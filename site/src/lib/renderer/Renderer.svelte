@@ -1,0 +1,59 @@
+<script lang="ts" module>
+	/** A serialized Markdoc Tag (plain object, not a class instance) */
+	export interface SerializedTag {
+		$$mdtype: 'Tag';
+		name: string;
+		attributes: Record<string, any>;
+		children: RendererNode[];
+	}
+
+	export type RendererNode = SerializedTag | string | number | null | undefined | RendererNode[];
+</script>
+
+<script lang="ts">
+	import { getComponent } from './registry.js';
+	import Renderer from './Renderer.svelte';
+
+	let { node }: { node: RendererNode } = $props();
+
+	function isTag(n: unknown): n is SerializedTag {
+		return n !== null && typeof n === 'object' && (n as any).$$mdtype === 'Tag';
+	}
+
+	/** Filter out attributes that shouldn't be rendered as HTML attributes */
+	function htmlAttrs(attrs: Record<string, any>): Record<string, any> {
+		const result: Record<string, any> = {};
+		for (const [k, v] of Object.entries(attrs)) {
+			if (v === undefined || v === null || v === false) continue;
+			result[k] = v === true ? '' : String(v);
+		}
+		return result;
+	}
+</script>
+
+{#if Array.isArray(node)}
+	{#each node as child}
+		<Renderer node={child} />
+	{/each}
+{:else if node === null || node === undefined}
+	<!-- empty -->
+{:else if typeof node === 'string'}
+	{node}
+{:else if typeof node === 'number'}
+	{String(node)}
+{:else if isTag(node)}
+	{@const Component = node.attributes?.typeof ? getComponent(node.attributes.typeof) : undefined}
+	{#if Component}
+		<Component tag={node}>
+			{#each node.children as child}
+				<Renderer node={child} />
+			{/each}
+		</Component>
+	{:else}
+		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
+			{#each node.children as child}
+				<Renderer node={child} />
+			{/each}
+		</svelte:element>
+	{/if}
+{/if}
