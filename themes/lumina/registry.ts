@@ -9,6 +9,10 @@ import Editor from './components/Editor.svelte';
 import Pricing from './components/Pricing.svelte';
 import PageSection from './components/PageSection.svelte';
 import NavComponent from './components/Nav.svelte';
+import Details from './components/Details.svelte';
+import Figure from './components/Figure.svelte';
+import Accordion from './components/Accordion.svelte';
+import Toc from './components/Toc.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components */
 export const registry: ComponentRegistry = {
@@ -28,4 +32,9 @@ export const registry: ComponentRegistry = {
 	'Nav': NavComponent,
 	'NavGroup': NavComponent,
 	'NavItem': NavComponent,
+	'Details': Details,
+	'Figure': Figure,
+	'Accordion': Accordion,
+	'AccordionItem': Accordion,
+	'TableOfContents': Toc,
 };

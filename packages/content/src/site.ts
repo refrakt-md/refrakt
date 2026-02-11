@@ -1,5 +1,5 @@
 import Markdoc, { RenderableTreeNodes } from '@markdoc/markdoc';
-import { tags, nodes } from '@refract-md/runes';
+import { tags, nodes, extractHeadings } from '@refract-md/runes';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -25,7 +25,8 @@ export interface SitePage {
 
 function transformContent(content: string, path: string): RenderableTreeNodes {
   const ast = Markdoc.parse(content);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path } };
+  const headings = extractHeadings(ast);
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path, headings } };
   return Markdoc.transform(ast, config);
 }
 

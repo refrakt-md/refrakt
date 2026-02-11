@@ -27,6 +27,11 @@ import {
   Error, ErrorComponent,
   DebugInfo, DebugInfoComponent,
   PageSection,
+  Details, DetailsComponent,
+  Figure, FigureComponent,
+  Accordion, AccordionComponent,
+  AccordionItem, AccordionItemComponent,
+  TableOfContents, TableOfContentsComponent,
 } from '@refract-md/types';
 
 export const schema = {
@@ -71,4 +76,9 @@ export const schema = {
   Nav: useSchema(Nav).defineType<NavComponent>('Nav'),
   NavGroup: useSchema(NavGroup).defineType<NavGroupComponent>('NavGroup'),
   NavItem: useSchema(NavItem).defineType<NavItemComponent>('NavItem'),
+  Details: useSchema(Details).defineType<DetailsComponent>('Details'),
+  Figure: useSchema(Figure).defineType<FigureComponent>('Figure'),
+  Accordion: useSchema(Accordion).defineType<AccordionComponent>('Accordion'),
+  AccordionItem: useSchema(AccordionItem).defineType<AccordionItemComponent>('AccordionItem'),
+  TableOfContents: useSchema(TableOfContents).defineType<TableOfContentsComponent>('TableOfContents'),
 }

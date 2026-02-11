@@ -30,3 +30,7 @@ export { default as Editor } from './components/Editor.svelte';
 export { default as Pricing } from './components/Pricing.svelte';
 export { default as PageSection } from './components/PageSection.svelte';
 export { default as Nav } from './components/Nav.svelte';
+export { default as Details } from './components/Details.svelte';
+export { default as Figure } from './components/Figure.svelte';
+export { default as Accordion } from './components/Accordion.svelte';
+export { default as Toc } from './components/Toc.svelte';

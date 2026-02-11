@@ -17,6 +17,10 @@ import { musicRecording } from './tags/music-recording.js'
 import { nav } from './tags/nav.js';
 import { region } from './tags/region.js';
 import { layout } from './tags/layout.js';
+import { details } from './tags/details.js';
+import { figure } from './tags/figure.js';
+import { accordion, accordionItem } from './tags/accordion.js';
+import { toc } from './tags/toc.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -28,6 +32,8 @@ export { RenderableNodeCursor } from './lib/renderable.js';
 export { schema } from './registry.js';
 export { createSchema } from './lib/index.js';
 export { Model } from './lib/model.js';
+export { extractHeadings } from './util.js';
+export type { HeadingInfo } from './util.js';
 
 export const documents = {
   doc: new DocPage(),
@@ -157,6 +163,43 @@ export const runes = {
     description: 'Individual music track metadata',
     seoType: 'MusicRecording',
     type: schema.MusicRecording,
+  }),
+  details: defineRune({
+    name: 'details',
+    schema: details,
+    description: 'Collapsible disclosure block for supplementary content',
+    reinterprets: { heading: 'summary label', paragraph: 'hidden content' },
+    type: schema.Details,
+  }),
+  figure: defineRune({
+    name: 'figure',
+    schema: figure,
+    description: 'Enhanced image with caption, attribution, and sizing',
+    reinterprets: { image: 'figure image', paragraph: 'caption' },
+    seoType: 'ImageObject',
+    type: schema.Figure,
+  }),
+  accordion: defineRune({
+    name: 'accordion',
+    aliases: ['faq'],
+    schema: accordion,
+    description: 'Collapsible accordion sections where headings become toggleable headers',
+    reinterprets: { heading: 'accordion section header', paragraph: 'collapsible panel content' },
+    seoType: 'FAQPage',
+    type: schema.Accordion,
+  }),
+  'accordion-item': defineRune({
+    name: 'accordion-item',
+    schema: accordionItem,
+    description: 'Individual accordion section',
+    type: schema.AccordionItem,
+  }),
+  toc: defineRune({
+    name: 'toc',
+    aliases: ['table-of-contents'],
+    schema: toc,
+    description: 'Auto-generated table of contents from document headings',
+    type: schema.TableOfContents,
   }),
 };
 

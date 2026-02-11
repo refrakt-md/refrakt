@@ -29,6 +29,10 @@ export { DocPage, DocPageComponent, DocPageProperties, Headings, HeadingsCompone
 export { DebugInfo, DebugInfoComponent, Error, ErrorComponent } from './schema/error.js';
 export { SequentialPagination, SequentialPaginationComponent } from './schema/pagination.js';
 export { Nav, NavComponent, NavGroup, NavGroupComponent, NavItem, NavItemComponent } from './schema/nav.js';
+export { Details, DetailsComponent } from './schema/details.js';
+export { Figure, FigureComponent } from './schema/figure.js';
+export { Accordion, AccordionProperties, AccordionComponent, AccordionItem, AccordionItemComponent } from './schema/accordion.js';
+export { TableOfContents, TableOfContentsComponent } from './schema/toc.js';
 
 // Theme system types
 export type {

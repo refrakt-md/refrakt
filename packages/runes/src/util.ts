@@ -41,6 +41,49 @@ export interface HeadingsToListOptions {
   include?: NodeFilter[];
 }
 
+export interface HeadingInfo {
+  level: number;
+  text: string;
+  id: string;
+}
+
+/**
+ * Pre-scan an AST for heading nodes, extracting their text and generating
+ * IDs using the same algorithm as nodes.ts heading transform.
+ */
+export function extractHeadings(node: Node): HeadingInfo[] {
+  const headings: HeadingInfo[] = [];
+
+  function walk(n: Node) {
+    if (n.type === 'heading') {
+      const textParts: string[] = [];
+      for (const child of n.walk()) {
+        if (child.type === 'text' && child.attributes.content) {
+          textParts.push(child.attributes.content);
+        }
+      }
+      const text = textParts.join(' ');
+      const id = n.attributes.id || text
+        .replace(/[?]/g, '')
+        .replace(/\s+/g, '-')
+        .toLowerCase();
+
+      headings.push({
+        level: n.attributes.level,
+        text,
+        id,
+      });
+    }
+
+    for (const child of n.children) {
+      walk(child);
+    }
+  }
+
+  walk(node);
+  return headings;
+}
+
 export function headingsToList(options?: HeadingsToListOptions) {
   const level = options?.level ?? 1;
   const include = options?.include;

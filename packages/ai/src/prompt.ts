@@ -23,6 +23,7 @@ const EXCLUDED_RUNES = new Set([
 	'step',
 	'tab',
 	'music-recording',
+	'accordion-item',
 ]);
 
 /** Usage examples for each author-facing rune */
@@ -171,6 +172,31 @@ Choose the plan that works for you.
 - Track One | 3:42
 - Track Two | 4:15
 {% /music-playlist %}`,
+
+	details: `{% details summary="How does billing work?" %}
+We bill monthly on the date you signed up. You can cancel anytime
+from your account settings.
+{% /details %}`,
+
+	figure: `{% figure size="large" align="center" caption="Dashboard overview" %}
+![Dashboard](/images/dashboard.png)
+{% /figure %}`,
+
+	accordion: `{% accordion headingLevel=2 %}
+## What is refract.md?
+
+A content framework that extends Markdown with semantic runes.
+
+## How do I install it?
+
+Run \`npm install @refract-md/runes\` to get started.
+
+## Is it free?
+
+Yes, refract.md is open source and free to use.
+{% /accordion %}`,
+
+	toc: `{% toc depth=3 %}{% /toc %}`,
 };
 
 function attributeTypeName(type: unknown): string {

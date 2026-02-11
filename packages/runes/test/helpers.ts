@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 import Markdoc, { Tag } from '@markdoc/markdoc';
-import { tags, nodes } from '../src/index.js';
+import { tags, nodes, extractHeadings } from '../src/index.js';
 
 export function parse(content: string, variables: Record<string, any> = {}) {
   const ast = Markdoc.parse(content);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: '/test.md', ...variables } };
+  const headings = extractHeadings(ast);
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: '/test.md', headings, ...variables } };
   return Markdoc.transform(ast, config);
 }
 
