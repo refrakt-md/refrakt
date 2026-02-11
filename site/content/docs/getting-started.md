@@ -25,7 +25,9 @@ content/
 ├── index.md
 └── docs/
     ├── getting-started.md
-    └── runes.md
+    └── runes/
+        ├── hint.md
+        └── ...
 ```
 
 The `_layout.md` file defines layout regions that wrap every page in that directory and its subdirectories. Pages are regular Markdown files with optional frontmatter.
@@ -75,7 +77,7 @@ Runes are Markdoc tags wrapped in `{% %}` delimiters. They create interpretation
 A heading inside `{% nav %}` becomes a navigation group title. A list inside `{% cta %}` becomes action buttons. A list inside `{% feature %}` becomes a feature grid. You write Markdown — the rune decides what it means.
 {% /hint %}
 
-See the [Runes Reference](/docs/runes) for the full list of available runes.
+Browse the individual rune pages in the sidebar for detailed usage and examples.
 
 {% hint type="check" %}
 You're ready to start building with refract.md. Explore the rune reference to see what's possible.

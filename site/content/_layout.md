@@ -8,7 +8,22 @@
 ## Guide
 
 - getting-started
-- runes
+
+## Runes
+
+- hint
+- cta
+- feature
+- steps
+- grid
+- tabs
+- accordion
+- details
+- figure
+- toc
+- pricing
+- nav
+- layout
 
 {% /nav %}
 {% /region %}
