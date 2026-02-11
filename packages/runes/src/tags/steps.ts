@@ -3,14 +3,11 @@ import { headingsToList } from '../util.js';
 import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';
 import { SpaceSeparatedNumberList } from '../attributes.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, group, createComponentRenderable, createSchema } from '../lib/index.js';
 import { NodeStream } from '../lib/node.js';
-import { name, pageSectionProperties } from './common.js';
+import { SplitablePageSectionModel, name, pageSectionProperties } from './common.js';
 
-class StepsModel extends Model {
-  @attribute({ type: SpaceSeparatedNumberList, required: false })
-  split: number[];
-
+class StepsModel extends SplitablePageSectionModel {
   @attribute({ type: Number, required: false })
   headingLevel: number | undefined = undefined;
 
@@ -40,10 +37,7 @@ class StepsModel extends Model {
   }
 }
 
-class StepModel extends Model {
-  @attribute({ type: SpaceSeparatedNumberList, required: false })
-  split: number[];
-
+class StepModel extends SplitablePageSectionModel {
   @group({ section: 0 })
   main: NodeStream;
 

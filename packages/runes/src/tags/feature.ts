@@ -2,10 +2,9 @@ import Markdoc, { Tag, Ast, RenderableTreeNodes } from '@markdoc/markdoc';
 import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model } from '../lib/index.js';
+import { group, Model } from '../lib/index.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';
-import { SpaceSeparatedNumberList } from '../attributes.js';
-import { pageSectionProperties } from './common.js';
+import { SplitablePageSectionModel, pageSectionProperties } from './common.js';
 
 export class DefinitionModel extends Model {
   @group({ include: [{ node: 'paragraph', descendant: 'image' }, 'heading'] })
@@ -48,13 +47,7 @@ export class DefinitionModel extends Model {
 
 export const definition = createSchema(DefinitionModel);
 
-class FeatureModel extends Model {
-  @attribute({ type: SpaceSeparatedNumberList, required: false })
-  split: number[] = [];
-
-  @attribute({ type: Boolean, required: false })
-  mirror: boolean = false;
-
+class FeatureModel extends SplitablePageSectionModel {
   @group({ section: 0, include: ['heading', 'paragraph'] })
   header: NodeStream;
 

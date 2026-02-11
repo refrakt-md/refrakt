@@ -6,16 +6,6 @@ export {
   ComponentType,
 } from './interfaces.js';
 
-// Runtime types for working with renderable trees
-export {
-  trimNamespace,
-  extractType,
-  extractProperty,
-  PropertyNode,
-  TypeNode,
-  AbstractElementWrapper,
-} from './types.js';
-
 // Schema definition utilities
 export {
   Type,

@@ -1,20 +1,13 @@
 import Markdoc, { RenderableTreeNodes } from '@markdoc/markdoc';
 import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';
-import { attribute, group, Model } from '../lib/index.js';
+import { group } from '../lib/index.js';
 import { NodeStream } from '../lib/node.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';
-import { SpaceSeparatedNumberList } from '../attributes.js';
-import { linkItem, pageSectionProperties } from './common.js';
+import { SplitablePageSectionModel, linkItem, pageSectionProperties } from './common.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
-class CallToActionModel extends Model {
-  @attribute({ type: SpaceSeparatedNumberList, required: false })
-  split: number[] = [];
-
-  @attribute({ type: Boolean, required: false })
-  mirror: boolean = false;
-
+class CallToActionModel extends SplitablePageSectionModel {
   @group({ section: 0, include: ['list'] })
   nav: NodeStream;
 

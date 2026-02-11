@@ -21,11 +21,8 @@ export const heading: Schema = {
     const attributes = node.transformAttributes(config);
     const children = node.transformChildren(config);
 
-    const generateID = () => {
-      if (attributes.id && typeof attributes.id === 'string') {
-        return attributes.id;
-      }
-      return children
+    if (!attributes.id || typeof attributes.id !== 'string') {
+      attributes.id = children
         .filter((child: any) => typeof child === 'string')
         .join(' ')
         .replace(/[?]/g, '')
@@ -33,12 +30,10 @@ export const heading: Schema = {
         .toLowerCase();
     }
 
-    attributes.id = generateID();
-
     return new Tag(
       `h${node.attributes['level']}`,
       attributes,
-      node.transformChildren(config)
+      children
     );
   }
 }

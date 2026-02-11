@@ -27,9 +27,10 @@ export function generateIdIfMissing(node: Node, config: Config) {
 export function *walkTag(tag: Tag): Generator<RenderableTreeNode> {
   yield tag;
   for (const child of tag.children) {
-    yield child;
     if (Tag.isTag(child)) {
       yield* walkTag(child);
+    } else {
+      yield child;
     }
   }
 }
