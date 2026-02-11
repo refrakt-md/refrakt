@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ThemeShell } from '@refract-md/svelte';
-	import { theme } from '@refract-md/theme-lumina';
+	import { theme } from 'virtual:refract/theme';
 
 	let { data } = $props();
 </script>
