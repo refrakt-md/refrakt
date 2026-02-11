@@ -29,6 +29,28 @@ pnpm add @refract-md/runes
 {% /tabs %}
 ```
 
+### Example
+
+{% tabs %}
+## npm
+
+```shell
+npm install @refract-md/runes
+```
+
+## yarn
+
+```shell
+yarn add @refract-md/runes
+```
+
+## pnpm
+
+```shell
+pnpm add @refract-md/runes
+```
+{% /tabs %}
+
 You can also use explicit `{% tab %}` tags for more control:
 
 ```markdown

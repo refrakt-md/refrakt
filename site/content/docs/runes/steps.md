@@ -23,6 +23,22 @@ Step-by-step instructions with numbered indicators. Ordered list items become in
 {% /steps %}
 ```
 
+### Example
+
+{% steps %}
+1. Install the dependencies
+
+   Run the install command for your package manager.
+
+2. Create your content directory
+
+   Add a `content/` folder with your Markdown files.
+
+3. Start the dev server
+
+   Run `npm run dev` and visit localhost.
+{% /steps %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

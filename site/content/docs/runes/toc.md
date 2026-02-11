@@ -17,6 +17,12 @@ Control how deep the heading hierarchy goes with `depth`:
 {% toc depth=2 /%}
 ```
 
+### Example
+
+The table of contents below is generated from this page's own headings:
+
+{% toc /%}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

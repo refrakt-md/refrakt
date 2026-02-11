@@ -21,6 +21,20 @@ Column three content.
 {% /grid %}
 ```
 
+### Example
+
+{% grid %}
+**First column.** This content sits in the first cell of the grid layout.
+
+---
+
+**Second column.** Grid cells are separated by horizontal rules in the Markdown source.
+
+---
+
+**Third column.** The grid automatically distributes available space across columns.
+{% /grid %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

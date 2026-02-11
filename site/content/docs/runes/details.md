@@ -22,6 +22,16 @@ Use `open` to have the block expanded by default:
 {% /details %}
 ```
 
+### Example
+
+{% details summary="Click to reveal more information" %}
+This content is hidden by default. The details rune wraps content in a native disclosure element that the user can toggle open and closed.
+{% /details %}
+
+{% details summary="This one starts open" open=true %}
+Since `open=true` is set, this block is expanded when the page loads.
+{% /details %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

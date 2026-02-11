@@ -18,6 +18,17 @@ A compelling description of what you're offering.
 {% /cta %}
 ```
 
+### Example
+
+{% cta %}
+# Get Started with refract.md
+
+Build structured content sites with semantic Markdown.
+
+- [Quick Start](/docs/getting-started)
+- [View on GitHub](https://github.com)
+{% /cta %}
+
 Code fences become copyable command blocks:
 
 ```markdown

@@ -39,6 +39,38 @@ Pick the plan that fits your needs.
 {% /pricing %}
 ```
 
+### Example
+
+{% pricing %}
+# Choose your plan
+
+Pick the plan that fits your needs.
+
+{% tier name="Free" priceMonthly="$0" %}
+- 1 project
+- Community support
+- Basic analytics
+
+[Get started](/docs/getting-started)
+{% /tier %}
+
+{% tier name="Pro" priceMonthly="$19" featured=true %}
+- Unlimited projects
+- Priority support
+- Advanced analytics
+
+[Start trial](/docs/getting-started)
+{% /tier %}
+
+{% tier name="Enterprise" priceMonthly="Custom" %}
+- Custom integrations
+- Dedicated support
+- SLA guarantee
+
+[Contact us](/docs/getting-started)
+{% /tier %}
+{% /pricing %}
+
 ### Tier attributes
 
 | Attribute | Type | Default | Description |
