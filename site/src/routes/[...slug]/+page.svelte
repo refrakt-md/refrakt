@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { DocsLayout } from '@refract-md/theme-lumina';
+	import { ThemeShell } from '@refract-md/svelte';
+	import { theme } from '@refract-md/theme-lumina';
 
 	let { data } = $props();
 </script>
 
-<DocsLayout
-	title={data.title}
-	description={data.description}
-	regions={data.regions}
-	renderable={data.renderable}
-	pages={data.pages}
+<ThemeShell
+	{theme}
+	page={{
+		title: data.title,
+		description: data.description,
+		regions: data.regions,
+		renderable: data.renderable,
+		pages: data.pages,
+		url: data.url,
+	}}
 />

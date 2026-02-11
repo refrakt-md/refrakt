@@ -1,8 +1,25 @@
-export { registry } from './registry.js';
+import type { SvelteTheme } from '@refract-md/svelte';
+import manifest from './manifest.json';
+import { registry } from './registry.js';
+import DocsLayout from './layouts/DocsLayout.svelte';
+import DefaultLayout from './layouts/DefaultLayout.svelte';
+
+/** Re-export the raw manifest for server-side use (no Svelte imports) */
+export { default as manifest } from './manifest.json';
+
+/** The structured theme object consumed by ThemeShell */
+export const theme: SvelteTheme = {
+	manifest: manifest as any,
+	layouts: { default: DefaultLayout, docs: DocsLayout },
+	components: registry,
+};
+
+// Backward-compatible named exports
+export { registry };
 export { default as DocsLayout } from './layouts/DocsLayout.svelte';
 export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 
-// Re-export individual components for advanced usage
+// Individual components for advanced usage
 export { default as Hint } from './components/Hint.svelte';
 export { default as CallToAction } from './components/CallToAction.svelte';
 export { default as Feature } from './components/Feature.svelte';

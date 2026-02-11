@@ -2,22 +2,44 @@
 	"name": "lumina",
 	"version": "0.1.0",
 	"description": "A clean, light documentation theme for refract.md",
-	"author": "refract.md",
-	"tokens": "tokens.css",
-	"components": {
-		"Hint": "components/Hint.svelte",
-		"CallToAction": "components/CallToAction.svelte",
-		"Feature": "components/Feature.svelte",
-		"Grid": "components/Grid.svelte",
-		"Steps": "components/Steps.svelte",
-		"Tabs": "components/Tabs.svelte",
-		"Editor": "components/Editor.svelte",
-		"Pricing": "components/Pricing.svelte",
-		"PageSection": "components/PageSection.svelte",
-		"Nav": "components/Nav.svelte"
-	},
+	"target": "sveltekit",
+	"designTokens": "tokens.css",
+
 	"layouts": {
-		"docs": "layouts/DocsLayout.svelte",
-		"default": "layouts/DefaultLayout.svelte"
-	}
+		"default": {
+			"component": "layouts/DefaultLayout.svelte",
+			"regions": ["header", "footer"]
+		},
+		"docs": {
+			"component": "layouts/DocsLayout.svelte",
+			"regions": ["header", "nav", "sidebar", "footer"],
+			"requiredRegions": ["nav"]
+		}
+	},
+
+	"routeRules": [
+		{ "pattern": "docs/**", "layout": "docs" },
+		{ "pattern": "**", "layout": "default" }
+	],
+
+	"components": {
+		"Hint": { "component": "components/Hint.svelte" },
+		"CallToAction": { "component": "components/CallToAction.svelte" },
+		"Feature": { "component": "components/Feature.svelte" },
+		"FeatureDefinition": { "component": "components/Feature.svelte" },
+		"Grid": { "component": "components/Grid.svelte" },
+		"Steps": { "component": "components/Steps.svelte" },
+		"Step": { "component": "components/Steps.svelte" },
+		"TabGroup": { "component": "components/Tabs.svelte" },
+		"Tab": { "component": "components/Tabs.svelte" },
+		"Editor": { "component": "components/Editor.svelte" },
+		"Pricing": { "component": "components/Pricing.svelte" },
+		"Tier": { "component": "components/Pricing.svelte" },
+		"PageSection": { "component": "components/PageSection.svelte" },
+		"Nav": { "component": "components/Nav.svelte" },
+		"NavGroup": { "component": "components/Nav.svelte" },
+		"NavItem": { "component": "components/Nav.svelte" }
+	},
+
+	"unsupportedRuneBehavior": "passthrough"
 }

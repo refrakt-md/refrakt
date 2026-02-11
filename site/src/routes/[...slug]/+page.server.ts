@@ -29,6 +29,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				{ name: region.name, mode: region.mode, content: region.content.map(serialize) }
 			])
 		),
+		url,
 	};
 };
 

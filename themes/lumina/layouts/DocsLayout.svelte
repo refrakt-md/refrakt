@@ -1,37 +1,16 @@
 <script lang="ts">
-	import { Renderer, setRegistry } from '@refract-md/svelte';
-	import { setContext } from 'svelte';
-	import { registry } from '../registry.js';
+	import { Renderer } from '@refract-md/svelte';
 
-	interface PageEntry {
-		url: string;
-		title: string;
-		draft: boolean;
-	}
-
-	let { title, description, regions, renderable, pages }: {
+	let { regions, renderable }: {
 		title: string;
 		description: string;
 		regions: Record<string, { name: string; mode: string; content: any[] }>;
 		renderable: any;
-		pages: PageEntry[];
+		pages: any[];
 	} = $props();
-
-	// Wire up theme components and page index into Svelte context
-	setRegistry(registry);
-	setContext('pages', pages);
 
 	const hasNav = !!regions.nav;
 </script>
-
-<svelte:head>
-	{#if title}
-		<title>{title}</title>
-	{/if}
-	{#if description}
-		<meta name="description" content={description} />
-	{/if}
-</svelte:head>
 
 {#if regions.header}
 	<header class="site-header">

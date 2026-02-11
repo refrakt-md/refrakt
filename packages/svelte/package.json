@@ -15,6 +15,7 @@
 		"svelte": "^5.0.0"
 	},
 	"dependencies": {
-		"@markdoc/markdoc": "0.4.0"
+		"@markdoc/markdoc": "0.4.0",
+		"@refract-md/types": "0.1.0"
 	}
 }

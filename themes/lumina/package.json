@@ -9,11 +9,13 @@
 			"svelte": "./index.ts",
 			"default": "./index.ts"
 		},
-		"./tokens.css": "./tokens.css"
+		"./tokens.css": "./tokens.css",
+		"./manifest": "./manifest.json"
 	},
 	"files": ["components", "layouts", "index.ts", "registry.ts", "tokens.css", "manifest.json"],
 	"dependencies": {
-		"@refract-md/svelte": "0.1.0"
+		"@refract-md/svelte": "0.1.0",
+		"@refract-md/types": "0.1.0"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0",

@@ -1,0 +1,5 @@
+{
+	"contentDir": "./content",
+	"theme": "@refract-md/theme-lumina",
+	"target": "sveltekit"
+}

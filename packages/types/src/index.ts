@@ -29,3 +29,12 @@ export { DocPage, DocPageComponent, DocPageProperties, Headings, HeadingsCompone
 export { DebugInfo, DebugInfoComponent, Error, ErrorComponent } from './schema/error.js';
 export { SequentialPagination, SequentialPaginationComponent } from './schema/pagination.js';
 export { Nav, NavComponent, NavGroup, NavGroupComponent, NavItem, NavItemComponent } from './schema/nav.js';
+
+// Theme system types
+export type {
+  RefractConfig,
+  ThemeManifest,
+  LayoutDefinition,
+  RouteRule,
+  ComponentDefinition,
+} from './theme.js';

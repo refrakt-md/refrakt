@@ -1,0 +1,57 @@
+/** Project-level configuration (refract.config.json) */
+export interface RefractConfig {
+	/** Path to content directory, relative to project root */
+	contentDir: string;
+	/** Active theme — package name or relative path */
+	theme: string;
+	/** Target framework identifier */
+	target: string;
+}
+
+/** Theme manifest — the universal contract between content and rendering */
+export interface ThemeManifest {
+	name: string;
+	version: string;
+	description?: string;
+	/** Target framework this theme is built for (e.g. "sveltekit", "astro") */
+	target: string;
+	/** Relative path to CSS custom properties file */
+	designTokens: string;
+	/** Layout definitions keyed by name */
+	layouts: Record<string, LayoutDefinition>;
+	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
+	routeRules: RouteRule[];
+	/** Rune-to-component mappings keyed by typeof name */
+	components: Record<string, ComponentDefinition>;
+	/** Behavior when a rune has no matching component */
+	unsupportedRuneBehavior?: 'fallback' | 'passthrough' | 'hide';
+	/** Relative path to fallback component for unsupported runes */
+	fallbackComponent?: string;
+}
+
+export interface LayoutDefinition {
+	/** Relative path to layout component file */
+	component: string;
+	/** All region names this layout supports */
+	regions: string[];
+	/** Regions that must be provided for this layout to render correctly */
+	requiredRegions?: string[];
+}
+
+export interface RouteRule {
+	/** Glob-style pattern matched against the page URL (e.g. "docs/**", "**") */
+	pattern: string;
+	/** Name of the layout to use (key in manifest.layouts) */
+	layout: string;
+}
+
+export interface ComponentDefinition {
+	/** Relative path to component file */
+	component: string;
+	/** Maps rune attribute names to component prop names */
+	propMapping?: Record<string, string>;
+	/** Whether this component accepts children */
+	acceptsChildren?: boolean;
+	/** Context-dependent component overrides: key is parent rune name */
+	contextOverrides?: Record<string, { component: string }>;
+}
