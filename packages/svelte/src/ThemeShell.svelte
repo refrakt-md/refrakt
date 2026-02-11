@@ -19,9 +19,9 @@
 	setRegistry(theme.components);
 	setContext('pages', page.pages);
 
-	// Pick layout via route rules
-	const layoutName = matchRouteRule(page.url, theme.manifest.routeRules);
-	const Layout = theme.layouts[layoutName] ?? theme.layouts['default'];
+	// Pick layout via route rules (reactive so layout updates on client-side navigation)
+	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules));
+	const Layout = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
 </script>
 
 <svelte:head>
