@@ -45,7 +45,11 @@
 	{:else}
 		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
 			{#each node.children as child}
-				<Renderer node={child} />
+				{#if node.attributes?.['data-codeblock'] && typeof child === 'string'}
+					{@html child}
+				{:else}
+					<Renderer node={child} />
+				{/if}
 			{/each}
 		</svelte:element>
 	{/if}
