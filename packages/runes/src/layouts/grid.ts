@@ -1,4 +1,5 @@
-import { Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export const flow = ['row', 'column', 'dense', 'row dense', 'column dense'] as const;

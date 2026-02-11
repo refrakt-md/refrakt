@@ -1,4 +1,5 @@
-import Markdoc, { RenderableTreeNodes } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNodes } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings } from '@refract-md/runes';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';

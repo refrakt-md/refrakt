@@ -1,4 +1,6 @@
-import { RenderableTreeNodes, Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { SpaceSeparatedNumberList } from '../attributes.js';
 import { attribute, createComponentRenderable, createSchema, Model } from '../lib/index.js';

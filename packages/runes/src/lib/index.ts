@@ -1,5 +1,5 @@
 import { Newable } from '@refract-md/types';
-import { Schema, SchemaAttribute } from '@markdoc/markdoc';
+import type { Schema, SchemaAttribute } from '@markdoc/markdoc';
 
 import { Model } from './model.js';
 import { AttributeAnnotation } from './annotations/attribute.js';

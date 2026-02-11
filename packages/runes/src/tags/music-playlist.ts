@@ -1,4 +1,5 @@
-import Markdoc, { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
 import { splitLayout } from '../layouts/index.js';
 import { CommaSeparatedList, SpaceSeparatedNumberList } from '../attributes.js';

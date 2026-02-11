@@ -1,4 +1,4 @@
-import { Config, CustomAttributeTypeInterface, ValidationError } from '@markdoc/markdoc';
+import type { Config, CustomAttributeTypeInterface, ValidationError } from '@markdoc/markdoc';
 
 export abstract class SeparatedString implements CustomAttributeTypeInterface {
   validate(value: any, config: Config, name: string): ValidationError[] {

@@ -1,4 +1,6 @@
-import Markdoc, { Ast, Node, Tag, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';

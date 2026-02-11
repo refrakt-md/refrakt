@@ -1,4 +1,5 @@
-import { Node, RenderableTreeNodes, Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, Node, RenderableTreeNodes } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
 import { NodeType } from '@refract-md/types';
 import { TypedNode } from '../interfaces.js';
@@ -31,7 +32,7 @@ class MusicRecordingModel extends Model {
   private transformDuration() {
     if (this.duration) {
       return new RenderableNodeCursor([
-        new Tag('span', { content: this.duration }, [this.formatDuration(Duration.parse(this.duration))])
+        new Markdoc.Tag('span', { content: this.duration }, [this.formatDuration(Duration.parse(this.duration))])
       ]);
     }
     return new RenderableNodeCursor<Tag<'span'>>([]);

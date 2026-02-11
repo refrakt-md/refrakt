@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import * as path from 'node:path';
 import { loadContent } from '../src/site.js';
 

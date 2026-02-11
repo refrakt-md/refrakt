@@ -1,4 +1,5 @@
-import { RenderableTreeNode, Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNode } from '@markdoc/markdoc';
 import { NodeType } from '@refract-md/types';
 import { walkTag } from '../util.js';
 
@@ -8,20 +9,20 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
   constructor(public readonly nodes: T[]) {}
 
   static fromData<TagName extends NodeType>(data: any, tag: TagName) {
-    return new RenderableNodeCursor([new Tag(tag, {}, [data])]);
+    return new RenderableNodeCursor([new Markdoc.Tag(tag, {}, [data])]);
   }
 
   wrap<TagName extends string>(tag: TagName, attributes: Record<string, any> = {}): RenderableNodeCursor<Tag<TagName>> {
-    return new RenderableNodeCursor([new Tag(tag, attributes, this.nodes)]);
+    return new RenderableNodeCursor([new Markdoc.Tag(tag, attributes, this.nodes)]);
   }
 
   tag<TagName extends NodeType>(tag: TagName): RenderableNodeCursor<Tag<TagName>> {
-    const nodes = this.nodes.filter(n => Tag.isTag(n) && n.name === tag) as unknown as Tag<TagName>[];
+    const nodes = this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.name === tag) as unknown as Tag<TagName>[];
     return new RenderableNodeCursor(nodes);
   }
 
   tags<TagNames extends NodeType[]>(...tags: TagNames): RenderableNodeCursor<Tag<TagNames[number]>> {
-    const nodes = this.nodes.filter(n => Tag.isTag(n) && (tags as string[]).includes(n.name)) as unknown as Tag<TagNames[number]>[];
+    const nodes = this.nodes.filter(n => Markdoc.Tag.isTag(n) && (tags as string[]).includes(n.name)) as unknown as Tag<TagNames[number]>[];
     return new RenderableNodeCursor(nodes);
   }
 
@@ -30,7 +31,7 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
   }
 
   typeof(type: string): RenderableNodeCursor<T> {
-    return new RenderableNodeCursor(this.nodes.filter(n => Tag.isTag(n) && n.attributes.typeof === type));
+    return new RenderableNodeCursor(this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.attributes.typeof === type));
   }
 
   concat(...other: (RenderableTreeNode | RenderableNodeCursor)[]) {
@@ -39,7 +40,7 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
   }
 
   flatten() {
-    const nodes = this.nodes.map(t => Tag.isTag(t) ? Array.from(walkTag(t)) : t).flat();
+    const nodes = this.nodes.map(t => Markdoc.Tag.isTag(t) ? Array.from(walkTag(t)) : t).flat();
     return new RenderableNodeCursor(nodes);
   }
 

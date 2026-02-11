@@ -1,4 +1,4 @@
-import { SchemaAttribute } from '@markdoc/markdoc';
+import type { SchemaAttribute } from '@markdoc/markdoc';
 import { Annotation } from './annotation.js';
 import { propertyDecorator } from './decoration.js';
 

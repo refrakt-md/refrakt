@@ -1,4 +1,4 @@
-import { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNodes } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
 import { attribute, groupList, Model } from '../lib/index.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';

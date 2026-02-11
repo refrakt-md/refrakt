@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import Markdoc, { Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import { tags, nodes, extractHeadings } from '../src/index.js';
 
 export function parse(content: string, variables: Record<string, any> = {}) {

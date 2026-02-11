@@ -1,4 +1,4 @@
-import { Config, Node } from '@markdoc/markdoc';
+import type { Config, Node } from '@markdoc/markdoc';
 import { Annotation } from './annotation.js';
 import { propertyDecorator } from './decoration.js';
 import { generateIdIfMissing } from '../../util.js';

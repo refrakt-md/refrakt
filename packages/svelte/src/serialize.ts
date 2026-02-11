@@ -1,5 +1,6 @@
-import { Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 
 /** Convert a Markdoc Tag instance to a plain serializable object */
 export function serialize(node: RenderableTreeNode): unknown {

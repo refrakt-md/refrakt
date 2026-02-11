@@ -1,4 +1,6 @@
-import Markdoc, { Tag, Ast, RenderableTreeNodes } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag, Ast } = Markdoc;
 import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';

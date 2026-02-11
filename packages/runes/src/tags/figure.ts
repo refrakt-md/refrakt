@@ -1,4 +1,5 @@
-import { Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 

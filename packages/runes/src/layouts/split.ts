@@ -1,4 +1,5 @@
-import { RenderableTreeNode, Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNode } from '@markdoc/markdoc';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export { GridFlow, gridLayout, gridItems, flow } from './grid.js';
@@ -25,13 +26,13 @@ export function splitLayout(options: SplitLayoutOptions) {
   }
 
   if (split && split.length === 2) {
-    return createCursor(new Tag('div', { 'data-name': 'layout', 'data-layout': 'grid', 'data-columns': columns }, [
-      new Tag('div', { 'data-colspan': split[mirror ? 1 : 0] }, mirror ? side : main),
-      new Tag('div', { 'data-colspan': split[mirror ? 0 : 1] }, mirror ? main : side),
+    return createCursor(new Markdoc.Tag('div', { 'data-name': 'layout', 'data-layout': 'grid', 'data-columns': columns }, [
+      new Markdoc.Tag('div', { 'data-colspan': split[mirror ? 1 : 0] }, mirror ? side : main),
+      new Markdoc.Tag('div', { 'data-colspan': split[mirror ? 0 : 1] }, mirror ? main : side),
     ]))
   }
-  return createCursor(new Tag('div', { 'data-name': 'layout', 'data-layout': 'grid', 'data-columns': columns }, [
-    new Tag('div', { 'data-colspan': 12 }, main),
-    new Tag('div', { 'data-colspan': 12 }, side),
+  return createCursor(new Markdoc.Tag('div', { 'data-name': 'layout', 'data-layout': 'grid', 'data-columns': columns }, [
+    new Markdoc.Tag('div', { 'data-colspan': 12 }, main),
+    new Markdoc.Tag('div', { 'data-colspan': 12 }, side),
   ]));
 }

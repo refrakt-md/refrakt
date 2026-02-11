@@ -1,4 +1,6 @@
-import { Config, Tag, MaybePromise, Node, RenderableTreeNodes, Schema, RenderableTreeNode } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Config, MaybePromise, Node, RenderableTreeNodes, Schema, RenderableTreeNode } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 
 export interface PageOptions {
   unwrap?: string[];

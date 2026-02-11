@@ -1,5 +1,6 @@
 import { ComponentType, Type } from '@refract-md/types';
-import { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
 import { RenderableNodeCursor } from './renderable.js';
 
 export type PropertyInput<TSchema, T extends ComponentType<TSchema>> = {
@@ -34,7 +35,7 @@ export function createComponentRenderable<TOutput extends ComponentType<object>>
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
     tags.forEach(n => {
-      if (Tag.isTag(n)) {
+      if (Markdoc.Tag.isTag(n)) {
         n.attributes.property = k
       }
     });
@@ -44,13 +45,13 @@ export function createComponentRenderable<TOutput extends ComponentType<object>>
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
     tags.forEach(n => {
-      if (Tag.isTag(n)) {
+      if (Markdoc.Tag.isTag(n)) {
         n.attributes['data-name'] = k;
       }
     });
   }
 
-  const tag = new Tag(result.tag, {
+  const tag = new Markdoc.Tag(result.tag, {
     id: result.id,
     property: result.property,
     typeof: type.name,

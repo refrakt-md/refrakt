@@ -1,4 +1,6 @@
-import Markdoc, { Ast, Node } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
+const { Ast } = Markdoc;
 import { headingsToList } from '../util.js';
 import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';

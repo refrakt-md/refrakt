@@ -1,4 +1,6 @@
-import { Ast, Config, Node, RenderableTreeNode, Tag } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, Config, Node, RenderableTreeNode } from '@markdoc/markdoc';
+const { Ast } = Markdoc;
 import { NodeFilter } from './interfaces.js';
 import { isFilterMatching } from './lib/node.js';
 
@@ -27,7 +29,7 @@ export function generateIdIfMissing(node: Node, config: Config) {
 export function *walkTag(tag: Tag): Generator<RenderableTreeNode> {
   yield tag;
   for (const child of tag.children) {
-    if (Tag.isTag(child)) {
+    if (Markdoc.Tag.isTag(child)) {
       yield* walkTag(child);
     } else {
       yield child;

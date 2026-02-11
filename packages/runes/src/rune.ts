@@ -1,4 +1,4 @@
-import { Schema } from '@markdoc/markdoc';
+import type { Schema } from '@markdoc/markdoc';
 import { Type, ComponentType } from '@refract-md/types';
 
 export interface RuneDescriptor {

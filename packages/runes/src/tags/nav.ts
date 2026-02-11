@@ -1,4 +1,5 @@
-import { Tag, RenderableTreeNode, RenderableTreeNodes, Node } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNode, RenderableTreeNodes, Node } from '@markdoc/markdoc';
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
 import { attribute, Model } from '../lib/index.js';
@@ -7,7 +8,7 @@ import { createComponentRenderable, createSchema } from '../lib/index.js';
 class NavItemModel extends Model {
   transform(): RenderableTreeNodes {
     const children = this.transformChildren({
-      text: node => new Tag('span', { property: 'slug' }, [node.attributes.content]),
+      text: node => new Markdoc.Tag('span', { property: 'slug' }, [node.attributes.content]),
     });
 
     const slug = children.tag('span');
@@ -44,7 +45,7 @@ class NavModel extends Model {
     const children = this.transformChildren({
       item: navItem,
       list: (node, config) => {
-        return new Tag('ul', {}, node.transformChildren(config));
+        return new Markdoc.Tag('ul', {}, node.transformChildren(config));
       },
     });
 
@@ -59,8 +60,8 @@ class NavModel extends Model {
         properties: {
           group: groups,
           item: groups.flatMap(g =>
-            g.children.filter((c): c is Tag => Tag.isTag(c) && c.name === 'ul')
-              .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Tag.isTag(c) && c.name === 'li'))
+            g.children.filter((c): c is Tag => Markdoc.Tag.isTag(c) && c.name === 'ul')
+              .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'))
           ),
         },
         children: groups,
@@ -93,7 +94,7 @@ class NavModel extends Model {
         properties: {
           title: currentHeading as Tag<'h1'>,
           item: currentItems.flatMap(ul =>
-            ul.children.filter((c): c is Tag<'li'> => Tag.isTag(c) && c.name === 'li')
+            ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li')
           ),
         },
         children: [currentHeading, ...currentItems],
@@ -101,11 +102,11 @@ class NavModel extends Model {
     };
 
     for (const node of allNodes) {
-      if (node instanceof Tag && /^h[1-6]$/.test(node.name)) {
+      if (node instanceof Markdoc.Tag && /^h[1-6]$/.test(node.name)) {
         flush();
         currentHeading = node;
         currentItems = [];
-      } else if (node instanceof Tag && node.name === 'ul') {
+      } else if (node instanceof Markdoc.Tag && node.name === 'ul') {
         currentItems.push(node);
       }
     }

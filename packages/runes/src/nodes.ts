@@ -1,5 +1,6 @@
 import pb from 'path-browserify';
-import Markdoc, { Schema } from '@markdoc/markdoc';
+import Markdoc from '@markdoc/markdoc';
+import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import hljs from 'highlight.js';
 

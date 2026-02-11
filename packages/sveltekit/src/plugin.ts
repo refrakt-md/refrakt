@@ -32,6 +32,9 @@ export function refract(options: RefractPluginOptions = {}): Plugin {
 			return {
 				ssr: {
 					noExternal,
+					optimizeDeps: {
+						include: ['@markdoc/markdoc'],
+					},
 				},
 			};
 		},
