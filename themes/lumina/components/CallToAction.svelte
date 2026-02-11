@@ -12,59 +12,72 @@
 <style>
 	.cta {
 		text-align: center;
-		padding: 4rem 2rem 3rem;
+		padding: 3.5rem 2rem 3rem;
 	}
 	.cta :global(h1),
 	.cta :global(h2),
 	.cta :global(h3) {
-		font-size: 2.75rem;
-		font-weight: 800;
-		letter-spacing: -0.025em;
-		margin-bottom: 1rem;
+		font-size: 2.5rem;
+		font-weight: 750;
+		letter-spacing: -0.03em;
+		margin-bottom: 0.75rem;
 		margin-top: 0;
 		line-height: 1.15;
+		background: linear-gradient(135deg, var(--color-text) 0%, #374151 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 	.cta :global(p) {
-		font-size: 1.2rem;
+		font-size: 1.15rem;
 		color: var(--color-muted);
-		max-width: 600px;
+		max-width: 540px;
 		margin: 0 auto 2rem;
-		line-height: 1.6;
+		line-height: 1.65;
 	}
 	.cta :global(ul) {
 		display: flex;
 		gap: 0.75rem;
 		justify-content: center;
+		flex-wrap: wrap;
 		list-style: none;
 		padding: 0;
 		margin: 0;
 	}
 	.cta :global(li) {
 		padding: 0;
+		margin: 0;
 	}
 	.cta :global(li a),
 	.cta :global(nav a) {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
 		padding: 0.625rem 1.5rem;
-		border-radius: 8px;
+		border-radius: var(--radius-sm);
 		text-decoration: none;
 		font-weight: 600;
-		font-size: 0.95rem;
-		transition: background-color 0.15s, box-shadow 0.15s;
+		font-size: 0.925rem;
+		transition: all 200ms ease;
 	}
 	.cta :global(li:first-child a) {
 		background: var(--color-primary);
 		color: white;
+		box-shadow: var(--shadow-sm), 0 0 0 0 rgba(37, 99, 235, 0);
 	}
 	.cta :global(li:first-child a:hover) {
-		background: #2563eb;
-		box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+		background: var(--color-primary-hover);
+		box-shadow: var(--shadow-md), 0 0 0 0 rgba(37, 99, 235, 0.1);
+		transform: translateY(-1px);
+		text-decoration: none;
 	}
 	.cta :global(li:not(:first-child) a) {
-		background: #f1f5f9;
+		background: var(--color-surface);
 		color: var(--color-text);
+		border: 1px solid var(--color-border);
 	}
 	.cta :global(li:not(:first-child) a:hover) {
-		background: #e2e8f0;
+		background: var(--color-surface-hover);
+		border-color: var(--color-surface-active);
+		text-decoration: none;
 	}
 </style>

@@ -21,28 +21,46 @@
 		counter-reset: step;
 		list-style: none;
 		padding-left: 0;
+		margin: 1.5rem 0;
 	}
 	.step {
 		counter-increment: step;
 		position: relative;
-		padding-left: 3rem;
-		padding-bottom: 1.5rem;
-		border-left: 2px solid #e5e7eb;
-		margin-left: 1rem;
+		padding-left: 3.25rem;
+		padding-bottom: 1.75rem;
+		border-left: 2px solid var(--color-border);
+		margin-left: 0.875rem;
+	}
+	.step:last-child {
+		border-left-color: transparent;
+		padding-bottom: 0;
 	}
 	.step::before {
 		content: counter(step);
 		position: absolute;
-		left: -0.875rem;
-		width: 1.75rem;
-		height: 1.75rem;
-		background: #3b82f6;
+		left: -0.9375rem;
+		top: 0;
+		width: 1.875rem;
+		height: 1.875rem;
+		background: var(--color-primary);
 		color: white;
-		border-radius: 50%;
+		border-radius: var(--radius-full);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-weight: 600;
-		font-size: 0.875rem;
+		font-weight: 650;
+		font-size: 0.8rem;
+		box-shadow: 0 0 0 4px var(--color-bg);
+	}
+	.step :global(h3),
+	.step :global(strong) {
+		display: block;
+		margin-top: 0;
+		margin-bottom: 0.375rem;
+	}
+	.step :global(p) {
+		color: var(--color-muted);
+		font-size: 0.925rem;
+		line-height: 1.65;
 	}
 </style>

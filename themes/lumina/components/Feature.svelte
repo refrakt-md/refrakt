@@ -11,7 +11,7 @@
 
 <style>
 	.feature {
-		padding: 3rem 0 2rem;
+		padding: 2.5rem 0 2rem;
 	}
 	.feature :global(h2) {
 		text-align: center;
@@ -20,27 +20,32 @@
 	.feature :global(dl) {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-		gap: 1.5rem;
+		gap: 1.25rem;
 		margin: 0;
 	}
 	.feature :global(dl > div) {
-		padding: 1.25rem;
-		border-radius: 10px;
+		padding: 1.5rem;
+		border-radius: var(--radius-md);
 		border: 1px solid var(--color-border);
-		transition: box-shadow 0.15s;
+		background: var(--color-bg);
+		box-shadow: var(--shadow-xs);
+		transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
 	}
 	.feature :global(dl > div:hover) {
-		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+		box-shadow: var(--shadow-md);
+		border-color: var(--color-surface-active);
+		transform: translateY(-2px);
 	}
 	.feature :global(dt) {
-		font-weight: 700;
+		font-weight: 650;
 		font-size: 1rem;
 		margin-bottom: 0.5rem;
+		letter-spacing: -0.01em;
 	}
 	.feature :global(dd) {
 		margin: 0;
 		color: var(--color-muted);
-		font-size: 0.925rem;
-		line-height: 1.6;
+		font-size: 0.9rem;
+		line-height: 1.65;
 	}
 </style>

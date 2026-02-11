@@ -23,10 +23,10 @@
 <style>
 	.site-header {
 		border-bottom: 1px solid var(--color-border);
-		padding: 0.75rem 0;
+		padding: 0.875rem 0;
 	}
 	.site-header :global(h1) {
-		font-size: 1.1rem;
+		font-size: 1.05rem;
 		margin: 0;
 		font-weight: 700;
 		letter-spacing: -0.01em;
@@ -35,9 +35,12 @@
 		color: inherit;
 		text-decoration: none;
 	}
+	.site-header :global(a:hover) {
+		text-decoration: none;
+	}
 	.page-content {
-		padding-top: 2rem;
+		padding-top: 2.5rem;
 		padding-bottom: 4rem;
-		max-width: 48rem;
+		max-width: 56rem;
 	}
 </style>

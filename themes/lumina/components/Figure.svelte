@@ -24,13 +24,15 @@
 	.figure :global(img) {
 		max-width: 100%;
 		height: auto;
-		border-radius: 8px;
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
 	}
 	.figure :global(figcaption) {
-		margin-top: 0.5rem;
-		font-size: 0.875rem;
-		color: #6b7280;
+		margin-top: 0.625rem;
+		font-size: 0.825rem;
+		color: var(--color-muted);
 		text-align: center;
+		font-style: italic;
 	}
 	.figure-small { max-width: 320px; }
 	.figure-medium { max-width: 640px; }

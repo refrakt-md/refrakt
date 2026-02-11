@@ -12,18 +12,19 @@
 
 <style>
 	.toc {
-		padding: 1rem;
-		border: 1px solid #e5e7eb;
-		border-radius: 8px;
+		padding: 1.25rem 1.5rem;
+		border-left: 3px solid var(--color-primary);
+		background: var(--color-surface);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
 		margin: 1.5rem 0;
 	}
 	.toc-title {
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-		font-size: 0.875rem;
+		font-weight: 650;
+		margin-bottom: 0.75rem;
+		font-size: 0.7rem;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: #6b7280;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
 	}
 	.toc :global(ul),
 	.toc :global(ol) {
@@ -32,7 +33,7 @@
 		margin: 0;
 	}
 	.toc :global(li) {
-		margin: 0.25rem 0;
+		margin: 0.125rem 0;
 	}
 	.toc :global(li[data-level="3"]) {
 		padding-left: 1rem;
@@ -41,11 +42,15 @@
 		padding-left: 2rem;
 	}
 	.toc :global(a) {
-		color: #4b5563;
+		color: var(--color-text);
 		text-decoration: none;
-		font-size: 0.875rem;
+		font-size: 0.85rem;
+		display: inline-block;
+		padding: 0.2rem 0;
+		transition: color 150ms ease;
 	}
 	.toc :global(a:hover) {
-		color: #3b82f6;
+		color: var(--color-primary);
+		text-decoration: none;
 	}
 </style>

@@ -6,25 +6,50 @@
 </script>
 
 <div class="editor">
-	{@render children()}
+	<div class="editor-topbar">
+		<span class="editor-dot" style="background: #ef4444;"></span>
+		<span class="editor-dot" style="background: #f59e0b;"></span>
+		<span class="editor-dot" style="background: #22c55e;"></span>
+	</div>
+	<div class="editor-content">
+		{@render children()}
+	</div>
 </div>
 
 <style>
 	.editor {
-		border: 1px solid #1e293b;
-		border-radius: 8px;
+		border: 1px solid rgba(255,255,255,0.08);
+		border-radius: var(--radius-md);
 		overflow: hidden;
 		margin: 1.5rem 0;
-		background: #0f172a;
-		color: #e2e8f0;
+		background: var(--color-code-bg);
+		color: var(--color-code-text);
+		box-shadow: var(--shadow-md);
 	}
-	.editor :global(pre) {
+	.editor-topbar {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.75rem 1rem;
+		background: rgba(255,255,255,0.03);
+		border-bottom: 1px solid rgba(255,255,255,0.06);
+	}
+	.editor-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: var(--radius-full);
+		opacity: 0.8;
+	}
+	.editor-content :global(pre) {
 		margin: 0;
-		padding: 1rem;
+		padding: 1rem 1.25rem;
 		overflow-x: auto;
+		background: none;
+		border: none;
+		border-radius: 0;
 	}
-	.editor :global(code) {
-		font-family: 'JetBrains Mono', 'Fira Code', monospace;
-		font-size: 0.875rem;
+	.editor-content :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
 	}
 </style>

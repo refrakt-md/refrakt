@@ -63,7 +63,7 @@
 
 <style>
 	.site-nav {
-		padding: 1rem 0;
+		padding: 0.5rem 0;
 	}
 	.site-nav :global(ul) {
 		list-style: none;
@@ -71,40 +71,44 @@
 		margin: 0;
 	}
 	.site-nav :global(li) {
-		padding: 0.125rem 0;
+		padding: 0.0625rem 0;
 	}
 	.nav-group {
-		margin-bottom: 1.5rem;
+		margin-bottom: 1.75rem;
 	}
 	.nav-group :global(h2),
 	.nav-group :global(h3) {
-		font-size: 0.75rem;
+		font-size: 0.7rem;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: #6b7280;
+		letter-spacing: 0.06em;
+		color: var(--color-muted);
+		margin-top: 0;
 		margin-bottom: 0.5rem;
+		padding-left: 0.75rem;
+		font-weight: 600;
 	}
 	.nav-link {
 		display: block;
 		padding: 0.375rem 0.75rem;
-		border-radius: 6px;
-		color: #374151;
+		border-radius: var(--radius-sm);
+		color: var(--color-text);
 		text-decoration: none;
-		font-size: 0.875rem;
-		transition: background-color 0.15s, color 0.15s;
+		font-size: 0.85rem;
+		transition: background-color 150ms ease, color 150ms ease;
 	}
 	.nav-link:hover {
-		background: #f3f4f6;
-		color: #111827;
+		background: var(--color-surface);
+		color: var(--color-text);
+		text-decoration: none;
 	}
 	.nav-link.active {
-		background: #eff6ff;
-		color: #2563eb;
+		background: var(--color-info-bg);
+		color: var(--color-primary);
 		font-weight: 600;
 	}
 	.nav-item {
 		padding: 0.375rem 0.75rem;
-		font-size: 0.875rem;
-		color: #6b7280;
+		font-size: 0.85rem;
+		color: var(--color-muted);
 	}
 </style>

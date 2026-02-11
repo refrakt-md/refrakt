@@ -11,6 +11,25 @@
 
 <style>
 	.page-section {
-		padding: 2rem 0;
+		padding: 3rem 0;
+	}
+	.page-section + .page-section {
+		border-top: 1px solid var(--color-border);
+	}
+	.page-section :global(> h1:first-child),
+	.page-section :global(> h2:first-child) {
+		margin-top: 0;
+	}
+	.split {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 3rem;
+		align-items: start;
+	}
+	@media (max-width: 768px) {
+		.split {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
 	}
 </style>
