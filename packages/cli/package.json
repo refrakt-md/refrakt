@@ -1,0 +1,16 @@
+{
+  "name": "@refract-md/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "refract": "./dist/bin.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refract-md/ai": "0.1.0",
+    "@refract-md/runes": "0.1.0"
+  }
+}
