@@ -1,5 +1,4 @@
 import { ComponentType, PropertyNodes } from "../interfaces.js";
-import { Menu } from "./menu.js";
 
 export class PageSection {
   eyebrow: string | undefined = undefined;
@@ -22,16 +21,12 @@ export class Page {
   name: string = '';
   description: string = '';
   contentSection: PageSection[] = [];
-  menu: Menu | undefined = undefined;
-  footer: any = undefined;
 }
 
 export interface PageProperties extends PropertyNodes<Page> {
   name: 'h1',
   description: 'p',
   contentSection: 'section',
-  menu: 'nav',
-  footer: 'footer',
 }
 
 export interface PageComponent extends ComponentType<Page> {

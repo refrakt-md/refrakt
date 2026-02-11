@@ -16,7 +16,6 @@ export {
 // Schema data classes
 export { Page, PageSection, PageSectionProperties, PageSectionComponent, PageProperties, PageComponent } from './schema/page.js';
 export { LinkItem, Command, LinkItemComponent, CommandComponent } from './schema/common.js';
-export { Menu, MenuComponent } from './schema/menu.js';
 export { TabGroup, Tab, TabPanel, TabGroupProperties, TabGroupComponent, TabComponent, TabPanelComponent } from './schema/tabs.js';
 export { Steps, Step, StepsProperties, StepsComponent, StepComponent } from './schema/steps.js';
 export { Grid, GridComponent } from './schema/grid.js';
@@ -26,7 +25,7 @@ export { CallToAction, CallToActionProperties, CallToActionComponent } from './s
 export { Pricing, Tier, PricingProperties, PricingComponent, TierComponent } from './schema/pricing.js';
 export { Editor, EditorComponent } from './schema/editor.js';
 export { MusicPlaylist, MusicRecording, MusicPlaylistComponent, MusicRecordingComponent, MusicPlaylistProperties } from './schema/audio.js';
-export { DocPage, DocPageComponent, DocPageProperties, Headings, HeadingsComponent, Topic, TopicComponent, TableOfContents, TableOfContentsComponent } from './schema/docpage.js';
-export { Footer, FooterComponent } from './schema/footer.js';
+export { DocPage, DocPageComponent, DocPageProperties, Headings, HeadingsComponent } from './schema/docpage.js';
 export { DebugInfo, DebugInfoComponent, Error, ErrorComponent } from './schema/error.js';
 export { SequentialPagination, SequentialPaginationComponent } from './schema/pagination.js';
+export { Nav, NavComponent, NavGroup, NavGroupComponent, NavItem, NavItemComponent } from './schema/nav.js';

@@ -1,10 +1,7 @@
 import { heading, paragraph, fence, list, item, em, strong, text, link, hardbreak, image } from './nodes.js';
 
 export { Page } from './documents/page.js';
-import { menu } from './documents/menu.js';
 import { DocPage } from './documents/doc.js';
-import { summary, topic } from './documents/summary.js';
-import { footer } from './documents/footer.js';
 
 import { cta } from './tags/cta.js';
 import { error } from './tags/error.js';
@@ -17,6 +14,9 @@ import { tab, tabs } from './tags/tabs.js';
 import { pricing, tier } from './tags/pricing.js';
 import { musicPlaylist } from './tags/music-playlist.js'
 import { musicRecording } from './tags/music-recording.js'
+import { nav } from './tags/nav.js';
+import { region } from './tags/region.js';
+import { layout } from './tags/layout.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -30,13 +30,27 @@ export { createSchema } from './lib/index.js';
 export { Model } from './lib/model.js';
 
 export const documents = {
-  menu,
-  footer,
   doc: new DocPage(),
-  summary,
 }
 
 export const runes = {
+  nav: defineRune({
+    name: 'nav',
+    schema: nav,
+    description: 'Navigation structure with page slug references and optional grouping',
+    reinterprets: { heading: 'nav group title', list: 'page references (slugs)' },
+    type: schema.Nav,
+  }),
+  region: defineRune({
+    name: 'region',
+    schema: region,
+    description: 'Named content block within a layout definition',
+  }),
+  layout: defineRune({
+    name: 'layout',
+    schema: layout,
+    description: 'Layout definition containing named regions',
+  }),
   cta: defineRune({
     name: 'cta',
     aliases: ['call-to-action'],
@@ -128,12 +142,6 @@ export const runes = {
     description: 'Individual pricing tier with name, price, and features',
     seoType: 'Offer',
     type: schema.Tier,
-  }),
-  topic: defineRune({
-    name: 'topic',
-    schema: topic,
-    description: 'Table of contents topic grouping',
-    type: schema.Topic,
   }),
   'music-playlist': defineRune({
     name: 'music-playlist',

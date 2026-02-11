@@ -1,0 +1,17 @@
+{
+  "name": "@refract-md/content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refract-md/runes": "0.1.0",
+    "@refract-md/types": "0.1.0",
+    "@markdoc/markdoc": "0.4.0",
+    "yaml": "^2.4.0"
+  }
+}
