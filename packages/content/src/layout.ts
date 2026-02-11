@@ -1,9 +1,12 @@
+import Markdoc, { Tag, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import { tags, nodes } from '@refract-md/runes';
 import { ContentDirectory, ContentPage } from './content-tree.js';
+import { parseFrontmatter } from './frontmatter.js';
 
 export interface Region {
   name: string;
   mode: 'replace' | 'prepend' | 'append';
-  content: string;
+  content: RenderableTreeNode[];
 }
 
 export interface ResolvedLayout {
@@ -56,15 +59,70 @@ function findLayoutChain(
 }
 
 /**
+ * Parse a layout file through Markdoc and extract regions.
+ */
+function parseLayout(layoutPage: ContentPage): { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] {
+  const { content } = parseFrontmatter(layoutPage.raw);
+  const ast = Markdoc.parse(content);
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: layoutPage.relativePath } };
+  const rendered = Markdoc.transform(ast, config);
+
+  const regions: { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] = [];
+  findRegions(rendered, regions);
+  return regions;
+}
+
+/**
+ * Recursively walk a rendered Tag tree to find data-region containers.
+ */
+function findRegions(
+  node: RenderableTreeNodes,
+  results: { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[]
+): void {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      findRegions(child, results);
+    }
+    return;
+  }
+
+  if (!Tag.isTag(node)) return;
+
+  const regionName = node.attributes['data-region'];
+  if (regionName) {
+    const mode = (node.attributes['data-mode'] as Region['mode']) || 'replace';
+    results.push({ name: regionName, mode, content: node.children });
+    return; // Don't recurse into region children — they're the region's content
+  }
+
+  // Recurse into non-region tags (e.g., the layout wrapper div)
+  for (const child of node.children) {
+    findRegions(child, results);
+  }
+}
+
+/**
  * Merge regions from a layout chain.
  * Later layouts in the chain can replace, prepend, or append to earlier regions.
  */
 function mergeRegions(chain: ContentPage[]): Map<string, Region> {
   const merged = new Map<string, Region>();
 
-  // Region extraction from parsed layout content happens at a higher level
-  // (when Markdoc processes the {% layout %} and {% region %} tags).
-  // This function receives the chain for later use during rendering.
+  for (const layoutPage of chain) {
+    const regions = parseLayout(layoutPage);
+
+    for (const { name, mode, content } of regions) {
+      const existing = merged.get(name);
+
+      if (!existing || mode === 'replace') {
+        merged.set(name, { name, mode, content });
+      } else if (mode === 'prepend') {
+        merged.set(name, { name, mode: existing.mode, content: [...content, ...existing.content] });
+      } else if (mode === 'append') {
+        merged.set(name, { name, mode: existing.mode, content: [...existing.content, ...content] });
+      }
+    }
+  }
 
   return merged;
 }

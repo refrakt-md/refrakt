@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Tag } from '@markdoc/markdoc';
 import * as path from 'node:path';
 import { loadContent } from '../src/site.js';
 
@@ -69,5 +70,28 @@ describe('loadContent', () => {
     const home = site.pages.find(p => p.route.url === '/');
     expect(home).toBeDefined();
     expect(home!.layout.chain.length).toBe(1);
+  });
+
+  it('should produce renderable Tag trees for pages', async () => {
+    const site = await loadContent(fixtureDir);
+
+    const home = site.pages.find(p => p.route.url === '/');
+    expect(home).toBeDefined();
+    expect(home!.renderable).toBeDefined();
+
+    // The renderable should be a Tag tree (document transforms to a Tag)
+    expect(Tag.isTag(home!.renderable)).toBe(true);
+  });
+
+  it('should produce Tag trees with correct content', async () => {
+    const site = await loadContent(fixtureDir);
+
+    const firstPost = site.pages.find(p => p.route.url === '/blog/first-post');
+    expect(firstPost).toBeDefined();
+    expect(firstPost!.renderable).toBeDefined();
+
+    // The page should contain the heading text
+    const html = JSON.stringify(firstPost!.renderable);
+    expect(html).toContain('First Post');
   });
 });

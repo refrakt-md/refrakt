@@ -1,3 +1,5 @@
+import Markdoc, { RenderableTreeNodes } from '@markdoc/markdoc';
+import { tags, nodes } from '@refract-md/runes';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -13,11 +15,18 @@ export interface Site {
   navigation: NavTree[];
 }
 
-interface SitePage {
+export interface SitePage {
   route: Route;
   frontmatter: Frontmatter;
   content: string;
+  renderable: RenderableTreeNodes;
   layout: ResolvedLayout;
+}
+
+function transformContent(content: string, path: string): RenderableTreeNodes {
+  const ast = Markdoc.parse(content);
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path } };
+  return Markdoc.transform(ast, config);
 }
 
 /**
@@ -32,8 +41,9 @@ export async function loadContent(dirPath: string, basePath: string = '/'): Prom
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root);
+    const renderable = transformContent(content, route.url);
 
-    pages.push({ route, frontmatter, content, layout });
+    pages.push({ route, frontmatter, content, renderable, layout });
   }
 
   return {
