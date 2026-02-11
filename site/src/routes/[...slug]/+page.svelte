@@ -1,7 +1,12 @@
 <script lang="ts">
 	import Renderer from '$lib/renderer/Renderer.svelte';
+	import { setContext } from 'svelte';
 
 	let { data } = $props();
+
+	setContext('pages', data.pages);
+
+	const hasNav = !!data.regions.nav;
 </script>
 
 <svelte:head>
@@ -19,7 +24,7 @@
 	</header>
 {/if}
 
-<div class="page-layout">
+<div class="page-layout" class:has-nav={hasNav}>
 	{#if data.regions.nav}
 		<aside class="sidebar">
 			<Renderer node={data.regions.nav.content} />
@@ -39,13 +44,26 @@
 
 <style>
 	.site-header {
-		border-bottom: 1px solid #e5e7eb;
-		padding: 1rem 0;
-		margin-bottom: 2rem;
+		border-bottom: 1px solid var(--color-border);
+		padding: 0.75rem 0;
+	}
+	.site-header :global(h1) {
+		font-size: 1.1rem;
+		margin: 0;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+	.site-header :global(a) {
+		color: inherit;
+		text-decoration: none;
 	}
 	.page-layout {
+		padding-top: 2rem;
+		padding-bottom: 4rem;
+	}
+	.page-layout.has-nav {
 		display: grid;
-		grid-template-columns: 240px 1fr;
+		grid-template-columns: 220px 1fr;
 		gap: 3rem;
 	}
 	.sidebar {
@@ -55,13 +73,14 @@
 	}
 	.page-content {
 		min-width: 0;
+		max-width: 48rem;
 	}
 	.sidebar-right {
 		grid-column: 2;
 	}
 
 	@media (max-width: 768px) {
-		.page-layout {
+		.page-layout.has-nav {
 			grid-template-columns: 1fr;
 		}
 		.sidebar {

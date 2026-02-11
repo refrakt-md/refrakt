@@ -8,6 +8,7 @@
 ## Guide
 
 - getting-started
+- runes
 
 {% /nav %}
 {% /region %}
