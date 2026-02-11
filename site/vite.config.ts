@@ -28,6 +28,6 @@ export default defineConfig({
 	plugins: [sveltekit(), contentHmr()],
 	ssr: {
 		// Bundle these CJS packages into SSR output so named imports work
-		noExternal: ['@markdoc/markdoc', '@refract-md/runes', '@refract-md/content', '@refract-md/types']
+		noExternal: ['@markdoc/markdoc', '@refract-md/runes', '@refract-md/content', '@refract-md/types', '@refract-md/svelte', '@refract-md/theme-lumina']
 	}
 });

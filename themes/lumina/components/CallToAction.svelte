@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SerializedTag } from '$lib/renderer/Renderer.svelte';
+	import type { SerializedTag } from '@refract-md/svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();

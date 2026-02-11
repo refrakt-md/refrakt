@@ -13,6 +13,8 @@
 	"dependencies": {
 		"@refract-md/content": "0.1.0",
 		"@refract-md/runes": "0.1.0",
+		"@refract-md/svelte": "0.1.0",
+		"@refract-md/theme-lumina": "0.1.0",
 		"@markdoc/markdoc": "0.4.0"
 	},
 	"devDependencies": {

@@ -1,0 +1,27 @@
+{
+	"name": "@refract-md/theme-lumina",
+	"version": "0.1.0",
+	"type": "module",
+	"svelte": "index.ts",
+	"exports": {
+		".": {
+			"types": "./index.ts",
+			"svelte": "./index.ts",
+			"default": "./index.ts"
+		},
+		"./tokens.css": "./tokens.css"
+	},
+	"files": ["components", "layouts", "index.ts", "registry.ts", "tokens.css", "manifest.json"],
+	"dependencies": {
+		"@refract-md/svelte": "0.1.0"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0",
+		"@sveltejs/kit": "^2.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@sveltejs/kit": {
+			"optional": true
+		}
+	}
+}

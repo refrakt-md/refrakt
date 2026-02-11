@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '$lib/../app.css';
+	import '@refract-md/theme-lumina/tokens.css';
 
 	let { children } = $props();
 </script>

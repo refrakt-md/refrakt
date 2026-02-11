@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SerializedTag, RendererNode } from '$lib/renderer/Renderer.svelte';
+	import type { SerializedTag, RendererNode } from '@refract-md/svelte';
 	import type { Snippet } from 'svelte';
 	import { getContext } from 'svelte';
 	import { page } from '$app/state';

@@ -1,17 +1,10 @@
 <script lang="ts" module>
-	/** A serialized Markdoc Tag (plain object, not a class instance) */
-	export interface SerializedTag {
-		$$mdtype: 'Tag';
-		name: string;
-		attributes: Record<string, any>;
-		children: RendererNode[];
-	}
-
-	export type RendererNode = SerializedTag | string | number | null | undefined | RendererNode[];
+	export type { SerializedTag, RendererNode } from './types.js';
 </script>
 
 <script lang="ts">
-	import { getComponent } from './registry.js';
+	import type { SerializedTag, RendererNode } from './types.js';
+	import { getComponent } from './context.js';
 	import Renderer from './Renderer.svelte';
 
 	let { node }: { node: RendererNode } = $props();

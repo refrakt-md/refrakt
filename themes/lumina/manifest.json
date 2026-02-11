@@ -1,0 +1,23 @@
+{
+	"name": "lumina",
+	"version": "0.1.0",
+	"description": "A clean, light documentation theme for refract.md",
+	"author": "refract.md",
+	"tokens": "tokens.css",
+	"components": {
+		"Hint": "components/Hint.svelte",
+		"CallToAction": "components/CallToAction.svelte",
+		"Feature": "components/Feature.svelte",
+		"Grid": "components/Grid.svelte",
+		"Steps": "components/Steps.svelte",
+		"Tabs": "components/Tabs.svelte",
+		"Editor": "components/Editor.svelte",
+		"Pricing": "components/Pricing.svelte",
+		"PageSection": "components/PageSection.svelte",
+		"Nav": "components/Nav.svelte"
+	},
+	"layouts": {
+		"docs": "layouts/DocsLayout.svelte",
+		"default": "layouts/DefaultLayout.svelte"
+	}
+}
