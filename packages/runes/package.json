@@ -1,0 +1,23 @@
+{
+  "name": "@refract-md/runes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refract-md/types": "0.1.0",
+    "@markdoc/markdoc": "0.4.0",
+    "reflect-metadata": "^0.2.0",
+    "fast-xml-parser": "4.5.1",
+    "highlight.js": "^11.11.1",
+    "path-browserify": "1.0.1",
+    "iso8601-duration": "2.1.2"
+  },
+  "devDependencies": {
+    "@types/path-browserify": "1.0.3"
+  }
+}
