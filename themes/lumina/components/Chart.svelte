@@ -14,7 +14,14 @@
 		chartData = JSON.parse(dataJson);
 	} catch {}
 
-	const colors = ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2'];
+	const colors = [
+		'var(--color-info)',
+		'var(--color-success)',
+		'var(--color-warning)',
+		'var(--color-danger)',
+		'#7c3aed',
+		'#0891b2',
+	];
 
 	// Simple SVG bar chart
 	const svgWidth = 600;
@@ -62,7 +69,7 @@
 							y={padding.top + chartHeight - (values[i][si] / maxValue) * chartHeight}
 							width={barWidth * 0.75}
 							height={(values[i][si] / maxValue) * chartHeight}
-							fill={colors[si % colors.length]}
+							style="fill: {colors[si % colors.length]}"
 							rx="2"
 						/>
 					{/each}
@@ -81,7 +88,7 @@
 							`${padding.left + i * barGroupWidth + barGroupWidth / 2},${padding.top + chartHeight - (values[i][si] / maxValue) * chartHeight}`
 						).join(' ')}
 						fill="none"
-						stroke={colors[si % colors.length]}
+						style="stroke: {colors[si % colors.length]}"
 						stroke-width="2"
 					/>
 					{#each labels as _, i}
@@ -89,7 +96,7 @@
 							cx={padding.left + i * barGroupWidth + barGroupWidth / 2}
 							cy={padding.top + chartHeight - (values[i][si] / maxValue) * chartHeight}
 							r="4"
-							fill={colors[si % colors.length]}
+							style="fill: {colors[si % colors.length]}"
 						/>
 					{/each}
 				{/each}

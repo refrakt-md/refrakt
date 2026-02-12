@@ -12,18 +12,32 @@
 	--font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
+	/* Primary scale (sky-blue) */
+	--color-primary-50: #f0f9ff;
+	--color-primary-100: #e0f2fe;
+	--color-primary-200: #bae6fd;
+	--color-primary-300: #7dd3fc;
+	--color-primary-400: #38bdf8;
+	--color-primary-500: #0ea5e9;
+	--color-primary-600: #0284c7;
+	--color-primary-700: #0369a1;
+	--color-primary-800: #075985;
+	--color-primary-900: #0c4a6e;
+	--color-primary-950: #082f49;
+
 	/* Core palette */
 	--color-text: #1a1a2e;
 	--color-muted: #64748b;
 	--color-border: #e2e8f0;
 	--color-bg: #ffffff;
-	--color-primary: #2563eb;
-	--color-primary-hover: #1d4ed8;
+	--color-primary: var(--color-primary-500);
+	--color-primary-hover: var(--color-primary-600);
 
 	/* Surfaces */
 	--color-surface: #f8fafc;
 	--color-surface-hover: #f1f5f9;
 	--color-surface-active: #e2e8f0;
+	--color-surface-raised: #ffffff;
 
 	/* Semantic */
 	--color-info: #3b82f6;
@@ -57,7 +71,89 @@
 	--color-inline-code-bg: #f1f5f9;
 }
 
-/* Base styles */
+/* ──────────────────────────────────────────────
+   Dark Mode — via data attribute or system pref
+   ────────────────────────────────────────────── */
+
+[data-theme="dark"] {
+	--color-text: #e2e8f0;
+	--color-muted: #94a3b8;
+	--color-border: rgba(255, 255, 255, 0.1);
+	--color-bg: #0c1222;
+	--color-primary: #38bdf8;
+	--color-primary-hover: #7dd3fc;
+
+	--color-surface: #0f172a;
+	--color-surface-hover: #1e293b;
+	--color-surface-active: #334155;
+	--color-surface-raised: #1e293b;
+
+	--color-info: #60a5fa;
+	--color-info-bg: rgba(59, 130, 246, 0.1);
+	--color-info-border: rgba(59, 130, 246, 0.3);
+	--color-warning: #fbbf24;
+	--color-warning-bg: rgba(245, 158, 11, 0.1);
+	--color-warning-border: rgba(245, 158, 11, 0.3);
+	--color-danger: #f87171;
+	--color-danger-bg: rgba(239, 68, 68, 0.1);
+	--color-danger-border: rgba(239, 68, 68, 0.3);
+	--color-success: #34d399;
+	--color-success-bg: rgba(16, 185, 129, 0.1);
+	--color-success-border: rgba(16, 185, 129, 0.3);
+
+	--color-code-bg: #0f172a;
+	--color-code-text: #e2e8f0;
+	--color-inline-code-bg: rgba(255, 255, 255, 0.08);
+
+	--shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+	--shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+	--shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+	--shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Auto dark mode via system preference */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--color-text: #e2e8f0;
+		--color-muted: #94a3b8;
+		--color-border: rgba(255, 255, 255, 0.1);
+		--color-bg: #0c1222;
+		--color-primary: #38bdf8;
+		--color-primary-hover: #7dd3fc;
+
+		--color-surface: #0f172a;
+		--color-surface-hover: #1e293b;
+		--color-surface-active: #334155;
+		--color-surface-raised: #1e293b;
+
+		--color-info: #60a5fa;
+		--color-info-bg: rgba(59, 130, 246, 0.1);
+		--color-info-border: rgba(59, 130, 246, 0.3);
+		--color-warning: #fbbf24;
+		--color-warning-bg: rgba(245, 158, 11, 0.1);
+		--color-warning-border: rgba(245, 158, 11, 0.3);
+		--color-danger: #f87171;
+		--color-danger-bg: rgba(239, 68, 68, 0.1);
+		--color-danger-border: rgba(239, 68, 68, 0.3);
+		--color-success: #34d399;
+		--color-success-bg: rgba(16, 185, 129, 0.1);
+		--color-success-border: rgba(16, 185, 129, 0.3);
+
+		--color-code-bg: #0f172a;
+		--color-code-text: #e2e8f0;
+		--color-inline-code-bg: rgba(255, 255, 255, 0.08);
+
+		--shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+		--shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+		--shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+		--shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+	}
+}
+
+/* ──────────────────────────────────────────────
+   Base Styles
+   ────────────────────────────────────────────── */
+
 html {
 	font-family: var(--font-sans);
 	color: var(--color-text);
@@ -65,6 +161,7 @@ html {
 	line-height: 1.7;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	transition: background-color 200ms ease, color 200ms ease;
 }
 
 body {
@@ -119,7 +216,7 @@ pre {
 	margin: 1.5rem 0;
 	font-size: 0.875rem;
 	line-height: 1.7;
-	border: 1px solid rgba(255,255,255,0.06);
+	border: 1px solid var(--color-border);
 }
 
 pre code {
@@ -188,7 +285,10 @@ meta {
 	display: none;
 }
 
-/* Syntax highlighting (highlight.js tokens) */
+/* ──────────────────────────────────────────────
+   Syntax Highlighting (highlight.js tokens)
+   ────────────────────────────────────────────── */
+
 pre .hljs-keyword,
 pre .hljs-selector-tag,
 pre .hljs-built_in { color: #c792ea; }

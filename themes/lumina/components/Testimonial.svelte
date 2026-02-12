@@ -44,7 +44,7 @@
 		line-height: 1;
 	}
 	.star.filled {
-		color: #f59e0b;
+		color: var(--color-warning);
 	}
 	.testimonial-content :global(blockquote),
 	.testimonial-content :global(.themed-blockquote) {

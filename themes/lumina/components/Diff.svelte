@@ -137,7 +137,7 @@
 		padding: 0;
 		border: none;
 		border-radius: 0;
-		background: var(--color-code-bg, #1e1e2e);
+		background: var(--color-code-bg);
 		overflow-x: auto;
 	}
 
@@ -173,7 +173,7 @@
 		flex-shrink: 0;
 		padding: 0 0.5rem;
 		user-select: none;
-		color: var(--color-text-muted, rgba(255, 255, 255, 0.3));
+		color: var(--color-muted);
 	}
 
 	.diff-gutter-num {

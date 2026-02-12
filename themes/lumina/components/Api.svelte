@@ -9,13 +9,13 @@
 	const auth = tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'auth')?.attributes?.content || '';
 
 	const methodColors: Record<string, { color: string; bg: string }> = {
-		GET: { color: '#059669', bg: '#ecfdf5' },
-		POST: { color: '#2563eb', bg: '#eff6ff' },
-		PUT: { color: '#d97706', bg: '#fffbeb' },
-		PATCH: { color: '#d97706', bg: '#fffbeb' },
-		DELETE: { color: '#dc2626', bg: '#fef2f2' },
-		HEAD: { color: '#6b7280', bg: '#f9fafb' },
-		OPTIONS: { color: '#6b7280', bg: '#f9fafb' },
+		GET: { color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+		POST: { color: 'var(--color-info)', bg: 'var(--color-info-bg)' },
+		PUT: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+		PATCH: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+		DELETE: { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)' },
+		HEAD: { color: 'var(--color-muted)', bg: 'var(--color-surface)' },
+		OPTIONS: { color: 'var(--color-muted)', bg: 'var(--color-surface)' },
 	};
 
 	const mc = methodColors[method] || methodColors.GET;

@@ -63,7 +63,7 @@
 		letter-spacing: -0.035em;
 		line-height: 1.1;
 		margin: 0 0 1rem;
-		background: linear-gradient(135deg, var(--color-text) 0%, #374151 100%);
+		background: linear-gradient(135deg, var(--color-text) 0%, var(--color-muted) 100%);
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;

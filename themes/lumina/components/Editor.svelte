@@ -18,7 +18,7 @@
 
 <style>
 	.editor {
-		border: 1px solid rgba(255,255,255,0.08);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		overflow: hidden;
 		margin: 1.5rem 0;
@@ -31,8 +31,8 @@
 		align-items: center;
 		gap: 0.375rem;
 		padding: 0.75rem 1rem;
-		background: rgba(255,255,255,0.03);
-		border-bottom: 1px solid rgba(255,255,255,0.06);
+		background: rgba(255, 255, 255, 0.03);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	}
 	.editor-dot {
 		width: 10px;

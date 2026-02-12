@@ -8,17 +8,41 @@
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'hintType')
 		?.attributes?.content ?? 'note');
 
-	const icons: Record<string, string> = {
-		note: 'ℹ',
-		warning: '⚠',
-		caution: '⛔',
-		check: '✓',
-	};
 </script>
 
 <aside class="hint hint-{hintType}" role="note">
 	<div class="hint-header">
-		<span class="hint-icon">{icons[hintType] ?? 'ℹ'}</span>
+		<span class="hint-icon">
+			{#if hintType === 'note'}
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="8" cy="8" r="6.25" />
+					<path d="M8 7v4" />
+					<circle cx="8" cy="5" r="0.75" fill="currentColor" stroke="none" />
+				</svg>
+			{:else if hintType === 'warning'}
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M7.13 2.5a1 1 0 0 1 1.74 0l5.5 9.5A1 1 0 0 1 13.5 13.5h-11a1 1 0 0 1-.87-1.5l5.5-9.5z" />
+					<path d="M8 6v3" />
+					<circle cx="8" cy="11" r="0.75" fill="currentColor" stroke="none" />
+				</svg>
+			{:else if hintType === 'caution'}
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M5.25 1.75h5.5l3.5 3.5v5.5l-3.5 3.5h-5.5l-3.5-3.5v-5.5l3.5-3.5z" />
+					<path d="M6 6l4 4M10 6l-4 4" />
+				</svg>
+			{:else if hintType === 'check'}
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="8" cy="8" r="6.25" />
+					<path d="M5.5 8.5l2 2 3-4" />
+				</svg>
+			{:else}
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="8" cy="8" r="6.25" />
+					<path d="M8 7v4" />
+					<circle cx="8" cy="5" r="0.75" fill="currentColor" stroke="none" />
+				</svg>
+			{/if}
+		</span>
 		<span class="hint-title">{hintType}</span>
 	</div>
 	<div class="hint-body">
@@ -44,9 +68,9 @@
 		margin-bottom: 0.375rem;
 	}
 	.hint-icon {
-		font-size: 0.875rem;
-		line-height: 1;
-		opacity: 0.9;
+		display: flex;
+		align-items: center;
+		color: var(--hint-color);
 	}
 	.hint-title {
 		font-weight: 600;
