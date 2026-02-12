@@ -11,27 +11,27 @@ Tabbed content panels. Headings become tab labels, the content below each headin
 
 Set `headingLevel` to automatically convert headings into tab labels.
 
-```markdoc
+````markdoc
 {% tabs headingLevel=2 %}
 ## npm
 
-\`\`\`shell
+```shell
 npm install @refrakt-md/runes
-\`\`\`
+```
 
 ## yarn
 
-\`\`\`shell
+```shell
 yarn add @refrakt-md/runes
-\`\`\`
+```
 
 ## pnpm
 
-\`\`\`shell
+```shell
 pnpm add @refrakt-md/runes
-\`\`\`
-{% /tabs %}
 ```
+{% /tabs %}
+````
 
 {% tabs headingLevel=2 %}
 ## npm

@@ -11,7 +11,7 @@ API endpoint documentation. Headings become the endpoint title, tables become pa
 
 A basic GET endpoint with query parameters and a JSON response example.
 
-```markdoc
+````markdoc
 {% api method="GET" path="/api/users" auth="Bearer token" %}
 ## List Users
 
@@ -35,7 +35,7 @@ Returns a paginated list of users. Requires authentication.
 
 > Rate limited to 100 requests per minute per API key.
 {% /api %}
-```
+````
 
 {% api method="GET" path="/api/users" auth="Bearer token" %}
 ## List Users
@@ -65,7 +65,7 @@ Returns a paginated list of users. Requires authentication.
 
 A POST endpoint with a request body and response example.
 
-```markdoc
+````markdoc
 {% api method="POST" path="/api/users" auth="Bearer token" %}
 ## Create User
 
@@ -86,7 +86,7 @@ Creates a new user account.
 }
 ```
 {% /api %}
-```
+````
 
 {% api method="POST" path="/api/users" auth="Bearer token" %}
 ## Create User

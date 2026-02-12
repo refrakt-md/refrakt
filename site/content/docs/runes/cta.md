@@ -35,17 +35,17 @@ Build structured content sites with semantic Markdown.
 
 Code fences inside a CTA become copyable command blocks.
 
-```markdoc
+````markdoc
 {% cta %}
 # Install refrakt.md
 
 Get up and running in seconds.
 
-\`\`\`shell
+```shell
 npm install @refrakt-md/runes
-\`\`\`
-{% /cta %}
 ```
+{% /cta %}
+````
 
 {% cta %}
 # Install refrakt.md

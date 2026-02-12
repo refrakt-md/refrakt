@@ -18,11 +18,11 @@ A content framework built on Markdoc that extends Markdown with semantic runes. 
 {% /accordion-item %}
 
 {% accordion-item name="How do runes work?" %}
-Runes are Markdoc tags that create interpretation contexts. A list inside `{% nav %}` becomes page links, inside `{% feature %}` becomes a feature grid, inside `{% cta %}` becomes action buttons.
+Runes are Markdoc tags that wrap ordinary Markdown. The same list renders as navigation links, a feature grid, or action buttons — depending on which rune contains it.
 {% /accordion-item %}
 
 {% accordion-item name="Do I need to learn a new syntax?" %}
-No. Runes use standard Markdoc tag syntax (`{% tag %}...{% /tag %}`), and the content inside is regular Markdown.
+No. Runes use standard Markdoc tag syntax, and the content inside is regular Markdown.
 {% /accordion-item %}
 {% /accordion %}
 ```
@@ -33,11 +33,11 @@ A content framework built on Markdoc that extends Markdown with semantic runes. 
 {% /accordion-item %}
 
 {% accordion-item name="How do runes work?" %}
-Runes are Markdoc tags that create interpretation contexts. A list inside `{% nav %}` becomes page links, inside `{% feature %}` becomes a feature grid, inside `{% cta %}` becomes action buttons.
+Runes are Markdoc tags that wrap ordinary Markdown. The same list renders as navigation links, a feature grid, or action buttons — depending on which rune contains it.
 {% /accordion-item %}
 
 {% accordion-item name="Do I need to learn a new syntax?" %}
-No. Runes use standard Markdoc tag syntax (`{% tag %}...{% /tag %}`), and the content inside is regular Markdown.
+No. Runes use standard Markdoc tag syntax, and the content inside is regular Markdown.
 {% /accordion-item %}
 {% /accordion %}
 
