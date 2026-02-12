@@ -28,6 +28,17 @@ import { changelog, changelogRelease } from './tags/changelog.js';
 import { embed } from './tags/embed.js';
 import { breadcrumb } from './tags/breadcrumb.js';
 import { compare } from './tags/compare.js';
+import { recipe } from './tags/recipe.js';
+import { howto } from './tags/howto.js';
+import { event } from './tags/event.js';
+import { cast, castMember } from './tags/cast.js';
+import { organization } from './tags/organization.js';
+import { datatable } from './tags/datatable.js';
+import { api } from './tags/api.js';
+import { diff } from './tags/diff.js';
+import { chart } from './tags/chart.js';
+import { diagram } from './tags/diagram.js';
+import { sidenote } from './tags/sidenote.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -275,6 +286,101 @@ export const runes = {
     description: 'Side-by-side code comparison with labeled panels',
     reinterprets: { fence: 'comparison panel' },
     type: schema.Compare,
+  }),
+  recipe: defineRune({
+    name: 'recipe',
+    schema: recipe,
+    description: 'Recipe with ingredients, steps, and chef tips. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
+    reinterprets: { list: 'ingredients', 'ordered list': 'steps', blockquote: 'chef tips', image: 'recipe photo', heading: 'recipe name' },
+    seoType: 'Recipe',
+    type: schema.Recipe,
+  }),
+  howto: defineRune({
+    name: 'howto',
+    aliases: ['how-to'],
+    schema: howto,
+    description: 'Step-by-step how-to guide with tools/materials list and instructions',
+    reinterprets: { 'ordered list': 'steps', list: 'tools/materials', heading: 'title' },
+    seoType: 'HowTo',
+    type: schema.HowTo,
+  }),
+  event: defineRune({
+    name: 'event',
+    schema: event,
+    description: 'Event information with date, location, and agenda',
+    reinterprets: { heading: 'event name', list: 'speakers/agenda', blockquote: 'venue description', link: 'registration URL' },
+    seoType: 'Event',
+    type: schema.Event,
+  }),
+  cast: defineRune({
+    name: 'cast',
+    aliases: ['team'],
+    schema: cast,
+    description: 'People directory for team pages, cast lists, or speaker lineups. List items with "Name - Role" pattern become entries.',
+    reinterprets: { list: 'people entries (Name - Role)', image: 'avatar/headshot', link: 'profile URL' },
+    seoType: 'Person',
+    type: schema.Cast,
+  }),
+  'cast-member': defineRune({
+    name: 'cast-member',
+    schema: castMember,
+    description: 'Individual cast/team member with name and role',
+    type: schema.CastMember,
+  }),
+  organization: defineRune({
+    name: 'organization',
+    aliases: ['business'],
+    schema: organization,
+    description: 'Structured business/organization information with contact details, hours, and location',
+    reinterprets: { heading: 'organization name', image: 'logo', link: 'website/social profiles' },
+    seoType: 'Organization',
+    type: schema.Organization,
+  }),
+  datatable: defineRune({
+    name: 'datatable',
+    aliases: ['data-table'],
+    schema: datatable,
+    description: 'Interactive data table with sorting, filtering, and pagination from a Markdown table',
+    reinterprets: { table: 'interactive data table' },
+    seoType: 'Dataset',
+    type: schema.DataTable,
+  }),
+  api: defineRune({
+    name: 'api',
+    aliases: ['endpoint'],
+    schema: api,
+    description: 'API endpoint documentation with method, path, parameters, and request/response examples',
+    reinterprets: { heading: 'endpoint title', fence: 'request/response examples', table: 'parameter list', blockquote: 'notes/warnings' },
+    type: schema.Api,
+  }),
+  diff: defineRune({
+    name: 'diff',
+    schema: diff,
+    description: 'Side-by-side or unified diff view between two code blocks',
+    reinterprets: { fence: 'before/after code blocks' },
+    type: schema.Diff,
+  }),
+  chart: defineRune({
+    name: 'chart',
+    schema: chart,
+    description: 'Chart visualization from a Markdown table. First column becomes axis labels, header row becomes series names.',
+    reinterprets: { table: 'chart data' },
+    type: schema.Chart,
+  }),
+  diagram: defineRune({
+    name: 'diagram',
+    schema: diagram,
+    description: 'Diagram rendering from Mermaid, PlantUML, or ASCII art code blocks',
+    reinterprets: { fence: 'diagram source code' },
+    type: schema.Diagram,
+  }),
+  sidenote: defineRune({
+    name: 'sidenote',
+    aliases: ['footnote', 'marginnote'],
+    schema: sidenote,
+    description: 'Margin note or footnote displayed alongside the main content',
+    reinterprets: { paragraph: 'note content' },
+    type: schema.Sidenote,
   }),
 };
 

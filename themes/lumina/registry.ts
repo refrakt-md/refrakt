@@ -20,6 +20,17 @@ import Compare from './components/Compare.svelte';
 import Timeline from './components/Timeline.svelte';
 import Changelog from './components/Changelog.svelte';
 import Embed from './components/Embed.svelte';
+import Recipe from './components/Recipe.svelte';
+import HowTo from './components/HowTo.svelte';
+import Event from './components/Event.svelte';
+import Cast from './components/Cast.svelte';
+import Organization from './components/Organization.svelte';
+import DataTable from './components/DataTable.svelte';
+import Api from './components/Api.svelte';
+import Diff from './components/Diff.svelte';
+import Chart from './components/Chart.svelte';
+import Diagram from './components/Diagram.svelte';
+import Sidenote from './components/Sidenote.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components */
 export const registry: ComponentRegistry = {
@@ -55,4 +66,17 @@ export const registry: ComponentRegistry = {
 	'Changelog': Changelog,
 	'ChangelogRelease': Changelog,
 	'Embed': Embed,
+	'Recipe': Recipe,
+	'RecipeIngredient': Recipe,
+	'HowTo': HowTo,
+	'Event': Event,
+	'Cast': Cast,
+	'CastMember': Cast,
+	'Organization': Organization,
+	'DataTable': DataTable,
+	'Api': Api,
+	'Diff': Diff,
+	'Chart': Chart,
+	'Diagram': Diagram,
+	'Sidenote': Sidenote,
 };

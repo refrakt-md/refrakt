@@ -27,6 +27,7 @@ const EXCLUDED_RUNES = new Set([
 	'timeline-entry',
 	'changelog-release',
 	'breadcrumb-item',
+	'cast-member',
 ]);
 
 /** Usage examples for each author-facing rune */
@@ -266,6 +267,143 @@ Major rewrite with semantic rune system.
 	embed: `{% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" %}
 Watch the video for a full walkthrough.
 {% /embed %}`,
+
+	recipe: `{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
+# Classic Pasta Carbonara
+
+A rich and creamy Italian pasta dish.
+
+- 400g spaghetti
+- 200g pancetta
+- 4 egg yolks
+- 100g Pecorino Romano
+- Black pepper
+
+1. Cook pasta in salted boiling water until al dente
+2. Fry pancetta until crispy
+3. Whisk egg yolks with grated cheese
+4. Toss hot pasta with pancetta, then stir in egg mixture
+
+> Use the pasta water to adjust consistency — add a splash at a time.
+{% /recipe %}`,
+
+	howto: `{% howto estimatedTime="PT1H" difficulty="medium" %}
+# How to Set Up a Development Environment
+
+You will need:
+
+- Node.js 18+
+- Git
+- A code editor
+
+1. Install Node.js from the official website
+2. Clone the repository with \`git clone\`
+3. Run \`npm install\` to install dependencies
+4. Start the dev server with \`npm run dev\`
+{% /howto %}`,
+
+	event: `{% event date="2025-06-15" endDate="2025-06-17" location="San Francisco, CA" url="https://example.com/register" %}
+# Tech Conference 2025
+
+Join us for three days of talks, workshops, and networking.
+
+- Keynote: The Future of Web Development
+- Workshop: Building with Semantic Content
+- Panel: Open Source Sustainability
+{% /event %}`,
+
+	cast: `{% cast layout="grid" %}
+# Our Team
+
+- Alice Johnson - CEO
+- Bob Smith - CTO
+- Carol Williams - Head of Design
+- David Chen - Lead Engineer
+{% /cast %}`,
+
+	organization: `{% organization type="LocalBusiness" %}
+# Acme Coffee Shop
+
+Your neighborhood coffee shop since 2015.
+
+- **Address:** 123 Main St, Portland, OR
+- **Hours:** Mon–Fri 7am–6pm, Sat–Sun 8am–5pm
+- **Phone:** (503) 555-0123
+- [Website](https://acme.coffee)
+- [Instagram](https://instagram.com/acmecoffee)
+{% /organization %}`,
+
+	datatable: `{% datatable sortable="Name,Price" searchable=true pageSize=10 %}
+| Name | Price | Category | Stock |
+|------|-------|----------|-------|
+| Widget A | $9.99 | Tools | 150 |
+| Widget B | $14.99 | Tools | 85 |
+| Gadget X | $24.99 | Electronics | 42 |
+{% /datatable %}`,
+
+	api: `{% api method="GET" path="/api/users" auth="Bearer token" %}
+## List Users
+
+Returns a paginated list of users.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| page | number | no | Page number (default: 1) |
+| limit | number | no | Items per page (default: 20) |
+
+\`\`\`json
+{
+  "users": [
+    { "id": 1, "name": "Alice" }
+  ],
+  "total": 42
+}
+\`\`\`
+{% /api %}`,
+
+	diff: `{% diff mode="unified" language="javascript" %}
+\`\`\`javascript
+function getData() {
+  return fetch('/api')
+    .then(res => res.json())
+    .then(data => data);
+}
+\`\`\`
+
+\`\`\`javascript
+async function getData() {
+  const res = await fetch('/api');
+  return res.json();
+}
+\`\`\`
+{% /diff %}`,
+
+	chart: `{% chart type="bar" title="Monthly Revenue" %}
+| Month | Revenue | Expenses |
+|-------|---------|----------|
+| Jan   | 4200    | 3100     |
+| Feb   | 5100    | 3400     |
+| Mar   | 4800    | 3200     |
+| Apr   | 6200    | 3800     |
+{% /chart %}`,
+
+	diagram: `{% diagram language="mermaid" title="User Flow" %}
+\`\`\`mermaid
+graph TD
+  A[Visit Site] --> B{Logged In?}
+  B -->|Yes| C[Dashboard]
+  B -->|No| D[Login Page]
+  D --> E[Sign Up]
+  D --> F[Sign In]
+  F --> C
+  E --> C
+\`\`\`
+{% /diagram %}`,
+
+	sidenote: `{% sidenote %}
+This is a margin note that provides additional context
+without interrupting the main flow of the text.
+{% /sidenote %}`,
 };
 
 function attributeTypeName(type: unknown): string {

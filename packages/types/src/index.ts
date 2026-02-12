@@ -40,6 +40,17 @@ export { Changelog, ChangelogProperties, ChangelogComponent, ChangelogRelease, C
 export { Embed, EmbedComponent } from './schema/embed.js';
 export { Breadcrumb, BreadcrumbComponent, BreadcrumbItem, BreadcrumbItemComponent } from './schema/breadcrumb.js';
 export { Compare, CompareComponent } from './schema/compare.js';
+export { Recipe, RecipeProperties, RecipeComponent, RecipeIngredient, RecipeIngredientComponent } from './schema/recipe.js';
+export { HowTo, HowToProperties, HowToComponent } from './schema/howto.js';
+export { Event, EventProperties, EventComponent } from './schema/event.js';
+export { Cast, CastProperties, CastComponent, CastMember, CastMemberComponent } from './schema/cast.js';
+export { Organization, OrganizationProperties, OrganizationComponent } from './schema/organization.js';
+export { DataTable, DataTableComponent } from './schema/datatable.js';
+export { Api, ApiComponent } from './schema/api.js';
+export { Diff, DiffComponent } from './schema/diff.js';
+export { Chart, ChartComponent } from './schema/chart.js';
+export { Diagram, DiagramComponent } from './schema/diagram.js';
+export { Sidenote, SidenoteComponent } from './schema/sidenote.js';
 
 // Theme system types
 export type {

@@ -19,6 +19,12 @@
 - pricing
 - testimonial
 - hero
+- recipe
+- howto
+- event
+- cast
+- organization
+- sidenote
 
 ## Layout
 
@@ -29,6 +35,14 @@
 - compare
 - timeline
 - changelog
+
+## Data & Dev
+
+- datatable
+- chart
+- diagram
+- api
+- diff
 
 ## Structure
 
