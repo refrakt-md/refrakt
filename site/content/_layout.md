@@ -17,6 +17,8 @@
 - steps
 - figure
 - pricing
+- testimonial
+- hero
 
 ## Layout
 
@@ -24,12 +26,17 @@
 - tabs
 - accordion
 - details
+- compare
+- timeline
+- changelog
 
 ## Structure
 
 - layout
 - nav
 - toc
+- breadcrumb
+- embed
 
 {% /nav %}
 {% /region %}
