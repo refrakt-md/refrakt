@@ -88,6 +88,7 @@
 		background: var(--color-surface);
 		border-bottom: 1px solid var(--color-border);
 		overflow-x: auto;
+		overflow-y: hidden;
 		-webkit-overflow-scrolling: touch;
 	}
 	.tab-button {
