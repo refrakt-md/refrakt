@@ -93,6 +93,10 @@
 		display: none;
 	}
 
+	.cast-member-body :global(span[property]) {
+		display: none;
+	}
+
 	.cast-member :global(img) {
 		width: 80px;
 		height: 80px;

@@ -41,6 +41,6 @@
 	.page-content {
 		padding-top: 2.5rem;
 		padding-bottom: 4rem;
-		max-width: 56rem;
+		max-width: 64rem;
 	}
 </style>

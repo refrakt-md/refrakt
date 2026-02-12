@@ -65,12 +65,12 @@ class CastModel extends Model {
 						converted.push(new Ast.Node('tag', {
 							name: match[1].trim(),
 							role: match[2].trim(),
-						}, item.children, 'cast-member'));
+						}, [], 'cast-member'));
 					} else {
 						converted.push(new Ast.Node('tag', {
 							name: text,
 							role: '',
-						}, item.children, 'cast-member'));
+						}, [], 'cast-member'));
 					}
 				}
 			} else {

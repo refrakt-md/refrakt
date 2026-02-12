@@ -46,7 +46,8 @@
 	.star.filled {
 		color: #f59e0b;
 	}
-	.testimonial-content :global(blockquote) {
+	.testimonial-content :global(blockquote),
+	.testimonial-content :global(.themed-blockquote) {
 		border: none;
 		padding: 0;
 		margin: 0 0 1rem;
@@ -55,17 +56,24 @@
 		line-height: 1.7;
 		color: var(--color-text);
 		background: none;
+		border-radius: 0;
+	}
+	.testimonial-content :global(.quote-mark) {
+		display: none;
 	}
 	.testimonial-content :global(blockquote p) {
 		margin: 0;
 	}
 	.testimonial-content :global(span[property="authorName"]) {
+		display: block;
 		font-weight: 700;
 		font-style: normal;
 		font-size: 0.925rem;
 		color: var(--color-text);
 	}
 	.testimonial-content :global(span[property="authorRole"]) {
+		display: block;
+		margin-top: 0.125rem;
 		font-size: 0.85rem;
 		color: var(--color-muted);
 	}

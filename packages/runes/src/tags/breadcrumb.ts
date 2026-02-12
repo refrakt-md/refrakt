@@ -24,7 +24,7 @@ class BreadcrumbModel extends Model {
 						);
 
 						if (link) {
-							const nameSpan = new Tag('span', {}, link.children);
+							const nameSpan = new Tag('span', { hidden: true }, link.children);
 							const urlLink = new Tag('a', { href: link.attributes.href }, link.children);
 
 							listItems.push(

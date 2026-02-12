@@ -77,7 +77,7 @@
 	}
 	.page-content {
 		min-width: 0;
-		max-width: 48rem;
+		max-width: 52rem;
 		padding-left: 2.5rem;
 	}
 	.sidebar-right {

@@ -9,7 +9,7 @@
 		?.attributes?.content ?? '/');
 </script>
 
-<nav class="breadcrumb" aria-label="Breadcrumb">
+<nav class="breadcrumb" aria-label="Breadcrumb" style="--separator: '{separator}'">
 	{@render children()}
 </nav>
 
@@ -35,7 +35,7 @@
 		margin: 0;
 	}
 	.breadcrumb :global(li + li::before) {
-		content: '/';
+		content: var(--separator);
 		color: var(--color-muted);
 		opacity: 0.5;
 		margin-right: 0.125rem;

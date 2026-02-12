@@ -10,7 +10,7 @@
 
 <style>
 	.site-layout {
-		max-width: 72rem;
+		max-width: 80rem;
 		margin: 0 auto;
 		padding: 0 1.5rem;
 	}
