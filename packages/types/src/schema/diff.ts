@@ -12,7 +12,6 @@ export interface DiffComponent extends ComponentType<Diff> {
 		language: 'meta',
 	},
 	refs: {
-		before: 'pre',
-		after: 'pre',
+		data: 'meta',
 	}
 }
