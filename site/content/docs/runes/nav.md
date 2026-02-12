@@ -7,6 +7,10 @@ description: Navigation structure for sidebar and site navigation
 
 Navigation structure for the sidebar. Headings become group titles, list items become page links using slugs that resolve to page titles.
 
+## Basic usage
+
+Define navigation groups with headings and page slugs as list items.
+
 ```markdoc
 {% nav %}
 ## Getting Started
@@ -20,8 +24,6 @@ Navigation structure for the sidebar. Headings become group titles, list items b
 ```
 
 Place inside a `{% region name="nav" %}` in your `_layout.md` to create a site-wide sidebar.
-
-### How slugs resolve
 
 Each list item is a slug (e.g., `getting-started`). The nav component matches it against page URLs — if a page exists at `/docs/getting-started`, the slug resolves and the page's `title` frontmatter is used as the link text.
 

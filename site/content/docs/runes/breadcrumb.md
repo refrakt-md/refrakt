@@ -7,6 +7,10 @@ description: Navigation breadcrumbs showing page hierarchy
 
 Navigation breadcrumbs from a list of links. Each linked item is a navigable breadcrumb, and the last item (without a link) represents the current page.
 
+## Basic usage
+
+A breadcrumb trail using the default `/` separator.
+
 ```markdoc
 {% breadcrumb %}
 - [Home](/)
@@ -16,8 +20,6 @@ Navigation breadcrumbs from a list of links. Each linked item is a navigable bre
 {% /breadcrumb %}
 ```
 
-### Example
-
 {% breadcrumb %}
 - [Home](/)
 - [Getting started](/docs/getting-started)
@@ -25,7 +27,9 @@ Navigation breadcrumbs from a list of links. Each linked item is a navigable bre
 - Breadcrumb
 {% /breadcrumb %}
 
-### Custom separator
+## Custom separator
+
+Use the `separator` attribute to change the divider between items.
 
 ```markdoc
 {% breadcrumb separator="›" %}
@@ -34,6 +38,12 @@ Navigation breadcrumbs from a list of links. Each linked item is a navigable bre
 - Current page
 {% /breadcrumb %}
 ```
+
+{% breadcrumb separator="›" %}
+- [Home](/)
+- [Getting started](/docs/getting-started)
+- Current page
+{% /breadcrumb %}
 
 ### Attributes
 

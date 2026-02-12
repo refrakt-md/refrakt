@@ -7,13 +7,29 @@ description: Embed external content like videos, tweets, and code demos
 
 Embed external content from popular platforms. URLs are automatically detected and converted to the appropriate embed format. Supports YouTube, Vimeo, Twitter/X, CodePen, and Spotify.
 
+## Basic usage
+
+Pass a URL and optional title to embed content from a supported provider.
+
 ```markdoc
 {% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
 ```
 
-### Example
-
 {% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
+
+## With fallback content
+
+Children become fallback content displayed when the embed cannot load.
+
+```markdoc
+{% embed url="https://example.com/video" %}
+Video could not be loaded. [Watch on the original site](https://example.com/video).
+{% /embed %}
+```
+
+{% embed url="https://example.com/video" %}
+Video could not be loaded. [Watch on the original site](https://example.com/video).
+{% /embed %}
 
 ### Supported providers
 
@@ -25,16 +41,6 @@ Embed external content from popular platforms. URLs are automatically detected a
 | CodePen | `https://codepen.io/.../pen/...` |
 | Spotify | `https://open.spotify.com/...` |
 | Generic | Any other URL (rendered as iframe) |
-
-### Fallback content
-
-Children become fallback content displayed when the embed cannot load:
-
-```markdoc
-{% embed url="https://example.com/video" %}
-Video could not be loaded. [Watch on the original site](https://example.com/video).
-{% /embed %}
-```
 
 ### Attributes
 

@@ -7,23 +7,25 @@ description: Version history with release notes
 
 Version history and release notes. Headings with a `v1.0.0 - date` pattern are automatically converted into release entries.
 
+## Heading-based changelog
+
+Headings are parsed into version and date parts, with list items below becoming the release notes.
+
 ```markdoc
 {% changelog %}
 ## v1.2.0 - January 2025
 
-- Added timeline rune
-- Added changelog rune
-- Fixed grid column spanning
+- Added timeline and changelog runes
+- Added breadcrumb navigation rune
+- Fixed grid column spanning on mobile
 
 ## v1.1.0 - December 2024
 
-- Added testimonial rune
-- Improved pricing tier styling
-- Fixed tab panel switching
+- Added testimonial and compare runes
+- Improved pricing tier card styling
+- Fixed tab panel content not rendering
 {% /changelog %}
 ```
-
-### Example
 
 {% changelog %}
 ## v1.2.0 - January 2025
@@ -39,9 +41,9 @@ Version history and release notes. Headings with a `v1.0.0 - date` pattern are a
 - Fixed tab panel content not rendering
 {% /changelog %}
 
-### Explicit releases
+## Explicit releases
 
-You can also use explicit `{% changelog-release %}` tags:
+Use `{% changelog-release %}` tags for more control over version and date values.
 
 ```markdoc
 {% changelog %}
@@ -55,6 +57,17 @@ You can also use explicit `{% changelog-release %}` tags:
 {% /changelog-release %}
 {% /changelog %}
 ```
+
+{% changelog %}
+{% changelog-release version="2.0.0" date="March 2025" %}
+- Complete rewrite of the rendering engine
+- New plugin API for custom runes
+{% /changelog-release %}
+
+{% changelog-release version="1.0.0" date="January 2025" %}
+- Initial stable release
+{% /changelog-release %}
+{% /changelog %}
 
 ### Attributes
 

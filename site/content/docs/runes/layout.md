@@ -7,6 +7,10 @@ description: Structural runes for defining page layouts and named content region
 
 Structural runes that define page layout. `{% layout %}` wraps the entire layout file. `{% region %}` defines named content areas (header, nav, sidebar, footer) that render in specific positions within the theme's layout component.
 
+## Defining regions
+
+A `_layout.md` file uses regions to place content into theme slots.
+
 ```markdoc
 {% layout %}
 {% region name="header" %}
@@ -21,8 +25,6 @@ Structural runes that define page layout. `{% layout %}` wraps the entire layout
 {% /region %}
 {% /layout %}
 ```
-
-### Region inheritance
 
 Layouts are inherited from parent directories. A `_layout.md` in a subdirectory can override or extend regions from the parent layout using the `mode` attribute.
 

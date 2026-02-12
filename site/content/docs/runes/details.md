@@ -7,26 +7,29 @@ description: Collapsible disclosure blocks for supplementary content
 
 Collapsible disclosure block for supplementary content. Renders as a native `<details>` element.
 
-```markdoc
-{% details summary="Implementation notes" %}
-This section contains additional technical details that most readers can skip.
-{% /details %}
-```
+## Basic usage
 
-Use `open` to have the block expanded by default:
+Content is hidden by default and revealed when the user clicks the summary.
 
 ```markdoc
-{% details summary="Changelog" open=true %}
-- v0.2.0: Added accordion support
-- v0.1.0: Initial release
+{% details summary="Click to reveal more information" %}
+This content is hidden by default. The details rune wraps content in a native disclosure element that the user can toggle open and closed.
 {% /details %}
 ```
-
-### Example
 
 {% details summary="Click to reveal more information" %}
 This content is hidden by default. The details rune wraps content in a native disclosure element that the user can toggle open and closed.
 {% /details %}
+
+## Open by default
+
+Use `open=true` to have the block expanded when the page loads.
+
+```markdoc
+{% details summary="This one starts open" open=true %}
+Since `open=true` is set, this block is expanded when the page loads.
+{% /details %}
+```
 
 {% details summary="This one starts open" open=true %}
 Since `open=true` is set, this block is expanded when the page loads.

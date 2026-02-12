@@ -7,6 +7,10 @@ description: Step-by-step instructions with numbered indicators
 
 Step-by-step instructions with numbered indicators. Ordered list items become individual steps.
 
+## Basic usage
+
+Each ordered list item becomes a numbered step.
+
 ```markdoc
 {% steps %}
 1. Install the dependencies
@@ -23,8 +27,6 @@ Step-by-step instructions with numbered indicators. Ordered list items become in
 {% /steps %}
 ```
 
-### Example
-
 {% steps %}
 1. Install the dependencies
 
@@ -37,6 +39,40 @@ Step-by-step instructions with numbered indicators. Ordered list items become in
 3. Start the dev server
 
    Run `npm run dev` and visit localhost.
+{% /steps %}
+
+## Heading-based steps
+
+Use `headingLevel` to convert headings into steps instead of list items.
+
+```markdoc
+{% steps headingLevel=3 %}
+### Clone the repository
+
+Fork and clone the repo to your local machine.
+
+### Install dependencies
+
+Run `npm install` to set up all packages.
+
+### Run the tests
+
+Verify everything works with `npm test`.
+{% /steps %}
+```
+
+{% steps headingLevel=3 %}
+### Clone the repository
+
+Fork and clone the repo to your local machine.
+
+### Install dependencies
+
+Run `npm install` to set up all packages.
+
+### Run the tests
+
+Verify everything works with `npm test`.
 {% /steps %}
 
 ### Attributes

@@ -7,20 +7,26 @@ description: Step-by-step how-to guide with tools and instructions
 
 Step-by-step how-to instructions. Unordered lists become tools/materials needed, ordered lists become steps.
 
+## Basic usage
+
+A how-to guide with required tools and numbered steps.
+
 ```markdoc
-{% howto estimatedTime="PT30M" difficulty="easy" %}
-# How to Get Started
+{% howto estimatedTime="PT1H" difficulty="medium" %}
+# How to Set Up a Development Environment
+
+You will need these tools:
 
 - Node.js 18+
-- A code editor
+- Git
+- A code editor (VS Code recommended)
 
-1. Install dependencies
-2. Create your first page
-3. Start the dev server
+1. Install Node.js from the official website
+2. Clone the repository with `git clone`
+3. Run `npm install` to install dependencies
+4. Start the dev server with `npm run dev`
 {% /howto %}
 ```
-
-### Example
 
 {% howto estimatedTime="PT1H" difficulty="medium" %}
 # How to Set Up a Development Environment

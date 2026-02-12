@@ -7,6 +7,10 @@ description: Side-by-side code comparison panels
 
 Side-by-side code comparison. Each fenced code block becomes a labeled panel. Labels default to the code block's language.
 
+## Basic usage
+
+Panels are automatically labeled by their code block language.
+
 ````markdoc
 {% compare %}
 ```javascript
@@ -23,8 +27,6 @@ function greet(name: string): string {
 {% /compare %}
 ````
 
-### Example
-
 {% compare %}
 ```javascript
 function greet(name) {
@@ -39,9 +41,9 @@ function greet(name: string): string {
 ```
 {% /compare %}
 
-### Custom labels
+## Custom labels
 
-Use the `labels` attribute to override the default language-based labels:
+Use the `labels` attribute to override the default language-based labels.
 
 ````markdoc
 {% compare labels="Before, After" %}
@@ -54,6 +56,16 @@ const data = await fetch('/api').then(r => r.json());
 ```
 {% /compare %}
 ````
+
+{% compare labels="Before, After" %}
+```javascript
+const data = fetch('/api').then(r => r.json());
+```
+
+```javascript
+const data = await fetch('/api').then(r => r.json());
+```
+{% /compare %}
 
 ### Attributes
 

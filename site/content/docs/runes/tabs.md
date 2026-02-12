@@ -7,6 +7,10 @@ description: Tabbed content panels with heading-based tab labels
 
 Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel.
 
+## Heading-based tabs
+
+Set `headingLevel` to automatically convert headings into tab labels.
+
 ```markdoc
 {% tabs headingLevel=2 %}
 ## npm
@@ -29,8 +33,6 @@ pnpm add @refrakt-md/runes
 {% /tabs %}
 ```
 
-### Example
-
 {% tabs headingLevel=2 %}
 ## npm
 
@@ -51,7 +53,9 @@ pnpm add @refrakt-md/runes
 ```
 {% /tabs %}
 
-You can also use explicit `{% tab %}` tags for more control:
+## Explicit tab tags
+
+Use `{% tab %}` tags for more control over tab names and content.
 
 ```markdoc
 {% tabs %}
@@ -64,6 +68,16 @@ Content for the TypeScript tab.
 {% /tab %}
 {% /tabs %}
 ```
+
+{% tabs %}
+{% tab name="JavaScript" %}
+Content for the JavaScript tab.
+{% /tab %}
+
+{% tab name="TypeScript" %}
+Content for the TypeScript tab.
+{% /tab %}
+{% /tabs %}
 
 ### Attributes
 
