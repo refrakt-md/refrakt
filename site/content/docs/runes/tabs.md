@@ -8,7 +8,7 @@ description: Tabbed content panels with heading-based tab labels
 Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel.
 
 ```markdoc
-{% tabs %}
+{% tabs headingLevel=2 %}
 ## npm
 
 \`\`\`shell
@@ -31,7 +31,7 @@ pnpm add @refrakt-md/runes
 
 ### Example
 
-{% tabs %}
+{% tabs headingLevel=2 %}
 ## npm
 
 ```shell

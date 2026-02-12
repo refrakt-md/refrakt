@@ -20,6 +20,13 @@ export interface GridLayoutOptions {
 }
 
 export function gridItems(layout: string[], content: RenderableNodeCursor[]): GridItem[] {
+  if (!layout || layout.length === 0) {
+    return content.map(children => ({
+      colspan: 1,
+      rowspan: undefined,
+      children
+    }));
+  }
   return layout
     .map((e, i) => {
       const [c, r] = e.split(':');
