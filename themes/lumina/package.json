@@ -11,6 +11,9 @@
 	},
 	"bugs": "https://github.com/refrakt-md/refrakt/issues",
 	"homepage": "https://github.com/refrakt-md/refrakt",
+	"publishConfig": {
+		"access": "public"
+	},
 	"svelte": "index.ts",
 	"exports": {
 		".": {
@@ -23,9 +26,11 @@
 	},
 	"files": [
 		"components",
+		"elements",
 		"layouts",
 		"index.ts",
 		"registry.ts",
+		"elements.ts",
 		"tokens.css",
 		"manifest.json"
 	],

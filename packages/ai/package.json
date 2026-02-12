@@ -2,7 +2,6 @@
   "name": "@refrakt-md/ai",
   "description": "AI content generation for refrakt.md",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -12,8 +11,14 @@
   },
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc"
   },

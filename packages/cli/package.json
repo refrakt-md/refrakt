@@ -2,7 +2,6 @@
   "name": "@refrakt-md/cli",
   "description": "CLI tools for refrakt.md",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -12,9 +11,15 @@
   },
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "refrakt": "./dist/bin.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc"
   },

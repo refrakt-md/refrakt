@@ -11,6 +11,9 @@
 	},
 	"bugs": "https://github.com/refrakt-md/refrakt/issues",
 	"homepage": "https://github.com/refrakt-md/refrakt",
+	"publishConfig": {
+		"access": "public"
+	},
 	"svelte": "src/index.ts",
 	"exports": {
 		".": {
