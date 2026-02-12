@@ -13,9 +13,6 @@
 	.page-section {
 		padding: 3rem 0;
 	}
-	.page-section + .page-section {
-		border-top: 1px solid var(--color-border);
-	}
 	.page-section :global(> h1:first-child),
 	.page-section :global(> h2:first-child) {
 		margin-top: 0;

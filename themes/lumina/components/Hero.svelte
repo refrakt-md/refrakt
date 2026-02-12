@@ -4,17 +4,17 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const align = tag.children
+	const align = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'align')
-		?.attributes?.content ?? 'center';
+		?.attributes?.content ?? 'center');
 
-	const background = tag.children
+	const background = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'background')
-		?.attributes?.content ?? '';
+		?.attributes?.content ?? '');
 
-	const backgroundImage = tag.children
+	const backgroundImage = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'backgroundImage')
-		?.attributes?.content ?? '';
+		?.attributes?.content ?? '');
 </script>
 
 <section

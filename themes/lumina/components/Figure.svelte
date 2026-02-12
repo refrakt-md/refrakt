@@ -4,13 +4,13 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const size = tag.children
+	const size = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'size')
-		?.attributes?.content ?? '';
+		?.attributes?.content ?? '');
 
-	const align = tag.children
+	const align = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'align')
-		?.attributes?.content ?? '';
+		?.attributes?.content ?? '');
 </script>
 
 <figure class="figure {size ? `figure-${size}` : ''} {align ? `figure-${align}` : ''}">

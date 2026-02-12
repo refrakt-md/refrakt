@@ -4,9 +4,9 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const hintType = tag.children
+	const hintType = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'hintType')
-		?.attributes?.content ?? 'note';
+		?.attributes?.content ?? 'note');
 
 	const icons: Record<string, string> = {
 		note: 'ℹ',

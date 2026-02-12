@@ -25,9 +25,9 @@
 	}
 
 	const globalOverrides = getElementOverrides();
-	const merged = overrides
+	const merged = $derived(overrides
 		? { ...globalOverrides, ...overrides }
-		: globalOverrides;
+		: globalOverrides);
 </script>
 
 {#if Array.isArray(node)}

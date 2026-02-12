@@ -4,13 +4,13 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const summary = tag.children
+	const summary = $derived(tag.children
 		.find((c: any) => c?.name === 'span' && c?.attributes?.property === 'summary')
-		?.children?.[0] ?? 'Details';
+		?.children?.[0] ?? 'Details');
 
-	const isOpen = tag.children
+	const isOpen = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'open')
-		?.attributes?.content ?? false;
+		?.attributes?.content ?? false);
 </script>
 
 <details class="details" open={isOpen || undefined}>

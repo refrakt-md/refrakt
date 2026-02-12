@@ -4,9 +4,9 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const separator = tag.children
+	const separator = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'separator')
-		?.attributes?.content ?? '/';
+		?.attributes?.content ?? '/');
 </script>
 
 <nav class="breadcrumb" aria-label="Breadcrumb">

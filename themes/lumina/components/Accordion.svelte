@@ -4,7 +4,7 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const isGroup = tag.attributes.typeof === 'Accordion';
+	const isGroup = $derived(tag.attributes.typeof === 'Accordion');
 </script>
 
 {#if isGroup}

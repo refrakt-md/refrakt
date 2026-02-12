@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
-	const isGroup = tag.attributes.typeof === 'Steps';
+	const isGroup = $derived(tag.attributes.typeof === 'Steps');
 </script>
 
 {#if isGroup}

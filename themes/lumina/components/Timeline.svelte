@@ -4,11 +4,11 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const isEntry = tag.attributes.typeof === 'TimelineEntry';
+	const isEntry = $derived(tag.attributes.typeof === 'TimelineEntry');
 
-	const direction = tag.children
+	const direction = $derived(tag.children
 		?.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'direction')
-		?.attributes?.content ?? 'vertical';
+		?.attributes?.content ?? 'vertical');
 </script>
 
 {#if isEntry}
@@ -88,13 +88,5 @@
 		padding: 2rem 0 1rem;
 		border-left: none;
 		border-top: 2px solid var(--color-border);
-	}
-	.timeline-horizontal .timeline-entry {
-		min-width: 200px;
-		padding: 0;
-	}
-	.timeline-horizontal .timeline-marker {
-		left: 0;
-		top: -2.5rem;
 	}
 </style>

@@ -11,7 +11,7 @@
 	}
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
-	const typeName = tag.attributes.typeof;
+	const typeName = $derived(tag.attributes.typeof);
 	const pages = getContext<PageEntry[]>('pages');
 
 	function getSlug(tag: SerializedTag): string | null {
@@ -39,8 +39,8 @@
 		return pages?.find(p => p.url.endsWith('/' + slug) || p.url === '/' + slug);
 	}
 
-	const slug = typeName === 'NavItem' ? getSlug(tag) : null;
-	const linkedPage = slug ? resolvePage(slug) : null;
+	const slug = $derived(typeName === 'NavItem' ? getSlug(tag) : null);
+	const linkedPage = $derived(slug ? resolvePage(slug) : null);
 </script>
 
 {#if typeName === 'Nav'}

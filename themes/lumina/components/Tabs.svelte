@@ -5,7 +5,7 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const typeName = tag.attributes.typeof;
+	const typeName = $derived(tag.attributes.typeof);
 
 	function isTag(n: RendererNode): n is SerializedTag {
 		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
@@ -20,26 +20,28 @@
 	}
 
 	// For TabGroup: parse the ul/li structure from the transform
-	const tabs: { name: string }[] = [];
-	const panels: { children: RendererNode[] }[] = [];
-
-	if (typeName === 'TabGroup') {
-		for (const child of tag.children) {
-			if (!isTag(child) || child.name !== 'ul') continue;
-			for (const item of child.children) {
-				if (!isTag(item)) continue;
-				if (item.attributes?.typeof === 'Tab') {
-					const nameNode = item.children.find(
-						(c): c is SerializedTag => isTag(c) && c.attributes?.property === 'name'
-					);
-					const name = nameNode ? getTextContent(nameNode) : getTextContent(item);
-					tabs.push({ name: name.trim() });
-				} else if (item.attributes?.typeof === 'TabPanel') {
-					panels.push({ children: item.children });
+	const { tabs, panels } = $derived.by(() => {
+		const tabs: { name: string }[] = [];
+		const panels: { children: RendererNode[] }[] = [];
+		if (typeName === 'TabGroup') {
+			for (const child of tag.children) {
+				if (!isTag(child) || child.name !== 'ul') continue;
+				for (const item of child.children) {
+					if (!isTag(item)) continue;
+					if (item.attributes?.typeof === 'Tab') {
+						const nameNode = item.children.find(
+							(c): c is SerializedTag => isTag(c) && c.attributes?.property === 'name'
+						);
+						const name = nameNode ? getTextContent(nameNode) : getTextContent(item);
+						tabs.push({ name: name.trim() });
+					} else if (item.attributes?.typeof === 'TabPanel') {
+						panels.push({ children: item.children });
+					}
 				}
 			}
 		}
-	}
+		return { tabs, panels };
+	});
 
 	let activeIndex = $state(0);
 </script>

@@ -16,8 +16,11 @@
 	let { theme, page }: { theme: SvelteTheme; page: PageData } = $props();
 
 	// Wire theme into Svelte context
+	// svelte-ignore state_referenced_locally
 	setRegistry(theme.components);
+	// svelte-ignore state_referenced_locally
 	if (theme.elements) setElementOverrides(theme.elements);
+	// svelte-ignore state_referenced_locally
 	setContext('pages', page.pages);
 
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)

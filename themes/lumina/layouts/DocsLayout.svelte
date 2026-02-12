@@ -9,7 +9,7 @@
 		pages: any[];
 	} = $props();
 
-	const hasNav = !!regions.nav;
+	const hasNav = $derived(!!regions.nav);
 </script>
 
 {#if regions.header}

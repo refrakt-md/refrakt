@@ -4,7 +4,7 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const isRelease = tag.attributes.typeof === 'ChangelogRelease';
+	const isRelease = $derived(tag.attributes.typeof === 'ChangelogRelease');
 </script>
 
 {#if isRelease}

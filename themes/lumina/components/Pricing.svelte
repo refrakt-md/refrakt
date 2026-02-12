@@ -4,17 +4,17 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const typeName = tag.attributes.typeof;
-	const isTier = typeName === 'Tier' || typeName === 'FeaturedTier';
-	const isFeatured = typeName === 'FeaturedTier';
+	const typeName = $derived(tag.attributes.typeof);
+	const isTier = $derived(typeName === 'Tier' || typeName === 'FeaturedTier');
+	const isFeatured = $derived(typeName === 'FeaturedTier');
 
 	// For tiers: extract name and price from property children
-	const tierName = isTier
+	const tierName = $derived(isTier
 		? tag.children.find((c: any) => c?.attributes?.property === 'name')?.children?.[0] ?? ''
-		: '';
-	const tierPrice = isTier
+		: '');
+	const tierPrice = $derived(isTier
 		? tag.children.find((c: any) => c?.attributes?.property === 'price')?.children?.[0] ?? ''
-		: '';
+		: '');
 </script>
 
 {#if typeName === 'Pricing'}

@@ -4,9 +4,9 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const layout = tag.children
+	const layout = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'layout')
-		?.attributes?.content ?? 'side-by-side';
+		?.attributes?.content ?? 'side-by-side');
 </script>
 
 <div class="compare compare-{layout}">

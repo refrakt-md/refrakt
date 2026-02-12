@@ -4,12 +4,12 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const rating = tag.children
+	const rating = $derived(tag.children
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'rating')
-		?.attributes?.content;
+		?.attributes?.content);
 
-	const hasRating = rating !== undefined && rating !== null;
-	const stars = hasRating ? Math.min(5, Math.max(0, Number(rating))) : 0;
+	const hasRating = $derived(rating !== undefined && rating !== null);
+	const stars = $derived(hasRating ? Math.min(5, Math.max(0, Number(rating))) : 0);
 </script>
 
 <article class="testimonial">

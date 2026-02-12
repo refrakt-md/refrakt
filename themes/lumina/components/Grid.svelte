@@ -10,12 +10,12 @@
 	}
 
 	// Find the grid layout container produced by the transform
-	const layoutDiv = tag.children.find(
+	const layoutDiv = $derived(tag.children.find(
 		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-layout'] === 'grid'
-	);
-	const columns = layoutDiv?.attributes?.['data-columns'];
-	const flow = layoutDiv?.attributes?.['data-flow'];
-	const gridItems = layoutDiv?.children?.filter((c): c is SerializedTag => isTag(c)) ?? [];
+	));
+	const columns = $derived(layoutDiv?.attributes?.['data-columns']);
+	const flow = $derived(layoutDiv?.attributes?.['data-flow']);
+	const gridItems = $derived(layoutDiv?.children?.filter((c): c is SerializedTag => isTag(c)) ?? []);
 </script>
 
 {#if gridItems.length > 0}
