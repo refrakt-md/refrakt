@@ -4,3 +4,4 @@ export { Router, type Route } from './router.js';
 export { resolveLayouts, type ResolvedLayout, type Region } from './layout.js';
 export { buildNavigation, type NavTree, type NavGroup, type NavItem } from './navigation.js';
 export { loadContent, type Site, type SitePage } from './site.js';
+export { generateSitemap, type SitemapEntry } from './sitemap.js';

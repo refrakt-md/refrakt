@@ -4,6 +4,19 @@
 	import { setContext } from 'svelte';
 	import { matchRouteRule } from './route-rules.js';
 
+	interface OgMeta {
+		title?: string;
+		description?: string;
+		image?: string;
+		type?: string;
+		url?: string;
+	}
+
+	interface PageSeo {
+		jsonLd: object[];
+		og: OgMeta;
+	}
+
 	interface PageData {
 		title: string;
 		description: string;
@@ -11,6 +24,7 @@
 		renderable: any;
 		pages: Array<{ url: string; title: string; draft: boolean }>;
 		url: string;
+		seo?: PageSeo;
 	}
 
 	let { theme, page }: { theme: SvelteTheme; page: PageData } = $props();
@@ -29,8 +43,33 @@
 </script>
 
 <svelte:head>
-	{#if page.title}<title>{page.title}</title>{/if}
-	{#if page.description}<meta name="description" content={page.description} />{/if}
+	{#if page.seo?.og.title}
+		<title>{page.seo.og.title}</title>
+		<meta property="og:title" content={page.seo.og.title} />
+	{:else if page.title}
+		<title>{page.title}</title>
+	{/if}
+	{#if page.seo?.og.description}
+		<meta name="description" content={page.seo.og.description} />
+		<meta property="og:description" content={page.seo.og.description} />
+	{:else if page.description}
+		<meta name="description" content={page.description} />
+	{/if}
+	{#if page.seo?.og.image}
+		<meta property="og:image" content={page.seo.og.image} />
+		<meta name="twitter:card" content="summary_large_image" />
+	{/if}
+	{#if page.seo?.og.url}
+		<meta property="og:url" content={page.seo.og.url} />
+	{/if}
+	{#if page.seo?.og.type}
+		<meta property="og:type" content={page.seo.og.type} />
+	{/if}
+	{#if page.seo}
+		{#each page.seo.jsonLd as schema}
+			{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
+		{/each}
+	{/if}
 </svelte:head>
 
 {#if Layout}

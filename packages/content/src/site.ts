@@ -1,11 +1,14 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
+import type { PageSeo } from '@refrakt-md/runes';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { NavTree } from './navigation.js';
+
+const seoTypeMap = buildSeoTypeMap(runes);
 
 export interface Site {
   /** The content tree */
@@ -22,6 +25,7 @@ export interface SitePage {
   content: string;
   renderable: RenderableTreeNodes;
   layout: ResolvedLayout;
+  seo: PageSeo;
 }
 
 function transformContent(content: string, path: string): RenderableTreeNodes {
@@ -44,8 +48,9 @@ export async function loadContent(dirPath: string, basePath: string = '/'): Prom
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root);
     const renderable = transformContent(content, route.url);
+    const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
 
-    pages.push({ route, frontmatter, content, renderable, layout });
+    pages.push({ route, frontmatter, content, renderable, layout, seo });
   }
 
   return {

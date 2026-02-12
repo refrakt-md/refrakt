@@ -41,6 +41,8 @@ export { createSchema } from './lib/index.js';
 export { Model } from './lib/model.js';
 export { extractHeadings } from './util.js';
 export type { HeadingInfo } from './util.js';
+export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
+export type { PageSeo, OgMeta } from './seo.js';
 
 export const documents = {
   doc: new DocPage(),
