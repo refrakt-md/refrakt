@@ -19,11 +19,11 @@
 	},
 	"dependencies": {
 		"@markdoc/markdoc": "0.4.0",
-		"@refrakt-md/content": "0.1.0",
-		"@refrakt-md/runes": "0.1.0",
-		"@refrakt-md/svelte": "0.1.0",
-		"@refrakt-md/sveltekit": "0.1.0",
-		"@refrakt-md/theme-lumina": "0.1.0"
+		"@refrakt-md/content": "0.2.0",
+		"@refrakt-md/runes": "0.2.0",
+		"@refrakt-md/svelte": "0.2.0",
+		"@refrakt-md/sveltekit": "0.2.0",
+		"@refrakt-md/theme-lumina": "0.2.0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.0",
