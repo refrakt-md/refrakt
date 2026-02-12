@@ -6,6 +6,8 @@ export interface RefraktConfig {
 	theme: string;
 	/** Target framework identifier */
 	target: string;
+	/** Component overrides — maps typeof names to relative paths of replacement components */
+	overrides?: Record<string, string>;
 }
 
 /** Theme manifest — the universal contract between content and rendering */

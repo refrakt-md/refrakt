@@ -41,9 +41,24 @@ function validateConfig(raw: unknown): RefraktConfig {
 		throw new Error('refrakt.config.json: "target" is required and must be a non-empty string');
 	}
 
+	let overrides: Record<string, string> | undefined;
+	if (obj.overrides !== undefined) {
+		if (typeof obj.overrides !== 'object' || obj.overrides === null || Array.isArray(obj.overrides)) {
+			throw new Error('refrakt.config.json: "overrides" must be an object mapping typeof names to component paths');
+		}
+		const entries = obj.overrides as Record<string, unknown>;
+		for (const [key, value] of Object.entries(entries)) {
+			if (typeof value !== 'string' || !value) {
+				throw new Error(`refrakt.config.json: overrides["${key}"] must be a non-empty string path`);
+			}
+		}
+		overrides = entries as Record<string, string>;
+	}
+
 	return {
 		contentDir: obj.contentDir,
 		theme: obj.theme,
 		target: obj.target,
+		...(overrides && { overrides }),
 	};
 }
