@@ -7,7 +7,7 @@ description: Callouts and admonitions for supplementary information
 
 Callouts and admonitions. Supports four types: `note`, `warning`, `caution`, and `check`.
 
-```markdown
+```markdoc
 {% hint type="note" %}
 This is a note with helpful information.
 {% /hint %}

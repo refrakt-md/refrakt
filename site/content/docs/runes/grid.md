@@ -7,7 +7,7 @@ description: Generic grid layout for arranging content in columns
 
 Generic grid layout. Children separated by horizontal rules (`---`) are arranged in a responsive CSS grid.
 
-```markdown
+```markdoc
 {% grid %}
 Column one content.
 

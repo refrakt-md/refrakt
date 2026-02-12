@@ -7,7 +7,7 @@ description: Structural runes for defining page layouts and named content region
 
 Structural runes that define page layout. `{% layout %}` wraps the entire layout file. `{% region %}` defines named content areas (header, nav, sidebar, footer) that render in specific positions within the theme's layout component.
 
-```markdown
+```markdoc
 {% layout %}
 {% region name="header" %}
 # Site Title

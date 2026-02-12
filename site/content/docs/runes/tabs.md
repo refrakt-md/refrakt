@@ -7,7 +7,7 @@ description: Tabbed content panels with heading-based tab labels
 
 Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel.
 
-```markdown
+```markdoc
 {% tabs %}
 ## npm
 
@@ -53,7 +53,7 @@ pnpm add @refract-md/runes
 
 You can also use explicit `{% tab %}` tags for more control:
 
-```markdown
+```markdoc
 {% tabs %}
 {% tab name="JavaScript" %}
 Content for the JavaScript tab.

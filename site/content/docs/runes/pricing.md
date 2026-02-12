@@ -7,7 +7,7 @@ description: Pricing tables with tier comparison
 
 Pricing tables with tier comparison. Headings become the section headline, and `{% tier %}` tags define each pricing tier.
 
-```markdown
+```markdoc
 {% pricing %}
 # Choose your plan
 

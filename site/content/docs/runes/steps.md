@@ -7,7 +7,7 @@ description: Step-by-step instructions with numbered indicators
 
 Step-by-step instructions with numbered indicators. Ordered list items become individual steps.
 
-```markdown
+```markdoc
 {% steps %}
 1. Install the dependencies
 

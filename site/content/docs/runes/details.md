@@ -7,7 +7,7 @@ description: Collapsible disclosure blocks for supplementary content
 
 Collapsible disclosure block for supplementary content. Renders as a native `<details>` element.
 
-```markdown
+```markdoc
 {% details summary="Implementation notes" %}
 This section contains additional technical details that most readers can skip.
 {% /details %}
@@ -15,7 +15,7 @@ This section contains additional technical details that most readers can skip.
 
 Use `open` to have the block expanded by default:
 
-```markdown
+```markdoc
 {% details summary="Changelog" open=true %}
 - v0.2.0: Added accordion support
 - v0.1.0: Initial release

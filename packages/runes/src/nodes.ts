@@ -3,6 +3,9 @@ import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import hljs from 'highlight.js';
+import { markdoc } from './hljs-markdoc.js';
+
+hljs.registerLanguage('markdoc', markdoc);
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;

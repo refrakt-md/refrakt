@@ -9,21 +9,27 @@
 
 - getting-started
 
-## Runes
+## Content
 
 - hint
 - cta
 - feature
 - steps
+- figure
+- pricing
+
+## Layout
+
 - grid
 - tabs
 - accordion
 - details
-- figure
-- toc
-- pricing
-- nav
+
+## Structure
+
 - layout
+- nav
+- toc
 
 {% /nav %}
 {% /region %}

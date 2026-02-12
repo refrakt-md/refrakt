@@ -7,7 +7,7 @@ description: Collapsible accordion sections for FAQ-style content
 
 Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or set `headingLevel` to automatically convert headings into accordion panels.
 
-```markdown
+```markdoc
 {% accordion %}
 {% accordion-item name="What is refract.md?" %}
 A content framework built on Markdoc that extends Markdown with semantic runes.
@@ -39,7 +39,7 @@ No. Runes use standard Markdoc tag syntax (`{% tag %}...{% /tag %}`), and the co
 
 Use `headingLevel` to automatically convert headings into accordion items:
 
-```markdown
+```markdoc
 {% accordion headingLevel=2 %}
 ## What is refract.md?
 

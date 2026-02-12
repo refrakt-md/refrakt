@@ -7,13 +7,13 @@ description: Auto-generated table of contents from page headings
 
 Auto-generated table of contents from the headings on the current page.
 
-```markdown
+```markdoc
 {% toc /%}
 ```
 
 Control how deep the heading hierarchy goes with `depth`:
 
-```markdown
+```markdoc
 {% toc depth=2 /%}
 ```
 

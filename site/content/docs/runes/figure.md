@@ -7,7 +7,7 @@ description: Enhanced images with captions, sizing, and alignment
 
 Enhanced image display with caption, sizing, and alignment controls.
 
-```markdown
+```markdoc
 {% figure caption="Architecture overview" size="large" align="center" %}
 ![Diagram](/images/architecture.png)
 {% /figure %}
@@ -15,7 +15,7 @@ Enhanced image display with caption, sizing, and alignment controls.
 
 If no `caption` attribute is provided, the first paragraph inside the rune is used as the caption.
 
-```markdown
+```markdoc
 {% figure size="medium" %}
 ![Photo](/images/photo.jpg)
 

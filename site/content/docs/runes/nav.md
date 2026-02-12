@@ -7,7 +7,7 @@ description: Navigation structure for sidebar and site navigation
 
 Navigation structure for the sidebar. Headings become group titles, list items become page links using slugs that resolve to page titles.
 
-```markdown
+```markdoc
 {% nav %}
 ## Getting Started
 - getting-started

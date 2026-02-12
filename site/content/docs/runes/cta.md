@@ -7,7 +7,7 @@ description: Call-to-action sections with headlines, descriptions, and action bu
 
 Call-to-action sections. Headings become the hero headline, paragraphs become the subtitle, and list items with links become action buttons.
 
-```markdown
+```markdoc
 {% cta %}
 # Your Headline
 
@@ -31,7 +31,7 @@ Build structured content sites with semantic Markdown.
 
 Code fences become copyable command blocks:
 
-```markdown
+```markdoc
 {% cta %}
 # Install refract.md
 

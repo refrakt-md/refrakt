@@ -7,7 +7,7 @@ description: Feature showcases with name, description, and optional icons
 
 Feature showcases. List items become feature definitions — bold text is the feature name, the following paragraph is the description.
 
-```markdown
+```markdoc
 {% feature %}
 ## Features
 
