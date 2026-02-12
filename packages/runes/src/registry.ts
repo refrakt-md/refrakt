@@ -32,6 +32,16 @@ import {
   Accordion, AccordionComponent,
   AccordionItem, AccordionItemComponent,
   TableOfContents, TableOfContentsComponent,
+  Hero, HeroComponent,
+  Testimonial, TestimonialComponent,
+  Timeline, TimelineComponent,
+  TimelineEntry, TimelineEntryComponent,
+  Changelog, ChangelogComponent,
+  ChangelogRelease, ChangelogReleaseComponent,
+  Embed, EmbedComponent,
+  Breadcrumb, BreadcrumbComponent,
+  BreadcrumbItem, BreadcrumbItemComponent,
+  Compare, CompareComponent,
 } from '@refract-md/types';
 
 export const schema = {
@@ -81,4 +91,14 @@ export const schema = {
   Accordion: useSchema(Accordion).defineType<AccordionComponent>('Accordion'),
   AccordionItem: useSchema(AccordionItem).defineType<AccordionItemComponent>('AccordionItem'),
   TableOfContents: useSchema(TableOfContents).defineType<TableOfContentsComponent>('TableOfContents'),
+  Hero: useSchema(Hero).defineType<HeroComponent>('Hero'),
+  Testimonial: useSchema(Testimonial).defineType<TestimonialComponent>('Testimonial'),
+  Timeline: useSchema(Timeline).defineType<TimelineComponent>('Timeline'),
+  TimelineEntry: useSchema(TimelineEntry).defineType<TimelineEntryComponent>('TimelineEntry'),
+  Changelog: useSchema(Changelog).defineType<ChangelogComponent>('Changelog'),
+  ChangelogRelease: useSchema(ChangelogRelease).defineType<ChangelogReleaseComponent>('ChangelogRelease'),
+  Embed: useSchema(Embed).defineType<EmbedComponent>('Embed'),
+  Breadcrumb: useSchema(Breadcrumb).defineType<BreadcrumbComponent>('Breadcrumb'),
+  BreadcrumbItem: useSchema(BreadcrumbItem).defineType<BreadcrumbItemComponent>('BreadcrumbItem'),
+  Compare: useSchema(Compare).defineType<CompareComponent>('Compare'),
 }

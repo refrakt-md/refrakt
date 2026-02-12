@@ -33,6 +33,13 @@ export { Details, DetailsComponent } from './schema/details.js';
 export { Figure, FigureComponent } from './schema/figure.js';
 export { Accordion, AccordionProperties, AccordionComponent, AccordionItem, AccordionItemComponent } from './schema/accordion.js';
 export { TableOfContents, TableOfContentsComponent } from './schema/toc.js';
+export { Hero, HeroComponent } from './schema/hero.js';
+export { Testimonial, TestimonialComponent } from './schema/testimonial.js';
+export { Timeline, TimelineProperties, TimelineComponent, TimelineEntry, TimelineEntryComponent } from './schema/timeline.js';
+export { Changelog, ChangelogProperties, ChangelogComponent, ChangelogRelease, ChangelogReleaseComponent } from './schema/changelog.js';
+export { Embed, EmbedComponent } from './schema/embed.js';
+export { Breadcrumb, BreadcrumbComponent, BreadcrumbItem, BreadcrumbItemComponent } from './schema/breadcrumb.js';
+export { Compare, CompareComponent } from './schema/compare.js';
 
 // Theme system types
 export type {

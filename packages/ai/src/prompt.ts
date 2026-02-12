@@ -24,6 +24,9 @@ const EXCLUDED_RUNES = new Set([
 	'tab',
 	'music-recording',
 	'accordion-item',
+	'timeline-entry',
+	'changelog-release',
+	'breadcrumb-item',
 ]);
 
 /** Usage examples for each author-facing rune */
@@ -197,6 +200,72 @@ Yes, refract.md is open source and free to use.
 {% /accordion %}`,
 
 	toc: `{% toc depth=3 %}{% /toc %}`,
+
+	hero: `{% hero align="center" %}
+# Build faster with refract.md
+
+Transform Markdown into beautiful, structured websites with semantic runes.
+
+- [Get Started](/docs/getting-started)
+- [View on GitHub](https://github.com/refrakt-md)
+{% /hero %}`,
+
+	breadcrumb: `{% breadcrumb %}
+- [Home](/)
+- [Docs](/docs)
+- [Runes](/docs/runes)
+- Hero
+{% /breadcrumb %}`,
+
+	testimonial: `{% testimonial rating=5 %}
+> refract.md completely changed how we think about documentation.
+> The rune system makes our content portable and semantic.
+
+**Sarah Chen** — VP of Engineering, Acme Corp
+{% /testimonial %}`,
+
+	compare: `{% compare %}
+\`\`\`javascript
+// Before
+const x = 1;
+const y = 2;
+\`\`\`
+
+\`\`\`javascript
+// After
+const [x, y] = [1, 2];
+\`\`\`
+{% /compare %}`,
+
+	timeline: `{% timeline %}
+## 2021 - Project started
+
+We began building the initial prototype.
+
+## 2023 - First release
+
+Open-sourced the library and published to npm.
+
+## 2024 - Version 2.0
+
+Major rewrite with semantic rune system.
+{% /timeline %}`,
+
+	changelog: `{% changelog project="refract.md" %}
+## v2.1.0 - 2024-03-15
+
+- **Added** Timeline and changelog runes
+- **Fixed** Code block rendering in dark mode
+
+## v2.0.0 - 2024-01-01
+
+- **Added** Semantic rune system
+- **Changed** Complete rewrite of the rendering engine
+{% /changelog %}`,
+
+	embed: `{% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" %}
+Watch the video for a full walkthrough.
+{% /embed %}`,
 };
 
 function attributeTypeName(type: unknown): string {

@@ -13,6 +13,13 @@ import Details from './components/Details.svelte';
 import Figure from './components/Figure.svelte';
 import Accordion from './components/Accordion.svelte';
 import Toc from './components/Toc.svelte';
+import Hero from './components/Hero.svelte';
+import Breadcrumb from './components/Breadcrumb.svelte';
+import Testimonial from './components/Testimonial.svelte';
+import Compare from './components/Compare.svelte';
+import Timeline from './components/Timeline.svelte';
+import Changelog from './components/Changelog.svelte';
+import Embed from './components/Embed.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components */
 export const registry: ComponentRegistry = {
@@ -38,4 +45,14 @@ export const registry: ComponentRegistry = {
 	'Accordion': Accordion,
 	'AccordionItem': Accordion,
 	'TableOfContents': Toc,
+	'Hero': Hero,
+	'Breadcrumb': Breadcrumb,
+	'BreadcrumbItem': Breadcrumb,
+	'Testimonial': Testimonial,
+	'Compare': Compare,
+	'Timeline': Timeline,
+	'TimelineEntry': Timeline,
+	'Changelog': Changelog,
+	'ChangelogRelease': Changelog,
+	'Embed': Embed,
 };

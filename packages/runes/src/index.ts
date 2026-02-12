@@ -21,6 +21,13 @@ import { details } from './tags/details.js';
 import { figure } from './tags/figure.js';
 import { accordion, accordionItem } from './tags/accordion.js';
 import { toc } from './tags/toc.js';
+import { hero } from './tags/hero.js';
+import { testimonial } from './tags/testimonial.js';
+import { timeline, timelineEntry } from './tags/timeline.js';
+import { changelog, changelogRelease } from './tags/changelog.js';
+import { embed } from './tags/embed.js';
+import { breadcrumb } from './tags/breadcrumb.js';
+import { compare } from './tags/compare.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -200,6 +207,72 @@ export const runes = {
     schema: toc,
     description: 'Auto-generated table of contents from document headings',
     type: schema.TableOfContents,
+  }),
+  hero: defineRune({
+    name: 'hero',
+    schema: hero,
+    description: 'Full-width introductory section for landing pages with title, subtitle, and call-to-action',
+    reinterprets: { heading: 'hero title', paragraph: 'subtitle/tagline', list: 'action buttons', image: 'hero image' },
+    type: schema.Hero,
+  }),
+  testimonial: defineRune({
+    name: 'testimonial',
+    aliases: ['review'],
+    schema: testimonial,
+    description: 'Customer testimonial or review with quote, author attribution, and optional rating',
+    reinterprets: { blockquote: 'testimonial quote', strong: 'author name', paragraph: 'author role', image: 'avatar' },
+    seoType: 'Review',
+    type: schema.Testimonial,
+  }),
+  timeline: defineRune({
+    name: 'timeline',
+    schema: timeline,
+    description: 'Chronological event display where headings become dated milestones',
+    reinterprets: { heading: 'date and milestone label', paragraph: 'event description' },
+    seoType: 'ItemList',
+    type: schema.Timeline,
+  }),
+  'timeline-entry': defineRune({
+    name: 'timeline-entry',
+    schema: timelineEntry,
+    description: 'Individual timeline entry with date and label',
+    type: schema.TimelineEntry,
+  }),
+  changelog: defineRune({
+    name: 'changelog',
+    schema: changelog,
+    description: 'Version history where headings become releases with categorized changes',
+    reinterprets: { heading: 'version number and date', list: 'categorized changes', strong: 'change category' },
+    type: schema.Changelog,
+  }),
+  'changelog-release': defineRune({
+    name: 'changelog-release',
+    schema: changelogRelease,
+    description: 'Individual changelog release with version and date',
+    type: schema.ChangelogRelease,
+  }),
+  embed: defineRune({
+    name: 'embed',
+    schema: embed,
+    description: 'Embedded content from external services (YouTube, Twitter, CodePen, Spotify)',
+    reinterprets: { paragraph: 'fallback text' },
+    seoType: 'VideoObject',
+    type: schema.Embed,
+  }),
+  breadcrumb: defineRune({
+    name: 'breadcrumb',
+    schema: breadcrumb,
+    description: 'Navigation breadcrumb trail showing page hierarchy',
+    reinterprets: { list: 'breadcrumb path items', link: 'breadcrumb link' },
+    seoType: 'BreadcrumbList',
+    type: schema.Breadcrumb,
+  }),
+  compare: defineRune({
+    name: 'compare',
+    schema: compare,
+    description: 'Side-by-side code comparison with labeled panels',
+    reinterprets: { fence: 'comparison panel' },
+    type: schema.Compare,
   }),
 };
 
