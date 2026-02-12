@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode } from '@markdoc/markdoc';
-import { NodeType } from '@refract-md/types';
+import { NodeType } from '@refrakt-md/types';
 import { walkTag } from '../util.js';
 
 export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeNode> {

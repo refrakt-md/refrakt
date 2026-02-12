@@ -1,5 +1,5 @@
 import type { Schema } from '@markdoc/markdoc';
-import { Type, ComponentType } from '@refract-md/types';
+import { Type, ComponentType } from '@refrakt-md/types';
 
 export interface RuneDescriptor {
   /** The primary tag name used in Markdoc (e.g., 'cta') */

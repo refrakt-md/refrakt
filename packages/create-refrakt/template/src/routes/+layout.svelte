@@ -1,5 +1,5 @@
 <script lang="ts">
-	import 'virtual:refract/tokens';
+	import 'virtual:refrakt/tokens';
 
 	let { children } = $props();
 </script>

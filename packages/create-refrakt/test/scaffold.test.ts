@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 function tmpTarget(): string {
 	return join(
 		tmpdir(),
-		`create-refract-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+		`create-refrakt-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
 		'my-site'
 	);
 }
@@ -26,7 +26,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refract-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
 
 		// Static template files
 		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(true);
@@ -45,7 +45,7 @@ describe('scaffold', () => {
 
 		// Generated files
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
-		expect(existsSync(join(targetDir, 'refract.config.json'))).toBe(true);
+		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
 
 		// Starter content
@@ -62,25 +62,25 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'test-project', targetDir, theme: '@refract-md/theme-lumina' });
+		scaffold({ projectName: 'test-project', targetDir, theme: '@refrakt-md/theme-lumina' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('test-project');
 		expect(pkg.type).toBe('module');
 		expect(pkg.scripts.dev).toBe('vite dev');
-		expect(pkg.dependencies['@refract-md/content']).toBeDefined();
-		expect(pkg.dependencies['@refract-md/sveltekit']).toBeDefined();
-		expect(pkg.dependencies['@refract-md/theme-lumina']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/content']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/theme-lumina']).toBeDefined();
 		expect(pkg.devDependencies.svelte).toBeDefined();
 	});
 
-	it('generates refract.config.json with specified theme', () => {
+	it('generates refrakt.config.json with specified theme', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
 		scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
 
-		const config = JSON.parse(readFileSync(join(targetDir, 'refract.config.json'), 'utf-8'));
+		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.theme).toBe('@my-org/theme-custom');
 		expect(config.contentDir).toBe('./content');
 		expect(config.target).toBe('sveltekit');
@@ -100,10 +100,10 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refract-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
 
 		expect(() =>
-			scaffold({ projectName: 'my-site', targetDir, theme: '@refract-md/theme-lumina' })
+			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' })
 		).toThrow('already exists');
 	});
 
@@ -111,7 +111,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'cool-docs', targetDir, theme: '@refract-md/theme-lumina' });
+		scaffold({ projectName: 'cool-docs', targetDir, theme: '@refrakt-md/theme-lumina' });
 
 		const readme = readFileSync(join(targetDir, 'README.md'), 'utf-8');
 		expect(readme).toContain('# cool-docs');
@@ -121,19 +121,19 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refract-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
 
 		const viteConfig = readFileSync(join(targetDir, 'vite.config.ts'), 'utf-8');
-		expect(viteConfig).toContain('refract()');
+		expect(viteConfig).toContain('refrakt()');
 		expect(viteConfig).toContain('sveltekit()');
 
 		const appDts = readFileSync(join(targetDir, 'src', 'app.d.ts'), 'utf-8');
-		expect(appDts).toContain('@refract-md/sveltekit/virtual');
+		expect(appDts).toContain('@refrakt-md/sveltekit/virtual');
 
 		const layout = readFileSync(join(targetDir, 'src', 'routes', '+layout.svelte'), 'utf-8');
-		expect(layout).toContain('virtual:refract/tokens');
+		expect(layout).toContain('virtual:refrakt/tokens');
 
 		const page = readFileSync(join(targetDir, 'src', 'routes', '[...slug]', '+page.svelte'), 'utf-8');
-		expect(page).toContain('virtual:refract/theme');
+		expect(page).toContain('virtual:refrakt/theme');
 	});
 });

@@ -1,4 +1,4 @@
-import { loadContent } from '@refract-md/content';
+import { loadContent } from '@refrakt-md/content';
 import * as path from 'node:path';
 
 const contentDir = path.resolve('content');

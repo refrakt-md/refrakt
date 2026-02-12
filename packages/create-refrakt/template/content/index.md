@@ -1,13 +1,13 @@
 ---
 title: Welcome
-description: A new refract.md site
+description: A new refrakt.md site
 ---
 
 {% cta %}
 
 # Welcome to your site
 
-This site is built with refract.md — a content framework that extends Markdown with semantic runes.
+This site is built with refrakt.md — a content framework that extends Markdown with semantic runes.
 
 - [Get Started](/docs/getting-started)
 

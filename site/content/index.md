@@ -1,5 +1,5 @@
 ---
-title: refract.md
+title: refrakt.md
 description: A content framework that extends Markdown with semantic runes
 ---
 
@@ -7,7 +7,7 @@ description: A content framework that extends Markdown with semantic runes
 
 # Write Markdown. Get structure.
 
-refract.md extends Markdown with semantic runes — tags that reinterpret standard Markdown primitives into rich, typed content. Same Markdown you know, new semantic power.
+refrakt.md extends Markdown with semantic runes — tags that reinterpret standard Markdown primitives into rich, typed content. Same Markdown you know, new semantic power.
 
 - [Get Started](/docs/getting-started)
 - [View on GitHub](https://github.com)
@@ -16,7 +16,7 @@ refract.md extends Markdown with semantic runes — tags that reinterpret standa
 
 {% feature %}
 
-## Why refract.md?
+## Why refrakt.md?
 
 - **Runes, not components**
 
@@ -37,5 +37,5 @@ refract.md extends Markdown with semantic runes — tags that reinterpret standa
 {% /feature %}
 
 {% hint type="note" %}
-refract.md is in active development. This site is built with refract.md itself — every page is authored in Markdown with runes.
+refrakt.md is in active development. This site is built with refrakt.md itself — every page is authored in Markdown with runes.
 {% /hint %}

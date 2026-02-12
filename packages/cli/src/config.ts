@@ -1,5 +1,5 @@
-import type { AIProvider } from '@refract-md/ai';
-import { createAnthropicProvider, createOllamaProvider } from '@refract-md/ai';
+import type { AIProvider } from '@refrakt-md/ai';
+import { createAnthropicProvider, createOllamaProvider } from '@refrakt-md/ai';
 
 export type ProviderName = 'anthropic' | 'ollama';
 

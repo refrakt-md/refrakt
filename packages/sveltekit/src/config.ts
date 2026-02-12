@@ -1,13 +1,13 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { RefractConfig } from '@refract-md/types';
+import type { RefraktConfig } from '@refrakt-md/types';
 
-export function loadRefractConfig(configPath: string): RefractConfig {
+export function loadRefraktConfig(configPath: string): RefraktConfig {
 	const absPath = resolve(configPath);
 
 	if (!existsSync(absPath)) {
 		throw new Error(
-			`refract.config.json not found at ${absPath}. ` +
+			`refrakt.config.json not found at ${absPath}. ` +
 			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "sveltekit" }`
 		);
 	}
@@ -18,27 +18,27 @@ export function loadRefractConfig(configPath: string): RefractConfig {
 	try {
 		parsed = JSON.parse(raw);
 	} catch (e) {
-		throw new Error(`Failed to parse refract.config.json at ${absPath}: ${(e as Error).message}`);
+		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(e as Error).message}`);
 	}
 
 	return validateConfig(parsed);
 }
 
-function validateConfig(raw: unknown): RefractConfig {
+function validateConfig(raw: unknown): RefraktConfig {
 	if (typeof raw !== 'object' || raw === null) {
-		throw new Error('refract.config.json must be a JSON object');
+		throw new Error('refrakt.config.json must be a JSON object');
 	}
 
 	const obj = raw as Record<string, unknown>;
 
 	if (typeof obj.contentDir !== 'string' || !obj.contentDir) {
-		throw new Error('refract.config.json: "contentDir" is required and must be a non-empty string');
+		throw new Error('refrakt.config.json: "contentDir" is required and must be a non-empty string');
 	}
 	if (typeof obj.theme !== 'string' || !obj.theme) {
-		throw new Error('refract.config.json: "theme" is required and must be a non-empty string');
+		throw new Error('refrakt.config.json: "theme" is required and must be a non-empty string');
 	}
 	if (typeof obj.target !== 'string' || !obj.target) {
-		throw new Error('refract.config.json: "target" is required and must be a non-empty string');
+		throw new Error('refrakt.config.json: "target" is required and must be a non-empty string');
 	}
 
 	return {

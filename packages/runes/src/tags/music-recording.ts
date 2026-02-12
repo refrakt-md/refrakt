@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, Node, RenderableTreeNodes } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
-import { NodeType } from '@refract-md/types';
+import { NodeType } from '@refrakt-md/types';
 import { TypedNode } from '../interfaces.js';
 import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 import { NodeStream } from '../lib/node.js';

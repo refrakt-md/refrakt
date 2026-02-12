@@ -27,7 +27,7 @@ export function scaffold(options: ScaffoldOptions): void {
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refract — please report it.`
+			`This is a bug in create-refrakt — please report it.`
 		);
 	}
 
@@ -52,8 +52,8 @@ export function scaffold(options: ScaffoldOptions): void {
 	);
 
 	writeFileSync(
-		path.join(targetDir, 'refract.config.json'),
-		generateRefractConfig(theme),
+		path.join(targetDir, 'refrakt.config.json'),
+		generateRefraktConfig(theme),
 	);
 
 	writeFileSync(
@@ -76,10 +76,10 @@ function generatePackageJson(projectName: string, theme: string): string {
 			check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
 		},
 		dependencies: {
-			'@refract-md/content': '^0.1.0',
-			'@refract-md/runes': '^0.1.0',
-			'@refract-md/svelte': '^0.1.0',
-			'@refract-md/sveltekit': '^0.1.0',
+			'@refrakt-md/content': '^0.1.0',
+			'@refrakt-md/runes': '^0.1.0',
+			'@refrakt-md/svelte': '^0.1.0',
+			'@refrakt-md/sveltekit': '^0.1.0',
 			[theme]: '^0.1.0',
 			'@markdoc/markdoc': '^0.4.0',
 		},
@@ -98,7 +98,7 @@ function generatePackageJson(projectName: string, theme: string): string {
 	return JSON.stringify(pkg, null, '\t') + '\n';
 }
 
-function generateRefractConfig(theme: string): string {
+function generateRefraktConfig(theme: string): string {
 	const config = {
 		contentDir: './content',
 		theme,
@@ -110,7 +110,7 @@ function generateRefractConfig(theme: string): string {
 function generateReadme(projectName: string): string {
 	return `# ${projectName}
 
-A [refract.md](https://github.com/bjornandersson/refract.md) site.
+A [refrakt.md](https://github.com/bjornandersson/refrakt.md) site.
 
 ## Development
 

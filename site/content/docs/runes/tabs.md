@@ -12,19 +12,19 @@ Tabbed content panels. Headings become tab labels, the content below each headin
 ## npm
 
 \`\`\`shell
-npm install @refract-md/runes
+npm install @refrakt-md/runes
 \`\`\`
 
 ## yarn
 
 \`\`\`shell
-yarn add @refract-md/runes
+yarn add @refrakt-md/runes
 \`\`\`
 
 ## pnpm
 
 \`\`\`shell
-pnpm add @refract-md/runes
+pnpm add @refrakt-md/runes
 \`\`\`
 {% /tabs %}
 ```
@@ -35,19 +35,19 @@ pnpm add @refract-md/runes
 ## npm
 
 ```shell
-npm install @refract-md/runes
+npm install @refrakt-md/runes
 ```
 
 ## yarn
 
 ```shell
-yarn add @refract-md/runes
+yarn add @refrakt-md/runes
 ```
 
 ## pnpm
 
 ```shell
-pnpm add @refract-md/runes
+pnpm add @refrakt-md/runes
 ```
 {% /tabs %}
 

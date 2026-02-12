@@ -1,4 +1,4 @@
-import type { RouteRule } from '@refract-md/types';
+import type { RouteRule } from '@refrakt-md/types';
 
 /**
  * Match a URL against an ordered list of route rules.

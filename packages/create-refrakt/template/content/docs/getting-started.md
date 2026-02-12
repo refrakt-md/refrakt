@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Learn how to work with your refract.md site
+description: Learn how to work with your refrakt.md site
 ---
 
 # Getting Started
@@ -38,4 +38,4 @@ This callout is created with the `hint` rune. Try changing the `type` attribute 
 
 - Add more pages by creating `.md` files in `content/`
 - Edit `content/_layout.md` to customize your site's header and navigation
-- Explore the available runes in the refract.md documentation
+- Explore the available runes in the refrakt.md documentation

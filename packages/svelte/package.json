@@ -1,7 +1,16 @@
 {
-	"name": "@refract-md/svelte",
+	"name": "@refrakt-md/svelte",
+	"description": "Svelte renderer for refrakt.md content",
 	"version": "0.1.0",
 	"type": "module",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/refrakt-md/refrakt.git",
+		"directory": "packages/svelte"
+	},
+	"bugs": "https://github.com/refrakt-md/refrakt/issues",
+	"homepage": "https://github.com/refrakt-md/refrakt",
 	"svelte": "src/index.ts",
 	"exports": {
 		".": {
@@ -10,12 +19,14 @@
 			"default": "./src/index.ts"
 		}
 	},
-	"files": ["src"],
-	"peerDependencies": {
-		"svelte": "^5.0.0"
-	},
+	"files": [
+		"src"
+	],
 	"dependencies": {
 		"@markdoc/markdoc": "0.4.0",
-		"@refract-md/types": "0.1.0"
+		"@refrakt-md/types": "0.1.0"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Rune metadata interface — structurally compatible with Rune from @refract-md/runes
+ * Rune metadata interface — structurally compatible with Rune from @refrakt-md/runes
  * without requiring a runtime dependency.
  */
 export interface RuneInfo {
@@ -90,13 +90,13 @@ Column three content.
 ## npm
 
 \`\`\`shell
-npm install @refract-md/runes
+npm install @refrakt-md/runes
 \`\`\`
 
 ## yarn
 
 \`\`\`shell
-yarn add @refract-md/runes
+yarn add @refrakt-md/runes
 \`\`\`
 {% /tabs %}`,
 
@@ -186,23 +186,23 @@ from your account settings.
 {% /figure %}`,
 
 	accordion: `{% accordion headingLevel=2 %}
-## What is refract.md?
+## What is refrakt.md?
 
 A content framework that extends Markdown with semantic runes.
 
 ## How do I install it?
 
-Run \`npm install @refract-md/runes\` to get started.
+Run \`npm install @refrakt-md/runes\` to get started.
 
 ## Is it free?
 
-Yes, refract.md is open source and free to use.
+Yes, refrakt.md is open source and free to use.
 {% /accordion %}`,
 
 	toc: `{% toc depth=3 %}{% /toc %}`,
 
 	hero: `{% hero align="center" %}
-# Build faster with refract.md
+# Build faster with refrakt.md
 
 Transform Markdown into beautiful, structured websites with semantic runes.
 
@@ -218,7 +218,7 @@ Transform Markdown into beautiful, structured websites with semantic runes.
 {% /breadcrumb %}`,
 
 	testimonial: `{% testimonial rating=5 %}
-> refract.md completely changed how we think about documentation.
+> refrakt.md completely changed how we think about documentation.
 > The rune system makes our content portable and semantic.
 
 **Sarah Chen** — VP of Engineering, Acme Corp
@@ -251,7 +251,7 @@ Open-sourced the library and published to npm.
 Major rewrite with semantic rune system.
 {% /timeline %}`,
 
-	changelog: `{% changelog project="refract.md" %}
+	changelog: `{% changelog project="refrakt.md" %}
 ## v2.1.0 - 2024-03-15
 
 - **Added** Timeline and changelog runes
@@ -345,7 +345,7 @@ export function generateSystemPrompt(runes: Record<string, RuneInfo>): string {
 		.map(rune => describeRune(rune))
 		.join('\n\n');
 
-	return `You are a content author for a website built with refract.md.
+	return `You are a content author for a website built with refrakt.md.
 Write Markdown files using Markdoc tags called "runes" ({% tag %} syntax).
 
 Content inside a rune is reinterpreted — a heading inside {% cta %}

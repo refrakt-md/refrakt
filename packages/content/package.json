@@ -1,16 +1,25 @@
 {
-  "name": "@refract-md/content",
+  "name": "@refrakt-md/content",
+  "description": "Content loading and transformation pipeline",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/content"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
-    "@refract-md/runes": "0.1.0",
-    "@refract-md/types": "0.1.0",
+    "@refrakt-md/runes": "0.1.0",
+    "@refrakt-md/types": "0.1.0",
     "@markdoc/markdoc": "0.4.0",
     "yaml": "^2.4.0"
   }

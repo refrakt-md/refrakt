@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { SerializedTag, RendererNode } from '@refract-md/svelte';
-	import { Renderer } from '@refract-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();

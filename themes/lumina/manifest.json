@@ -1,7 +1,7 @@
 {
 	"name": "lumina",
 	"version": "0.1.0",
-	"description": "A clean, light documentation theme for refract.md",
+	"description": "A clean, light documentation theme for refrakt.md",
 	"target": "sveltekit",
 	"designTokens": "tokens.css",
 

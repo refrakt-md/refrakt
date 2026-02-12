@@ -1,5 +1,5 @@
-import { loadContent } from '@refract-md/content';
-import { serialize, serializeTree } from '@refract-md/svelte';
+import { loadContent } from '@refrakt-md/content';
+import { serialize, serializeTree } from '@refrakt-md/svelte';
 import { error } from '@sveltejs/kit';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';

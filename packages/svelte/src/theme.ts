@@ -1,4 +1,4 @@
-import type { ThemeManifest } from '@refract-md/types';
+import type { ThemeManifest } from '@refrakt-md/types';
 import type { Component } from 'svelte';
 
 /**

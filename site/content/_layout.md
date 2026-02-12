@@ -1,6 +1,6 @@
 {% layout %}
 {% region name="header" %}
-# refract.md
+# refrakt.md
 {% /region %}
 
 {% region name="nav" %}

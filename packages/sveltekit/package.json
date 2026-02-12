@@ -1,8 +1,17 @@
 {
-  "name": "@refract-md/sveltekit",
+  "name": "@refrakt-md/sveltekit",
+  "description": "SvelteKit integration plugin for refrakt.md",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/sveltekit"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -18,7 +27,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refract-md/types": "0.1.0"
+    "@refrakt-md/types": "0.1.0"
   },
   "peerDependencies": {
     "vite": ">=5.0.0"

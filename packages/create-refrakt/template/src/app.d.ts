@@ -1,4 +1,4 @@
-/// <reference types="@refract-md/sveltekit/virtual" />
+/// <reference types="@refrakt-md/sveltekit/virtual" />
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces

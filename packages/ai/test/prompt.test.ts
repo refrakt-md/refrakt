@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateSystemPrompt } from '../src/prompt.js';
-import { runes } from '@refract-md/runes';
+import { runes } from '@refrakt-md/runes';
 
 describe('generateSystemPrompt', () => {
 	const prompt = generateSystemPrompt(runes);

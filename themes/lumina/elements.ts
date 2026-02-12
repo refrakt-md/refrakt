@@ -1,4 +1,4 @@
-import type { ElementOverrides } from '@refract-md/svelte';
+import type { ElementOverrides } from '@refrakt-md/svelte';
 import Table from './elements/Table.svelte';
 import Blockquote from './elements/Blockquote.svelte';
 

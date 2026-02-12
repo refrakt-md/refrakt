@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, NodeType, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 const { Ast } = Markdoc;
-import { NodeType as RenderableNodeType } from '@refract-md/types';
+import { NodeType as RenderableNodeType } from '@refrakt-md/types';
 import { RenderableNodeCursor } from './renderable.js';
 import { NodeFilter, NodeFilterOptions } from '../interfaces.js';
 

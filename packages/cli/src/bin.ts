@@ -23,7 +23,7 @@ if (command === 'write') {
 
 function printUsage(): void {
 	console.log(`
-Usage: refract <command> [options]
+Usage: refrakt <command> [options]
 
 Commands:
   write <prompt>  Generate a Markdown content file using AI
@@ -40,10 +40,10 @@ Provider auto-detection:
   3. Default → Ollama at localhost:11434
 
 Examples:
-  refract write "Create a getting started guide"
-  refract write -o content/docs/api.md "Write an API reference page"
-  refract write -p ollama -m llama3.2 "Write a FAQ page"
-  ANTHROPIC_API_KEY=sk-... refract write "Create a landing page"
+  refrakt write "Create a getting started guide"
+  refrakt write -o content/docs/api.md "Write an API reference page"
+  refrakt write -p ollama -m llama3.2 "Write a FAQ page"
+  ANTHROPIC_API_KEY=sk-... refrakt write "Create a landing page"
 `);
 }
 
@@ -96,7 +96,7 @@ function runWrite(writeArgs: string[]): void {
 		process.exit(1);
 	}
 
-	// Dynamic imports to avoid loading @refract-md/runes at parse time
+	// Dynamic imports to avoid loading @refrakt-md/runes at parse time
 	// (markdoc CJS/ESM interop requires Node.js 22.12+ or a bundler)
 	Promise.all([
 		import('./config.js'),

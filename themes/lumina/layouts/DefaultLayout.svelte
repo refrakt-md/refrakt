@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Renderer } from '@refract-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 
 	let { regions, renderable }: {
 		title: string;

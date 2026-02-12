@@ -1,7 +1,7 @@
-import type { RefractConfig } from '@refract-md/types';
+import type { RefraktConfig } from '@refrakt-md/types';
 
-const VIRTUAL_PREFIX = 'virtual:refract/';
-const RESOLVED_PREFIX = '\0virtual:refract/';
+const VIRTUAL_PREFIX = 'virtual:refrakt/';
+const RESOLVED_PREFIX = '\0virtual:refrakt/';
 
 export const VIRTUAL_IDS = {
 	theme: `${VIRTUAL_PREFIX}theme`,
@@ -16,7 +16,7 @@ export function resolveVirtualId(id: string): string | undefined {
 	return undefined;
 }
 
-export function loadVirtualModule(id: string, config: RefractConfig): string | undefined {
+export function loadVirtualModule(id: string, config: RefraktConfig): string | undefined {
 	if (id === `${RESOLVED_PREFIX}theme`) {
 		return `export { theme } from '${config.theme}';`;
 	}

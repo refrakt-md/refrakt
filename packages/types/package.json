@@ -1,8 +1,17 @@
 {
-  "name": "@refract-md/types",
+  "name": "@refrakt-md/types",
+  "description": "Shared type definitions for refrakt.md",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/types"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

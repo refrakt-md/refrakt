@@ -43,7 +43,7 @@ export { Compare, CompareComponent } from './schema/compare.js';
 
 // Theme system types
 export type {
-  RefractConfig,
+  RefraktConfig,
   ThemeManifest,
   LayoutDefinition,
   RouteRule,

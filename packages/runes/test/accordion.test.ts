@@ -27,7 +27,7 @@ Content for second section.
 
 	it('should work with faq alias', () => {
 		const result = parse(`{% faq headingLevel=2 %}
-## What is refract.md?
+## What is refrakt.md?
 
 A content framework.
 

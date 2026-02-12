@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, NodeType, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { NodeType as RenderableNodeType } from '@refract-md/types';
+import { NodeType as RenderableNodeType } from '@refrakt-md/types';
 import { RenderableNodeCursor } from './renderable.js';
 import { makeSchema } from './node.js';
 import { GeneratedAttributeAnnotation } from './annotations/id.js';

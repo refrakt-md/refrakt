@@ -1,4 +1,4 @@
-import type { ComponentRegistry } from '@refract-md/svelte';
+import type { ComponentRegistry } from '@refrakt-md/svelte';
 import Hint from './components/Hint.svelte';
 import CallToAction from './components/CallToAction.svelte';
 import Feature from './components/Feature.svelte';

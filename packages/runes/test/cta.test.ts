@@ -37,7 +37,7 @@ Get started now.
 # Install
 
 \`\`\`shell
-npm install refract-md
+npm install refrakt-md
 \`\`\`
 {% /cta %}`);
 

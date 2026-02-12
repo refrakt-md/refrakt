@@ -1,4 +1,4 @@
-import type { SvelteTheme } from '@refract-md/svelte';
+import type { SvelteTheme } from '@refrakt-md/svelte';
 import manifest from './manifest.json';
 import { registry } from './registry.js';
 import { elements } from './elements.js';

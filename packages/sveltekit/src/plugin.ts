@@ -1,31 +1,31 @@
 import type { Plugin, UserConfig } from 'vite';
-import type { RefractConfig } from '@refract-md/types';
+import type { RefraktConfig } from '@refrakt-md/types';
 import type { RefractPluginOptions } from './types.js';
-import { loadRefractConfig } from './config.js';
+import { loadRefraktConfig } from './config.js';
 import { resolveVirtualId, loadVirtualModule } from './virtual-modules.js';
 import { setupContentHmr } from './content-hmr.js';
 
 const CORE_NO_EXTERNAL = [
 	'@markdoc/markdoc',
-	'@refract-md/runes',
-	'@refract-md/content',
-	'@refract-md/types',
-	'@refract-md/svelte',
+	'@refrakt-md/runes',
+	'@refrakt-md/content',
+	'@refrakt-md/types',
+	'@refrakt-md/svelte',
 ];
 
-export function refract(options: RefractPluginOptions = {}): Plugin {
-	const configPath = options.configPath ?? './refract.config.json';
-	let refractConfig: RefractConfig;
+export function refrakt(options: RefractPluginOptions = {}): Plugin {
+	const configPath = options.configPath ?? './refrakt.config.json';
+	let refraktConfig: RefraktConfig;
 
 	return {
-		name: 'refract-md',
+		name: 'refrakt-md',
 
 		config(): Partial<UserConfig> {
-			refractConfig = loadRefractConfig(configPath);
+			refraktConfig = loadRefraktConfig(configPath);
 
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
-				refractConfig.theme,
+				refraktConfig.theme,
 				...(options.noExternal ?? []),
 			];
 
@@ -44,11 +44,11 @@ export function refract(options: RefractPluginOptions = {}): Plugin {
 		},
 
 		load(id: string) {
-			return loadVirtualModule(id, refractConfig);
+			return loadVirtualModule(id, refraktConfig);
 		},
 
 		configureServer(server) {
-			setupContentHmr(server, refractConfig.contentDir);
+			setupContentHmr(server, refraktConfig.contentDir);
 		},
 	};
 }

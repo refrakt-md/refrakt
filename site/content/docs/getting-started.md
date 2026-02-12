@@ -1,23 +1,23 @@
 ---
 title: Getting Started
-description: Set up refract.md and create your first content
+description: Set up refrakt.md and create your first content
 ---
 
 # Getting Started
 
-refract.md is a content framework built on [Markdoc](https://markdoc.dev). It extends Markdown with semantic runes — tags that transform standard Markdown primitives into structured, typed content.
+refrakt.md is a content framework built on [Markdoc](https://markdoc.dev). It extends Markdown with semantic runes — tags that transform standard Markdown primitives into structured, typed content.
 
 ## Installation
 
 Install the core packages in your project:
 
 ```shell
-npm install @refract-md/runes @refract-md/content @markdoc/markdoc
+npm install @refrakt-md/runes @refrakt-md/content @markdoc/markdoc
 ```
 
 ## Project Structure
 
-A refract.md project is a directory of Markdown files:
+A refrakt.md project is a directory of Markdown files:
 
 ```
 content/
@@ -62,7 +62,7 @@ Create an `index.md`:
 title: Welcome
 ---
 
-# Hello, refract.md
+# Hello, refrakt.md
 
 {% hint type="note" %}
 This callout was created with the hint rune.
@@ -80,5 +80,5 @@ A heading inside `{% nav %}` becomes a navigation group title. A list inside `{%
 Browse the individual rune pages in the sidebar for detailed usage and examples.
 
 {% hint type="check" %}
-You're ready to start building with refract.md. Explore the rune reference to see what's possible.
+You're ready to start building with refrakt.md. Explore the rune reference to see what's possible.
 {% /hint %}

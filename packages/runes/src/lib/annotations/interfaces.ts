@@ -1,4 +1,4 @@
-import { Newable } from '@refract-md/types';
+import { Newable } from '@refrakt-md/types';
 
 export { Newable };
 

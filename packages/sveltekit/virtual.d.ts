@@ -1,14 +1,14 @@
-declare module 'virtual:refract/theme' {
-	import type { SvelteTheme } from '@refract-md/svelte';
+declare module 'virtual:refrakt/theme' {
+	import type { SvelteTheme } from '@refrakt-md/svelte';
 	export const theme: SvelteTheme;
 }
 
-declare module 'virtual:refract/tokens' {
+declare module 'virtual:refrakt/tokens' {
 	// Side-effect-only import, no exports
 }
 
-declare module 'virtual:refract/config' {
-	import type { RefractConfig } from '@refract-md/types';
-	const config: RefractConfig;
+declare module 'virtual:refrakt/config' {
+	import type { RefraktConfig } from '@refrakt-md/types';
+	const config: RefraktConfig;
 	export default config;
 }

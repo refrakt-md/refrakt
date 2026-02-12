@@ -9,7 +9,7 @@ Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or set
 
 ```markdoc
 {% accordion %}
-{% accordion-item name="What is refract.md?" %}
+{% accordion-item name="What is refrakt.md?" %}
 A content framework built on Markdoc that extends Markdown with semantic runes.
 {% /accordion-item %}
 
@@ -22,7 +22,7 @@ Runes are Markdoc tags that create interpretation contexts — the Markdown insi
 ### Example
 
 {% accordion %}
-{% accordion-item name="What is refract.md?" %}
+{% accordion-item name="What is refrakt.md?" %}
 A content framework built on Markdoc that extends Markdown with semantic runes. You write standard Markdown — runes decide how it's interpreted.
 {% /accordion-item %}
 
@@ -41,7 +41,7 @@ Use `headingLevel` to automatically convert headings into accordion items:
 
 ```markdoc
 {% accordion headingLevel=2 %}
-## What is refract.md?
+## What is refrakt.md?
 
 A content framework built on Markdoc.
 

@@ -1,4 +1,4 @@
-import { ComponentType, Type } from '@refract-md/types';
+import { ComponentType, Type } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
 import { RenderableNodeCursor } from './renderable.js';

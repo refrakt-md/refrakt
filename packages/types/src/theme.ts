@@ -1,5 +1,5 @@
-/** Project-level configuration (refract.config.json) */
-export interface RefractConfig {
+/** Project-level configuration (refrakt.config.json) */
+export interface RefraktConfig {
 	/** Path to content directory, relative to project root */
 	contentDir: string;
 	/** Active theme — package name or relative path */

@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
-import { generateSystemPrompt } from '@refract-md/ai';
-import { runes } from '@refract-md/runes';
-import type { AIProvider, Message } from '@refract-md/ai';
+import { generateSystemPrompt } from '@refrakt-md/ai';
+import { runes } from '@refrakt-md/runes';
+import type { AIProvider, Message } from '@refrakt-md/ai';
 
 export interface WriteOptions {
 	prompt: string;

@@ -41,14 +41,14 @@ describe('changelog tag', () => {
 	});
 
 	it('should pass project attribute as meta', () => {
-		const result = parse(`{% changelog project="refract.md" %}
+		const result = parse(`{% changelog project="refrakt.md" %}
 ## v1.0.0 - 2024-01-01
 
 - Initial release
 {% /changelog %}`);
 
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Changelog');
-		const projectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'refract.md');
+		const projectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'refrakt.md');
 		expect(projectMeta).toBeDefined();
 	});
 

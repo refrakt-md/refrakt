@@ -1,4 +1,4 @@
-import { NodeType } from '@refract-md/types';
+import { NodeType } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, NodeType as MarkdocNodeType, Tag } from '@markdoc/markdoc';
 const { Ast } = Markdoc;

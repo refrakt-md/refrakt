@@ -4,8 +4,8 @@ import type { Component } from 'svelte';
 export type ComponentRegistry = Record<string, Component<any>>;
 export type ElementOverrides = Record<string, Component<any>>;
 
-const REGISTRY_KEY = Symbol('refract-registry');
-const ELEMENT_OVERRIDES_KEY = Symbol('refract-element-overrides');
+const REGISTRY_KEY = Symbol('refrakt-registry');
+const ELEMENT_OVERRIDES_KEY = Symbol('refrakt-element-overrides');
 
 /** Set the component registry in Svelte context. Call during component init (e.g. in a layout). */
 export function setRegistry(registry: ComponentRegistry): void {

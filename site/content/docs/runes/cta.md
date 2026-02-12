@@ -21,7 +21,7 @@ A compelling description of what you're offering.
 ### Example
 
 {% cta %}
-# Get Started with refract.md
+# Get Started with refrakt.md
 
 Build structured content sites with semantic Markdown.
 
@@ -33,10 +33,10 @@ Code fences become copyable command blocks:
 
 ```markdoc
 {% cta %}
-# Install refract.md
+# Install refrakt.md
 
 \`\`\`shell
-npm install @refract-md/runes
+npm install @refrakt-md/runes
 \`\`\`
 {% /cta %}
 ```

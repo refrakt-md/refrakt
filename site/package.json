@@ -1,8 +1,15 @@
 {
 	"name": "site",
-	"private": true,
 	"version": "0.0.1",
+	"private": true,
 	"type": "module",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/refrakt-md/refrakt.git"
+	},
+	"bugs": "https://github.com/refrakt-md/refrakt/issues",
+	"homepage": "https://github.com/refrakt-md/refrakt",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -12,11 +19,11 @@
 	},
 	"dependencies": {
 		"@markdoc/markdoc": "0.4.0",
-		"@refract-md/content": "0.1.0",
-		"@refract-md/runes": "0.1.0",
-		"@refract-md/svelte": "0.1.0",
-		"@refract-md/sveltekit": "0.1.0",
-		"@refract-md/theme-lumina": "0.1.0"
+		"@refrakt-md/content": "0.1.0",
+		"@refrakt-md/runes": "0.1.0",
+		"@refrakt-md/svelte": "0.1.0",
+		"@refrakt-md/sveltekit": "0.1.0",
+		"@refrakt-md/theme-lumina": "0.1.0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.0",

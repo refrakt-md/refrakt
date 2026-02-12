@@ -1,6 +1,6 @@
 {
-  "name": "@refrakt-md/cli",
-  "description": "CLI tools for refrakt.md",
+  "name": "create-refrakt",
+  "description": "Scaffold a new refrakt.md project",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,18 +8,20 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/refrakt-md/refrakt.git",
-    "directory": "packages/cli"
+    "directory": "packages/create-refrakt"
   },
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
   "bin": {
-    "refrakt": "./dist/bin.js"
+    "create-refrakt": "./dist/bin.js"
   },
+  "main": "dist/scaffold.js",
+  "types": "dist/scaffold.d.ts",
+  "files": [
+    "dist",
+    "template"
+  ],
   "scripts": {
     "build": "tsc"
-  },
-  "dependencies": {
-    "@refrakt-md/ai": "0.1.0",
-    "@refrakt-md/runes": "0.1.0"
   }
 }

@@ -42,7 +42,7 @@ import {
   Breadcrumb, BreadcrumbComponent,
   BreadcrumbItem, BreadcrumbItemComponent,
   Compare, CompareComponent,
-} from '@refract-md/types';
+} from '@refrakt-md/types';
 
 export const schema = {
   Page: useSchema(Page).defineType<PageComponent>('Page'),
