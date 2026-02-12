@@ -1,6 +1,7 @@
 import type { SvelteTheme } from '@refract-md/svelte';
 import manifest from './manifest.json';
 import { registry } from './registry.js';
+import { elements } from './elements.js';
 import DocsLayout from './layouts/DocsLayout.svelte';
 import DefaultLayout from './layouts/DefaultLayout.svelte';
 
@@ -12,6 +13,7 @@ export const theme: SvelteTheme = {
 	manifest: manifest as any,
 	layouts: { default: DefaultLayout, docs: DocsLayout },
 	components: registry,
+	elements,
 };
 
 // Backward-compatible named exports

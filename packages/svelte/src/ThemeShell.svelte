@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SvelteTheme } from './theme.js';
-	import { setRegistry } from './context.js';
+	import { setRegistry, setElementOverrides } from './context.js';
 	import { setContext } from 'svelte';
 	import { matchRouteRule } from './route-rules.js';
 
@@ -17,6 +17,7 @@
 
 	// Wire theme into Svelte context
 	setRegistry(theme.components);
+	if (theme.elements) setElementOverrides(theme.elements);
 	setContext('pages', page.pages);
 
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)

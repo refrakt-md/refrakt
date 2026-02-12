@@ -3,11 +3,12 @@
 </script>
 
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import type { SerializedTag, RendererNode } from './types.js';
-	import { getComponent } from './context.js';
+	import { getComponent, getElementOverrides } from './context.js';
 	import Renderer from './Renderer.svelte';
 
-	let { node }: { node: RendererNode } = $props();
+	let { node, overrides }: { node: RendererNode; overrides?: Record<string, Component<any>> } = $props();
 
 	function isTag(n: unknown): n is SerializedTag {
 		return n !== null && typeof n === 'object' && (n as any).$$mdtype === 'Tag';
@@ -22,11 +23,16 @@
 		}
 		return result;
 	}
+
+	const globalOverrides = getElementOverrides();
+	const merged = overrides
+		? { ...globalOverrides, ...overrides }
+		: globalOverrides;
 </script>
 
 {#if Array.isArray(node)}
 	{#each node as child}
-		<Renderer node={child} />
+		<Renderer node={child} overrides={merged} />
 	{/each}
 {:else if node === null || node === undefined}
 	<!-- empty -->
@@ -36,19 +42,26 @@
 	{String(node)}
 {:else if isTag(node)}
 	{@const Component = node.attributes?.typeof ? getComponent(node.attributes.typeof) : undefined}
+	{@const ElementOverride = !Component && merged?.[node.name] ? merged[node.name] : undefined}
 	{#if Component}
 		<Component tag={node}>
 			{#each node.children as child}
-				<Renderer node={child} />
+				<Renderer node={child} overrides={merged} />
 			{/each}
 		</Component>
+	{:else if ElementOverride}
+		<ElementOverride tag={node}>
+			{#each node.children as child}
+				<Renderer node={child} overrides={merged} />
+			{/each}
+		</ElementOverride>
 	{:else}
 		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
 			{#each node.children as child}
 				{#if node.attributes?.['data-codeblock'] && typeof child === 'string'}
 					{@html child}
 				{:else}
-					<Renderer node={child} />
+					<Renderer node={child} overrides={merged} />
 				{/if}
 			{/each}
 		</svelte:element>

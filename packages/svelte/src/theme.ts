@@ -11,4 +11,6 @@ export interface SvelteTheme {
 	layouts: Record<string, Component<any>>;
 	/** typeof name → Svelte component (the component registry) */
 	components: Record<string, Component<any>>;
+	/** HTML element name → Svelte component (element-level overrides) */
+	elements?: Record<string, Component<any>>;
 }
