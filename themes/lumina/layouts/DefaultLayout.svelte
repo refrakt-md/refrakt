@@ -25,18 +25,22 @@
 		border-bottom: 1px solid var(--color-border);
 		padding: 0.875rem 0;
 	}
-	.site-header :global(h1) {
-		font-size: 1.05rem;
+	.site-header :global(p) {
 		margin: 0;
-		font-weight: 700;
-		letter-spacing: -0.01em;
+		line-height: 1;
 	}
 	.site-header :global(a) {
+		display: inline-block;
 		color: inherit;
 		text-decoration: none;
 	}
 	.site-header :global(a:hover) {
 		text-decoration: none;
+	}
+	.site-header :global(img) {
+		display: block;
+		height: 1.5rem;
+		width: auto;
 	}
 	.page-content {
 		padding-top: 2.5rem;

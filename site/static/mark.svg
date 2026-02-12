@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 62" fill="none">
+  <defs>
+    <linearGradient id="refract" x1="6" y1="34" x2="36" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- stem (medium boundary) -->
+  <line x1="6" y1="2" x2="6" y2="58" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- upper arm (incident ray) -->
+  <line x1="6" y1="34" x2="24" y2="16" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- lower arm (refracted ray) -->
+  <line x1="6" y1="34" x2="36" y2="58" stroke="url(#refract)" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

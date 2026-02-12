@@ -1,6 +1,6 @@
 {% layout %}
 {% region name="header" %}
-# refrakt.md
+[![refrakt.md](/logo.svg)](/)
 {% /region %}
 
 {% region name="nav" %}
@@ -10,21 +10,19 @@
 - getting-started
 - releases
 
+## Sections
+
+- hero
+- cta
+- feature
+- pricing
+- testimonial
+
 ## Content
 
 - hint
-- cta
-- feature
 - steps
 - figure
-- pricing
-- testimonial
-- hero
-- recipe
-- howto
-- event
-- cast
-- organization
 - sidenote
 
 ## Layout
@@ -33,19 +31,27 @@
 - tabs
 - accordion
 - details
+
+## Code & Data
+
 - compare
-- timeline
-- changelog
-
-## Data & Dev
-
+- diff
+- api
 - datatable
 - chart
 - diagram
-- api
-- diff
 
-## Structure
+## Semantic
+
+- recipe
+- howto
+- event
+- cast
+- organization
+- timeline
+- changelog
+
+## Site
 
 - layout
 - nav
