@@ -8,6 +8,7 @@
 ## Guide
 
 - getting-started
+- releases
 
 ## Content
 
