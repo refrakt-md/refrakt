@@ -28,6 +28,7 @@ export const registry: ComponentRegistry = {
 	'Editor': Editor,
 	'Pricing': Pricing,
 	'Tier': Pricing,
+	'FeaturedTier': Pricing,
 	'PageSection': PageSection,
 	'Nav': NavComponent,
 	'NavGroup': NavComponent,

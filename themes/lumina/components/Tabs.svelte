@@ -5,32 +5,49 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
+	const typeName = tag.attributes.typeof;
+
 	function isTag(n: RendererNode): n is SerializedTag {
 		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
 	}
 
-	// Extract tab panels from children (sections with heading + content)
-	const panels: { name: string; children: RendererNode[] }[] = [];
-	let currentPanel: { name: string; children: RendererNode[] } | null = null;
+	function getTextContent(node: RendererNode): string {
+		if (typeof node === 'string') return node;
+		if (typeof node === 'number') return String(node);
+		if (isTag(node)) return node.children.map(getTextContent).join('');
+		if (Array.isArray(node)) return node.map(getTextContent).join('');
+		return '';
+	}
 
-	for (const child of tag.children) {
-		if (isTag(child) && /^h[1-6]$/.test(child.name)) {
-			if (currentPanel) panels.push(currentPanel);
-			const text = child.children.map((c: RendererNode) => typeof c === 'string' ? c : '').join('');
-			currentPanel = { name: text, children: [] };
-		} else if (currentPanel) {
-			currentPanel.children.push(child);
+	// For TabGroup: parse the ul/li structure from the transform
+	const tabs: { name: string }[] = [];
+	const panels: { children: RendererNode[] }[] = [];
+
+	if (typeName === 'TabGroup') {
+		for (const child of tag.children) {
+			if (!isTag(child) || child.name !== 'ul') continue;
+			for (const item of child.children) {
+				if (!isTag(item)) continue;
+				if (item.attributes?.typeof === 'Tab') {
+					const nameNode = item.children.find(
+						(c): c is SerializedTag => isTag(c) && c.attributes?.property === 'name'
+					);
+					const name = nameNode ? getTextContent(nameNode) : getTextContent(item);
+					tabs.push({ name: name.trim() });
+				} else if (item.attributes?.typeof === 'TabPanel') {
+					panels.push({ children: item.children });
+				}
+			}
 		}
 	}
-	if (currentPanel) panels.push(currentPanel);
 
 	let activeIndex = $state(0);
 </script>
 
-{#if panels.length > 0}
+{#if typeName === 'TabGroup' && tabs.length > 0}
 	<div class="tabs">
 		<div class="tab-bar" role="tablist">
-			{#each panels as panel, i}
+			{#each tabs as tab, i}
 				<button
 					class="tab-button"
 					class:active={i === activeIndex}
@@ -38,7 +55,7 @@
 					aria-selected={i === activeIndex}
 					onclick={() => activeIndex = i}
 				>
-					{panel.name}
+					{tab.name}
 				</button>
 			{/each}
 		</div>
@@ -53,9 +70,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="tabs">
-		{@render children()}
-	</div>
+	{@render children()}
 {/if}
 
 <style>
