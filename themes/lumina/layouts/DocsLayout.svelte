@@ -14,32 +14,37 @@
 
 {#if regions.header}
 	<header class="site-header">
-		<Renderer node={regions.header.content} />
+		<div class="site-header-inner">
+			<Renderer node={regions.header.content} />
+		</div>
 	</header>
 {/if}
 
-<div class="page-layout" class:has-nav={hasNav}>
-	{#if regions.nav}
-		<aside class="sidebar">
-			<Renderer node={regions.nav.content} />
-		</aside>
-	{/if}
+{#if regions.nav}
+	<aside class="sidebar">
+		<Renderer node={regions.nav.content} />
+	</aside>
+{/if}
 
-	<main class="page-content">
+<main class="page-content" class:has-nav={hasNav}>
+	<div class="page-content-inner">
 		<Renderer node={renderable} />
-	</main>
-
-	{#if regions.sidebar}
-		<aside class="sidebar-right">
-			<Renderer node={regions.sidebar.content} />
-		</aside>
-	{/if}
-</div>
+	</div>
+</main>
 
 <style>
+	/* ---- Fixed header ---- */
 	.site-header {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 10;
+		background: var(--color-bg, #fff);
 		border-bottom: 1px solid var(--color-border);
-		padding: 0.875rem 0;
+	}
+	.site-header-inner {
+		padding: 0.875rem 1.5rem;
 	}
 	.site-header :global(p) {
 		margin: 0;
@@ -58,52 +63,58 @@
 		height: 1.5rem;
 		width: auto;
 	}
-	.page-layout {
-		padding-top: 2rem;
-		padding-bottom: 4rem;
-	}
-	.page-layout.has-nav {
-		display: grid;
-		grid-template-columns: 240px 1fr;
-		gap: 1px;
-	}
+
+	/* ---- Fixed sidebar ---- */
 	.sidebar {
-		position: sticky;
-		top: 1rem;
-		align-self: start;
-		padding-right: 1.5rem;
-		border-right: 1px solid var(--color-border);
-		max-height: calc(100vh - 2rem);
+		position: fixed;
+		left: 0;
+		top: 3.375rem; /* header height */
+		bottom: 0;
+		width: 240px;
 		overflow-y: auto;
+		padding: 1.5rem;
+		border-right: 1px solid var(--color-border);
+		background: var(--color-bg, #fff);
+		z-index: 5;
 	}
 	.sidebar::-webkit-scrollbar {
 		width: 0;
 	}
+
+	/* ---- Content area ---- */
 	.page-content {
-		min-width: 0;
-		max-width: 52rem;
-		padding-left: 2.5rem;
+		padding-top: 5rem; /* clears fixed header */
+		padding-bottom: 4rem;
 	}
-	.sidebar-right {
-		grid-column: 2;
+	.page-content.has-nav {
+		margin-left: 240px;
+	}
+	.page-content-inner {
+		max-width: 60rem;
+		margin: 0 auto;
+		padding: 0 2.5rem;
 	}
 
+	/* ---- Mobile ---- */
 	@media (max-width: 768px) {
-		.page-layout.has-nav {
-			grid-template-columns: 1fr;
-			gap: 0;
+		.site-header {
+			position: static;
 		}
 		.sidebar {
 			position: static;
+			width: auto;
 			border-right: none;
 			border-bottom: 1px solid var(--color-border);
-			padding-right: 0;
-			padding-bottom: 1rem;
-			margin-bottom: 1.5rem;
-			max-height: none;
+			padding: 1rem 1.5rem;
 		}
 		.page-content {
-			padding-left: 0;
+			padding-top: 2rem;
+		}
+		.page-content.has-nav {
+			margin-left: 0;
+		}
+		.page-content-inner {
+			padding: 0 1.5rem;
 		}
 	}
 </style>

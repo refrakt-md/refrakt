@@ -12,7 +12,9 @@
 
 {#if regions.header}
 	<header class="site-header">
-		<Renderer node={regions.header.content} />
+		<div class="site-header-inner">
+			<Renderer node={regions.header.content} />
+		</div>
 	</header>
 {/if}
 
@@ -23,7 +25,9 @@
 <style>
 	.site-header {
 		border-bottom: 1px solid var(--color-border);
-		padding: 0.875rem 0;
+	}
+	.site-header-inner {
+		padding: 0.875rem 1.5rem;
 	}
 	.site-header :global(p) {
 		margin: 0;
@@ -46,5 +50,8 @@
 		padding-top: 2.5rem;
 		padding-bottom: 4rem;
 		max-width: 64rem;
+		margin: 0 auto;
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
 	}
 </style>
