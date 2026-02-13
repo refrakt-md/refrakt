@@ -1,0 +1,57 @@
+/* Event */
+.rf-event {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-event__details {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	padding-bottom: 1rem;
+	margin-bottom: 1.5rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-event__detail {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+.rf-event__label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+.rf-event__value {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--rf-color-text);
+}
+.rf-event__register {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: var(--rf-color-primary);
+	color: #fff;
+	border-radius: var(--rf-radius-md);
+	font-weight: 500;
+	font-size: 0.875rem;
+	text-decoration: none;
+	margin-top: 0.25rem;
+}
+.rf-event__register:hover {
+	background: var(--rf-color-primary-hover);
+}
+.rf-event__content ul,
+.rf-event__content ol {
+	padding-left: 1.5rem;
+}
+.rf-event__content a {
+	color: var(--rf-color-primary);
+	text-decoration: none;
+}
+.rf-event__content a:hover {
+	color: var(--rf-color-primary-hover);
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Lumina",
+  "description": "A clean, light documentation theme for refrakt.md",
+  "version": "0.3.0",
+  "author": "refrakt.md",
+  "prefix": "rf",
+  "tokenPrefix": "--rf",
+  "darkMode": {
+    "attribute": "data-theme",
+    "values": { "dark": "dark", "light": "light" },
+    "systemPreference": true
+  }
+}

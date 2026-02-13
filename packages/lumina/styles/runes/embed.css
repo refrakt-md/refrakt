@@ -1,0 +1,32 @@
+/* Embed */
+.rf-embed {
+	margin: 1.5rem 0;
+	padding: 0;
+}
+.rf-embed__wrapper {
+	position: relative;
+	width: 100%;
+	height: 0;
+	overflow: hidden;
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+}
+.rf-embed__wrapper iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+}
+.rf-embed__fallback {
+	font-size: 0.85rem;
+	color: var(--rf-color-muted);
+	margin-top: 0.5rem;
+}
+.rf-embed__fallback p:last-child {
+	margin-bottom: 0;
+}
+.rf-embed__fallback:empty {
+	display: none;
+}

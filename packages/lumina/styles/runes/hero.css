@@ -1,0 +1,102 @@
+/* Hero */
+.rf-hero {
+	position: relative;
+	padding: 5rem 2rem 4.5rem;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
+}
+.rf-hero__actions {
+	max-width: 720px;
+	margin: 0 auto;
+}
+.rf-hero--center {
+	text-align: center;
+}
+.rf-hero--center .rf-hero__actions {
+	margin: 0 auto;
+}
+.rf-hero--left {
+	text-align: left;
+}
+.rf-hero--left .rf-hero__actions {
+	margin: 0;
+}
+.rf-hero--right {
+	text-align: right;
+}
+.rf-hero--right .rf-hero__actions {
+	margin: 0 0 0 auto;
+}
+.rf-hero h1 {
+	font-size: 3.25rem;
+	font-weight: 800;
+	letter-spacing: -0.035em;
+	line-height: 1.1;
+	margin: 0 0 1rem;
+	background: linear-gradient(135deg, var(--rf-color-text) 0%, var(--rf-color-muted) 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+.rf-hero p {
+	font-size: 1.2rem;
+	line-height: 1.65;
+	color: var(--rf-color-muted);
+	margin: 0 0 2rem;
+}
+.rf-hero--center p {
+	max-width: 560px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 2rem;
+}
+.rf-hero ul,
+.rf-hero nav {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-hero--center ul,
+.rf-hero--center nav {
+	justify-content: center;
+}
+.rf-hero li {
+	padding: 0;
+	margin: 0;
+}
+.rf-hero li a,
+.rf-hero nav a {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.7rem 1.75rem;
+	border-radius: var(--rf-radius-sm);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.95rem;
+	transition: all 200ms ease;
+}
+.rf-hero li:first-child a {
+	background: var(--rf-color-primary);
+	color: white;
+	box-shadow: var(--rf-shadow-sm);
+}
+.rf-hero li:first-child a:hover {
+	background: var(--rf-color-primary-hover);
+	box-shadow: var(--rf-shadow-md);
+	transform: translateY(-1px);
+	text-decoration: none;
+}
+.rf-hero li:not(:first-child) a {
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
+	border: 1px solid var(--rf-color-border);
+}
+.rf-hero li:not(:first-child) a:hover {
+	background: var(--rf-color-surface-hover);
+	border-color: var(--rf-color-surface-active);
+	text-decoration: none;
+}

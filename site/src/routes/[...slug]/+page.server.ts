@@ -1,5 +1,6 @@
 import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
+import { identityTransform } from '@refrakt-md/lumina/transform';
 import { error } from '@sveltejs/kit';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';
@@ -19,14 +20,17 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Page not found');
 	}
 
+	const serialized = serializeTree(page.renderable);
+	const renderable = identityTransform(serialized);
+
 	return {
 		title: page.frontmatter.title ?? '',
 		description: page.frontmatter.description ?? '',
-		renderable: serializeTree(page.renderable),
+		renderable,
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(serialize) }
+				{ name: region.name, mode: region.mode, content: region.content.map(c => identityTransform(serialize(c))) }
 			])
 		),
 		seo: page.seo,

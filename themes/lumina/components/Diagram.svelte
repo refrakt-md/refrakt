@@ -15,7 +15,6 @@
 	onMount(async () => {
 		if (language === 'mermaid' && source) {
 			try {
-				// Use CDN import to avoid bundling mermaid (~2MB)
 				const cdn = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 				const mermaid = (await import(/* @vite-ignore */ cdn)).default;
 				mermaid.initialize({ startOnLoad: false, theme: 'default' });
@@ -27,53 +26,20 @@
 			}
 		} else if (language === 'ascii' && source) {
 			container.textContent = source;
-			container.style.fontFamily = 'var(--font-mono)';
+			container.style.fontFamily = 'var(--rf-font-mono)';
 			container.style.whiteSpace = 'pre';
 			rendered = true;
 		}
 	});
 </script>
 
-<figure class="diagram" typeof="Diagram">
+<figure class="rf-diagram" typeof="Diagram">
 	{#if title}
-		<figcaption class="diagram-title">{title}</figcaption>
+		<figcaption class="rf-diagram__title">{title}</figcaption>
 	{/if}
-	<div class="diagram-container" bind:this={container}>
+	<div class="rf-diagram__container" bind:this={container}>
 		{#if !rendered}
-			<pre class="diagram-source"><code>{source}</code></pre>
+			<pre class="rf-diagram__source"><code>{source}</code></pre>
 		{/if}
 	</div>
 </figure>
-
-<style>
-	.diagram {
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: 1.5rem;
-		margin: 1.5rem 0;
-		text-align: center;
-	}
-
-	.diagram-title {
-		font-weight: 600;
-		font-size: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	.diagram-container {
-		display: flex;
-		justify-content: center;
-		overflow-x: auto;
-	}
-
-	.diagram-container :global(svg) {
-		max-width: 100%;
-		height: auto;
-	}
-
-	.diagram-source {
-		text-align: left;
-		font-size: 0.875rem;
-		margin: 0;
-	}
-</style>

@@ -1,0 +1,26 @@
+/* Organization */
+.rf-organization {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-organization__type {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+	margin-bottom: 1rem;
+}
+.rf-organization__body img {
+	max-height: 80px;
+	width: auto;
+	margin-bottom: 1rem;
+}
+.rf-organization__body ul,
+.rf-organization__body ol {
+	padding-left: 1.5rem;
+}
+.rf-organization__body a { color: var(--rf-color-primary); }
+.rf-organization__body a:hover { color: var(--rf-color-primary-hover); }

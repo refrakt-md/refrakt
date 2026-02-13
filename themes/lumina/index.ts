@@ -21,25 +21,10 @@ export { registry };
 export { default as DocsLayout } from './layouts/DocsLayout.svelte';
 export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 
-// Individual components for advanced usage
-export { default as Hint } from './components/Hint.svelte';
-export { default as CallToAction } from './components/CallToAction.svelte';
-export { default as Feature } from './components/Feature.svelte';
-export { default as Grid } from './components/Grid.svelte';
-export { default as Steps } from './components/Steps.svelte';
+// Interactive components for advanced usage
 export { default as Tabs } from './components/Tabs.svelte';
-export { default as Editor } from './components/Editor.svelte';
-export { default as Pricing } from './components/Pricing.svelte';
-export { default as PageSection } from './components/PageSection.svelte';
+export { default as DataTable } from './components/DataTable.svelte';
+export { default as Form } from './components/Form.svelte';
+export { default as Reveal } from './components/Reveal.svelte';
+export { default as Diagram } from './components/Diagram.svelte';
 export { default as Nav } from './components/Nav.svelte';
-export { default as Details } from './components/Details.svelte';
-export { default as Figure } from './components/Figure.svelte';
-export { default as Accordion } from './components/Accordion.svelte';
-export { default as Toc } from './components/Toc.svelte';
-export { default as Hero } from './components/Hero.svelte';
-export { default as Breadcrumb } from './components/Breadcrumb.svelte';
-export { default as Testimonial } from './components/Testimonial.svelte';
-export { default as Compare } from './components/Compare.svelte';
-export { default as Timeline } from './components/Timeline.svelte';
-export { default as Changelog } from './components/Changelog.svelte';
-export { default as Embed } from './components/Embed.svelte';

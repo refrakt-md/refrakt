@@ -1,0 +1,37 @@
+/* HowTo */
+.rf-howto {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-howto__meta {
+	display: flex;
+	gap: 1.5rem;
+	padding-bottom: 1rem;
+	margin-bottom: 1.5rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-howto__meta-item {
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+	font-weight: 500;
+}
+.rf-howto__content ul {
+	background: var(--rf-color-surface-hover);
+	border-radius: var(--rf-radius-md);
+	padding: 1rem 1rem 1rem 2.5rem;
+	margin-bottom: 1rem;
+	list-style: disc;
+}
+.rf-howto__content ol {
+	padding-left: 1.5rem;
+	counter-reset: step;
+}
+.rf-howto__content ol > li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-howto__content ol > li:last-child {
+	border-bottom: none;
+}

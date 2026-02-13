@@ -1,0 +1,59 @@
+/* Testimonial */
+.rf-testimonial {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 1.75rem 2rem;
+	margin: 1.5rem 0;
+	background: var(--rf-color-surface);
+}
+.rf-testimonial__rating {
+	display: flex;
+	gap: 0.125rem;
+	margin-bottom: 0.75rem;
+}
+.rf-testimonial__star {
+	font-size: 1.1rem;
+	color: var(--rf-color-border);
+	line-height: 1;
+}
+.rf-testimonial__star--filled {
+	color: var(--rf-color-warning);
+}
+.rf-testimonial blockquote,
+.rf-testimonial .rf-blockquote {
+	border: none;
+	padding: 0;
+	margin: 0 0 1rem;
+	font-size: 1.05rem;
+	font-style: italic;
+	line-height: 1.7;
+	color: var(--rf-color-text);
+	background: none;
+	border-radius: 0;
+}
+.rf-testimonial .rf-blockquote__quote-mark {
+	display: none;
+}
+.rf-testimonial blockquote p {
+	margin: 0;
+}
+.rf-testimonial span[property="authorName"] {
+	display: block;
+	font-weight: 700;
+	font-style: normal;
+	font-size: 0.925rem;
+	color: var(--rf-color-text);
+}
+.rf-testimonial span[property="authorRole"] {
+	display: block;
+	margin-top: 0.125rem;
+	font-size: 0.85rem;
+	color: var(--rf-color-muted);
+}
+.rf-testimonial img {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-top: 0.75rem;
+}

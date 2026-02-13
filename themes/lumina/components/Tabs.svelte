@@ -47,12 +47,11 @@
 </script>
 
 {#if typeName === 'TabGroup' && tabs.length > 0}
-	<div class="tabs">
-		<div class="tab-bar" role="tablist">
+	<div class="rf-tabs">
+		<div class="rf-tabs__bar" role="tablist">
 			{#each tabs as tab, i}
 				<button
-					class="tab-button"
-					class:active={i === activeIndex}
+					class="rf-tabs__button {i === activeIndex ? 'rf-tabs__button--active' : ''}"
 					role="tab"
 					aria-selected={i === activeIndex}
 					onclick={() => activeIndex = i}
@@ -61,10 +60,10 @@
 				</button>
 			{/each}
 		</div>
-		<div class="tab-panels">
+		<div class="rf-tabs__panels">
 			{#each panels as panel, i}
 				{#if i === activeIndex}
-					<div class="tab-panel" role="tabpanel">
+					<div class="rf-tabs__panel" role="tabpanel">
 						<Renderer node={panel.children} />
 					</div>
 				{/if}
@@ -74,55 +73,3 @@
 {:else}
 	{@render children()}
 {/if}
-
-<style>
-	.tabs {
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		overflow: hidden;
-		margin: 1.5rem 0;
-		background: var(--color-bg);
-	}
-	.tab-bar {
-		display: flex;
-		background: var(--color-surface);
-		border-bottom: 1px solid var(--color-border);
-		overflow-x: auto;
-		overflow-y: hidden;
-		-webkit-overflow-scrolling: touch;
-	}
-	.tab-button {
-		flex: 0 0 auto;
-		padding: 0.625rem 1.25rem;
-		font-size: 0.85rem;
-		font-weight: 500;
-		color: var(--color-muted);
-		background: none;
-		border: none;
-		border-bottom: 2px solid transparent;
-		cursor: pointer;
-		transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
-		white-space: nowrap;
-		margin-bottom: -1px;
-		font-family: inherit;
-	}
-	.tab-button:hover {
-		color: var(--color-text);
-		background: var(--color-surface-hover);
-	}
-	.tab-button.active {
-		color: var(--color-primary);
-		border-bottom-color: var(--color-primary);
-		font-weight: 600;
-		background: var(--color-bg);
-	}
-	.tab-panel {
-		padding: 1.25rem 1.5rem;
-	}
-	.tab-panel :global(pre) {
-		margin: 0;
-	}
-	.tab-panel :global(p:last-child) {
-		margin-bottom: 0;
-	}
-</style>

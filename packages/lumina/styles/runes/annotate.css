@@ -1,0 +1,87 @@
+/* Annotate */
+.rf-annotate {
+	margin: 1.5rem 0;
+}
+.rf-annotate__body {
+	display: contents;
+}
+/* Margin style */
+.rf-annotate--margin {
+	position: relative;
+}
+.rf-annotate--margin .rf-annotate-note {
+	float: right;
+	clear: right;
+	width: 40%;
+	margin: 0 -44% 0.5rem 1rem;
+	padding: 0.75rem 1rem;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	border-left: 2px solid var(--rf-color-border);
+}
+/* Inline style */
+.rf-annotate--inline .rf-annotate-note {
+	margin: 0.5rem 0 1rem;
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	border-left: 3px solid var(--rf-color-primary);
+}
+/* Tooltip style */
+.rf-annotate--tooltip .rf-annotate-note {
+	display: inline-block;
+	position: relative;
+	margin: 0 0.25rem;
+	padding: 0;
+	font-size: 0;
+	vertical-align: super;
+}
+.rf-annotate--tooltip .rf-annotate-note::before {
+	content: '?';
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	height: 1rem;
+	font-size: 0.625rem;
+	font-weight: 700;
+	color: var(--rf-color-primary);
+	border: 1px solid var(--rf-color-primary);
+	border-radius: var(--rf-radius-full, 50%);
+	cursor: help;
+}
+.rf-annotate--tooltip .rf-annotate-note__body {
+	display: none;
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 16rem;
+	padding: 0.75rem;
+	font-size: 0.8125rem;
+	color: var(--rf-color-text);
+	background: var(--rf-color-bg);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	margin-bottom: 0.5rem;
+	z-index: 10;
+}
+.rf-annotate--tooltip .rf-annotate-note:hover .rf-annotate-note__body {
+	display: block;
+}
+.rf-annotate-note__body p:last-child { margin-bottom: 0; }
+.rf-annotate-note__body span[property],
+.rf-annotate-note__body meta { display: none; }
+@media (max-width: 768px) {
+	.rf-annotate--margin .rf-annotate-note {
+		float: none;
+		width: 100%;
+		margin: 0.5rem 0 1rem;
+		padding: 0.75rem 1rem;
+		background: var(--rf-color-surface);
+		border-radius: var(--rf-radius-md);
+	}
+}

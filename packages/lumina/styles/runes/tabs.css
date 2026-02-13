@@ -1,0 +1,50 @@
+/* Tabs */
+.rf-tabs {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+	margin: 1.5rem 0;
+	background: var(--rf-color-bg);
+}
+.rf-tabs__bar {
+	display: flex;
+	background: var(--rf-color-surface);
+	border-bottom: 1px solid var(--rf-color-border);
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+}
+.rf-tabs__button {
+	flex: 0 0 auto;
+	padding: 0.625rem 1.25rem;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
+	white-space: nowrap;
+	margin-bottom: -1px;
+	font-family: inherit;
+}
+.rf-tabs__button:hover {
+	color: var(--rf-color-text);
+	background: var(--rf-color-surface-hover);
+}
+.rf-tabs__button--active {
+	color: var(--rf-color-primary);
+	border-bottom-color: var(--rf-color-primary);
+	font-weight: 600;
+	background: var(--rf-color-bg);
+}
+.rf-tabs__panel {
+	padding: 1.25rem 1.5rem;
+}
+.rf-tabs__panel pre {
+	margin: 0;
+}
+.rf-tabs__panel p:last-child {
+	margin-bottom: 0;
+}

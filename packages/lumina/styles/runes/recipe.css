@@ -1,0 +1,43 @@
+/* Recipe */
+.rf-recipe {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-recipe__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: center;
+	padding-bottom: 1rem;
+	margin-bottom: 1.5rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-recipe__meta-item {
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+	font-weight: 500;
+}
+.rf-recipe__badge {
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-full);
+	text-transform: capitalize;
+}
+.rf-recipe__content {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+.rf-recipe__content ul {
+	list-style: disc;
+	padding-left: 1.5rem;
+}
+.rf-recipe__content ol {
+	padding-left: 1.5rem;
+}
+.rf-recipe__content ol li {
+	padding: 0.25rem 0;
+}

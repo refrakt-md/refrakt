@@ -1,0 +1,65 @@
+/* Lumina Theme — Design Tokens (Light Mode) */
+
+:root {
+	/* Typography */
+	--rf-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--rf-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+	/* Primary scale (sky-blue) */
+	--rf-color-primary-50: #f0f9ff;
+	--rf-color-primary-100: #e0f2fe;
+	--rf-color-primary-200: #bae6fd;
+	--rf-color-primary-300: #7dd3fc;
+	--rf-color-primary-400: #38bdf8;
+	--rf-color-primary-500: #0ea5e9;
+	--rf-color-primary-600: #0284c7;
+	--rf-color-primary-700: #0369a1;
+	--rf-color-primary-800: #075985;
+	--rf-color-primary-900: #0c4a6e;
+	--rf-color-primary-950: #082f49;
+
+	/* Core palette */
+	--rf-color-text: #1a1a2e;
+	--rf-color-muted: #64748b;
+	--rf-color-border: #e2e8f0;
+	--rf-color-bg: #ffffff;
+	--rf-color-primary: var(--rf-color-primary-500);
+	--rf-color-primary-hover: var(--rf-color-primary-600);
+
+	/* Surfaces */
+	--rf-color-surface: #f8fafc;
+	--rf-color-surface-hover: #f1f5f9;
+	--rf-color-surface-active: #e2e8f0;
+	--rf-color-surface-raised: #ffffff;
+
+	/* Semantic */
+	--rf-color-info: #3b82f6;
+	--rf-color-info-bg: #eff6ff;
+	--rf-color-info-border: #bfdbfe;
+	--rf-color-warning: #f59e0b;
+	--rf-color-warning-bg: #fffbeb;
+	--rf-color-warning-border: #fde68a;
+	--rf-color-danger: #ef4444;
+	--rf-color-danger-bg: #fef2f2;
+	--rf-color-danger-border: #fecaca;
+	--rf-color-success: #10b981;
+	--rf-color-success-bg: #ecfdf5;
+	--rf-color-success-border: #a7f3d0;
+
+	/* Radii */
+	--rf-radius-sm: 6px;
+	--rf-radius-md: 10px;
+	--rf-radius-lg: 16px;
+	--rf-radius-full: 9999px;
+
+	/* Shadows */
+	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+
+	/* Code block */
+	--rf-color-code-bg: #0f172a;
+	--rf-color-code-text: #e2e8f0;
+	--rf-color-inline-code-bg: #f1f5f9;
+}

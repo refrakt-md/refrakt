@@ -1,0 +1,112 @@
+/* DataTable */
+.rf-datatable {
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
+}
+.rf-datatable__toolbar {
+	display: flex;
+	justify-content: flex-end;
+	padding: 0.5rem 0.75rem;
+	background: var(--rf-color-surface);
+}
+.rf-datatable__input {
+	width: 14rem;
+	padding: 0.35rem 0.625rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-sm);
+	font-size: 0.8rem;
+	font-family: var(--rf-font-sans);
+	background: var(--rf-color-bg);
+	color: var(--rf-color-text);
+}
+.rf-datatable__input:focus {
+	outline: none;
+	border-color: var(--rf-color-primary);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--rf-color-primary) 15%, transparent);
+}
+.rf-datatable__content .rf-datatable__table {
+	border: none;
+	border-radius: 0;
+	margin: 0;
+	overflow: visible;
+}
+.rf-datatable__content .rf-datatable__table th {
+	background: var(--rf-color-surface);
+}
+.rf-datatable__content .rf-datatable__table th:first-child,
+.rf-datatable__content .rf-datatable__table th:last-child {
+	border-radius: 0;
+}
+.rf-datatable__content table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0;
+}
+.rf-datatable__content .rf-table-wrapper {
+	margin: 0;
+	border: none;
+	border-radius: 0;
+	overflow: visible;
+}
+.rf-datatable__content th {
+	text-align: left;
+	padding: 0.75rem 1rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-hover);
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-datatable__content th[style*="cursor"]:hover {
+	color: var(--rf-color-text);
+}
+.rf-datatable__content .sort-indicator {
+	font-size: 0.65rem;
+	opacity: 0.7;
+}
+.rf-datatable__content td {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--rf-color-border);
+	font-size: 0.875rem;
+}
+.rf-datatable__content tr:last-child td {
+	border-bottom: none;
+}
+.rf-datatable__content tr:hover td {
+	background: var(--rf-color-surface-hover);
+}
+.rf-datatable__pagination {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-datatable__page-btn {
+	padding: 0.25rem 0.5rem;
+	border: none;
+	border-radius: var(--rf-radius-sm);
+	background: transparent;
+	color: var(--rf-color-muted);
+	font-size: 0.8rem;
+	font-family: var(--rf-font-sans);
+	cursor: pointer;
+	transition: color 150ms ease, background 150ms ease;
+}
+.rf-datatable__page-btn:hover:not(:disabled) {
+	color: var(--rf-color-text);
+	background: var(--rf-color-surface-hover);
+}
+.rf-datatable__page-btn:disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
+}
+.rf-datatable__page-info {
+	font-size: 0.75rem;
+	color: var(--rf-color-muted);
+}

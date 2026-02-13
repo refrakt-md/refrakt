@@ -19,63 +19,18 @@
 	}
 </script>
 
-<article class="howto" typeof="HowTo">
+<article class="rf-howto" typeof="HowTo">
 	{#if estimatedTime || difficulty}
-		<div class="howto-meta">
+		<div class="rf-howto__meta">
 			{#if estimatedTime}
-				<span class="howto-meta-item">Estimated time: {formatDuration(estimatedTime)}</span>
+				<span class="rf-howto__meta-item">Estimated time: {formatDuration(estimatedTime)}</span>
 			{/if}
 			{#if difficulty}
-				<span class="howto-meta-item">Difficulty: {difficulty}</span>
+				<span class="rf-howto__meta-item">Difficulty: {difficulty}</span>
 			{/if}
 		</div>
 	{/if}
-	<div class="howto-content">
+	<div class="rf-howto__content">
 		{@render children()}
 	</div>
 </article>
-
-<style>
-	.howto {
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		padding: 2rem;
-		margin: 1.5rem 0;
-	}
-
-	.howto-meta {
-		display: flex;
-		gap: 1.5rem;
-		padding-bottom: 1rem;
-		margin-bottom: 1.5rem;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.howto-meta-item {
-		font-size: 0.875rem;
-		color: var(--color-muted);
-		font-weight: 500;
-	}
-
-	.howto-content :global(ul) {
-		background: var(--color-surface-hover);
-		border-radius: var(--radius-md);
-		padding: 1rem 1rem 1rem 2.5rem;
-		margin-bottom: 1rem;
-		list-style: disc;
-	}
-
-	.howto-content :global(ol) {
-		padding-left: 1.5rem;
-		counter-reset: step;
-	}
-
-	.howto-content :global(ol > li) {
-		padding: 0.5rem 0;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.howto-content :global(ol > li:last-child) {
-		border-bottom: none;
-	}
-</style>

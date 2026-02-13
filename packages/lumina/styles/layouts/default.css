@@ -1,0 +1,45 @@
+/* Default layout */
+.rf-header {
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-header__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.875rem 1.5rem;
+}
+.rf-header p {
+	margin: 0;
+	line-height: 1;
+}
+.rf-header a {
+	display: inline-block;
+	color: inherit;
+	text-decoration: none;
+}
+.rf-header a:hover {
+	text-decoration: none;
+}
+.rf-header img {
+	display: block;
+	height: 1.5rem;
+	width: auto;
+}
+.rf-header__inner p:last-child:not(:first-child) {
+	font-size: 0.85rem;
+}
+.rf-header__inner p:last-child:not(:first-child) a {
+	margin-left: 1.5rem;
+	color: var(--rf-color-muted);
+}
+.rf-header__inner p:last-child:not(:first-child) a:hover {
+	color: var(--rf-color-text);
+}
+.rf-page-content {
+	padding-top: 2.5rem;
+	padding-bottom: 4rem;
+	max-width: 64rem;
+	margin: 0 auto;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+}

@@ -1,0 +1,26 @@
+/* Table wrapper */
+.rf-table-wrapper {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+}
+.rf-table-wrapper table {
+	margin: 0;
+	border-collapse: collapse;
+	width: 100%;
+	min-width: 100%;
+}
+.rf-table-wrapper th {
+	background: var(--rf-color-surface);
+}
+.rf-table-wrapper th:first-child {
+	border-top-left-radius: var(--rf-radius-md);
+}
+.rf-table-wrapper th:last-child {
+	border-top-right-radius: var(--rf-radius-md);
+}
+.rf-table-wrapper tr:last-child td {
+	border-bottom: none;
+}

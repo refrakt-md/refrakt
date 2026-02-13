@@ -9,7 +9,6 @@
 		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
 	}
 
-	// Find the grid layout container produced by the transform
 	const layoutDiv = $derived(tag.children.find(
 		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-layout'] === 'grid'
 	));
@@ -20,7 +19,7 @@
 
 {#if gridItems.length > 0}
 	<div
-		class="grid"
+		class="rf-grid"
 		style:grid-template-columns={columns ? `repeat(${columns}, 1fr)` : undefined}
 		style:grid-auto-flow={flow || undefined}
 	>
@@ -28,7 +27,7 @@
 			{@const colspan = Number(item.attributes?.['data-colspan']) || 1}
 			{@const rowspan = Number(item.attributes?.['data-rowspan']) || 1}
 			<div
-				class="grid-item"
+				class="rf-grid__item"
 				style:grid-column={colspan > 1 ? `span ${colspan}` : undefined}
 				style:grid-row={rowspan > 1 ? `span ${rowspan}` : undefined}
 			>
@@ -37,22 +36,7 @@
 		{/each}
 	</div>
 {:else}
-	<div class="grid">
+	<div class="rf-grid">
 		{@render children()}
 	</div>
 {/if}
-
-<style>
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: 1.5rem;
-		margin: 1.5rem 0;
-	}
-	.grid-item :global(p:first-child) {
-		margin-top: 0;
-	}
-	.grid-item :global(p:last-child) {
-		margin-bottom: 0;
-	}
-</style>

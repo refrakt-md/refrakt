@@ -1,0 +1,24 @@
+/* Figure */
+.rf-figure {
+	margin: 1.5rem 0;
+}
+.rf-figure img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--rf-radius-md);
+	box-shadow: var(--rf-shadow-sm);
+}
+.rf-figure figcaption {
+	margin-top: 0.625rem;
+	font-size: 0.825rem;
+	color: var(--rf-color-muted);
+	text-align: center;
+	font-style: italic;
+}
+.rf-figure--small { max-width: 320px; }
+.rf-figure--medium { max-width: 640px; }
+.rf-figure--large { max-width: 960px; }
+.rf-figure--full { max-width: 100%; }
+.rf-figure--left { margin-right: auto; }
+.rf-figure--center { margin-left: auto; margin-right: auto; }
+.rf-figure--right { margin-left: auto; }

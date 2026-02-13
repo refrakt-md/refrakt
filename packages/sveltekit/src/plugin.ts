@@ -11,6 +11,7 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/content',
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
+	'@refrakt-md/lumina',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {

@@ -1,0 +1,22 @@
+/* Blockquote */
+.rf-blockquote {
+	position: relative;
+	border-left: 3px solid var(--rf-color-primary);
+	margin: 1.5rem 0;
+	padding: 1rem 1.25rem 1rem 2.75rem;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+}
+.rf-blockquote__mark {
+	position: absolute;
+	left: 0.75rem;
+	top: 1rem;
+	width: 18px;
+	height: 18px;
+	color: var(--rf-color-primary);
+	opacity: 0.4;
+}
+.rf-blockquote p:last-child {
+	margin-bottom: 0;
+}

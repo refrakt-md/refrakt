@@ -44,71 +44,19 @@
 </script>
 
 {#if typeName === 'Nav'}
-	<nav class="site-nav">
+	<nav class="rf-nav">
 		{@render children()}
 	</nav>
 {:else if typeName === 'NavGroup'}
-	<div class="nav-group">
+	<div class="rf-nav-group">
 		{@render children()}
 	</div>
 {:else if typeName === 'NavItem' && linkedPage}
-	<a href={linkedPage.url} class="nav-link" class:active={page.url.pathname === linkedPage.url}>
+	<a href={linkedPage.url} class="rf-nav-item__link" class:rf-nav-item__link--active={page.url.pathname === linkedPage.url}>
 		{linkedPage.title}
 	</a>
 {:else}
-	<div class="nav-item">
+	<div class="rf-nav-item">
 		{@render children()}
 	</div>
 {/if}
-
-<style>
-	.site-nav {
-		padding: 0.5rem 0;
-	}
-	.site-nav :global(ul) {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-	.site-nav :global(li) {
-		padding: 0.0625rem 0;
-	}
-	.nav-group {
-		margin-bottom: 1.75rem;
-	}
-	.nav-group :global(h2),
-	.nav-group :global(h3) {
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-muted);
-		margin-top: 0;
-		margin-bottom: 0.5rem;
-		padding-left: 0.75rem;
-		font-weight: 600;
-	}
-	.nav-link {
-		display: block;
-		padding: 0.375rem 0.75rem;
-		border-radius: var(--radius-sm);
-		color: var(--color-text);
-		text-decoration: none;
-		font-size: 0.85rem;
-		transition: background-color 150ms ease, color 150ms ease;
-	}
-	.nav-link:hover {
-		background: var(--color-surface);
-		color: var(--color-text);
-		text-decoration: none;
-	}
-	.nav-link.active {
-		background: var(--color-info-bg);
-		color: var(--color-primary);
-		font-weight: 600;
-	}
-	.nav-item {
-		padding: 0.375rem 0.75rem;
-		font-size: 0.85rem;
-		color: var(--color-muted);
-	}
-</style>

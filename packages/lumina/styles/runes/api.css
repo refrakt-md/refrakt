@@ -1,0 +1,69 @@
+/* Api */
+.rf-api {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	margin: 1.5rem 0;
+	overflow: hidden;
+}
+.rf-api__header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem 1.25rem;
+	background: var(--rf-color-surface-hover);
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-api__method {
+	font-weight: 700;
+	font-size: 0.75rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	font-family: var(--rf-font-mono);
+}
+.rf-api__path {
+	font-family: var(--rf-font-mono);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--rf-color-text);
+}
+.rf-api__auth {
+	margin-left: auto;
+	font-size: 0.75rem;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+}
+.rf-api__body {
+	padding: 1.25rem;
+}
+.rf-api__body table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1rem 0;
+}
+.rf-api__body th {
+	text-align: left;
+	padding: 0.5rem 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: var(--rf-color-muted);
+	border-bottom: 2px solid var(--rf-color-border);
+}
+.rf-api__body td {
+	padding: 0.5rem 0.75rem;
+	border-bottom: 1px solid var(--rf-color-border);
+	font-size: 0.875rem;
+}
+.rf-api__body pre {
+	border-radius: var(--rf-radius-md);
+	margin: 1rem 0;
+}
+.rf-api__body blockquote {
+	border-left: 3px solid var(--rf-color-warning-border);
+	background: var(--rf-color-warning-bg);
+	padding: 0.75rem 1rem;
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	margin: 1rem 0;
+}

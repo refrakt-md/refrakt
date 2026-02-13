@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "HTML structure contracts for the Lumina theme identity. Documents what HTML structure the CSS expects for each rune.",
+  "runes": {}
+}

@@ -35,6 +35,7 @@
 		"manifest.json"
 	],
 	"dependencies": {
+		"@refrakt-md/lumina": "0.3.0",
 		"@refrakt-md/svelte": "0.3.0",
 		"@refrakt-md/types": "0.3.0"
 	},

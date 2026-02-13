@@ -1,0 +1,54 @@
+/* Conversation */
+.rf-conversation {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin: 1.5rem 0;
+	max-width: 40rem;
+}
+.rf-conversation__messages {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.rf-conversation-message {
+	display: flex;
+	flex-direction: column;
+	max-width: 80%;
+}
+.rf-conversation-message--left {
+	align-self: flex-start;
+	align-items: flex-start;
+}
+.rf-conversation-message--right {
+	align-self: flex-end;
+	align-items: flex-end;
+}
+.rf-conversation-message__speaker {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rf-color-muted);
+	margin-bottom: 0.25rem;
+	padding: 0 0.75rem;
+}
+.rf-conversation-message__body {
+	padding: 0.75rem 1rem;
+	border-radius: 1rem;
+	font-size: 0.9375rem;
+	line-height: 1.5;
+}
+.rf-conversation-message--left .rf-conversation-message__body {
+	background: var(--rf-color-surface);
+	border-bottom-left-radius: 0.25rem;
+}
+.rf-conversation-message--right .rf-conversation-message__body {
+	background: var(--rf-color-primary);
+	color: white;
+	border-bottom-right-radius: 0.25rem;
+}
+.rf-conversation-message__body p { margin: 0; }
+.rf-conversation-message__body p + p { margin-top: 0.5rem; }
+.rf-conversation-message__body span[property],
+.rf-conversation-message__body meta { display: none; }
+.rf-conversation-message span[property="speaker"],
+.rf-conversation-message meta[property] { display: none; }

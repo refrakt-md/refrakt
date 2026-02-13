@@ -1,0 +1,20 @@
+/* PageSection */
+.rf-page-section {
+	padding: 3rem 0;
+}
+.rf-page-section > h1:first-child,
+.rf-page-section > h2:first-child {
+	margin-top: 0;
+}
+.rf-page-section--split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 3rem;
+	align-items: start;
+}
+@media (max-width: 768px) {
+	.rf-page-section--split {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+	}
+}

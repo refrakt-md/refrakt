@@ -1,0 +1,190 @@
+import type { ThemeConfig, RuneConfig, StructureEntry, SerializedTag, RendererNode } from './types.js';
+import { isTag, makeTag, readMeta } from './helpers.js';
+
+/**
+ * Create an identity transform function from a theme configuration.
+ *
+ * The returned function walks the serialized tag tree and enhances it:
+ * - Adds BEM classes based on the rune config
+ * - Reads and consumes meta tags for variant info
+ * - Auto-labels children by tag name (e.g., summary → data-name="header")
+ * - Injects structural elements (headers, icons, titles) from config
+ * - Recurses into children for nested runes
+ */
+export function createTransform(config: ThemeConfig) {
+	const { prefix, runes, icons = {} } = config;
+
+	function identityTransform(tree: RendererNode): RendererNode {
+		if (tree === null || tree === undefined) return tree;
+		if (typeof tree === 'string' || typeof tree === 'number') return tree;
+		if (Array.isArray(tree)) return tree.map(identityTransform);
+		if (!isTag(tree)) return tree;
+
+		const typeof_ = tree.attributes?.typeof;
+		if (typeof_ && typeof_ in runes) {
+			return transformRune(tree, runes[typeof_], prefix, icons, identityTransform);
+		}
+
+		// Recurse into children even for non-rune tags
+		return { ...tree, children: tree.children.map(identityTransform) };
+	}
+
+	return identityTransform;
+}
+
+/** Apply BEM classes and structural enhancements to a rune tag */
+function transformRune(
+	tag: SerializedTag,
+	config: RuneConfig,
+	prefix: string,
+	icons: Record<string, Record<string, string>>,
+	recurse: (node: RendererNode) => RendererNode
+): SerializedTag {
+	const block = `${prefix}-${config.block}`;
+
+	// 1. Read modifiers from meta tags, collecting resolved values
+	const modifierClasses: string[] = [];
+	const modifierValues: Record<string, string> = {};
+	if (config.modifiers) {
+		for (const [name, mod] of Object.entries(config.modifiers)) {
+			const value = mod.source === 'meta'
+				? readMeta(tag, name, mod.default)
+				: tag.attributes[name] ?? mod.default;
+			if (value) {
+				modifierValues[name] = value;
+				modifierClasses.push(`${block}--${value}`);
+			}
+		}
+	}
+
+	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
+	const modDataAttrs: Record<string, string> = {};
+	for (const [name, value] of Object.entries(modifierValues)) {
+		const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
+		modDataAttrs[`data-${kebab}`] = value;
+	}
+
+	// 3. Build the class string
+	const existingClass = tag.attributes.class || '';
+	const bemClass = [block, ...modifierClasses, existingClass].filter(Boolean).join(' ');
+
+	// 4. Auto-label children by tag name or property attribute
+	let children = tag.children;
+	if (config.autoLabel) {
+		children = children.map(child => {
+			if (!isTag(child)) return child;
+			const label = config.autoLabel![child.name] ?? config.autoLabel![child.attributes?.property];
+			if (label && !child.attributes['data-name']) {
+				return { ...child, attributes: { ...child.attributes, 'data-name': label } };
+			}
+			return child;
+		});
+	}
+
+	// 5. Inject structural elements from config
+	if (config.structure) {
+		const prepend: RendererNode[] = [];
+		const append: RendererNode[] = [];
+
+		for (const [name, entry] of Object.entries(config.structure)) {
+			const element = buildStructureElement(entry, name, modifierValues, icons);
+			if (entry.before) {
+				prepend.push(element);
+			} else {
+				append.push(element);
+			}
+		}
+
+		if (prepend.length || append.length) {
+			children = [...prepend, ...children, ...append];
+		}
+	}
+
+	// 6. Apply BEM element classes to data-name children (recursively for structural elements)
+	const enhancedChildren = children.map(child => {
+		if (!isTag(child)) return recurse(child);
+		return applyBemClasses(child, block, recurse);
+	});
+
+	// 7. Remove consumed meta tags
+	const filteredChildren = enhancedChildren.filter(child => {
+		if (!isTag(child as any)) return true;
+		const c = child as SerializedTag;
+		if (c.name !== 'meta' || !c.attributes.property) return true;
+		return !config.modifiers || !(c.attributes.property in config.modifiers);
+	});
+
+	return {
+		...tag,
+		attributes: {
+			...tag.attributes,
+			...modDataAttrs,
+			class: bemClass,
+			...(config.rootAttributes || {}),
+		},
+		children: filteredChildren,
+	};
+}
+
+/** Recursively apply BEM element classes to data-name elements within a rune's children */
+function applyBemClasses(
+	child: SerializedTag,
+	block: string,
+	recurse: (node: RendererNode) => RendererNode
+): RendererNode {
+	const dataName = child.attributes['data-name'];
+	if (dataName) {
+		const elementClass = `${block}__${dataName}`;
+		const childExistingClass = child.attributes.class || '';
+		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
+		const nestedChildren = child.children.map(c => {
+			if (!isTag(c)) return c;
+			return applyBemClasses(c, block, recurse);
+		});
+		return recurse({
+			...child,
+			attributes: {
+				...child.attributes,
+				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
+			},
+			children: nestedChildren,
+		});
+	}
+
+	return recurse(child);
+}
+
+/** Build a structural element from a StructureEntry config */
+function buildStructureElement(
+	entry: StructureEntry,
+	name: string,
+	modifierValues: Record<string, string>,
+	icons: Record<string, Record<string, string>>,
+): SerializedTag {
+	const dataName = entry.ref ?? name;
+
+	// Icon entry: create empty element, CSS displays icon via mask-image
+	if (entry.icon) {
+		return makeTag(entry.tag, { 'data-name': dataName }, []);
+	}
+
+	// Meta text injection: use resolved modifier value as text content
+	if (entry.metaText) {
+		const text = modifierValues[entry.metaText] ?? '';
+		return makeTag(entry.tag, { 'data-name': dataName }, [text]);
+	}
+
+	// Process children recursively
+	const elementChildren: RendererNode[] = [];
+	if (entry.children) {
+		for (const child of entry.children) {
+			if (typeof child === 'string') {
+				elementChildren.push(child);
+			} else {
+				elementChildren.push(buildStructureElement(child, child.ref ?? '', modifierValues, icons));
+			}
+		}
+	}
+
+	return makeTag(entry.tag, { 'data-name': dataName }, elementChildren);
+}

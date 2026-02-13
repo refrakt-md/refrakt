@@ -8,76 +8,19 @@
 </script>
 
 {#if isGroup}
-	<div class="accordion">
+	<div class="rf-accordion">
 		{@render children()}
 	</div>
 {:else}
 	{@const name = tag.children
 		.find((c) => c?.name === 'span' && c?.attributes?.property === 'name')
 		?.children?.[0] ?? ''}
-	<details class="accordion-item">
-		<summary class="accordion-header">
-			<span class="accordion-title">{name}</span>
-			<svg class="accordion-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
-				<path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
+	<details class="rf-accordion-item">
+		<summary class="rf-accordion-item__header">
+			<span class="rf-accordion-item__title">{name}</span>
 		</summary>
-		<div class="accordion-body">
+		<div class="rf-accordion-item__body">
 			{@render children()}
 		</div>
 	</details>
 {/if}
-
-<style>
-	.accordion {
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		overflow: hidden;
-		margin: 1.5rem 0;
-	}
-	.accordion-item {
-		border-bottom: 1px solid var(--color-border);
-	}
-	.accordion-item:last-child {
-		border-bottom: none;
-	}
-	.accordion-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.875rem 1.25rem;
-		font-weight: 600;
-		font-size: 0.95rem;
-		cursor: pointer;
-		user-select: none;
-		transition: background-color 200ms ease;
-		list-style: none;
-	}
-	.accordion-header::-webkit-details-marker {
-		display: none;
-	}
-	.accordion-header::marker {
-		display: none;
-		content: '';
-	}
-	.accordion-header:hover {
-		background: var(--color-surface);
-	}
-	.accordion-chevron {
-		flex-shrink: 0;
-		color: var(--color-muted);
-		transition: transform 200ms ease;
-	}
-	.accordion-item[open] .accordion-chevron {
-		transform: rotate(180deg);
-	}
-	.accordion-body {
-		padding: 0 1.25rem 1rem;
-		font-size: 0.925rem;
-		line-height: 1.65;
-		color: var(--color-muted);
-	}
-	.accordion-body :global(p:last-child) {
-		margin-bottom: 0;
-	}
-</style>

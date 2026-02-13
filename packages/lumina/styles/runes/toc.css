@@ -1,0 +1,43 @@
+/* Table of Contents */
+.rf-toc {
+	padding: 1.25rem 1.5rem;
+	border-left: 3px solid var(--rf-color-primary);
+	background: var(--rf-color-surface);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	margin: 1.5rem 0;
+}
+.rf-toc__list {
+	font-weight: 650;
+	margin-bottom: 0.75rem;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--rf-color-muted);
+}
+.rf-toc ul,
+.rf-toc ol {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+.rf-toc li {
+	margin: 0.125rem 0;
+}
+.rf-toc li[data-level="3"] {
+	padding-left: 1rem;
+}
+.rf-toc li[data-level="4"] {
+	padding-left: 2rem;
+}
+.rf-toc a {
+	color: var(--rf-color-text);
+	text-decoration: none;
+	font-size: 0.85rem;
+	display: inline-block;
+	padding: 0.2rem 0;
+	transition: color 150ms ease;
+}
+.rf-toc a:hover {
+	color: var(--rf-color-primary);
+	text-decoration: none;
+}

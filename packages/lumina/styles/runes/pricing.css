@@ -1,0 +1,109 @@
+/* Pricing */
+.rf-pricing {
+	padding: 2rem 0;
+}
+.rf-pricing > header {
+	text-align: center;
+	margin-bottom: 2rem;
+}
+.rf-pricing > header h1 {
+	margin-top: 0;
+}
+.rf-pricing__tiers {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-pricing > ul[data-layout="grid"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1.5rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-tier {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	padding: 2rem;
+	background: var(--rf-color-bg);
+	display: flex;
+	flex-direction: column;
+	transition: box-shadow 200ms ease;
+}
+.rf-tier:hover {
+	box-shadow: var(--rf-shadow-md);
+}
+.rf-tier--featured {
+	border-color: var(--rf-color-primary);
+	box-shadow: var(--rf-shadow-lg);
+}
+.rf-tier h1[property="name"] {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--rf-color-muted);
+}
+.rf-tier p[property="price"] {
+	font-size: 2.5rem;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	color: var(--rf-color-text);
+	margin-bottom: 1.5rem;
+	line-height: 1.1;
+}
+.rf-tier__body {
+	flex: 1;
+}
+.rf-tier__body ul {
+	list-style: none;
+	padding-left: 0;
+	margin: 0 0 1.5rem;
+}
+.rf-tier__body li {
+	padding: 0.375rem 0;
+	font-size: 0.9rem;
+	color: var(--rf-color-muted);
+}
+.rf-tier__body li::before {
+	content: '\2713';
+	margin-right: 0.5rem;
+	color: var(--rf-color-success);
+	font-weight: 600;
+}
+.rf-tier__body a {
+	display: block;
+	text-align: center;
+	padding: 0.625rem 1.5rem;
+	border-radius: var(--rf-radius-sm);
+	font-weight: 600;
+	font-size: 0.9rem;
+	text-decoration: none;
+	transition: background-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+	margin-top: auto;
+}
+.rf-tier:not(.rf-tier--featured) a {
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
+	border: 1px solid var(--rf-color-border);
+}
+.rf-tier:not(.rf-tier--featured) a:hover {
+	background: var(--rf-color-surface-hover);
+	text-decoration: none;
+}
+.rf-tier--featured a {
+	background: var(--rf-color-primary);
+	color: white;
+}
+.rf-tier--featured a:hover {
+	background: var(--rf-color-primary-hover);
+	box-shadow: var(--rf-shadow-sm);
+	transform: translateY(-1px);
+	text-decoration: none;
+}
+.rf-tier__body p:has(a) {
+	margin-bottom: 0;
+}

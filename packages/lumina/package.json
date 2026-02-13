@@ -1,0 +1,40 @@
+{
+  "name": "@refrakt-md/lumina",
+  "description": "Lumina theme identity for refrakt.md — design tokens, CSS, and identity transform",
+  "version": "0.3.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/lumina"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/transform.js",
+  "types": "dist/transform.d.ts",
+  "exports": {
+    ".": "./index.css",
+    "./transform": {
+      "types": "./dist/transform.d.ts",
+      "default": "./dist/transform.js"
+    },
+    "./manifest": "./manifest.json",
+    "./contracts": "./contracts/structures.json"
+  },
+  "files": [
+    "dist",
+    "index.css",
+    "tokens",
+    "styles",
+    "contracts",
+    "manifest.json"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/types": "0.3.0"
+  }
+}

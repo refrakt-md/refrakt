@@ -1,0 +1,27 @@
+/* Diagram */
+.rf-diagram {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 1.5rem;
+	margin: 1.5rem 0;
+	text-align: center;
+}
+.rf-diagram__title {
+	font-weight: 600;
+	font-size: 1rem;
+	margin-bottom: 1rem;
+}
+.rf-diagram__container {
+	display: flex;
+	justify-content: center;
+	overflow-x: auto;
+}
+.rf-diagram__container svg {
+	max-width: 100%;
+	height: auto;
+}
+.rf-diagram__source {
+	text-align: left;
+	font-size: 0.875rem;
+	margin: 0;
+}

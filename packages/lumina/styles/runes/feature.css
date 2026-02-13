@@ -1,0 +1,53 @@
+/* Feature */
+.rf-feature {
+	padding: 2.5rem 0 2rem;
+}
+.rf-feature__main {
+	display: contents;
+}
+.rf-feature h2 {
+	text-align: center;
+	margin-bottom: 2rem;
+}
+.rf-feature--split {
+	display: grid;
+	align-items: center;
+	gap: 3rem;
+}
+.rf-feature--split h2 {
+	text-align: left;
+}
+.rf-feature--split dl {
+	display: block;
+}
+.rf-feature dl {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1.5rem;
+	margin: 0;
+}
+.rf-feature-definition {
+	padding: 1.75rem;
+	border-radius: var(--rf-radius-md);
+	border: 1px solid var(--rf-color-border);
+	background: var(--rf-color-bg);
+	box-shadow: var(--rf-shadow-sm);
+	transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+.rf-feature-definition:hover {
+	box-shadow: var(--rf-shadow-lg);
+	border-color: var(--rf-color-surface-active);
+	transform: translateY(-2px);
+}
+.rf-feature-definition dt {
+	font-weight: 650;
+	font-size: 1.05rem;
+	margin-bottom: 0.5rem;
+	letter-spacing: -0.01em;
+}
+.rf-feature-definition dd {
+	margin: 0;
+	color: var(--rf-color-muted);
+	font-size: 0.9rem;
+	line-height: 1.65;
+}

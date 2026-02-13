@@ -1,0 +1,28 @@
+/* Sidenote */
+.rf-sidenote {
+	margin: 1rem 0;
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+.rf-sidenote--sidenote {
+	border-left: 3px solid var(--rf-color-primary);
+	padding: 0.75rem 1rem;
+	background: var(--rf-color-info-bg);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	color: var(--rf-color-muted);
+}
+.rf-sidenote--footnote {
+	border-top: 1px solid var(--rf-color-border);
+	padding-top: 0.75rem;
+	margin-top: 2rem;
+	color: var(--rf-color-muted);
+}
+.rf-sidenote--tooltip {
+	background: var(--rf-color-surface-hover);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	padding: 0.75rem 1rem;
+	color: var(--rf-color-muted);
+}
+.rf-sidenote__body p { margin: 0; }
+.rf-sidenote__body p + p { margin-top: 0.5rem; }

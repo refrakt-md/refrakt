@@ -1,0 +1,41 @@
+/* Compare */
+.rf-compare {
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+}
+.rf-compare--side-by-side .rf-compare__panels {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.rf-compare--stacked .rf-compare__panels {
+	display: flex;
+	flex-direction: column;
+}
+.rf-compare [data-panel] {
+	min-width: 0;
+	overflow: auto;
+}
+.rf-compare--side-by-side [data-panel] + [data-panel] {
+	border-left: 1px solid var(--rf-color-border);
+}
+.rf-compare--stacked [data-panel] + [data-panel] {
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-compare [data-label] {
+	display: block;
+	padding: 0.5rem 1rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-compare pre {
+	margin: 0;
+	border: none;
+	border-radius: 0;
+}
