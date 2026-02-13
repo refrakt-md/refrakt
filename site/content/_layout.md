@@ -1,6 +1,8 @@
 {% layout %}
 {% region name="header" %}
 [![refrakt.md](/logo.svg)](/)
+
+[Docs](/docs/getting-started) [Changelog](/releases)
 {% /region %}
 
 {% region name="nav" %}
@@ -8,7 +10,6 @@
 ## Guide
 
 - getting-started
-- releases
 
 ## Sections
 

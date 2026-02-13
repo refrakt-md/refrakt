@@ -27,6 +27,9 @@
 		border-bottom: 1px solid var(--color-border);
 	}
 	.site-header-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		padding: 0.875rem 1.5rem;
 	}
 	.site-header :global(p) {
@@ -45,6 +48,16 @@
 		display: block;
 		height: 1.5rem;
 		width: auto;
+	}
+	.site-header-inner :global(p:last-child:not(:first-child)) {
+		font-size: 0.85rem;
+	}
+	.site-header-inner :global(p:last-child:not(:first-child) a) {
+		margin-left: 1.5rem;
+		color: var(--color-muted);
+	}
+	.site-header-inner :global(p:last-child:not(:first-child) a:hover) {
+		color: var(--color-text);
 	}
 	.page-content {
 		padding-top: 2.5rem;
