@@ -56,12 +56,22 @@ function extractText(node: Node): string {
 }
 
 // Check if a paragraph contains only bold text (submit button pattern)
+// Uses walk() to handle any AST nesting (e.g. inline wrapper nodes)
 function isBoldOnlyParagraph(node: Node): boolean {
 	if (node.type !== 'paragraph') return false;
-	const significantChildren = node.children.filter(
-		c => !(c.type === 'text' && c.attributes.content.trim() === '')
-	);
-	return significantChildren.length === 1 && significantChildren[0].type === 'strong';
+	const allNodes = Array.from(node.walk());
+	const hasStrong = allNodes.some(n => n.type === 'strong');
+	if (!hasStrong) return false;
+	const textContent = allNodes
+		.filter(n => n.type === 'text')
+		.map(n => n.attributes.content)
+		.join('');
+	const strongText = allNodes
+		.filter(n => n.type === 'strong')
+		.flatMap(s => Array.from(s.walk()).filter(n => n.type === 'text'))
+		.map(n => n.attributes.content)
+		.join('');
+	return textContent.trim() === strongText.trim() && textContent.trim().length > 0;
 }
 
 // Parse blockquote text for selection modifiers
