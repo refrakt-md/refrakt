@@ -47,6 +47,12 @@ npm create refrakt
 
 {% /feature %}
 
+{% testimonial layout="quote" %}
+> Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
+
+**Claude Opus** — AI, Anthropic
+{% /testimonial %}
+
 ## See it in action
 
 {% grid layout="1 1" %}
