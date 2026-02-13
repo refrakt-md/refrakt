@@ -16,6 +16,7 @@
 - cta
 - feature
 - pricing
+- comparison
 - testimonial
 
 ## Content

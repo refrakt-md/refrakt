@@ -57,6 +57,7 @@ export { Bento, BentoProperties, BentoComponent, BentoCell, BentoCellComponent }
 export { Storyboard, StoryboardComponent, StoryboardPanel, StoryboardPanelComponent } from './schema/storyboard.js';
 export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from './schema/annotate.js';
 export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
+export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
 
 // Theme system types
 export type {

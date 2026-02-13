@@ -30,7 +30,7 @@
 		margin: 1.5rem 0;
 	}
 
-	.annotate-margin :global(aside[typeof="AnnotateNote"]) {
+	.annotate-margin :global(.annotate-note) {
 		float: right;
 		clear: right;
 		width: 40%;
@@ -46,7 +46,7 @@
 		margin: 1.5rem 0;
 	}
 
-	.annotate-inline :global(aside[typeof="AnnotateNote"]) {
+	.annotate-inline :global(.annotate-note) {
 		margin: 0.5rem 0 1rem;
 		padding: 0.75rem 1rem;
 		font-size: 0.875rem;
@@ -61,7 +61,7 @@
 		margin: 1.5rem 0;
 	}
 
-	.annotate-tooltip :global(aside[typeof="AnnotateNote"]) {
+	.annotate-tooltip :global(.annotate-note) {
 		display: inline-block;
 		position: relative;
 		margin: 0 0.25rem;
@@ -70,7 +70,7 @@
 		vertical-align: super;
 	}
 
-	.annotate-tooltip :global(aside[typeof="AnnotateNote"])::before {
+	.annotate-tooltip :global(.annotate-note)::before {
 		content: '?';
 		display: inline-flex;
 		align-items: center;
@@ -85,7 +85,7 @@
 		cursor: help;
 	}
 
-	.annotate-tooltip :global(aside[typeof="AnnotateNote"] .note-body) {
+	.annotate-tooltip :global(.annotate-note .note-body) {
 		display: none;
 		position: absolute;
 		bottom: 100%;
@@ -95,7 +95,7 @@
 		padding: 0.75rem;
 		font-size: 0.8125rem;
 		color: var(--color-text);
-		background: white;
+		background: var(--color-bg);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md, 0.375rem);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -103,7 +103,7 @@
 		z-index: 10;
 	}
 
-	.annotate-tooltip :global(aside[typeof="AnnotateNote"]:hover .note-body) {
+	.annotate-tooltip :global(.annotate-note:hover .note-body) {
 		display: block;
 	}
 
@@ -122,7 +122,7 @@
 
 	@media (max-width: 768px) {
 		/* Fall back to inline style on small screens */
-		.annotate-margin :global(aside[typeof="AnnotateNote"]) {
+		.annotate-margin :global(.annotate-note) {
 			float: none;
 			width: 100%;
 			margin: 0.5rem 0 1rem;

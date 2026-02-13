@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
 import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
@@ -47,24 +46,35 @@ class BentoModel extends Model {
 	cellgroup: NodeStream;
 
 	convertHeadings(nodes: Node[]) {
-		const converted = headingsToList({ level: this.headingLevel })(nodes);
-		const n = converted.length - 1;
 		const baseLevel = this.headingLevel;
+		const cells: Node[] = [];
+		let currentHeading: Node | null = null;
+		let currentChildren: Node[] = [];
 
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const headingLevel = heading.attributes?.level ?? baseLevel;
-			const name = Array.from(heading.walk()).filter(n => n.type === 'text').map(t => t.attributes.content).join(' ');
+		const flush = () => {
+			if (currentHeading) {
+				const level = currentHeading.attributes?.level ?? baseLevel;
+				const name = Array.from(currentHeading.walk())
+					.filter(n => n.type === 'text')
+					.map(t => t.attributes.content).join(' ');
+				const diff = level - baseLevel;
+				const size = diff === 0 ? 'large' : diff === 1 ? 'medium' : 'small';
+				cells.push(new Ast.Node('tag', { name, size }, currentChildren, 'bento-cell'));
+			}
+		};
 
-			// Determine size: base level = large, base+1 = medium, base+2+ = small
-			const diff = headingLevel - baseLevel;
-			const size = diff === 0 ? 'large' : diff === 1 ? 'medium' : 'small';
+		for (const node of nodes) {
+			if (node.type === 'heading' && node.attributes.level >= baseLevel) {
+				flush();
+				currentHeading = node;
+				currentChildren = [];
+			} else {
+				currentChildren.push(node);
+			}
+		}
+		flush();
 
-			return new Ast.Node('tag', { name, size }, item.children.slice(1), 'bento-cell');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
+		return cells;
 	}
 
 	processChildren(nodes: Node[]) {

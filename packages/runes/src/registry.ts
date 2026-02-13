@@ -67,6 +67,9 @@ import {
   AnnotateNote, AnnotateNoteComponent,
   Form, FormComponent,
   FormField, FormFieldComponent,
+  Comparison, ComparisonComponent,
+  ComparisonColumn, ComparisonColumnComponent,
+  ComparisonRow, ComparisonRowComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -151,4 +154,7 @@ export const schema = {
   AnnotateNote: useSchema(AnnotateNote).defineType<AnnotateNoteComponent>('AnnotateNote'),
   Form: useSchema(Form).defineType<FormComponent>('Form'),
   FormField: useSchema(FormField).defineType<FormFieldComponent>('FormField'),
+  Comparison: useSchema(Comparison).defineType<ComparisonComponent>('Comparison'),
+  ComparisonColumn: useSchema(ComparisonColumn).defineType<ComparisonColumnComponent>('ComparisonColumn'),
+  ComparisonRow: useSchema(ComparisonRow).defineType<ComparisonRowComponent>('ComparisonRow'),
 }

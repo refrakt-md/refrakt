@@ -45,6 +45,7 @@ import { bento, bentoCell } from './tags/bento.js';
 import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
+import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -468,6 +469,26 @@ export const runes = {
     schema: formField,
     description: 'Individual form field with inferred type',
     type: schema.FormField,
+  }),
+  comparison: defineRune({
+    name: 'comparison',
+    aliases: ['versus', 'vs'],
+    schema: comparison,
+    description: 'Product/feature comparison matrix where headings become columns and bold labels align rows across columns',
+    reinterprets: { heading: 'column header (thing being compared)', list: 'feature rows', strong: 'row alignment label', 's': 'negative indicator', blockquote: 'callout badge' },
+    type: schema.Comparison,
+  }),
+  'comparison-column': defineRune({
+    name: 'comparison-column',
+    schema: comparisonColumn,
+    description: 'Individual column within a comparison matrix',
+    type: schema.ComparisonColumn,
+  }),
+  'comparison-row': defineRune({
+    name: 'comparison-row',
+    schema: comparisonRow,
+    description: 'Individual row/cell within a comparison column',
+    type: schema.ComparisonRow,
   }),
 };
 

@@ -126,10 +126,10 @@
 
 <div class="datatable" typeof="DataTable">
 	{#if searchable}
-		<div class="datatable-search">
+		<div class="datatable-toolbar">
 			<input
 				type="search"
-				placeholder="Search..."
+				placeholder="Filter rows..."
 				bind:value={searchQuery}
 				class="datatable-input"
 			/>
@@ -145,17 +145,17 @@
 				disabled={currentPage === 0}
 				onclick={() => currentPage--}
 			>
-				Previous
+				&larr; Prev
 			</button>
 			<span class="datatable-page-info">
-				Page {currentPage + 1} of {totalPages}
+				{currentPage + 1} / {totalPages}
 			</span>
 			<button
 				class="datatable-page-btn"
 				disabled={currentPage >= totalPages - 1}
 				onclick={() => currentPage++}
 			>
-				Next
+				Next &rarr;
 			</button>
 		</div>
 	{/if}
@@ -169,26 +169,28 @@
 		overflow: hidden;
 	}
 
-	.datatable-search {
-		padding: 0.75rem 1rem;
-		border-bottom: 1px solid var(--color-border);
+	.datatable-toolbar {
+		display: flex;
+		justify-content: flex-end;
+		padding: 0.5rem 0.75rem;
+		background: var(--color-surface-hover);
 	}
 
 	.datatable-input {
-		width: 100%;
-		padding: 0.5rem 0.75rem;
+		width: 14rem;
+		padding: 0.35rem 0.625rem;
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		font-size: 0.875rem;
+		border-radius: var(--radius-sm);
+		font-size: 0.8rem;
 		font-family: var(--font-sans);
-		background: var(--color-surface);
+		background: var(--color-bg);
 		color: var(--color-text);
 	}
 
 	.datatable-input:focus {
 		outline: none;
 		border-color: var(--color-primary);
-		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 15%, transparent);
 	}
 
 	.datatable-content :global(table) {
@@ -234,36 +236,36 @@
 	.datatable-pagination {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		gap: 1rem;
-		padding: 0.75rem 1rem;
+		justify-content: flex-end;
+		gap: 0.75rem;
+		padding: 0.5rem 0.75rem;
 		border-top: 1px solid var(--color-border);
-		background: var(--color-surface-hover);
 	}
 
 	.datatable-page-btn {
-		padding: 0.375rem 0.75rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		background: var(--color-surface);
-		color: var(--color-text);
+		padding: 0.25rem 0.5rem;
+		border: none;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-muted);
 		font-size: 0.8rem;
 		font-family: var(--font-sans);
 		cursor: pointer;
-		transition: background 150ms ease;
+		transition: color 150ms ease, background 150ms ease;
 	}
 
 	.datatable-page-btn:hover:not(:disabled) {
+		color: var(--color-text);
 		background: var(--color-surface-hover);
 	}
 
 	.datatable-page-btn:disabled {
-		opacity: 0.4;
+		opacity: 0.3;
 		cursor: not-allowed;
 	}
 
 	.datatable-page-info {
-		font-size: 0.8rem;
+		font-size: 0.75rem;
 		color: var(--color-muted);
 	}
 </style>
