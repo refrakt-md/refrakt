@@ -36,6 +36,7 @@ import Reveal from './components/Reveal.svelte';
 import Bento from './components/Bento.svelte';
 import Storyboard from './components/Storyboard.svelte';
 import Annotate from './components/Annotate.svelte';
+import Form from './components/Form.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components */
 export const registry: ComponentRegistry = {
@@ -94,4 +95,6 @@ export const registry: ComponentRegistry = {
 	'StoryboardPanel': Storyboard,
 	'Annotate': Annotate,
 	'AnnotateNote': Annotate,
+	'Form': Form,
+	'FormField': Form,
 };

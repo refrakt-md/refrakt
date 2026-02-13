@@ -65,6 +65,8 @@ import {
   StoryboardPanel, StoryboardPanelComponent,
   Annotate, AnnotateComponent,
   AnnotateNote, AnnotateNoteComponent,
+  Form, FormComponent,
+  FormField, FormFieldComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -147,4 +149,6 @@ export const schema = {
   StoryboardPanel: useSchema(StoryboardPanel).defineType<StoryboardPanelComponent>('StoryboardPanel'),
   Annotate: useSchema(Annotate).defineType<AnnotateComponent>('Annotate'),
   AnnotateNote: useSchema(AnnotateNote).defineType<AnnotateNoteComponent>('AnnotateNote'),
+  Form: useSchema(Form).defineType<FormComponent>('Form'),
+  FormField: useSchema(FormField).defineType<FormFieldComponent>('FormField'),
 }

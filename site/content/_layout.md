@@ -24,6 +24,7 @@
 - steps
 - figure
 - sidenote
+- form
 
 ## Layout
 

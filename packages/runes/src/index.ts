@@ -44,6 +44,7 @@ import { reveal, revealStep } from './tags/reveal.js';
 import { bento, bentoCell } from './tags/bento.js';
 import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { annotate, annotateNote } from './tags/annotate.js';
+import { form, formField } from './tags/form.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -453,6 +454,20 @@ export const runes = {
     schema: annotateNote,
     description: 'Annotation note within an annotate block',
     type: schema.AnnotateNote,
+  }),
+  form: defineRune({
+    name: 'form',
+    aliases: ['contact-form'],
+    schema: form,
+    description: 'Accessible HTML form from Markdown. Lists become input fields with smart type inference, blockquotes followed by lists become select/radio/checkbox groups.',
+    reinterprets: { list: 'form fields (type inferred from name)', blockquote: 'help text or selection group label', heading: 'fieldset group', strong: 'submit button label', hr: 'section separator' },
+    type: schema.Form,
+  }),
+  'form-field': defineRune({
+    name: 'form-field',
+    schema: formField,
+    description: 'Individual form field with inferred type',
+    type: schema.FormField,
   }),
 };
 

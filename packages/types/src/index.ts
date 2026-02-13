@@ -56,6 +56,7 @@ export { Reveal, RevealProperties, RevealComponent, RevealStep, RevealStepCompon
 export { Bento, BentoProperties, BentoComponent, BentoCell, BentoCellComponent } from './schema/bento.js';
 export { Storyboard, StoryboardComponent, StoryboardPanel, StoryboardPanelComponent } from './schema/storyboard.js';
 export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from './schema/annotate.js';
+export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
 
 // Theme system types
 export type {
