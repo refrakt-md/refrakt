@@ -4,17 +4,9 @@
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const typeName = $derived(tag.attributes.typeof);
-	const isTier = $derived(typeName === 'Tier' || typeName === 'FeaturedTier');
-	const isFeatured = $derived(typeName === 'FeaturedTier');
-
-	// For tiers: extract name and price from property children
-	const tierName = $derived(isTier
-		? tag.children.find((c: any) => c?.attributes?.property === 'name')?.children?.[0] ?? ''
-		: '');
-	const tierPrice = $derived(isTier
-		? tag.children.find((c: any) => c?.attributes?.property === 'price')?.children?.[0] ?? ''
-		: '');
+	const typeName = tag.attributes.typeof;
+	const isTier = typeName === 'Tier' || typeName === 'FeaturedTier';
+	const isFeatured = typeName === 'FeaturedTier';
 </script>
 
 {#if typeName === 'Pricing'}
@@ -22,13 +14,9 @@
 		{@render children()}
 	</section>
 {:else if isTier}
-	<div class="tier" class:featured={isFeatured}>
-		<h3 class="tier-name">{tierName}</h3>
-		<div class="tier-price">{tierPrice}</div>
-		<div class="tier-body">
-			{@render children()}
-		</div>
-	</div>
+	<li class="tier" class:featured={isFeatured}>
+		{@render children()}
+	</li>
 {/if}
 
 <style>
@@ -66,13 +54,13 @@
 		border-color: var(--color-primary);
 		box-shadow: var(--shadow-lg);
 	}
-	.tier-name {
+	.tier :global(h1[property="name"]) {
 		margin: 0 0 0.5rem;
 		font-size: 1.1rem;
 		font-weight: 600;
 		color: var(--color-muted);
 	}
-	.tier-price {
+	.tier :global(p[property="price"]) {
 		font-size: 2.5rem;
 		font-weight: 700;
 		letter-spacing: -0.03em;
@@ -80,30 +68,26 @@
 		margin-bottom: 1.5rem;
 		line-height: 1.1;
 	}
-	.tier-body {
+	.tier :global(div[data-name="body"]) {
 		flex: 1;
 	}
-	.tier-body :global(h1[property]),
-	.tier-body :global(p[property]) {
-		display: none;
-	}
-	.tier-body :global(ul) {
+	.tier :global(div[data-name="body"] ul) {
 		list-style: none;
 		padding-left: 0;
 		margin: 0 0 1.5rem;
 	}
-	.tier-body :global(li) {
+	.tier :global(div[data-name="body"] li) {
 		padding: 0.375rem 0;
 		font-size: 0.9rem;
 		color: var(--color-muted);
 	}
-	.tier-body :global(li::before) {
+	.tier :global(div[data-name="body"] li::before) {
 		content: '✓';
 		margin-right: 0.5rem;
 		color: var(--color-success);
 		font-weight: 600;
 	}
-	.tier-body :global(a) {
+	.tier :global(div[data-name="body"] a) {
 		display: block;
 		text-align: center;
 		padding: 0.625rem 1.5rem;
@@ -133,7 +117,7 @@
 		transform: translateY(-1px);
 		text-decoration: none;
 	}
-	.tier-body :global(p:has(a)) {
+	.tier :global(div[data-name="body"] p:has(a)) {
 		margin-bottom: 0;
 	}
 </style>
