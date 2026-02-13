@@ -1,23 +1,36 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { SerializedTag } from '@refrakt-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
-	const isGroup = tag.attributes.typeof === 'Storyboard';
+	function isTag(n: RendererNode): n is SerializedTag {
+		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
+	}
+
+	const isGroup = $derived(tag.attributes.typeof === 'Storyboard');
 
 	// For Storyboard container
-	const styleMeta = isGroup
+	const styleMeta = $derived(isGroup
 		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'style')?.attributes?.content || 'clean'
-		: 'clean';
-	const columns = isGroup
+		: 'clean');
+	const columns = $derived(isGroup
 		? parseInt(tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'columns')?.attributes?.content || '3', 10)
-		: 3;
+		: 3);
+
+	const panelsEl = $derived(isGroup
+		? tag.children.find((c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'panels')
+		: undefined);
 </script>
 
 {#if isGroup}
-	<div class="storyboard storyboard-{styleMeta}" style="--sb-columns: {columns};">
-		{@render children()}
+	<div class="storyboard storyboard-{styleMeta}">
+		<div class="storyboard-grid" style:grid-template-columns="repeat({columns}, 1fr)">
+			{#if panelsEl}
+				<Renderer node={panelsEl.children} />
+			{/if}
+		</div>
 	</div>
 {:else}
 	<div class="storyboard-panel">
@@ -32,9 +45,8 @@
 		margin: 1.5rem 0;
 	}
 
-	.storyboard :global(div[data-name="panels"]) {
+	.storyboard-grid {
 		display: grid;
-		grid-template-columns: repeat(var(--sb-columns, 3), 1fr);
 		gap: 1rem;
 	}
 
@@ -104,14 +116,14 @@
 	}
 
 	@media (max-width: 768px) {
-		.storyboard :global(div[data-name="panels"]) {
-			grid-template-columns: repeat(2, 1fr);
+		.storyboard-grid {
+			grid-template-columns: repeat(2, 1fr) !important;
 		}
 	}
 
 	@media (max-width: 480px) {
-		.storyboard :global(div[data-name="panels"]) {
-			grid-template-columns: 1fr;
+		.storyboard-grid {
+			grid-template-columns: 1fr !important;
 		}
 	}
 </style>

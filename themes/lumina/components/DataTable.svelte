@@ -173,7 +173,7 @@
 		display: flex;
 		justify-content: flex-end;
 		padding: 0.5rem 0.75rem;
-		background: var(--color-surface-hover);
+		background: var(--color-surface);
 	}
 
 	.datatable-input {
@@ -191,6 +191,20 @@
 		outline: none;
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 15%, transparent);
+	}
+
+	.datatable-content :global(.table-wrapper) {
+		border: none;
+		border-radius: 0;
+		margin: 0;
+		overflow: visible;
+	}
+	.datatable-content :global(.table-wrapper th) {
+		background: var(--color-surface);
+	}
+	.datatable-content :global(.table-wrapper th:first-child),
+	.datatable-content :global(.table-wrapper th:last-child) {
+		border-radius: 0;
 	}
 
 	.datatable-content :global(table) {

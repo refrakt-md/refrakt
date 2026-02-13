@@ -1,8 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { SerializedTag } from '@refrakt-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
+
+	function isTag(c: RendererNode): c is SerializedTag {
+		return typeof c === 'object' && c !== null && 'name' in c;
+	}
 
 	const isGroup = tag.attributes.typeof === 'Bento';
 
@@ -10,6 +15,11 @@
 	const metas = isGroup ? tag.children.filter((c: any) => c?.name === 'meta') : [];
 	const gap = isGroup ? metas[0]?.attributes?.content || '1rem' : '1rem';
 	const columns = isGroup ? parseInt(metas[1]?.attributes?.content || '4', 10) : 4;
+
+	// Find the grid container in tag.children
+	const gridEl = isGroup
+		? tag.children.find((c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'grid')
+		: undefined;
 
 	// For BentoCell
 	const cellName = !isGroup
@@ -21,8 +31,12 @@
 </script>
 
 {#if isGroup}
-	<section class="bento" style="--bento-gap: {gap}; --bento-columns: {columns};">
-		{@render children()}
+	<section class="bento">
+		<div class="bento-grid" style:grid-template-columns="repeat({columns}, 1fr)" style:gap={gap}>
+			{#if gridEl}
+				<Renderer node={gridEl.children} />
+			{/if}
+		</div>
 	</section>
 {:else}
 	<div class="bento-cell bento-cell-{cellSize}">
@@ -40,10 +54,8 @@
 		margin: 1.5rem 0;
 	}
 
-	.bento :global(div[data-name="grid"]) {
+	.bento-grid {
 		display: grid;
-		grid-template-columns: repeat(var(--bento-columns, 4), 1fr);
-		gap: var(--bento-gap, 1rem);
 	}
 
 	.bento-cell {
@@ -90,8 +102,8 @@
 	}
 
 	@media (max-width: 768px) {
-		.bento :global(div[data-name="grid"]) {
-			grid-template-columns: repeat(2, 1fr);
+		.bento-grid {
+			grid-template-columns: repeat(2, 1fr) !important;
 		}
 		.bento-cell-large {
 			grid-column: span 2;
@@ -103,8 +115,8 @@
 	}
 
 	@media (max-width: 480px) {
-		.bento :global(div[data-name="grid"]) {
-			grid-template-columns: 1fr;
+		.bento-grid {
+			grid-template-columns: 1fr !important;
 		}
 		.bento-cell-large,
 		.bento-cell-medium {

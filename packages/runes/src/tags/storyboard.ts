@@ -52,7 +52,7 @@ class StoryboardModel extends Model {
 		};
 
 		for (const node of nodes) {
-			if (node.type === 'image' || (node.type === 'paragraph' && node.children.some(c => c.type === 'image'))) {
+			if (node.type === 'image' || (node.type === 'paragraph' && Array.from(node.walk()).some(n => n.type === 'image'))) {
 				// Image starts a new panel
 				flushPanel();
 				currentPanelChildren.push(node);
