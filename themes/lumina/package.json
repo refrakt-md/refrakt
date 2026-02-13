@@ -1,7 +1,7 @@
 {
 	"name": "@refrakt-md/theme-lumina",
 	"description": "A clean, light documentation theme for refrakt.md",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"type": "module",
 	"license": "MIT",
 	"repository": {
@@ -35,8 +35,8 @@
 		"manifest.json"
 	],
 	"dependencies": {
-		"@refrakt-md/svelte": "0.2.0",
-		"@refrakt-md/types": "0.2.0"
+		"@refrakt-md/svelte": "0.3.0",
+		"@refrakt-md/types": "0.3.0"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0",
