@@ -162,9 +162,22 @@ function extractProduct(tag: Tag): object {
 	};
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+	'$': 'USD', '€': 'EUR', '£': 'GBP', '¥': 'JPY', '₹': 'INR',
+	'kr': 'SEK', 'CHF': 'CHF', 'A$': 'AUD', 'C$': 'CAD',
+};
+
+function inferCurrency(priceText: string): string {
+	for (const [symbol, code] of Object.entries(CURRENCY_SYMBOLS)) {
+		if (priceText.startsWith(symbol)) return code;
+	}
+	return 'USD';
+}
+
 function extractOffer(tag: Tag): object {
 	const name = findProperty(tag, 'name');
 	const price = findProperty(tag, 'price');
+	const currency = metaContent(tag, 'currency') as string | undefined;
 
 	const priceText = price ? textContent(price) : '';
 	const numericMatch = priceText.match(/[\d.]+/);
@@ -173,7 +186,7 @@ function extractOffer(tag: Tag): object {
 		'@type': 'Offer',
 		name: name ? textContent(name) : undefined,
 		price: numericMatch ? numericMatch[0] : priceText || undefined,
-		priceCurrency: 'USD',
+		priceCurrency: currency || inferCurrency(priceText),
 	};
 }
 

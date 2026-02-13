@@ -5,11 +5,11 @@ description: Pricing tables with tier comparison
 
 # Pricing
 
-Pricing tables with tier comparison. Headings become the section headline, and `{% tier %}` tags define each pricing tier.
+Pricing tables with tier comparison. Write natural markdown headings with `## Name — Price` to auto-generate tiers, or use explicit `{% tier %}` tags for full control.
 
-## Basic usage
+## Heading-based
 
-A simple pricing table with two tiers.
+Write pricing tiers as headings with a `Name — Price` pattern. Content below each heading becomes the tier body.
 
 ```markdoc
 {% pricing %}
@@ -17,21 +17,19 @@ A simple pricing table with two tiers.
 
 Pick the plan that fits your needs.
 
-{% tier name="Free" priceMonthly="$0" %}
+## Free — $0
 - 1 project
 - Community support
 - Basic analytics
 
 [Get started](/docs/getting-started)
-{% /tier %}
 
-{% tier name="Pro" priceMonthly="$19" %}
+## Pro — $19/mo
 - Unlimited projects
 - Priority support
 - Advanced analytics
 
 [Start trial](/docs/getting-started)
-{% /tier %}
 {% /pricing %}
 ```
 
@@ -40,37 +38,35 @@ Pick the plan that fits your needs.
 
 Pick the plan that fits your needs.
 
-{% tier name="Free" priceMonthly="$0" %}
+## Free — $0
 - 1 project
 - Community support
 - Basic analytics
 
 [Get started](/docs/getting-started)
-{% /tier %}
 
-{% tier name="Pro" priceMonthly="$19" %}
+## Pro — $19/mo
 - Unlimited projects
 - Priority support
 - Advanced analytics
 
 [Start trial](/docs/getting-started)
-{% /tier %}
 {% /pricing %}
 
-## Featured tier
+## Explicit tiers
 
-Use `featured=true` to highlight the recommended tier.
+Use `{% tier %}` tags when you need full control over attributes like `featured` or `currency`.
 
 ```markdoc
 {% pricing %}
 # Choose your plan
 
-{% tier name="Free" priceMonthly="$0" %}
+{% tier name="Free" price="$0" %}
 - 1 project
 - Community support
 {% /tier %}
 
-{% tier name="Pro" priceMonthly="$19" featured=true %}
+{% tier name="Pro" price="$19" featured=true %}
 - Unlimited projects
 - Priority support
 - Advanced analytics
@@ -78,7 +74,7 @@ Use `featured=true` to highlight the recommended tier.
 [Start trial](/docs/getting-started)
 {% /tier %}
 
-{% tier name="Enterprise" priceMonthly="Custom" %}
+{% tier name="Enterprise" price="Custom" %}
 - Custom integrations
 - Dedicated support
 - SLA guarantee
@@ -91,12 +87,12 @@ Use `featured=true` to highlight the recommended tier.
 {% pricing %}
 # Choose your plan
 
-{% tier name="Free" priceMonthly="$0" %}
+{% tier name="Free" price="$0" %}
 - 1 project
 - Community support
 {% /tier %}
 
-{% tier name="Pro" priceMonthly="$19" featured=true %}
+{% tier name="Pro" price="$19" featured=true %}
 - Unlimited projects
 - Priority support
 - Advanced analytics
@@ -104,7 +100,7 @@ Use `featured=true` to highlight the recommended tier.
 [Start trial](/docs/getting-started)
 {% /tier %}
 
-{% tier name="Enterprise" priceMonthly="Custom" %}
+{% tier name="Enterprise" price="Custom" %}
 - Custom integrations
 - Dedicated support
 - SLA guarantee
@@ -118,5 +114,6 @@ Use `featured=true` to highlight the recommended tier.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `name` | `string` | **required** | Tier name |
-| `priceMonthly` | `string` | **required** | Display price |
+| `price` | `string` | **required** | Display price (e.g. `$19`, `€29/mo`, `Custom`) |
 | `featured` | `boolean` | `false` | Highlight this tier as the recommended option |
+| `currency` | `string` | — | ISO currency code for SEO (auto-inferred from price symbol if omitted) |

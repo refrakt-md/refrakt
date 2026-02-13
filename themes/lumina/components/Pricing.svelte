@@ -83,6 +83,10 @@
 	.tier-body {
 		flex: 1;
 	}
+	.tier-body :global(h1[property]),
+	.tier-body :global(p[property]) {
+		display: none;
+	}
 	.tier-body :global(ul) {
 		list-style: none;
 		padding-left: 0;

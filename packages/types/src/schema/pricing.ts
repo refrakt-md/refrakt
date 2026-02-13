@@ -5,6 +5,7 @@ export class Tier {
   name: string | undefined = undefined;
   description: string | undefined = undefined;
   price: string | undefined = undefined;
+  currency: string | undefined = undefined;
   url: string | undefined = undefined;
 }
 
@@ -14,9 +15,10 @@ export interface TierComponent extends ComponentType<Tier> {
     name: 'h1',
     description: 'p',
     price: 'p',
+    currency: 'meta',
     url: 'a',
   },
-  refs: {}
+  refs: { body: 'div' }
 }
 
 export class Pricing extends PageSection {
@@ -30,5 +32,5 @@ export interface PricingProperties extends PageSectionProperties {
 export interface PricingComponent extends ComponentType<Pricing> {
   tag: 'section',
   properties: PricingProperties,
-  refs: {}
+  refs: { tiers: 'ul' }
 }
