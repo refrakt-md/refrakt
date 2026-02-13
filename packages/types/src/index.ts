@@ -51,6 +51,11 @@ export { Diff, DiffComponent } from './schema/diff.js';
 export { Chart, ChartComponent } from './schema/chart.js';
 export { Diagram, DiagramComponent } from './schema/diagram.js';
 export { Sidenote, SidenoteComponent } from './schema/sidenote.js';
+export { Conversation, ConversationComponent, ConversationMessage, ConversationMessageComponent } from './schema/conversation.js';
+export { Reveal, RevealProperties, RevealComponent, RevealStep, RevealStepComponent } from './schema/reveal.js';
+export { Bento, BentoProperties, BentoComponent, BentoCell, BentoCellComponent } from './schema/bento.js';
+export { Storyboard, StoryboardComponent, StoryboardPanel, StoryboardPanelComponent } from './schema/storyboard.js';
+export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from './schema/annotate.js';
 
 // Theme system types
 export type {

@@ -31,6 +31,11 @@ import Diff from './components/Diff.svelte';
 import Chart from './components/Chart.svelte';
 import Diagram from './components/Diagram.svelte';
 import Sidenote from './components/Sidenote.svelte';
+import Conversation from './components/Conversation.svelte';
+import Reveal from './components/Reveal.svelte';
+import Bento from './components/Bento.svelte';
+import Storyboard from './components/Storyboard.svelte';
+import Annotate from './components/Annotate.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components */
 export const registry: ComponentRegistry = {
@@ -79,4 +84,14 @@ export const registry: ComponentRegistry = {
 	'Chart': Chart,
 	'Diagram': Diagram,
 	'Sidenote': Sidenote,
+	'Conversation': Conversation,
+	'ConversationMessage': Conversation,
+	'Reveal': Reveal,
+	'RevealStep': Reveal,
+	'Bento': Bento,
+	'BentoCell': Bento,
+	'Storyboard': Storyboard,
+	'StoryboardPanel': Storyboard,
+	'Annotate': Annotate,
+	'AnnotateNote': Annotate,
 };

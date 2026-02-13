@@ -55,6 +55,16 @@ import {
   Chart, ChartComponent,
   Diagram, DiagramComponent,
   Sidenote, SidenoteComponent,
+  Conversation, ConversationComponent,
+  ConversationMessage, ConversationMessageComponent,
+  Reveal, RevealComponent,
+  RevealStep, RevealStepComponent,
+  Bento, BentoComponent,
+  BentoCell, BentoCellComponent,
+  Storyboard, StoryboardComponent,
+  StoryboardPanel, StoryboardPanelComponent,
+  Annotate, AnnotateComponent,
+  AnnotateNote, AnnotateNoteComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -127,4 +137,14 @@ export const schema = {
   Chart: useSchema(Chart).defineType<ChartComponent>('Chart'),
   Diagram: useSchema(Diagram).defineType<DiagramComponent>('Diagram'),
   Sidenote: useSchema(Sidenote).defineType<SidenoteComponent>('Sidenote'),
+  Conversation: useSchema(Conversation).defineType<ConversationComponent>('Conversation'),
+  ConversationMessage: useSchema(ConversationMessage).defineType<ConversationMessageComponent>('ConversationMessage'),
+  Reveal: useSchema(Reveal).defineType<RevealComponent>('Reveal'),
+  RevealStep: useSchema(RevealStep).defineType<RevealStepComponent>('RevealStep'),
+  Bento: useSchema(Bento).defineType<BentoComponent>('Bento'),
+  BentoCell: useSchema(BentoCell).defineType<BentoCellComponent>('BentoCell'),
+  Storyboard: useSchema(Storyboard).defineType<StoryboardComponent>('Storyboard'),
+  StoryboardPanel: useSchema(StoryboardPanel).defineType<StoryboardPanelComponent>('StoryboardPanel'),
+  Annotate: useSchema(Annotate).defineType<AnnotateComponent>('Annotate'),
+  AnnotateNote: useSchema(AnnotateNote).defineType<AnnotateNoteComponent>('AnnotateNote'),
 }

@@ -39,6 +39,11 @@ import { diff } from './tags/diff.js';
 import { chart } from './tags/chart.js';
 import { diagram } from './tags/diagram.js';
 import { sidenote } from './tags/sidenote.js';
+import { conversation, conversationMessage } from './tags/conversation.js';
+import { reveal, revealStep } from './tags/reveal.js';
+import { bento, bentoCell } from './tags/bento.js';
+import { storyboard, storyboardPanel } from './tags/storyboard.js';
+import { annotate, annotateNote } from './tags/annotate.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -381,6 +386,73 @@ export const runes = {
     description: 'Margin note or footnote displayed alongside the main content',
     reinterprets: { paragraph: 'note content' },
     type: schema.Sidenote,
+  }),
+  conversation: defineRune({
+    name: 'conversation',
+    aliases: ['dialogue', 'chat'],
+    schema: conversation,
+    description: 'Chat/dialogue display where blockquotes become alternating speaker messages',
+    reinterprets: { blockquote: 'speaker message', strong: 'speaker name' },
+    type: schema.Conversation,
+  }),
+  'conversation-message': defineRune({
+    name: 'conversation-message',
+    schema: conversationMessage,
+    description: 'Individual message within a conversation',
+    type: schema.ConversationMessage,
+  }),
+  reveal: defineRune({
+    name: 'reveal',
+    schema: reveal,
+    description: 'Progressive disclosure where headings become reveal steps shown one at a time',
+    reinterprets: { heading: 'reveal step label', paragraph: 'revealed content' },
+    type: schema.Reveal,
+  }),
+  'reveal-step': defineRune({
+    name: 'reveal-step',
+    schema: revealStep,
+    description: 'Individual step within a reveal sequence',
+    type: schema.RevealStep,
+  }),
+  bento: defineRune({
+    name: 'bento',
+    schema: bento,
+    description: 'Magazine-style bento grid where heading levels determine cell size',
+    reinterprets: { heading: 'cell title (level determines size)', paragraph: 'cell content', image: 'cell background' },
+    type: schema.Bento,
+  }),
+  'bento-cell': defineRune({
+    name: 'bento-cell',
+    schema: bentoCell,
+    description: 'Individual cell within a bento grid',
+    type: schema.BentoCell,
+  }),
+  storyboard: defineRune({
+    name: 'storyboard',
+    aliases: ['comic'],
+    schema: storyboard,
+    description: 'Comic/storyboard layout where images become panels and paragraphs become captions',
+    reinterprets: { image: 'panel visual', paragraph: 'caption/dialogue' },
+    type: schema.Storyboard,
+  }),
+  'storyboard-panel': defineRune({
+    name: 'storyboard-panel',
+    schema: storyboardPanel,
+    description: 'Individual panel within a storyboard',
+    type: schema.StoryboardPanel,
+  }),
+  annotate: defineRune({
+    name: 'annotate',
+    schema: annotate,
+    description: 'Content with margin annotations. Nested note tags appear as margin notes alongside the main text.',
+    reinterprets: { paragraph: 'main content' },
+    type: schema.Annotate,
+  }),
+  note: defineRune({
+    name: 'note',
+    schema: annotateNote,
+    description: 'Annotation note within an annotate block',
+    type: schema.AnnotateNote,
   }),
 };
 
