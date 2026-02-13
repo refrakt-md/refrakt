@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
-import { splitLayout } from '../layouts/index.js';
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { group } from '../lib/index.js';
 import { NodeStream } from '../lib/node.js';
@@ -40,27 +40,35 @@ class CallToActionModel extends SplitablePageSectionModel {
       .transform();
 
     const side = this.showcase.transform();
-    const className = this.split.length > 0 ? 'split' : undefined;
+    const mainContent = nav.concat(header, actions).wrap('div', { 'data-name': 'main' });
+    const showcaseContent = side.wrap('div', { 'data-name': 'showcase' });
 
-    const layout = splitLayout({
-      split: this.split,
-      mirror: this.mirror,
-      main: nav.concat(header, actions).toArray(),
-      side: side.toArray(),
-    });
+    const splitMeta = this.split.length > 0
+      ? new Tag('meta', { property: 'split', content: this.split.join(' ') })
+      : null;
+    const mirrorMeta = this.mirror
+      ? new Tag('meta', { property: 'mirror', content: 'true' })
+      : null;
+
+    const children = [
+      splitMeta,
+      mirrorMeta,
+      mainContent.next(),
+      ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
+    ].filter(Boolean);
 
     return createComponentRenderable(schema.CallToAction, {
       tag: 'section',
       property: 'contentSection',
-      class: [className, this.node.transformAttributes(this.config).class].join(' '),
+      class: this.node.transformAttributes(this.config).class,
       properties: {
         ...pageSectionProperties(header),
         action: actions.flatten().tags('li', 'div'),
       },
       refs: {
-        showcase: layout.gridItem(1),
+        showcase: showcaseContent,
       },
-      children: layout.next(),
+      children,
     })
   }
 }

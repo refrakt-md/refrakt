@@ -1,15 +1,50 @@
 <script lang="ts">
-	import type { SerializedTag } from '@refrakt-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
+
+	function isTag(n: RendererNode): n is SerializedTag {
+		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
+	}
+
 	const isGroup = $derived(tag.attributes.typeof === 'Steps');
+
+	const split = $derived(tag.children
+		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'split')
+		?.attributes?.content ?? '');
+
+	const mainEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'main'
+	));
+
+	const showcaseEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'showcase'
+	));
+
+	const hasSplit = $derived(!!split && !!showcaseEl);
+
+	function gridColumns(splitStr: string): string {
+		const parts = splitStr.split(' ').map(Number);
+		if (parts.length !== 2) return '1fr 1fr';
+		return `${parts[0]}fr ${parts[1]}fr`;
+	}
 </script>
 
 {#if isGroup}
 	<ol class="steps">
 		{@render children()}
 	</ol>
+{:else if hasSplit}
+	<li class="step step-split">
+		<div class="step-main">
+			{#if mainEl}<Renderer node={mainEl.children} />{/if}
+		</div>
+		<div class="step-showcase" style:grid-column="2" style:grid-row="1">
+			{#if showcaseEl}<Renderer node={showcaseEl.children} />{/if}
+		</div>
+	</li>
 {:else}
 	<li class="step">
 		{@render children()}
@@ -62,5 +97,14 @@
 		color: var(--color-muted);
 		font-size: 0.925rem;
 		line-height: 1.65;
+	}
+	.step-split {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+	}
+	.step-showcase {
+		border-radius: var(--radius-md);
+		overflow: hidden;
 	}
 </style>

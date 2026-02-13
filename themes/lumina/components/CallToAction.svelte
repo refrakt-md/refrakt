@@ -1,18 +1,72 @@
 <script lang="ts">
-	import type { SerializedTag } from '@refrakt-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
+
+	function isTag(n: RendererNode): n is SerializedTag {
+		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
+	}
+
+	const split = $derived(tag.children
+		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'split')
+		?.attributes?.content ?? '');
+
+	const mirror = $derived(tag.children
+		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'mirror')
+		?.attributes?.content === 'true');
+
+	const mainEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'main'
+	));
+
+	const showcaseEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'showcase'
+	));
+
+	const hasSplit = $derived(!!split && !!showcaseEl);
+
+	function gridColumns(splitStr: string, mirrored: boolean): string {
+		const parts = splitStr.split(' ').map(Number);
+		if (parts.length !== 2) return '1fr 1fr';
+		return mirrored ? `${parts[1]}fr ${parts[0]}fr` : `${parts[0]}fr ${parts[1]}fr`;
+	}
 </script>
 
-<section class="cta">
-	{@render children()}
-</section>
+{#if hasSplit}
+	<section class="cta cta-split" style:grid-template-columns={gridColumns(split, mirror)}>
+		<div class="cta-main">
+			{#if mainEl}<Renderer node={mainEl.children} />{/if}
+		</div>
+		<div class="cta-showcase">
+			{#if showcaseEl}<Renderer node={showcaseEl.children} />{/if}
+		</div>
+	</section>
+{:else}
+	<section class="cta">
+		{@render children()}
+	</section>
+{/if}
 
 <style>
 	.cta {
 		text-align: center;
 		padding: 3.5rem 2rem 3rem;
+	}
+	.cta-split {
+		display: grid;
+		align-items: center;
+		gap: 3rem;
+		text-align: left;
+	}
+	.cta-split :global(p) {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.cta-split :global(ul),
+	.cta-split :global(nav) {
+		justify-content: flex-start;
 	}
 	.cta :global(h1),
 	.cta :global(h2),

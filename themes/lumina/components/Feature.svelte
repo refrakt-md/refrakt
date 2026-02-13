@@ -1,17 +1,55 @@
 <script lang="ts">
-	import type { SerializedTag } from '@refrakt-md/svelte';
+	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
+	import { Renderer } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
+	function isTag(n: RendererNode): n is SerializedTag {
+		return n !== null && typeof n === 'object' && !Array.isArray(n) && (n as any).$$mdtype === 'Tag';
+	}
+
 	const typeName = $derived(tag.attributes.typeof);
 	const isDefinition = $derived(typeName === 'FeatureDefinition');
+
+	const split = $derived(tag.children
+		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'split')
+		?.attributes?.content ?? '');
+
+	const mirror = $derived(tag.children
+		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'mirror')
+		?.attributes?.content === 'true');
+
+	const mainEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'main'
+	));
+
+	const showcaseEl = $derived(tag.children.find(
+		(c): c is SerializedTag => isTag(c) && c.attributes?.['data-name'] === 'showcase'
+	));
+
+	const hasSplit = $derived(!!split && !!showcaseEl);
+
+	function gridColumns(splitStr: string, mirrored: boolean): string {
+		const parts = splitStr.split(' ').map(Number);
+		if (parts.length !== 2) return '1fr 1fr';
+		return mirrored ? `${parts[1]}fr ${parts[0]}fr` : `${parts[0]}fr ${parts[1]}fr`;
+	}
 </script>
 
 {#if isDefinition}
 	<div class="feature-card">
 		{@render children()}
 	</div>
+{:else if hasSplit}
+	<section class="feature feature-split" style:grid-template-columns={gridColumns(split, mirror)}>
+		<div class="feature-main">
+			{#if mainEl}<Renderer node={mainEl.children} />{/if}
+		</div>
+		<div class="feature-showcase">
+			{#if showcaseEl}<Renderer node={showcaseEl.children} />{/if}
+		</div>
+	</section>
 {:else}
 	<section class="feature">
 		{@render children()}
@@ -25,6 +63,17 @@
 	.feature :global(h2) {
 		text-align: center;
 		margin-bottom: 2rem;
+	}
+	.feature-split {
+		display: grid;
+		align-items: center;
+		gap: 3rem;
+	}
+	.feature-split :global(h2) {
+		text-align: left;
+	}
+	.feature-split :global(dl) {
+		display: block;
 	}
 	.feature :global(dl) {
 		display: grid;

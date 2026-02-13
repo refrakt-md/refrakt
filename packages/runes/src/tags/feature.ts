@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag, Ast } = Markdoc;
-import { splitLayout } from '../layouts/index.js';
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
 import { group, Model } from '../lib/index.js';
@@ -71,6 +70,22 @@ class FeatureModel extends SplitablePageSectionModel {
       .transform();
 
     const side = this.showcase.transform();
+    const mainContent = header.concat(definitions).wrap('div', { 'data-name': 'main' });
+    const showcaseContent = side.wrap('div', { 'data-name': 'showcase' });
+
+    const splitMeta = this.split.length > 0
+      ? new Tag('meta', { property: 'split', content: this.split.join(' ') })
+      : null;
+    const mirrorMeta = this.mirror
+      ? new Tag('meta', { property: 'mirror', content: 'true' })
+      : null;
+
+    const children = [
+      splitMeta,
+      mirrorMeta,
+      mainContent.next(),
+      ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
+    ].filter(Boolean);
 
     return createComponentRenderable(schema.Feature, {
       tag: 'section',
@@ -80,12 +95,7 @@ class FeatureModel extends SplitablePageSectionModel {
         ...pageSectionProperties(header),
         featureItem: definitions.flatten().tag('div'),
       },
-      children: splitLayout({
-        split: this.split,
-        mirror: this.mirror,
-        main: header.concat(definitions).toArray(),
-        side: side.toArray(),
-      }).next()
+      children,
     });
   }
 }
