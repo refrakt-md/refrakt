@@ -8,19 +8,14 @@ import Nav from './components/Nav.svelte';
 import Accordion from './components/Accordion.svelte';
 import Details from './components/Details.svelte';
 import Diff from './components/Diff.svelte';
-import Api from './components/Api.svelte';
 import Chart from './components/Chart.svelte';
 import Grid from './components/Grid.svelte';
 import Comparison from './components/Comparison.svelte';
 import Pricing from './components/Pricing.svelte';
 import Testimonial from './components/Testimonial.svelte';
-import Editor from './components/Editor.svelte';
 import Embed from './components/Embed.svelte';
 import Storyboard from './components/Storyboard.svelte';
 import Bento from './components/Bento.svelte';
-import HowTo from './components/HowTo.svelte';
-import Recipe from './components/Recipe.svelte';
-import Event from './components/Event.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components.
  *  Components registered here handle interactive behavior, complex data
@@ -45,7 +40,6 @@ export const registry: ComponentRegistry = {
 	'Details': Details,
 	// Complex data rendering
 	'Diff': Diff,
-	'Api': Api,
 	'Chart': Chart,
 	'Comparison': Comparison,
 	'ComparisonColumn': Comparison,
@@ -56,15 +50,10 @@ export const registry: ComponentRegistry = {
 	'StoryboardPanel': Storyboard,
 	'Bento': Bento,
 	'BentoCell': Bento,
-	'Editor': Editor,
 	'Embed': Embed,
 	// Rendering logic
 	'Pricing': Pricing,
 	'Tier': Pricing,
 	'FeaturedTier': Pricing,
 	'Testimonial': Testimonial,
-	'HowTo': HowTo,
-	'Recipe': Recipe,
-	'RecipeIngredient': Recipe,
-	'Event': Event,
 };

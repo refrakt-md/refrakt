@@ -1,6 +1,21 @@
 import type { ThemeConfig, RuneConfig, StructureEntry, SerializedTag, RendererNode } from './types.js';
 import { isTag, makeTag, readMeta } from './helpers.js';
 
+/** Pure text transforms for metaText values */
+const transforms: Record<string, (v: string) => string> = {
+	duration(iso: string): string {
+		const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+		if (!m) return iso;
+		const parts: string[] = [];
+		if (m[1]) parts.push(`${m[1]}h`);
+		if (m[2]) parts.push(`${m[2]}m`);
+		if (m[3]) parts.push(`${m[3]}s`);
+		return parts.join(' ') || iso;
+	},
+	uppercase: (s) => s.toUpperCase(),
+	capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
+};
+
 /**
  * Create an identity transform function from a theme configuration.
  *
@@ -88,6 +103,7 @@ function transformRune(
 
 		for (const [name, entry] of Object.entries(config.structure)) {
 			const element = buildStructureElement(entry, name, modifierValues, icons);
+			if (!element) continue;
 			if (entry.before) {
 				prepend.push(element);
 			} else {
@@ -95,9 +111,17 @@ function transformRune(
 			}
 		}
 
-		if (prepend.length || append.length) {
+		if (config.contentWrapper) {
+			const wrapped = makeTag(config.contentWrapper.tag,
+				{ 'data-name': config.contentWrapper.ref }, children);
+			children = [...prepend, wrapped, ...append];
+		} else if (prepend.length || append.length) {
 			children = [...prepend, ...children, ...append];
 		}
+	} else if (config.contentWrapper) {
+		const wrapped = makeTag(config.contentWrapper.tag,
+			{ 'data-name': config.contentWrapper.ref }, children);
+		children = [wrapped];
 	}
 
 	// 6. Apply BEM element classes to data-name children (recursively for structural elements)
@@ -154,24 +178,47 @@ function applyBemClasses(
 	return recurse(child);
 }
 
-/** Build a structural element from a StructureEntry config */
+/** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
 function buildStructureElement(
 	entry: StructureEntry,
 	name: string,
 	modifierValues: Record<string, string>,
 	icons: Record<string, Record<string, string>>,
-): SerializedTag {
+): SerializedTag | null {
+	// Conditional injection
+	if (entry.condition && !modifierValues[entry.condition]) return null;
+	if (entry.conditionAny && !entry.conditionAny.some(k => modifierValues[k])) return null;
+
 	const dataName = entry.ref ?? name;
+
+	// Resolve extra attributes
+	const extraAttrs: Record<string, string> = {};
+	if (entry.attrs) {
+		for (const [key, val] of Object.entries(entry.attrs)) {
+			if (typeof val === 'string') {
+				extraAttrs[key] = val;
+			} else {
+				extraAttrs[key] = modifierValues[val.fromModifier] ?? '';
+			}
+		}
+	}
+
+	const baseAttrs = { 'data-name': dataName, ...extraAttrs };
 
 	// Icon entry: create empty element, CSS displays icon via mask-image
 	if (entry.icon) {
-		return makeTag(entry.tag, { 'data-name': dataName }, []);
+		return makeTag(entry.tag, baseAttrs, []);
 	}
 
 	// Meta text injection: use resolved modifier value as text content
 	if (entry.metaText) {
-		const text = modifierValues[entry.metaText] ?? '';
-		return makeTag(entry.tag, { 'data-name': dataName }, [text]);
+		let text = modifierValues[entry.metaText] ?? '';
+		if (entry.transform && transforms[entry.transform]) {
+			text = transforms[entry.transform](text);
+		}
+		if (entry.textPrefix) text = entry.textPrefix + text;
+		if (entry.textSuffix) text = text + entry.textSuffix;
+		return makeTag(entry.tag, baseAttrs, [text]);
 	}
 
 	// Process children recursively
@@ -181,10 +228,11 @@ function buildStructureElement(
 			if (typeof child === 'string') {
 				elementChildren.push(child);
 			} else {
-				elementChildren.push(buildStructureElement(child, child.ref ?? '', modifierValues, icons));
+				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons);
+				if (built) elementChildren.push(built);
 			}
 		}
 	}
 
-	return makeTag(entry.tag, { 'data-name': dataName }, elementChildren);
+	return makeTag(entry.tag, baseAttrs, elementChildren);
 }

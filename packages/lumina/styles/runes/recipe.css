@@ -26,6 +26,10 @@
 	border-radius: var(--rf-radius-full);
 	text-transform: capitalize;
 }
+/* Difficulty colors driven by data-difficulty attribute from engine */
+[data-difficulty="easy"] .rf-recipe__badge { color: var(--rf-color-success); background: var(--rf-color-success-bg); }
+[data-difficulty="medium"] .rf-recipe__badge { color: var(--rf-color-warning); background: var(--rf-color-warning-bg); }
+[data-difficulty="hard"] .rf-recipe__badge { color: var(--rf-color-danger); background: var(--rf-color-danger-bg); }
 .rf-recipe__content {
 	display: flex;
 	flex-direction: column;

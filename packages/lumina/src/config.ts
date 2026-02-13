@@ -19,7 +19,19 @@ export const luminaConfig: ThemeConfig = {
 		AccordionItem: { block: 'accordion-item', autoLabel: { name: 'header' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
 		Grid: { block: 'grid' },
-		Editor: { block: 'editor' },
+		Editor: {
+			block: 'editor',
+			structure: {
+				topbar: {
+					tag: 'div', before: true,
+					children: [
+						{ tag: 'span', ref: 'dot' },
+						{ tag: 'span', ref: 'dot' },
+						{ tag: 'span', ref: 'dot' },
+					],
+				},
+			},
+		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
 		Embed: { block: 'embed' },
@@ -30,11 +42,69 @@ export const luminaConfig: ThemeConfig = {
 		TimelineEntry: { block: 'timeline-entry' },
 		Changelog: { block: 'changelog' },
 		ChangelogRelease: { block: 'changelog-release' },
-		Event: { block: 'event' },
+		Event: {
+			block: 'event',
+			contentWrapper: { tag: 'div', ref: 'content' },
+			modifiers: {
+				date: { source: 'meta' },
+				endDate: { source: 'meta' },
+				location: { source: 'meta' },
+				url: { source: 'meta' },
+			},
+			structure: {
+				details: {
+					tag: 'div', before: true,
+					children: [
+						{
+							tag: 'div', ref: 'detail', condition: 'date',
+							children: [
+								{ tag: 'span', ref: 'label', children: ['Date'] },
+								{ tag: 'span', ref: 'value', metaText: 'date' },
+								{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate' },
+							],
+						},
+						{
+							tag: 'div', ref: 'detail', condition: 'location',
+							children: [
+								{ tag: 'span', ref: 'label', children: ['Location'] },
+								{ tag: 'span', ref: 'value', metaText: 'location' },
+							],
+						},
+						{
+							tag: 'a', ref: 'register', condition: 'url',
+							attrs: { href: { fromModifier: 'url' } },
+							children: ['Register'],
+						},
+					],
+				},
+			},
+		},
 		Organization: { block: 'organization' },
 		Cast: { block: 'cast' },
 		CastMember: { block: 'cast-member' },
-		Recipe: { block: 'recipe' },
+		Recipe: {
+			block: 'recipe',
+			contentWrapper: { tag: 'div', ref: 'content' },
+			modifiers: {
+				prepTime: { source: 'meta' },
+				cookTime: { source: 'meta' },
+				servings: { source: 'meta' },
+				difficulty: { source: 'meta', default: 'medium' },
+			},
+			structure: {
+				meta: {
+					tag: 'div', before: true,
+					conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
+					children: [
+						{ tag: 'span', ref: 'meta-item', metaText: 'prepTime', transform: 'duration', textPrefix: 'Prep: ', condition: 'prepTime' },
+						{ tag: 'span', ref: 'meta-item', metaText: 'cookTime', transform: 'duration', textPrefix: 'Cook: ', condition: 'cookTime' },
+						{ tag: 'span', ref: 'meta-item', metaText: 'servings', textPrefix: 'Serves: ', condition: 'servings' },
+						{ tag: 'span', ref: 'badge', metaText: 'difficulty', condition: 'difficulty' },
+					],
+				},
+			},
+		},
+		RecipeIngredient: { block: 'recipe-ingredient' },
 		Pricing: { block: 'pricing' },
 		Tier: { block: 'tier' },
 		FeaturedTier: { block: 'featured-tier' },
@@ -45,7 +115,25 @@ export const luminaConfig: ThemeConfig = {
 		Nav: { block: 'nav' },
 		NavGroup: { block: 'nav-group' },
 		NavItem: { block: 'nav-item' },
-		Api: { block: 'api' },
+		Api: {
+			block: 'api',
+			contentWrapper: { tag: 'div', ref: 'body' },
+			modifiers: {
+				method: { source: 'meta', default: 'GET' },
+				path: { source: 'meta' },
+				auth: { source: 'meta' },
+			},
+			structure: {
+				header: {
+					tag: 'div', before: true,
+					children: [
+						{ tag: 'span', ref: 'method', metaText: 'method' },
+						{ tag: 'code', ref: 'path', metaText: 'path' },
+						{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth' },
+					],
+				},
+			},
+		},
 		Diff: { block: 'diff' },
 		Chart: { block: 'chart' },
 		MusicPlaylist: { block: 'music-playlist' },
@@ -114,7 +202,21 @@ export const luminaConfig: ThemeConfig = {
 		},
 		HowTo: {
 			block: 'howto',
-			modifiers: { difficulty: { source: 'meta', default: 'medium' } },
+			contentWrapper: { tag: 'div', ref: 'content' },
+			modifiers: {
+				estimatedTime: { source: 'meta' },
+				difficulty: { source: 'meta', default: 'medium' },
+			},
+			structure: {
+				meta: {
+					tag: 'div', before: true,
+					conditionAny: ['estimatedTime', 'difficulty'],
+					children: [
+						{ tag: 'span', ref: 'meta-item', metaText: 'estimatedTime', transform: 'duration', textPrefix: 'Estimated time: ', condition: 'estimatedTime' },
+						{ tag: 'span', ref: 'meta-item', metaText: 'difficulty', textPrefix: 'Difficulty: ', condition: 'difficulty' },
+					],
+				},
+			},
 		},
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───

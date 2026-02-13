@@ -34,6 +34,14 @@
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--rf-radius-sm);
 }
+/* Method colors driven by data-method attribute from engine */
+[data-method="GET"] .rf-api__method { color: var(--rf-color-success); background: var(--rf-color-success-bg); }
+[data-method="POST"] .rf-api__method { color: var(--rf-color-info); background: var(--rf-color-info-bg); }
+[data-method="PUT"] .rf-api__method { color: var(--rf-color-warning); background: var(--rf-color-warning-bg); }
+[data-method="PATCH"] .rf-api__method { color: var(--rf-color-warning); background: var(--rf-color-warning-bg); }
+[data-method="DELETE"] .rf-api__method { color: var(--rf-color-danger); background: var(--rf-color-danger-bg); }
+[data-method="HEAD"] .rf-api__method { color: var(--rf-color-muted); background: var(--rf-color-surface); }
+[data-method="OPTIONS"] .rf-api__method { color: var(--rf-color-muted); background: var(--rf-color-surface); }
 .rf-api__body {
 	padding: 1.25rem;
 }

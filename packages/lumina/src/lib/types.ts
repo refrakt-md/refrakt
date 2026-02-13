@@ -29,6 +29,9 @@ export interface RuneConfig {
 
 	/** Extra attributes to add to the root element */
 	rootAttributes?: Record<string, string>;
+
+	/** Wrap content children (non-structural) in this element */
+	contentWrapper?: { tag: string; ref: string };
 }
 
 export interface StructureEntry {
@@ -44,6 +47,18 @@ export interface StructureEntry {
 	icon?: { group: string; variant: string };
 	/** Inject text from a resolved modifier value */
 	metaText?: string;
+	/** Only inject if the named modifier has a truthy resolved value */
+	condition?: string;
+	/** Only inject if ANY of the named modifiers has a truthy value */
+	conditionAny?: string[];
+	/** Extra attributes. String values are literal; objects reference modifiers */
+	attrs?: Record<string, string | { fromModifier: string }>;
+	/** Transform applied to metaText value before injection */
+	transform?: 'duration' | 'uppercase' | 'capitalize';
+	/** Static text prepended to metaText value */
+	textPrefix?: string;
+	/** Static text appended to metaText value */
+	textSuffix?: string;
 }
 
 /** Top-level theme configuration */

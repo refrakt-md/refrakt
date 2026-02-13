@@ -22,6 +22,9 @@
 	border-radius: var(--rf-radius-full);
 	opacity: 0.8;
 }
+.rf-editor__dot:nth-child(1) { background: #ef4444; }
+.rf-editor__dot:nth-child(2) { background: #f59e0b; }
+.rf-editor__dot:nth-child(3) { background: #22c55e; }
 .rf-editor__content pre {
 	margin: 0;
 	padding: 1rem 1.25rem;
