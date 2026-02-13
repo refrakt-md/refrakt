@@ -1,13 +1,13 @@
 ---
 title: refrakt.md
-description: A content framework built on Markdoc with 40+ semantic runes
+description: A content framework built on Markdoc with 60+ semantic runes
 ---
 
 {% cta %}
 
 # Write Markdown. Get structure.
 
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 40+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
 ```shell
 npm create refrakt
@@ -55,31 +55,11 @@ npm create refrakt
 
 ## See it in action
 
-{% grid layout="1 1" %}
+Every example below is pure Markdown — no custom components, no JSX, no frontmatter gymnastics.
 
-```markdoc
-{% steps %}
-## Write Markdown
+{% tabs headingLevel=3 %}
 
-Create pages with standard Markdown.
-Runes wrap your content in semantic
-contexts — no new syntax to learn.
-
-## Add runes
-
-Pick from 40+ built-in runes for
-navigation, SEO, pricing tables,
-API docs, changelogs, and more.
-
-## Ship it
-
-Run `npm create refrakt` to scaffold
-a project. Deploy anywhere SvelteKit
-runs — Vercel, Netlify, or self-hosted.
-{% /steps %}
-```
-
----
+### Steps
 
 {% steps %}
 ## Write Markdown
@@ -88,15 +68,76 @@ Create pages with standard Markdown. Runes wrap your content in semantic context
 
 ## Add runes
 
-Pick from 40+ built-in runes for navigation, SEO, pricing tables, API docs, changelogs, and more.
+Pick from 60+ built-in runes for navigation, SEO, pricing tables, API docs, changelogs, and more.
 
 ## Ship it
 
 Run `npm create refrakt` to scaffold a project. Deploy anywhere SvelteKit runs — Vercel, Netlify, or self-hosted.
 {% /steps %}
 
-{% /grid %}
+### Comparison
 
-{% hint type="note" %}
-refrakt.md is in active development. This site is built with refrakt.md — every page you're reading is authored in Markdown with runes.
-{% /hint %}
+{% comparison highlighted="refrakt.md" %}
+
+## refrakt.md
+
+- **Syntax** — Standard Markdown + Markdoc tags
+- **Content model** — Semantic runes with structured output
+- **SEO** — Automatic JSON-LD and Open Graph from content
+- **Portability** — Plain Markdown files, no lock-in
+
+## MDX
+
+- **Syntax** — Markdown + JSX (custom syntax)
+- **Content model** — React components embedded in Markdown
+- **SEO** — ~~Manual~~ — you wire it yourself
+- **Portability** — ~~Tied to React ecosystem~~
+
+## Plain Markdown
+
+- **Syntax** — Standard Markdown only
+- **Content model** — Paragraphs, lists, headings — that's it
+- **SEO** — ~~None~~ — no structured data support
+- **Portability** — Universal, but limited expressiveness
+
+{% /comparison %}
+
+### Timeline
+
+{% timeline %}
+## Q1 2025 — Foundation
+
+Core rune system, Markdoc integration, and Svelte renderer. First 20 runes covering content, layout, and navigation.
+
+## Q2 2025 — Expansion
+
+40+ new runes for data, code, semantic content, and creative layouts. SEO layer with automatic JSON-LD generation.
+
+## Q3 2025 — Ecosystem
+
+Theme marketplace, CLI authoring tools, and multi-framework support beyond Svelte.
+{% /timeline %}
+
+### Conversation
+
+{% conversation %}
+> Can you build me a pricing page?
+
+> Sure — here's the Markdown. Three tiers, feature comparison, and a highlighted recommended plan. It also emits PriceSpecification schema automatically.
+
+> Wait, that's just Markdown? Where are the components?
+
+> There are none. The `pricing` rune reinterprets your headings as tier names and list items as features. The theme handles the visual layout.
+{% /conversation %}
+
+{% /tabs %}
+
+{% cta %}
+
+## Ready to get started?
+
+Scaffold a project in seconds and start writing content with runes.
+
+- [Get Started](/docs/getting-started)
+
+{% /cta %}
