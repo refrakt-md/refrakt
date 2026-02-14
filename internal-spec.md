@@ -1,0 +1,483 @@
+# refrakt.md -- Internal Engineering Spec
+
+> **Status:** Working document -- evolving
+> **Audience:** The developer and Claude Code
+> **Last updated:** 2026-02-14
+
+---
+
+## 1. How to Use This Document
+
+This is the private working engineering document for refrakt.md development. It tracks what is built, what is not, what to build next, and the reasoning behind technical decisions.
+
+- For **stable architecture concepts** (rune philosophy, theme system design, content/theme separation), reference `refrakt-md-architecture.md`.
+- For **business strategy** (monetization, marketplace, positioning), reference `refrakt-md-strategy.md`.
+- This document is where the messy "here's what we're building next" thinking lives. Update it as work progresses. Sections will become stale -- that is expected. When something here conflicts with the architecture doc, the architecture doc wins for principles, but this doc wins for current implementation reality.
+
+---
+
+## 2. Guidance for Claude Code
+
+### Read Order
+
+1. Read `refrakt-md-architecture.md` first for the full picture of what we are building and why.
+2. Read this document for what is actually built, what is missing, and what comes next.
+3. Explore the codebase starting from `packages/runes/src/index.ts` (the rune library entry point) outward.
+
+### Principles
+
+- **The rune library is the foundation.** Get it right before building anything else. Every rune must produce a clean, well-structured renderable tree. If a rune's output is wrong, everything downstream (identity transform, component dispatch, SEO extraction) breaks.
+- **Content and themes must be strictly separated.** Content lives in Markdoc files. Themes live in theme packages. A content file must never reference a framework, a component name, or a CSS class. A theme must never assume specific content structure beyond what runes guarantee.
+- **Runes are interpretation contexts, not just visual components.** A list inside `{% recipe %}` is an ingredient list. A list inside `{% pricing %}` is a feature list. The rune changes the *meaning* of the Markdown AST beneath it. This semantic reinterpretation is the core idea.
+- **The manifest is the contract between content and presentation.** The theme manifest (`manifest.json`) declares layouts, route rules, component mappings, and supported runes. It is the single source of truth for what a theme can do.
+- **Dev experience matters.** HMR and fast feedback loops are non-negotiable. If a content change takes more than a second to appear in the browser, something is broken.
+- **Production output should be optimized as if hand-written.** No unnecessary JavaScript. No unused CSS. No runtime overhead from dynamic dispatch when static dispatch will do.
+- **SEO is a by-product of semantic richness, not a separate concern.** Because runes understand the meaning of content, structured data (JSON-LD, Open Graph) falls out naturally. Authors should never have to think about SEO markup.
+
+### Key Questions to Keep in Mind
+
+These are unresolved or partially resolved design questions. When working on features that touch these areas, consider the tradeoffs:
+
+1. **Can runes describe themselves programmatically?**
+   Partially. `RuneDescriptor` (in `packages/runes/src/rune.ts`) provides `name`, `aliases`, `description`, `reinterprets`, `seoType`, and a reference to the type registry entry. However, *attribute definitions* are locked inside TypeScript decorators on the Markdoc schema objects and are not exposed for runtime introspection. This means AI and themes cannot currently ask "what attributes does `{% recipe %}` accept?" at runtime.
+
+2. **How does context-aware rendering work?**
+   Currently runtime-only via Svelte context (`packages/svelte/src/context.ts`). The `Renderer.svelte` component looks up components by `typeof` attribute through `getComponent()`. There is no build-time resolution and no `contextOverrides` support in the component registry -- the manifest schema allows it but nothing reads it. A `{% callout %}` inside a `{% hero %}` renders the same way as a standalone `{% callout %}`.
+
+3. **Where does the identity transform end and the component begin?**
+   The identity transform (`packages/lumina/src/lib/engine.ts`) adds BEM classes and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it. Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform; interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+
+---
+
+## 3. Gap Analysis
+
+### Fully Built (stable)
+
+| What | Where | Notes |
+|---|---|---|
+| 43 primary runes (61+ with aliases) across 7 categories | `packages/runes/src/tags/*.ts` | All defined in `packages/runes/src/index.ts` with `defineRune()`. Each has name, description, reinterprets map, and type registry binding. |
+| Rune class with RuneDescriptor | `packages/runes/src/rune.ts` | `Rune` class, `defineRune()` factory, `runeTagMap()` for Markdoc integration. |
+| Type schema system | `packages/types/src/schema/*.ts` | ~47 schema files defining component types with `useSchema().defineType()`. |
+| Rune registry with schema.org mappings | `packages/runes/src/registry.ts` | Maps every rune type to its schema + SEO bindings via RDFa `typeof` attributes. |
+| Identity transform engine | `packages/lumina/src/lib/engine.ts` | `createTransform()` -- BEM class generation, modifier resolution, structural element injection, meta tag consumption. |
+| Identity config (per-rune BEM mappings) | `packages/lumina/src/config.ts` | Per-rune configuration for the identity transform. |
+| SEO extraction layer | `packages/runes/src/seo.ts` | 8 extractors: FAQPage, Product/Offer, Review, BreadcrumbList, ItemList, VideoObject, ImageObject, MusicPlaylist. Open Graph derivation from hero/frontmatter/first-content. |
+| Three-layer routing | `packages/content/src/router.ts`, `packages/svelte/src/route-rules.ts` | Filesystem default, frontmatter overrides, manifest route rules with pattern matching. |
+| Layout system | `packages/content/src/layout.ts` | `{% layout %}`, `{% region %}`, `{% nav %}` with inheritance via `_layout.md` cascade. Region modes: replace, prepend, append. |
+| Content tree loading | `packages/content/src/site.ts` | Reads content directory, builds page tree, applies transforms. |
+| Navigation resolution | `packages/content/src/navigation.ts` | Resolves `{% nav %}` slugs to actual page data. |
+| Sitemap generation | `packages/content/src/sitemap.ts` | XML sitemap from content tree. |
+| Svelte Renderer | `packages/svelte/src/Renderer.svelte` | Recursive tree-to-DOM rendering with component dispatch via `typeof` attribute lookup. |
+| ThemeShell | `packages/svelte/src/ThemeShell.svelte` | Layout selection via route rules, SEO `<head>` injection (JSON-LD, OG, Twitter Card). |
+| Serialization layer | `packages/svelte/src/serialize.ts` | Converts Markdoc Tag class instances to plain serializable objects for SvelteKit load boundary. |
+| SvelteKit Vite plugin | `packages/sveltekit/src/plugin.ts` | Virtual modules, content HMR, dev/build mode switching. |
+| Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
+| Theme manifest | `themes/lumina/manifest.json` | Lumina theme config: 2 layouts (default, docs), route rules, component mappings. |
+| Theme component registry | `themes/lumina/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
+| `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
+| AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
+| AI provider abstraction | `packages/ai/src/provider.ts`, `packages/ai/src/providers/` | Anthropic and Ollama providers. |
+
+### Partially Built
+
+| What | Current State | What Is Missing |
+|---|---|---|
+| **Production rendering** | Uses SvelteKit prerender via catch-all `[...slug]` route. Works, produces static HTML. | No explicit page file generation. No pre-processed route tree. Context is resolved at runtime via Svelte context, not at build time. Code splitting is framework-default, not rune-aware. |
+| **Rune self-description** | `RuneDescriptor` provides name, aliases, description, reinterprets map, seoType. | Attribute definitions (what attributes a rune accepts, their types, defaults) are embedded in Markdoc `Schema` objects and not exposed in a way that AI or themes can introspect at runtime. |
+| **Component registry** | Works: `typeof` attribute -> component lookup via Svelte context. | Flat lookup only. No `contextOverrides` for parent-based component switching. The manifest schema supports the field but nothing reads it. |
+| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. | Missing per-rune CSS files (the architecture envisions `styles/runes/hero.css` etc. -- these do not exist yet as separate files). No dark mode tokens. No blog layout. |
+
+### Not Built
+
+| What | Notes |
+|---|---|
+| **Multi-framework adapters** (Astro, Next.js, static HTML) | Currently SvelteKit-only. |
+| **React component set** | Only Svelte components exist. |
+| **Shared interactive behavior** (vanilla JS core modules) | Interactive logic is embedded in Svelte components, not factored out. |
+| **Rune tree-shaking / content analysis manifest** | No build step that scans content and produces a rune usage report. |
+| **Generated routes** (blog indexes, tag pages, RSS feeds) | Manifest `routeRules` can declare `generated` but nothing processes it. |
+| **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
+| **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
+| **Reference rune** (`{% reference %}` for code documentation) | Not implemented. |
+| **Context-aware rendering overrides** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. |
+| **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
+| **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. |
+| **Per-rune CSS files** | Lumina styles are not yet split into one file per rune. |
+| **Blog layout** | Lumina has `default` and `docs` layouts only. |
+
+---
+
+## 4. Implementation Phases (Updated)
+
+### Phase 1: Rune Library & Parser -- COMPLETE
+
+All 43+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
+
+### Phase 2: Layout & Routing -- COMPLETE
+
+`{% layout %}`, `{% region %}`, `{% nav %}` all working. Three-layer routing implemented (filesystem, frontmatter, manifest route rules). Layout inheritance with replace/prepend/append modes. Sequential pagination derived from `{% nav ordered="true" %}`.
+
+### Phase 3: SvelteKit Renderer -- COMPLETE
+
+Lumina theme hand-crafted. Manifest format defined and validated. Component registry working via Svelte context. Dual-mode dev/build pipeline via Vite plugin with content HMR. Region-to-layout mapping working. ThemeShell handles layout selection and SEO head injection.
+
+### Phase 4: SEO Layer -- COMPLETE
+
+8 schema.org extractors (FAQPage, Product, Review, BreadcrumbList, ItemList, VideoObject, ImageObject, MusicPlaylist). JSON-LD generation. Open Graph derivation with fallback chain (frontmatter -> hero rune -> first content elements). Built as a separate pass over the renderable tree in `packages/runes/src/seo.ts`.
+
+### Phase 5: AI Theme Generation -- PARTIAL
+
+`refrakt write` for content generation exists with Anthropic and Ollama providers. AI theme generation (describe a theme in natural language, get a working theme package) is not built.
+
+### Phase 6 (next): Production Optimization & Missing Runes
+
+This phase covers the work needed to make production output competitive with hand-built sites:
+
+- Split Lumina CSS into per-rune files (`styles/runes/hero.css`, etc.)
+- Content analysis step that produces a rune usage manifest per page
+- Rune-level CSS tree-shaking based on the usage manifest
+- Per-page code splitting via pre-processed route generation (generate actual `+page.svelte` files)
+- Context-aware component binding at build time
+- Add missing runes: quiz, poll/survey, reference
+- Add blog layout to Lumina
+
+### Phase 7: Multi-Framework Support
+
+- Factor interactive behavior out of Svelte components into vanilla JS core modules
+- Create React component wrappers for the ~10 interactive runes
+- Build Astro adapter (Svelte or React islands with `client:` directives)
+- Build Next.js adapter
+- Build static HTML adapter with vanilla JS progressive enhancement
+
+### Phase 8: TypeDoc Pipeline
+
+- TypeScript Compiler API for symbol extraction
+- Generate `{% reference %}` Markdoc files from TypeScript source
+- CLI command `refrakt typedoc`
+- Staleness detection for CI (`--validate` mode)
+- Auto-generated `_layout.md` with `{% nav %}` for API reference navigation
+
+### Phase 9: Generated Routes & Content Features
+
+- Blog index generation from manifest `routeRules[].generated`
+- Tag/category archive pages
+- RSS feed generation
+- Search index generation
+- Client-side search component
+
+---
+
+## 5. Technical Decisions & Rationale
+
+### Why Markdoc over MDX?
+
+Markdoc's AST is inspectable and transformable. Runes can manipulate the tree before rendering -- reinterpret children, inject structural elements, extract SEO data. MDX compiles to JSX which is opaque to tooling. Markdoc also avoids tying content to a specific framework: the same `.md` file works whether the theme targets SvelteKit, Astro, or static HTML.
+
+### Why identity transform + BEM?
+
+Most runes do not need interactivity. The identity transform (`packages/lumina/src/lib/engine.ts`) produces fully structured HTML with BEM classes that CSS alone can style. This means ~75-80% of runes need zero framework components. Only interactive runes (tabs, accordion, form, datatable, reveal, chart, diagram) need Svelte/React wrappers.
+
+This is the key insight for multi-framework support: the component surface area is ~10-15 interactive components, not 43+. The identity layer handles everything else.
+
+### Why RDFa-style typeof attributes?
+
+The `typeof` attribute on rendered tags serves dual purpose:
+1. **Component dispatch** -- the Svelte Renderer checks `typeof` to look up a component in the registry.
+2. **Machine readability** -- schema.org compatibility for SEO crawlers.
+
+One attribute, two uses. No separate dispatch mechanism needed.
+
+### Why serialize the tree?
+
+Markdoc `Tag` objects are class instances with methods. They cannot cross the SvelteKit server-to-client boundary in `load` functions (which require JSON-serializable data). The serialize step (`packages/svelte/src/serialize.ts`) converts them to plain objects with a `$$mdtype: 'Tag'` marker.
+
+### Why context-based component dispatch (not import-based)?
+
+In development mode, the catch-all `[...slug]` route does not know at build time which runes a page will use. Component dispatch happens at runtime via Svelte context (`setRegistry()` / `getComponent()`). This enables instant HMR -- change content, see the result, no rebuild.
+
+In a future production mode with pre-processed routes, this would be replaced by explicit imports for each page's runes.
+
+### Why separate content and lumina packages?
+
+`packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/lumina` handles visual concerns: BEM class generation, structural element injection, design tokens. `packages/runes` is the shared vocabulary both depend on. This separation means a different theme can replace lumina entirely without touching content loading.
+
+---
+
+## 6. Open Questions
+
+### 1. Rune attribute introspection
+
+**Problem:** Runes define their accepted attributes in Markdoc `Schema` objects (via the `attributes` field). This information is available at parse time but not exposed through `RuneDescriptor` or the `Rune` class. AI theme generators and content validators cannot ask "what attributes does `{% recipe %}` accept?" without parsing the schema objects.
+
+**Options:**
+- (a) Add an `attributes` field to `RuneDescriptor` that mirrors the Markdoc schema's attribute definitions in a simpler format.
+- (b) Expose the Markdoc `Schema.attributes` directly through the `Rune` class.
+- (c) Generate a static attributes manifest at build time from the schema definitions.
+
+**Leaning toward:** (a) -- explicit is better than wrapping Markdoc internals.
+
+### 2. Context-aware rendering
+
+**Problem:** The architecture spec envisions `contextOverrides` in the manifest (e.g., a different callout component when nested inside a hero). The manifest schema supports this field, but nothing reads it. The identity transform does not know about parent context, and the Svelte Renderer does not pass parent typeof down.
+
+**Options:**
+- (a) Runtime: Pass parent typeof through Svelte context. Renderer checks `contextOverrides` during component lookup.
+- (b) Build-time: During pre-processed route generation, resolve the full nesting tree and emit explicit component imports.
+- (c) Identity-transform-level: The identity transform already walks the tree -- it could apply different BEM modifiers based on parent rune.
+
+**Leaning toward:** (c) for styling differences, (a) for component switching. Most "context-aware" rendering is CSS -- a callout inside a hero just needs a BEM modifier like `hero__callout` rather than a different component.
+
+### 3. Generated routes
+
+**Problem:** Blog indexes, tag pages, RSS feeds. Should these be a content-layer feature (generated by `packages/content`) or a theme-layer feature (generated by the adapter)?
+
+The manifest `routeRules` has a `generated` field for this, suggesting theme-layer. But the data (post listings, tag groupings) comes from content analysis.
+
+**Leaning toward:** Content layer produces the data (list of posts, tags, dates). Theme layer decides how to render it (what component, what layout). The adapter wires the two together.
+
+### 4. Theme marketplace package format
+
+**Problem:** When themes support multiple frameworks, what is the npm package structure? One package with subpath exports? Separate packages per framework?
+
+**Leaning toward:** Single package with subpath exports:
+```
+@refrakt-md/lumina          -> identity layer
+@refrakt-md/lumina/sveltekit -> SvelteKit adapter + Svelte components
+@refrakt-md/lumina/astro     -> Astro adapter
+@refrakt-md/lumina/nextjs    -> Next.js adapter + React components
+```
+
+### 5. How far to take pre-processed production builds?
+
+**Problem:** The current approach (catch-all route + SvelteKit prerender) works and produces good output. Full pre-processing (generating `+page.svelte` files per content page) adds complexity but enables framework-native code splitting and eliminates runtime component dispatch.
+
+**Question:** Is the complexity worth it now, or should we wait until multi-framework support forces the issue?
+
+**Current answer:** Wait. The catch-all approach works for SvelteKit. Pre-processing becomes necessary when we build the Astro and Next.js adapters, since those frameworks expect real page files.
+
+---
+
+## 7. Key File Paths
+
+### Rune System
+
+| File | Purpose |
+|---|---|
+| `packages/runes/src/index.ts` | All rune exports, tags map, nodes map |
+| `packages/runes/src/rune.ts` | `Rune` class, `RuneDescriptor` interface, `defineRune()`, `runeTagMap()` |
+| `packages/runes/src/tags/*.ts` | Individual rune implementations (43 files) |
+| `packages/runes/src/registry.ts` | Schema + SEO type mappings via `useSchema().defineType()` |
+| `packages/runes/src/seo.ts` | SEO extraction: JSON-LD extractors + OG derivation |
+| `packages/runes/src/nodes.ts` | Custom Markdoc node overrides (heading, paragraph, fence, etc.) |
+| `packages/runes/src/lib/renderable.ts` | `RenderableNodeCursor` for tree traversal |
+| `packages/runes/src/lib/model.ts` | `Model` class for schema building |
+| `packages/runes/src/lib/annotations/*.ts` | Decorator system: `@attribute`, `@group`, `@decoration`, `@id` |
+| `packages/runes/src/documents/page.ts` | `Page` document type |
+| `packages/runes/src/documents/doc.ts` | `DocPage` document type (docs-specific) |
+
+### Type System
+
+| File | Purpose |
+|---|---|
+| `packages/types/src/index.ts` | All type exports |
+| `packages/types/src/schema/*.ts` | ~47 TypeScript component type definitions |
+| `packages/types/src/types.ts` | Core type primitives (`Type`, `ComponentType`, `useSchema`) |
+| `packages/types/src/interfaces.ts` | Shared interfaces |
+| `packages/types/src/theme.ts` | Theme-related types |
+
+### Content Layer
+
+| File | Purpose |
+|---|---|
+| `packages/content/src/site.ts` | Content tree loading + transform pipeline |
+| `packages/content/src/layout.ts` | Layout chain resolution + region merging |
+| `packages/content/src/router.ts` | File-to-URL conversion |
+| `packages/content/src/navigation.ts` | Nav slug resolution to page data |
+| `packages/content/src/content-tree.ts` | Content directory tree structure |
+| `packages/content/src/frontmatter.ts` | Frontmatter extraction |
+| `packages/content/src/sitemap.ts` | XML sitemap generation |
+
+### Svelte Rendering
+
+| File | Purpose |
+|---|---|
+| `packages/svelte/src/Renderer.svelte` | Recursive tree-to-DOM rendering with component dispatch |
+| `packages/svelte/src/ThemeShell.svelte` | Layout selection + SEO `<head>` injection |
+| `packages/svelte/src/context.ts` | `setRegistry()`, `getComponent()`, `setElementOverrides()`, `getElementOverrides()` |
+| `packages/svelte/src/theme.ts` | `SvelteTheme` type definition |
+| `packages/svelte/src/serialize.ts` | Tag class instances -> plain serializable objects |
+| `packages/svelte/src/route-rules.ts` | Route pattern matching for layout selection |
+| `packages/svelte/src/types.ts` | `SerializedTag`, `RendererNode` types |
+| `packages/svelte/src/index.ts` | Package exports |
+
+### SvelteKit Integration
+
+| File | Purpose |
+|---|---|
+| `packages/sveltekit/src/plugin.ts` | Vite plugin: virtual modules + dev/build mode |
+| `packages/sveltekit/src/content-hmr.ts` | Content directory watcher for HMR |
+| `packages/sveltekit/src/virtual-modules.ts` | Virtual module definitions |
+| `packages/sveltekit/src/config.ts` | Plugin configuration types |
+
+### Lumina Theme
+
+| File | Purpose |
+|---|---|
+| `themes/lumina/manifest.json` | Theme config: layouts, route rules, component mappings |
+| `themes/lumina/registry.ts` | Component dispatch map (17 typeof values -> 16 Svelte components) |
+| `themes/lumina/index.ts` | Theme entry point |
+| `themes/lumina/elements.ts` | Element-level overrides |
+| `themes/lumina/tokens.css` | Design tokens (CSS custom properties) |
+
+### Identity Transform
+
+| File | Purpose |
+|---|---|
+| `packages/lumina/src/lib/engine.ts` | `createTransform()` -- BEM class application, modifier resolution, structural injection |
+| `packages/lumina/src/config.ts` | Per-rune BEM configuration |
+| `packages/lumina/src/transform.ts` | Transform entry point |
+| `packages/lumina/src/lib/helpers.ts` | Tag detection + construction helpers |
+| `packages/lumina/src/lib/types.ts` | `ThemeConfig`, `RuneConfig`, `StructureEntry` types |
+
+### CLI & AI
+
+| File | Purpose |
+|---|---|
+| `packages/cli/src/bin.ts` | CLI entry point |
+| `packages/cli/src/commands/write.ts` | `refrakt write` command |
+| `packages/cli/src/config.ts` | CLI configuration |
+| `packages/ai/src/prompt.ts` | System prompt generation for AI |
+| `packages/ai/src/provider.ts` | AI provider interface |
+| `packages/ai/src/providers/anthropic.ts` | Anthropic Claude provider |
+| `packages/ai/src/providers/ollama.ts` | Ollama local provider |
+
+---
+
+## 8. Component Registry Detail
+
+The Lumina theme registers these components in `themes/lumina/registry.ts`:
+
+| typeof Value(s) | Component File | Why It Needs a Component |
+|---|---|---|
+| `TabGroup`, `Tab` | `Tabs.svelte` | Click-to-switch panel state |
+| `DataTable` | `DataTable.svelte` | Sort, filter, paginate |
+| `Diagram` | `Diagram.svelte` | Mermaid/PlantUML rendering |
+| `Reveal`, `RevealStep` | `Reveal.svelte` | Progressive disclosure state |
+| `Form`, `FormField` | `Form.svelte` | Validation, dynamic fields |
+| `Nav`, `NavGroup`, `NavItem` | `Nav.svelte` | Active state, expand/collapse |
+| `Accordion`, `AccordionItem` | `Accordion.svelte` | Expand/collapse state |
+| `Details` | `Details.svelte` | Open/close toggle |
+| `Chart` | `Chart.svelte` | Chart.js rendering |
+| `Comparison`, `ComparisonColumn`, `ComparisonRow` | `Comparison.svelte` | Complex table layout |
+| `Grid` | `Grid.svelte` | Dynamic column calculation |
+| `Storyboard`, `StoryboardPanel` | `Storyboard.svelte` | Panel layout logic |
+| `Bento`, `BentoCell` | `Bento.svelte` | Grid sizing from heading levels |
+| `Embed` | `Embed.svelte` | oEmbed resolution, iframe handling |
+| `Pricing`, `Tier`, `FeaturedTier` | `Pricing.svelte` | Highlight/toggle logic |
+| `Testimonial` | `Testimonial.svelte` | Avatar + quote layout |
+
+Everything *not* in this list is rendered by the generic `Renderer.svelte` path: `svelte:element` with the BEM classes applied by the identity transform. This includes: Hero, Hint/Callout, CTA, Feature, Steps, Figure, Timeline, Changelog, Breadcrumb, Compare, Recipe, HowTo, Event, Cast, Organization, Api, Diff, Sidenote, Conversation, Annotate, Codegroup, TOC.
+
+---
+
+## 9. SEO Extractor Coverage
+
+The SEO layer (`packages/runes/src/seo.ts`) has extractors for these schema.org types:
+
+| Extractor | Triggered By | Schema.org Type |
+|---|---|---|
+| `extractFAQPage` | `{% accordion %}` / `{% faq %}` with `seoType: 'FAQPage'` | `FAQPage` with `Question` + `Answer` |
+| `extractProduct` | `{% pricing %}` with `seoType: 'Product'` | `Product` with nested `Offer` per tier |
+| `extractOffer` | Child of Product (not top-level) | `Offer` with price + currency |
+| `extractReview` | `{% testimonial %}` / `{% review %}` with `seoType: 'Review'` | `Review` with author + rating |
+| `extractBreadcrumbList` | `{% breadcrumb %}` with `seoType: 'BreadcrumbList'` | `BreadcrumbList` with `ListItem` |
+| `extractItemList` | `{% timeline %}` with `seoType: 'ItemList'` | `ItemList` with date + label |
+| `extractVideoObject` | `{% embed %}` with `seoType: 'VideoObject'` | `VideoObject` |
+| `extractImageObject` | `{% figure %}` with `seoType: 'ImageObject'` | `ImageObject` with caption |
+| `extractMusicPlaylist` | `{% music-playlist %}` with `seoType: 'MusicPlaylist'` | `MusicPlaylist` with `MusicRecording` tracks |
+
+**Runes with seoType but no extractor yet:**
+- `{% howto %}` -- `seoType: 'HowTo'` (no `extractHowTo`)
+- `{% recipe %}` -- `seoType: 'Recipe'` (no `extractRecipe`)
+- `{% event %}` -- `seoType: 'Event'` (no `extractEvent`)
+- `{% cast %}` -- `seoType: 'Person'` (no `extractPerson`)
+- `{% organization %}` -- `seoType: 'Organization'` (no `extractOrganization`)
+- `{% datatable %}` -- `seoType: 'Dataset'` (no `extractDataset`)
+
+These runes have the `seoType` field set on their `RuneDescriptor` and will be picked up by `buildSeoTypeMap()`, but `extractSeo()` will silently skip them because there is no matching extractor function in the `extractors` record.
+
+---
+
+## 10. Rendering Pipeline (How a Page Goes from .md to DOM)
+
+For reference, the full pipeline for a page in dev mode:
+
+```
+1. Content file (.md)
+   |
+   v
+2. Markdoc parse -> AST
+   (using custom nodes from packages/runes/src/nodes.ts)
+   |
+   v
+3. Markdoc transform -> Renderable tree (Tag instances)
+   (using tags map from packages/runes/src/index.ts)
+   (rune schemas reinterpret children: lists -> ingredients, headings -> tabs, etc.)
+   |
+   v
+4. SEO extraction (packages/runes/src/seo.ts)
+   (walks tree looking for typeof attributes, runs extractors, builds JSON-LD + OG)
+   |
+   v
+5. Serialize (packages/svelte/src/serialize.ts)
+   (Tag class instances -> plain {$$mdtype:'Tag', name, attributes, children} objects)
+   |
+   v
+6. Identity transform (packages/lumina/src/lib/engine.ts)
+   (walks serialized tree, adds BEM classes, injects structural elements, resolves modifiers)
+   |
+   v
+7. SvelteKit load function returns: { renderable, regions, seo, title, ... }
+   |
+   v
+8. ThemeShell.svelte
+   (selects layout via route rules, injects SEO head tags)
+   |
+   v
+9. Layout component (e.g. DocsLayout.svelte)
+   (receives regions + renderable, places them in slots)
+   |
+   v
+10. Renderer.svelte (recursive)
+    (for each tag: check typeof -> look up component in registry ->
+     if found: render component, else: render svelte:element with BEM classes)
+    |
+    v
+11. DOM
+```
+
+---
+
+## 11. What to Work on Next
+
+This section captures the current priority order. Update it as things change.
+
+**Immediate (before any new features):**
+- Write missing SEO extractors for HowTo, Recipe, Event, Person, Organization, Dataset
+- These runes already declare their `seoType` but get silently skipped
+
+**Short term:**
+- Split Lumina CSS into per-rune files for future tree-shaking
+- Add a blog layout to Lumina
+- Implement `contextOverrides` at the identity transform level (BEM modifiers based on parent rune)
+
+**Medium term:**
+- Content analysis step (scan all content, produce rune usage manifest)
+- Pre-processed route generation for production builds
+- Quiz, poll/survey, reference rune implementations
+
+**Long term:**
+- Multi-framework support (React components, Astro adapter, Next.js adapter)
+- AI theme generation
+- TypeDoc pipeline
+- Generated routes (blog indexes, tag pages, RSS)
