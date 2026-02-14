@@ -73,6 +73,100 @@ function escapeHtml(str: string): string {
 	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/** Align hunks into paired split lines (before/after) */
+function getSplitLines(hunks: DiffHunk[]): { before: (DiffHunk | null)[]; after: (DiffHunk | null)[] } {
+	const before: (DiffHunk | null)[] = [];
+	const after: (DiffHunk | null)[] = [];
+	let i = 0;
+	while (i < hunks.length) {
+		if (hunks[i].type === 'equal') {
+			before.push(hunks[i]);
+			after.push(hunks[i]);
+			i++;
+		} else {
+			const removes: DiffHunk[] = [];
+			const adds: DiffHunk[] = [];
+			while (i < hunks.length && hunks[i].type === 'remove') {
+				removes.push(hunks[i]);
+				i++;
+			}
+			while (i < hunks.length && hunks[i].type === 'add') {
+				adds.push(hunks[i]);
+				i++;
+			}
+			const maxLen = Math.max(removes.length, adds.length);
+			for (let j = 0; j < maxLen; j++) {
+				before.push(j < removes.length ? removes[j] : null);
+				after.push(j < adds.length ? adds[j] : null);
+			}
+		}
+	}
+	return { before, after };
+}
+
+/** Compute unified line numbers for each hunk */
+function getUnifiedLines(hunks: DiffHunk[]): { hunk: DiffHunk; beforeNum: number | null; afterNum: number | null }[] {
+	const lines: { hunk: DiffHunk; beforeNum: number | null; afterNum: number | null }[] = [];
+	let bNum = 1, aNum = 1;
+	for (const hunk of hunks) {
+		if (hunk.type === 'equal') {
+			lines.push({ hunk, beforeNum: bNum, afterNum: aNum });
+			bNum++; aNum++;
+		} else if (hunk.type === 'remove') {
+			lines.push({ hunk, beforeNum: bNum, afterNum: null });
+			bNum++;
+		} else if (hunk.type === 'add') {
+			lines.push({ hunk, beforeNum: null, afterNum: aNum });
+			aNum++;
+		}
+	}
+	return lines;
+}
+
+/** Build unified diff renderable — pre with line spans, gutter numbers, and prefix */
+function buildUnifiedRenderable(hunks: DiffHunk[]) {
+	const lines = getUnifiedLines(hunks);
+	const lineNodes = lines.map(({ hunk, beforeNum, afterNum }) => {
+		const prefix = hunk.type === 'remove' ? '-' : hunk.type === 'add' ? '+' : ' ';
+		return new Tag('span', { 'data-name': 'line', 'data-type': hunk.type }, [
+			new Tag('span', { 'data-name': 'gutter-num' }, [beforeNum != null ? String(beforeNum) : ' ']),
+			new Tag('span', { 'data-name': 'gutter-num' }, [afterNum != null ? String(afterNum) : ' ']),
+			new Tag('span', { 'data-name': 'gutter-prefix' }, [prefix]),
+			new Tag('span', { 'data-name': 'line-content', 'data-codeblock': true }, [hunk.html]),
+		]);
+	});
+
+	return [new Tag('pre', { 'data-name': 'code' }, lineNodes)];
+}
+
+/** Build split diff renderable — side-by-side panels with before/after lines */
+function buildSplitRenderable(hunks: DiffHunk[]) {
+	const { before, after } = getSplitLines(hunks);
+
+	function buildPanelLines(lines: (DiffHunk | null)[]) {
+		return lines.map(line => {
+			const type = line ? line.type : 'empty';
+			return new Tag('span', { 'data-name': 'line', 'data-type': type }, [
+				new Tag('span', { 'data-name': 'gutter' }, [line ? '' : ' ']),
+				new Tag('span', { 'data-name': 'line-content', 'data-codeblock': true }, [
+					line ? line.html : '\u00a0',
+				]),
+			]);
+		});
+	}
+
+	return [new Tag('div', { 'data-name': 'split-container' }, [
+		new Tag('div', { 'data-name': 'panel' }, [
+			new Tag('div', { 'data-name': 'header' }, ['Before']),
+			new Tag('pre', { 'data-name': 'code' }, buildPanelLines(before)),
+		]),
+		new Tag('div', { 'data-name': 'panel' }, [
+			new Tag('div', { 'data-name': 'header-after' }, ['After']),
+			new Tag('pre', { 'data-name': 'code' }, buildPanelLines(after)),
+		]),
+	])];
+}
+
 class DiffModel extends Model {
 	@attribute({ type: String, required: false, matches: modeType.slice() })
 	mode: typeof modeType[number] = 'unified';
@@ -102,8 +196,10 @@ class DiffModel extends Model {
 		// Compute line-level diff with syntax highlighting
 		const hunks = computeLineDiff(beforeSource, afterSource, lang);
 
-		const diffData = JSON.stringify({ language: lang, hunks });
-		const dataMeta = new Tag('meta', { content: diffData });
+		// Build expanded renderable AST
+		const expanded = this.mode === 'split'
+			? buildSplitRenderable(hunks)
+			: buildUnifiedRenderable(hunks);
 
 		return createComponentRenderable(schema.Diff, {
 			tag: 'div',
@@ -111,10 +207,7 @@ class DiffModel extends Model {
 				mode: modeMeta,
 				language: languageMeta,
 			},
-			refs: {
-				data: dataMeta,
-			},
-			children: [modeMeta, languageMeta, dataMeta],
+			children: [modeMeta, languageMeta, ...expanded],
 		});
 	}
 }

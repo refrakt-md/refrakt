@@ -134,7 +134,10 @@ export const luminaConfig: ThemeConfig = {
 				},
 			},
 		},
-		Diff: { block: 'diff' },
+		Diff: {
+			block: 'diff',
+			modifiers: { mode: { source: 'meta', default: 'unified' } },
+		},
 		Chart: { block: 'chart' },
 		MusicPlaylist: { block: 'music-playlist' },
 		MusicRecording: { block: 'music-recording' },

@@ -11,7 +11,4 @@ export interface DiffComponent extends ComponentType<Diff> {
 		mode: 'meta',
 		language: 'meta',
 	},
-	refs: {
-		data: 'meta',
-	}
 }

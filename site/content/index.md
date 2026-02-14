@@ -53,6 +53,79 @@ npm create refrakt
 **Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
+## Under the hood
+
+A single hint tag flows through five pipeline stages — from the Markdown you type to styled, semantic HTML.
+
+{% steps %}
+
+## You write Markdown
+
+Wrap content in a rune tag. The `type` attribute tells the system this is a warning.
+
+```markdown
+{% hint type="warning" %}
+Back up your data before proceeding.
+{% /hint %}
+```
+
+## Markdoc parses it
+
+Markdoc turns your text into an abstract syntax tree — a structured representation of every tag, heading, and paragraph.
+
+```text
+Document
+└── Tag(hint) { type: "warning" }
+    └── Paragraph
+        └── "Back up your data before proceeding."
+```
+
+## Rune schema interprets
+
+The Hint model reads `type`, emits a `hintType` meta tag, and wraps content in a body container. The `typeof` marker carries semantic meaning forward.
+
+```text
+section { typeof: "Hint" }
+├── meta { property: "hintType", content: "warning" }
+└── div { data-name: "body" }
+    └── p "Back up your data before proceeding."
+```
+
+## Theme engine styles
+
+The identity transform reads the meta tag, injects a header with icon and title, adds BEM classes, and strips the consumed metadata.
+
+```text
+section.rf-hint.rf-hint--warning
+├── div.rf-hint__header
+│   ├── span.rf-hint__icon
+│   └── span.rf-hint__title "warning"
+└── div.rf-hint__body
+    └── p "Back up your data before proceeding."
+```
+
+## Renderer outputs HTML
+
+The framework renderer walks the styled tree and produces clean, semantic HTML.
+
+```html
+<section class="rf-hint rf-hint--warning">
+  <div class="rf-hint__header">
+    <span class="rf-hint__icon"></span>
+    <span class="rf-hint__title">warning</span>
+  </div>
+  <div class="rf-hint__body">
+    <p>Back up your data before proceeding.</p>
+  </div>
+</section>
+```
+
+{% /steps %}
+
+{% hint type="warning" %}
+Back up your data before proceeding.
+{% /hint %}
+
 ## See it in action
 
 Every example below is pure Markdown — no custom components, no JSX, no frontmatter gymnastics.

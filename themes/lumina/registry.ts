@@ -7,7 +7,6 @@ import Form from './components/Form.svelte';
 import Nav from './components/Nav.svelte';
 import Accordion from './components/Accordion.svelte';
 import Details from './components/Details.svelte';
-import Diff from './components/Diff.svelte';
 import Chart from './components/Chart.svelte';
 import Grid from './components/Grid.svelte';
 import Comparison from './components/Comparison.svelte';
@@ -39,7 +38,6 @@ export const registry: ComponentRegistry = {
 	'AccordionItem': Accordion,
 	'Details': Details,
 	// Complex data rendering
-	'Diff': Diff,
 	'Chart': Chart,
 	'Comparison': Comparison,
 	'ComparisonColumn': Comparison,
