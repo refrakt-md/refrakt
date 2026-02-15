@@ -30,22 +30,22 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {} } = config;
 
-	function identityTransform(tree: RendererNode): RendererNode {
+	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
-		if (Array.isArray(tree)) return tree.map(identityTransform);
+		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentTypeof));
 		if (!isTag(tree)) return tree;
 
 		const typeof_ = tree.attributes?.typeof;
 		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, identityTransform);
+			return transformRune(tree, runes[typeof_], prefix, icons, identityTransform, parentTypeof);
 		}
 
-		// Recurse into children even for non-rune tags
-		return { ...tree, children: tree.children.map(identityTransform) };
+		// Recurse into children even for non-rune tags (pass parent context through)
+		return { ...tree, children: tree.children.map(n => identityTransform(n, parentTypeof)) };
 	}
 
-	return identityTransform;
+	return (tree: RendererNode) => identityTransform(tree);
 }
 
 /** Apply BEM classes and structural enhancements to a rune tag */
@@ -54,9 +54,11 @@ function transformRune(
 	config: RuneConfig,
 	prefix: string,
 	icons: Record<string, Record<string, string>>,
-	recurse: (node: RendererNode) => RendererNode
+	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
+	parentTypeof?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
+	const typeof_ = tag.attributes?.typeof;
 
 	// 1. Read modifiers from meta tags, collecting resolved values
 	const modifierClasses: string[] = [];
@@ -71,6 +73,11 @@ function transformRune(
 				modifierClasses.push(`${block}--${value}`);
 			}
 		}
+	}
+
+	// 1b. Context-aware modifiers — add BEM modifier when nested inside a matching parent rune
+	if (config.contextModifiers && parentTypeof && config.contextModifiers[parentTypeof]) {
+		modifierClasses.push(`${block}--${config.contextModifiers[parentTypeof]}`);
 	}
 
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
@@ -127,8 +134,8 @@ function transformRune(
 
 	// 6. Apply BEM element classes to data-name children (recursively for structural elements)
 	const enhancedChildren = children.map(child => {
-		if (!isTag(child)) return recurse(child);
-		return applyBemClasses(child, block, recurse);
+		if (!isTag(child)) return recurse(child, typeof_);
+		return applyBemClasses(child, block, recurse, typeof_);
 	});
 
 	// 7. Remove consumed meta tags
@@ -155,7 +162,8 @@ function transformRune(
 function applyBemClasses(
 	child: SerializedTag,
 	block: string,
-	recurse: (node: RendererNode) => RendererNode
+	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
+	parentTypeof?: string
 ): RendererNode {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
@@ -164,7 +172,7 @@ function applyBemClasses(
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, recurse);
+			return applyBemClasses(c, block, recurse, parentTypeof);
 		});
 		return recurse({
 			...child,
@@ -173,10 +181,10 @@ function applyBemClasses(
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
 			},
 			children: nestedChildren,
-		});
+		}, parentTypeof);
 	}
 
-	return recurse(child);
+	return recurse(child, parentTypeof);
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
