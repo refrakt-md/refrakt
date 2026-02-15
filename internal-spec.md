@@ -45,7 +45,7 @@ These are unresolved or partially resolved design questions. When working on fea
    Currently runtime-only via Svelte context (`packages/svelte/src/context.ts`). The `Renderer.svelte` component looks up components by `typeof` attribute through `getComponent()`. There is no build-time resolution and no `contextOverrides` support in the component registry -- the manifest schema allows it but nothing reads it. A `{% callout %}` inside a `{% hero %}` renders the same way as a standalone `{% callout %}`.
 
 3. **Where does the identity transform end and the component begin?**
-   The identity transform (`packages/lumina/src/lib/engine.ts`) adds BEM classes and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it. Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform; interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it. Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform; interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
 
 ---
 
@@ -59,8 +59,10 @@ These are unresolved or partially resolved design questions. When working on fea
 | Rune class with RuneDescriptor | `packages/runes/src/rune.ts` | `Rune` class, `defineRune()` factory, `runeTagMap()` for Markdoc integration. |
 | Type schema system | `packages/types/src/schema/*.ts` | ~47 schema files defining component types with `useSchema().defineType()`. |
 | Rune registry with schema.org mappings | `packages/runes/src/registry.ts` | Maps every rune type to its schema + SEO bindings via RDFa `typeof` attributes. |
-| Identity transform engine | `packages/lumina/src/lib/engine.ts` | `createTransform()` -- BEM class generation, modifier resolution, structural element injection, meta tag consumption. |
-| Identity config (per-rune BEM mappings) | `packages/lumina/src/config.ts` | Per-rune configuration for the identity transform. |
+| Identity transform engine | `packages/transform/src/engine.ts` | `createTransform()` in `@refrakt-md/transform` -- BEM class generation, modifier resolution, structural element injection, meta tag consumption. Extracted from lumina so any theme can reuse it with its own `ThemeConfig`. |
+| Identity config (per-rune BEM mappings) | `packages/lumina/src/config.ts` | Per-rune configuration for the identity transform. Imports `ThemeConfig` from `@refrakt-md/transform`. |
+| Per-rune CSS (44 files) | `packages/lumina/styles/runes/*.css` | One CSS file per rune for targeted styling. Enables future tree-shaking by rune usage. |
+| Design tokens incl. dark mode | `packages/lumina/tokens/base.css`, `tokens/dark.css` | CSS custom properties for colors, spacing, typography. Dark mode via `prefers-color-scheme` and `.dark` class. |
 | SEO extraction layer | `packages/runes/src/seo.ts` | 8 extractors: FAQPage, Product/Offer, Review, BreadcrumbList, ItemList, VideoObject, ImageObject, MusicPlaylist. Open Graph derivation from hero/frontmatter/first-content. |
 | Three-layer routing | `packages/content/src/router.ts`, `packages/svelte/src/route-rules.ts` | Filesystem default, frontmatter overrides, manifest route rules with pattern matching. |
 | Layout system | `packages/content/src/layout.ts` | `{% layout %}`, `{% region %}`, `{% nav %}` with inheritance via `_layout.md` cascade. Region modes: replace, prepend, append. |
@@ -85,7 +87,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Production rendering** | Uses SvelteKit prerender via catch-all `[...slug]` route. Works, produces static HTML. | No explicit page file generation. No pre-processed route tree. Context is resolved at runtime via Svelte context, not at build time. Code splitting is framework-default, not rune-aware. |
 | **Rune self-description** | `RuneDescriptor` provides name, aliases, description, reinterprets map, seoType. | Attribute definitions (what attributes a rune accepts, their types, defaults) are embedded in Markdoc `Schema` objects and not exposed in a way that AI or themes can introspect at runtime. |
 | **Component registry** | Works: `typeof` attribute -> component lookup via Svelte context. | Flat lookup only. No `contextOverrides` for parent-based component switching. The manifest schema supports the field but nothing reads it. |
-| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. | Missing per-rune CSS files (the architecture envisions `styles/runes/hero.css` etc. -- these do not exist yet as separate files). No dark mode tokens. No blog layout. |
+| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. Per-rune CSS files (44) and dark mode tokens are in place. | No blog layout. No CSS tree-shaking (per-rune files exist but all are bundled regardless of usage). |
 
 ### Not Built
 
@@ -102,8 +104,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Context-aware rendering overrides** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. |
-| **Per-rune CSS files** | Lumina styles are not yet split into one file per rune. |
 | **Blog layout** | Lumina has `default` and `docs` layouts only. |
+| **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
 
 ---
 
@@ -133,7 +135,8 @@ Lumina theme hand-crafted. Manifest format defined and validated. Component regi
 
 This phase covers the work needed to make production output competitive with hand-built sites:
 
-- Split Lumina CSS into per-rune files (`styles/runes/hero.css`, etc.)
+- ~~Split Lumina CSS into per-rune files~~ -- DONE (44 files in `packages/lumina/styles/runes/`)
+- ~~Extract identity transform into `@refrakt-md/transform`~~ -- DONE
 - Content analysis step that produces a rune usage manifest per page
 - Rune-level CSS tree-shaking based on the usage manifest
 - Per-page code splitting via pre-processed route generation (generate actual `+page.svelte` files)
@@ -175,7 +178,9 @@ Markdoc's AST is inspectable and transformable. Runes can manipulate the tree be
 
 ### Why identity transform + BEM?
 
-Most runes do not need interactivity. The identity transform (`packages/lumina/src/lib/engine.ts`) produces fully structured HTML with BEM classes that CSS alone can style. This means ~75-80% of runes need zero framework components. Only interactive runes (tabs, accordion, form, datatable, reveal, chart, diagram) need Svelte/React wrappers.
+Most runes do not need interactivity. The identity transform (`packages/transform/src/engine.ts`, in `@refrakt-md/transform`) produces fully structured HTML with BEM classes that CSS alone can style. This means ~75-80% of runes need zero framework components. Only interactive runes (tabs, accordion, form, datatable, reveal, chart, diagram) need Svelte/React wrappers.
+
+The engine was extracted into `@refrakt-md/transform` so any theme can reuse `createTransform()` with its own `ThemeConfig`. Lumina's config lives in `packages/lumina/src/config.ts` and produces the pre-built `identityTransform` via `packages/lumina/src/transform.ts`.
 
 This is the key insight for multi-framework support: the component surface area is ~10-15 interactive components, not 43+. The identity layer handles everything else.
 
@@ -197,9 +202,15 @@ In development mode, the catch-all `[...slug]` route does not know at build time
 
 In a future production mode with pre-processed routes, this would be replaced by explicit imports for each page's runes.
 
-### Why separate content and lumina packages?
+### Why separate content, transform, and lumina packages?
 
-`packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/lumina` handles visual concerns: BEM class generation, structural element injection, design tokens. `packages/runes` is the shared vocabulary both depend on. This separation means a different theme can replace lumina entirely without touching content loading.
+The theme system is now a three-package split:
+
+1. **`@refrakt-md/transform`** (`packages/transform/`) -- the generic identity transform engine. Provides `createTransform()` and helper utilities. Framework-agnostic, theme-agnostic. Any theme can import this and supply its own `ThemeConfig`.
+2. **`@refrakt-md/lumina`** (`packages/lumina/`) -- Lumina's specific config + CSS. Contains the `ThemeConfig` for Lumina's BEM mappings, per-rune CSS files (44), and design tokens (light + dark). No framework code.
+3. **`@refrakt-md/theme-lumina`** (`themes/lumina/`) -- Svelte implementation layer. Interactive components, manifest, registry. This is the only framework-specific package.
+
+`packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/runes` is the shared vocabulary everything depends on. This separation means a different theme can replace lumina entirely without touching content loading, and a React implementation layer could reuse `@refrakt-md/transform` + `@refrakt-md/lumina` CSS with its own component set.
 
 ---
 
@@ -241,11 +252,13 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 
 **Leaning toward:** Single package with subpath exports:
 ```
-@refrakt-md/lumina          -> identity layer
+@refrakt-md/lumina          -> identity layer (config + CSS)
 @refrakt-md/lumina/sveltekit -> SvelteKit adapter + Svelte components
 @refrakt-md/lumina/astro     -> Astro adapter
 @refrakt-md/lumina/nextjs    -> Next.js adapter + React components
 ```
+
+**Current reality:** The three-package split (`@refrakt-md/transform` → `@refrakt-md/lumina` → `@refrakt-md/theme-lumina`) already provides the separation needed. A future React theme would import `@refrakt-md/transform` + the `@refrakt-md/lumina` CSS and provide its own React components, without touching the identity layer or config.
 
 ### 5. How far to take pre-processed production builds?
 
@@ -282,6 +295,7 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 | `packages/types/src/index.ts` | All type exports |
 | `packages/types/src/schema/*.ts` | ~47 TypeScript component type definitions |
 | `packages/types/src/types.ts` | Core type primitives (`Type`, `ComponentType`, `useSchema`) |
+| `packages/types/src/serialized.ts` | Canonical `SerializedTag`, `RendererNode` types (used by transform, svelte, lumina) |
 | `packages/types/src/interfaces.ts` | Shared interfaces |
 | `packages/types/src/theme.ts` | Theme-related types |
 
@@ -307,7 +321,7 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 | `packages/svelte/src/theme.ts` | `SvelteTheme` type definition |
 | `packages/svelte/src/serialize.ts` | Tag class instances -> plain serializable objects |
 | `packages/svelte/src/route-rules.ts` | Route pattern matching for layout selection |
-| `packages/svelte/src/types.ts` | `SerializedTag`, `RendererNode` types |
+| `packages/svelte/src/types.ts` | Re-exports `SerializedTag`, `RendererNode` from `@refrakt-md/types` |
 | `packages/svelte/src/index.ts` | Package exports |
 
 ### SvelteKit Integration
@@ -329,15 +343,16 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 | `themes/lumina/elements.ts` | Element-level overrides |
 | `themes/lumina/tokens.css` | Design tokens (CSS custom properties) |
 
-### Identity Transform
+### Identity Transform (`@refrakt-md/transform`)
 
 | File | Purpose |
 |---|---|
-| `packages/lumina/src/lib/engine.ts` | `createTransform()` -- BEM class application, modifier resolution, structural injection |
-| `packages/lumina/src/config.ts` | Per-rune BEM configuration |
-| `packages/lumina/src/transform.ts` | Transform entry point |
-| `packages/lumina/src/lib/helpers.ts` | Tag detection + construction helpers |
-| `packages/lumina/src/lib/types.ts` | `ThemeConfig`, `RuneConfig`, `StructureEntry` types |
+| `packages/transform/src/index.ts` | Barrel export for the transform package |
+| `packages/transform/src/engine.ts` | `createTransform()` -- BEM class application, modifier resolution, structural injection |
+| `packages/transform/src/helpers.ts` | Tag detection + construction helpers (`isTag`, `makeTag`, `findMeta`, etc.) |
+| `packages/transform/src/types.ts` | `ThemeConfig`, `RuneConfig`, `StructureEntry` types |
+| `packages/lumina/src/config.ts` | Per-rune BEM configuration (Lumina's `ThemeConfig`) |
+| `packages/lumina/src/transform.ts` | Re-exports from `@refrakt-md/transform` + pre-built Lumina `identityTransform` |
 
 ### CLI & AI
 
@@ -433,7 +448,7 @@ For reference, the full pipeline for a page in dev mode:
    (Tag class instances -> plain {$$mdtype:'Tag', name, attributes, children} objects)
    |
    v
-6. Identity transform (packages/lumina/src/lib/engine.ts)
+6. Identity transform (packages/transform/src/engine.ts)
    (walks serialized tree, adds BEM classes, injects structural elements, resolves modifiers)
    |
    v
@@ -467,9 +482,10 @@ This section captures the current priority order. Update it as things change.
 - These runes already declare their `seoType` but get silently skipped
 
 **Short term:**
-- Split Lumina CSS into per-rune files for future tree-shaking
+- ~~Split Lumina CSS into per-rune files~~ -- DONE (tree-shaking itself is still pending)
 - Add a blog layout to Lumina
 - Implement `contextOverrides` at the identity transform level (BEM modifiers based on parent rune)
+- CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
 
 **Medium term:**
 - Content analysis step (scan all content, produce rune usage manifest)
