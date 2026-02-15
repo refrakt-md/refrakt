@@ -106,6 +106,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. |
 | **Blog layout** | Lumina has `default` and `docs` layouts only. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
+| **VS Code extension** (Phase 1: static) | TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12. |
+| **Language server** (Phase 2: LSP) | Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12. |
 
 ---
 
@@ -167,6 +169,30 @@ This phase covers the work needed to make production output competitive with han
 - RSS feed generation
 - Search index generation
 - Client-side search component
+
+### Phase 10: Editor Support (VS Code Extension & Language Server)
+
+Two-phase delivery. See Section 12 for full detail.
+
+**Phase 10a: Static Intelligence** (small effort, declarative only)
+- TextMate grammar for rune syntax highlighting (opening, closing, self-closing tags)
+- Attribute name/value highlighting within rune tags
+- Bracket matching for `{% rune %}` / `{% /rune %}` pairs
+- Folding regions for rune blocks
+- Snippets for every rune with tabstop and choice syntax
+- Published to VS Code Marketplace and Open VSX as `@refrakt-md/vscode`
+
+**Phase 10b: Language Server** (medium-large effort, LSP-based)
+- `@refrakt-md/language-server` — editor-agnostic LSP server
+- Autocompletion: rune names, attributes, attribute values, closing tags (context-aware)
+- Hover documentation generated from `RuneDefinition` metadata
+- Diagnostics: unknown runes, unclosed tags, invalid attributes, missing required attrs, nesting errors
+- Fuzzy matching for typo suggestions
+- Document symbols for Outline panel and breadcrumbs
+- Quick fix code actions
+- Cross-file intelligence: nav references, snippet refs, duplicate slug detection
+- Rename support for pages and snippets
+- Incremental parsing for performance
 
 ---
 
@@ -486,14 +512,170 @@ This section captures the current priority order. Update it as things change.
 - Add a blog layout to Lumina
 - Implement `contextOverrides` at the identity transform level (BEM modifiers based on parent rune)
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
+- VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching) — low effort, high DX impact
 
 **Medium term:**
 - Content analysis step (scan all content, produce rune usage manifest)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey, reference rune implementations
+- Language server (Phase 10b) — requires rune attribute introspection (Open Question #1)
 
 **Long term:**
 - Multi-framework support (React components, Astro adapter, Next.js adapter)
 - AI theme generation
 - TypeDoc pipeline
 - Generated routes (blog indexes, tag pages, RSS)
+
+---
+
+## 12. Editor Support — VS Code Extension & Language Server
+
+> **Packages:** `@refrakt-md/vscode` (VS Code extension), `@refrakt-md/language-server` (LSP server, editor-agnostic)
+> **Status:** Not started
+> **Full plan:** `vscode-extension-plan.md`
+
+### Phase 1: Static Intelligence (declarative, no runtime code)
+
+**TextMate Grammar** (`syntaxes/refrakt.tmLanguage.json`)
+
+Injection grammar extending Markdown to recognize rune constructs:
+
+| Content | Scope | Visual Effect |
+|---|---|---|
+| `{%` and `%}` | `punctuation.definition.tag.rune.refrakt` | Bracket color |
+| `{% /` (closing) | `punctuation.definition.tag.rune.closing.refrakt` | Bracket color |
+| Rune name (`recipe`, `hero`) | `entity.name.tag.rune.refrakt` | Tag name color |
+| Rune attributes (`type="info"`) | `entity.other.attribute-name.rune.refrakt` | Attribute color |
+| Attribute values (`"info"`) | `string.quoted.double.rune.refrakt` | String color |
+| Self-closing `/%}` | `punctuation.definition.tag.rune.self-closing.refrakt` | Bracket color |
+
+Scope name: `text.html.markdown.refrakt`, injected into `L:text.html.markdown`.
+
+**Bracket Matching & Folding**
+
+Folding markers match `{% rune %}` opening tags to `{% /rune %}` closing tags. Enables gutter fold icons and minimap structure. Bracket pair colorization enabled for `[markdown]`.
+
+**Snippets**
+
+Every rune gets a `rune:<name>` snippet with tabstops and VS Code choice syntax (`${1|option1,option2|}`) for enum attributes. Examples: `rune:hero`, `rune:recipe`, `rune:callout`, `rune:tabs`, `rune:comparison`, `rune:form`, `rune:reference`, `rune:codegroup`, `rune:grid`, etc.
+
+**File Association**
+
+`.md` files within a refrakt.md project (detected by `refrakt.config.json` or `content/` directory) get the enhanced grammar. Outside refrakt projects, standard Markdown highlighting applies.
+
+**Extension Package Structure**
+
+```
+vscode-refrakt/
+├── package.json            ← extension manifest
+├── syntaxes/
+│   └── refrakt.tmLanguage.json
+├── snippets/
+│   └── runes.json
+├── language-configuration.json
+├── icon.png
+└── README.md
+```
+
+### Phase 2: Language Server (LSP-based)
+
+**Architecture**
+
+```
+VS Code Extension  ◄═══ LSP/JSON-RPC ═══►  Language Server (@refrakt-md/language-server)
+(thin client)                                ├── Markdoc Parser (content → AST)
+                                             ├── Rune Registry (self-describing metadata)
+Neovim / Zed /     ◄═══ LSP/JSON-RPC ═══►  └── Feature Providers
+any LSP client                                   ├── Completion
+                                                 ├── Hover
+                                                 ├── Diagnostics
+                                                 ├── Symbols
+                                                 ├── Code Actions
+                                                 ├── Definition
+                                                 └── Rename
+```
+
+The language server is a standalone Node.js process. Any LSP-capable editor can connect.
+
+**Rune Registry as Data Source**
+
+All intelligence comes from the rune library's self-describing metadata. Each rune provides name, description, category, attributes (with types, defaults, enums), reinterpretation map, SEO mappings, and nesting rules. Adding a new rune to `@refrakt-md/runes` automatically teaches the language server about it — no extension update required.
+
+> **Dependency on Open Question #1:** The language server needs attribute introspection from `RuneDescriptor`. Currently attributes are locked inside Markdoc `Schema` objects. Phase 2 requires resolving this (leaning toward option (a): add an `attributes` field to `RuneDescriptor`).
+
+**Autocompletion**
+
+- Rune name completion on `{% ` — sorted by category with descriptions
+- Attribute completion after rune name — shows available attributes, excludes already-specified ones
+- Attribute value completion on `="` — enum values for enum attributes
+- Closing tag completion on `{% /` — suggests nearest unclosed rune
+- Markdown primitive hints inside rune blocks (inlay hints showing expected content types)
+- Context-aware filtering: prioritize valid children of the parent rune
+
+**Hover Documentation**
+
+Generated from `RuneDefinition` metadata:
+- Rune name hover: description, category, reinterpretation map, SEO type, available attributes
+- Attribute hover: type, description, default value, schema.org mapping
+
+**Diagnostics & Validation**
+
+| Level | Examples |
+|---|---|
+| Error | Unknown rune (with fuzzy "did you mean?"), unclosed rune, unknown attribute, invalid attribute value, missing required attribute, invalid nesting |
+| Warning | Missing expected content (e.g., recipe without ingredients), SEO opportunity (e.g., recipe without prepTime), empty rune, deprecated attribute |
+| Info | Reinterpretation hints, composition suggestions |
+
+**Document Symbols & Outline**
+
+Rune structure appears in VS Code's Outline panel and breadcrumbs, showing the nesting hierarchy of runes and headings.
+
+**Code Actions & Quick Fixes**
+
+Auto-correct typos, insert closing tags, add missing required attributes, insert template content for empty runes.
+
+**Cross-File Intelligence**
+
+When the language server has access to the workspace:
+- `{% nav %}` slug references: Ctrl+click jumps to content file
+- `{% snippet ref="..." %}`: Ctrl+click jumps to snippet definition
+- Project-wide diagnostics: dead nav references, duplicate slugs, non-existent snippet refs
+- Workspace symbol search (Cmd+T)
+- Rename support: renaming a page file updates nav references across the project
+
+**Incremental Parsing**
+
+On document change, only the affected rune block(s) are re-parsed and re-validated. Cached diagnostics for unchanged sections are preserved.
+
+**Language Server Package Structure**
+
+```
+language-server/
+├── src/
+│   ├── server.ts               ← LSP entry point
+│   ├── parser/
+│   │   ├── document.ts         ← document model with incremental updates
+│   │   └── markdoc.ts          ← Markdoc parser wrapper
+│   ├── providers/
+│   │   ├── completion.ts       ← rune, attribute, and value completion
+│   │   ├── hover.ts            ← rune and attribute hover docs
+│   │   ├── diagnostics.ts      ← validation and error reporting
+│   │   ├── symbols.ts          ← document outline and workspace symbols
+│   │   ├── codeActions.ts      ← quick fixes
+│   │   ├── definition.ts       ← go-to-definition for cross-references
+│   │   └── rename.ts           ← rename support
+│   ├── registry/
+│   │   └── loader.ts           ← loads RuneDefinitions from @refrakt-md/runes
+│   └── workspace/
+│       ├── indexer.ts           ← cross-file index (pages, slugs, snippets)
+│       └── config.ts           ← project configuration reader
+└── tests/
+```
+
+### Future Considerations
+
+- **Live preview panel:** WebView sidebar rendering the current rune block with the active theme
+- **AI-assisted authoring:** Inline suggestions ("This looks like a recipe — wrap it in `{% recipe %}`?")
+- **Theme-aware completion:** Prioritize runes the current theme supports via manifest detection
+- **Performance profiling:** Show estimated bundle impact of runes on the current page
+- **Color decoration:** Inline color swatches for design token references in theme CSS
