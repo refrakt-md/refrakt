@@ -129,11 +129,7 @@ Lumina theme hand-crafted. Manifest format defined and validated. Component regi
 
 8 schema.org extractors (FAQPage, Product, Review, BreadcrumbList, ItemList, VideoObject, ImageObject, MusicPlaylist). JSON-LD generation. Open Graph derivation with fallback chain (frontmatter -> hero rune -> first content elements). Built as a separate pass over the renderable tree in `packages/runes/src/seo.ts`.
 
-### Phase 5: AI Theme Generation -- PARTIAL
-
-`refrakt write` for content generation exists with Anthropic and Ollama providers. AI theme generation (describe a theme in natural language, get a working theme package) is not built.
-
-### Phase 6 (next): Production Optimization & Missing Runes
+### Phase 5 (next): Production Optimization & Missing Runes
 
 This phase covers the work needed to make production output competitive with hand-built sites:
 
@@ -147,7 +143,7 @@ This phase covers the work needed to make production output competitive with han
 - Add missing runes: quiz, poll/survey, reference
 - Add blog layout to Lumina
 
-### Phase 7: Multi-Framework Support
+### Phase 6: Multi-Framework Support
 
 - Factor interactive behavior out of Svelte components into vanilla JS core modules
 - Create React component wrappers for the ~10 interactive runes
@@ -155,7 +151,7 @@ This phase covers the work needed to make production output competitive with han
 - Build Next.js adapter
 - Build static HTML adapter with vanilla JS progressive enhancement
 
-### Phase 8: TypeDoc Pipeline
+### Phase 7: TypeDoc Pipeline
 
 - TypeScript Compiler API for symbol extraction
 - Generate `{% reference %}` Markdoc files from TypeScript source
@@ -163,7 +159,7 @@ This phase covers the work needed to make production output competitive with han
 - Staleness detection for CI (`--validate` mode)
 - Auto-generated `_layout.md` with `{% nav %}` for API reference navigation
 
-### Phase 9: Generated Routes & Content Features
+### Phase 8: Generated Routes & Content Features
 
 - Blog index generation from manifest `routeRules[].generated`
 - Tag/category archive pages
@@ -171,11 +167,11 @@ This phase covers the work needed to make production output competitive with han
 - Search index generation
 - Client-side search component
 
-### Phase 10: Editor Support (VS Code Extension & Language Server)
+### Phase 9: Editor Support (VS Code Extension & Language Server)
 
 Two-phase delivery. See Section 12 for full detail.
 
-**Phase 10a: Static Intelligence** (small effort, declarative only)
+**Phase 9a: Static Intelligence** (small effort, declarative only)
 - TextMate grammar for rune syntax highlighting (opening, closing, self-closing tags)
 - Attribute name/value highlighting within rune tags
 - Bracket matching for `{% rune %}` / `{% /rune %}` pairs
@@ -183,7 +179,7 @@ Two-phase delivery. See Section 12 for full detail.
 - Snippets for every rune with tabstop and choice syntax
 - Published to VS Code Marketplace and Open VSX as `@refrakt-md/vscode`
 
-**Phase 10b: Language Server** (medium-large effort, LSP-based)
+**Phase 9b: Language Server** (medium-large effort, LSP-based)
 - `@refrakt-md/language-server` — editor-agnostic LSP server
 - Autocompletion: rune names, attributes, attribute values, closing tags (context-aware)
 - Hover documentation generated from `RuneDefinition` metadata
@@ -194,6 +190,10 @@ Two-phase delivery. See Section 12 for full detail.
 - Cross-file intelligence: nav references, snippet refs, duplicate slug detection
 - Rename support for pages and snippets
 - Incremental parsing for performance
+
+### Phase 10: AI Theme Generation
+
+`refrakt write` for content generation exists with Anthropic and Ollama providers. AI theme generation (describe a theme in natural language, get a working theme package) is not built. Depends on a stable theme package format and well-documented `ThemeConfig` API — both prerequisites are addressed by earlier phases.
 
 ---
 
@@ -519,7 +519,7 @@ This section captures the current priority order. Update it as things change.
 - Content analysis step (scan all content, produce rune usage manifest)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey, reference rune implementations
-- Language server (Phase 10b) — requires rune attribute introspection (Open Question #1)
+- Language server (Phase 9b) — requires rune attribute introspection (Open Question #1)
 
 **Long term:**
 - Multi-framework support (React components, Astro adapter, Next.js adapter)
