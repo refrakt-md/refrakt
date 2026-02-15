@@ -1,4 +1,5 @@
-import type { ThemeConfig, RuneConfig, StructureEntry, SerializedTag, RendererNode } from './types.js';
+import type { SerializedTag, RendererNode } from '@refrakt-md/types';
+import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { isTag, makeTag, readMeta } from './helpers.js';
 
 /** Pure text transforms for metaText values */

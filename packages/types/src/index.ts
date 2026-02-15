@@ -67,3 +67,6 @@ export type {
   RouteRule,
   ComponentDefinition,
 } from './theme.js';
+
+// Serialized tree types
+export type { SerializedTag, RendererNode } from './serialized.js';

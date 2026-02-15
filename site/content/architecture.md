@@ -38,10 +38,11 @@ The architecture is organized into several focused packages:
 |---------|---------|
 | `@refrakt-md/runes` | Rune definitions, Markdoc schemas, transforms, and SEO extraction |
 | `@refrakt-md/types` | Shared TypeScript interfaces for components, themes, and configuration |
+| `@refrakt-md/transform` | Identity transform engine -- BEM classes, structural injection, meta consumption |
 | `@refrakt-md/content` | Content tree, filesystem routing, layout resolution, sitemap generation |
 | `@refrakt-md/svelte` | Svelte adapter -- Renderer, ThemeShell, serialization, component registry |
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
-| `@refrakt-md/lumina` | Identity transform engine -- BEM classes, structural injection, meta consumption |
+| `@refrakt-md/lumina` | Lumina theme identity -- design tokens, per-rune CSS, and pre-built transform |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
 
@@ -135,7 +136,7 @@ The theme system has a two-layer architecture that separates **identity** (what 
 
 ### Identity Layer (Framework-Agnostic)
 
-The identity layer lives in `@refrakt-md/lumina` and consists of three parts:
+The identity layer is powered by `@refrakt-md/transform` (the generic engine) and `@refrakt-md/lumina` (the Lumina-specific configuration and CSS). It consists of three parts:
 
 **1. Design Tokens** -- CSS custom properties that define the visual language. These are declared in `tokens.css` and follow a `--rf-` prefix convention:
 

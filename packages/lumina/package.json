@@ -35,6 +35,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@refrakt-md/transform": "0.3.0",
     "@refrakt-md/types": "0.3.0"
   }
 }
