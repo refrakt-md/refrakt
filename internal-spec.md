@@ -42,10 +42,10 @@ These are unresolved or partially resolved design questions. When working on fea
    Partially. `RuneDescriptor` (in `packages/runes/src/rune.ts`) provides `name`, `aliases`, `description`, `reinterprets`, `seoType`, and a reference to the type registry entry. However, *attribute definitions* are locked inside TypeScript decorators on the Markdoc schema objects and are not exposed for runtime introspection. This means AI and themes cannot currently ask "what attributes does `{% recipe %}` accept?" at runtime.
 
 2. **How does context-aware rendering work?**
-   Currently runtime-only via Svelte context (`packages/svelte/src/context.ts`). The `Renderer.svelte` component looks up components by `typeof` attribute through `getComponent()`. There is no build-time resolution and no `contextOverrides` support in the component registry -- the manifest schema allows it but nothing reads it. A `{% callout %}` inside a `{% hero %}` renders the same way as a standalone `{% callout %}`.
+   Two levels. **CSS-level:** The identity transform threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching its parent's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). This is implemented and configured for Hint, CallToAction, and Feature in Lumina. **Component-level:** Not yet built. `contextOverrides` in the manifest schema is dead -- nothing reads or applies it. The Svelte Renderer does not pass parent typeof down for component switching.
 
 3. **Where does the identity transform end and the component begin?**
-   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it. Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform; interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`). Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
 
 ---
 
@@ -101,7 +101,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
 | **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
 | **Reference rune** (`{% reference %}` for code documentation) | Not implemented. |
-| **Context-aware rendering overrides** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. |
+| **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. |
 | **Blog layout** | Lumina has `default` and `docs` layouts only. |
@@ -142,7 +142,8 @@ This phase covers the work needed to make production output competitive with han
 - Content analysis step that produces a rune usage manifest per page
 - Rune-level CSS tree-shaking based on the usage manifest
 - Per-page code splitting via pre-processed route generation (generate actual `+page.svelte` files)
-- Context-aware component binding at build time
+- ~~Context-aware styling via identity transform BEM modifiers~~ -- DONE (Hint, Feature, CallToAction in Lumina; 7 tests)
+- Context-aware component binding at build time (for cases needing different components, not just CSS)
 - Add missing runes: quiz, poll/survey, reference
 - Add blog layout to Lumina
 
@@ -204,7 +205,7 @@ Markdoc's AST is inspectable and transformable. Runes can manipulate the tree be
 
 ### Why identity transform + BEM?
 
-Most runes do not need interactivity. The identity transform (`packages/transform/src/engine.ts`, in `@refrakt-md/transform`) produces fully structured HTML with BEM classes that CSS alone can style. This means ~75-80% of runes need zero framework components. Only interactive runes (tabs, accordion, form, datatable, reveal, chart, diagram) need Svelte/React wrappers.
+Most runes do not need interactivity. The identity transform (`packages/transform/src/engine.ts`, in `@refrakt-md/transform`) produces fully structured HTML with BEM classes that CSS alone can style. The transform also supports context-aware styling: when a rune is nested inside a parent rune, the engine applies additional BEM modifiers (e.g., `rf-hint--in-hero`) based on the `contextModifiers` configuration, allowing CSS to target runes in specific contexts without framework components. This means ~75-80% of runes need zero framework components. Only interactive runes (tabs, accordion, form, datatable, reveal, chart, diagram) need Svelte/React wrappers.
 
 The engine was extracted into `@refrakt-md/transform` so any theme can reuse `createTransform()` with its own `ThemeConfig`. Lumina's config lives in `packages/lumina/src/config.ts` and produces the pre-built `identityTransform` via `packages/lumina/src/transform.ts`.
 
@@ -255,14 +256,13 @@ The theme system is now a three-package split:
 
 ### 2. Context-aware rendering
 
-**Problem:** The architecture spec envisions `contextOverrides` in the manifest (e.g., a different callout component when nested inside a hero). The manifest schema supports this field, but nothing reads it. The identity transform does not know about parent context, and the Svelte Renderer does not pass parent typeof down.
+**Status:** Partially resolved.
 
-**Options:**
-- (a) Runtime: Pass parent typeof through Svelte context. Renderer checks `contextOverrides` during component lookup.
-- (b) Build-time: During pre-processed route generation, resolve the full nesting tree and emit explicit component imports.
-- (c) Identity-transform-level: The identity transform already walks the tree -- it could apply different BEM modifiers based on parent rune.
+**What's built:** Option (c) -- identity-transform-level BEM modifiers. The identity transform (`packages/transform/src/engine.ts`) now threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching the parent rune's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). Implemented for Hint (Hero, Feature), Feature (Hero, Grid), and CallToAction (Hero, Pricing) in Lumina. Context-aware CSS rules in `packages/lumina/styles/runes/*.css`. 7 tests in `packages/transform/test/context-modifiers.test.ts`.
 
-**Leaning toward:** (c) for styling differences, (a) for component switching. Most "context-aware" rendering is CSS -- a callout inside a hero just needs a BEM modifier like `hero__callout` rather than a different component.
+**What's not built:** Component switching via `contextOverrides` in the manifest. Options (a) runtime dispatch and (b) build-time resolution remain unimplemented. If a rune needs a completely different component when nested (not just different CSS), that still requires future work.
+
+**Conclusion:** Most context-sensitive styling is CSS-only. BEM modifiers handle the 80% case. Component switching is rarely needed but remains possible via future manifest support.
 
 ### 3. Generated routes
 
@@ -510,7 +510,8 @@ This section captures the current priority order. Update it as things change.
 **Short term:**
 - ~~Split Lumina CSS into per-rune files~~ -- DONE (tree-shaking itself is still pending)
 - Add a blog layout to Lumina
-- Implement `contextOverrides` at the identity transform level (BEM modifiers based on parent rune)
+- ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
+- Extend `contextModifiers` to more runes as styling needs emerge
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
 - VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching) — low effort, high DX impact
 

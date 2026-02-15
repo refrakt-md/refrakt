@@ -76,3 +76,22 @@
 	--hint-color: var(--rf-color-success);
 	--hint-bg: var(--rf-color-success-bg);
 }
+
+/* Context-aware: compact hint when nested inside a hero */
+.rf-hint--in-hero {
+	margin: 1rem 0 0;
+	padding: 0.625rem 1rem;
+	border-radius: var(--rf-radius-sm);
+	font-size: 0.875rem;
+}
+.rf-hint--in-hero .rf-hint__header {
+	margin-bottom: 0.25rem;
+}
+
+/* Context-aware: hint inside a feature block */
+.rf-hint--in-feature {
+	margin: 0.75rem 0 0;
+	padding: 0.5rem 0.875rem;
+	border-left-width: 2px;
+	font-size: 0.85rem;
+}

@@ -51,3 +51,17 @@
 	font-size: 0.9rem;
 	line-height: 1.65;
 }
+
+/* Context-aware: feature inside a hero — no top padding, tighter spacing */
+.rf-feature--in-hero {
+	padding-top: 0;
+}
+.rf-feature--in-hero .rf-feature-definition {
+	background: transparent;
+	border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Context-aware: feature inside a grid — remove outer padding */
+.rf-feature--in-grid {
+	padding: 0;
+}

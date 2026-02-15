@@ -86,3 +86,19 @@
 	border-color: var(--rf-color-surface-active);
 	text-decoration: none;
 }
+
+/* Context-aware: CTA inside a hero gets more vertical space */
+.rf-cta--in-hero {
+	padding-top: 2rem;
+	padding-bottom: 0;
+}
+
+/* Context-aware: CTA inside pricing — compact, left-aligned */
+.rf-cta--in-pricing {
+	text-align: left;
+	padding: 1.5rem 0 0;
+}
+.rf-cta--in-pricing p {
+	margin: 0 0 1rem;
+	max-width: none;
+}

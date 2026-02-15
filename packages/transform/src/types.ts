@@ -13,6 +13,11 @@ export interface RuneConfig {
 		default?: string;
 	}>;
 
+	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
+	 *  Key = parent typeof (e.g., 'Hero'), Value = modifier suffix (e.g., 'in-hero').
+	 *  Produces classes like: rf-callout--in-hero */
+	contextModifiers?: Record<string, string>;
+
 	/** Structural overrides — additional elements to inject (keyed by data-name) */
 	structure?: Record<string, StructureEntry>;
 

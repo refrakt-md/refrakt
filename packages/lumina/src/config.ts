@@ -108,7 +108,7 @@ export const luminaConfig: ThemeConfig = {
 		Pricing: { block: 'pricing' },
 		Tier: { block: 'tier' },
 		FeaturedTier: { block: 'featured-tier' },
-		Feature: { block: 'feature' },
+		Feature: { block: 'feature', contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' } },
 		FeatureDefinition: { block: 'feature-definition' },
 		Steps: { block: 'steps' },
 		Step: { block: 'step' },
@@ -147,6 +147,7 @@ export const luminaConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
+			contextModifiers: { 'Hero': 'in-hero', 'Feature': 'in-feature' },
 			structure: {
 				header: {
 					tag: 'div', before: true,
@@ -161,7 +162,7 @@ export const luminaConfig: ThemeConfig = {
 			block: 'hero',
 			modifiers: { align: { source: 'meta', default: 'center' } },
 		},
-		CallToAction: { block: 'cta' },
+		CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' } },
 		Figure: {
 			block: 'figure',
 			modifiers: {

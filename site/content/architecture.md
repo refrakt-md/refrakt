@@ -153,7 +153,7 @@ The identity layer is powered by `@refrakt-md/transform` (the generic engine) an
 
 Tokens cover typography, a full color scale (primary 50-950, semantic colors, surfaces), border radii, shadows, and code block styling. A dark mode token set overrides these in a `prefers-color-scheme: dark` context.
 
-**2. Identity Transform Engine** -- A pure function that walks the serialized tag tree and enhances it with BEM classes, structural elements, and modifier data attributes. This is where the `typeof` attribute on rendered tags gets resolved into a theme-specific presentation.
+**2. Identity Transform Engine** -- A pure function that walks the serialized tag tree and enhances it with BEM classes, context-aware modifiers, structural elements, and modifier data attributes. This is where the `typeof` attribute on rendered tags gets resolved into a theme-specific presentation. The engine threads parent rune context through the recursion, so nested runes can receive additional BEM modifiers based on their parent -- for example, a Hint inside a Hero automatically gets `rf-hint--in-hero`, allowing CSS to style it differently without any framework code.
 
 For example, a `Hero` rune with `align="center"` is transformed into:
 
@@ -172,6 +172,7 @@ The engine also injects structural elements not present in the Markdown. For a `
 The engine is configured declaratively. Each rune gets a `RuneConfig` that specifies:
 - `block` -- the BEM block name (`hint`, `hero`, `cta`, etc.)
 - `modifiers` -- which `meta` tags to consume and convert into BEM modifier classes
+- `contextModifiers` -- optional mapping from parent rune `typeof` to BEM modifier suffix (e.g., `{ 'Hero': 'in-hero' }` produces `rf-hint--in-hero` when nested inside a Hero)
 - `autoLabel` -- rules for adding `data-name` attributes to child elements
 - `structure` -- structural elements to inject (headers, icons, badges, metadata displays)
 - `contentWrapper` -- optional wrapper element for the content area
