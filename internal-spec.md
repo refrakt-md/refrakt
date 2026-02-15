@@ -294,6 +294,48 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 
 **Current answer:** Wait. The catch-all approach works for SvelteKit. Pre-processing becomes necessary when we build the Astro and Next.js adapters, since those frameworks expect real page files.
 
+### 6. Syntax highlighting pipeline position
+
+**Problem:** Syntax highlighting currently runs at the rune level. `hljs.highlight()` is called inside `fence` (`packages/runes/src/nodes.ts:65`) and `diff` (`packages/runes/src/tags/diff.ts:66`). A custom Markdoc language definition lives in `packages/runes/src/hljs-markdoc.ts`. The highlighted HTML is injected as raw strings via `data-codeblock: true`, producing hljs-specific classes (`hljs-keyword`, `hljs-string`, etc.) that bypass the BEM/RDFa contract.
+
+**Why this is a problem:**
+1. Runes produce library-specific markup. Changing the highlighter means changing every rune that handles code.
+2. hljs classes are opaque to the identity transform — the theme CSS must import hljs stylesheets separately, outside the design token system.
+3. hljs requires client-side JavaScript for dynamic highlighting. This conflicts with the "zero unnecessary JS" production goal.
+4. The `data-codeblock` mechanism renders raw HTML strings, making the code content invisible to any downstream tree transform.
+
+**Proposed solution:** A dedicated **syntax highlight transform** that runs as a separate pipeline step.
+
+- **Runes produce plain code elements.** The fence node and diff rune emit `<pre><code>` (or equivalent Tag tree) with the raw code text and a `data-language` attribute. No highlighting.
+- **A new transform step** walks the serialized tree after the identity transform, finds code elements by `data-language`, and applies Shiki highlighting.
+- **Shiki** replaces hljs. Shiki is build-time only (no client JS), produces inline styles or CSS variables (`--shiki-token-*`), and integrates with the theme's design token system. The Lumina theme maps `--shiki-token-keyword`, `--shiki-token-string`, etc. to its existing color tokens.
+- The `data-codeblock: true` mechanism remains for the final highlighted output, but it is applied by the highlight transform, not by individual runes.
+
+**Pipeline position:**
+
+```
+Markdoc transform → Serialize → Identity transform → Syntax highlight transform → Renderer
+```
+
+**Migration path:**
+1. Add Shiki as a dependency of `@refrakt-md/transform` (or a new `@refrakt-md/highlight` package).
+2. Update `fence` in `nodes.ts` to emit plain `<pre><code data-language="...">` with raw text.
+3. Update `diff.ts` to emit line content as plain text instead of hljs HTML.
+4. Create the highlight transform function that walks the tree and applies Shiki.
+5. Wire the transform into the SvelteKit plugin pipeline (after identity transform).
+6. Add `--shiki-token-*` CSS variable mappings to Lumina's design tokens.
+7. Remove hljs dependency, remove `hljs-markdoc.ts`.
+
+**Affected files:**
+- `packages/runes/src/nodes.ts` — fence transform (remove hljs)
+- `packages/runes/src/tags/diff.ts` — line highlighting (remove hljs)
+- `packages/runes/src/hljs-markdoc.ts` — delete
+- `packages/transform/src/` (or new package) — new highlight transform
+- `packages/lumina/tokens/` — Shiki CSS variable mappings
+- `packages/sveltekit/src/plugin.ts` — wire new transform into pipeline
+
+**Leaning toward:** Dedicated transform step with Shiki. Keeps runes focused on semantics, gives themes control over code appearance via design tokens, eliminates client-side JS for highlighting.
+
 ---
 
 ## 7. Key File Paths
@@ -513,6 +555,7 @@ This section captures the current priority order. Update it as things change.
 - ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
 - Extend `contextModifiers` to more runes as styling needs emerge
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
+- Extract syntax highlighting from rune level into a dedicated pipeline step (see Open Question #6); replace hljs with Shiki for build-time CSS-variable-based highlighting
 - VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching) — low effort, high DX impact
 
 **Medium term:**
