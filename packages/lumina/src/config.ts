@@ -1,4 +1,4 @@
-import type { ThemeConfig } from './lib/types.js';
+import type { ThemeConfig } from '@refrakt-md/transform';
 
 /** Lumina theme configuration — drives the identity transform */
 export const luminaConfig: ThemeConfig = {

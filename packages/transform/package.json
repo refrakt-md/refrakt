@@ -1,0 +1,34 @@
+{
+  "name": "@refrakt-md/transform",
+  "description": "Identity transform engine for refrakt.md themes — BEM classes, structural injection, meta consumption",
+  "version": "0.3.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/transform"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/types": "0.3.0"
+  }
+}

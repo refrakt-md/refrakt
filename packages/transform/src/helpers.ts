@@ -1,4 +1,4 @@
-import type { SerializedTag, RendererNode } from './types.js';
+import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
 /** Type guard: is this node a serialized tag? */
 export function isTag(node: RendererNode): node is SerializedTag {
