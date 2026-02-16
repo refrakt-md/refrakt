@@ -10,21 +10,11 @@ import {
 let client: LanguageClient;
 
 export function activate(_context: ExtensionContext) {
-  // __dirname resolves symlinks, so this works when the extension is
-  // symlinked from ~/.vscode/extensions/ into the monorepo.
-  const serverModule = path.resolve(__dirname, '..', '..', 'language-server', 'dist', 'server.js');
+  const serverModule = path.join(__dirname, 'server.js');
 
   const serverOptions: ServerOptions = {
-    run: {
-      command: 'node',
-      args: ['--experimental-vm-modules', serverModule, '--stdio'],
-      transport: TransportKind.stdio,
-    },
-    debug: {
-      command: 'node',
-      args: ['--experimental-vm-modules', serverModule, '--stdio'],
-      transport: TransportKind.stdio,
-    },
+    run: { module: serverModule, transport: TransportKind.stdio },
+    debug: { module: serverModule, transport: TransportKind.stdio },
   };
 
   const clientOptions: LanguageClientOptions = {
