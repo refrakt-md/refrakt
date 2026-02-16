@@ -241,6 +241,7 @@ Every theme ships a `manifest.json` that declares its capabilities:
   },
   "routeRules": [
     { "pattern": "docs/**", "layout": "docs" },
+    { "pattern": "blog", "layout": "blog" },
     { "pattern": "blog/**", "layout": "blog" },
     { "pattern": "**", "layout": "default" }
   ],
@@ -327,10 +328,11 @@ The layout resolver walks up the directory tree from the page's location to the 
 
 ### Layout-to-Component Mapping
 
-The theme manifest maps layout names to Svelte components. Lumina ships two layouts:
+The theme manifest maps layout names to Svelte components. Lumina ships three layouts:
 
 - **`DefaultLayout`** -- supports `header` and `footer` regions. Used for landing pages, marketing content, standalone pages.
 - **`DocsLayout`** -- supports `header`, `nav`, `sidebar`, and `footer` regions. The `nav` region is required. Used for documentation with sidebar navigation.
+- **`BlogLayout`** -- supports `header`, `sidebar`, and `footer` regions. Renders an index page with post cards when the page has no `date` frontmatter, and a full article view with metadata (date, author, tags) for individual posts.
 
 ---
 
@@ -380,7 +382,8 @@ The theme manifest's `routeRules` array determines which layout handles each URL
 ```json
 [
   { "pattern": "docs/**", "layout": "docs" },
-  { "pattern": "blog/*",  "layout": "default" },
+  { "pattern": "blog",    "layout": "blog" },
+  { "pattern": "blog/**", "layout": "blog" },
   { "pattern": "**",      "layout": "default" }
 ]
 ```

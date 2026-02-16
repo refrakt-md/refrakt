@@ -88,7 +88,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Production rendering** | Uses SvelteKit prerender via catch-all `[...slug]` route. Works, produces static HTML. | No explicit page file generation. No pre-processed route tree. Context is resolved at runtime via Svelte context, not at build time. Code splitting is framework-default, not rune-aware. |
 | **Rune self-description** | `RuneDescriptor` provides name, aliases, description, reinterprets map, seoType. | Attribute definitions (what attributes a rune accepts, their types, defaults) are embedded in Markdoc `Schema` objects and not exposed in a way that AI or themes can introspect at runtime. |
 | **Component registry** | Works: `typeof` attribute -> component lookup via Svelte context. | Flat lookup only. No `contextOverrides` for parent-based component switching. The manifest schema supports the field but nothing reads it. |
-| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. Per-rune CSS files (44) and dark mode tokens are in place. | No blog layout. No CSS tree-shaking (per-rune files exist but all are bundled regardless of usage). |
+| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. Per-rune CSS files (44) and dark mode tokens are in place. Blog layout with index page and article view. | No CSS tree-shaking (per-rune files exist but all are bundled regardless of usage). |
 
 ### Not Built
 
@@ -107,7 +107,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **AI authoring modes** (draft, review, enhance, transform) | Write mode exists. Four additional modes designed but not implemented. See Section 13. |
 | **Gemini provider** (free tier AI) | Anthropic and Ollama exist. Gemini Flash planned as free cloud option. See Section 13 Provider Roadmap. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
-| **Blog layout** | Lumina has `default` and `docs` layouts only. |
+| ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
 | **VS Code extension** (Phase 1: static) | TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12. |
 | **Language server** (Phase 2: LSP) | Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12. |
@@ -144,7 +144,7 @@ This phase covers the work needed to make production output competitive with han
 - ~~Context-aware styling via identity transform BEM modifiers~~ -- DONE (Hint, Feature, CallToAction in Lumina; 7 tests)
 - Context-aware component binding at build time (for cases needing different components, not just CSS)
 - Add missing runes: quiz, poll/survey, reference
-- Add blog layout to Lumina
+- ~~Add blog layout to Lumina~~ -- DONE (BlogLayout with index page and article view, extended frontmatter pipeline)
 
 ### Phase 6: Multi-Framework Support
 
@@ -549,7 +549,7 @@ This section captures the current priority order. Update it as things change.
 
 **Short term:**
 - ~~Split Lumina CSS into per-rune files~~ -- DONE (tree-shaking itself is still pending)
-- Add a blog layout to Lumina
+- ~~Add a blog layout to Lumina~~ -- DONE
 - ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
 - ~~Align Hero and CTA runes~~ -- DONE (Hero gains fence/Command + LinkItem support; CTA simplified to focused action block, split/showcase removed; unified action pattern across both)
 - Extend `contextModifiers` to more runes as styling needs emerge
