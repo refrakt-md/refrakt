@@ -1,47 +1,104 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, findAllTags } from './helpers.js';
 
 describe('codegroup tag', () => {
-  it('should create an Editor component from code fences with headings', () => {
+  it('should create a CodeGroup component from bare code fences', () => {
     const result = parse(`{% codegroup %}
-# JavaScript
-
 \`\`\`js
 const x = 1;
 \`\`\`
-
-# Python
 
 \`\`\`python
 x = 1
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Editor');
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
   });
 
-  it('should create tab structure from heading + fence pairs', () => {
+  it('should create Tab and TabPanel children from fences', () => {
     const result = parse(`{% codegroup %}
-# JavaScript
-
 \`\`\`js
 const x = 1;
 \`\`\`
-
-# Python
 
 \`\`\`python
 x = 1
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Editor');
-    expect(tag).toBeDefined();
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
+    const tabs = findAllTags(tag!, t => t.attributes.typeof === 'Tab');
+    const panels = findAllTags(tag!, t => t.attributes.typeof === 'TabPanel');
+    expect(tabs.length).toBe(2);
+    expect(panels.length).toBe(2);
+  });
 
-    // Codegroup wraps in tabs, which creates TabGroup/Tab
-    const tabGroup = findTag(tag!, t => t.attributes.typeof === 'TabGroup');
-    expect(tabGroup).toBeDefined();
+  it('should auto-detect language as tab name', () => {
+    const result = parse(`{% codegroup %}
+\`\`\`js
+const x = 1;
+\`\`\`
+
+\`\`\`python
+x = 1
+\`\`\`
+{% /codegroup %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
+    const tabs = findAllTags(tag!, t => t.attributes.typeof === 'Tab');
+
+    // Tab names should contain prettified language names
+    const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
+    const secondTabSpan = findTag(tabs[1], t => t.name === 'span');
+    expect(firstTabSpan?.children).toContain('JavaScript');
+    expect(secondTabSpan?.children).toContain('Python');
+  });
+
+  it('should use custom labels when provided', () => {
+    const result = parse(`{% codegroup labels="React, Vue" %}
+\`\`\`js
+const x = 1;
+\`\`\`
+
+\`\`\`js
+const x = 1;
+\`\`\`
+{% /codegroup %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
+    const tabs = findAllTags(tag!, t => t.attributes.typeof === 'Tab');
+
+    const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
+    const secondTabSpan = findTag(tabs[1], t => t.name === 'span');
+    expect(firstTabSpan?.children).toContain('React');
+    expect(secondTabSpan?.children).toContain('Vue');
+  });
+
+  it('should include title span when title is provided', () => {
+    const result = parse(`{% codegroup title="app.js" %}
+\`\`\`js
+const x = 1;
+\`\`\`
+{% /codegroup %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
+    const titleSpan = findTag(tag!, t => t.name === 'span' && t.children?.includes('app.js'));
+    expect(titleSpan).toBeDefined();
+  });
+
+  it('should work with a single code fence', () => {
+    const result = parse(`{% codegroup %}
+\`\`\`js
+const x = 1;
+\`\`\`
+{% /codegroup %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
+    expect(tag).toBeDefined();
+    const tabs = findAllTags(tag!, t => t.attributes.typeof === 'Tab');
+    expect(tabs.length).toBe(1);
   });
 });

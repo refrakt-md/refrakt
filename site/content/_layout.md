@@ -37,6 +37,7 @@
 
 ## Code & Data
 
+- codegroup
 - compare
 - diff
 - api

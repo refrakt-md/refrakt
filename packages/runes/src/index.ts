@@ -95,9 +95,9 @@ export const runes = {
   codegroup: defineRune({
     name: 'codegroup',
     schema: codegroup,
-    description: 'Tabbed code editor with multiple code blocks',
-    reinterprets: { fence: 'editor tab content', hr: 'section delimiter' },
-    type: schema.Editor,
+    description: 'Tabbed code block with language tabs',
+    reinterprets: { fence: 'tab content' },
+    type: schema.CodeGroup,
   }),
   error: defineRune({
     name: 'error',

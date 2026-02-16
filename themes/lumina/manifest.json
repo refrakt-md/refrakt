@@ -38,7 +38,7 @@
 		"Step": { "component": "components/Steps.svelte" },
 		"TabGroup": { "component": "components/Tabs.svelte" },
 		"Tab": { "component": "components/Tabs.svelte" },
-		"Editor": { "component": "components/Editor.svelte" },
+		"CodeGroup": { "component": "components/CodeGroup.svelte" },
 		"Pricing": { "component": "components/Pricing.svelte" },
 		"Tier": { "component": "components/Pricing.svelte" },
 		"PageSection": { "component": "components/PageSection.svelte" },

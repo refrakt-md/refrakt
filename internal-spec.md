@@ -198,6 +198,20 @@ Two-phase delivery. See Section 12 for full detail.
 
 `refrakt write` for content generation exists with Anthropic and Ollama providers. AI theme generation (describe a theme in natural language, get a working theme package) is not built. Depends on a stable theme package format and well-documented `ThemeConfig` API — both prerequisites are addressed by earlier phases.
 
+### Future Rune: `editor`
+
+The `codegroup` rune handles the common case: multiple code fences in a tabbed view. The `editor` rune would handle the power-user case: a grid layout of multiple codegroups arranged like an IDE.
+
+- **Concept:** A layout rune that arranges multiple `codegroup` blocks in a configurable grid
+- **Visual:** IDE/editor window metaphor — topbar chrome wrapping a multi-panel workspace
+- **Attributes:** `columns`, `rows`, `flow`, `layout` (same grid attributes from `layouts/` module)
+- **Authoring (explicit):** Nested `{% codegroup %}` children inside `{% editor %}`
+- **Authoring (shorthand):** HR delimiters where each section auto-wraps in a codegroup
+- **Example use cases:** Source code + terminal output side-by-side; frontend tabs (React/Vue/Svelte) + API response below; multi-file project view
+- **Relationship:** `codegroup` is the leaf (single tabbed code block), `editor` is the container (grid of codegroups) — same pattern as `tab`/`tabs` and `step`/`steps`
+- **Type:** New `Editor` type (or reuse `Grid` with code-specific config)
+- **Dependencies:** Requires `codegroup` rune (implemented), grid layout infrastructure (exists in `layouts/` module)
+
 ---
 
 ## 5. Technical Decisions & Rationale
