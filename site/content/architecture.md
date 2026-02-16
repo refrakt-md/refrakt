@@ -247,12 +247,13 @@ The manifest is the universal contract between content and rendering. It tells t
 
 ### Element Overrides
 
-Beyond rune components, themes can override rendering of standard HTML elements. Lumina overrides `<table>` and `<blockquote>` with Svelte components that add responsive wrappers and enhanced styling. This is done through the `elements` map:
+Beyond rune components, themes can override rendering of standard HTML elements. Lumina overrides `<table>`, `<blockquote>`, and `<pre>` with Svelte components that add responsive wrappers, enhanced styling, and interactive features like copy-to-clipboard on code blocks. This is done through the `elements` map:
 
 ```typescript
 export const elements: ElementOverrides = {
   'table': Table,
   'blockquote': Blockquote,
+  'pre': Pre,
 };
 ```
 
