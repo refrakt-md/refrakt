@@ -19,8 +19,8 @@ export const luminaConfig: ThemeConfig = {
 		AccordionItem: { block: 'accordion-item', autoLabel: { name: 'header' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
 		Grid: { block: 'grid' },
-		Editor: {
-			block: 'editor',
+		CodeGroup: {
+			block: 'codegroup',
 			structure: {
 				topbar: {
 					tag: 'div', before: true,

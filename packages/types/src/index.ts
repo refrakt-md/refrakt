@@ -23,7 +23,7 @@ export { Hint, HintComponent } from './schema/hint.js';
 export { Feature, FeatureDefinition, FeatureProperties, FeatureComponent, FeatureDefinitionComponent } from './schema/feature.js';
 export { CallToAction, CallToActionProperties, CallToActionComponent } from './schema/cta.js';
 export { Pricing, Tier, PricingProperties, PricingComponent, TierComponent } from './schema/pricing.js';
-export { Editor, EditorComponent } from './schema/editor.js';
+export { CodeGroup, CodeGroupComponent } from './schema/codegroup.js';
 export { MusicPlaylist, MusicRecording, MusicPlaylistComponent, MusicRecordingComponent, MusicPlaylistProperties } from './schema/audio.js';
 export { DocPage, DocPageComponent, DocPageProperties, Headings, HeadingsComponent } from './schema/docpage.js';
 export { DebugInfo, DebugInfoComponent, Error, ErrorComponent } from './schema/error.js';

@@ -102,7 +102,7 @@ refrakt.md ships 39 author-facing runes (plus internal child runes). Each rune d
 | `compare` | -- | Fenced code blocks as side-by-side comparison panels with labels | -- |
 | `diff` | -- | Two fenced code blocks as before/after code (unified or side-by-side mode) | -- |
 | `api` | `endpoint` | Heading as endpoint title, fence as request/response examples, table as parameter list, blockquote as notes/warnings | -- |
-| `codegroup` | -- | Fenced code blocks as tabbed editor panels, `hr` as section delimiter for multi-pane layouts | -- |
+| `codegroup` | -- | Fenced code blocks as language-tabbed code block (auto-detects language as tab name) | -- |
 
 ### Commercial
 
