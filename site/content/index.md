@@ -57,7 +57,7 @@ npm create refrakt
 
 A single hint tag flows through five pipeline stages — from the Markdown you type to styled, semantic HTML.
 
-{% steps %}
+{% steps headingLevel=2 %}
 
 ## You write Markdown
 
@@ -134,7 +134,7 @@ Every example below is pure Markdown — no custom components, no JSX, no frontm
 
 ### Steps
 
-{% steps %}
+{% steps headingLevel=2 %}
 ## Write Markdown
 
 Create pages with standard Markdown. Runes wrap your content in semantic contexts — no new syntax to learn.
