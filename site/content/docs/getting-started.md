@@ -36,7 +36,7 @@ The `_layout.md` file defines layout regions that wrap every page in that direct
 
 Create a `_layout.md` at the root of your content directory:
 
-```markdown
+```markdoc
 {% layout %}
 {% region name="header" %}
 # My Site
@@ -57,7 +57,7 @@ This defines a header with your site title and a navigation sidebar. The `{% nav
 
 Create an `index.md`:
 
-```markdown
+```markdoc
 ---
 title: Welcome
 ---

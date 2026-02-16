@@ -63,7 +63,7 @@ A single hint tag flows through five pipeline stages — from the Markdown you t
 
 Wrap content in a rune tag. The `type` attribute tells the system this is a warning.
 
-```markdown
+```markdoc
 {% hint type="warning" %}
 Back up your data before proceeding.
 {% /hint %}
