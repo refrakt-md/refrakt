@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag } from './helpers.js';
 
 describe('cta tag', () => {
   it('should transform a basic call-to-action', () => {
@@ -46,5 +46,22 @@ npm install refrakt-md
 
     const command = findTag(ctaTag!, t => t.attributes.typeof === 'Command');
     expect(command).toBeDefined();
+  });
+
+  it('should handle action links as LinkItem components', () => {
+    const result = parse(`{% cta %}
+# Ready?
+
+Take the next step.
+
+- [Get Started](/start)
+- [Learn More](/docs)
+{% /cta %}`);
+
+    const ctaTag = findTag(result as any, t => t.attributes.typeof === 'CallToAction');
+    expect(ctaTag).toBeDefined();
+
+    const linkItem = findTag(ctaTag!, t => t.attributes.typeof === 'LinkItem');
+    expect(linkItem).toBeDefined();
   });
 });

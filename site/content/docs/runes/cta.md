@@ -1,11 +1,11 @@
 ---
 title: CTA
-description: Call-to-action sections with headlines, descriptions, and action buttons
+description: Focused call-to-action blocks with headlines, descriptions, and action buttons
 ---
 
 # CTA
 
-Call-to-action sections. Headings become the hero headline, paragraphs become the subtitle, and list items with links become action buttons.
+A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/docs/runes/hero) instead.
 
 ## Basic usage
 
@@ -31,7 +31,7 @@ Build structured content sites with semantic Markdown.
 - [View on GitHub](https://github.com)
 {% /cta %}
 
-## With code showcase
+## With command block
 
 Code fences inside a CTA become copyable command blocks.
 

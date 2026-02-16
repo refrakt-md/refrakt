@@ -14,9 +14,7 @@ export interface CallToActionComponent extends ComponentType<CallToAction> {
   tag: 'section',
   properties: CallToActionProperties,
   refs: {
-    layout: 'div',
-    body: 'section',
-    actions: 'section',
-    showcase: 'div',
+    actions: 'div',
+    body: 'div',
   }
 }
