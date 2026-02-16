@@ -45,7 +45,7 @@ Scaffold a project and start writing.
 npm create refrakt
 ```
 
-- [Documentation](/docs)
+- [Documentation](/docs/getting-started)
 {% /hero %}
 ````
 
@@ -58,7 +58,7 @@ Scaffold a project and start writing.
 npm create refrakt
 ```
 
-- [Documentation](/docs)
+- [Documentation](/docs/getting-started)
 {% /hero %}
 
 ## Left-aligned
