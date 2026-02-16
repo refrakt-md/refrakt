@@ -466,16 +466,14 @@ The SEO layer (`packages/runes/src/seo.ts`) has extractors for these schema.org 
 | `extractVideoObject` | `{% embed %}` with `seoType: 'VideoObject'` | `VideoObject` |
 | `extractImageObject` | `{% figure %}` with `seoType: 'ImageObject'` | `ImageObject` with caption |
 | `extractMusicPlaylist` | `{% music-playlist %}` with `seoType: 'MusicPlaylist'` | `MusicPlaylist` with `MusicRecording` tracks |
+| `extractRecipe` | `{% recipe %}` with `seoType: 'Recipe'` | `Recipe` with ingredients, steps (`HowToStep`), prep/cook time, yield |
+| `extractHowTo` | `{% howto %}` with `seoType: 'HowTo'` | `HowTo` with tools (`HowToTool`), steps (`HowToStep`), totalTime |
+| `extractEvent` | `{% event %}` with `seoType: 'Event'` | `Event` with start/end date, location (`Place`), url |
+| `extractPerson` | `{% cast %}` with `seoType: 'Person'` | `Person` per cast member (name + jobTitle); returns array for multiple members |
+| `extractOrganization` | `{% organization %}` with `seoType: 'Organization'` | `Organization` (or sub-type via `type` attribute: LocalBusiness, Corporation, etc.) |
+| `extractDataset` | `{% datatable %}` with `seoType: 'Dataset'` | `Dataset` with name + description |
 
-**Runes with seoType but no extractor yet:**
-- `{% howto %}` -- `seoType: 'HowTo'` (no `extractHowTo`)
-- `{% recipe %}` -- `seoType: 'Recipe'` (no `extractRecipe`)
-- `{% event %}` -- `seoType: 'Event'` (no `extractEvent`)
-- `{% cast %}` -- `seoType: 'Person'` (no `extractPerson`)
-- `{% organization %}` -- `seoType: 'Organization'` (no `extractOrganization`)
-- `{% datatable %}` -- `seoType: 'Dataset'` (no `extractDataset`)
-
-These runes have the `seoType` field set on their `RuneDescriptor` and will be picked up by `buildSeoTypeMap()`, but `extractSeo()` will silently skip them because there is no matching extractor function in the `extractors` record.
+All runes with `seoType` now have matching extractors. The `Extractor` type supports returning `object | object[]` to handle runes like `{% cast %}` that produce multiple JSON-LD entries.
 
 ---
 
@@ -538,8 +536,7 @@ For reference, the full pipeline for a page in dev mode:
 This section captures the current priority order. Update it as things change.
 
 **Immediate (before any new features):**
-- Write missing SEO extractors for HowTo, Recipe, Event, Person, Organization, Dataset
-- These runes already declare their `seoType` but get silently skipped
+- ~~Write missing SEO extractors for HowTo, Recipe, Event, Person, Organization, Dataset~~ -- DONE (all 6 extractors added to `seo.ts`, see Section 9)
 
 **Short term:**
 - ~~Split Lumina CSS into per-rune files~~ -- DONE (tree-shaking itself is still pending)

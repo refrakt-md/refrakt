@@ -121,7 +121,7 @@ function metaContent(tag: Tag, propertyName: string): string | number | undefine
 
 // ─── Per-type extractors ───
 
-type Extractor = (tag: Tag) => object;
+type Extractor = (tag: Tag) => object | object[];
 
 function extractFAQPage(tag: Tag): object {
 	const items = findAll(tag, t => t.attributes.typeof === 'AccordionItem');
@@ -299,6 +299,135 @@ function extractMusicPlaylist(tag: Tag): object {
 	};
 }
 
+function extractRecipe(tag: Tag): object {
+	const headline = findProperty(tag, 'headline');
+	const blurb = findProperty(tag, 'blurb');
+	const img = findFirst(tag, t => t.name === 'img');
+
+	const ul = findFirst(tag, t => t.name === 'ul');
+	const ingredients = ul
+		? findAll(ul, t => t.name === 'li').map(li => textContent(li))
+		: [];
+
+	const ol = findFirst(tag, t => t.name === 'ol');
+	const steps = ol
+		? findAll(ol, t => t.name === 'li').map(li => ({
+			'@type': 'HowToStep',
+			text: textContent(li),
+		}))
+		: [];
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Recipe',
+		name: headline ? textContent(headline) : undefined,
+		description: blurb ? textContent(blurb) : undefined,
+		image: img?.attributes?.src || undefined,
+		prepTime: metaContent(tag, 'prepTime') || undefined,
+		cookTime: metaContent(tag, 'cookTime') || undefined,
+		recipeYield: metaContent(tag, 'servings') || undefined,
+		recipeIngredient: ingredients.length ? ingredients : undefined,
+		recipeInstructions: steps.length ? steps : undefined,
+	};
+}
+
+function extractHowTo(tag: Tag): object {
+	const headline = findProperty(tag, 'headline');
+	const blurb = findProperty(tag, 'blurb');
+	const img = findFirst(tag, t => t.name === 'img');
+
+	const ul = findFirst(tag, t => t.name === 'ul');
+	const tools = ul
+		? findAll(ul, t => t.name === 'li').map(li => ({
+			'@type': 'HowToTool',
+			name: textContent(li),
+		}))
+		: [];
+
+	const ol = findFirst(tag, t => t.name === 'ol');
+	const steps = ol
+		? findAll(ol, t => t.name === 'li').map(li => ({
+			'@type': 'HowToStep',
+			text: textContent(li),
+		}))
+		: [];
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'HowTo',
+		name: headline ? textContent(headline) : undefined,
+		description: blurb ? textContent(blurb) : undefined,
+		image: img?.attributes?.src || undefined,
+		totalTime: metaContent(tag, 'estimatedTime') || undefined,
+		tool: tools.length ? tools : undefined,
+		step: steps.length ? steps : undefined,
+	};
+}
+
+function extractEvent(tag: Tag): object {
+	const headline = findProperty(tag, 'headline');
+	const blurb = findProperty(tag, 'blurb');
+	const img = findFirst(tag, t => t.name === 'img');
+	const location = metaContent(tag, 'location');
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Event',
+		name: headline ? textContent(headline) : undefined,
+		description: blurb ? textContent(blurb) : undefined,
+		image: img?.attributes?.src || undefined,
+		startDate: metaContent(tag, 'date') || undefined,
+		endDate: metaContent(tag, 'endDate') || undefined,
+		location: location ? { '@type': 'Place', name: location } : undefined,
+		url: metaContent(tag, 'url') || undefined,
+	};
+}
+
+function extractPerson(tag: Tag): object | object[] {
+	const members = findAll(tag, t => t.attributes.typeof === 'CastMember');
+	if (members.length === 0) return { '@context': 'https://schema.org', '@type': 'Person' };
+
+	const people = members.map(member => {
+		const name = findProperty(member, 'name');
+		const role = findProperty(member, 'role');
+		return {
+			'@context': 'https://schema.org',
+			'@type': 'Person',
+			name: name ? textContent(name) : undefined,
+			jobTitle: role ? textContent(role) : undefined,
+		};
+	});
+
+	return people.length === 1 ? people[0] : people;
+}
+
+function extractOrganization(tag: Tag): object {
+	const headline = findProperty(tag, 'headline');
+	const blurb = findProperty(tag, 'blurb');
+	const img = findFirst(tag, t => t.name === 'img');
+	const orgType = metaContent(tag, 'type') as string | undefined;
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': orgType || 'Organization',
+		name: headline ? textContent(headline) : undefined,
+		description: blurb ? textContent(blurb) : undefined,
+		image: img?.attributes?.src || undefined,
+	};
+}
+
+function extractDataset(tag: Tag): object {
+	const headline = findProperty(tag, 'headline');
+	const blurb = findProperty(tag, 'blurb');
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Dataset',
+		name: headline ? textContent(headline) : undefined,
+		description: blurb ? textContent(blurb) : undefined,
+	};
+}
+
 // ─── Extractor registry ───
 
 const extractors: Record<string, Extractor> = {
@@ -310,6 +439,12 @@ const extractors: Record<string, Extractor> = {
 	VideoObject: extractVideoObject,
 	ImageObject: extractImageObject,
 	MusicPlaylist: extractMusicPlaylist,
+	Recipe: extractRecipe,
+	HowTo: extractHowTo,
+	Event: extractEvent,
+	Person: extractPerson,
+	Organization: extractOrganization,
+	Dataset: extractDataset,
 };
 
 // Child types extracted inline by their parent — skip as top-level
@@ -336,7 +471,12 @@ export function extractSeo(
 
 		const extractor = extractors[seoType];
 		if (extractor) {
-			jsonLd.push(extractor(tag));
+			const result = extractor(tag);
+			if (Array.isArray(result)) {
+				jsonLd.push(...result);
+			} else {
+				jsonLd.push(result);
+			}
 		}
 	}
 
