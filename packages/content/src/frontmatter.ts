@@ -7,6 +7,10 @@ export interface Frontmatter {
   draft?: boolean;
   redirect?: string;
   order?: number;
+  date?: string;
+  author?: string;
+  tags?: string[];
+  image?: string;
   [key: string]: unknown;
 }
 

@@ -233,10 +233,15 @@ Every theme ships a `manifest.json` that declares its capabilities:
       "component": "layouts/DocsLayout.svelte",
       "regions": ["header", "nav", "sidebar", "footer"],
       "requiredRegions": ["nav"]
+    },
+    "blog": {
+      "component": "layouts/BlogLayout.svelte",
+      "regions": ["header", "sidebar", "footer"]
     }
   },
   "routeRules": [
     { "pattern": "docs/**", "layout": "docs" },
+    { "pattern": "blog/**", "layout": "blog" },
     { "pattern": "**", "layout": "default" }
   ],
   "unsupportedRuneBehavior": "passthrough"

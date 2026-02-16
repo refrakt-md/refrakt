@@ -20,6 +20,7 @@
 	interface PageData {
 		title: string;
 		description: string;
+		frontmatter?: Record<string, unknown>;
 		regions: Record<string, { name: string; mode: string; content: any[] }>;
 		renderable: any;
 		pages: Array<{ url: string; title: string; draft: boolean }>;
@@ -76,6 +77,7 @@
 	<Layout
 		title={page.title}
 		description={page.description}
+		frontmatter={page.frontmatter}
 		regions={page.regions}
 		renderable={page.renderable}
 		pages={page.pages}
