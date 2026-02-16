@@ -109,7 +109,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
-| **VS Code extension** (Phase 1: static) | TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12. |
+| ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
 | **Language server** (Phase 2: LSP) | Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12. |
 
 ---
@@ -571,7 +571,7 @@ This section captures the current priority order. Update it as things change.
 - Extend `contextModifiers` to more runes as styling needs emerge
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
-- VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching) — low effort, high DX impact
+- ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
 
 **Medium term:**
 - Content analysis step (scan all content, produce rune usage manifest)
