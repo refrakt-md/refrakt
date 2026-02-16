@@ -73,11 +73,19 @@ function parseChangelog(text, versions) {
     // Skip category headings (### Patch Changes, ### Minor Changes, etc.)
     if (line.match(/^###\s/)) continue;
 
-    // Change entry
-    if (currentVersion && line.match(/^- /)) {
-      const cleaned = cleanEntry(line);
-      if (cleaned) versions.get(currentVersion).add(cleaned);
-    }
+    if (!currentVersion) continue;
+
+    // Match top-level and indented bullet lines (changesets nests content under a single `- ` entry)
+    const bulletMatch = line.match(/^(\s*)- (.+)/);
+    if (!bulletMatch) continue;
+
+    const content = bulletMatch[2];
+
+    // Skip heading-style category labels (- ### New packages, - ### Theme restructuring, etc.)
+    if (content.match(/^#{1,6}\s/)) continue;
+
+    const cleaned = cleanEntry(`- ${content}`);
+    if (cleaned) versions.get(currentVersion).add(cleaned);
   }
 }
 
