@@ -21,9 +21,7 @@
 
 {#if isCodeBlock}
 	<div class="rf-codeblock">
-		<pre bind:this={preEl} {...tag.attributes}>
-			{@render children()}
-		</pre>
+		<pre bind:this={preEl} {...tag.attributes}>{@render children()}</pre>
 		<button class="rf-codeblock__copy" class:rf-codeblock__copy--copied={copied} onclick={copy} aria-label="Copy code">
 			{#if copied}
 				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -38,9 +36,7 @@
 		</button>
 	</div>
 {:else}
-	<pre {...tag.attributes}>
-		{@render children()}
-	</pre>
+	<pre {...tag.attributes}>{@render children()}</pre>
 {/if}
 
 <style>
