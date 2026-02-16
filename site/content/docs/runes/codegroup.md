@@ -5,135 +5,101 @@ description: Tabbed code block with language tabs
 
 # Codegroup
 
-Display multiple code blocks in a tabbed view. Each fenced code block becomes a tab, with the language automatically detected as the tab name.
+Display multiple code blocks in a tabbed view. Each fenced code block becomes a tab, with the language automatically used as the tab name.
 
 ## Basic usage
 
-Just add code fences inside a codegroup. The language from each fence becomes the tab label.
+Tabs are automatically labeled by their code block language.
 
 ````markdoc
 {% codegroup %}
 ```js
-const greeting = 'Hello, world!';
-console.log(greeting);
+const x = 1;
 ```
 
 ```python
-greeting = "Hello, world!"
-print(greeting)
-```
-
-```ruby
-greeting = "Hello, world!"
-puts greeting
+x = 1
 ```
 {% /codegroup %}
 ````
 
 {% codegroup %}
 ```js
-const greeting = 'Hello, world!';
-console.log(greeting);
+const x = 1;
 ```
 
 ```python
-greeting = "Hello, world!"
-print(greeting)
-```
-
-```ruby
-greeting = "Hello, world!"
-puts greeting
+x = 1
 ```
 {% /codegroup %}
 
 ## Custom labels
 
-When multiple fences share the same language, use `labels` to give each tab a custom name.
+Use the `labels` attribute to override the default language-based tab names. Useful when multiple tabs share the same language.
 
 ````markdoc
 {% codegroup labels="React, Vue, Svelte" %}
-```js
-function App() {
+```jsx
+export default function App() {
   return <h1>Hello</h1>;
 }
 ```
 
-```js
-export default {
-  template: '<h1>Hello</h1>'
-}
+```html
+<template>
+  <h1>Hello</h1>
+</template>
 ```
 
-```js
+```html
 <h1>Hello</h1>
 ```
 {% /codegroup %}
 ````
 
 {% codegroup labels="React, Vue, Svelte" %}
-```js
-function App() {
+```jsx
+export default function App() {
   return <h1>Hello</h1>;
 }
 ```
 
-```js
-export default {
-  template: '<h1>Hello</h1>'
-}
+```html
+<template>
+  <h1>Hello</h1>
+</template>
 ```
 
-```js
+```html
 <h1>Hello</h1>
 ```
 {% /codegroup %}
 
 ## With title
 
-Use `title` to display a filename or label in the topbar alongside the window dots.
+Use the `title` attribute to display a filename or label in the topbar.
 
 ````markdoc
-{% codegroup title="package.json" %}
-```json
-{
-  "name": "my-app",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  }
-}
+{% codegroup title="app.js" %}
+```js
+import express from 'express';
+
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
 ```
 {% /codegroup %}
 ````
 
-{% codegroup title="package.json" %}
-```json
-{
-  "name": "my-app",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  }
-}
-```
-{% /codegroup %}
+{% codegroup title="app.js" %}
+```js
+import express from 'express';
 
-## Single code block
-
-A codegroup with one fence still applies the styled code block chrome (topbar with window dots).
-
-````markdoc
-{% codegroup %}
-```bash
-npm install @refrakt-md/core
-```
-{% /codegroup %}
-````
-
-{% codegroup %}
-```bash
-npm install @refrakt-md/core
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
 ```
 {% /codegroup %}
 

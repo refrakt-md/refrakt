@@ -46,7 +46,7 @@ describe('generateSystemPrompt', () => {
 	it('includes reinterprets', () => {
 		expect(prompt).toContain('paragraph → message body');
 		expect(prompt).toContain('heading → section headline');
-		expect(prompt).toContain('fence → editor tab content');
+		expect(prompt).toContain('fence → tab content');
 	});
 
 	it('includes examples with rune syntax', () => {
