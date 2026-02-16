@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import hljs from 'highlight.js';
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
@@ -10,14 +9,14 @@ const modeType = ['unified', 'split', 'inline'] as const;
 interface DiffHunk {
 	type: 'equal' | 'add' | 'remove';
 	text: string;
-	html: string;
 }
 
 /**
  * Compute line-level diff using LCS (Longest Common Subsequence).
- * Returns an array of hunks with type, raw text, and hljs-highlighted HTML.
+ * Returns an array of hunks with type and raw text.
+ * Highlighting is deferred to the pipeline's highlight transform.
  */
-function computeLineDiff(before: string, after: string, language: string): DiffHunk[] {
+function computeLineDiff(before: string, after: string): DiffHunk[] {
 	const a = before.split('\n');
 	const b = after.split('\n');
 
@@ -33,44 +32,24 @@ function computeLineDiff(before: string, after: string, language: string): DiffH
 	}
 
 	// Backtrack to produce hunks
-	const hunks: DiffHunk[] = [];
 	let i = m, j = n;
 	const stack: DiffHunk[] = [];
 
 	while (i > 0 || j > 0) {
 		if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
-			stack.push({ type: 'equal', text: a[i - 1], html: '' });
+			stack.push({ type: 'equal', text: a[i - 1] });
 			i--; j--;
 		} else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-			stack.push({ type: 'add', text: b[j - 1], html: '' });
+			stack.push({ type: 'add', text: b[j - 1] });
 			j--;
 		} else {
-			stack.push({ type: 'remove', text: a[i - 1], html: '' });
+			stack.push({ type: 'remove', text: a[i - 1] });
 			i--;
 		}
 	}
 
-	// Reverse (we built it backwards) and apply highlighting
 	stack.reverse();
-	for (const hunk of stack) {
-		hunk.html = highlightLine(hunk.text, language);
-		hunks.push(hunk);
-	}
-
-	return hunks;
-}
-
-function highlightLine(text: string, language: string): string {
-	if (!language || !text) return escapeHtml(text);
-	try {
-		return hljs.highlight(text, { language }).value;
-	} catch {
-		return escapeHtml(text);
-	}
-}
-
-function escapeHtml(str: string): string {
-	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	return stack;
 }
 
 /** Align hunks into paired split lines (before/after) */
@@ -124,7 +103,7 @@ function getUnifiedLines(hunks: DiffHunk[]): { hunk: DiffHunk; beforeNum: number
 }
 
 /** Build unified diff renderable — pre with line spans, gutter numbers, and prefix */
-function buildUnifiedRenderable(hunks: DiffHunk[]) {
+function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
 	const lines = getUnifiedLines(hunks);
 	const lineNodes = lines.map(({ hunk, beforeNum, afterNum }) => {
 		const prefix = hunk.type === 'remove' ? '-' : hunk.type === 'add' ? '+' : ' ';
@@ -132,7 +111,7 @@ function buildUnifiedRenderable(hunks: DiffHunk[]) {
 			new Tag('span', { 'data-name': 'gutter-num' }, [beforeNum != null ? String(beforeNum) : ' ']),
 			new Tag('span', { 'data-name': 'gutter-num' }, [afterNum != null ? String(afterNum) : ' ']),
 			new Tag('span', { 'data-name': 'gutter-prefix' }, [prefix]),
-			new Tag('span', { 'data-name': 'line-content', 'data-codeblock': true }, [hunk.html]),
+			new Tag('span', { 'data-name': 'line-content', ...(lang ? { 'data-language': lang } : {}) }, [hunk.text]),
 		]);
 	});
 
@@ -140,7 +119,7 @@ function buildUnifiedRenderable(hunks: DiffHunk[]) {
 }
 
 /** Build split diff renderable — side-by-side panels with before/after lines */
-function buildSplitRenderable(hunks: DiffHunk[]) {
+function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 	const { before, after } = getSplitLines(hunks);
 
 	function buildPanelLines(lines: (DiffHunk | null)[]) {
@@ -148,8 +127,8 @@ function buildSplitRenderable(hunks: DiffHunk[]) {
 			const type = line ? line.type : 'empty';
 			return new Tag('span', { 'data-name': 'line', 'data-type': type }, [
 				new Tag('span', { 'data-name': 'gutter' }, [line ? '' : ' ']),
-				new Tag('span', { 'data-name': 'line-content', 'data-codeblock': true }, [
-					line ? line.html : '\u00a0',
+				new Tag('span', { 'data-name': 'line-content', ...(line && lang ? { 'data-language': lang } : {}) }, [
+					line ? line.text : '\u00a0',
 				]),
 			]);
 		});
@@ -178,7 +157,7 @@ class DiffModel extends Model {
 		const modeMeta = new Tag('meta', { content: this.mode });
 		const languageMeta = new Tag('meta', { content: this.language });
 
-		// Extract raw source directly from AST (before hljs transformation)
+		// Extract raw source directly from AST
 		const fences: { content: string; language: string }[] = [];
 		for (const child of this.node.children) {
 			if (child.type === 'fence') {
@@ -193,13 +172,13 @@ class DiffModel extends Model {
 		const afterSource = fences.length > 1 ? fences[1].content.replace(/\n$/, '') : '';
 		const lang = this.language || (fences.length > 0 ? fences[0].language : '');
 
-		// Compute line-level diff with syntax highlighting
-		const hunks = computeLineDiff(beforeSource, afterSource, lang);
+		// Compute line-level diff (highlighting deferred to highlight transform)
+		const hunks = computeLineDiff(beforeSource, afterSource);
 
 		// Build expanded renderable AST
 		const expanded = this.mode === 'split'
-			? buildSplitRenderable(hunks)
-			: buildUnifiedRenderable(hunks);
+			? buildSplitRenderable(hunks, lang)
+			: buildUnifiedRenderable(hunks, lang);
 
 		return createComponentRenderable(schema.Diff, {
 			tag: 'div',

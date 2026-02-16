@@ -71,7 +71,7 @@ const z = 3;
 		expect(addLine).toBeDefined();
 	});
 
-	it('should include syntax-highlighted HTML in line content', () => {
+	it('should include raw text with data-language in line content', () => {
 		const result = parse(`{% diff language="javascript" %}
 \`\`\`javascript
 const x = 1;
@@ -86,11 +86,15 @@ let y = 2;
 		const lineContents = findAllTags(tag!, t => t.attributes['data-name'] === 'line-content');
 		expect(lineContents.length).toBeGreaterThan(0);
 
-		// Line content children should have hljs-highlighted HTML strings
-		const hasHighlight = lineContents.some(lc =>
-			lc.children.some(c => typeof c === 'string' && c.includes('hljs-'))
+		// Line content should have data-language for the highlight transform
+		const hasLang = lineContents.some(lc => lc.attributes['data-language'] === 'javascript');
+		expect(hasLang).toBe(true);
+
+		// Line content children should be plain text (not highlighted HTML)
+		const hasPlainText = lineContents.some(lc =>
+			lc.children.some(c => typeof c === 'string' && !c.includes('<span'))
 		);
-		expect(hasHighlight).toBe(true);
+		expect(hasPlainText).toBe(true);
 	});
 
 	it('should handle identical code blocks with all equal lines', () => {

@@ -1,13 +1,13 @@
 {
-  "name": "@refrakt-md/runes",
-  "description": "Semantic Markdoc runes for refrakt.md",
+  "name": "@refrakt-md/highlight",
+  "description": "Syntax highlighting transform for refrakt.md — Shiki-based tree walker with pluggable highlighter",
   "version": "0.3.0",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/refrakt-md/refrakt.git",
-    "directory": "packages/runes"
+    "directory": "packages/highlight"
   },
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
@@ -16,6 +16,12 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -24,13 +30,7 @@
   },
   "dependencies": {
     "@refrakt-md/types": "0.3.0",
-    "@markdoc/markdoc": "0.4.0",
-    "reflect-metadata": "^0.2.0",
-    "fast-xml-parser": "4.5.1",
-    "path-browserify": "1.0.1",
-    "iso8601-duration": "2.1.2"
-  },
-  "devDependencies": {
-    "@types/path-browserify": "1.0.3"
+    "@refrakt-md/transform": "0.3.0",
+    "shiki": "^3.0.0"
   }
 }

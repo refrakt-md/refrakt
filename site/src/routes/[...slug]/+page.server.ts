@@ -1,16 +1,29 @@
 import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
 import { identityTransform } from '@refrakt-md/lumina/transform';
+import { createHighlightTransform } from '@refrakt-md/highlight';
 import { error } from '@sveltejs/kit';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';
+import type { RendererNode } from '@refrakt-md/types';
 
 const contentDir = path.resolve('content');
+
+let _hl: ((tree: RendererNode) => RendererNode) | null = null;
+
+async function getHighlightTransform(): Promise<(tree: RendererNode) => RendererNode> {
+	const cached = _hl;
+	if (cached) return cached;
+	const hl = await createHighlightTransform();
+	_hl = hl;
+	return hl;
+}
 
 export const prerender = true;
 
 export const load: PageServerLoad = async ({ params }) => {
 	const site = await loadContent(contentDir);
+	const hl = await getHighlightTransform();
 	const slug = params.slug || '';
 	const url = '/' + slug;
 
@@ -21,7 +34,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	const serialized = serializeTree(page.renderable);
-	const renderable = identityTransform(serialized);
+	const renderable = hl(identityTransform(serialized));
 
 	return {
 		title: page.frontmatter.title ?? '',
@@ -30,7 +43,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(c => identityTransform(serialize(c))) }
+				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(identityTransform(serialize(c)))) }
 			])
 		),
 		seo: page.seo,
