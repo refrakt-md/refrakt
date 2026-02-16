@@ -2,7 +2,7 @@
 	"name": "@refrakt-md/vscode",
 	"displayName": "refrakt.md",
 	"description": "Syntax highlighting, snippets, and editor support for refrakt.md content authoring with Markdoc runes.",
-	"version": "0.1.0",
+	"version": "0.4.0",
 	"publisher": "refrakt-md",
 	"license": "MIT",
 	"repository": {
