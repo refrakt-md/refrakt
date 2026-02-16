@@ -1,0 +1,55 @@
+{
+	"name": "refrakt-md",
+	"displayName": "refrakt.md",
+	"description": "Syntax highlighting, snippets, and editor support for refrakt.md content authoring with Markdoc runes.",
+	"version": "0.1.0",
+	"publisher": "refrakt-md",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/refrakt-md/refrakt.git",
+		"directory": "packages/vscode"
+	},
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"categories": [
+		"Programming Languages",
+		"Snippets"
+	],
+	"keywords": [
+		"markdoc",
+		"markdown",
+		"refrakt",
+		"runes",
+		"content"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "markdown",
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"scopeName": "text.html.markdown.refrakt",
+				"path": "./syntaxes/refrakt.tmLanguage.json",
+				"injectTo": [
+					"text.html.markdown"
+				]
+			}
+		],
+		"snippets": [
+			{
+				"language": "markdown",
+				"path": "./snippets/runes.json"
+			}
+		],
+		"configurationDefaults": {
+			"[markdown]": {
+				"editor.wordWrap": "on"
+			}
+		}
+	}
+}

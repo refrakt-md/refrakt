@@ -1,0 +1,77 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"scopeName": "text.html.markdown.refrakt",
+	"injectionSelector": "L:text.html.markdown, L:meta.paragraph.markdown, L:markup.list.markdown, L:markup.quote.markdown",
+	"patterns": [
+		{ "include": "#rune-closing-tag" },
+		{ "include": "#rune-tag" }
+	],
+	"repository": {
+		"rune-closing-tag": {
+			"name": "meta.tag.rune.closing.refrakt",
+			"match": "(\\{%)\\s*(/)([a-zA-Z][a-zA-Z0-9-]*)\\s*(%\\})",
+			"captures": {
+				"1": { "name": "punctuation.definition.tag.begin.rune.refrakt" },
+				"2": { "name": "punctuation.definition.tag.close.rune.refrakt" },
+				"3": { "name": "entity.name.tag.rune.refrakt" },
+				"4": { "name": "punctuation.definition.tag.end.rune.refrakt" }
+			}
+		},
+		"rune-tag": {
+			"name": "meta.tag.rune.refrakt",
+			"begin": "(\\{%)\\s*([a-zA-Z][a-zA-Z0-9-]*)",
+			"end": "(/?)(%\\})",
+			"beginCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.rune.refrakt" },
+				"2": { "name": "entity.name.tag.rune.refrakt" }
+			},
+			"endCaptures": {
+				"1": { "name": "punctuation.definition.tag.self-close.rune.refrakt" },
+				"2": { "name": "punctuation.definition.tag.end.rune.refrakt" }
+			},
+			"patterns": [
+				{ "include": "#rune-attributes" }
+			]
+		},
+		"rune-attributes": {
+			"patterns": [
+				{ "include": "#rune-attribute-quoted" },
+				{ "include": "#rune-attribute-boolean" },
+				{ "include": "#rune-attribute-number" },
+				{ "include": "#rune-attribute-unquoted" }
+			]
+		},
+		"rune-attribute-quoted": {
+			"match": "([a-zA-Z][a-zA-Z0-9-]*)(=)(\"[^\"]*\")",
+			"captures": {
+				"1": { "name": "entity.other.attribute-name.rune.refrakt" },
+				"2": { "name": "punctuation.separator.key-value.rune.refrakt" },
+				"3": { "name": "string.quoted.double.rune.refrakt" }
+			}
+		},
+		"rune-attribute-boolean": {
+			"match": "([a-zA-Z][a-zA-Z0-9-]*)(=)(true|false)(?=\\s|%|/)",
+			"captures": {
+				"1": { "name": "entity.other.attribute-name.rune.refrakt" },
+				"2": { "name": "punctuation.separator.key-value.rune.refrakt" },
+				"3": { "name": "constant.language.boolean.rune.refrakt" }
+			}
+		},
+		"rune-attribute-number": {
+			"match": "([a-zA-Z][a-zA-Z0-9-]*)(=)([0-9]+(?:\\.[0-9]+)?)(?=\\s|%|/)",
+			"captures": {
+				"1": { "name": "entity.other.attribute-name.rune.refrakt" },
+				"2": { "name": "punctuation.separator.key-value.rune.refrakt" },
+				"3": { "name": "constant.numeric.rune.refrakt" }
+			}
+		},
+		"rune-attribute-unquoted": {
+			"match": "([a-zA-Z][a-zA-Z0-9-]*)(=)([^\\s\"%}/]+)",
+			"captures": {
+				"1": { "name": "entity.other.attribute-name.rune.refrakt" },
+				"2": { "name": "punctuation.separator.key-value.rune.refrakt" },
+				"3": { "name": "string.unquoted.rune.refrakt" }
+			}
+		}
+	}
+}
