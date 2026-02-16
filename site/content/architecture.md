@@ -270,7 +270,7 @@ A `_layout.md` file in any content directory defines the layout for that directo
 - `{% layout %}` -- wraps the entire layout definition
 - `{% region %}` -- creates a named content block
 
-```md
+```markdoc
 {% layout %}
 
 {% region name="header" %}
@@ -304,7 +304,7 @@ Layout files cascade down the directory tree. A `_layout.md` in `/content/` appl
 - **`mode="prepend"`** -- adds content before the parent's region content
 - **`mode="append"`** -- adds content after the parent's region content
 
-```md
+```markdoc
 {% layout extends="parent" %}
 
 {% region name="nav" mode="append" %}
