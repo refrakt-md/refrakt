@@ -1,8 +1,8 @@
 {
-	"name": "@refrakt-md/vscode",
+	"name": "refrakt-md",
 	"displayName": "refrakt.md",
 	"description": "Syntax highlighting, snippets, and editor support for refrakt.md content authoring with Markdoc runes.",
-	"version": "0.1.0",
+	"version": "0.4.0",
 	"publisher": "refrakt-md",
 	"license": "MIT",
 	"repository": {
@@ -10,6 +10,7 @@
 		"url": "https://github.com/refrakt-md/refrakt.git",
 		"directory": "packages/vscode"
 	},
+	"main": "./dist/extension.js",
 	"engines": {
 		"vscode": "^1.85.0"
 	},
@@ -51,5 +52,18 @@
 				"editor.wordWrap": "on"
 			}
 		}
+	},
+	"scripts": {
+		"build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node && esbuild ../language-server/dist/server.js --bundle --outfile=dist/server.js --format=cjs --platform=node",
+		"watch": "npm run build -- --watch",
+		"package": "vsce package --no-dependencies"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.85.0",
+		"@vscode/vsce": "^3.0.0",
+		"esbuild": "^0.25.0"
 	}
 }

@@ -1,0 +1,9 @@
+**/*
+!dist/extension.js
+!dist/server.js
+!syntaxes/**
+!snippets/**
+!language-configuration.json
+!package.json
+!README.md
+!LICENSE
