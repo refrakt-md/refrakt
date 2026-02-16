@@ -46,7 +46,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker, CSS variables integration, pluggable highlighter |
 | `@refrakt-md/lumina` | Lumina theme -- identity layer (design tokens, per-rune CSS, pre-built transform) plus framework adapters via subpath exports (`/sveltekit`) |
-| `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic and Ollama providers |
+| `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
 
 ---
@@ -571,9 +571,10 @@ ANTHROPIC_API_KEY=sk-... refrakt write "Create a landing page with pricing"
 | Provider | Detection | Default Model |
 |----------|-----------|---------------|
 | **Anthropic** (Claude) | `ANTHROPIC_API_KEY` environment variable | `claude-sonnet-4-5-20250929` |
+| **Gemini** (Google) | `GOOGLE_API_KEY` environment variable | `gemini-2.0-flash` |
 | **Ollama** (local models) | `OLLAMA_HOST` env var, or default `localhost:11434` | `llama3.2` |
 
-Provider auto-detection checks for `ANTHROPIC_API_KEY` first, then falls back to Ollama. Both providers use streaming responses.
+Provider auto-detection checks for `ANTHROPIC_API_KEY` first, then `GOOGLE_API_KEY`, then falls back to Ollama. All providers use streaming responses. Gemini Flash is a free cloud option -- Google AI Studio API keys require no billing setup.
 
 ### System Prompt Design
 
