@@ -1,5 +1,49 @@
 # @refrakt-md/runes
 
+## 0.4.0
+
+### Minor Changes
+
+- ### New packages
+
+  - `@refrakt-md/highlight` — Shiki-based syntax highlighting with Markdoc grammar support, CSS variables integration, and copy-to-clipboard
+  - `@refrakt-md/transform` — Identity transform engine extracted into its own package (BEM classes, structural injection, meta consumption)
+
+  ### New runes
+
+  - `form` — Form component with field validation
+  - `comparison` — Comparison matrices and tables
+  - `storyboard` — Story visualization
+  - `reveal` — Progressive disclosure
+  - `conversation` — Chat-style content
+  - `bento` — Grid layout component
+  - `annotate` — Annotated content
+
+  ### Theme restructuring
+
+  - Merged `@refrakt-md/theme-lumina` into `@refrakt-md/lumina/sveltekit` as a subpath export
+  - SvelteKit plugin now derives theme adapter dynamically from `config.theme` + `config.target`
+  - Theme packages now serve framework adapters via subpath exports — no separate packages per framework
+
+  ### CodeGroup redesign
+
+  - Replaced Editor rune with dedicated CodeGroup component for multi-file code blocks
+
+  ### SEO extractors
+
+  - Added Recipe, HowTo, Event, Person, Organization, and Dataset schema.org extractors
+
+  ### Other improvements
+
+  - Unified actions pattern across Hero and CTA runes
+  - Blog layout added to Lumina theme
+  - Copy-to-clipboard for code blocks
+  - Test coverage expanded from ~299 to 370 tests
+
+### Patch Changes
+
+- @refrakt-md/types@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

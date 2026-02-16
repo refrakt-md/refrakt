@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/ai",
   "description": "AI content generation for refrakt.md",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -23,6 +23,6 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@refrakt-md/runes": "0.3.0"
+    "@refrakt-md/runes": "0.4.0"
   }
 }

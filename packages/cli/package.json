@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/cli",
   "description": "CLI tools for refrakt.md",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/ai": "0.3.0",
-    "@refrakt-md/runes": "0.3.0"
+    "@refrakt-md/ai": "0.4.0",
+    "@refrakt-md/runes": "0.4.0"
   }
 }
