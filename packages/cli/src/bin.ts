@@ -29,7 +29,8 @@ Commands:
   write <prompt>  Generate a Markdown content file using AI
 
 Write Options:
-  --output, -o <path>      Write output to file instead of stdout
+  --output, -o <path>      Write output to a single file
+  --output-dir, -d <dir>   Generate multiple files into a directory
   --provider, -p <name>    Provider: anthropic, gemini, ollama (default: auto-detect)
   --model, -m <name>       Model name (default: per-provider)
   --help, -h               Show this help message
@@ -43,14 +44,15 @@ Provider auto-detection:
 Examples:
   refrakt write "Create a getting started guide"
   refrakt write -o content/docs/api.md "Write an API reference page"
+  refrakt write -d content/ "Set up a docs site with index, guides, and blog"
   refrakt write -p ollama -m llama3.2 "Write a FAQ page"
-  GOOGLE_API_KEY=... refrakt write "Create a landing page"
 `);
 }
 
 function runWrite(writeArgs: string[]): void {
 	let prompt: string | undefined;
 	let output: string | undefined;
+	let outputDir: string | undefined;
 	let providerName: string | undefined;
 	let model: string | undefined;
 
@@ -61,6 +63,12 @@ function runWrite(writeArgs: string[]): void {
 			output = writeArgs[++i];
 			if (!output) {
 				console.error('Error: --output requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--output-dir' || arg === '-d') {
+			outputDir = writeArgs[++i];
+			if (!outputDir) {
+				console.error('Error: --output-dir requires a directory path');
 				process.exit(1);
 			}
 		} else if (arg === '--provider' || arg === '-p') {
@@ -97,6 +105,11 @@ function runWrite(writeArgs: string[]): void {
 		process.exit(1);
 	}
 
+	if (output && outputDir) {
+		console.error('Error: --output and --output-dir are mutually exclusive\n');
+		process.exit(1);
+	}
+
 	// Dynamic imports to avoid loading @refrakt-md/runes at parse time
 	// (markdoc CJS/ESM interop requires Node.js 22.12+ or a bundler)
 	Promise.all([
@@ -112,7 +125,7 @@ function runWrite(writeArgs: string[]): void {
 		}
 
 		const modelName = model ?? resolved.defaultModel;
-		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output });
+		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output, outputDir });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);

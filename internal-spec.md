@@ -104,7 +104,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Reference rune** (`{% reference %}` for code documentation) | Not implemented. |
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
-| **AI authoring modes** (draft, review, enhance, transform) | Write mode exists. Four additional modes designed but not implemented. See Section 13. |
+| **AI authoring modes** (draft, review, enhance, transform) | Write mode exists with single-file and multi-file (`-d`) support. `modes/` architecture established. Four additional modes designed but not implemented. See Section 13. |
 | ~~**Gemini provider**~~ | ~~Anthropic and Ollama exist. Gemini Flash planned as free cloud option.~~ DONE — `packages/ai/src/providers/gemini.ts` with `formatGeminiRequest()` + `parseGeminiSSE()`. Auto-detection: Anthropic > Gemini (`GOOGLE_API_KEY`) > Ollama. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
@@ -769,9 +769,11 @@ The current `refrakt write` command operates in a single mode: generate complete
 
 **System prompt emphasis:** Completeness, accuracy, correct rune selection, proper attribute usage. The AI should produce content that is ready to publish with minimal editing.
 
-**Output:** A complete `.md` file written to the content directory.
+**Output:** A single `.md` file (`-o`) or multiple files to a directory (`-d`).
 
-**Current state:** Implemented in `packages/cli/src/commands/write.ts` with system prompt in `packages/ai/src/prompt.ts`.
+**Multi-file mode:** `refrakt write -d content/ "Set up a docs site with index, guides, and blog"` generates multiple files using `--- FILE: path ---` markers in the AI output. The mode-specific prompt additions live in `packages/ai/src/modes/write.ts`, establishing the `modes/` architecture for future authoring modes.
+
+**Current state:** Implemented in `packages/cli/src/commands/write.ts` with base system prompt in `packages/ai/src/prompt.ts` and write mode additions in `packages/ai/src/modes/write.ts`.
 
 ---
 
@@ -968,7 +970,7 @@ packages/ai/
 ├── src/
 │   ├── prompt.ts              ← base system prompt (rune vocabulary, project context)
 │   ├── modes/
-│   │   ├── write.ts           ← write mode prompt additions
+│   │   ├── write.ts           ← write mode prompt additions (exists — multi-file instructions)
 │   │   ├── draft.ts           ← draft mode prompt + Q&A flow
 │   │   ├── review.ts          ← review mode prompt + suggestion format
 │   │   ├── enhance.ts         ← enhance mode prompt + pattern matching instructions
