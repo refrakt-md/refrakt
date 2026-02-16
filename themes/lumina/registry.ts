@@ -15,6 +15,7 @@ import Testimonial from './components/Testimonial.svelte';
 import Embed from './components/Embed.svelte';
 import Storyboard from './components/Storyboard.svelte';
 import Bento from './components/Bento.svelte';
+import CodeGroup from './components/CodeGroup.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components.
  *  Components registered here handle interactive behavior, complex data
@@ -23,6 +24,7 @@ import Bento from './components/Bento.svelte';
  */
 export const registry: ComponentRegistry = {
 	// Interactive
+	'CodeGroup': CodeGroup,
 	'TabGroup': Tabs,
 	'Tab': Tabs,
 	'DataTable': DataTable,

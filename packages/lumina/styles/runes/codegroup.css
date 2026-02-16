@@ -31,6 +31,33 @@
 	font-size: 0.8rem;
 	opacity: 0.7;
 }
+.rf-codegroup__tabs {
+	display: flex;
+	background: rgba(255, 255, 255, 0.03);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.rf-codegroup__tab {
+	flex: 0 0 auto;
+	padding: 0.5rem 1rem;
+	font-size: 0.8rem;
+	font-family: var(--rf-font-mono);
+	color: rgba(255, 255, 255, 0.5);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	transition: color 200ms ease, border-color 200ms ease;
+	white-space: nowrap;
+}
+.rf-codegroup__tab:hover {
+	color: rgba(255, 255, 255, 0.8);
+}
+.rf-codegroup__tab--active {
+	color: rgba(255, 255, 255, 0.95);
+	border-bottom-color: var(--rf-color-primary);
+}
 .rf-codegroup__content pre {
 	margin: 0;
 	padding: 1rem 1.25rem;
