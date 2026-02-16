@@ -161,6 +161,155 @@ Answer one.
 		expect(types).toContain('Review');
 	});
 
+	it('should extract Recipe with ingredients and steps', () => {
+		const result = seo(`{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 %}
+# Chocolate Cake
+
+A rich chocolate cake recipe.
+
+- 2 cups flour
+- 1 cup sugar
+- 3 eggs
+
+1. Mix dry ingredients
+2. Add wet ingredients
+3. Bake at 350°F for 30 minutes
+{% /recipe %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const recipe = result.jsonLd[0] as any;
+		expect(recipe['@context']).toBe('https://schema.org');
+		expect(recipe['@type']).toBe('Recipe');
+		expect(recipe.name).toBe('Chocolate Cake');
+		expect(recipe.description).toContain('chocolate cake');
+		expect(recipe.prepTime).toBe('PT15M');
+		expect(recipe.cookTime).toBe('PT30M');
+		expect(recipe.recipeYield).toBe('4');
+		expect(recipe.recipeIngredient).toHaveLength(3);
+		expect(recipe.recipeIngredient[0]).toContain('flour');
+		expect(recipe.recipeInstructions).toHaveLength(3);
+		expect(recipe.recipeInstructions[0]['@type']).toBe('HowToStep');
+		expect(recipe.recipeInstructions[0].text).toContain('Mix dry');
+	});
+
+	it('should extract HowTo with tools and steps', () => {
+		const result = seo(`{% howto estimatedTime="PT2H" difficulty="medium" %}
+# Build a Bookshelf
+
+A guide to building a simple bookshelf.
+
+- Hammer
+- Screwdriver
+- Wood glue
+
+1. Cut the wood to size
+2. Sand all surfaces
+3. Assemble with screws and glue
+{% /howto %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const howto = result.jsonLd[0] as any;
+		expect(howto['@context']).toBe('https://schema.org');
+		expect(howto['@type']).toBe('HowTo');
+		expect(howto.name).toBe('Build a Bookshelf');
+		expect(howto.description).toContain('bookshelf');
+		expect(howto.totalTime).toBe('PT2H');
+		expect(howto.tool).toHaveLength(3);
+		expect(howto.tool[0]['@type']).toBe('HowToTool');
+		expect(howto.tool[0].name).toContain('Hammer');
+		expect(howto.step).toHaveLength(3);
+		expect(howto.step[0]['@type']).toBe('HowToStep');
+		expect(howto.step[0].text).toContain('Cut the wood');
+	});
+
+	it('should extract Event with date and location', () => {
+		const result = seo(`{% event date="2025-06-15T09:00:00Z" endDate="2025-06-15T17:00:00Z" location="Convention Center" url="https://example.com/event" %}
+# Tech Conference 2025
+
+Join us for an exciting day of talks and workshops.
+{% /event %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const event = result.jsonLd[0] as any;
+		expect(event['@context']).toBe('https://schema.org');
+		expect(event['@type']).toBe('Event');
+		expect(event.name).toBe('Tech Conference 2025');
+		expect(event.description).toContain('exciting day');
+		expect(event.startDate).toBe('2025-06-15T09:00:00Z');
+		expect(event.endDate).toBe('2025-06-15T17:00:00Z');
+		expect(event.location['@type']).toBe('Place');
+		expect(event.location.name).toBe('Convention Center');
+		expect(event.url).toBe('https://example.com/event');
+	});
+
+	it('should extract Person from cast with multiple members', () => {
+		const result = seo(`{% cast %}
+- Jane Smith - Director
+- John Doe - Producer
+- Alice Johnson - Lead Actor
+{% /cast %}`);
+
+		expect(result.jsonLd).toHaveLength(3);
+		const people = result.jsonLd as any[];
+		expect(people[0]['@type']).toBe('Person');
+		expect(people[0].name).toBe('Jane Smith');
+		expect(people[0].jobTitle).toBe('Director');
+		expect(people[1].name).toBe('John Doe');
+		expect(people[2].name).toBe('Alice Johnson');
+	});
+
+	it('should extract single Person from cast with one member', () => {
+		const result = seo(`{% cast %}
+- Jane Smith - Director
+{% /cast %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const person = result.jsonLd[0] as any;
+		expect(person['@type']).toBe('Person');
+		expect(person.name).toBe('Jane Smith');
+		expect(person.jobTitle).toBe('Director');
+	});
+
+	it('should extract Organization with sub-type', () => {
+		const result = seo(`{% organization type="LocalBusiness" %}
+# Acme Corp
+
+A leading provider of innovative solutions.
+{% /organization %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const org = result.jsonLd[0] as any;
+		expect(org['@context']).toBe('https://schema.org');
+		expect(org['@type']).toBe('LocalBusiness');
+		expect(org.name).toBe('Acme Corp');
+		expect(org.description).toContain('innovative solutions');
+	});
+
+	it('should extract Organization with default type', () => {
+		const result = seo(`{% organization %}
+# Some Org
+
+Description here.
+{% /organization %}`);
+
+		const org = result.jsonLd[0] as any;
+		expect(org['@type']).toBe('Organization');
+	});
+
+	it('should extract Dataset from datatable', () => {
+		const result = seo(`{% datatable sortable="name,age" searchable=true %}
+| Name | Age | City |
+|------|-----|------|
+| Alice | 30 | NYC |
+| Bob | 25 | LA |
+{% /datatable %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const dataset = result.jsonLd[0] as any;
+		expect(dataset['@context']).toBe('https://schema.org');
+		expect(dataset['@type']).toBe('Dataset');
+	});
+
 	it('should not produce top-level JSON-LD for child seoTypes (Offer)', () => {
 		// Tier has seoType 'Offer' but should only appear inside Product
 		const result = seo(`{% pricing %}
