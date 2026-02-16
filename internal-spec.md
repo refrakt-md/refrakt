@@ -110,7 +110,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
-| **Language server** (Phase 2: LSP) | Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12. |
+| ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 
 ---
 
@@ -182,16 +182,16 @@ Two-phase delivery. See Section 12 for full detail.
 - Snippets for every rune with tabstop and choice syntax
 - Published to VS Code Marketplace and Open VSX as `@refrakt-md/vscode`
 
-**Phase 9b: Language Server** (medium-large effort, LSP-based)
-- `@refrakt-md/language-server` — editor-agnostic LSP server
-- Autocompletion: rune names, attributes, attribute values, closing tags (context-aware)
-- Hover documentation generated from `RuneDefinition` metadata
-- Diagnostics: unknown runes, unclosed tags, invalid attributes, missing required attrs, nesting errors
-- Fuzzy matching for typo suggestions
-- Document symbols for Outline panel and breadcrumbs
-- Quick fix code actions
-- Cross-file intelligence: nav references, snippet refs, duplicate slug detection
-- Rename support for pages and snippets
+**Phase 9b: Language Server** -- DONE
+- `@refrakt-md/language-server` — editor-agnostic LSP server (`packages/language-server/`)
+- ~~Autocompletion: rune names, attributes, attribute values, closing tags (context-aware)~~ DONE
+- ~~Hover documentation generated from rune registry metadata~~ DONE
+- ~~Diagnostics: unknown runes, invalid attributes, missing required attrs, with "did you mean?" suggestions~~ DONE
+- ~~Fuzzy matching for typo suggestions~~ DONE (Levenshtein distance)
+- Document symbols for Outline panel and breadcrumbs (future)
+- Quick fix code actions (future)
+- Cross-file intelligence: nav references, snippet refs, duplicate slug detection (future)
+- Rename support for pages and snippets (future)
 - Incremental parsing for performance
 
 ### Phase 10: AI Theme Generation
@@ -578,7 +578,7 @@ This section captures the current priority order. Update it as things change.
 - AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey, reference rune implementations
-- Language server (Phase 9b) — requires rune attribute introspection (Open Question #1)
+- ~~Language server (Phase 9b)~~ -- DONE (`packages/language-server/`, completion + hover + diagnostics, 58 tests)
 
 **Long term:**
 - Multi-framework support (React components, Astro adapter, Next.js adapter)
@@ -591,7 +591,7 @@ This section captures the current priority order. Update it as things change.
 ## 12. Editor Support — VS Code Extension & Language Server
 
 > **Packages:** `@refrakt-md/vscode` (VS Code extension), `@refrakt-md/language-server` (LSP server, editor-agnostic)
-> **Status:** Not started
+> **Status:** Phase 1 (static) and Phase 2 (language server core) complete
 > **Full plan:** `vscode-extension-plan.md`
 
 ### Phase 1: Static Intelligence (declarative, no runtime code)
@@ -661,7 +661,7 @@ The language server is a standalone Node.js process. Any LSP-capable editor can 
 
 All intelligence comes from the rune library's self-describing metadata. Each rune provides name, description, category, attributes (with types, defaults, enums), reinterpretation map, SEO mappings, and nesting rules. Adding a new rune to `@refrakt-md/runes` automatically teaches the language server about it — no extension update required.
 
-> **Dependency on Open Question #1:** The language server needs attribute introspection from `RuneDescriptor`. Currently attributes are locked inside Markdoc `Schema` objects. Phase 2 requires resolving this (leaning toward option (a): add an `attributes` field to `RuneDescriptor`).
+> **Resolved:** Attribute introspection uses `rune.schema.attributes` directly from Markdoc `Schema` objects — no changes to `RuneDescriptor` needed.
 
 **Autocompletion**
 

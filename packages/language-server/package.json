@@ -1,0 +1,35 @@
+{
+  "name": "@refrakt-md/language-server",
+  "description": "Language server for refrakt.md rune authoring",
+  "version": "0.4.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/language-server"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "bin": {
+    "refrakt-language-server": "./dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/runes": "0.4.0",
+    "@markdoc/markdoc": "0.4.0",
+    "reflect-metadata": "^0.2.0",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  }
+}
