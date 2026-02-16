@@ -1,7 +1,7 @@
 ---
 title: Hello World
 description: Introducing the refrakt.md blog, where we share updates, tutorials, and insights about building content-driven sites.
-date: 2025-06-01
+date: 2026-02-16
 author: The Refrakt Team
 tags: [announcement, getting-started]
 ---

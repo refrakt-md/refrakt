@@ -23,7 +23,16 @@
 		frontmatter?: Record<string, unknown>;
 		regions: Record<string, { name: string; mode: string; content: any[] }>;
 		renderable: any;
-		pages: Array<{ url: string; title: string; draft: boolean }>;
+		pages: Array<{
+			url: string;
+			title: string;
+			draft: boolean;
+			description?: string;
+			date?: string;
+			author?: string;
+			tags?: string[];
+			image?: string;
+		}>;
 		url: string;
 		seo?: PageSeo;
 	}

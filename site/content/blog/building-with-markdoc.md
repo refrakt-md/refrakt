@@ -1,7 +1,7 @@
 ---
 title: Building with Markdoc
 description: How refrakt.md extends Markdoc's tag system into a full content framework with runes, semantic transforms, and theme-driven rendering.
-date: 2025-06-15
+date: 2026-02-16
 author: The Refrakt Team
 tags: [architecture, markdoc]
 ---

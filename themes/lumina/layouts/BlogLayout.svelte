@@ -1,18 +1,38 @@
 <script lang="ts">
 	import { Renderer } from '@refrakt-md/svelte';
 
-	let { title, frontmatter, regions, renderable }: {
+	let { title, frontmatter, regions, renderable, pages }: {
 		title: string;
 		description: string;
 		frontmatter?: Record<string, unknown>;
 		regions: Record<string, { name: string; mode: string; content: any[] }>;
 		renderable: any;
-		pages: any[];
+		pages: Array<{
+			url: string;
+			title: string;
+			draft: boolean;
+			description?: string;
+			date?: string;
+			author?: string;
+			tags?: string[];
+			image?: string;
+		}>;
 	} = $props();
 
-	const date = frontmatter?.date as string | undefined;
-	const author = frontmatter?.author as string | undefined;
-	const tags = frontmatter?.tags as string[] | undefined;
+	const date = $derived(frontmatter?.date as string | undefined);
+	const author = $derived(frontmatter?.author as string | undefined);
+	const tags = $derived(frontmatter?.tags as string[] | undefined);
+
+	// Index page has no date; individual posts always have one
+	const isIndex = $derived(!date);
+
+	const posts = $derived(
+		isIndex
+			? pages
+				.filter(p => p.url.startsWith('/blog/') && p.url !== '/blog' && !p.draft && p.date)
+				.sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+			: []
+	);
 
 	const hasSidebar = $derived(!!regions.sidebar);
 
@@ -31,37 +51,74 @@
 {/if}
 
 <div class="blog-layout" class:has-sidebar={hasSidebar}>
-	<article class="blog-article">
-		<header class="blog-article-header">
-			<h1 class="blog-article-title">{title}</h1>
-			{#if date || author}
-				<div class="blog-article-meta">
-					{#if date}
-						<time datetime={date}>{formatDate(date)}</time>
-					{/if}
-					{#if author}
-						<span class="blog-article-author">{author}</span>
-					{/if}
-				</div>
-			{/if}
-			{#if tags && tags.length > 0}
-				<div class="blog-article-tags">
-					{#each tags as tag}
-						<span class="blog-article-tag">{tag}</span>
-					{/each}
-				</div>
-			{/if}
-		</header>
+	{#if isIndex}
+		<div class="blog-index">
+			<h1 class="blog-index-title">{title}</h1>
 
-		<div class="blog-article-body">
-			<Renderer node={renderable} />
+			<div class="blog-index-body">
+				<Renderer node={renderable} />
+			</div>
+
+			<div class="blog-index-posts">
+				{#each posts as post}
+					<a href={post.url} class="blog-post-card">
+						<h2 class="blog-post-card-title">{post.title}</h2>
+						<div class="blog-post-card-meta">
+							{#if post.date}
+								<time datetime={post.date}>{formatDate(post.date)}</time>
+							{/if}
+							{#if post.author}
+								<span class="blog-post-card-author">{post.author}</span>
+							{/if}
+						</div>
+						{#if post.description}
+							<p class="blog-post-card-desc">{post.description}</p>
+						{/if}
+						{#if post.tags && post.tags.length > 0}
+							<div class="blog-post-card-tags">
+								{#each post.tags as tag}
+									<span class="blog-article-tag">{tag}</span>
+								{/each}
+							</div>
+						{/if}
+						<span class="blog-post-card-link">Read more &rarr;</span>
+					</a>
+				{/each}
+			</div>
 		</div>
-	</article>
+	{:else}
+		<article class="blog-article">
+			<header class="blog-article-header">
+				<h1 class="blog-article-title">{title}</h1>
+				{#if date || author}
+					<div class="blog-article-meta">
+						{#if date}
+							<time datetime={date}>{formatDate(date)}</time>
+						{/if}
+						{#if author}
+							<span class="blog-article-author">{author}</span>
+						{/if}
+					</div>
+				{/if}
+				{#if tags && tags.length > 0}
+					<div class="blog-article-tags">
+						{#each tags as tag}
+							<span class="blog-article-tag">{tag}</span>
+						{/each}
+					</div>
+				{/if}
+			</header>
 
-	{#if regions.sidebar}
-		<aside class="blog-sidebar">
-			<Renderer node={regions.sidebar.content} />
-		</aside>
+			<div class="blog-article-body">
+				<Renderer node={renderable} />
+			</div>
+		</article>
+
+		{#if regions.sidebar}
+			<aside class="blog-sidebar">
+				<Renderer node={regions.sidebar.content} />
+			</aside>
+		{/if}
 	{/if}
 </div>
 
@@ -121,6 +178,83 @@
 		grid-template-columns: 1fr 16rem;
 		gap: 3rem;
 		align-items: start;
+	}
+
+	/* ---- Blog index ---- */
+	.blog-index {
+		max-width: 42rem;
+	}
+	.blog-index-title {
+		font-size: 2.25rem;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin: 0 0 1rem;
+		color: var(--color-text);
+	}
+	.blog-index-body {
+		margin-bottom: 2rem;
+		line-height: 1.8;
+		color: var(--color-muted);
+	}
+	.blog-index-body:empty {
+		display: none;
+	}
+	.blog-index-posts {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	/* ---- Post card ---- */
+	.blog-post-card {
+		display: block;
+		padding: 1.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md, 0.5rem);
+		text-decoration: none;
+		color: inherit;
+		transition: border-color 0.15s, box-shadow 0.15s;
+	}
+	.blog-post-card:hover {
+		border-color: var(--color-text);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+		text-decoration: none;
+	}
+	.blog-post-card-title {
+		font-size: 1.35rem;
+		font-weight: 700;
+		margin: 0 0 0.5rem;
+		color: var(--color-text);
+	}
+	.blog-post-card-meta {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		margin-bottom: 0.5rem;
+	}
+	.blog-post-card-author::before {
+		content: '\00b7';
+		margin-right: 0.75rem;
+	}
+	.blog-post-card-desc {
+		margin: 0 0 0.75rem;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--color-muted);
+	}
+	.blog-post-card-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+	.blog-post-card-link {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-primary, var(--color-text));
 	}
 
 	/* ---- Article ---- */

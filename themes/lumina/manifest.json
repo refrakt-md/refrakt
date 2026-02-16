@@ -23,6 +23,7 @@
 
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },
+		{ "pattern": "blog", "layout": "blog" },
 		{ "pattern": "blog/**", "layout": "blog" },
 		{ "pattern": "**", "layout": "default" }
 	],

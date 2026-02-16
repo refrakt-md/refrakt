@@ -11,6 +11,11 @@ export async function load() {
 			url: p.route.url,
 			title: p.frontmatter.title ?? '',
 			draft: p.route.draft,
+			description: p.frontmatter.description,
+			date: p.frontmatter.date,
+			author: p.frontmatter.author,
+			tags: p.frontmatter.tags,
+			image: p.frontmatter.image,
 		})),
 	};
 }
