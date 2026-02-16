@@ -76,11 +76,11 @@ function generatePackageJson(projectName: string, theme: string): string {
 			check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
 		},
 		dependencies: {
-			'@refrakt-md/content': '^0.1.0',
-			'@refrakt-md/runes': '^0.1.0',
-			'@refrakt-md/svelte': '^0.1.0',
-			'@refrakt-md/sveltekit': '^0.1.0',
-			[theme]: '^0.1.0',
+			'@refrakt-md/content': '^0.4.0',
+			'@refrakt-md/runes': '^0.4.0',
+			'@refrakt-md/svelte': '^0.4.0',
+			'@refrakt-md/sveltekit': '^0.4.0',
+			[theme]: '^0.4.0',
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {

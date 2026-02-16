@@ -13,6 +13,7 @@ describe('detectProvider', () => {
 		const result = detectProvider('anthropic');
 		expect(result.name).toBe('anthropic');
 		expect(result.provider.name).toBe('anthropic');
+		expect(result.defaultModel).toBe('claude-sonnet-4-5-20250929');
 	});
 
 	it('throws when anthropic requested without API key', () => {
@@ -25,6 +26,7 @@ describe('detectProvider', () => {
 		const result = detectProvider('gemini');
 		expect(result.name).toBe('gemini');
 		expect(result.provider.name).toBe('gemini');
+		expect(result.defaultModel).toBe('gemini-2.0-flash');
 	});
 
 	it('throws when gemini requested without API key', () => {
@@ -36,6 +38,7 @@ describe('detectProvider', () => {
 		const result = detectProvider('ollama');
 		expect(result.name).toBe('ollama');
 		expect(result.provider.name).toBe('ollama');
+		expect(result.defaultModel).toBe('llama3.2');
 	});
 
 	it('throws on unknown provider name', () => {

@@ -6,7 +6,14 @@ export type ProviderName = 'anthropic' | 'gemini' | 'ollama';
 export interface ResolvedProvider {
 	provider: AIProvider;
 	name: ProviderName;
+	defaultModel: string;
 }
+
+const DEFAULT_MODELS: Record<ProviderName, string> = {
+	anthropic: 'claude-sonnet-4-5-20250929',
+	gemini: 'gemini-2.0-flash',
+	ollama: 'llama3.2',
+};
 
 export function detectProvider(explicit?: string): ResolvedProvider {
 	if (explicit) {
@@ -17,6 +24,7 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 	if (anthropicKey) {
 		return {
 			name: 'anthropic',
+			defaultModel: DEFAULT_MODELS.anthropic,
 			provider: createAnthropicProvider({ apiKey: anthropicKey }),
 		};
 	}
@@ -25,6 +33,7 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 	if (googleKey) {
 		return {
 			name: 'gemini',
+			defaultModel: DEFAULT_MODELS.gemini,
 			provider: createGeminiProvider({ apiKey: googleKey }),
 		};
 	}
@@ -32,6 +41,7 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 	const ollamaHost = process.env.OLLAMA_HOST;
 	return {
 		name: 'ollama',
+		defaultModel: DEFAULT_MODELS.ollama,
 		provider: createOllamaProvider(ollamaHost ? { host: ollamaHost } : undefined),
 	};
 }
@@ -47,6 +57,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			}
 			return {
 				name: 'anthropic',
+				defaultModel: DEFAULT_MODELS.anthropic,
 				provider: createAnthropicProvider({ apiKey }),
 			};
 		}
@@ -59,6 +70,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			}
 			return {
 				name: 'gemini',
+				defaultModel: DEFAULT_MODELS.gemini,
 				provider: createGeminiProvider({ apiKey }),
 			};
 		}
@@ -66,6 +78,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			const host = process.env.OLLAMA_HOST;
 			return {
 				name: 'ollama',
+				defaultModel: DEFAULT_MODELS.ollama,
 				provider: createOllamaProvider(host ? { host } : undefined),
 			};
 		}

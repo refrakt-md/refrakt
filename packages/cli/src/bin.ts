@@ -30,20 +30,21 @@ Commands:
 
 Write Options:
   --output, -o <path>      Write output to file instead of stdout
-  --provider, -p <name>    Provider: anthropic, ollama (default: auto-detect)
+  --provider, -p <name>    Provider: anthropic, gemini, ollama (default: auto-detect)
   --model, -m <name>       Model name (default: per-provider)
   --help, -h               Show this help message
 
 Provider auto-detection:
   1. ANTHROPIC_API_KEY env var → Anthropic
-  2. OLLAMA_HOST env var → Ollama
-  3. Default → Ollama at localhost:11434
+  2. GOOGLE_API_KEY env var → Gemini Flash
+  3. OLLAMA_HOST env var → Ollama
+  4. Default → Ollama at localhost:11434
 
 Examples:
   refrakt write "Create a getting started guide"
   refrakt write -o content/docs/api.md "Write an API reference page"
   refrakt write -p ollama -m llama3.2 "Write a FAQ page"
-  ANTHROPIC_API_KEY=sk-... refrakt write "Create a landing page"
+  GOOGLE_API_KEY=... refrakt write "Create a landing page"
 `);
 }
 
@@ -110,7 +111,8 @@ function runWrite(writeArgs: string[]): void {
 			process.exit(1);
 		}
 
-		return writeCommand({ prompt: prompt!, provider: resolved.provider, model, output });
+		const modelName = model ?? resolved.defaultModel;
+		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
