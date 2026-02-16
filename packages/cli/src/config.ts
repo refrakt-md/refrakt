@@ -1,7 +1,7 @@
 import type { AIProvider } from '@refrakt-md/ai';
-import { createAnthropicProvider, createOllamaProvider } from '@refrakt-md/ai';
+import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
 
-export type ProviderName = 'anthropic' | 'ollama';
+export type ProviderName = 'anthropic' | 'gemini' | 'ollama';
 
 export interface ResolvedProvider {
 	provider: AIProvider;
@@ -18,6 +18,14 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 		return {
 			name: 'anthropic',
 			provider: createAnthropicProvider({ apiKey: anthropicKey }),
+		};
+	}
+
+	const googleKey = process.env.GOOGLE_API_KEY;
+	if (googleKey) {
+		return {
+			name: 'gemini',
+			provider: createGeminiProvider({ apiKey: googleKey }),
 		};
 	}
 
@@ -42,6 +50,18 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 				provider: createAnthropicProvider({ apiKey }),
 			};
 		}
+		case 'gemini': {
+			const apiKey = process.env.GOOGLE_API_KEY;
+			if (!apiKey) {
+				throw new Error(
+					'GOOGLE_API_KEY environment variable is required for the Gemini provider',
+				);
+			}
+			return {
+				name: 'gemini',
+				provider: createGeminiProvider({ apiKey }),
+			};
+		}
 		case 'ollama': {
 			const host = process.env.OLLAMA_HOST;
 			return {
@@ -51,7 +71,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 		}
 		default:
 			throw new Error(
-				`Unknown provider "${name}". Available: anthropic, ollama`,
+				`Unknown provider "${name}". Available: anthropic, gemini, ollama`,
 			);
 	}
 }
