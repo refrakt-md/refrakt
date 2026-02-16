@@ -12,7 +12,6 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
 	'@refrakt-md/transform',
-	'@refrakt-md/lumina',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {
@@ -25,9 +24,11 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		config(): Partial<UserConfig> {
 			refraktConfig = loadRefraktConfig(configPath);
 
+			const themeAdapter = `${refraktConfig.theme}/${refraktConfig.target}`;
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
 				refraktConfig.theme,
+				themeAdapter,
 				...(options.noExternal ?? []),
 			];
 

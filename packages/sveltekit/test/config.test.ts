@@ -16,14 +16,14 @@ describe('loadRefraktConfig', () => {
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
 		}));
 
 		const config = loadRefraktConfig(configPath);
 		expect(config).toEqual({
 			contentDir: './content',
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
 		});
 
@@ -50,7 +50,7 @@ describe('loadRefraktConfig', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
 		}));
 
@@ -79,7 +79,7 @@ describe('loadRefraktConfig', () => {
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 		}));
 
 		expect(() => loadRefraktConfig(configPath))
@@ -93,7 +93,7 @@ describe('loadRefraktConfig', () => {
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
 			extra: 'field',
 		}));
@@ -101,7 +101,7 @@ describe('loadRefraktConfig', () => {
 		const config = loadRefraktConfig(configPath);
 		expect(config).toEqual({
 			contentDir: './content',
-			theme: '@refrakt-md/theme-lumina',
+			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
 		});
 

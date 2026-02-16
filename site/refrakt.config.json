@@ -1,5 +1,5 @@
 {
 	"contentDir": "./content",
-	"theme": "@refrakt-md/theme-lumina",
+	"theme": "@refrakt-md/lumina",
 	"target": "sveltekit"
 }

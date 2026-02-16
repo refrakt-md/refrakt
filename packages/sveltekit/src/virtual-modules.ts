@@ -17,6 +17,8 @@ export function resolveVirtualId(id: string): string | undefined {
 }
 
 export function loadVirtualModule(id: string, config: RefraktConfig): string | undefined {
+	const themeAdapter = `${config.theme}/${config.target}`;
+
 	if (id === `${RESOLVED_PREFIX}theme`) {
 		const overrides = config.overrides;
 		if (overrides && Object.keys(overrides).length > 0) {
@@ -28,7 +30,7 @@ export function loadVirtualModule(id: string, config: RefraktConfig): string | u
 				.map(([typeName], i) => `\t\t'${typeName}': _o${i},`)
 				.join('\n');
 			return [
-				`import { theme as _base } from '${config.theme}';`,
+				`import { theme as _base } from '${themeAdapter}';`,
 				imports,
 				'',
 				'export const theme = {',
@@ -40,11 +42,11 @@ export function loadVirtualModule(id: string, config: RefraktConfig): string | u
 				'};',
 			].join('\n');
 		}
-		return `export { theme } from '${config.theme}';`;
+		return `export { theme } from '${themeAdapter}';`;
 	}
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {
-		return `import '${config.theme}/tokens.css';`;
+		return `import '${themeAdapter}/tokens.css';`;
 	}
 
 	if (id === `${RESOLVED_PREFIX}config`) {

@@ -6,7 +6,7 @@ import * as path from 'node:path';
 const args = process.argv.slice(2);
 
 let projectName: string | undefined;
-let theme = '@refrakt-md/theme-lumina';
+let theme = '@refrakt-md/lumina';
 
 for (let i = 0; i < args.length; i++) {
 	const arg = args[i];
@@ -43,12 +43,12 @@ function printUsage(): void {
 Usage: create-refrakt <project-name> [options]
 
 Options:
-  --theme, -t <package>  Theme package to use (default: @refrakt-md/theme-lumina)
+  --theme, -t <package>  Theme package to use (default: @refrakt-md/lumina)
   --help, -h             Show this help message
 
 Example:
   npx create-refrakt my-site
-  npx create-refrakt my-site --theme @refrakt-md/theme-aurora
+  npx create-refrakt my-site --theme @refrakt-md/aurora
 `);
 }
 

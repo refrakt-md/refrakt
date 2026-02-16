@@ -4,7 +4,7 @@
    then aliases legacy --* names for existing components.
    ────────────────────────────────────────────── */
 
-@import '@refrakt-md/lumina';
+@import '../index.css';
 
 :root {
 	/* Typography */
