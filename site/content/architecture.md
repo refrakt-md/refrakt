@@ -45,7 +45,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/svelte` | Svelte adapter -- Renderer, ThemeShell, serialization, component registry |
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker, CSS variables integration, pluggable highlighter |
-| `@refrakt-md/lumina` | Lumina theme identity -- design tokens, per-rune CSS, and pre-built transform |
+| `@refrakt-md/lumina` | Lumina theme -- identity layer (design tokens, per-rune CSS, pre-built transform) plus framework adapters via subpath exports (`/sveltekit`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
 
@@ -183,6 +183,8 @@ The engine is configured declaratively. Each rune gets a `RuneConfig` that speci
 **3. Per-Rune CSS** -- Each rune has its own CSS file targeting BEM classes. A `hint.css` styles `.rf-hint`, `.rf-hint--warning`, `.rf-hint__header`, `.rf-hint__icon`, and so on. Because all runes produce stable, predictable BEM class names, theme CSS is straightforward to write and override.
 
 ### Implementation Layer (Framework-Specific)
+
+The implementation layer lives inside the theme package as a **subpath export**. For Lumina, the SvelteKit adapter is at `@refrakt-md/lumina/sveltekit`. The Vite plugin auto-resolves this from the `theme` and `target` fields in `refrakt.config.json`, so adding a future React or Astro adapter means adding a new subpath export to the same package — no new packages needed.
 
 The implementation layer is only needed for runes that require **runtime interactivity**.
 
