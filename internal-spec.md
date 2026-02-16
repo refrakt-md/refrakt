@@ -105,6 +105,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI authoring modes** (draft, review, enhance, transform) | Write mode exists. Four additional modes designed but not implemented. See Section 13. |
+| **Gemini provider** (free tier AI) | Anthropic and Ollama exist. Gemini Flash planned as free cloud option. See Section 13 Provider Roadmap. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | **Blog layout** | Lumina has `default` and `docs` layouts only. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
@@ -422,6 +423,7 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 | `packages/ai/src/provider.ts` | AI provider interface |
 | `packages/ai/src/providers/anthropic.ts` | Anthropic Claude provider |
 | `packages/ai/src/providers/ollama.ts` | Ollama local provider |
+| `packages/ai/src/providers/gemini.ts` | (Planned) Google Gemini Flash provider — free tier cloud option |
 | `packages/ai/src/modes/` | (Planned) Mode-specific prompt extensions: write, draft, review, enhance, transform |
 | `packages/ai/src/conversation.ts` | (Planned) Multi-turn conversation handler for review/enhance modes |
 | `packages/cli/src/commands/draft.ts` | (Planned) `refrakt draft` command |
@@ -1018,3 +1020,36 @@ This metadata comes from `RuneDescriptor` and the rune registry. Solving the att
 | Transform | Low | Nothing — but lower value until adoption grows |
 
 Enhance and review are highest priority because they're the most differentiated. Any AI can generate content (write mode). No other tool can review content and suggest rune-specific improvements — that requires deep knowledge of the rune vocabulary that only refrakt.md's AI layer has.
+
+---
+
+### Provider Roadmap
+
+The current provider system supports Anthropic (paid) and Ollama (local). A third provider — **Google Gemini Flash** — should be added as a **free cloud-based option** to lower the adoption barrier.
+
+| Provider | Env Var | Cost | Default Model | Streaming Format |
+|---|---|---|---|---|
+| **Anthropic** (exists) | `ANTHROPIC_API_KEY` | Paid | `claude-sonnet-4-5-20250929` | SSE (`content_block_delta` events) |
+| **Google Gemini** (planned) | `GOOGLE_API_KEY` | Free tier (15 RPM, 1M TPM, 1500 RPD) | `gemini-2.0-flash` | SSE (`candidates[0].content.parts[0].text`) |
+| **Ollama** (exists) | `OLLAMA_HOST` | Free (local) | `llama3.2` | NDJSON (`message.content`) |
+
+**Why Gemini Flash:**
+- Google AI Studio API keys are free to obtain — no billing setup required
+- Free tier limits (15 requests/min, 1500 requests/day) are more than sufficient for content authoring
+- Flash is fast and capable enough for Markdoc generation with runes
+- Fills the gap between "pay for Claude" and "install Ollama locally"
+
+**Updated auto-detection priority:**
+
+```
+1. ANTHROPIC_API_KEY → Anthropic (paid, highest quality)
+2. GOOGLE_API_KEY    → Gemini Flash (free tier, good quality)
+3. OLLAMA_HOST       → Ollama (local, any model)
+4. Default           → Ollama at localhost:11434
+```
+
+**Implementation follows the existing pattern:**
+- `packages/ai/src/providers/gemini.ts` — factory + `formatGeminiRequest()` + `parseGeminiSSE()`
+- API endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?key={apiKey}`
+- System messages handled via Gemini's `systemInstruction` field (similar to Anthropic's separate system field)
+- Update `detectProvider()` in `packages/cli/src/config.ts` to check `GOOGLE_API_KEY` between Anthropic and Ollama
