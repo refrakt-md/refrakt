@@ -161,6 +161,7 @@ export const luminaConfig: ThemeConfig = {
 		Hero: {
 			block: 'hero',
 			modifiers: { align: { source: 'meta', default: 'center' } },
+			contextModifiers: { 'Feature': 'in-feature' },
 		},
 		CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' } },
 		Figure: {

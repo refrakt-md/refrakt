@@ -3,7 +3,7 @@ title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
 
-{% cta %}
+{% hero %}
 
 # Write Markdown. Get structure.
 
@@ -15,7 +15,7 @@ npm create refrakt
 
 - [Get Started](/docs/getting-started)
 
-{% /cta %}
+{% /hero %}
 
 {% feature %}
 

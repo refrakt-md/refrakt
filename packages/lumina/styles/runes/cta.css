@@ -3,23 +3,6 @@
 	text-align: center;
 	padding: 3.5rem 2rem 3rem;
 }
-.rf-cta__main {
-	display: contents;
-}
-.rf-cta--split {
-	display: grid;
-	align-items: center;
-	gap: 3rem;
-	text-align: left;
-}
-.rf-cta--split p {
-	margin-left: 0;
-	margin-right: 0;
-}
-.rf-cta--split ul,
-.rf-cta--split nav {
-	justify-content: flex-start;
-}
 .rf-cta h1,
 .rf-cta h2,
 .rf-cta h3 {

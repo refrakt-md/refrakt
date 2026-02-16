@@ -61,7 +61,7 @@ refrakt.md ships 39 author-facing runes (plus internal child runes). Each rune d
 |------|---------|-------------|------------|
 | `grid` | `columns` | `hr` as grid cell delimiter | -- |
 | `cta` | `call-to-action` | Heading as headline, paragraph as blurb, list as action buttons, fence as command | -- |
-| `hero` | -- | Heading as hero title, paragraph as subtitle/tagline, list as action buttons, image as hero image | -- |
+| `hero` | -- | Heading as hero title, paragraph as subtitle/tagline, list as action buttons, fence as command | -- |
 | `bento` | -- | Heading as cell title (level determines size: h2=large, h3=medium, h4+=small), paragraph as cell content, image as cell background | -- |
 | `feature` | -- | Heading as section headline, paragraph as description, list items as feature definitions with icon/name/description | -- |
 | `steps` | -- | Heading as step name, paragraph as step content (ordered list auto-converted) | -- |

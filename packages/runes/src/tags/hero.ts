@@ -3,7 +3,8 @@ const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 import { NodeStream } from '../lib/node.js';
-import { pageSectionProperties } from './common.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
+import { linkItem, pageSectionProperties } from './common.js';
 
 const alignType = ['left', 'center', 'right'] as const;
 
@@ -20,12 +21,25 @@ class HeroModel extends Model {
 	@group({ include: ['heading', 'paragraph'] })
 	header: NodeStream;
 
-	@group({ include: ['list'] })
+	@group({ include: ['list', 'fence'] })
 	actions: NodeStream;
 
 	transform() {
 		const header = this.header.transform();
-		const actions = this.actions.transform();
+		const actions = this.actions
+			.useNode('item', linkItem)
+			.useNode('fence', node => {
+				const output = new RenderableNodeCursor([Markdoc.transform(node, this.config)]);
+
+				return createComponentRenderable(schema.Command, {
+					tag: 'div',
+					properties: {
+						code: output.flatten().tag('code'),
+					},
+					children: output.next(),
+				});
+			})
+			.transform();
 
 		const backgroundMeta = new Tag('meta', { content: this.background });
 		const backgroundImageMeta = new Tag('meta', { content: this.backgroundImage });
@@ -41,6 +55,7 @@ class HeroModel extends Model {
 				background: backgroundMeta,
 				backgroundImage: backgroundImageMeta,
 				align: alignMeta,
+				action: actions.flatten().tags('li', 'div'),
 			},
 			refs: {
 				actions: actionsDiv,

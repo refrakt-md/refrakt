@@ -42,10 +42,10 @@ These are unresolved or partially resolved design questions. When working on fea
    Partially. `RuneDescriptor` (in `packages/runes/src/rune.ts`) provides `name`, `aliases`, `description`, `reinterprets`, `seoType`, and a reference to the type registry entry. However, *attribute definitions* are locked inside TypeScript decorators on the Markdoc schema objects and are not exposed for runtime introspection. This means AI and themes cannot currently ask "what attributes does `{% recipe %}` accept?" at runtime.
 
 2. **How does context-aware rendering work?**
-   Two levels. **CSS-level:** The identity transform threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching its parent's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). This is implemented and configured for Hint, CallToAction, and Feature in Lumina. **Component-level:** Not yet built. `contextOverrides` in the manifest schema is dead -- nothing reads or applies it. The Svelte Renderer does not pass parent typeof down for component switching.
+   Two levels. **CSS-level:** The identity transform threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching its parent's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). This is implemented and configured for Hint, Hero, CallToAction, and Feature in Lumina. **Component-level:** Not yet built. `contextOverrides` in the manifest schema is dead -- nothing reads or applies it. The Svelte Renderer does not pass parent typeof down for component switching.
 
 3. **Where does the identity transform end and the component begin?**
-   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`). Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`, `rf-hero--in-feature`). Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
 
 ---
 
@@ -259,7 +259,7 @@ The theme system is now a three-package split:
 
 **Status:** Partially resolved.
 
-**What's built:** Option (c) -- identity-transform-level BEM modifiers. The identity transform (`packages/transform/src/engine.ts`) now threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching the parent rune's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). Implemented for Hint (Hero, Feature), Feature (Hero, Grid), and CallToAction (Hero, Pricing) in Lumina. Context-aware CSS rules in `packages/lumina/styles/runes/*.css`. 7 tests in `packages/transform/test/context-modifiers.test.ts`.
+**What's built:** Option (c) -- identity-transform-level BEM modifiers. The identity transform (`packages/transform/src/engine.ts`) now threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching the parent rune's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). Implemented for Hint (Hero, Feature), Hero (Feature), Feature (Hero, Grid), and CallToAction (Hero, Pricing) in Lumina. Context-aware CSS rules in `packages/lumina/styles/runes/*.css`. 7 tests in `packages/transform/test/context-modifiers.test.ts`.
 
 **What's not built:** Component switching via `contextOverrides` in the manifest. Options (a) runtime dispatch and (b) build-time resolution remain unimplemented. If a rune needs a completely different component when nested (not just different CSS), that still requires future work.
 
@@ -545,6 +545,7 @@ This section captures the current priority order. Update it as things change.
 - ~~Split Lumina CSS into per-rune files~~ -- DONE (tree-shaking itself is still pending)
 - Add a blog layout to Lumina
 - ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
+- ~~Align Hero and CTA runes~~ -- DONE (Hero gains fence/Command + LinkItem support; CTA simplified to focused action block, split/showcase removed; unified action pattern across both)
 - Extend `contextModifiers` to more runes as styling needs emerge
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
