@@ -104,7 +104,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Reference rune** (`{% reference %}` for code documentation) | Not implemented. |
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
-| **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. |
+| **AI authoring modes** (draft, review, enhance, transform) | Write mode exists. Four additional modes designed but not implemented. See Section 13. |
+| **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | **Blog layout** | Lumina has `default` and `docs` layouts only. |
 | **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
 | **VS Code extension** (Phase 1: static) | TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12. |
@@ -421,6 +422,12 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 | `packages/ai/src/provider.ts` | AI provider interface |
 | `packages/ai/src/providers/anthropic.ts` | Anthropic Claude provider |
 | `packages/ai/src/providers/ollama.ts` | Ollama local provider |
+| `packages/ai/src/modes/` | (Planned) Mode-specific prompt extensions: write, draft, review, enhance, transform |
+| `packages/ai/src/conversation.ts` | (Planned) Multi-turn conversation handler for review/enhance modes |
+| `packages/cli/src/commands/draft.ts` | (Planned) `refrakt draft` command |
+| `packages/cli/src/commands/review.ts` | (Planned) `refrakt review` command |
+| `packages/cli/src/commands/enhance.ts` | (Planned) `refrakt enhance` command |
+| `packages/cli/src/commands/transform.ts` | (Planned) `refrakt transform` command |
 
 ---
 
@@ -550,6 +557,7 @@ This section captures the current priority order. Update it as things change.
 
 **Medium term:**
 - Content analysis step (scan all content, produce rune usage manifest)
+- AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey, reference rune implementations
 - Language server (Phase 9b) — requires rune attribute introspection (Open Question #1)
@@ -713,3 +721,300 @@ language-server/
 - **Theme-aware completion:** Prioritize runes the current theme supports via manifest detection
 - **Performance profiling:** Show estimated bundle impact of runes on the current page
 - **Color decoration:** Inline color swatches for design token references in theme CSS
+
+---
+
+## 13. AI Authoring Modes
+
+> **Packages:** `@refrakt-md/ai` (prompts + conversation handler), `@refrakt-md/cli` (commands)
+> **Status:** Write mode implemented; four additional modes designed but not built
+
+### Overview
+
+The current `refrakt write` command operates in a single mode: generate complete content from a description. This covers one use case (documentation, technical content) but misses how most authors actually want to work with AI. The AI layer should support five distinct modes, each with its own system prompt, interaction pattern, and output expectations.
+
+| Mode | Command | Interaction | Who It's For |
+|---|---|---|---|
+| **Write** | `refrakt write` | One-shot | Developers documenting software, generating reference content, product pages |
+| **Draft** | `refrakt draft` | Brief Q&A → one-shot | Bloggers, content marketers wanting a structured starting point |
+| **Review** | `refrakt review` | Conversational | Authors with a strong voice who want editorial feedback |
+| **Enhance** | `refrakt enhance` | Conversational | Authors with plain Markdown who want rune upgrade suggestions |
+| **Transform** | `refrakt transform` | One-shot | Migration from external formats (HTML, Confluence, Google Docs) |
+
+---
+
+### Write Mode (exists)
+
+**Command:** `refrakt write "API reference for the auth module" --source ./src/auth`
+
+**Interaction:** One-shot. User describes what they want, AI generates complete content with appropriate runes.
+
+**System prompt emphasis:** Completeness, accuracy, correct rune selection, proper attribute usage. The AI should produce content that is ready to publish with minimal editing.
+
+**Output:** A complete `.md` file written to the content directory.
+
+**Current state:** Implemented in `packages/cli/src/commands/write.ts` with system prompt in `packages/ai/src/prompt.ts`.
+
+---
+
+### Draft Mode (not built)
+
+**Command:** `refrakt draft "blog post about why we chose Markdoc over MDX"`
+
+**Interaction:** Brief upfront Q&A (3-5 questions) followed by one-shot generation.
+
+Before generating, the AI asks targeted questions to understand the author's intent:
+
+```
+refrakt draft "blog post about our migration to refrakt.md"
+
+AI: Before I draft this, a few questions:
+
+1. What's the main takeaway you want readers to leave with?
+2. What was the biggest challenge in the migration?
+3. Any specific metrics or results to highlight?
+4. Casual/personal tone or more professional?
+
+> 1. That content-first development is faster than component-first
+> 2. Getting the team to think in runes instead of components
+> 3. 40% reduction in build time, 3x faster content updates
+> 4. Casual, first-person
+
+AI: Writing draft...
+```
+
+**System prompt emphasis:** Structure and flow over completeness. The AI generates a well-organized draft with `TODO` markers where the author should add personal details, specific examples, opinions, or data they haven't shared. The draft provides the skeleton — the author provides the soul.
+
+**Design note:** The Q&A questions should be dynamic based on content type detection. A recipe draft needs "What cuisine? How many servings?" while a blog post needs "What's your main takeaway?" The mode prompt should include content-type detection logic to tailor the questions.
+
+**Output markers:**
+
+```markdoc
+{% section %}
+
+We started evaluating refrakt.md in <!-- TODO: when did you start? --> after
+hitting a wall with our previous setup.
+
+<!-- TODO: Describe the specific pain point that triggered the evaluation.
+     What broke or frustrated the team? Personal anecdote works well here. -->
+
+The migration took about <!-- TODO: timeline --> and involved
+<!-- TODO: team size --> engineers working part-time on the transition.
+
+{% /section %}
+```
+
+**Output:** A `.md` file with content structure, rune selections, and clearly marked TODO placeholders. The file is valid Markdoc — it renders as-is but is visibly incomplete.
+
+---
+
+### Review Mode (not built)
+
+**Command:** `refrakt review content/blog/my-post.md`
+
+**Interaction:** Conversational. The AI reads the file, presents findings, and the author can discuss, accept, or reject suggestions interactively.
+
+```
+refrakt review content/blog/my-post.md
+
+AI: I've reviewed your post. Here are my observations:
+
+STRUCTURE
+1. The opening is strong but the transition between the problem
+   statement (lines 12-18) and your solution (line 19) is abrupt.
+   Consider adding a bridging paragraph.
+
+RUNE OPPORTUNITIES
+2. Lines 34-52: This feature comparison as a plain table would be
+   more effective as {% comparison highlighted="refrakt.md" %} —
+   it would generate Product schema and enable visual highlighting
+   of the recommended option.
+
+3. Lines 67-78: The FAQ section at the bottom should use {% faq %}
+   instead of plain headings. This generates FAQPage schema which
+   can surface as rich results in Google.
+
+SEO
+4. No explicit excerpt in frontmatter. The first paragraph will be
+   used for og:description — currently that's "In this post we'll
+   explore..." which is generic. Consider a more specific excerpt.
+
+READING FLOW
+5. The post is 2,400 words. The middle section (lines 40-65) is
+   dense with no visual breaks. A {% callout %} or pull quote
+   would help pacing.
+
+Apply suggestion 2? [y/n/skip/all/quit]
+> y
+
+AI: Restructured lines 34-52 as {% comparison %}. The content is
+preserved but now uses the comparison rune with aligned feature rows.
+
+Apply suggestion 3? [y/n/skip/all/quit]
+> y
+
+...
+```
+
+**System prompt emphasis:** Act as an experienced editor, not a rewriter. Critique structure, pacing, rune usage, SEO opportunities, and readability. Never rewrite the author's voice — suggest structural changes. Deep knowledge of every rune's capabilities is essential so the AI can spot opportunities the author missed.
+
+**Key capabilities the prompt must cover:**
+- Identify content patterns that match specific runes (lists that should be comparisons, Q&A pairs that should be FAQs, step sequences that should be howtos)
+- Evaluate reading flow and pacing
+- Check frontmatter completeness (date, tags, excerpt, image)
+- Assess SEO opportunities based on rune-to-schema mappings
+- Flag accessibility concerns (image alt text, heading hierarchy)
+
+**Implementation note:** Suggestions are applied sequentially, not batched. Each application triggers a follow-up message to the AI with the updated file content so subsequent suggestions account for line-number shifts from earlier changes.
+
+**Flags:** `--dry-run` dumps all suggestions to stdout without applying any — useful for CI pipelines or pre-commit hooks ("lint my content for rune opportunities").
+
+**Output:** Modifications applied to the original file in place (with git-friendly diffs). The author's voice and content are preserved — only structure and rune usage change.
+
+---
+
+### Enhance Mode (not built)
+
+**Command:** `refrakt enhance content/docs/getting-started.md`
+
+**Interaction:** Conversational. Similar to review mode but focused specifically on upgrading plain Markdown to rune-powered content.
+
+```
+refrakt enhance content/docs/getting-started.md
+
+AI: This file is mostly plain Markdown. I found 6 opportunities
+to enhance it with runes:
+
+1. Lines 5-8: The intro paragraph + heading would work well as
+   {% hero align="left" %} — gives it visual weight and
+   generates og:title automatically.
+
+2. Lines 15-30: This code example with explanation could be
+   wrapped in {% codegroup %} if you add the equivalent in
+   another language, or left as-is if single-language is fine.
+
+3. Lines 35-50: The "Prerequisites" section is a plain list.
+   Wrapping it in {% callout type="info" %} would visually
+   distinguish it as a requirement block.
+
+4. Lines 55-80: These numbered steps are a natural fit for
+   {% howto %} — this would generate HowTo schema for Google
+   and structure the steps with proper semantics.
+
+5. Lines 82-95: The warning paragraph should be
+   {% callout type="warning" %} to ensure it stands out visually.
+
+6. Lines 100-120: The closing "Next Steps" section with links
+   could be a {% nav %} block for consistent site navigation.
+
+Apply all? [y/n/pick/quit]
+> pick
+Which suggestions? (comma-separated): 1,3,4,5
+```
+
+**System prompt emphasis:** Deep knowledge of every rune in the library — what it does, what Markdown patterns it matches, what SEO schema it produces, how it composes with other runes. The AI's job is to be a rune expert that sees opportunities the author doesn't know exist.
+
+The prompt should include the full `RuneDescriptor` metadata for every rune, including the `reinterprets` map. This lets the AI match content patterns to runes: "you have a heading followed by an unordered list followed by an ordered list followed by a blockquote — that's exactly the pattern `{% recipe %}` reinterprets."
+
+**Flags:** `--dry-run` (same as review mode) for CI/linting use.
+
+**Output:** The original file with rune wrappers applied around existing content. The prose is untouched — only rune tags and attributes are added.
+
+---
+
+### Transform Mode (not built)
+
+**Command:** `refrakt transform --from html ./exported-page.html`
+
+**Interaction:** One-shot. Input format specified via `--from` flag.
+
+**Supported source formats:**
+- `html` — Raw HTML (from CMS exports, web scraping)
+- `confluence` — Confluence export format
+- `notion` — Notion export (Markdown with Notion-specific syntax)
+- `docx` — Word document (extract text + structure). **Note:** Requires a parsing dependency such as `mammoth.js` for document-to-HTML conversion.
+- `markdown` — Plain Markdown without runes (upgrade to Markdoc with runes)
+
+**System prompt emphasis:** Structural analysis of the source content. Map the source's structure to the most appropriate runes. Preserve all content — nothing should be lost in transformation. Handle messy input gracefully (inconsistent formatting, inline styles, broken nesting).
+
+**Output:** A `.md` file with Markdoc content using appropriate runes. For large sources, may produce multiple files with a suggested directory structure.
+
+---
+
+### Implementation Architecture
+
+All modes share the same AI provider layer (`packages/ai/src/provider.ts`) and base system prompt (`packages/ai/src/prompt.ts`). Each mode extends the base with mode-specific instructions.
+
+```
+packages/ai/
+├── src/
+│   ├── prompt.ts              ← base system prompt (rune vocabulary, project context)
+│   ├── modes/
+│   │   ├── write.ts           ← write mode prompt additions
+│   │   ├── draft.ts           ← draft mode prompt + Q&A flow
+│   │   ├── review.ts          ← review mode prompt + suggestion format
+│   │   ├── enhance.ts         ← enhance mode prompt + pattern matching instructions
+│   │   └── transform.ts       ← transform mode prompt + source format handling
+│   ├── conversation.ts        ← multi-turn conversation handler (for review/enhance)
+│   ├── provider.ts            ← AI provider interface (exists)
+│   └── providers/
+│       ├── anthropic.ts       ← (exists)
+│       └── ollama.ts          ← (exists)
+
+packages/cli/
+├── src/
+│   └── commands/
+│       ├── write.ts           ← (exists)
+│       ├── draft.ts
+│       ├── review.ts
+│       ├── enhance.ts
+│       └── transform.ts
+```
+
+### Conversation Handler
+
+Review and enhance modes require multi-turn conversations. The conversation handler manages:
+
+- Maintaining message history across turns
+- Parsing AI suggestions into structured objects (suggestion ID, affected lines, proposed change)
+- Applying accepted suggestions to the file sequentially (each application re-indexes line numbers via a follow-up AI message with the updated file)
+- Presenting the interactive prompt (y/n/skip/all/quit/pick)
+- Generating diffs for each applied suggestion
+
+```typescript
+interface Suggestion {
+  id: number;
+  category: 'structure' | 'rune' | 'seo' | 'readability' | 'accessibility';
+  lines: [number, number];       // affected line range
+  description: string;
+  proposedChange?: string;       // the actual modification (if applicable)
+}
+```
+
+The AI returns suggestions in a structured format (prompted to use a specific schema). The CLI parses these, presents them interactively, and applies the accepted ones. Each application triggers a follow-up message to the AI with the updated file content so subsequent suggestions account for earlier changes.
+
+### Rune Metadata in Prompts
+
+All modes benefit from rune self-description. The base system prompt should include, for every rune:
+
+- Name and aliases
+- Description
+- Category
+- Accepted attributes (types, defaults, required/optional) — **requires solving Open Question #1 (rune attribute introspection)**
+- Reinterpretation map (what each Markdown primitive means inside this rune)
+- SEO type and schema.org mapping
+- Composition hints (what runes work well inside or around this one)
+
+This metadata comes from `RuneDescriptor` and the rune registry. Solving the attribute introspection gap (exposing attribute definitions through `RuneDescriptor`) directly improves the quality of every AI mode — especially enhance and review, where the AI needs to suggest correct attribute usage.
+
+### Priority
+
+| Mode | Priority | Depends On |
+|---|---|---|
+| Write | Done | — |
+| Enhance | High | Rune attribute introspection (Open Question #1) |
+| Review | High | Multi-turn conversation handler |
+| Draft | Medium | Multi-turn conversation handler (for Q&A) |
+| Transform | Low | Nothing — but lower value until adoption grows |
+
+Enhance and review are highest priority because they're the most differentiated. Any AI can generate content (write mode). No other tool can review content and suggest rune-specific improvements — that requires deep knowledge of the rune vocabulary that only refrakt.md's AI layer has.
