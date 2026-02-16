@@ -76,6 +76,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
 | Theme manifest | `themes/lumina/manifest.json` | Lumina theme config: 2 layouts (default, docs), route rules, component mappings. |
 | Theme component registry | `themes/lumina/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
+| Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights with CSS variables theme, sets `data-codeblock`. Pluggable via custom `highlight` function. |
 | `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
 | AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
 | AI provider abstraction | `packages/ai/src/provider.ts`, `packages/ai/src/providers/` | Anthropic and Ollama providers. |
@@ -294,47 +295,27 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 
 **Current answer:** Wait. The catch-all approach works for SvelteKit. Pre-processing becomes necessary when we build the Astro and Next.js adapters, since those frameworks expect real page files.
 
-### 6. Syntax highlighting pipeline position
+### 6. Syntax highlighting pipeline position — RESOLVED
 
-**Problem:** Syntax highlighting currently runs at the rune level. `hljs.highlight()` is called inside `fence` (`packages/runes/src/nodes.ts:65`) and `diff` (`packages/runes/src/tags/diff.ts:66`). A custom Markdoc language definition lives in `packages/runes/src/hljs-markdoc.ts`. The highlighted HTML is injected as raw strings via `data-codeblock: true`, producing hljs-specific classes (`hljs-keyword`, `hljs-string`, etc.) that bypass the BEM/RDFa contract.
+**Status:** Implemented. Syntax highlighting has been extracted from the rune level into a dedicated pipeline step via `@refrakt-md/highlight`.
 
-**Why this is a problem:**
-1. Runes produce library-specific markup. Changing the highlighter means changing every rune that handles code.
-2. hljs classes are opaque to the identity transform — the theme CSS must import hljs stylesheets separately, outside the design token system.
-3. hljs requires client-side JavaScript for dynamic highlighting. This conflicts with the "zero unnecessary JS" production goal.
-4. The `data-codeblock` mechanism renders raw HTML strings, making the code content invisible to any downstream tree transform.
-
-**Proposed solution:** A dedicated **syntax highlight transform** that runs as a separate pipeline step.
-
-- **Runes produce plain code elements.** The fence node and diff rune emit `<pre><code>` (or equivalent Tag tree) with the raw code text and a `data-language` attribute. No highlighting.
-- **A new transform step** walks the serialized tree after the identity transform, finds code elements by `data-language`, and applies Shiki highlighting.
-- **Shiki** replaces hljs. Shiki is build-time only (no client JS), produces inline styles or CSS variables (`--shiki-token-*`), and integrates with the theme's design token system. The Lumina theme maps `--shiki-token-keyword`, `--shiki-token-string`, etc. to its existing color tokens.
-- The `data-codeblock: true` mechanism remains for the final highlighted output, but it is applied by the highlight transform, not by individual runes.
+**What was built:**
+- **`@refrakt-md/highlight` package** (`packages/highlight/`) — A tree-walking transform that finds elements with `data-language` + text children, highlights them with Shiki, and sets `data-codeblock: true` for raw HTML injection by the Renderer.
+- **`data-language` marker convention** — Any element with a `data-language` attribute signals "highlight me." The fence node emits `<pre data-language><code data-language>` with raw text. The diff rune emits per-line `<span data-name="line-content" data-language>` with raw text. The highlight transform finds them generically.
+- **Shiki with CSS variables theme** — `createCssVariablesTheme()` produces `style="color: var(--shiki-token-keyword)"` on spans. Token variables (`--shiki-token-keyword`, `--shiki-token-string`, etc.) are mapped in Lumina's `tokens/base.css` and `tokens/dark.css`, fully integrated with the design token system.
+- **Pluggable highlighter** — `createHighlightTransform({ highlight: (code, lang) => html })` accepts any custom highlight function. Shiki is the default but not a hard dependency for consumers.
+- **Unknown language fallback** — When Shiki doesn't recognize a language, the `catch` block leaves the node unchanged (no `data-codeblock`, Renderer escapes text normally).
 
 **Pipeline position:**
-
 ```
-Markdoc transform → Serialize → Identity transform → Syntax highlight transform → Renderer
+Markdoc transform → Serialize → Identity transform → Highlight transform → Renderer
 ```
 
-**Migration path:**
-1. Add Shiki as a dependency of `@refrakt-md/transform` (or a new `@refrakt-md/highlight` package).
-2. Update `fence` in `nodes.ts` to emit plain `<pre><code data-language="...">` with raw text.
-3. Update `diff.ts` to emit line content as plain text instead of hljs HTML.
-4. Create the highlight transform function that walks the tree and applies Shiki.
-5. Wire the transform into the SvelteKit plugin pipeline (after identity transform).
-6. Add `--shiki-token-*` CSS variable mappings to Lumina's design tokens.
-7. Remove hljs dependency, remove `hljs-markdoc.ts`.
-
-**Affected files:**
-- `packages/runes/src/nodes.ts` — fence transform (remove hljs)
-- `packages/runes/src/tags/diff.ts` — line highlighting (remove hljs)
-- `packages/runes/src/hljs-markdoc.ts` — delete
-- `packages/transform/src/` (or new package) — new highlight transform
-- `packages/lumina/tokens/` — Shiki CSS variable mappings
-- `packages/sveltekit/src/plugin.ts` — wire new transform into pipeline
-
-**Leaning toward:** Dedicated transform step with Shiki. Keeps runes focused on semantics, gives themes control over code appearance via design tokens, eliminates client-side JS for highlighting.
+**What was removed:**
+- `highlight.js` dependency from `@refrakt-md/runes`
+- `packages/runes/src/hljs-markdoc.ts` (custom Markdoc hljs language)
+- hljs CSS selectors from `packages/lumina/styles/global.css`
+- All hljs-specific code from `fence` (`nodes.ts`) and `diff` (`diff.ts`)
 
 ---
 
@@ -410,6 +391,13 @@ Markdoc transform → Serialize → Identity transform → Syntax highlight tran
 | `themes/lumina/index.ts` | Theme entry point |
 | `themes/lumina/elements.ts` | Element-level overrides |
 | `themes/lumina/tokens.css` | Design tokens (CSS custom properties) |
+
+### Syntax Highlight Transform (`@refrakt-md/highlight`)
+
+| File | Purpose |
+|---|---|
+| `packages/highlight/src/highlight.ts` | `createHighlightTransform()` — Shiki-based tree walker, `extractInnerHtml()`, pluggable `highlight` option |
+| `packages/highlight/src/index.ts` | Package exports (`createHighlightTransform`, `HighlightOptions`) |
 
 ### Identity Transform (`@refrakt-md/transform`)
 
@@ -520,23 +508,27 @@ For reference, the full pipeline for a page in dev mode:
    (walks serialized tree, adds BEM classes, injects structural elements, resolves modifiers)
    |
    v
-7. SvelteKit load function returns: { renderable, regions, seo, title, ... }
+7. Syntax highlight transform (packages/highlight/src/highlight.ts)
+   (walks tree, finds elements with data-language + text children, applies Shiki, sets data-codeblock)
    |
    v
-8. ThemeShell.svelte
+8. SvelteKit load function returns: { renderable, regions, seo, title, ... }
+   |
+   v
+9. ThemeShell.svelte
    (selects layout via route rules, injects SEO head tags)
    |
    v
-9. Layout component (e.g. DocsLayout.svelte)
-   (receives regions + renderable, places them in slots)
-   |
-   v
-10. Renderer.svelte (recursive)
+10. Layout component (e.g. DocsLayout.svelte)
+    (receives regions + renderable, places them in slots)
+    |
+    v
+11. Renderer.svelte (recursive)
     (for each tag: check typeof -> look up component in registry ->
      if found: render component, else: render svelte:element with BEM classes)
     |
     v
-11. DOM
+12. DOM
 ```
 
 ---
@@ -555,7 +547,7 @@ This section captures the current priority order. Update it as things change.
 - ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
 - Extend `contextModifiers` to more runes as styling needs emerge
 - CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
-- Extract syntax highlighting from rune level into a dedicated pipeline step (see Open Question #6); replace hljs with Shiki for build-time CSS-variable-based highlighting
+- ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching) — low effort, high DX impact
 
 **Medium term:**

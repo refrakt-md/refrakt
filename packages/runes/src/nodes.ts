@@ -2,10 +2,6 @@ import pb from 'path-browserify';
 import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
-import hljs from 'highlight.js';
-import { markdoc } from './hljs-markdoc.js';
-
-hljs.registerLanguage('markdoc', markdoc);
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -58,14 +54,13 @@ export const fence: Schema = {
       render: false,
     },
     process: { type: Boolean, render: false, default: false },
-    language: { type: String, render: 'data-language', default: 'shell' },
+    language: { type: String, render: false, default: 'shell' },
   },
   transform(node, config) {
-    const attributes = node.transformAttributes(config);
-    const content = hljs.highlight(node.attributes.content, { language: attributes['data-language'] });
+    const lang = node.attributes.language || 'shell';
 
-    return new Tag('pre', attributes, [
-      new Tag('code', { 'data-codeblock': true, content: '' }, [content.value])
+    return new Tag('pre', { 'data-language': lang }, [
+      new Tag('code', { 'data-language': lang }, [node.attributes.content])
     ]);
   }
 }

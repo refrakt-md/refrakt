@@ -24,7 +24,9 @@
 		"@refrakt-md/svelte": "0.3.0",
 		"@refrakt-md/sveltekit": "0.3.0",
 		"@refrakt-md/theme-lumina": "0.3.0",
-		"@refrakt-md/lumina": "0.3.0"
+		"@refrakt-md/lumina": "0.3.0",
+		"@refrakt-md/highlight": "0.3.0",
+		"@refrakt-md/types": "0.3.0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.0",

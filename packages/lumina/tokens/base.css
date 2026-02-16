@@ -62,4 +62,17 @@
 	--rf-color-code-bg: #0f172a;
 	--rf-color-code-text: #e2e8f0;
 	--rf-color-inline-code-bg: #f1f5f9;
+
+	/* Syntax highlighting (Shiki CSS variables) */
+	--shiki-foreground: var(--rf-color-code-text);
+	--shiki-background: var(--rf-color-code-bg);
+	--shiki-token-keyword: #c792ea;
+	--shiki-token-string: #c3e88d;
+	--shiki-token-string-expression: #c3e88d;
+	--shiki-token-constant: #f78c6c;
+	--shiki-token-comment: #637777;
+	--shiki-token-function: #82aaff;
+	--shiki-token-parameter: #d6deeb;
+	--shiki-token-punctuation: #89ddff;
+	--shiki-token-link: #82aaff;
 }
