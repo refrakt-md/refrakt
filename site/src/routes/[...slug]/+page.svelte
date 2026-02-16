@@ -10,6 +10,7 @@
 	page={{
 		title: data.title,
 		description: data.description,
+		frontmatter: data.frontmatter,
 		regions: data.regions,
 		renderable: data.renderable,
 		pages: data.pages,

@@ -39,6 +39,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		title: page.frontmatter.title ?? '',
 		description: page.frontmatter.description ?? '',
+		frontmatter: page.frontmatter,
 		renderable,
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [

@@ -2,7 +2,7 @@
 {% region name="header" %}
 [![refrakt.md](/logo.svg)](/)
 
-[Docs](/docs/getting-started) [Architecture](/architecture) [Changelog](/releases)
+[Docs](/docs/getting-started) [Architecture](/architecture) [Blog](/blog) [Changelog](/releases)
 {% /region %}
 
 {% region name="nav" %}
