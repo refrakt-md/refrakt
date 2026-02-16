@@ -45,7 +45,7 @@ These are unresolved or partially resolved design questions. When working on fea
    Two levels. **CSS-level:** The identity transform threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching its parent's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). This is implemented and configured for Hint, Hero, CallToAction, and Feature in Lumina. **Component-level:** Not yet built. `contextOverrides` in the manifest schema is dead -- nothing reads or applies it. The Svelte Renderer does not pass parent typeof down for component switching.
 
 3. **Where does the identity transform end and the component begin?**
-   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`, `rf-hero--in-feature`). Components registered in the theme registry (`themes/lumina/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`, `rf-hero--in-feature`). Components registered in the theme registry (`packages/lumina/sveltekit/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
 
 ---
 
@@ -74,8 +74,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | Serialization layer | `packages/svelte/src/serialize.ts` | Converts Markdoc Tag class instances to plain serializable objects for SvelteKit load boundary. |
 | SvelteKit Vite plugin | `packages/sveltekit/src/plugin.ts` | Virtual modules, content HMR, dev/build mode switching. |
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
-| Theme manifest | `themes/lumina/manifest.json` | Lumina theme config: 2 layouts (default, docs), route rules, component mappings. |
-| Theme component registry | `themes/lumina/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
+| Theme manifest | `packages/lumina/sveltekit/manifest.json` | Lumina SvelteKit adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
+| Theme component registry | `packages/lumina/sveltekit/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
 | Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights with CSS variables theme, sets `data-codeblock`. Pluggable via custom `highlight` function. |
 | `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
 | AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
@@ -248,13 +248,17 @@ In a future production mode with pre-processed routes, this would be replaced by
 
 ### Why separate content, transform, and lumina packages?
 
-The theme system is now a three-package split:
+The theme system uses subpath exports within a single theme package:
 
 1. **`@refrakt-md/transform`** (`packages/transform/`) -- the generic identity transform engine. Provides `createTransform()` and helper utilities. Framework-agnostic, theme-agnostic. Any theme can import this and supply its own `ThemeConfig`.
-2. **`@refrakt-md/lumina`** (`packages/lumina/`) -- Lumina's specific config + CSS. Contains the `ThemeConfig` for Lumina's BEM mappings, per-rune CSS files (44), and design tokens (light + dark). No framework code.
-3. **`@refrakt-md/theme-lumina`** (`themes/lumina/`) -- Svelte implementation layer. Interactive components, manifest, registry. This is the only framework-specific package.
+2. **`@refrakt-md/lumina`** (`packages/lumina/`) -- Lumina's identity layer (config, CSS, design tokens, BEM mappings) plus framework-specific adapters as subpath exports:
+   - `@refrakt-md/lumina` -- identity CSS + design tokens (no framework code)
+   - `@refrakt-md/lumina/transform` -- identity transform config
+   - `@refrakt-md/lumina/sveltekit` -- Svelte components, layouts, registry, manifest
 
-`packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/runes` is the shared vocabulary everything depends on. This separation means a different theme can replace lumina entirely without touching content loading, and a React implementation layer could reuse `@refrakt-md/transform` + `@refrakt-md/lumina` CSS with its own component set.
+The SvelteKit plugin auto-resolves the adapter from `config.theme + "/" + config.target` (e.g., `@refrakt-md/lumina` + `sveltekit` → `@refrakt-md/lumina/sveltekit`). This means adding a new framework adapter only requires adding a new subpath export — no new packages needed.
+
+`packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/runes` is the shared vocabulary everything depends on. This separation means a different theme can replace lumina entirely without touching content loading, and a React adapter would live at `@refrakt-md/lumina/react` reusing the same identity CSS.
 
 ---
 
@@ -289,19 +293,17 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 
 **Leaning toward:** Content layer produces the data (list of posts, tags, dates). Theme layer decides how to render it (what component, what layout). The adapter wires the two together.
 
-### 4. Theme marketplace package format
+### 4. Theme marketplace package format — RESOLVED
 
-**Problem:** When themes support multiple frameworks, what is the npm package structure? One package with subpath exports? Separate packages per framework?
-
-**Leaning toward:** Single package with subpath exports:
+Single package with subpath exports. Implemented for Lumina:
 ```
-@refrakt-md/lumina          -> identity layer (config + CSS)
-@refrakt-md/lumina/sveltekit -> SvelteKit adapter + Svelte components
-@refrakt-md/lumina/astro     -> Astro adapter
-@refrakt-md/lumina/nextjs    -> Next.js adapter + React components
+@refrakt-md/lumina              -> identity layer (CSS + tokens + transform)
+@refrakt-md/lumina/sveltekit    -> SvelteKit adapter (Svelte components, layouts, registry)
+@refrakt-md/lumina/astro        -> (future) Astro adapter
+@refrakt-md/lumina/nextjs       -> (future) Next.js adapter + React components
 ```
 
-**Current reality:** The three-package split (`@refrakt-md/transform` → `@refrakt-md/lumina` → `@refrakt-md/theme-lumina`) already provides the separation needed. A future React theme would import `@refrakt-md/transform` + the `@refrakt-md/lumina` CSS and provide its own React components, without touching the identity layer or config.
+The SvelteKit plugin resolves the adapter automatically: `config.theme` + `"/"` + `config.target`. Framework-specific dependencies (svelte, @sveltejs/kit) are optional peer deps, only needed when importing the corresponding subpath.
 
 ### 5. How far to take pre-processed production builds?
 
@@ -398,15 +400,15 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 | `packages/sveltekit/src/virtual-modules.ts` | Virtual module definitions |
 | `packages/sveltekit/src/config.ts` | Plugin configuration types |
 
-### Lumina Theme
+### Lumina Theme — SvelteKit Adapter (`@refrakt-md/lumina/sveltekit`)
 
 | File | Purpose |
 |---|---|
-| `themes/lumina/manifest.json` | Theme config: layouts, route rules, component mappings |
-| `themes/lumina/registry.ts` | Component dispatch map (17 typeof values -> 16 Svelte components) |
-| `themes/lumina/index.ts` | Theme entry point |
-| `themes/lumina/elements.ts` | Element-level overrides |
-| `themes/lumina/tokens.css` | Design tokens (CSS custom properties) |
+| `packages/lumina/sveltekit/manifest.json` | Theme config: layouts, route rules, component mappings |
+| `packages/lumina/sveltekit/registry.ts` | Component dispatch map (17 typeof values -> 16 Svelte components) |
+| `packages/lumina/sveltekit/index.ts` | Theme entry point (exports `SvelteTheme` object) |
+| `packages/lumina/sveltekit/elements.ts` | Element-level overrides |
+| `packages/lumina/sveltekit/tokens.css` | Token bridge (imports identity CSS, aliases legacy variable names) |
 
 ### Syntax Highlight Transform (`@refrakt-md/highlight`)
 
@@ -449,7 +451,7 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 
 ## 8. Component Registry Detail
 
-The Lumina theme registers these components in `themes/lumina/registry.ts`:
+The Lumina theme registers these components in `packages/lumina/sveltekit/registry.ts`:
 
 | typeof Value(s) | Component File | Why It Needs a Component |
 |---|---|---|

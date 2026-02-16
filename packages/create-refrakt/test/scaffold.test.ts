@@ -26,7 +26,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		// Static template files
 		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(true);
@@ -62,7 +62,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'test-project', targetDir, theme: '@refrakt-md/theme-lumina' });
+		scaffold({ projectName: 'test-project', targetDir, theme: '@refrakt-md/lumina' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('test-project');
@@ -70,7 +70,7 @@ describe('scaffold', () => {
 		expect(pkg.scripts.dev).toBe('vite dev');
 		expect(pkg.dependencies['@refrakt-md/content']).toBeDefined();
 		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeDefined();
-		expect(pkg.dependencies['@refrakt-md/theme-lumina']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/lumina']).toBeDefined();
 		expect(pkg.devDependencies.svelte).toBeDefined();
 	});
 
@@ -100,10 +100,10 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		expect(() =>
-			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' })
+			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' })
 		).toThrow('already exists');
 	});
 
@@ -111,7 +111,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'cool-docs', targetDir, theme: '@refrakt-md/theme-lumina' });
+		scaffold({ projectName: 'cool-docs', targetDir, theme: '@refrakt-md/lumina' });
 
 		const readme = readFileSync(join(targetDir, 'README.md'), 'utf-8');
 		expect(readme).toContain('# cool-docs');
@@ -121,7 +121,7 @@ describe('scaffold', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/theme-lumina' });
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		const viteConfig = readFileSync(join(targetDir, 'vite.config.ts'), 'utf-8');
 		expect(viteConfig).toContain('refrakt()');

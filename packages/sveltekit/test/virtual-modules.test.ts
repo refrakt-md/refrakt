@@ -29,18 +29,18 @@ describe('resolveVirtualId', () => {
 describe('loadVirtualModule', () => {
 	const config = {
 		contentDir: './content',
-		theme: '@refrakt-md/theme-lumina',
+		theme: '@refrakt-md/lumina',
 		target: 'sveltekit',
 	};
 
-	it('generates theme re-export', () => {
+	it('generates theme re-export from theme/target adapter', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/theme', config);
-		expect(result).toBe("export { theme } from '@refrakt-md/theme-lumina';");
+		expect(result).toBe("export { theme } from '@refrakt-md/lumina/sveltekit';");
 	});
 
-	it('generates tokens CSS import', () => {
+	it('generates tokens CSS import from theme/target adapter', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/tokens', config);
-		expect(result).toBe("import '@refrakt-md/theme-lumina/tokens.css';");
+		expect(result).toBe("import '@refrakt-md/lumina/sveltekit/tokens.css';");
 	});
 
 	it('generates config export', () => {
@@ -56,10 +56,10 @@ describe('loadVirtualModule', () => {
 	});
 
 	it('works with different theme package names', () => {
-		const customConfig = { ...config, theme: '@refrakt-md/theme-aurora' };
+		const customConfig = { ...config, theme: '@refrakt-md/aurora' };
 		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
-			.toBe("export { theme } from '@refrakt-md/theme-aurora';");
+			.toBe("export { theme } from '@refrakt-md/aurora/sveltekit';");
 		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig))
-			.toBe("import '@refrakt-md/theme-aurora/tokens.css';");
+			.toBe("import '@refrakt-md/aurora/sveltekit/tokens.css';");
 	});
 });
