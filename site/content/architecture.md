@@ -30,7 +30,9 @@ On its own, that is just a list. But wrap it in a rune, and it becomes something
 - Inside `{% nav %}` -- those are **page references** (slugs), resolved into a navigation tree.
 - Inside `{% cast %}` -- those are **team members**, parsed as "Name - Role" entries with `schema.org/Person` metadata.
 
+{% hint type="note" %}
 This is **semantic reinterpretation of Markdown primitives**. Authors write familiar Markdown. The rune supplies the interpretation. The theme supplies the presentation. And SEO structured data falls out automatically because the system already understands what the content *means*.
+{% /hint %}
 
 The architecture is organized into several focused packages:
 
@@ -181,7 +183,11 @@ The engine is configured declaratively. Each rune gets a `RuneConfig` that speci
 
 ### Implementation Layer (Framework-Specific)
 
-The implementation layer is only needed for runes that require **runtime interactivity**. Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript.
+The implementation layer is only needed for runes that require **runtime interactivity**.
+
+{% hint type="check" %}
+Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript.
+{% /hint %}
 
 Interactive runes register Svelte components in the theme's component registry:
 
@@ -381,7 +387,9 @@ Pattern syntax:
 
 ## 6. SEO Generation
 
+{% hint type="check" %}
 SEO in refrakt.md is automatic. Because runes already understand the semantic meaning of content, structured data generation is a by-product of the transform pipeline -- not a separate annotation step.
+{% /hint %}
 
 ### JSON-LD Structured Data
 
@@ -431,7 +439,9 @@ The `ThemeShell` Svelte component automatically injects both JSON-LD scripts and
 </svelte:head>
 ```
 
+{% hint type="note" %}
 No configuration or annotation is required from the content author. Write a recipe, get Recipe structured data. Write an FAQ, get FAQPage structured data.
+{% /hint %}
 
 ---
 
@@ -476,36 +486,34 @@ This produces a virtual module that imports the base theme, imports the override
 
 The full content pipeline flows through these stages:
 
-```
-.md files on disk
-  |
-  v
-ContentTree (filesystem scan, deterministic ordering)
-  |
-  v
-Frontmatter parsing (YAML extraction, route resolution)
-  |
-  v
-Layout resolution (walk directory tree, collect _layout.md chain, merge regions)
-  |
-  v
-Markdoc transform (parse AST, apply rune schemas, transform to renderable tree)
-  |
-  v
-SEO extraction (walk renderable tree, generate JSON-LD + OG meta)
-  |
-  v
-Serialization (convert Markdoc Tag instances to plain objects for SSR transfer)
-  |
-  v
-Identity transform (BEM classes, structural injection, meta consumption)
-  |
-  v
-Renderer (Svelte recursive component, typeof-based component dispatch)
-  |
-  v
-HTML output
-```
+{% steps headingLevel=3 %}
+### ContentTree
+Filesystem scan with deterministic ordering.
+
+### Frontmatter parsing
+YAML extraction and route resolution.
+
+### Layout resolution
+Walk directory tree, collect `_layout.md` chain, merge regions by mode.
+
+### Markdoc transform
+Parse AST, apply rune schemas, transform to renderable tree.
+
+### SEO extraction
+Walk renderable tree, generate JSON-LD and Open Graph meta.
+
+### Serialization
+Convert Markdoc Tag instances to plain objects for SSR transfer.
+
+### Identity transform
+Apply BEM classes, structural injection, and meta consumption.
+
+### Renderer
+Svelte recursive component with `typeof`-based component dispatch.
+
+### HTML output
+Static HTML ready for the browser.
+{% /steps %}
 
 ### Static Output
 
@@ -563,7 +571,9 @@ The generated system prompt teaches the LLM:
 - Nesting rules (e.g., `{% tier %}` inside `{% pricing %}`)
 - The horizontal rule delimiter convention for grids and code groups
 
+{% hint type="note" %}
 Because the prompt is generated from the actual rune metadata, it stays perfectly synchronized with the rune library -- no separate documentation to maintain.
+{% /hint %}
 
 ---
 
