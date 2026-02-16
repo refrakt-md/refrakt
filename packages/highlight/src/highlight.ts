@@ -1,22 +1,26 @@
 import { createHighlighter, createCssVariablesTheme } from 'shiki';
+import type { LanguageRegistration } from 'shiki';
 import { isTag } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag } from '@refrakt-md/types';
+import { markdocLanguage } from './langs/markdoc.js';
 
 const cssVarsTheme = createCssVariablesTheme();
 
 export interface HighlightOptions {
-	/** Languages to pre-load when using the default Shiki highlighter. */
-	langs?: string[];
+	/** Languages to pre-load when using the default Shiki highlighter.
+	 *  Accepts bundled language names or custom LanguageRegistration objects. */
+	langs?: (string | LanguageRegistration)[];
 	/** Custom highlight function. Receives raw code + language, returns HTML string.
 	 *  Default: Shiki with css-variables theme. */
 	highlight?: (code: string, lang: string) => string;
 }
 
-const DEFAULT_LANGS = [
+const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
 	'javascript', 'typescript', 'html', 'css', 'json', 'shell',
 	'python', 'ruby', 'go', 'rust', 'java', 'c', 'cpp',
 	'markdown', 'yaml', 'toml', 'sql', 'graphql', 'svelte',
 	'jsx', 'tsx', 'diff', 'xml',
+	markdocLanguage,
 ];
 
 /**

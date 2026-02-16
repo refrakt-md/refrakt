@@ -73,6 +73,16 @@ describe('highlight transform', () => {
 		expect(result.children[0]).toBe('<custom>hello</custom>');
 	});
 
+	it('should highlight markdoc code blocks', async () => {
+		const hl = await createHighlightTransform();
+		const tree = tag('code', { 'data-language': 'markdoc' }, ['{% hint type="warning" %}\nBe careful\n{% /hint %}']);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-codeblock']).toBe(true);
+		expect(typeof result.children[0]).toBe('string');
+		expect(result.children[0] as string).toContain('style=');
+	});
+
 	it('should handle null and string nodes in the tree', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
 
