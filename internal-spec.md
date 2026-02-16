@@ -180,7 +180,7 @@ Two-phase delivery. See Section 12 for full detail.
 - Bracket matching for `{% rune %}` / `{% /rune %}` pairs
 - Folding regions for rune blocks
 - Snippets for every rune with tabstop and choice syntax
-- Published to VS Code Marketplace and Open VSX as `@refrakt-md/vscode`
+- Publish to VS Code Marketplace and Open VSX once extension icon is created (VSIX packaging ready, `npm run package` in `packages/vscode/`)
 
 **Phase 9b: Language Server** -- DONE
 - `@refrakt-md/language-server` — editor-agnostic LSP server (`packages/language-server/`)
