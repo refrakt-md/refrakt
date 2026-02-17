@@ -1,0 +1,113 @@
+/* ── Map Rune ── */
+
+.rf-map {
+	margin: 2rem 0;
+	border-radius: var(--rf-radius-lg, 0.75rem);
+	overflow: hidden;
+	border: 1px solid var(--rf-color-border);
+}
+
+/* Height variants */
+.rf-map--small .rf-map__container { height: 200px; }
+.rf-map--medium .rf-map__container { height: 400px; }
+.rf-map--large .rf-map__container { height: 600px; }
+.rf-map--full .rf-map__container { height: 80vh; min-height: 400px; }
+
+.rf-map__container {
+	width: 100%;
+	position: relative;
+	background: var(--rf-color-surface, #f8f9fa);
+}
+
+/* Fallback list shown while Leaflet loads */
+.rf-map__fallback {
+	padding: 1.5rem;
+	margin: 0;
+	list-style: decimal inside;
+	font-size: 0.925rem;
+	color: var(--rf-color-muted);
+}
+
+.rf-map__fallback li {
+	padding: 0.25rem 0;
+}
+
+.rf-map__fallback strong {
+	color: var(--rf-color-text);
+}
+
+/* Accessible text list (visible to screen readers, hidden visually) */
+.rf-map__pins {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* MapPin in fallback / a11y list */
+.rf-map-pin {
+	padding: 0.25rem 0;
+}
+
+.rf-map-pin__description {
+	color: var(--rf-color-muted);
+	font-style: italic;
+}
+
+.rf-map-pin__group {
+	display: inline-block;
+	font-size: 0.75rem;
+	padding: 0.1rem 0.5rem;
+	border-radius: var(--rf-radius-sm, 0.25rem);
+	background: var(--rf-color-surface, #f0f0f0);
+	color: var(--rf-color-muted);
+	margin-left: 0.5rem;
+}
+
+/* Hide meta tags and property spans inside the map */
+.rf-map meta,
+.rf-map span[property] {
+	display: none;
+}
+
+/* Leaflet popup overrides to match theme */
+.rf-map .leaflet-popup-content-wrapper {
+	border-radius: var(--rf-radius-md, 0.5rem);
+	font-family: var(--rf-font-sans, inherit);
+	font-size: 0.875rem;
+	color: var(--rf-color-text);
+}
+
+.rf-map .leaflet-popup-content {
+	margin: 0.75rem 1rem;
+	line-height: 1.5;
+}
+
+.rf-map .leaflet-popup-content strong {
+	display: block;
+	font-size: 0.95rem;
+	margin-bottom: 0.25rem;
+}
+
+.rf-map .leaflet-popup-content em {
+	color: var(--rf-color-muted);
+}
+
+.rf-map .leaflet-popup-content small {
+	color: var(--rf-color-muted);
+	font-size: 0.8rem;
+}
+
+.rf-map .leaflet-popup-content a {
+	color: var(--rf-color-primary);
+	text-decoration: none;
+}
+
+.rf-map .leaflet-popup-content a:hover {
+	text-decoration: underline;
+}

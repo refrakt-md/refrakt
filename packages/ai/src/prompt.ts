@@ -28,6 +28,7 @@ const EXCLUDED_RUNES = new Set([
 	'changelog-release',
 	'breadcrumb-item',
 	'cast-member',
+	'map-pin',
 ]);
 
 /** Usage examples for each author-facing rune */
@@ -404,6 +405,15 @@ graph TD
 This is a margin note that provides additional context
 without interrupting the main flow of the text.
 {% /sidenote %}`,
+
+	map: `{% map zoom="13" height="large" %}
+## Landmarks
+- **Eiffel Tower** - *Iconic iron lattice tower* - 48.8566, 2.3522
+- **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
+
+## Parks
+- **Jardin du Luxembourg** - 48.8462, 2.3372
+{% /map %}`,
 };
 
 function attributeTypeName(type: unknown): string {

@@ -53,7 +53,7 @@ The architecture is organized into several focused packages:
 
 ## 2. Rune Library
 
-refrakt.md ships 39 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships 40 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
 ### Layout & Structure
 
@@ -123,6 +123,7 @@ refrakt.md ships 39 author-facing runes (plus internal child runes). Each rune d
 | `organization` | `business` | Heading as organization name, image as logo, link as website/social profiles | `Organization` |
 | `timeline` | -- | Heading as dated milestone ("2023 - Company founded" pattern), paragraph as event description | `ItemList` |
 | `changelog` | -- | Heading as version + date ("v2.1.0 - 2024-01-15"), list as categorized changes, strong as change category | -- |
+| `map` | -- | List items as map pins (bold as name, italic as description, coordinates or address as location), heading as pin group label, blockquote as caption | `Place` |
 
 ### Music
 
@@ -212,6 +213,7 @@ export const registry: ComponentRegistry = {
   'Pricing': Pricing,     // Tier rendering logic
   'Comparison': Comparison,
   'Testimonial': Testimonial,
+  'Map': Map,           // Leaflet map visualization
 };
 ```
 
@@ -424,6 +426,7 @@ The SEO extractor walks the rendered tag tree, finds tags with `typeof` attribut
 | `VideoObject` | `{% embed %}` (video providers) -- extracts title, content URL, embed URL |
 | `ItemList` | `{% timeline %}` -- extracts ordered list of dated milestones |
 | `Dataset` | `{% datatable %}` -- extracts tabular data |
+| `Place` | `{% map %}` -- extracts pin locations with names, coordinates, and descriptions |
 
 The currency for pricing tiers is auto-detected from price symbols (`$` = USD, `EUR` = EUR, `kr` = SEK, etc.).
 
@@ -626,7 +629,7 @@ The Svelte `Renderer` component checks each tag:
 
 If a component is registered for that `typeof` value, it gets rendered. Otherwise, the tag is rendered as plain HTML with its BEM classes (applied by the identity transform). This means:
 
-- **Interactive runes** (tabs, accordion, datatable, form, diagram, reveal, chart) are handled by Svelte components that add behavior.
+- **Interactive runes** (tabs, accordion, datatable, form, diagram, reveal, chart, map) are handled by Svelte components that add behavior.
 - **Static runes** (hero, hint, cta, feature, breadcrumb, timeline, changelog, recipe, howto, event, cast, organization, figure, sidenote, annotate, conversation, etc.) are fully rendered by the identity transform + CSS. They produce semantic HTML with BEM classes, and the theme's CSS handles all presentation.
 
 ### Theme Manifest Declaration

@@ -54,6 +54,7 @@
 - organization
 - timeline
 - changelog
+- map
 
 ## Creative
 
