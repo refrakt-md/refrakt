@@ -17,7 +17,11 @@ Place the self-closing tag where you want the table of contents to appear.
 
 The table of contents below is generated from this page's own headings:
 
+{% preview %}
+
 {% toc /%}
+
+{% /preview %}
 
 Control how deep the heading hierarchy goes with `depth`:
 

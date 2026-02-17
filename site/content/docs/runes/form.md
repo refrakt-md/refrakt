@@ -21,6 +21,8 @@ List items are automatically mapped to the correct input types based on their na
 {% /form %}
 `````
 
+{% preview %}
+
 {% form action="https://formspree.io/f/example" %}
 - Name
 - Email
@@ -28,6 +30,8 @@ List items are automatically mapped to the correct input types based on their na
 
 **Send**
 {% /form %}
+
+{% /preview %}
 
 ## Fieldset groups
 
@@ -49,6 +53,8 @@ Headings create `<fieldset>` sections with legends.
 {% /form %}
 `````
 
+{% preview %}
+
 {% form action="/api/contact" %}
 ## Contact Info
 
@@ -62,6 +68,8 @@ Headings create `<fieldset>` sections with legends.
 
 **Submit**
 {% /form %}
+
+{% /preview %}
 
 ## Selection fields
 
@@ -89,6 +97,8 @@ A blockquote followed by a list creates a selection group. With 4 or fewer optio
 {% /form %}
 `````
 
+{% preview %}
+
 {% form action="/api/signup" %}
 - Name
 - Email
@@ -109,6 +119,8 @@ A blockquote followed by a list creates a selection group. With 4 or fewer optio
 **Sign Up**
 {% /form %}
 
+{% /preview %}
+
 ## Style variants
 
 Use the `style` attribute to change the layout.
@@ -121,11 +133,15 @@ Use the `style` attribute to change the layout.
 {% /form %}
 `````
 
+{% preview %}
+
 {% form action="/api/subscribe" style="inline" %}
 - Email (placeholder: "you@example.com")
 
 **Subscribe**
 {% /form %}
+
+{% /preview %}
 
 ### Attributes
 

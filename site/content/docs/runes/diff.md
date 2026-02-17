@@ -43,6 +43,8 @@ app.listen(3000);
 {% /diff %}
 ````
 
+{% preview %}
+
 {% diff mode="split" language="javascript" %}
 ```javascript
 import express from 'express';
@@ -72,6 +74,8 @@ app.get('/users', async (req, res) => {
 app.listen(3000);
 ```
 {% /diff %}
+
+{% /preview %}
 
 ## Unified diff
 
@@ -106,6 +110,8 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 {% /diff %}
 ````
 
+{% preview %}
+
 {% diff mode="unified" language="css" %}
 ```css
 .button {
@@ -132,6 +138,8 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 }
 ```
 {% /diff %}
+
+{% /preview %}
 
 ### Attributes
 

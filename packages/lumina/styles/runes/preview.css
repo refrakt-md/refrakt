@@ -1,0 +1,96 @@
+/* Preview — Component showcase with theme toggle and width control */
+.rf-preview {
+	margin: 2rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
+}
+
+/* Width variants */
+.rf-preview[data-width="medium"] {
+	width: calc(100% + 4rem);
+	margin-left: -2rem;
+}
+.rf-preview[data-width="wide"] {
+	width: calc(100% + 8rem);
+	margin-left: -4rem;
+	max-width: 76rem;
+}
+.rf-preview[data-width="full"] {
+	width: 100vw;
+	margin-left: calc(-50vw + 50%);
+}
+
+/* Toolbar */
+.rf-preview__toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 1rem;
+	background: var(--rf-color-surface);
+	border-bottom: 1px solid var(--rf-color-border);
+	min-height: 2.5rem;
+}
+.rf-preview__title {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rf-color-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+/* Theme toggle pill */
+.rf-preview__toggle {
+	display: flex;
+	gap: 0.125rem;
+	background: var(--rf-color-surface-active);
+	border-radius: var(--rf-radius-full);
+	padding: 0.125rem;
+}
+.rf-preview__toggle-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.625rem;
+	height: 1.625rem;
+	border: none;
+	border-radius: var(--rf-radius-full);
+	background: transparent;
+	color: var(--rf-color-muted);
+	cursor: pointer;
+	transition: background 150ms ease, color 150ms ease;
+	padding: 0;
+}
+.rf-preview__toggle-btn:hover {
+	color: var(--rf-color-text);
+}
+.rf-preview__toggle-btn--active {
+	background: var(--rf-color-bg);
+	color: var(--rf-color-text);
+	box-shadow: var(--rf-shadow-xs);
+}
+
+/* Canvas */
+.rf-preview__canvas {
+	padding: 2rem 2.5rem;
+	background: var(--rf-color-bg);
+}
+.rf-preview__canvas > *:first-child {
+	margin-top: 0;
+}
+.rf-preview__canvas > *:last-child {
+	margin-bottom: 0;
+}
+
+/* Mobile: collapse all breakouts */
+@media (max-width: 768px) {
+	.rf-preview[data-width="medium"],
+	.rf-preview[data-width="wide"],
+	.rf-preview[data-width="full"] {
+		width: 100%;
+		margin-left: 0;
+	}
+	.rf-preview__canvas {
+		padding: 1.5rem;
+	}
+}

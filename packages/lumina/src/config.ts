@@ -245,5 +245,6 @@ export const luminaConfig: ThemeConfig = {
 			},
 		},
 		MapPin: { block: 'map-pin' },
+		Preview: { block: 'preview' },
 	},
 };

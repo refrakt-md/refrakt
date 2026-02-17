@@ -26,6 +26,8 @@ graph TD
 {% /diagram %}
 ````
 
+{% preview %}
+
 {% diagram language="mermaid" title="User Authentication Flow" %}
 ```mermaid
 graph TD
@@ -38,6 +40,8 @@ graph TD
   E --> C
 ```
 {% /diagram %}
+
+{% /preview %}
 
 ### Attributes
 

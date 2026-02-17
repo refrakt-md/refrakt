@@ -24,6 +24,8 @@ Your neighborhood coffee shop since 2015. We serve locally roasted coffee and fr
 {% /organization %}
 ```
 
+{% preview %}
+
 {% organization type="LocalBusiness" %}
 # Acme Coffee Shop
 
@@ -34,6 +36,8 @@ Your neighborhood coffee shop since 2015. We serve locally roasted coffee and fr
 - **Phone:** (503) 555-0123
 - [Website](https://acme.coffee)
 {% /organization %}
+
+{% /preview %}
 
 ## Corporation
 
@@ -52,6 +56,8 @@ Enterprise solutions for the modern web.
 {% /organization %}
 ```
 
+{% preview %}
+
 {% organization type="Corporation" %}
 # Acme Inc.
 
@@ -62,6 +68,8 @@ Enterprise solutions for the modern web.
 - [Website](https://acme.example.com)
 - [GitHub](https://github.com/acme)
 {% /organization %}
+
+{% /preview %}
 
 ### Attributes
 

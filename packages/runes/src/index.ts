@@ -47,6 +47,7 @@ import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
 import { map, mapPin } from './tags/map.js';
+import { preview } from './tags/preview.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -505,6 +506,14 @@ export const runes = {
     schema: mapPin,
     description: 'Individual map pin with location data',
     type: schema.MapPin,
+  }),
+  preview: defineRune({
+    name: 'preview',
+    aliases: ['showcase'],
+    schema: preview,
+    description: 'Component showcase with theme toggle and adjustable width for documentation and design systems',
+    reinterprets: {},
+    type: schema.Preview,
   }),
 };
 

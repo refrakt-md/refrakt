@@ -24,6 +24,8 @@ Join us for three days of talks, workshops, and networking with the web developm
 {% /event %}
 ```
 
+{% preview %}
+
 {% event date="2025-06-15" endDate="2025-06-17" location="San Francisco, CA" url="https://example.com/register" %}
 # Tech Conference 2025
 
@@ -34,6 +36,8 @@ Join us for three days of talks, workshops, and networking with the web developm
 - Panel: Open Source Sustainability
 - Networking Dinner
 {% /event %}
+
+{% /preview %}
 
 ### Attributes
 

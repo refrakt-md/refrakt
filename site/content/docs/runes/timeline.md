@@ -27,6 +27,8 @@ Reached 10,000 users and launched the plugin marketplace for custom runes.
 {% /timeline %}
 ```
 
+{% preview %}
+
 {% timeline %}
 ## 2023 - Founded
 
@@ -40,6 +42,8 @@ Released v1.0 with support for 15 semantic runes and two themes. Open-sourced th
 
 Reached 10,000 users and launched the plugin marketplace for custom runes.
 {% /timeline %}
+
+{% /preview %}
 
 ## Explicit entries
 
@@ -57,6 +61,8 @@ Public beta with full documentation.
 {% /timeline %}
 ```
 
+{% preview %}
+
 {% timeline %}
 {% timeline-entry date="Q1 2024" label="Alpha release" %}
 Initial release to early testers.
@@ -66,6 +72,8 @@ Initial release to early testers.
 Public beta with full documentation.
 {% /timeline-entry %}
 {% /timeline %}
+
+{% /preview %}
 
 ### Attributes
 

@@ -27,6 +27,8 @@ function greet(name: string): string {
 {% /compare %}
 ````
 
+{% preview %}
+
 {% compare %}
 ```javascript
 function greet(name) {
@@ -40,6 +42,8 @@ function greet(name: string): string {
 }
 ```
 {% /compare %}
+
+{% /preview %}
 
 ## Custom labels
 
@@ -57,6 +61,8 @@ const data = await fetch('/api').then(r => r.json());
 {% /compare %}
 ````
 
+{% preview %}
+
 {% compare labels="Before, After" %}
 ```javascript
 const data = fetch('/api').then(r => r.json());
@@ -66,6 +72,8 @@ const data = fetch('/api').then(r => r.json());
 const data = await fetch('/api').then(r => r.json());
 ```
 {% /compare %}
+
+{% /preview %}
 
 ### Attributes
 

@@ -20,12 +20,16 @@ List items are parsed into name and role parts automatically.
 {% /cast %}
 ```
 
+{% preview %}
+
 {% cast layout="grid" %}
 - Alice Johnson - CEO
 - Bob Smith - CTO
 - Carol Williams - Head of Design
 - David Chen - Lead Engineer
 {% /cast %}
+
+{% /preview %}
 
 ## Explicit members
 
@@ -43,6 +47,8 @@ Bob leads the engineering team.
 {% /cast %}
 ```
 
+{% preview %}
+
 {% cast %}
 {% cast-member name="Alice Johnson" role="CEO" %}
 Alice founded the company in 2020.
@@ -52,6 +58,8 @@ Alice founded the company in 2020.
 Bob leads the engineering team.
 {% /cast-member %}
 {% /cast %}
+
+{% /preview %}
 
 ### Attributes
 

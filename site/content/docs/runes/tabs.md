@@ -33,6 +33,8 @@ pnpm add @refrakt-md/runes
 {% /tabs %}
 ````
 
+{% preview %}
+
 {% tabs headingLevel=2 %}
 ## npm
 
@@ -53,6 +55,8 @@ pnpm add @refrakt-md/runes
 ```
 {% /tabs %}
 
+{% /preview %}
+
 ## Explicit tab tags
 
 Use `{% tab %}` tags for more control over tab names and content.
@@ -69,6 +73,8 @@ Content for the TypeScript tab.
 {% /tabs %}
 ```
 
+{% preview %}
+
 {% tabs %}
 {% tab name="JavaScript" %}
 Content for the JavaScript tab.
@@ -78,6 +84,8 @@ Content for the JavaScript tab.
 Content for the TypeScript tab.
 {% /tab %}
 {% /tabs %}
+
+{% /preview %}
 
 ### Attributes
 

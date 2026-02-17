@@ -27,6 +27,8 @@ The plot thickens...
 {% /storyboard %}
 ```
 
+{% preview %}
+
 {% storyboard columns=3 %}
 ![Dawn](https://picsum.photos/seed/dawn/600/400)
 
@@ -41,6 +43,8 @@ An unexpected path through the trees.
 The view from the top changes everything.
 {% /storyboard %}
 
+{% /preview %}
+
 ## Comic style
 
 Thick borders and slightly tilted panels give a comic book feel.
@@ -50,6 +54,8 @@ Thick borders and slightly tilted panels give a comic book feel.
 ...
 {% /storyboard %}
 ```
+
+{% preview %}
 
 {% storyboard columns=3 style="comic" %}
 ![Hero](https://picsum.photos/seed/hero/600/400)
@@ -65,6 +71,8 @@ A storm blocks the way forward!
 Against all odds, a new dawn rises.
 {% /storyboard %}
 
+{% /preview %}
+
 ## Polaroid style
 
 White-framed panels with drop shadows, like pinned photos.
@@ -74,6 +82,8 @@ White-framed panels with drop shadows, like pinned photos.
 ...
 {% /storyboard %}
 ```
+
+{% preview %}
 
 {% storyboard columns=2 style="polaroid" %}
 ![Coast](https://picsum.photos/seed/coast/600/400)
@@ -92,6 +102,8 @@ Winter in the city
 
 Spring blooms again
 {% /storyboard %}
+
+{% /preview %}
 
 ### Attributes
 

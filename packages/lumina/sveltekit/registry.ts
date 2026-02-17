@@ -17,6 +17,7 @@ import Storyboard from './components/Storyboard.svelte';
 import Bento from './components/Bento.svelte';
 import CodeGroup from './components/CodeGroup.svelte';
 import MapComponent from './components/Map.svelte';
+import Preview from './components/Preview.svelte';
 
 /** Maps typeof attribute values to Lumina theme Svelte components.
  *  Components registered here handle interactive behavior, complex data
@@ -60,4 +61,6 @@ export const registry: ComponentRegistry = {
 	// Map visualization
 	'Map': MapComponent,
 	'MapPin': MapComponent,
+	// Showcase
+	'Preview': Preview,
 };

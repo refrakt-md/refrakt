@@ -22,6 +22,8 @@ The default chart type displays data as vertical bars.
 {% /chart %}
 ```
 
+{% preview %}
+
 {% chart type="bar" title="Monthly Revenue" %}
 | Month | Revenue | Expenses |
 |-------|---------|----------|
@@ -30,6 +32,8 @@ The default chart type displays data as vertical bars.
 | Mar   | 4800    | 3200     |
 | Apr   | 6200    | 3800     |
 {% /chart %}
+
+{% /preview %}
 
 ## Line chart
 
@@ -46,6 +50,8 @@ Use `type="line"` for trend data.
 {% /chart %}
 ```
 
+{% preview %}
+
 {% chart type="line" title="User Growth" %}
 | Quarter | Users |
 |---------|-------|
@@ -54,6 +60,8 @@ Use `type="line"` for trend data.
 | Q3 2024 | 5000  |
 | Q4 2024 | 8500  |
 {% /chart %}
+
+{% /preview %}
 
 ### Attributes
 

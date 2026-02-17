@@ -22,6 +22,8 @@ A content framework that turns Markdown into rich, semantic pages. Write standar
 {% /hero %}
 ```
 
+{% preview %}
+
 {% hero %}
 # Build with refrakt.md
 
@@ -30,6 +32,8 @@ A content framework that turns Markdown into rich, semantic pages. Write standar
 - [Get started](/docs/getting-started)
 - [View on GitHub](https://github.com/refrakt-md/refrakt)
 {% /hero %}
+
+{% /preview %}
 
 ## With command block
 
@@ -49,6 +53,8 @@ npm create refrakt
 {% /hero %}
 ````
 
+{% preview %}
+
 {% hero %}
 # Get started in seconds
 
@@ -60,6 +66,8 @@ npm create refrakt
 
 - [Documentation](/docs/getting-started)
 {% /hero %}
+
+{% /preview %}
 
 ## Left-aligned
 
@@ -75,6 +83,8 @@ Semantic runes transform your Markdown into structured, accessible content.
 {% /hero %}
 ```
 
+{% preview %}
+
 {% hero align="left" %}
 # Documentation that writes itself
 
@@ -82,6 +92,8 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 - [Quick start](/docs/getting-started)
 {% /hero %}
+
+{% /preview %}
 
 ### Attributes
 

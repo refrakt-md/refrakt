@@ -27,6 +27,8 @@ Create Markdown files with runes and watch them transform.
 {% /reveal %}
 ```
 
+{% preview %}
+
 {% reveal headingLevel=3 %}
 ### Step 1: Install the package
 
@@ -40,6 +42,8 @@ Set up the lumina theme in your config file.
 
 Create Markdown files with runes and watch them transform.
 {% /reveal %}
+
+{% /preview %}
 
 ### Attributes
 

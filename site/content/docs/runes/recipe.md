@@ -32,6 +32,8 @@ A rich and creamy Italian pasta dish.
 {% /recipe %}
 ```
 
+{% preview %}
+
 {% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
 # Classic Pasta Carbonara
 
@@ -50,6 +52,8 @@ A rich and creamy Italian pasta dish.
 
 > The residual heat from the pasta cooks the eggs — never add eggs directly to a hot pan or they will scramble.
 {% /recipe %}
+
+{% /preview %}
 
 ### Attributes
 

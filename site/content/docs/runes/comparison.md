@@ -38,6 +38,8 @@ Each `##` heading defines a column. Bold text at the start of list items serves 
 {% /comparison %}
 `````
 
+{% preview %}
+
 {% comparison title="Choosing a Framework" %}
 
 ## SvelteKit
@@ -62,6 +64,8 @@ Each `##` heading defines a column. Bold text at the start of list items serves 
 - **TypeScript** — First-class support
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Highlighted column
 
@@ -94,6 +98,8 @@ Use the `highlighted` attribute to visually emphasize a recommended column. Add 
 {% /comparison %}
 `````
 
+{% preview %}
+
 {% comparison highlighted="refrakt.md" verdict="refrakt.md gives you the power of AI without sacrificing ownership or portability." %}
 
 ## refrakt.md
@@ -118,6 +124,8 @@ Use the `highlighted` attribute to visually emphasize a recommended column. Add 
 - **AI role** — AI assists with layout and copy
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Cards layout
 
@@ -150,6 +158,8 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 {% /comparison %}
 `````
 
+{% preview %}
+
 {% comparison highlighted="Pro" layout="cards" %}
 
 ## Free
@@ -174,6 +184,8 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 - **Support** — Dedicated Slack
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Attributes
 

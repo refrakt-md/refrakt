@@ -37,6 +37,8 @@ Returns a paginated list of users. Requires authentication.
 {% /api %}
 ````
 
+{% preview %}
+
 {% api method="GET" path="/api/users" auth="Bearer token" %}
 ## List Users
 
@@ -60,6 +62,8 @@ Returns a paginated list of users. Requires authentication.
 
 > Rate limited to 100 requests per minute per API key.
 {% /api %}
+
+{% /preview %}
 
 ## POST endpoint
 
@@ -88,6 +92,8 @@ Creates a new user account.
 {% /api %}
 ````
 
+{% preview %}
+
 {% api method="POST" path="/api/users" auth="Bearer token" %}
 ## Create User
 
@@ -108,6 +114,8 @@ Creates a new user account.
 }
 ```
 {% /api %}
+
+{% /preview %}
 
 ### Attributes
 

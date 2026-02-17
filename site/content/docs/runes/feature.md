@@ -29,6 +29,8 @@ A feature grid with named items and descriptions.
 {% /feature %}
 ```
 
+{% preview %}
+
 {% feature %}
 ## What you get
 
@@ -44,6 +46,8 @@ A feature grid with named items and descriptions.
 
   Define regions once in a parent layout. Child pages inherit and can override with prepend, append, or replace modes.
 {% /feature %}
+
+{% /preview %}
 
 ## With heading and description
 
@@ -65,6 +69,8 @@ Refrakt gives you the building blocks to ship structured content sites without f
 {% /feature %}
 ```
 
+{% preview %}
+
 {% feature %}
 ## Built for content teams
 
@@ -78,6 +84,8 @@ Refrakt gives you the building blocks to ship structured content sites without f
 
   Every rune produces typed, validated content that your theme components can rely on.
 {% /feature %}
+
+{% /preview %}
 
 ## Split layout
 
@@ -118,6 +126,8 @@ title: Home
 {% /feature %}
 ````
 
+{% preview %}
+
 {% feature split=true %}
 ## Why Refrakt
 
@@ -150,6 +160,8 @@ title: Home
 ```
 {% /codegroup %}
 {% /feature %}
+
+{% /preview %}
 
 ## Split with mirror
 
@@ -193,6 +205,8 @@ const tree = Markdoc.transform(ast, {
 {% /feature %}
 ````
 
+{% preview %}
+
 {% feature split=true mirror=true %}
 ## How it works
 
@@ -228,6 +242,8 @@ const tree = Markdoc.transform(ast, {
 ```
 {% /codegroup %}
 {% /feature %}
+
+{% /preview %}
 
 ### Attributes
 

@@ -15,7 +15,11 @@ Pass a URL and optional title to embed content from a supported provider.
 {% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
 ```
 
+{% preview %}
+
 {% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
+
+{% /preview %}
 
 ## With fallback content
 
@@ -27,9 +31,13 @@ Video could not be loaded. [Watch on the original site](https://example.com/vide
 {% /embed %}
 ```
 
+{% preview %}
+
 {% embed url="https://example.com/video" %}
 Video could not be loaded. [Watch on the original site](https://example.com/video).
 {% /embed %}
+
+{% /preview %}
 
 ### Supported providers
 

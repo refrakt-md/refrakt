@@ -23,6 +23,8 @@ Use blockquotes with bold speaker names to create a conversation.
 {% /conversation %}
 ```
 
+{% preview %}
+
 {% conversation %}
 > **Alice:** Hey, have you tried refrakt.md yet?
 
@@ -32,6 +34,8 @@ Use blockquotes with bold speaker names to create a conversation.
 
 > **Bob:** That sounds really flexible. I'll check it out!
 {% /conversation %}
+
+{% /preview %}
 
 ## Named speakers
 
@@ -49,6 +53,8 @@ Use the `speakers` attribute to automatically alternate between named speakers w
 {% /conversation %}
 ```
 
+{% preview %}
+
 {% conversation speakers="Support, Customer" %}
 > How can I help you today?
 
@@ -58,6 +64,8 @@ Use the `speakers` attribute to automatically alternate between named speakers w
 
 > That fixed it — thank you!
 {% /conversation %}
+
+{% /preview %}
 
 ### Attributes
 

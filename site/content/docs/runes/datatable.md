@@ -23,6 +23,8 @@ Enable sorting and search on a Markdown table.
 {% /datatable %}
 ```
 
+{% preview %}
+
 {% datatable sortable="Name,Price" searchable=true %}
 | Name | Price | Category | Stock |
 |------|-------|----------|-------|
@@ -32,6 +34,8 @@ Enable sorting and search on a Markdown table.
 | Gadget Y | $19.99 | Electronics | 128 |
 | Part Z | $4.99 | Components | 500 |
 {% /datatable %}
+
+{% /preview %}
 
 ## With pagination
 
@@ -49,6 +53,8 @@ Use `pageSize` to paginate large tables.
 {% /datatable %}
 ```
 
+{% preview %}
+
 {% datatable sortable="Name,Price" searchable=true pageSize=3 %}
 | Name | Price | Category | Stock |
 |------|-------|----------|-------|
@@ -58,6 +64,8 @@ Use `pageSize` to paginate large tables.
 | Gadget Y | $19.99 | Electronics | 128 |
 | Part Z | $4.99 | Components | 500 |
 {% /datatable %}
+
+{% /preview %}
 
 ### Attributes
 

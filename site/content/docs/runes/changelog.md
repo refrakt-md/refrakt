@@ -27,6 +27,8 @@ Headings are parsed into version and date parts, with list items below becoming 
 {% /changelog %}
 ```
 
+{% preview %}
+
 {% changelog %}
 ## v1.2.0 - January 2025
 
@@ -40,6 +42,8 @@ Headings are parsed into version and date parts, with list items below becoming 
 - Improved pricing tier card styling
 - Fixed tab panel content not rendering
 {% /changelog %}
+
+{% /preview %}
 
 ## Explicit releases
 
@@ -58,6 +62,8 @@ Use `{% changelog-release %}` tags for more control over version and date values
 {% /changelog %}
 ```
 
+{% preview %}
+
 {% changelog %}
 {% changelog-release version="2.0.0" date="March 2025" %}
 - Complete rewrite of the rendering engine
@@ -68,6 +74,8 @@ Use `{% changelog-release %}` tags for more control over version and date values
 - Initial stable release
 {% /changelog-release %}
 {% /changelog %}
+
+{% /preview %}
 
 ### Attributes
 

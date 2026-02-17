@@ -17,9 +17,13 @@ This is a margin note that provides additional context without interrupting the 
 {% /sidenote %}
 ```
 
+{% preview %}
+
 {% sidenote style="sidenote" %}
 This is a margin note that provides additional context without interrupting the main flow of the text. It can contain **rich formatting** and [links](/docs/getting-started).
 {% /sidenote %}
+
+{% /preview %}
 
 ## Footnote style
 
@@ -31,9 +35,13 @@ This appears as a footnote, typically rendered at the bottom of the content sect
 {% /sidenote %}
 ```
 
+{% preview %}
+
 {% sidenote style="footnote" %}
 This appears as a footnote, typically rendered at the bottom of the content section with a separator line.
 {% /sidenote %}
+
+{% /preview %}
 
 ## Tooltip style
 
@@ -45,9 +53,13 @@ This appears as a tooltip-style callout with a subtle border and background.
 {% /sidenote %}
 ```
 
+{% preview %}
+
 {% sidenote style="tooltip" %}
 This appears as a tooltip-style callout with a subtle border and background.
 {% /sidenote %}
+
+{% /preview %}
 
 ### Attributes
 

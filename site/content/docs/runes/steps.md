@@ -27,6 +27,8 @@ Each ordered list item becomes a numbered step.
 {% /steps %}
 ```
 
+{% preview %}
+
 {% steps %}
 1. Install the dependencies
 
@@ -40,6 +42,8 @@ Each ordered list item becomes a numbered step.
 
    Run `npm run dev` and visit localhost.
 {% /steps %}
+
+{% /preview %}
 
 ## Heading-based steps
 
@@ -61,6 +65,8 @@ Verify everything works with `npm test`.
 {% /steps %}
 ```
 
+{% preview %}
+
 {% steps headingLevel=3 %}
 ### Clone the repository
 
@@ -74,6 +80,8 @@ Run `npm install` to set up all packages.
 
 Verify everything works with `npm test`.
 {% /steps %}
+
+{% /preview %}
 
 ### Attributes
 

@@ -27,6 +27,8 @@ The term "rune" refers to a symbol that carries meaning. In refrakt.md, runes ca
 {% /annotate %}
 ````
 
+{% preview %}
+
 {% annotate %}
 The refrakt.md framework builds on Markdoc to provide semantic content transformation.
 
@@ -40,6 +42,8 @@ Runes are the core abstraction — they wrap ordinary Markdown and reinterpret i
 The term "rune" refers to a symbol that carries meaning. In refrakt.md, runes carry rendering intent.
 {% /note %}
 {% /annotate %}
+
+{% /preview %}
 
 ## Inline notes
 
@@ -57,6 +61,8 @@ The content inside a rune is regular Markdown.
 {% /annotate %}
 ```
 
+{% preview %}
+
 {% annotate style="inline" %}
 Runes use standard Markdoc tag syntax.
 
@@ -66,6 +72,8 @@ This means any Markdoc-compatible editor will understand them.
 
 The content inside a rune is regular Markdown.
 {% /annotate %}
+
+{% /preview %}
 
 ### Attributes
 

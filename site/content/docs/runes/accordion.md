@@ -27,6 +27,8 @@ No. Runes use standard Markdoc tag syntax, and the content inside is regular Mar
 {% /accordion %}
 ```
 
+{% preview %}
+
 {% accordion %}
 {% accordion-item name="What is refrakt.md?" %}
 A content framework built on Markdoc that extends Markdown with semantic runes. You write standard Markdown — runes decide how it's interpreted.
@@ -40,6 +42,8 @@ Runes are Markdoc tags that wrap ordinary Markdown. The same list renders as nav
 No. Runes use standard Markdoc tag syntax, and the content inside is regular Markdown.
 {% /accordion-item %}
 {% /accordion %}
+
+{% /preview %}
 
 ## Heading conversion
 
@@ -57,6 +61,8 @@ Runes create interpretation contexts for Markdown content.
 {% /accordion %}
 ```
 
+{% preview %}
+
 {% accordion headingLevel=2 %}
 ## What is refrakt.md?
 
@@ -66,6 +72,8 @@ A content framework built on Markdoc.
 
 Runes create interpretation contexts for Markdown content.
 {% /accordion %}
+
+{% /preview %}
 
 ### Attributes
 

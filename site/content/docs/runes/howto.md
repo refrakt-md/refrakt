@@ -28,6 +28,8 @@ You will need these tools:
 {% /howto %}
 ```
 
+{% preview %}
+
 {% howto estimatedTime="PT1H" difficulty="medium" %}
 # How to Set Up a Development Environment
 
@@ -42,6 +44,8 @@ You will need these tools:
 3. Run `npm install` to install dependencies
 4. Start the dev server with `npm run dev`
 {% /howto %}
+
+{% /preview %}
 
 ### Attributes
 

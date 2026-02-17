@@ -23,6 +23,8 @@ x = 1
 {% /codegroup %}
 ````
 
+{% preview %}
+
 {% codegroup %}
 ```js
 const x = 1;
@@ -32,6 +34,8 @@ const x = 1;
 x = 1
 ```
 {% /codegroup %}
+
+{% /preview %}
 
 ## Custom labels
 
@@ -57,6 +61,8 @@ export default function App() {
 {% /codegroup %}
 ````
 
+{% preview %}
+
 {% codegroup labels="React, Vue, Svelte" %}
 ```jsx
 export default function App() {
@@ -75,6 +81,8 @@ export default function App() {
 ```
 {% /codegroup %}
 
+{% /preview %}
+
 ## With title
 
 Use the `title` attribute to display a filename or label in the topbar.
@@ -92,6 +100,8 @@ app.get('/', (req, res) => {
 {% /codegroup %}
 ````
 
+{% preview %}
+
 {% codegroup title="app.js" %}
 ```js
 import express from 'express';
@@ -102,6 +112,8 @@ app.get('/', (req, res) => {
 });
 ```
 {% /codegroup %}
+
+{% /preview %}
 
 ### Attributes
 

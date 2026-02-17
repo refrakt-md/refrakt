@@ -22,6 +22,8 @@ Build structured content sites with semantic Markdown.
 {% /cta %}
 ```
 
+{% preview %}
+
 {% cta %}
 # Get Started with refrakt.md
 
@@ -30,6 +32,8 @@ Build structured content sites with semantic Markdown.
 - [Quick Start](/docs/getting-started)
 - [View on GitHub](https://github.com)
 {% /cta %}
+
+{% /preview %}
 
 ## With command block
 
@@ -47,6 +51,8 @@ npm install @refrakt-md/runes
 {% /cta %}
 ````
 
+{% preview %}
+
 {% cta %}
 # Install refrakt.md
 
@@ -56,3 +62,5 @@ Get up and running in seconds.
 npm install @refrakt-md/runes
 ```
 {% /cta %}
+
+{% /preview %}

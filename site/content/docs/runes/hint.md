@@ -17,9 +17,13 @@ This is a note with helpful information.
 {% /hint %}
 ```
 
+{% preview %}
+
 {% hint type="note" %}
 This is a note with helpful information.
 {% /hint %}
+
+{% /preview %}
 
 ## All hint types
 
@@ -43,6 +47,8 @@ This is a **check** — a success or completion message.
 {% /hint %}
 ```
 
+{% preview %}
+
 {% hint type="note" %}
 This is a **note** — useful for supplementary information.
 {% /hint %}
@@ -58,6 +64,8 @@ This is a **caution** — a serious potential issue.
 {% hint type="check" %}
 This is a **check** — a success or completion message.
 {% /hint %}
+
+{% /preview %}
 
 ### Attributes
 

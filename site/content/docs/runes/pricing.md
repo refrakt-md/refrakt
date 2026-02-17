@@ -33,6 +33,8 @@ Pick the plan that fits your needs.
 {% /pricing %}
 ```
 
+{% preview %}
+
 {% pricing %}
 # Plans
 
@@ -52,6 +54,8 @@ Pick the plan that fits your needs.
 
 [Start trial](/docs/getting-started)
 {% /pricing %}
+
+{% /preview %}
 
 ## Explicit tiers
 
@@ -84,6 +88,8 @@ Use `{% tier %}` tags when you need full control over attributes like `featured`
 {% /pricing %}
 ```
 
+{% preview %}
+
 {% pricing %}
 # Choose your plan
 
@@ -108,6 +114,8 @@ Use `{% tier %}` tags when you need full control over attributes like `featured`
 [Contact us](/docs/getting-started)
 {% /tier %}
 {% /pricing %}
+
+{% /preview %}
 
 ### Tier attributes
 

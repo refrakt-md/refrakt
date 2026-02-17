@@ -17,9 +17,13 @@ This content is hidden by default. The details rune wraps content in a native di
 {% /details %}
 ```
 
+{% preview %}
+
 {% details summary="Click to reveal more information" %}
 This content is hidden by default. The details rune wraps content in a native disclosure element that the user can toggle open and closed.
 {% /details %}
+
+{% /preview %}
 
 ## Open by default
 
@@ -31,9 +35,13 @@ Since `open=true` is set, this block is expanded when the page loads.
 {% /details %}
 ```
 
+{% preview %}
+
 {% details summary="This one starts open" open=true %}
 Since `open=true` is set, this block is expanded when the page loads.
 {% /details %}
+
+{% /preview %}
 
 ### Attributes
 

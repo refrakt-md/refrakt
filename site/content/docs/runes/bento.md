@@ -31,6 +31,8 @@ Another small cell sits neatly in the grid.
 {% /bento %}
 ```
 
+{% preview %}
+
 {% bento headingLevel=2 columns=4 %}
 ## Featured Article
 
@@ -48,6 +50,8 @@ Small cells are great for bite-sized content.
 
 Another small cell sits neatly in the grid.
 {% /bento %}
+
+{% /preview %}
 
 ### Attributes
 
