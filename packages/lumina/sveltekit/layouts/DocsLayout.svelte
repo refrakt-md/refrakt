@@ -83,7 +83,7 @@
 	<header class="site-header">
 		<div class="site-header-inner">
 			<Renderer node={regions.header.content} />
-			<button class="mobile-menu-btn" onclick={() => menuOpen = true} aria-label="Open menu">
+			<button class="mobile-menu-btn" onclick={() => { navOpen = false; menuOpen = true; }} aria-label="Open menu">
 				<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
 					<circle cx="10" cy="4" r="1.5"/>
 					<circle cx="10" cy="10" r="1.5"/>
@@ -116,7 +116,7 @@
 <!-- Mobile docs toolbar with hamburger + breadcrumbs -->
 {#if hasNav}
 	<div class="mobile-toolbar">
-		<button class="mobile-toolbar-hamburger" onclick={() => navOpen = !navOpen} aria-label="Toggle navigation">
+		<button class="mobile-toolbar-hamburger" onclick={() => { menuOpen = false; navOpen = !navOpen; }} aria-label="Toggle navigation">
 			<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none">
 				<line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
 			</svg>
