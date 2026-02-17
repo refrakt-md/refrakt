@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build-extension",
+			"type": "shell",
+			"command": "npm run build -w packages/types -w packages/runes -w packages/transform -w packages/language-server && npm run build -w packages/vscode",
+			"group": "build",
+			"problemMatcher": []
+		}
+	]
+}

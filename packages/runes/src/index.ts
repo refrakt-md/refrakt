@@ -62,6 +62,7 @@ export { extractHeadings } from './util.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
+export { serialize, serializeTree } from './serialize.js';
 
 export const documents = {
   doc: new DocPage(),

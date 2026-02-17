@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@refrakt-md/runes": "0.4.0",
+    "@refrakt-md/transform": "0.4.0",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0",
     "vscode-languageserver": "^9.0.1",

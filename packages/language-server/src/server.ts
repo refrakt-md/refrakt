@@ -13,11 +13,20 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { provideCompletion } from './providers/completion.js';
 import { provideHover } from './providers/hover.js';
 import { provideDiagnostics } from './providers/diagnostics.js';
+import { inspectRuneAtPosition } from './providers/inspector.js';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
-connection.onInitialize((): InitializeResult => {
+let workspaceRoot: string | undefined;
+
+connection.onInitialize((params): InitializeResult => {
+  if (params.rootUri) {
+    workspaceRoot = new URL(params.rootUri).pathname;
+  } else if (params.rootPath) {
+    workspaceRoot = params.rootPath;
+  }
+
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full,
@@ -37,6 +46,11 @@ connection.onCompletion((params) => {
 // Hover
 connection.onHover((params) => {
   return provideHover(params, documents);
+});
+
+// Rune Inspector — custom request
+connection.onRequest('refrakt/inspectRune', (params: { uri: string; position: { line: number; character: number } }) => {
+  return inspectRuneAtPosition(documents, params.uri, params.position, workspaceRoot);
 });
 
 // Diagnostics — run on document open and change

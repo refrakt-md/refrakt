@@ -51,6 +51,36 @@
 			"[markdown]": {
 				"editor.wordWrap": "on"
 			}
+		},
+		"views": {
+			"explorer": [
+				{
+					"id": "refraktRuneInspector",
+					"name": "Rune Inspector",
+					"when": "resourceLangId == markdown"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "refrakt.inspectRune",
+				"title": "Inspect Rune at Cursor",
+				"category": "Refrakt"
+			},
+			{
+				"command": "refrakt.copyInspectorNode",
+				"title": "Copy as JSON",
+				"icon": "$(copy)"
+			}
+		],
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "refrakt.copyInspectorNode",
+					"when": "viewItem == inspectorNode",
+					"group": "inline"
+				}
+			]
 		}
 	},
 	"scripts": {
