@@ -113,6 +113,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**CSS tree-shaking**~~ | ~~Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page.~~ DONE — Build-time content analysis in `packages/sveltekit/src/plugin.ts` (`buildStart` hook). Virtual module generates selective CSS imports for only the rune blocks used in the site. Dev mode unchanged (all CSS for instant feedback). |
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
+| **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
 
 ---
 
@@ -574,6 +575,7 @@ This section captures the current priority order. Update it as things change.
 - ~~CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page~~ -- DONE
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
+- Local runes v1: declarative rune extension via config (see `planning/local-runes.md`)
 
 **Medium term:**
 - ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
