@@ -114,6 +114,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 | **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
+| **Rune Inspector** (VS Code tree view) | Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor. Prerequisite: relocate `serialize()` from svelte to runes package. Full spec: `planning/rune-inspector.md` |
 
 ---
 
