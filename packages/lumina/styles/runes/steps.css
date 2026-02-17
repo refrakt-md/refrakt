@@ -1,9 +1,12 @@
 /* Steps */
 .rf-steps {
 	counter-reset: step;
+	margin: 1.5rem 0;
+}
+.rf-steps ol {
 	list-style: none;
 	padding-left: 0;
-	margin: 1.5rem 0;
+	margin: 0;
 }
 .rf-step__main {
 	display: contents;

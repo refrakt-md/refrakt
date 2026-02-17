@@ -31,7 +31,8 @@
 		? tag.children.find((c: any) => c?.name === 'span' && c?.attributes?.property === 'name')?.children?.[0] || ''
 		: '';
 	const fieldType = !isForm
-		? tag.attributes['data-field-type'] || 'text'
+		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'fieldType')?.attributes?.content
+			|| 'text'
 		: '';
 	const required = !isForm
 		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'required')?.attributes?.content === 'true'
