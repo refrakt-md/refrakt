@@ -43,13 +43,41 @@ function detectRowType(node: Node): string {
 	return 'text';
 }
 
-// Remove the bold label from item children to get just the description content.
-// The description is everything after "**Label** — " or "**Label** "
+// Remove the bold label and separator from item children to get just the description.
+// Input:  "**Learning curve** — Low, intuitive syntax"
+// Output: "Low, intuitive syntax" (strong and separator stripped)
 function getDescriptionChildren(node: Node): Node[] {
-	// Return all children as-is — the theme will render them and
-	// the bold label provides context. Keeping the full content
-	// ensures rich formatting (links, emphasis, etc.) is preserved.
-	return node.children;
+	if (!node.children.length) return node.children;
+
+	const firstChild = node.children[0];
+	if (firstChild.type !== 'paragraph' && firstChild.type !== 'inline') return node.children;
+
+	// Find the first strong node in the paragraph
+	const strongIndex = firstChild.children.findIndex(c => c.type === 'strong');
+	if (strongIndex === -1) return node.children;
+
+	// Get everything after the strong node
+	const afterStrong = firstChild.children.slice(strongIndex + 1);
+
+	// Strip the leading separator (—, –, -, :) from the next text node
+	if (afterStrong.length > 0 && afterStrong[0].type === 'text') {
+		const text = afterStrong[0].attributes.content;
+		const stripped = text.replace(/^\s*[-–—:]\s*/, '');
+		if (stripped) {
+			afterStrong[0] = new Ast.Node('text', { content: stripped }, []);
+		} else {
+			afterStrong.shift();
+		}
+	}
+
+	// If nothing remains in the paragraph, return remaining item children
+	if (afterStrong.length === 0) {
+		return node.children.slice(1);
+	}
+
+	// Create new paragraph with the description-only content
+	const newParagraph = new Ast.Node('paragraph', firstChild.attributes, afterStrong);
+	return [newParagraph, ...node.children.slice(1)];
 }
 
 interface ParsedRow {
