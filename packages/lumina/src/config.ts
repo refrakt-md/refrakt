@@ -38,7 +38,7 @@ export const luminaConfig: ThemeConfig = {
 		Breadcrumb: { block: 'breadcrumb' },
 		BreadcrumbItem: { block: 'breadcrumb-item' },
 		Testimonial: { block: 'testimonial' },
-		Timeline: { block: 'timeline' },
+		Timeline: { block: 'timeline', modifiers: { direction: { source: 'meta', default: 'vertical' } } },
 		TimelineEntry: { block: 'timeline-entry' },
 		Changelog: { block: 'changelog' },
 		ChangelogRelease: { block: 'changelog-release' },

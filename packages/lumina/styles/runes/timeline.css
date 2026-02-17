@@ -22,7 +22,7 @@
 .rf-timeline-entry:last-child {
 	padding-bottom: 0;
 }
-.rf-timeline-entry::before {
+.rf-timeline--vertical .rf-timeline-entry::before {
 	content: '';
 	position: absolute;
 	left: -2.5625rem;
@@ -34,7 +34,7 @@
 	border: 2px solid var(--rf-color-bg);
 	box-shadow: 0 0 0 2px var(--rf-color-primary);
 }
-.rf-timeline-entry__body time {
+.rf-timeline-entry > time {
 	display: block;
 	font-size: 0.8rem;
 	font-weight: 600;
@@ -42,7 +42,7 @@
 	letter-spacing: 0.02em;
 	margin-bottom: 0.25rem;
 }
-.rf-timeline-entry__body span {
+.rf-timeline-entry > span {
 	display: block;
 	font-size: 1.05rem;
 	font-weight: 700;
@@ -64,4 +64,20 @@
 	padding: 2rem 0 1rem;
 	border-left: none;
 	border-top: 2px solid var(--rf-color-border);
+}
+.rf-timeline--horizontal .rf-timeline-entry::before {
+	content: '';
+	position: absolute;
+	top: -2.5625rem;
+	left: 0.5rem;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: var(--rf-color-primary);
+	border: 2px solid var(--rf-color-bg);
+	box-shadow: 0 0 0 2px var(--rf-color-primary);
+}
+.rf-timeline--horizontal .rf-timeline-entry {
+	min-width: 12rem;
+	padding: 0;
 }
