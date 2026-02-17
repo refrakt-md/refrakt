@@ -57,7 +57,8 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			if (!isBuild) return;
 
 			try {
-				const { loadContent, analyzeRuneUsage } = await import('@refrakt-md/content');
+				const contentPkg = '@refrakt-md/content';
+				const { loadContent, analyzeRuneUsage } = await import(contentPkg);
 				const site = await loadContent(resolve(resolvedRoot, refraktConfig.contentDir));
 				const report = analyzeRuneUsage(site.pages);
 
