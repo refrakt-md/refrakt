@@ -11,17 +11,7 @@ Interactive Markdown table with sorting, filtering, and pagination. A standard M
 
 Enable sorting and search on a Markdown table.
 
-```markdoc
-{% datatable sortable="Name,Price" searchable=true %}
-| Name | Price | Category | Stock |
-|------|-------|----------|-------|
-| Widget A | $9.99 | Tools | 150 |
-| Widget B | $14.99 | Tools | 85 |
-| Gadget X | $24.99 | Electronics | 42 |
-| Gadget Y | $19.99 | Electronics | 128 |
-| Part Z | $4.99 | Components | 500 |
-{% /datatable %}
-```
+{% preview source=true %}
 
 {% datatable sortable="Name,Price" searchable=true %}
 | Name | Price | Category | Stock |
@@ -32,22 +22,14 @@ Enable sorting and search on a Markdown table.
 | Gadget Y | $19.99 | Electronics | 128 |
 | Part Z | $4.99 | Components | 500 |
 {% /datatable %}
+
+{% /preview %}
 
 ## With pagination
 
 Use `pageSize` to paginate large tables.
 
-```markdoc
-{% datatable sortable="Name,Price" searchable=true pageSize=3 %}
-| Name | Price | Category | Stock |
-|------|-------|----------|-------|
-| Widget A | $9.99 | Tools | 150 |
-| Widget B | $14.99 | Tools | 85 |
-| Gadget X | $24.99 | Electronics | 42 |
-| Gadget Y | $19.99 | Electronics | 128 |
-| Part Z | $4.99 | Components | 500 |
-{% /datatable %}
-```
+{% preview source=true %}
 
 {% datatable sortable="Name,Price" searchable=true pageSize=3 %}
 | Name | Price | Category | Stock |
@@ -58,6 +40,8 @@ Use `pageSize` to paginate large tables.
 | Gadget Y | $19.99 | Electronics | 128 |
 | Part Z | $4.99 | Components | 500 |
 {% /datatable %}
+
+{% /preview %}
 
 ### Attributes
 

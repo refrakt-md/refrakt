@@ -34,6 +34,7 @@
 - tabs
 - accordion
 - details
+- preview
 
 ## Code & Data
 

@@ -11,16 +11,7 @@ Full-width intro section for the top of a page. Headings and paragraphs become t
 
 A centered hero section with headline, description, and action buttons.
 
-```markdoc
-{% hero %}
-# Build with refrakt.md
-
-A content framework that turns Markdown into rich, semantic pages. Write standard Markdown — runes decide how it's interpreted.
-
-- [Get started](/docs/getting-started)
-- [View on GitHub](https://github.com/refrakt-md/refrakt)
-{% /hero %}
-```
+{% preview source=true %}
 
 {% hero %}
 # Build with refrakt.md
@@ -30,24 +21,14 @@ A content framework that turns Markdown into rich, semantic pages. Write standar
 - [Get started](/docs/getting-started)
 - [View on GitHub](https://github.com/refrakt-md/refrakt)
 {% /hero %}
+
+{% /preview %}
 
 ## With command block
 
 Code fences inside a hero become copyable command blocks — great for install commands on landing pages.
 
-````markdoc
-{% hero %}
-# Get started in seconds
-
-Scaffold a project and start writing.
-
-```shell
-npm create refrakt
-```
-
-- [Documentation](/docs/getting-started)
-{% /hero %}
-````
+{% preview source=true %}
 
 {% hero %}
 # Get started in seconds
@@ -60,20 +41,14 @@ npm create refrakt
 
 - [Documentation](/docs/getting-started)
 {% /hero %}
+
+{% /preview %}
 
 ## Left-aligned
 
 Use `align="left"` for a more editorial feel.
 
-```markdoc
-{% hero align="left" %}
-# Documentation that writes itself
-
-Semantic runes transform your Markdown into structured, accessible content.
-
-- [Quick start](/docs/getting-started)
-{% /hero %}
-```
+{% preview source=true %}
 
 {% hero align="left" %}
 # Documentation that writes itself
@@ -82,6 +57,8 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 - [Quick start](/docs/getting-started)
 {% /hero %}
+
+{% /preview %}
 
 ### Attributes
 

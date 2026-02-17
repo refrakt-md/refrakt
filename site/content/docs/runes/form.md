@@ -11,15 +11,7 @@ Transform Markdown into fully functional, accessible HTML forms. Lists become in
 
 List items are automatically mapped to the correct input types based on their names.
 
-`````markdoc
-{% form action="https://formspree.io/f/example" %}
-- Name
-- Email
-- Message
-
-**Send**
-{% /form %}
-`````
+{% preview source=true %}
 
 {% form action="https://formspree.io/f/example" %}
 - Name
@@ -28,26 +20,14 @@ List items are automatically mapped to the correct input types based on their na
 
 **Send**
 {% /form %}
+
+{% /preview %}
 
 ## Fieldset groups
 
 Headings create `<fieldset>` sections with legends.
 
-`````markdoc
-{% form action="/api/contact" %}
-## Contact Info
-
-- Name
-- Email
-- Phone (optional)
-
-## Your Message
-
-- Message
-
-**Submit**
-{% /form %}
-`````
+{% preview source=true %}
 
 {% form action="/api/contact" %}
 ## Contact Info
@@ -62,32 +42,14 @@ Headings create `<fieldset>` sections with legends.
 
 **Submit**
 {% /form %}
+
+{% /preview %}
 
 ## Selection fields
 
 A blockquote followed by a list creates a selection group. With 4 or fewer options, it renders as radio buttons. Add `(multiple)` for checkboxes.
 
-`````markdoc
-{% form action="/api/signup" %}
-- Name
-- Email
-
-> What interests you? (multiple)
-
-- Web Design
-- Branding
-- Consulting
-- Development
-
-> Preferred contact method
-
-- Email
-- Phone
-- No preference
-
-**Sign Up**
-{% /form %}
-`````
+{% preview source=true %}
 
 {% form action="/api/signup" %}
 - Name
@@ -108,24 +70,22 @@ A blockquote followed by a list creates a selection group. With 4 or fewer optio
 
 **Sign Up**
 {% /form %}
+
+{% /preview %}
 
 ## Style variants
 
 Use the `style` attribute to change the layout.
 
-`````markdoc
-{% form action="/api/subscribe" style="inline" %}
-- Email (placeholder: "you@example.com")
-
-**Subscribe**
-{% /form %}
-`````
+{% preview source=true %}
 
 {% form action="/api/subscribe" style="inline" %}
 - Email (placeholder: "you@example.com")
 
 **Subscribe**
 {% /form %}
+
+{% /preview %}
 
 ### Attributes
 

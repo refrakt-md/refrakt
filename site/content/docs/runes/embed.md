@@ -11,25 +11,23 @@ Embed external content from popular platforms. URLs are automatically detected a
 
 Pass a URL and optional title to embed content from a supported provider.
 
-```markdoc
-{% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
-```
+{% preview source=true %}
 
 {% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Example video" /%}
+
+{% /preview %}
 
 ## With fallback content
 
 Children become fallback content displayed when the embed cannot load.
 
-```markdoc
-{% embed url="https://example.com/video" %}
-Video could not be loaded. [Watch on the original site](https://example.com/video).
-{% /embed %}
-```
+{% preview source=true %}
 
 {% embed url="https://example.com/video" %}
 Video could not be loaded. [Watch on the original site](https://example.com/video).
 {% /embed %}
+
+{% /preview %}
 
 ### Supported providers
 

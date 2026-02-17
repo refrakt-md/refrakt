@@ -59,6 +59,7 @@ export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from
 export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
 export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
+export { Preview, PreviewComponent } from './schema/preview.js';
 
 // Theme system types
 export type {

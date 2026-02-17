@@ -11,32 +11,7 @@ Transform Markdown into structured comparison matrices. Headings become columns,
 
 Each `##` heading defines a column. Bold text at the start of list items serves as alignment keys — items with the same bold label across columns appear in the same row.
 
-`````markdoc
-{% comparison title="Choosing a Framework" %}
-
-## SvelteKit
-
-- **Learning curve** — Low, intuitive template syntax
-- **Bundle size** — Compiles away the framework
-- **SSR** — Built-in with adapter system
-- **TypeScript** — First-class support
-
-## Next.js
-
-- **Learning curve** — Moderate, React knowledge required
-- **Bundle size** — Medium, React runtime included
-- **SSR** — Built-in with multiple strategies
-- **TypeScript** — First-class support
-
-## Astro
-
-- **Learning curve** — Low, HTML-first approach
-- **Bundle size** — Zero JS by default
-- **SSR** — Built-in, island architecture
-- **TypeScript** — First-class support
-
-{% /comparison %}
-`````
+{% preview source=true %}
 
 {% comparison title="Choosing a Framework" %}
 
@@ -62,37 +37,14 @@ Each `##` heading defines a column. Bold text at the start of list items serves 
 - **TypeScript** — First-class support
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Highlighted column
 
 Use the `highlighted` attribute to visually emphasize a recommended column. Add `verdict` for a summary below the comparison.
 
-`````markdoc
-{% comparison highlighted="refrakt.md" verdict="refrakt.md gives you the power of AI without sacrificing ownership or portability." %}
-
-## refrakt.md
-
-- **Content ownership** — Your content stays yours, portable Markdown
-- **Theme system** — Switch themes instantly, same content renders differently
-- **Output** — Real SvelteKit, not proprietary runtime
-- **AI role** — AI generates reusable themes, not throwaway sites
-
-## Wix AI
-
-- **Content ownership** — ~~Content locked in Wix platform~~
-- **Theme system** — ~~Templates only~~, no real theme swapping
-- **Output** — Proprietary Wix runtime
-- **AI role** — AI generates a single site layout
-
-## Framer AI
-
-- **Content ownership** — ~~Content lives in Framer~~
-- **Theme system** — ~~Visual-first~~, design tool not content system
-- **Output** — Framer runtime
-- **AI role** — AI assists with layout and copy
-
-{% /comparison %}
-`````
+{% preview source=true %}
 
 {% comparison highlighted="refrakt.md" verdict="refrakt.md gives you the power of AI without sacrificing ownership or portability." %}
 
@@ -118,37 +70,14 @@ Use the `highlighted` attribute to visually emphasize a recommended column. Add 
 - **AI role** — AI assists with layout and copy
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Cards layout
 
 Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or when columns have different content lengths.
 
-`````markdoc
-{% comparison highlighted="Pro" layout="cards" %}
-
-## Free
-
-- **Projects** — 1
-- **AI generations** — 5 per month
-- **Themes** — Community only
-- **Support** — Community forum
-
-## Pro
-
-- **Projects** — Unlimited
-- **AI generations** — Unlimited
-- **Themes** — Community + Premium
-- **Support** — Priority email
-
-## Team
-
-- **Projects** — Unlimited
-- **AI generations** — Unlimited
-- **Themes** — All + private library
-- **Support** — Dedicated Slack
-
-{% /comparison %}
-`````
+{% preview source=true %}
 
 {% comparison highlighted="Pro" layout="cards" %}
 
@@ -174,6 +103,8 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 - **Support** — Dedicated Slack
 
 {% /comparison %}
+
+{% /preview %}
 
 ## Attributes
 

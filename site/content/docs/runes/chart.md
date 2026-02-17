@@ -11,16 +11,7 @@ Turns a Markdown table into a chart. The first column becomes axis labels, the h
 
 The default chart type displays data as vertical bars.
 
-```markdoc
-{% chart type="bar" title="Monthly Revenue" %}
-| Month | Revenue | Expenses |
-|-------|---------|----------|
-| Jan   | 4200    | 3100     |
-| Feb   | 5100    | 3400     |
-| Mar   | 4800    | 3200     |
-| Apr   | 6200    | 3800     |
-{% /chart %}
-```
+{% preview source=true %}
 
 {% chart type="bar" title="Monthly Revenue" %}
 | Month | Revenue | Expenses |
@@ -30,21 +21,14 @@ The default chart type displays data as vertical bars.
 | Mar   | 4800    | 3200     |
 | Apr   | 6200    | 3800     |
 {% /chart %}
+
+{% /preview %}
 
 ## Line chart
 
 Use `type="line"` for trend data.
 
-```markdoc
-{% chart type="line" title="User Growth" %}
-| Quarter | Users |
-|---------|-------|
-| Q1 2024 | 1000  |
-| Q2 2024 | 2500  |
-| Q3 2024 | 5000  |
-| Q4 2024 | 8500  |
-{% /chart %}
-```
+{% preview source=true %}
 
 {% chart type="line" title="User Growth" %}
 | Quarter | Users |
@@ -54,6 +38,8 @@ Use `type="line"` for trend data.
 | Q3 2024 | 5000  |
 | Q4 2024 | 8500  |
 {% /chart %}
+
+{% /preview %}
 
 ### Attributes
 

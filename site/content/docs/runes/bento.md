@@ -11,25 +11,7 @@ Magazine-style bento grid. Heading levels determine cell size — larger heading
 
 Headings split content into grid cells. h2 = large (2x2), h3 = medium (2x1), h4+ = small (1x1).
 
-```markdoc
-{% bento headingLevel=2 columns=4 %}
-## Featured Article
-
-This cell spans 2 columns and 2 rows, making it the hero of the grid.
-
-### Quick Update
-
-A medium cell spanning 2 columns.
-
-#### Tip of the Day
-
-Small cells are great for bite-sized content.
-
-#### Did You Know?
-
-Another small cell sits neatly in the grid.
-{% /bento %}
-```
+{% preview source=true %}
 
 {% bento headingLevel=2 columns=4 %}
 ## Featured Article
@@ -48,6 +30,8 @@ Small cells are great for bite-sized content.
 
 Another small cell sits neatly in the grid.
 {% /bento %}
+
+{% /preview %}
 
 ### Attributes
 
