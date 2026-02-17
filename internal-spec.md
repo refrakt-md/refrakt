@@ -103,7 +103,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Generated routes** (blog indexes, tag pages, RSS feeds) | Manifest `routeRules` can declare `generated` but nothing processes it. |
 | **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
 | **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
-| **Reference rune** (`{% reference %}` for code documentation) | Not implemented. |
+| **Symbol rune** (`{% symbol %}` for code documentation) | Documents code constructs (functions, classes, interfaces, enums) using Markdown reinterpretation. Full spec: `planning/rune-symbol.md` |
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI authoring modes** (draft, review, enhance, transform) | Write mode exists with single-file and multi-file (`-d`) support. `modes/` architecture established. Four additional modes designed but not implemented. See Section 13. |
@@ -581,7 +581,8 @@ This section captures the current priority order. Update it as things change.
 - ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
 - AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
-- Quiz, poll/survey, reference rune implementations
+- Quiz, poll/survey rune implementations
+- Symbol rune (`{% symbol %}`) for code documentation (see `planning/rune-symbol.md`)
 - ~~Language server (Phase 9b)~~ -- DONE (`packages/language-server/`, completion + hover + diagnostics, 58 tests)
 
 **Long term:**
