@@ -90,5 +90,6 @@
 		regions={page.regions}
 		renderable={page.renderable}
 		pages={page.pages}
+		url={page.url}
 	/>
 {/if}
