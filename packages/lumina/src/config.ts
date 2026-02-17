@@ -233,10 +233,7 @@ export const luminaConfig: ThemeConfig = {
 			block: 'form',
 			modifiers: { style: { source: 'meta', default: 'stacked' } },
 		},
-		FormField: {
-			block: 'form-field',
-			modifiers: { fieldType: { source: 'meta', default: 'text' } },
-		},
+		FormField: { block: 'form-field' },
 		Reveal: { block: 'reveal' },
 		RevealStep: { block: 'reveal-step' },
 		Diagram: { block: 'diagram' },
