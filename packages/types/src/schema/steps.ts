@@ -23,6 +23,8 @@ export interface StepComponent extends ComponentType<Step> {
   tag: 'li',
   properties: {
     name: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6',
+    split: 'meta',
+    mirror: 'meta',
   },
   refs: {}
 }

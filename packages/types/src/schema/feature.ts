@@ -22,6 +22,8 @@ export class Feature extends PageSection {
 
 export interface FeatureProperties extends PageSectionProperties {
   featureItem: 'div',
+  split: 'meta',
+  mirror: 'meta',
 }
 
 export interface FeatureComponent extends ComponentType<Feature> {

@@ -3,7 +3,7 @@ import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag, Ast } = Markdoc;
 import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
-import { group, Model } from '../lib/index.js';
+import { attribute, group, Model } from '../lib/index.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { SplitablePageSectionModel, pageSectionProperties } from './common.js';
@@ -53,6 +53,12 @@ export class DefinitionModel extends Model {
 export const definition = createSchema(DefinitionModel);
 
 class FeatureModel extends SplitablePageSectionModel {
+  @attribute({ type: Boolean, required: false })
+  split: boolean = false;
+
+  @attribute({ type: Boolean, required: false })
+  mirror: boolean = false;
+
   @group({ section: 0, include: ['heading', 'paragraph'] })
   header: NodeStream;
 
@@ -79,20 +85,24 @@ class FeatureModel extends SplitablePageSectionModel {
     const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
     const showcaseContent = side.wrap('div');
 
+    const splitMeta = this.split ? new Tag('meta', { content: 'split' }) : undefined;
+    const mirrorMeta = this.mirror ? new Tag('meta', { content: 'mirror' }) : undefined;
+
     const children = [
+      ...(splitMeta ? [splitMeta] : []),
+      ...(mirrorMeta ? [mirrorMeta] : []),
       mainContent.next(),
       ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
-    ].filter(Boolean);
-
-    const cls = [this.split && 'split', this.mirror && 'mirror'].filter(Boolean).join(' ') || undefined;
+    ];
 
     return createComponentRenderable(schema.Feature, {
       tag: 'section',
       property: 'contentSection',
-      class: cls,
       properties: {
         ...pageSectionProperties(header),
         featureItem: definitions.flatten().tag('div'),
+        split: splitMeta,
+        mirror: mirrorMeta,
       },
       refs: {
         body: mainContent,

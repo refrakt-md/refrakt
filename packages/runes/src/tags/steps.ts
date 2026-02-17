@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-const { Ast } = Markdoc;
+const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
 import { attribute, group, createComponentRenderable, createSchema } from '../lib/index.js';
@@ -38,6 +38,12 @@ class StepsModel extends SplitablePageSectionModel {
 }
 
 class StepModel extends SplitablePageSectionModel {
+  @attribute({ type: Boolean, required: false })
+  split: boolean = false;
+
+  @attribute({ type: Boolean, required: false })
+  mirror: boolean = false;
+
   @group({ section: 0 })
   main: NodeStream;
 
@@ -51,18 +57,22 @@ class StepModel extends SplitablePageSectionModel {
     const mainContent = main.wrap('div', { 'data-name': 'main' });
     const sideContent = side.wrap('div', { 'data-name': 'showcase' });
 
+    const splitMeta = this.split ? new Tag('meta', { content: 'split' }) : undefined;
+    const mirrorMeta = this.mirror ? new Tag('meta', { content: 'mirror' }) : undefined;
+
     const children = [
+      ...(splitMeta ? [splitMeta] : []),
+      ...(mirrorMeta ? [mirrorMeta] : []),
       mainContent.next(),
       ...(side.toArray().length > 0 ? [sideContent.next()] : []),
-    ].filter(Boolean);
-
-    const cls = [this.split && 'split', this.mirror && 'mirror'].filter(Boolean).join(' ') || undefined;
+    ];
 
     return createComponentRenderable(schema.Step, {
       tag: 'li',
-      class: cls,
       properties: {
         name: name(main),
+        split: splitMeta,
+        mirror: mirrorMeta,
       },
       children,
     });
