@@ -43,6 +43,11 @@
 		menuOpen = false;
 		navOpen = false;
 	});
+
+	// Lock body scroll when a panel is open
+	$effect(() => {
+		document.body.style.overflow = (menuOpen || navOpen) ? 'hidden' : '';
+	});
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -101,7 +106,7 @@
 
 <!-- Mobile nav panel -->
 {#if navOpen}
-	<div class="mobile-panel" role="dialog" aria-label="Page navigation">
+	<div class="mobile-panel mobile-panel--nav" role="dialog" aria-label="Page navigation">
 		<div class="mobile-panel-header">
 			<span class="mobile-panel-title">Navigation</span>
 			<button class="mobile-panel-close" onclick={closeNav} aria-label="Close navigation">
@@ -164,14 +169,14 @@
 		height: 1.5rem;
 		width: auto;
 	}
-	.site-header-inner :global(p:last-child:not(:first-child)) {
+	.site-header-inner :global(p ~ p) {
 		font-size: 0.85rem;
 	}
-	.site-header-inner :global(p:last-child:not(:first-child) a) {
+	.site-header-inner :global(p ~ p a) {
 		margin-left: 1.5rem;
 		color: var(--color-muted);
 	}
-	.site-header-inner :global(p:last-child:not(:first-child) a:hover) {
+	.site-header-inner :global(p ~ p a:hover) {
 		color: var(--color-text);
 	}
 
@@ -327,7 +332,7 @@
 			position: static;
 		}
 		/* Hide desktop nav links in header */
-		.site-header-inner :global(p:last-child:not(:first-child)) {
+		.site-header-inner :global(p ~ p) {
 			display: none;
 		}
 		/* Show mobile menu button */
@@ -341,6 +346,10 @@
 		/* Show mobile toolbar on docs pages */
 		.mobile-toolbar {
 			display: flex;
+		}
+		/* Nav panel sits below header + toolbar */
+		.mobile-panel--nav {
+			top: 5.5rem;
 		}
 		/* Hide desktop sidebar */
 		.sidebar {

@@ -20,6 +20,11 @@
 		url;
 		menuOpen = false;
 	});
+
+	// Lock body scroll when panel is open
+	$effect(() => {
+		document.body.style.overflow = menuOpen ? 'hidden' : '';
+	});
 </script>
 
 <svelte:window onkeydown={onKeydown} />
@@ -88,14 +93,14 @@
 		height: 1.5rem;
 		width: auto;
 	}
-	.site-header-inner :global(p:last-child:not(:first-child)) {
+	.site-header-inner :global(p ~ p) {
 		font-size: 0.85rem;
 	}
-	.site-header-inner :global(p:last-child:not(:first-child) a) {
+	.site-header-inner :global(p ~ p a) {
 		margin-left: 1.5rem;
 		color: var(--color-muted);
 	}
-	.site-header-inner :global(p:last-child:not(:first-child) a:hover) {
+	.site-header-inner :global(p ~ p a:hover) {
 		color: var(--color-text);
 	}
 	.page-content {
@@ -179,7 +184,7 @@
 	}
 
 	@media (max-width: 768px) {
-		.site-header-inner :global(p:last-child:not(:first-child)) {
+		.site-header-inner :global(p ~ p) {
 			display: none;
 		}
 		.mobile-menu-btn {
