@@ -11,29 +11,7 @@ Pricing tables with tier comparison. Write natural markdown headings with `## Na
 
 Write pricing tiers as headings with a `Name — Price` pattern. Content below each heading becomes the tier body.
 
-```markdoc
-{% pricing %}
-# Plans
-
-Pick the plan that fits your needs.
-
-## Free — $0
-- 1 project
-- Community support
-- Basic analytics
-
-[Get started](/docs/getting-started)
-
-## Pro — $19/mo
-- Unlimited projects
-- Priority support
-- Advanced analytics
-
-[Start trial](/docs/getting-started)
-{% /pricing %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% pricing %}
 # Plans
@@ -61,34 +39,7 @@ Pick the plan that fits your needs.
 
 Use `{% tier %}` tags when you need full control over attributes like `featured` or `currency`.
 
-```markdoc
-{% pricing %}
-# Choose your plan
-
-{% tier name="Free" price="$0" %}
-- 1 project
-- Community support
-{% /tier %}
-
-{% tier name="Pro" price="$19" featured=true %}
-- Unlimited projects
-- Priority support
-- Advanced analytics
-
-[Start trial](/docs/getting-started)
-{% /tier %}
-
-{% tier name="Enterprise" price="Custom" %}
-- Custom integrations
-- Dedicated support
-- SLA guarantee
-
-[Contact us](/docs/getting-started)
-{% /tier %}
-{% /pricing %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% pricing %}
 # Choose your plan

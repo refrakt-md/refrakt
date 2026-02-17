@@ -58,7 +58,7 @@ The preview rune supports two ways to show source code alongside rendered output
 Add `source` to automatically extract the children's Markdoc text as the code view. No duplication needed -- the preview infers the source from what it renders.
 
 ```markdoc
-{% preview source %}
+{% preview source=true %}
 {% hint type="note" %}
 This is a note inside a preview.
 {% /hint %}

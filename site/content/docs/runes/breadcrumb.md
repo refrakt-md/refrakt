@@ -11,16 +11,7 @@ Navigation breadcrumbs from a list of links. Each linked item is a navigable bre
 
 A breadcrumb trail using the default `/` separator.
 
-```markdoc
-{% breadcrumb %}
-- [Home](/)
-- [Getting started](/docs/getting-started)
-- [Tabs](/docs/runes/tabs)
-- Breadcrumb
-{% /breadcrumb %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% breadcrumb %}
 - [Home](/)
@@ -35,15 +26,7 @@ A breadcrumb trail using the default `/` separator.
 
 Use the `separator` attribute to change the divider between items.
 
-```markdoc
-{% breadcrumb separator="›" %}
-- [Home](/)
-- [Getting started](/docs/getting-started)
-- Current page
-{% /breadcrumb %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% breadcrumb separator="›" %}
 - [Home](/)

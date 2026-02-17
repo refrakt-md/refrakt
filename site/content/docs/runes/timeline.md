@@ -11,23 +11,7 @@ Chronological events. Headings with a `date - label` pattern are automatically c
 
 Headings are parsed into date and label parts, with content below becoming the description.
 
-```markdoc
-{% timeline %}
-## 2023 - Founded
-
-The company was founded with a mission to simplify content authoring for developer teams.
-
-## 2024 - Public launch
-
-Released v1.0 with support for 15 semantic runes and two themes. Open-sourced the core framework.
-
-## 2025 - Community growth
-
-Reached 10,000 users and launched the plugin marketplace for custom runes.
-{% /timeline %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% timeline %}
 ## 2023 - Founded
@@ -49,19 +33,7 @@ Reached 10,000 users and launched the plugin marketplace for custom runes.
 
 Use `{% timeline-entry %}` tags for more control over date and label values.
 
-```markdoc
-{% timeline %}
-{% timeline-entry date="Q1 2024" label="Alpha release" %}
-Initial release to early testers.
-{% /timeline-entry %}
-
-{% timeline-entry date="Q3 2024" label="Beta release" %}
-Public beta with full documentation.
-{% /timeline-entry %}
-{% /timeline %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% timeline %}
 {% timeline-entry date="Q1 2024" label="Alpha release" %}

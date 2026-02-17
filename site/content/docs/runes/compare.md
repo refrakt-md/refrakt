@@ -11,23 +11,7 @@ Side-by-side code comparison. Each fenced code block becomes a labeled panel. La
 
 Panels are automatically labeled by their code block language.
 
-````markdoc
-{% compare %}
-```javascript
-function greet(name) {
-  return `Hello, ${name}!`;
-}
-```
-
-```typescript
-function greet(name: string): string {
-  return `Hello, ${name}!`;
-}
-```
-{% /compare %}
-````
-
-{% preview %}
+{% preview source=true %}
 
 {% compare %}
 ```javascript
@@ -49,19 +33,7 @@ function greet(name: string): string {
 
 Use the `labels` attribute to override the default language-based labels.
 
-````markdoc
-{% compare labels="Before, After" %}
-```javascript
-const data = fetch('/api').then(r => r.json());
-```
-
-```javascript
-const data = await fetch('/api').then(r => r.json());
-```
-{% /compare %}
-````
-
-{% preview %}
+{% preview source=true %}
 
 {% compare labels="Before, After" %}
 ```javascript

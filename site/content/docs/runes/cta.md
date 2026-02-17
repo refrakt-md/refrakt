@@ -11,18 +11,7 @@ A focused call-to-action block. Headings become the headline, paragraphs become 
 
 A headline with a description and action buttons.
 
-```markdoc
-{% cta %}
-# Get Started with refrakt.md
-
-Build structured content sites with semantic Markdown.
-
-- [Quick Start](/docs/getting-started)
-- [View on GitHub](https://github.com)
-{% /cta %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% cta %}
 # Get Started with refrakt.md
@@ -39,19 +28,7 @@ Build structured content sites with semantic Markdown.
 
 Code fences inside a CTA become copyable command blocks.
 
-````markdoc
-{% cta %}
-# Install refrakt.md
-
-Get up and running in seconds.
-
-```shell
-npm install @refrakt-md/runes
-```
-{% /cta %}
-````
-
-{% preview %}
+{% preview source=true %}
 
 {% cta %}
 # Install refrakt.md

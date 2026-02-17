@@ -11,13 +11,9 @@ Auto-generated table of contents from the headings on the current page.
 
 Place the self-closing tag where you want the table of contents to appear.
 
-```markdoc
-{% toc /%}
-```
-
 The table of contents below is generated from this page's own headings:
 
-{% preview %}
+{% preview source=true %}
 
 {% toc /%}
 

@@ -11,23 +11,7 @@ Comic/storyboard layout. Images become panels, following paragraphs become capti
 
 Each image starts a new panel. Text after the image becomes that panel's caption.
 
-```markdoc
-{% storyboard columns=3 %}
-![Panel 1](https://picsum.photos/seed/dawn/600/400)
-
-The journey begins.
-
-![Panel 2](https://picsum.photos/seed/forest/600/400)
-
-An unexpected discovery.
-
-![Panel 3](https://picsum.photos/seed/summit/600/400)
-
-The plot thickens...
-{% /storyboard %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% storyboard columns=3 %}
 ![Dawn](https://picsum.photos/seed/dawn/600/400)
@@ -49,13 +33,7 @@ The view from the top changes everything.
 
 Thick borders and slightly tilted panels give a comic book feel.
 
-```markdoc
-{% storyboard columns=3 style="comic" %}
-...
-{% /storyboard %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% storyboard columns=3 style="comic" %}
 ![Hero](https://picsum.photos/seed/hero/600/400)
@@ -77,13 +55,7 @@ Against all odds, a new dawn rises.
 
 White-framed panels with drop shadows, like pinned photos.
 
-```markdoc
-{% storyboard columns=2 style="polaroid" %}
-...
-{% /storyboard %}
-```
-
-{% preview %}
+{% preview source=true %}
 
 {% storyboard columns=2 style="polaroid" %}
 ![Coast](https://picsum.photos/seed/coast/600/400)
