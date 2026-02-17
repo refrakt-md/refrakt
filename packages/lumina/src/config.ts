@@ -237,5 +237,13 @@ export const luminaConfig: ThemeConfig = {
 		Reveal: { block: 'reveal' },
 		RevealStep: { block: 'reveal-step' },
 		Diagram: { block: 'diagram' },
+		Map: {
+			block: 'map',
+			modifiers: {
+				style: { source: 'meta', default: 'street' },
+				height: { source: 'meta', default: 'medium' },
+			},
+		},
+		MapPin: { block: 'map-pin' },
 	},
 };

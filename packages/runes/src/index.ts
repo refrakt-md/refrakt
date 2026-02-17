@@ -46,6 +46,7 @@ import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
+import { map, mapPin } from './tags/map.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -489,6 +490,20 @@ export const runes = {
     schema: comparisonRow,
     description: 'Individual row/cell within a comparison column',
     type: schema.ComparisonRow,
+  }),
+  map: defineRune({
+    name: 'map',
+    schema: map,
+    description: 'Interactive map visualization from Markdown lists of locations with pins, routes, and grouped layers',
+    reinterprets: { list: 'location pins or route waypoints', heading: 'pin group label', strong: 'pin name', em: 'pin description', link: 'pin click URL' },
+    seoType: 'Place',
+    type: schema.Map,
+  }),
+  'map-pin': defineRune({
+    name: 'map-pin',
+    schema: mapPin,
+    description: 'Individual map pin with location data',
+    type: schema.MapPin,
   }),
 };
 

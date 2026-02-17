@@ -70,6 +70,8 @@ import {
   Comparison, ComparisonComponent,
   ComparisonColumn, ComparisonColumnComponent,
   ComparisonRow, ComparisonRowComponent,
+  Map, MapComponent,
+  MapPin, MapPinComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -157,4 +159,6 @@ export const schema = {
   Comparison: useSchema(Comparison).defineType<ComparisonComponent>('Comparison'),
   ComparisonColumn: useSchema(ComparisonColumn).defineType<ComparisonColumnComponent>('ComparisonColumn'),
   ComparisonRow: useSchema(ComparisonRow).defineType<ComparisonRowComponent>('ComparisonRow'),
+  Map: useSchema(Map).defineType<MapComponent>('Map'),
+  MapPin: useSchema(MapPin).defineType<MapPinComponent>('MapPin'),
 }
