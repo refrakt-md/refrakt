@@ -54,7 +54,7 @@ describe('refrakt plugin', () => {
 		}));
 
 		const plugin = refrakt({ configPath });
-		const result = (plugin.config as Function)() as any;
+		const result = (plugin.config as Function)({}, { command: 'serve' }) as any;
 
 		expect(result.ssr.noExternal).toContain('@markdoc/markdoc');
 		expect(result.ssr.noExternal).toContain('@refrakt-md/runes');
@@ -77,7 +77,7 @@ describe('refrakt plugin', () => {
 		}));
 
 		const plugin = refrakt({ configPath, noExternal: ['custom-package'] });
-		const result = (plugin.config as Function)() as any;
+		const result = (plugin.config as Function)({}, { command: 'serve' }) as any;
 
 		expect(result.ssr.noExternal).toContain('custom-package');
 
@@ -95,7 +95,7 @@ describe('refrakt plugin', () => {
 
 		const plugin = refrakt({ configPath });
 		// Call config first to load the config
-		(plugin.config as Function)();
+		(plugin.config as Function)({}, { command: 'serve' });
 
 		expect((plugin.resolveId as Function)('virtual:refrakt/theme'))
 			.toBe('\0virtual:refrakt/theme');
@@ -116,7 +116,7 @@ describe('refrakt plugin', () => {
 
 		const plugin = refrakt({ configPath });
 		// Call config first to load the config
-		(plugin.config as Function)();
+		(plugin.config as Function)({}, { command: 'serve' });
 
 		expect((plugin.load as Function)('\0virtual:refrakt/theme'))
 			.toBe("export { theme } from '@refrakt-md/lumina/sveltekit';");

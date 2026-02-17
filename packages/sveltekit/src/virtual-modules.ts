@@ -16,7 +16,17 @@ export function resolveVirtualId(id: string): string | undefined {
 	return undefined;
 }
 
-export function loadVirtualModule(id: string, config: RefraktConfig): string | undefined {
+/** Build-time context for CSS tree-shaking */
+export interface BuildContext {
+	isBuild: boolean;
+	usedCssBlocks?: Set<string>;
+}
+
+export function loadVirtualModule(
+	id: string,
+	config: RefraktConfig,
+	buildCtx: BuildContext = { isBuild: false },
+): string | undefined {
 	const themeAdapter = `${config.theme}/${config.target}`;
 
 	if (id === `${RESOLVED_PREFIX}theme`) {
@@ -46,6 +56,15 @@ export function loadVirtualModule(id: string, config: RefraktConfig): string | u
 	}
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {
+		if (buildCtx.isBuild && buildCtx.usedCssBlocks) {
+			const theme = config.theme;
+			const lines = [`import '${theme}/base.css';`];
+			for (const block of [...buildCtx.usedCssBlocks].sort()) {
+				lines.push(`import '${theme}/styles/runes/${block}.css';`);
+			}
+			lines.push(`import '${themeAdapter}/aliases.css';`);
+			return lines.join('\n');
+		}
 		return `import '${themeAdapter}/tokens.css';`;
 	}
 

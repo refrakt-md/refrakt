@@ -5,5 +5,8 @@ import { luminaConfig } from './config.js';
 export { createTransform } from '@refrakt-md/transform';
 export type { ThemeConfig, RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 
+/** Lumina theme configuration — rune-to-BEM-block mappings, modifier sources, structural injection */
+export { luminaConfig } from './config.js';
+
 /** Lumina identity transform — adds BEM classes, consumes meta tags, enhances structure */
 export const identityTransform = createTransform(luminaConfig);

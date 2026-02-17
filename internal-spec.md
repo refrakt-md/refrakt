@@ -72,6 +72,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | Svelte Renderer | `packages/svelte/src/Renderer.svelte` | Recursive tree-to-DOM rendering with component dispatch via `typeof` attribute lookup. |
 | ThemeShell | `packages/svelte/src/ThemeShell.svelte` | Layout selection via route rules, SEO `<head>` injection (JSON-LD, OG, Twitter Card). |
 | Serialization layer | `packages/svelte/src/serialize.ts` | Converts Markdoc Tag class instances to plain serializable objects for SvelteKit load boundary. |
+| Content analysis | `packages/content/src/analyze.ts` | `collectRuneTypes()` tree walker + `analyzeRuneUsage()` for site-wide rune usage reports. Walks page renderables and layout regions. |
+| CSS tree-shaking | `packages/sveltekit/src/plugin.ts` | Build-time content analysis in `buildStart` hook. Resolves rune types to BEM blocks via theme config, checks CSS file existence, generates selective imports. Dev mode serves all CSS. |
 | SvelteKit Vite plugin | `packages/sveltekit/src/plugin.ts` | Virtual modules, content HMR, dev/build mode switching. |
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
 | Theme manifest | `packages/lumina/sveltekit/manifest.json` | Lumina SvelteKit adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
@@ -88,7 +90,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Production rendering** | Uses SvelteKit prerender via catch-all `[...slug]` route. Works, produces static HTML. | No explicit page file generation. No pre-processed route tree. Context is resolved at runtime via Svelte context, not at build time. Code splitting is framework-default, not rune-aware. |
 | **Rune self-description** | `RuneDescriptor` provides name, aliases, description, reinterprets map, seoType. | Attribute definitions (what attributes a rune accepts, their types, defaults) are embedded in Markdoc `Schema` objects and not exposed in a way that AI or themes can introspect at runtime. |
 | **Component registry** | Works: `typeof` attribute -> component lookup via Svelte context. | Flat lookup only. No `contextOverrides` for parent-based component switching. The manifest schema supports the field but nothing reads it. |
-| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. Per-rune CSS files (44) and dark mode tokens are in place. Blog layout with index page and article view. | No CSS tree-shaking (per-rune files exist but all are bundled regardless of usage). |
+| **Lumina theme** | Hand-crafted Svelte components for interactive runes. Identity transform handles static runes. Per-rune CSS files (44) and dark mode tokens are in place. Blog layout with index page and article view. CSS tree-shaking via build-time content analysis. | No critical CSS inlining. |
 
 ### Not Built
 
@@ -97,7 +99,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Multi-framework adapters** (Astro, Next.js, static HTML) | Currently SvelteKit-only. |
 | **React component set** | Only Svelte components exist. |
 | **Shared interactive behavior** (vanilla JS core modules) | Interactive logic is embedded in Svelte components, not factored out. |
-| **Rune tree-shaking / content analysis manifest** | No build step that scans content and produces a rune usage report. |
+| ~~**Rune tree-shaking / content analysis manifest**~~ | ~~No build step that scans content and produces a rune usage report.~~ DONE — `packages/content/src/analyze.ts` with `collectRuneTypes()` tree walker and `analyzeRuneUsage()`. Vite plugin runs analysis at `buildStart` and passes `usedCssBlocks` to virtual module for selective CSS imports. |
 | **Generated routes** (blog indexes, tag pages, RSS feeds) | Manifest `routeRules` can declare `generated` but nothing processes it. |
 | **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
 | **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
@@ -108,7 +110,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**Gemini provider**~~ | ~~Anthropic and Ollama exist. Gemini Flash planned as free cloud option.~~ DONE — `packages/ai/src/providers/gemini.ts` with `formatGeminiRequest()` + `parseGeminiSSE()`. Auto-detection: Anthropic > Gemini (`GOOGLE_API_KEY`) > Ollama. |
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
-| **CSS tree-shaking** | Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page. |
+| ~~**CSS tree-shaking**~~ | ~~Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page.~~ DONE — Build-time content analysis in `packages/sveltekit/src/plugin.ts` (`buildStart` hook). Virtual module generates selective CSS imports for only the rune blocks used in the site. Dev mode unchanged (all CSS for instant feedback). |
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 
@@ -138,8 +140,8 @@ This phase covers the work needed to make production output competitive with han
 
 - ~~Split Lumina CSS into per-rune files~~ -- DONE (44 files in `packages/lumina/styles/runes/`)
 - ~~Extract identity transform into `@refrakt-md/transform`~~ -- DONE
-- Content analysis step that produces a rune usage manifest per page
-- Rune-level CSS tree-shaking based on the usage manifest
+- ~~Content analysis step that produces a rune usage manifest per page~~ -- DONE (`packages/content/src/analyze.ts`)
+- ~~Rune-level CSS tree-shaking based on the usage manifest~~ -- DONE (Vite plugin `buildStart` hook + virtual module conditional CSS generation)
 - Per-page code splitting via pre-processed route generation (generate actual `+page.svelte` files)
 - ~~Context-aware styling via identity transform BEM modifiers~~ -- DONE (Hint, Feature, CallToAction in Lumina; 7 tests)
 - Context-aware component binding at build time (for cases needing different components, not just CSS)
@@ -569,12 +571,12 @@ This section captures the current priority order. Update it as things change.
 - ~~Context-aware BEM modifiers at the identity transform level~~ -- DONE
 - ~~Align Hero and CTA runes~~ -- DONE (Hero gains fence/Command + LinkItem support; CTA simplified to focused action block, split/showcase removed; unified action pattern across both)
 - Extend `contextModifiers` to more runes as styling needs emerge
-- CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page
+- ~~CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page~~ -- DONE
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
 
 **Medium term:**
-- Content analysis step (scan all content, produce rune usage manifest)
+- ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
 - AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey, reference rune implementations

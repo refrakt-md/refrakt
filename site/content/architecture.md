@@ -476,7 +476,7 @@ The Vite plugin (`@refrakt-md/sveltekit`) provides three virtual modules that de
 | Virtual Module | Provides |
 |---------------|----------|
 | `virtual:refrakt/theme` | The resolved theme object (component registry, layouts, manifest). Supports component overrides from `refrakt.config.json` |
-| `virtual:refrakt/tokens` | CSS import for the theme's design token file |
+| `virtual:refrakt/tokens` | CSS import for the theme's design tokens. In production builds, uses content analysis to include only the CSS for runes actually used in the site |
 | `virtual:refrakt/config` | The project configuration as a JSON module |
 
 The theme virtual module is particularly interesting. If the project defines component overrides in `refrakt.config.json`, the plugin generates import code that merges overrides into the base theme:
@@ -499,6 +499,9 @@ This produces a virtual module that imports the base theme, imports the override
 The full content pipeline flows through these stages:
 
 {% steps headingLevel=3 %}
+### Content analysis (build only)
+Scan all pages and layout regions to determine which rune types are used. Maps types to CSS blocks for tree-shaking.
+
 ### ContentTree
 Filesystem scan with deterministic ordering.
 

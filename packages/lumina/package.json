@@ -16,6 +16,7 @@
   "types": "dist/transform.d.ts",
   "exports": {
     ".": "./index.css",
+    "./base.css": "./base.css",
     "./transform": {
       "types": "./dist/transform.d.ts",
       "default": "./dist/transform.js"
@@ -27,11 +28,14 @@
       "svelte": "./sveltekit/index.ts",
       "default": "./sveltekit/index.ts"
     },
+    "./styles/runes/*.css": "./styles/runes/*.css",
     "./sveltekit/tokens.css": "./sveltekit/tokens.css",
+    "./sveltekit/aliases.css": "./sveltekit/aliases.css",
     "./sveltekit/manifest": "./sveltekit/manifest.json"
   },
   "files": [
     "dist",
+    "base.css",
     "index.css",
     "tokens",
     "styles",
