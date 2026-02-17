@@ -1,0 +1,69 @@
+/* ──────────────────────────────────────────────
+   Lumina Theme — Token Aliases
+   Maps --rf-* design tokens to legacy --* names
+   for existing Svelte components.
+   ────────────────────────────────────────────── */
+
+:root {
+	/* Typography */
+	--font-sans: var(--rf-font-sans);
+	--font-mono: var(--rf-font-mono);
+
+	/* Primary scale */
+	--color-primary-50: var(--rf-color-primary-50);
+	--color-primary-100: var(--rf-color-primary-100);
+	--color-primary-200: var(--rf-color-primary-200);
+	--color-primary-300: var(--rf-color-primary-300);
+	--color-primary-400: var(--rf-color-primary-400);
+	--color-primary-500: var(--rf-color-primary-500);
+	--color-primary-600: var(--rf-color-primary-600);
+	--color-primary-700: var(--rf-color-primary-700);
+	--color-primary-800: var(--rf-color-primary-800);
+	--color-primary-900: var(--rf-color-primary-900);
+	--color-primary-950: var(--rf-color-primary-950);
+
+	/* Core palette */
+	--color-text: var(--rf-color-text);
+	--color-muted: var(--rf-color-muted);
+	--color-border: var(--rf-color-border);
+	--color-bg: var(--rf-color-bg);
+	--color-primary: var(--rf-color-primary);
+	--color-primary-hover: var(--rf-color-primary-hover);
+
+	/* Surfaces */
+	--color-surface: var(--rf-color-surface);
+	--color-surface-hover: var(--rf-color-surface-hover);
+	--color-surface-active: var(--rf-color-surface-active);
+	--color-surface-raised: var(--rf-color-surface-raised);
+
+	/* Semantic */
+	--color-info: var(--rf-color-info);
+	--color-info-bg: var(--rf-color-info-bg);
+	--color-info-border: var(--rf-color-info-border);
+	--color-warning: var(--rf-color-warning);
+	--color-warning-bg: var(--rf-color-warning-bg);
+	--color-warning-border: var(--rf-color-warning-border);
+	--color-danger: var(--rf-color-danger);
+	--color-danger-bg: var(--rf-color-danger-bg);
+	--color-danger-border: var(--rf-color-danger-border);
+	--color-success: var(--rf-color-success);
+	--color-success-bg: var(--rf-color-success-bg);
+	--color-success-border: var(--rf-color-success-border);
+
+	/* Radii */
+	--radius-sm: var(--rf-radius-sm);
+	--radius-md: var(--rf-radius-md);
+	--radius-lg: var(--rf-radius-lg);
+	--radius-full: var(--rf-radius-full);
+
+	/* Shadows */
+	--shadow-xs: var(--rf-shadow-xs);
+	--shadow-sm: var(--rf-shadow-sm);
+	--shadow-md: var(--rf-shadow-md);
+	--shadow-lg: var(--rf-shadow-lg);
+
+	/* Code block */
+	--color-code-bg: var(--rf-color-code-bg);
+	--color-code-text: var(--rf-color-code-text);
+	--color-inline-code-bg: var(--rf-color-inline-code-bg);
+}
