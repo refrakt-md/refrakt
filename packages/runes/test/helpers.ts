@@ -6,7 +6,7 @@ import { tags, nodes, extractHeadings } from '../src/index.js';
 export function parse(content: string, variables: Record<string, any> = {}) {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: '/test.md', headings, ...variables } };
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: '/test.md', headings, __source: content, ...variables } };
   return Markdoc.transform(ast, config);
 }
 

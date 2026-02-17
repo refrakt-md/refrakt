@@ -51,23 +51,37 @@ The theme toggle scopes CSS custom properties to the preview canvas, so child co
 
 ## Source code toggle
 
-Add a fenced code block as a direct child of the preview to enable a code/preview toggle. The first fence becomes the "source" view; everything else is the "preview" view.
+The preview rune supports two ways to show source code alongside rendered output.
 
-````markdoc
-{% preview title="Hint example" %}
+### Auto-inferred source
+
+Add `source` to automatically extract the children's Markdoc text as the code view. No duplication needed -- the preview infers the source from what it renders.
+
 ```markdoc
-{% hint type="note" %}
-This is a note inside a preview.
-{% /hint %}
-```
-
+{% preview source %}
 {% hint type="note" %}
 This is a note inside a preview.
 {% /hint %}
 {% /preview %}
+```
+
+This is ideal for Markdoc documentation sites where the preview content IS the source code.
+
+### Explicit source
+
+Add a fenced code block as a direct child for full control over what the code view shows. The fence can be in any language -- JSX, Vue, HTML, or Markdoc. This is useful when documenting external frameworks where the source differs from the rendered preview.
+
+````markdoc
+{% preview title="Button" %}
+```jsx
+<Button variant="primary">Click me</Button>
+```
+
+![button preview](button.png)
+{% /preview %}
 ````
 
-The toolbar shows eye and code bracket icons when a source block is present. Click the code icon to see the syntax-highlighted source. The code can be in any language -- JSX, Vue, HTML, or Markdoc.
+If both a fence and `source` are present, the fence takes priority.
 
 ### Attributes
 
@@ -76,3 +90,4 @@ The toolbar shows eye and code bracket icons when a source block is present. Cli
 | `title` | `string` | -- | Optional label displayed in the toolbar |
 | `theme` | `"auto"` \| `"light"` \| `"dark"` | `"auto"` | Initial theme mode (user can toggle) |
 | `width` | `"narrow"` \| `"medium"` \| `"wide"` \| `"full"` | `"wide"` | Canvas width control |
+| `source` | `boolean` | `false` | Auto-infer source code from children's Markdoc text |

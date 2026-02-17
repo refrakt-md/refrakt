@@ -76,6 +76,64 @@ A paragraph.
 		expect(allPres[0].attributes.property).toBe('source');
 	});
 
+	it('should auto-infer source from children when source=true', () => {
+		const content = `{% preview source=true %}
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		expect(preview).toBeDefined();
+
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		expect(source).toBeDefined();
+		expect(source!.attributes['data-language']).toBe('markdoc');
+
+		const code = findTag(source!, t => t.name === 'code');
+		expect(code).toBeDefined();
+		expect(code!.children[0]).toContain('{% hint type="note" %}');
+		expect(code!.children[0]).toContain('{% /hint %}');
+		// Should NOT include the preview open/close tags
+		expect(code!.children[0]).not.toContain('{% preview');
+		expect(code!.children[0]).not.toContain('{% /preview');
+	});
+
+	it('should not auto-infer source when source=false (default)', () => {
+		const result = parse(`{% preview %}
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		expect(source).toBeUndefined();
+	});
+
+	it('should prefer fence over auto-infer when both are present', () => {
+		const content = `{% preview source=true %}
+\`\`\`jsx
+<Button />
+\`\`\`
+
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		expect(source).toBeDefined();
+		// Fence wins — language is jsx, not markdoc
+		expect(source!.attributes['data-language']).toBe('jsx');
+
+		const code = findTag(source!, t => t.name === 'code');
+		expect(code!.children[0]).toContain('<Button />');
+	});
+
 	it('should only extract the first fence, leaving nested fences intact', () => {
 		const result = parse(`{% preview %}
 \`\`\`markdoc

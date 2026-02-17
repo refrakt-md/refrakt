@@ -31,7 +31,7 @@ export interface SitePage {
 function transformContent(content: string, path: string): RenderableTreeNodes {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path, headings } };
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path, headings, __source: content } };
   return Markdoc.transform(ast, config);
 }
 

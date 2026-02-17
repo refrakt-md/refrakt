@@ -13,8 +13,11 @@ class PreviewModel extends Model {
 	@attribute({ type: String, required: false, matches: ['narrow', 'medium', 'wide', 'full'] })
 	width: string = 'wide';
 
+	@attribute({ type: Boolean, required: false })
+	source: boolean = false;
+
 	transform() {
-		// Extract first direct fence child as source for code/preview toggle
+		// 1. Extract first direct fence child as source (fence always wins)
 		const fenceIdx = this.node.children.findIndex(c => c.type === 'fence');
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
 		if (fenceIdx !== -1) {
@@ -23,6 +26,22 @@ class PreviewModel extends Model {
 			sourcePre = new Tag('pre', { 'data-language': lang }, [
 				new Tag('code', { 'data-language': lang }, [fence.attributes.content])
 			]) as Markdoc.Tag<'pre'>;
+		}
+
+		// 2. Auto-infer from children source (fallback when no fence)
+		if (!sourcePre && this.source) {
+			const raw = this.config.variables?.__source;
+			if (typeof raw === 'string' && this.node.lines?.length >= 2) {
+				const allLines = raw.split('\n');
+				const start = this.node.lines[0] + 1;
+				const end = this.node.lines[this.node.lines.length - 1] - 1;
+				const childSource = allLines.slice(start, end).join('\n').trim();
+				if (childSource) {
+					sourcePre = new Tag('pre', { 'data-language': 'markdoc' }, [
+						new Tag('code', { 'data-language': 'markdoc' }, [childSource])
+					]) as Markdoc.Tag<'pre'>;
+				}
+			}
 		}
 
 		const children = this.transformChildren();

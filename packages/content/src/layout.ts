@@ -66,7 +66,7 @@ function findLayoutChain(
 function parseLayout(layoutPage: ContentPage): { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] {
   const { content } = parseFrontmatter(layoutPage.raw);
   const ast = Markdoc.parse(content);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: layoutPage.relativePath } };
+  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: layoutPage.relativePath, __source: content } };
   const rendered = Markdoc.transform(ast, config);
 
   const regions: { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] = [];
