@@ -16,16 +16,44 @@
 	let menuOpen = $state(false);
 	let navOpen = $state(false);
 
-	// Breadcrumb: derive category from URL segments after /docs/
-	const breadcrumb = $derived(() => {
-		const segments = (url || '').replace(/^\//, '').split('/');
-		// segments: ['docs', 'runes', 'breadcrumb'] or ['docs', 'getting-started']
-		if (segments.length <= 1) return { category: '', page: title };
-		// Skip 'docs', take first segment after as category
-		const category = segments[1] ? segments[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
-		if (segments.length <= 2) return { category: '', page: title };
-		return { category, page: title };
-	});
+	// Helpers to walk the serialized nav tree (same patterns as Nav.svelte)
+	function isTag(node: any): node is { $$mdtype: 'Tag'; name: string; attributes: Record<string, any>; children: any[] } {
+		return node !== null && typeof node === 'object' && !Array.isArray(node) && node.$$mdtype === 'Tag';
+	}
+
+	function getTextContent(node: any): string {
+		if (typeof node === 'string') return node;
+		if (typeof node === 'number') return String(node);
+		if (isTag(node)) return node.children.map(getTextContent).join('');
+		if (Array.isArray(node)) return node.map(getTextContent).join('');
+		return '';
+	}
+
+	// Build slug → group title map from nav region
+	function buildNavMap(content: any[]): Map<string, string> {
+		const map = new Map<string, string>();
+		function walk(nodes: any[], groupTitle: string) {
+			for (const node of nodes) {
+				if (!isTag(node)) continue;
+				if (node.attributes.typeof === 'NavGroup') {
+					const heading = node.children.find((c: any) => isTag(c) && /^h[1-6]$/.test(c.name));
+					walk(node.children, heading ? getTextContent(heading) : '');
+				} else if (node.attributes.typeof === 'NavItem') {
+					const slugSpan = node.children.find((c: any) => isTag(c) && c.name === 'span' && c.attributes.property === 'slug');
+					if (slugSpan && groupTitle) map.set(getTextContent(slugSpan), groupTitle);
+				} else if (node.children) {
+					walk(node.children, groupTitle);
+				}
+			}
+		}
+		walk(content, '');
+		return map;
+	}
+
+	// Breadcrumb: look up current page slug in nav group headings
+	const pageSlug = $derived((url || '').split('/').filter(Boolean).pop() || '');
+	const navMap = $derived(regions.nav ? buildNavMap(regions.nav.content) : new Map());
+	const breadcrumbCategory = $derived(navMap.get(pageSlug) || '');
 
 	function closeMenu() { menuOpen = false; }
 
@@ -94,11 +122,11 @@
 			</svg>
 		</button>
 		<div class="mobile-toolbar-breadcrumb">
-			{#if breadcrumb().category}
-				<span class="breadcrumb-category">{breadcrumb().category}</span>
+			{#if breadcrumbCategory}
+				<span class="breadcrumb-category">{breadcrumbCategory}</span>
 				<span class="breadcrumb-sep">&rsaquo;</span>
 			{/if}
-			<span class="breadcrumb-page">{breadcrumb().page}</span>
+			<span class="breadcrumb-page">{title}</span>
 		</div>
 	</div>
 {/if}
