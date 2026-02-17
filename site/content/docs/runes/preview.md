@@ -49,6 +49,26 @@ Content rendered in dark mode by default.
 
 The theme toggle scopes CSS custom properties to the preview canvas, so child content inherits the selected theme without affecting the rest of the page.
 
+## Source code toggle
+
+Add a fenced code block as a direct child of the preview to enable a code/preview toggle. The first fence becomes the "source" view; everything else is the "preview" view.
+
+````markdoc
+{% preview title="Hint example" %}
+```markdoc
+{% hint type="note" %}
+This is a note inside a preview.
+{% /hint %}
+```
+
+{% hint type="note" %}
+This is a note inside a preview.
+{% /hint %}
+{% /preview %}
+````
+
+The toolbar shows eye and code bracket icons when a source block is present. Click the code icon to see the syntax-highlighted source. The code can be in any language -- JSX, Vue, HTML, or Markdoc.
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

@@ -39,6 +39,22 @@
 	letter-spacing: 0.05em;
 }
 
+/* Controls container (view toggle + theme toggle) */
+.rf-preview__controls {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* View toggle pill (code/preview) */
+.rf-preview__view-toggle {
+	display: flex;
+	gap: 0.125rem;
+	background: var(--rf-color-surface-active);
+	border-radius: var(--rf-radius-full);
+	padding: 0.125rem;
+}
+
 /* Theme toggle pill */
 .rf-preview__toggle {
 	display: flex;
@@ -80,6 +96,18 @@
 }
 .rf-preview__canvas > *:last-child {
 	margin-bottom: 0;
+}
+
+/* Source code view */
+.rf-preview__source {
+	overflow: auto;
+}
+.rf-preview__source pre {
+	margin: 0;
+	border-radius: 0;
+}
+.rf-preview__source .rf-codeblock {
+	border-radius: 0;
 }
 
 /* Mobile: collapse all breakouts */

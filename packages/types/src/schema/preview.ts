@@ -12,6 +12,7 @@ export interface PreviewComponent extends ComponentType<Preview> {
 		title: 'meta',
 		theme: 'meta',
 		width: 'meta',
+		source: 'pre',
 	},
 	refs: {}
 }
