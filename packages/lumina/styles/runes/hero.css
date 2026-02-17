@@ -9,12 +9,17 @@
 .rf-hero__actions {
 	max-width: 720px;
 	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
 }
 .rf-hero--center {
 	text-align: center;
 }
 .rf-hero--center .rf-hero__actions {
 	margin: 0 auto;
+	justify-content: center;
 }
 .rf-hero--left {
 	text-align: left;
@@ -27,6 +32,16 @@
 }
 .rf-hero--right .rf-hero__actions {
 	margin: 0 0 0 auto;
+}
+.rf-hero__actions pre {
+	margin: 0;
+	padding: 0.7rem 1.75rem;
+	font-size: 0.95rem;
+	border-radius: var(--rf-radius-sm);
+	background: var(--rf-color-code-bg);
+	color: var(--rf-color-code-text);
+	border: 1px solid var(--rf-color-border);
+	white-space: nowrap;
 }
 .rf-hero h1 {
 	font-size: 3.25rem;
