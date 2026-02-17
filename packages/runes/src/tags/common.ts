@@ -2,13 +2,12 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { SpaceSeparatedNumberList } from '../attributes.js';
 import { attribute, createComponentRenderable, createSchema, Model } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export class SplitablePageSectionModel extends Model {
-  @attribute({ type: SpaceSeparatedNumberList, required: false })
-  split: number[] = [];
+  @attribute({ type: Boolean, required: false })
+  split: boolean = false;
 
   @attribute({ type: Boolean, required: false })
   mirror: boolean = false;

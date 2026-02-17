@@ -80,5 +80,5 @@ Verify everything works with `npm test`.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `headingLevel` | `number` | — | Convert headings at this level into steps |
-| `split` | `string` | — | Space-separated column sizes for split layout |
-| `mirror` | `boolean` | `false` | Mirror the split layout direction |
+| `split` | `boolean` | `false` | Enable two-column split layout |
+| `mirror` | `boolean` | `false` | Swap the column order |

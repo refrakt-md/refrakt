@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
+const { Ast } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
 import { attribute, group, createComponentRenderable, createSchema } from '../lib/index.js';
@@ -51,18 +51,16 @@ class StepModel extends SplitablePageSectionModel {
     const mainContent = main.wrap('div', { 'data-name': 'main' });
     const sideContent = side.wrap('div', { 'data-name': 'showcase' });
 
-    const splitMeta = this.split.length > 0
-      ? new Tag('meta', { property: 'split', content: this.split.join(' ') })
-      : null;
-
     const children = [
-      splitMeta,
       mainContent.next(),
       ...(side.toArray().length > 0 ? [sideContent.next()] : []),
     ].filter(Boolean);
 
+    const cls = [this.split && 'split', this.mirror && 'mirror'].filter(Boolean).join(' ') || undefined;
+
     return createComponentRenderable(schema.Step, {
       tag: 'li',
+      class: cls,
       properties: {
         name: name(main),
       },

@@ -5,10 +5,11 @@ import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
 import { group, Model } from '../lib/index.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 import { SplitablePageSectionModel, pageSectionProperties } from './common.js';
 
 export class DefinitionModel extends Model {
-  @group({ include: [{ node: 'paragraph', descendant: 'image' }, 'heading'] })
+  @group({ include: [{ node: 'paragraph', descendant: 'image' }, { node: 'paragraph', descendant: 'strong' }, 'heading'] })
   term: NodeStream;
 
   @group({ include: ['paragraph'] })
@@ -18,7 +19,10 @@ export class DefinitionModel extends Model {
     const dt = this.term
       .useNode('paragraph', node => {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
-        return Markdoc.transform(img ? img : node, this.config);
+        if (img) return Markdoc.transform(img, this.config);
+        const strong = Array.from(node.walk()).find(n => n.type === 'strong');
+        if (strong) return new Tag('span', {}, strong.transformChildren(this.config));
+        return Markdoc.transform(node, this.config);
       })
       .useNode('heading', node => {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
@@ -65,35 +69,34 @@ class FeatureModel extends SplitablePageSectionModel {
         return Markdoc.transform(new Ast.Node('tag', {}, node.children, 'definition'), config);
       })
       .useNode('list', (node, config) => {
-        return new Tag('dl', this.split.length > 0 ? {} : { 'data-layout': 'grid', 'data-columns': 3 }, node.transformChildren(config));
+        return new Tag('dl', this.split ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(config));
       })
       .transform();
 
     const side = this.showcase.transform();
-    const mainContent = header.concat(definitions).wrap('div', { 'data-name': 'main' });
-    const showcaseContent = side.wrap('div', { 'data-name': 'showcase' });
 
-    const splitMeta = this.split.length > 0
-      ? new Tag('meta', { property: 'split', content: this.split.join(' ') })
-      : null;
-    const mirrorMeta = this.mirror
-      ? new Tag('meta', { property: 'mirror', content: 'true' })
-      : null;
+    const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
+    const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
+    const showcaseContent = side.wrap('div');
 
     const children = [
-      splitMeta,
-      mirrorMeta,
       mainContent.next(),
       ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
     ].filter(Boolean);
 
+    const cls = [this.split && 'split', this.mirror && 'mirror'].filter(Boolean).join(' ') || undefined;
+
     return createComponentRenderable(schema.Feature, {
       tag: 'section',
       property: 'contentSection',
-      class: this.split.length > 0 ? 'split' : undefined,
+      class: cls,
       properties: {
         ...pageSectionProperties(header),
         featureItem: definitions.flatten().tag('div'),
+      },
+      refs: {
+        body: mainContent,
+        showcase: showcaseContent,
       },
       children,
     });

@@ -56,6 +56,9 @@
 	grid-template-columns: 1fr 1fr;
 	gap: 2rem;
 }
+.rf-step--mirror .rf-step__showcase {
+	order: -1;
+}
 .rf-step__showcase {
 	border-radius: var(--rf-radius-md);
 	overflow: hidden;

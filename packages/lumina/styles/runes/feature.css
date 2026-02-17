@@ -2,7 +2,7 @@
 .rf-feature {
 	padding: 2.5rem 0 2rem;
 }
-.rf-feature__main {
+.rf-feature__body {
 	display: contents;
 }
 .rf-feature h2 {
@@ -12,7 +12,11 @@
 .rf-feature--split {
 	display: grid;
 	align-items: center;
+	grid-template-columns: 1fr 1fr;
 	gap: 3rem;
+}
+.rf-feature--mirror .rf-feature__showcase {
+	order: -1;
 }
 .rf-feature--split h2 {
 	text-align: left;
@@ -31,19 +35,13 @@
 	border-radius: var(--rf-radius-md);
 	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-bg);
-	box-shadow: var(--rf-shadow-sm);
-	transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
-}
-.rf-feature-definition:hover {
-	box-shadow: var(--rf-shadow-lg);
-	border-color: var(--rf-color-surface-active);
-	transform: translateY(-2px);
 }
 .rf-feature-definition dt {
 	font-weight: 650;
 	font-size: 1.05rem;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.75rem;
 	letter-spacing: -0.01em;
+	color: var(--rf-color-text);
 }
 .rf-feature-definition dd {
 	margin: 0;
