@@ -60,6 +60,7 @@ export { Form, FormComponent, FormField, FormFieldComponent } from './schema/for
 export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
 export { Preview, PreviewComponent } from './schema/preview.js';
+export { Sandbox, SandboxComponent } from './schema/sandbox.js';
 
 // Theme system types
 export type {

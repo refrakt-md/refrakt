@@ -48,6 +48,7 @@ import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
 import { map, mapPin } from './tags/map.js';
 import { preview } from './tags/preview.js';
+import { sandbox } from './tags/sandbox.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -514,6 +515,13 @@ export const runes = {
     description: 'Component showcase with theme toggle and adjustable width for documentation and design systems',
     reinterprets: {},
     type: schema.Preview,
+  }),
+  sandbox: defineRune({
+    name: 'sandbox',
+    schema: sandbox,
+    description: 'Isolated HTML/CSS/JS rendering in an iframe with optional framework loading',
+    reinterprets: {},
+    type: schema.Sandbox,
   }),
 };
 

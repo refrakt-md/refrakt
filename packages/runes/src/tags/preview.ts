@@ -16,6 +16,9 @@ class PreviewModel extends Model {
 	@attribute({ type: Boolean, required: false })
 	source: boolean = false;
 
+	@attribute({ type: String, required: false })
+	responsive: string = '';
+
 	transform() {
 		// 1. Extract first direct fence child as source (fence always wins)
 		const fenceIdx = this.node.children.findIndex(c => c.type === 'fence');
@@ -49,11 +52,13 @@ class PreviewModel extends Model {
 		const titleMeta = this.title ? new Tag('meta', { content: this.title }) : undefined;
 		const themeMeta = new Tag('meta', { content: this.theme });
 		const widthMeta = new Tag('meta', { content: this.width });
+		const responsiveMeta = this.responsive ? new Tag('meta', { content: this.responsive }) : undefined;
 
 		const childNodes = [
 			...(titleMeta ? [titleMeta] : []),
 			themeMeta,
 			widthMeta,
+			...(responsiveMeta ? [responsiveMeta] : []),
 			...(sourcePre ? [sourcePre] : []),
 			...children.toArray(),
 		];
@@ -64,6 +69,7 @@ class PreviewModel extends Model {
 				...(titleMeta ? { title: titleMeta } : {}),
 				theme: themeMeta,
 				width: widthMeta,
+				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
 				...(sourcePre ? { source: sourcePre } : {}),
 			},
 			children: childNodes,

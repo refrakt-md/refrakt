@@ -1,0 +1,23 @@
+/* Sandbox — Isolated HTML/CSS/JS rendering via iframe */
+.rf-sandbox {
+	margin: 1.5rem 0;
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+}
+
+.rf-sandbox iframe {
+	display: block;
+	width: 100%;
+	border: none;
+}
+
+/* Static fallback (pre/code shown before hydration) */
+.rf-sandbox pre {
+	margin: 0;
+}
+
+/* When inside preview, remove sandbox margin */
+.rf-preview .rf-sandbox {
+	margin: 0;
+	border-radius: 0;
+}

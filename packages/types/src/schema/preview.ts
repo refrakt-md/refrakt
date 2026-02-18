@@ -4,6 +4,7 @@ export class Preview {
 	title: string = '';
 	theme: string = 'auto';
 	width: string = 'wide';
+	responsive: string = '';
 }
 
 export interface PreviewComponent extends ComponentType<Preview> {
@@ -13,6 +14,7 @@ export interface PreviewComponent extends ComponentType<Preview> {
 		theme: 'meta',
 		width: 'meta',
 		source: 'pre',
+		responsive: 'meta',
 	},
 	refs: {}
 }

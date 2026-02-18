@@ -134,6 +134,31 @@ A note.
 		expect(code!.children[0]).toContain('<Button />');
 	});
 
+	it('should emit responsive meta property when set', () => {
+		const result = parse(`{% preview responsive="mobile,tablet,desktop" %}
+Some content.
+{% /preview %}`);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		expect(preview).toBeDefined();
+
+		const responsiveMeta = findTag(preview!, t =>
+			t.name === 'meta' && t.attributes.property === 'responsive');
+		expect(responsiveMeta).toBeDefined();
+		expect(responsiveMeta!.attributes.content).toBe('mobile,tablet,desktop');
+	});
+
+	it('should not emit responsive meta when not set', () => {
+		const result = parse(`{% preview %}
+Some content.
+{% /preview %}`);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const responsiveMeta = findTag(preview!, t =>
+			t.name === 'meta' && t.attributes.property === 'responsive');
+		expect(responsiveMeta).toBeUndefined();
+	});
+
 	it('should only extract the first fence, leaving nested fences intact', () => {
 		const result = parse(`{% preview %}
 \`\`\`markdoc
