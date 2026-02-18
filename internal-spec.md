@@ -103,7 +103,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Generated routes** (blog indexes, tag pages, RSS feeds) | Manifest `routeRules` can declare `generated` but nothing processes it. |
 | **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
 | **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
-| **Symbol rune** (`{% symbol %}` for code documentation) | Documents code constructs (functions, classes, interfaces, enums) using Markdown reinterpretation. Full spec: `planning/rune-symbol.md` |
+| ~~**Symbol rune** (`{% symbol %}` for code documentation)~~ | ~~Documents code constructs (functions, classes, interfaces, enums) using Markdown reinterpretation. Full spec: `planning/rune-symbol.md`~~ DONE |
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI authoring modes** (draft, review, enhance, transform) | Write mode exists with single-file and multi-file (`-d`) support. `modes/` architecture established. Four additional modes designed but not implemented. See Section 13. |
@@ -111,7 +111,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
 | ~~**CSS tree-shaking**~~ | ~~Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page.~~ DONE — Build-time content analysis in `packages/sveltekit/src/plugin.ts` (`buildStart` hook). Virtual module generates selective CSS imports for only the rune blocks used in the site. Dev mode unchanged (all CSS for instant feedback). |
-| ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 48 snippets (68 prefixes with aliases), language configuration for bracket matching and folding. |
+| ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 50 snippets (70 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 | **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
 | ~~**Rune Inspector** (VS Code tree view)~~ | ~~Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor.~~ DONE — `packages/vscode/src/inspector.ts` (TreeDataProvider), `packages/language-server/src/providers/inspector.ts` (pipeline execution), custom LSP request `refrakt/inspectRune`. `serialize()` relocated from svelte to runes package. 10 tests. |
@@ -123,7 +123,7 @@ These are unresolved or partially resolved design questions. When working on fea
 
 ### Phase 1: Rune Library & Parser -- COMPLETE
 
-All 44+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
+All 45+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
 
 ### Phase 2: Layout & Routing -- COMPLETE
 
@@ -587,7 +587,7 @@ This section captures the current priority order. Update it as things change.
 - AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey rune implementations
-- Symbol rune (`{% symbol %}`) for code documentation (see `planning/rune-symbol.md`)
+- ~~Symbol rune (`{% symbol %}`) for code documentation (see `planning/rune-symbol.md`)~~ -- DONE
 - ~~Language server (Phase 9b)~~ -- DONE (`packages/language-server/`, completion + hover + diagnostics, 58 tests)
 
 **Long term:**

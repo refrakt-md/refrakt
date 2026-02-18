@@ -43,6 +43,7 @@
 - compare
 - diff
 - api
+- symbol
 - datatable
 - chart
 - diagram

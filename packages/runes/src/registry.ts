@@ -74,6 +74,9 @@ import {
   MapPin, MapPinComponent,
   Preview, PreviewComponent,
   Sandbox, SandboxComponent,
+  Symbol, SymbolComponent,
+  SymbolGroup, SymbolGroupComponent,
+  SymbolMember, SymbolMemberComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -165,4 +168,7 @@ export const schema = {
   MapPin: useSchema(MapPin).defineType<MapPinComponent>('MapPin'),
   Preview: useSchema(Preview).defineType<PreviewComponent>('Preview'),
   Sandbox: useSchema(Sandbox).defineType<SandboxComponent>('Sandbox'),
+  Symbol: useSchema(Symbol).defineType<SymbolComponent>('Symbol'),
+  SymbolGroup: useSchema(SymbolGroup).defineType<SymbolGroupComponent>('SymbolGroup'),
+  SymbolMember: useSchema(SymbolMember).defineType<SymbolMemberComponent>('SymbolMember'),
 }

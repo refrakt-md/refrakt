@@ -49,6 +49,7 @@ import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.j
 import { map, mapPin } from './tags/map.js';
 import { preview } from './tags/preview.js';
 import { sandbox } from './tags/sandbox.js';
+import { symbol, symbolGroup, symbolMember } from './tags/symbol.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -522,6 +523,26 @@ export const runes = {
     description: 'Isolated HTML/CSS/JS rendering in an iframe with optional framework loading',
     reinterprets: {},
     type: schema.Sandbox,
+  }),
+  symbol: defineRune({
+    name: 'symbol',
+    schema: symbol,
+    description: 'Code construct documentation for functions, classes, interfaces, enums, and type aliases',
+    reinterprets: { heading: 'construct name or member group', fence: 'type signature', list: 'parameter definitions', blockquote: 'returns/throws/deprecation' },
+    seoType: 'TechArticle',
+    type: schema.Symbol,
+  }),
+  'symbol-group': defineRune({
+    name: 'symbol-group',
+    schema: symbolGroup,
+    description: 'Member group within a class/interface symbol',
+    type: schema.SymbolGroup,
+  }),
+  'symbol-member': defineRune({
+    name: 'symbol-member',
+    schema: symbolMember,
+    description: 'Individual member within a symbol group',
+    type: schema.SymbolMember,
   }),
 };
 
