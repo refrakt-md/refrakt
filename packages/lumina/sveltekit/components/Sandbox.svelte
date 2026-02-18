@@ -66,6 +66,17 @@ ${renderedContent}
   });
   ro.observe(document.body);
 
+  // Sync .dark class with OS preference as default
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyOsTheme() {
+    if (!document.documentElement.hasAttribute('data-theme')) {
+      document.documentElement.classList.toggle('dark', mq.matches);
+    }
+  }
+  applyOsTheme();
+  mq.addEventListener('change', applyOsTheme);
+
+  // Listen for explicit theme from parent Preview
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'rf-sandbox-theme') {
       const theme = e.data.theme;
@@ -77,8 +88,8 @@ ${renderedContent}
         html.classList.remove('dark');
         html.setAttribute('data-theme', 'light');
       } else {
-        html.classList.remove('dark');
         html.removeAttribute('data-theme');
+        html.classList.toggle('dark', mq.matches);
       }
     }
   });
@@ -93,16 +104,6 @@ ${renderedContent}
 	onMount(() => {
 		mounted = true;
 
-		// Send current theme once iframe content has loaded
-		const sendTheme = () => {
-			if (previewTheme && iframeEl?.contentWindow) {
-				iframeEl.contentWindow.postMessage(
-					{ type: 'rf-sandbox-theme', theme: previewTheme.mode }, '*'
-				);
-			}
-		};
-		iframeEl?.addEventListener('load', sendTheme);
-
 		if (heightAttr === 'auto') {
 			const handler = (e: MessageEvent) => {
 				if (e.data?.type === 'rf-sandbox-resize' && e.source === iframeEl?.contentWindow) {
@@ -110,20 +111,31 @@ ${renderedContent}
 				}
 			};
 			window.addEventListener('message', handler);
-			return () => {
-				window.removeEventListener('message', handler);
-				iframeEl?.removeEventListener('load', sendTheme);
-			};
+			return () => window.removeEventListener('message', handler);
 		}
+	});
 
-		return () => iframeEl?.removeEventListener('load', sendTheme);
+	// Send theme to iframe once it loads (iframeEl is bound after mounted re-render)
+	$effect(() => {
+		if (!iframeEl || !previewTheme) return;
+
+		const sendTheme = () => {
+			iframeEl.contentWindow?.postMessage(
+				{ type: 'rf-sandbox-theme', theme: previewTheme.mode }, '*'
+			);
+		};
+
+		iframeEl.addEventListener('load', sendTheme);
+		return () => iframeEl.removeEventListener('load', sendTheme);
 	});
 
 	// Post theme changes to iframe when Preview toggle changes
 	$effect(() => {
-		if (!previewTheme || !mounted || !iframeEl?.contentWindow) return;
+		// Read theme first to always subscribe to changes
+		const theme = previewTheme?.mode;
+		if (!theme || !mounted || !iframeEl?.contentWindow) return;
 		iframeEl.contentWindow.postMessage(
-			{ type: 'rf-sandbox-theme', theme: previewTheme.mode }, '*'
+			{ type: 'rf-sandbox-theme', theme }, '*'
 		);
 	});
 </script>
