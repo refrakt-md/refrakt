@@ -203,8 +203,8 @@
 			</div>
 		</div>
 	</div>
-	{#if view === 'code' && hasSource}
-		<div class="rf-preview__source">
+	{#if hasSource}
+		<div class="rf-preview__source" hidden={view !== 'code'}>
 			{#if sandboxSourcePanels}
 				{#if sandboxSourcePanels.length > 1}
 					<div class="rf-preview__source-tabs">
@@ -222,22 +222,21 @@
 				<Renderer node={sourceNode} />
 			{/if}
 		</div>
-	{:else}
-		<div class="rf-preview__canvas" data-theme={resolvedTheme}>
-			{#if hasResponsive}
-				<div
-					class="rf-preview__viewport-frame"
-					class:rf-preview__viewport-frame--constrained={!!viewportWidth}
-					style={viewportWidth ? `max-width: ${viewportWidth}px` : ''}
-				>
-					{#if viewportWidth}
-						<span class="rf-preview__viewport-label">{VIEWPORT_PRESETS[activeViewport!].label}</span>
-					{/if}
-					<Renderer node={contentChildren} />
-				</div>
-			{:else}
-				<Renderer node={contentChildren} />
-			{/if}
-		</div>
 	{/if}
+	<div class="rf-preview__canvas" data-theme={resolvedTheme} hidden={view === 'code' && hasSource}>
+		{#if hasResponsive}
+			<div
+				class="rf-preview__viewport-frame"
+				class:rf-preview__viewport-frame--constrained={!!viewportWidth}
+				style={viewportWidth ? `max-width: ${viewportWidth}px` : ''}
+			>
+				{#if viewportWidth}
+					<span class="rf-preview__viewport-label">{VIEWPORT_PRESETS[activeViewport!].label}</span>
+				{/if}
+				<Renderer node={contentChildren} />
+			</div>
+		{:else}
+			<Renderer node={contentChildren} />
+		{/if}
+	</div>
 </div>
