@@ -7,6 +7,7 @@
 
 	let inputValue = $state('');
 	let messagesEl: HTMLElement;
+	let sidebarOpen = $state(false);
 
 	onMount(() => {
 		chat.init();
@@ -18,6 +19,33 @@
 		const msg = inputValue;
 		inputValue = '';
 		await chat.send(msg);
+	}
+
+	function handleNewChat() {
+		chat.newConversation();
+		sidebarOpen = false;
+	}
+
+	function handleSwitchConversation(id: string) {
+		chat.switchConversation(id);
+		sidebarOpen = false;
+	}
+
+	function handleDeleteConversation(e: MouseEvent, id: string) {
+		e.stopPropagation();
+		chat.deleteConversation(id);
+	}
+
+	function formatTime(timestamp: number): string {
+		const diff = Date.now() - timestamp;
+		const minutes = Math.floor(diff / 60000);
+		if (minutes < 1) return 'Just now';
+		if (minutes < 60) return `${minutes}m ago`;
+		const hours = Math.floor(minutes / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		if (days < 7) return `${days}d ago`;
+		return new Date(timestamp).toLocaleDateString();
 	}
 
 	$effect(() => {
@@ -35,81 +63,273 @@
 	{/if}
 </svelte:head>
 
-<div class="chat-container">
-	<header class="chat-header">
-		<h1>chat.refrakt.md</h1>
-	</header>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+{#if sidebarOpen}
+	<div class="sidebar-overlay" onclick={() => sidebarOpen = false} onkeydown={() => {}}></div>
+{/if}
 
-	<div class="messages" bind:this={messagesEl}>
-		{#if chat.messages.length === 0}
-			<div class="empty-state">
-				<p>Ask anything. Responses are rendered with rich, interactive runes.</p>
-				<p class="hint">Try: "Good pasta carbonara recipe?" or "Compare React vs Svelte"</p>
-			</div>
-		{/if}
+<div class="app-layout">
+	<aside class="sidebar" class:sidebar--open={sidebarOpen}>
+		<div class="sidebar__header">
+			<button class="new-chat-btn" onclick={handleNewChat}>
+				+ New Chat
+			</button>
+		</div>
+		<nav class="sidebar__list">
+			{#each chat.conversations as conv}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="conv-item"
+					class:conv-item--active={conv.id === chat.activeConversationId}
+					onclick={() => handleSwitchConversation(conv.id)}
+					onkeydown={() => {}}
+					role="button"
+					tabindex="0"
+				>
+					<span class="conv-item__title">{conv.title}</span>
+					<span class="conv-item__time">{formatTime(conv.updatedAt)}</span>
+					<button
+						class="conv-item__delete"
+						onclick={(e) => handleDeleteConversation(e, conv.id)}
+						title="Delete conversation"
+					>
+						&times;
+					</button>
+				</div>
+			{/each}
+			{#if chat.conversations.length === 0}
+				<p class="sidebar__empty">No conversations yet</p>
+			{/if}
+		</nav>
+	</aside>
 
-		{#each chat.messages as message}
-			<div class="message message--{message.role}">
-				{#if message.role === 'user'}
-					<div class="user-bubble">
-						<p>{message.content}</p>
-					</div>
-				{:else if message.error}
-					<div class="error-bubble">
-						<p>Error: {message.error}</p>
-					</div>
-				{:else if message.renderable}
-					<div class="assistant-content">
-						<Renderer node={message.renderable} />
-					</div>
-				{:else if message.content}
-					<div class="assistant-content">
-						<p class="raw-text">{message.content}</p>
-					</div>
-				{/if}
-			</div>
-		{/each}
+	<div class="chat-container">
+		<header class="chat-header">
+			<button class="menu-btn" onclick={() => sidebarOpen = !sidebarOpen} title="Toggle sidebar">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+					<path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+				</svg>
+			</button>
+			<h1>chat.refrakt.md</h1>
+		</header>
 
-		{#if chat.isThinking}
-			<div class="thinking-indicator">
-				<span class="dot"></span>
-				<span class="dot"></span>
-				<span class="dot"></span>
-			</div>
-		{/if}
+		<div class="messages" bind:this={messagesEl}>
+			{#if chat.messages.length === 0}
+				<div class="empty-state">
+					<p>Ask anything. Responses are rendered with rich, interactive runes.</p>
+					<p class="hint">Try: "Good pasta carbonara recipe?" or "Compare React vs Svelte"</p>
+				</div>
+			{/if}
+
+			{#each chat.messages as message}
+				<div class="message message--{message.role}">
+					{#if message.role === 'user'}
+						<div class="user-bubble">
+							<p>{message.content}</p>
+						</div>
+					{:else if message.error}
+						<div class="error-bubble">
+							<p>Error: {message.error}</p>
+						</div>
+					{:else if message.renderable}
+						<div class="assistant-content">
+							<Renderer node={message.renderable} />
+						</div>
+					{:else if message.content}
+						<div class="assistant-content">
+							<p class="raw-text">{message.content}</p>
+						</div>
+					{/if}
+				</div>
+			{/each}
+
+			{#if chat.isThinking}
+				<div class="thinking-indicator">
+					<span class="dot"></span>
+					<span class="dot"></span>
+					<span class="dot"></span>
+				</div>
+			{/if}
+		</div>
+
+		<form class="input-bar" onsubmit={handleSubmit}>
+			<input
+				type="text"
+				bind:value={inputValue}
+				placeholder="Ask something..."
+				disabled={chat.isStreaming}
+			/>
+			{#if chat.isStreaming}
+				<button type="button" class="cancel-btn" onclick={() => chat.cancel()}>
+					Cancel
+				</button>
+			{:else}
+				<button type="submit" disabled={!inputValue.trim()}>
+					Send
+				</button>
+			{/if}
+		</form>
 	</div>
-
-	<form class="input-bar" onsubmit={handleSubmit}>
-		<input
-			type="text"
-			bind:value={inputValue}
-			placeholder="Ask something..."
-			disabled={chat.isStreaming}
-		/>
-		{#if chat.isStreaming}
-			<button type="button" class="cancel-btn" onclick={() => chat.cancel()}>
-				Cancel
-			</button>
-		{:else}
-			<button type="submit" disabled={!inputValue.trim()}>
-				Send
-			</button>
-		{/if}
-	</form>
 </div>
 
 <style>
-	.chat-container {
+	.app-layout {
+		display: flex;
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	/* Sidebar */
+	.sidebar {
+		width: 260px;
+		min-width: 260px;
+		background: var(--rf-color-surface-alt, #f8fafc);
+		border-right: 1px solid var(--rf-color-border, #e2e8f0);
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
+		overflow: hidden;
+	}
+
+	.sidebar__header {
+		padding: 0.75rem;
+		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+	}
+
+	.new-chat-btn {
+		width: 100%;
+		padding: 0.5rem 0.75rem;
+		background: var(--rf-color-primary, #0ea5e9);
+		color: white;
+		border: none;
+		border-radius: 0.375rem;
+		font-size: 0.875rem;
+		font-family: inherit;
+		cursor: pointer;
+		transition: background 0.15s;
+	}
+
+	.new-chat-btn:hover {
+		background: var(--rf-color-primary-600, #0284c7);
+	}
+
+	.sidebar__list {
+		flex: 1;
+		overflow-y: auto;
+		padding: 0.5rem;
+	}
+
+	.sidebar__empty {
+		text-align: center;
+		color: var(--rf-color-text-muted, #94a3b8);
+		font-size: 0.8125rem;
+		padding: 1rem;
+	}
+
+	.conv-item {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		width: 100%;
+		padding: 0.5rem 0.625rem;
+		margin-bottom: 2px;
+		background: transparent;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+		text-align: left;
+		font-family: inherit;
+		color: inherit;
+		transition: background 0.1s;
+		position: relative;
+	}
+
+	.conv-item:hover {
+		background: var(--rf-color-border, #e2e8f0);
+	}
+
+	.conv-item--active {
+		background: var(--rf-color-primary-100, #e0f2fe);
+	}
+
+	.conv-item--active:hover {
+		background: var(--rf-color-primary-100, #e0f2fe);
+	}
+
+	.conv-item__title {
+		flex: 1;
+		font-size: 0.8125rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
+	}
+
+	.conv-item__time {
+		font-size: 0.6875rem;
+		color: var(--rf-color-text-muted, #94a3b8);
+		margin-left: 0.5rem;
+		flex-shrink: 0;
+	}
+
+	.conv-item__delete {
+		display: none;
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent;
+		border: none;
+		color: var(--rf-color-text-muted, #94a3b8);
+		font-size: 1.125rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 2px 6px;
+		border-radius: 0.25rem;
+	}
+
+	.conv-item:hover .conv-item__delete {
+		display: block;
+	}
+
+	.conv-item__delete:hover {
+		color: var(--rf-color-danger-700, #b91c1c);
+		background: var(--rf-color-danger-50, #fef2f2);
+	}
+
+	/* Sidebar overlay for mobile */
+	.sidebar-overlay {
+		display: none;
+	}
+
+	/* Chat container */
+	.chat-container {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
 		max-width: 860px;
-		margin: 0 auto;
 	}
 
 	.chat-header {
 		padding: 0.75rem 1rem;
 		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.menu-btn {
+		display: none;
+		background: transparent;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		padding: 0.25rem;
+		border-radius: 0.25rem;
+	}
+
+	.menu-btn:hover {
+		background: var(--rf-color-border, #e2e8f0);
 	}
 
 	.chat-header h1 {
@@ -258,5 +478,34 @@
 
 	.cancel-btn:hover {
 		background: var(--rf-color-danger-50, #fef2f2);
+	}
+
+	/* Mobile: sidebar as overlay drawer */
+	@media (max-width: 768px) {
+		.sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			z-index: 100;
+			transform: translateX(-100%);
+			transition: transform 0.2s ease;
+		}
+
+		.sidebar--open {
+			transform: translateX(0);
+		}
+
+		.sidebar-overlay {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 99;
+			background: rgba(0, 0, 0, 0.3);
+		}
+
+		.menu-btn {
+			display: block;
+		}
 	}
 </style>
