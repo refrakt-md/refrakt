@@ -53,7 +53,7 @@ The architecture is organized into several focused packages:
 
 ## 2. Rune Library
 
-refrakt.md ships 41 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships 42 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
 ### Layout & Structure
 
@@ -66,7 +66,8 @@ refrakt.md ships 41 author-facing runes (plus internal child runes). Each rune d
 | `feature` | -- | Heading as section headline, paragraph as description, list items as feature definitions with icon/name/description | -- |
 | `steps` | -- | Heading as step name, paragraph as step content (ordered list auto-converted) | -- |
 | `storyboard` | `comic` | Image as panel visual, paragraph as caption/dialogue | -- |
-| `preview` | `showcase` | Children pass through unchanged; wrapper provides theme toggle and width control | -- |
+| `preview` | `showcase` | Children pass through unchanged; wrapper provides theme toggle, responsive viewport simulation, and source view | -- |
+| `sandbox` | -- | Raw HTML/CSS/JS rendered in an isolated iframe with optional framework loading (Tailwind, Bootstrap, Bulma, Pico) | -- |
 
 ### Content
 
@@ -214,7 +215,9 @@ export const registry: ComponentRegistry = {
   'Pricing': Pricing,     // Tier rendering logic
   'Comparison': Comparison,
   'Testimonial': Testimonial,
-  'Map': Map,           // Leaflet map visualization
+  'Map': Map,             // Leaflet map visualization
+  'Preview': Preview,     // Theme toggle, responsive viewports, source view
+  'Sandbox': Sandbox,     // Isolated iframe rendering
 };
 ```
 
