@@ -1,4 +1,4 @@
-import { renderMarkdoc, initHighlight, getHighlightCss } from './pipeline.js';
+import { renderMarkdoc, renderMarkdocSafe, initHighlight, getHighlightCss } from './pipeline.js';
 import { streamChat } from './stream.js';
 import {
 	createConversation,
@@ -11,11 +11,14 @@ import {
 	type StoredConversation,
 } from './db.js';
 import type { RendererNode } from '@refrakt-md/types';
+import type { InProgressBlock } from './block-scanner.js';
 
 export interface ChatMessage {
 	role: 'user' | 'assistant';
 	content: string;
 	renderable?: RendererNode;
+	inProgressBlocks?: InProgressBlock[];
+	degraded?: boolean;
 	error?: string;
 }
 
@@ -128,29 +131,33 @@ export function createChat() {
 				assistantMsg.content = accumulated;
 				scrollTick++;
 
-				// Try to render on each chunk — if Markdoc can't parse incomplete
-				// content, we silently catch and the UI shows raw text fallback
-				try {
-					assistantMsg.renderable = renderMarkdoc(accumulated);
-				} catch {
-					// Parse incomplete — will retry on next chunk
+				// Render with graceful degradation — never throws
+				const result = renderMarkdocSafe(accumulated);
+				for (const err of result.errors) {
+					console.warn('[refrakt-chat] Render degradation:', err);
 				}
+				if (result.renderable) {
+					assistantMsg.renderable = result.renderable;
+				}
+				assistantMsg.inProgressBlocks = result.inProgressBlocks;
+				assistantMsg.degraded = result.degraded;
 			}
 
 			// Final render with complete content
-			try {
-				assistantMsg.renderable = renderMarkdoc(accumulated);
-			} catch {
-				// If even the final content can't parse, leave renderable undefined
-				// The UI will show raw text
+			const finalResult = renderMarkdocSafe(accumulated);
+			for (const err of finalResult.errors) {
+				console.warn('[refrakt-chat] Final render issue:', err);
 			}
+			assistantMsg.renderable = finalResult.renderable ?? undefined;
+			assistantMsg.inProgressBlocks = [];
+			assistantMsg.degraded = finalResult.degraded;
 		} catch (err) {
 			if (err instanceof DOMException && err.name === 'AbortError') {
 				// User cancelled — keep partial content, no error
-				try {
-					if (accumulated) assistantMsg.renderable = renderMarkdoc(accumulated);
-				} catch {
-					// Partial content can't parse — raw text fallback is fine
+				if (accumulated) {
+					const result = renderMarkdocSafe(accumulated);
+					assistantMsg.renderable = result.renderable ?? undefined;
+					assistantMsg.inProgressBlocks = [];
 				}
 			} else {
 				assistantMsg.error =
