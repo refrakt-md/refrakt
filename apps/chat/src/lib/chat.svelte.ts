@@ -12,6 +12,7 @@ import {
 } from './db.js';
 import type { RendererNode } from '@refrakt-md/types';
 import type { InProgressBlock } from './block-scanner.js';
+import type { ChatMode } from '@refrakt-md/ai';
 
 export interface ChatMessage {
 	role: 'user' | 'assistant';
@@ -35,6 +36,8 @@ export function createChat() {
 	let highlightReady = $state(false);
 	let scrollTick = $state(0);
 	let abortController: AbortController | null = null;
+	let selectedMode = $state<ChatMode>('general');
+	let conversationMode = $state<ChatMode | null>(null);
 
 	async function init() {
 		await initHighlight();
@@ -50,6 +53,8 @@ export function createChat() {
 	async function switchConversation(id: string) {
 		if (isStreaming) return;
 		activeConversationId = id;
+		const conv = conversations.find((c) => c.id === id);
+		conversationMode = (conv?.mode as ChatMode) ?? 'general';
 		const stored = await loadMessages(id);
 		messages = stored.map((m) => {
 			const msg: ChatMessage = { role: m.role, content: m.content };
@@ -68,6 +73,7 @@ export function createChat() {
 	async function newConversation() {
 		if (isStreaming) return;
 		activeConversationId = null;
+		conversationMode = null;
 		messages = [];
 	}
 
@@ -86,9 +92,10 @@ export function createChat() {
 	}
 
 	async function send(userMessage: string) {
-		// Create conversation on first message if needed
+		// Lock mode and create conversation on first message if needed
 		if (!activeConversationId) {
-			const conv = await createConversation(truncateTitle(userMessage));
+			conversationMode = selectedMode;
+			const conv = await createConversation(truncateTitle(userMessage), selectedMode);
 			activeConversationId = conv.id;
 			conversations = await listConversations();
 		}
@@ -124,8 +131,10 @@ export function createChat() {
 
 		let accumulated = '';
 
+		const effectiveMode = conversationMode ?? selectedMode;
+
 		try {
-			for await (const chunk of streamChat(history, abortController.signal)) {
+			for await (const chunk of streamChat(history, effectiveMode, abortController.signal)) {
 				if (isThinking) isThinking = false;
 				accumulated += chunk;
 				assistantMsg.content = accumulated;
@@ -203,6 +212,18 @@ export function createChat() {
 		},
 		get scrollTick() {
 			return scrollTick;
+		},
+		get selectedMode() {
+			return selectedMode;
+		},
+		set selectedMode(m: ChatMode) {
+			selectedMode = m;
+		},
+		get effectiveMode(): ChatMode {
+			return conversationMode ?? selectedMode;
+		},
+		get isModeLocked() {
+			return conversationMode !== null;
 		},
 		init,
 		send,
