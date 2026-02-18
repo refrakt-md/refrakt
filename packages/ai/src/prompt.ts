@@ -406,6 +406,26 @@ This is a margin note that provides additional context
 without interrupting the main flow of the text.
 {% /sidenote %}`,
 
+	preview: `{% preview title="Button Variants" theme="auto" responsive="mobile,tablet,desktop" %}
+\`\`\`html
+<button class="rf-btn rf-btn--primary">Primary</button>
+<button class="rf-btn rf-btn--secondary">Secondary</button>
+\`\`\`
+
+<button class="rf-btn rf-btn--primary">Primary</button>
+<button class="rf-btn rf-btn--secondary">Secondary</button>
+{% /preview %}`,
+
+	sandbox: `{% sandbox framework="tailwind" %}
+<div class="flex items-center gap-4 p-6 bg-white rounded-xl shadow-lg max-w-sm">
+  <img src="https://i.pravatar.cc/80" alt="Avatar" class="w-16 h-16 rounded-full" />
+  <div>
+    <h3 class="text-lg font-semibold text-gray-900">Jane Doe</h3>
+    <p class="text-sm text-gray-500">Product Designer</p>
+  </div>
+</div>
+{% /sandbox %}`,
+
 	map: `{% map zoom="13" height="large" %}
 ## Landmarks
 - **Eiffel Tower** - *Iconic iron lattice tower* - 48.8566, 2.3522
