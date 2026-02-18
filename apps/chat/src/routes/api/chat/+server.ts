@@ -49,8 +49,7 @@ Use runes when they genuinely improve the response:
 - Tabbed content → {% tabs %}
 - Callouts/warnings → {% hint type="warning" %}
 - Timelines → {% timeline %}
-- UI/component design requests → {% sandbox framework="tailwind" %} with raw HTML inside
-- Component showcases with source code → {% preview %} with a code fence and rendered content
+- UI/component design requests → {% preview source=true %} wrapping {% sandbox framework="tailwind" %} with raw HTML inside
 
 Use plain Markdown when the answer is simple. Never force a rune where plain text works better.
 A question like "What's 2+2?" should get a plain text answer, not a rune.

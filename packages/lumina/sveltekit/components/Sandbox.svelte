@@ -9,11 +9,11 @@
 		.find((c: any) => c?.name === 'meta' && c?.attributes?.property === prop)
 		?.attributes?.content;
 
-	const rawContent: string = getMeta('content') || '';
-	const framework: string = getMeta('framework') || '';
-	const dependencies: string = getMeta('dependencies') || '';
-	const label: string = getMeta('label') || '';
-	const heightAttr: string = getMeta('height') || 'auto';
+	const rawContent = $derived(getMeta('content') || '');
+	const framework = $derived(getMeta('framework') || '');
+	const dependencies = $derived(getMeta('dependencies') || '');
+	const label = $derived(getMeta('label') || '');
+	const heightAttr = $derived(getMeta('height') || 'auto');
 
 	// Read theme from parent Preview (undefined when standalone)
 	const previewTheme = getContext<{ readonly mode: string } | undefined>('rf-preview-theme');
@@ -46,15 +46,15 @@
 	}
 
 	// Strip data-source attributes from rendered content (authoring markers only)
-	const renderedContent = rawContent.replace(/\s*data-source(?:="[^"]*")?/g, '');
+	const renderedContent = $derived(rawContent.replace(/\s*data-source(?:="[^"]*")?/g, ''));
 
 	// Bake initial theme into srcdoc so iframe starts correct on (re)creation
-	const initialTheme = previewTheme?.mode;
-	const htmlAttrs = initialTheme === 'dark' ? ' class="dark" data-theme="dark"'
+	const initialTheme = $derived(previewTheme?.mode);
+	const htmlAttrs = $derived(initialTheme === 'dark' ? ' class="dark" data-theme="dark"'
 		: initialTheme === 'light' ? ' data-theme="light"'
-		: '';
+		: '');
 
-	const srcdoc = `<!DOCTYPE html>
+	const srcdoc = $derived(`<!DOCTYPE html>
 <html${htmlAttrs}>
 <head>
 <meta charset="utf-8">
@@ -101,7 +101,7 @@ ${renderedContent}
   });
 <\/script>
 </body>
-</html>`;
+</html>`);
 
 	let iframeEl: HTMLIFrameElement;
 	let iframeHeight = $state(heightAttr !== 'auto' ? parseInt(heightAttr) : 150);
