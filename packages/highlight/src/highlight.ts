@@ -62,7 +62,7 @@ export async function createHighlightTransform(
 			const html = highlighter.codeToHtml(code, {
 				lang,
 				themes: { light: theme.light, dark: theme.dark },
-				defaultColor: false,
+				defaultColor: 'light',
 			});
 			return extractInnerHtml(html);
 		};
@@ -106,7 +106,9 @@ function buildSingleThemeCss(
 	return `:root {\n\t--rf-color-code-bg: ${bg};\n\t--rf-color-code-text: ${fg};\n}\n`;
 }
 
-/** Build CSS for dual themes — bg/fg overrides for both modes + span toggle rules. */
+/** Build CSS for dual themes — bg/fg overrides + dark mode span toggle.
+ *  Uses `defaultColor: 'light'` so light colors are inline on spans.
+ *  Dark mode uses `!important` to override inline styles (standard Shiki pattern). */
 function buildDualThemeCss(
 	highlighter: HighlighterGeneric<BundledLanguage, BundledTheme>,
 	lightName: string,
@@ -116,41 +118,34 @@ function buildDualThemeCss(
 	const dark = highlighter.getTheme(darkName);
 
 	return `/* Highlight theme: ${lightName} / ${darkName} */
-:root {
-\t--rf-color-code-bg: ${light.bg};
-\t--rf-color-code-text: ${light.fg};
+pre[data-language] {
+\tbackground-color: ${light.bg};
+\tcolor: ${light.fg};
 }
-[data-theme="dark"] {
-\t--rf-color-code-bg: ${dark.bg};
-\t--rf-color-code-text: ${dark.fg};
+[data-theme="dark"] pre[data-language] {
+\tbackground-color: ${dark.bg};
+\tcolor: ${dark.fg};
 }
 @media (prefers-color-scheme: dark) {
-\t:root:not([data-theme="light"]) {
-\t\t--rf-color-code-bg: ${dark.bg};
-\t\t--rf-color-code-text: ${dark.fg};
+\t:root:not([data-theme="light"]) pre[data-language] {
+\t\tbackground-color: ${dark.bg};
+\t\tcolor: ${dark.fg};
 \t}
 }
-[data-codeblock] span {
-\tcolor: var(--shiki-light);
-\tbackground-color: var(--shiki-light-bg);
-\tfont-style: var(--shiki-light-font-style);
-\tfont-weight: var(--shiki-light-font-weight);
-\ttext-decoration: var(--shiki-light-text-decoration);
-}
 [data-theme="dark"] [data-codeblock] span {
-\tcolor: var(--shiki-dark);
-\tbackground-color: var(--shiki-dark-bg);
-\tfont-style: var(--shiki-dark-font-style);
-\tfont-weight: var(--shiki-dark-font-weight);
-\ttext-decoration: var(--shiki-dark-text-decoration);
+\tcolor: var(--shiki-dark) !important;
+\tbackground-color: var(--shiki-dark-bg) !important;
+\tfont-style: var(--shiki-dark-font-style) !important;
+\tfont-weight: var(--shiki-dark-font-weight) !important;
+\ttext-decoration: var(--shiki-dark-text-decoration) !important;
 }
 @media (prefers-color-scheme: dark) {
 \t:root:not([data-theme="light"]) [data-codeblock] span {
-\t\tcolor: var(--shiki-dark);
-\t\tbackground-color: var(--shiki-dark-bg);
-\t\tfont-style: var(--shiki-dark-font-style);
-\t\tfont-weight: var(--shiki-dark-font-weight);
-\t\ttext-decoration: var(--shiki-dark-text-decoration);
+\t\tcolor: var(--shiki-dark) !important;
+\t\tbackground-color: var(--shiki-dark-bg) !important;
+\t\tfont-style: var(--shiki-dark-font-style) !important;
+\t\tfont-weight: var(--shiki-dark-font-weight) !important;
+\t\ttext-decoration: var(--shiki-dark-text-decoration) !important;
 \t}
 }
 `;

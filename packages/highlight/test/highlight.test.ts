@@ -132,7 +132,7 @@ describe('highlight transform — single named theme', () => {
 });
 
 describe('highlight transform — dual themes', () => {
-	it('should highlight with CSS custom properties for both themes', async () => {
+	it('should highlight with inline light colors and dark CSS variables', async () => {
 		const hl = await createHighlightTransform({
 			theme: { light: 'github-light', dark: 'github-dark' },
 			langs: ['javascript'],
@@ -142,8 +142,8 @@ describe('highlight transform — dual themes', () => {
 		const result = hl(tree) as SerializedTag;
 		expect(result.attributes['data-codeblock']).toBe(true);
 		const html = result.children[0] as string;
-		// With defaultColor: false, spans should have --shiki-light and --shiki-dark
-		expect(html).toContain('--shiki-light:');
+		// With defaultColor: 'light', spans have inline color + --shiki-dark variable
+		expect(html).toContain('style="color:');
 		expect(html).toContain('--shiki-dark:');
 	});
 
@@ -152,19 +152,20 @@ describe('highlight transform — dual themes', () => {
 			theme: { light: 'github-light', dark: 'github-dark' },
 			langs: ['javascript'],
 		});
-		expect(hl.css).toContain('--rf-color-code-bg:');
-		expect(hl.css).toContain('--rf-color-code-text:');
+		expect(hl.css).toContain('pre[data-language]');
+		expect(hl.css).toContain('background-color:');
 		expect(hl.css).toContain('[data-theme="dark"]');
 	});
 
-	it('should generate span toggle rules for dark mode', async () => {
+	it('should generate dark-mode span toggle rules with !important', async () => {
 		const hl = await createHighlightTransform({
 			theme: { light: 'github-light', dark: 'github-dark' },
 			langs: ['javascript'],
 		});
 		expect(hl.css).toContain('[data-codeblock] span');
-		expect(hl.css).toContain('color: var(--shiki-light)');
-		expect(hl.css).toContain('color: var(--shiki-dark)');
+		expect(hl.css).toContain('color: var(--shiki-dark) !important');
+		// No light-mode span rules — light colors are inline
+		expect(hl.css).not.toContain('var(--shiki-light)');
 	});
 
 	it('should include prefers-color-scheme fallback', async () => {
