@@ -55,7 +55,7 @@ These are unresolved or partially resolved design questions. When working on fea
 
 | What | Where | Notes |
 |---|---|---|
-| 43 primary runes (61+ with aliases) across 7 categories | `packages/runes/src/tags/*.ts` | All defined in `packages/runes/src/index.ts` with `defineRune()`. Each has name, description, reinterprets map, and type registry binding. |
+| 44 primary runes (62+ with aliases) across 7 categories | `packages/runes/src/tags/*.ts` | All defined in `packages/runes/src/index.ts` with `defineRune()`. Each has name, description, reinterprets map, and type registry binding. |
 | Rune class with RuneDescriptor | `packages/runes/src/rune.ts` | `Rune` class, `defineRune()` factory, `runeTagMap()` for Markdoc integration. |
 | Type schema system | `packages/types/src/schema/*.ts` | ~47 schema files defining component types with `useSchema().defineType()`. |
 | Rune registry with schema.org mappings | `packages/runes/src/registry.ts` | Maps every rune type to its schema + SEO bindings via RDFa `typeof` attributes. |
@@ -77,7 +77,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | SvelteKit Vite plugin | `packages/sveltekit/src/plugin.ts` | Virtual modules, content HMR, dev/build mode switching. |
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
 | Theme manifest | `packages/lumina/sveltekit/manifest.json` | Lumina SvelteKit adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
-| Theme component registry | `packages/lumina/sveltekit/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
+| Theme component registry | `packages/lumina/sveltekit/registry.ts` | Maps 19 typeof values to 18 Svelte components (interactive + complex rendering). |
 | Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights code, sets `data-codeblock`. Supports configurable themes: any built-in Shiki theme via `theme` option (single name or `{ light, dark }` pair for dual-theme light/dark mode switching). Defaults to CSS variables theme. Returns a `.css` property with background overrides and dual-theme toggle rules. Pluggable via custom `highlight` function. |
 | `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
 | AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
@@ -111,11 +111,11 @@ These are unresolved or partially resolved design questions. When working on fea
 | **AI theme generation** | `refrakt write` exists for content. No equivalent for themes. See also Section 13 for the broader AI authoring roadmap. |
 | ~~**Blog layout**~~ | ~~Lumina has `default` and `docs` layouts only.~~ DONE — BlogLayout with index (post listing sorted by date) and article view, frontmatter metadata display, route rule for `blog` and `blog/**`. |
 | ~~**CSS tree-shaking**~~ | ~~Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page.~~ DONE — Build-time content analysis in `packages/sveltekit/src/plugin.ts` (`buildStart` hook). Virtual module generates selective CSS imports for only the rune blocks used in the site. Dev mode unchanged (all CSS for instant feedback). |
-| ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
+| ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 48 snippets (68 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 | **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
 | ~~**Rune Inspector** (VS Code tree view)~~ | ~~Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor.~~ DONE — `packages/vscode/src/inspector.ts` (TreeDataProvider), `packages/language-server/src/providers/inspector.ts` (pipeline execution), custom LSP request `refrakt/inspectRune`. `serialize()` relocated from svelte to runes package. 10 tests. |
-| **Preview & Sandbox runes** | Preview enhancements: `responsive` attribute for viewport simulation (mobile/tablet/desktop toolbar toggles). Sandbox rune: isolated HTML/CSS/JS rendering via iframe `srcdoc`, raw source extraction (bypasses Markdoc HTML parsing), framework presets, `data-source` markers for multi-language source panels. Full spec: `planning/preview-sandbox-spec.md` |
+| ~~**Preview & Sandbox runes**~~ | ~~Preview enhancements: `responsive` attribute for viewport simulation (mobile/tablet/desktop toolbar toggles). Sandbox rune: isolated HTML/CSS/JS rendering via iframe `srcdoc`, raw source extraction (bypasses Markdoc HTML parsing), framework presets, `data-source` markers for multi-language source panels. Full spec: `planning/preview-sandbox-spec.md`~~ DONE — Preview: `responsive` attribute with mobile/tablet/desktop viewport toolbar, theme toggle propagation into sandboxed iframes, flicker-free view/viewport switching. Sandbox: iframe `srcdoc` isolation, raw source extraction, framework presets (Tailwind, Bootstrap, Bulma, Pico), `data-source` markers with server-side Shiki highlighting, dedented source panels. Custom markdoc TextMate grammar for HTML-in-sandbox highlighting. VS Code snippet + docs. |
 
 ---
 
@@ -123,7 +123,7 @@ These are unresolved or partially resolved design questions. When working on fea
 
 ### Phase 1: Rune Library & Parser -- COMPLETE
 
-All 43+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
+All 44+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
 
 ### Phase 2: Layout & Routing -- COMPLETE
 
@@ -476,6 +476,8 @@ The Lumina theme registers these components in `packages/lumina/sveltekit/regist
 | `Embed` | `Embed.svelte` | oEmbed resolution, iframe handling |
 | `Pricing`, `Tier`, `FeaturedTier` | `Pricing.svelte` | Highlight/toggle logic |
 | `Testimonial` | `Testimonial.svelte` | Avatar + quote layout |
+| `Preview` | `Preview.svelte` | Theme toggle, responsive viewport simulation, source view |
+| `Sandbox` | `Sandbox.svelte` | Isolated iframe rendering with framework presets |
 
 Everything *not* in this list is rendered by the generic `Renderer.svelte` path: `svelte:element` with the BEM classes applied by the identity transform. This includes: Hero, Hint/Callout, CTA, Feature, Steps, Figure, Timeline, Changelog, Breadcrumb, Compare, Recipe, HowTo, Event, Cast, Organization, Api, Diff, Sidenote, Conversation, Annotate, Codegroup, TOC.
 
@@ -578,7 +580,7 @@ This section captures the current priority order. Update it as things change.
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
 - Local runes v1: declarative rune extension via config (see `planning/local-runes.md`)
-- Preview & Sandbox runes: responsive viewport simulation, sandbox iframe isolation, `data-source` extraction (see `planning/preview-sandbox-spec.md`)
+- ~~Preview & Sandbox runes: responsive viewport simulation, sandbox iframe isolation, `data-source` extraction (see `planning/preview-sandbox-spec.md`)~~ -- DONE
 
 **Medium term:**
 - ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
