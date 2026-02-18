@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Renderer } from '@refrakt-md/svelte';
+	import SafeRenderer from '$lib/SafeRenderer.svelte';
 	import { createChat } from '$lib/chat.svelte.js';
 
 	const chat = createChat();
@@ -133,7 +133,10 @@
 						</div>
 					{:else if message.renderable}
 						<div class="assistant-content">
-							<Renderer node={message.renderable} />
+							<SafeRenderer
+								node={message.renderable}
+								inProgressBlocks={message.inProgressBlocks ?? []}
+							/>
 						</div>
 					{:else if message.content}
 						<div class="assistant-content">
