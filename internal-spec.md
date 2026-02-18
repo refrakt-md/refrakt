@@ -114,7 +114,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 46 snippets (66 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
 | **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
-| **Rune Inspector** (VS Code tree view) | Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor. Prerequisite: relocate `serialize()` from svelte to runes package. Full spec: `planning/rune-inspector.md` |
+| ~~**Rune Inspector** (VS Code tree view)~~ | ~~Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor.~~ DONE — `packages/vscode/src/inspector.ts` (TreeDataProvider), `packages/language-server/src/providers/inspector.ts` (pipeline execution), custom LSP request `refrakt/inspectRune`. `serialize()` relocated from svelte to runes package. 10 tests. |
+| **Preview & Sandbox runes** | Preview enhancements: `responsive` attribute for viewport simulation (mobile/tablet/desktop toolbar toggles). Sandbox rune: isolated HTML/CSS/JS rendering via iframe `srcdoc`, raw source extraction (bypasses Markdoc HTML parsing), framework presets, `data-source` markers for multi-language source panels. Full spec: `planning/preview-sandbox-spec.md` |
 
 ---
 
@@ -577,6 +578,7 @@ This section captures the current priority order. Update it as things change.
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
 - Local runes v1: declarative rune extension via config (see `planning/local-runes.md`)
+- Preview & Sandbox runes: responsive viewport simulation, sandbox iframe isolation, `data-source` extraction (see `planning/preview-sandbox-spec.md`)
 
 **Medium term:**
 - ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
