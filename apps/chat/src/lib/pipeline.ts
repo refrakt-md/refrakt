@@ -13,7 +13,7 @@ let hlCss = '';
  */
 export async function initHighlight(): Promise<void> {
 	const hl = await createHighlightTransform({
-		theme: { light: 'github-light', dark: 'github-dark' },
+		theme: { light: 'laserwave', dark: 'laserwave' },
 	});
 	hlTransform = hl;
 	hlCss = hl.css;
