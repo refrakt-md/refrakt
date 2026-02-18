@@ -1,15 +1,31 @@
 import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
+import { createHighlightTransform } from '@refrakt-md/highlight';
+import type { HighlightTransform } from '@refrakt-md/highlight';
 import { error } from '@sveltejs/kit';
+import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';
+import type { RefraktConfig } from '@refrakt-md/types';
 
-const contentDir = path.resolve('content');
+const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
+const contentDir = path.resolve(config.contentDir);
+
+let _hl: HighlightTransform | null = null;
+
+async function getHighlightTransform(): Promise<HighlightTransform> {
+	const cached = _hl;
+	if (cached) return cached;
+	const hl = await createHighlightTransform(config.highlight);
+	_hl = hl;
+	return hl;
+}
 
 export const prerender = true;
 
 export const load: PageServerLoad = async ({ params }) => {
 	const site = await loadContent(contentDir);
+	const hl = await getHighlightTransform();
 	const slug = params.slug || '';
 	const url = '/' + slug;
 
@@ -19,17 +35,20 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Page not found');
 	}
 
+	const renderable = hl(serializeTree(page.renderable));
+
 	return {
 		title: page.frontmatter.title ?? '',
 		description: page.frontmatter.description ?? '',
-		renderable: serializeTree(page.renderable),
+		renderable,
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(serialize) }
+				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(serialize(c))) }
 			])
 		),
 		url,
+		highlightCss: hl.css,
 	};
 };
 
