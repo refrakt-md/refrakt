@@ -48,8 +48,14 @@
 	// Strip data-source attributes from rendered content (authoring markers only)
 	const renderedContent = rawContent.replace(/\s*data-source(?:="[^"]*")?/g, '');
 
+	// Bake initial theme into srcdoc so iframe starts correct on (re)creation
+	const initialTheme = previewTheme?.mode;
+	const htmlAttrs = initialTheme === 'dark' ? ' class="dark" data-theme="dark"'
+		: initialTheme === 'light' ? ' data-theme="light"'
+		: '';
+
 	const srcdoc = `<!DOCTYPE html>
-<html>
+<html${htmlAttrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

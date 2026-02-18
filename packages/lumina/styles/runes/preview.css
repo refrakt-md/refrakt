@@ -111,12 +111,14 @@
 
 /* Viewport simulation frame */
 .rf-preview__viewport-frame {
+	position: relative;
+	overflow: hidden;
+	transition: max-width 300ms ease;
+}
+.rf-preview__viewport-frame--constrained {
 	margin: 0 auto;
 	border: 1px dashed var(--rf-color-border);
 	border-radius: var(--rf-radius-sm);
-	transition: max-width 300ms ease;
-	position: relative;
-	overflow: hidden;
 }
 .rf-preview__viewport-label {
 	position: absolute;

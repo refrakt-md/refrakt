@@ -224,9 +224,15 @@
 		</div>
 	{:else}
 		<div class="rf-preview__canvas" data-theme={resolvedTheme}>
-			{#if viewportWidth}
-				<div class="rf-preview__viewport-frame" style="max-width: {viewportWidth}px">
-					<span class="rf-preview__viewport-label">{VIEWPORT_PRESETS[activeViewport!].label}</span>
+			{#if hasResponsive}
+				<div
+					class="rf-preview__viewport-frame"
+					class:rf-preview__viewport-frame--constrained={!!viewportWidth}
+					style={viewportWidth ? `max-width: ${viewportWidth}px` : ''}
+				>
+					{#if viewportWidth}
+						<span class="rf-preview__viewport-label">{VIEWPORT_PRESETS[activeViewport!].label}</span>
+					{/if}
 					<Renderer node={contentChildren} />
 				</div>
 			{:else}
