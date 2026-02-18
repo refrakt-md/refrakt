@@ -44,7 +44,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/content` | Content tree, filesystem routing, layout resolution, sitemap generation |
 | `@refrakt-md/svelte` | Svelte adapter -- Renderer, ThemeShell, serialization, component registry |
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
-| `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker, CSS variables integration, pluggable highlighter |
+| `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker with configurable themes (any built-in Shiki theme or light/dark pair), pluggable highlighter |
 | `@refrakt-md/lumina` | Lumina theme -- identity layer (design tokens, per-rune CSS, pre-built transform) plus framework adapters via subpath exports (`/sveltekit`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
@@ -531,7 +531,7 @@ Convert Markdoc Tag instances to plain objects for SSR transfer.
 Apply BEM classes, structural injection, and meta consumption.
 
 ### Syntax highlight transform
-Walk the tree, find elements with `data-language` and text children, apply Shiki highlighting with CSS variables, and set `data-codeblock` for raw HTML injection. Unknown languages fall back to plain text.
+Walk the tree, find elements with `data-language` and text children, apply Shiki highlighting, and set `data-codeblock` for raw HTML injection. Supports configurable themes via the `theme` option -- a single built-in Shiki theme name or a `{ light, dark }` pair for dual-theme switching. Defaults to a CSS variables theme integrated with Lumina's design tokens. Unknown languages fall back to plain text.
 
 ### Renderer
 Svelte recursive component with `typeof`-based component dispatch.

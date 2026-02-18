@@ -78,7 +78,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
 | Theme manifest | `packages/lumina/sveltekit/manifest.json` | Lumina SvelteKit adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
 | Theme component registry | `packages/lumina/sveltekit/registry.ts` | Maps 17 typeof values to 16 Svelte components (interactive + complex rendering). |
-| Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights with CSS variables theme, sets `data-codeblock`. Pluggable via custom `highlight` function. |
+| Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights code, sets `data-codeblock`. Supports configurable themes: any built-in Shiki theme via `theme` option (single name or `{ light, dark }` pair for dual-theme light/dark mode switching). Defaults to CSS variables theme. Returns a `.css` property with background overrides and dual-theme toggle rules. Pluggable via custom `highlight` function. |
 | `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
 | AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
 | AI provider abstraction | `packages/ai/src/provider.ts`, `packages/ai/src/providers/` | Anthropic, Gemini, and Ollama providers. |
@@ -325,7 +325,7 @@ The SvelteKit plugin resolves the adapter automatically: `config.theme` + `"/"` 
 **What was built:**
 - **`@refrakt-md/highlight` package** (`packages/highlight/`) — A tree-walking transform that finds elements with `data-language` + text children, highlights them with Shiki, and sets `data-codeblock: true` for raw HTML injection by the Renderer.
 - **`data-language` marker convention** — Any element with a `data-language` attribute signals "highlight me." The fence node emits `<pre data-language><code data-language>` with raw text. The diff rune emits per-line `<span data-name="line-content" data-language>` with raw text. The highlight transform finds them generically.
-- **Shiki with CSS variables theme** — `createCssVariablesTheme()` produces `style="color: var(--shiki-token-keyword)"` on spans. Token variables (`--shiki-token-keyword`, `--shiki-token-string`, etc.) are mapped in Lumina's `tokens/base.css` and `tokens/dark.css`, fully integrated with the design token system.
+- **Configurable Shiki themes** — `createHighlightTransform({ theme: 'dracula' })` loads any built-in Shiki theme and produces inline hex colors. `theme: { light: 'github-light', dark: 'github-dark' }` uses Shiki's dual-theme feature with `defaultColor: false`, generating `--shiki-light` / `--shiki-dark` CSS custom properties on spans that toggle with the site's light/dark mode. The returned transform has a `.css` property containing background color overrides (`--rf-color-code-bg`, `--rf-color-code-text`) and dual-theme span toggle rules. Default (no `theme`): `createCssVariablesTheme()` produces `style="color: var(--shiki-token-keyword)"` on spans, with token variables mapped in Lumina's `tokens/base.css` and `tokens/dark.css`.
 - **Pluggable highlighter** — `createHighlightTransform({ highlight: (code, lang) => html })` accepts any custom highlight function. Shiki is the default but not a hard dependency for consumers.
 - **Unknown language fallback** — When Shiki doesn't recognize a language, the `catch` block leaves the node unchanged (no `data-codeblock`, Renderer escapes text normally).
 
@@ -419,8 +419,8 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 
 | File | Purpose |
 |---|---|
-| `packages/highlight/src/highlight.ts` | `createHighlightTransform()` — Shiki-based tree walker, `extractInnerHtml()`, pluggable `highlight` option |
-| `packages/highlight/src/index.ts` | Package exports (`createHighlightTransform`, `HighlightOptions`) |
+| `packages/highlight/src/highlight.ts` | `createHighlightTransform()` — Shiki-based tree walker, configurable theme (`theme` option), `extractInnerHtml()`, pluggable `highlight` option |
+| `packages/highlight/src/index.ts` | Package exports (`createHighlightTransform`, `HighlightOptions`, `HighlightTransform`) |
 
 ### Identity Transform (`@refrakt-md/transform`)
 
