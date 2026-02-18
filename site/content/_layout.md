@@ -35,6 +35,7 @@
 - accordion
 - details
 - preview
+- sandbox
 
 ## Code & Data
 

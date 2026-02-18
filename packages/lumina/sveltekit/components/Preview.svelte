@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
 	import { Renderer } from '@refrakt-md/svelte';
+	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
@@ -16,6 +17,19 @@
 	const title: string = getMeta('title') ?? '';
 	const width: string = getMeta('width') ?? 'wide';
 	const initialTheme: string = getMeta('theme') ?? 'auto';
+	const responsiveStr: string = getMeta('responsive') ?? '';
+
+	// Responsive viewport presets
+	const VIEWPORT_PRESETS: Record<string, { width: number | null; label: string }> = {
+		mobile: { width: 375, label: '375px' },
+		tablet: { width: 768, label: '768px' },
+		desktop: { width: null, label: 'Full' },
+	};
+
+	const responsivePresets = responsiveStr
+		? responsiveStr.split(',').map(s => s.trim()).filter(s => s in VIEWPORT_PRESETS)
+		: [];
+	const hasResponsive = responsivePresets.length > 0;
 
 	// Separate source element from content children
 	const { sourceNode, contentChildren } = $derived.by(() => {
@@ -33,10 +47,46 @@
 		return { sourceNode, contentChildren };
 	});
 
+	// Detect sandbox child for data-source extraction
+	const sandboxChild = $derived.by(() => {
+		const tags = contentChildren.filter(c => isTag(c) && c.attributes?.typeof === 'Sandbox');
+		return tags.length === 1 ? tags[0] as SerializedTag : null;
+	});
+
+	// Read server-provided data-source panels from sandbox children
+	const sandboxSourcePanels = $derived.by(() => {
+		if (!sandboxChild) return null;
+		const panels = sandboxChild.children?.filter(
+			(c: any) => isTag(c) && c.name === 'meta' && c.attributes?.property === 'source-panel'
+		);
+		if (!panels || panels.length === 0) return null;
+		return panels.map((panel: any) => ({
+			label: (panel as SerializedTag).attributes['data-label'] as string,
+			node: (panel as SerializedTag).children?.[0] as SerializedTag,
+		}));
+	});
+
 	let themeMode: 'auto' | 'light' | 'dark' = $state(initialTheme as 'auto' | 'light' | 'dark');
+
+	// Expose reactive theme to descendant Sandbox components via context
+	setContext('rf-preview-theme', {
+		get mode() { return themeMode; }
+	});
 	let view: 'preview' | 'code' = $state('preview');
+	let activeViewport: string | null = $state(
+		hasResponsive ? responsivePresets[responsivePresets.length - 1] : null
+	);
+	let activeSourceTab = $state(0);
 
 	const resolvedTheme = $derived(themeMode === 'auto' ? undefined : themeMode);
+	const viewportWidth = $derived(
+		activeViewport && VIEWPORT_PRESETS[activeViewport]
+			? VIEWPORT_PRESETS[activeViewport].width
+			: null
+	);
+
+	// Determine effective source: data-source panels override the default sourceNode
+	const hasSource = $derived(sourceNode != null || sandboxSourcePanels != null);
 </script>
 
 <div class="rf-preview" data-width={width}>
@@ -47,7 +97,7 @@
 			<span></span>
 		{/if}
 		<div class="rf-preview__controls">
-			{#if sourceNode}
+			{#if hasSource}
 				<div class="rf-preview__view-toggle">
 					<button
 						class="rf-preview__toggle-btn"
@@ -73,6 +123,37 @@
 							<polyline points="8 6 2 12 8 18"/>
 						</svg>
 					</button>
+				</div>
+			{/if}
+			{#if hasResponsive}
+				<div class="rf-preview__viewport-toggle">
+					{#each responsivePresets as preset}
+						<button
+							class="rf-preview__toggle-btn"
+							class:rf-preview__toggle-btn--active={activeViewport === preset}
+							onclick={() => activeViewport = preset}
+							aria-label="{VIEWPORT_PRESETS[preset].label} viewport"
+							title={VIEWPORT_PRESETS[preset].label}
+						>
+							{#if preset === 'mobile'}
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+									<line x1="12" y1="18" x2="12.01" y2="18"/>
+								</svg>
+							{:else if preset === 'tablet'}
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+									<line x1="12" y1="18" x2="12.01" y2="18"/>
+								</svg>
+							{:else}
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+									<line x1="8" y1="21" x2="16" y2="21"/>
+									<line x1="12" y1="17" x2="12" y2="21"/>
+								</svg>
+							{/if}
+						</button>
+					{/each}
 				</div>
 			{/if}
 			<div class="rf-preview__toggle">
@@ -122,13 +203,40 @@
 			</div>
 		</div>
 	</div>
-	{#if view === 'code' && sourceNode}
-		<div class="rf-preview__source">
-			<Renderer node={sourceNode} />
-		</div>
-	{:else}
-		<div class="rf-preview__canvas" data-theme={resolvedTheme}>
-			<Renderer node={contentChildren} />
+	{#if hasSource}
+		<div class="rf-preview__source" hidden={view !== 'code'}>
+			{#if sandboxSourcePanels}
+				{#if sandboxSourcePanels.length > 1}
+					<div class="rf-preview__source-tabs">
+						{#each sandboxSourcePanels as panel, i}
+							<button
+								class="rf-preview__source-tab"
+								class:rf-preview__source-tab--active={activeSourceTab === i}
+								onclick={() => activeSourceTab = i}
+							>{panel.label}</button>
+						{/each}
+					</div>
+				{/if}
+				<Renderer node={sandboxSourcePanels[activeSourceTab].node} />
+			{:else if sourceNode}
+				<Renderer node={sourceNode} />
+			{/if}
 		</div>
 	{/if}
+	<div class="rf-preview__canvas" data-theme={resolvedTheme} hidden={view === 'code' && hasSource}>
+		{#if hasResponsive}
+			<div
+				class="rf-preview__viewport-frame"
+				class:rf-preview__viewport-frame--constrained={!!viewportWidth}
+				style={viewportWidth ? `max-width: ${viewportWidth}px` : ''}
+			>
+				{#if viewportWidth}
+					<span class="rf-preview__viewport-label">{VIEWPORT_PRESETS[activeViewport!].label}</span>
+				{/if}
+				<Renderer node={contentChildren} />
+			</div>
+		{:else}
+			<Renderer node={contentChildren} />
+		{/if}
+	</div>
 </div>

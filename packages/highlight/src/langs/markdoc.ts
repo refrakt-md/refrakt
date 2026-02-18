@@ -12,12 +12,33 @@ export const markdocLanguage: LanguageRegistration = {
 	name: 'markdoc',
 	scopeName: 'text.html.markdoc',
 	displayName: 'Markdoc',
-	embeddedLangs: ['markdown'],
+	embeddedLangs: ['markdown', 'html'],
 	patterns: [
+		{ include: '#sandbox-block' },
 		{ include: '#markdoc-tag' },
 		{ include: 'text.html.markdown' },
 	],
 	repository: {
+		'sandbox-block': {
+			name: 'meta.block.sandbox.markdoc',
+			contentName: 'meta.embedded.block.html',
+			begin: '(\\{%)(\\s*sandbox)((?:\\s+[^%]*)?)(%\\})',
+			end: '(\\{%)(\\s*/sandbox\\s*)(%\\})',
+			beginCaptures: {
+				1: { name: 'punctuation.definition.tag.begin.markdoc' },
+				2: { name: 'entity.name.tag.markdoc' },
+				3: { patterns: [{ include: '#tag-attributes' }] },
+				4: { name: 'punctuation.definition.tag.end.markdoc' },
+			},
+			endCaptures: {
+				1: { name: 'punctuation.definition.tag.begin.markdoc' },
+				2: { name: 'entity.name.tag.markdoc' },
+				3: { name: 'punctuation.definition.tag.end.markdoc' },
+			},
+			patterns: [
+				{ include: 'text.html.basic' },
+			],
+		},
 		'markdoc-tag': {
 			name: 'meta.tag.markdoc',
 			begin: '(\\{%)(\\s*\\/?\\s*[a-z][a-z0-9-]*)',

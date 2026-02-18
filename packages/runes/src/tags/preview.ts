@@ -3,6 +3,14 @@ const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
+/** Strip common leading whitespace from all lines. */
+function dedent(text: string): string {
+	const lines = text.split('\n');
+	const indents = lines.filter(l => l.trim().length > 0).map(l => l.match(/^(\s*)/)?.[0].length ?? 0);
+	const min = indents.length > 0 ? Math.min(...indents) : 0;
+	return min > 0 ? lines.map(l => l.slice(min)).join('\n') : text;
+}
+
 class PreviewModel extends Model {
 	@attribute({ type: String, required: false })
 	title: string = '';
@@ -15,6 +23,9 @@ class PreviewModel extends Model {
 
 	@attribute({ type: Boolean, required: false })
 	source: boolean = false;
+
+	@attribute({ type: String, required: false })
+	responsive: string = '';
 
 	transform() {
 		// 1. Extract first direct fence child as source (fence always wins)
@@ -35,7 +46,7 @@ class PreviewModel extends Model {
 				const allLines = raw.split('\n');
 				const start = this.node.lines[0] + 1;
 				const end = this.node.lines[this.node.lines.length - 1] - 1;
-				const childSource = allLines.slice(start, end).join('\n').trim();
+				const childSource = dedent(allLines.slice(start, end).join('\n').trim());
 				if (childSource) {
 					sourcePre = new Tag('pre', { 'data-language': 'markdoc' }, [
 						new Tag('code', { 'data-language': 'markdoc' }, [childSource])
@@ -49,11 +60,13 @@ class PreviewModel extends Model {
 		const titleMeta = this.title ? new Tag('meta', { content: this.title }) : undefined;
 		const themeMeta = new Tag('meta', { content: this.theme });
 		const widthMeta = new Tag('meta', { content: this.width });
+		const responsiveMeta = this.responsive ? new Tag('meta', { content: this.responsive }) : undefined;
 
 		const childNodes = [
 			...(titleMeta ? [titleMeta] : []),
 			themeMeta,
 			widthMeta,
+			...(responsiveMeta ? [responsiveMeta] : []),
 			...(sourcePre ? [sourcePre] : []),
 			...children.toArray(),
 		];
@@ -64,6 +77,7 @@ class PreviewModel extends Model {
 				...(titleMeta ? { title: titleMeta } : {}),
 				theme: themeMeta,
 				width: widthMeta,
+				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
 				...(sourcePre ? { source: sourcePre } : {}),
 			},
 			children: childNodes,

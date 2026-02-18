@@ -73,6 +73,7 @@ import {
   Map, MapComponent,
   MapPin, MapPinComponent,
   Preview, PreviewComponent,
+  Sandbox, SandboxComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -163,4 +164,5 @@ export const schema = {
   Map: useSchema(Map).defineType<MapComponent>('Map'),
   MapPin: useSchema(MapPin).defineType<MapPinComponent>('MapPin'),
   Preview: useSchema(Preview).defineType<PreviewComponent>('Preview'),
+  Sandbox: useSchema(Sandbox).defineType<SandboxComponent>('Sandbox'),
 }
