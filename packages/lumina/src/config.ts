@@ -247,5 +247,30 @@ export const luminaConfig: ThemeConfig = {
 		MapPin: { block: 'map-pin' },
 		Preview: { block: 'preview' },
 		Sandbox: { block: 'sandbox' },
+		Symbol: {
+			block: 'symbol',
+			contentWrapper: { tag: 'div', ref: 'body' },
+			modifiers: {
+				kind: { source: 'meta', default: 'function' },
+				lang: { source: 'meta', default: 'typescript' },
+				since: { source: 'meta' },
+				deprecated: { source: 'meta' },
+				source: { source: 'meta' },
+			},
+			structure: {
+				header: {
+					tag: 'div', before: true,
+					children: [
+						{ tag: 'span', ref: 'kind-badge', metaText: 'kind' },
+						{ tag: 'span', ref: 'lang-badge', metaText: 'lang' },
+						{ tag: 'span', ref: 'since-badge', metaText: 'since', textPrefix: 'Since ', condition: 'since' },
+						{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', textPrefix: 'Deprecated ', condition: 'deprecated' },
+						{ tag: 'a', ref: 'source-link', condition: 'source', attrs: { href: { fromModifier: 'source' } }, children: ['Source'] },
+					],
+				},
+			},
+		},
+		SymbolGroup: { block: 'symbol-group' },
+		SymbolMember: { block: 'symbol-member' },
 	},
 };

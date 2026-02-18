@@ -53,7 +53,7 @@ The architecture is organized into several focused packages:
 
 ## 2. Rune Library
 
-refrakt.md ships 42 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships 43 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
 ### Layout & Structure
 
@@ -104,6 +104,7 @@ refrakt.md ships 42 author-facing runes (plus internal child runes). Each rune d
 | `compare` | -- | Fenced code blocks as side-by-side comparison panels with labels | -- |
 | `diff` | -- | Two fenced code blocks as before/after code (unified or side-by-side mode) | -- |
 | `api` | `endpoint` | Heading as endpoint title, fence as request/response examples, table as parameter list, blockquote as notes/warnings | -- |
+| `symbol` | -- | Heading as construct name, fence as type signature, list as parameter definitions, blockquote as returns/throws/deprecation | `TechArticle` |
 | `codegroup` | -- | Fenced code blocks as language-tabbed code block (auto-detects language as tab name) | -- |
 
 ### Commercial

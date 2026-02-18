@@ -606,5 +606,45 @@
 			"{% /sandbox %}"
 		],
 		"description": "Isolated HTML/CSS/JS sandbox with iframe rendering and optional framework loading"
+	},
+	"Symbol": {
+		"prefix": "rune:symbol",
+		"body": [
+			"{% symbol kind=\"${1|function,hook,class,interface,enum,type,module,component|}\" lang=\"${2|typescript,javascript,python,rust,go|}\" %}",
+			"",
+			"## ${3:name}",
+			"",
+			"${4:Description.}",
+			"",
+			"```${2}",
+			"${5:signature}",
+			"```",
+			"",
+			"$0",
+			"",
+			"{% /symbol %}"
+		],
+		"description": "Code construct documentation (function, class, interface, enum, type)"
+	},
+	"Symbol Class": {
+		"prefix": "rune:symbol:class",
+		"body": [
+			"{% symbol kind=\"${1|class,interface,module|}\" lang=\"${2|typescript,javascript,python,rust,go|}\" %}",
+			"",
+			"## ${3:ClassName}",
+			"",
+			"${4:Description.}",
+			"",
+			"```${2}",
+			"${5:declaration}",
+			"```",
+			"",
+			"### ${6:Methods}",
+			"",
+			"$0",
+			"",
+			"{% /symbol %}"
+		],
+		"description": "Class/interface documentation with member groups"
 	}
 }

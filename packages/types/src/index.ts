@@ -61,6 +61,7 @@ export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
 export { Preview, PreviewComponent } from './schema/preview.js';
 export { Sandbox, SandboxComponent } from './schema/sandbox.js';
+export { Symbol, SymbolComponent, SymbolGroup, SymbolGroupComponent, SymbolMember, SymbolMemberComponent } from './schema/symbol.js';
 
 // Theme system types
 export type {
