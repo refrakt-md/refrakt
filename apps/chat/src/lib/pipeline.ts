@@ -28,7 +28,8 @@ export function renderMarkdoc(source: string): RendererNode {
 	const ast = Markdoc.parse(source);
 
 	// 2. Transform with rune schemas (reinterpret children, emit typeof markers)
-	const renderable = Markdoc.transform(ast, { tags, nodes });
+	// Pass __source so sandbox/preview can extract raw HTML via node.lines
+	const renderable = Markdoc.transform(ast, { tags, nodes, variables: { __source: source } });
 
 	// 3. Serialize (Markdoc Tag instances → plain JSON objects)
 	const serialized = serializeTree(renderable) as RendererNode;
