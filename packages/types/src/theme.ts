@@ -8,6 +8,11 @@ export interface RefraktConfig {
 	target: string;
 	/** Component overrides — maps typeof names to relative paths of replacement components */
 	overrides?: Record<string, string>;
+	/** Syntax highlighting options */
+	highlight?: {
+		/** Shiki theme — a built-in theme name, or { light, dark } pair for dual themes */
+		theme?: string | { light: string; dark: string };
+	};
 }
 
 /** Theme manifest — the universal contract between content and rendering */

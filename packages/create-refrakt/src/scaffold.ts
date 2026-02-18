@@ -77,9 +77,11 @@ function generatePackageJson(projectName: string, theme: string): string {
 		},
 		dependencies: {
 			'@refrakt-md/content': '^0.4.0',
+			'@refrakt-md/highlight': '^0.4.0',
 			'@refrakt-md/runes': '^0.4.0',
 			'@refrakt-md/svelte': '^0.4.0',
 			'@refrakt-md/sveltekit': '^0.4.0',
+			'@refrakt-md/types': '^0.4.0',
 			[theme]: '^0.4.0',
 			'@markdoc/markdoc': '^0.4.0',
 		},

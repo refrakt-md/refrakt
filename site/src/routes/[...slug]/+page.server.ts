@@ -2,19 +2,22 @@ import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
 import { identityTransform } from '@refrakt-md/lumina/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
+import type { HighlightTransform } from '@refrakt-md/highlight';
 import { error } from '@sveltejs/kit';
+import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';
-import type { RendererNode } from '@refrakt-md/types';
+import type { RefraktConfig } from '@refrakt-md/types';
 
-const contentDir = path.resolve('content');
+const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
+const contentDir = path.resolve(config.contentDir);
 
-let _hl: ((tree: RendererNode) => RendererNode) | null = null;
+let _hl: HighlightTransform | null = null;
 
-async function getHighlightTransform(): Promise<(tree: RendererNode) => RendererNode> {
+async function getHighlightTransform(): Promise<HighlightTransform> {
 	const cached = _hl;
 	if (cached) return cached;
-	const hl = await createHighlightTransform();
+	const hl = await createHighlightTransform(config.highlight);
 	_hl = hl;
 	return hl;
 }
@@ -49,6 +52,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		),
 		seo: page.seo,
 		url,
+		highlightCss: hl.css,
 	};
 };
 

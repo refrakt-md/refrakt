@@ -5,6 +5,12 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	{#if data.highlightCss}
+		{@html `<style>${data.highlightCss}</style>`}
+	{/if}
+</svelte:head>
+
 <ThemeShell
 	{theme}
 	page={{
