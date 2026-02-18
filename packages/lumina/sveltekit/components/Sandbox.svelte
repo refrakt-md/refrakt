@@ -49,7 +49,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${buildDependencyTags()}
 <style>
-  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; }
 </style>
 </head>
 <body>

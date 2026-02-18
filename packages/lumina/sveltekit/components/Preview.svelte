@@ -73,10 +73,18 @@
 			const language = tagName === 'style' ? 'css'
 				: tagName === 'script' ? 'javascript'
 				: 'html';
+			let content: string;
+			if (tagName === 'style' || tagName === 'script') {
+				content = el.innerHTML.trim();
+			} else {
+				const clone = el.cloneNode(true) as Element;
+				clone.removeAttribute('data-source');
+				content = clone.outerHTML;
+			}
 			return {
 				label: attrVal || language.charAt(0).toUpperCase() + language.slice(1),
 				language,
-				content: el.innerHTML.trim(),
+				content,
 			};
 		});
 	});
