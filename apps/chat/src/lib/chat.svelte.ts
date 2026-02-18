@@ -12,7 +12,10 @@ export interface ChatMessage {
 export function createChat() {
 	let messages = $state<ChatMessage[]>([]);
 	let isStreaming = $state(false);
+	let isThinking = $state(false);
 	let highlightReady = $state(false);
+	let scrollTick = $state(0);
+	let abortController: AbortController | null = null;
 
 	async function init() {
 		await initHighlight();
@@ -23,6 +26,9 @@ export function createChat() {
 		// Add user message
 		messages.push({ role: 'user', content: userMessage });
 		isStreaming = true;
+		isThinking = true;
+		scrollTick = 0;
+		abortController = new AbortController();
 
 		// Build history for the AI (exclude the message we just added from being sent twice)
 		const history = messages
@@ -37,9 +43,11 @@ export function createChat() {
 		let accumulated = '';
 
 		try {
-			for await (const chunk of streamChat(history)) {
+			for await (const chunk of streamChat(history, abortController.signal)) {
+				if (isThinking) isThinking = false;
 				accumulated += chunk;
 				assistantMsg.content = accumulated;
+				scrollTick++;
 
 				// Try to render on each chunk — if Markdoc can't parse incomplete
 				// content, we silently catch and the UI shows raw text fallback
@@ -58,11 +66,26 @@ export function createChat() {
 				// The UI will show raw text
 			}
 		} catch (err) {
-			assistantMsg.error =
-				err instanceof Error ? err.message : 'An error occurred';
+			if (err instanceof DOMException && err.name === 'AbortError') {
+				// User cancelled — keep partial content, no error
+				try {
+					if (accumulated) assistantMsg.renderable = renderMarkdoc(accumulated);
+				} catch {
+					// Partial content can't parse — raw text fallback is fine
+				}
+			} else {
+				assistantMsg.error =
+					err instanceof Error ? err.message : 'An error occurred';
+			}
 		} finally {
 			isStreaming = false;
+			isThinking = false;
+			abortController = null;
 		}
+	}
+
+	function cancel() {
+		abortController?.abort();
 	}
 
 	return {
@@ -72,13 +95,20 @@ export function createChat() {
 		get isStreaming() {
 			return isStreaming;
 		},
+		get isThinking() {
+			return isThinking;
+		},
 		get highlightReady() {
 			return highlightReady;
 		},
 		get highlightCss() {
 			return getHighlightCss();
 		},
+		get scrollTick() {
+			return scrollTick;
+		},
 		init,
 		send,
+		cancel,
 	};
 }

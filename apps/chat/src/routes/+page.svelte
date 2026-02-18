@@ -21,7 +21,9 @@
 	}
 
 	$effect(() => {
-		if (chat.messages.length && messagesEl) {
+		// Subscribe to both new messages and streaming content growth
+		const _ = [chat.messages.length, chat.scrollTick];
+		if (messagesEl) {
 			messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
 		}
 	});
@@ -68,8 +70,8 @@
 			</div>
 		{/each}
 
-		{#if chat.isStreaming}
-			<div class="streaming-indicator">
+		{#if chat.isThinking}
+			<div class="thinking-indicator">
 				<span class="dot"></span>
 				<span class="dot"></span>
 				<span class="dot"></span>
@@ -84,9 +86,15 @@
 			placeholder="Ask something..."
 			disabled={chat.isStreaming}
 		/>
-		<button type="submit" disabled={chat.isStreaming || !inputValue.trim()}>
-			Send
-		</button>
+		{#if chat.isStreaming}
+			<button type="button" class="cancel-btn" onclick={() => chat.cancel()}>
+				Cancel
+			</button>
+		{:else}
+			<button type="submit" disabled={!inputValue.trim()}>
+				Send
+			</button>
+		{/if}
 	</form>
 </div>
 
@@ -173,7 +181,7 @@
 		white-space: pre-wrap;
 	}
 
-	.streaming-indicator {
+	.thinking-indicator {
 		display: flex;
 		gap: 0.25rem;
 		padding: 0.5rem 0;
@@ -240,5 +248,15 @@
 	.input-bar button:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.cancel-btn {
+		background: transparent;
+		color: var(--rf-color-danger-700, #b91c1c);
+		border: 1px solid var(--rf-color-danger-300, #fca5a5);
+	}
+
+	.cancel-btn:hover {
+		background: var(--rf-color-danger-50, #fef2f2);
 	}
 </style>
