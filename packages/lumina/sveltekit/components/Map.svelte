@@ -7,31 +7,20 @@
 
 	const isMap = tag.attributes.typeof === 'Map';
 
-	// Map-level properties (read from meta children)
-	const zoom = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'zoom')?.attributes?.content || ''
-		: '';
-	const center = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'center')?.attributes?.content || ''
-		: '';
-	const mapStyle = isMap
-		? tag.attributes['data-style'] || 'street'
-		: 'street';
-	const height = isMap
-		? tag.attributes['data-height'] || 'medium'
-		: 'medium';
-	const provider = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'provider')?.attributes?.content || 'openstreetmap'
-		: 'openstreetmap';
-	const interactive = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'interactive')?.attributes?.content !== 'false'
-		: true;
-	const route = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'route')?.attributes?.content === 'true'
-		: false;
-	const cluster = isMap
-		? tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'cluster')?.attributes?.content === 'true'
-		: false;
+	// Helper to read a meta child from the tag tree
+	function findMeta(property: string): string {
+		return tag.children.find((c: any) => c?.name === 'meta' && c?.attributes?.property === property)?.attributes?.content || '';
+	}
+
+	// Map-level properties — reactive so they update if tag prop changes (streaming)
+	const zoom = $derived(isMap ? findMeta('zoom') : '');
+	const center = $derived(isMap ? findMeta('center') : '');
+	const mapStyle = $derived(isMap ? (tag.attributes['data-style'] || 'street') : 'street');
+	const height = $derived(isMap ? (tag.attributes['data-height'] || 'medium') : 'medium');
+	const provider = $derived(isMap ? (findMeta('provider') || 'openstreetmap') : 'openstreetmap');
+	const interactive = $derived(isMap ? findMeta('interactive') !== 'false' : true);
+	const route = $derived(isMap ? findMeta('route') === 'true' : false);
+	const cluster = $derived(isMap ? findMeta('cluster') === 'true' : false);
 
 	// Extract pin data from tag children
 	interface PinData {
@@ -89,6 +78,8 @@
 
 	let container: HTMLDivElement;
 	let rendered = $state(false);
+	let mapInstance: any = null;
+	let initializing = false;
 
 	// Tile provider URLs
 	const tileUrls: Record<string, Record<string, string>> = {
@@ -129,26 +120,43 @@
 		return null;
 	}
 
-	onMount(async () => {
-		if (!isMap || pins.length === 0) return;
+	async function initLeaflet() {
+		if (initializing || rendered || !isMap || pins.length === 0 || !container) return;
+		initializing = true;
 
 		try {
 			// Load Leaflet CSS
-			const linkEl = document.createElement('link');
-			linkEl.rel = 'stylesheet';
-			linkEl.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-			document.head.appendChild(linkEl);
+			if (!document.querySelector('link[href*="leaflet@1.9.4"]')) {
+				const linkEl = document.createElement('link');
+				linkEl.rel = 'stylesheet';
+				linkEl.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+				document.head.appendChild(linkEl);
+			}
 
 			// Load Leaflet JS
 			const cdn = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js';
 			const L = await import(/* @vite-ignore */ cdn);
 
-			// Resolve pin coordinates (geocode addresses if needed)
+			// Snapshot current reactive values for use in this async flow
+			const currentPins = pins;
+			const currentCenter = center;
+			const currentZoom = zoom;
+			const currentMapStyle = mapStyle;
+			const currentProvider = provider;
+			const currentInteractive = interactive;
+			const currentRoute = route;
+			const currentCluster = cluster;
+
+			// Resolve pin coordinates (geocode addresses if needed, fall back to name)
 			const resolvedPins = await Promise.all(
-				pins.map(async (pin) => {
+				currentPins.map(async (pin) => {
 					if (pin.lat && pin.lng) return { ...pin };
 					if (pin.address) {
 						const coords = await geocode(pin.address);
+						if (coords) return { ...pin, lat: coords[0], lng: coords[1] };
+					}
+					if (pin.name) {
+						const coords = await geocode(pin.name);
 						if (coords) return { ...pin, lat: coords[0], lng: coords[1] };
 					}
 					return null;
@@ -162,12 +170,12 @@
 			let mapCenter: [number, number];
 			let mapZoom: number;
 
-			if (center) {
-				const coordMatch = center.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+			if (currentCenter) {
+				const coordMatch = currentCenter.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
 				if (coordMatch) {
 					mapCenter = [parseFloat(coordMatch[1]), parseFloat(coordMatch[2])];
 				} else {
-					const geocoded = await geocode(center);
+					const geocoded = await geocode(currentCenter);
 					mapCenter = geocoded || [validPins[0].lat, validPins[0].lng];
 				}
 			} else {
@@ -180,28 +188,28 @@
 				];
 			}
 
-			mapZoom = zoom ? parseInt(zoom) : 13;
+			mapZoom = currentZoom ? parseInt(currentZoom) : 13;
 
 			// Create map
 			const map = L.map(container, {
-				zoomControl: interactive,
-				dragging: interactive,
-				scrollWheelZoom: interactive,
-				doubleClickZoom: interactive,
-				touchZoom: interactive,
+				zoomControl: currentInteractive,
+				dragging: currentInteractive,
+				scrollWheelZoom: currentInteractive,
+				doubleClickZoom: currentInteractive,
+				touchZoom: currentInteractive,
 			}).setView(mapCenter, mapZoom);
 
 			// Add tile layer
-			if (provider === 'mapbox') {
+			if (currentProvider === 'mapbox') {
 				const apiKey = tag.attributes['data-api-key'] || '';
-				const style = tileUrls.mapbox[mapStyle] || tileUrls.mapbox.street;
+				const style = tileUrls.mapbox[currentMapStyle] || tileUrls.mapbox.street;
 				L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/256/{z}/{x}/{y}@2x?access_token=${apiKey}`, {
 					attribution: attributions.mapbox,
 					tileSize: 512,
 					zoomOffset: -1,
 				}).addTo(map);
 			} else {
-				const tileUrl = tileUrls.openstreetmap[mapStyle] || tileUrls.openstreetmap.street;
+				const tileUrl = tileUrls.openstreetmap[currentMapStyle] || tileUrls.openstreetmap.street;
 				L.tileLayer(tileUrl, { attribution: attributions.openstreetmap }).addTo(map);
 			}
 
@@ -247,7 +255,7 @@
 			}
 
 			// Route line for ordered lists
-			if (route && validPins.length > 1) {
+			if (currentRoute && validPins.length > 1) {
 				const routeCoords = validPins.map(p => [p.lat, p.lng] as [number, number]);
 				L.polyline(routeCoords, {
 					color: 'var(--rf-color-primary, #3b82f6)',
@@ -258,7 +266,7 @@
 			}
 
 			// Clustering
-			if (cluster && allMarkers.length > 0) {
+			if (currentCluster && allMarkers.length > 0) {
 				try {
 					const clusterCdn = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster-src.js';
 					const clusterCss = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
@@ -266,10 +274,12 @@
 
 					// Load cluster CSS
 					for (const href of [clusterCss, clusterDefaultCss]) {
-						const link = document.createElement('link');
-						link.rel = 'stylesheet';
-						link.href = href;
-						document.head.appendChild(link);
+						if (!document.querySelector(`link[href="${href}"]`)) {
+							const link = document.createElement('link');
+							link.rel = 'stylesheet';
+							link.href = href;
+							document.head.appendChild(link);
+						}
 					}
 
 					// Load cluster JS via script tag (no ESM module available)
@@ -294,19 +304,39 @@
 			}
 
 			// Fit bounds if no explicit center/zoom
-			if (!center && !zoom && validPins.length > 1) {
+			if (!currentCenter && !currentZoom && validPins.length > 1) {
 				const bounds = L.latLngBounds(validPins.map(p => [p.lat, p.lng]));
 				map.fitBounds(bounds, { padding: [30, 30] });
 			}
 
+			mapInstance = map;
 			rendered = true;
 		} catch (e) {
 			// Leaflet failed to load, fallback list remains visible
 			console.warn('Map rune: Leaflet failed to load', e);
+		} finally {
+			initializing = false;
+		}
+	}
+
+	// Reactive: trigger Leaflet init when pins become available (handles streaming)
+	$effect(() => {
+		if (pins.length > 0) {
+			initLeaflet();
 		}
 	});
 
-	const pinLabel = `Map with ${pins.length} location${pins.length !== 1 ? 's' : ''}: ${pins.map(p => p.name).filter(Boolean).join(', ')}`;
+	// Cleanup on unmount
+	onMount(() => {
+		return () => {
+			if (mapInstance) {
+				mapInstance.remove();
+				mapInstance = null;
+			}
+		};
+	});
+
+	const pinLabel = $derived(`Map with ${pins.length} location${pins.length !== 1 ? 's' : ''}: ${pins.map(p => p.name).filter(Boolean).join(', ')}`);
 </script>
 
 {#if isMap}
