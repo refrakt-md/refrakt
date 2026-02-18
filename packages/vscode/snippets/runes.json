@@ -587,6 +587,24 @@
 			"$0",
 			"{% /preview %}"
 		],
-		"description": "Component showcase with theme toggle and source view"
+		"description": "Component showcase with theme toggle, responsive viewports, and source view"
+	},
+	"Preview Responsive": {
+		"prefix": "rune:preview:responsive",
+		"body": [
+			"{% preview source=true responsive=\"mobile,tablet,desktop\" %}",
+			"$0",
+			"{% /preview %}"
+		],
+		"description": "Component showcase with responsive viewport presets"
+	},
+	"Sandbox": {
+		"prefix": "rune:sandbox",
+		"body": [
+			"{% sandbox framework=\"${1|,tailwind,bootstrap,bulma,pico|}\" %}",
+			"$0",
+			"{% /sandbox %}"
+		],
+		"description": "Isolated HTML/CSS/JS sandbox with iframe rendering and optional framework loading"
 	}
 }
