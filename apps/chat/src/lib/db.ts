@@ -1,11 +1,12 @@
 import { openDB as idbOpen, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'refrakt-chat';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export interface StoredConversation {
 	id: string;
 	title: string;
+	mode?: string;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -21,23 +22,28 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDB() {
 	if (!dbPromise) {
 		dbPromise = idbOpen(DB_NAME, DB_VERSION, {
-			upgrade(db) {
-				const convStore = db.createObjectStore('conversations', { keyPath: 'id' });
-				convStore.createIndex('updatedAt', 'updatedAt');
+			upgrade(db, oldVersion) {
+				if (oldVersion < 1) {
+					const convStore = db.createObjectStore('conversations', { keyPath: 'id' });
+					convStore.createIndex('updatedAt', 'updatedAt');
 
-				const msgStore = db.createObjectStore('messages', { autoIncrement: true });
-				msgStore.createIndex('conversationId', 'conversationId');
+					const msgStore = db.createObjectStore('messages', { autoIncrement: true });
+					msgStore.createIndex('conversationId', 'conversationId');
+				}
+				// v1 → v2: mode field is optional, no store schema change needed.
+				// Existing conversations get mode=undefined → treated as 'general'.
 			},
 		});
 	}
 	return dbPromise;
 }
 
-export async function createConversation(title: string): Promise<StoredConversation> {
+export async function createConversation(title: string, mode?: string): Promise<StoredConversation> {
 	const db = await getDB();
 	const conv: StoredConversation = {
 		id: crypto.randomUUID(),
 		title,
+		mode,
 		createdAt: Date.now(),
 		updatedAt: Date.now(),
 	};

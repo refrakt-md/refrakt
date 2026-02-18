@@ -9,3 +9,5 @@ export { createGeminiProvider } from './providers/gemini.js';
 export type { GeminiOptions } from './providers/gemini.js';
 export { writePrompt } from './modes/write.js';
 export type { WritePromptOptions } from './modes/write.js';
+export { CHAT_MODES, CHAT_MODE_LIST, getChatModeRunes } from './modes/chat.js';
+export type { ChatMode, ChatModeDefinition } from './modes/chat.js';

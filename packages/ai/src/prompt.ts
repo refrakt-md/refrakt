@@ -507,9 +507,13 @@ function describeRune(rune: RuneInfo): string {
 	return lines.join('\n');
 }
 
-export function generateSystemPrompt(runes: Record<string, RuneInfo>): string {
+export function generateSystemPrompt(
+	runes: Record<string, RuneInfo>,
+	includeRunes?: Set<string>,
+): string {
 	const runeDescriptions = Object.values(runes)
 		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
+		.filter(rune => !includeRunes || includeRunes.has(rune.name))
 		.map(rune => describeRune(rune))
 		.join('\n\n');
 

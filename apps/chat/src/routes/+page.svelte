@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import SafeRenderer from '$lib/SafeRenderer.svelte';
 	import { createChat } from '$lib/chat.svelte.js';
+	import { CHAT_MODE_LIST } from '@refrakt-md/ai';
 
 	const chat = createChat();
 
@@ -87,6 +88,9 @@
 					tabindex="0"
 				>
 					<span class="conv-item__title">{conv.title}</span>
+					{#if conv.mode}
+						<span class="conv-item__mode">{conv.mode}</span>
+					{/if}
 					<span class="conv-item__time">{formatTime(conv.updatedAt)}</span>
 					<button
 						class="conv-item__delete"
@@ -111,12 +115,24 @@
 				</svg>
 			</button>
 			<h1>chat.refrakt.md</h1>
+			<select
+				class="mode-select"
+				value={chat.selectedMode}
+				onchange={(e) => chat.selectedMode = e.currentTarget.value as any}
+				disabled={chat.isModeLocked || chat.isStreaming}
+				title={chat.isModeLocked ? 'Mode is locked for this conversation' : 'Select conversation mode'}
+			>
+				{#each CHAT_MODE_LIST as mode}
+					<option value={mode.id}>{mode.label}</option>
+				{/each}
+			</select>
 		</header>
 
 		<div class="messages" bind:this={messagesEl}>
 			{#if chat.messages.length === 0}
 				<div class="empty-state">
 					<p>Ask anything. Responses are rendered with rich, interactive runes.</p>
+					<p class="mode-description">{CHAT_MODE_LIST.find(m => m.id === chat.effectiveMode)?.description ?? ''}</p>
 					<p class="hint">Try: "Good pasta carbonara recipe?" or "Compare React vs Svelte"</p>
 				</div>
 			{/if}
@@ -267,6 +283,14 @@
 		min-width: 0;
 	}
 
+	.conv-item__mode {
+		font-size: 0.625rem;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--rf-color-primary, #0ea5e9);
+		flex-shrink: 0;
+	}
+
 	.conv-item__time {
 		font-size: 0.6875rem;
 		color: var(--rf-color-text-muted, #94a3b8);
@@ -341,6 +365,28 @@
 		font-weight: 600;
 	}
 
+	.mode-select {
+		margin-left: auto;
+		padding: 0.375rem 0.5rem;
+		border: 1px solid var(--rf-color-border, #e2e8f0);
+		border-radius: 0.375rem;
+		background: transparent;
+		color: inherit;
+		font-size: 0.8125rem;
+		font-family: inherit;
+		cursor: pointer;
+	}
+
+	.mode-select:focus {
+		outline: none;
+		border-color: var(--rf-color-primary, #0ea5e9);
+	}
+
+	.mode-select:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
 	.messages {
 		flex: 1;
 		overflow-y: auto;
@@ -355,6 +401,11 @@
 
 	.empty-state p {
 		margin: 0.5rem 0;
+	}
+
+	.empty-state .mode-description {
+		font-size: 0.875rem;
+		color: var(--rf-color-text-muted, #94a3b8);
 	}
 
 	.empty-state .hint {

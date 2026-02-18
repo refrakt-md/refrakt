@@ -4,12 +4,13 @@
  */
 export async function* streamChat(
 	messages: Array<{ role: string; content: string }>,
+	mode?: string,
 	signal?: AbortSignal,
 ): AsyncGenerator<string> {
 	const response = await fetch('/api/chat', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ messages }),
+		body: JSON.stringify({ messages, mode }),
 		signal,
 	});
 

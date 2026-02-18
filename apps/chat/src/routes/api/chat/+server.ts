@@ -1,8 +1,8 @@
 import { env } from '$env/dynamic/private';
-import { generateSystemPrompt } from '@refrakt-md/ai';
+import { generateSystemPrompt, getChatModeRunes, CHAT_MODES } from '@refrakt-md/ai';
 import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
 import { runes } from '@refrakt-md/runes';
-import type { AIProvider, Message } from '@refrakt-md/ai';
+import type { AIProvider, Message, ChatMode } from '@refrakt-md/ai';
 import type { RequestHandler } from './$types';
 
 interface ResolvedProvider {
@@ -40,27 +40,37 @@ function detectProvider(): ResolvedProvider {
 
 const CHAT_PREAMBLE = `You are a helpful assistant. Your responses will be rendered as rich, interactive content using the refrakt.md rune system.
 
-Use runes when they genuinely improve the response:
-- Recipes → {% recipe %}
-- Comparisons → {% comparison %}
-- Step-by-step instructions → {% steps %} or {% howto %}
-- Code examples → fenced code blocks (they get syntax highlighted automatically)
-- FAQs → {% accordion %}
-- Tabbed content → {% tabs %}
-- Callouts/warnings → {% hint type="warning" %}
-- Timelines → {% timeline %}
-- UI/component design requests → {% preview source=true %} wrapping {% sandbox framework="tailwind" %} with raw HTML inside
+Use the runes listed in the Available Runes section when they genuinely improve the response. Match the rune to the content: structured data deserves a rune, simple answers deserve plain text.
 
 Use plain Markdown when the answer is simple. Never force a rune where plain text works better.
 A question like "What's 2+2?" should get a plain text answer, not a rune.
 
-Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} syntax.`;
+Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} syntax.
+Do NOT use rune names that are not listed in the Available Runes section below.`;
 
-const systemPrompt = CHAT_PREAMBLE + '\n\n' + generateSystemPrompt(runes);
+const VALID_MODES = new Set(Object.keys(CHAT_MODES));
+const promptCache = new Map<string, string>();
+
+function getSystemPrompt(mode?: string): string {
+	const key = mode && VALID_MODES.has(mode) ? mode : 'full';
+	let cached = promptCache.get(key);
+	if (!cached) {
+		const includeRunes = key !== 'full'
+			? getChatModeRunes(key as ChatMode)
+			: undefined;
+		cached = CHAT_PREAMBLE + '\n\n' + generateSystemPrompt(runes, includeRunes);
+		promptCache.set(key, cached);
+	}
+	return cached;
+}
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { messages } = (await request.json()) as { messages: Array<{ role: string; content: string }> };
+	const { messages, mode } = (await request.json()) as {
+		messages: Array<{ role: string; content: string }>;
+		mode?: string;
+	};
 	const { provider } = detectProvider();
+	const systemPrompt = getSystemPrompt(mode);
 
 	const allMessages: Message[] = [
 		{ role: 'system', content: systemPrompt },
