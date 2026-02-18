@@ -11,10 +11,12 @@
 	width: calc(100% + 4rem);
 	margin-left: -2rem;
 }
-.rf-preview[data-width="wide"] {
-	width: calc(100% + 8rem);
-	margin-left: -4rem;
-	max-width: 76rem;
+@container (min-width: 1008px) {
+	.rf-preview[data-width="wide"] {
+		width: calc(100% + 8rem);
+		margin-left: -4rem;
+		max-width: 76rem;
+	}
 }
 .rf-preview[data-width="full"] {
 	width: 100vw;

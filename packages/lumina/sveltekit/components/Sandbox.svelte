@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, getContext } from 'svelte';
 	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 
@@ -15,8 +15,14 @@
 	const label: string = getMeta('label') || '';
 	const heightAttr: string = getMeta('height') || 'auto';
 
+	// Read theme from parent Preview (undefined when standalone)
+	const previewTheme = getContext<{ readonly mode: string } | undefined>('rf-preview-theme');
+
 	const FRAMEWORK_PRESETS: Record<string, string[]> = {
-		tailwind: ['<script src="https://cdn.tailwindcss.com"><\/script>'],
+		tailwind: [
+			'<script src="https://cdn.tailwindcss.com"><\/script>',
+			'<script>tailwind.config = { darkMode: "class" }<\/script>',
+		],
 		bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
 		bulma: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1/css/bulma.min.css">'],
 		pico: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">'],
@@ -59,6 +65,23 @@ ${renderedContent}
     parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
   });
   ro.observe(document.body);
+
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'rf-sandbox-theme') {
+      const theme = e.data.theme;
+      const html = document.documentElement;
+      if (theme === 'dark') {
+        html.classList.add('dark');
+        html.setAttribute('data-theme', 'dark');
+      } else if (theme === 'light') {
+        html.classList.remove('dark');
+        html.setAttribute('data-theme', 'light');
+      } else {
+        html.classList.remove('dark');
+        html.removeAttribute('data-theme');
+      }
+    }
+  });
 <\/script>
 </body>
 </html>`;
@@ -70,6 +93,16 @@ ${renderedContent}
 	onMount(() => {
 		mounted = true;
 
+		// Send current theme once iframe content has loaded
+		const sendTheme = () => {
+			if (previewTheme && iframeEl?.contentWindow) {
+				iframeEl.contentWindow.postMessage(
+					{ type: 'rf-sandbox-theme', theme: previewTheme.mode }, '*'
+				);
+			}
+		};
+		iframeEl?.addEventListener('load', sendTheme);
+
 		if (heightAttr === 'auto') {
 			const handler = (e: MessageEvent) => {
 				if (e.data?.type === 'rf-sandbox-resize' && e.source === iframeEl?.contentWindow) {
@@ -77,8 +110,21 @@ ${renderedContent}
 				}
 			};
 			window.addEventListener('message', handler);
-			return () => window.removeEventListener('message', handler);
+			return () => {
+				window.removeEventListener('message', handler);
+				iframeEl?.removeEventListener('load', sendTheme);
+			};
 		}
+
+		return () => iframeEl?.removeEventListener('load', sendTheme);
+	});
+
+	// Post theme changes to iframe when Preview toggle changes
+	$effect(() => {
+		if (!previewTheme || !mounted || !iframeEl?.contentWindow) return;
+		iframeEl.contentWindow.postMessage(
+			{ type: 'rf-sandbox-theme', theme: previewTheme.mode }, '*'
+		);
 	});
 </script>
 

@@ -98,6 +98,8 @@ Scripts run inside the sandboxed iframe, fully isolated from the host page.
     .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
     .counter button:hover { background: #4b5563; }
   }
+  [data-theme="dark"] .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+  [data-theme="dark"] .counter button:hover { background: #4b5563; }
 </style>
 <div class="counter">
   <button onclick="update(-1)">−</button>
@@ -146,6 +148,8 @@ Named `data-source` values create labelled tabs in the source panel.
     .card { border-color: #374151; }
     .card p { color: #9ca3af; }
   }
+  [data-theme="dark"] .card { border-color: #374151; }
+  [data-theme="dark"] .card p { color: #9ca3af; }
 </style>
 <div class="wrapper" style="padding: 24px;">
   <div data-source="HTML" class="card">

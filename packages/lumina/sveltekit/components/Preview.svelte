@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
 	import { Renderer } from '@refrakt-md/svelte';
+	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
@@ -90,6 +91,11 @@
 	});
 
 	let themeMode: 'auto' | 'light' | 'dark' = $state(initialTheme as 'auto' | 'light' | 'dark');
+
+	// Expose reactive theme to descendant Sandbox components via context
+	setContext('rf-preview-theme', {
+		get mode() { return themeMode; }
+	});
 	let view: 'preview' | 'code' = $state('preview');
 	let activeViewport: string | null = $state(
 		hasResponsive ? responsivePresets[responsivePresets.length - 1] : null
