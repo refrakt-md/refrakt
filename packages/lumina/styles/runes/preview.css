@@ -110,15 +110,19 @@
 	border-radius: 0;
 }
 
-/* Mobile: collapse all breakouts */
-@media (max-width: 768px) {
-	.rf-preview[data-width="medium"],
-	.rf-preview[data-width="wide"],
-	.rf-preview[data-width="full"] {
-		width: 100%;
-		margin-left: 0;
+/* Small containers: edge-to-edge bleed */
+@container (max-width: 1008px) {
+	.rf-preview {
+		margin-left: calc(-1 * var(--rf-content-padding, 1.5rem));
+		margin-right: calc(-1 * var(--rf-content-padding, 1.5rem));
+		border-radius: 0;
+		border-left: none;
+		border-right: none;
+	}
+	.rf-preview__toolbar {
+		padding: 0.5rem calc(var(--rf-content-padding, 1.5rem) + 1rem) 0.5rem var(--rf-content-padding, 1.5rem);
 	}
 	.rf-preview__canvas {
-		padding: 1.5rem;
+		padding: 1.5rem var(--rf-content-padding, 1.5rem);
 	}
 }

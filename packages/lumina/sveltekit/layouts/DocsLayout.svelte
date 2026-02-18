@@ -220,6 +220,7 @@
 	.page-content {
 		padding-top: 5rem; /* clears fixed header */
 		padding-bottom: 4rem;
+		container-type: inline-size;
 	}
 	.page-content.has-nav {
 		margin-left: 240px;
@@ -228,6 +229,7 @@
 		max-width: 60rem;
 		margin: 0 auto;
 		padding: 0 2.5rem;
+		--rf-content-padding: 2.5rem;
 	}
 
 	/* ---- Mobile menu button (hidden on desktop) ---- */
@@ -382,6 +384,7 @@
 		}
 		.page-content-inner {
 			padding: 0 1.5rem;
+			--rf-content-padding: 1.5rem;
 		}
 	}
 </style>
