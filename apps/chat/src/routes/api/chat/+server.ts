@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/private';
 import { generateSystemPrompt } from '@refrakt-md/ai';
 import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
 import { runes } from '@refrakt-md/runes';
@@ -11,7 +12,7 @@ interface ResolvedProvider {
 }
 
 function detectProvider(): ResolvedProvider {
-	const anthropicKey = process.env.ANTHROPIC_API_KEY;
+	const anthropicKey = env.ANTHROPIC_API_KEY;
 	if (anthropicKey) {
 		return {
 			name: 'anthropic',
@@ -20,7 +21,7 @@ function detectProvider(): ResolvedProvider {
 		};
 	}
 
-	const googleKey = process.env.GOOGLE_API_KEY;
+	const googleKey = env.GOOGLE_API_KEY;
 	if (googleKey) {
 		return {
 			name: 'gemini',
@@ -29,7 +30,7 @@ function detectProvider(): ResolvedProvider {
 		};
 	}
 
-	const ollamaHost = process.env.OLLAMA_HOST;
+	const ollamaHost = env.OLLAMA_HOST;
 	return {
 		name: 'ollama',
 		defaultModel: 'llama3.2',

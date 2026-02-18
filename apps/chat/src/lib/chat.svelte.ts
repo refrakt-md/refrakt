@@ -29,9 +29,10 @@ export function createChat() {
 			.filter((m) => m.role === 'user' || m.role === 'assistant')
 			.map((m) => ({ role: m.role, content: m.content }));
 
-		// Add placeholder for assistant response
-		const assistantMsg: ChatMessage = { role: 'assistant', content: '' };
-		messages.push(assistantMsg);
+		// Add placeholder for assistant response — access through the array
+		// so mutations go through the $state proxy and trigger UI updates
+		messages.push({ role: 'assistant', content: '' });
+		const assistantMsg = messages[messages.length - 1];
 
 		let accumulated = '';
 
