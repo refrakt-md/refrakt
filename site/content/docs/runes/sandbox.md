@@ -164,6 +164,7 @@ Named `data-source` values create labelled tabs in the source panel.
 
 Without a preview wrapper, the sandbox renders inline with no chrome — useful for embedding a live widget in the middle of prose.
 
+
 {% sandbox %}
 <style>
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -174,6 +175,19 @@ Without a preview wrapper, the sandbox renders inline with no chrome — useful 
 </style>
 <div class="pulse-dot"></div>
 {% /sandbox %}
+
+```markdoc
+{% sandbox %}
+<style>
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .pulse-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #7C3AED; animation: pulse 2s infinite;
+  }
+</style>
+<div class="pulse-dot"></div>
+{% /sandbox %}
+```
 
 ## Tailwind card grid
 

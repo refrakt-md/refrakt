@@ -53,41 +53,17 @@
 		return tags.length === 1 ? tags[0] as SerializedTag : null;
 	});
 
-	// Extract sandbox raw HTML for data-source panel generation
+	// Read server-provided data-source panels from sandbox children
 	const sandboxSourcePanels = $derived.by(() => {
 		if (!sandboxChild) return null;
-		const content = sandboxChild.children
-			?.find((c: any) => c?.name === 'meta' && c?.attributes?.property === 'content')
-			?.attributes?.content;
-		if (!content || typeof content !== 'string') return null;
-
-		// Parse data-source markers from the raw HTML using DOMParser (browser only)
-		if (typeof DOMParser === 'undefined') return null;
-		const parser = new DOMParser();
-		const doc = parser.parseFromString(`<body>${content}</body>`, 'text/html');
-		const elements = doc.querySelectorAll('[data-source]');
-		if (elements.length === 0) return null;
-
-		return Array.from(elements).map(el => {
-			const attrVal = el.getAttribute('data-source') || '';
-			const tagName = el.tagName.toLowerCase();
-			const language = tagName === 'style' ? 'css'
-				: tagName === 'script' ? 'javascript'
-				: 'html';
-			let content: string;
-			if (tagName === 'style' || tagName === 'script') {
-				content = el.innerHTML.trim();
-			} else {
-				const clone = el.cloneNode(true) as Element;
-				clone.removeAttribute('data-source');
-				content = clone.outerHTML;
-			}
-			return {
-				label: attrVal || language.charAt(0).toUpperCase() + language.slice(1),
-				language,
-				content,
-			};
-		});
+		const panels = sandboxChild.children?.filter(
+			(c: any) => isTag(c) && c.name === 'meta' && c.attributes?.property === 'source-panel'
+		);
+		if (!panels || panels.length === 0) return null;
+		return panels.map((panel: any) => ({
+			label: (panel as SerializedTag).attributes['data-label'] as string,
+			node: (panel as SerializedTag).children?.[0] as SerializedTag,
+		}));
 	});
 
 	let themeMode: 'auto' | 'light' | 'dark' = $state(initialTheme as 'auto' | 'light' | 'dark');
@@ -241,7 +217,7 @@
 						{/each}
 					</div>
 				{/if}
-				<pre data-language={sandboxSourcePanels[activeSourceTab].language}><code data-language={sandboxSourcePanels[activeSourceTab].language}>{sandboxSourcePanels[activeSourceTab].content}</code></pre>
+				<Renderer node={sandboxSourcePanels[activeSourceTab].node} />
 			{:else if sourceNode}
 				<Renderer node={sourceNode} />
 			{/if}
