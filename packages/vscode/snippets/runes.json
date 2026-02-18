@@ -579,5 +579,14 @@
 			"{% /music-recording %}"
 		],
 		"description": "Individual music track metadata"
+	},
+	"Preview": {
+		"prefix": ["rune:preview", "rune:showcase"],
+		"body": [
+			"{% preview source=true %}",
+			"$0",
+			"{% /preview %}"
+		],
+		"description": "Component showcase with theme toggle and source view"
 	}
 }
