@@ -31,6 +31,11 @@ const EXCLUDED_RUNES = new Set([
 	'map-pin',
 ]);
 
+/** Attributes to hide from the AI prompt (rune.attribute format) */
+const HIDDEN_ATTRIBUTES = new Set([
+	'feature.split',
+]);
+
 /** Usage examples for each author-facing rune */
 const RUNE_EXAMPLES: Record<string, string> = {
 	hint: `{% hint type="note" %}
@@ -590,9 +595,14 @@ function describeRune(rune: RuneInfo): string {
 	// Attributes
 	const attrs = rune.schema.attributes;
 	if (attrs && Object.keys(attrs).length > 0) {
-		lines.push('Attributes:');
-		for (const [attrName, attrDef] of Object.entries(attrs)) {
-			lines.push(describeAttribute(attrName, attrDef));
+		const entries = Object.entries(attrs).filter(
+			([name]) => !HIDDEN_ATTRIBUTES.has(`${rune.name}.${name}`),
+		);
+		if (entries.length > 0) {
+			lines.push('Attributes:');
+			for (const [attrName, attrDef] of entries) {
+				lines.push(describeAttribute(attrName, attrDef));
+			}
 		}
 	}
 

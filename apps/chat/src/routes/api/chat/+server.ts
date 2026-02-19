@@ -48,7 +48,11 @@ Use plain Markdown only for simple factual answers, short explanations, or conve
 Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} syntax.
 Do NOT use rune names that are not listed in the Available Runes section below.
 
-CRITICAL: Write runes DIRECTLY in your response — they will render as interactive components. Do NOT wrap rune content in code fences or code blocks. Do NOT include YAML frontmatter (---). Your response is a chat message, not a file.`;
+CRITICAL OUTPUT FORMAT RULES:
+- Write runes DIRECTLY in your response — they render as live interactive components.
+- NEVER wrap your output in code fences (\`\`\`). Your response is NOT a code example.
+- NEVER include YAML frontmatter (---).
+- Start your response with the first rune tag or plain text — not with \`\`\`.`;
 
 const VALID_MODES = new Set(Object.keys(CHAT_MODES));
 const promptPartsCache = new Map<string, [string, string]>();
@@ -124,7 +128,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		async start(controller) {
 			const encoder = new TextEncoder();
 			try {
-				for await (const chunk of provider.complete({ messages: allMessages })) {
+				for await (const chunk of provider.complete({ messages: allMessages, maxTokens: 16384 })) {
 					controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`));
 				}
 				controller.enqueue(encoder.encode('data: [DONE]\n\n'));
