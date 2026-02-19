@@ -2,12 +2,22 @@ export interface WritePromptOptions {
 	multiFile?: boolean;
 }
 
+const FRONTMATTER_INSTRUCTION = `
+
+## File format
+
+Every page should begin with YAML frontmatter:
+---
+title: Page Title
+description: A brief description
+---`;
+
 export function writePrompt(options?: WritePromptOptions): string {
 	if (!options?.multiFile) {
-		return '';
+		return FRONTMATTER_INSTRUCTION;
 	}
 
-	return `
+	return FRONTMATTER_INSTRUCTION + `
 
 ## Multi-file output
 

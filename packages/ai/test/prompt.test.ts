@@ -67,9 +67,9 @@ describe('generateSystemPrompt', () => {
 		expect(prompt).not.toMatch(/^### music-recording$/m);
 	});
 
-	it('includes frontmatter instructions', () => {
-		expect(prompt).toContain('frontmatter');
-		expect(prompt).toContain('title: Page Title');
+	it('does not include frontmatter instructions in base prompt', () => {
+		// Frontmatter moved to writePrompt() — base prompt is shared with chat
+		expect(prompt).not.toContain('title: Page Title');
 	});
 
 	it('includes writing rules', () => {

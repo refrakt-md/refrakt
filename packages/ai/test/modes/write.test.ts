@@ -2,12 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { writePrompt } from '../../src/modes/write.js';
 
 describe('writePrompt', () => {
-	it('returns empty string when no options', () => {
-		expect(writePrompt()).toBe('');
+	it('includes frontmatter instructions when no options', () => {
+		const result = writePrompt();
+		expect(result).toContain('YAML frontmatter');
+		expect(result).toContain('title: Page Title');
 	});
 
-	it('returns empty string when multiFile is false', () => {
-		expect(writePrompt({ multiFile: false })).toBe('');
+	it('includes frontmatter instructions when multiFile is false', () => {
+		const result = writePrompt({ multiFile: false });
+		expect(result).toContain('YAML frontmatter');
+		expect(result).toContain('title: Page Title');
 	});
 
 	it('includes multi-file instructions when multiFile is true', () => {
@@ -16,11 +20,11 @@ describe('writePrompt', () => {
 		expect(result).toContain('Multi-file output');
 	});
 
-	it('includes example structure with frontmatter', () => {
+	it('includes frontmatter and example structure in multi-file', () => {
 		const result = writePrompt({ multiFile: true });
 		expect(result).toContain('--- FILE: index.md ---');
 		expect(result).toContain('--- FILE: _layout.md ---');
-		expect(result).toContain('frontmatter');
+		expect(result).toContain('YAML frontmatter');
 	});
 
 	it('warns against parent traversal', () => {

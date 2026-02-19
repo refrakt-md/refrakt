@@ -616,17 +616,11 @@ function describeRune(rune: RuneInfo): string {
 }
 
 const BASE_INSTRUCTIONS = `You are a content author for a website built with refrakt.md.
-Write Markdown files using Markdoc tags called "runes" ({% tag %} syntax).
+Write content using Markdoc tags called "runes" ({% tag %} syntax).
 
 Content inside a rune is reinterpreted — a heading inside {% cta %}
 becomes the hero headline, while inside {% nav %} it becomes a group title.
 This context-dependent meaning is what makes runes powerful.
-
-Every page should begin with YAML frontmatter:
----
-title: Page Title
-description: A brief description
----
 
 ## Writing rules
 
