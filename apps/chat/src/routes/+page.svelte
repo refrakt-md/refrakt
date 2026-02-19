@@ -96,17 +96,11 @@
 			</svg>
 		</button>
 		<h1>chat.refrakt.md</h1>
-		<select
-			class="mode-select"
-			value={chat.selectedMode}
-			onchange={(e) => chat.selectedMode = e.currentTarget.value as any}
-			disabled={chat.isModeLocked || chat.isStreaming}
-			title={chat.isModeLocked ? 'Mode is locked for this conversation' : 'Select conversation mode'}
-		>
-			{#each CHAT_MODE_LIST as mode}
-				<option value={mode.id}>{mode.label}</option>
-			{/each}
-		</select>
+		{#if chat.isModeLocked}
+			<span class="mode-badge" title="Mode is locked for this conversation">
+				{CHAT_MODE_LIST.find(m => m.id === chat.effectiveMode)?.label ?? chat.effectiveMode}
+			</span>
+		{/if}
 		<button
 			class="page-toggle-btn"
 			onclick={() => pageStore.toggle()}
@@ -164,10 +158,26 @@
 		<div class="chat-container">
 			<div class="messages" bind:this={messagesEl}>
 			{#if chat.messages.length === 0}
-				<div class="empty-state">
-					<p>Ask anything. Responses are rendered with rich, interactive runes.</p>
-					<p class="mode-description">{CHAT_MODE_LIST.find(m => m.id === chat.effectiveMode)?.description ?? ''}</p>
-					<p class="hint">Try: "Good pasta carbonara recipe?" or "Compare React vs Svelte"</p>
+				<div class="mode-picker">
+					<div class="mode-picker__header">
+						<h2 class="mode-picker__title">What are you working on?</h2>
+						<p class="mode-picker__subtitle">
+							Each mode unlocks specialized runes that shape how the AI responds.
+							Pick the one that fits your task.
+						</p>
+					</div>
+					<div class="mode-picker__grid">
+						{#each CHAT_MODE_LIST as mode}
+							<button
+								class="mode-card"
+								class:mode-card--selected={chat.selectedMode === mode.id}
+								onclick={() => chat.selectedMode = mode.id}
+							>
+								<span class="mode-card__label">{mode.label}</span>
+								<span class="mode-card__description">{mode.description}</span>
+							</button>
+						{/each}
+					</div>
 				</div>
 			{/if}
 
@@ -418,7 +428,7 @@
 		width: 100%;
 	}
 
-	.empty-state {
+	.mode-picker {
 		max-width: 640px;
 		margin-left: auto;
 		margin-right: auto;
@@ -433,7 +443,7 @@
 
 	/* When page panel is not open, widen content */
 	.app-layout:not(:has(.page-panel)) .message,
-	.app-layout:not(:has(.page-panel)) .empty-state,
+	.app-layout:not(:has(.page-panel)) .mode-picker,
 	.app-layout:not(:has(.page-panel)) .input-bar {
 		max-width: 860px;
 	}
@@ -452,26 +462,17 @@
 		background: var(--rf-color-border, #e2e8f0);
 	}
 
-	.mode-select {
+	.mode-badge {
 		margin-left: auto;
-		padding: 0.375rem 0.5rem;
+		padding: 0.25rem 0.625rem;
 		border: 1px solid var(--rf-color-border, #e2e8f0);
 		border-radius: 0.375rem;
-		background: transparent;
-		color: inherit;
-		font-size: 0.8125rem;
-		font-family: inherit;
-		cursor: pointer;
-	}
-
-	.mode-select:focus {
-		outline: none;
-		border-color: var(--rf-color-primary, #0ea5e9);
-	}
-
-	.mode-select:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
+		background: var(--rf-color-surface-alt, #f8fafc);
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--rf-color-text-muted, #64748b);
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
 	}
 
 	/* Page toggle button */
@@ -521,24 +522,80 @@
 		padding: 1.5rem 1rem;
 	}
 
-	.empty-state {
+	.mode-picker {
+		padding: 2.5rem 1rem 1.5rem;
+	}
+
+	.mode-picker__header {
 		text-align: center;
-		padding: 3rem 1rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.mode-picker__title {
+		margin: 0 0 0.5rem;
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--rf-color-text, #1e293b);
+	}
+
+	.mode-picker__subtitle {
+		margin: 0;
+		font-size: 0.875rem;
 		color: var(--rf-color-text-muted, #64748b);
+		line-height: 1.5;
 	}
 
-	.empty-state p {
-		margin: 0.5rem 0;
+	.mode-picker__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 0.75rem;
 	}
 
-	.empty-state .mode-description {
+	.mode-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.375rem;
+		padding: 0.875rem 1rem;
+		background: var(--rf-color-surface, #ffffff);
+		border: 1px solid var(--rf-color-border, #e2e8f0);
+		border-radius: 0.5rem;
+		cursor: pointer;
+		text-align: left;
+		font-family: inherit;
+		color: inherit;
+		transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+	}
+
+	.mode-card:hover {
+		border-color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-surface-alt, #f8fafc);
+	}
+
+	.mode-card--selected {
+		border-color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-primary-50, #f0f9ff);
+		box-shadow: 0 0 0 1px var(--rf-color-primary, #0ea5e9);
+	}
+
+	.mode-card--selected:hover {
+		background: var(--rf-color-primary-50, #f0f9ff);
+	}
+
+	.mode-card__label {
 		font-size: 0.875rem;
-		color: var(--rf-color-text-muted, #94a3b8);
+		font-weight: 600;
+		color: var(--rf-color-text, #1e293b);
 	}
 
-	.empty-state .hint {
-		font-size: 0.875rem;
-		font-style: italic;
+	.mode-card--selected .mode-card__label {
+		color: var(--rf-color-primary-700, #0369a1);
+	}
+
+	.mode-card__description {
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: var(--rf-color-text-muted, #64748b);
 	}
 
 	.message {
