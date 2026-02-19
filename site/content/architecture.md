@@ -228,9 +228,6 @@ export const registry: ComponentRegistry = {
   'Map': Map,             // Leaflet map visualization
   'Preview': Preview,     // Theme toggle, responsive viewports, source view
   'Sandbox': Sandbox,     // Isolated iframe rendering
-  'Palette': Palette,     // Color swatch grid with WCAG contrast
-  'Typography': Typography, // Font specimen display with Google Fonts
-  'Spacing': Spacing,     // Spacing scale, radius, shadow tokens
 };
 ```
 

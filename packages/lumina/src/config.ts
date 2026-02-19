@@ -276,8 +276,29 @@ export const luminaConfig: ThemeConfig = {
 		// ─── Design runes ───
 
 		Swatch: { block: 'swatch' },
-		Palette: { block: 'palette' },
-		Typography: { block: 'typography' },
-		Spacing: { block: 'spacing' },
+		Palette: {
+			block: 'palette',
+			modifiers: {
+				title: { source: 'meta' },
+				showContrast: { source: 'meta' },
+				showA11y: { source: 'meta' },
+				columns: { source: 'meta' },
+			},
+		},
+		Typography: {
+			block: 'typography',
+			modifiers: {
+				title: { source: 'meta' },
+				showSizes: { source: 'meta' },
+				showWeights: { source: 'meta' },
+				showCharset: { source: 'meta' },
+			},
+		},
+		Spacing: {
+			block: 'spacing',
+			modifiers: {
+				title: { source: 'meta' },
+			},
+		},
 	},
 };
