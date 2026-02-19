@@ -123,23 +123,12 @@
 				<h4 class="rf-palette__group-title">{group.title}</h4>
 			{/if}
 
-			{#each group.entries as entry}
-				{#if entry.values.length > 1}
-					<!-- Neutral scale: renders as a horizontal gradient strip -->
-					<div class="rf-palette__scale">
-						{#each entry.values as value}
-							<div
-								class="rf-palette__scale-stop"
-								style="background-color: {value}; color: {textColorFor(value)}"
-							>
-								<span class="rf-palette__swatch-value">{value}</span>
-							</div>
-						{/each}
-						<span class="rf-palette__swatch-name">{entry.name}</span>
-					</div>
-				{:else}
-					<!-- Single color swatch -->
-					<div class="rf-palette__grid" style="--rf-palette-cols: {autoColumns(group.entries.filter(e => e.values.length <= 1).length)}">
+			{@const singles = group.entries.filter(e => e.values.length <= 1)}
+			{@const scales = group.entries.filter(e => e.values.length > 1)}
+
+			{#if singles.length > 0}
+				<div class="rf-palette__grid" style="--rf-palette-cols: {autoColumns(singles.length)}">
+					{#each singles as entry}
 						<div class="rf-palette__swatch">
 							<div
 								class="rf-palette__swatch-color"
@@ -163,8 +152,22 @@
 								{/if}
 							{/if}
 						</div>
-					</div>
-				{/if}
+					{/each}
+				</div>
+			{/if}
+
+			{#each scales as entry}
+				<div class="rf-palette__scale">
+					{#each entry.values as value}
+						<div
+							class="rf-palette__scale-stop"
+							style="background-color: {value}; color: {textColorFor(value)}"
+						>
+							<span class="rf-palette__swatch-value">{value}</span>
+						</div>
+					{/each}
+				</div>
+				<span class="rf-palette__swatch-name">{entry.name}</span>
 			{/each}
 		</div>
 	{/each}
