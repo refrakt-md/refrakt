@@ -21,12 +21,12 @@ export function formatGeminiRequest(
 	systemInstruction?: { parts: { text: string }[] };
 	generationConfig: { maxOutputTokens: number; temperature?: number };
 } {
-	let systemInstruction: { parts: { text: string }[] } | undefined;
+	const systemParts: string[] = [];
 	const contents: GeminiContent[] = [];
 
 	for (const msg of options.messages) {
 		if (msg.role === 'system') {
-			systemInstruction = { parts: [{ text: msg.content }] };
+			systemParts.push(msg.content);
 		} else {
 			contents.push({
 				role: msg.role === 'assistant' ? 'model' : 'user',
@@ -42,6 +42,10 @@ export function formatGeminiRequest(
 	if (options.temperature !== undefined) {
 		generationConfig.temperature = options.temperature;
 	}
+
+	const systemInstruction = systemParts.length > 0
+		? { parts: [{ text: systemParts.join('\n\n') }] }
+		: undefined;
 
 	return {
 		contents,

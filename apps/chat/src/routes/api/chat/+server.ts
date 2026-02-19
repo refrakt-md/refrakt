@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import { generateSystemPrompt, getChatModeRunes, CHAT_MODES } from '@refrakt-md/ai';
+import { generateSystemPromptParts, getChatModeRunes, CHAT_MODES } from '@refrakt-md/ai';
 import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
 import { runes } from '@refrakt-md/runes';
 import type { AIProvider, Message, ChatMode } from '@refrakt-md/ai';
@@ -17,7 +17,7 @@ function detectProvider(): ResolvedProvider {
 		return {
 			name: 'anthropic',
 			defaultModel: 'claude-sonnet-4-5-20250929',
-			provider: createAnthropicProvider({ apiKey: anthropicKey }),
+			provider: createAnthropicProvider({ apiKey: anthropicKey, promptCaching: true }),
 		};
 	}
 
@@ -49,17 +49,23 @@ Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} s
 Do NOT use rune names that are not listed in the Available Runes section below.`;
 
 const VALID_MODES = new Set(Object.keys(CHAT_MODES));
-const promptCache = new Map<string, string>();
+const promptPartsCache = new Map<string, [string, string]>();
 
-function getSystemPrompt(mode?: string): string {
+/**
+ * Returns the system prompt as two parts for cache-aware delivery:
+ * [0] Base layer: preamble + writing rules (stable across all modes)
+ * [1] Mode layer: rune vocabulary (varies by mode)
+ */
+function getSystemPromptParts(mode?: string): [string, string] {
 	const key = mode && VALID_MODES.has(mode) ? mode : 'full';
-	let cached = promptCache.get(key);
+	let cached = promptPartsCache.get(key);
 	if (!cached) {
 		const includeRunes = key !== 'full'
 			? getChatModeRunes(key as ChatMode)
 			: undefined;
-		cached = CHAT_PREAMBLE + '\n\n' + generateSystemPrompt(runes, includeRunes);
-		promptCache.set(key, cached);
+		const [base, runeVocab] = generateSystemPromptParts(runes, includeRunes);
+		cached = [CHAT_PREAMBLE + '\n\n' + base, runeVocab];
+		promptPartsCache.set(key, cached);
 	}
 	return cached;
 }
@@ -70,10 +76,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		mode?: string;
 	};
 	const { provider } = detectProvider();
-	const systemPrompt = getSystemPrompt(mode);
+	const [baseLayer, modeLayer] = getSystemPromptParts(mode);
 
 	const allMessages: Message[] = [
-		{ role: 'system', content: systemPrompt },
+		{ role: 'system', content: baseLayer },
+		{ role: 'system', content: modeLayer },
 		...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
 	];
 

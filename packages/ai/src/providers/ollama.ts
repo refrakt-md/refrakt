@@ -15,9 +15,23 @@ export function formatOllamaRequest(
 	if (options.temperature !== undefined) reqOptions.temperature = options.temperature;
 	if (options.maxTokens !== undefined) reqOptions.num_predict = options.maxTokens;
 
+	// Merge multiple system messages into one
+	const systemParts: string[] = [];
+	const nonSystem: Message[] = [];
+	for (const msg of options.messages) {
+		if (msg.role === 'system') {
+			systemParts.push(msg.content);
+		} else {
+			nonSystem.push(msg);
+		}
+	}
+	const messages: Message[] = systemParts.length > 0
+		? [{ role: 'system', content: systemParts.join('\n\n') }, ...nonSystem]
+		: nonSystem;
+
 	return {
 		model: options.model ?? defaults.model,
-		messages: options.messages,
+		messages,
 		stream: true,
 		...(Object.keys(reqOptions).length > 0 ? { options: reqOptions } : {}),
 	};

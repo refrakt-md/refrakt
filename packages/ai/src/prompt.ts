@@ -507,17 +507,7 @@ function describeRune(rune: RuneInfo): string {
 	return lines.join('\n');
 }
 
-export function generateSystemPrompt(
-	runes: Record<string, RuneInfo>,
-	includeRunes?: Set<string>,
-): string {
-	const runeDescriptions = Object.values(runes)
-		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
-		.filter(rune => !includeRunes || includeRunes.has(rune.name))
-		.map(rune => describeRune(rune))
-		.join('\n\n');
-
-	return `You are a content author for a website built with refrakt.md.
+const BASE_INSTRUCTIONS = `You are a content author for a website built with refrakt.md.
 Write Markdown files using Markdoc tags called "runes" ({% tag %} syntax).
 
 Content inside a rune is reinterpreted — a heading inside {% cta %}
@@ -536,9 +526,29 @@ description: A brief description
 - Use runes ({% tag %} ... {% /tag %}) for semantic structure.
 - Runes can be nested where it makes sense (e.g. {% tier %} inside {% pricing %}).
 - Horizontal rules (---) delimit grid cells inside {% grid %} and {% codegroup %}.
-- Do NOT invent rune names that are not listed below.
+- Do NOT invent rune names that are not listed below.`;
 
-## Available Runes
+/**
+ * Returns the system prompt as two separate parts for cache-aware usage:
+ * [0] Base instructions (role description, writing rules) — stable across all modes
+ * [1] Rune vocabulary (available runes section) — varies by mode
+ */
+export function generateSystemPromptParts(
+	runes: Record<string, RuneInfo>,
+	includeRunes?: Set<string>,
+): [string, string] {
+	const runeDescriptions = Object.values(runes)
+		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
+		.filter(rune => !includeRunes || includeRunes.has(rune.name))
+		.map(rune => describeRune(rune))
+		.join('\n\n');
 
-${runeDescriptions}`;
+	return [BASE_INSTRUCTIONS, `## Available Runes\n\n${runeDescriptions}`];
+}
+
+export function generateSystemPrompt(
+	runes: Record<string, RuneInfo>,
+	includeRunes?: Set<string>,
+): string {
+	return generateSystemPromptParts(runes, includeRunes).join('\n\n');
 }

@@ -15,7 +15,7 @@ function mockSSEResponse(events: string[]): Response {
 }
 
 describe('formatAnthropicRequest', () => {
-	it('extracts system message into separate field', () => {
+	it('extracts system messages into separate array', () => {
 		const messages: Message[] = [
 			{ role: 'system', content: 'You are helpful.' },
 			{ role: 'user', content: 'Hello' },
@@ -26,7 +26,25 @@ describe('formatAnthropicRequest', () => {
 			{ model: 'claude-sonnet-4-5-20250929' },
 		);
 
-		expect(result.system).toBe('You are helpful.');
+		expect(result.system).toEqual(['You are helpful.']);
+		expect(result.messages).toEqual([
+			{ role: 'user', content: 'Hello' },
+		]);
+	});
+
+	it('collects multiple system messages', () => {
+		const messages: Message[] = [
+			{ role: 'system', content: 'Base layer.' },
+			{ role: 'system', content: 'Mode layer.' },
+			{ role: 'user', content: 'Hello' },
+		];
+
+		const result = formatAnthropicRequest(
+			{ messages },
+			{ model: 'claude-sonnet-4-5-20250929' },
+		);
+
+		expect(result.system).toEqual(['Base layer.', 'Mode layer.']);
 		expect(result.messages).toEqual([
 			{ role: 'user', content: 'Hello' },
 		]);
@@ -176,6 +194,68 @@ describe('createAnthropicProvider', () => {
 		expect(body.messages).toEqual([{ role: 'user', content: 'Hello' }]);
 		expect(body.stream).toBe(true);
 		expect(chunks).toEqual(['Hi']);
+	});
+
+	it('sends cached content blocks when promptCaching is enabled', async () => {
+		let capturedRequest: { url: string; init: RequestInit } | undefined;
+
+		const mockFetch: typeof fetch = async (input, init) => {
+			capturedRequest = { url: input as string, init: init! };
+			return mockSSEResponse([
+				'data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hi"}}',
+				'',
+				'data: {"type":"message_stop"}',
+			]);
+		};
+
+		const provider = createAnthropicProvider({
+			apiKey: 'sk-test-123',
+			promptCaching: true,
+			fetch: mockFetch,
+		});
+
+		for await (const _ of provider.complete({
+			messages: [
+				{ role: 'system', content: 'Base layer' },
+				{ role: 'system', content: 'Mode layer' },
+				{ role: 'user', content: 'Hello' },
+			],
+		})) { /* drain */ }
+
+		const body = JSON.parse(capturedRequest!.init.body as string);
+		expect(body.system).toEqual([
+			{ type: 'text', text: 'Base layer', cache_control: { type: 'ephemeral' } },
+			{ type: 'text', text: 'Mode layer', cache_control: { type: 'ephemeral' } },
+		]);
+	});
+
+	it('joins system parts as string when promptCaching is disabled', async () => {
+		let capturedRequest: { url: string; init: RequestInit } | undefined;
+
+		const mockFetch: typeof fetch = async (input, init) => {
+			capturedRequest = { url: input as string, init: init! };
+			return mockSSEResponse([
+				'data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hi"}}',
+				'',
+				'data: {"type":"message_stop"}',
+			]);
+		};
+
+		const provider = createAnthropicProvider({
+			apiKey: 'sk-test-123',
+			fetch: mockFetch,
+		});
+
+		for await (const _ of provider.complete({
+			messages: [
+				{ role: 'system', content: 'Base layer' },
+				{ role: 'system', content: 'Mode layer' },
+				{ role: 'user', content: 'Hello' },
+			],
+		})) { /* drain */ }
+
+		const body = JSON.parse(capturedRequest!.init.body as string);
+		expect(body.system).toBe('Base layer\n\nMode layer');
 	});
 
 	it('throws on non-ok response', async () => {
