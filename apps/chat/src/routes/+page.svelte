@@ -435,30 +435,23 @@
 
 	/* Center message content within the chat container */
 	.message {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
 	}
 
 	.mode-picker {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 	}
 
 	.input-bar {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
-	}
-
-	/* When page panel is not open, widen content */
-	.app-layout:not(:has(.page-panel)) .message,
-	.app-layout:not(:has(.page-panel)) .mode-picker,
-	.app-layout:not(:has(.page-panel)) .input-bar {
-		max-width: 860px;
 	}
 
 	.menu-btn {
