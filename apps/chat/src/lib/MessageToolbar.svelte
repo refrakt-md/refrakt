@@ -6,10 +6,11 @@
 	interface Props {
 		blocks: ContentBlock[];
 		messageIndex: number;
+		messageContent: string;
 		pageStore: PageStore;
 	}
 
-	let { blocks, messageIndex, pageStore }: Props = $props();
+	let { blocks, messageIndex, messageContent, pageStore }: Props = $props();
 	let outlineOpen = $state(false);
 	let toolbarEl: HTMLElement;
 
@@ -33,6 +34,7 @@
 			messageIndex,
 			blocks.map((b) => b.id),
 			blocks,
+			messageContent,
 		);
 	}
 
@@ -43,6 +45,7 @@
 				messageIndex,
 				selected.map((b) => b.id),
 				selected,
+				messageContent,
 			);
 		}
 		outlineOpen = false;

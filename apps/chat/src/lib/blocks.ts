@@ -1,3 +1,4 @@
+import Markdoc from '@markdoc/markdoc';
 import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 
 export type BlockType =
@@ -200,4 +201,55 @@ export function extractBlocks(node: RendererNode, messageIndex: number): Content
 	}
 
 	return blocks;
+}
+
+/**
+ * Extract the Markdoc source text for a single block by its index.
+ * Parses the message with Markdoc to get AST nodes with line numbers,
+ * then slices the source by line range.
+ */
+export function extractBlockSource(
+	messageContent: string,
+	blockIndex: number,
+): string | null {
+	const ast = Markdoc.parse(messageContent);
+	const lines = messageContent.split('\n');
+
+	let idx = 0;
+	for (const child of ast.children) {
+		if (!child.lines || child.lines.length === 0) continue;
+		if (idx === blockIndex) {
+			const startLine = child.lines[0];
+			const endLine = child.lines[child.lines.length - 1];
+			return lines.slice(startLine, endLine + 1).join('\n').trimEnd();
+		}
+		idx++;
+	}
+	return null;
+}
+
+/**
+ * Extract source for multiple blocks at once (avoids re-parsing).
+ * Returns a Map of blockIndex → source text.
+ */
+export function extractBlockSources(
+	messageContent: string,
+	blockIndices: number[],
+): Map<number, string> {
+	const ast = Markdoc.parse(messageContent);
+	const lines = messageContent.split('\n');
+	const result = new Map<number, string>();
+	const indexSet = new Set(blockIndices);
+
+	let idx = 0;
+	for (const child of ast.children) {
+		if (!child.lines || child.lines.length === 0) continue;
+		if (indexSet.has(idx)) {
+			const startLine = child.lines[0];
+			const endLine = child.lines[child.lines.length - 1];
+			result.set(idx, lines.slice(startLine, endLine + 1).join('\n').trimEnd());
+		}
+		idx++;
+	}
+	return result;
 }

@@ -186,6 +186,7 @@
 							<MessageToolbar
 								blocks={extractBlocks(message.renderable, i)}
 								messageIndex={i}
+								messageContent={message.content}
 								{pageStore}
 							/>
 						{/if}

@@ -11,6 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"dependencies": {
+		"@codemirror/lang-markdown": "^6.5.0",
+		"@codemirror/language": "^6.12.1",
 		"@markdoc/markdoc": "0.4.0",
 		"@refrakt-md/ai": "0.4.0",
 		"@refrakt-md/highlight": "0.4.0",
@@ -18,6 +20,7 @@
 		"@refrakt-md/runes": "0.4.0",
 		"@refrakt-md/svelte": "0.4.0",
 		"@refrakt-md/types": "0.4.0",
+		"codemirror": "^6.0.2",
 		"idb": "^8.0.3"
 	},
 	"devDependencies": {

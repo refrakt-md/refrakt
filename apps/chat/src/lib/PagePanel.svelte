@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SafeRenderer from './SafeRenderer.svelte';
+	import SourceEditor from './SourceEditor.svelte';
 	import type { PageStore } from './page.svelte.js';
 
 	interface Props {
@@ -10,6 +11,7 @@
 
 	let dragPinId: string | null = $state(null);
 	let dragOverIndex: number | null = $state(null);
+	let editingPinId: string | null = $state(null);
 
 	function handleDragStart(e: DragEvent, pinId: string) {
 		dragPinId = pinId;
@@ -42,6 +44,10 @@
 	function handleDragEnd() {
 		dragPinId = null;
 		dragOverIndex = null;
+	}
+
+	function toggleEdit(pinId: string) {
+		editingPinId = editingPinId === pinId ? null : pinId;
 	}
 </script>
 
@@ -81,7 +87,8 @@
 					class="pin-item"
 					class:pin-item--dragging={dragPinId === pin.id}
 					class:pin-item--drag-over={dragOverIndex === i && dragPinId !== pin.id}
-					draggable="true"
+					class:pin-item--editing={editingPinId === pin.id}
+					draggable={editingPinId !== pin.id ? 'true' : 'false'}
 					ondragstart={(e) => handleDragStart(e, pin.id)}
 					ondragover={(e) => handleDragOver(e, i)}
 					ondragleave={handleDragLeave}
@@ -100,15 +107,52 @@
 						</svg>
 					</div>
 					<div class="pin-item__content">
-						<SafeRenderer node={pin.snapshot} inProgressBlocks={[]} />
+						{#if pin.isEdited}
+							<span class="pin-item__edited-badge">edited</span>
+						{/if}
+
+						{#if editingPinId === pin.id}
+							<SourceEditor
+								source={pageStore.getBlockSource(pin.id)}
+								onchange={(s) => pageStore.updateBlockSource(pin.id, s)}
+								onclose={() => editingPinId = null}
+							/>
+						{:else}
+							<SafeRenderer node={pin.snapshot} inProgressBlocks={[]} />
+						{/if}
 					</div>
-					<button
-						class="pin-item__remove"
-						onclick={() => pageStore.unpin(pin.id)}
-						title="Remove from page"
-					>
-						&times;
-					</button>
+					<div class="pin-item__actions">
+						{#if pin.source}
+							<button
+								class="pin-item__action-btn"
+								onclick={() => toggleEdit(pin.id)}
+								title={editingPinId === pin.id ? 'Close editor' : 'Edit source'}
+							>
+								<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+									<path d="M11.5 1.5l3 3-9 9H2.5v-3l9-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+								</svg>
+							</button>
+						{/if}
+						{#if pin.isEdited}
+							<button
+								class="pin-item__action-btn pin-item__action-btn--revert"
+								onclick={() => pageStore.revertBlockSource(pin.id)}
+								title="Revert to original"
+							>
+								<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+									<path d="M2 6h8a4 4 0 010 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+									<path d="M5 3L2 6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+								</svg>
+							</button>
+						{/if}
+						<button
+							class="pin-item__action-btn pin-item__action-btn--remove"
+							onclick={() => pageStore.unpin(pin.id)}
+							title="Remove from page"
+						>
+							&times;
+						</button>
+					</div>
 				</li>
 			{/each}
 		</ol>
@@ -237,6 +281,10 @@
 		border-top: 2px solid var(--rf-color-primary, #0ea5e9);
 	}
 
+	.pin-item--editing {
+		background: var(--rf-color-surface-alt, #f8fafc);
+	}
+
 	.pin-item__handle {
 		flex-shrink: 0;
 		cursor: grab;
@@ -255,25 +303,62 @@
 		overflow: hidden;
 	}
 
-	.pin-item__remove {
-		flex-shrink: 0;
-		background: transparent;
-		border: none;
-		font-size: 1rem;
-		color: var(--rf-color-text-muted, #94a3b8);
-		cursor: pointer;
-		padding: 0.125rem 0.25rem;
+	.pin-item__edited-badge {
+		display: inline-block;
+		font-size: 0.625rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-primary-50, #f0f9ff);
+		padding: 0.125rem 0.375rem;
 		border-radius: 0.25rem;
-		line-height: 1;
-		opacity: 0;
-		transition: opacity 0.1s, color 0.1s;
+		margin-bottom: 0.375rem;
 	}
 
-	.pin-item:hover .pin-item__remove {
+	.pin-item__actions {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		opacity: 0;
+		transition: opacity 0.1s;
+	}
+
+	.pin-item:hover .pin-item__actions,
+	.pin-item--editing .pin-item__actions {
 		opacity: 1;
 	}
 
-	.pin-item__remove:hover {
+	.pin-item__action-btn {
+		background: transparent;
+		border: none;
+		color: var(--rf-color-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0.25rem;
+		border-radius: 0.25rem;
+		line-height: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: color 0.1s, background 0.1s;
+	}
+
+	.pin-item__action-btn:hover {
+		color: var(--rf-color-text, #1e293b);
+		background: var(--rf-color-border, #e2e8f0);
+	}
+
+	.pin-item__action-btn--revert:hover {
+		color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-primary-50, #f0f9ff);
+	}
+
+	.pin-item__action-btn--remove {
+		font-size: 1rem;
+	}
+
+	.pin-item__action-btn--remove:hover {
 		color: var(--rf-color-danger-700, #b91c1c);
 		background: var(--rf-color-danger-50, #fef2f2);
 	}
@@ -287,6 +372,10 @@
 			width: 100%;
 			min-width: 0;
 			z-index: 100;
+		}
+
+		.pin-item__actions {
+			opacity: 1;
 		}
 	}
 </style>
