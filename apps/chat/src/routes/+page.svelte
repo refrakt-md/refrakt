@@ -233,7 +233,7 @@
 		</div>
 
 		{#if pageStore.isOpen}
-			<PagePanel {pageStore} />
+			<PagePanel {pageStore} mode={chat.effectiveMode} />
 		{/if}
 	</div>
 </div>
