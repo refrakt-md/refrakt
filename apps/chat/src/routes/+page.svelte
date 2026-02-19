@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SafeRenderer from '$lib/SafeRenderer.svelte';
+	import MessageToolbar from '$lib/MessageToolbar.svelte';
+	import PagePanel from '$lib/PagePanel.svelte';
 	import { createChat } from '$lib/chat.svelte.js';
+	import { createPageStore } from '$lib/page.svelte.js';
+	import { extractBlocks } from '$lib/blocks.js';
 	import { CHAT_MODE_LIST } from '@refrakt-md/ai';
 
 	const chat = createChat();
+	const pageStore = createPageStore();
 
 	let inputValue = $state('');
 	let messagesEl: HTMLElement;
@@ -12,6 +17,11 @@
 
 	onMount(() => {
 		chat.init();
+	});
+
+	// Load page state when conversation changes
+	$effect(() => {
+		pageStore.loadForConversation(chat.activeConversationId);
 	});
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -49,6 +59,15 @@
 		return new Date(timestamp).toLocaleDateString();
 	}
 
+	function isCompletedAssistant(message: typeof chat.messages[0], index: number): boolean {
+		// Show toolbar only for completed assistant messages (not the one currently streaming)
+		if (message.role !== 'user' && message.renderable && !message.error) {
+			if (chat.isStreaming && index === chat.messages.length - 1) return false;
+			return true;
+		}
+		return false;
+	}
+
 	$effect(() => {
 		// Subscribe to both new messages and streaming content growth
 		const _ = [chat.messages.length, chat.scrollTick];
@@ -69,66 +88,81 @@
 	<div class="sidebar-overlay" onclick={() => sidebarOpen = false} onkeydown={() => {}}></div>
 {/if}
 
-<div class="app-layout">
-	<aside class="sidebar" class:sidebar--open={sidebarOpen}>
-		<div class="sidebar__header">
-			<button class="new-chat-btn" onclick={handleNewChat}>
-				+ New Chat
-			</button>
-		</div>
-		<nav class="sidebar__list">
-			{#each chat.conversations as conv}
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div
-					class="conv-item"
-					class:conv-item--active={conv.id === chat.activeConversationId}
-					onclick={() => handleSwitchConversation(conv.id)}
-					onkeydown={() => {}}
-					role="button"
-					tabindex="0"
-				>
-					<span class="conv-item__title">{conv.title}</span>
-					{#if conv.mode}
-						<span class="conv-item__mode">{conv.mode}</span>
-					{/if}
-					<span class="conv-item__time">{formatTime(conv.updatedAt)}</span>
-					<button
-						class="conv-item__delete"
-						onclick={(e) => handleDeleteConversation(e, conv.id)}
-						title="Delete conversation"
-					>
-						&times;
-					</button>
-				</div>
+<div class="app-shell">
+	<header class="titlebar">
+		<button class="menu-btn" onclick={() => sidebarOpen = !sidebarOpen} title="Toggle sidebar">
+			<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+				<path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+			</svg>
+		</button>
+		<h1>chat.refrakt.md</h1>
+		<select
+			class="mode-select"
+			value={chat.selectedMode}
+			onchange={(e) => chat.selectedMode = e.currentTarget.value as any}
+			disabled={chat.isModeLocked || chat.isStreaming}
+			title={chat.isModeLocked ? 'Mode is locked for this conversation' : 'Select conversation mode'}
+		>
+			{#each CHAT_MODE_LIST as mode}
+				<option value={mode.id}>{mode.label}</option>
 			{/each}
-			{#if chat.conversations.length === 0}
-				<p class="sidebar__empty">No conversations yet</p>
+		</select>
+		<button
+			class="page-toggle-btn"
+			onclick={() => pageStore.toggle()}
+			title={pageStore.isOpen ? 'Close page panel' : 'Open page panel'}
+			class:page-toggle-btn--active={pageStore.isOpen}
+		>
+			<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+				<rect x="2" y="2" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+				<path d="M6 6h6M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+			</svg>
+			{#if pageStore.pinCount > 0}
+				<span class="page-toggle-badge">{pageStore.pinCount}</span>
 			{/if}
-		</nav>
-	</aside>
+		</button>
+	</header>
 
-	<div class="chat-container">
-		<header class="chat-header">
-			<button class="menu-btn" onclick={() => sidebarOpen = !sidebarOpen} title="Toggle sidebar">
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-					<path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-				</svg>
-			</button>
-			<h1>chat.refrakt.md</h1>
-			<select
-				class="mode-select"
-				value={chat.selectedMode}
-				onchange={(e) => chat.selectedMode = e.currentTarget.value as any}
-				disabled={chat.isModeLocked || chat.isStreaming}
-				title={chat.isModeLocked ? 'Mode is locked for this conversation' : 'Select conversation mode'}
-			>
-				{#each CHAT_MODE_LIST as mode}
-					<option value={mode.id}>{mode.label}</option>
+	<div class="app-layout">
+		<aside class="sidebar" class:sidebar--open={sidebarOpen}>
+			<div class="sidebar__header">
+				<button class="new-chat-btn" onclick={handleNewChat}>
+					+ New Chat
+				</button>
+			</div>
+			<nav class="sidebar__list">
+				{#each chat.conversations as conv}
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						class="conv-item"
+						class:conv-item--active={conv.id === chat.activeConversationId}
+						onclick={() => handleSwitchConversation(conv.id)}
+						onkeydown={() => {}}
+						role="button"
+						tabindex="0"
+					>
+						<span class="conv-item__title">{conv.title}</span>
+						{#if conv.mode}
+							<span class="conv-item__mode">{conv.mode}</span>
+						{/if}
+						<span class="conv-item__time">{formatTime(conv.updatedAt)}</span>
+						<button
+							class="conv-item__delete"
+							onclick={(e) => handleDeleteConversation(e, conv.id)}
+							title="Delete conversation"
+						>
+							&times;
+						</button>
+					</div>
 				{/each}
-			</select>
-		</header>
+				{#if chat.conversations.length === 0}
+					<p class="sidebar__empty">No conversations yet</p>
+				{/if}
+			</nav>
+		</aside>
 
-		<div class="messages" bind:this={messagesEl}>
+		<div class="chat-container">
+			<div class="messages" bind:this={messagesEl}>
 			{#if chat.messages.length === 0}
 				<div class="empty-state">
 					<p>Ask anything. Responses are rendered with rich, interactive runes.</p>
@@ -137,7 +171,7 @@
 				</div>
 			{/if}
 
-			{#each chat.messages as message}
+			{#each chat.messages as message, i}
 				<div class="message message--{message.role}">
 					{#if message.role === 'user'}
 						<div class="user-bubble">
@@ -148,6 +182,13 @@
 							<p>Error: {message.error}</p>
 						</div>
 					{:else if message.renderable}
+						{#if isCompletedAssistant(message, i)}
+							<MessageToolbar
+								blocks={extractBlocks(message.renderable, i)}
+								messageIndex={i}
+								{pageStore}
+							/>
+						{/if}
 						<div class="assistant-content">
 							<SafeRenderer
 								node={message.renderable}
@@ -169,32 +210,63 @@
 					<span class="dot"></span>
 				</div>
 			{/if}
+			</div>
+
+			<form class="input-bar" onsubmit={handleSubmit}>
+				<input
+					type="text"
+					bind:value={inputValue}
+					placeholder="Ask something..."
+					disabled={chat.isStreaming}
+				/>
+				{#if chat.isStreaming}
+					<button type="button" class="cancel-btn" onclick={() => chat.cancel()}>
+						Cancel
+					</button>
+				{:else}
+					<button type="submit" disabled={!inputValue.trim()}>
+						Send
+					</button>
+				{/if}
+			</form>
 		</div>
 
-		<form class="input-bar" onsubmit={handleSubmit}>
-			<input
-				type="text"
-				bind:value={inputValue}
-				placeholder="Ask something..."
-				disabled={chat.isStreaming}
-			/>
-			{#if chat.isStreaming}
-				<button type="button" class="cancel-btn" onclick={() => chat.cancel()}>
-					Cancel
-				</button>
-			{:else}
-				<button type="submit" disabled={!inputValue.trim()}>
-					Send
-				</button>
-			{/if}
-		</form>
+		{#if pageStore.isOpen}
+			<PagePanel {pageStore} />
+		{/if}
 	</div>
 </div>
 
 <style>
+	.app-shell {
+		display: flex;
+		flex-direction: column;
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	/* Fixed titlebar */
+	.titlebar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+		background: var(--rf-color-surface, #ffffff);
+		flex-shrink: 0;
+		z-index: 20;
+	}
+
+	.titlebar h1 {
+		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 600;
+	}
+
 	.app-layout {
 		display: flex;
-		height: 100vh;
+		flex: 1;
+		min-height: 0;
 		overflow: hidden;
 	}
 
@@ -330,19 +402,39 @@
 
 	/* Chat container */
 	.chat-container {
-		flex: 1;
+		width: 640px;
+		min-width: 480px;
+		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
-		min-width: 0;
-		max-width: 860px;
+		min-height: 0;
 	}
 
-	.chat-header {
-		padding: 0.75rem 1rem;
-		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
+	/* When page panel is not open, fill width so scrollbar sits at viewport edge */
+	.app-layout:not(:has(.page-panel)) .chat-container {
+		flex: 1;
+		width: auto;
+		min-width: 0;
+	}
+
+	/* Messages fills full width (scrollbar at edge), content centered inside */
+	.app-layout:not(:has(.page-panel)) .message {
+		max-width: 860px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.app-layout:not(:has(.page-panel)) .empty-state {
+		max-width: 860px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.app-layout:not(:has(.page-panel)) .input-bar {
+		max-width: 860px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 
 	.menu-btn {
@@ -357,12 +449,6 @@
 
 	.menu-btn:hover {
 		background: var(--rf-color-border, #e2e8f0);
-	}
-
-	.chat-header h1 {
-		margin: 0;
-		font-size: 1.125rem;
-		font-weight: 600;
 	}
 
 	.mode-select {
@@ -385,6 +471,47 @@
 	.mode-select:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	/* Page toggle button */
+	.page-toggle-btn {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.375rem;
+		background: transparent;
+		border: 1px solid var(--rf-color-border, #e2e8f0);
+		border-radius: 0.375rem;
+		color: var(--rf-color-text-muted, #64748b);
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s, border-color 0.1s;
+	}
+
+	.page-toggle-btn:hover {
+		background: var(--rf-color-surface-alt, #f8fafc);
+		color: var(--rf-color-text, #1e293b);
+	}
+
+	.page-toggle-btn--active {
+		border-color: var(--rf-color-primary, #0ea5e9);
+		color: var(--rf-color-primary, #0ea5e9);
+	}
+
+	.page-toggle-badge {
+		position: absolute;
+		top: -4px;
+		right: -4px;
+		min-width: 16px;
+		height: 16px;
+		padding: 0 4px;
+		background: var(--rf-color-primary, #0ea5e9);
+		color: white;
+		font-size: 0.625rem;
+		font-weight: 700;
+		line-height: 16px;
+		text-align: center;
+		border-radius: 8px;
 	}
 
 	.messages {
@@ -560,6 +687,12 @@
 
 		.menu-btn {
 			display: block;
+		}
+
+		.chat-container {
+			width: auto;
+			min-width: 0;
+			flex: 1;
 		}
 	}
 </style>

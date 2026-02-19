@@ -1,0 +1,280 @@
+<script lang="ts">
+	import SafeRenderer from './SafeRenderer.svelte';
+	import type { PageStore } from './page.svelte.js';
+
+	interface Props {
+		pageStore: PageStore;
+	}
+
+	let { pageStore }: Props = $props();
+
+	let dragPinId: string | null = $state(null);
+	let dragOverIndex: number | null = $state(null);
+
+	function handleDragStart(e: DragEvent, pinId: string) {
+		dragPinId = pinId;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+		}
+	}
+
+	function handleDragOver(e: DragEvent, index: number) {
+		e.preventDefault();
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = 'move';
+		}
+		dragOverIndex = index;
+	}
+
+	function handleDragLeave() {
+		dragOverIndex = null;
+	}
+
+	function handleDrop(e: DragEvent, targetIndex: number) {
+		e.preventDefault();
+		if (dragPinId) {
+			pageStore.reorder(dragPinId, targetIndex);
+		}
+		dragPinId = null;
+		dragOverIndex = null;
+	}
+
+	function handleDragEnd() {
+		dragPinId = null;
+		dragOverIndex = null;
+	}
+</script>
+
+<aside class="page-panel">
+	<div class="page-panel__header">
+		<h2 class="page-panel__title">Page</h2>
+		<button class="page-panel__close" onclick={() => pageStore.close()} title="Close page panel">
+			&times;
+		</button>
+	</div>
+
+	{#if pageStore.page.pins.length === 0}
+		<div class="page-panel__empty">
+			<p>Pin blocks from AI responses to build your page.</p>
+		</div>
+	{:else}
+		<div class="page-panel__meta">
+			<input
+				type="text"
+				class="page-panel__meta-input"
+				placeholder="Page title"
+				value={pageStore.page.title}
+				oninput={(e) => (pageStore.page.title = e.currentTarget.value)}
+			/>
+			<textarea
+				class="page-panel__meta-textarea"
+				placeholder="Description (optional)"
+				rows="2"
+				value={pageStore.page.description}
+				oninput={(e) => (pageStore.page.description = e.currentTarget.value)}
+			></textarea>
+		</div>
+
+		<ol class="page-panel__pins" role="list" aria-label="Pinned blocks">
+			{#each pageStore.page.pins as pin, i (pin.id)}
+				<li
+					class="pin-item"
+					class:pin-item--dragging={dragPinId === pin.id}
+					class:pin-item--drag-over={dragOverIndex === i && dragPinId !== pin.id}
+					draggable="true"
+					ondragstart={(e) => handleDragStart(e, pin.id)}
+					ondragover={(e) => handleDragOver(e, i)}
+					ondragleave={handleDragLeave}
+					ondrop={(e) => handleDrop(e, i)}
+					ondragend={handleDragEnd}
+					role="listitem"
+				>
+					<div class="pin-item__handle" title="Drag to reorder">
+						<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+							<circle cx="4" cy="3" r="1" fill="currentColor"/>
+							<circle cx="8" cy="3" r="1" fill="currentColor"/>
+							<circle cx="4" cy="6" r="1" fill="currentColor"/>
+							<circle cx="8" cy="6" r="1" fill="currentColor"/>
+							<circle cx="4" cy="9" r="1" fill="currentColor"/>
+							<circle cx="8" cy="9" r="1" fill="currentColor"/>
+						</svg>
+					</div>
+					<div class="pin-item__content">
+						<SafeRenderer node={pin.snapshot} inProgressBlocks={[]} />
+					</div>
+					<button
+						class="pin-item__remove"
+						onclick={() => pageStore.unpin(pin.id)}
+						title="Remove from page"
+					>
+						&times;
+					</button>
+				</li>
+			{/each}
+		</ol>
+	{/if}
+</aside>
+
+<style>
+	.page-panel {
+		flex: 1;
+		min-width: 480px;
+		background: #ffffff;
+		border-left: 1px solid var(--rf-color-border, #e2e8f0);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.page-panel__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+	}
+
+	.page-panel__title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.page-panel__close {
+		background: transparent;
+		border: none;
+		font-size: 1.25rem;
+		color: var(--rf-color-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0.125rem 0.375rem;
+		border-radius: 0.25rem;
+		line-height: 1;
+	}
+
+	.page-panel__close:hover {
+		color: var(--rf-color-text, #1e293b);
+		background: var(--rf-color-border, #e2e8f0);
+	}
+
+	.page-panel__empty {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem 1.5rem;
+		text-align: center;
+		color: var(--rf-color-text-muted, #94a3b8);
+		font-size: 0.875rem;
+	}
+
+	.page-panel__meta {
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.page-panel__meta-input,
+	.page-panel__meta-textarea {
+		width: 100%;
+		padding: 0.375rem 0.5rem;
+		border: 1px solid var(--rf-color-border, #e2e8f0);
+		border-radius: 0.375rem;
+		font-size: 0.8125rem;
+		font-family: inherit;
+		background: transparent;
+		color: inherit;
+		resize: none;
+	}
+
+	.page-panel__meta-input:focus,
+	.page-panel__meta-textarea:focus {
+		outline: none;
+		border-color: var(--rf-color-primary, #0ea5e9);
+	}
+
+	.page-panel__meta-input {
+		font-weight: 600;
+	}
+
+	.page-panel__pins {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		flex: 1;
+		overflow-y: auto;
+	}
+
+	.pin-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		padding: 1rem 1.5rem;
+		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
+		position: relative;
+		transition: opacity 0.15s, background 0.15s;
+	}
+
+	.pin-item--dragging {
+		opacity: 0.4;
+	}
+
+	.pin-item--drag-over {
+		background: var(--rf-color-primary-50, #f0f9ff);
+		border-top: 2px solid var(--rf-color-primary, #0ea5e9);
+	}
+
+	.pin-item__handle {
+		flex-shrink: 0;
+		cursor: grab;
+		color: var(--rf-color-text-muted, #94a3b8);
+		padding: 0.25rem 0.125rem;
+		margin-top: 0.125rem;
+	}
+
+	.pin-item__handle:active {
+		cursor: grabbing;
+	}
+
+	.pin-item__content {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.pin-item__remove {
+		flex-shrink: 0;
+		background: transparent;
+		border: none;
+		font-size: 1rem;
+		color: var(--rf-color-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0.125rem 0.25rem;
+		border-radius: 0.25rem;
+		line-height: 1;
+		opacity: 0;
+		transition: opacity 0.1s, color 0.1s;
+	}
+
+	.pin-item:hover .pin-item__remove {
+		opacity: 1;
+	}
+
+	.pin-item__remove:hover {
+		color: var(--rf-color-danger-700, #b91c1c);
+		background: var(--rf-color-danger-50, #fef2f2);
+	}
+
+	@media (max-width: 768px) {
+		.page-panel {
+			position: fixed;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			width: 100%;
+			min-width: 0;
+			z-index: 100;
+		}
+	}
+</style>

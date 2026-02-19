@@ -1,7 +1,7 @@
 import { openDB as idbOpen, type IDBPDatabase } from 'idb';
 
 const DB_NAME = 'refrakt-chat';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export interface StoredConversation {
 	id: string;
@@ -15,6 +15,13 @@ export interface StoredMessage {
 	conversationId: string;
 	role: 'user' | 'assistant';
 	content: string;
+}
+
+export interface StoredPage {
+	conversationId: string;
+	title: string;
+	description: string;
+	pins: any[];
 }
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -32,6 +39,9 @@ function getDB() {
 				}
 				// v1 → v2: mode field is optional, no store schema change needed.
 				// Existing conversations get mode=undefined → treated as 'general'.
+				if (oldVersion < 3) {
+					db.createObjectStore('pages', { keyPath: 'conversationId' });
+				}
 			},
 		});
 	}
@@ -59,7 +69,7 @@ export async function listConversations(): Promise<StoredConversation[]> {
 
 export async function deleteConversation(id: string): Promise<void> {
 	const db = await getDB();
-	const tx = db.transaction(['conversations', 'messages'], 'readwrite');
+	const tx = db.transaction(['conversations', 'messages', 'pages'], 'readwrite');
 	await tx.objectStore('conversations').delete(id);
 
 	const msgStore = tx.objectStore('messages');
@@ -69,6 +79,8 @@ export async function deleteConversation(id: string): Promise<void> {
 		await cursor.delete();
 		cursor = await cursor.continue();
 	}
+
+	await tx.objectStore('pages').delete(id);
 
 	await tx.done;
 }
@@ -122,4 +134,21 @@ export async function updateConversationTitle(id: string, title: string): Promis
 		conv.title = title;
 		await db.put('conversations', conv);
 	}
+}
+
+export async function savePage(
+	conversationId: string,
+	page: { title: string; description: string; pins: any[] },
+): Promise<void> {
+	const db = await getDB();
+	await db.put('pages', { conversationId, ...page });
+}
+
+export async function loadPage(
+	conversationId: string,
+): Promise<{ title: string; description: string; pins: any[] } | undefined> {
+	const db = await getDB();
+	const stored = await db.get('pages', conversationId);
+	if (!stored) return undefined;
+	return { title: stored.title, description: stored.description, pins: stored.pins };
 }
