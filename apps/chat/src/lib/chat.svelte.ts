@@ -35,6 +35,27 @@ function stripCodeFence(text: string): string {
 	return match ? match[1] : text;
 }
 
+/** Strip sandbox HTML from older assistant messages to reduce API token cost. */
+const SANDBOX_CONTENT_RE = /(\{%\s*sandbox[^%]*%\})\s*[\s\S]*?(\s*\{%\s*\/sandbox\s*%\})/g;
+function compressHistory(
+	msgs: Array<{ role: string; content: string }>,
+): Array<{ role: string; content: string }> {
+	let lastAssistantIdx = -1;
+	for (let i = msgs.length - 1; i >= 0; i--) {
+		if (msgs[i].role === 'assistant') { lastAssistantIdx = i; break; }
+	}
+	return msgs.map((m, i) => {
+		if (m.role !== 'assistant' || i === lastAssistantIdx) return m;
+		return {
+			role: m.role,
+			content: m.content.replace(
+				SANDBOX_CONTENT_RE,
+				'$1\n<!-- [sandbox content omitted] -->\n$2',
+			),
+		};
+	});
+}
+
 /** Auto-close any rune tags left open (e.g. when AI hit token limit). */
 function closeUnclosedTags(text: string): string {
 	const open = scanInProgressBlocks(text);
@@ -200,10 +221,12 @@ export function createChat() {
 		scrollTick = 0;
 		abortController = new AbortController();
 
-		// Build history for the AI
-		const history = messages
-			.filter((m) => m.role === 'user' || m.role === 'assistant')
-			.map((m) => ({ role: m.role, content: m.content }));
+		// Build history for the AI (compress old sandbox HTML to save tokens)
+		const history = compressHistory(
+			messages
+				.filter((m) => m.role === 'user' || m.role === 'assistant')
+				.map((m) => ({ role: m.role, content: m.content })),
+		);
 
 		// Add placeholder for assistant response — access through the array
 		// so mutations go through the $state proxy and trigger UI updates
