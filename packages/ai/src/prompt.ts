@@ -492,6 +492,56 @@ without interrupting the main flow of the text.
 {% /spacing %}
 
 {% /design-context %}`,
+
+	bento: `{% bento columns=3 %}
+## Fast Builds
+
+Static generation with incremental rebuilds for instant deployments.
+
+### Type-Safe Content
+
+Every rune produces typed, validated output.
+
+### Zero Config
+
+Convention-based project structure — just write Markdown.
+
+## Open Source
+
+Free forever, community-driven, and fully extensible.
+{% /bento %}`,
+
+	form: `{% form action="/api/contact" method="POST" success="Thanks! We'll be in touch." %}
+# Contact Us
+
+- Name (required)
+- Email (required, placeholder: "you@example.com")
+- Company (optional)
+
+> What are you interested in?
+- Product demo
+- Partnership
+- Support
+- Other
+
+- Message (required)
+
+**Send Message**
+{% /form %}`,
+
+	storyboard: `{% storyboard columns=3 style="clean" %}
+![Research](/images/step-research.png)
+
+We start by understanding your audience and goals.
+
+![Design](/images/step-design.png)
+
+Our team creates wireframes and visual prototypes.
+
+![Launch](/images/step-launch.png)
+
+We ship, measure, and iterate together.
+{% /storyboard %}`,
 };
 
 function attributeTypeName(type: unknown): string {
@@ -588,6 +638,73 @@ description: A brief description
 
 /** Mode-specific writing guidance appended to the rune vocabulary layer */
 const MODE_GUIDANCE: Record<string, string> = {
+	general: `## General Mode Guidelines
+
+You have access to core layout runes plus page-level runes (hero, cta, feature). Use them when the user asks for structured content:
+- {% hero %} for page introductions with headline + call-to-action links
+- {% cta %} for standalone call-to-action sections
+- {% feature %} for listing product/service features with descriptions
+- {% grid %} for multi-column layouts
+- {% tabs %}, {% accordion %}, {% details %} for organizing content
+- {% steps %} for sequential instructions
+- {% comparison %} for side-by-side data tables`,
+
+	code: `## Code & Docs Mode Guidelines
+
+Use code-focused runes to create rich technical documentation:
+- {% codegroup %} for showing the same concept in multiple languages
+- {% diff %} for before/after code comparisons
+- {% compare %} for side-by-side code blocks
+- {% api %} for REST API endpoint documentation with parameters and responses
+- {% symbol %} for type/class/function reference documentation
+- {% diagram %} for architecture and flow diagrams (Mermaid syntax)
+- {% sandbox %} + {% preview %} for live HTML/CSS/JS demos
+- {% steps %} for tutorials and setup guides
+- {% tabs %} for platform-specific instructions (npm/yarn/pnpm)`,
+
+	content: `## Content Mode Guidelines
+
+Use editorial and storytelling runes to create engaging content:
+- {% hero %} for page introductions with headline + call-to-action links
+- {% cta %} for standalone call-to-action sections
+- {% feature %} for listing highlights or benefits
+- {% timeline %} for chronological narratives or history
+- {% changelog %} for release notes and version history
+- {% howto %} for step-by-step tutorials with estimated time
+- {% recipe %} for recipes with ingredients, steps, and metadata
+- {% testimonial %} for quotes with attribution and star ratings
+- {% annotate %} for adding margin notes to content
+- {% conversation %} for dialogue-style content`,
+
+	marketing: `## Marketing Mode Guidelines
+
+You are creating marketing and business content. Use runes to create polished, structured pages:
+- {% hero %} for the page introduction — headline, description, and call-to-action links
+- {% feature %} for showcasing product benefits or service highlights
+- {% pricing %} with {% tier %} children for pricing tables
+- {% testimonial %} for customer quotes with ratings
+- {% cta %} for call-to-action sections (newsletter signup, free trial, etc.)
+- {% bento %} for feature grids with visual cards
+- {% cast %} for team or speaker listings
+- {% organization %} for business info (address, hours, contact)
+- {% event %} for upcoming events or launches
+- {% storyboard %} for visual narratives or process explanations
+- {% form %} for contact forms or lead capture
+- {% accordion %} or {% details %} for FAQ sections
+
+A typical landing page structure: hero → features → social proof (testimonials) → pricing → CTA. Use this as a starting pattern when asked to create landing pages or marketing pages.`,
+
+	travel: `## Travel Mode Guidelines
+
+Use location and experience runes to create travel content:
+- {% map %} for interactive maps with pinned locations and categories
+- {% timeline %} for day-by-day itineraries
+- {% recipe %} for local cuisine with ingredients and steps
+- {% event %} for local events, festivals, or activities
+- {% cast %} for travel companions, local guides, or notable people
+- {% grid %} for photo galleries or destination comparisons
+- {% tabs %} for organizing by day, region, or category`,
+
 	design: `## Design Mode Guidelines
 
 CRITICAL: Raw HTML written as Markdown will NOT render as HTML — Markdoc treats it as plain text. Users will see literal <div>, <section> tags.
