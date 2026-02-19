@@ -19,9 +19,7 @@ import CodeGroup from './components/CodeGroup.svelte';
 import MapComponent from './components/Map.svelte';
 import Preview from './components/Preview.svelte';
 import Sandbox from './components/Sandbox.svelte';
-import Palette from './components/Palette.svelte';
-import Typography from './components/Typography.svelte';
-import Spacing from './components/Spacing.svelte';
+
 
 /** Maps typeof attribute values to Lumina theme Svelte components.
  *  Components registered here handle interactive behavior, complex data
@@ -68,8 +66,4 @@ export const registry: ComponentRegistry = {
 	// Showcase
 	'Preview': Preview,
 	'Sandbox': Sandbox,
-	// Design
-	'Palette': Palette,
-	'Typography': Typography,
-	'Spacing': Spacing,
 };
