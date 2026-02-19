@@ -7,9 +7,10 @@
 	interface Props {
 		pageStore: PageStore;
 		mode: string;
+		model?: string;
 	}
 
-	let { pageStore, mode }: Props = $props();
+	let { pageStore, mode, model }: Props = $props();
 
 	let dragPinId: string | null = $state(null);
 	let dragOverIndex: number | null = $state(null);
@@ -153,6 +154,7 @@
 								pinId={pin.id}
 								currentSource={pageStore.getBlockSource(pin.id)}
 								{mode}
+								{model}
 								onaccept={(src) => handleRefineAccept(pin.id, src)}
 								onkeepboth={(src) => handleRefineKeepBoth(pin.id, src)}
 								ondiscard={handleRefineDiscard}

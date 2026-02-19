@@ -10,12 +10,13 @@
 		pinId: string;
 		currentSource: string;
 		mode: string;
+		model?: string;
 		onaccept: (newSource: string) => void;
 		onkeepboth: (newSource: string) => void;
 		ondiscard: () => void;
 	}
 
-	let { pinId, currentSource, mode, onaccept, onkeepboth, ondiscard }: Props = $props();
+	let { pinId, currentSource, mode, model, onaccept, onkeepboth, ondiscard }: Props = $props();
 
 	let instruction = $state('');
 	let isStreaming = $state(false);
@@ -58,7 +59,7 @@
 		];
 
 		try {
-			for await (const chunk of streamChat(messages, mode, abortController.signal)) {
+			for await (const chunk of streamChat(messages, mode, abortController.signal, null, model)) {
 				if (isThinking) isThinking = false;
 				accumulated += chunk;
 				const result = renderMarkdocSafe(accumulated);

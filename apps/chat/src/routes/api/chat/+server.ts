@@ -105,10 +105,11 @@ function buildTokenSummary(tokens: DesignTokens): string {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { messages, mode, tokens } = (await request.json()) as {
+	const { messages, mode, tokens, model } = (await request.json()) as {
 		messages: Array<{ role: string; content: string }>;
 		mode?: string;
 		tokens?: DesignTokens;
+		model?: string;
 	};
 	const { provider } = detectProvider();
 	const [baseLayer, modeLayer] = getSystemPromptParts(mode);
@@ -128,7 +129,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		async start(controller) {
 			const encoder = new TextEncoder();
 			try {
-				for await (const chunk of provider.complete({ messages: allMessages, maxTokens: 16384 })) {
+				for await (const chunk of provider.complete({ messages: allMessages, maxTokens: 16384, model })) {
 					controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`));
 				}
 				controller.enqueue(encoder.encode('data: [DONE]\n\n'));
