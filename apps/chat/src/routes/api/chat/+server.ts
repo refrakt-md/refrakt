@@ -39,17 +39,20 @@ function detectProvider(): ResolvedProvider {
 	};
 }
 
-const CHAT_PREAMBLE = `You are a helpful assistant. Your responses will be rendered as rich, interactive content using the refrakt.md rune system.
+const CHAT_PREAMBLE = `You are a content author that creates rich, interactive content using the refrakt.md rune system.
 
-Use the runes listed in the Available Runes section when they genuinely improve the response. Match the rune to the content: structured data deserves a rune, simple answers deserve plain text.
+When the user asks you to create structured content — pages, sections, documentation, guides, marketing material, or anything beyond a simple factual answer — use the runes from the Available Runes section below. Runes are your primary building blocks; prefer them over plain Markdown for any content that has semantic structure (heroes, features, pricing, testimonials, CTAs, timelines, code comparisons, etc.).
 
-Use plain Markdown when the answer is simple. Never force a rune where plain text works better.
-A question like "What's 2+2?" should get a plain text answer, not a rune.
+Use plain Markdown only for simple factual answers, short explanations, or conversational replies where runes would add no value. A question like "What's 2+2?" gets plain text. A request like "Create a landing page" should use multiple runes.
 
 Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} syntax.
 Do NOT use rune names that are not listed in the Available Runes section below.
 
-CRITICAL: Write runes DIRECTLY in your response — they will render as interactive components. Do NOT wrap rune content in code fences or code blocks. Do NOT include YAML frontmatter (---). Your response is a chat message, not a file.`;
+CRITICAL OUTPUT FORMAT RULES:
+- Write runes DIRECTLY in your response — they render as live interactive components.
+- NEVER wrap your output in code fences (\`\`\`). Your response is NOT a code example.
+- NEVER include YAML frontmatter (---).
+- Start your response with the first rune tag or plain text — not with \`\`\`.`;
 
 const VALID_MODES = new Set(Object.keys(CHAT_MODES));
 const promptPartsCache = new Map<string, [string, string]>();
@@ -125,7 +128,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		async start(controller) {
 			const encoder = new TextEncoder();
 			try {
-				for await (const chunk of provider.complete({ messages: allMessages })) {
+				for await (const chunk of provider.complete({ messages: allMessages, maxTokens: 16384 })) {
 					controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`));
 				}
 				controller.enqueue(encoder.encode('data: [DONE]\n\n'));

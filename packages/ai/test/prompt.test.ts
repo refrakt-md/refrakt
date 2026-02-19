@@ -67,9 +67,9 @@ describe('generateSystemPrompt', () => {
 		expect(prompt).not.toMatch(/^### music-recording$/m);
 	});
 
-	it('includes frontmatter instructions', () => {
-		expect(prompt).toContain('frontmatter');
-		expect(prompt).toContain('title: Page Title');
+	it('does not include frontmatter instructions in base prompt', () => {
+		// Frontmatter moved to writePrompt() — base prompt is shared with chat
+		expect(prompt).not.toContain('title: Page Title');
 	});
 
 	it('includes writing rules', () => {
@@ -92,10 +92,36 @@ describe('mode guidance', () => {
 		expect(runeVocab).not.toContain('Design Mode Guidelines');
 	});
 
-	it('does not include guidance for general mode', () => {
+	it('includes general guidelines when mode is general', () => {
 		const generalRunes = getChatModeRunes('general');
 		const [, runeVocab] = generateSystemPromptParts(runes, generalRunes, 'general');
+		expect(runeVocab).toContain('General Mode Guidelines');
 		expect(runeVocab).not.toContain('Design Mode Guidelines');
+	});
+
+	it('includes marketing guidelines when mode is marketing', () => {
+		const marketingRunes = getChatModeRunes('marketing');
+		const [, runeVocab] = generateSystemPromptParts(runes, marketingRunes, 'marketing');
+		expect(runeVocab).toContain('Marketing Mode Guidelines');
+		expect(runeVocab).toContain('hero → features → social proof');
+	});
+
+	it('includes code guidelines when mode is code', () => {
+		const codeRunes = getChatModeRunes('code');
+		const [, runeVocab] = generateSystemPromptParts(runes, codeRunes, 'code');
+		expect(runeVocab).toContain('Code & Docs Mode Guidelines');
+	});
+
+	it('includes content guidelines when mode is content', () => {
+		const contentRunes = getChatModeRunes('content');
+		const [, runeVocab] = generateSystemPromptParts(runes, contentRunes, 'content');
+		expect(runeVocab).toContain('Content Mode Guidelines');
+	});
+
+	it('includes travel guidelines when mode is travel', () => {
+		const travelRunes = getChatModeRunes('travel');
+		const [, runeVocab] = generateSystemPromptParts(runes, travelRunes, 'travel');
+		expect(runeVocab).toContain('Travel Mode Guidelines');
 	});
 });
 

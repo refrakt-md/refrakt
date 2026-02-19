@@ -11,7 +11,7 @@ import {
 	type StoredConversation,
 } from './db.js';
 import type { RendererNode, DesignTokens } from '@refrakt-md/types';
-import type { InProgressBlock } from './block-scanner.js';
+import { scanInProgressBlocks, type InProgressBlock } from './block-scanner.js';
 import type { ChatMode } from '@refrakt-md/ai';
 
 export interface ChatMessage {
@@ -25,6 +25,21 @@ export interface ChatMessage {
 
 function truncateTitle(text: string, max = 50): string {
 	return text.length > max ? text.slice(0, max) + '...' : text;
+}
+
+/** Strip outer code fence if the AI wrapped its rune output in one. */
+function stripCodeFence(text: string): string {
+	const match = text.match(/^```(?:markdoc|markdown|md|html)?\s*\n([\s\S]*?)\n```\s*$/);
+	return match ? match[1] : text;
+}
+
+/** Auto-close any rune tags left open (e.g. when AI hit token limit). */
+function closeUnclosedTags(text: string): string {
+	const open = scanInProgressBlocks(text);
+	if (open.length === 0) return text;
+	// Close in reverse order (innermost first)
+	const closers = open.reverse().map((b) => `{% /${b.tagName} %}`).join('\n');
+	return text + '\n' + closers;
 }
 
 /** Walk a renderable tree to find DesignContext tokens meta tag. */
@@ -197,6 +212,12 @@ export function createChat() {
 				assistantMsg.degraded = result.degraded;
 			}
 
+			// Strip code fence wrapper if the AI wrapped its output in one
+			accumulated = stripCodeFence(accumulated);
+			// Auto-close rune tags left open (e.g. AI hit token limit)
+			accumulated = closeUnclosedTags(accumulated);
+			assistantMsg.content = accumulated;
+
 			// Final render with complete content
 			const finalResult = renderMarkdocSafe(accumulated);
 			for (const err of finalResult.errors) {
@@ -215,6 +236,9 @@ export function createChat() {
 			if (err instanceof DOMException && err.name === 'AbortError') {
 				// User cancelled — keep partial content, no error
 				if (accumulated) {
+					accumulated = stripCodeFence(accumulated);
+					accumulated = closeUnclosedTags(accumulated);
+					assistantMsg.content = accumulated;
 					const result = renderMarkdocSafe(accumulated);
 					assistantMsg.renderable = result.renderable ?? undefined;
 					assistantMsg.inProgressBlocks = [];

@@ -141,7 +141,7 @@ export const link: Schema = {
   render: 'a',
   transform(node, config) {
     const { urls, path } = config.variables || {};
-    const dirName = dirname(path);
+    const dirName = path ? dirname(path) : '/';
     let attributes = node.attributes;
     const absPath = dirName !== '/'
       ? join(dirName, node.attributes.href)
@@ -170,8 +170,8 @@ export const image: Schema = {
     const svgFiles: TargetFile[] = config.variables?.svg || [];
 
     let src = node.attributes.src;
-    if (!isAbsolute(src)) {
-      src = join('/', dirname(config.variables?.path), src);
+    if (!isAbsolute(src) && config.variables?.path) {
+      src = join('/', dirname(config.variables.path), src);
     }
 
     const svg = svgFiles.find(file => file._id === src);
