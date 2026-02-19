@@ -14,7 +14,7 @@ function mockNDJSONResponse(lines: object[]): Response {
 }
 
 describe('formatOllamaRequest', () => {
-	it('passes messages directly (including system)', () => {
+	it('passes system and user messages', () => {
 		const messages = [
 			{ role: 'system' as const, content: 'You are helpful.' },
 			{ role: 'user' as const, content: 'Hello' },
@@ -26,6 +26,24 @@ describe('formatOllamaRequest', () => {
 		);
 
 		expect(result.messages).toEqual(messages);
+	});
+
+	it('merges multiple system messages into one', () => {
+		const messages = [
+			{ role: 'system' as const, content: 'Base layer.' },
+			{ role: 'system' as const, content: 'Mode layer.' },
+			{ role: 'user' as const, content: 'Hello' },
+		];
+
+		const result = formatOllamaRequest(
+			{ messages },
+			{ model: 'llama3.2' },
+		);
+
+		expect(result.messages).toEqual([
+			{ role: 'system', content: 'Base layer.\n\nMode layer.' },
+			{ role: 'user', content: 'Hello' },
+		]);
 	});
 
 	it('uses provided model over default', () => {

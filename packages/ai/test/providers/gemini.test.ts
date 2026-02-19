@@ -34,6 +34,23 @@ describe('formatGeminiRequest', () => {
 		]);
 	});
 
+	it('joins multiple system messages into one systemInstruction', () => {
+		const messages: Message[] = [
+			{ role: 'system', content: 'Base layer.' },
+			{ role: 'system', content: 'Mode layer.' },
+			{ role: 'user', content: 'Hello' },
+		];
+
+		const result = formatGeminiRequest(
+			{ messages },
+			{ model: 'gemini-2.0-flash' },
+		);
+
+		expect(result.systemInstruction).toEqual({
+			parts: [{ text: 'Base layer.\n\nMode layer.' }],
+		});
+	});
+
 	it('omits systemInstruction when no system message', () => {
 		const result = formatGeminiRequest(
 			{ messages: [{ role: 'user', content: 'Hello' }] },

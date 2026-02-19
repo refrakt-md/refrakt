@@ -4,6 +4,8 @@ export interface AnthropicOptions {
 	apiKey: string;
 	baseUrl?: string;
 	defaultModel?: string;
+	/** Wrap system prompt blocks with cache_control for Anthropic prompt caching */
+	promptCaching?: boolean;
 	/** Override fetch for testing */
 	fetch?: typeof globalThis.fetch;
 }
@@ -16,13 +18,13 @@ interface AnthropicMessage {
 export function formatAnthropicRequest(
 	options: CompletionOptions,
 	defaults: { model: string },
-): { system: string | undefined; messages: AnthropicMessage[]; model: string; max_tokens: number; stream: boolean } {
-	let system: string | undefined;
+): { system: string[]; messages: AnthropicMessage[]; model: string; max_tokens: number; stream: boolean } {
+	const system: string[] = [];
 	const messages: AnthropicMessage[] = [];
 
 	for (const msg of options.messages) {
 		if (msg.role === 'system') {
-			system = msg.content;
+			system.push(msg.content);
 		} else {
 			messages.push({ role: msg.role, content: msg.content });
 		}
@@ -83,7 +85,23 @@ export function createAnthropicProvider(options: AnthropicOptions): AIProvider {
 		name: 'anthropic',
 
 		async *complete(completionOptions: CompletionOptions): AsyncIterable<string> {
-			const body = formatAnthropicRequest(completionOptions, { model: defaultModel });
+			const formatted = formatAnthropicRequest(completionOptions, { model: defaultModel });
+
+			// Build system field: cached content blocks or plain string
+			let system: unknown;
+			if (formatted.system.length > 0) {
+				system = options.promptCaching
+					? formatted.system.map(text => ({ type: 'text', text, cache_control: { type: 'ephemeral' } }))
+					: formatted.system.join('\n\n');
+			}
+
+			const body = {
+				system,
+				messages: formatted.messages,
+				model: formatted.model,
+				max_tokens: formatted.max_tokens,
+				stream: formatted.stream,
+			};
 
 			const response = await fetchFn(`${baseUrl}/v1/messages`, {
 				method: 'POST',
