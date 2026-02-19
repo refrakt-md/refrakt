@@ -1,4 +1,4 @@
-export { generateSystemPrompt, generateSystemPromptParts } from './prompt.js';
+export { generateSystemPrompt, generateSystemPromptParts, getModeGuidance } from './prompt.js';
 export type { RuneInfo } from './prompt.js';
 export type { AIProvider, CompletionOptions, Message } from './provider.js';
 export { createAnthropicProvider } from './providers/anthropic.js';

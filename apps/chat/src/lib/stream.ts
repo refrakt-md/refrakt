@@ -1,3 +1,5 @@
+import type { DesignTokens } from '@refrakt-md/types';
+
 /**
  * Stream chat messages from the server-side AI proxy via SSE.
  * Yields text chunks as they arrive from the AI provider.
@@ -6,11 +8,15 @@ export async function* streamChat(
 	messages: Array<{ role: string; content: string }>,
 	mode?: string,
 	signal?: AbortSignal,
+	tokens?: DesignTokens | null,
 ): AsyncGenerator<string> {
+	const payload: Record<string, unknown> = { messages, mode };
+	if (tokens) payload.tokens = tokens;
+
 	const response = await fetch('/api/chat', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ messages, mode }),
+		body: JSON.stringify(payload),
 		signal,
 	});
 

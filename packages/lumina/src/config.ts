@@ -300,5 +300,11 @@ export const luminaConfig: ThemeConfig = {
 				title: { source: 'meta' },
 			},
 		},
+		DesignContext: {
+			block: 'design-context',
+			modifiers: {
+				title: { source: 'meta' },
+			},
+		},
 	},
 };

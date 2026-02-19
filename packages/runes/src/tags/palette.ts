@@ -203,3 +203,33 @@ class PaletteModel extends Model {
 }
 
 export const palette = createSchema(PaletteModel);
+
+/** Extract color tokens from a palette AST node (used by design-context). */
+export function extractPaletteTokens(node: Node): { name: string; value: string; group?: string }[] {
+	const tokens: { name: string; value: string; group?: string }[] = [];
+	let currentGroup = '';
+
+	for (const child of node.children) {
+		if (child.type === 'heading') {
+			currentGroup = extractText(child);
+		} else if (child.type === 'list') {
+			for (const item of child.children) {
+				if (item.type === 'item') {
+					const text = extractText(item);
+					const entry = parseColorEntry(text);
+					if (entry) {
+						if (entry.values.length <= 1) {
+							tokens.push({ name: entry.name, value: entry.values[0] || '', group: currentGroup || undefined });
+						} else {
+							for (const v of entry.values) {
+								tokens.push({ name: entry.name, value: v, group: currentGroup || undefined });
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return tokens;
+}

@@ -1,4 +1,4 @@
-export type ChatMode = 'general' | 'code' | 'content' | 'marketing' | 'travel' | 'full';
+export type ChatMode = 'general' | 'code' | 'content' | 'marketing' | 'travel' | 'design' | 'full';
 
 export interface ChatModeDefinition {
 	id: ChatMode;
@@ -19,32 +19,33 @@ const CHILD_RUNE_MAP: Record<string, string[]> = {
 	bento: ['bento-cell'],
 	storyboard: ['storyboard-panel'],
 	reveal: ['reveal-step'],
+	'design-context': ['palette', 'typography', 'spacing', 'swatch'],
 };
 
 const CORE_RUNES = [
 	'hint',
-	'cta',
 	'grid',
 	'tabs',
 	'accordion',
 	'details',
 	'steps',
-	'feature',
 	'figure',
 	'embed',
-	'hero',
 	'sidenote',
 	'datatable',
 	'comparison',
 	'codegroup',
 ] as const;
 
+/** Page-level content runes — included in general, content, and marketing modes */
+const PAGE_RUNES = ['hero', 'cta', 'feature'] as const;
+
 export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 	general: {
 		id: 'general',
 		label: 'General',
 		description: 'Core runes for everyday content',
-		runes: [...CORE_RUNES],
+		runes: [...CORE_RUNES, ...PAGE_RUNES],
 	},
 	code: {
 		id: 'code',
@@ -58,6 +59,7 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Editorial content, guides, and storytelling',
 		runes: [
 			...CORE_RUNES,
+			...PAGE_RUNES,
 			'timeline',
 			'changelog',
 			'howto',
@@ -73,6 +75,7 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Landing pages, pricing, and business content',
 		runes: [
 			...CORE_RUNES,
+			...PAGE_RUNES,
 			'pricing',
 			'testimonial',
 			'bento',
@@ -89,6 +92,12 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Maps, itineraries, and location-based content',
 		runes: [...CORE_RUNES, 'map', 'timeline', 'recipe', 'event', 'cast'],
 	},
+	design: {
+		id: 'design',
+		label: 'Design',
+		description: 'Design systems, tokens, and visual prototyping',
+		runes: [...CORE_RUNES, 'sandbox', 'preview', 'swatch', 'palette', 'typography', 'spacing', 'design-context'],
+	},
 	full: {
 		id: 'full',
 		label: 'Full',
@@ -104,6 +113,7 @@ export const CHAT_MODE_LIST: ChatModeDefinition[] = [
 	CHAT_MODES.content,
 	CHAT_MODES.marketing,
 	CHAT_MODES.travel,
+	CHAT_MODES.design,
 	CHAT_MODES.full,
 ];
 

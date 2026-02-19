@@ -1,0 +1,25 @@
+/* Design Context — unified token card wrapper */
+.rf-design-context {
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border, #e5e7eb);
+	border-radius: 0.75rem;
+	overflow: hidden;
+}
+.rf-design-context__title {
+	font-size: 1.125rem;
+	font-weight: 600;
+	padding: 1rem 1.25rem;
+	border-bottom: 1px solid var(--rf-color-border, #e5e7eb);
+	background: var(--rf-color-bg-muted, #f9fafb);
+}
+.rf-design-context__sections {
+	display: flex;
+	flex-direction: column;
+}
+.rf-design-context__sections > * {
+	padding: 1.25rem;
+	margin: 0;
+}
+.rf-design-context__sections > * + * {
+	border-top: 1px dashed var(--rf-color-border, #e5e7eb);
+}

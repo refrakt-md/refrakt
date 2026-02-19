@@ -54,6 +54,7 @@ import { swatch } from './tags/swatch.js';
 import { palette } from './tags/palette.js';
 import { typography } from './tags/typography.js';
 import { spacing } from './tags/spacing.js';
+import { designContext } from './tags/design-context.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -575,6 +576,13 @@ export const runes = {
     description: 'Visual display of spacing scale, border radii, and shadow tokens as proportional shapes',
     reinterprets: { heading: 'section type (Spacing, Radius, Shadows)', list: 'token entries (name: value)' },
     type: schema.Spacing,
+  }),
+  'design-context': defineRune({
+    name: 'design-context',
+    schema: designContext,
+    description: 'Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection',
+    reinterprets: {},
+    type: schema.DesignContext,
   }),
 };
 

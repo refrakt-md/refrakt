@@ -2,6 +2,7 @@
 	import { onMount, getContext } from 'svelte';
 	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
+	import type { DesignTokens } from '@refrakt-md/types';
 
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 
@@ -18,6 +19,9 @@
 	// Read theme from parent Preview (undefined when standalone)
 	const previewTheme = getContext<{ readonly mode: string } | undefined>('rf-preview-theme');
 
+	// Read design tokens from parent DesignContext (undefined when no context)
+	const designTokensCtx = getContext<{ readonly tokens: DesignTokens } | undefined>('rf-design-tokens');
+
 	const FRAMEWORK_PRESETS: Record<string, string[]> = {
 		tailwind: [
 			'<script src="https://cdn.tailwindcss.com"><\/script>',
@@ -28,10 +32,126 @@
 		pico: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">'],
 	};
 
+	const ROLE_FALLBACKS: Record<string, string> = {
+		heading: 'sans-serif',
+		body: 'sans-serif',
+		mono: 'monospace',
+		display: 'sans-serif',
+		caption: 'sans-serif',
+	};
+
+	function buildDesignTokenTags(tokens: DesignTokens): string {
+		const parts: string[] = [];
+
+		// Google Fonts link
+		if (tokens.fonts && tokens.fonts.length > 0) {
+			const families = tokens.fonts.map(f => {
+				const name = f.family.replace(/ /g, '+');
+				const weights = f.weights.sort((a, b) => a - b).join(';');
+				return `family=${name}:wght@${weights}`;
+			});
+			const url = `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
+			parts.push(`<link rel="preconnect" href="https://fonts.googleapis.com">`);
+			parts.push(`<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`);
+			parts.push(`<link href="${url}" rel="stylesheet">`);
+		}
+
+		// CSS custom properties
+		const vars: string[] = [];
+		if (tokens.fonts) {
+			for (const f of tokens.fonts) {
+				const fallback = ROLE_FALLBACKS[f.role] || 'sans-serif';
+				vars.push(`  --font-${f.role}: '${f.family}', ${fallback};`);
+			}
+		}
+		if (tokens.colors) {
+			for (const c of tokens.colors) {
+				const varName = c.name.toLowerCase().replace(/\s+/g, '-');
+				vars.push(`  --color-${varName}: ${c.value};`);
+			}
+		}
+		if (tokens.spacing?.unit) {
+			vars.push(`  --spacing-unit: ${tokens.spacing.unit};`);
+		}
+		if (tokens.radii) {
+			for (const r of tokens.radii) {
+				const varName = r.name.toLowerCase().replace(/\s+/g, '-');
+				vars.push(`  --radius-${varName}: ${r.value};`);
+			}
+		}
+		if (tokens.shadows) {
+			for (const s of tokens.shadows) {
+				const varName = s.name.toLowerCase().replace(/\s+/g, '-');
+				vars.push(`  --shadow-${varName}: ${s.value};`);
+			}
+		}
+
+		if (vars.length > 0) {
+			const rules: string[] = [`:root {\n${vars.join('\n')}\n}`];
+			// Base typography rules
+			if (tokens.fonts) {
+				const bodyFont = tokens.fonts.find(f => f.role === 'body');
+				const headingFont = tokens.fonts.find(f => f.role === 'heading');
+				const monoFont = tokens.fonts.find(f => f.role === 'mono');
+				if (bodyFont) rules.push(`body { font-family: var(--font-body); }`);
+				if (headingFont) rules.push(`h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }`);
+				if (monoFont) rules.push(`code, pre, kbd { font-family: var(--font-mono); }`);
+			}
+			parts.push(`<style>\n${rules.join('\n')}\n</style>`);
+		}
+
+		return parts.join('\n');
+	}
+
+	function buildTailwindTokenConfig(tokens: DesignTokens): string {
+		const extend: Record<string, any> = {};
+		if (tokens.fonts) {
+			extend.fontFamily = {};
+			for (const f of tokens.fonts) {
+				const fallback = ROLE_FALLBACKS[f.role] || 'sans-serif';
+				extend.fontFamily[f.role] = [`'${f.family}'`, fallback];
+			}
+		}
+		if (tokens.colors) {
+			extend.colors = {};
+			for (const c of tokens.colors) {
+				const key = c.name.toLowerCase().replace(/\s+/g, '-');
+				extend.colors[key] = c.value;
+			}
+		}
+		if (tokens.radii) {
+			extend.borderRadius = {};
+			for (const r of tokens.radii) {
+				const key = r.name.toLowerCase().replace(/\s+/g, '-');
+				extend.borderRadius[key] = r.value;
+			}
+		}
+		if (Object.keys(extend).length === 0) return '';
+		return `<script>tailwind.config = { darkMode: "class", theme: { extend: ${JSON.stringify(extend)} } }<\/script>`;
+	}
+
 	function buildDependencyTags(): string {
 		const tags: string[] = [];
+
+		// Design tokens (injected before framework so they serve as defaults)
+		const tokens = designTokensCtx?.tokens;
+		if (tokens) {
+			tags.push(buildDesignTokenTags(tokens));
+		}
+
 		if (framework && FRAMEWORK_PRESETS[framework]) {
-			tags.push(...FRAMEWORK_PRESETS[framework]);
+			// If we have tokens and tailwind, use token-aware config instead of default
+			if (framework === 'tailwind' && tokens) {
+				tags.push(`<script src="https://cdn.tailwindcss.com"><\/script>`);
+				const tokenConfig = buildTailwindTokenConfig(tokens);
+				if (tokenConfig) {
+					tags.push(tokenConfig);
+				} else {
+					tags.push(`<script>tailwind.config = { darkMode: "class" }<\/script>`);
+				}
+			} else {
+				tags.push(...FRAMEWORK_PRESETS[framework]);
+			}
 		}
 		if (dependencies) {
 			for (const url of dependencies.split(',').map(u => u.trim()).filter(Boolean)) {
