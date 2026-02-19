@@ -1,17 +1,20 @@
 <script lang="ts">
 	import SafeRenderer from './SafeRenderer.svelte';
 	import SourceEditor from './SourceEditor.svelte';
+	import RefinePanel from './RefinePanel.svelte';
 	import type { PageStore } from './page.svelte.js';
 
 	interface Props {
 		pageStore: PageStore;
+		mode: string;
 	}
 
-	let { pageStore }: Props = $props();
+	let { pageStore, mode }: Props = $props();
 
 	let dragPinId: string | null = $state(null);
 	let dragOverIndex: number | null = $state(null);
 	let editingPinId: string | null = $state(null);
+	let refiningPinId: string | null = $state(null);
 
 	function handleDragStart(e: DragEvent, pinId: string) {
 		dragPinId = pinId;
@@ -47,7 +50,30 @@
 	}
 
 	function toggleEdit(pinId: string) {
+		if (refiningPinId) refiningPinId = null;
 		editingPinId = editingPinId === pinId ? null : pinId;
+	}
+
+	function toggleRefine(pinId: string) {
+		if (editingPinId) editingPinId = null;
+		refiningPinId = refiningPinId === pinId ? null : pinId;
+	}
+
+	function handleRefineAccept(pinId: string, newSource: string) {
+		pageStore.replaceBlockSource(pinId, newSource);
+		refiningPinId = null;
+	}
+
+	function handleRefineKeepBoth(pinId: string, newSource: string) {
+		const pin = pageStore.page.pins.find((p) => p.id === pinId);
+		if (pin) {
+			pageStore.insertPinAfter(pinId, newSource, pin.label, pin.type);
+		}
+		refiningPinId = null;
+	}
+
+	function handleRefineDiscard() {
+		refiningPinId = null;
 	}
 </script>
 
@@ -88,7 +114,8 @@
 					class:pin-item--dragging={dragPinId === pin.id}
 					class:pin-item--drag-over={dragOverIndex === i && dragPinId !== pin.id}
 					class:pin-item--editing={editingPinId === pin.id}
-					draggable={editingPinId !== pin.id ? 'true' : 'false'}
+					class:pin-item--refining={refiningPinId === pin.id}
+					draggable={editingPinId !== pin.id && refiningPinId !== pin.id ? 'true' : 'false'}
 					ondragstart={(e) => handleDragStart(e, pin.id)}
 					ondragover={(e) => handleDragOver(e, i)}
 					ondragleave={handleDragLeave}
@@ -120,6 +147,17 @@
 						{:else}
 							<SafeRenderer node={pin.snapshot} inProgressBlocks={[]} />
 						{/if}
+
+						{#if refiningPinId === pin.id}
+							<RefinePanel
+								pinId={pin.id}
+								currentSource={pageStore.getBlockSource(pin.id)}
+								{mode}
+								onaccept={(src) => handleRefineAccept(pin.id, src)}
+								onkeepboth={(src) => handleRefineKeepBoth(pin.id, src)}
+								ondiscard={handleRefineDiscard}
+							/>
+						{/if}
 					</div>
 					<div class="pin-item__actions">
 						{#if pin.source}
@@ -127,9 +165,20 @@
 								class="pin-item__action-btn"
 								onclick={() => toggleEdit(pin.id)}
 								title={editingPinId === pin.id ? 'Close editor' : 'Edit source'}
+								disabled={refiningPinId === pin.id}
 							>
 								<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
 									<path d="M11.5 1.5l3 3-9 9H2.5v-3l9-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+								</svg>
+							</button>
+							<button
+								class="pin-item__action-btn pin-item__action-btn--refine"
+								onclick={() => toggleRefine(pin.id)}
+								title={refiningPinId === pin.id ? 'Close refine' : 'Refine with AI'}
+								disabled={editingPinId === pin.id}
+							>
+								<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+									<path d="M8 2l1.5 3L13 6.5 9.5 8 8 14l-1.5-6L3 6.5 6.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
 								</svg>
 							</button>
 						{/if}
@@ -281,7 +330,8 @@
 		border-top: 2px solid var(--rf-color-primary, #0ea5e9);
 	}
 
-	.pin-item--editing {
+	.pin-item--editing,
+	.pin-item--refining {
 		background: var(--rf-color-surface-alt, #f8fafc);
 	}
 
@@ -326,7 +376,8 @@
 	}
 
 	.pin-item:hover .pin-item__actions,
-	.pin-item--editing .pin-item__actions {
+	.pin-item--editing .pin-item__actions,
+	.pin-item--refining .pin-item__actions {
 		opacity: 1;
 	}
 
@@ -347,6 +398,21 @@
 	.pin-item__action-btn:hover {
 		color: var(--rf-color-text, #1e293b);
 		background: var(--rf-color-border, #e2e8f0);
+	}
+
+	.pin-item__action-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	.pin-item__action-btn:disabled:hover {
+		color: var(--rf-color-text-muted, #94a3b8);
+		background: transparent;
+	}
+
+	.pin-item__action-btn--refine:hover {
+		color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-primary-50, #f0f9ff);
 	}
 
 	.pin-item__action-btn--revert:hover {

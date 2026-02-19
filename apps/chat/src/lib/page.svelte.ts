@@ -37,6 +37,8 @@ export interface PageStore {
 	updateBlockSource(pinId: string, newSource: string): void;
 	revertBlockSource(pinId: string): void;
 	getBlockSource(pinId: string): string;
+	replaceBlockSource(pinId: string, newSource: string): void;
+	insertPinAfter(afterPinId: string, newSource: string, label: string, type: BlockType): void;
 	clearPage(): void;
 	loadForConversation(conversationId: string | null): Promise<void>;
 }
@@ -161,6 +163,49 @@ export function createPageStore(): PageStore {
 		return pin.editedSource ?? pin.source;
 	}
 
+	function replaceBlockSource(pinId: string, newSource: string) {
+		const pin = page.pins.find((p) => p.id === pinId);
+		if (!pin) return;
+
+		pin.source = newSource;
+		pin.editedSource = undefined;
+		pin.isEdited = false;
+
+		const result = renderMarkdocSafe(newSource);
+		if (result.renderable) {
+			pin.snapshot = JSON.parse(JSON.stringify(result.renderable));
+		}
+
+		persist();
+	}
+
+	function insertPinAfter(afterPinId: string, newSource: string, label: string, type: BlockType) {
+		const afterIndex = page.pins.findIndex((p) => p.id === afterPinId);
+		if (afterIndex === -1) return;
+
+		const originalPin = page.pins[afterIndex];
+		const result = renderMarkdocSafe(newSource);
+
+		const newPin: PinnedBlock = {
+			id: crypto.randomUUID(),
+			sourceMessageIndex: originalPin.sourceMessageIndex,
+			sourceBlockId: originalPin.sourceBlockId + ':refined',
+			order: 0,
+			snapshot: result.renderable
+				? JSON.parse(JSON.stringify(result.renderable))
+				: originalPin.snapshot,
+			label: label + ' (refined)',
+			type,
+			source: newSource,
+			isEdited: false,
+		};
+
+		const pins = [...page.pins];
+		pins.splice(afterIndex + 1, 0, newPin);
+		page.pins = pins.map((p, i) => ({ ...p, order: i }));
+		persist();
+	}
+
 	function clearPage() {
 		page = { title: '', description: '', pins: [] };
 		persist();
@@ -215,6 +260,8 @@ export function createPageStore(): PageStore {
 		updateBlockSource,
 		revertBlockSource,
 		getBlockSource,
+		replaceBlockSource,
+		insertPinAfter,
 		clearPage,
 		loadForConversation,
 	};
