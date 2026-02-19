@@ -469,6 +469,29 @@ without interrupting the main flow of the text.
 - md: 0 4px 6px rgba(0,0,0,0.1)
 - lg: 0 10px 15px rgba(0,0,0,0.1)
 {% /spacing %}`,
+
+	'design-context': `{% design-context title="Brand Tokens" %}
+
+{% typography %}
+- heading: Inter (400, 600, 700)
+- body: Source Sans Pro (400, 600)
+- mono: Fira Code (400)
+{% /typography %}
+
+{% palette %}
+## Brand
+- Primary: #2563EB
+- Secondary: #7C3AED
+- Accent: #F59E0B
+{% /palette %}
+
+{% spacing %}
+## Spacing
+- unit: 4px
+- scale: 4, 8, 12, 16, 24, 32, 48, 64
+{% /spacing %}
+
+{% /design-context %}`,
 };
 
 function attributeTypeName(type: unknown): string {

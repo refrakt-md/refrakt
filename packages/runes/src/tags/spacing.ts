@@ -170,3 +170,59 @@ class SpacingModel extends Model {
 }
 
 export const spacing = createSchema(SpacingModel);
+
+/** Extract spacing tokens from a spacing AST node (used by design-context). */
+export function extractSpacingTokens(node: Node): {
+	spacing?: { unit?: string; scale?: string[] };
+	radii?: { name: string; value: string }[];
+	shadows?: { name: string; value: string }[];
+} {
+	const result: {
+		spacing?: { unit?: string; scale?: string[] };
+		radii?: { name: string; value: string }[];
+		shadows?: { name: string; value: string }[];
+	} = {};
+	let currentSection: SectionType | '' = '';
+	let unit = '';
+	let scaleValues: string[] = [];
+	const radii: { name: string; value: string }[] = [];
+	const shadows: { name: string; value: string }[] = [];
+
+	for (const child of node.children) {
+		if (child.type === 'heading') {
+			const heading = extractText(child).toLowerCase();
+			if (heading.includes('spacing')) currentSection = 'spacing';
+			else if (heading.includes('radius') || heading.includes('radii')) currentSection = 'radius';
+			else if (heading.includes('shadow')) currentSection = 'shadows';
+			else currentSection = '';
+		} else if (child.type === 'list' && currentSection) {
+			for (const item of child.children) {
+				if (item.type === 'item') {
+					const text = extractText(item);
+					const entry = parseNameValue(text);
+					if (!entry) continue;
+
+					if (currentSection === 'spacing') {
+						if (entry.name === 'scale') {
+							scaleValues = entry.value.split(',').map(v => v.trim());
+						} else if (entry.name === 'unit') {
+							unit = entry.value;
+						}
+					} else if (currentSection === 'radius') {
+						radii.push({ name: entry.name, value: entry.value });
+					} else if (currentSection === 'shadows') {
+						shadows.push({ name: entry.name, value: entry.value });
+					}
+				}
+			}
+		}
+	}
+
+	if (unit || scaleValues.length > 0) {
+		result.spacing = { unit: unit || undefined, scale: scaleValues.length > 0 ? scaleValues : undefined };
+	}
+	if (radii.length > 0) result.radii = radii;
+	if (shadows.length > 0) result.shadows = shadows;
+
+	return result;
+}

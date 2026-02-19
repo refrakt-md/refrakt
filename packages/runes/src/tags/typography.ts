@@ -188,3 +188,30 @@ class TypographyModel extends Model {
 }
 
 export const typography = createSchema(TypographyModel);
+
+/** Extract font tokens from a typography AST node (used by design-context). */
+export function extractTypographyTokens(node: Node): { role: string; family: string; weights: number[]; category: string }[] {
+	const tokens: { role: string; family: string; weights: number[]; category: string }[] = [];
+
+	for (const child of node.children) {
+		if (child.type === 'list') {
+			for (const item of child.children) {
+				if (item.type === 'item') {
+					const text = extractText(item);
+					const entry = parseFontEntry(text);
+					if (entry) {
+						const category = ROLE_FALLBACKS[entry.role] || 'sans-serif';
+						tokens.push({
+							role: entry.role,
+							family: entry.family,
+							weights: entry.weights,
+							category,
+						});
+					}
+				}
+			}
+		}
+	}
+
+	return tokens;
+}

@@ -1,4 +1,4 @@
-export type ChatMode = 'general' | 'code' | 'content' | 'marketing' | 'travel' | 'full';
+export type ChatMode = 'general' | 'code' | 'content' | 'marketing' | 'travel' | 'design' | 'full';
 
 export interface ChatModeDefinition {
 	id: ChatMode;
@@ -19,6 +19,7 @@ const CHILD_RUNE_MAP: Record<string, string[]> = {
 	bento: ['bento-cell'],
 	storyboard: ['storyboard-panel'],
 	reveal: ['reveal-step'],
+	'design-context': ['palette', 'typography', 'spacing', 'swatch'],
 };
 
 const CORE_RUNES = [
@@ -89,6 +90,12 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Maps, itineraries, and location-based content',
 		runes: [...CORE_RUNES, 'map', 'timeline', 'recipe', 'event', 'cast'],
 	},
+	design: {
+		id: 'design',
+		label: 'Design',
+		description: 'Design systems, tokens, and visual prototyping',
+		runes: [...CORE_RUNES, 'sandbox', 'preview', 'swatch', 'palette', 'typography', 'spacing', 'design-context'],
+	},
 	full: {
 		id: 'full',
 		label: 'Full',
@@ -104,6 +111,7 @@ export const CHAT_MODE_LIST: ChatModeDefinition[] = [
 	CHAT_MODES.content,
 	CHAT_MODES.marketing,
 	CHAT_MODES.travel,
+	CHAT_MODES.design,
 	CHAT_MODES.full,
 ];
 

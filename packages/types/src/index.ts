@@ -66,6 +66,8 @@ export { Swatch, SwatchComponent } from './schema/swatch.js';
 export { Palette, PaletteEntry, PaletteGroup, PaletteComponent } from './schema/palette.js';
 export { Typography, TypographySpecimen, TypographyComponent } from './schema/typography.js';
 export { Spacing, SpacingScale, SpacingRadius, SpacingShadow, SpacingComponent } from './schema/spacing.js';
+export { DesignContext, DesignContextComponent } from './schema/design-context.js';
+export type { DesignTokens } from './schema/design-context.js';
 
 // Theme system types
 export type {

@@ -81,6 +81,7 @@ import {
   Palette, PaletteComponent,
   Typography, TypographyComponent,
   Spacing, SpacingComponent,
+  DesignContext, DesignContextComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -179,4 +180,5 @@ export const schema = {
   Palette: useSchema(Palette).defineType<PaletteComponent>('Palette'),
   Typography: useSchema(Typography).defineType<TypographyComponent>('Typography'),
   Spacing: useSchema(Spacing).defineType<SpacingComponent>('Spacing'),
+  DesignContext: useSchema(DesignContext).defineType<DesignContextComponent>('DesignContext'),
 }

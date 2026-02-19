@@ -3,6 +3,7 @@ import { generateSystemPromptParts, getChatModeRunes, CHAT_MODES } from '@refrak
 import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
 import { runes } from '@refrakt-md/runes';
 import type { AIProvider, Message, ChatMode } from '@refrakt-md/ai';
+import type { DesignTokens } from '@refrakt-md/types';
 import type { RequestHandler } from './$types';
 
 interface ResolvedProvider {
@@ -70,10 +71,36 @@ function getSystemPromptParts(mode?: string): [string, string] {
 	return cached;
 }
 
+function buildTokenSummary(tokens: DesignTokens): string {
+	const lines: string[] = ['Active Design Tokens:'];
+	if (tokens.fonts?.length) {
+		lines.push('Fonts: ' + tokens.fonts.map(f => `${f.role}=${f.family}`).join(', '));
+	}
+	if (tokens.colors?.length) {
+		lines.push('Colors: ' + tokens.colors.map(c => `${c.name.toLowerCase().replace(/\s+/g, '-')}=${c.value}`).join(', '));
+	}
+	if (tokens.spacing) {
+		const parts: string[] = [];
+		if (tokens.spacing.unit) parts.push(`unit=${tokens.spacing.unit}`);
+		if (tokens.spacing.scale?.length) parts.push(`scale=${tokens.spacing.scale.join(',')}`);
+		if (parts.length) lines.push('Spacing: ' + parts.join(', '));
+	}
+	if (tokens.radii?.length) {
+		lines.push('Radii: ' + tokens.radii.map(r => `${r.name}=${r.value}`).join(', '));
+	}
+	if (tokens.shadows?.length) {
+		lines.push('Shadows: ' + tokens.shadows.map(s => `${s.name}=${s.value}`).join(', '));
+	}
+	lines.push('');
+	lines.push('Use these token names (--font-heading, --color-primary, etc.) in sandbox CSS custom properties. When framework="tailwind", use Tailwind classes mapped to these tokens.');
+	return lines.join('\n');
+}
+
 export const POST: RequestHandler = async ({ request }) => {
-	const { messages, mode } = (await request.json()) as {
+	const { messages, mode, tokens } = (await request.json()) as {
 		messages: Array<{ role: string; content: string }>;
 		mode?: string;
+		tokens?: DesignTokens;
 	};
 	const { provider } = detectProvider();
 	const [baseLayer, modeLayer] = getSystemPromptParts(mode);
@@ -83,6 +110,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		{ role: 'system', content: modeLayer },
 		...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
 	];
+
+	// Inject design token summary so the AI uses token names in sandboxes
+	if (tokens && mode === 'design') {
+		allMessages.push({ role: 'system', content: buildTokenSummary(tokens) });
+	}
 
 	const stream = new ReadableStream({
 		async start(controller) {

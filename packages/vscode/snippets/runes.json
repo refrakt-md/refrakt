@@ -719,5 +719,33 @@
 			"{% /spacing %}"
 		],
 		"description": "Spacing scale, border radius, and shadow token display"
+	},
+	"Design Context": {
+		"prefix": "rune:design-context",
+		"body": [
+			"{% design-context title=\"${1:Brand Tokens}\" %}",
+			"",
+			"{% typography %}",
+			"- heading: ${2:Inter} (${3:400, 600, 700})",
+			"- body: ${4:Source Sans Pro} (${5:400, 600})",
+			"- mono: ${6:Fira Code} (${7:400})",
+			"{% /typography %}",
+			"",
+			"{% palette %}",
+			"## Brand",
+			"- Primary: ${8:#2563EB}",
+			"- Secondary: ${9:#7C3AED}",
+			"- Accent: ${10:#F59E0B}",
+			"{% /palette %}",
+			"",
+			"{% spacing %}",
+			"## Spacing",
+			"- unit: ${11:4px}",
+			"- scale: ${12:4, 8, 12, 16, 24, 32, 48, 64}",
+			"{% /spacing %}",
+			"",
+			"{% /design-context %}"
+		],
+		"description": "Unified design token card with typography, palette, and spacing"
 	}
 }

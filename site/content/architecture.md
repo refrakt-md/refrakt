@@ -228,6 +228,7 @@ export const registry: ComponentRegistry = {
   'Map': Map,             // Leaflet map visualization
   'Preview': Preview,     // Theme toggle, responsive viewports, source view
   'Sandbox': Sandbox,     // Isolated iframe rendering
+  'DesignContext': DesignContext, // Token extraction + context provider
 };
 ```
 

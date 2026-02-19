@@ -10,7 +10,7 @@ import {
 	updateConversationTitle,
 	type StoredConversation,
 } from './db.js';
-import type { RendererNode } from '@refrakt-md/types';
+import type { RendererNode, DesignTokens } from '@refrakt-md/types';
 import type { InProgressBlock } from './block-scanner.js';
 import type { ChatMode } from '@refrakt-md/ai';
 
@@ -27,6 +27,48 @@ function truncateTitle(text: string, max = 50): string {
 	return text.length > max ? text.slice(0, max) + '...' : text;
 }
 
+/** Walk a renderable tree to find DesignContext tokens meta tag. */
+function extractDesignTokensFromTree(node: RendererNode): DesignTokens | null {
+	if (!node || typeof node !== 'object') return null;
+	const tag = node as Record<string, any>;
+
+	// Check if this is a DesignContext node
+	if (tag.attributes?.typeof === 'DesignContext' && Array.isArray(tag.children)) {
+		for (const child of tag.children) {
+			if (child?.name === 'meta' && child?.attributes?.property === 'tokens') {
+				try {
+					return JSON.parse(child.attributes.content);
+				} catch {
+					return null;
+				}
+			}
+		}
+	}
+
+	// Recurse into children
+	if (Array.isArray(tag.children)) {
+		for (const child of tag.children) {
+			const found = extractDesignTokensFromTree(child);
+			if (found) return found;
+		}
+	}
+
+	return null;
+}
+
+/** Scan all messages for the most recent design-context tokens. */
+function scanMessagesForTokens(msgs: ChatMessage[]): DesignTokens | null {
+	// Walk backwards to find the most recent design-context
+	for (let i = msgs.length - 1; i >= 0; i--) {
+		const msg = msgs[i];
+		if (msg.renderable) {
+			const tokens = extractDesignTokensFromTree(msg.renderable);
+			if (tokens) return tokens;
+		}
+	}
+	return null;
+}
+
 export function createChat() {
 	let messages = $state<ChatMessage[]>([]);
 	let conversations = $state<StoredConversation[]>([]);
@@ -38,6 +80,7 @@ export function createChat() {
 	let abortController: AbortController | null = null;
 	let selectedMode = $state<ChatMode>('general');
 	let conversationMode = $state<ChatMode | null>(null);
+	let activeDesignTokens = $state<DesignTokens | null>(null);
 
 	async function init() {
 		await initHighlight();
@@ -67,6 +110,7 @@ export function createChat() {
 			}
 			return msg;
 		});
+		activeDesignTokens = scanMessagesForTokens(messages);
 		scrollTick++;
 	}
 
@@ -74,6 +118,7 @@ export function createChat() {
 		if (isStreaming) return;
 		activeConversationId = null;
 		conversationMode = null;
+		activeDesignTokens = null;
 		messages = [];
 	}
 
@@ -134,7 +179,7 @@ export function createChat() {
 		const effectiveMode = conversationMode ?? selectedMode;
 
 		try {
-			for await (const chunk of streamChat(history, effectiveMode, abortController.signal)) {
+			for await (const chunk of streamChat(history, effectiveMode, abortController.signal, activeDesignTokens)) {
 				if (isThinking) isThinking = false;
 				accumulated += chunk;
 				assistantMsg.content = accumulated;
@@ -160,6 +205,12 @@ export function createChat() {
 			assistantMsg.renderable = finalResult.renderable ?? undefined;
 			assistantMsg.inProgressBlocks = [];
 			assistantMsg.degraded = finalResult.degraded;
+
+			// Check for design tokens in the new message
+			if (assistantMsg.renderable) {
+				const newTokens = extractDesignTokensFromTree(assistantMsg.renderable);
+				if (newTokens) activeDesignTokens = newTokens;
+			}
 		} catch (err) {
 			if (err instanceof DOMException && err.name === 'AbortError') {
 				// User cancelled — keep partial content, no error
@@ -224,6 +275,9 @@ export function createChat() {
 		},
 		get isModeLocked() {
 			return conversationMode !== null;
+		},
+		get activeDesignTokens() {
+			return activeDesignTokens;
 		},
 		init,
 		send,

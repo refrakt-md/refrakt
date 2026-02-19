@@ -19,6 +19,7 @@ import CodeGroup from './components/CodeGroup.svelte';
 import MapComponent from './components/Map.svelte';
 import Preview from './components/Preview.svelte';
 import Sandbox from './components/Sandbox.svelte';
+import DesignContext from './components/DesignContext.svelte';
 
 
 /** Maps typeof attribute values to Lumina theme Svelte components.
@@ -66,4 +67,6 @@ export const registry: ComponentRegistry = {
 	// Showcase
 	'Preview': Preview,
 	'Sandbox': Sandbox,
+	// Design
+	'DesignContext': DesignContext,
 };
