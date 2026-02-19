@@ -135,6 +135,26 @@ describe('map tag', () => {
 		expect(pins.length).toBe(2);
 	});
 
+	it('should preserve negative coordinates', () => {
+		const result = parse(`{% map route="true" %}
+- **Portland** - 45.5152, -122.6784
+- **San Francisco** - 37.7749, -122.4194
+{% /map %}`);
+
+		const pins = findAllTags(result as any, t => t.attributes.typeof === 'MapPin');
+		expect(pins.length).toBe(2);
+
+		const lat0 = findTag(pins[0], t => t.name === 'meta' && t.attributes.property === 'lat');
+		const lng0 = findTag(pins[0], t => t.name === 'meta' && t.attributes.property === 'lng');
+		expect(lat0?.attributes.content).toBe('45.5152');
+		expect(lng0?.attributes.content).toBe('-122.6784');
+
+		const lat1 = findTag(pins[1], t => t.name === 'meta' && t.attributes.property === 'lat');
+		const lng1 = findTag(pins[1], t => t.name === 'meta' && t.attributes.property === 'lng');
+		expect(lat1?.attributes.content).toBe('37.7749');
+		expect(lng1?.attributes.content).toBe('-122.4194');
+	});
+
 	it('should handle named pin with coordinates', () => {
 		const result = parse(`{% map %}
 - **Louvre Museum** - 48.8606, 2.3376

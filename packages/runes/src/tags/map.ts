@@ -64,10 +64,7 @@ function parseLocationItem(node: Node): {
 	if (name) remaining = remaining.replace(name, '');
 	if (description) remaining = remaining.replace(description, '');
 
-	// Strip separators
-	remaining = remaining.replace(new RegExp(SEPARATOR.source, 'g'), ' ').trim();
-
-	// Check for coordinates in remaining text
+	// Extract coordinates BEFORE stripping separators, so negative signs survive
 	let lat = '';
 	let lng = '';
 	const coordMatch = remaining.match(COORD_PATTERN);
@@ -76,6 +73,9 @@ function parseLocationItem(node: Node): {
 		lng = coordMatch[2];
 		remaining = remaining.replace(COORD_PATTERN, '').trim();
 	}
+
+	// Strip separators
+	remaining = remaining.replace(new RegExp(SEPARATOR.source, 'g'), ' ').trim();
 
 	// Whatever is left is the address
 	const address = remaining.replace(/\s+/g, ' ').trim();
