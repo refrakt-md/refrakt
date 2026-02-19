@@ -81,6 +81,14 @@
 <aside class="page-panel">
 	<div class="page-panel__header">
 		<h2 class="page-panel__title">Page</h2>
+		{#if pageStore.page.pins.length > 0}
+			<button class="page-panel__export" onclick={() => pageStore.exportPage()} title="Export as Markdoc">
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+					<path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M3 12v1.5h10V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</button>
+		{/if}
 		<button class="page-panel__close" onclick={() => pageStore.close()} title="Close page panel">
 			&times;
 		</button>
@@ -236,7 +244,7 @@
 	.page-panel__header {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		gap: 0.5rem;
 		padding: 0.75rem 1rem;
 		border-bottom: 1px solid var(--rf-color-border, #e2e8f0);
 	}
@@ -247,7 +255,26 @@
 		font-weight: 600;
 	}
 
+	.page-panel__export {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: none;
+		color: var(--rf-color-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0.25rem;
+		border-radius: 0.25rem;
+	}
+
+	.page-panel__export:hover {
+		color: var(--rf-color-primary, #0ea5e9);
+		background: var(--rf-color-border, #e2e8f0);
+	}
+
 	.page-panel__close {
+		margin-left: auto;
 		background: transparent;
 		border: none;
 		font-size: 1.25rem;

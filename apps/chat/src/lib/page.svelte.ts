@@ -39,8 +39,42 @@ export interface PageStore {
 	getBlockSource(pinId: string): string;
 	replaceBlockSource(pinId: string, newSource: string): void;
 	insertPinAfter(afterPinId: string, newSource: string, label: string, type: BlockType): void;
+	exportPage(): void;
 	clearPage(): void;
 	loadForConversation(conversationId: string | null): Promise<void>;
+}
+
+/** Escape a YAML string value if it contains special characters. */
+function yamlString(s: string): string {
+	if (/[:#"'\n]/.test(s)) return JSON.stringify(s);
+	return s;
+}
+
+/** Build a Markdoc `.md` string from the curated page state. */
+export function exportPageToMarkdoc(page: PageState): string {
+	const lines: string[] = [];
+
+	// YAML frontmatter
+	const hasMeta = page.title || page.description;
+	if (hasMeta) {
+		lines.push('---');
+		if (page.title) lines.push(`title: ${yamlString(page.title)}`);
+		if (page.description) lines.push(`description: ${yamlString(page.description)}`);
+		lines.push('---');
+		lines.push('');
+	}
+
+	// Pin content in order
+	const sorted = [...page.pins].sort((a, b) => a.order - b.order);
+	for (const pin of sorted) {
+		const source = (pin.editedSource ?? pin.source).trim();
+		if (source) {
+			lines.push(source);
+			lines.push('');
+		}
+	}
+
+	return lines.join('\n');
 }
 
 export function createPageStore(): PageStore {
@@ -206,6 +240,22 @@ export function createPageStore(): PageStore {
 		persist();
 	}
 
+	function exportPage() {
+		const md = exportPageToMarkdoc(page);
+		const slug = (page.title || 'page')
+			.replace(/[^a-z0-9\-_ ]/gi, '')
+			.replace(/\s+/g, '-')
+			.toLowerCase();
+		const filename = slug + '.md';
+		const blob = new Blob([md], { type: 'text/markdown' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
 	function clearPage() {
 		page = { title: '', description: '', pins: [] };
 		persist();
@@ -262,6 +312,7 @@ export function createPageStore(): PageStore {
 		getBlockSource,
 		replaceBlockSource,
 		insertPinAfter,
+		exportPage,
 		clearPage,
 		loadForConversation,
 	};
