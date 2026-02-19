@@ -118,13 +118,12 @@
 	{/if}
 
 	{#each colorGroups as group}
+		{@const singles = group.entries.filter(e => e.values.length <= 1)}
+		{@const scales = group.entries.filter(e => e.values.length > 1)}
 		<div class="rf-palette__group">
 			{#if group.title}
 				<h4 class="rf-palette__group-title">{group.title}</h4>
 			{/if}
-
-			{@const singles = group.entries.filter(e => e.values.length <= 1)}
-			{@const scales = group.entries.filter(e => e.values.length > 1)}
 
 			{#if singles.length > 0}
 				<div class="rf-palette__grid" style="--rf-palette-cols: {autoColumns(singles.length)}">
