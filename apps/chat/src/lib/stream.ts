@@ -9,9 +9,11 @@ export async function* streamChat(
 	mode?: string,
 	signal?: AbortSignal,
 	tokens?: DesignTokens | null,
+	model?: string,
 ): AsyncGenerator<string> {
 	const payload: Record<string, unknown> = { messages, mode };
 	if (tokens) payload.tokens = tokens;
+	if (model) payload.model = model;
 
 	const response = await fetch('/api/chat', {
 		method: 'POST',

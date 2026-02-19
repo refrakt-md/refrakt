@@ -7,6 +7,7 @@ export interface StoredConversation {
 	id: string;
 	title: string;
 	mode?: string;
+	model?: string;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -48,12 +49,13 @@ function getDB() {
 	return dbPromise;
 }
 
-export async function createConversation(title: string, mode?: string): Promise<StoredConversation> {
+export async function createConversation(title: string, mode?: string, model?: string): Promise<StoredConversation> {
 	const db = await getDB();
 	const conv: StoredConversation = {
 		id: crypto.randomUUID(),
 		title,
 		mode,
+		model,
 		createdAt: Date.now(),
 		updatedAt: Date.now(),
 	};
@@ -132,6 +134,15 @@ export async function updateConversationTitle(id: string, title: string): Promis
 	const conv = await db.get('conversations', id);
 	if (conv) {
 		conv.title = title;
+		await db.put('conversations', conv);
+	}
+}
+
+export async function updateConversationModel(id: string, model: string): Promise<void> {
+	const db = await getDB();
+	const conv = await db.get('conversations', id);
+	if (conv) {
+		conv.model = model;
 		await db.put('conversations', conv);
 	}
 }

@@ -101,6 +101,19 @@
 				{CHAT_MODE_LIST.find(m => m.id === chat.effectiveMode)?.label ?? chat.effectiveMode}
 			</span>
 		{/if}
+		{#if chat.availableModels.length > 1}
+			<select
+				class="model-select"
+				value={chat.effectiveModel}
+				onchange={(e) => chat.setModel(e.currentTarget.value)}
+				disabled={chat.isStreaming}
+				title="Select AI model"
+			>
+				{#each chat.availableModels as model}
+					<option value={model.id}>{model.label}</option>
+				{/each}
+			</select>
+		{/if}
 		<button
 			class="page-toggle-btn"
 			onclick={() => pageStore.toggle()}
@@ -243,7 +256,7 @@
 		</div>
 
 		{#if pageStore.isOpen}
-			<PagePanel {pageStore} mode={chat.effectiveMode} />
+			<PagePanel {pageStore} mode={chat.effectiveMode} model={chat.effectiveModel} />
 		{/if}
 	</div>
 </div>
@@ -422,30 +435,23 @@
 
 	/* Center message content within the chat container */
 	.message {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
 	}
 
 	.mode-picker {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 	}
 
 	.input-bar {
-		max-width: 640px;
+		max-width: 860px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
-	}
-
-	/* When page panel is not open, widen content */
-	.app-layout:not(:has(.page-panel)) .message,
-	.app-layout:not(:has(.page-panel)) .mode-picker,
-	.app-layout:not(:has(.page-panel)) .input-bar {
-		max-width: 860px;
 	}
 
 	.menu-btn {
@@ -473,6 +479,40 @@
 		color: var(--rf-color-text-muted, #64748b);
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
+	}
+
+	/* Push model selector to the right when no mode badge */
+	.model-select {
+		margin-left: auto;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--rf-color-border, #e2e8f0);
+		border-radius: 0.375rem;
+		background: var(--rf-color-surface, #ffffff);
+		font-size: 0.75rem;
+		font-family: inherit;
+		font-weight: 500;
+		color: var(--rf-color-text-muted, #64748b);
+		cursor: pointer;
+		appearance: none;
+		-webkit-appearance: none;
+		padding-right: 1.25rem;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.375rem center;
+	}
+
+	.model-select:hover {
+		border-color: var(--rf-color-primary, #0ea5e9);
+	}
+
+	.model-select:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	/* When mode badge is present, don't push model selector */
+	.mode-badge + .model-select {
+		margin-left: 0;
 	}
 
 	/* Page toggle button */

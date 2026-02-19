@@ -8,11 +8,13 @@ import {
 	updateLastMessage,
 	loadMessages,
 	updateConversationTitle,
+	updateConversationModel,
 	type StoredConversation,
 } from './db.js';
 import type { RendererNode, DesignTokens } from '@refrakt-md/types';
 import { scanInProgressBlocks, type InProgressBlock } from './block-scanner.js';
 import type { ChatMode } from '@refrakt-md/ai';
+import type { ModelInfo, ModelsResponse } from '../routes/api/models/+server.js';
 
 export interface ChatMessage {
 	role: 'user' | 'assistant';
@@ -96,10 +98,27 @@ export function createChat() {
 	let selectedMode = $state<ChatMode>('general');
 	let conversationMode = $state<ChatMode | null>(null);
 	let activeDesignTokens = $state<DesignTokens | null>(null);
+	let availableModels = $state<ModelInfo[]>([]);
+	let defaultModel = $state('');
+	let selectedModel = $state('');
+	let conversationModel = $state<string | null>(null);
 
 	async function init() {
 		await initHighlight();
 		highlightReady = true;
+
+		// Fetch available models from server
+		try {
+			const res = await fetch('/api/models');
+			if (res.ok) {
+				const data: ModelsResponse = await res.json();
+				availableModels = data.models;
+				defaultModel = data.default;
+				selectedModel = data.default;
+			}
+		} catch {
+			// Models endpoint unavailable — keep defaults
+		}
 
 		// Load conversation list and restore most recent
 		conversations = await listConversations();
@@ -113,6 +132,7 @@ export function createChat() {
 		activeConversationId = id;
 		const conv = conversations.find((c) => c.id === id);
 		conversationMode = (conv?.mode as ChatMode) ?? 'general';
+		conversationModel = conv?.model ?? null;
 		const stored = await loadMessages(id);
 		messages = stored.map((m) => {
 			const msg: ChatMessage = { role: m.role, content: m.content };
@@ -133,6 +153,7 @@ export function createChat() {
 		if (isStreaming) return;
 		activeConversationId = null;
 		conversationMode = null;
+		conversationModel = null;
 		activeDesignTokens = null;
 		messages = [];
 	}
@@ -152,10 +173,11 @@ export function createChat() {
 	}
 
 	async function send(userMessage: string) {
-		// Lock mode and create conversation on first message if needed
+		// Lock mode/model and create conversation on first message if needed
 		if (!activeConversationId) {
 			conversationMode = selectedMode;
-			const conv = await createConversation(truncateTitle(userMessage), selectedMode);
+			conversationModel = selectedModel || null;
+			const conv = await createConversation(truncateTitle(userMessage), selectedMode, selectedModel || undefined);
 			activeConversationId = conv.id;
 			conversations = await listConversations();
 		}
@@ -192,9 +214,10 @@ export function createChat() {
 		let accumulated = '';
 
 		const effectiveMode = conversationMode ?? selectedMode;
+		const effectiveModel = conversationModel ?? (selectedModel || undefined);
 
 		try {
-			for await (const chunk of streamChat(history, effectiveMode, abortController.signal, activeDesignTokens)) {
+			for await (const chunk of streamChat(history, effectiveMode, abortController.signal, activeDesignTokens, effectiveModel)) {
 				if (isThinking) isThinking = false;
 				accumulated += chunk;
 				assistantMsg.content = accumulated;
@@ -259,6 +282,16 @@ export function createChat() {
 		}
 	}
 
+	async function setModel(modelId: string) {
+		selectedModel = modelId;
+		// If there's an active conversation, update its stored model
+		if (activeConversationId) {
+			conversationModel = modelId;
+			await updateConversationModel(activeConversationId, modelId);
+			conversations = await listConversations();
+		}
+	}
+
 	function cancel() {
 		abortController?.abort();
 	}
@@ -303,9 +336,19 @@ export function createChat() {
 		get activeDesignTokens() {
 			return activeDesignTokens;
 		},
+		get availableModels() {
+			return availableModels;
+		},
+		get effectiveModel(): string {
+			return conversationModel ?? selectedModel;
+		},
+		get isModelLocked() {
+			return conversationModel !== null;
+		},
 		init,
 		send,
 		cancel,
+		setModel,
 		newConversation,
 		switchConversation,
 		deleteConversation,
