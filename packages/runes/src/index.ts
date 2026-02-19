@@ -50,6 +50,10 @@ import { map, mapPin } from './tags/map.js';
 import { preview } from './tags/preview.js';
 import { sandbox } from './tags/sandbox.js';
 import { symbol, symbolGroup, symbolMember } from './tags/symbol.js';
+import { swatch } from './tags/swatch.js';
+import { palette } from './tags/palette.js';
+import { typography } from './tags/typography.js';
+import { spacing } from './tags/spacing.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -543,6 +547,34 @@ export const runes = {
     schema: symbolMember,
     description: 'Individual member within a symbol group',
     type: schema.SymbolMember,
+  }),
+  swatch: defineRune({
+    name: 'swatch',
+    schema: swatch,
+    description: 'Inline color chip with colored dot and label for referencing colors in prose',
+    reinterprets: {},
+    type: schema.Swatch,
+  }),
+  palette: defineRune({
+    name: 'palette',
+    schema: palette,
+    description: 'Visual color palette displaying swatches with names, values, and optional WCAG contrast/accessibility info',
+    reinterprets: { list: 'color entries (name: #value)', heading: 'color group title' },
+    type: schema.Palette,
+  }),
+  typography: defineRune({
+    name: 'typography',
+    schema: typography,
+    description: 'Font specimen display showing typefaces at multiple sizes and weights with sample text',
+    reinterprets: { list: 'font entries (role: Family Name (weights))' },
+    type: schema.Typography,
+  }),
+  spacing: defineRune({
+    name: 'spacing',
+    schema: spacing,
+    description: 'Visual display of spacing scale, border radii, and shadow tokens as proportional shapes',
+    reinterprets: { heading: 'section type (Spacing, Radius, Shadows)', list: 'token entries (name: value)' },
+    type: schema.Spacing,
   }),
 };
 

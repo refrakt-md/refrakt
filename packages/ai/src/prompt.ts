@@ -434,6 +434,41 @@ without interrupting the main flow of the text.
 ## Parks
 - **Jardin du Luxembourg** - 48.8462, 2.3372
 {% /map %}`,
+
+	swatch: `{% swatch color="#2563EB" label="Ultramarine" /%}`,
+
+	palette: `{% palette title="Brand Colors" showContrast="true" showA11y="true" %}
+## Primary
+- Blue: #2563EB
+- Indigo: #4F46E5
+- Purple: #7C3AED
+
+## Neutrals
+- Gray: #F9FAFB, #F3F4F6, #E5E7EB, #D1D5DB, #9CA3AF, #6B7280, #4B5563, #374151, #1F2937, #111827
+{% /palette %}`,
+
+	typography: `{% typography title="Font System" sample="The quick brown fox jumps over the lazy dog" %}
+- heading: Inter (600, 700)
+- body: Inter (400, 500)
+- mono: JetBrains Mono (400, 500)
+{% /typography %}`,
+
+	spacing: `{% spacing title="Design Tokens" %}
+## Spacing
+- unit: 4px
+- scale: 0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32
+
+## Radius
+- sm: 4px
+- md: 8px
+- lg: 12px
+- full: 9999px
+
+## Shadows
+- sm: 0 1px 2px rgba(0,0,0,0.05)
+- md: 0 4px 6px rgba(0,0,0,0.1)
+- lg: 0 10px 15px rgba(0,0,0,0.1)
+{% /spacing %}`,
 };
 
 function attributeTypeName(type: unknown): string {

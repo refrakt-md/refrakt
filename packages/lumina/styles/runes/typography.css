@@ -1,0 +1,91 @@
+/* Typography — font specimen display */
+.rf-typography {
+	margin: 1.5rem 0;
+}
+.rf-typography__title {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+}
+.rf-typography__specimens {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+.rf-typography__specimen {
+	border: 1px solid var(--rf-color-border, #e5e7eb);
+	border-radius: var(--rf-radius-lg, 12px);
+	padding: 1.5rem;
+}
+.rf-typography__specimen-header {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	margin-bottom: 1.25rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--rf-color-border, #e5e7eb);
+}
+.rf-typography__specimen-role {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-primary, #0ea5e9);
+	background: var(--rf-color-primary-bg, rgba(14, 165, 233, 0.1));
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm, 4px);
+}
+.rf-typography__specimen-family {
+	font-size: 0.9rem;
+	color: var(--rf-color-text-muted, #6b7280);
+}
+.rf-typography__sizes {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+.rf-typography__size-sample {
+	display: flex;
+	align-items: baseline;
+	gap: 1rem;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.rf-typography__size-label {
+	flex-shrink: 0;
+	font-size: 0.7rem;
+	font-family: var(--rf-font-mono, monospace);
+	color: var(--rf-color-text-muted, #6b7280);
+	min-width: 3rem;
+	text-align: right;
+}
+.rf-typography__weights {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+	padding-top: 1rem;
+	border-top: 1px solid var(--rf-color-border, #e5e7eb);
+}
+.rf-typography__weight-sample {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+.rf-typography__weight-label {
+	font-size: 0.7rem;
+	font-family: var(--rf-font-mono, monospace);
+	color: var(--rf-color-text-muted, #6b7280);
+}
+.rf-typography__charset {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--rf-color-border, #e5e7eb);
+	font-size: 0.875rem;
+	line-height: 1.8;
+	letter-spacing: 0.05em;
+	word-break: break-all;
+	color: var(--rf-color-text-muted, #6b7280);
+}

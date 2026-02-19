@@ -272,5 +272,12 @@ export const luminaConfig: ThemeConfig = {
 		},
 		SymbolGroup: { block: 'symbol-group' },
 		SymbolMember: { block: 'symbol-member' },
+
+		// ─── Design runes ───
+
+		Swatch: { block: 'swatch' },
+		Palette: { block: 'palette' },
+		Typography: { block: 'typography' },
+		Spacing: { block: 'spacing' },
 	},
 };

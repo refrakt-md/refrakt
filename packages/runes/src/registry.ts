@@ -77,6 +77,10 @@ import {
   Symbol, SymbolComponent,
   SymbolGroup, SymbolGroupComponent,
   SymbolMember, SymbolMemberComponent,
+  Swatch, SwatchComponent,
+  Palette, PaletteComponent,
+  Typography, TypographyComponent,
+  Spacing, SpacingComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -171,4 +175,8 @@ export const schema = {
   Symbol: useSchema(Symbol).defineType<SymbolComponent>('Symbol'),
   SymbolGroup: useSchema(SymbolGroup).defineType<SymbolGroupComponent>('SymbolGroup'),
   SymbolMember: useSchema(SymbolMember).defineType<SymbolMemberComponent>('SymbolMember'),
+  Swatch: useSchema(Swatch).defineType<SwatchComponent>('Swatch'),
+  Palette: useSchema(Palette).defineType<PaletteComponent>('Palette'),
+  Typography: useSchema(Typography).defineType<TypographyComponent>('Typography'),
+  Spacing: useSchema(Spacing).defineType<SpacingComponent>('Spacing'),
 }
