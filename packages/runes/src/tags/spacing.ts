@@ -1,9 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {
@@ -29,46 +28,41 @@ class SpacingModel extends Model {
 	@attribute({ type: String, required: false })
 	title: string = '';
 
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
+	transform(): RenderableTreeNodes {
+		// Parse headings and list items directly from the original AST
+		const sectionChildren: InstanceType<typeof Tag>[] = [];
 		let currentSection: SectionType | '' = '';
 
-		for (const node of nodes) {
-			if (node.type === 'heading') {
-				const heading = extractText(node).toLowerCase();
+		for (const child of this.node.children) {
+			if (child.type === 'heading') {
+				const heading = extractText(child).toLowerCase();
 				if (heading.includes('spacing')) currentSection = 'spacing';
 				else if (heading.includes('radius') || heading.includes('radii')) currentSection = 'radius';
 				else if (heading.includes('shadow')) currentSection = 'shadows';
 				else currentSection = '';
 
 				if (currentSection) {
-					converted.push(new Ast.Node('tag', {
-						sectionType: currentSection,
-					}, [], 'spacing-section-marker'));
+					sectionChildren.push(new Tag('div', { sectionType: currentSection }));
 				}
-			} else if (node.type === 'list' && currentSection) {
-				for (const item of node.children) {
+			} else if (child.type === 'list' && currentSection) {
+				for (const item of child.children) {
 					if (item.type === 'item') {
 						const text = extractText(item);
 						const entry = parseNameValue(text);
 						if (entry) {
-							// Special handling for scale values (comma-separated)
 							if (entry.name === 'scale') {
-								converted.push(new Ast.Node('tag', {
+								sectionChildren.push(new Tag('div', {
 									section: currentSection,
 									entryType: 'scale',
 									value: entry.value,
-								}, [], 'spacing-entry'));
+								}));
 							} else {
-								converted.push(new Ast.Node('tag', {
+								sectionChildren.push(new Tag('div', {
 									section: currentSection,
 									entryType: 'named',
 									name: entry.name,
 									value: entry.value,
-								}, [], 'spacing-entry'));
+								}));
 							}
 						}
 					}
@@ -76,14 +70,8 @@ class SpacingModel extends Model {
 			}
 		}
 
-		return super.processChildren(converted);
-	}
-
-	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
-
 		const titleMeta = new Tag('meta', { content: this.title });
-		const sectionsDiv = new Tag('div', {}, body.toArray());
+		const sectionsDiv = new Tag('div', {}, sectionChildren);
 
 		return createComponentRenderable(schema.Spacing, {
 			tag: 'section',

@@ -1,9 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {
@@ -39,50 +38,38 @@ class PaletteModel extends Model {
 	@attribute({ type: Number, required: false })
 	columns: number | undefined = undefined;
 
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
+	transform(): RenderableTreeNodes {
+		// Parse headings and list items directly from the original AST
+		const gridChildren: InstanceType<typeof Tag>[] = [];
 		let currentGroup = '';
 
-		for (const node of nodes) {
-			if (node.type === 'heading') {
-				currentGroup = extractText(node);
-				// Emit a group marker tag
-				converted.push(new Ast.Node('tag', {
-					groupTitle: currentGroup,
-				}, [], 'palette-group-marker'));
-			} else if (node.type === 'list') {
-				for (const item of node.children) {
+		for (const child of this.node.children) {
+			if (child.type === 'heading') {
+				currentGroup = extractText(child);
+				gridChildren.push(new Tag('div', { groupTitle: currentGroup }));
+			} else if (child.type === 'list') {
+				for (const item of child.children) {
 					if (item.type === 'item') {
 						const text = extractText(item);
 						const entry = parseColorEntry(text);
 						if (entry) {
-							converted.push(new Ast.Node('tag', {
+							gridChildren.push(new Tag('div', {
 								name: entry.name,
 								values: entry.values.join(','),
 								group: currentGroup,
-							}, [], 'palette-entry'));
+							}));
 						}
 					}
 				}
 			}
 		}
 
-		return super.processChildren(converted);
-	}
-
-	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
-
 		const titleMeta = new Tag('meta', { content: this.title });
 		const showContrastMeta = new Tag('meta', { content: String(this.showContrast) });
 		const showA11yMeta = new Tag('meta', { content: String(this.showA11y) });
 		const columnsMeta = new Tag('meta', { content: this.columns != null ? String(this.columns) : '' });
 
-		// Collect all rendered children into a grid container
-		const gridDiv = new Tag('div', {}, body.toArray());
+		const gridDiv = new Tag('div', {}, gridChildren);
 
 		return createComponentRenderable(schema.Palette, {
 			tag: 'section',
