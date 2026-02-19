@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateSystemPrompt } from '../src/prompt.js';
+import { generateSystemPrompt, generateSystemPromptParts } from '../src/prompt.js';
+import { getChatModeRunes } from '../src/modes/chat.js';
 import { runes } from '@refrakt-md/runes';
 
 describe('generateSystemPrompt', () => {
@@ -74,5 +75,63 @@ describe('generateSystemPrompt', () => {
 	it('includes writing rules', () => {
 		expect(prompt).toContain('Do NOT invent rune names');
 		expect(prompt).toContain('Horizontal rules');
+	});
+});
+
+describe('mode guidance', () => {
+	it('includes design guidelines when mode is design', () => {
+		const designRunes = getChatModeRunes('design');
+		const [, runeVocab] = generateSystemPromptParts(runes, designRunes, 'design');
+		expect(runeVocab).toContain('Design Mode Guidelines');
+		expect(runeVocab).toContain('sandbox');
+		expect(runeVocab).toContain('Raw HTML written as Markdown will NOT render');
+	});
+
+	it('does not include guidance without mode', () => {
+		const [, runeVocab] = generateSystemPromptParts(runes);
+		expect(runeVocab).not.toContain('Design Mode Guidelines');
+	});
+
+	it('does not include guidance for general mode', () => {
+		const generalRunes = getChatModeRunes('general');
+		const [, runeVocab] = generateSystemPromptParts(runes, generalRunes, 'general');
+		expect(runeVocab).not.toContain('Design Mode Guidelines');
+	});
+});
+
+describe('rune classification', () => {
+	it('excludes hero/cta/feature from design mode', () => {
+		const designRunes = getChatModeRunes('design')!;
+		expect(designRunes.has('hero')).toBe(false);
+		expect(designRunes.has('cta')).toBe(false);
+		expect(designRunes.has('feature')).toBe(false);
+	});
+
+	it('excludes hero/cta/feature from code mode', () => {
+		const codeRunes = getChatModeRunes('code')!;
+		expect(codeRunes.has('hero')).toBe(false);
+		expect(codeRunes.has('cta')).toBe(false);
+		expect(codeRunes.has('feature')).toBe(false);
+	});
+
+	it('includes hero/cta/feature in general mode', () => {
+		const generalRunes = getChatModeRunes('general')!;
+		expect(generalRunes.has('hero')).toBe(true);
+		expect(generalRunes.has('cta')).toBe(true);
+		expect(generalRunes.has('feature')).toBe(true);
+	});
+
+	it('includes hero/cta/feature in content mode', () => {
+		const contentRunes = getChatModeRunes('content')!;
+		expect(contentRunes.has('hero')).toBe(true);
+		expect(contentRunes.has('cta')).toBe(true);
+		expect(contentRunes.has('feature')).toBe(true);
+	});
+
+	it('includes hero/cta/feature in marketing mode', () => {
+		const marketingRunes = getChatModeRunes('marketing')!;
+		expect(marketingRunes.has('hero')).toBe(true);
+		expect(marketingRunes.has('cta')).toBe(true);
+		expect(marketingRunes.has('feature')).toBe(true);
 	});
 });

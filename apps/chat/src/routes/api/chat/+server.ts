@@ -47,7 +47,9 @@ Use plain Markdown when the answer is simple. Never force a rune where plain tex
 A question like "What's 2+2?" should get a plain text answer, not a rune.
 
 Important: Write valid Markdoc. Rune tags use {% tagname %} ... {% /tagname %} syntax.
-Do NOT use rune names that are not listed in the Available Runes section below.`;
+Do NOT use rune names that are not listed in the Available Runes section below.
+
+CRITICAL: Write runes DIRECTLY in your response — they will render as interactive components. Do NOT wrap rune content in code fences or code blocks. Do NOT include YAML frontmatter (---). Your response is a chat message, not a file.`;
 
 const VALID_MODES = new Set(Object.keys(CHAT_MODES));
 const promptPartsCache = new Map<string, [string, string]>();
@@ -64,7 +66,7 @@ function getSystemPromptParts(mode?: string): [string, string] {
 		const includeRunes = key !== 'full'
 			? getChatModeRunes(key as ChatMode)
 			: undefined;
-		const [base, runeVocab] = generateSystemPromptParts(runes, includeRunes);
+		const [base, runeVocab] = generateSystemPromptParts(runes, includeRunes, key !== 'full' ? key : undefined);
 		cached = [CHAT_PREAMBLE + '\n\n' + base, runeVocab];
 		promptPartsCache.set(key, cached);
 	}
@@ -92,7 +94,10 @@ function buildTokenSummary(tokens: DesignTokens): string {
 		lines.push('Shadows: ' + tokens.shadows.map(s => `${s.name}=${s.value}`).join(', '));
 	}
 	lines.push('');
-	lines.push('Use these token names (--font-heading, --color-primary, etc.) in sandbox CSS custom properties. When framework="tailwind", use Tailwind classes mapped to these tokens.');
+	lines.push('These tokens are auto-injected into {% sandbox %} iframes. Use them:');
+	lines.push('- CSS: var(--font-heading), var(--color-primary), var(--spacing-unit), var(--radius-md)');
+	lines.push('- Tailwind (framework="tailwind"): font-heading, text-primary, rounded-md — token names map to theme extensions');
+	lines.push('IMPORTANT: Use {% preview source=true %}{% sandbox framework="tailwind" %}...{% /sandbox %}{% /preview %} to render custom UI with these tokens. Do NOT write raw HTML outside sandbox.');
 	return lines.join('\n');
 }
 

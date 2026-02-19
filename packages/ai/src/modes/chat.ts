@@ -24,28 +24,28 @@ const CHILD_RUNE_MAP: Record<string, string[]> = {
 
 const CORE_RUNES = [
 	'hint',
-	'cta',
 	'grid',
 	'tabs',
 	'accordion',
 	'details',
 	'steps',
-	'feature',
 	'figure',
 	'embed',
-	'hero',
 	'sidenote',
 	'datatable',
 	'comparison',
 	'codegroup',
 ] as const;
 
+/** Page-level content runes — included in general, content, and marketing modes */
+const PAGE_RUNES = ['hero', 'cta', 'feature'] as const;
+
 export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 	general: {
 		id: 'general',
 		label: 'General',
 		description: 'Core runes for everyday content',
-		runes: [...CORE_RUNES],
+		runes: [...CORE_RUNES, ...PAGE_RUNES],
 	},
 	code: {
 		id: 'code',
@@ -59,6 +59,7 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Editorial content, guides, and storytelling',
 		runes: [
 			...CORE_RUNES,
+			...PAGE_RUNES,
 			'timeline',
 			'changelog',
 			'howto',
@@ -74,6 +75,7 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		description: 'Landing pages, pricing, and business content',
 		runes: [
 			...CORE_RUNES,
+			...PAGE_RUNES,
 			'pricing',
 			'testimonial',
 			'bento',

@@ -586,14 +586,64 @@ description: A brief description
 - Horizontal rules (---) delimit grid cells inside {% grid %} and {% codegroup %}.
 - Do NOT invent rune names that are not listed below.`;
 
+/** Mode-specific writing guidance appended to the rune vocabulary layer */
+const MODE_GUIDANCE: Record<string, string> = {
+	design: `## Design Mode Guidelines
+
+CRITICAL: Raw HTML written as Markdown will NOT render as HTML — Markdoc treats it as plain text. Users will see literal <div>, <section> tags.
+
+When creating UI components, layouts, or visual prototypes, ALWAYS nest a sandbox inside a preview rune. This gives users a rendered preview with source code panel, responsive viewports, and theme toggling:
+
+{% preview source=true responsive="mobile,tablet,desktop" %}
+{% sandbox framework="tailwind" %}
+<section class="py-20 px-4 bg-gradient-to-br from-indigo-600 to-purple-700 text-center">
+  <h1 class="text-5xl font-bold text-white mb-4">Ship faster</h1>
+  <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">Build beautiful products.</p>
+  <div class="flex gap-4 justify-center">
+    <a href="#" class="px-6 py-3 bg-white text-indigo-700 rounded-lg font-semibold">Get Started</a>
+    <a href="#" class="px-6 py-3 border border-white/30 text-white rounded-lg">Learn More</a>
+  </div>
+</section>
+{% /sandbox %}
+{% /preview %}
+
+Use data-source attributes to create separate source code tabs:
+
+{% preview source=true responsive="mobile,tablet,desktop" %}
+{% sandbox framework="tailwind" %}
+<style data-source="CSS">
+  .hero { background: linear-gradient(to bottom right, var(--color-primary), var(--color-secondary)); }
+</style>
+<section class="hero" data-source="HTML">
+  <h1>Headline</h1>
+</section>
+{% /sandbox %}
+{% /preview %}
+
+A bare {% sandbox %} (without preview) is acceptable for small inline demos that do not need source/viewport controls.
+
+### Design tokens in sandbox:
+
+When design tokens are active, they are auto-injected into sandbox iframes as CSS custom properties:
+- CSS: var(--font-heading), var(--color-primary), var(--radius-md)
+- Tailwind: token names become theme extensions (font-heading, text-primary, rounded-md)
+- Prefer token-based values over hardcoded colors/fonts when tokens exist.`,
+};
+
+/** Returns mode-specific writing guidance, if any. */
+export function getModeGuidance(mode: string): string | undefined {
+	return MODE_GUIDANCE[mode];
+}
+
 /**
  * Returns the system prompt as two separate parts for cache-aware usage:
  * [0] Base instructions (role description, writing rules) — stable across all modes
- * [1] Rune vocabulary (available runes section) — varies by mode
+ * [1] Rune vocabulary (available runes section) + optional mode guidance — varies by mode
  */
 export function generateSystemPromptParts(
 	runes: Record<string, RuneInfo>,
 	includeRunes?: Set<string>,
+	mode?: string,
 ): [string, string] {
 	const runeDescriptions = Object.values(runes)
 		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
@@ -601,12 +651,22 @@ export function generateSystemPromptParts(
 		.map(rune => describeRune(rune))
 		.join('\n\n');
 
-	return [BASE_INSTRUCTIONS, `## Available Runes\n\n${runeDescriptions}`];
+	let runeVocab = `## Available Runes\n\n${runeDescriptions}`;
+
+	if (mode) {
+		const guidance = MODE_GUIDANCE[mode];
+		if (guidance) {
+			runeVocab += '\n\n' + guidance;
+		}
+	}
+
+	return [BASE_INSTRUCTIONS, runeVocab];
 }
 
 export function generateSystemPrompt(
 	runes: Record<string, RuneInfo>,
 	includeRunes?: Set<string>,
+	mode?: string,
 ): string {
-	return generateSystemPromptParts(runes, includeRunes).join('\n\n');
+	return generateSystemPromptParts(runes, includeRunes, mode).join('\n\n');
 }
