@@ -1,0 +1,105 @@
+/* Spacing — spacing scale, radii, and shadow display */
+.rf-spacing {
+	margin: 1.5rem 0;
+}
+.rf-spacing__title {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+}
+.rf-spacing__section {
+	margin-bottom: 2rem;
+}
+.rf-spacing__section:last-child {
+	margin-bottom: 0;
+}
+.rf-spacing__section-title {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-text-muted, #6b7280);
+	margin-bottom: 0.75rem;
+}
+
+/* Spacing scale — proportional bars */
+.rf-spacing__scale {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+.rf-spacing__scale-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+.rf-spacing__scale-bar {
+	height: 1.25rem;
+	background: var(--rf-color-primary, #0ea5e9);
+	border-radius: var(--rf-radius-sm, 4px);
+	opacity: 0.8;
+	min-width: 4px;
+}
+.rf-spacing__scale-label {
+	font-size: 0.75rem;
+	font-family: var(--rf-font-mono, monospace);
+	color: var(--rf-color-text, #1a1a2e);
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+.rf-spacing__scale-multiplier {
+	color: var(--rf-color-text-muted, #6b7280);
+	margin-left: 0.25rem;
+}
+
+/* Radius — rounded corner samples */
+.rf-spacing__radii {
+	display: flex;
+	gap: 1.25rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.rf-spacing__radius-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.375rem;
+}
+.rf-spacing__radius-sample {
+	width: 3.5rem;
+	height: 3.5rem;
+	border: 2px solid var(--rf-color-border, #e5e7eb);
+	background: var(--rf-color-surface-raised, #f9fafb);
+}
+.rf-spacing__radius-label {
+	font-weight: 500;
+	font-size: 0.8rem;
+}
+.rf-spacing__radius-value {
+	font-size: 0.7rem;
+	font-family: var(--rf-font-mono, monospace);
+	color: var(--rf-color-text-muted, #6b7280);
+}
+
+/* Shadows — sample cards */
+.rf-spacing__shadows {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+.rf-spacing__shadow-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+}
+.rf-spacing__shadow-sample {
+	width: 5rem;
+	height: 3.5rem;
+	background: var(--rf-color-surface, #fff);
+	border-radius: var(--rf-radius-md, 8px);
+}
+.rf-spacing__shadow-label {
+	font-weight: 500;
+	font-size: 0.8rem;
+}

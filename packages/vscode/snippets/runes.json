@@ -646,5 +646,78 @@
 			"{% /symbol %}"
 		],
 		"description": "Class/interface documentation with member groups"
+	},
+
+	"Swatch": {
+		"prefix": "rune:swatch",
+		"body": [
+			"{% swatch color=\"${1:#2563EB}\" label=\"${2:Blue}\" /%}"
+		],
+		"description": "Inline color chip with label"
+	},
+	"Swatch with Value": {
+		"prefix": "rune:swatch:value",
+		"body": [
+			"{% swatch color=\"${1:#2563EB}\" label=\"${2:Blue}\" showValue=true /%}"
+		],
+		"description": "Inline color chip with label and hex value"
+	},
+	"Palette": {
+		"prefix": "rune:palette",
+		"body": [
+			"{% palette title=\"${1:Colors}\" %}",
+			"- ${2:Blue}: ${3:#2563EB}",
+			"- ${4:Indigo}: ${5:#4F46E5}",
+			"- ${6:Purple}: ${7:#7C3AED}",
+			"{% /palette %}"
+		],
+		"description": "Color swatch grid"
+	},
+	"Palette Grouped": {
+		"prefix": "rune:palette:grouped",
+		"body": [
+			"{% palette title=\"${1:Design System}\" showContrast=\"true\" showA11y=\"true\" %}",
+			"## ${2:Primary}",
+			"- ${3:Blue}: ${4:#2563EB}",
+			"- ${5:Indigo}: ${6:#4F46E5}",
+			"",
+			"## ${7:Neutral}",
+			"- Gray: #F9FAFB, #F3F4F6, #E5E7EB, #D1D5DB, #9CA3AF, #6B7280, #4B5563, #374151, #1F2937, #111827",
+			"{% /palette %}"
+		],
+		"description": "Grouped color palette with contrast info and neutral scale"
+	},
+	"Typography": {
+		"prefix": "rune:typography",
+		"body": [
+			"{% typography title=\"${1:Font System}\" %}",
+			"- heading: ${2:Inter} (${3:600, 700})",
+			"- body: ${4:Inter} (${5:400, 500})",
+			"- mono: ${6:JetBrains Mono} (${7:400, 500})",
+			"{% /typography %}"
+		],
+		"description": "Font specimen display with Google Fonts loading"
+	},
+	"Spacing": {
+		"prefix": "rune:spacing",
+		"body": [
+			"{% spacing title=\"${1:Design Tokens}\" %}",
+			"## Spacing",
+			"- unit: ${2:4px}",
+			"- scale: ${3:0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32}",
+			"",
+			"## Radius",
+			"- sm: ${4:4px}",
+			"- md: ${5:8px}",
+			"- lg: ${6:12px}",
+			"- full: 9999px",
+			"",
+			"## Shadows",
+			"- sm: 0 1px 2px rgba(0,0,0,0.05)",
+			"- md: 0 4px 6px rgba(0,0,0,0.1)",
+			"- lg: 0 10px 15px rgba(0,0,0,0.1)",
+			"{% /spacing %}"
+		],
+		"description": "Spacing scale, border radius, and shadow token display"
 	}
 }

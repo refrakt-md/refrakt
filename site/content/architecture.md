@@ -53,7 +53,7 @@ The architecture is organized into several focused packages:
 
 ## 2. Rune Library
 
-refrakt.md ships 43 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships 47 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
 ### Layout & Structure
 
@@ -134,6 +134,15 @@ refrakt.md ships 43 author-facing runes (plus internal child runes). Each rune d
 |------|---------|-------------|------------|
 | `music-playlist` | -- | Heading as playlist name, list items as tracks (pipe-delimited fields), image as album art | `MusicPlaylist` |
 | `music-recording` | -- | Heading as track name; attributes for artist, duration (ISO 8601), copyright year | `MusicRecording` |
+
+### Design
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `swatch` | -- | Inline color chip from `color` + `label` attributes | -- |
+| `palette` | -- | List items as `name: #value` color entries, `##` headings as groups, comma-separated values as neutral scales | -- |
+| `typography` | -- | List items as `role: Family Name (weights)` font specimens | -- |
+| `spacing` | -- | `##` sections (Spacing, Radius, Shadows) with `name: value` list items | -- |
 
 ---
 
@@ -219,6 +228,9 @@ export const registry: ComponentRegistry = {
   'Map': Map,             // Leaflet map visualization
   'Preview': Preview,     // Theme toggle, responsive viewports, source view
   'Sandbox': Sandbox,     // Isolated iframe rendering
+  'Palette': Palette,     // Color swatch grid with WCAG contrast
+  'Typography': Typography, // Font specimen display with Google Fonts
+  'Spacing': Spacing,     // Spacing scale, radius, shadow tokens
 };
 ```
 

@@ -67,6 +67,13 @@
 - storyboard
 - annotate
 
+## Design
+
+- swatch
+- palette
+- typography
+- spacing
+
 ## Site
 
 - layout
