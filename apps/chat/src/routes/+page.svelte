@@ -402,39 +402,39 @@
 
 	/* Chat container */
 	.chat-container {
-		width: 640px;
-		min-width: 480px;
-		flex-shrink: 0;
+		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
 	}
 
-	/* When page panel is not open, fill width so scrollbar sits at viewport edge */
-	.app-layout:not(:has(.page-panel)) .chat-container {
-		flex: 1;
-		width: auto;
-		min-width: 0;
-	}
-
-	/* Messages fills full width (scrollbar at edge), content centered inside */
-	.app-layout:not(:has(.page-panel)) .message {
-		max-width: 860px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.app-layout:not(:has(.page-panel)) .empty-state {
-		max-width: 860px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.app-layout:not(:has(.page-panel)) .input-bar {
-		max-width: 860px;
+	/* Center message content within the chat container */
+	.message {
+		max-width: 640px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
+	}
+
+	.empty-state {
+		max-width: 640px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.input-bar {
+		max-width: 640px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
+	}
+
+	/* When page panel is not open, widen content */
+	.app-layout:not(:has(.page-panel)) .message,
+	.app-layout:not(:has(.page-panel)) .empty-state,
+	.app-layout:not(:has(.page-panel)) .input-bar {
+		max-width: 860px;
 	}
 
 	.menu-btn {

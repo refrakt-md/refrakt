@@ -28,6 +28,7 @@ export interface PageStore {
 	pinBlocks(messageIndex: number, blockIds: string[], blocks: ContentBlock[]): void;
 	unpin(pinId: string): void;
 	reorder(pinId: string, newIndex: number): void;
+	updateMeta(title: string, description: string): void;
 	clearPage(): void;
 	loadForConversation(conversationId: string | null): Promise<void>;
 }
@@ -39,12 +40,20 @@ export function createPageStore(): PageStore {
 
 	async function persist() {
 		if (currentConversationId) {
-			await savePage(currentConversationId, {
+			// Strip $state proxies via JSON round-trip — IndexedDB structured clone can't handle Proxy objects
+			await savePage(currentConversationId, JSON.parse(JSON.stringify({
 				title: page.title,
 				description: page.description,
 				pins: page.pins,
-			});
+			})));
 		}
+	}
+
+	let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function debouncedPersist() {
+		if (persistTimer) clearTimeout(persistTimer);
+		persistTimer = setTimeout(() => persist(), 500);
 	}
 
 	function pinBlocks(messageIndex: number, blockIds: string[], blocks: ContentBlock[]) {
@@ -90,6 +99,12 @@ export function createPageStore(): PageStore {
 		persist();
 	}
 
+	function updateMeta(title: string, description: string) {
+		page.title = title;
+		page.description = description;
+		debouncedPersist();
+	}
+
 	function clearPage() {
 		page = { title: '', description: '', pins: [] };
 		persist();
@@ -132,6 +147,7 @@ export function createPageStore(): PageStore {
 		pinBlocks,
 		unpin,
 		reorder,
+		updateMeta,
 		clearPage,
 		loadForConversation,
 	};

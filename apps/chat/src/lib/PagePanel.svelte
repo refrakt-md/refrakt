@@ -64,14 +64,14 @@
 				class="page-panel__meta-input"
 				placeholder="Page title"
 				value={pageStore.page.title}
-				oninput={(e) => (pageStore.page.title = e.currentTarget.value)}
+				oninput={(e) => pageStore.updateMeta(e.currentTarget.value, pageStore.page.description)}
 			/>
 			<textarea
 				class="page-panel__meta-textarea"
 				placeholder="Description (optional)"
 				rows="2"
 				value={pageStore.page.description}
-				oninput={(e) => (pageStore.page.description = e.currentTarget.value)}
+				oninput={(e) => pageStore.updateMeta(pageStore.page.title, e.currentTarget.value)}
 			></textarea>
 		</div>
 
@@ -119,11 +119,23 @@
 	.page-panel {
 		flex: 1;
 		min-width: 480px;
+		max-width: 1280px;
 		background: #ffffff;
 		border-left: 1px solid var(--rf-color-border, #e2e8f0);
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+	}
+
+	@media (min-width: 1200px) {
+		.page-panel {
+			margin: 1.5rem;
+			margin-left: auto;
+			border-left: none;
+			border: 1px solid var(--rf-color-border, #e2e8f0);
+			border-radius: 1rem;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+		}
 	}
 
 	.page-panel__header {
