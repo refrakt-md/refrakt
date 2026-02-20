@@ -10,7 +10,7 @@ export const baseConfig: ThemeConfig = {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
 		Accordion: { block: 'accordion' },
-		AccordionItem: { block: 'accordion-item', autoLabel: { name: 'header' } },
+		AccordionItem: { block: 'accordion-item', autoLabel: { summary: 'header', name: 'title' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
 		Grid: { block: 'grid' },
 		CodeGroup: {
@@ -101,7 +101,7 @@ export const baseConfig: ThemeConfig = {
 		RecipeIngredient: { block: 'recipe-ingredient' },
 		Pricing: { block: 'pricing' },
 		Tier: { block: 'tier' },
-		FeaturedTier: { block: 'featured-tier' },
+		FeaturedTier: { block: 'tier', staticModifiers: ['featured'] },
 		Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' } },
 		FeatureDefinition: { block: 'feature-definition' },
 		Steps: { block: 'steps' },
@@ -185,7 +185,11 @@ export const baseConfig: ThemeConfig = {
 		AnnotateNote: { block: 'annotate-note' },
 		Storyboard: {
 			block: 'storyboard',
-			modifiers: { style: { source: 'meta', default: 'clean' } },
+			modifiers: {
+				style: { source: 'meta', default: 'clean' },
+				columns: { source: 'meta', default: '3' },
+			},
+			styles: { columns: '--sb-columns' },
 		},
 		StoryboardPanel: { block: 'storyboard-panel' },
 		Bento: { block: 'bento' },

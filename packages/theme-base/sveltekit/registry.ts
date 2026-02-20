@@ -5,15 +5,11 @@ import Diagram from './components/Diagram.svelte';
 import Reveal from './components/Reveal.svelte';
 import Form from './components/Form.svelte';
 import Nav from './components/Nav.svelte';
-import Accordion from './components/Accordion.svelte';
-import Details from './components/Details.svelte';
 import Chart from './components/Chart.svelte';
 import Grid from './components/Grid.svelte';
 import Comparison from './components/Comparison.svelte';
-import Pricing from './components/Pricing.svelte';
 import Testimonial from './components/Testimonial.svelte';
 import Embed from './components/Embed.svelte';
-import Storyboard from './components/Storyboard.svelte';
 import Bento from './components/Bento.svelte';
 import CodeGroup from './components/CodeGroup.svelte';
 import MapComponent from './components/Map.svelte';
@@ -41,9 +37,6 @@ export const registry: ComponentRegistry = {
 	'Nav': Nav,
 	'NavGroup': Nav,
 	'NavItem': Nav,
-	'Accordion': Accordion,
-	'AccordionItem': Accordion,
-	'Details': Details,
 	// Complex data rendering
 	'Chart': Chart,
 	'Comparison': Comparison,
@@ -51,15 +44,10 @@ export const registry: ComponentRegistry = {
 	'ComparisonRow': Comparison,
 	// Dynamic layout
 	'Grid': Grid,
-	'Storyboard': Storyboard,
-	'StoryboardPanel': Storyboard,
 	'Bento': Bento,
 	'BentoCell': Bento,
 	'Embed': Embed,
 	// Rendering logic
-	'Pricing': Pricing,
-	'Tier': Pricing,
-	'FeaturedTier': Pricing,
 	'Testimonial': Testimonial,
 	// Map visualization
 	'Map': MapComponent,
