@@ -152,6 +152,7 @@ function transformRune(
 			...tag.attributes,
 			...modDataAttrs,
 			class: bemClass,
+			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),
 		},
 		children: filteredChildren,
