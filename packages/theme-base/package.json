@@ -1,0 +1,65 @@
+{
+  "name": "@refrakt-md/theme-base",
+  "description": "Base theme for refrakt.md — universal rune config, interactive components, and structural CSS",
+  "version": "0.4.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/theme-base"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./sveltekit": {
+      "types": "./sveltekit/index.ts",
+      "svelte": "./sveltekit/index.ts",
+      "default": "./sveltekit/index.ts"
+    },
+    "./sveltekit/registry": {
+      "types": "./sveltekit/registry.ts",
+      "svelte": "./sveltekit/registry.ts",
+      "default": "./sveltekit/registry.ts"
+    },
+    "./sveltekit/elements": {
+      "types": "./sveltekit/elements.ts",
+      "svelte": "./sveltekit/elements.ts",
+      "default": "./sveltekit/elements.ts"
+    },
+    "./sveltekit/components/*": "./sveltekit/components/*"
+  },
+  "files": [
+    "dist",
+    "sveltekit"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/transform": "0.4.0",
+    "@refrakt-md/types": "0.4.0",
+    "@refrakt-md/svelte": "0.4.0"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0",
+    "@sveltejs/kit": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "svelte": {
+      "optional": true
+    },
+    "@sveltejs/kit": {
+      "optional": true
+    }
+  }
+}
