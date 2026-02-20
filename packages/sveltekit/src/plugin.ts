@@ -15,6 +15,7 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
 	'@refrakt-md/transform',
+	'@refrakt-md/theme-base',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {

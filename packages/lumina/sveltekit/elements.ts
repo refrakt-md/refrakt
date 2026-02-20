@@ -1,11 +1,9 @@
 import type { ElementOverrides } from '@refrakt-md/svelte';
-import Table from './elements/Table.svelte';
+import { elements as baseElements } from '@refrakt-md/theme-base/sveltekit/elements';
 import Blockquote from './elements/Blockquote.svelte';
-import Pre from './elements/Pre.svelte';
 
-/** Maps HTML element names to Lumina theme override components */
+/** Lumina element overrides — extends base with decorative Blockquote */
 export const elements: ElementOverrides = {
-	'table': Table,
+	...baseElements,
 	'blockquote': Blockquote,
-	'pre': Pre,
 };
