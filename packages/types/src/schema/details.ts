@@ -1,16 +1,13 @@
 import { ComponentType } from "../interfaces.js";
 
 export class Details {
-	summary: string = '';
-	open: boolean = false;
+	// summary and open are now handled via <summary> element and root attribute
+	// rather than property-tagged children
 }
 
 export interface DetailsComponent extends ComponentType<Details> {
-	tag: 'section',
-	properties: {
-		summary: 'span',
-		open: 'meta',
-	},
+	tag: 'details',
+	properties: {},
 	refs: {
 		body: 'div',
 	}

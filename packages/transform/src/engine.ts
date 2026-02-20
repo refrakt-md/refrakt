@@ -80,11 +80,29 @@ function transformRune(
 		modifierClasses.push(`${block}--${config.contextModifiers[parentTypeof]}`);
 	}
 
+	// 1c. Static modifiers — always applied, no meta source needed
+	if (config.staticModifiers) {
+		for (const mod of config.staticModifiers) {
+			modifierClasses.push(`${block}--${mod}`);
+		}
+	}
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
 		const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
 		modDataAttrs[`data-${kebab}`] = value;
+	}
+
+	// 2b. Build inline style from modifier values mapped to CSS properties
+	let styleStr = (tag.attributes.style as string) || '';
+	if (config.styles) {
+		for (const [modName, cssProp] of Object.entries(config.styles)) {
+			const val = modifierValues[modName];
+			if (val) {
+				styleStr += `${styleStr ? '; ' : ''}${cssProp}: ${val}`;
+			}
+		}
 	}
 
 	// 3. Build the class string
@@ -152,6 +170,7 @@ function transformRune(
 			...tag.attributes,
 			...modDataAttrs,
 			class: bemClass,
+			...(styleStr ? { style: styleStr } : {}),
 			...(config.rootAttributes || {}),
 		},
 		children: filteredChildren,

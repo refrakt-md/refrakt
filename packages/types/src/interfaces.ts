@@ -70,6 +70,10 @@ export type NodeType =
   'path' |
   'math' |
 
+  // Interactive
+  'details' |
+  'summary' |
+
   // Table content
   'caption' |
   'col' |
