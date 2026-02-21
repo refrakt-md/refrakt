@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { SvelteTheme } from './theme.js';
 	import { setRegistry, setElementOverrides } from './context.js';
-	import { setContext } from 'svelte';
+	import { setContext, tick } from 'svelte';
 	import { matchRouteRule } from './route-rules.js';
+	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 
 	interface OgMeta {
 		title?: string;
@@ -50,6 +51,16 @@
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules));
 	const Layout = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
+
+	// Initialize rune behaviors after render, re-run on navigation
+	$effect(() => {
+		void page.renderable; // track page changes
+		let cleanup: (() => void) | undefined;
+		tick().then(() => {
+			cleanup = initRuneBehaviors();
+		});
+		return () => cleanup?.();
+	});
 </script>
 
 <svelte:head>

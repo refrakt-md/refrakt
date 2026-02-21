@@ -33,7 +33,7 @@ export class Form {
 }
 
 export interface FormComponent extends ComponentType<Form> {
-	tag: 'div',
+	tag: 'form',
 	properties: {
 		action: 'meta',
 		method: 'meta',

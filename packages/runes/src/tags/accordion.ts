@@ -12,11 +12,11 @@ class AccordionItemModel extends Model {
 	name: string;
 
 	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
+		const nameTag = new Tag('summary', {}, [this.name]);
 		const body = this.transformChildren().wrap('div');
 
 		return createComponentRenderable(schema.AccordionItem, {
-			tag: 'div',
+			tag: 'details',
 			properties: {
 				name: nameTag,
 			},
@@ -65,7 +65,7 @@ class AccordionModel extends Model {
 		const header = this.header.transform();
 		const itemStream = this.itemgroup.transform();
 
-		const items = itemStream.tag('div').typeof('AccordionItem');
+		const items = itemStream.tag('details').typeof('AccordionItem');
 		const itemsContainer = items.wrap('div');
 
 		const children = header.count() > 0

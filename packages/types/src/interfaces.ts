@@ -14,7 +14,9 @@ export type NodeType =
   'address' |
   'article' |
   'aside' |
+  'details' |
   'footer' |
+  'form' |
   'header' |
   'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' |
   'hgroup' |
@@ -55,6 +57,7 @@ export type NodeType =
   'kbd' |
   'span' |
   'strong' |
+  'summary' |
   'time' |
 
   // Image and multimedia

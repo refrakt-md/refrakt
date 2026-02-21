@@ -222,13 +222,33 @@ export const baseConfig: ThemeConfig = {
 
 		TabGroup: { block: 'tabs' },
 		Tab: { block: 'tab' },
-		DataTable: { block: 'datatable' },
+		DataTable: {
+			block: 'datatable',
+			modifiers: {
+				searchable: { source: 'meta', default: 'false' },
+				sortable: { source: 'meta' },
+				pageSize: { source: 'meta', default: '0' },
+				defaultSort: { source: 'meta' },
+			},
+		},
 		Form: {
 			block: 'form',
-			modifiers: { style: { source: 'meta', default: 'stacked' } },
+			modifiers: {
+				style: { source: 'meta', default: 'stacked' },
+				action: { source: 'meta' },
+				method: { source: 'meta', default: 'POST' },
+				success: { source: 'meta' },
+				error: { source: 'meta' },
+				honeypot: { source: 'meta', default: 'true' },
+			},
 		},
 		FormField: { block: 'form-field' },
-		Reveal: { block: 'reveal' },
+		Reveal: {
+			block: 'reveal',
+			modifiers: {
+				mode: { source: 'meta', default: 'click' },
+			},
+		},
 		RevealStep: { block: 'reveal-step' },
 		Diagram: { block: 'diagram' },
 		Map: {
@@ -239,7 +259,15 @@ export const baseConfig: ThemeConfig = {
 			},
 		},
 		MapPin: { block: 'map-pin' },
-		Preview: { block: 'preview' },
+		Preview: {
+			block: 'preview',
+			modifiers: {
+				theme: { source: 'meta', default: 'auto' },
+				width: { source: 'meta', default: 'wide' },
+				responsive: { source: 'meta' },
+				title: { source: 'meta' },
+			},
+		},
 		Sandbox: { block: 'sandbox' },
 		Symbol: {
 			block: 'symbol',
