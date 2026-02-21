@@ -1,10 +1,12 @@
 import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
+import type { AuditResult } from './css-audit.js';
 
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
+const RED = '\x1b[31m';
 const RESET = '\x1b[0m';
 
 /** Format the "Config Applied" section showing what the identity transform does */
@@ -159,5 +161,89 @@ export function buildJsonOutput(opts: {
 		} : null,
 		html: opts.html,
 		selectors: opts.selectors,
+	};
+}
+
+/** Format a single-rune audit result */
+export function formatAuditResult(result: AuditResult, theme: string): string {
+	const lines: string[] = [];
+	lines.push(heading(`CSS Coverage: ${result.rune} (${theme})`));
+	lines.push('');
+
+	// Find the longest selector for alignment
+	const selectors = Object.keys(result.selectors);
+	const maxLen = Math.max(...selectors.map(s => s.length));
+
+	for (const [sel, info] of Object.entries(result.selectors)) {
+		const padded = sel.padEnd(maxLen + 2);
+		if (info.styled) {
+			lines.push(`  ${GREEN}\u2713${RESET} ${padded} ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+		} else {
+			lines.push(`  ${RED}\u2717${RESET} ${padded} ${RED}NOT STYLED${RESET}`);
+		}
+	}
+
+	lines.push('');
+	const pct = result.total > 0 ? Math.round((result.styled / result.total) * 100) : 0;
+	const statusIcon = result.status === 'complete' ? `${GREEN}\u2713 complete${RESET}`
+		: result.status === 'partial' ? `${YELLOW}\u26a0 ${result.total - result.styled} unstyled${RESET}`
+		: `${RED}\u2717 not started${RESET}`;
+	lines.push(`  Coverage: ${result.styled}/${result.total} selectors (${pct}%)  ${statusIcon}`);
+
+	return lines.join('\n');
+}
+
+/** Format the full-theme audit summary */
+export function formatAuditSummary(results: AuditResult[], theme: string): string {
+	const lines: string[] = [];
+	lines.push(heading(`Theme Audit: ${theme}`));
+	lines.push('');
+
+	// Find the longest rune name for alignment
+	const maxNameLen = Math.max(...results.map(r => r.rune.length));
+
+	for (const r of results) {
+		const name = r.rune.padEnd(maxNameLen + 2);
+		const fraction = `${r.styled}/${r.total}`.padStart(7);
+		const statusIcon = r.status === 'complete' ? `${GREEN}\u2713 complete${RESET}`
+			: r.status === 'partial' ? `${YELLOW}\u26a0 ${r.total - r.styled} unstyled${RESET}`
+			: `${RED}\u2717 not started${RESET}`;
+		lines.push(`  ${name} ${fraction}  selectors   ${statusIcon}`);
+	}
+
+	// Summary
+	const totalSelectors = results.reduce((sum, r) => sum + r.total, 0);
+	const totalStyled = results.reduce((sum, r) => sum + r.styled, 0);
+	const complete = results.filter(r => r.status === 'complete').length;
+	const partial = results.filter(r => r.status === 'partial').length;
+	const notStarted = results.filter(r => r.status === 'not-started').length;
+	const pct = totalSelectors > 0 ? Math.round((totalStyled / totalSelectors) * 100) : 0;
+
+	lines.push('');
+	lines.push(`  ${DIM}${'─'.repeat(40)}${RESET}`);
+	lines.push(`  Overall: ${totalStyled}/${totalSelectors} selectors styled (${pct}%)`);
+	lines.push(`  Complete: ${complete} runes`);
+	if (partial > 0) lines.push(`  Partial: ${partial} runes`);
+	if (notStarted > 0) lines.push(`  Not started: ${notStarted} runes`);
+
+	return lines.join('\n');
+}
+
+/** Build JSON output for an audit */
+export function buildAuditJson(results: AuditResult[], theme: string): object {
+	const totalSelectors = results.reduce((sum, r) => sum + r.total, 0);
+	const totalStyled = results.reduce((sum, r) => sum + r.styled, 0);
+
+	return {
+		theme,
+		totalSelectors,
+		styledSelectors: totalStyled,
+		coverage: totalSelectors > 0 ? Math.round((totalStyled / totalSelectors) * 100) / 100 : 0,
+		runes: Object.fromEntries(results.map(r => [r.rune, {
+			total: r.total,
+			styled: r.styled,
+			status: r.status,
+			selectors: r.selectors,
+		}])),
 	};
 }
