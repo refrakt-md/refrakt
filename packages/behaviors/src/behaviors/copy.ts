@@ -11,8 +11,9 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 	const cleanups: Array<() => void> = [];
 
 	for (const pre of pres) {
-		// Skip if already wrapped with a copy button
+		// Skip if already wrapped with a copy button (by this behavior or by a framework component)
 		if (pre.parentElement?.classList.contains('rf-code-wrapper')) continue;
+		if (pre.parentElement?.classList.contains('rf-codeblock')) continue;
 
 		const btn = document.createElement('button');
 		btn.className = 'rf-copy-btn';
