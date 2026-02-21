@@ -2,11 +2,22 @@ import type { BehaviorFn, InitOptions } from './types.js';
 import { isFrameworkManaged } from './utils.js';
 import { copyBehavior } from './behaviors/copy.js';
 import { accordionBehavior } from './behaviors/accordion.js';
+import { tabsBehavior } from './behaviors/tabs.js';
+import { revealBehavior } from './behaviors/reveal.js';
+import { datatableBehavior } from './behaviors/datatable.js';
+import { formBehavior } from './behaviors/form.js';
+import { previewBehavior } from './behaviors/preview.js';
 
 /** Map of rune type → behavior function */
 const behaviors: Record<string, BehaviorFn> = {
 	accordion: accordionBehavior,
 	accordionitem: accordionBehavior,
+	tabgroup: tabsBehavior,
+	codegroup: tabsBehavior,
+	reveal: revealBehavior,
+	datatable: datatableBehavior,
+	form: formBehavior,
+	preview: previewBehavior,
 };
 
 /**
@@ -51,4 +62,9 @@ export function initRuneBehaviors(
 
 export { copyBehavior } from './behaviors/copy.js';
 export { accordionBehavior } from './behaviors/accordion.js';
+export { tabsBehavior } from './behaviors/tabs.js';
+export { revealBehavior } from './behaviors/reveal.js';
+export { datatableBehavior } from './behaviors/datatable.js';
+export { formBehavior } from './behaviors/form.js';
+export { previewBehavior } from './behaviors/preview.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
