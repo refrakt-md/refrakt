@@ -29,6 +29,14 @@ export interface RuneConfig {
 
 	/** Wrap content children (non-structural) in this element */
 	contentWrapper?: { tag: string; ref: string };
+
+	/** Map modifier names to CSS properties set as inline style on root.
+	 *  E.g., `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"` */
+	styles?: Record<string, string>;
+
+	/** Modifier class suffixes always applied (no meta source needed).
+	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
+	staticModifiers?: string[];
 }
 
 export interface StructureEntry {
