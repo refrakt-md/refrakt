@@ -80,6 +80,13 @@ function transformRune(
 		modifierClasses.push(`${block}--${config.contextModifiers[parentTypeof]}`);
 	}
 
+	// 1c. Static modifiers — always-applied BEM modifier suffixes
+	if (config.staticModifiers) {
+		for (const mod of config.staticModifiers) {
+			modifierClasses.push(`${block}--${mod}`);
+		}
+	}
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -146,7 +153,27 @@ function transformRune(
 		return !config.modifiers || !(c.attributes.property in config.modifiers);
 	});
 
-	return {
+	// 8. Build inline styles from styles config
+	let inlineStyle = tag.attributes.style || '';
+	if (config.styles) {
+		const parts: string[] = [];
+		for (const [modName, spec] of Object.entries(config.styles)) {
+			const val = modifierValues[modName];
+			if (!val) continue;
+			if (typeof spec === 'string') {
+				parts.push(`${spec}: ${val}`);
+			} else {
+				parts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
+			}
+		}
+		if (parts.length) {
+			inlineStyle = inlineStyle
+				? `${inlineStyle}; ${parts.join('; ')}`
+				: parts.join('; ');
+		}
+	}
+
+	const result: SerializedTag = {
 		...tag,
 		attributes: {
 			...tag.attributes,
@@ -154,9 +181,20 @@ function transformRune(
 			class: bemClass,
 			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),
+			...(inlineStyle ? { style: inlineStyle } : {}),
 		},
 		children: filteredChildren,
 	};
+
+	// 9. Programmatic escape hatch — runs after all declarative processing
+	if (config.postTransform) {
+		return config.postTransform(result, {
+			modifiers: modifierValues,
+			parentType: parentTypeof,
+		});
+	}
+
+	return result;
 }
 
 /** Recursively apply BEM element classes to data-name elements within a rune's children */

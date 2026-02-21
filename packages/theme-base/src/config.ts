@@ -103,7 +103,7 @@ export const baseConfig: ThemeConfig = {
 		RecipeIngredient: { block: 'recipe-ingredient' },
 		Pricing: { block: 'pricing' },
 		Tier: { block: 'tier' },
-		FeaturedTier: { block: 'featured-tier' },
+		FeaturedTier: { block: 'tier', staticModifiers: ['featured'] },
 		Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' } },
 		FeatureDefinition: { block: 'feature-definition' },
 		Steps: { block: 'steps' },
@@ -187,13 +187,28 @@ export const baseConfig: ThemeConfig = {
 		AnnotateNote: { block: 'annotate-note' },
 		Storyboard: {
 			block: 'storyboard',
-			modifiers: { style: { source: 'meta', default: 'clean' } },
+			modifiers: {
+				style: { source: 'meta', default: 'clean' },
+				columns: { source: 'meta', default: '3' },
+			},
+			styles: { columns: '--sb-columns' },
 		},
 		StoryboardPanel: { block: 'storyboard-panel' },
-		Bento: { block: 'bento' },
+		Bento: {
+			block: 'bento',
+			modifiers: {
+				columns: { source: 'meta', default: '4' },
+				gap: { source: 'meta', default: '1rem' },
+			},
+			styles: {
+				columns: '--bento-columns',
+				gap: '--bento-gap',
+			},
+		},
 		BentoCell: {
 			block: 'bento-cell',
 			modifiers: { size: { source: 'meta', default: 'medium' } },
+			autoLabel: { name: 'title' },
 		},
 		Comparison: { block: 'comparison' },
 		ComparisonColumn: { block: 'comparison-column' },
