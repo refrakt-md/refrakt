@@ -56,6 +56,9 @@
     "svelte": "^5.0.0",
     "@sveltejs/kit": "^2.0.0"
   },
+  "devDependencies": {
+    "postcss": "^8.4.0"
+  },
   "peerDependenciesMeta": {
     "svelte": {
       "optional": true
