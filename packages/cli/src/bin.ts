@@ -41,6 +41,9 @@ Write Options:
 Inspect Options:
   --list                   List all available runes
   --json                   Output as JSON
+  --audit                  Check CSS coverage for generated selectors
+  --all                    Audit all runes (use with --audit)
+  --css <dir>              CSS directory for audit (auto-detected by default)
   --theme <name>           Theme to use (default: base)
   --items <n>              Number of repeated children (default: 3)
   --<attr>=<value>         Set a rune attribute (e.g., --type=warning)
@@ -60,6 +63,9 @@ Examples:
   refrakt inspect api --method=POST --path="/users"
   refrakt inspect --list
   refrakt inspect --list --json
+  refrakt inspect hint --audit
+  refrakt inspect --all --audit
+  refrakt inspect hint --audit --css path/to/styles
 `);
 }
 
@@ -67,6 +73,9 @@ function runInspect(inspectArgs: string[]): void {
 	let runeName: string | undefined;
 	let list = false;
 	let json = false;
+	let audit = false;
+	let all = false;
+	let cssDir: string | undefined;
 	let theme = 'base';
 	let items = 3;
 	const flags: Record<string, string> = {};
@@ -78,6 +87,16 @@ function runInspect(inspectArgs: string[]): void {
 			list = true;
 		} else if (arg === '--json') {
 			json = true;
+		} else if (arg === '--audit') {
+			audit = true;
+		} else if (arg === '--all') {
+			all = true;
+		} else if (arg === '--css') {
+			cssDir = inspectArgs[++i];
+			if (!cssDir) {
+				console.error('Error: --css requires a directory path');
+				process.exit(1);
+			}
 		} else if (arg === '--theme') {
 			theme = inspectArgs[++i];
 			if (!theme) {
@@ -134,7 +153,7 @@ function runInspect(inspectArgs: string[]): void {
 	]) => {
 		const Markdoc = markdocModule.default ?? markdocModule;
 		return inspectCommand(
-			{ runeName, list, json, theme, items, flags },
+			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
 			{ Markdoc, runes, tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig },
 		);
 	}).catch((err) => {

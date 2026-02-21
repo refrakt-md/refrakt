@@ -4,12 +4,23 @@ import type { ThemeConfig } from '@refrakt-md/transform';
 import { getFixture } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import {
+	parseCssFile,
+	auditSelectors,
+	collectAllSelectors,
+	type CssSelectorMatch,
+	type AuditResult,
+} from '../lib/css-audit.js';
+import { resolveCssDir, readCssForBlock, readAllCss } from '../lib/css-resolve.js';
+import {
 	formatConfig,
 	formatSelectors,
 	formatInput,
 	formatHtml,
 	formatRuneList,
 	buildJsonOutput,
+	formatAuditResult,
+	formatAuditSummary,
+	buildAuditJson,
 	heading,
 } from '../lib/format.js';
 
@@ -31,8 +42,11 @@ export interface InspectOptions {
 	runeName?: string;
 	list: boolean;
 	json: boolean;
+	audit: boolean;
+	all: boolean;
 	theme: string;
 	items: number;
+	cssDir?: string;
 	flags: Record<string, string>;
 }
 
@@ -50,6 +64,19 @@ export async function inspectCommand(
 		return listRunes(runes, options.json);
 	}
 
+	// Resolve theme config
+	const config = resolveTheme(options.theme, baseConfig);
+
+	// --all --audit: full-theme audit
+	if (options.all && options.audit) {
+		return runFullAudit(config, runes, options, deps);
+	}
+
+	// --all without --audit: not supported yet
+	if (options.all) {
+		throw new Error('--all currently requires --audit. Use --list to see available runes.');
+	}
+
 	if (!options.runeName) {
 		throw new Error('Missing rune name. Use --list to see available runes.\n\nUsage: refrakt inspect <rune> [options]');
 	}
@@ -63,8 +90,10 @@ export async function inspectCommand(
 		throw new Error(`Unknown rune "${options.runeName}"\n\nAvailable runes:\n${available}`);
 	}
 
-	// Resolve theme config
-	const config = resolveTheme(options.theme, baseConfig);
+	// --audit mode for a single rune
+	if (options.audit) {
+		return runSingleAudit(rune, config, options, deps);
+	}
 
 	// Check for variant expansion (e.g., --type=all)
 	const schemaVariants = discoverVariants(rune.schema);
@@ -96,6 +125,126 @@ export async function inspectCommand(
 		} else {
 			outputFormatted(rune, config, options.flags, deps);
 		}
+	}
+}
+
+/** Run audit for a single rune */
+function runSingleAudit(
+	rune: Rune,
+	config: ThemeConfig,
+	options: InspectOptions,
+	deps: InspectDeps,
+): void {
+	const cssDir = resolveCssDir(options.cssDir);
+	if (!cssDir) {
+		throw new Error('No CSS directory found. Use --css <dir> to specify the path to rune CSS files.');
+	}
+
+	const runeTypeof = rune.type?.name;
+	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
+	if (!runeConfig) {
+		throw new Error(`No engine config found for rune "${rune.name}". It may be a component-only rune without identity transform config.`);
+	}
+
+	// Read CSS for this block
+	const cssFile = readCssForBlock(cssDir, runeConfig.block);
+	const cssMatches: CssSelectorMatch[] = cssFile
+		? parseCssFile(cssFile.content, cssFile.path)
+		: [];
+
+	// Collect all possible selectors across variants
+	const schemaVariants = discoverVariants(rune.schema);
+	const allSelectors = collectAllSelectors(
+		rune.name,
+		runeConfig.block,
+		config.prefix,
+		schemaVariants,
+		runeConfig.contextModifiers,
+		runeConfig.staticModifiers,
+		(flags) => {
+			const { tree } = runPipeline(rune, config, flags, deps);
+			return deps.extractSelectors(tree, config.prefix);
+		},
+	);
+
+	const result = auditSelectors(rune.name, allSelectors, cssMatches);
+
+	if (options.json) {
+		console.log(JSON.stringify(buildAuditJson([result], options.theme), null, 2));
+	} else {
+		console.log(formatAuditResult(result, options.theme));
+	}
+}
+
+/** Run audit for all runes in the theme */
+function runFullAudit(
+	config: ThemeConfig,
+	runes: Record<string, Rune>,
+	options: InspectOptions,
+	deps: InspectDeps,
+): void {
+	const cssDir = resolveCssDir(options.cssDir);
+	if (!cssDir) {
+		throw new Error('No CSS directory found. Use --css <dir> to specify the path to rune CSS files.');
+	}
+
+	// Parse all CSS files upfront
+	const cssFiles = readAllCss(cssDir);
+	const allCssMatches: CssSelectorMatch[] = [];
+	for (const file of cssFiles) {
+		allCssMatches.push(...parseCssFile(file.content, file.path));
+	}
+
+	const results: AuditResult[] = [];
+
+	// Iterate over all runes that have engine config
+	for (const rune of Object.values(runes)) {
+		const runeTypeof = rune.type?.name;
+		const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
+		if (!runeConfig) continue; // Skip runes without identity transform config
+
+		const schemaVariants = discoverVariants(rune.schema);
+
+		let allSelectors: string[];
+		try {
+			allSelectors = collectAllSelectors(
+				rune.name,
+				runeConfig.block,
+				config.prefix,
+				schemaVariants,
+				runeConfig.contextModifiers,
+				runeConfig.staticModifiers,
+				(flags) => {
+					const { tree } = runPipeline(rune, config, flags, deps);
+					return deps.extractSelectors(tree, config.prefix);
+				},
+			);
+		} catch {
+			// Skip runes whose fixtures fail to transform
+			continue;
+		}
+
+		// Filter CSS matches to only those relevant to this rune's block
+		const blockPrefix = `.${config.prefix}-${runeConfig.block}`;
+		const relevantCss = allCssMatches.filter(m =>
+			m.selector.startsWith(blockPrefix) || m.selector.startsWith('[data-')
+		);
+
+		results.push(auditSelectors(rune.name, allSelectors, relevantCss));
+	}
+
+	// Sort results: complete first, then partial, then not-started, alphabetically within each group
+	results.sort((a, b) => {
+		const order = { 'complete': 0, 'partial': 1, 'not-started': 2 };
+		const statusDiff = order[a.status] - order[b.status];
+		if (statusDiff !== 0) return statusDiff;
+		return a.rune.localeCompare(b.rune);
+	});
+
+	if (options.json) {
+		console.log(JSON.stringify(buildAuditJson(results, options.theme), null, 2));
+	} else {
+		console.log(formatAuditSummary(results, options.theme));
 	}
 }
 
@@ -223,10 +372,10 @@ function findExpandAttr(flags: Record<string, string>, variants: Record<string, 
 
 /** Resolve a theme name to a ThemeConfig */
 function resolveTheme(theme: string, baseConfig: ThemeConfig): ThemeConfig {
-	// For Phase 1, only base config is supported
+	// For now, only base config is supported
 	if (theme === 'base') return baseConfig;
 
-	// TODO: Phase 2 — resolve named themes by importing from @refrakt-md/<name>
+	// TODO: resolve named themes by importing from @refrakt-md/<name>
 	// or loading from a local refrakt.config.ts
 	console.error(`Warning: Theme "${theme}" not found, using base config.\n`);
 	return baseConfig;
