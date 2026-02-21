@@ -10,7 +10,7 @@ export class CodeGroup {
 export interface CodeGroupComponent extends ComponentType<CodeGroup> {
   tag: 'section',
   properties: {
-    title: 'span',
+    title: 'meta',
     tab: 'li',
     panel: 'li',
   },

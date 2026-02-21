@@ -63,7 +63,7 @@
 	color: rgba(255, 255, 255, 0.95);
 	border-bottom-color: var(--rf-color-primary);
 }
-.rf-codegroup__content pre {
+.rf-codegroup pre {
 	margin: 0;
 	padding: 1rem 1.25rem;
 	overflow-x: auto;
@@ -71,7 +71,7 @@
 	border: none;
 	border-radius: 0;
 }
-.rf-codegroup__content code {
+.rf-codegroup code {
 	font-family: var(--rf-font-mono);
 	font-size: 0.85rem;
 }

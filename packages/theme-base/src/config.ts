@@ -15,6 +15,7 @@ export const baseConfig: ThemeConfig = {
 		Grid: { block: 'grid' },
 		CodeGroup: {
 			block: 'codegroup',
+			modifiers: { title: { source: 'meta' } },
 			structure: {
 				topbar: {
 					tag: 'div', before: true,
@@ -22,6 +23,7 @@ export const baseConfig: ThemeConfig = {
 						{ tag: 'span', ref: 'dot' },
 						{ tag: 'span', ref: 'dot' },
 						{ tag: 'span', ref: 'dot' },
+						{ tag: 'span', ref: 'title', metaText: 'title', condition: 'title' },
 					],
 				},
 			},
