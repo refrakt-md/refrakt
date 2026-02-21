@@ -52,11 +52,12 @@
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules));
 	const Layout = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
 
-	// Initialize rune behaviors after render.
+	// Initialize rune behaviors after render, re-run on navigation.
 	// The {#key page.url} block in the template ensures full DOM recreation on
 	// navigation, so behaviors always run on fresh DOM and old behavior-modified
 	// elements are simply discarded (no cleanup/restore conflicts with Svelte).
 	$effect(() => {
+		void page.url; // re-run when page changes
 		let cleanup: (() => void) | undefined;
 		let active = true;
 		tick().then(() => {
