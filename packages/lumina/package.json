@@ -30,7 +30,6 @@
     },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./sveltekit/tokens.css": "./sveltekit/tokens.css",
-    "./sveltekit/aliases.css": "./sveltekit/aliases.css",
     "./sveltekit/manifest": "./sveltekit/manifest.json"
   },
   "files": [

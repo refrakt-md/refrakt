@@ -62,7 +62,6 @@ export function loadVirtualModule(
 			for (const block of [...buildCtx.usedCssBlocks].sort()) {
 				lines.push(`import '${theme}/styles/runes/${block}.css';`);
 			}
-			lines.push(`import '${themeAdapter}/aliases.css';`);
 			return lines.join('\n');
 		}
 		return `import '${themeAdapter}/tokens.css';`;

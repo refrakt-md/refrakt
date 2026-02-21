@@ -175,7 +175,7 @@
 <style>
 	/* ---- Site header ---- */
 	.site-header {
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--rf-color-border);
 	}
 	.site-header-inner {
 		display: flex;
@@ -205,10 +205,10 @@
 	}
 	.site-header-inner :global(p ~ p a) {
 		margin-left: 1.5rem;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.site-header-inner :global(p ~ p a:hover) {
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 
 	/* ---- Mobile menu button ---- */
@@ -218,11 +218,11 @@
 		border: none;
 		padding: 0.25rem;
 		cursor: pointer;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 		line-height: 0;
 	}
 	.mobile-menu-btn:hover {
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 
 	/* ---- Mobile panel ---- */
@@ -231,7 +231,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 100;
-		background: var(--color-bg, #fff);
+		background: var(--rf-color-bg, #fff);
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
 	}
@@ -240,25 +240,25 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0.875rem 1.5rem;
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--rf-color-border);
 	}
 	.mobile-panel-title {
 		font-size: 0.85rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.mobile-panel-close {
 		background: none;
 		border: none;
 		padding: 0.25rem;
 		cursor: pointer;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 		line-height: 0;
 	}
 	.mobile-panel-close:hover {
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 	.mobile-panel-nav {
 		padding: 1.5rem;
@@ -273,12 +273,12 @@
 		display: block;
 		padding: 0.75rem 0;
 		font-size: 1.1rem;
-		color: var(--color-text);
+		color: var(--rf-color-text);
 		text-decoration: none;
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--rf-color-border);
 	}
 	.mobile-panel-nav :global(a:hover) {
-		color: var(--color-primary, var(--color-text));
+		color: var(--rf-color-primary, var(--rf-color-text));
 		text-decoration: none;
 	}
 
@@ -305,12 +305,12 @@
 		line-height: 1.15;
 		letter-spacing: -0.02em;
 		margin: 0 0 1rem;
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 	.blog-index-body {
 		margin-bottom: 2rem;
 		line-height: 1.8;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.blog-index-body:empty {
 		display: none;
@@ -325,14 +325,14 @@
 	.blog-post-card {
 		display: block;
 		padding: 1.5rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md, 0.5rem);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md, 0.5rem);
 		text-decoration: none;
 		color: inherit;
 		transition: border-color 0.15s, box-shadow 0.15s;
 	}
 	.blog-post-card:hover {
-		border-color: var(--color-text);
+		border-color: var(--rf-color-text);
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 		text-decoration: none;
 	}
@@ -340,14 +340,14 @@
 		font-size: 1.35rem;
 		font-weight: 700;
 		margin: 0 0 0.5rem;
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 	.blog-post-card-meta {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		font-size: 0.85rem;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 		margin-bottom: 0.5rem;
 	}
 	.blog-post-card-author::before {
@@ -358,7 +358,7 @@
 		margin: 0 0 0.75rem;
 		font-size: 0.95rem;
 		line-height: 1.6;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.blog-post-card-tags {
 		display: flex;
@@ -369,7 +369,7 @@
 	.blog-post-card-link {
 		font-size: 0.85rem;
 		font-weight: 600;
-		color: var(--color-primary, var(--color-text));
+		color: var(--rf-color-primary, var(--rf-color-text));
 	}
 
 	/* ---- Article ---- */
@@ -379,7 +379,7 @@
 	.blog-article-header {
 		margin-bottom: 2.5rem;
 		padding-bottom: 1.5rem;
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--rf-color-border);
 	}
 	.blog-article-title {
 		font-size: 2.25rem;
@@ -387,14 +387,14 @@
 		line-height: 1.15;
 		letter-spacing: -0.02em;
 		margin: 0 0 1rem;
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 	.blog-article-meta {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		font-size: 0.9rem;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.blog-article-meta time {
 		font-weight: 500;
@@ -414,9 +414,9 @@
 		font-weight: 500;
 		padding: 0.2rem 0.6rem;
 		border-radius: 9999px;
-		background: var(--color-surface);
-		color: var(--color-muted);
-		border: 1px solid var(--color-border);
+		background: var(--rf-color-surface);
+		color: var(--rf-color-muted);
+		border: 1px solid var(--rf-color-border);
 	}
 
 	/* ---- Article body typography ---- */
@@ -433,7 +433,7 @@
 		margin-bottom: 1.25rem;
 	}
 	.blog-article-body :global(img) {
-		border-radius: var(--radius-md);
+		border-radius: var(--rf-radius-md);
 		margin: 1.5rem 0;
 	}
 
@@ -442,7 +442,7 @@
 		position: sticky;
 		top: 2.5rem;
 		font-size: 0.85rem;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 	.blog-sidebar :global(h2),
 	.blog-sidebar :global(h3),
@@ -451,7 +451,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 		margin-top: 0;
 		margin-bottom: 0.5rem;
 	}
@@ -464,20 +464,20 @@
 		padding: 0.25rem 0;
 	}
 	.blog-sidebar :global(a) {
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 		text-decoration: none;
 	}
 	.blog-sidebar :global(a:hover) {
-		color: var(--color-text);
+		color: var(--rf-color-text);
 	}
 
 	/* ---- Footer ---- */
 	.site-footer {
-		border-top: 1px solid var(--color-border);
+		border-top: 1px solid var(--rf-color-border);
 		padding: 2rem 1.5rem;
 		text-align: center;
 		font-size: 0.85rem;
-		color: var(--color-muted);
+		color: var(--rf-color-muted);
 	}
 
 	/* ---- Mobile ---- */
@@ -499,7 +499,7 @@
 		}
 		.blog-sidebar {
 			position: static;
-			border-top: 1px solid var(--color-border);
+			border-top: 1px solid var(--rf-color-border);
 			padding-top: 1.5rem;
 		}
 	}
