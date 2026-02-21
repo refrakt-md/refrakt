@@ -9,9 +9,9 @@ This is hidden content.
 
 		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
 		expect(details).toBeDefined();
-		expect(details!.name).toBe('section');
+		expect(details!.name).toBe('details');
 
-		const summary = findTag(details!, t => t.name === 'span' && t.attributes.property === 'summary');
+		const summary = findTag(details!, t => t.name === 'summary' && t.attributes.property === 'summary');
 		expect(summary).toBeDefined();
 		expect(summary!.children).toContain('Click to expand');
 	});
@@ -24,7 +24,7 @@ Some content.
 		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
 		expect(details).toBeDefined();
 
-		const summary = findTag(details!, t => t.name === 'span' && t.attributes.property === 'summary');
+		const summary = findTag(details!, t => t.name === 'summary' && t.attributes.property === 'summary');
 		expect(summary).toBeDefined();
 		expect(summary!.children).toContain('Details');
 	});
@@ -35,9 +35,7 @@ Content here.
 {% /details %}`);
 
 		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
-		const openMeta = findTag(details!, t => t.name === 'meta' && t.attributes.property === 'open');
-		expect(openMeta).toBeDefined();
-		expect(openMeta!.attributes.content).toBe(false);
+		expect(details!.attributes.open).toBeFalsy();
 	});
 
 	it('should support open=true', () => {
@@ -46,8 +44,6 @@ Content here.
 {% /details %}`);
 
 		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
-		const openMeta = findTag(details!, t => t.name === 'meta' && t.attributes.property === 'open');
-		expect(openMeta).toBeDefined();
-		expect(openMeta!.attributes.content).toBe(true);
+		expect(details!.attributes.open).toBe(true);
 	});
 });

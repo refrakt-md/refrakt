@@ -10,7 +10,7 @@ describe('form tag', () => {
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'Form');
     expect(tag).toBeDefined();
-    expect(tag!.name).toBe('div');
+    expect(tag!.name).toBe('form');
   });
 
   it('should pass action and method attributes as meta', () => {

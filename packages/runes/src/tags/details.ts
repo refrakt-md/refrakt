@@ -23,21 +23,23 @@ class DetailsModel extends Model {
 			}
 		}
 
-		const summaryTag = new Tag('span', {}, [summaryText || 'Details']);
-		const openTag = new Tag('meta', { content: this.open });
+		const summaryTag = new Tag('summary', {}, [summaryText || 'Details']);
 		const body = children.wrap('div');
 
-		return createComponentRenderable(schema.Details, {
-			tag: 'section',
+		const tag = createComponentRenderable(schema.Details, {
+			tag: 'details',
 			properties: {
 				summary: summaryTag,
-				open: openTag,
 			},
 			refs: {
 				body: body.tag('div'),
 			},
-			children: [summaryTag, openTag, body.next()],
+			children: [summaryTag, body.next()],
 		});
+
+		if (this.open) (tag.attributes as Record<string, unknown>).open = true;
+
+		return tag;
 	}
 }
 

@@ -6,6 +6,12 @@
 	margin: 1.5rem 0;
 	background: var(--rf-color-bg);
 }
+.rf-tabs__tabs,
+.rf-tabs__panels {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
 .rf-tabs__bar {
 	display: flex;
 	background: var(--rf-color-surface);

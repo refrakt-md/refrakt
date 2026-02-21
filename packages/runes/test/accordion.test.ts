@@ -20,7 +20,7 @@ Content for second section.
 		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'span' && t.attributes.property === 'name');
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('First Section');
 	});

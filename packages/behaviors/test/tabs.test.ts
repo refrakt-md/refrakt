@@ -14,10 +14,13 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 	const count = opts?.tabCount ?? 3;
 	const rune = opts?.rune ?? 'tabgroup';
 
-	const items = Array.from({ length: count }, (_, i) => `
+	const tabs = Array.from({ length: count }, (_, i) => `
 		<li typeof="Tab" data-rune="tab">
 			<span property="name">Tab ${i + 1}</span>
 		</li>
+	`).join('');
+
+	const panels = Array.from({ length: count }, (_, i) => `
 		<li typeof="TabPanel">
 			<div>Content ${i + 1}</div>
 		</li>
@@ -26,7 +29,10 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', rune);
 	el.className = rune === 'codegroup' ? 'rf-codegroup' : 'rf-tabs';
-	el.innerHTML = `<ul>${items}</ul>`;
+	el.innerHTML = `
+		<ul data-name="tabs">${tabs}</ul>
+		<ul data-name="panels">${panels}</ul>
+	`;
 	document.body.appendChild(el);
 	return el;
 }
@@ -34,10 +40,13 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	const count = opts?.tabCount ?? 2;
 
-	const items = Array.from({ length: count }, (_, i) => `
+	const tabs = Array.from({ length: count }, (_, i) => `
 		<li typeof="Tab" data-rune="tab">
 			<span property="name">file${i + 1}.ts</span>
 		</li>
+	`).join('');
+
+	const panels = Array.from({ length: count }, (_, i) => `
 		<li typeof="TabPanel">
 			<pre><code>code ${i + 1}</code></pre>
 		</li>
@@ -52,7 +61,8 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 			<span class="rf-codegroup__dot"></span>
 			<span class="rf-codegroup__dot"></span>
 		</div>
-		<ul>${items}</ul>
+		<ul data-name="tabs">${tabs}</ul>
+		<ul data-name="panels">${panels}</ul>
 	`;
 	document.body.appendChild(el);
 	return el;

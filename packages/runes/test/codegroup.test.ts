@@ -77,7 +77,7 @@ const x = 1;
     expect(secondTabSpan?.children).toContain('Vue');
   });
 
-  it('should include title span when title is provided', () => {
+  it('should include title meta when title is provided', () => {
     const result = parse(`{% codegroup title="app.js" %}
 \`\`\`js
 const x = 1;
@@ -85,8 +85,8 @@ const x = 1;
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'CodeGroup');
-    const titleSpan = findTag(tag!, t => t.name === 'span' && t.children?.includes('app.js'));
-    expect(titleSpan).toBeDefined();
+    const titleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'title' && t.attributes.content === 'app.js');
+    expect(titleMeta).toBeDefined();
   });
 
   it('should work with a single code fence', () => {

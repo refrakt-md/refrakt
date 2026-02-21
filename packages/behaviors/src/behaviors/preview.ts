@@ -1,5 +1,37 @@
 import type { CleanupFn } from '../types.js';
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createIcon(content: string): SVGSVGElement {
+	const svg = document.createElementNS(SVG_NS, 'svg');
+	svg.setAttribute('width', '14');
+	svg.setAttribute('height', '14');
+	svg.setAttribute('viewBox', '0 0 24 24');
+	svg.setAttribute('fill', 'none');
+	svg.setAttribute('stroke', 'currentColor');
+	svg.setAttribute('stroke-width', '2');
+	svg.setAttribute('stroke-linecap', 'round');
+	svg.setAttribute('stroke-linejoin', 'round');
+	svg.innerHTML = content;
+	return svg;
+}
+
+const ICONS = {
+	eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+	code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+	mobile: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+	tablet: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+	desktop: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+	sun: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+	moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+} as const;
+
+const VIEWPORT_ICONS: Record<string, string> = {
+	mobile: ICONS.mobile,
+	tablet: ICONS.tablet,
+	desktop: ICONS.desktop,
+};
+
 const VIEWPORT_PRESETS: Record<string, { width: number | null; label: string }> = {
 	mobile: { width: 375, label: '375px' },
 	tablet: { width: 768, label: '768px' },
@@ -67,13 +99,13 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		viewPreviewBtn.className = 'rf-preview__toggle-btn rf-preview__toggle-btn--active';
 		viewPreviewBtn.setAttribute('aria-label', 'Preview');
 		viewPreviewBtn.setAttribute('title', 'Preview');
-		viewPreviewBtn.textContent = 'Preview';
+		viewPreviewBtn.appendChild(createIcon(ICONS.eye));
 
 		viewCodeBtn = document.createElement('button');
 		viewCodeBtn.className = 'rf-preview__toggle-btn';
 		viewCodeBtn.setAttribute('aria-label', 'View source');
 		viewCodeBtn.setAttribute('title', 'View source');
-		viewCodeBtn.textContent = 'Code';
+		viewCodeBtn.appendChild(createIcon(ICONS.code));
 
 		viewToggle.appendChild(viewPreviewBtn);
 		viewToggle.appendChild(viewCodeBtn);
@@ -100,7 +132,7 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 			btn.className = 'rf-preview__toggle-btn';
 			btn.setAttribute('aria-label', `${VIEWPORT_PRESETS[preset].label} viewport`);
 			btn.setAttribute('title', VIEWPORT_PRESETS[preset].label);
-			btn.textContent = preset.charAt(0).toUpperCase() + preset.slice(1);
+			btn.appendChild(createIcon(VIEWPORT_ICONS[preset] || ICONS.desktop));
 
 			const onClick = () => { activeViewport = preset; render(); };
 			btn.addEventListener('click', onClick);
@@ -117,10 +149,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	const themeToggle = document.createElement('div');
 	themeToggle.className = 'rf-preview__toggle';
 
-	const themeOptions: Array<{ mode: 'auto' | 'light' | 'dark'; label: string; title: string }> = [
-		{ mode: 'auto', label: 'Auto', title: 'System preference' },
-		{ mode: 'light', label: 'Light', title: 'Light mode' },
-		{ mode: 'dark', label: 'Dark', title: 'Dark mode' },
+	const themeOptions: Array<{ mode: 'auto' | 'light' | 'dark'; label: string; title: string; icon: string }> = [
+		{ mode: 'auto', label: 'Auto', title: 'System preference', icon: ICONS.desktop },
+		{ mode: 'light', label: 'Light', title: 'Light mode', icon: ICONS.sun },
+		{ mode: 'dark', label: 'Dark', title: 'Dark mode', icon: ICONS.moon },
 	];
 
 	const themeButtons: Map<string, HTMLButtonElement> = new Map();
@@ -129,7 +161,7 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		btn.className = 'rf-preview__toggle-btn';
 		btn.setAttribute('aria-label', `${opt.label} theme`);
 		btn.setAttribute('title', opt.title);
-		btn.textContent = opt.label;
+		btn.appendChild(createIcon(opt.icon));
 
 		const onClick = () => { themeMode = opt.mode; render(); };
 		btn.addEventListener('click', onClick);

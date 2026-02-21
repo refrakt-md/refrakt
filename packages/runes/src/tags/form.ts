@@ -297,7 +297,7 @@ class FormModel extends Model {
 		const fieldsContainer = fields.wrap('div');
 
 		return createComponentRenderable(schema.Form, {
-			tag: 'div',
+			tag: 'form',
 			properties: {
 				action: actionMeta,
 				method: methodMeta,

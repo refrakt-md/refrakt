@@ -6,7 +6,7 @@ export class Accordion extends PageSection {
 }
 
 export interface AccordionProperties extends PageSectionProperties {
-	item: 'div',
+	item: 'details',
 }
 
 export interface AccordionComponent extends ComponentType<Accordion> {
@@ -22,9 +22,9 @@ export class AccordionItem {
 }
 
 export interface AccordionItemComponent extends ComponentType<AccordionItem> {
-	tag: 'div',
+	tag: 'details',
 	properties: {
-		name: 'span',
+		name: 'summary',
 	},
 	refs: {
 		body: 'div',

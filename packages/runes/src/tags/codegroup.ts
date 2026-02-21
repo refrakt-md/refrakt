@@ -61,9 +61,9 @@ class CodeGroupModel extends Model {
     const children: any[] = [];
 
     if (this.title) {
-      const titleSpan = new Tag('span', {}, [this.title]);
-      properties.title = new RenderableNodeCursor([titleSpan]).tag('span');
-      children.push(titleSpan);
+      const titleMeta = new Tag('meta', { content: this.title });
+      properties.title = titleMeta;
+      children.push(titleMeta);
     }
 
     children.push(tabList.next(), panelList.next());

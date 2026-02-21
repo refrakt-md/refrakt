@@ -12,25 +12,23 @@ import { uniqueId } from '../utils.js';
  * - ARIA: role="tablist", role="tab", role="tabpanel", aria-selected, aria-controls
  */
 export function tabsBehavior(el: HTMLElement): CleanupFn {
-	const ul = el.querySelector('ul');
-	if (!ul) return () => {};
+	// The rune schema produces two <ul> elements:
+	// <ul data-name="tabs"> for Tab items, <ul data-name="panels"> for TabPanel items.
+	// Fall back to positional lookup for compatibility with single-<ul> structures.
+	const allUls = el.querySelectorAll('ul');
+	const tabsUl = el.querySelector<HTMLElement>('ul[data-name="tabs"]') || allUls[0];
+	const panelsUl = el.querySelector<HTMLElement>('ul[data-name="panels"]') || allUls[1] || tabsUl;
+	if (!tabsUl) return () => {};
 
-	const items = Array.from(ul.children).filter(
-		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI',
+	const tabItems = Array.from(tabsUl.children).filter(
+		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
+			c.getAttribute('typeof') === 'Tab',
 	);
 
-	// Separate Tab items from TabPanel items
-	const tabItems: HTMLElement[] = [];
-	const panelItems: HTMLElement[] = [];
-
-	for (const item of items) {
-		const typeof_ = item.getAttribute('typeof');
-		if (typeof_ === 'Tab') {
-			tabItems.push(item);
-		} else if (typeof_ === 'TabPanel') {
-			panelItems.push(item);
-		}
-	}
+	const panelItems = Array.from(panelsUl.children).filter(
+		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
+			c.getAttribute('typeof') === 'TabPanel',
+	);
 
 	if (tabItems.length === 0 || panelItems.length === 0) return () => {};
 
@@ -67,12 +65,12 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 		return btn;
 	});
 
-	// Insert tab bar — for codegroup, after topbar; for tabs, before the ul
+	// Insert tab bar — for codegroup, after topbar; for tabs, before the tabs ul
 	const topbar = el.querySelector('[data-name="topbar"]');
 	if (topbar) {
 		topbar.after(tabBar);
 	} else {
-		ul.before(tabBar);
+		tabsUl.before(tabBar);
 	}
 
 	// Set up panels with ARIA attributes
