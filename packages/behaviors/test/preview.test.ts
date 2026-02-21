@@ -46,7 +46,7 @@ describe('previewBehavior', () => {
 			expect(el.querySelector('.rf-preview__controls')).not.toBeNull();
 		});
 
-		it('creates theme toggle buttons', () => {
+		it('creates theme toggle buttons with SVG icons', () => {
 			const el = createPreview();
 			previewBehavior(el);
 
@@ -55,9 +55,12 @@ describe('previewBehavior', () => {
 
 			const buttons = themeToggle!.querySelectorAll('button');
 			expect(buttons.length).toBe(3);
-			expect(buttons[0].textContent).toBe('Auto');
-			expect(buttons[1].textContent).toBe('Light');
-			expect(buttons[2].textContent).toBe('Dark');
+			expect(buttons[0].querySelector('svg')).not.toBeNull();
+			expect(buttons[1].querySelector('svg')).not.toBeNull();
+			expect(buttons[2].querySelector('svg')).not.toBeNull();
+			expect(buttons[0].getAttribute('aria-label')).toBe('Auto theme');
+			expect(buttons[1].getAttribute('aria-label')).toBe('Light theme');
+			expect(buttons[2].getAttribute('aria-label')).toBe('Dark theme');
 		});
 	});
 
