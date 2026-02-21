@@ -56,10 +56,14 @@
 	$effect(() => {
 		void page.renderable; // track page changes
 		let cleanup: (() => void) | undefined;
+		let active = true;
 		tick().then(() => {
-			cleanup = initRuneBehaviors();
+			if (active) cleanup = initRuneBehaviors();
 		});
-		return () => cleanup?.();
+		return () => {
+			active = false;
+			cleanup?.();
+		};
 	});
 </script>
 
