@@ -1,0 +1,84 @@
+/* Shared mobile UI — menu button, fullscreen panel, close */
+
+/* ---- Mobile menu button (hidden on desktop) ---- */
+.rf-mobile-menu-btn {
+	display: none;
+	background: none;
+	border: none;
+	padding: 0.25rem;
+	cursor: pointer;
+	color: var(--rf-color-muted);
+	line-height: 0;
+}
+.rf-mobile-menu-btn:hover {
+	color: var(--rf-color-text);
+}
+
+/* ---- Fullscreen mobile panel ---- */
+.rf-mobile-panel {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	background: var(--rf-color-bg, #fff);
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.rf-mobile-panel__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.875rem 1.5rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-mobile-panel__title {
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+.rf-mobile-panel__close {
+	background: none;
+	border: none;
+	padding: 0.25rem;
+	cursor: pointer;
+	color: var(--rf-color-muted);
+	line-height: 0;
+}
+.rf-mobile-panel__close:hover {
+	color: var(--rf-color-text);
+}
+.rf-mobile-panel__nav {
+	padding: 1.5rem;
+}
+.rf-mobile-panel__nav p {
+	margin: 0;
+}
+.rf-mobile-panel__nav img {
+	display: none;
+}
+.rf-mobile-panel__nav a {
+	display: block;
+	padding: 0.75rem 0;
+	font-size: 1.1rem;
+	color: var(--rf-color-text);
+	text-decoration: none;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-mobile-panel__nav a:hover {
+	color: var(--rf-color-primary, var(--rf-color-text));
+	text-decoration: none;
+}
+.rf-mobile-panel__body {
+	padding: 1rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+	.rf-mobile-menu-btn {
+		display: block;
+	}
+	.rf-mobile-panel {
+		display: block;
+	}
+}
