@@ -45,7 +45,9 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/svelte` | Svelte adapter -- Renderer, ThemeShell, serialization, component registry |
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker with configurable themes (any built-in Shiki theme or light/dark pair), pluggable highlighter |
-| `@refrakt-md/lumina` | Lumina theme -- identity layer (design tokens, per-rune CSS, pre-built transform) plus framework adapters via subpath exports (`/sveltekit`) |
+| `@refrakt-md/behaviors` | Vanilla JS behavior library -- interactive behaviors for tabs, accordion, datatable, form, reveal, preview, and copy-to-clipboard. Framework-agnostic. |
+| `@refrakt-md/theme-base` | Shared theme infrastructure -- BEM config for all runes, per-rune CSS files, base component registry |
+| `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/sveltekit`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
 
@@ -195,38 +197,63 @@ The engine is configured declaratively. Each rune gets a `RuneConfig` that speci
 
 **3. Per-Rune CSS** -- Each rune has its own CSS file targeting BEM classes. A `hint.css` styles `.rf-hint`, `.rf-hint--warning`, `.rf-hint__header`, `.rf-hint__icon`, and so on. Because all runes produce stable, predictable BEM class names, theme CSS is straightforward to write and override.
 
+### Behavior Layer (Framework-Agnostic Interactivity)
+
+Between the identity transform and the framework-specific component layer sits a **vanilla JS behavior layer** (`@refrakt-md/behaviors`). This layer handles runes that need interactivity but not full component rendering -- they get their structure and BEM classes from the identity transform, then behaviors attach event listeners and DOM manipulation after render.
+
+The `ThemeShell` component initializes behaviors after each render via `initRuneBehaviors()`, which scans the DOM for `data-rune` attributes and dispatches to the appropriate behavior function. On navigation, a `{#key page.url}` block forces complete DOM recreation so behaviors always run on fresh elements.
+
+| Behavior | Rune Types | Interactivity |
+|----------|-----------|---------------|
+| `tabsBehavior` | TabGroup, CodeGroup | Click-to-switch panels, keyboard navigation, active tab state |
+| `accordionBehavior` | Accordion, AccordionItem | Expand/collapse toggle |
+| `datatableBehavior` | DataTable | Column sorting, text filtering, pagination |
+| `formBehavior` | Form | Field validation, dynamic field types |
+| `revealBehavior` | Reveal | Progressive disclosure stepping |
+| `previewBehavior` | Preview | Theme toggle, responsive viewport simulation, source view |
+| `copyBehavior` | All `<pre>` blocks | Copy-to-clipboard button injection |
+
+{% hint type="check" %}
+The behavior layer is entirely framework-agnostic. It operates on standard DOM elements with `data-rune` attributes and BEM classes -- no React, Svelte, or any framework dependency. This makes it directly reusable across future framework adapters (Astro, Next.js, static HTML).
+{% /hint %}
+
 ### Implementation Layer (Framework-Specific)
 
 The implementation layer lives inside the theme package as a **subpath export**. For Lumina, the SvelteKit adapter is at `@refrakt-md/lumina/sveltekit`. The Vite plugin auto-resolves this from the `theme` and `target` fields in `refrakt.config.json`, so adding a future React or Astro adapter means adding a new subpath export to the same package — no new packages needed.
 
-The implementation layer is only needed for runes that require **runtime interactivity**.
+The implementation layer is only needed for runes that require external libraries (Mermaid, Chart.js, Leaflet) or complex Svelte-specific rendering logic.
 
 {% hint type="check" %}
-Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript.
+Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript. Runes like tabs, accordion, and datatable get their interactivity from the behavior layer (vanilla JS), not from Svelte components.
 {% /hint %}
 
-Interactive runes register Svelte components in the theme's component registry:
+Runes that need Svelte components register them in the theme's component registry:
 
 ```typescript
+// Only runes needing external libraries or complex Svelte rendering.
+// Behavior-driven runes (tabs, accordion, datatable, form, reveal,
+// preview, details) are NOT here -- they use @refrakt-md/behaviors.
 export const registry: ComponentRegistry = {
-  'TabGroup': Tabs,       // Tab switching behavior
-  'DataTable': DataTable, // Sorting, filtering, pagination
-  'Form': Form,           // Form validation and submission
-  'Accordion': Accordion, // Expand/collapse behavior
-  'Details': Details,     // Disclosure toggle
-  'Reveal': Reveal,       // Progressive disclosure steps
   'Diagram': Diagram,     // Mermaid/PlantUML rendering
-  'Chart': Chart,         // Chart visualization
-  'Nav': Nav,             // Active page highlighting
-  'Grid': Grid,           // Dynamic grid layout
-  'Bento': Bento,         // Bento grid sizing
-  'Storyboard': Storyboard,
-  'Embed': Embed,         // iframe injection
+  'Nav': Nav,             // Active page highlighting, expand/collapse
+  'NavGroup': Nav,
+  'NavItem': Nav,
+  'Chart': Chart,         // Chart.js visualization
+  'Comparison': Comparison, // Complex table layout
+  'ComparisonColumn': Comparison,
+  'ComparisonRow': Comparison,
+  'Grid': Grid,           // Dynamic column calculation
+  'Storyboard': Storyboard, // Panel layout logic
+  'StoryboardPanel': Storyboard,
+  'Bento': Bento,         // Grid sizing from heading levels
+  'BentoCell': Bento,
+  'Embed': Embed,         // oEmbed resolution, iframe handling
   'Pricing': Pricing,     // Tier rendering logic
-  'Comparison': Comparison,
-  'Testimonial': Testimonial,
-  'Map': Map,             // Leaflet map visualization
-  'Preview': Preview,     // Theme toggle, responsive viewports, source view
+  'Tier': Pricing,
+  'FeaturedTier': Pricing,
+  'Testimonial': Testimonial, // Avatar + quote layout
+  'Map': MapComponent,    // Leaflet map visualization
+  'MapPin': MapComponent,
   'Sandbox': Sandbox,     // Isolated iframe rendering
   'DesignContext': DesignContext, // Token extraction + context provider
 };
@@ -547,6 +574,9 @@ Walk the tree, find elements with `data-language` and text children, apply Shiki
 ### Renderer
 Svelte recursive component with `typeof`-based component dispatch.
 
+### Behavior initialization
+After DOM render, `ThemeShell`'s `$effect` calls `initRuneBehaviors()` from `@refrakt-md/behaviors`. This scans for `data-rune` attributes and attaches vanilla JS behaviors (tabs, accordion, datatable, form, reveal, preview, copy-to-clipboard). Re-runs on navigation via `{#key page.url}` full DOM recreation.
+
 ### HTML output
 Static HTML ready for the browser.
 {% /steps %}
@@ -642,10 +672,11 @@ The Svelte `Renderer` component checks each tag:
 {/if}
 ```
 
-If a component is registered for that `typeof` value, it gets rendered. Otherwise, the tag is rendered as plain HTML with its BEM classes (applied by the identity transform). This means:
+If a component is registered for that `typeof` value, it gets rendered. Otherwise, the tag is rendered as plain HTML with its BEM classes (applied by the identity transform). This gives three tiers of rune rendering:
 
-- **Interactive runes** (tabs, accordion, datatable, form, diagram, reveal, chart, map) are handled by Svelte components that add behavior.
-- **Static runes** (hero, hint, cta, feature, breadcrumb, timeline, changelog, recipe, howto, event, cast, organization, figure, sidenote, annotate, conversation, etc.) are fully rendered by the identity transform + CSS. They produce semantic HTML with BEM classes, and the theme's CSS handles all presentation.
+- **Component runes** (diagram, chart, nav, map, grid, bento, storyboard, comparison, pricing, testimonial, embed, sandbox, design-context) are handled by Svelte components that need external libraries or complex rendering logic.
+- **Behavior-driven runes** (tabs, codegroup, accordion, datatable, form, reveal, preview, details) are rendered as plain HTML with BEM classes, then get interactivity from `@refrakt-md/behaviors` (vanilla JS). No Svelte component needed.
+- **Static runes** (hero, hint, cta, feature, breadcrumb, timeline, changelog, recipe, howto, event, cast, organization, figure, sidenote, annotate, conversation, etc.) are fully rendered by the identity transform + CSS alone. They produce semantic HTML with BEM classes, and the theme's CSS handles all presentation.
 
 ### Theme Manifest Declaration
 
