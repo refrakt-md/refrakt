@@ -102,13 +102,6 @@ li > p {
 	margin-bottom: 0.5rem;
 }
 
-blockquote {
-	border-left: 3px solid var(--rf-color-border);
-	margin: 1.5rem 0;
-	padding: 0.5rem 1rem;
-	color: var(--rf-color-muted);
-}
-
 table {
 	width: 100%;
 	border-collapse: collapse;
