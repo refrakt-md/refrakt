@@ -66,6 +66,7 @@ describe('context-aware BEM modifiers', () => {
 		const result = asTag(transform(hint));
 		expect(result.attributes.class).toBe('rf-hint rf-hint--warning');
 		expect(result.attributes.class).not.toContain('in-');
+		expect(result.attributes['data-rune']).toBe('hint');
 	});
 
 	it('rune nested inside a matching parent gets the modifier class', () => {
