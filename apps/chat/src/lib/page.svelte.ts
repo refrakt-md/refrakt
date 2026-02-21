@@ -1,6 +1,6 @@
 import type { RendererNode } from '@refrakt-md/types';
-import type { BlockType, ContentBlock } from './blocks.js';
-import { extractBlockSources } from './blocks.js';
+import type { BlockType, ContentBlock, ContentSection } from './blocks.js';
+import { extractBlockSources, extractSectionSources } from './blocks.js';
 import { renderMarkdocSafe } from './pipeline.js';
 import { savePage, loadPage } from './db.js';
 
@@ -31,6 +31,7 @@ export interface PageStore {
 	close(): void;
 	toggle(): void;
 	pinBlocks(messageIndex: number, blockIds: string[], blocks: ContentBlock[], messageContent: string): void;
+	pinSections(messageIndex: number, sectionIds: string[], sections: ContentSection[], messageContent: string): void;
 	unpin(pinId: string): void;
 	reorder(pinId: string, newIndex: number): void;
 	updateMeta(title: string, description: string): void;
@@ -75,6 +76,13 @@ export function exportPageToMarkdoc(page: PageState): string {
 	}
 
 	return lines.join('\n');
+}
+
+function sectionTypeToBlockType(section: ContentSection): BlockType {
+	if (section.type === 'rune') return 'rune';
+	if (section.type === 'hr') return 'hr';
+	if (section.headingLevel) return 'heading';
+	return 'paragraph';
 }
 
 export function createPageStore(): PageStore {
@@ -123,6 +131,38 @@ export function createPageStore(): PageStore {
 				label: block.label,
 				type: block.type,
 				source: sources.get(block.index) ?? '',
+				isEdited: false,
+			});
+		}
+
+		if (newPins.length > 0) {
+			page.pins = [...page.pins, ...newPins];
+			persist();
+		}
+	}
+
+	function pinSections(messageIndex: number, sectionIds: string[], sections: ContentSection[], messageContent: string) {
+		const existing = new Set(page.pins.map((p) => p.sourceBlockId));
+		const newPins: PinnedBlock[] = [];
+
+		const selectedSections = sections.filter((s) => sectionIds.includes(s.id) && !existing.has(s.id));
+		const sources = extractSectionSources(messageContent, selectedSections);
+
+		for (const section of selectedSections) {
+			const source = sources.get(section.index) ?? '';
+			const result = renderMarkdocSafe(source);
+
+			newPins.push({
+				id: crypto.randomUUID(),
+				sourceMessageIndex: messageIndex,
+				sourceBlockId: section.id,
+				order: page.pins.length + newPins.length,
+				snapshot: result.renderable
+					? JSON.parse(JSON.stringify(result.renderable))
+					: JSON.parse(JSON.stringify(section.nodes.length === 1 ? section.nodes[0] : section.nodes)),
+				label: section.label,
+				type: sectionTypeToBlockType(section),
+				source,
 				isEdited: false,
 			});
 		}
@@ -304,6 +344,7 @@ export function createPageStore(): PageStore {
 			isOpen = !isOpen;
 		},
 		pinBlocks,
+		pinSections,
 		unpin,
 		reorder,
 		updateMeta,
