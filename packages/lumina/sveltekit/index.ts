@@ -23,10 +23,6 @@ export { default as DocsLayout } from './layouts/DocsLayout.svelte';
 export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 export { default as BlogLayout } from './layouts/BlogLayout.svelte';
 
-// Interactive components re-exported from theme-base for advanced usage
-export { default as Tabs } from '@refrakt-md/theme-base/sveltekit/components/Tabs.svelte';
-export { default as DataTable } from '@refrakt-md/theme-base/sveltekit/components/DataTable.svelte';
-export { default as Form } from '@refrakt-md/theme-base/sveltekit/components/Form.svelte';
-export { default as Reveal } from '@refrakt-md/theme-base/sveltekit/components/Reveal.svelte';
+// Components re-exported from theme-base for advanced usage
 export { default as Diagram } from '@refrakt-md/theme-base/sveltekit/components/Diagram.svelte';
 export { default as Nav } from '@refrakt-md/theme-base/sveltekit/components/Nav.svelte';
