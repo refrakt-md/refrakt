@@ -5,7 +5,7 @@
 	import PagePanel from '$lib/PagePanel.svelte';
 	import { createChat } from '$lib/chat.svelte.js';
 	import { createPageStore } from '$lib/page.svelte.js';
-	import { extractBlocks } from '$lib/blocks.js';
+	import { extractSections } from '$lib/blocks.js';
 	import { CHAT_MODE_LIST } from '@refrakt-md/ai';
 
 	const chat = createChat();
@@ -207,7 +207,7 @@
 					{:else if message.renderable}
 						{#if isCompletedAssistant(message, i)}
 							<MessageToolbar
-								blocks={extractBlocks(message.renderable, i)}
+								sections={extractSections(message.renderable, i, message.content)}
 								messageIndex={i}
 								messageContent={message.content}
 								{pageStore}
