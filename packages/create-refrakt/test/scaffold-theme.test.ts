@@ -37,6 +37,9 @@ describe('scaffoldTheme', () => {
 		expect(existsSync(join(targetDir, 'tokens', 'dark.css'))).toBe(true);
 		expect(existsSync(join(targetDir, 'styles', 'global.css'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
+		expect(existsSync(join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'))).toBe(true);
+		expect(existsSync(join(targetDir, 'test', 'css-coverage.test.ts'))).toBe(true);
+		expect(existsSync(join(targetDir, 'preview', 'kitchen-sink.md'))).toBe(true);
 	});
 
 	it('generates package.json with correct exports and dependencies', () => {
@@ -156,5 +159,77 @@ describe('scaffoldTheme', () => {
 		scaffoldTheme({ themeName: 'my-theme', targetDir });
 
 		expect(existsSync(join(targetDir, 'styles', 'runes'))).toBe(true);
+	});
+
+	it('generates svelte/index.ts with behaviors export', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const svelteIndex = readFileSync(join(targetDir, 'svelte', 'index.ts'), 'utf-8');
+		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/behaviors");
+		expect(svelteIndex).toContain("behaviors");
+	});
+
+	it('generates DefaultLayout.svelte with Renderer', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const layout = readFileSync(join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'), 'utf-8');
+		expect(layout).toContain("import { Renderer } from '@refrakt-md/svelte'");
+		expect(layout).toContain('<Renderer node={renderable}');
+		expect(layout).toContain('regions.header');
+	});
+
+	it('generates manifest.json with correct layout path', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const manifest = JSON.parse(readFileSync(join(targetDir, 'manifest.json'), 'utf-8'));
+		expect(manifest.layouts.default.component).toBe('./svelte/layouts/DefaultLayout.svelte');
+	});
+
+	it('generates package.json with test script and devDependencies', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
+		expect(pkg.scripts.test).toBe('vitest run');
+		expect(pkg.devDependencies.vitest).toBeDefined();
+		expect(pkg.devDependencies.postcss).toBeDefined();
+	});
+
+	it('generates css-coverage test that imports themeConfig', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const testFile = readFileSync(join(targetDir, 'test', 'css-coverage.test.ts'), 'utf-8');
+		expect(testFile).toContain("import { themeConfig }");
+		expect(testFile).toContain('postcss');
+		expect(testFile).toContain('.rf-');
+	});
+
+	it('generates kitchen-sink.md with multiple rune types', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const kitchenSink = readFileSync(join(targetDir, 'preview', 'kitchen-sink.md'), 'utf-8');
+		expect(kitchenSink).toContain('{% hint');
+		expect(kitchenSink).toContain('{% grid');
+		expect(kitchenSink).toContain('{% accordion %}');
+		expect(kitchenSink).toContain('{% steps %}');
+		expect(kitchenSink).toContain('{% api');
+		expect(kitchenSink).toContain('{% tabs %}');
 	});
 });

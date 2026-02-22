@@ -65,7 +65,7 @@ export async function inspectCommand(
 	}
 
 	// Resolve theme config
-	const config = resolveTheme(options.theme, baseConfig);
+	const config = await resolveTheme(options.theme, baseConfig);
 
 	// --all --audit: full-theme audit
 	if (options.all && options.audit) {
@@ -371,12 +371,27 @@ function findExpandAttr(flags: Record<string, string>, variants: Record<string, 
 }
 
 /** Resolve a theme name to a ThemeConfig */
-function resolveTheme(theme: string, baseConfig: ThemeConfig): ThemeConfig {
-	// For now, only base config is supported
+async function resolveTheme(theme: string, baseConfig: ThemeConfig): Promise<ThemeConfig> {
 	if (theme === 'base') return baseConfig;
 
-	// TODO: resolve named themes by importing from @refrakt-md/<name>
-	// or loading from a local refrakt.config.ts
-	console.error(`Warning: Theme "${theme}" not found, using base config.\n`);
-	return baseConfig;
+	// Try dynamic import — works for package names (e.g., '@refrakt-md/lumina')
+	// and file paths (e.g., './src/config.ts')
+	const importPath = theme.startsWith('.') || theme.startsWith('/')
+		? (await import('node:path')).resolve(theme)
+		: theme + '/transform';
+
+	try {
+		const mod = await import(importPath);
+		// Look for common export names
+		const config = mod.themeConfig ?? mod.config ?? mod.default;
+		if (config && typeof config === 'object' && config.runes && config.prefix) {
+			return config as ThemeConfig;
+		}
+		console.error(`Warning: "${importPath}" does not export a valid ThemeConfig, using base config.\n`);
+		return baseConfig;
+	} catch (err) {
+		console.error(`Warning: Could not load theme "${theme}" (${importPath}): ${(err as Error).message}\n`);
+		console.error(`Falling back to base config.\n`);
+		return baseConfig;
+	}
 }

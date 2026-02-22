@@ -148,9 +148,11 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 	const packageName = scope ? `${scope}/${themeName}` : themeName;
 
 	mkdirSync(path.join(targetDir, 'src'), { recursive: true });
-	mkdirSync(path.join(targetDir, 'svelte'), { recursive: true });
+	mkdirSync(path.join(targetDir, 'svelte', 'layouts'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'tokens'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'styles', 'runes'), { recursive: true });
+	mkdirSync(path.join(targetDir, 'test'), { recursive: true });
+	mkdirSync(path.join(targetDir, 'preview'), { recursive: true });
 
 	writeFileSync(
 		path.join(targetDir, 'package.json'),
@@ -196,6 +198,21 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 		path.join(targetDir, 'tsconfig.json'),
 		generateThemeTsconfig(),
 	);
+
+	writeFileSync(
+		path.join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'),
+		generateThemeDefaultLayout(),
+	);
+
+	writeFileSync(
+		path.join(targetDir, 'test', 'css-coverage.test.ts'),
+		generateThemeCssCoverageTest(),
+	);
+
+	writeFileSync(
+		path.join(targetDir, 'preview', 'kitchen-sink.md'),
+		generateThemeKitchenSink(),
+	);
 }
 
 function generateThemePackageJson(packageName: string): string {
@@ -227,12 +244,17 @@ function generateThemePackageJson(packageName: string): string {
 		],
 		scripts: {
 			build: 'tsc',
+			test: 'vitest run',
 		},
 		dependencies: {
 			'@refrakt-md/theme-base': '^0.4.0',
 			'@refrakt-md/transform': '^0.4.0',
 			'@refrakt-md/types': '^0.4.0',
 			'@refrakt-md/svelte': '^0.4.0',
+		},
+		devDependencies: {
+			vitest: '^3.0.0',
+			postcss: '^8.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -261,6 +283,7 @@ export const themeConfig = mergeThemeConfig(baseConfig, {
 function generateThemeSvelteIndex(): string {
 	return `export { registry } from '@refrakt-md/theme-base/svelte/registry';
 export { elements } from '@refrakt-md/theme-base/svelte/elements';
+export { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
 `;
 }
 
@@ -272,7 +295,7 @@ function generateThemeManifest(packageName: string): string {
 		designTokens: './tokens/base.css',
 		layouts: {
 			default: {
-				component: './svelte/layouts/Default.svelte',
+				component: './svelte/layouts/DefaultLayout.svelte',
 				regions: ['content'],
 			},
 		},
@@ -431,4 +454,191 @@ function generateThemeTsconfig(): string {
 		include: ['src'],
 	};
 	return JSON.stringify(config, null, '\t') + '\n';
+}
+
+function generateThemeDefaultLayout(): string {
+	return `<script lang="ts">
+\timport { Renderer } from '@refrakt-md/svelte';
+
+\tlet { regions, renderable }: {
+\t\tregions: Record<string, { name: string; mode: string; content: any[] }>;
+\t\trenderable: any;
+\t} = $props();
+</script>
+
+{#if regions.header}
+\t<header>
+\t\t<Renderer node={regions.header.content} />
+\t</header>
+{/if}
+
+<main>
+\t<Renderer node={renderable} />
+</main>
+`;
+}
+
+function generateThemeCssCoverageTest(): string {
+	return `import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync, existsSync } from 'fs';
+import { join } from 'path';
+import postcss from 'postcss';
+import { themeConfig } from '../src/config.js';
+
+const CSS_DIR = join(__dirname, '..', 'styles', 'runes');
+
+/** Parse all CSS files and collect every .rf-* class selector */
+function parseAllCssSelectors(): Set<string> {
+\tconst selectors = new Set<string>();
+\tif (!existsSync(CSS_DIR)) return selectors;
+
+\tconst files = readdirSync(CSS_DIR).filter(f => f.endsWith('.css'));
+\tfor (const file of files) {
+\t\tconst css = readFileSync(join(CSS_DIR, file), 'utf-8');
+\t\tconst root = postcss.parse(css);
+\t\troot.walkRules(rule => {
+\t\t\tconst matches = rule.selector.matchAll(/\\.rf-[\\w-]+/g);
+\t\t\tfor (const m of matches) {
+\t\t\t\tselectors.add(m[0]);
+\t\t\t}
+\t\t});
+\t}
+\treturn selectors;
+}
+
+const allCssSelectors = parseAllCssSelectors();
+const { prefix, runes } = themeConfig;
+
+describe('Theme CSS coverage', () => {
+\tit('block selectors exist for styled runes', () => {
+\t\tconst allBlocks = [...new Set(Object.values(runes).map(c => c.block))];
+\t\tconst styledBlocks = allBlocks.filter(block =>
+\t\t\tallCssSelectors.has(\`.\${prefix}-\${block}\`)
+\t\t);
+
+\t\tconsole.log(\`CSS coverage: \${styledBlocks.length}/\${allBlocks.length} blocks\`);
+\t\t// Start at 0% — increase this threshold as you add CSS
+\t\texpect(styledBlocks.length).toBeGreaterThanOrEqual(0);
+\t});
+});
+`;
+}
+
+function generateThemeKitchenSink(): string {
+	return `---
+title: Kitchen Sink
+description: Preview of all major runes for theme development.
+---
+
+# Kitchen Sink
+
+This page demonstrates all major rune types. Use it to preview your theme styles.
+
+## Hints
+
+{% hint type="note" %}
+This is a **note** hint for general information.
+{% /hint %}
+
+{% hint type="warning" %}
+This is a **warning** hint for cautionary messages.
+{% /hint %}
+
+{% hint type="caution" %}
+This is a **caution** hint for dangerous actions.
+{% /hint %}
+
+{% hint type="check" %}
+This is a **check** hint for success messages.
+{% /hint %}
+
+## Grid
+
+{% grid cols=3 %}
+{% feature title="Fast" %}
+Lightning-fast build times with incremental compilation.
+{% /feature %}
+
+{% feature title="Flexible" %}
+Supports multiple frameworks and output targets.
+{% /feature %}
+
+{% feature title="Extensible" %}
+Create custom runes and themes to match your brand.
+{% /feature %}
+{% /grid %}
+
+## Accordion
+
+{% accordion %}
+### What is refrakt.md?
+A documentation framework that transforms Markdown into rich, interactive pages.
+
+### How do themes work?
+Themes provide an identity transform layer (BEM classes, structure) and optional Svelte components for interactive runes.
+
+### Can I create my own runes?
+Yes! Define a schema in the runes package and add engine config to your theme.
+{% /accordion %}
+
+## Steps
+
+{% steps %}
+### Install dependencies
+\`\`\`sh
+npm install
+\`\`\`
+
+### Configure your theme
+Edit \`src/config.ts\` to customize rune behavior and icons.
+
+### Add CSS styles
+Create CSS files in \`styles/runes/\` for each rune block.
+{% /steps %}
+
+## API Endpoint
+
+{% api method="GET" path="/api/users" %}
+Returns a list of all users.
+
+### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| limit | number | Max results to return |
+| offset | number | Pagination offset |
+{% /api %}
+
+## Tabs
+
+{% tabs %}
+{% tab title="npm" %}
+\`\`\`sh
+npm install @refrakt-md/svelte
+\`\`\`
+{% /tab %}
+
+{% tab title="pnpm" %}
+\`\`\`sh
+pnpm add @refrakt-md/svelte
+\`\`\`
+{% /tab %}
+
+{% tab title="yarn" %}
+\`\`\`sh
+yarn add @refrakt-md/svelte
+\`\`\`
+{% /tab %}
+{% /tabs %}
+
+## Code Block
+
+\`\`\`ts title="example.ts"
+import { themeConfig } from './config';
+
+export function greet(name: string): string {
+  return \`Hello, \${name}!\`;
+}
+\`\`\`
+`;
 }
