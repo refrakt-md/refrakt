@@ -35,7 +35,7 @@ npx vitest run packages/lumina/test/css-coverage.test.ts
 
 These tests derive expected BEM selectors from `baseConfig` and verify they exist in the CSS files. Run after modifying rune configs or CSS. Known gaps are documented in `UNSTYLED_BLOCKS` and `KNOWN_MISSING_SELECTORS` in the test file — update those sets when adding or removing CSS.
 
-### Inspect Tool (on feat/inspect-audit branch)
+### Inspect Tool
 
 ```bash
 # See the identity transform output for a rune
@@ -64,6 +64,18 @@ refrakt inspect hint --audit --css packages/lumina/styles/runes
 ```
 
 Use `refrakt inspect` to see exactly what HTML the identity transform produces for any rune — BEM classes, data attributes, structural elements, and consumed meta tags. The `--audit` flag checks which generated selectors have CSS coverage.
+
+### Contracts
+
+```bash
+# Generate structure contracts (all BEM selectors, data attrs, element structure)
+refrakt contracts -o contracts/structures.json
+
+# Validate existing contracts file is up to date (for CI)
+refrakt contracts --check -o contracts/structures.json
+```
+
+Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config. Use `--check` in CI to catch config-contract drift.
 
 ## Architecture
 
@@ -140,7 +152,7 @@ Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `R
 
 ### Theme Development
 
-Theme developer documentation lives at `site/content/docs/themes/` (5 pages: overview, configuration, css, creating-a-theme, components). Refer to these when working on themes.
+Theme developer documentation lives at `site/content/docs/themes/` (6 pages: overview, configuration, css, creating-a-theme, components, tooling). Refer to these when working on themes.
 
 **Key files for theme work:**
 - `packages/theme-base/src/config.ts` — base config with all 45+ rune configurations (source of truth)
@@ -182,7 +194,7 @@ packages/content/     — Content loading, routing, layout cascade
 packages/svelte/      — Renderer.svelte + ThemeShell.svelte
 packages/sveltekit/   — Vite plugin + virtual modules + HMR
 packages/ai/          — AI prompt building + providers
-packages/cli/         — refrakt CLI (write + inspect)
+packages/cli/         — refrakt CLI (write + inspect + contracts)
 packages/create-refrakt/ — Project scaffolding
 site/                 — Documentation site (SvelteKit)
 ```
