@@ -123,7 +123,7 @@ These are unresolved or partially resolved design questions. When working on fea
 
 ### Phase 1: Rune Library & Parser -- COMPLETE
 
-All 45+ runes implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
+All runes (~52 schema files) implemented with proper reinterpretation logic, attribute system, and renderable output. The `Rune` class provides `defineRune()` with descriptor metadata. Markdoc schema integration via `runeTagMap()`.
 
 ### Phase 2: Layout & Routing -- COMPLETE
 

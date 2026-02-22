@@ -72,7 +72,7 @@ This package has no framework dependencies — it works with any rendering targe
 
 The shared foundation. Contains:
 
-- **`baseConfig`** — Universal rune-to-BEM mappings for all 45+ runes. Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
+- **`baseConfig`** — Universal rune-to-BEM mappings for all 74 rune configurations (including child runes like AccordionItem, Tier, Tab, etc.). Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
 - **`mergeThemeConfig()`** — Utility to extend the base config with theme-specific overrides (icons, modified rune behavior, custom prefix).
 - **Interactive components** — Svelte components for the ~10 runes that require JavaScript (Chart, Map, Diagram, etc.), shared across all themes.
 - **Component registry** — Maps `typeof` values to Svelte components.

@@ -109,7 +109,7 @@ Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packag
 
 - `types` — foundational, no deps on other packages
 - `transform` — depends on types; identity transform engine + config interfaces
-- `runes` — depends on types; defines all 45+ rune schemas
+- `runes` — depends on types; defines rune schemas (~52 files, some covering parent + child)
 - `theme-base` — depends on transform + types; base config + shared interactive components
 - `lumina` — depends on theme-base + transform; design tokens, CSS, icon overrides
 - `behaviors` — no deps; progressive enhancement JS for interactive runes
@@ -155,7 +155,7 @@ Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `R
 Theme developer documentation lives at `site/content/docs/themes/` (6 pages: overview, configuration, css, creating-a-theme, components, tooling). Refer to these when working on themes.
 
 **Key files for theme work:**
-- `packages/theme-base/src/config.ts` — base config with all 45+ rune configurations (source of truth)
+- `packages/theme-base/src/config.ts` — base config with all 74 rune configurations (source of truth)
 - `packages/theme-base/src/merge.ts` — `mergeThemeConfig()` for extending base with theme overrides
 - `packages/transform/src/engine.ts` — identity transform implementation
 - `packages/transform/src/types.ts` — `ThemeConfig`, `RuneConfig`, `StructureEntry` interfaces
@@ -185,7 +185,7 @@ Site content lives in `site/content/` as `.md` files with YAML frontmatter. Layo
 
 ```
 packages/types/       — Shared TypeScript interfaces
-packages/runes/       — 45+ rune schemas + SEO extraction
+packages/runes/       — rune schemas (~52) + SEO extraction
 packages/transform/   — Identity transform engine + types (ThemeConfig, RuneConfig)
 packages/theme-base/  — Base theme config (all rune mappings) + shared interactive components
 packages/lumina/      — Lumina theme (tokens, CSS, icon overrides)

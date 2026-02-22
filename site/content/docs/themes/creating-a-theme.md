@@ -5,15 +5,71 @@ description: Step-by-step guide to building a custom refrakt.md theme from scrat
 
 # Creating a Theme
 
-This guide walks through building a custom theme package from scratch, using the base configuration as a foundation and adding your own visual identity.
+There are two approaches to creating a theme: **extending Lumina** (start with full visual coverage, then customize) or **building from scratch** (full control from the ground up).
 
-## Prerequisites
+## Extending Lumina
+
+The quickest way to create a theme is to start from Lumina and override the parts you want to change. You get a complete, styled theme immediately and can customize incrementally.
+
+### Config
+
+Use `mergeThemeConfig` with Lumina's config as the base:
+
+```typescript
+// src/config.ts
+import { mergeThemeConfig } from '@refrakt-md/theme-base';
+import { luminaConfig } from '@refrakt-md/lumina/transform';
+
+export const myThemeConfig = mergeThemeConfig(luminaConfig, {
+  // Override icons
+  icons: {
+    hint: {
+      note: '<svg ...>...</svg>',
+      warning: '<svg ...>...</svg>',
+    },
+  },
+  // Override specific rune configs
+  runes: {
+    Hint: {
+      modifiers: { hintType: { source: 'meta', default: 'info' } },
+    },
+  },
+});
+```
+
+### CSS
+
+Import all of Lumina's CSS, then layer your overrides after it:
+
+```css
+/* index.css */
+@import '@refrakt-md/lumina';          /* full Lumina styles */
+@import './tokens/overrides.css';       /* your custom tokens */
+@import './styles/runes/hint.css';      /* override specific runes */
+```
+
+Because CSS cascades, your overrides replace Lumina's rules for the same selectors. You only need to write CSS for the parts you want to change.
+
+### What to override
+
+- **Tokens only** — change the visual language (colors, typography, radii) while keeping all rune layouts
+- **Specific rune CSS** — restyle individual runes while keeping others as-is
+- **Icons** — provide your own SVGs via the config
+- **Config tweaks** — change modifier defaults or add structural elements
+
+---
+
+## Building from scratch
+
+This guide walks through building a custom theme package from the ground up, using the base configuration as a foundation and adding your own visual identity.
+
+### Prerequisites
 
 - Familiarity with CSS and BEM naming
 - Basic knowledge of Node.js and npm
 - Understanding of the [theme overview](/docs/themes/overview) and [configuration reference](/docs/themes/configuration)
 
-## Step 1: Create the package
+### Step 1: Create the package
 
 Set up a new package in your project or monorepo:
 
@@ -62,7 +118,7 @@ The key exports:
 - `./manifest` — Theme metadata
 - `./sveltekit` — SvelteKit adapter (registry re-export)
 
-## Step 2: Write your config
+### Step 2: Write your config
 
 Create `src/config.ts`:
 
@@ -93,7 +149,7 @@ export const myThemeConfig = mergeThemeConfig(baseConfig, {
 });
 ```
 
-The base config already defines all 45+ rune configurations. Your config only needs to provide:
+The base config already defines all 74 rune configurations. Your config only needs to provide:
 - **Icons** for runes that display them (currently just Hint)
 - **Overrides** for runes where you want different defaults or behavior
 
@@ -101,7 +157,7 @@ The base config already defines all 45+ rune configurations. Your config only ne
 If you change the `prefix` (e.g., from `'rf'` to `'mt'`), all your CSS selectors must use the new prefix: `.mt-hint` instead of `.rf-hint`. Most themes keep `'rf'` for compatibility.
 {% /hint %}
 
-## Step 3: Define design tokens
+### Step 3: Define design tokens
 
 Create `tokens/base.css` with your visual language:
 
@@ -181,7 +237,7 @@ Create `tokens/dark.css` for dark mode:
 }
 ```
 
-## Step 4: Write rune CSS
+### Step 4: Write rune CSS
 
 Create a `styles/runes/` directory. Start with a simple rune and build from there.
 
@@ -237,7 +293,7 @@ Create a `styles/runes/` directory. Start with a simple rune and build from ther
 
 ### Working through all runes
 
-The base config defines 45+ runes. You don't need CSS for all of them immediately — the identity transform still produces valid HTML with BEM classes even without CSS. Prioritize the runes your content uses most.
+The base config defines 74 rune configurations. You don't need CSS for all of them immediately — the identity transform still produces valid HTML with BEM classes even without CSS. Prioritize the runes your content uses most.
 
 A good order:
 1. **Layout basics**: grid, tabs, accordion, details
@@ -245,7 +301,7 @@ A good order:
 3. **Structural runes**: recipe, api, event, howto
 4. **Everything else**: design tokens, code, data, creative runes
 
-## Step 5: Add icons
+### Step 5: Add icons
 
 Runes that use `icon` in their structure config need SVG strings provided in the theme config. Currently this is just the Hint rune, which expects icons for each hint type.
 
@@ -262,7 +318,7 @@ icons: {
 
 Use `stroke="currentColor"` so the icon inherits color from CSS.
 
-## Step 6: Create your manifest
+### Step 6: Create your manifest
 
 Create `manifest.json` at the package root:
 
@@ -284,7 +340,7 @@ Create `manifest.json` at the package root:
 
 The manifest declares your theme's identity and capabilities to tooling and documentation generators.
 
-## Step 7: Create the CSS entry point
+### Step 7: Create the CSS entry point
 
 Create `index.css` that imports everything:
 
@@ -298,7 +354,7 @@ Create `index.css` that imports everything:
 /* Add imports as you create more rune CSS files */
 ```
 
-## Step 8: SvelteKit integration
+### Step 8: SvelteKit integration
 
 Create `sveltekit/index.ts` to re-export the component registry from theme-base:
 
@@ -320,7 +376,7 @@ export const registry = {
 };
 ```
 
-## Step 9: Build and test
+### Step 9: Build and test
 
 Add a `tsconfig.json`:
 

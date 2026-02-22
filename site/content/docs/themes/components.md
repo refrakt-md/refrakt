@@ -258,4 +258,4 @@ Ask these questions in order:
 
 3. **Does it need Svelte state, external libraries, or complex rendering?** If yes, create a Svelte component and register it.
 
-The majority of runes fall into category 1. A handful need category 2. Very few need category 3 — the base theme has only 9 registered components out of 45+ runes.
+The majority of runes fall into category 1. A handful need category 2. Very few need category 3 — the base theme has only 9 registered components out of 74 rune configurations.

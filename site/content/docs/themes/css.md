@@ -361,18 +361,34 @@ styles/runes/
 
 ### Child runes in parent files
 
-Runes that are always children of another rune are styled in the parent's CSS file. For example, `.rf-tier` selectors live in `pricing.css`, not in a separate `tier.css`.
+Runes that are always children of another rune are styled in the parent's CSS file. For example, `.rf-tier` selectors live in `pricing.css`, not in a separate `tier.css`. If you're looking for a child rune's CSS (AccordionItem, Tab, Tier, etc.), check the parent rune's file instead.
 
-Common parent-child groupings:
+Use `refrakt inspect <child-rune> --audit` to discover which selectors a child rune produces and whether they have CSS coverage.
+
+All parent-child groupings:
 
 | Parent CSS file | Contains selectors for |
 |-----------------|----------------------|
 | `accordion.css` | `.rf-accordion`, `.rf-accordion-item` |
-| `pricing.css` | `.rf-pricing`, `.rf-tier` |
+| `annotate.css` | `.rf-annotate`, `.rf-annotate-note` |
+| `bento.css` | `.rf-bento`, `.rf-bento-cell` |
+| `breadcrumb.css` | `.rf-breadcrumb`, `.rf-breadcrumb-item` |
+| `cast.css` | `.rf-cast`, `.rf-cast-member` |
+| `changelog.css` | `.rf-changelog`, `.rf-changelog-release` |
+| `comparison.css` | `.rf-comparison`, `.rf-comparison-column`, `.rf-comparison-row` |
+| `conversation.css` | `.rf-conversation`, `.rf-conversation-message` |
+| `feature.css` | `.rf-feature`, `.rf-feature-definition` |
+| `form.css` | `.rf-form`, `.rf-form-field` |
+| `map.css` | `.rf-map`, `.rf-map-pin` |
+| `nav.css` | `.rf-nav`, `.rf-nav-group`, `.rf-nav-item` |
+| `pricing.css` | `.rf-pricing`, `.rf-tier`, `.rf-tier--featured` |
+| `recipe.css` | `.rf-recipe`, `.rf-recipe-ingredient` |
+| `reveal.css` | `.rf-reveal`, `.rf-reveal-step` |
 | `steps.css` | `.rf-steps`, `.rf-step` |
+| `storyboard.css` | `.rf-storyboard`, `.rf-storyboard-panel` |
+| `symbol.css` | `.rf-symbol`, `.rf-symbol-group`, `.rf-symbol-member` |
 | `tabs.css` | `.rf-tabs`, `.rf-tab` |
 | `timeline.css` | `.rf-timeline`, `.rf-timeline-entry` |
-| `conversation.css` | `.rf-conversation`, `.rf-conversation-message` |
 
 ### Barrel import
 
