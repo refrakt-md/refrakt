@@ -70,10 +70,11 @@ A paragraph.
 		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
 		expect(source).toBeDefined();
 
-		// No other pre tags should exist (fence was removed from children)
+		// Only source and htmlSource pre tags should exist (fence was removed from children)
 		const allPres = findAllTags(preview!, t => t.name === 'pre');
-		expect(allPres).toHaveLength(1);
+		expect(allPres).toHaveLength(2);
 		expect(allPres[0].attributes.property).toBe('source');
+		expect(allPres[1].attributes.property).toBe('htmlSource');
 	});
 
 	it('should auto-infer source from children when source=true', () => {
@@ -157,6 +158,84 @@ Some content.
 		const responsiveMeta = findTag(preview!, t =>
 			t.name === 'meta' && t.attributes.property === 'responsive');
 		expect(responsiveMeta).toBeUndefined();
+	});
+
+	it('should generate htmlSource when source=true', () => {
+		const content = `{% preview source=true %}
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		expect(preview).toBeDefined();
+
+		const htmlSource = findTag(preview!, t =>
+			t.name === 'pre' && t.attributes.property === 'htmlSource');
+		expect(htmlSource).toBeDefined();
+		expect(htmlSource!.attributes['data-language']).toBe('html');
+
+		const code = findTag(htmlSource!, t => t.name === 'code');
+		expect(code).toBeDefined();
+		// Should contain structural attributes
+		expect(code!.children[0]).toContain('typeof="Hint"');
+		expect(code!.children[0]).toContain('property="hintType"');
+	});
+
+	it('should not generate htmlSource when source is absent', () => {
+		const result = parse(`{% preview %}
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const htmlSource = findTag(preview!, t =>
+			t.name === 'pre' && t.attributes.property === 'htmlSource');
+		expect(htmlSource).toBeUndefined();
+	});
+
+	it('should generate htmlSource alongside fence source', () => {
+		const content = `{% preview %}
+\`\`\`jsx
+<Button />
+\`\`\`
+
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const source = findTag(preview!, t =>
+			t.name === 'pre' && t.attributes.property === 'source');
+		const htmlSource = findTag(preview!, t =>
+			t.name === 'pre' && t.attributes.property === 'htmlSource');
+
+		expect(source).toBeDefined();
+		expect(source!.attributes['data-language']).toBe('jsx');
+		expect(htmlSource).toBeDefined();
+		expect(htmlSource!.attributes['data-language']).toBe('html');
+	});
+
+	it('should pretty-print the rune HTML output', () => {
+		const content = `{% preview source=true %}
+{% hint type="note" %}
+A note.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+
+		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const htmlSource = findTag(preview!, t =>
+			t.name === 'pre' && t.attributes.property === 'htmlSource');
+		const code = findTag(htmlSource!, t => t.name === 'code');
+		// Should have newlines (pretty-printed, not flat)
+		expect(code!.children[0]).toContain('\n');
+		// Should have indentation
+		expect(code!.children[0]).toMatch(/^\s{2}/m);
 	});
 
 	it('should only extract the first fence, leaving nested fences intact', () => {

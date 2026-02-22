@@ -12,6 +12,8 @@ function createPreview(opts?: {
 	theme?: string;
 	responsive?: string;
 	hasSource?: boolean;
+	hasHtmlSource?: boolean;
+	hasThemedSource?: boolean;
 }): HTMLElement {
 	const el = document.createElement('div');
 	el.setAttribute('data-rune', 'preview');
@@ -23,8 +25,22 @@ function createPreview(opts?: {
 	if (opts?.hasSource) {
 		const source = document.createElement('div');
 		source.setAttribute('property', 'source');
-		source.innerHTML = '<pre><code>const x = 1;</code></pre>';
+		source.innerHTML = '<pre><code data-language="markdoc">{% hint %}...{% /hint %}</code></pre>';
 		el.appendChild(source);
+	}
+
+	if (opts?.hasHtmlSource) {
+		const htmlSource = document.createElement('div');
+		htmlSource.setAttribute('property', 'htmlSource');
+		htmlSource.innerHTML = '<pre><code data-language="html">&lt;div typeof="Hint"&gt;...&lt;/div&gt;</code></pre>';
+		el.appendChild(htmlSource);
+	}
+
+	if (opts?.hasThemedSource) {
+		const themedSource = document.createElement('div');
+		themedSource.setAttribute('property', 'themedSource');
+		themedSource.innerHTML = '<pre><code data-language="html">&lt;div class="rf-hint"&gt;...&lt;/div&gt;</code></pre>';
+		el.appendChild(themedSource);
 	}
 
 	const content = document.createElement('div');
@@ -294,6 +310,100 @@ describe('previewBehavior', () => {
 			// Source and content should be back in el
 			expect(el.querySelector('[property="source"]')).not.toBeNull();
 			expect(el.querySelector('.preview-content')).not.toBeNull();
+		});
+	});
+
+	describe('source tabs', () => {
+		it('creates tab bar when source, htmlSource, and themedSource all exist', () => {
+			const el = createPreview({ hasSource: true, hasHtmlSource: true, hasThemedSource: true });
+			previewBehavior(el);
+
+			const tabs = el.querySelector('.rf-preview__source-tabs');
+			expect(tabs).not.toBeNull();
+			const tabButtons = tabs!.querySelectorAll('.rf-preview__source-tab');
+			expect(tabButtons.length).toBe(3);
+			expect(tabButtons[0].textContent).toBe('Markdoc');
+			expect(tabButtons[1].textContent).toBe('Rune');
+			expect(tabButtons[2].textContent).toBe('HTML');
+		});
+
+		it('creates tab bar with 2 tabs when only source and htmlSource exist', () => {
+			const el = createPreview({ hasSource: true, hasHtmlSource: true });
+			previewBehavior(el);
+
+			const tabs = el.querySelector('.rf-preview__source-tabs');
+			expect(tabs).not.toBeNull();
+			const tabButtons = tabs!.querySelectorAll('.rf-preview__source-tab');
+			expect(tabButtons.length).toBe(2);
+			expect(tabButtons[0].textContent).toBe('Markdoc');
+			expect(tabButtons[1].textContent).toBe('Rune');
+		});
+
+		it('does not create tab bar when only source exists', () => {
+			const el = createPreview({ hasSource: true });
+			previewBehavior(el);
+
+			expect(el.querySelector('.rf-preview__source-tabs')).toBeNull();
+		});
+
+		it('creates view toggle when only htmlSource exists', () => {
+			const el = createPreview({ hasHtmlSource: true });
+			previewBehavior(el);
+
+			expect(el.querySelector('.rf-preview__view-toggle')).not.toBeNull();
+		});
+
+		it('switches between source tabs', () => {
+			const el = createPreview({ hasSource: true, hasHtmlSource: true, hasThemedSource: true });
+			previewBehavior(el);
+
+			// Switch to code view first
+			const viewToggle = el.querySelector('.rf-preview__view-toggle')!;
+			viewToggle.querySelectorAll('button')[1].click();
+
+			const tabButtons = el.querySelectorAll('.rf-preview__source-tab');
+
+			// Click Rune tab
+			tabButtons[1].click();
+			expect(tabButtons[1].classList.contains('rf-preview__source-tab--active')).toBe(true);
+			expect(tabButtons[0].classList.contains('rf-preview__source-tab--active')).toBe(false);
+
+			// Click HTML tab
+			tabButtons[2].click();
+			expect(tabButtons[2].classList.contains('rf-preview__source-tab--active')).toBe(true);
+			expect(tabButtons[1].classList.contains('rf-preview__source-tab--active')).toBe(false);
+		});
+
+		it('shows themedSource content in HTML tab', () => {
+			const el = createPreview({ hasSource: true, hasHtmlSource: true, hasThemedSource: true });
+			previewBehavior(el);
+
+			// Switch to code view
+			const viewToggle = el.querySelector('.rf-preview__view-toggle')!;
+			viewToggle.querySelectorAll('button')[1].click();
+
+			// Switch to HTML tab (last tab)
+			const tabButtons = el.querySelectorAll('.rf-preview__source-tab');
+			tabButtons[tabButtons.length - 1].click();
+
+			const sourcePanel = el.querySelector('.rf-preview__source')!;
+			const panels = sourcePanel.querySelectorAll(':scope > div:not(.rf-preview__source-tabs)');
+			const htmlPanel = panels[panels.length - 1] as HTMLElement;
+
+			expect(htmlPanel.hidden).toBe(false);
+			expect(htmlPanel.querySelector('pre')).not.toBeNull();
+			expect(htmlPanel.querySelector('code')!.textContent).toContain('rf-hint');
+		});
+
+		it('restores all source elements on cleanup', () => {
+			const el = createPreview({ hasSource: true, hasHtmlSource: true, hasThemedSource: true });
+			const cleanup = previewBehavior(el);
+
+			cleanup();
+
+			expect(el.querySelector('[property="source"]')).not.toBeNull();
+			expect(el.querySelector('[property="htmlSource"]')).not.toBeNull();
+			expect(el.querySelector('[property="themedSource"]')).not.toBeNull();
 		});
 	});
 

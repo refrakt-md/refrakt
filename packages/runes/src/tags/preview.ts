@@ -11,6 +11,66 @@ function dedent(text: string): string {
 	return min > 0 ? lines.map(l => l.slice(min)).join('\n') : text;
 }
 
+const VOID_ELEMENTS = new Set([
+	'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+	'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
+function escapeHtml(s: string): string {
+	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Render Markdoc Tag tree to pretty-printed HTML, preserving structural attributes. */
+function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string {
+	const indent = '  ';
+	const lines: string[] = [];
+
+	for (const node of nodes) {
+		if (node === null || node === undefined) continue;
+		if (typeof node === 'string') {
+			const trimmed = node.trim();
+			if (trimmed) lines.push(indent.repeat(depth) + escapeHtml(trimmed));
+			continue;
+		}
+		if (typeof node === 'number') { lines.push(indent.repeat(depth) + String(node)); continue; }
+		if (!Tag.isTag(node)) continue;
+
+		const { name, attributes, children = [] } = node;
+		if (!name) { lines.push(renderRuneHtml(children, depth)); continue; }
+
+		// Build attributes, skipping $$mdtype
+		const attrParts: string[] = [];
+		for (const [k, v] of Object.entries(attributes ?? {})) {
+			if (k === '$$mdtype') continue;
+			if (v === undefined || v === null || v === false) continue;
+			if (v === true) { attrParts.push(k); continue; }
+			attrParts.push(`${k}="${escapeHtml(String(v))}"`);
+		}
+		const attrStr = attrParts.length ? ' ' + attrParts.join(' ') : '';
+		const pad = indent.repeat(depth);
+
+		if (VOID_ELEMENTS.has(name)) {
+			lines.push(`${pad}<${name}${attrStr}>`);
+			continue;
+		}
+
+		// Inline text-only children on the same line
+		const allText = children.every((c: Markdoc.RenderableTreeNode) => typeof c === 'string' || typeof c === 'number');
+		if (allText && children.length <= 1) {
+			const text = children.map((c: Markdoc.RenderableTreeNode) => typeof c === 'string' ? escapeHtml(c) : String(c ?? '')).join('');
+			lines.push(`${pad}<${name}${attrStr}>${text}</${name}>`);
+			continue;
+		}
+
+		lines.push(`${pad}<${name}${attrStr}>`);
+		const inner = renderRuneHtml(children, depth + 1);
+		if (inner) lines.push(inner);
+		lines.push(`${pad}</${name}>`);
+	}
+
+	return lines.join('\n');
+}
+
 class PreviewModel extends Model {
 	@attribute({ type: String, required: false })
 	title: string = '';
@@ -57,6 +117,17 @@ class PreviewModel extends Model {
 
 		const children = this.transformChildren();
 
+		// 3. Generate rune output HTML when source is present
+		let htmlSourcePre: Markdoc.Tag<'pre'> | undefined;
+		if (sourcePre) {
+			const htmlString = renderRuneHtml(children.toArray());
+			if (htmlString) {
+				htmlSourcePre = new Tag('pre', { 'data-language': 'html' }, [
+					new Tag('code', { 'data-language': 'html' }, [htmlString])
+				]) as Markdoc.Tag<'pre'>;
+			}
+		}
+
 		const titleMeta = this.title ? new Tag('meta', { content: this.title }) : undefined;
 		const themeMeta = new Tag('meta', { content: this.theme });
 		const widthMeta = new Tag('meta', { content: this.width });
@@ -68,6 +139,7 @@ class PreviewModel extends Model {
 			widthMeta,
 			...(responsiveMeta ? [responsiveMeta] : []),
 			...(sourcePre ? [sourcePre] : []),
+			...(htmlSourcePre ? [htmlSourcePre] : []),
 			...children.toArray(),
 		];
 
@@ -79,6 +151,7 @@ class PreviewModel extends Model {
 				width: widthMeta,
 				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
 				...(sourcePre ? { source: sourcePre } : {}),
+				...(htmlSourcePre ? { htmlSource: htmlSourcePre } : {}),
 			},
 			children: childNodes,
 		});

@@ -1,4 +1,5 @@
-import type { ThemeConfig } from '@refrakt-md/transform';
+import type { ThemeConfig, SerializedTag } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml } from '@refrakt-md/transform';
 
 /** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
@@ -288,6 +289,35 @@ export const baseConfig: ThemeConfig = {
 				width: { source: 'meta', default: 'wide' },
 				responsive: { source: 'meta' },
 				title: { source: 'meta' },
+			},
+			postTransform(node) {
+				// Generate themed HTML when source mode is active.
+				// This must happen in postTransform (not the rune) because it needs
+				// the fully-transformed tree with BEM classes and structural elements.
+				const hasSource = node.children.some(
+					c => isTag(c) && c.name === 'pre' && c.attributes.property === 'source'
+				);
+				if (!hasSource) return node;
+
+				// Extract content children (skip meta, source, htmlSource, themedSource)
+				const contentChildren = node.children.filter(c => {
+					if (!isTag(c)) return true;
+					if (c.name === 'meta' && c.attributes.property) return false;
+					if (c.name === 'pre' && c.attributes.property) return false;
+					return true;
+				});
+
+				const html = renderToHtml(contentChildren, { pretty: true });
+				if (!html) return node;
+
+				const themedPre: SerializedTag = makeTag('pre', {
+					property: 'themedSource',
+					'data-language': 'html',
+				}, [
+					makeTag('code', { 'data-language': 'html' }, [html]),
+				]);
+
+				return { ...node, children: [...node.children, themedPre] };
 			},
 		},
 		Sandbox: { block: 'sandbox' },

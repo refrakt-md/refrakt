@@ -46,6 +46,11 @@ const VIEWPORT_PRESETS: Record<string, { width: number | null; label: string }> 
  * - Viewport toggle: responsive viewport presets (mobile, tablet, desktop)
  * - Theme toggle: auto, light, dark theme modes
  *
+ * Source panel supports up to three tabs:
+ * - Markdoc: original authoring syntax (from source property)
+ * - Rune: pre-engine structural HTML (from htmlSource property)
+ * - HTML: post-engine themed HTML (from themedSource property, generated at build time)
+ *
  * Reads configuration from data attributes:
  * - `data-theme`: initial theme mode (default: 'auto')
  * - `data-responsive`: comma-separated viewport presets
@@ -59,13 +64,19 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		.filter((s) => s in VIEWPORT_PRESETS);
 	const hasResponsive = responsivePresets.length > 0;
 
-	// Separate source element from content children
+	// Separate source elements from content children
 	const sourceEl = el.querySelector('[property="source"]') as HTMLElement | null;
+	const htmlSourceEl = el.querySelector('[property="htmlSource"]') as HTMLElement | null;
+	const themedSourceEl = el.querySelector('[property="themedSource"]') as HTMLElement | null;
 	const contentChildren = Array.from(el.children).filter(
-		(child) => child !== sourceEl && !(child as HTMLElement).matches?.('meta[property]'),
+		(child) =>
+			child !== sourceEl &&
+			child !== htmlSourceEl &&
+			child !== themedSourceEl &&
+			!(child as HTMLElement).matches?.('meta[property]'),
 	) as HTMLElement[];
 
-	const hasSource = sourceEl !== null;
+	const hasSource = sourceEl !== null || htmlSourceEl !== null;
 
 	// State
 	let view: 'preview' | 'code' = 'preview';
@@ -177,14 +188,6 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	const canvas = document.createElement('div');
 	canvas.className = 'rf-preview__canvas';
 
-	// Wrap source in source panel
-	let sourcePanel: HTMLDivElement | null = null;
-	if (hasSource && sourceEl) {
-		sourcePanel = document.createElement('div');
-		sourcePanel.className = 'rf-preview__source';
-		sourcePanel.appendChild(sourceEl);
-	}
-
 	// Viewport frame (if responsive)
 	let viewportFrame: HTMLDivElement | null = null;
 	let viewportLabel: HTMLSpanElement | null = null;
@@ -207,6 +210,67 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		}
 	}
 
+	// Build source panel with tabs
+	type SourceTab = { key: string; label: string; panel: HTMLDivElement };
+	const sourceTabs: SourceTab[] = [];
+	let sourcePanel: HTMLDivElement | null = null;
+	let sourceTabButtons: Map<string, HTMLButtonElement> | null = null;
+	let activeSourceTab: string = '';
+
+	if (hasSource) {
+		sourcePanel = document.createElement('div');
+		sourcePanel.className = 'rf-preview__source';
+
+		if (sourceEl) {
+			const panel = document.createElement('div');
+			panel.appendChild(sourceEl);
+			sourceTabs.push({ key: 'markdoc', label: 'Markdoc', panel });
+		}
+		if (htmlSourceEl) {
+			const panel = document.createElement('div');
+			panel.appendChild(htmlSourceEl);
+			sourceTabs.push({ key: 'rune', label: 'Rune', panel });
+		}
+
+		// Themed HTML tab (generated at build time by engine postTransform, with Shiki highlighting)
+		if (themedSourceEl) {
+			const panel = document.createElement('div');
+			panel.appendChild(themedSourceEl);
+			sourceTabs.push({ key: 'html', label: 'HTML', panel });
+		}
+
+		activeSourceTab = sourceTabs[0]?.key ?? '';
+
+		// Create tab bar when multiple sources exist
+		if (sourceTabs.length > 1) {
+			const tabBar = document.createElement('div');
+			tabBar.className = 'rf-preview__source-tabs';
+			sourceTabButtons = new Map();
+
+			for (const tab of sourceTabs) {
+				const btn = document.createElement('button');
+				btn.className = 'rf-preview__source-tab';
+				if (tab.key === activeSourceTab) btn.classList.add('rf-preview__source-tab--active');
+				btn.textContent = tab.label;
+
+				const onClick = () => { activeSourceTab = tab.key; render(); };
+				btn.addEventListener('click', onClick);
+				cleanups.push(() => btn.removeEventListener('click', onClick));
+
+				tabBar.appendChild(btn);
+				sourceTabButtons.set(tab.key, btn);
+			}
+
+			sourcePanel.appendChild(tabBar);
+		}
+
+		// Add all source panels
+		for (const tab of sourceTabs) {
+			tab.panel.hidden = tab.key !== activeSourceTab;
+			sourcePanel.appendChild(tab.panel);
+		}
+	}
+
 	// Insert into DOM
 	el.appendChild(toolbar);
 	if (sourcePanel) el.appendChild(sourcePanel);
@@ -222,6 +286,16 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 			sourcePanel.hidden = view !== 'code';
 		}
 		canvas.hidden = view === 'code' && hasSource;
+
+		// Source tab toggle
+		if (sourceTabButtons) {
+			for (const [key, btn] of sourceTabButtons) {
+				btn.classList.toggle('rf-preview__source-tab--active', activeSourceTab === key);
+			}
+		}
+		for (const tab of sourceTabs) {
+			tab.panel.hidden = tab.key !== activeSourceTab;
+		}
 
 		// Viewport toggle
 		for (const [preset, btn] of viewportButtons) {
@@ -263,9 +337,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		cleanups.forEach((fn) => fn());
 
 		// Restore DOM: move children back to el, remove toolbar/canvas/source wrappers
-		if (sourceEl && sourcePanel) {
-			el.appendChild(sourceEl);
-		}
+		if (sourceEl) el.appendChild(sourceEl);
+		if (htmlSourceEl) el.appendChild(htmlSourceEl);
+		if (themedSourceEl) el.appendChild(themedSourceEl);
+
 		for (const child of Array.from(viewportFrame?.children ?? canvas.children)) {
 			if (child !== viewportLabel) {
 				el.appendChild(child);
