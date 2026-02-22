@@ -64,7 +64,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				const report = analyzeRuneUsage(site.pages);
 
 				const themeTransform = await import(`${refraktConfig.theme}/transform`);
-				const themeConfig = themeTransform.luminaConfig ?? themeTransform.default;
+				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
 
 				usedCssBlocks = new Set<string>();
 

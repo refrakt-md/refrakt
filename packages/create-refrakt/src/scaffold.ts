@@ -281,9 +281,24 @@ export const themeConfig = mergeThemeConfig(baseConfig, {
 }
 
 function generateThemeSvelteIndex(): string {
-	return `export { registry } from '@refrakt-md/theme-base/svelte/registry';
-export { elements } from '@refrakt-md/theme-base/svelte/elements';
+	return `import type { SvelteTheme } from '@refrakt-md/svelte';
+import manifest from '../manifest.json';
+import { registry } from '@refrakt-md/theme-base/svelte/registry';
+import { elements } from '@refrakt-md/theme-base/svelte/elements';
+import DefaultLayout from './layouts/DefaultLayout.svelte';
+
+export { default as manifest } from '../manifest.json';
+
+export const theme: SvelteTheme = {
+\tmanifest: manifest as any,
+\tlayouts: { default: DefaultLayout },
+\tcomponents: registry,
+\telements,
+};
+
+export { registry };
 export { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
+export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 `;
 }
 

@@ -74,13 +74,17 @@ describe('scaffoldTheme', () => {
 		expect(config).toContain('runes:');
 	});
 
-	it('generates svelte/index.ts re-exporting from theme-base', () => {
+	it('generates svelte/index.ts with full SvelteTheme object', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
 		scaffoldTheme({ themeName: 'my-theme', targetDir });
 
 		const svelteIndex = readFileSync(join(targetDir, 'svelte', 'index.ts'), 'utf-8');
+		expect(svelteIndex).toContain("import type { SvelteTheme } from '@refrakt-md/svelte'");
+		expect(svelteIndex).toContain('export const theme: SvelteTheme');
+		expect(svelteIndex).toContain('layouts: { default: DefaultLayout }');
+		expect(svelteIndex).toContain('components: registry');
 		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/registry");
 		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/elements");
 	});
