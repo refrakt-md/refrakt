@@ -83,7 +83,7 @@ describe('scaffold', () => {
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.theme).toBe('@my-org/theme-custom');
 		expect(config.contentDir).toBe('./content');
-		expect(config.target).toBe('sveltekit');
+		expect(config.target).toBe('svelte');
 	});
 
 	it('adds custom theme to package.json dependencies', () => {

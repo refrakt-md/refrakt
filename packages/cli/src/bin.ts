@@ -15,6 +15,10 @@ if (command === 'write') {
 	runInspect(args.slice(1));
 } else if (command === 'contracts') {
 	runContracts(args.slice(1));
+} else if (command === 'scaffold-css') {
+	runScaffoldCss(args.slice(1));
+} else if (command === 'validate') {
+	runValidate(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -33,6 +37,8 @@ Commands:
   write <prompt>       Generate a Markdown content file using AI
   inspect <rune>       Show identity transform output for a rune
   contracts [options]  Generate structure contracts from theme config
+  scaffold-css         Generate CSS stub files for all runes
+  validate             Validate theme config and manifest
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -61,6 +67,14 @@ Provider auto-detection:
 Contracts Options:
   --output, -o <path>      Write contracts to a file (default: stdout)
   --check                  Validate existing file is up to date (exit 1 if stale)
+
+Scaffold-CSS Options:
+  --output-dir, -d <dir>   Output directory (default: ./styles/runes)
+  --force                  Overwrite existing files
+
+Validate Options:
+  --config <path>          Path to theme config module (default: auto-detect)
+  --manifest <path>        Path to manifest.json (default: auto-detect)
 
 Examples:
   refrakt inspect hint --type=warning
@@ -285,6 +299,84 @@ function runContracts(contractsArgs: string[]): void {
 
 	import('./commands/contracts.js').then(({ contractsCommand }) => {
 		contractsCommand({ output, check });
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runScaffoldCss(scaffoldArgs: string[]): void {
+	let outputDir = './styles/runes';
+	let force = false;
+
+	for (let i = 0; i < scaffoldArgs.length; i++) {
+		const arg = scaffoldArgs[i];
+
+		if (arg === '--output-dir' || arg === '-d') {
+			outputDir = scaffoldArgs[++i];
+			if (!outputDir) {
+				console.error('Error: --output-dir requires a directory path');
+				process.exit(1);
+			}
+		} else if (arg === '--force') {
+			force = true;
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	import('./commands/scaffold-css.js').then(({ scaffoldCssCommand }) => {
+		scaffoldCssCommand({ outputDir, force });
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runValidate(validateArgs: string[]): void {
+	let configPath: string | undefined;
+	let manifestPath: string | undefined;
+
+	for (let i = 0; i < validateArgs.length; i++) {
+		const arg = validateArgs[i];
+
+		if (arg === '--config') {
+			configPath = validateArgs[++i];
+			if (!configPath) {
+				console.error('Error: --config requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--manifest') {
+			manifestPath = validateArgs[++i];
+			if (!manifestPath) {
+				console.error('Error: --manifest requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	import('./commands/validate.js').then(({ validateCommand }) => {
+		validateCommand({ configPath, manifestPath });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);

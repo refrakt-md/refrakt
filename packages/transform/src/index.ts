@@ -18,5 +18,9 @@ export { isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta } f
 export { renderToHtml } from './html.js';
 export type { RenderOptions } from './html.js';
 
+// Validation
+export { validateThemeConfig, validateManifest } from './validate.js';
+export type { ValidationResult, ValidationError, ValidationWarning } from './validate.js';
+
 // Selector extraction
 export { extractSelectors } from './selectors.js';
