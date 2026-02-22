@@ -213,6 +213,16 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 		path.join(targetDir, 'preview', 'kitchen-sink.md'),
 		generateThemeKitchenSink(),
 	);
+
+	writeFileSync(
+		path.join(targetDir, 'base.css'),
+		generateThemeBaseCss(),
+	);
+
+	writeFileSync(
+		path.join(targetDir, 'svelte', 'tokens.css'),
+		generateThemeTokensBridge(),
+	);
 }
 
 function generateThemePackageJson(packageName: string): string {
@@ -224,6 +234,7 @@ function generateThemePackageJson(packageName: string): string {
 		types: 'dist/config.d.ts',
 		exports: {
 			'.': './index.css',
+			'./base.css': './base.css',
 			'./transform': {
 				types: './dist/config.d.ts',
 				default: './dist/config.js',
@@ -233,14 +244,17 @@ function generateThemePackageJson(packageName: string): string {
 				default: './svelte/index.ts',
 			},
 			'./manifest': './manifest.json',
+			'./styles/runes/*.css': './styles/runes/*.css',
+			'./svelte/tokens.css': './svelte/tokens.css',
 		},
 		files: [
 			'dist',
-			'svelte',
+			'base.css',
+			'index.css',
 			'tokens',
 			'styles',
-			'index.css',
 			'manifest.json',
+			'svelte',
 		],
 		scripts: {
 			build: 'tsc',
@@ -655,5 +669,18 @@ export function greet(name: string): string {
   return \`Hello, \${name}!\`;
 }
 \`\`\`
+`;
+}
+
+function generateThemeBaseCss(): string {
+	return `/* Base styles — tokens + globals (no rune CSS) */
+@import './tokens/base.css';
+@import './tokens/dark.css';
+@import './styles/global.css';
+`;
+}
+
+function generateThemeTokensBridge(): string {
+	return `@import '../index.css';
 `;
 }
