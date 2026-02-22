@@ -1,21 +1,13 @@
 import { ComponentType } from "../interfaces.js";
 
 export class FormField {
-	name: string = '';
 	fieldType: string = 'text';
-	required: string = 'true';
-	placeholder: string = '';
-	options: string = '';
 }
 
 export interface FormFieldComponent extends ComponentType<FormField> {
 	tag: 'div',
 	properties: {
-		name: 'span',
 		fieldType: 'meta',
-		required: 'meta',
-		placeholder: 'meta',
-		options: 'meta',
 	},
 	refs: {
 		body: 'div',

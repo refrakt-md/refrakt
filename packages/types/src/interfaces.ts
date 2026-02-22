@@ -73,6 +73,16 @@ export type NodeType =
   'path' |
   'math' |
 
+  // Forms
+  'button' |
+  'fieldset' |
+  'input' |
+  'label' |
+  'legend' |
+  'option' |
+  'select' |
+  'textarea' |
+
   // Table content
   'caption' |
   'col' |

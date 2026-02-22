@@ -11,8 +11,7 @@
 	flex-direction: column;
 	gap: 1.25rem;
 }
-.rf-form meta,
-.rf-form span[property] { display: none; }
+.rf-form meta { display: none; }
 /* Honeypot */
 .rf-form__hp {
 	position: absolute;

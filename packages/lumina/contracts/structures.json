@@ -1011,25 +1011,8 @@
 			"modifiers": {
 				"fieldType": {
 					"source": "meta",
-					"default": "text",
 					"classPattern": ".rf-form-field--{value}",
 					"dataAttribute": "data-field-type"
-				},
-				"required": {
-					"source": "meta",
-					"default": "true",
-					"classPattern": ".rf-form-field--{value}",
-					"dataAttribute": "data-required"
-				},
-				"placeholder": {
-					"source": "meta",
-					"classPattern": ".rf-form-field--{value}",
-					"dataAttribute": "data-placeholder"
-				},
-				"options": {
-					"source": "meta",
-					"classPattern": ".rf-form-field--{value}",
-					"dataAttribute": "data-options"
 				}
 			}
 		},

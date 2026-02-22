@@ -104,26 +104,122 @@ class FormFieldModel extends Model {
 	options: string = '';
 
 	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
+		const fieldId = `field-${this.name.toLowerCase().replace(/\s+/g, '-')}`;
+		const isRequired = this.required === 'true';
+		const optionsList = this.options
+			? this.options.split(',').map(o => o.trim()).filter(Boolean)
+			: [];
+
+		// --- Special types: return plain tags (no FormField wrapper) ---
+		// These get BEM classes from the parent Form block via data-name.
+
+		if (this.fieldType === 'submit') {
+			return new Tag('button', { type: 'submit', 'data-name': 'submit' }, [this.name]);
+		}
+
+		if (this.fieldType === 'separator') {
+			return new Tag('hr', { 'data-name': 'separator' }, []);
+		}
+
+		if (this.fieldType === 'help') {
+			return new Tag('p', { 'data-name': 'help' }, [this.name]);
+		}
+
+		if (this.fieldType === 'description') {
+			return new Tag('p', { 'data-name': 'text' }, [this.name]);
+		}
+
+		if (this.fieldType === 'group') {
+			return new Tag('fieldset', { class: 'rf-form-fieldset' }, [
+				new Tag('legend', {}, [this.name]),
+			]);
+		}
+
+		// --- Choice groups (radio/checkbox): fieldset with typeof for engine BEM ---
+
+		if (this.fieldType === 'radio' || this.fieldType === 'checkbox') {
+			const labelChildren: any[] = [this.name];
+			if (isRequired) {
+				labelChildren.push(
+					new Tag('span', { 'data-name': 'required', 'aria-hidden': 'true' }, ['*']),
+				);
+			}
+
+			const choiceElements = optionsList.map((o, i) =>
+				new Tag('label', { class: 'rf-form-choice' }, [
+					new Tag('input', {
+						type: this.fieldType,
+						name: fieldId,
+						value: o,
+						...(isRequired && this.fieldType === 'radio' && i === 0 ? { required: '' } : {}),
+					}, []),
+					new Tag('span', {}, [o]),
+				]),
+			);
+
+			const fieldTypeMeta = new Tag('meta', { property: 'fieldType', content: this.fieldType });
+
+			return new Tag('fieldset', {
+				typeof: 'FormField',
+				class: 'rf-form-choice-group',
+			}, [
+				fieldTypeMeta,
+				new Tag('legend', {}, labelChildren),
+				...choiceElements,
+			]);
+		}
+
+		// --- Standard fields: label + input wrapped in createComponentRenderable ---
+
+		const labelChildren: any[] = [this.name];
+		if (isRequired) {
+			labelChildren.push(
+				new Tag('span', { 'data-name': 'required', 'aria-hidden': 'true' }, ['*']),
+			);
+		}
+		const label = new Tag('label', { for: fieldId }, labelChildren);
+
+		let inputElement: InstanceType<typeof Tag>;
+
+		if (this.fieldType === 'textarea') {
+			inputElement = new Tag('textarea', {
+				id: fieldId,
+				name: fieldId,
+				...(this.placeholder ? { placeholder: this.placeholder } : {}),
+				...(isRequired ? { required: '' } : {}),
+				rows: '4',
+			}, []);
+		} else if (this.fieldType === 'select') {
+			inputElement = new Tag('select', {
+				id: fieldId,
+				name: fieldId,
+				...(isRequired ? { required: '' } : {}),
+			}, [
+				new Tag('option', { value: '', disabled: '', selected: '' }, ['Select an option']),
+				...optionsList.map(o => new Tag('option', { value: o }, [o])),
+			]);
+		} else {
+			inputElement = new Tag('input', {
+				type: this.fieldType,
+				id: fieldId,
+				name: fieldId,
+				...(this.placeholder ? { placeholder: this.placeholder } : {}),
+				...(isRequired ? { required: '' } : {}),
+			}, []);
+		}
+
+		const body = new Tag('div', {}, [label, inputElement]);
 		const fieldTypeMeta = new Tag('meta', { content: this.fieldType });
-		const requiredMeta = new Tag('meta', { content: this.required });
-		const placeholderMeta = new Tag('meta', { content: this.placeholder });
-		const optionsMeta = new Tag('meta', { content: this.options });
-		const body = this.transformChildren().wrap('div');
 
 		return createComponentRenderable(schema.FormField, {
 			tag: 'div',
 			properties: {
-				name: nameTag,
 				fieldType: fieldTypeMeta,
-				required: requiredMeta,
-				placeholder: placeholderMeta,
-				options: optionsMeta,
 			},
 			refs: {
-				body: body.tag('div'),
+				body,
 			},
-			children: [nameTag, fieldTypeMeta, requiredMeta, placeholderMeta, optionsMeta, body.next()],
+			children: [fieldTypeMeta, body],
 		});
 	}
 }
@@ -294,7 +390,7 @@ class FormModel extends Model {
 		const honeypotMeta = new Tag('meta', { content: String(this.honeypot) });
 
 		const fields = body.tag('div').typeof('FormField');
-		const fieldsContainer = fields.wrap('div');
+		const bodyContainer = body.wrap('div');
 
 		return createComponentRenderable(schema.Form, {
 			tag: 'form',
@@ -307,8 +403,8 @@ class FormModel extends Model {
 				honeypot: honeypotMeta,
 				field: fields,
 			},
-			refs: { body: fieldsContainer },
-			children: [actionMeta, methodMeta, successMeta, errorMeta, styleMeta, honeypotMeta, fieldsContainer.next()],
+			refs: { body: bodyContainer },
+			children: [actionMeta, methodMeta, successMeta, errorMeta, styleMeta, honeypotMeta, bodyContainer.next()],
 		});
 	}
 }

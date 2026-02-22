@@ -1,5 +1,4 @@
 import type { ThemeConfig } from '@refrakt-md/transform';
-import { formFieldPostTransform } from './form-transform.js';
 
 /** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
@@ -263,12 +262,8 @@ export const baseConfig: ThemeConfig = {
 		FormField: {
 			block: 'form-field',
 			modifiers: {
-				fieldType: { source: 'meta', default: 'text' },
-				required: { source: 'meta', default: 'true' },
-				placeholder: { source: 'meta' },
-				options: { source: 'meta' },
+				fieldType: { source: 'meta' },
 			},
-			postTransform: formFieldPostTransform,
 		},
 		Reveal: {
 			block: 'reveal',
