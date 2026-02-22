@@ -22,7 +22,3 @@ export { registry };
 export { default as DocsLayout } from './layouts/DocsLayout.svelte';
 export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 export { default as BlogLayout } from './layouts/BlogLayout.svelte';
-
-// Components re-exported from theme-base for advanced usage
-export { default as Diagram } from '@refrakt-md/theme-base/svelte/components/Diagram.svelte';
-export { default as Nav } from '@refrakt-md/theme-base/svelte/components/Nav.svelte';
