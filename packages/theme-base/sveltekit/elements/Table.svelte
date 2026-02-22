@@ -16,8 +16,8 @@
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
 		margin: 1.5rem 0;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
 	}
 	.table-wrapper :global(table) {
 		margin: 0;
@@ -26,13 +26,13 @@
 		min-width: 100%;
 	}
 	.table-wrapper :global(th) {
-		background: var(--color-surface);
+		background: var(--rf-color-surface);
 	}
 	.table-wrapper :global(th:first-child) {
-		border-top-left-radius: var(--radius-md);
+		border-top-left-radius: var(--rf-radius-md);
 	}
 	.table-wrapper :global(th:last-child) {
-		border-top-right-radius: var(--radius-md);
+		border-top-right-radius: var(--rf-radius-md);
 	}
 	.table-wrapper :global(tr:last-child td) {
 		border-bottom: none;

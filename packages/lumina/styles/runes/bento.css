@@ -4,6 +4,8 @@
 }
 .rf-bento__grid {
 	display: grid;
+	grid-template-columns: repeat(var(--bento-columns, 4), 1fr);
+	gap: var(--bento-gap, 1rem);
 }
 .rf-bento-cell {
 	border: 1px solid var(--rf-color-border);

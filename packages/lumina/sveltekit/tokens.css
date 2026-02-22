@@ -1,8 +1,6 @@
 /* ──────────────────────────────────────────────
    Lumina Theme — Token Bridge
-   Imports identity tokens + global styles (--rf-* prefix),
-   then aliases legacy --* names for existing components.
+   Imports identity tokens + global styles (--rf-* prefix).
    ────────────────────────────────────────────── */
 
 @import '../index.css';
-@import './aliases.css';

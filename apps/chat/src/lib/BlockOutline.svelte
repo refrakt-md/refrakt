@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getBlockIcon, type ContentBlock } from './blocks.js';
+	import { getSectionIcon, type ContentSection } from './blocks.js';
 
 	interface Props {
-		blocks: ContentBlock[];
+		sections: ContentSection[];
 		messageIndex: number;
-		onpin: (e: CustomEvent<{ blockIds: string[] }>) => void;
+		onpin: (e: CustomEvent<{ sectionIds: string[] }>) => void;
 		onclose: () => void;
 	}
 
-	let { blocks, messageIndex, onpin, onclose }: Props = $props();
+	let { sections, messageIndex, onpin, onclose }: Props = $props();
 	let selected = $state(new Set<string>());
 	let popoverEl: HTMLElement;
 
-	let allSelected = $derived(selected.size === blocks.length && blocks.length > 0);
+	let allSelected = $derived(selected.size === sections.length && sections.length > 0);
 
 	function toggle(id: string) {
 		const next = new Set(selected);
@@ -29,13 +29,13 @@
 		if (allSelected) {
 			selected = new Set();
 		} else {
-			selected = new Set(blocks.map((b) => b.id));
+			selected = new Set(sections.map((s) => s.id));
 		}
 	}
 
 	function handlePin() {
 		if (selected.size === 0) return;
-		onpin(new CustomEvent('pin', { detail: { blockIds: [...selected] } }));
+		onpin(new CustomEvent('pin', { detail: { sectionIds: [...selected] } }));
 		selected = new Set();
 	}
 
@@ -65,26 +65,31 @@
 	});
 </script>
 
-<div class="block-outline" bind:this={popoverEl} role="dialog" aria-label="Block outline for message {messageIndex + 1}">
+<div class="block-outline" bind:this={popoverEl} role="dialog" aria-label="Section outline for message {messageIndex + 1}">
 	<div class="outline-header">
-		<span class="outline-count">{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
+		<span class="outline-count">{sections.length} section{sections.length !== 1 ? 's' : ''}</span>
 		<button class="outline-toggle-all" onclick={toggleAll}>
 			{allSelected ? 'Deselect all' : 'Select all'}
 		</button>
 	</div>
 
 	<ul class="outline-list">
-		{#each blocks as block}
+		{#each sections as section}
 			<li class="outline-item">
 				<label class="outline-label">
 					<input
 						type="checkbox"
-						checked={selected.has(block.id)}
-						onchange={() => toggle(block.id)}
-						aria-label={block.label}
+						checked={selected.has(section.id)}
+						onchange={() => toggle(section.id)}
+						aria-label={section.label}
 					/>
-					<span class="outline-icon" data-type={block.type}>{getBlockIcon(block.type)}</span>
-					<span class="outline-text">{block.label}</span>
+					<span class="outline-icon" data-type={section.type}>{getSectionIcon(section.type)}</span>
+					<span class="outline-text">
+						{section.label}
+						{#if section.childSummary && section.blockIndices.length > 1}
+							<span class="outline-child-summary">({section.childSummary})</span>
+						{/if}
+					</span>
 				</label>
 			</li>
 		{/each}
@@ -191,7 +196,7 @@
 		color: var(--rf-color-primary, #0ea5e9);
 	}
 
-	.outline-icon[data-type='heading'] {
+	.outline-icon[data-type='section'] {
 		font-weight: 700;
 		color: var(--rf-color-text, #1e293b);
 	}
@@ -203,6 +208,12 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		color: var(--rf-color-text, #1e293b);
+	}
+
+	.outline-child-summary {
+		font-size: 0.6875rem;
+		color: var(--rf-color-text-muted, #94a3b8);
+		font-weight: 400;
 	}
 
 	.outline-footer {

@@ -25,14 +25,14 @@
 	height: 1.5rem;
 	width: auto;
 }
-.rf-header__inner p:last-child:not(:first-child) {
+.rf-header__inner p ~ p {
 	font-size: 0.85rem;
 }
-.rf-header__inner p:last-child:not(:first-child) a {
+.rf-header__inner p ~ p a {
 	margin-left: 1.5rem;
 	color: var(--rf-color-muted);
 }
-.rf-header__inner p:last-child:not(:first-child) a:hover {
+.rf-header__inner p ~ p a:hover {
 	color: var(--rf-color-text);
 }
 .rf-page-content {
@@ -42,4 +42,12 @@
 	margin: 0 auto;
 	padding-left: 1.5rem;
 	padding-right: 1.5rem;
+	--rf-content-padding: 1.5rem;
+	container-type: inline-size;
+}
+
+@media (max-width: 768px) {
+	.rf-header__inner p ~ p {
+		display: none;
+	}
 }

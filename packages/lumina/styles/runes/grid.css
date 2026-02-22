@@ -1,13 +1,31 @@
 /* Grid */
 .rf-grid {
+	margin: 1.5rem 0;
+}
+.rf-grid [data-layout="grid"] {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 	gap: 1.5rem;
-	margin: 1.5rem 0;
 }
-.rf-grid__item p:first-child {
-	margin-top: 0;
-}
-.rf-grid__item p:last-child {
-	margin-bottom: 0;
-}
+/* Explicit column counts override auto-fit */
+.rf-grid [data-columns="1"] { grid-template-columns: 1fr; }
+.rf-grid [data-columns="2"] { grid-template-columns: repeat(2, 1fr); }
+.rf-grid [data-columns="3"] { grid-template-columns: repeat(3, 1fr); }
+.rf-grid [data-columns="4"] { grid-template-columns: repeat(4, 1fr); }
+.rf-grid [data-columns="5"] { grid-template-columns: repeat(5, 1fr); }
+.rf-grid [data-columns="6"] { grid-template-columns: repeat(6, 1fr); }
+/* Flow */
+.rf-grid [data-flow="column"] { grid-auto-flow: column; }
+.rf-grid [data-flow="dense"] { grid-auto-flow: dense; }
+.rf-grid [data-flow="row dense"] { grid-auto-flow: row dense; }
+.rf-grid [data-flow="column dense"] { grid-auto-flow: column dense; }
+/* Spans */
+.rf-grid [data-colspan="2"] { grid-column: span 2; }
+.rf-grid [data-colspan="3"] { grid-column: span 3; }
+.rf-grid [data-colspan="4"] { grid-column: span 4; }
+.rf-grid [data-rowspan="2"] { grid-row: span 2; }
+.rf-grid [data-rowspan="3"] { grid-row: span 3; }
+.rf-grid [data-rowspan="4"] { grid-row: span 4; }
+/* Item styling */
+.rf-grid [data-name="item"] p:first-child { margin-top: 0; }
+.rf-grid [data-name="item"] p:last-child { margin-bottom: 0; }

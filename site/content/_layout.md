@@ -11,6 +11,14 @@
 
 - getting-started
 
+## Themes
+
+- overview
+- configuration
+- css
+- creating-a-theme
+- components
+
 ## Sections
 
 - hero

@@ -19,8 +19,7 @@
 .rf-testimonial__star--filled {
 	color: var(--rf-color-warning);
 }
-.rf-testimonial blockquote,
-.rf-testimonial .rf-blockquote {
+.rf-testimonial blockquote {
 	border: none;
 	padding: 0;
 	margin: 0 0 1rem;
@@ -31,7 +30,7 @@
 	background: none;
 	border-radius: 0;
 }
-.rf-testimonial .rf-blockquote__quote-mark {
+.rf-testimonial blockquote::before {
 	display: none;
 }
 .rf-testimonial blockquote p {

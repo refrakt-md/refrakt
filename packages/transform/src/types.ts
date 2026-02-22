@@ -31,12 +31,22 @@ export interface RuneConfig {
 	contentWrapper?: { tag: string; ref: string };
 
 	/** Map modifier names to CSS properties set as inline style on root.
-	 *  E.g., `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"` */
-	styles?: Record<string, string>;
+	 *  Simple form: `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"`
+	 *  Template form: `{ columns: { prop: 'grid-template-columns', template: 'repeat({}, 1fr)' } }`
+	 *    → `style="grid-template-columns: repeat(3, 1fr)"` */
+	styles?: Record<string, string | { prop: string; template: string }>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
 	staticModifiers?: string[];
+
+	/** Programmatic escape hatch. Runs after all declarative processing.
+	 *  Receives the fully transformed node and resolved modifier values.
+	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */
+	postTransform?: (node: SerializedTag, context: {
+		modifiers: Record<string, string>;
+		parentType?: string;
+	}) => SerializedTag;
 }
 
 export interface StructureEntry {

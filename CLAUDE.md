@@ -26,6 +26,45 @@ cd site && npm run dev
 
 Build order: types → create-refrakt + lumina → runes + sveltekit → content + ai → cli. Getting this wrong causes missing type errors.
 
+### CSS Coverage Tests
+
+```bash
+# Run CSS coverage tests for Lumina
+npx vitest run packages/lumina/test/css-coverage.test.ts
+```
+
+These tests derive expected BEM selectors from `baseConfig` and verify they exist in the CSS files. Run after modifying rune configs or CSS. Known gaps are documented in `UNSTYLED_BLOCKS` and `KNOWN_MISSING_SELECTORS` in the test file — update those sets when adding or removing CSS.
+
+### Inspect Tool (on feat/inspect-audit branch)
+
+```bash
+# See the identity transform output for a rune
+refrakt inspect hint --type=warning
+
+# Expand all variants of an attribute
+refrakt inspect hint --type=all
+
+# Set multiple attributes
+refrakt inspect api --method=POST --path="/users"
+
+# JSON output for programmatic use
+refrakt inspect hint --json
+
+# List all available runes
+refrakt inspect --list
+
+# CSS coverage audit for a single rune
+refrakt inspect hint --audit
+
+# Full-theme CSS audit
+refrakt inspect --all --audit
+
+# Audit with explicit CSS directory
+refrakt inspect hint --audit --css packages/lumina/styles/runes
+```
+
+Use `refrakt inspect` to see exactly what HTML the identity transform produces for any rune — BEM classes, data attributes, structural elements, and consumed meta tags. The `--audit` flag checks which generated selectors have CSS coverage.
+
 ## Architecture
 
 ### Transformation Pipeline
@@ -39,30 +78,33 @@ Five stages from content to output:
 1. **Parse**: Markdoc turns `.md` files into AST nodes
 2. **Schema Transform**: Rune models (`packages/runes/src/tags/*.ts`) interpret children, emit `typeof` markers and meta tags
 3. **Serialize**: Markdoc Tag class instances → plain `{$$mdtype:'Tag'}` objects (required for SvelteKit server→client boundary)
-4. **Identity Transform**: Engine (`packages/lumina/src/lib/engine.ts`) reads meta tags, adds BEM classes, injects structural elements, strips consumed metadata
+4. **Identity Transform**: Engine (`packages/transform/src/engine.ts`) reads meta tags, adds BEM classes, injects structural elements, strips consumed metadata
 5. **Render**: Svelte Renderer dispatches on `typeof` attribute — registered component or generic HTML element
 
 ### Rune System
 
 Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside `{% nav %}` becomes a group title; a list inside `{% recipe %}` becomes ingredients. Same primitives, different meaning based on context.
 
-Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/lumina/src/config.ts`), and optionally a Svelte component (`packages/lumina/sveltekit/components/`).
+Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/theme-base/src/config.ts`), and optionally a Svelte component (`packages/theme-base/sveltekit/components/`).
 
 ### Two-Layer Theme System
 
-**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/lumina/src/lib/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/lumina/src/config.ts`. Most runes (~75%) need only this layer.
+**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/theme-base/src/config.ts`. Most runes (~75%) need only this layer.
 
-**Layer 2 — Svelte Components** (`packages/lumina/sveltekit/components/`): Only for interactive runes (Tabs, Accordion, DataTable, Form, etc.). Registered in `packages/lumina/sveltekit/registry.ts`. The Renderer looks up `typeof` → component in the registry.
+**Layer 2 — Svelte Components** (`packages/theme-base/sveltekit/components/`): Only for interactive runes requiring external libraries or complex rendering (Chart, Map, Diagram, Comparison, etc.). Registered in `packages/theme-base/sveltekit/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
 
 ### Package Relationships
 
 - `types` — foundational, no deps on other packages
-- `runes` — depends on types; defines all 43+ rune schemas
-- `lumina` — depends on types; identity transform engine + config
+- `transform` — depends on types; identity transform engine + config interfaces
+- `runes` — depends on types; defines all 45+ rune schemas
+- `theme-base` — depends on transform + types; base config + shared interactive components
+- `lumina` — depends on theme-base + transform; design tokens, CSS, icon overrides
+- `behaviors` — no deps; progressive enhancement JS for interactive runes
 - `content` — depends on runes + types; content loading, routing, layout cascade
 - `svelte` — depends on types; Renderer + ThemeShell components
 - `sveltekit` — depends on types; Vite plugin with virtual modules + content HMR
-- `ai` + `cli` — content generation tooling
+- `ai` + `cli` — content generation + inspect tooling
 
 ## Conventions
 
@@ -83,12 +125,45 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 ### Engine Config Pattern
 
-Non-interactive runes are configured declaratively in `packages/lumina/src/config.ts`:
+Non-interactive runes are configured declaratively in `packages/theme-base/src/config.ts`:
 - `block`: BEM block name
 - `modifiers`: `{ name: { source: 'meta', default?: string } }` — reads meta tag, adds modifier class + data attribute
-- `structure`: injects structural elements (headers, icons, meta displays)
+- `contextModifiers`: `{ 'ParentType': 'suffix' }` — adds BEM modifier when nested inside a parent rune
+- `staticModifiers`: `['name']` — always-applied BEM modifier classes
+- `structure`: injects structural elements (headers, icons, meta displays) via `StructureEntry`
 - `contentWrapper`: wraps content children in a container element
 - `autoLabel`: maps child tag names to `data-name` values
+- `styles`: maps modifier values to CSS custom properties or inline style declarations
+- `postTransform`: programmatic escape hatch (prefer declarative config)
+
+Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `RuneConfig`, `StructureEntry`).
+
+### Theme Development
+
+Theme developer documentation lives at `site/content/docs/themes/` (5 pages: overview, configuration, css, creating-a-theme, components). Refer to these when working on themes.
+
+**Key files for theme work:**
+- `packages/theme-base/src/config.ts` — base config with all 45+ rune configurations (source of truth)
+- `packages/theme-base/src/merge.ts` — `mergeThemeConfig()` for extending base with theme overrides
+- `packages/transform/src/engine.ts` — identity transform implementation
+- `packages/transform/src/types.ts` — `ThemeConfig`, `RuneConfig`, `StructureEntry` interfaces
+- `packages/lumina/styles/runes/` — 48 per-rune CSS files (reference implementation)
+- `packages/lumina/tokens/base.css` — design token definitions
+- `packages/theme-base/sveltekit/registry.ts` — component registry for interactive runes
+
+**When writing CSS for a rune:**
+1. Check the rune's config in `packages/theme-base/src/config.ts` to understand what selectors the engine produces
+2. Use `refrakt inspect <rune>` to see the actual HTML output with BEM classes and data attributes
+3. Style the block (`.rf-{block}`), element (`.rf-{block}__{name}`), and modifier (`.rf-{block}--{value}`) selectors
+4. Use `[data-*]` attribute selectors for variant styling on children, not BEM modifiers
+5. Reference design tokens (`var(--rf-color-*)`, `var(--rf-radius-*)`, etc.) — never hard-code values
+6. Run `npx vitest run packages/lumina/test/css-coverage.test.ts` to verify coverage
+
+**When adding a new rune config:**
+1. Add the `RuneConfig` entry to `packages/theme-base/src/config.ts`
+2. Write CSS in `packages/lumina/styles/runes/{block}.css`
+3. Import the CSS file in `packages/lumina/index.css`
+4. Run CSS coverage tests to verify all selectors are styled
 
 ### Content Authoring
 
@@ -98,14 +173,16 @@ Site content lives in `site/content/` as `.md` files with YAML frontmatter. Layo
 
 ```
 packages/types/       — Shared TypeScript interfaces
-packages/runes/       — 43+ rune schemas + SEO extraction
-packages/lumina/      — Identity transform engine + BEM config
+packages/runes/       — 45+ rune schemas + SEO extraction
+packages/transform/   — Identity transform engine + types (ThemeConfig, RuneConfig)
+packages/theme-base/  — Base theme config (all rune mappings) + shared interactive components
+packages/lumina/      — Lumina theme (tokens, CSS, icon overrides)
+packages/behaviors/   — Progressive enhancement JS (tabs, accordion, datatable, form)
 packages/content/     — Content loading, routing, layout cascade
 packages/svelte/      — Renderer.svelte + ThemeShell.svelte
 packages/sveltekit/   — Vite plugin + virtual modules + HMR
 packages/ai/          — AI prompt building + providers
-packages/cli/         — refrakt write CLI
+packages/cli/         — refrakt CLI (write + inspect)
 packages/create-refrakt/ — Project scaffolding
-packages/lumina/sveltekit/ — SvelteKit adapter (Svelte components + tokens + manifest)
 site/                 — Documentation site (SvelteKit)
 ```

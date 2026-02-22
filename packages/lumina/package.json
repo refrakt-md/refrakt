@@ -30,7 +30,6 @@
     },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./sveltekit/tokens.css": "./sveltekit/tokens.css",
-    "./sveltekit/aliases.css": "./sveltekit/aliases.css",
     "./sveltekit/manifest": "./sveltekit/manifest.json"
   },
   "files": [
@@ -55,6 +54,9 @@
   "peerDependencies": {
     "svelte": "^5.0.0",
     "@sveltejs/kit": "^2.0.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.4.0"
   },
   "peerDependenciesMeta": {
     "svelte": {
