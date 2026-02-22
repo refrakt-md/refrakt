@@ -485,6 +485,197 @@ For quick use without a full package, users can copy:
 
 ---
 
+## Distribution & Installation
+
+The current theme system resolves themes via Node module resolution — the `theme` field in `refrakt.config.json` is used as a bare specifier in `import()`, `import.meta.resolve()`, and generated virtual module imports (`plugin.ts:35,66,72`, `virtual-modules.ts:55,61-63`). This means a theme must be resolvable by Node, but it does **not** have to come from the npm registry.
+
+### Strategy: Two installation paths
+
+#### Path 1: CLI Install Command (MVP)
+
+Theme Studio exports a tarball (`.tgz`). A CLI command installs it into the project:
+
+```bash
+npx refrakt theme install ./my-theme-1.0.0.tgz
+```
+
+Under the hood:
+1. Detect the user's package manager (`npm`, `pnpm`, `yarn`, `bun`) via lockfile heuristic
+2. Run the appropriate install command (e.g., `npm install file:./my-theme-1.0.0.tgz`)
+3. Read the `name` field from the tarball's `package.json`
+4. Update `refrakt.config.json` to set `"theme": "<package-name>"`
+
+The theme lands in `node_modules/` and is fully resolvable by all existing import paths. No changes to the SvelteKit plugin required.
+
+**User experience:**
+```
+1. Build theme in Theme Studio
+2. Download my-theme-1.0.0.tgz
+3. npx refrakt theme install ./my-theme-1.0.0.tgz
+4. npm run dev — site is restyled
+```
+
+**Tarball contents** (produced by `npm pack` on the exported theme directory):
+
+```
+package/
+  package.json            — name, version, exports map
+  manifest.json           — theme metadata
+  dist/
+    config.js             — compiled mergeThemeConfig() call
+    config.d.ts
+    transform.js          — createTransform(config) re-export
+    transform.d.ts
+  tokens/
+    base.css              — generated light mode tokens
+    dark.css              — generated dark mode tokens
+  svelte/
+    index.ts              — SvelteTheme re-export
+    tokens.css            — CSS bridge (imports index.css)
+  styles/
+    runes/                — empty for Tier 1, populated for Tier 2+
+  index.css               — barrel import (Lumina base + token overrides)
+  base.css                — tokens + global + layouts (no runes)
+```
+
+The `package.json` inside the tarball includes the same `exports` map pattern as Lumina, ensuring all subpath imports work:
+
+```json
+{
+  "name": "my-theme",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.css",
+    "./base.css": "./base.css",
+    "./transform": { "default": "./dist/transform.js" },
+    "./svelte": { "svelte": "./svelte/index.ts", "default": "./svelte/index.ts" },
+    "./styles/runes/*.css": "./styles/runes/*.css",
+    "./svelte/tokens.css": "./svelte/tokens.css"
+  },
+  "dependencies": {
+    "@refrakt-md/theme-base": "^0.4.0",
+    "@refrakt-md/transform": "^0.4.0",
+    "@refrakt-md/lumina": "^0.4.0"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "svelte": { "optional": true }
+  }
+}
+```
+
+Note: `@refrakt-md/lumina` is listed as a dependency because Tier 1 themes import Lumina's rune CSS via `@import '@refrakt-md/lumina/index.css'` in their `index.css`. The user's project already has Lumina (or it gets installed transitively).
+
+**Updating a theme:** Re-run `npx refrakt theme install ./my-theme-1.1.0.tgz`. The CLI detects the existing theme, bumps the version, and reinstalls. No manual `package.json` edits needed.
+
+#### Path 2: Local Directory Resolution (Follow-up)
+
+For a zero-install experience, extend the SvelteKit plugin to resolve local directory paths as themes:
+
+```jsonc
+// refrakt.config.json
+{
+  "theme": "./themes/my-theme",
+  "target": "svelte",
+  "contentDir": "./content"
+}
+```
+
+The user unzips the exported theme into `themes/my-theme/` and points the config at it. No `npm install` step.
+
+**Plugin changes required:**
+
+The plugin detects relative paths (starts with `./` or `../`) and adjusts resolution:
+
+1. **`plugin.ts` config hook** — resolve the relative path to an absolute path. Add Vite `resolve.alias` entries so that bare specifier sub-path imports work:
+
+```typescript
+// When theme starts with './' or '../':
+const absTheme = resolve(resolvedRoot, refraktConfig.theme);
+config.resolve.alias = {
+  [themeName]: absTheme,                          // 'my-theme' → '/abs/themes/my-theme'
+  [`${themeName}/transform`]: `${absTheme}/dist/transform.js`,
+  [`${themeName}/svelte`]: `${absTheme}/svelte/index.ts`,
+  [`${themeName}/base.css`]: `${absTheme}/base.css`,
+  [`${themeName}/svelte/tokens.css`]: `${absTheme}/svelte/tokens.css`,
+};
+```
+
+2. **`plugin.ts` buildStart** — use `resolve()` instead of `import.meta.resolve()` to locate the theme root for CSS tree-shaking.
+
+3. **`virtual-modules.ts`** — no changes needed if aliases are set up correctly; the generated import statements still use the theme name as a specifier, and Vite resolves them through aliases.
+
+4. **SSR noExternal** — the local path must also be added, or marked as `external: false`, so Vite bundles it during SSR.
+
+**Exported directory structure** is identical to the tarball contents (minus the `package/` wrapper). Theme Studio provides a "Download as ZIP" option that extracts directly into the project.
+
+**User experience:**
+```
+1. Build theme in Theme Studio
+2. Download my-theme.zip
+3. Unzip into ./themes/my-theme/
+4. Set "theme": "./themes/my-theme" in refrakt.config.json
+5. npm run dev — site is restyled
+```
+
+### Why both paths?
+
+| | CLI Install (tarball) | Local Directory |
+|---|---|---|
+| **Plugin changes** | None | Alias resolution + path detection |
+| **npm install needed** | Yes (automated by CLI) | No |
+| **Version management** | npm handles it | Manual (overwrite directory) |
+| **Lockfile tracking** | Yes — pinned version | No |
+| **CI reproducibility** | Excellent — lockfile pins exact version | Depends on committing the theme dir |
+| **Peer deps** | Resolved automatically by npm | Must be installed separately |
+| **Multiple themes** | Switch by changing config + installing | Switch by changing config path |
+
+The tarball/CLI path is the safe default — it works within the existing npm ecosystem, gives version tracking, and requires zero plugin changes. The local directory path is a convenience feature that removes friction for rapid iteration ("download, unzip, done") at the cost of plugin complexity.
+
+### CLI Command Specification
+
+```
+refrakt theme install <path>     Install a theme from a .tgz tarball
+refrakt theme install <name>     Install a theme from the npm registry
+refrakt theme list               List available themes (registry + local)
+refrakt theme info               Show current theme details
+```
+
+`refrakt theme install` implementation:
+
+```typescript
+async function themeInstall(source: string): Promise<void> {
+  // 1. Detect package manager
+  const pm = detectPackageManager();  // npm | pnpm | yarn | bun
+
+  // 2. Read theme name from tarball or registry
+  const themeName = source.endsWith('.tgz')
+    ? readNameFromTarball(source)
+    : source;
+
+  // 3. Install
+  const installCmd = {
+    npm:  `npm install ${source}`,
+    pnpm: `pnpm add ${source}`,
+    yarn: `yarn add ${source}`,
+    bun:  `bun add ${source}`,
+  }[pm];
+  await exec(installCmd);
+
+  // 4. Update refrakt.config.json
+  const config = loadRefraktConfig('./refrakt.config.json');
+  config.theme = themeName;
+  writeFileSync('./refrakt.config.json', JSON.stringify(config, null, '\t') + '\n');
+
+  console.log(`Theme "${themeName}" installed and set as active theme.`);
+}
+```
+
+---
+
 ## Persistence
 
 ### Local Storage
@@ -529,12 +720,19 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 12. **Preview panel** — Iframe-based rune showcase with light/dark toggle
 13. **Prompt bar** — Text input with generate/refine mode
 
-### Phase 4 — Polish
+### Phase 4 — Export & Distribution
 
-14. **Undo/redo** — History stack with snapshot labels
-15. **Export** — Zip download + clipboard copy for token CSS and full theme package
-16. **Persistence** — localStorage/IndexedDB for session state
-17. **URL sharing** — Compressed token state in URL parameters
+14. **Export package** — Assemble theme directory with package.json, exports map, tokens, CSS, config
+15. **Tarball download** — `npm pack` equivalent in-browser (tar.gz generation)
+16. **ZIP download** — For local directory installation path
+17. **`refrakt theme install` CLI** — Detect package manager, install tarball, update config
+
+### Phase 5 — Polish
+
+18. **Undo/redo** — History stack with snapshot labels
+19. **Persistence** — localStorage/IndexedDB for session state
+20. **URL sharing** — Compressed token state in URL parameters
+21. **Local directory plugin support** — Extend SvelteKit plugin to resolve `./` theme paths via Vite aliases
 
 ---
 
