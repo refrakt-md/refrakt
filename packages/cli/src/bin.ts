@@ -13,6 +13,8 @@ if (command === 'write') {
 	runWrite(args.slice(1));
 } else if (command === 'inspect') {
 	runInspect(args.slice(1));
+} else if (command === 'contracts') {
+	runContracts(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -30,6 +32,7 @@ Usage: refrakt <command> [options]
 Commands:
   write <prompt>       Generate a Markdown content file using AI
   inspect <rune>       Show identity transform output for a rune
+  contracts [options]  Generate structure contracts from theme config
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -55,9 +58,11 @@ Provider auto-detection:
   3. OLLAMA_HOST env var → Ollama
   4. Default → Ollama at localhost:11434
 
+Contracts Options:
+  --output, -o <path>      Write contracts to a file (default: stdout)
+  --check                  Validate existing file is up to date (exit 1 if stale)
+
 Examples:
-  refrakt write "Create a getting started guide"
-  refrakt write -o content/docs/api.md "Write an API reference page"
   refrakt inspect hint --type=warning
   refrakt inspect hint --type=all
   refrakt inspect api --method=POST --path="/users"
@@ -66,6 +71,10 @@ Examples:
   refrakt inspect hint --audit
   refrakt inspect --all --audit
   refrakt inspect hint --audit --css path/to/styles
+  refrakt write -d content/ "Set up a docs site with index, guides, and blog"
+  refrakt write -p ollama -m llama3.2 "Write a FAQ page"
+  refrakt contracts -o packages/lumina/contracts/structures.json
+  refrakt contracts --check -o packages/lumina/contracts/structures.json
 `);
 }
 
@@ -239,6 +248,43 @@ function runWrite(writeArgs: string[]): void {
 
 		const modelName = model ?? resolved.defaultModel;
 		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output, outputDir });
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runContracts(contractsArgs: string[]): void {
+	let output: string | undefined;
+	let check = false;
+
+	for (let i = 0; i < contractsArgs.length; i++) {
+		const arg = contractsArgs[i];
+
+		if (arg === '--output' || arg === '-o') {
+			output = contractsArgs[++i];
+			if (!output) {
+				console.error('Error: --output requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--check') {
+			check = true;
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	import('./commands/contracts.js').then(({ contractsCommand }) => {
+		contractsCommand({ output, check });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);

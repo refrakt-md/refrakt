@@ -1,5 +1,1336 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "HTML structure contracts for the Lumina theme identity. Documents what HTML structure the CSS expects for each rune.",
-  "runes": {}
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"description": "HTML structure contracts for the identity transform. Documents the BEM selectors, data attributes, and HTML structure the engine produces for each rune. Auto-generated from theme config — do not edit by hand.",
+	"prefix": "rf",
+	"runes": {
+		"Accordion": {
+			"block": "accordion",
+			"root": ".rf-accordion",
+			"dataRune": "accordion",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"AccordionItem": {
+			"block": "accordion-item",
+			"root": ".rf-accordion-item",
+			"dataRune": "accordionitem",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"header": {
+					"tag": "name",
+					"selector": ".rf-accordion-item__header",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Details": {
+			"block": "details",
+			"root": ".rf-details",
+			"dataRune": "details",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"summary": {
+					"tag": "summary",
+					"selector": ".rf-details__summary",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Grid": {
+			"block": "grid",
+			"root": ".rf-grid",
+			"dataRune": "grid",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"CodeGroup": {
+			"block": "codegroup",
+			"root": ".rf-codegroup",
+			"dataRune": "codegroup",
+			"childOrder": [
+				"topbar",
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-codegroup--{value}",
+					"dataAttribute": "data-title"
+				}
+			},
+			"elements": {
+				"topbar": {
+					"tag": "div",
+					"selector": ".rf-codegroup__topbar",
+					"source": "structure"
+				},
+				"dot": {
+					"tag": "span",
+					"selector": ".rf-codegroup__dot",
+					"source": "structure",
+					"parent": "topbar"
+				},
+				"title": {
+					"tag": "span",
+					"selector": ".rf-codegroup__title",
+					"source": "structure",
+					"parent": "topbar",
+					"condition": "title"
+				}
+			}
+		},
+		"PageSection": {
+			"block": "page-section",
+			"root": ".rf-page-section",
+			"dataRune": "pagesection",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"TableOfContents": {
+			"block": "toc",
+			"root": ".rf-toc",
+			"dataRune": "tableofcontents",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Embed": {
+			"block": "embed",
+			"root": ".rf-embed",
+			"dataRune": "embed",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Breadcrumb": {
+			"block": "breadcrumb",
+			"root": ".rf-breadcrumb",
+			"dataRune": "breadcrumb",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"BreadcrumbItem": {
+			"block": "breadcrumb-item",
+			"root": ".rf-breadcrumb-item",
+			"dataRune": "breadcrumbitem",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Testimonial": {
+			"block": "testimonial",
+			"root": ".rf-testimonial",
+			"dataRune": "testimonial",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Timeline": {
+			"block": "timeline",
+			"root": ".rf-timeline",
+			"dataRune": "timeline",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"direction": {
+					"source": "meta",
+					"default": "vertical",
+					"classPattern": ".rf-timeline--{value}",
+					"dataAttribute": "data-direction"
+				}
+			}
+		},
+		"TimelineEntry": {
+			"block": "timeline-entry",
+			"root": ".rf-timeline-entry",
+			"dataRune": "timelineentry",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Changelog": {
+			"block": "changelog",
+			"root": ".rf-changelog",
+			"dataRune": "changelog",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"ChangelogRelease": {
+			"block": "changelog-release",
+			"root": ".rf-changelog-release",
+			"dataRune": "changelogrelease",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Event": {
+			"block": "event",
+			"root": ".rf-event",
+			"dataRune": "event",
+			"childOrder": [
+				"details",
+				"{content:content}"
+			],
+			"modifiers": {
+				"date": {
+					"source": "meta",
+					"classPattern": ".rf-event--{value}",
+					"dataAttribute": "data-date"
+				},
+				"endDate": {
+					"source": "meta",
+					"classPattern": ".rf-event--{value}",
+					"dataAttribute": "data-end-date"
+				},
+				"location": {
+					"source": "meta",
+					"classPattern": ".rf-event--{value}",
+					"dataAttribute": "data-location"
+				},
+				"url": {
+					"source": "meta",
+					"classPattern": ".rf-event--{value}",
+					"dataAttribute": "data-url"
+				}
+			},
+			"elements": {
+				"details": {
+					"tag": "div",
+					"selector": ".rf-event__details",
+					"source": "structure"
+				},
+				"detail": {
+					"tag": "div",
+					"selector": ".rf-event__detail",
+					"source": "structure",
+					"parent": "details",
+					"condition": "date"
+				},
+				"label": {
+					"tag": "span",
+					"selector": ".rf-event__label",
+					"source": "structure",
+					"parent": "detail"
+				},
+				"value": {
+					"tag": "span",
+					"selector": ".rf-event__value",
+					"source": "structure",
+					"parent": "detail"
+				},
+				"end-date": {
+					"tag": "span",
+					"selector": ".rf-event__end-date",
+					"source": "structure",
+					"parent": "detail",
+					"condition": "endDate"
+				},
+				"register": {
+					"tag": "a",
+					"selector": ".rf-event__register",
+					"source": "structure",
+					"parent": "details",
+					"condition": "url"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-event__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Organization": {
+			"block": "organization",
+			"root": ".rf-organization",
+			"dataRune": "organization",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Cast": {
+			"block": "cast",
+			"root": ".rf-cast",
+			"dataRune": "cast",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"CastMember": {
+			"block": "cast-member",
+			"root": ".rf-cast-member",
+			"dataRune": "castmember",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Recipe": {
+			"block": "recipe",
+			"root": ".rf-recipe",
+			"dataRune": "recipe",
+			"childOrder": [
+				"meta",
+				"{content:content}"
+			],
+			"modifiers": {
+				"prepTime": {
+					"source": "meta",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-prep-time"
+				},
+				"cookTime": {
+					"source": "meta",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-cook-time"
+				},
+				"servings": {
+					"source": "meta",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-servings"
+				},
+				"difficulty": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-difficulty"
+				}
+			},
+			"elements": {
+				"meta": {
+					"tag": "div",
+					"selector": ".rf-recipe__meta",
+					"source": "structure",
+					"conditionAny": [
+						"prepTime",
+						"cookTime",
+						"servings",
+						"difficulty"
+					]
+				},
+				"meta-item": {
+					"tag": "span",
+					"selector": ".rf-recipe__meta-item",
+					"source": "structure",
+					"parent": "meta",
+					"condition": "prepTime"
+				},
+				"badge": {
+					"tag": "span",
+					"selector": ".rf-recipe__badge",
+					"source": "structure",
+					"parent": "meta",
+					"condition": "difficulty"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-recipe__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"RecipeIngredient": {
+			"block": "recipe-ingredient",
+			"root": ".rf-recipe-ingredient",
+			"dataRune": "recipeingredient",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Pricing": {
+			"block": "pricing",
+			"root": ".rf-pricing",
+			"dataRune": "pricing",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Tier": {
+			"block": "tier",
+			"root": ".rf-tier",
+			"dataRune": "tier",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"FeaturedTier": {
+			"block": "tier",
+			"root": ".rf-tier",
+			"dataRune": "featuredtier",
+			"childOrder": [
+				"{content}"
+			],
+			"staticModifiers": [
+				{
+					"name": "featured",
+					"selector": ".rf-tier--featured"
+				}
+			]
+		},
+		"Feature": {
+			"block": "feature",
+			"root": ".rf-feature",
+			"dataRune": "feature",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"split": {
+					"source": "meta",
+					"classPattern": ".rf-feature--{value}",
+					"dataAttribute": "data-split"
+				},
+				"mirror": {
+					"source": "meta",
+					"classPattern": ".rf-feature--{value}",
+					"dataAttribute": "data-mirror"
+				}
+			},
+			"contextModifiers": {
+				"Hero": {
+					"suffix": "in-hero",
+					"selector": ".rf-feature--in-hero"
+				},
+				"Grid": {
+					"suffix": "in-grid",
+					"selector": ".rf-feature--in-grid"
+				}
+			}
+		},
+		"FeatureDefinition": {
+			"block": "feature-definition",
+			"root": ".rf-feature-definition",
+			"dataRune": "featuredefinition",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Steps": {
+			"block": "steps",
+			"root": ".rf-steps",
+			"dataRune": "steps",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Step": {
+			"block": "step",
+			"root": ".rf-step",
+			"dataRune": "step",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"split": {
+					"source": "meta",
+					"classPattern": ".rf-step--{value}",
+					"dataAttribute": "data-split"
+				},
+				"mirror": {
+					"source": "meta",
+					"classPattern": ".rf-step--{value}",
+					"dataAttribute": "data-mirror"
+				}
+			}
+		},
+		"Nav": {
+			"block": "nav",
+			"root": ".rf-nav",
+			"dataRune": "nav",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"NavGroup": {
+			"block": "nav-group",
+			"root": ".rf-nav-group",
+			"dataRune": "navgroup",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"NavItem": {
+			"block": "nav-item",
+			"root": ".rf-nav-item",
+			"dataRune": "navitem",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Api": {
+			"block": "api",
+			"root": ".rf-api",
+			"dataRune": "api",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"method": {
+					"source": "meta",
+					"default": "GET",
+					"classPattern": ".rf-api--{value}",
+					"dataAttribute": "data-method"
+				},
+				"path": {
+					"source": "meta",
+					"classPattern": ".rf-api--{value}",
+					"dataAttribute": "data-path"
+				},
+				"auth": {
+					"source": "meta",
+					"classPattern": ".rf-api--{value}",
+					"dataAttribute": "data-auth"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-api__header",
+					"source": "structure"
+				},
+				"method": {
+					"tag": "span",
+					"selector": ".rf-api__method",
+					"source": "structure",
+					"parent": "header"
+				},
+				"path": {
+					"tag": "code",
+					"selector": ".rf-api__path",
+					"source": "structure",
+					"parent": "header"
+				},
+				"auth": {
+					"tag": "span",
+					"selector": ".rf-api__auth",
+					"source": "structure",
+					"parent": "header",
+					"condition": "auth"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-api__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Diff": {
+			"block": "diff",
+			"root": ".rf-diff",
+			"dataRune": "diff",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"mode": {
+					"source": "meta",
+					"default": "unified",
+					"classPattern": ".rf-diff--{value}",
+					"dataAttribute": "data-mode"
+				}
+			}
+		},
+		"Chart": {
+			"block": "chart",
+			"root": ".rf-chart",
+			"dataRune": "chart",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"MusicPlaylist": {
+			"block": "music-playlist",
+			"root": ".rf-music-playlist",
+			"dataRune": "musicplaylist",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"MusicRecording": {
+			"block": "music-recording",
+			"root": ".rf-music-recording",
+			"dataRune": "musicrecording",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Hint": {
+			"block": "hint",
+			"root": ".rf-hint",
+			"dataRune": "hint",
+			"childOrder": [
+				"header",
+				"{content}"
+			],
+			"modifiers": {
+				"hintType": {
+					"source": "meta",
+					"default": "note",
+					"classPattern": ".rf-hint--{value}",
+					"dataAttribute": "data-hint-type"
+				}
+			},
+			"contextModifiers": {
+				"Hero": {
+					"suffix": "in-hero",
+					"selector": ".rf-hint--in-hero"
+				},
+				"Feature": {
+					"suffix": "in-feature",
+					"selector": ".rf-hint--in-feature"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-hint__header",
+					"source": "structure"
+				},
+				"icon": {
+					"tag": "span",
+					"selector": ".rf-hint__icon",
+					"source": "structure",
+					"parent": "header"
+				},
+				"title": {
+					"tag": "span",
+					"selector": ".rf-hint__title",
+					"source": "structure",
+					"parent": "header"
+				}
+			}
+		},
+		"Hero": {
+			"block": "hero",
+			"root": ".rf-hero",
+			"dataRune": "hero",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"align": {
+					"source": "meta",
+					"default": "center",
+					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-align"
+				}
+			},
+			"contextModifiers": {
+				"Feature": {
+					"suffix": "in-feature",
+					"selector": ".rf-hero--in-feature"
+				}
+			}
+		},
+		"CallToAction": {
+			"block": "cta",
+			"root": ".rf-cta",
+			"dataRune": "calltoaction",
+			"childOrder": [
+				"{content}"
+			],
+			"contextModifiers": {
+				"Hero": {
+					"suffix": "in-hero",
+					"selector": ".rf-cta--in-hero"
+				},
+				"Pricing": {
+					"suffix": "in-pricing",
+					"selector": ".rf-cta--in-pricing"
+				}
+			}
+		},
+		"Figure": {
+			"block": "figure",
+			"root": ".rf-figure",
+			"dataRune": "figure",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"size": {
+					"source": "meta",
+					"default": "default",
+					"classPattern": ".rf-figure--{value}",
+					"dataAttribute": "data-size"
+				},
+				"align": {
+					"source": "meta",
+					"default": "center",
+					"classPattern": ".rf-figure--{value}",
+					"dataAttribute": "data-align"
+				}
+			}
+		},
+		"Sidenote": {
+			"block": "sidenote",
+			"root": ".rf-sidenote",
+			"dataRune": "sidenote",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "sidenote",
+					"classPattern": ".rf-sidenote--{value}",
+					"dataAttribute": "data-style"
+				}
+			}
+		},
+		"Compare": {
+			"block": "compare",
+			"root": ".rf-compare",
+			"dataRune": "compare",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "side-by-side",
+					"classPattern": ".rf-compare--{value}",
+					"dataAttribute": "data-layout"
+				}
+			}
+		},
+		"Conversation": {
+			"block": "conversation",
+			"root": ".rf-conversation",
+			"dataRune": "conversation",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"ConversationMessage": {
+			"block": "conversation-message",
+			"root": ".rf-conversation-message",
+			"dataRune": "conversationmessage",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"alignment": {
+					"source": "meta",
+					"default": "left",
+					"classPattern": ".rf-conversation-message--{value}",
+					"dataAttribute": "data-alignment"
+				}
+			}
+		},
+		"Annotate": {
+			"block": "annotate",
+			"root": ".rf-annotate",
+			"dataRune": "annotate",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "margin",
+					"classPattern": ".rf-annotate--{value}",
+					"dataAttribute": "data-style"
+				}
+			}
+		},
+		"AnnotateNote": {
+			"block": "annotate-note",
+			"root": ".rf-annotate-note",
+			"dataRune": "annotatenote",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Storyboard": {
+			"block": "storyboard",
+			"root": ".rf-storyboard",
+			"dataRune": "storyboard",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "clean",
+					"classPattern": ".rf-storyboard--{value}",
+					"dataAttribute": "data-style"
+				},
+				"columns": {
+					"source": "meta",
+					"default": "3",
+					"classPattern": ".rf-storyboard--{value}",
+					"dataAttribute": "data-columns"
+				}
+			},
+			"inlineStyles": {
+				"columns": "--sb-columns"
+			}
+		},
+		"StoryboardPanel": {
+			"block": "storyboard-panel",
+			"root": ".rf-storyboard-panel",
+			"dataRune": "storyboardpanel",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Bento": {
+			"block": "bento",
+			"root": ".rf-bento",
+			"dataRune": "bento",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"columns": {
+					"source": "meta",
+					"default": "4",
+					"classPattern": ".rf-bento--{value}",
+					"dataAttribute": "data-columns"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "1rem",
+					"classPattern": ".rf-bento--{value}",
+					"dataAttribute": "data-gap"
+				}
+			},
+			"inlineStyles": {
+				"columns": "--bento-columns",
+				"gap": "--bento-gap"
+			}
+		},
+		"BentoCell": {
+			"block": "bento-cell",
+			"root": ".rf-bento-cell",
+			"dataRune": "bentocell",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"size": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-bento-cell--{value}",
+					"dataAttribute": "data-size"
+				}
+			},
+			"elements": {
+				"title": {
+					"tag": "name",
+					"selector": ".rf-bento-cell__title",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Comparison": {
+			"block": "comparison",
+			"root": ".rf-comparison",
+			"dataRune": "comparison",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"ComparisonColumn": {
+			"block": "comparison-column",
+			"root": ".rf-comparison-column",
+			"dataRune": "comparisoncolumn",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"ComparisonRow": {
+			"block": "comparison-row",
+			"root": ".rf-comparison-row",
+			"dataRune": "comparisonrow",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"rowType": {
+					"source": "meta",
+					"default": "text",
+					"classPattern": ".rf-comparison-row--{value}",
+					"dataAttribute": "data-row-type"
+				}
+			}
+		},
+		"HowTo": {
+			"block": "howto",
+			"root": ".rf-howto",
+			"dataRune": "howto",
+			"childOrder": [
+				"meta",
+				"{content:content}"
+			],
+			"modifiers": {
+				"estimatedTime": {
+					"source": "meta",
+					"classPattern": ".rf-howto--{value}",
+					"dataAttribute": "data-estimated-time"
+				},
+				"difficulty": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-howto--{value}",
+					"dataAttribute": "data-difficulty"
+				}
+			},
+			"elements": {
+				"meta": {
+					"tag": "div",
+					"selector": ".rf-howto__meta",
+					"source": "structure",
+					"conditionAny": [
+						"estimatedTime",
+						"difficulty"
+					]
+				},
+				"meta-item": {
+					"tag": "span",
+					"selector": ".rf-howto__meta-item",
+					"source": "structure",
+					"parent": "meta",
+					"condition": "estimatedTime"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-howto__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"TabGroup": {
+			"block": "tabs",
+			"root": ".rf-tabs",
+			"dataRune": "tabgroup",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Tab": {
+			"block": "tab",
+			"root": ".rf-tab",
+			"dataRune": "tab",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"DataTable": {
+			"block": "datatable",
+			"root": ".rf-datatable",
+			"dataRune": "datatable",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"searchable": {
+					"source": "meta",
+					"default": "false",
+					"classPattern": ".rf-datatable--{value}",
+					"dataAttribute": "data-searchable"
+				},
+				"sortable": {
+					"source": "meta",
+					"classPattern": ".rf-datatable--{value}",
+					"dataAttribute": "data-sortable"
+				},
+				"pageSize": {
+					"source": "meta",
+					"default": "0",
+					"classPattern": ".rf-datatable--{value}",
+					"dataAttribute": "data-page-size"
+				},
+				"defaultSort": {
+					"source": "meta",
+					"classPattern": ".rf-datatable--{value}",
+					"dataAttribute": "data-default-sort"
+				}
+			}
+		},
+		"Form": {
+			"block": "form",
+			"root": ".rf-form",
+			"dataRune": "form",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-style"
+				},
+				"action": {
+					"source": "meta",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-action"
+				},
+				"method": {
+					"source": "meta",
+					"default": "POST",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-method"
+				},
+				"success": {
+					"source": "meta",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-success"
+				},
+				"error": {
+					"source": "meta",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-error"
+				},
+				"honeypot": {
+					"source": "meta",
+					"default": "true",
+					"classPattern": ".rf-form--{value}",
+					"dataAttribute": "data-honeypot"
+				}
+			}
+		},
+		"FormField": {
+			"block": "form-field",
+			"root": ".rf-form-field",
+			"dataRune": "formfield",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"fieldType": {
+					"source": "meta",
+					"default": "text",
+					"classPattern": ".rf-form-field--{value}",
+					"dataAttribute": "data-field-type"
+				},
+				"required": {
+					"source": "meta",
+					"default": "true",
+					"classPattern": ".rf-form-field--{value}",
+					"dataAttribute": "data-required"
+				},
+				"placeholder": {
+					"source": "meta",
+					"classPattern": ".rf-form-field--{value}",
+					"dataAttribute": "data-placeholder"
+				},
+				"options": {
+					"source": "meta",
+					"classPattern": ".rf-form-field--{value}",
+					"dataAttribute": "data-options"
+				}
+			}
+		},
+		"Reveal": {
+			"block": "reveal",
+			"root": ".rf-reveal",
+			"dataRune": "reveal",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"mode": {
+					"source": "meta",
+					"default": "click",
+					"classPattern": ".rf-reveal--{value}",
+					"dataAttribute": "data-mode"
+				}
+			}
+		},
+		"RevealStep": {
+			"block": "reveal-step",
+			"root": ".rf-reveal-step",
+			"dataRune": "revealstep",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Diagram": {
+			"block": "diagram",
+			"root": ".rf-diagram",
+			"dataRune": "diagram",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Map": {
+			"block": "map",
+			"root": ".rf-map",
+			"dataRune": "map",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "street",
+					"classPattern": ".rf-map--{value}",
+					"dataAttribute": "data-style"
+				},
+				"height": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-map--{value}",
+					"dataAttribute": "data-height"
+				}
+			}
+		},
+		"MapPin": {
+			"block": "map-pin",
+			"root": ".rf-map-pin",
+			"dataRune": "mappin",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Preview": {
+			"block": "preview",
+			"root": ".rf-preview",
+			"dataRune": "preview",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"theme": {
+					"source": "meta",
+					"default": "auto",
+					"classPattern": ".rf-preview--{value}",
+					"dataAttribute": "data-theme"
+				},
+				"width": {
+					"source": "meta",
+					"default": "wide",
+					"classPattern": ".rf-preview--{value}",
+					"dataAttribute": "data-width"
+				},
+				"responsive": {
+					"source": "meta",
+					"classPattern": ".rf-preview--{value}",
+					"dataAttribute": "data-responsive"
+				},
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-preview--{value}",
+					"dataAttribute": "data-title"
+				}
+			}
+		},
+		"Sandbox": {
+			"block": "sandbox",
+			"root": ".rf-sandbox",
+			"dataRune": "sandbox",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Symbol": {
+			"block": "symbol",
+			"root": ".rf-symbol",
+			"dataRune": "symbol",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"kind": {
+					"source": "meta",
+					"default": "function",
+					"classPattern": ".rf-symbol--{value}",
+					"dataAttribute": "data-kind"
+				},
+				"lang": {
+					"source": "meta",
+					"default": "typescript",
+					"classPattern": ".rf-symbol--{value}",
+					"dataAttribute": "data-lang"
+				},
+				"since": {
+					"source": "meta",
+					"classPattern": ".rf-symbol--{value}",
+					"dataAttribute": "data-since"
+				},
+				"deprecated": {
+					"source": "meta",
+					"classPattern": ".rf-symbol--{value}",
+					"dataAttribute": "data-deprecated"
+				},
+				"source": {
+					"source": "meta",
+					"classPattern": ".rf-symbol--{value}",
+					"dataAttribute": "data-source"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-symbol__header",
+					"source": "structure"
+				},
+				"kind-badge": {
+					"tag": "span",
+					"selector": ".rf-symbol__kind-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"lang-badge": {
+					"tag": "span",
+					"selector": ".rf-symbol__lang-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"since-badge": {
+					"tag": "span",
+					"selector": ".rf-symbol__since-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "since"
+				},
+				"deprecated-badge": {
+					"tag": "span",
+					"selector": ".rf-symbol__deprecated-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "deprecated"
+				},
+				"source-link": {
+					"tag": "a",
+					"selector": ".rf-symbol__source-link",
+					"source": "structure",
+					"parent": "header",
+					"condition": "source"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-symbol__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"SymbolGroup": {
+			"block": "symbol-group",
+			"root": ".rf-symbol-group",
+			"dataRune": "symbolgroup",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"SymbolMember": {
+			"block": "symbol-member",
+			"root": ".rf-symbol-member",
+			"dataRune": "symbolmember",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Swatch": {
+			"block": "swatch",
+			"root": ".rf-swatch",
+			"dataRune": "swatch",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Palette": {
+			"block": "palette",
+			"root": ".rf-palette",
+			"dataRune": "palette",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-palette--{value}",
+					"dataAttribute": "data-title"
+				},
+				"showContrast": {
+					"source": "meta",
+					"classPattern": ".rf-palette--{value}",
+					"dataAttribute": "data-show-contrast"
+				},
+				"showA11y": {
+					"source": "meta",
+					"classPattern": ".rf-palette--{value}",
+					"dataAttribute": "data-show-a11y"
+				},
+				"columns": {
+					"source": "meta",
+					"classPattern": ".rf-palette--{value}",
+					"dataAttribute": "data-columns"
+				}
+			}
+		},
+		"Typography": {
+			"block": "typography",
+			"root": ".rf-typography",
+			"dataRune": "typography",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-typography--{value}",
+					"dataAttribute": "data-title"
+				},
+				"showSizes": {
+					"source": "meta",
+					"classPattern": ".rf-typography--{value}",
+					"dataAttribute": "data-show-sizes"
+				},
+				"showWeights": {
+					"source": "meta",
+					"classPattern": ".rf-typography--{value}",
+					"dataAttribute": "data-show-weights"
+				},
+				"showCharset": {
+					"source": "meta",
+					"classPattern": ".rf-typography--{value}",
+					"dataAttribute": "data-show-charset"
+				}
+			}
+		},
+		"Spacing": {
+			"block": "spacing",
+			"root": ".rf-spacing",
+			"dataRune": "spacing",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-spacing--{value}",
+					"dataAttribute": "data-title"
+				}
+			}
+		},
+		"DesignContext": {
+			"block": "design-context",
+			"root": ".rf-design-context",
+			"dataRune": "designcontext",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-design-context--{value}",
+					"dataAttribute": "data-title"
+				}
+			}
+		}
+	}
 }
