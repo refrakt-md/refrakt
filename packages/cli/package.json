@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "@refrakt-md/ai": "0.4.0",
-    "@refrakt-md/runes": "0.4.0"
+    "@refrakt-md/runes": "0.4.0",
+    "@refrakt-md/theme-base": "0.4.0",
+    "@refrakt-md/transform": "0.4.0"
   }
 }
