@@ -1,7 +1,7 @@
 {
 	"contentDir": "./content",
 	"theme": "@refrakt-md/lumina",
-	"target": "sveltekit",
+	"target": "svelte",
 	"highlight": {
 		"theme": {
 			"light": "laserwave",

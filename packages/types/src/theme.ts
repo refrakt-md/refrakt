@@ -20,7 +20,7 @@ export interface ThemeManifest {
 	name: string;
 	version: string;
 	description?: string;
-	/** Target framework this theme is built for (e.g. "sveltekit", "astro") */
+	/** Target framework this theme is built for (e.g. "svelte", "astro") */
 	target: string;
 	/** Relative path to CSS custom properties file */
 	designTokens: string;

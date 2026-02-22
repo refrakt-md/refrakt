@@ -1,7 +1,7 @@
 <script lang="ts">
-	import '@refrakt-md/lumina/sveltekit/tokens.css';
+	import '@refrakt-md/lumina/svelte/tokens.css';
 	import { setRegistry, setElementOverrides } from '@refrakt-md/svelte';
-	import { theme } from '@refrakt-md/lumina/sveltekit';
+	import { theme } from '@refrakt-md/lumina/svelte';
 
 	setRegistry(theme.components);
 	if (theme.elements) setElementOverrides(theme.elements);

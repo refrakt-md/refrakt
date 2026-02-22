@@ -8,7 +8,7 @@ export function loadRefraktConfig(configPath: string): RefraktConfig {
 	if (!existsSync(absPath)) {
 		throw new Error(
 			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "sveltekit" }`
+			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "svelte" }`
 		);
 	}
 

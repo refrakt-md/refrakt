@@ -47,7 +47,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker with configurable themes (any built-in Shiki theme or light/dark pair), pluggable highlighter |
 | `@refrakt-md/behaviors` | Vanilla JS behavior library -- interactive behaviors for tabs, accordion, datatable, form, reveal, preview, and copy-to-clipboard. Framework-agnostic. |
 | `@refrakt-md/theme-base` | Shared theme infrastructure -- BEM config for all runes, per-rune CSS files, base component registry |
-| `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/sveltekit`) |
+| `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/svelte`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |
 
@@ -219,7 +219,7 @@ The behavior layer is entirely framework-agnostic. It operates on standard DOM e
 
 ### Implementation Layer (Framework-Specific)
 
-The implementation layer lives inside the theme package as a **subpath export**. For Lumina, the SvelteKit adapter is at `@refrakt-md/lumina/sveltekit`. The Vite plugin auto-resolves this from the `theme` and `target` fields in `refrakt.config.json`, so adding a future React or Astro adapter means adding a new subpath export to the same package — no new packages needed.
+The implementation layer lives inside the theme package as a **subpath export**. For Lumina, the Svelte adapter is at `@refrakt-md/lumina/svelte`. The Vite plugin auto-resolves this from the `theme` and `target` fields in `refrakt.config.json`, so adding a future React or Astro adapter means adding a new subpath export to the same package — no new packages needed.
 
 The implementation layer is only needed for runes that require external libraries (Mermaid, Chart.js, Leaflet) or complex Svelte-specific rendering logic.
 
@@ -268,7 +268,7 @@ Every theme ships a `manifest.json` that declares its capabilities:
 ```json
 {
   "name": "lumina",
-  "target": "sveltekit",
+  "target": "svelte",
   "designTokens": "tokens.css",
   "layouts": {
     "default": {
@@ -530,7 +530,7 @@ The theme virtual module is particularly interesting. If the project defines com
 {
   "contentDir": "./content",
   "theme": "@refrakt-md/lumina",
-  "target": "sveltekit",
+  "target": "svelte",
   "overrides": {
     "Hero": "./src/components/MyHero.svelte"
   }

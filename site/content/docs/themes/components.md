@@ -55,7 +55,7 @@ In SvelteKit, behaviors are typically applied via a Svelte action:
 
 ```svelte
 <script>
-  import { behaviors } from '@refrakt-md/theme-base/sveltekit/behaviors';
+  import { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
 </script>
 
 <div use:behaviors>
@@ -75,10 +75,10 @@ For runes that need external libraries or complex rendering logic, register a Sv
 
 ## The component registry
 
-The registry maps `typeof` attribute values to Svelte components. It lives in your theme's SvelteKit adapter:
+The registry maps `typeof` attribute values to Svelte components. It lives in your theme's Svelte adapter:
 
 ```typescript
-// packages/theme-base/sveltekit/registry.ts
+// packages/theme-base/svelte/registry.ts
 import type { ComponentRegistry } from '@refrakt-md/svelte';
 import Chart from './components/Chart.svelte';
 import Diagram from './components/Diagram.svelte';
@@ -222,7 +222,7 @@ A complete component that reads metadata and renders an iframe:
 Element overrides enhance standard HTML elements without requiring a `typeof` marker. They're useful for wrapping elements like `<table>` or `<pre>` with additional structure:
 
 ```typescript
-// packages/theme-base/sveltekit/elements.ts
+// packages/theme-base/svelte/elements.ts
 export const elements: ElementOverrides = {
   'table': Table,
   'pre': Pre,

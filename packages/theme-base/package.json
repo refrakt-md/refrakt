@@ -21,31 +21,31 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./sveltekit": {
-      "types": "./sveltekit/index.ts",
-      "svelte": "./sveltekit/index.ts",
-      "default": "./sveltekit/index.ts"
+    "./svelte": {
+      "types": "./svelte/index.ts",
+      "svelte": "./svelte/index.ts",
+      "default": "./svelte/index.ts"
     },
-    "./sveltekit/registry": {
-      "types": "./sveltekit/registry.ts",
-      "svelte": "./sveltekit/registry.ts",
-      "default": "./sveltekit/registry.ts"
+    "./svelte/registry": {
+      "types": "./svelte/registry.ts",
+      "svelte": "./svelte/registry.ts",
+      "default": "./svelte/registry.ts"
     },
-    "./sveltekit/elements": {
-      "types": "./sveltekit/elements.ts",
-      "svelte": "./sveltekit/elements.ts",
-      "default": "./sveltekit/elements.ts"
+    "./svelte/elements": {
+      "types": "./svelte/elements.ts",
+      "svelte": "./svelte/elements.ts",
+      "default": "./svelte/elements.ts"
     },
-    "./sveltekit/behaviors": {
-      "types": "./sveltekit/behaviors.ts",
-      "svelte": "./sveltekit/behaviors.ts",
-      "default": "./sveltekit/behaviors.ts"
+    "./svelte/behaviors": {
+      "types": "./svelte/behaviors.ts",
+      "svelte": "./svelte/behaviors.ts",
+      "default": "./svelte/behaviors.ts"
     },
-    "./sveltekit/components/*": "./sveltekit/components/*"
+    "./svelte/components/*": "./svelte/components/*"
   },
   "files": [
     "dist",
-    "sveltekit"
+    "svelte"
   ],
   "scripts": {
     "build": "tsc"

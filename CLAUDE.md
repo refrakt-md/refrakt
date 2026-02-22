@@ -97,13 +97,13 @@ Five stages from content to output:
 
 Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside `{% nav %}` becomes a group title; a list inside `{% recipe %}` becomes ingredients. Same primitives, different meaning based on context.
 
-Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/theme-base/src/config.ts`), and optionally a Svelte component (`packages/theme-base/sveltekit/components/`).
+Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/theme-base/src/config.ts`), and optionally a Svelte component (`packages/theme-base/svelte/components/`).
 
 ### Two-Layer Theme System
 
 **Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/theme-base/src/config.ts`. Most runes (~75%) need only this layer.
 
-**Layer 2 — Svelte Components** (`packages/theme-base/sveltekit/components/`): Only for interactive runes requiring external libraries or complex rendering (Chart, Map, Diagram, Comparison, etc.). Registered in `packages/theme-base/sveltekit/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
+**Layer 2 — Svelte Components** (`packages/theme-base/svelte/components/`): Only for interactive runes requiring external libraries or complex rendering (Chart, Map, Diagram, Comparison, etc.). Registered in `packages/theme-base/svelte/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
 
 ### Package Relationships
 
@@ -161,7 +161,7 @@ Theme developer documentation lives at `site/content/docs/themes/` (6 pages: ove
 - `packages/transform/src/types.ts` — `ThemeConfig`, `RuneConfig`, `StructureEntry` interfaces
 - `packages/lumina/styles/runes/` — 48 per-rune CSS files (reference implementation)
 - `packages/lumina/tokens/base.css` — design token definitions
-- `packages/theme-base/sveltekit/registry.ts` — component registry for interactive runes
+- `packages/theme-base/svelte/registry.ts` — component registry for interactive runes
 
 **When writing CSS for a rune:**
 1. Check the rune's config in `packages/theme-base/src/config.ts` to understand what selectors the engine produces

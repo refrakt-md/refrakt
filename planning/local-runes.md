@@ -14,7 +14,7 @@ Local runes are declared in `refrakt.config.json`:
 {
   "contentDir": "./content",
   "theme": "@refrakt-md/lumina",
-  "target": "sveltekit",
+  "target": "svelte",
   "runes": {
     "playground": {
       "component": "./src/components/Playground.svelte",
@@ -137,7 +137,7 @@ The `virtual:refrakt/theme` module generator already handles component overrides
 
 ```typescript
 // Generated virtual module (conceptual):
-import { theme as _base } from '@refrakt-md/lumina/sveltekit';
+import { theme as _base } from '@refrakt-md/lumina/svelte';
 import _o0 from './src/components/Playground.svelte';     // override
 import _r0 from './src/components/PricingCalculator.svelte'; // local rune
 

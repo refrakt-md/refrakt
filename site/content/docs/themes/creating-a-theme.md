@@ -95,9 +95,9 @@ Configure `package.json` with the required exports:
       "default": "./dist/transform.js"
     },
     "./manifest": "./manifest.json",
-    "./sveltekit": {
-      "svelte": "./sveltekit/index.ts",
-      "default": "./sveltekit/index.ts"
+    "./svelte": {
+      "svelte": "./svelte/index.ts",
+      "default": "./svelte/index.ts"
     }
   },
   "scripts": {
@@ -116,7 +116,7 @@ The key exports:
 - `.` — Your CSS entry point (tokens + rune styles)
 - `./transform` — Your theme config, compiled to JS
 - `./manifest` — Theme metadata
-- `./sveltekit` — SvelteKit adapter (registry re-export)
+- `./svelte` — Svelte adapter (registry re-export)
 
 ### Step 2: Write your config
 
@@ -356,10 +356,10 @@ Create `index.css` that imports everything:
 
 ### Step 8: SvelteKit integration
 
-Create `sveltekit/index.ts` to re-export the component registry from theme-base:
+Create `svelte/index.ts` to re-export the component registry from theme-base:
 
 ```typescript
-export { registry } from '@refrakt-md/theme-base/sveltekit/registry';
+export { registry } from '@refrakt-md/theme-base/svelte/registry';
 ```
 
 This gives SvelteKit sites access to the interactive components (Chart, Map, Diagram, etc.) that are shared across all themes.
@@ -367,7 +367,7 @@ This gives SvelteKit sites access to the interactive components (Chart, Map, Dia
 If your theme needs to override or add components, you can create your own registry:
 
 ```typescript
-import { registry as baseRegistry } from '@refrakt-md/theme-base/sveltekit/registry';
+import { registry as baseRegistry } from '@refrakt-md/theme-base/svelte/registry';
 import MyCustomComponent from './components/MyComponent.svelte';
 
 export const registry = {
@@ -442,7 +442,7 @@ const transform = createTransform(myThemeConfig);
 packages/my-theme/
 ├── src/
 │   └── config.ts
-├── sveltekit/
+├── svelte/
 │   └── index.ts
 ├── tokens/
 │   ├── base.css

@@ -21,7 +21,7 @@
 
   ### Theme restructuring
 
-  - Merged `@refrakt-md/theme-lumina` into `@refrakt-md/lumina/sveltekit` as a subpath export
+  - Merged `@refrakt-md/theme-lumina` into `@refrakt-md/lumina/svelte` as a subpath export
   - SvelteKit plugin now derives theme adapter dynamically from `config.theme` + `config.target`
   - Theme packages now serve framework adapters via subpath exports — no separate packages per framework
 

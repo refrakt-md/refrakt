@@ -39,7 +39,7 @@ The biggest architectural change in 0.4.0 is the merger of the old `@refrakt-md/
 Previously, the Lumina theme was split across two separate packages -- one for the identity layer (design tokens, CSS, transform config) and another for the Svelte components. Now it's a single package with subpath exports:
 
 - `@refrakt-md/lumina` -- Identity layer: design tokens, per-rune CSS, pre-built transform config
-- `@refrakt-md/lumina/sveltekit` -- SvelteKit adapter: Svelte components, layouts, component registry
+- `@refrakt-md/lumina/svelte` -- Svelte adapter: Svelte components, layouts, component registry
 
 The SvelteKit Vite plugin now derives the theme adapter dynamically by combining the `theme` and `target` fields from `refrakt.config.json`. This means adding a future React or Astro adapter is just a matter of adding a new subpath export to the same package -- no new packages, no config changes.
 

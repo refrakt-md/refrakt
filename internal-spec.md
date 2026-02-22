@@ -45,7 +45,7 @@ These are unresolved or partially resolved design questions. When working on fea
    Two levels. **CSS-level:** The identity transform threads parent rune context through recursion. When a rune's `RuneConfig` has a `contextModifiers` entry matching its parent's `typeof`, an extra BEM modifier class is added (e.g., `rf-hint--in-hero`). This is implemented and configured for Hint, Hero, CallToAction, and Feature in Lumina. **Component-level:** Not yet built. `contextOverrides` in the manifest schema is dead -- nothing reads or applies it. The Svelte Renderer does not pass parent typeof down for component switching.
 
 3. **Where does the identity transform end and the component begin?**
-   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`, `rf-hero--in-feature`). Components registered in the theme registry (`packages/lumina/sveltekit/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
+   The identity transform (`packages/transform/src/engine.ts`, extracted into `@refrakt-md/transform`) adds BEM classes, context-aware modifiers, and injects structural elements. It operates on the serialized tag tree *before* the Svelte Renderer sees it and threads parent rune context through the recursion, allowing nested runes to receive additional BEM modifiers based on their parent (e.g., `rf-hint--in-hero`, `rf-hero--in-feature`). Components registered in the theme registry (`packages/lumina/svelte/registry.ts`) take over rendering entirely for their typeof. The line is: static runes get BEM-classed HTML via the identity transform (with context-aware modifiers when nested); interactive runes get a Svelte component. Currently ~17 component types are registered in Lumina; everything else falls through to `svelte:element` rendering.
 
 ---
 
@@ -76,8 +76,8 @@ These are unresolved or partially resolved design questions. When working on fea
 | CSS tree-shaking | `packages/sveltekit/src/plugin.ts` | Build-time content analysis in `buildStart` hook. Resolves rune types to BEM blocks via theme config, checks CSS file existence, generates selective imports. Dev mode serves all CSS. |
 | SvelteKit Vite plugin | `packages/sveltekit/src/plugin.ts` | Virtual modules, content HMR, dev/build mode switching. |
 | Content HMR | `packages/sveltekit/src/content-hmr.ts` | Watches content directory, triggers Vite HMR on file changes. |
-| Theme manifest | `packages/lumina/sveltekit/manifest.json` | Lumina SvelteKit adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
-| Theme component registry | `packages/lumina/sveltekit/registry.ts` | Maps 19 typeof values to 18 Svelte components (interactive + complex rendering). |
+| Theme manifest | `packages/lumina/svelte/manifest.json` | Lumina Svelte adapter: 3 layouts (default, docs, blog), route rules, component mappings. |
+| Theme component registry | `packages/lumina/svelte/registry.ts` | Maps 19 typeof values to 18 Svelte components (interactive + complex rendering). |
 | Syntax highlight transform | `packages/highlight/src/highlight.ts` | `@refrakt-md/highlight` — Shiki-based tree walker. Finds `data-language` elements, highlights code, sets `data-codeblock`. Supports configurable themes: any built-in Shiki theme via `theme` option (single name or `{ light, dark }` pair for dual-theme light/dark mode switching). Defaults to CSS variables theme. Returns a `.css` property with background overrides and dual-theme toggle rules. Pluggable via custom `highlight` function. |
 | `refrakt write` CLI | `packages/cli/src/bin.ts`, `packages/cli/src/commands/write.ts` | AI content generation command. |
 | AI prompt generation | `packages/ai/src/prompt.ts` | System prompt for AI content writing with rune context. |
@@ -259,9 +259,9 @@ The theme system uses subpath exports within a single theme package:
 2. **`@refrakt-md/lumina`** (`packages/lumina/`) -- Lumina's identity layer (config, CSS, design tokens, BEM mappings) plus framework-specific adapters as subpath exports:
    - `@refrakt-md/lumina` -- identity CSS + design tokens (no framework code)
    - `@refrakt-md/lumina/transform` -- identity transform config
-   - `@refrakt-md/lumina/sveltekit` -- Svelte components, layouts, registry, manifest
+   - `@refrakt-md/lumina/svelte` -- Svelte components, layouts, registry, manifest
 
-The SvelteKit plugin auto-resolves the adapter from `config.theme + "/" + config.target` (e.g., `@refrakt-md/lumina` + `sveltekit` → `@refrakt-md/lumina/sveltekit`). This means adding a new framework adapter only requires adding a new subpath export — no new packages needed.
+The SvelteKit plugin auto-resolves the adapter from `config.theme + "/" + config.target` (e.g., `@refrakt-md/lumina` + `svelte` → `@refrakt-md/lumina/svelte`). This means adding a new framework adapter only requires adding a new subpath export — no new packages needed.
 
 `packages/content` handles filesystem concerns: reading files, resolving layouts, building the content tree, routing. `packages/runes` is the shared vocabulary everything depends on. This separation means a different theme can replace lumina entirely without touching content loading, and a React adapter would live at `@refrakt-md/lumina/react` reusing the same identity CSS.
 
@@ -303,7 +303,7 @@ The manifest `routeRules` has a `generated` field for this, suggesting theme-lay
 Single package with subpath exports. Implemented for Lumina:
 ```
 @refrakt-md/lumina              -> identity layer (CSS + tokens + transform)
-@refrakt-md/lumina/sveltekit    -> SvelteKit adapter (Svelte components, layouts, registry)
+@refrakt-md/lumina/svelte    -> Svelte adapter (Svelte components, layouts, registry)
 @refrakt-md/lumina/astro        -> (future) Astro adapter
 @refrakt-md/lumina/nextjs       -> (future) Next.js adapter + React components
 ```
@@ -405,15 +405,15 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 | `packages/sveltekit/src/virtual-modules.ts` | Virtual module definitions |
 | `packages/sveltekit/src/config.ts` | Plugin configuration types |
 
-### Lumina Theme — SvelteKit Adapter (`@refrakt-md/lumina/sveltekit`)
+### Lumina Theme — Svelte Adapter (`@refrakt-md/lumina/svelte`)
 
 | File | Purpose |
 |---|---|
-| `packages/lumina/sveltekit/manifest.json` | Theme config: layouts, route rules, component mappings |
-| `packages/lumina/sveltekit/registry.ts` | Component dispatch map (17 typeof values -> 16 Svelte components) |
-| `packages/lumina/sveltekit/index.ts` | Theme entry point (exports `SvelteTheme` object) |
-| `packages/lumina/sveltekit/elements.ts` | Element-level overrides |
-| `packages/lumina/sveltekit/tokens.css` | Token bridge (imports identity CSS, aliases legacy variable names) |
+| `packages/lumina/svelte/manifest.json` | Theme config: layouts, route rules, component mappings |
+| `packages/lumina/svelte/registry.ts` | Component dispatch map (17 typeof values -> 16 Svelte components) |
+| `packages/lumina/svelte/index.ts` | Theme entry point (exports `SvelteTheme` object) |
+| `packages/lumina/svelte/elements.ts` | Element-level overrides |
+| `packages/lumina/svelte/tokens.css` | Token bridge (imports identity CSS, aliases legacy variable names) |
 
 ### Syntax Highlight Transform (`@refrakt-md/highlight`)
 
@@ -456,7 +456,7 @@ Markdoc transform → Serialize → Identity transform → Highlight transform �
 
 ## 8. Component Registry Detail
 
-The Lumina theme registers these components in `packages/lumina/sveltekit/registry.ts`:
+The Lumina theme registers these components in `packages/lumina/svelte/registry.ts`:
 
 | typeof Value(s) | Component File | Why It Needs a Component |
 |---|---|---|

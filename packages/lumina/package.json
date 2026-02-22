@@ -23,14 +23,14 @@
     },
     "./manifest": "./manifest.json",
     "./contracts": "./contracts/structures.json",
-    "./sveltekit": {
-      "types": "./sveltekit/index.ts",
-      "svelte": "./sveltekit/index.ts",
-      "default": "./sveltekit/index.ts"
+    "./svelte": {
+      "types": "./svelte/index.ts",
+      "svelte": "./svelte/index.ts",
+      "default": "./svelte/index.ts"
     },
     "./styles/runes/*.css": "./styles/runes/*.css",
-    "./sveltekit/tokens.css": "./sveltekit/tokens.css",
-    "./sveltekit/manifest": "./sveltekit/manifest.json"
+    "./svelte/tokens.css": "./svelte/tokens.css",
+    "./svelte/manifest": "./svelte/manifest.json"
   },
   "files": [
     "dist",
@@ -40,7 +40,7 @@
     "styles",
     "contracts",
     "manifest.json",
-    "sveltekit"
+    "svelte"
   ],
   "scripts": {
     "build": "tsc"

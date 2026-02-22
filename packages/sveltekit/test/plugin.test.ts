@@ -17,7 +17,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath });
@@ -32,7 +32,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath });
@@ -50,7 +50,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath });
@@ -62,7 +62,7 @@ describe('refrakt plugin', () => {
 		expect(result.ssr.noExternal).toContain('@refrakt-md/types');
 		expect(result.ssr.noExternal).toContain('@refrakt-md/svelte');
 		expect(result.ssr.noExternal).toContain('@refrakt-md/lumina');
-		expect(result.ssr.noExternal).toContain('@refrakt-md/lumina/sveltekit');
+		expect(result.ssr.noExternal).toContain('@refrakt-md/lumina/svelte');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -73,7 +73,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath, noExternal: ['custom-package'] });
@@ -90,7 +90,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath });
@@ -111,7 +111,7 @@ describe('refrakt plugin', () => {
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
+			target: 'svelte',
 		}));
 
 		const plugin = refrakt({ configPath });
@@ -119,7 +119,7 @@ describe('refrakt plugin', () => {
 		(plugin.config as Function)({}, { command: 'serve' });
 
 		expect((plugin.load as Function)('\0virtual:refrakt/theme'))
-			.toBe("export { theme } from '@refrakt-md/lumina/sveltekit';");
+			.toBe("export { theme } from '@refrakt-md/lumina/svelte';");
 
 		rmSync(dir, { recursive: true });
 	});
