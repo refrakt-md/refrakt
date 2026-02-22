@@ -11,6 +11,8 @@ if (!command || command === '--help' || command === '-h') {
 
 if (command === 'write') {
 	runWrite(args.slice(1));
+} else if (command === 'inspect') {
+	runInspect(args.slice(1));
 } else if (command === 'contracts') {
 	runContracts(args.slice(1));
 } else if (command.startsWith('-')) {
@@ -28,7 +30,8 @@ function printUsage(): void {
 Usage: refrakt <command> [options]
 
 Commands:
-  write <prompt>      Generate a Markdown content file using AI
+  write <prompt>       Generate a Markdown content file using AI
+  inspect <rune>       Show identity transform output for a rune
   contracts [options]  Generate structure contracts from theme config
 
 Write Options:
@@ -37,6 +40,17 @@ Write Options:
   --provider, -p <name>    Provider: anthropic, gemini, ollama (default: auto-detect)
   --model, -m <name>       Model name (default: per-provider)
   --help, -h               Show this help message
+
+Inspect Options:
+  --list                   List all available runes
+  --json                   Output as JSON
+  --audit                  Check CSS coverage for generated selectors
+  --all                    Audit all runes (use with --audit)
+  --css <dir>              CSS directory for audit (auto-detected by default)
+  --theme <name>           Theme to use (default: base)
+  --items <n>              Number of repeated children (default: 3)
+  --<attr>=<value>         Set a rune attribute (e.g., --type=warning)
+  --<attr>=all             Expand all variants for that attribute
 
 Provider auto-detection:
   1. ANTHROPIC_API_KEY env var → Anthropic
@@ -49,13 +63,112 @@ Contracts Options:
   --check                  Validate existing file is up to date (exit 1 if stale)
 
 Examples:
-  refrakt write "Create a getting started guide"
-  refrakt write -o content/docs/api.md "Write an API reference page"
+  refrakt inspect hint --type=warning
+  refrakt inspect hint --type=all
+  refrakt inspect api --method=POST --path="/users"
+  refrakt inspect --list
+  refrakt inspect --list --json
+  refrakt inspect hint --audit
+  refrakt inspect --all --audit
+  refrakt inspect hint --audit --css path/to/styles
   refrakt write -d content/ "Set up a docs site with index, guides, and blog"
   refrakt write -p ollama -m llama3.2 "Write a FAQ page"
   refrakt contracts -o packages/lumina/contracts/structures.json
   refrakt contracts --check -o packages/lumina/contracts/structures.json
 `);
+}
+
+function runInspect(inspectArgs: string[]): void {
+	let runeName: string | undefined;
+	let list = false;
+	let json = false;
+	let audit = false;
+	let all = false;
+	let cssDir: string | undefined;
+	let theme = 'base';
+	let items = 3;
+	const flags: Record<string, string> = {};
+
+	for (let i = 0; i < inspectArgs.length; i++) {
+		const arg = inspectArgs[i];
+
+		if (arg === '--list') {
+			list = true;
+		} else if (arg === '--json') {
+			json = true;
+		} else if (arg === '--audit') {
+			audit = true;
+		} else if (arg === '--all') {
+			all = true;
+		} else if (arg === '--css') {
+			cssDir = inspectArgs[++i];
+			if (!cssDir) {
+				console.error('Error: --css requires a directory path');
+				process.exit(1);
+			}
+		} else if (arg === '--theme') {
+			theme = inspectArgs[++i];
+			if (!theme) {
+				console.error('Error: --theme requires a value');
+				process.exit(1);
+			}
+		} else if (arg === '--items') {
+			const val = inspectArgs[++i];
+			if (!val) {
+				console.error('Error: --items requires a number');
+				process.exit(1);
+			}
+			items = parseInt(val, 10);
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else if (arg.startsWith('--') && arg.includes('=')) {
+			// --attr=value flags (rune-specific attributes)
+			const eqIdx = arg.indexOf('=');
+			const key = arg.slice(2, eqIdx);
+			const value = arg.slice(eqIdx + 1);
+			flags[key] = value;
+		} else if (arg.startsWith('--')) {
+			// --attr value flags (rune-specific attributes)
+			const key = arg.slice(2);
+			const value = inspectArgs[++i];
+			if (!value) {
+				console.error(`Error: --${key} requires a value`);
+				process.exit(1);
+			}
+			flags[key] = value;
+		} else if (!runeName) {
+			runeName = arg;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	// Dynamic imports to avoid loading heavy dependencies at parse time
+	Promise.all([
+		import('./commands/inspect.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+		import('@refrakt-md/theme-base'),
+		import('@markdoc/markdoc'),
+	]).then(([
+		{ inspectCommand },
+		{ runes, tags, nodes, serializeTree, extractHeadings },
+		{ createTransform, renderToHtml, extractSelectors },
+		{ baseConfig },
+		markdocModule,
+	]) => {
+		const Markdoc = markdocModule.default ?? markdocModule;
+		return inspectCommand(
+			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
+			{ Markdoc, runes, tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig },
+		);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
 }
 
 function runWrite(writeArgs: string[]): void {
