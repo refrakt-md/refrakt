@@ -1,20 +1,18 @@
 <script lang="ts">
 	import type { TokenDefinition } from './tokens.js';
 	import { themeState } from './state/theme.svelte.js';
+	import ColorEditor from './editors/ColorEditor.svelte';
+	import FontEditor from './editors/FontEditor.svelte';
+	import RadiusEditor from './editors/RadiusEditor.svelte';
+	import ShadowEditor from './editors/ShadowEditor.svelte';
 
 	let { token }: { token: TokenDefinition } = $props();
 
 	let value = $derived(themeState.currentTokens[token.name]);
 	let isOverridden = $derived(themeState.currentOverrides.has(token.name));
 
-	function onInput(e: Event) {
-		const target = e.target as HTMLInputElement;
-		themeState.updateToken(token.name, target.value);
-	}
-
-	function onColorInput(e: Event) {
-		const target = e.target as HTMLInputElement;
-		themeState.updateToken(token.name, target.value);
+	function update(v: string) {
+		themeState.updateToken(token.name, v);
 	}
 
 	function reset() {
@@ -36,20 +34,14 @@
 	</div>
 	<div class="token-controls">
 		{#if token.type === 'color'}
-			<input
-				type="color"
-				value={value.startsWith('#') ? value : '#000000'}
-				oninput={onColorInput}
-				class="color-picker"
-			/>
+			<ColorEditor {value} onchange={update} />
+		{:else if token.type === 'font'}
+			<FontEditor {value} onchange={update} category={token.name === 'font-mono' ? 'mono' : 'sans'} />
+		{:else if token.type === 'size'}
+			<RadiusEditor {value} onchange={update} tokenName={token.name} />
+		{:else if token.type === 'shadow'}
+			<ShadowEditor {value} onchange={update} />
 		{/if}
-		<input
-			type="text"
-			{value}
-			oninput={onInput}
-			class="text-input"
-			class:wide={token.type !== 'color'}
-		/>
 	</div>
 	<div class="token-desc">{token.description}</div>
 </div>
@@ -78,34 +70,7 @@
 		font-weight: 600;
 	}
 	.token-controls {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-	.color-picker {
-		width: 32px;
-		height: 28px;
-		padding: 1px;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		cursor: pointer;
-		flex-shrink: 0;
-	}
-	.text-input {
-		flex: 1;
-		padding: 4px 8px;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 12px;
-		background: white;
-	}
-	.text-input.wide {
-		width: 100%;
-	}
-	.text-input:focus {
-		outline: none;
-		border-color: #0ea5e9;
+		margin-bottom: 2px;
 	}
 	.token-desc {
 		font-size: 11px;
