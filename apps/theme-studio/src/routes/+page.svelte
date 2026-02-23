@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { getTokensByCategory } from '$lib/tokens.js';
 	import { themeState } from '$lib/state/theme.svelte.js';
+	import { historyState } from '$lib/state/history.svelte.js';
+	import { generateState } from '$lib/state/generate.svelte.js';
 	import TokenGroup from '$lib/TokenGroup.svelte';
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
 	import PromptBar from '$lib/PromptBar.svelte';
@@ -10,7 +12,30 @@
 	const categories = [...tokenGroups.entries()];
 
 	let showExport = $state(false);
+
+	function handleKeydown(e: KeyboardEvent) {
+		const mod = e.metaKey || e.ctrlKey;
+		if (!mod) return;
+
+		if (e.key === 'z' && !e.shiftKey) {
+			e.preventDefault();
+			historyState.undo();
+		} else if (e.key === 'z' && e.shiftKey) {
+			e.preventDefault();
+			historyState.redo();
+		} else if (e.key === 'd') {
+			e.preventDefault();
+			themeState.toggleMode();
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			// Focus the prompt bar input
+			const input = document.querySelector<HTMLInputElement>('.prompt-bar input');
+			input?.focus();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="studio">
 	<header class="studio-header">
@@ -27,9 +52,31 @@
 		</div>
 		<div class="header-right">
 			<button
+				class="history-btn"
+				onclick={() => historyState.undo()}
+				disabled={!historyState.canUndo}
+				title="Undo (Ctrl+Z)"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="9 14 4 9 9 4" />
+					<path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+				</svg>
+			</button>
+			<button
+				class="history-btn"
+				onclick={() => historyState.redo()}
+				disabled={!historyState.canRedo}
+				title="Redo (Ctrl+Shift+Z)"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="15 14 20 9 15 4" />
+					<path d="M4 20v-7a4 4 0 0 1 4-4h12" />
+				</svg>
+			</button>
+			<button
 				class="mode-toggle"
 				onclick={() => themeState.toggleMode()}
-				title="Toggle light/dark mode"
+				title="Toggle light/dark mode (Ctrl+D)"
 			>
 				{#if themeState.mode === 'light'}
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,6 +181,30 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+	}
+
+	.history-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		border: 1px solid #e5e5e5;
+		border-radius: 6px;
+		background: white;
+		cursor: pointer;
+		color: #555;
+	}
+
+	.history-btn:hover:not(:disabled) {
+		border-color: #ccc;
+		background: #fafafa;
+	}
+
+	.history-btn:disabled {
+		opacity: 0.3;
+		cursor: default;
 	}
 
 	.mode-toggle {

@@ -1,4 +1,5 @@
 import { themeState } from './theme.svelte.js';
+import { historyState } from './history.svelte.js';
 import { streamGenerate, type GenerateOptions } from '../ai/stream.js';
 import { parseThemeResponse, type ParseResult } from '../ai/parse.js';
 
@@ -84,6 +85,8 @@ class GenerateState {
 	private applyResult(text: string): ParseResult {
 		const result = parseThemeResponse(text);
 		if (result.success && result.theme) {
+			// Snapshot before replacing so user can undo back to pre-generation state
+			historyState.push();
 			// Apply to ThemeState — update all tokens in both modes
 			themeState.tokens.light = result.theme.light;
 			themeState.tokens.dark = result.theme.dark;

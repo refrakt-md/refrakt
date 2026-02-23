@@ -1,6 +1,7 @@
 import { getDefaults, getToken } from '../tokens.js';
 import { compileThemeCss } from '../compiler.js';
 import { fixtures, presets, ALL_TOKEN_GROUPS, type TokenGroup } from '../fixtures.js';
+import { historyState } from './history.svelte.js';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -68,6 +69,7 @@ class ThemeState {
 
 	/** Update a single token value in the current mode */
 	updateToken(name: string, value: string): void {
+		historyState.pushDebounced();
 		if (this.mode === 'dark') {
 			this.tokens.dark[name] = value;
 			this.overrides.dark.add(name);
@@ -79,6 +81,7 @@ class ThemeState {
 
 	/** Reset a single token to its default in the current mode */
 	resetToken(name: string): void {
+		historyState.push();
 		const def = getToken(name);
 		if (!def) return;
 
@@ -93,6 +96,7 @@ class ThemeState {
 
 	/** Reset all tokens to defaults */
 	resetAll(): void {
+		historyState.push();
 		this.tokens.light = getDefaults('light');
 		this.tokens.dark = getDefaults('dark');
 		this.overrides.light = new Set();

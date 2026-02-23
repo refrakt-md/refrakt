@@ -1,7 +1,7 @@
 # Theme Studio — AI-Powered Theme Generator
 
 > **Package:** `apps/theme-studio`
-> **Status:** In progress — Phase 3 complete
+> **Status:** In progress — Phase 4 complete
 > **Dependencies:** `@refrakt-md/transform`, `@refrakt-md/theme-base`, `@refrakt-md/lumina`, `@refrakt-md/runes`, `@refrakt-md/svelte`, `@refrakt-md/ai`
 
 ---
@@ -781,7 +781,10 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 - [x] Theme system prompt — token vocabulary, design constraints, output format (`lib/ai/prompt.ts`)
 - [x] Generation endpoint — SSE streaming API route (`routes/api/generate/+server.ts`)
 - [x] Response parser — extract and validate token JSON (`lib/ai/parse.ts`)
-- [x] Refinement flow — include current state in prompt for targeted adjustments
+- [x] Refinement flow — include current state in prompt for targeted adjustments (`lib/state/generate.svelte.ts`)
+- [x] Design expression prompt — typography, radius, shadow creative guidance + archetype examples
+- [x] JSON extraction — 5-strategy parser with truncation repair and console logging
+- [x] Response debugging — error response preview, server-side provider/model logging
 
 ### Phase 3 — Editor UI
 
@@ -792,23 +795,21 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 - [x] Prompt bar — text input with generate/refine mode (`lib/PromptBar.svelte`)
 - [x] Fixture picker — popover with presets (Docs/Marketing/Blog/All), token coverage indicator (`lib/FixturePicker.svelte`)
 - [x] Interactive behaviors — tabs, accordion, datatable behaviors via `@refrakt-md/behaviors`
-- [ ] Keyboard shortcuts — Ctrl+Z undo, Ctrl+Enter submit, Ctrl+D toggle mode
+- [x] Streaming preview — real-time AI output in prompt bar during generation (`lib/PromptBar.svelte`)
 
 ### Phase 4 — Export & Distribution
 
 - [x] Export panel — modal with CSS preview, copy to clipboard, download ZIP (`lib/ExportPanel.svelte`)
 - [x] Theme package assembly — package.json, exports map, tokens, CSS, config, manifest (`lib/export.ts`)
 - [x] ZIP download — client-side ZIP generation via jszip
-- [ ] Tarball download — in-browser `.tgz` generation
-- [ ] `refrakt theme install` CLI command — detect package manager, install, update config
 
 ### Phase 5 — Polish
 
-- [ ] Undo/redo — history stack with snapshot labels (`lib/state/history.svelte.ts`)
+- [x] Undo/redo — history stack with debounced snapshots (`lib/state/history.svelte.ts`)
+- [x] Keyboard shortcuts — Ctrl+Z undo, Ctrl+Shift+Z redo, Ctrl+Enter focus prompt, Ctrl+D toggle mode
 - [ ] Persistence — localStorage/IndexedDB for theme state, fixture selection, generation history
-- [ ] URL sharing — compressed token state in URL parameters
-- [ ] Local directory plugin support — extend SvelteKit plugin to resolve `./` theme paths
 - [ ] Accessibility audit — real-time WCAG contrast checks on token combinations
+- [ ] URL sharing — compressed token state in URL parameters
 
 ---
 
@@ -850,6 +851,12 @@ Theme generation is a fundamentally different interaction model. The chat app is
 - Upload custom SVG icons for hint variants (note, warning, caution, check)
 - Preview icons in context within the hint fixture
 - Export includes icon overrides in `config.ts`
+
+### Distribution
+
+- Tarball download — in-browser `.tgz` generation for npm-compatible packages
+- `refrakt theme install` CLI command — detect package manager, install, update config
+- Local directory plugin support — extend SvelteKit plugin to resolve `./` theme paths
 
 ### Preset Gallery
 
