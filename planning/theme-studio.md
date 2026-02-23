@@ -266,26 +266,50 @@ interface TokenValues {
 
 ### Rune Showcase
 
-The preview panel displays a curated set of runes rendered through the full identity transform pipeline. This is not a mockup — it uses the actual `@refrakt-md/transform` engine with `@refrakt-md/lumina`'s rune CSS, overlaid with the generated tokens.
+The preview panel displays a user-configurable set of runes rendered through the full identity transform pipeline. This is not a mockup — it uses the actual `@refrakt-md/transform` engine with `@refrakt-md/lumina`'s rune CSS, overlaid with the generated tokens.
+
+### Fixture Picker
+
+Users select which runes appear in the preview column via a picker in the preview panel header. This keeps the preview focused on the runes that matter for their theme.
+
+**Picker UI:** A toolbar button ("Runes") opens a popover checklist grouped by category. Each entry shows the fixture name and a brief label of what token groups it exercises. Users toggle individual fixtures on/off.
+
+**Presets:** Quick-select buttons for common use cases:
+
+| Preset | Fixtures Included |
+|--------|-------------------|
+| **All** | Every available fixture |
+| **Docs** | Hints, Steps, Code, Tabs, Accordion, Prose |
+| **Marketing** | Hero, Pricing, Feature Grid, CTA, Comparison |
+| **Blog** | Prose, Timeline, Recipe, Blockquote, Code |
+
+**Token coverage indicator:** When the selected fixtures don't exercise certain token categories, a subtle badge appears in the picker: "Not covered: semantic colors, code". This nudges users to add relevant fixtures without forcing a selection — they can ignore it if they're only tweaking specific tokens.
+
+**Persistence:** The fixture selection is stored alongside the theme state in localStorage/IndexedDB and restored on reload.
 
 ### Fixture Content
 
 Static Markdoc snippets covering the most visually distinct runes:
 
-| Fixture | Runes Exercised | What It Tests |
-|---------|-----------------|---------------|
-| Hero section | Hero (center + left aligned) | Primary colors, typography, buttons, shadows |
-| Hint variants | Hint (note, warning, caution, check) | All 4 semantic colors, borders, icons |
-| Pricing table | Pricing + Tier + FeaturedTier | Surfaces, borders, radii, featured accent |
-| Tab group | TabGroup + Tab | Surface hierarchy, active states, borders |
-| Code block | Fenced code | Code background, syntax highlighting tokens |
-| Steps list | Steps + Step | Sequential layout, counters, primary accent |
-| Feature grid | Grid + Feature | Card layout, surface colors, shadows |
-| Timeline | Timeline + TimelineEntry | Line/dot accents, alternating layout |
-| Recipe card | Recipe | Metadata display, badge styling |
-| Data table | DataTable | Table styling, alternating rows, headers |
-| Accordion | Accordion + AccordionItem | Expand/collapse, borders, surface states |
-| General prose | Headings, paragraphs, links, lists, blockquotes, inline code | Typography, text color, link color, muted color |
+| Fixture | Runes Exercised | What It Tests | Token Groups |
+|---------|-----------------|---------------|--------------|
+| Hero section | Hero (center + left aligned) | Primary colors, typography, buttons, shadows | primary, typography, shadows |
+| Hint variants | Hint (note, warning, caution, check) | All 4 semantic colors, borders, icons | semantic, borders |
+| Pricing table | Pricing + Tier + FeaturedTier | Surfaces, borders, radii, featured accent | surfaces, borders, radii, primary |
+| Tab group | TabGroup + Tab | Surface hierarchy, active states, borders | surfaces, borders |
+| Code block | Fenced code | Code background, syntax highlighting tokens | code, syntax |
+| Steps list | Steps + Step | Sequential layout, counters, primary accent | primary, typography |
+| Feature grid | Grid + Feature | Card layout, surface colors, shadows | surfaces, shadows, radii |
+| Timeline | Timeline + TimelineEntry | Line/dot accents, alternating layout | primary, borders |
+| Recipe card | Recipe | Metadata display, badge styling | surfaces, typography |
+| Data table | DataTable | Table styling, alternating rows, headers | surfaces, borders, typography |
+| Accordion | Accordion + AccordionItem | Expand/collapse, borders, surface states | surfaces, borders |
+| General prose | Headings, paragraphs, links, lists, blockquotes, inline code | Typography, text color, link color, muted color | typography, primary, code |
+| CTA | CTA | Button styles, background contrast | primary, surfaces, typography |
+| Comparison | Comparison | Column layout, highlighted state | surfaces, primary, borders |
+| Blockquote | Blockquote | Border accent, muted text | borders, typography |
+
+**Default selection:** All fixtures are enabled by default. The presets provide quick filtering for focused workflows.
 
 Each fixture is a string of Markdoc content that gets parsed, transformed, serialized, and identity-transformed on the client. The Svelte Renderer displays the result inside an iframe that loads Lumina's rune CSS + the generated token stylesheet.
 
@@ -331,20 +355,20 @@ This approach means:
 ┌──────────────────────────────────────────────────────────────┐
 │  Theme Studio          [Theme Name]     [Light ◐ Dark]       │
 ├──────────────┬───────────────────────────────────────────────┤
+│              │  [Runes ▾] [Docs] [Marketing] [Blog] [All]   │
+│  Token       │                                               │
+│  Editor      │  Preview Panel                                │
 │              │                                               │
-│  Token       │  Preview Panel                                │
-│  Editor      │                                               │
-│              │  ┌─────────────────────────────────────────┐  │
-│  ┌────────┐  │  │  Hero Section                           │  │
-│  │ Colors │  │  │  ═══════════                            │  │
-│  │ ●●●●●  │  │  │  Hints (note, warning, caution, check) │  │
-│  │        │  │  │  Pricing Table                          │  │
-│  │ Typo   │  │  │  Tabs                                   │  │
+│  ┌────────┐  │  ┌─────────────────────────────────────────┐  │
+│  │ Colors │  │  │  Hero Section                           │  │
+│  │ ●●●●●  │  │  │  ═══════════                            │  │
+│  │        │  │  │  Hints (note, warning, caution, check) │  │
+│  │ Typo   │  │  │  Pricing Table                          │  │
 │  │ Aa Bb  │  │  │  Code Block                             │  │
 │  │        │  │  │  Steps                                  │  │
-│  │ Radii  │  │  │  Feature Grid                           │  │
-│  │ ▢ ▢ ▢  │  │  │  ...                                   │  │
-│  │        │  │  │                                         │  │
+│  │ Radii  │  │  │  ...                                   │  │
+│  │ ▢ ▢ ▢  │  │  │                                         │  │
+│  │        │  │  │  ⚠ Not covered: code, syntax            │  │
 │  │ Shadow │  │  └─────────────────────────────────────────┘  │
 │  │ ░░░░░  │  │                                               │
 │  └────────┘  │                                               │
@@ -364,7 +388,10 @@ This approach means:
 - Editor control (color picker, font dropdown, pixel slider, shadow editor)
 - Reset button (back to AI-generated or Lumina default)
 
-**Preview Panel** (main area): Scrollable showcase of rune fixtures rendered with current tokens. Light/dark mode toggle in the header. Responsive — shows how runes look at different widths.
+**Preview Panel** (main area): Scrollable showcase of rune fixtures rendered with current tokens. Light/dark mode toggle in the header. Responsive — shows how runes look at different widths. A toolbar row at the top provides:
+- **Runes** button — opens a popover checklist to toggle individual fixtures on/off
+- **Preset buttons** (Docs, Marketing, Blog, All) — quick-select fixture sets for common workflows
+- **Token coverage badge** — appears when selected fixtures don't exercise all token groups
 
 ### Interactions
 
@@ -374,6 +401,8 @@ This approach means:
 | Edit single token | Preview updates instantly (CSS variable change) |
 | Toggle light/dark | Preview switches mode, editor shows corresponding token set |
 | Type refinement prompt | AI adjusts specific tokens, preserving manual edits where possible |
+| Toggle fixture in Runes picker | Preview adds/removes that rune, coverage badge updates |
+| Click preset (Docs/Marketing/Blog/All) | Fixture selection switches to preset, preview re-renders |
 | Undo/Redo | Token state reverts/reapplies (full snapshot) |
 | Export | Download theme package as zip or copy CSS to clipboard |
 
@@ -407,6 +436,7 @@ interface ThemeState {
     dark: Set<string>;
   };
   mode: 'light' | 'dark';
+  selectedFixtures: Set<string>;  // fixture IDs enabled in preview
 }
 ```
 
