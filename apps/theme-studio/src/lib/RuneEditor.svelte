@@ -3,6 +3,7 @@
 	import { generateCssState } from './state/generate-css.svelte.js';
 	import { contracts, getRuneNames, formatContractForPrompt } from './contracts.js';
 	import type { RuneContract } from './contracts.js';
+	import CssEditor from './CssEditor.svelte';
 
 	let { onclose }: { onclose: () => void } = $props();
 
@@ -20,10 +21,9 @@
 		currentBlock ? (themeState.runeOverrides[currentBlock] ?? '') : '',
 	);
 
-	function handleCssInput(e: Event) {
-		const value = (e.target as HTMLTextAreaElement).value;
+	function handleCssChange(css: string) {
 		if (currentBlock) {
-			themeState.updateRuneOverride(currentBlock, value);
+			themeState.updateRuneOverride(currentBlock, css);
 		}
 	}
 
@@ -78,12 +78,11 @@
 		</details>
 
 		<div class="css-input">
-			<textarea
+			<CssEditor
 				value={cssValue}
-				oninput={handleCssInput}
+				onchange={handleCssChange}
 				placeholder={`.rf-${currentBlock} {\n  /* your overrides */\n}`}
-				spellcheck="false"
-			></textarea>
+			/>
 		</div>
 
 		<div class="ai-prompt">
@@ -225,31 +224,8 @@
 		flex: 1;
 		padding: 0 16px;
 		min-height: 0;
-	}
-
-	.css-input textarea {
-		width: 100%;
-		height: 100%;
-		min-height: 200px;
-		font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-		font-size: 12px;
-		line-height: 1.6;
-		padding: 12px;
-		border: 1px solid #e5e5e5;
-		border-radius: 6px;
-		background: #1e1e2e;
-		color: #cdd6f4;
-		resize: none;
-		tab-size: 2;
-	}
-
-	.css-input textarea:focus {
-		outline: none;
-		border-color: #0ea5e9;
-	}
-
-	.css-input textarea::placeholder {
-		color: #585b70;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.ai-prompt {
