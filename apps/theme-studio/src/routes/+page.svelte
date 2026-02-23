@@ -3,6 +3,7 @@
 	import { themeState } from '$lib/state/theme.svelte.js';
 	import TokenGroup from '$lib/TokenGroup.svelte';
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
+	import PromptBar from '$lib/PromptBar.svelte';
 
 	const tokenGroups = getTokensByCategory();
 	const categories = [...tokenGroups.entries()];
@@ -57,6 +58,8 @@
 			<PreviewPanel />
 		</main>
 	</div>
+
+	<PromptBar />
 </div>
 
 <style>

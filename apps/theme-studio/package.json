@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@markdoc/markdoc": "0.4.0",
+		"@refrakt-md/ai": "0.4.0",
 		"@refrakt-md/highlight": "0.4.0",
 		"@refrakt-md/lumina": "0.4.0",
 		"@refrakt-md/runes": "0.4.0",
