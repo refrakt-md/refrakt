@@ -88,6 +88,43 @@ export function extractJson(text: string): string | null {
 		}
 	}
 
+	// Strategy 5: Truncation repair — strip incomplete last line, close braces
+	if (firstBrace !== -1) {
+		// Strip code fence markers if present
+		let raw = trimmed;
+		const fenceStart = raw.match(/^```(?:json)?\s*\n/);
+		if (fenceStart) raw = raw.slice(fenceStart[0].length);
+
+		const braceStart = raw.indexOf('{');
+		if (braceStart !== -1) {
+			let candidate = raw.slice(braceStart);
+			// Split into lines and remove last (likely incomplete) line
+			const lines = candidate.split('\n');
+			// Walk backwards removing incomplete lines until we find one that
+			// ends with a complete JSON entry (}, or ",)
+			while (lines.length > 1) {
+				const last = lines[lines.length - 1].trim();
+				if (last.endsWith('},') || last.endsWith('}') || last.endsWith('",') || last === '') {
+					break;
+				}
+				lines.pop();
+			}
+			candidate = lines.join('\n');
+			// Close any open braces
+			let depth = 0;
+			for (const ch of candidate) {
+				if (ch === '{') depth++;
+				else if (ch === '}') depth--;
+			}
+			if (depth > 0) candidate += '}'.repeat(depth);
+			try {
+				JSON.parse(candidate);
+				console.log('[theme-studio] Strategy 5 (truncation line repair) succeeded');
+				return candidate;
+			} catch { /* continue */ }
+		}
+	}
+
 	console.warn('[theme-studio] All extraction strategies failed');
 	console.warn('[theme-studio] Full response text:', trimmed);
 	return null;
@@ -212,6 +249,14 @@ export function parseThemeResponse(text: string): ParseResult {
 
 	const light = validateTokens(lightRaw!, 'light');
 	const dark = validateTokens(darkRaw!, 'dark');
+
+	// Detect truncation: if many tokens are missing, the response was likely cut off
+	const lightMissing = light.warnings.filter(w => w.includes('missing')).length;
+	const darkMissing = dark.warnings.filter(w => w.includes('missing')).length;
+	const totalMissing = lightMissing + darkMissing;
+	if (totalMissing > tokens.length * 0.3) {
+		warnings.unshift(`Response appears truncated — ${totalMissing} tokens fell back to defaults`);
+	}
 
 	return {
 		success: true,

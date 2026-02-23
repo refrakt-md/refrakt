@@ -55,13 +55,48 @@ ${tokenSections.join('\n\n')}
 
 8. **Shadow progression**: shadow-xs < shadow-sm < shadow-md < shadow-lg in perceived elevation. Dark mode shadows need higher opacity.
 
+## Design Expression
+
+A theme's visual identity comes from ALL token categories, not just colors. Typography, border radius, and shadows are equally important for communicating a theme's personality. Always customize these to match the theme concept.
+
+### Typography
+- \`font-sans\` sets the overall voice: serif families feel editorial/elegant, geometric sans-serifs feel modern/clean, humanist sans-serifs feel warm/approachable, system-ui feels utilitarian/native.
+- \`font-mono\` sets the code personality: e.g. 'IBM Plex Mono' for technical, 'Courier Prime' for retro.
+- Always include a full font stack with generic fallbacks (sans-serif, serif, or monospace).
+
+### Border Radius
+- Radius tokens set the geometry language of the entire UI.
+- Sharp/angular themes (brutalist, cyberpunk, industrial): use small values (0-2px for sm, 2-4px for md, 4-8px for lg).
+- Soft/friendly themes (playful, rounded, organic): use larger values (8-12px for sm, 14-20px for md, 20-28px for lg).
+- The Lumina defaults (6/10/16px) are a neutral middle ground — always deviate from them to match the concept.
+- \`radius-full\` should always remain 9999px.
+
+### Shadows
+- Shadow tokens establish depth and atmosphere.
+- Flat/minimal themes: use very subtle shadows or \`none\`.
+- Rich/layered themes: use pronounced multi-layer shadows.
+- Neon/cyberpunk themes: use colored glow shadows (e.g., \`0 0 20px rgba(255,0,255,0.3)\`).
+- Paper/material themes: use realistic drop shadows with visible offset.
+- The shadow color/opacity is as expressive as the blur radius — don't always default to neutral black.
+
+### Archetype Examples
+
+These illustrate how non-color tokens vary across theme concepts:
+
+**Cyberpunk / Neon**: font-sans: 'Rajdhani', 'Orbitron', system-ui, sans-serif. font-mono: 'Share Tech Mono', 'Fira Code', monospace. radius-sm: 2px, radius-md: 4px, radius-lg: 6px. Shadows use colored glows like \`0 0 20px rgba(255,0,255,0.25)\`.
+
+**Editorial / Magazine**: font-sans: 'Playfair Display', 'Georgia', serif. font-mono: 'Courier Prime', 'Courier New', monospace. radius-sm: 8px, radius-md: 14px, radius-lg: 22px. Shadows are soft like \`0 6px 16px rgba(0,0,0,0.04)\`.
+
+**Brutalist / Raw**: font-sans: 'Space Grotesk', system-ui, sans-serif. font-mono: 'Space Mono', monospace. radius-sm: 0px, radius-md: 0px, radius-lg: 0px. Shadows are harsh like \`4px 4px 0 rgba(0,0,0,0.9)\` or \`none\`.
+
 ## Output Format
 
 Respond with a JSON object containing "light" and "dark" keys.
 Each key maps token names to string values.
 Use ONLY the exact token names listed above.
 Include ALL ${tokens.length} tokens in BOTH light and dark objects.
-For tokens with no dark-mode variant (like fonts, radii), repeat the same value in both light and dark.
+Non-color tokens (fonts, radii) typically use the same value in both light and dark, but shadows may differ between modes (dark mode often needs stronger or differently-colored shadows).
+Every token must be intentionally chosen for the theme concept — do not leave non-color tokens at generic defaults.
 
 Do NOT include any text before or after the JSON.
 Do NOT wrap the JSON in code fences.`;

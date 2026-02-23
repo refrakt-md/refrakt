@@ -9,6 +9,7 @@ class GenerateState {
 	streamedText = $state('');
 	error = $state('');
 	warnings = $state<string[]>([]);
+	hasGenerated = $state(false);
 	private abortController: AbortController | null = null;
 
 	get isGenerating(): boolean {
@@ -24,10 +25,11 @@ class GenerateState {
 		this.warnings = [];
 		this.abortController = new AbortController();
 
-		// Determine if this is a refinement (any overrides exist)
+		// Determine if this is a refinement (previous generation or manual edits)
 		const hasOverrides =
 			themeState.overrides.light.size > 0 ||
 			themeState.overrides.dark.size > 0;
+		const isRefinement = hasOverrides || this.hasGenerated;
 
 		const options: GenerateOptions = {
 			prompt,
@@ -35,15 +37,17 @@ class GenerateState {
 		};
 
 		// Include current state for refinement
-		if (hasOverrides) {
+		if (isRefinement) {
 			options.current = {
 				light: { ...themeState.tokens.light },
 				dark: { ...themeState.tokens.dark },
 			};
-			options.overrides = {
-				light: [...themeState.overrides.light],
-				dark: [...themeState.overrides.dark],
-			};
+			if (hasOverrides) {
+				options.overrides = {
+					light: [...themeState.overrides.light],
+					dark: [...themeState.overrides.dark],
+				};
+			}
 		}
 
 		try {
@@ -87,6 +91,7 @@ class GenerateState {
 			// override set for the next refinement pass
 			themeState.overrides.light = new Set();
 			themeState.overrides.dark = new Set();
+			this.hasGenerated = true;
 		}
 		return result;
 	}
