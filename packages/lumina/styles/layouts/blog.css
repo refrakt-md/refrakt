@@ -8,7 +8,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0.875rem 1.5rem;
+	padding: 1.125rem 1.5rem;
 }
 .rf-blog-header p {
 	margin: 0;
@@ -22,9 +22,16 @@
 .rf-blog-header a:hover {
 	text-decoration: none;
 }
+.rf-blog-header p:first-child a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	font-size: 1.2rem;
+	letter-spacing: -0.02em;
+}
 .rf-blog-header img {
-	display: block;
-	height: 1.5rem;
+	height: 2rem;
 	width: auto;
 }
 .rf-blog-header__inner p ~ p {

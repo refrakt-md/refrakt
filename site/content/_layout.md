@@ -1,6 +1,6 @@
 {% layout %}
 {% region name="header" %}
-[![refrakt.md](/logo.svg)](/)
+[![](/mark.svg) refrakt.md](/)
 
 [Docs](/docs/getting-started) [Architecture](/architecture) [Blog](/blog) [Changelog](/releases)
 {% /region %}

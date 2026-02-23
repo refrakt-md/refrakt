@@ -850,9 +850,15 @@ Theme generation is a fundamentally different interaction model. The chat app is
 
 ### Tier 2: Icon Customization
 
-- Upload custom SVG icons for hint variants (note, warning, caution, check)
-- Preview icons in context within the hint fixture
-- Export includes icon overrides in `config.ts`
+Now that the icon rune system exists (`{% icon /%}`, Lucide registry, grouped icon config), this tier expands beyond hint-only icons:
+
+- Browse/search the ~83 built-in Lucide icons from `packages/lumina/src/icons.ts`
+- Upload custom SVG icons for any icon group (hint variants, global library, custom groups)
+- Replace hint variant icons (note, warning, caution, check) — updates CSS `mask-image` data URIs in hint rune overrides
+- Replace or add global registry icons — updates `icons.global` in `mergeThemeConfig`
+- Preview icons in context: hint fixture for hint group, inline `{% icon /%}` for global group
+- SVG validation and sanitization on upload (stroke-based, `currentColor`-compatible)
+- Export includes both: CSS `mask-image` overrides for structure-injected icons AND `icons` config object for `mergeThemeConfig`
 
 ### Distribution
 

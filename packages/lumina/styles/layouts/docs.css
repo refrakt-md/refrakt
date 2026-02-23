@@ -14,7 +14,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0.875rem 1.5rem;
+	padding: 1.125rem 1.5rem;
 }
 .rf-docs-header p {
 	margin: 0;
@@ -28,9 +28,16 @@
 .rf-docs-header a:hover {
 	text-decoration: none;
 }
+.rf-docs-header p:first-child a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	font-size: 1.2rem;
+	letter-spacing: -0.02em;
+}
 .rf-docs-header img {
-	display: block;
-	height: 1.5rem;
+	height: 2rem;
 	width: auto;
 }
 .rf-docs-header__inner p ~ p {
@@ -48,7 +55,7 @@
 .rf-docs-sidebar {
 	position: fixed;
 	left: 0;
-	top: 3.375rem;
+	top: 4.125rem;
 	bottom: 0;
 	width: 240px;
 	overflow-y: auto;
@@ -63,7 +70,7 @@
 
 /* ---- Content area ---- */
 .rf-docs-content {
-	padding-top: 5rem;
+	padding-top: 5.75rem;
 	padding-bottom: 4rem;
 	container-type: inline-size;
 }
@@ -130,7 +137,7 @@
 		display: flex;
 	}
 	.rf-mobile-panel--nav {
-		top: 5.5rem;
+		top: 6.25rem;
 	}
 	.rf-docs-sidebar {
 		display: none;

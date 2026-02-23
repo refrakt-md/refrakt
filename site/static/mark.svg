@@ -1,15 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 62" fill="none">
-  <defs>
-    <linearGradient id="refract" x1="6" y1="34" x2="36" y2="58" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#111827"/>
-      <stop offset="100%" stop-color="#ea580c"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <style>
+    .top { fill: #67e8f9; }
+    .right { fill: #22d3ee; }
+    .left { fill: #06b6d4; }
+    @media (prefers-color-scheme: dark) {
+      .top { fill: #a5f3fc; }
+      .right { fill: #67e8f9; }
+      .left { fill: #22d3ee; }
+    }
+  </style>
 
-  <!-- stem (medium boundary) -->
-  <line x1="6" y1="2" x2="6" y2="58" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
-  <!-- upper arm (incident ray) -->
-  <line x1="6" y1="34" x2="24" y2="16" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
-  <!-- lower arm (refracted ray) -->
-  <line x1="6" y1="34" x2="36" y2="58" stroke="url(#refract)" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- Isometric cube: 6 triangles, 3 faces -->
+  <!-- Top face -->
+  <polygon class="top" points="41.6,6.7 68.1,22 41.6,37.3"/>
+  <polygon class="top" points="11.9,22 38.4,6.7 38.4,37.3"/>
+  <!-- Right face -->
+  <polygon class="right" points="69.6,24.7 69.6,55.3 43.1,40"/>
+  <polygon class="right" points="68.1,58 41.6,73.3 41.6,42.7"/>
+  <!-- Left face -->
+  <polygon class="left" points="38.4,73.3 11.9,58 38.4,42.7"/>
+  <polygon class="left" points="10.4,55.3 10.4,24.7 36.9,40"/>
 </svg>
