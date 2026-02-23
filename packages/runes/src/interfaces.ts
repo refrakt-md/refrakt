@@ -7,6 +7,7 @@ export interface NodeFilterOptions {
   node?: MarkdocNodeType;
   limit?: number;
   descendant?: string;
+  descendantTag?: string;
   deep?: boolean;
 }
 

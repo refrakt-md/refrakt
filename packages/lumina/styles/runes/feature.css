@@ -51,6 +51,16 @@
 	letter-spacing: -0.01em;
 	color: var(--rf-color-text);
 }
+.rf-feature-definition dt:has(> .rf-icon) {
+	display: flex;
+	flex-direction: column;
+}
+.rf-feature-definition dt > .rf-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+	margin-bottom: 0.5rem;
+	color: var(--rf-color-accent);
+}
 .rf-feature-definition dd {
 	margin: 0;
 	color: var(--rf-color-muted);

@@ -21,27 +21,27 @@ npm create refrakt
 
 ## Why refrakt.md?
 
-- **Built on Markdoc**
+- {% icon name="puzzle" /%} **Built on Markdoc**
 
   Not another Markdown dialect. refrakt.md extends Markdoc with semantic runes that add meaning to the Markdown you already write. Everything Markdoc does, you keep.
 
-- **Runes, not components**
+- {% icon name="sparkles" /%} **Runes, not components**
 
   Runes reinterpret the Markdown inside them. A heading inside `{% nav %}` becomes a group title. A list inside `{% cta %}` becomes action buttons. You write Markdown — the rune decides what it means.
 
-- **SEO from the start**
+- {% icon name="globe" /%} **SEO from the start**
 
   Every rune can emit Schema.org JSON-LD and Open Graph metadata automatically. Recipes get Recipe schema, events get Event schema, FAQs get FAQ schema — no manual wiring.
 
-- **AI-powered authoring**
+- {% icon name="brain" /%} **AI-powered authoring**
 
   Generate full pages with `refrakt write`. The CLI knows every rune and produces valid Markdown with proper rune structure. Supports Claude and local models via Ollama.
 
-- **Layout inheritance**
+- {% icon name="layers" /%} **Layout inheritance**
 
   Define regions in `_layout.md` files that cascade down directory trees. Headers, navigation, and sidebars compose automatically — no config files needed.
 
-- **Portable content**
+- {% icon name="package" /%} **Portable content**
 
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 

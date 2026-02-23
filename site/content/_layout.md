@@ -32,6 +32,7 @@
 
 - hint
 - steps
+- icon
 - figure
 - sidenote
 - form

@@ -24,6 +24,25 @@
 		return result;
 	}
 
+	function escapeAttr(str: string): string {
+		return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	}
+
+	/** Serialize an SVG tag tree to HTML string. Using {@html} avoids SVG namespace
+	 *  issues that occur when <svelte:element> creates child SVG elements (path, circle, etc.)
+	 *  outside the SVG namespace context during client-side navigation. */
+	function svgToHtml(tag: SerializedTag): string {
+		const attrs = Object.entries(htmlAttrs(tag.attributes))
+			.map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
+			.join('');
+		const children = tag.children.map(child => {
+			if (typeof child === 'string') return escapeAttr(child);
+			if (isTag(child)) return svgToHtml(child);
+			return '';
+		}).join('');
+		return `<${tag.name}${attrs}>${children}</${tag.name}>`;
+	}
+
 	const globalOverrides = getElementOverrides();
 	const merged = $derived(overrides
 		? { ...globalOverrides, ...overrides }
@@ -55,6 +74,8 @@
 				<Renderer node={child} overrides={merged} />
 			{/each}
 		</ElementOverride>
+	{:else if node.name === 'svg'}
+		{@html svgToHtml(node)}
 	{:else}
 		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
 			{#each node.children as child}

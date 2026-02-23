@@ -28,17 +28,20 @@ export interface SitePage {
   seo: PageSeo;
 }
 
-function transformContent(content: string, path: string): RenderableTreeNodes {
+function transformContent(content: string, path: string, icons?: Record<string, Record<string, string>>): RenderableTreeNodes {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path, headings, __source: content } };
+  const config = { tags, nodes, variables: {
+    generatedIds: new Set<string>(), path, headings, __source: content,
+    ...(icons ? { __icons: icons } : {}),
+  } };
   return Markdoc.transform(ast, config);
 }
 
 /**
  * Load a content directory and resolve all pages, routes, layouts, and navigation.
  */
-export async function loadContent(dirPath: string, basePath: string = '/'): Promise<Site> {
+export async function loadContent(dirPath: string, basePath: string = '/', icons?: Record<string, Record<string, string>>): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
   const pages: SitePage[] = [];
@@ -47,7 +50,7 @@ export async function loadContent(dirPath: string, basePath: string = '/'): Prom
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root);
-    const renderable = transformContent(content, route.url);
+    const renderable = transformContent(content, route.url, icons);
     const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
 
     pages.push({ route, frontmatter, content, renderable, layout, seo });

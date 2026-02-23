@@ -303,9 +303,9 @@ A good order:
 
 ### Step 5: Add icons
 
-Runes that use `icon` in their structure config need SVG strings provided in the theme config. Currently this is just the Hint rune, which expects icons for each hint type.
+Icons are SVG strings organized by group in the theme config. There are two types of icon groups:
 
-The SVGs should be inline strings — no file references:
+**Structural icons** — used by the identity transform's `StructureEntry.icon` config to inject icons into rune headers. The Hint rune expects icons for each hint type:
 
 ```typescript
 icons: {
@@ -316,7 +316,20 @@ icons: {
 }
 ```
 
-Use `stroke="currentColor"` so the icon inherits color from CSS.
+**Content icons** — the `global` group provides icons that content authors reference with `{% icon name="..." /%}`. Lumina ships ~80 curated Lucide icons in its `global` group. Your theme can provide its own set or extend Lumina's:
+
+```typescript
+icons: {
+  hint: { /* structural icons */ },
+  global: {
+    'rocket': '<svg ...>...</svg>',
+    'shield': '<svg ...>...</svg>',
+    // ... curated icon set for content authors
+  },
+}
+```
+
+Use `stroke="currentColor"` so icons inherit color from CSS.
 
 ### Step 6: Create your manifest
 

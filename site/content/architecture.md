@@ -86,6 +86,7 @@ refrakt.md ships 47 author-facing runes (plus internal child runes). Each rune d
 | `reveal` | -- | Heading as reveal step label, paragraph as revealed content (progressive disclosure) | -- |
 | `conversation` | `dialogue`, `chat` | Blockquote as speaker message, strong as speaker name | -- |
 | `form` | `contact-form` | List items as form fields (type inferred from name), blockquote as help text or selection group, heading as fieldset group, strong as submit button label | -- |
+| `icon` | -- | Self-closing. Resolves `name` attribute to inline SVG from theme icon registry | -- |
 
 ### Navigation & Disclosure
 

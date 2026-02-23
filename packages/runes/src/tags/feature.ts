@@ -9,7 +9,7 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 import { SplitablePageSectionModel, pageSectionProperties } from './common.js';
 
 export class DefinitionModel extends Model {
-  @group({ include: [{ node: 'paragraph', descendant: 'image' }, { node: 'paragraph', descendant: 'strong' }, 'heading'] })
+  @group({ include: [{ node: 'paragraph', descendant: 'image' }, { node: 'paragraph', descendantTag: 'icon' }, { node: 'paragraph', descendant: 'strong' }, 'heading'] })
   term: NodeStream;
 
   @group({ include: ['paragraph'] })
@@ -20,6 +20,13 @@ export class DefinitionModel extends Model {
       .useNode('paragraph', node => {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
         if (img) return Markdoc.transform(img, this.config);
+        const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
+        if (iconTag) {
+          const strong = Array.from(node.walk()).find(n => n.type === 'strong');
+          const iconResult = Markdoc.transform(iconTag, this.config);
+          if (strong) return [iconResult, new Tag('span', {}, strong.transformChildren(this.config))];
+          return iconResult;
+        }
         const strong = Array.from(node.walk()).find(n => n.type === 'strong');
         if (strong) return new Tag('span', {}, strong.transformChildren(this.config));
         return Markdoc.transform(node, this.config);

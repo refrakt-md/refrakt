@@ -24,7 +24,7 @@ interface ThemeConfig {
 |-------|-------------|
 | `prefix` | Prepended to all BEM class names. `'rf'` produces `.rf-hint`, `.rf-hint--note`, `.rf-hint__icon` |
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
-| `icons` | SVG strings organized by group and variant. Accessed by `StructureEntry.icon` config |
+| `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
 | `runes` | Maps rune `typeof` values to their transform configuration |
 
 ## RuneConfig

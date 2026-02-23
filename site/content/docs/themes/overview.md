@@ -109,10 +109,11 @@ packages/lumina/
 └── package.json            # Exports, dependencies
 ```
 
-Lumina's config is minimal — it only adds icon SVGs to the base config:
+Lumina's config is minimal — it adds icon SVGs and a curated content icon set to the base config:
 
 ```typescript
 import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+import { icons as lucideIcons } from './icons.js';
 
 export const luminaConfig = mergeThemeConfig(baseConfig, {
   icons: {
@@ -122,6 +123,7 @@ export const luminaConfig = mergeThemeConfig(baseConfig, {
       caution: '<svg>...</svg>',
       check: '<svg>...</svg>',
     },
+    global: lucideIcons,  // ~80 curated Lucide icons for the icon rune
   },
 });
 ```

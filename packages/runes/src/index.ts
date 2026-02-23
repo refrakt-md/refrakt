@@ -55,6 +55,7 @@ import { palette } from './tags/palette.js';
 import { typography } from './tags/typography.js';
 import { spacing } from './tags/spacing.js';
 import { designContext } from './tags/design-context.js';
+import { icon } from './tags/icon.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -583,6 +584,12 @@ export const runes = {
     description: 'Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection',
     reinterprets: {},
     type: schema.DesignContext,
+  }),
+  icon: defineRune({
+    name: 'icon',
+    schema: icon,
+    description: 'Inline icon resolved by name from the theme icon registry. Self-closing.',
+    reinterprets: {},
   }),
 };
 
