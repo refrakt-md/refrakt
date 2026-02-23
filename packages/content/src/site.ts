@@ -49,7 +49,7 @@ export async function loadContent(dirPath: string, basePath: string = '/', icons
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
-    const layout = resolveLayouts(page, tree.root);
+    const layout = resolveLayouts(page, tree.root, icons);
     const renderable = transformContent(content, route.url, icons);
     const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
 

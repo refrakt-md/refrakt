@@ -44,6 +44,11 @@
 .rf-blog-header__inner p ~ p a:hover {
 	color: var(--rf-color-text);
 }
+.rf-blog-header__inner p ~ p a svg {
+	width: 1.1rem;
+	height: 1.1rem;
+	vertical-align: -0.15em;
+}
 
 /* ---- Layout container ---- */
 .rf-blog {

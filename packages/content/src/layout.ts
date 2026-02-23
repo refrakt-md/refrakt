@@ -24,10 +24,11 @@ export interface ResolvedLayout {
  */
 export function resolveLayouts(
   page: ContentPage,
-  rootDir: ContentDirectory
+  rootDir: ContentDirectory,
+  icons?: Record<string, Record<string, string>>
 ): ResolvedLayout {
   const chain = findLayoutChain(page, rootDir);
-  const regions = mergeRegions(chain);
+  const regions = mergeRegions(chain, icons);
   return { chain, regions };
 }
 
@@ -63,10 +64,13 @@ function findLayoutChain(
 /**
  * Parse a layout file through Markdoc and extract regions.
  */
-function parseLayout(layoutPage: ContentPage): { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] {
+function parseLayout(layoutPage: ContentPage, icons?: Record<string, Record<string, string>>): { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] {
   const { content } = parseFrontmatter(layoutPage.raw);
   const ast = Markdoc.parse(content);
-  const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: layoutPage.relativePath, __source: content } };
+  const config = { tags, nodes, variables: {
+    generatedIds: new Set<string>(), path: layoutPage.relativePath, __source: content,
+    ...(icons ? { __icons: icons } : {}),
+  } };
   const rendered = Markdoc.transform(ast, config);
 
   const regions: { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] = [];
@@ -107,11 +111,11 @@ function findRegions(
  * Merge regions from a layout chain.
  * Later layouts in the chain can replace, prepend, or append to earlier regions.
  */
-function mergeRegions(chain: ContentPage[]): Map<string, Region> {
+function mergeRegions(chain: ContentPage[], icons?: Record<string, Record<string, string>>): Map<string, Region> {
   const merged = new Map<string, Region>();
 
   for (const layoutPage of chain) {
-    const regions = parseLayout(layoutPage);
+    const regions = parseLayout(layoutPage, icons);
 
     for (const { name, mode, content } of regions) {
       const existing = merged.get(name);
