@@ -136,6 +136,7 @@
 						<div class="tree-item indent">manifest.json</div>
 						<div class="tree-item indent">index.css</div>
 						<div class="tree-item indent">base.css</div>
+						<div class="tree-item indent">transform.js</div>
 						<div class="tree-item indent">tokens/</div>
 						<div class="tree-item indent2">base.css</div>
 						<div class="tree-item indent2">dark.css</div>
@@ -147,6 +148,7 @@
 							{/each}
 						{/if}
 						<div class="tree-item indent">svelte/</div>
+						<div class="tree-item indent2">index.js</div>
 						<div class="tree-item indent2">tokens.css</div>
 					</div>
 				</div>

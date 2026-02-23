@@ -19,6 +19,8 @@ if (command === 'write') {
 	runScaffoldCss(args.slice(1));
 } else if (command === 'validate') {
 	runValidate(args.slice(1));
+} else if (command === 'theme') {
+	runTheme(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -39,6 +41,7 @@ Commands:
   contracts [options]  Generate structure contracts from theme config
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate theme config and manifest
+  theme <subcommand>   Manage themes (install, info)
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -76,6 +79,10 @@ Validate Options:
   --config <path>          Path to theme config module (default: auto-detect)
   --manifest <path>        Path to manifest.json (default: auto-detect)
 
+Theme Subcommands:
+  theme install <source>   Install a theme (directory, .tgz, or npm package)
+  theme info               Show current theme details
+
 Examples:
   refrakt inspect hint --type=warning
   refrakt inspect hint --type=all
@@ -89,6 +96,9 @@ Examples:
   refrakt write -p ollama -m llama3.2 "Write a FAQ page"
   refrakt contracts -o packages/lumina/contracts/structures.json
   refrakt contracts --check -o packages/lumina/contracts/structures.json
+  refrakt theme install ./my-theme
+  refrakt theme install @my-org/my-theme
+  refrakt theme info
 `);
 }
 
@@ -381,4 +391,51 @@ function runValidate(validateArgs: string[]): void {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
 	});
+}
+
+function runTheme(themeArgs: string[]): void {
+	const subcommand = themeArgs[0];
+
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`
+Usage: refrakt theme <subcommand> [options]
+
+Subcommands:
+  install <source>   Install a theme (directory, .tgz, or npm package name)
+  info               Show current theme details
+
+Examples:
+  refrakt theme install ./my-theme
+  refrakt theme install @my-org/my-theme
+  refrakt theme info
+`);
+		process.exit(subcommand ? 0 : 1);
+	}
+
+	if (subcommand === 'install') {
+		const source = themeArgs[1];
+		if (!source) {
+			console.error('Error: Missing source argument\n');
+			console.error('Usage: refrakt theme install <directory | .tgz | package-name>');
+			process.exit(1);
+		}
+
+		import('./commands/theme.js').then(({ themeInstallCommand }) => {
+			return themeInstallCommand({ source });
+		}).catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+	} else if (subcommand === 'info') {
+		import('./commands/theme.js').then(({ themeInfoCommand }) => {
+			return themeInfoCommand({});
+		}).catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+	} else {
+		console.error(`Error: Unknown theme subcommand "${subcommand}"\n`);
+		console.error('Available subcommands: install, info');
+		process.exit(1);
+	}
 }

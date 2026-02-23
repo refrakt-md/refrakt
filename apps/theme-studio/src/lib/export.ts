@@ -73,10 +73,14 @@ export function generatePackageJson(name: string, description: string): string {
 				'.': './index.css',
 				'./base.css': './base.css',
 				'./manifest': './manifest.json',
+				'./transform': './transform.js',
+				'./svelte': './svelte/index.js',
 				'./svelte/tokens.css': './svelte/tokens.css',
+				'./styles/runes/*.css': './styles/runes/*.css',
 			},
 			dependencies: {
 				'@refrakt-md/lumina': '^0.5.0',
+				'@refrakt-md/theme-base': '^0.5.0',
 			},
 			peerDependencies: {
 				svelte: '^5.0.0',
@@ -94,6 +98,18 @@ function generateSvelteTokensCss(): string {
 	return [
 		`/* Token bridge — imports full theme CSS */`,
 		`@import '../index.css';`,
+		``,
+	].join('\n');
+}
+
+function generateSvelteIndex(): string {
+	return `export { theme } from '@refrakt-md/lumina/svelte';\n`;
+}
+
+function generateTransformIndex(): string {
+	return [
+		`export { luminaConfig, identityTransform, createTransform } from '@refrakt-md/lumina/transform';`,
+		`export { luminaConfig as themeConfig } from '@refrakt-md/lumina/transform';`,
 		``,
 	].join('\n');
 }
@@ -136,8 +152,11 @@ export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
 		}
 	}
 
+	root.file('transform.js', generateTransformIndex());
+
 	const svelte = root.folder('svelte')!;
 	svelte.file('tokens.css', generateSvelteTokensCss());
+	svelte.file('index.js', generateSvelteIndex());
 
 	return zip.generateAsync({ type: 'blob' });
 }
