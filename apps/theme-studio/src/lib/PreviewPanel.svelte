@@ -89,6 +89,9 @@
 		background: var(--rf-color-bg, #ffffff);
 		border-radius: 8px;
 		border: 1px solid #e5e5e5;
+		max-width: 1080px;
+		margin: 0 auto;
+		width: 100%;
 	}
 	.preview-toolbar {
 		flex-shrink: 0;
@@ -111,9 +114,6 @@
 		font-family: var(--rf-font-sans, system-ui, sans-serif);
 		color: var(--rf-color-text, #1a1a2e);
 		background: var(--rf-color-bg, #ffffff);
-		max-width: 1080px;
-		margin: 0 auto;
-		width: 100%;
 	}
 	.fixture {
 		margin-bottom: 32px;
