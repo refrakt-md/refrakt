@@ -21,23 +21,38 @@ const TOKEN_MAP = new Map<string, TokenDefinition>(tokens.map(t => [t.name, t]))
 /**
  * Extract JSON from potentially messy AI output.
  * Handles: raw JSON, ```json fences, preamble text before JSON,
- * trailing text after JSON.
+ * trailing text after JSON, and truncated responses.
  */
 export function extractJson(text: string): string | null {
 	const trimmed = text.trim();
+	console.log('[theme-studio] extractJson input length:', trimmed.length);
+	console.log('[theme-studio] extractJson preview:', trimmed.slice(0, 200));
 
 	// Strategy 1: Direct parse
 	try {
 		JSON.parse(trimmed);
+		console.log('[theme-studio] Strategy 1 (direct parse) succeeded');
 		return trimmed;
 	} catch { /* continue */ }
 
-	// Strategy 2: Code fence extraction (```json ... ``` or ``` ... ```)
+	// Strategy 2a: Code fence extraction — non-greedy (```json ... ```)
 	const fenceMatch = trimmed.match(/```(?:json)?\s*\n([\s\S]*?)\n\s*```/);
 	if (fenceMatch) {
 		try {
 			JSON.parse(fenceMatch[1]);
+			console.log('[theme-studio] Strategy 2a (code fence non-greedy) succeeded');
 			return fenceMatch[1];
+		} catch { /* continue */ }
+	}
+
+	// Strategy 2b: Code fence extraction — greedy (handles multiple fences or unusual formatting)
+	const greedyFenceMatch = trimmed.match(/```(?:json)?\s*\n([\s\S]*)```/);
+	if (greedyFenceMatch) {
+		const content = greedyFenceMatch[1].trim();
+		try {
+			JSON.parse(content);
+			console.log('[theme-studio] Strategy 2b (code fence greedy) succeeded');
+			return content;
 		} catch { /* continue */ }
 	}
 
@@ -48,10 +63,33 @@ export function extractJson(text: string): string | null {
 		const candidate = trimmed.slice(firstBrace, lastBrace + 1);
 		try {
 			JSON.parse(candidate);
+			console.log('[theme-studio] Strategy 3 (outermost braces) succeeded');
 			return candidate;
 		} catch { /* continue */ }
 	}
 
+	// Strategy 4: Try to repair truncated JSON (missing closing braces)
+	if (firstBrace !== -1) {
+		let candidate = trimmed.slice(firstBrace);
+		// Count open vs close braces
+		let depth = 0;
+		for (const ch of candidate) {
+			if (ch === '{') depth++;
+			else if (ch === '}') depth--;
+		}
+		if (depth > 0) {
+			// Truncated — try adding missing closing braces
+			candidate = candidate + '}'.repeat(depth);
+			try {
+				JSON.parse(candidate);
+				console.log('[theme-studio] Strategy 4 (brace repair, added', depth, 'closing braces) succeeded');
+				return candidate;
+			} catch { /* continue */ }
+		}
+	}
+
+	console.warn('[theme-studio] All extraction strategies failed');
+	console.warn('[theme-studio] Full response text:', trimmed);
 	return null;
 }
 

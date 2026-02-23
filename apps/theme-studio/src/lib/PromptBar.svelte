@@ -22,12 +22,15 @@
 	{#if generateState.status === 'streaming'}
 		<div class="streaming-indicator">
 			<span class="dot-pulse"></span>
-			<span>Generating theme...</span>
+			<span>Generating theme... ({generateState.streamedText.length} chars)</span>
 			<button class="cancel-btn" onclick={() => generateState.cancel()}>Cancel</button>
 		</div>
+		{#if generateState.streamedText.length > 0}
+			<pre class="stream-preview">{generateState.streamedText.slice(-500)}</pre>
+		{/if}
 	{:else if generateState.status === 'error'}
 		<div class="error-bar">
-			<span>{generateState.error}</span>
+			<span class="error-text">{generateState.error}</span>
 			<button class="dismiss-btn" onclick={() => generateState.dismiss()}>Dismiss</button>
 		</div>
 	{:else}
@@ -146,12 +149,34 @@
 		background: #fafafa;
 	}
 
+	.stream-preview {
+		margin: 6px 0 0;
+		padding: 6px 10px;
+		background: #f5f5f5;
+		border-radius: 6px;
+		font-size: 11px;
+		color: #666;
+		overflow-y: auto;
+		white-space: pre-wrap;
+		word-break: break-all;
+		max-height: 120px;
+		line-height: 1.4;
+	}
+
 	.error-bar {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 8px;
 		color: #ef4444;
 		font-size: 13px;
+	}
+
+	.error-text {
+		white-space: pre-wrap;
+		word-break: break-word;
+		flex: 1;
+		max-height: 120px;
+		overflow-y: auto;
 	}
 
 	.dismiss-btn {

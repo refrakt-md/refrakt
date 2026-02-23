@@ -53,7 +53,11 @@ function detectProvider(): ResolvedProvider {
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json() as GenerateRequest;
 
-	const { provider } = detectProvider();
+	const resolved = detectProvider();
+	const model = body.model ?? resolved.defaultModel;
+	console.log(`[theme-studio] Using provider: ${resolved.name}, model: ${model}`);
+
+	const { provider } = resolved;
 
 	const [basePrompt, contextPrompt] = buildThemePromptParts(
 		body.current ? {

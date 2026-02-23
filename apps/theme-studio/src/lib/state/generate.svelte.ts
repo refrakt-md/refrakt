@@ -57,7 +57,10 @@ class GenerateState {
 
 			if (!result.success) {
 				this.status = 'error';
-				this.error = result.error ?? 'Failed to parse theme';
+				const preview = this.streamedText.trim()
+					? '\n\nResponse preview:\n' + this.streamedText.slice(0, 500)
+					: '\n\n(No response text received)';
+				this.error = (result.error ?? 'Failed to parse theme') + preview;
 			} else {
 				this.warnings = result.warnings;
 				this.status = 'idle';
