@@ -839,12 +839,14 @@ Theme generation is a fundamentally different interaction model. The chat app is
 
 ## Future Extensions
 
-### Tier 2: Rune CSS Overrides
+### Tier 2: Rune CSS Overrides (**Done**)
 
-- Select a rune from the showcase → open a per-rune CSS editor
-- AI generates CSS based on the rune's contract (selectors from `generateStructureContract()`)
-- `refrakt inspect <rune> --json` provides the exact HTML structure to style against
-- Override CSS layers after Lumina's rune CSS in the cascade
+- [x] Pre-generated BEM contracts from `generateStructureContract()` (`scripts/generate-contracts.ts`)
+- [x] Per-rune CSS editor panel with selector reference (`lib/RuneEditor.svelte`)
+- [x] AI CSS generation with rune-specific prompts (`lib/ai/css-prompt.ts`, `state/generate-css.svelte.ts`)
+- [x] Live preview injection via `<style>` tag (`PreviewPanel.svelte`)
+- [x] State, history, and persistence integration (schema v2)
+- [x] Export includes `styles/runes/{block}.css` files + updated `index.css` imports
 
 ### Tier 2: Icon Customization
 

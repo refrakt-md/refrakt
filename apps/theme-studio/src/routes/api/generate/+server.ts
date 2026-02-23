@@ -3,9 +3,13 @@ import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } f
 import type { AIProvider, Message } from '@refrakt-md/ai';
 import type { RequestHandler } from './$types';
 import { buildThemePromptParts } from '$lib/ai/prompt.js';
+import { buildCssPromptParts } from '$lib/ai/css-prompt.js';
+import { contracts, getRuneContract } from '$lib/contracts.js';
 
 interface GenerateRequest {
 	prompt: string;
+	mode?: 'tokens' | 'rune-css';
+	runeName?: string;
 	current?: {
 		light: Record<string, string>;
 		dark: Record<string, string>;
@@ -58,22 +62,46 @@ export const POST: RequestHandler = async ({ request }) => {
 	console.log(`[theme-studio] Using provider: ${resolved.name}, model: ${model}`);
 
 	const { provider } = resolved;
+	const mode = body.mode ?? 'tokens';
 
-	const [basePrompt, contextPrompt] = buildThemePromptParts(
-		body.current ? {
-			current: body.current,
-			overrides: body.overrides ? {
-				light: new Set(body.overrides.light),
-				dark: new Set(body.overrides.dark),
+	let messages: Message[];
+
+	if (mode === 'rune-css' && body.runeName) {
+		const contract = getRuneContract(body.runeName);
+		if (!contract) {
+			return new Response(
+				JSON.stringify({ error: `Unknown rune: ${body.runeName}` }),
+				{ status: 400, headers: { 'Content-Type': 'application/json' } },
+			);
+		}
+		const currentTokens = body.current?.light ?? {};
+		const [basePrompt, contextPrompt] = buildCssPromptParts(
+			body.runeName,
+			contract,
+			currentTokens,
+		);
+		messages = [
+			{ role: 'system', content: basePrompt },
+			{ role: 'system', content: contextPrompt },
+			{ role: 'user', content: body.prompt },
+		];
+		console.log(`[theme-studio] Generating CSS for rune: ${body.runeName}`);
+	} else {
+		const [basePrompt, contextPrompt] = buildThemePromptParts(
+			body.current ? {
+				current: body.current,
+				overrides: body.overrides ? {
+					light: new Set(body.overrides.light),
+					dark: new Set(body.overrides.dark),
+				} : undefined,
 			} : undefined,
-		} : undefined,
-	);
-
-	const messages: Message[] = [
-		{ role: 'system', content: basePrompt },
-		{ role: 'system', content: contextPrompt },
-		{ role: 'user', content: body.prompt },
-	];
+		);
+		messages = [
+			{ role: 'system', content: basePrompt },
+			{ role: 'system', content: contextPrompt },
+			{ role: 'user', content: body.prompt },
+		];
+	}
 
 	const stream = new ReadableStream({
 		async start(controller) {

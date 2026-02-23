@@ -7,6 +7,7 @@ export interface ThemeSnapshot {
 	description: string;
 	tokens: { light: Record<string, string>; dark: Record<string, string> };
 	overrides: { light: string[]; dark: string[] };
+	runeOverrides: Record<string, string>;
 }
 
 function takeSnapshot(): ThemeSnapshot {
@@ -21,6 +22,7 @@ function takeSnapshot(): ThemeSnapshot {
 			light: [...themeState.overrides.light],
 			dark: [...themeState.overrides.dark],
 		},
+		runeOverrides: { ...themeState.runeOverrides },
 	};
 }
 
@@ -31,6 +33,7 @@ function restoreSnapshot(snapshot: ThemeSnapshot): void {
 	themeState.tokens.dark = { ...snapshot.tokens.dark };
 	themeState.overrides.light = new Set(snapshot.overrides.light);
 	themeState.overrides.dark = new Set(snapshot.overrides.dark);
+	themeState.runeOverrides = { ...snapshot.runeOverrides };
 }
 
 class HistoryState {

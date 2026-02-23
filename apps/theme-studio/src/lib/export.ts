@@ -18,8 +18,8 @@ export function generateDarkCss(darkTokens: Record<string, string>): string {
 	return compileDarkTokens(darkTokens);
 }
 
-export function generateIndexCss(pkgName: string): string {
-	return [
+export function generateIndexCss(pkgName: string, runeBlocks: string[] = []): string {
+	const lines = [
 		`/* ${pkgName} — Theme for refrakt.md */`,
 		`/* Import Lumina's complete rune CSS + default tokens */`,
 		`@import '@refrakt-md/lumina/index.css';`,
@@ -27,8 +27,18 @@ export function generateIndexCss(pkgName: string): string {
 		`/* Override with custom tokens */`,
 		`@import './tokens/base.css';`,
 		`@import './tokens/dark.css';`,
-		``,
-	].join('\n');
+	];
+
+	if (runeBlocks.length > 0) {
+		lines.push('');
+		lines.push('/* Per-rune CSS overrides */');
+		for (const block of runeBlocks.sort()) {
+			lines.push(`@import './styles/runes/${block}.css';`);
+		}
+	}
+
+	lines.push('');
+	return lines.join('\n');
 }
 
 export function generateManifest(name: string, description: string): string {
@@ -93,6 +103,7 @@ interface ThemeExportData {
 	description: string;
 	lightTokens: Record<string, string>;
 	darkTokens: Record<string, string>;
+	runeOverrides?: Record<string, string>;
 }
 
 export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
@@ -100,14 +111,30 @@ export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
 	const pkgName = toPackageName(data.name);
 	const root = zip.folder(pkgName)!;
 
+	// Collect rune override block names
+	const runeBlocks = data.runeOverrides
+		? Object.entries(data.runeOverrides)
+				.filter(([, css]) => css.trim())
+				.map(([block]) => block)
+		: [];
+
 	root.file('package.json', generatePackageJson(data.name, data.description));
 	root.file('manifest.json', generateManifest(data.name, data.description));
-	root.file('index.css', generateIndexCss(pkgName));
-	root.file('base.css', generateIndexCss(pkgName)); // same as index.css for Tier 1
+	root.file('index.css', generateIndexCss(pkgName, runeBlocks));
+	root.file('base.css', generateIndexCss(pkgName, runeBlocks));
 
 	const tokens = root.folder('tokens')!;
 	tokens.file('base.css', generateBaseCss(data.lightTokens));
 	tokens.file('dark.css', generateDarkCss(data.darkTokens));
+
+	// Per-rune CSS overrides
+	if (runeBlocks.length > 0) {
+		const runes = root.folder('styles')!.folder('runes')!;
+		for (const block of runeBlocks) {
+			const css = data.runeOverrides![block];
+			runes.file(`${block}.css`, `/* ${block} rune overrides */\n${css}\n`);
+		}
+	}
 
 	const svelte = root.folder('svelte')!;
 	svelte.file('tokens.css', generateSvelteTokensCss());

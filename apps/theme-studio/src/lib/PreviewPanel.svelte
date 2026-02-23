@@ -65,6 +65,9 @@
 	{:else}
 		<div class="preview-content" style={previewStyle}>
 			{@html `<style>${getHighlightCss()}</style>`}
+			{#if themeState.runeCss}
+				{@html `<style>${themeState.runeCss}</style>`}
+			{/if}
 			{#each visibleFixtures as fixture (fixture.id)}
 				<section class="fixture">
 					<div class="fixture-label">{fixture.name}</div>

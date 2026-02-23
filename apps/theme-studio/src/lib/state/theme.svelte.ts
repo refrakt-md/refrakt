@@ -22,8 +22,22 @@ class ThemeState {
 
 	selectedFixtures: Set<string> = $state(new Set(fixtures.map((f) => f.id)));
 
+	/** Per-rune CSS overrides keyed by block name */
+	runeOverrides: Record<string, string> = $state({});
+
 	/** The CSS string for the current theme (both light and dark tokens) */
 	css = $derived(compileThemeCss(this.tokens.light, this.tokens.dark));
+
+	/** Compiled CSS from all rune overrides, for injection into preview */
+	runeCss = $derived.by(() => {
+		const parts: string[] = [];
+		for (const [block, css] of Object.entries(this.runeOverrides)) {
+			if (css.trim()) {
+				parts.push(`/* rune: ${block} */\n${css}`);
+			}
+		}
+		return parts.join('\n\n');
+	});
 
 	/** Get the current mode's token values */
 	get currentTokens(): Record<string, string> {
@@ -94,6 +108,20 @@ class ThemeState {
 		}
 	}
 
+	/** Update CSS override for a specific rune */
+	updateRuneOverride(block: string, css: string): void {
+		historyState.pushDebounced();
+		this.runeOverrides = { ...this.runeOverrides, [block]: css };
+	}
+
+	/** Remove CSS override for a specific rune */
+	removeRuneOverride(block: string): void {
+		historyState.push();
+		const next = { ...this.runeOverrides };
+		delete next[block];
+		this.runeOverrides = next;
+	}
+
 	/** Reset all tokens to defaults */
 	resetAll(): void {
 		historyState.push();
@@ -101,6 +129,7 @@ class ThemeState {
 		this.tokens.dark = getDefaults('dark');
 		this.overrides.light = new Set();
 		this.overrides.dark = new Set();
+		this.runeOverrides = {};
 	}
 
 	/** Toggle between light and dark mode */
@@ -116,6 +145,7 @@ class ThemeState {
 		tokens: { light: Record<string, string>; dark: Record<string, string> };
 		overrides: { light: string[]; dark: string[] };
 		selectedFixtures: string[];
+		runeOverrides?: Record<string, string>;
 	}): void {
 		this.name = data.name;
 		this.description = data.description;
@@ -125,6 +155,7 @@ class ThemeState {
 		this.overrides.light = new Set(data.overrides.light);
 		this.overrides.dark = new Set(data.overrides.dark);
 		this.selectedFixtures = new Set(data.selectedFixtures);
+		this.runeOverrides = data.runeOverrides ?? {};
 	}
 }
 

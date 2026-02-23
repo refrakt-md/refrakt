@@ -4,6 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
+		"generate:contracts": "tsx scripts/generate-contracts.ts",
+		"prebuild": "npm run generate:contracts",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -22,6 +24,8 @@
 		"jszip": "^3.10.1"
 	},
 	"devDependencies": {
+		"@refrakt-md/theme-base": "0.5.0",
+		"@refrakt-md/transform": "0.5.0",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",

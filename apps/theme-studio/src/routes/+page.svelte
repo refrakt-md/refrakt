@@ -9,11 +9,13 @@
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
 	import PromptBar from '$lib/PromptBar.svelte';
 	import ExportPanel from '$lib/ExportPanel.svelte';
+	import RuneEditor from '$lib/RuneEditor.svelte';
 
 	const tokenGroups = getTokensByCategory();
 	const categories = [...tokenGroups.entries()];
 
 	let showExport = $state(false);
+	let showRuneEditor = $state(false);
 
 	onMount(() => {
 		return initPersistence();
@@ -97,6 +99,13 @@
 					<span>Dark</span>
 				{/if}
 			</button>
+			<button
+				class="rune-css-btn"
+				class:active={showRuneEditor}
+				onclick={() => (showRuneEditor = !showRuneEditor)}
+			>
+				Rune CSS
+			</button>
 			<button class="export-btn" onclick={() => (showExport = true)}>
 				Export
 			</button>
@@ -116,6 +125,12 @@
 		<main class="preview">
 			<PreviewPanel />
 		</main>
+
+		{#if showRuneEditor}
+			<aside class="rune-panel">
+				<RuneEditor onclose={() => (showRuneEditor = false)} />
+			</aside>
+		{/if}
 	</div>
 
 	<PromptBar />
@@ -231,6 +246,28 @@
 		background: #fafafa;
 	}
 
+	.rune-css-btn {
+		padding: 6px 12px;
+		border: 1px solid #e5e5e5;
+		border-radius: 6px;
+		background: white;
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 600;
+		color: #555;
+	}
+
+	.rune-css-btn:hover {
+		border-color: #ccc;
+		background: #fafafa;
+	}
+
+	.rune-css-btn.active {
+		border-color: #0ea5e9;
+		color: #0ea5e9;
+		background: #f0f9ff;
+	}
+
 	.export-btn {
 		padding: 6px 12px;
 		border: 1px solid #0ea5e9;
@@ -281,6 +318,14 @@
 		flex: 1;
 		display: flex;
 		padding: 16px;
+		overflow: hidden;
+	}
+
+	.rune-panel {
+		width: 400px;
+		flex-shrink: 0;
+		border-left: 1px solid #e5e5e5;
+		background: #fafafa;
 		overflow: hidden;
 	}
 </style>

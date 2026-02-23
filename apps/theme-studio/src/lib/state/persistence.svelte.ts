@@ -4,7 +4,7 @@ import { generateState } from './generate.svelte.js';
 
 const STORAGE_KEY_THEME = 'refrakt-theme-studio:theme';
 const STORAGE_KEY_HISTORY = 'refrakt-theme-studio:history';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 interface PersistedTheme {
 	v: number;
@@ -15,6 +15,7 @@ interface PersistedTheme {
 	overrides: { light: string[]; dark: string[] };
 	selectedFixtures: string[];
 	hasGenerated: boolean;
+	runeOverrides: Record<string, string>;
 }
 
 interface PersistedHistory {
@@ -41,6 +42,7 @@ function serializeTheme(): PersistedTheme {
 		},
 		selectedFixtures: [...themeState.selectedFixtures],
 		hasGenerated: generateState.hasGenerated,
+		runeOverrides: { ...themeState.runeOverrides },
 	};
 }
 
@@ -55,8 +57,11 @@ function migrateTheme(raw: unknown): PersistedTheme | null {
 	if (!raw || typeof raw !== 'object') return null;
 	const data = raw as Record<string, unknown>;
 	if (typeof data.v !== 'number' || data.v < 1) return null;
+	// v1 → v2: add runeOverrides
+	if (data.v === 1) {
+		return { ...data, v: 2, runeOverrides: {} } as unknown as PersistedTheme;
+	}
 	if (data.v === SCHEMA_VERSION) return data as unknown as PersistedTheme;
-	// Future migrations would go here
 	return null;
 }
 

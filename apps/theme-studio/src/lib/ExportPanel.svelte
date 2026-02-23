@@ -19,6 +19,12 @@
 	let darkCss = $derived(generateDarkCss(themeState.tokens.dark));
 	let fullCss = $derived(`${baseCss}\n\n${darkCss}`);
 	let pkgName = $derived(toPackageName(themeState.name));
+	let runeBlocks = $derived(
+		Object.entries(themeState.runeOverrides)
+			.filter(([, css]) => css.trim())
+			.map(([block]) => block)
+			.sort(),
+	);
 
 	let displayedCss = $derived(
 		cssSection === 'base' ? baseCss : cssSection === 'dark' ? darkCss : fullCss,
@@ -38,6 +44,7 @@
 				description: themeState.description,
 				lightTokens: themeState.tokens.light,
 				darkTokens: themeState.tokens.dark,
+				runeOverrides: themeState.runeOverrides,
 			});
 			downloadBlob(blob, `${pkgName}.zip`);
 		} finally {
@@ -132,6 +139,13 @@
 						<div class="tree-item indent">tokens/</div>
 						<div class="tree-item indent2">base.css</div>
 						<div class="tree-item indent2">dark.css</div>
+						{#if runeBlocks.length > 0}
+							<div class="tree-item indent">styles/</div>
+							<div class="tree-item indent2">runes/</div>
+							{#each runeBlocks as block}
+								<div class="tree-item indent3">{block}.css</div>
+							{/each}
+						{/if}
 						<div class="tree-item indent">svelte/</div>
 						<div class="tree-item indent2">tokens.css</div>
 					</div>
@@ -378,6 +392,10 @@
 
 	.tree-item.indent2 {
 		padding-left: 32px;
+	}
+
+	.tree-item.indent3 {
+		padding-left: 48px;
 	}
 
 	.download-btn {
