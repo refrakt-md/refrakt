@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/behaviors",
   "description": "Vanilla JS behavior library for refrakt.md runes — tabs, accordions, copy buttons, keyboard navigation",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "license": "MIT",
   "repository": {

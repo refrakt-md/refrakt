@@ -1,4 +1,4 @@
-# @refrakt-md/ai
+# refrakt-md
 
 ## 0.5.0
 
@@ -86,9 +86,3 @@
   - Fix feature rune dt/dd bug and split/mirror API
   - Fix mobile nav hidden links and panel positioning
   - Fix TS2307 on Cloudflare with dynamic import
-
-## 0.4.0
-
-## 0.3.0
-
-## 0.2.0

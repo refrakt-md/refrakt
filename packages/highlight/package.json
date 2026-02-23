@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/highlight",
   "description": "Syntax highlighting transform for refrakt.md — Shiki-based tree walker with pluggable highlighter",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,8 +29,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.4.0",
-    "@refrakt-md/transform": "0.4.0",
+    "@refrakt-md/types": "0.5.0",
+    "@refrakt-md/transform": "0.5.0",
     "shiki": "^3.0.0"
   }
 }

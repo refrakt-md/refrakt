@@ -1,4 +1,4 @@
-# @refrakt-md/ai
+# @refrakt-md/theme-base
 
 ## 0.5.0
 
@@ -87,8 +87,10 @@
   - Fix mobile nav hidden links and panel positioning
   - Fix TS2307 on Cloudflare with dynamic import
 
-## 0.4.0
+### Patch Changes
 
-## 0.3.0
-
-## 0.2.0
+- Updated dependencies
+  - @refrakt-md/types@0.5.0
+  - @refrakt-md/transform@0.5.0
+  - @refrakt-md/behaviors@0.5.0
+  - @refrakt-md/svelte@0.5.0
