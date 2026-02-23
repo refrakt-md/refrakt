@@ -148,7 +148,8 @@ This phase covers the work needed to make production output competitive with han
 - Per-page code splitting via pre-processed route generation (generate actual `+page.svelte` files)
 - ~~Context-aware styling via identity transform BEM modifiers~~ -- DONE (Hint, Feature, CallToAction in Lumina; 7 tests)
 - Context-aware component binding at build time (for cases needing different components, not just CSS)
-- Add missing runes: quiz, poll/survey, reference
+- Add missing runes: quiz, poll/survey
+- ~~Add symbol rune~~ -- DONE (function, class, interface, enum, type, module, hook, component kinds)
 - ~~Add blog layout to Lumina~~ -- DONE (BlogLayout with index page and article view, extended frontmatter pipeline)
 
 ### Phase 6: Multi-Framework Support
@@ -159,13 +160,35 @@ This phase covers the work needed to make production output competitive with han
 - Build Next.js adapter
 - Build static HTML adapter with vanilla JS progressive enhancement
 
-### Phase 7: TypeDoc Pipeline
+### Phase 7: Symbol Extraction Pipeline
 
-- TypeScript Compiler API for symbol extraction
-- Generate `{% reference %}` Markdoc files from TypeScript source
-- CLI command `refrakt typedoc`
-- Staleness detection for CI (`--validate` mode)
+CLI command: `refrakt extract`
+
+- Language-specific extractors in `packages/cli/src/extractors/` — each exports `extractSymbols(sourcePath): SymbolDoc[]`
+- Shared Markdoc generator converts `SymbolDoc[]` to `{% symbol %}` Markdown files
 - Auto-generated `_layout.md` with `{% nav %}` for API reference navigation
+- Staleness detection for CI (`--validate` mode)
+
+**TypeScript extractor:**
+- TypeScript Compiler API (`ts.createProgram`) for AST walking
+- Extract exported functions, classes, interfaces, enums, type aliases
+- Parse JSDoc/TSDoc comments for descriptions, `@param`, `@returns`, `@since`, `@deprecated`
+- Resolve type signatures from the type checker
+
+**Python extractor:**
+- `tree-sitter-python` (Node.js native) for AST parsing — no Python runtime dependency
+- Extract functions, classes, methods, module-level docstrings
+- Parse Google, NumPy, and Sphinx docstring conventions
+- Extract type hints from annotations (`def foo(x: int) -> str`)
+- Handle decorators (`@deprecated`, `@property`, `@staticmethod`, `@classmethod`)
+
+**CLI usage:**
+```bash
+refrakt extract ./src --output ./content/api          # auto-detect language
+refrakt extract ./src --lang typescript --output ./content/api
+refrakt extract ./mymodule --lang python --output ./content/api
+refrakt extract ./src --validate                       # CI staleness check
+```
 
 ### Phase 8: Generated Routes & Content Features
 
@@ -627,7 +650,7 @@ Folding markers match `{% rune %}` opening tags to `{% /rune %}` closing tags. E
 
 **Snippets**
 
-Every rune gets a `rune:<name>` snippet with tabstops and VS Code choice syntax (`${1|option1,option2|}`) for enum attributes. Examples: `rune:hero`, `rune:recipe`, `rune:callout`, `rune:tabs`, `rune:comparison`, `rune:form`, `rune:reference`, `rune:codegroup`, `rune:grid`, etc.
+Every rune gets a `rune:<name>` snippet with tabstops and VS Code choice syntax (`${1|option1,option2|}`) for enum attributes. Examples: `rune:hero`, `rune:recipe`, `rune:callout`, `rune:tabs`, `rune:comparison`, `rune:form`, `rune:symbol`, `rune:codegroup`, `rune:grid`, etc.
 
 **File Association**
 
