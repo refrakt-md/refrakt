@@ -1,7 +1,7 @@
 # Theme Studio — AI-Powered Theme Generator
 
 > **Package:** `apps/theme-studio`
-> **Status:** Design proposal
+> **Status:** In progress — Phase 3 complete
 > **Dependencies:** `@refrakt-md/transform`, `@refrakt-md/theme-base`, `@refrakt-md/lumina`, `@refrakt-md/runes`, `@refrakt-md/svelte`, `@refrakt-md/ai`
 
 ---
@@ -763,6 +763,52 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 19. **Persistence** — localStorage/IndexedDB for session state
 20. **URL sharing** — Compressed token state in URL parameters
 21. **Local directory plugin support** — Extend SvelteKit plugin to resolve `./` theme paths via Vite aliases
+
+---
+
+## Backlog
+
+### Phase 1 — Core Pipeline
+
+- [x] Scaffold SvelteKit app in `apps/theme-studio/`
+- [x] Token registry — 53 tokens with metadata, categories, defaults (`lib/tokens.ts`)
+- [x] Theme state store — Svelte 5 runes-based reactive state (`lib/state/theme.svelte.ts`)
+- [x] CSS compiler — assemble tokens into `base.css` / `dark.css` strings (`lib/compiler.ts`)
+- [x] Preview pipeline — Markdoc → transform → serialize → identity transform → Renderer (`lib/pipeline.ts`)
+
+### Phase 2 — AI Generation
+
+- [x] Theme system prompt — token vocabulary, design constraints, output format (`lib/ai/prompt.ts`)
+- [x] Generation endpoint — SSE streaming API route (`routes/api/generate/+server.ts`)
+- [x] Response parser — extract and validate token JSON (`lib/ai/parse.ts`)
+- [x] Refinement flow — include current state in prompt for targeted adjustments
+
+### Phase 3 — Editor UI
+
+- [x] App shell — sidebar + preview + prompt bar layout (`routes/+page.svelte`)
+- [x] Token editors — color pickers, font dropdowns, radius sliders, shadow editors (`lib/editors/`)
+- [x] Token groups — collapsible category groups with per-token editors (`lib/TokenGroup.svelte`)
+- [x] Preview panel — rune showcase with light/dark token injection (`lib/PreviewPanel.svelte`)
+- [x] Prompt bar — text input with generate/refine mode (`lib/PromptBar.svelte`)
+- [x] Fixture picker — popover with presets (Docs/Marketing/Blog/All), token coverage indicator (`lib/FixturePicker.svelte`)
+- [x] Interactive behaviors — tabs, accordion, datatable behaviors via `@refrakt-md/behaviors`
+- [ ] Keyboard shortcuts — Ctrl+Z undo, Ctrl+Enter submit, Ctrl+D toggle mode
+
+### Phase 4 — Export & Distribution
+
+- [ ] Export panel — download/copy theme output UI
+- [ ] Theme package assembly — package.json, exports map, tokens, CSS, config
+- [ ] Tarball download — in-browser `.tgz` generation
+- [ ] ZIP download — for local directory installation
+- [ ] `refrakt theme install` CLI command — detect package manager, install, update config
+
+### Phase 5 — Polish
+
+- [ ] Undo/redo — history stack with snapshot labels (`lib/state/history.svelte.ts`)
+- [ ] Persistence — localStorage/IndexedDB for theme state, fixture selection, generation history
+- [ ] URL sharing — compressed token state in URL parameters
+- [ ] Local directory plugin support — extend SvelteKit plugin to resolve `./` theme paths
+- [ ] Accessibility audit — real-time WCAG contrast checks on token combinations
 
 ---
 
