@@ -12,5 +12,7 @@
 @import './styles/elements/blockquote.css';
 
 /* Layouts */
+@import './styles/layouts/mobile.css';
 @import './styles/layouts/default.css';
 @import './styles/layouts/docs.css';
+@import './styles/layouts/blog.css';
