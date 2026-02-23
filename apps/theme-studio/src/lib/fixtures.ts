@@ -105,7 +105,7 @@ const theme = createTheme({
 		name: 'Steps',
 		description: 'Primary accent, surfaces, borders',
 		tokenGroups: ['primary', 'typography'],
-		source: `{% steps %}
+		source: `{% steps headingLevel=2 %}
 
 ## Install the theme
 
@@ -203,7 +203,7 @@ A traditional Roman pasta dish with eggs, cheese, and pancetta.
 		name: 'Accordion',
 		description: 'Surfaces, borders, active states',
 		tokenGroups: ['surfaces', 'borders'],
-		source: `{% accordion %}
+		source: `{% accordion headingLevel=2 %}
 
 ## What is a design token?
 
@@ -224,7 +224,7 @@ Yes. Set the \`--rf-font-sans\` and \`--rf-font-mono\` tokens to any font family
 		name: 'Tabs',
 		description: 'Surface hierarchy, active states, borders',
 		tokenGroups: ['surfaces', 'borders'],
-		source: `{% tabs %}
+		source: `{% tabs headingLevel=2 %}
 
 ## Overview
 

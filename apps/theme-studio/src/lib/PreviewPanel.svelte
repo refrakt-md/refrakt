@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { Renderer } from '@refrakt-md/svelte';
 	import type { RendererNode } from '@refrakt-md/types';
+	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 	import { fixtures } from './fixtures.js';
 	import { renderMarkdoc, initHighlight, getHighlightCss } from './pipeline.js';
 	import { themeState } from './state/theme.svelte.js';
@@ -37,6 +38,21 @@
 	let visibleFixtures = $derived(
 		renderedFixtures.filter((f) => themeState.selectedFixtures.has(f.id))
 	);
+
+	// Initialize interactive behaviors (tabs, accordion, etc.) after render
+	$effect(() => {
+		if (!ready) return;
+		void visibleFixtures;
+		let cleanup: (() => void) | undefined;
+		let active = true;
+		tick().then(() => {
+			if (active) cleanup = initRuneBehaviors();
+		});
+		return () => {
+			active = false;
+			cleanup?.();
+		};
+	});
 </script>
 
 <div class="preview-panel">
