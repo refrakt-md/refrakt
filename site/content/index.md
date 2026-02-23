@@ -128,28 +128,9 @@ Back up your data before proceeding.
 
 ## See it in action
 
-Every example below is pure Markdown — no custom components, no JSX, no frontmatter gymnastics.
+Pure Markdown in, structured HTML out. The source tabs show exactly what you write and what the framework receives.
 
-{% tabs headingLevel=3 %}
-
-### Steps
-
-{% steps headingLevel=2 %}
-## Write Markdown
-
-Create pages with standard Markdown. Runes wrap your content in semantic contexts — no new syntax to learn.
-
-## Add runes
-
-Pick from 60+ built-in runes for navigation, SEO, pricing tables, API docs, changelogs, and more.
-
-## Ship it
-
-Run `npm create refrakt` to scaffold a project. Deploy anywhere SvelteKit runs — Vercel, Netlify, or self-hosted.
-{% /steps %}
-
-### Comparison
-
+{% preview source=true width="wide" %}
 {% comparison highlighted="refrakt.md" %}
 
 ## refrakt.md
@@ -174,36 +155,7 @@ Run `npm create refrakt` to scaffold a project. Deploy anywhere SvelteKit runs �
 - **Portability** — Universal, but limited expressiveness
 
 {% /comparison %}
-
-### Timeline
-
-{% timeline %}
-## Q1 2025 — Foundation
-
-Core rune system, Markdoc integration, and Svelte renderer. First 20 runes covering content, layout, and navigation.
-
-## Q2 2025 — Expansion
-
-40+ new runes for data, code, semantic content, and creative layouts. SEO layer with automatic JSON-LD generation.
-
-## Q3 2025 — Ecosystem
-
-Theme marketplace, CLI authoring tools, and multi-framework support beyond Svelte.
-{% /timeline %}
-
-### Conversation
-
-{% conversation %}
-> Can you build me a pricing page?
-
-> Sure — here's the Markdown. Three tiers, feature comparison, and a highlighted recommended plan. It also emits PriceSpecification schema automatically.
-
-> Wait, that's just Markdown? Where are the components?
-
-> There are none. The `pricing` rune reinterprets your headings as tier names and list items as features. The theme handles the visual layout.
-{% /conversation %}
-
-{% /tabs %}
+{% /preview %}
 
 {% cta %}
 
