@@ -796,10 +796,10 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 
 ### Phase 4 — Export & Distribution
 
-- [ ] Export panel — download/copy theme output UI
-- [ ] Theme package assembly — package.json, exports map, tokens, CSS, config
+- [x] Export panel — modal with CSS preview, copy to clipboard, download ZIP (`lib/ExportPanel.svelte`)
+- [x] Theme package assembly — package.json, exports map, tokens, CSS, config, manifest (`lib/export.ts`)
+- [x] ZIP download — client-side ZIP generation via jszip
 - [ ] Tarball download — in-browser `.tgz` generation
-- [ ] ZIP download — for local directory installation
 - [ ] `refrakt theme install` CLI command — detect package manager, install, update config
 
 ### Phase 5 — Polish

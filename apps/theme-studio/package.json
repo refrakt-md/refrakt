@@ -18,7 +18,8 @@
 		"@refrakt-md/lumina": "0.5.0",
 		"@refrakt-md/runes": "0.5.0",
 		"@refrakt-md/svelte": "0.5.0",
-		"@refrakt-md/types": "0.5.0"
+		"@refrakt-md/types": "0.5.0",
+		"jszip": "^3.10.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",

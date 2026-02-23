@@ -4,9 +4,12 @@
 	import TokenGroup from '$lib/TokenGroup.svelte';
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
 	import PromptBar from '$lib/PromptBar.svelte';
+	import ExportPanel from '$lib/ExportPanel.svelte';
 
 	const tokenGroups = getTokensByCategory();
 	const categories = [...tokenGroups.entries()];
+
+	let showExport = $state(false);
 </script>
 
 <div class="studio">
@@ -41,6 +44,9 @@
 					<span>Dark</span>
 				{/if}
 			</button>
+			<button class="export-btn" onclick={() => (showExport = true)}>
+				Export
+			</button>
 			<button class="reset-all-btn" onclick={() => themeState.resetAll()}>
 				Reset All
 			</button>
@@ -61,6 +67,10 @@
 
 	<PromptBar />
 </div>
+
+{#if showExport}
+	<ExportPanel onclose={() => (showExport = false)} />
+{/if}
 
 <style>
 	.studio {
@@ -142,6 +152,22 @@
 	.mode-toggle:hover {
 		border-color: #ccc;
 		background: #fafafa;
+	}
+
+	.export-btn {
+		padding: 6px 12px;
+		border: 1px solid #0ea5e9;
+		border-radius: 6px;
+		background: #0ea5e9;
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 600;
+		color: white;
+	}
+
+	.export-btn:hover {
+		background: #0284c7;
+		border-color: #0284c7;
 	}
 
 	.reset-all-btn {
