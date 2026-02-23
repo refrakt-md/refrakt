@@ -11,9 +11,7 @@ let hlCss = '';
  * Initialize syntax highlighting. Call once on app startup.
  */
 export async function initHighlight(): Promise<void> {
-	const hl = await createHighlightTransform({
-		theme: { light: 'laserwave', dark: 'laserwave' },
-	});
+	const hl = await createHighlightTransform();
 	hlTransform = hl;
 	hlCss = hl.css;
 }
