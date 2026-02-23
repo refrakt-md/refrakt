@@ -807,7 +807,7 @@ Theme tokens can be encoded into a shareable URL parameter (compressed JSON). Th
 
 - [x] Undo/redo — history stack with debounced snapshots (`lib/state/history.svelte.ts`)
 - [x] Keyboard shortcuts — Ctrl+Z undo, Ctrl+Shift+Z redo, Ctrl+Enter focus prompt, Ctrl+D toggle mode
-- [ ] Persistence — localStorage/IndexedDB for theme state, fixture selection, generation history
+- [x] Persistence — localStorage auto-save with versioned schema, debounced effects (`lib/state/persistence.svelte.ts`)
 - [ ] Accessibility audit — real-time WCAG contrast checks on token combinations
 - [ ] URL sharing — compressed token state in URL parameters
 

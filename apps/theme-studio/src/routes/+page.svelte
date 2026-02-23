@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { getTokensByCategory } from '$lib/tokens.js';
 	import { themeState } from '$lib/state/theme.svelte.js';
 	import { historyState } from '$lib/state/history.svelte.js';
 	import { generateState } from '$lib/state/generate.svelte.js';
+	import { initPersistence } from '$lib/state/persistence.svelte.js';
 	import TokenGroup from '$lib/TokenGroup.svelte';
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
 	import PromptBar from '$lib/PromptBar.svelte';
@@ -12,6 +14,10 @@
 	const categories = [...tokenGroups.entries()];
 
 	let showExport = $state(false);
+
+	onMount(() => {
+		return initPersistence();
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		const mod = e.metaKey || e.ctrlKey;

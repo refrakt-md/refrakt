@@ -2,7 +2,7 @@ import { themeState } from './theme.svelte.js';
 
 const MAX_STACK = 50;
 
-interface ThemeSnapshot {
+export interface ThemeSnapshot {
 	name: string;
 	description: string;
 	tokens: { light: Record<string, string>; dark: Record<string, string> };
@@ -82,6 +82,17 @@ class HistoryState {
 		if (!this.canRedo) return;
 		this.index++;
 		restoreSnapshot(this.stack[this.index]);
+	}
+
+	/** Get serializable representation for persistence */
+	toJSON(): { stack: ThemeSnapshot[]; index: number } {
+		return { stack: [...this.stack], index: this.index };
+	}
+
+	/** Restore history from persisted data */
+	hydrate(data: { stack: ThemeSnapshot[]; index: number }): void {
+		this.stack = data.stack;
+		this.index = Math.min(data.index, data.stack.length - 1);
 	}
 }
 

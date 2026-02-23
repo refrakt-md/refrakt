@@ -107,6 +107,25 @@ class ThemeState {
 	toggleMode(): void {
 		this.mode = this.mode === 'light' ? 'dark' : 'light';
 	}
+
+	/** Restore state from persisted data */
+	hydrate(data: {
+		name: string;
+		description: string;
+		mode: ThemeMode;
+		tokens: { light: Record<string, string>; dark: Record<string, string> };
+		overrides: { light: string[]; dark: string[] };
+		selectedFixtures: string[];
+	}): void {
+		this.name = data.name;
+		this.description = data.description;
+		this.mode = data.mode;
+		this.tokens.light = data.tokens.light;
+		this.tokens.dark = data.tokens.dark;
+		this.overrides.light = new Set(data.overrides.light);
+		this.overrides.dark = new Set(data.overrides.dark);
+		this.selectedFixtures = new Set(data.selectedFixtures);
+	}
 }
 
 export const themeState = new ThemeState();
