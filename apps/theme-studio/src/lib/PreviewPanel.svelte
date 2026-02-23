@@ -5,13 +5,15 @@
 	import { fixtures } from './fixtures.js';
 	import { renderMarkdoc, initHighlight, getHighlightCss } from './pipeline.js';
 	import { themeState } from './state/theme.svelte.js';
+	import FixturePicker from './FixturePicker.svelte';
 
-	let renderedFixtures: { name: string; node: RendererNode }[] = $state([]);
+	let renderedFixtures: { id: string; name: string; node: RendererNode }[] = $state([]);
 	let ready = $state(false);
 
 	onMount(async () => {
 		await initHighlight();
 		renderedFixtures = fixtures.map((f) => ({
+			id: f.id,
 			name: f.name,
 			node: renderMarkdoc(f.source),
 		}));
@@ -31,15 +33,23 @@
 		}
 		return parts.join('; ');
 	});
+
+	let visibleFixtures = $derived(
+		renderedFixtures.filter((f) => themeState.selectedFixtures.has(f.id))
+	);
 </script>
 
 <div class="preview-panel">
+	<div class="preview-toolbar">
+		<FixturePicker />
+	</div>
+
 	{#if !ready}
 		<div class="loading">Loading preview...</div>
 	{:else}
 		<div class="preview-content" style={previewStyle}>
 			{@html `<style>${getHighlightCss()}</style>`}
-			{#each renderedFixtures as fixture (fixture.name)}
+			{#each visibleFixtures as fixture (fixture.id)}
 				<section class="fixture">
 					<div class="fixture-label">{fixture.name}</div>
 					<div class="fixture-body">
@@ -47,6 +57,9 @@
 					</div>
 				</section>
 			{/each}
+			{#if visibleFixtures.length === 0}
+				<div class="empty-state">No fixtures selected. Use the picker above to add runes.</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -54,10 +67,18 @@
 <style>
 	.preview-panel {
 		flex: 1;
-		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 		background: var(--rf-color-bg, #ffffff);
 		border-radius: 8px;
 		border: 1px solid #e5e5e5;
+	}
+	.preview-toolbar {
+		flex-shrink: 0;
+		padding: 8px 12px;
+		border-bottom: 1px solid #e5e5e5;
+		background: #fafafa;
 	}
 	.loading {
 		display: flex;
@@ -68,11 +89,12 @@
 		font-size: 14px;
 	}
 	.preview-content {
+		flex: 1;
+		overflow-y: auto;
 		padding: 24px;
 		font-family: var(--rf-font-sans, system-ui, sans-serif);
 		color: var(--rf-color-text, #1a1a2e);
 		background: var(--rf-color-bg, #ffffff);
-		min-height: 100%;
 	}
 	.fixture {
 		margin-bottom: 32px;
@@ -93,5 +115,14 @@
 	}
 	.fixture-body {
 		/* inherits custom properties from .preview-content */
+	}
+	.empty-state {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 200px;
+		color: #999;
+		font-size: 14px;
+		font-family: system-ui, sans-serif;
 	}
 </style>

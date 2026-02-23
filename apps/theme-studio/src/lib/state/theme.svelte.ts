@@ -1,5 +1,6 @@
 import { getDefaults, getToken } from '../tokens.js';
 import { compileThemeCss } from '../compiler.js';
+import { fixtures, presets, ALL_TOKEN_GROUPS, type TokenGroup } from '../fixtures.js';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -18,6 +19,8 @@ class ThemeState {
 		dark: new Set<string>(),
 	});
 
+	selectedFixtures: Set<string> = $state(new Set(fixtures.map((f) => f.id)));
+
 	/** The CSS string for the current theme (both light and dark tokens) */
 	css = $derived(compileThemeCss(this.tokens.light, this.tokens.dark));
 
@@ -29,6 +32,38 @@ class ThemeState {
 	/** Get the current mode's override set */
 	get currentOverrides(): Set<string> {
 		return this.mode === 'dark' ? this.overrides.dark : this.overrides.light;
+	}
+
+	/** Token groups not exercised by the current fixture selection */
+	get uncoveredTokenGroups(): TokenGroup[] {
+		const covered = new Set<TokenGroup>();
+		for (const fixture of fixtures) {
+			if (this.selectedFixtures.has(fixture.id)) {
+				for (const group of fixture.tokenGroups) {
+					covered.add(group);
+				}
+			}
+		}
+		return ALL_TOKEN_GROUPS.filter((g) => !covered.has(g));
+	}
+
+	/** Toggle a fixture on/off in the preview */
+	toggleFixture(id: string): void {
+		const next = new Set(this.selectedFixtures);
+		if (next.has(id)) {
+			next.delete(id);
+		} else {
+			next.add(id);
+		}
+		this.selectedFixtures = next;
+	}
+
+	/** Apply a named preset (replaces current selection) */
+	applyPreset(presetName: string): void {
+		const ids = presets[presetName];
+		if (ids) {
+			this.selectedFixtures = new Set(ids);
+		}
 	}
 
 	/** Update a single token value in the current mode */
