@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/language-server",
   "description": "Language server for refrakt.md rune authoring",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -26,8 +26,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/runes": "0.5.0",
-    "@refrakt-md/transform": "0.5.0",
+    "@refrakt-md/runes": "0.5.1",
+    "@refrakt-md/transform": "0.5.1",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0",
     "vscode-languageserver": "^9.0.1",

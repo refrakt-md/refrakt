@@ -1,5 +1,14 @@
 # @refrakt-md/theme-base
 
+## 0.5.1
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.5.1
+- @refrakt-md/svelte@0.5.1
+- @refrakt-md/transform@0.5.1
+- @refrakt-md/types@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
