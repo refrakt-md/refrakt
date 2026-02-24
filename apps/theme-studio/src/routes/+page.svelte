@@ -366,4 +366,10 @@
 		background: #fafafa;
 		overflow: hidden;
 	}
+
+	@media (min-width: 1600px) {
+		.rune-panel {
+			width: 720px;
+		}
+	}
 </style>

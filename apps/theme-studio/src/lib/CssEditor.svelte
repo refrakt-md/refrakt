@@ -9,11 +9,12 @@
 
 	interface Props {
 		value: string;
-		onchange: (css: string) => void;
+		onchange?: (css: string) => void;
 		placeholder?: string;
+		readonly?: boolean;
 	}
 
-	let { value, onchange, placeholder = '' }: Props = $props();
+	let { value, onchange, placeholder = '', readonly = false }: Props = $props();
 
 	let container: HTMLElement;
 	let editorView: EditorView;
@@ -81,22 +82,28 @@
 	]);
 
 	onMount(() => {
-		const state = EditorState.create({
-			doc: value,
-			extensions: [
-				basicSetup,
-				css(),
-				darkTheme,
-				syntaxHighlighting(highlightTheme),
-				...(placeholder ? [cmPlaceholder(placeholder)] : []),
+		const extensions = [
+			basicSetup,
+			css(),
+			darkTheme,
+			syntaxHighlighting(highlightTheme),
+			...(placeholder ? [cmPlaceholder(placeholder)] : []),
+		];
+
+		if (readonly) {
+			extensions.push(EditorState.readOnly.of(true));
+			extensions.push(EditorView.editable.of(false));
+		} else if (onchange) {
+			extensions.push(
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
 						onchange(update.state.doc.toString());
 					}
 				}),
-			],
-		});
+			);
+		}
 
+		const state = EditorState.create({ doc: value, extensions });
 		editorView = new EditorView({ state, parent: container });
 	});
 
@@ -122,7 +129,7 @@
 	});
 </script>
 
-<div class="css-editor" bind:this={container}></div>
+<div class="css-editor" class:readonly bind:this={container}></div>
 
 <style>
 	.css-editor {
@@ -132,7 +139,10 @@
 		overflow: hidden;
 		border: 1px solid #e5e5e5;
 	}
-	.css-editor:focus-within {
+	.css-editor:focus-within:not(.readonly) {
 		border-color: #0ea5e9;
+	}
+	.css-editor.readonly {
+		opacity: 0.85;
 	}
 </style>

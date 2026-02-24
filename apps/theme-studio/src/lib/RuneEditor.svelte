@@ -3,28 +3,84 @@
 	import { generateCssState } from './state/generate-css.svelte.js';
 	import { getRuneGroups, formatGroupForPrompt } from './contracts.js';
 	import type { RuneGroup } from './contracts.js';
+	import { getBaseStyle } from './base-styles.js';
 	import CssEditor from './CssEditor.svelte';
 
 	let { onclose }: { onclose: () => void } = $props();
 
 	let selectedGroupName = $state('');
 	let cssPrompt = $state('');
+	let activeTab: 'base' | 'overrides' = $state('overrides');
 	const runeGroups = getRuneGroups();
 
 	let currentGroup: RuneGroup | undefined = $derived(
 		runeGroups.find((g) => g.name === selectedGroupName),
 	);
 
+	/** Base CSS for the current group (parent block's file contains all child selectors) */
+	let baseStyle = $derived(currentGroup ? getBaseStyle(currentGroup.blocks[0]) : '');
+
+	/** Merged override CSS from all blocks in the group */
+	let mergedOverrides = $derived.by(() => {
+		if (!currentGroup) return '';
+		const { blocks } = currentGroup;
+		if (blocks.length === 1) {
+			return themeState.runeOverrides[blocks[0]] ?? '';
+		}
+		return blocks
+			.map((block) => (themeState.runeOverrides[block] ?? '').trim())
+			.filter(Boolean)
+			.join('\n\n');
+	});
+
 	function groupHasOverride(group: RuneGroup): boolean {
 		return group.blocks.some((b) => themeState.runeOverrides[b]?.trim());
 	}
 
-	function handleCssChange(block: string, css: string) {
-		themeState.updateRuneOverride(block, css);
+	function handleOverrideChange(css: string) {
+		if (!currentGroup) return;
+		const { blocks } = currentGroup;
+
+		if (blocks.length === 1) {
+			themeState.updateRuneOverride(blocks[0], css);
+			return;
+		}
+
+		// Split CSS by .rf-{block} selectors and distribute to per-block storage
+		const blockParts = new Map<string, string[]>();
+		for (const block of blocks) {
+			blockParts.set(block, []);
+		}
+
+		const sections = css.split(/(?=^\.)/m);
+		for (const section of sections) {
+			const trimmed = section.trim();
+			if (!trimmed) continue;
+
+			let target = blocks[0];
+			for (const block of blocks) {
+				if (trimmed.includes(`.rf-${block}`)) {
+					target = block;
+					break;
+				}
+			}
+			blockParts.get(target)!.push(trimmed);
+		}
+
+		for (const [block, parts] of blockParts) {
+			if (parts.length > 0) {
+				themeState.updateRuneOverride(block, parts.join('\n\n'));
+			} else {
+				themeState.removeRuneOverride(block);
+			}
+		}
 	}
 
-	function handleClear(block: string) {
-		themeState.removeRuneOverride(block);
+	function handleClearAll() {
+		if (!currentGroup) return;
+		for (const block of currentGroup.blocks) {
+			themeState.removeRuneOverride(block);
+		}
 	}
 
 	function handleGenerate() {
@@ -36,6 +92,13 @@
 	/** Count of runes that have CSS overrides */
 	let overrideCount = $derived(
 		Object.values(themeState.runeOverrides).filter((css) => css.trim()).length,
+	);
+
+	/** Placeholder for the override editor */
+	let overridePlaceholder = $derived(
+		currentGroup
+			? `.rf-${currentGroup.blocks[0]} {\n  /* your overrides */\n}`
+			: '',
 	);
 </script>
 
@@ -72,30 +135,30 @@
 			<pre>{formatGroupForPrompt(currentGroup)}</pre>
 		</details>
 
-		<div class="block-editors">
-			{#each currentGroup.blocks as block}
-				{@const blockCss = themeState.runeOverrides[block] ?? ''}
-				<div class="block-section">
-					{#if currentGroup.blocks.length > 1}
-						<div class="block-label">.rf-{block}</div>
-					{/if}
-					<div class="css-input">
-						<CssEditor
-							value={blockCss}
-							onchange={(css) => handleCssChange(block, css)}
-							placeholder={`.rf-${block} {\n  /* your overrides */\n}`}
-						/>
-					</div>
-					{#if blockCss.trim()}
-						<div class="block-actions">
-							<button class="clear-btn" onclick={() => handleClear(block)}>
-								Clear{currentGroup.blocks.length > 1 ? ` .rf-${block}` : ''}
-							</button>
-						</div>
-					{/if}
-				</div>
-			{/each}
+		{#if baseStyle}
+			<div class="tab-bar">
+				<button class="tab" class:active={activeTab === 'base'} onclick={() => (activeTab = 'base')}>Base</button>
+				<button class="tab" class:active={activeTab === 'overrides'} onclick={() => (activeTab = 'overrides')}>Overrides</button>
+			</div>
+		{/if}
+
+		<div class="editor-area">
+			{#if activeTab === 'base' && baseStyle}
+				<CssEditor value={baseStyle} readonly />
+			{:else}
+				<CssEditor
+					value={mergedOverrides}
+					onchange={handleOverrideChange}
+					placeholder={overridePlaceholder}
+				/>
+			{/if}
 		</div>
+
+		{#if mergedOverrides.trim()}
+			<div class="editor-actions">
+				<button class="clear-btn" onclick={handleClearAll}>Clear</button>
+			</div>
+		{/if}
 
 		<div class="ai-prompt">
 			<div class="prompt-row">
@@ -226,38 +289,39 @@
 		color: #555;
 	}
 
-	.block-editors {
-		flex: 1;
-		min-height: 0;
+	.tab-bar {
 		display: flex;
-		flex-direction: column;
-		overflow-y: auto;
+		gap: 0;
+		padding: 0 16px;
+		flex-shrink: 0;
 	}
 
-	.block-section {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		min-height: 0;
-	}
-
-	.block-label {
+	.tab {
+		padding: 4px 12px;
+		border: 1px solid #e5e5e5;
+		border-bottom: none;
+		background: #f5f5f5;
 		font-size: 11px;
 		font-weight: 600;
 		color: #999;
-		padding: 6px 16px 2px;
-		font-family: monospace;
+		cursor: pointer;
+		border-radius: 4px 4px 0 0;
 	}
 
-	.css-input {
+	.tab.active {
+		background: white;
+		color: #333;
+	}
+
+	.editor-area {
 		flex: 1;
-		padding: 0 16px;
 		min-height: 0;
+		padding: 0 16px;
 		display: flex;
 		flex-direction: column;
 	}
 
-	.block-actions {
+	.editor-actions {
 		padding: 4px 16px;
 		flex-shrink: 0;
 	}
