@@ -19,6 +19,13 @@
 - creating-a-theme
 - components
 
+## Authoring
+
+- authoring-overview
+- model-api
+- output-contract
+- patterns
+
 ## Sections
 
 - hero

@@ -135,6 +135,10 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 - `refs` values are Tags that get `data-name` attribute set on them
 - Rune schemas should produce structurally complete renderables, not raw data blobs that components re-parse
 
+### Rune Authoring Guide
+
+Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (4 pages: overview, model-api, output-contract, patterns). Refer to these when writing or modifying runes — they cover the Model lifecycle, decorators (`@attribute`, `@group`, `@id`), the output contract (`createComponentRenderable`, properties vs refs, meta tags), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming).
+
 ### Engine Config Pattern
 
 Non-interactive runes are configured declaratively in `packages/theme-base/src/config.ts`:
