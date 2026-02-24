@@ -1,13 +1,12 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
-import { join, resolve, normalize } from 'node:path';
+import { join, resolve, normalize, extname } from 'node:path';
 import { exec } from 'node:child_process';
 import { ContentTree } from '@refrakt-md/content';
 import { parseFrontmatter } from '@refrakt-md/content';
 import type { ThemeConfig } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
-import { renderPreviewPage } from './preview.js';
-import { getEditorHtml } from './ui.js';
+import { renderPreviewPage, renderPreviewContent } from './preview.js';
 
 export interface EditorOptions {
 	/** Absolute path to the content directory */
@@ -24,6 +23,31 @@ export interface EditorOptions {
 	open?: boolean;
 }
 
+const MIME_TYPES: Record<string, string> = {
+	'.html': 'text/html; charset=utf-8',
+	'.js': 'text/javascript; charset=utf-8',
+	'.css': 'text/css; charset=utf-8',
+	'.json': 'application/json',
+	'.svg': 'image/svg+xml',
+	'.png': 'image/png',
+	'.ico': 'image/x-icon',
+	'.woff': 'font/woff',
+	'.woff2': 'font/woff2',
+};
+
+/**
+ * Resolve the path to the built frontend (app/dist).
+ * Works from both the compiled dist/ directory and the source src/ directory.
+ */
+function resolveAppDist(): string {
+	// import.meta.dirname gives us the directory of THIS file.
+	// In compiled form: packages/editor/dist/
+	// We need:          packages/editor/app/dist/
+	const thisDir = import.meta.dirname;
+	const appDist = resolve(thisDir, '..', 'app', 'dist');
+	return appDist;
+}
+
 export async function startEditor(options: EditorOptions): Promise<void> {
 	const {
 		contentDir,
@@ -35,6 +59,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	} = options;
 
 	const absContentDir = resolve(contentDir);
+	const appDistDir = resolveAppDist();
 
 	// Bundle theme CSS once on startup
 	let themeCss = '';
@@ -58,9 +83,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				return;
 			}
 
-			if (method === 'GET' && url.pathname === '/') {
-				serveHtml(res, getEditorHtml(port));
-			} else if (method === 'GET' && url.pathname === '/api/tree') {
+			// API routes
+			if (method === 'GET' && url.pathname === '/api/tree') {
 				await handleGetTree(res, absContentDir);
 			} else if (method === 'GET' && url.pathname.startsWith('/api/files/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/files/'.length));
@@ -71,6 +95,11 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
 				handlePreview(res, absContentDir, filePath, themeConfig, themeCss);
+			} else if (method === 'POST' && url.pathname === '/api/preview') {
+				await handlePreviewContent(req, res, themeConfig, themeCss);
+			} else if (method === 'GET') {
+				// Serve static frontend (SPA fallback to index.html)
+				serveStatic(res, appDistDir, url.pathname);
 			} else {
 				res.writeHead(404, { 'Content-Type': 'application/json' });
 				res.end(JSON.stringify({ error: 'Not Found' }));
@@ -98,6 +127,34 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			exec(`${cmd} ${url}`);
 		}
 	});
+}
+
+// ── Static file serving ──────────────────────────────────────────────────
+
+function serveStatic(
+	res: import('node:http').ServerResponse,
+	appDistDir: string,
+	pathname: string,
+): void {
+	// Try exact file first, then fall back to index.html (SPA routing)
+	let filePath = join(appDistDir, pathname === '/' ? 'index.html' : pathname);
+
+	if (!existsSync(filePath) || !filePath.startsWith(appDistDir)) {
+		// SPA fallback
+		filePath = join(appDistDir, 'index.html');
+	}
+
+	if (!existsSync(filePath)) {
+		res.writeHead(404, { 'Content-Type': 'text/plain' });
+		res.end('Editor frontend not built. Run: npm run build -w packages/editor');
+		return;
+	}
+
+	const ext = extname(filePath);
+	const contentType = MIME_TYPES[ext] ?? 'application/octet-stream';
+	const content = readFileSync(filePath);
+	res.writeHead(200, { 'Content-Type': contentType });
+	res.end(content);
 }
 
 // ── Route handlers ──────────────────────────────────────────────────────
@@ -173,6 +230,19 @@ function handlePreview(
 	}
 
 	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss);
+	serveHtml(res, html);
+}
+
+async function handlePreviewContent(
+	req: import('node:http').IncomingMessage,
+	res: import('node:http').ServerResponse,
+	themeConfig: ThemeConfig,
+	themeCss: string,
+): Promise<void> {
+	const body = await readBody(req);
+	const { content } = JSON.parse(body) as { content: string };
+
+	const html = renderPreviewContent(content, themeConfig, themeCss);
 	serveHtml(res, html);
 }
 

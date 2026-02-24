@@ -18,6 +18,18 @@ export function renderPreviewPage(
 ): string {
 	const fullPath = join(contentDir, filePath);
 	const raw = readFileSync(fullPath, 'utf-8');
+	return renderPreviewContent(raw, themeConfig, themeCss);
+}
+
+/**
+ * Render raw markdown content (not from disk) through the full pipeline.
+ * Used for live preview while typing.
+ */
+export function renderPreviewContent(
+	raw: string,
+	themeConfig: ThemeConfig,
+	themeCss: string,
+): string {
 	const { frontmatter, content } = parseFrontmatter(raw);
 
 	// Run the Markdoc pipeline
@@ -36,7 +48,7 @@ export function renderPreviewPage(
 	// Render to HTML string
 	const bodyHtml = renderToHtml(transformed, { pretty: true });
 
-	const title = frontmatter.title ?? filePath;
+	const title = frontmatter.title ?? 'Preview';
 
 	return `<!DOCTYPE html>
 <html lang="en">
