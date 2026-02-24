@@ -422,7 +422,7 @@ refrakt inspect hint --audit
 refrakt inspect --all --audit
 ```
 
-This reports which generated selectors have matching CSS rules and which are missing. See the [tooling guide](/docs/themes/tooling) for details on audit output and workflow.
+This reports which generated selectors have matching CSS rules and which are missing. See the [tooling guide](/docs/cli/inspect#css-audit) for details on audit output and workflow.
 
 For automated CI testing, you can add CSS coverage tests similar to Lumina's. Create `test/css-coverage.test.ts` that:
 

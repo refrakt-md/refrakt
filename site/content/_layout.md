@@ -11,6 +11,14 @@
 
 - getting-started
 
+## CLI
+
+- cli-overview
+- inspect
+- write
+- extract
+- theme-tools
+
 ## Themes
 
 - overview

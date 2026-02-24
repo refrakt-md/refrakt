@@ -214,7 +214,7 @@ The `ctx` object contains:
 | `parentType` | `string \| undefined` | The parent rune's `typeof` value, if nested |
 
 {% hint type="warning" %}
-Use declarative config first. `postTransform` is for edge cases that truly can't be expressed with modifiers, structure, or styles. It makes the config harder to analyze statically — the [inspect and audit tools](/docs/themes/tooling) can't introspect programmatic transforms.
+Use declarative config first. `postTransform` is for edge cases that truly can't be expressed with modifiers, structure, or styles. It makes the config harder to analyze statically — the [inspect and audit tools](/docs/cli/inspect) can't introspect programmatic transforms.
 {% /hint %}
 
 ## StructureEntry
