@@ -39,6 +39,10 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	// Resolve theme config, CSS, and Svelte entry
 	const { themeConfig, themeCssPath, themeSveltePath } = await resolveTheme(themeName, configDir);
 
+	// Resolve static assets directory (SvelteKit convention: {projectRoot}/static/)
+	const staticPath = resolve(configDir, 'static');
+	const staticDir = existsSync(staticPath) ? staticPath : undefined;
+
 	// Start editor
 	const { startEditor } = await import('@refrakt-md/editor');
 
@@ -48,6 +52,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		themeConfig,
 		themeCssPath,
 		themeSveltePath,
+		staticDir,
 		devServer: options.devServer,
 		open: !options.noOpen,
 	});

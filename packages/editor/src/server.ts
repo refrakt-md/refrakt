@@ -27,6 +27,8 @@ export interface EditorOptions {
 	themeSveltePath?: string;
 	/** URL of running dev server for live preview */
 	devServer?: string;
+	/** Absolute path to a static assets directory (served at root, like SvelteKit's static/) */
+	staticDir?: string;
 	/** Whether to open browser automatically (default: true) */
 	open?: boolean;
 }
@@ -38,6 +40,11 @@ const MIME_TYPES: Record<string, string> = {
 	'.json': 'application/json',
 	'.svg': 'image/svg+xml',
 	'.png': 'image/png',
+	'.jpg': 'image/jpeg',
+	'.jpeg': 'image/jpeg',
+	'.gif': 'image/gif',
+	'.webp': 'image/webp',
+	'.avif': 'image/avif',
 	'.ico': 'image/x-icon',
 	'.woff': 'font/woff',
 	'.woff2': 'font/woff2',
@@ -63,6 +70,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		themeConfig,
 		themeCssPath,
 		themeSveltePath,
+		staticDir,
 		devServer,
 		open = true,
 	} = options;
@@ -161,6 +169,18 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (previewRuntimeDir && method === 'GET' && url.pathname.startsWith('/preview/')) {
 				const file = url.pathname.slice('/preview/'.length) || 'index.html';
 				serveStatic(res, previewRuntimeDir, '/' + file);
+			} else if (staticDir && method === 'GET' && !url.pathname.startsWith('/api/')) {
+				// Try project static dir first (images, fonts, etc.), then SPA fallback
+				const staticFile = join(staticDir, url.pathname);
+				if (staticFile.startsWith(staticDir) && existsSync(staticFile) && statSync(staticFile).isFile()) {
+					const ext = extname(staticFile);
+					const contentType = MIME_TYPES[ext] ?? 'application/octet-stream';
+					const content = readFileSync(staticFile);
+					res.writeHead(200, { 'Content-Type': contentType });
+					res.end(content);
+				} else {
+					serveStatic(res, appDistDir, url.pathname);
+				}
 			} else if (method === 'GET') {
 				// Serve static frontend (SPA fallback to index.html)
 				serveStatic(res, appDistDir, url.pathname);
@@ -179,6 +199,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		const url = `http://localhost:${port}`;
 		console.log(`\n  refrakt editor running at ${url}\n`);
 		console.log(`  Content directory: ${absContentDir}`);
+		if (staticDir) console.log(`  Static directory: ${staticDir}`);
 		if (devServer) console.log(`  Dev server: ${devServer}`);
 		console.log('');
 
