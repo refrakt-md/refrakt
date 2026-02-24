@@ -7,6 +7,7 @@ import { parseFrontmatter } from '@refrakt-md/content';
 import type { ThemeConfig } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent } from './preview.js';
+import { createHighlightTransform } from '@refrakt-md/highlight';
 
 export interface EditorOptions {
 	/** Absolute path to the content directory */
@@ -67,6 +68,12 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		themeCss = bundleCss(themeCssPath);
 	}
 
+	// Initialize syntax highlighting (Shiki)
+	const highlightTransform = await createHighlightTransform();
+	if (highlightTransform.css) {
+		themeCss += '\n' + highlightTransform.css;
+	}
+
 	const server = createServer(async (req, res) => {
 		try {
 			const url = new URL(req.url!, `http://localhost:${port}`);
@@ -94,9 +101,9 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				await handlePutFile(req, res, absContentDir, filePath);
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
-				handlePreview(res, absContentDir, filePath, themeConfig, themeCss);
+				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform);
 			} else if (method === 'POST' && url.pathname === '/api/preview') {
-				await handlePreviewContent(req, res, themeConfig, themeCss);
+				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform);
 			} else if (method === 'GET') {
 				// Serve static frontend (SPA fallback to index.html)
 				serveStatic(res, appDistDir, url.pathname);
@@ -215,6 +222,7 @@ function handlePreview(
 	filePath: string,
 	themeConfig: ThemeConfig,
 	themeCss: string,
+	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
 ): void {
 	const fullPath = safePath(contentDir, filePath);
 	if (!fullPath) {
@@ -229,7 +237,7 @@ function handlePreview(
 		return;
 	}
 
-	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss);
+	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight);
 	serveHtml(res, html);
 }
 
@@ -238,11 +246,12 @@ async function handlePreviewContent(
 	res: import('node:http').ServerResponse,
 	themeConfig: ThemeConfig,
 	themeCss: string,
+	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { content } = JSON.parse(body) as { content: string };
 
-	const html = renderPreviewContent(content, themeConfig, themeCss);
+	const html = renderPreviewContent(content, themeConfig, themeCss, highlight);
 	serveHtml(res, html);
 }
 

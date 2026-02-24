@@ -90,8 +90,8 @@
 		font-family: system-ui, -apple-system, sans-serif;
 		height: 100vh;
 		overflow: hidden;
-		background: #0f1117;
-		color: #e2e8f0;
+		background: #f8fafc;
+		color: #1a1a2e;
 	}
 
 	.editor-app {

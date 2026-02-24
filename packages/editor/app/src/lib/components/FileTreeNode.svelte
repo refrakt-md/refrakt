@@ -84,7 +84,7 @@
 	}
 
 	.tree-dir:hover {
-		color: #94a3b8;
+		color: #1a1a2e;
 	}
 
 	.tree-dir__arrow {
@@ -105,23 +105,23 @@
 		font-size: 0.8rem;
 		cursor: pointer;
 		transition: background 0.1s;
-		color: #e2e8f0;
+		color: #1a1a2e;
 		background: none;
 		border: none;
 		text-align: left;
 	}
 
 	.tree-item:hover {
-		background: #1e2030;
+		background: #e2e8f0;
 	}
 
 	.tree-item.active {
-		background: #2a2d3a;
-		color: #818cf8;
+		background: #e0f2fe;
+		color: #0ea5e9;
 	}
 
 	.tree-item--layout {
-		color: #f59e0b;
+		color: #d97706;
 		font-style: italic;
 	}
 

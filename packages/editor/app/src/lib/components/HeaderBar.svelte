@@ -45,8 +45,8 @@
 		gap: 1rem;
 		padding: 0 1rem;
 		height: 44px;
-		background: #161822;
-		border-bottom: 1px solid #2a2d3a;
+		background: #ffffff;
+		border-bottom: 1px solid #e2e8f0;
 		flex-shrink: 0;
 	}
 
@@ -54,12 +54,12 @@
 		font-size: 0.875rem;
 		font-weight: 600;
 		letter-spacing: 0.05em;
-		color: #94a3b8;
+		color: #64748b;
 		white-space: nowrap;
 	}
 
 	.header__accent {
-		color: #818cf8;
+		color: #0ea5e9;
 	}
 
 	.header__file {
@@ -80,7 +80,7 @@
 
 	.header__error {
 		font-size: 0.75rem;
-		color: #f87171;
+		color: #b91c1c;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -96,10 +96,10 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.35rem 0.75rem;
-		border: 1px solid #2a2d3a;
+		border: 1px solid #e2e8f0;
 		border-radius: 6px;
-		background: #1e2030;
-		color: #e2e8f0;
+		background: #ffffff;
+		color: #1a1a2e;
 		font-size: 0.8rem;
 		cursor: pointer;
 		transition: background 0.15s;
@@ -107,7 +107,7 @@
 	}
 
 	.header__save:hover:not(:disabled) {
-		background: #2a2d3a;
+		background: #f1f5f9;
 	}
 
 	.header__save:disabled {
@@ -118,9 +118,9 @@
 	.header__kbd {
 		font-size: 0.65rem;
 		padding: 0.1rem 0.3rem;
-		border: 1px solid #3a3d4a;
+		border: 1px solid #e2e8f0;
 		border-radius: 3px;
-		background: #12141c;
+		background: #f8fafc;
 		color: #64748b;
 		font-family: system-ui;
 	}

@@ -55,14 +55,16 @@
 	}
 
 	.layout__panel--left {
-		background: #161822;
+		background: #f8fafc;
+		border-right: 1px solid #e2e8f0;
 	}
 
 	.layout__panel--center {
-		background: #12141c;
+		background: #ffffff;
 	}
 
 	.layout__panel--right {
 		background: #ffffff;
+		border-left: 1px solid #e2e8f0;
 	}
 </style>

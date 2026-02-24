@@ -18,11 +18,11 @@
 	let container: HTMLElement;
 	let editorView: EditorView;
 
-	const darkTheme = EditorView.theme(
+	const lightTheme = EditorView.theme(
 		{
 			'&': {
-				backgroundColor: '#12141c',
-				color: '#cdd6f4',
+				backgroundColor: '#ffffff',
+				color: '#1a1a2e',
 				fontSize: '13px',
 				height: '100%',
 			},
@@ -33,52 +33,52 @@
 			},
 			'.cm-content': {
 				padding: '1rem 0',
-				caretColor: '#cdd6f4',
+				caretColor: '#1e293b',
 			},
 			'.cm-gutters': {
-				backgroundColor: '#0f1117',
-				color: '#3a3d4a',
+				backgroundColor: '#f8fafc',
+				color: '#94a3b8',
 				border: 'none',
 				paddingRight: '0.5rem',
 			},
 			'.cm-activeLineGutter': {
-				backgroundColor: '#161822',
+				backgroundColor: '#e2e8f0',
 				color: '#64748b',
 			},
 			'.cm-activeLine': {
-				backgroundColor: 'rgba(205, 214, 244, 0.04)',
+				backgroundColor: 'rgba(0, 0, 0, 0.03)',
 			},
 			'.cm-cursor': {
-				borderLeftColor: '#818cf8',
+				borderLeftColor: '#1e293b',
 			},
 			'&.cm-focused .cm-selectionBackground, ::selection': {
-				backgroundColor: 'rgba(129, 140, 248, 0.2)',
+				backgroundColor: 'rgba(14, 165, 233, 0.2)',
 			},
 			'.cm-selectionBackground': {
-				backgroundColor: 'rgba(129, 140, 248, 0.15)',
+				backgroundColor: 'rgba(14, 165, 233, 0.12)',
 			},
 			'&.cm-focused': {
 				outline: 'none',
 			},
 		},
-		{ dark: true },
+		{ dark: false },
 	);
 
 	const highlightTheme = HighlightStyle.define([
-		{ tag: tags.heading1, color: '#818cf8', fontWeight: 'bold', fontSize: '1.4em' },
-		{ tag: tags.heading2, color: '#818cf8', fontWeight: 'bold', fontSize: '1.2em' },
-		{ tag: tags.heading3, color: '#818cf8', fontWeight: 'bold', fontSize: '1.1em' },
-		{ tag: tags.heading, color: '#818cf8', fontWeight: 'bold' },
-		{ tag: tags.emphasis, color: '#f5c2e7', fontStyle: 'italic' },
-		{ tag: tags.strong, color: '#f5c2e7', fontWeight: 'bold' },
-		{ tag: tags.link, color: '#89b4fa', textDecoration: 'underline' },
-		{ tag: tags.url, color: '#89b4fa' },
-		{ tag: tags.quote, color: '#a6adc8' },
-		{ tag: tags.monospace, color: '#a6e3a1' },
-		{ tag: tags.processingInstruction, color: '#f9e2af' },
-		{ tag: tags.meta, color: '#6c7086' },
-		{ tag: tags.comment, color: '#585b70' },
-		{ tag: tags.punctuation, color: '#6c7086' },
+		{ tag: tags.heading1, color: '#0369a1', fontWeight: 'bold', fontSize: '1.4em' },
+		{ tag: tags.heading2, color: '#0369a1', fontWeight: 'bold', fontSize: '1.2em' },
+		{ tag: tags.heading3, color: '#0369a1', fontWeight: 'bold', fontSize: '1.1em' },
+		{ tag: tags.heading, color: '#0369a1', fontWeight: 'bold' },
+		{ tag: tags.emphasis, color: '#9333ea', fontStyle: 'italic' },
+		{ tag: tags.strong, color: '#9333ea', fontWeight: 'bold' },
+		{ tag: tags.link, color: '#0ea5e9', textDecoration: 'underline' },
+		{ tag: tags.url, color: '#0ea5e9' },
+		{ tag: tags.quote, color: '#64748b' },
+		{ tag: tags.monospace, color: '#16a34a' },
+		{ tag: tags.processingInstruction, color: '#d97706' },
+		{ tag: tags.meta, color: '#94a3b8' },
+		{ tag: tags.comment, color: '#94a3b8' },
+		{ tag: tags.punctuation, color: '#94a3b8' },
 	]);
 
 	// Create CodeMirror when container is available, destroy on cleanup
@@ -93,7 +93,7 @@
 				highlightActiveLine(),
 				history(),
 				markdown(),
-				darkTheme,
+				lightTheme,
 				syntaxHighlighting(highlightTheme),
 				highlightSelectionMatches(),
 				keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),

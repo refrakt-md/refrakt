@@ -15,10 +15,11 @@ export function renderPreviewPage(
 	filePath: string,
 	themeConfig: ThemeConfig,
 	themeCss: string,
+	highlightTransform?: (tree: RendererNode) => RendererNode,
 ): string {
 	const fullPath = join(contentDir, filePath);
 	const raw = readFileSync(fullPath, 'utf-8');
-	return renderPreviewContent(raw, themeConfig, themeCss);
+	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform);
 }
 
 /**
@@ -29,6 +30,7 @@ export function renderPreviewContent(
 	raw: string,
 	themeConfig: ThemeConfig,
 	themeCss: string,
+	highlightTransform?: (tree: RendererNode) => RendererNode,
 ): string {
 	const { frontmatter, content } = parseFrontmatter(raw);
 
@@ -43,7 +45,12 @@ export function renderPreviewContent(
 
 	// Apply identity transform (BEM classes, structure injection, meta consumption)
 	const transform = createTransform(themeConfig);
-	const transformed = transform(serialized);
+	let transformed = transform(serialized);
+
+	// Apply syntax highlighting if available
+	if (highlightTransform) {
+		transformed = highlightTransform(transformed);
+	}
 
 	// Render to HTML string
 	const bodyHtml = renderToHtml(transformed, { pretty: true });

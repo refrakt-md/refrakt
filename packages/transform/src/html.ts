@@ -77,6 +77,12 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 		return `${pad}<${tag}${attrs} />`;
 	}
 
+	// <pre> preserves whitespace — render children flat to avoid visible indentation
+	if (tag === 'pre') {
+		const children = node.children.map(c => renderFlatChild(c)).join('');
+		return `${pad}<${tag}${attrs}>${children}</${tag}>`;
+	}
+
 	// Inline elements with only text children
 	const allText = node.children.every(c => typeof c === 'string' || typeof c === 'number');
 	if (allText && node.children.length <= 1) {
@@ -89,4 +95,26 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 		.filter(Boolean);
 
 	return `${pad}<${tag}${attrs}>\n${childLines.join('\n')}\n${pad}</${tag}>`;
+}
+
+/** Render a child node flat (no indentation), respecting data-codeblock raw HTML. */
+function renderFlatChild(node: RendererNode): string {
+	if (node === null || node === undefined) return '';
+	if (typeof node === 'string') return escapeHtml(node);
+	if (typeof node === 'number') return String(node);
+	if (Array.isArray(node)) return node.map(renderFlatChild).join('');
+	if (!isTag(node)) return '';
+
+	const tag = node.name;
+	const attrs = renderAttrs(node.attributes);
+
+	if (VOID_ELEMENTS.has(tag)) return `<${tag}${attrs} />`;
+
+	// data-codeblock children are raw HTML from Shiki — don't escape
+	const raw = node.attributes?.['data-codeblock'];
+	const children = raw
+		? node.children.map(c => typeof c === 'string' ? c : renderFlatChild(c)).join('')
+		: node.children.map(renderFlatChild).join('');
+
+	return `<${tag}${attrs}>${children}</${tag}>`;
 }
