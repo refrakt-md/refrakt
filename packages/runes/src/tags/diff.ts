@@ -115,7 +115,7 @@ function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
 		]);
 	});
 
-	return [new Tag('pre', { 'data-name': 'code' }, lineNodes)];
+	return [new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, lineNodes)];
 }
 
 /** Build split diff renderable — side-by-side panels with before/after lines */
@@ -137,11 +137,11 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 	return [new Tag('div', { 'data-name': 'split-container' }, [
 		new Tag('div', { 'data-name': 'panel' }, [
 			new Tag('div', { 'data-name': 'header' }, ['Before']),
-			new Tag('pre', { 'data-name': 'code' }, buildPanelLines(before)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before)),
 		]),
 		new Tag('div', { 'data-name': 'panel' }, [
 			new Tag('div', { 'data-name': 'header-after' }, ['After']),
-			new Tag('pre', { 'data-name': 'code' }, buildPanelLines(after)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after)),
 		]),
 	])];
 }

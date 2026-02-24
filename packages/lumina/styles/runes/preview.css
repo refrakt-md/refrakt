@@ -139,7 +139,8 @@
 	margin: 0;
 	border-radius: 0;
 }
-.rf-preview__source .rf-codeblock {
+.rf-preview__source .rf-codeblock,
+.rf-preview__source .rf-code-wrapper {
 	border-radius: 0;
 }
 

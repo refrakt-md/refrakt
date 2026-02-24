@@ -10,6 +10,7 @@
 /* Element Overrides */
 @import './styles/elements/table.css';
 @import './styles/elements/blockquote.css';
+@import './styles/elements/code.css';
 
 /* Layouts */
 @import './styles/layouts/mobile.css';
