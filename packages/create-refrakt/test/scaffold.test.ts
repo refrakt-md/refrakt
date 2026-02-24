@@ -86,6 +86,26 @@ describe('scaffold', () => {
 		expect(config.target).toBe('svelte');
 	});
 
+	it('generates dependency versions matching the package version', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+
+		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
+		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+		const expected = `~${ownPkg.version}`;
+		expect(pkg.dependencies['@refrakt-md/content']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/highlight']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/runes']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/svelte']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/types']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/lumina']).toBe(expected);
+		// Third-party packages should not use the refrakt version
+		expect(pkg.dependencies['@markdoc/markdoc']).toBe('^0.4.0');
+	});
+
 	it('adds custom theme to package.json dependencies', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));

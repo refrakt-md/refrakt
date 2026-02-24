@@ -105,6 +105,21 @@ describe('scaffoldTheme', () => {
 		expect(manifest.routeRules[0].pattern).toBe('**');
 	});
 
+	it('generates dependency versions matching the package version', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffoldTheme({ themeName: 'my-theme', targetDir });
+
+		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
+		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+		const expected = `~${ownPkg.version}`;
+		expect(pkg.dependencies['@refrakt-md/theme-base']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/transform']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/types']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/svelte']).toBe(expected);
+	});
+
 	it('prepends scope to package name when --scope is provided', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));

@@ -1,6 +1,12 @@
-import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync } from 'node:fs';
+import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+function getRefraktVersion(): string {
+	const pkgPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
+	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+	return pkg.version;
+}
 
 export interface ScaffoldOptions {
 	projectName: string;
@@ -63,6 +69,7 @@ export function scaffold(options: ScaffoldOptions): void {
 }
 
 function generatePackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
 	const pkg = {
 		name: projectName,
 		private: true,
@@ -76,13 +83,13 @@ function generatePackageJson(projectName: string, theme: string): string {
 			check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
 		},
 		dependencies: {
-			'@refrakt-md/content': '^0.4.0',
-			'@refrakt-md/highlight': '^0.4.0',
-			'@refrakt-md/runes': '^0.4.0',
-			'@refrakt-md/svelte': '^0.4.0',
-			'@refrakt-md/sveltekit': '^0.4.0',
-			'@refrakt-md/types': '^0.4.0',
-			[theme]: '^0.4.0',
+			'@refrakt-md/content': v,
+			'@refrakt-md/highlight': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/svelte': v,
+			'@refrakt-md/sveltekit': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
@@ -261,10 +268,10 @@ function generateThemePackageJson(packageName: string): string {
 			test: 'vitest run',
 		},
 		dependencies: {
-			'@refrakt-md/theme-base': '^0.4.0',
-			'@refrakt-md/transform': '^0.4.0',
-			'@refrakt-md/types': '^0.4.0',
-			'@refrakt-md/svelte': '^0.4.0',
+			'@refrakt-md/theme-base': `~${getRefraktVersion()}`,
+			'@refrakt-md/transform': `~${getRefraktVersion()}`,
+			'@refrakt-md/types': `~${getRefraktVersion()}`,
+			'@refrakt-md/svelte': `~${getRefraktVersion()}`,
 		},
 		devDependencies: {
 			vitest: '^3.0.0',
@@ -583,18 +590,24 @@ This is a **check** hint for success messages.
 
 ## Grid
 
-{% grid cols=3 %}
-{% feature title="Fast" %}
+{% grid columns=3 %}
+
+**Fast**
+
 Lightning-fast build times with incremental compilation.
-{% /feature %}
 
-{% feature title="Flexible" %}
+---
+
+**Flexible**
+
 Supports multiple frameworks and output targets.
-{% /feature %}
 
-{% feature title="Extensible" %}
+---
+
+**Extensible**
+
 Create custom runes and themes to match your brand.
-{% /feature %}
+
 {% /grid %}
 
 ## Accordion

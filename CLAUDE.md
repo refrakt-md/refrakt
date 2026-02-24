@@ -185,6 +185,18 @@ Theme developer documentation lives at `site/content/docs/themes/` (6 pages: ove
 
 Site content lives in `site/content/` as `.md` files with YAML frontmatter. Layouts use `_layout.md` files with `{% layout %}` + `{% region %}` tags that cascade down directory trees.
 
+## Release Process
+
+See [RELEASING.md](RELEASING.md) for the full process. Key commands:
+
+```bash
+npx changeset            # Create a changeset for your changes
+npm run version-packages # Bump versions + generate changelog
+npm run release          # Build + publish (usually handled by CI)
+```
+
+All `@refrakt-md/*` packages and `create-refrakt` are versioned together (Changesets fixed mode). The `create-refrakt` scaffold template derives dependency versions from its own `package.json` at runtime, so they stay in sync automatically.
+
 ## Monorepo Structure
 
 ```
