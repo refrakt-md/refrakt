@@ -11,7 +11,7 @@
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
   "scripts": {
-    "build": "npm run build -w packages/types -w packages/create-refrakt -w packages/transform -w packages/behaviors && npm run build -w packages/theme-base && npm run build -w packages/lumina -w packages/highlight && npm run build -w packages/runes -w packages/sveltekit && npm run build -w packages/content -w packages/ai && npm run build -w packages/cli",
+    "build": "npm run build -w packages/types -w packages/create-refrakt -w packages/transform -w packages/behaviors && npm run build -w packages/theme-base && npm run build -w packages/lumina -w packages/highlight && npm run build -w packages/runes -w packages/sveltekit && npm run build -w packages/content -w packages/ai && npm run build -w packages/editor && npm run build -w packages/cli",
     "test": "vitest run",
     "test:watch": "vitest",
     "changeset": "changeset",

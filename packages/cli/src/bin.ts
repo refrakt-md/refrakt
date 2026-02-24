@@ -23,6 +23,8 @@ if (command === 'write') {
 	runTheme(args.slice(1));
 } else if (command === 'extract') {
 	runExtract(args.slice(1));
+} else if (command === 'edit') {
+	runEdit(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -45,6 +47,7 @@ Commands:
   validate             Validate theme config and manifest
   theme <subcommand>   Manage themes (install, info)
   extract <path>       Extract symbols from source code into {% symbol %} Markdown
+  edit                 Launch the browser-based content editor
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -112,6 +115,15 @@ Examples:
   refrakt extract ./src -o ./content/api
   refrakt extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
   refrakt extract ./src -o ./content/api --validate
+  refrakt edit
+  refrakt edit --port 3000 --content-dir ./content
+  refrakt edit --dev-server http://localhost:5173
+
+Edit Options:
+  --port, -p <number>      Editor port (default: 4800)
+  --content-dir <dir>      Content directory (default: from refrakt.config.json)
+  --dev-server <url>       URL of running dev server for live preview
+  --no-open                Don't auto-open browser
 `);
 }
 
@@ -530,6 +542,58 @@ function runExtract(extractArgs: string[]): void {
 			sourceUrl,
 			title,
 		});
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runEdit(editArgs: string[]): void {
+	let port: number | undefined;
+	let contentDir: string | undefined;
+	let devServer: string | undefined;
+	let noOpen = false;
+
+	for (let i = 0; i < editArgs.length; i++) {
+		const arg = editArgs[i];
+
+		if (arg === '--port' || arg === '-p') {
+			const val = editArgs[++i];
+			if (!val) {
+				console.error('Error: --port requires a number');
+				process.exit(1);
+			}
+			port = parseInt(val, 10);
+		} else if (arg === '--content-dir') {
+			contentDir = editArgs[++i];
+			if (!contentDir) {
+				console.error('Error: --content-dir requires a directory path');
+				process.exit(1);
+			}
+		} else if (arg === '--dev-server') {
+			devServer = editArgs[++i];
+			if (!devServer) {
+				console.error('Error: --dev-server requires a URL');
+				process.exit(1);
+			}
+		} else if (arg === '--no-open') {
+			noOpen = true;
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	import('./commands/edit.js').then(({ editCommand }) => {
+		return editCommand({ port, contentDir, devServer, noOpen });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
