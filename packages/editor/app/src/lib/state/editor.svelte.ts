@@ -32,6 +32,11 @@ class EditorState {
 
 	dirty = $derived(this.editorContent !== this.savedContent);
 
+	/** Whether the current file is a layout or a regular page */
+	currentFileType = $derived<'page' | 'layout'>(
+		this.currentPath?.endsWith('_layout.md') ? 'layout' : 'page'
+	);
+
 	/**
 	 * Load a file's raw content into the editor, splitting frontmatter and body.
 	 */

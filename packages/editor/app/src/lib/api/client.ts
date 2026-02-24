@@ -128,3 +128,16 @@ export async function toggleDraft(path: string): Promise<{ draft: boolean }> {
 	}
 	return res.json();
 }
+
+export interface PageListItem {
+	slug: string;
+	path: string;
+	title: string;
+}
+
+export async function fetchPagesList(): Promise<PageListItem[]> {
+	const res = await fetch(`${BASE}/api/pages-list`);
+	if (!res.ok) throw new Error(`Failed to load pages list: ${res.status}`);
+	const data = await res.json();
+	return data.pages;
+}

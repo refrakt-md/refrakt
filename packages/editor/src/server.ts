@@ -118,6 +118,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				handleDelete(res, absContentDir, filePath);
 			} else if (method === 'POST' && url.pathname === '/api/toggle-draft') {
 				await handleToggleDraft(req, res, absContentDir);
+			} else if (method === 'GET' && url.pathname === '/api/pages-list') {
+				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET') {
 				// Serve static frontend (SPA fallback to index.html)
 				serveStatic(res, appDistDir, url.pathname);
@@ -503,6 +505,33 @@ async function handleToggleDraft(
 	writeFileSync(fullPath, newRaw, 'utf-8');
 
 	serveJson(res, { ok: true, draft: frontmatter.draft ?? false });
+}
+
+async function handlePagesList(
+	res: import('node:http').ServerResponse,
+	contentDir: string,
+): Promise<void> {
+	const tree = await ContentTree.fromDirectory(contentDir);
+	const pages: { slug: string; path: string; title: string }[] = [];
+
+	function walk(dir: import('@refrakt-md/content').ContentDirectory) {
+		for (const page of dir.pages) {
+			const name = page.relativePath.split('/').pop()!;
+			const slug = name.replace(/\.md$/, '');
+			const { frontmatter } = parseFrontmatter(page.raw);
+			pages.push({
+				slug,
+				path: page.relativePath,
+				title: (frontmatter.title as string) || slug,
+			});
+		}
+		for (const child of dir.children) {
+			walk(child);
+		}
+	}
+
+	walk(tree.root);
+	serveJson(res, { pages });
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────

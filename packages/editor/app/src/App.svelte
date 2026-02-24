@@ -4,6 +4,7 @@
 	import FileTree from './lib/components/FileTree.svelte';
 	import FrontmatterEditor from './lib/components/FrontmatterEditor.svelte';
 	import MarkdownEditor from './lib/components/MarkdownEditor.svelte';
+	import LayoutEditor from './lib/components/LayoutEditor.svelte';
 	import PreviewPane from './lib/components/PreviewPane.svelte';
 	import CreatePageModal from './lib/components/CreatePageModal.svelte';
 	import CreateDirectoryModal from './lib/components/CreateDirectoryModal.svelte';
@@ -219,8 +220,12 @@
 			/>
 		{/snippet}
 		{#snippet center()}
-			<FrontmatterEditor />
-			<MarkdownEditor />
+			{#if editorState.currentFileType === 'layout'}
+				<LayoutEditor />
+			{:else}
+				<FrontmatterEditor />
+				<MarkdownEditor />
+			{/if}
 		{/snippet}
 		{#snippet right()}
 			<PreviewPane />
