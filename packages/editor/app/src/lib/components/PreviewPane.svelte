@@ -2,9 +2,12 @@
 	import { editorState } from '../state/editor.svelte.js';
 	import { fetchPreviewHtml, fetchPreviewData } from '../api/client.js';
 
+	let { onnavigate }: { onnavigate?: (path: string) => void } = $props();
+
 	let previewHtml = $state('');
 	let previewIframe: HTMLIFrameElement | undefined = $state();
 	let debounceTimer: ReturnType<typeof setTimeout>;
+	let pageMap: Map<string, string> = new Map(); // url → file path
 
 	// Listen for messages from the preview runtime iframe
 	$effect(() => {
@@ -12,7 +15,9 @@
 			if (e.data?.type === 'preview-ready') {
 				editorState.previewRuntimeReady = true;
 			} else if (e.data?.type === 'preview-navigate') {
-				// Future: could navigate to the linked page in the editor
+				const href = e.data.href as string;
+				const filePath = pageMap.get(href);
+				if (filePath && onnavigate) onnavigate(filePath);
 			}
 		}
 		window.addEventListener('message', onMessage);
@@ -40,7 +45,10 @@
 			try {
 				if (runtime) {
 					// Svelte preview runtime — send data via postMessage
-					const data = await fetchPreviewData(path, content);
+					const data = await fetchPreviewData(path, content) as any;
+					if (data.pages) {
+						pageMap = new Map(data.pages.map((p: any) => [p.url, p.path]));
+					}
 					previewIframe?.contentWindow?.postMessage(
 						{ type: 'preview-update', page: data },
 						'*',

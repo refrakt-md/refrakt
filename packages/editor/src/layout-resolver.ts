@@ -11,7 +11,7 @@ export interface PagePreviewData {
 	description: string;
 	frontmatter: Record<string, unknown>;
 	url: string;
-	pages: Array<{ url: string; title: string; draft: boolean }>;
+	pages: Array<{ url: string; path: string; title: string; draft: boolean }>;
 }
 
 /**
@@ -21,7 +21,7 @@ export interface PagePreviewData {
 export class LayoutResolver {
 	private tree: ContentTree | null = null;
 	private router = new Router('/');
-	private pagesList: Array<{ url: string; title: string; draft: boolean }> = [];
+	private pagesList: Array<{ url: string; path: string; title: string; draft: boolean }> = [];
 
 	constructor(
 		private contentDir: string,
@@ -190,13 +190,14 @@ export class LayoutResolver {
 	}
 
 	/** Build the pages list for Nav component link resolution */
-	private buildPagesList(): Array<{ url: string; title: string; draft: boolean }> {
+	private buildPagesList(): Array<{ url: string; path: string; title: string; draft: boolean }> {
 		if (!this.tree) return [];
-		const pages: Array<{ url: string; title: string; draft: boolean }> = [];
+		const pages: Array<{ url: string; path: string; title: string; draft: boolean }> = [];
 		for (const page of this.tree.pages()) {
 			const { frontmatter } = parseFrontmatter(page.raw);
 			pages.push({
 				url: this.router.filePathToUrl(page.relativePath),
+				path: page.relativePath,
 				title: (frontmatter.title as string) ?? page.relativePath,
 				draft: frontmatter.draft === true,
 			});

@@ -236,7 +236,7 @@
 			{/if}
 		{/snippet}
 		{#snippet right()}
-			<PreviewPane />
+			<PreviewPane onnavigate={handleSelectFile} />
 		{/snippet}
 	</EditorLayout>
 </div>
