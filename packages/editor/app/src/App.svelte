@@ -284,6 +284,34 @@
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
+		scrollbar-width: thin;
+		scrollbar-color: transparent transparent;
+	}
+
+	:global(*:hover) {
+		scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+	}
+
+	:global(::-webkit-scrollbar) {
+		width: 8px;
+		height: 8px;
+	}
+
+	:global(::-webkit-scrollbar-track) {
+		background: transparent;
+	}
+
+	:global(::-webkit-scrollbar-thumb) {
+		background: transparent;
+		border-radius: 4px;
+	}
+
+	:global(*:hover::-webkit-scrollbar-thumb) {
+		background: rgba(0, 0, 0, 0.15);
+	}
+
+	:global(*:hover::-webkit-scrollbar-thumb:hover) {
+		background: rgba(0, 0, 0, 0.3);
 	}
 
 	:global(body) {

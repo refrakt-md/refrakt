@@ -25,7 +25,7 @@
 	const lightTheme = EditorView.theme(
 		{
 			'&': {
-				backgroundColor: '#ffffff',
+				backgroundColor: '#f8fafc',
 				color: '#1a1a2e',
 				fontSize: '13px',
 				height: '100%',
