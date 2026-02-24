@@ -36,8 +36,8 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		process.exit(1);
 	}
 
-	// Resolve theme config and CSS
-	const { themeConfig, themeCssPath } = await resolveTheme(themeName, configDir);
+	// Resolve theme config, CSS, and Svelte entry
+	const { themeConfig, themeCssPath, themeSveltePath } = await resolveTheme(themeName, configDir);
 
 	// Start editor
 	const { startEditor } = await import('@refrakt-md/editor');
@@ -47,15 +47,22 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		port: options.port ?? 4800,
 		themeConfig,
 		themeCssPath,
+		themeSveltePath,
 		devServer: options.devServer,
 		open: !options.noOpen,
 	});
 }
 
+interface ResolvedTheme {
+	themeConfig: import('@refrakt-md/transform').ThemeConfig;
+	themeCssPath?: string;
+	themeSveltePath?: string;
+}
+
 async function resolveTheme(
 	themeName: string | undefined,
 	configDir: string,
-): Promise<{ themeConfig: import('@refrakt-md/transform').ThemeConfig; themeCssPath?: string }> {
+): Promise<ResolvedTheme> {
 	// Always use baseConfig as the foundation
 	const { baseConfig } = await import('@refrakt-md/theme-base');
 
@@ -88,7 +95,14 @@ async function resolveTheme(
 		const cssPath = resolve(themePkgDir, 'index.css');
 		const themeCssPath = existsSync(cssPath) ? cssPath : undefined;
 
-		return { themeConfig, themeCssPath };
+		// Look for Svelte entry point (for preview runtime)
+		let themeSveltePath: string | undefined;
+		const svelteEntry = resolve(themePkgDir, 'svelte', 'index.ts');
+		if (existsSync(svelteEntry)) {
+			themeSveltePath = svelteEntry;
+		}
+
+		return { themeConfig, themeCssPath, themeSveltePath };
 	} catch {
 		console.warn(`Warning: Could not resolve theme "${themeName}", using base config`);
 		return { themeConfig: baseConfig };

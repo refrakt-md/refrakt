@@ -6,10 +6,13 @@ import { exec } from 'node:child_process';
 import { ContentTree } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import { runes as allRunes } from '@refrakt-md/runes';
-import type { ThemeConfig } from '@refrakt-md/transform';
+import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import { createTransform } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent } from './preview.js';
 import { createHighlightTransform } from '@refrakt-md/highlight';
+import { buildPreviewRuntime } from './preview-builder.js';
+import { LayoutResolver } from './layout-resolver.js';
 
 export interface EditorOptions {
 	/** Absolute path to the content directory */
@@ -20,6 +23,8 @@ export interface EditorOptions {
 	themeConfig: ThemeConfig;
 	/** Path to theme's CSS entry file (index.css) */
 	themeCssPath?: string;
+	/** Path to theme's Svelte entry (for preview runtime) */
+	themeSveltePath?: string;
 	/** URL of running dev server for live preview */
 	devServer?: string;
 	/** Whether to open browser automatically (default: true) */
@@ -57,6 +62,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		port = 4800,
 		themeConfig,
 		themeCssPath,
+		themeSveltePath,
 		devServer,
 		open = true,
 	} = options;
@@ -75,6 +81,23 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	if (highlightTransform.css) {
 		themeCss += '\n' + highlightTransform.css;
 	}
+
+	// Build Svelte preview runtime if theme has a Svelte entry
+	let previewRuntimeDir: string | null = null;
+	if (themeSveltePath) {
+		const result = await buildPreviewRuntime(themeSveltePath);
+		if (result.success) {
+			previewRuntimeDir = result.outputDir;
+			console.log('  Preview runtime: built \u2713');
+		}
+	}
+
+	// Initialize layout resolver for full-page preview with layouts
+	const layoutResolver = new LayoutResolver(absContentDir, themeConfig);
+	await layoutResolver.refresh();
+
+	// Create identity transform once (reused across preview requests)
+	const identityTransform = createTransform(themeConfig);
 
 	const server = createServer(async (req, res) => {
 		try {
@@ -101,6 +124,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'PUT' && url.pathname.startsWith('/api/files/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/files/'.length));
 				await handlePutFile(req, res, absContentDir, filePath);
+				// Refresh layout resolver so layout changes propagate to preview
+				layoutResolver.refresh().catch(() => {});
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
 				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform);
@@ -123,6 +148,19 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/runes') {
 				handleGetRunes(res);
+			} else if (method === 'GET' && url.pathname === '/api/config') {
+				serveJson(res, {
+					previewRuntime: previewRuntimeDir !== null,
+					devServerUrl: devServer ?? null,
+				});
+			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
+				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
+			} else if (previewRuntimeDir && method === 'GET' && url.pathname === '/preview/theme.css') {
+				res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
+				res.end(themeCss);
+			} else if (previewRuntimeDir && method === 'GET' && url.pathname.startsWith('/preview/')) {
+				const file = url.pathname.slice('/preview/'.length) || 'index.html';
+				serveStatic(res, previewRuntimeDir, '/' + file);
 			} else if (method === 'GET') {
 				// Serve static frontend (SPA fallback to index.html)
 				serveStatic(res, appDistDir, url.pathname);
@@ -271,6 +309,24 @@ async function handlePreviewContent(
 
 	const html = renderPreviewContent(content, themeConfig, themeCss, highlight);
 	serveHtml(res, html);
+}
+
+async function handlePreviewData(
+	req: import('node:http').IncomingMessage,
+	res: import('node:http').ServerResponse,
+	resolver: LayoutResolver,
+	transform: (tree: RendererNode) => RendererNode,
+	highlight: (tree: RendererNode) => RendererNode,
+): Promise<void> {
+	const body = await readBody(req);
+	const { path, content } = JSON.parse(body) as { path: string; content: string };
+
+	const isLayout = path.endsWith('_layout.md');
+	const data = isLayout
+		? resolver.buildLayoutPreviewData(path, content, transform, highlight)
+		: resolver.buildPreviewData(path, content, transform, highlight);
+
+	serveJson(res, data);
 }
 
 // ── File operation handlers ──────────────────────────────────────────────

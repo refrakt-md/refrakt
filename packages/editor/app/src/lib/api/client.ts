@@ -40,6 +40,27 @@ export async function fetchPreviewHtml(path: string, content: string): Promise<s
 	return res.text();
 }
 
+export async function fetchPreviewData(path: string, content: string): Promise<unknown> {
+	const res = await fetch(`${BASE}/api/preview-data`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ path, content }),
+	});
+	if (!res.ok) throw new Error(`Preview data failed: ${res.status}`);
+	return res.json();
+}
+
+export interface EditorConfig {
+	previewRuntime: boolean;
+	devServerUrl: string | null;
+}
+
+export async function fetchConfig(): Promise<EditorConfig> {
+	const res = await fetch(`${BASE}/api/config`);
+	if (!res.ok) throw new Error(`Config failed: ${res.status}`);
+	return res.json();
+}
+
 // ── File operations ──────────────────────────────────────────────────
 
 export interface CreatePageOptions {

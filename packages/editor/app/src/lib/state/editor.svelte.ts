@@ -31,6 +31,11 @@ class EditorState {
 	/** Rune metadata for autocomplete/palette */
 	runes: RuneInfo[] = $state([]);
 
+	/** Whether the Svelte preview runtime is available */
+	previewRuntimeAvailable = $state(false);
+	/** Whether the preview runtime iframe has signalled ready */
+	previewRuntimeReady = $state(false);
+
 	/** Directories the user has collapsed */
 	collapsedDirs: Set<string> = $state(new Set());
 

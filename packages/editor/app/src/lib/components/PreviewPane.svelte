@@ -1,13 +1,35 @@
 <script lang="ts">
 	import { editorState } from '../state/editor.svelte.js';
-	import { fetchPreviewHtml } from '../api/client.js';
+	import { fetchPreviewHtml, fetchPreviewData } from '../api/client.js';
 
 	let previewHtml = $state('');
+	let previewIframe: HTMLIFrameElement | undefined = $state();
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
+	// Listen for messages from the preview runtime iframe
+	$effect(() => {
+		function onMessage(e: MessageEvent) {
+			if (e.data?.type === 'preview-ready') {
+				editorState.previewRuntimeReady = true;
+			} else if (e.data?.type === 'preview-navigate') {
+				// Future: could navigate to the linked page in the editor
+			}
+		}
+		window.addEventListener('message', onMessage);
+		return () => window.removeEventListener('message', onMessage);
+	});
+
+	// Determine which mode to use
+	const useRuntime = $derived(
+		editorState.previewRuntimeAvailable && editorState.previewRuntimeReady,
+	);
+
+	// Main preview effect — debounces content changes
 	$effect(() => {
 		const path = editorState.currentPath;
 		const content = editorState.editorContent;
+		// Read useRuntime to re-trigger when mode changes
+		const runtime = useRuntime;
 		if (!path || !content) {
 			previewHtml = '';
 			return;
@@ -16,7 +38,17 @@
 		clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(async () => {
 			try {
-				previewHtml = await fetchPreviewHtml(path, content);
+				if (runtime) {
+					// Svelte preview runtime — send data via postMessage
+					const data = await fetchPreviewData(path, content);
+					previewIframe?.contentWindow?.postMessage(
+						{ type: 'preview-update', page: data },
+						'*',
+					);
+				} else {
+					// HTML fallback — use srcdoc
+					previewHtml = await fetchPreviewHtml(path, content);
+				}
 			} catch {
 				// Ignore preview errors during typing
 			}
@@ -26,16 +58,23 @@
 	});
 </script>
 
-{#if editorState.currentPath}
-	<iframe title="Preview" srcdoc={previewHtml}></iframe>
-{:else}
+{#if !editorState.currentPath}
 	<div class="preview__empty">
 		<span class="preview__empty-text">Select a page to preview</span>
 	</div>
+{:else if editorState.previewRuntimeAvailable}
+	<iframe
+		bind:this={previewIframe}
+		title="Preview"
+		src="/preview/"
+		class="preview__iframe"
+	></iframe>
+{:else}
+	<iframe title="Preview" srcdoc={previewHtml} class="preview__iframe"></iframe>
 {/if}
 
 <style>
-	iframe {
+	.preview__iframe {
 		width: 100%;
 		height: 100%;
 		border: none;

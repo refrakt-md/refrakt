@@ -24,7 +24,8 @@
   },
   "files": [
     "dist",
-    "app/dist"
+    "app/dist",
+    "preview-runtime"
   ],
   "scripts": {
     "build": "npx vite build app && tsc"
