@@ -155,7 +155,7 @@ hint: defineRune({
 
 `packages/runes/test/hint.test.ts`
 
-Tests verify that the schema transform produces the expected output structure. See the [Patterns](/docs/patterns) page for testing guidelines.
+Tests verify that the schema transform produces the expected output structure. See the [Patterns](/docs/authoring/patterns) page for testing guidelines.
 
 ## Rune checklist
 
