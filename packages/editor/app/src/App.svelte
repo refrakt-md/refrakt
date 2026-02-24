@@ -4,6 +4,7 @@
 	import FileTree from './lib/components/FileTree.svelte';
 	import FrontmatterEditor from './lib/components/FrontmatterEditor.svelte';
 	import MarkdownEditor from './lib/components/MarkdownEditor.svelte';
+	import BlockEditor from './lib/components/BlockEditor.svelte';
 	import LayoutEditor from './lib/components/LayoutEditor.svelte';
 	import PreviewPane from './lib/components/PreviewPane.svelte';
 	import CreatePageModal from './lib/components/CreatePageModal.svelte';
@@ -232,7 +233,25 @@
 				<LayoutEditor />
 			{:else}
 				<FrontmatterEditor />
-				<MarkdownEditor />
+				{#if editorState.currentPath}
+					<div class="mode-toggle">
+						<button
+							class="mode-toggle__btn"
+							class:active={editorState.editorMode === 'code'}
+							onclick={() => { editorState.editorMode = 'code'; }}
+						>Code</button>
+						<button
+							class="mode-toggle__btn"
+							class:active={editorState.editorMode === 'visual'}
+							onclick={() => { editorState.editorMode = 'visual'; }}
+						>Visual</button>
+					</div>
+				{/if}
+				{#if editorState.editorMode === 'visual'}
+					<BlockEditor />
+				{:else}
+					<MarkdownEditor />
+				{/if}
 			{/if}
 		{/snippet}
 		{#snippet right()}
@@ -331,5 +350,46 @@
 		display: flex;
 		flex-direction: column;
 		height: 100vh;
+	}
+
+	/* Code / Visual mode toggle */
+	.mode-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0;
+		padding: 0.35rem 0.75rem;
+		border-bottom: 1px solid #e2e8f0;
+		background: #fafbfc;
+		flex-shrink: 0;
+	}
+
+	.mode-toggle__btn {
+		padding: 0.2rem 0.6rem;
+		border: 1px solid #e2e8f0;
+		background: #ffffff;
+		color: #64748b;
+		font-size: 0.7rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s;
+	}
+
+	.mode-toggle__btn:first-child {
+		border-radius: 4px 0 0 4px;
+	}
+
+	.mode-toggle__btn:last-child {
+		border-radius: 0 4px 4px 0;
+		border-left: none;
+	}
+
+	.mode-toggle__btn:hover:not(.active) {
+		background: #f1f5f9;
+	}
+
+	.mode-toggle__btn.active {
+		background: #0ea5e9;
+		color: #ffffff;
+		border-color: #0ea5e9;
 	}
 </style>

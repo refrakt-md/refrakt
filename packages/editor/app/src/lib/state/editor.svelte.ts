@@ -23,6 +23,9 @@ class EditorState {
 	/** Whether raw YAML mode is active */
 	frontmatterRawMode = $state(false);
 
+	/** Editor view mode: 'code' (CodeMirror) or 'visual' (block editor) */
+	editorMode: 'code' | 'visual' = $state('code');
+
 	treeLoading = $state(false);
 	fileLoading = $state(false);
 	saving = $state(false);
