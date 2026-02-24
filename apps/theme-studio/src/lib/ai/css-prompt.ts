@@ -1,13 +1,14 @@
-import { formatContractForPrompt, type RuneContract } from '../contracts.js';
+import { formatContractForPrompt, getRuneContract, type RuneContract } from '../contracts.js';
 import { tokens } from '../tokens.js';
 
 /**
  * Build system prompt parts for per-rune CSS generation.
+ * Accepts a group of rune members (parent + children) so the AI sees all selectors.
  * Returns [basePrompt, contextPrompt] — base is cacheable, context varies per request.
  */
 export function buildCssPromptParts(
-	runeName: string,
-	contract: RuneContract,
+	groupName: string,
+	members: Array<{ name: string; contract: RuneContract }>,
 	currentTokens: Record<string, string>,
 	existingCss?: string,
 ): [string, string] {
@@ -46,18 +47,31 @@ Common tokens you can reference:
 3. Do NOT redefine token values — override component-level styles only
 4. Keep specificity reasonable — use the BEM selectors, avoid !important
 5. For dark mode, use [data-theme="dark"] .rf-{block} { ... } or prefers-color-scheme
+6. When generating CSS for a group, organize rules by block — put each block's rules together
 
 ## Output Format
 
 Respond with ONLY valid CSS. No explanations, no markdown fences, no comments about what you did.
 Start directly with the CSS rules.`;
 
-	// Context prompt with contract + current tokens
+	// Context prompt with contract(s) + current tokens
 	const lines: string[] = [];
-	lines.push(`## Target Rune: ${runeName}\n`);
-	lines.push('### Selector Contract');
-	lines.push(formatContractForPrompt(contract));
-	lines.push('');
+
+	if (members.length > 1) {
+		lines.push(`## Target Rune Group: ${groupName}\n`);
+		lines.push('This is a parent-child rune group. Generate CSS for ALL blocks in the group.');
+		lines.push('Organize your output with each block\'s rules grouped together.\n');
+		for (const { name, contract } of members) {
+			lines.push(`### ${name} (.rf-${contract.block})`);
+			lines.push(formatContractForPrompt(contract));
+			lines.push('');
+		}
+	} else {
+		lines.push(`## Target Rune: ${groupName}\n`);
+		lines.push('### Selector Contract');
+		lines.push(formatContractForPrompt(members[0].contract));
+		lines.push('');
+	}
 
 	// Include key token values so AI knows current theme palette
 	lines.push('### Current Theme Tokens');
@@ -76,4 +90,16 @@ Start directly with the CSS rules.`;
 	}
 
 	return [base, lines.join('\n')];
+}
+
+/** Resolve a runeGroup array (member names) into contracts for prompt building */
+export function resolveGroupMembers(
+	groupMembers: string[],
+): Array<{ name: string; contract: RuneContract }> {
+	return groupMembers
+		.map((name) => {
+			const contract = getRuneContract(name);
+			return contract ? { name, contract } : null;
+		})
+		.filter((m): m is { name: string; contract: RuneContract } => m !== null);
 }

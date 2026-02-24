@@ -5,6 +5,7 @@ export interface RuneContract {
 	block: string;
 	root: string;
 	dataRune: string;
+	parent?: string;
 	modifiers?: Record<string, {
 		source: string;
 		default?: string;
@@ -68,6 +69,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		block: config.block,
 		root: `.${block}`,
 		dataRune: runeName.toLowerCase(),
+		...(config.parent ? { parent: config.parent } : {}),
 		childOrder: [],
 	};
 

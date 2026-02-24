@@ -1,7 +1,7 @@
 import { themeState } from './theme.svelte.js';
 import { historyState } from './history.svelte.js';
 import { streamGenerate } from '../ai/stream.js';
-import type { RuneContract } from '../contracts.js';
+import type { RuneGroup } from '../contracts.js';
 
 export type GenerateCssStatus = 'idle' | 'streaming' | 'error';
 
@@ -15,7 +15,7 @@ class GenerateCssState {
 		return this.status === 'streaming';
 	}
 
-	async generate(prompt: string, runeName: string, contract: RuneContract): Promise<void> {
+	async generate(prompt: string, group: RuneGroup): Promise<void> {
 		if (this.isGenerating) return;
 
 		this.status = 'streaming';
@@ -27,7 +27,8 @@ class GenerateCssState {
 			for await (const chunk of streamGenerate({
 				prompt,
 				mode: 'rune-css',
-				runeName,
+				runeName: group.name,
+				runeGroup: group.members,
 				current: {
 					light: { ...themeState.tokens.light },
 					dark: { ...themeState.tokens.dark },
@@ -40,7 +41,7 @@ class GenerateCssState {
 			const css = extractCss(this.streamedText);
 			if (css) {
 				historyState.push();
-				themeState.updateRuneOverride(contract.block, css);
+				distributeCssToBlocks(css, group.blocks);
 			} else {
 				this.status = 'error';
 				this.error = 'Could not extract CSS from response';
@@ -86,6 +87,45 @@ function extractCss(text: string): string | null {
 	if (trimmed.includes('{') && trimmed.includes('}')) return trimmed;
 
 	return null;
+}
+
+/** Distribute AI-generated CSS to per-block overrides by matching .rf-{block} selectors */
+function distributeCssToBlocks(css: string, blocks: string[]): void {
+	if (blocks.length === 1) {
+		themeState.updateRuneOverride(blocks[0], css);
+		return;
+	}
+
+	// Split CSS into rule blocks by looking for top-level selectors
+	const blockCss = new Map<string, string[]>();
+	for (const block of blocks) {
+		blockCss.set(block, []);
+	}
+
+	// Split on lines that start a new rule (begin with . or [ at column 0)
+	const sections = css.split(/(?=^\.)/m);
+	for (const section of sections) {
+		const trimmed = section.trim();
+		if (!trimmed) continue;
+
+		let matched = false;
+		for (const block of blocks) {
+			if (trimmed.includes(`.rf-${block}`)) {
+				blockCss.get(block)!.push(trimmed);
+				matched = true;
+				break;
+			}
+		}
+		if (!matched) {
+			blockCss.get(blocks[0])!.push(trimmed);
+		}
+	}
+
+	for (const [block, parts] of blockCss) {
+		if (parts.length > 0) {
+			themeState.updateRuneOverride(block, parts.join('\n\n'));
+		}
+	}
 }
 
 export const generateCssState = new GenerateCssState();

@@ -5,6 +5,10 @@ export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
 	block: string;
 
+	/** Parent rune typeof name for grouping in editors.
+	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group. */
+	parent?: string;
+
 	/** Modifier sources — maps modifier name to where to read it from */
 	modifiers?: Record<string, {
 		/** Where to read the modifier value */

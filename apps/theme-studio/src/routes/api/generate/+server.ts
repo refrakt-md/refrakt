@@ -3,13 +3,13 @@ import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } f
 import type { AIProvider, Message } from '@refrakt-md/ai';
 import type { RequestHandler } from './$types';
 import { buildThemePromptParts } from '$lib/ai/prompt.js';
-import { buildCssPromptParts } from '$lib/ai/css-prompt.js';
-import { contracts, getRuneContract } from '$lib/contracts.js';
+import { buildCssPromptParts, resolveGroupMembers } from '$lib/ai/css-prompt.js';
 
 interface GenerateRequest {
 	prompt: string;
 	mode?: 'tokens' | 'rune-css';
 	runeName?: string;
+	runeGroup?: string[];
 	current?: {
 		light: Record<string, string>;
 		dark: Record<string, string>;
@@ -67,8 +67,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	let messages: Message[];
 
 	if (mode === 'rune-css' && body.runeName) {
-		const contract = getRuneContract(body.runeName);
-		if (!contract) {
+		const memberNames = body.runeGroup ?? [body.runeName];
+		const members = resolveGroupMembers(memberNames);
+		if (members.length === 0) {
 			return new Response(
 				JSON.stringify({ error: `Unknown rune: ${body.runeName}` }),
 				{ status: 400, headers: { 'Content-Type': 'application/json' } },
@@ -77,7 +78,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const currentTokens = body.current?.light ?? {};
 		const [basePrompt, contextPrompt] = buildCssPromptParts(
 			body.runeName,
-			contract,
+			members,
 			currentTokens,
 		);
 		messages = [
@@ -85,7 +86,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			{ role: 'system', content: contextPrompt },
 			{ role: 'user', content: body.prompt },
 		];
-		console.log(`[theme-studio] Generating CSS for rune: ${body.runeName}`);
+		console.log(`[theme-studio] Generating CSS for rune group: ${memberNames.join(', ')}`);
 	} else {
 		const [basePrompt, contextPrompt] = buildThemePromptParts(
 			body.current ? {

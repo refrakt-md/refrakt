@@ -11,7 +11,7 @@ export const baseConfig: ThemeConfig = {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
 		Accordion: { block: 'accordion' },
-		AccordionItem: { block: 'accordion-item', autoLabel: { name: 'header' } },
+		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
 		Grid: { block: 'grid' },
 		CodeGroup: {
@@ -33,12 +33,12 @@ export const baseConfig: ThemeConfig = {
 		TableOfContents: { block: 'toc' },
 		Embed: { block: 'embed' },
 		Breadcrumb: { block: 'breadcrumb' },
-		BreadcrumbItem: { block: 'breadcrumb-item' },
+		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
 		Testimonial: { block: 'testimonial' },
 		Timeline: { block: 'timeline', modifiers: { direction: { source: 'meta', default: 'vertical' } } },
-		TimelineEntry: { block: 'timeline-entry' },
+		TimelineEntry: { block: 'timeline-entry', parent: 'Timeline' },
 		Changelog: { block: 'changelog' },
-		ChangelogRelease: { block: 'changelog-release' },
+		ChangelogRelease: { block: 'changelog-release', parent: 'Changelog' },
 		Event: {
 			block: 'event',
 			contentWrapper: { tag: 'div', ref: 'content' },
@@ -78,7 +78,7 @@ export const baseConfig: ThemeConfig = {
 		},
 		Organization: { block: 'organization' },
 		Cast: { block: 'cast' },
-		CastMember: { block: 'cast-member' },
+		CastMember: { block: 'cast-member', parent: 'Cast' },
 		Recipe: {
 			block: 'recipe',
 			contentWrapper: { tag: 'div', ref: 'content' },
@@ -101,17 +101,17 @@ export const baseConfig: ThemeConfig = {
 				},
 			},
 		},
-		RecipeIngredient: { block: 'recipe-ingredient' },
+		RecipeIngredient: { block: 'recipe-ingredient', parent: 'Recipe' },
 		Pricing: { block: 'pricing' },
-		Tier: { block: 'tier' },
-		FeaturedTier: { block: 'tier', staticModifiers: ['featured'] },
+		Tier: { block: 'tier', parent: 'Pricing' },
+		FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
 		Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' } },
-		FeatureDefinition: { block: 'feature-definition' },
+		FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 		Steps: { block: 'steps' },
-		Step: { block: 'step', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
+		Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
 		Nav: { block: 'nav' },
-		NavGroup: { block: 'nav-group' },
-		NavItem: { block: 'nav-item' },
+		NavGroup: { block: 'nav-group', parent: 'Nav' },
+		NavItem: { block: 'nav-item', parent: 'Nav' },
 		Api: {
 			block: 'api',
 			contentWrapper: { tag: 'div', ref: 'body' },
@@ -137,7 +137,7 @@ export const baseConfig: ThemeConfig = {
 		},
 		Chart: { block: 'chart' },
 		MusicPlaylist: { block: 'music-playlist' },
-		MusicRecording: { block: 'music-recording' },
+		MusicRecording: { block: 'music-recording', parent: 'MusicPlaylist' },
 
 		// ─── Runes with modifier meta tags ───
 
@@ -179,13 +179,14 @@ export const baseConfig: ThemeConfig = {
 		Conversation: { block: 'conversation' },
 		ConversationMessage: {
 			block: 'conversation-message',
+			parent: 'Conversation',
 			modifiers: { alignment: { source: 'meta', default: 'left' } },
 		},
 		Annotate: {
 			block: 'annotate',
 			modifiers: { style: { source: 'meta', default: 'margin' } },
 		},
-		AnnotateNote: { block: 'annotate-note' },
+		AnnotateNote: { block: 'annotate-note', parent: 'Annotate' },
 		Storyboard: {
 			block: 'storyboard',
 			modifiers: {
@@ -194,7 +195,7 @@ export const baseConfig: ThemeConfig = {
 			},
 			styles: { columns: '--sb-columns' },
 		},
-		StoryboardPanel: { block: 'storyboard-panel' },
+		StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard' },
 		Bento: {
 			block: 'bento',
 			modifiers: {
@@ -208,13 +209,15 @@ export const baseConfig: ThemeConfig = {
 		},
 		BentoCell: {
 			block: 'bento-cell',
+			parent: 'Bento',
 			modifiers: { size: { source: 'meta', default: 'medium' } },
 			autoLabel: { name: 'title' },
 		},
 		Comparison: { block: 'comparison' },
-		ComparisonColumn: { block: 'comparison-column' },
+		ComparisonColumn: { block: 'comparison-column', parent: 'Comparison' },
 		ComparisonRow: {
 			block: 'comparison-row',
+			parent: 'Comparison',
 			modifiers: { rowType: { source: 'meta', default: 'text' } },
 		},
 		HowTo: {
@@ -239,7 +242,7 @@ export const baseConfig: ThemeConfig = {
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
 		TabGroup: { block: 'tabs' },
-		Tab: { block: 'tab' },
+		Tab: { block: 'tab', parent: 'TabGroup' },
 		DataTable: {
 			block: 'datatable',
 			modifiers: {
@@ -262,6 +265,7 @@ export const baseConfig: ThemeConfig = {
 		},
 		FormField: {
 			block: 'form-field',
+			parent: 'Form',
 			modifiers: {
 				fieldType: { source: 'meta' },
 			},
@@ -272,7 +276,7 @@ export const baseConfig: ThemeConfig = {
 				mode: { source: 'meta', default: 'click' },
 			},
 		},
-		RevealStep: { block: 'reveal-step' },
+		RevealStep: { block: 'reveal-step', parent: 'Reveal' },
 		Diagram: { block: 'diagram' },
 		Map: {
 			block: 'map',
@@ -281,7 +285,7 @@ export const baseConfig: ThemeConfig = {
 				height: { source: 'meta', default: 'medium' },
 			},
 		},
-		MapPin: { block: 'map-pin' },
+		MapPin: { block: 'map-pin', parent: 'Map' },
 		Preview: {
 			block: 'preview',
 			modifiers: {
@@ -344,8 +348,8 @@ export const baseConfig: ThemeConfig = {
 				},
 			},
 		},
-		SymbolGroup: { block: 'symbol-group' },
-		SymbolMember: { block: 'symbol-member' },
+		SymbolGroup: { block: 'symbol-group', parent: 'Symbol' },
+		SymbolMember: { block: 'symbol-member', parent: 'Symbol' },
 
 		// ─── Design runes ───
 

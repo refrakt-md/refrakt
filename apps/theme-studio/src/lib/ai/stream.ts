@@ -2,6 +2,7 @@ export interface GenerateOptions {
 	prompt: string;
 	mode?: 'tokens' | 'rune-css';
 	runeName?: string;
+	runeGroup?: string[];
 	current?: {
 		light: Record<string, string>;
 		dark: Record<string, string>;

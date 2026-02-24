@@ -23,6 +23,58 @@ export function getRuneContractByBlock(block: string): { name: string; contract:
 	return undefined;
 }
 
+/** A group of related runes for the editor — one parent plus its children */
+export interface RuneGroup {
+	/** Display name (the parent rune name) */
+	name: string;
+	/** All rune names in this group, parent first */
+	members: string[];
+	/** All contracts in this group, in member order */
+	contracts: RuneContract[];
+	/** All unique block names in this group */
+	blocks: string[];
+}
+
+/** Build grouped rune list for the editor. Parent runes that have children
+ *  become groups; standalone runes become single-member groups. */
+export function getRuneGroups(): RuneGroup[] {
+	const childrenOf = new Map<string, string[]>();
+
+	for (const [name, contract] of Object.entries(contracts.runes)) {
+		if (contract.parent) {
+			const list = childrenOf.get(contract.parent) ?? [];
+			list.push(name);
+			childrenOf.set(contract.parent, list);
+		}
+	}
+
+	const groups: RuneGroup[] = [];
+
+	for (const name of Object.keys(contracts.runes).sort()) {
+		const contract = contracts.runes[name];
+		if (contract.parent) continue;
+
+		const children = childrenOf.get(name) ?? [];
+		const members = [name, ...children.sort()];
+		const memberContracts = members.map((m) => contracts.runes[m]);
+		const blocks = [...new Set(memberContracts.map((c) => c.block))];
+
+		groups.push({ name, members, contracts: memberContracts, blocks });
+	}
+
+	return groups;
+}
+
+/** Format a group's combined contracts for AI prompt display */
+export function formatGroupForPrompt(group: RuneGroup): string {
+	return group.members
+		.map((name) => {
+			const contract = contracts.runes[name];
+			return `## ${name} (.rf-${contract.block})\n${formatContractForPrompt(contract)}`;
+		})
+		.join('\n\n');
+}
+
 /** Format a contract as a selector reference for AI prompts */
 export function formatContractForPrompt(contract: RuneContract): string {
 	const lines: string[] = [];

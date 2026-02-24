@@ -1,41 +1,35 @@
 <script lang="ts">
 	import { themeState } from './state/theme.svelte.js';
 	import { generateCssState } from './state/generate-css.svelte.js';
-	import { contracts, getRuneNames, formatContractForPrompt } from './contracts.js';
-	import type { RuneContract } from './contracts.js';
+	import { getRuneGroups, formatGroupForPrompt } from './contracts.js';
+	import type { RuneGroup } from './contracts.js';
 	import CssEditor from './CssEditor.svelte';
 
 	let { onclose }: { onclose: () => void } = $props();
 
-	let selectedRune = $state('');
+	let selectedGroupName = $state('');
 	let cssPrompt = $state('');
-	const runeNames = getRuneNames();
+	const runeGroups = getRuneGroups();
 
-	let currentContract: RuneContract | undefined = $derived(
-		selectedRune ? contracts.runes[selectedRune] : undefined,
+	let currentGroup: RuneGroup | undefined = $derived(
+		runeGroups.find((g) => g.name === selectedGroupName),
 	);
 
-	let currentBlock = $derived(currentContract?.block ?? '');
-
-	let cssValue = $derived(
-		currentBlock ? (themeState.runeOverrides[currentBlock] ?? '') : '',
-	);
-
-	function handleCssChange(css: string) {
-		if (currentBlock) {
-			themeState.updateRuneOverride(currentBlock, css);
-		}
+	function groupHasOverride(group: RuneGroup): boolean {
+		return group.blocks.some((b) => themeState.runeOverrides[b]?.trim());
 	}
 
-	function handleClear() {
-		if (currentBlock) {
-			themeState.removeRuneOverride(currentBlock);
-		}
+	function handleCssChange(block: string, css: string) {
+		themeState.updateRuneOverride(block, css);
+	}
+
+	function handleClear(block: string) {
+		themeState.removeRuneOverride(block);
 	}
 
 	function handleGenerate() {
-		if (!cssPrompt.trim() || !selectedRune || !currentContract) return;
-		generateCssState.generate(cssPrompt, selectedRune, currentContract);
+		if (!cssPrompt.trim() || !currentGroup) return;
+		generateCssState.generate(cssPrompt, currentGroup);
 		cssPrompt = '';
 	}
 
@@ -59,30 +53,48 @@
 	</div>
 
 	<div class="rune-select">
-		<select bind:value={selectedRune}>
+		<select bind:value={selectedGroupName}>
 			<option value="">Select a rune...</option>
-			{#each runeNames as name}
-				{@const contract = contracts.runes[name]}
-				{@const hasOverride = themeState.runeOverrides[contract.block]?.trim()}
-				<option value={name}>
-					{name} (.rf-{contract.block}){hasOverride ? ' *' : ''}
+			{#each runeGroups as group}
+				{@const hasOverride = groupHasOverride(group)}
+				<option value={group.name}>
+					{group.name}{group.members.length > 1
+						? ` (+ ${group.members.length - 1})`
+						: ''}{hasOverride ? ' *' : ''}
 				</option>
 			{/each}
 		</select>
 	</div>
 
-	{#if currentContract}
+	{#if currentGroup}
 		<details class="selector-ref">
-			<summary>Available selectors</summary>
-			<pre>{formatContractForPrompt(currentContract)}</pre>
+			<summary>Available selectors ({currentGroup.members.length} rune{currentGroup.members.length > 1 ? 's' : ''})</summary>
+			<pre>{formatGroupForPrompt(currentGroup)}</pre>
 		</details>
 
-		<div class="css-input">
-			<CssEditor
-				value={cssValue}
-				onchange={handleCssChange}
-				placeholder={`.rf-${currentBlock} {\n  /* your overrides */\n}`}
-			/>
+		<div class="block-editors">
+			{#each currentGroup.blocks as block}
+				{@const blockCss = themeState.runeOverrides[block] ?? ''}
+				<div class="block-section">
+					{#if currentGroup.blocks.length > 1}
+						<div class="block-label">.rf-{block}</div>
+					{/if}
+					<div class="css-input">
+						<CssEditor
+							value={blockCss}
+							onchange={(css) => handleCssChange(block, css)}
+							placeholder={`.rf-${block} {\n  /* your overrides */\n}`}
+						/>
+					</div>
+					{#if blockCss.trim()}
+						<div class="block-actions">
+							<button class="clear-btn" onclick={() => handleClear(block)}>
+								Clear{currentGroup.blocks.length > 1 ? ` .rf-${block}` : ''}
+							</button>
+						</div>
+					{/if}
+				</div>
+			{/each}
 		</div>
 
 		<div class="ai-prompt">
@@ -112,12 +124,6 @@
 					{generateCssState.error}
 					<button onclick={() => generateCssState.dismiss()}>Dismiss</button>
 				</div>
-			{/if}
-		</div>
-
-		<div class="editor-actions">
-			{#if cssValue.trim()}
-				<button class="clear-btn" onclick={handleClear}>Clear</button>
 			{/if}
 		</div>
 	{:else}
@@ -220,12 +226,40 @@
 		color: #555;
 	}
 
+	.block-editors {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow-y: auto;
+	}
+
+	.block-section {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+	}
+
+	.block-label {
+		font-size: 11px;
+		font-weight: 600;
+		color: #999;
+		padding: 6px 16px 2px;
+		font-family: monospace;
+	}
+
 	.css-input {
 		flex: 1;
 		padding: 0 16px;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.block-actions {
+		padding: 4px 16px;
+		flex-shrink: 0;
 	}
 
 	.ai-prompt {
@@ -297,13 +331,6 @@
 		cursor: pointer;
 		font-size: 11px;
 		text-decoration: underline;
-	}
-
-	.editor-actions {
-		padding: 12px 16px;
-		display: flex;
-		gap: 8px;
-		flex-shrink: 0;
 	}
 
 	.clear-btn {
