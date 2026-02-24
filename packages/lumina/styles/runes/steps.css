@@ -30,21 +30,33 @@
 	top: 0;
 	width: 1.875rem;
 	height: 1.875rem;
-	background: var(--rf-color-primary);
-	color: white;
+	background: var(--rf-color-border);
+	color: var(--rf-color-muted);
 	border-radius: var(--rf-radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-weight: 650;
 	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
 	box-shadow: 0 0 0 4px var(--rf-color-bg);
 }
+.rf-step h1,
+.rf-step h2,
 .rf-step h3,
+.rf-step h4,
+.rf-step h5,
+.rf-step h6,
 .rf-step strong {
 	display: block;
 	margin-top: 0;
 	margin-bottom: 0.375rem;
+}
+.rf-step pre {
+	margin-top: 0;
+}
+.rf-step > p:first-of-type {
+	margin-top: 0;
 }
 .rf-step p {
 	color: var(--rf-color-muted);
