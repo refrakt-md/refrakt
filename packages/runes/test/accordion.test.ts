@@ -71,4 +71,43 @@ Content.
 		const container = findTag(acc!, t => t.name === 'div' && t.attributes['data-name'] === 'items');
 		expect(container).toBeDefined();
 	});
+
+	it('should auto-detect heading level without explicit headingLevel', () => {
+		const result = parse(`{% accordion %}
+## Item One
+Content one.
+
+## Item Two
+Content two.
+{% /accordion %}`);
+
+		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		expect(acc).toBeDefined();
+
+		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		expect(items.length).toBe(2);
+
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
+		expect(firstName).toBeDefined();
+		expect(firstName!.children).toContain('Item One');
+	});
+
+	it('should auto-detect h3 heading level', () => {
+		const result = parse(`{% accordion %}
+### Question One
+Answer one.
+
+### Question Two
+Answer two.
+
+### Question Three
+Answer three.
+{% /accordion %}`);
+
+		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		expect(acc).toBeDefined();
+
+		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		expect(items.length).toBe(3);
+	});
 });

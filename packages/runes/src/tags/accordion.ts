@@ -42,7 +42,9 @@ class AccordionModel extends Model {
 	itemgroup: NodeStream;
 
 	convertHeadings(nodes: Node[]) {
-		const converted = headingsToList({ level: this.headingLevel })(nodes);
+		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
+		if (!level) return nodes;
+		const converted = headingsToList({ level })(nodes);
 		const n = converted.length - 1;
 		const tags = converted[n].children.map(item => {
 			const heading = item.children[0];
@@ -55,10 +57,7 @@ class AccordionModel extends Model {
 	}
 
 	processChildren(nodes: Node[]) {
-		if (this.headingLevel !== undefined) {
-			return super.processChildren(this.convertHeadings(nodes));
-		}
-		return super.processChildren(nodes);
+		return super.processChildren(this.convertHeadings(nodes));
 	}
 
 	transform(): RenderableTreeNodes {

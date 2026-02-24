@@ -87,10 +87,13 @@ export function extractHeadings(node: Node): HeadingInfo[] {
 }
 
 export function headingsToList(options?: HeadingsToListOptions) {
-  const level = options?.level ?? 1;
+  const explicitLevel = options?.level;
   const include = options?.include;
 
   return (nodes: Node[]) => {
+    // Auto-detect level from first heading if not specified
+    const level = explicitLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
+    if (!level) return nodes;
     let start: number | undefined;
     const list = new Ast.Node('list');
     const head: Node[] = [];

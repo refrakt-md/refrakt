@@ -38,7 +38,7 @@ class NavModel extends Model {
   ordered: boolean = false;
 
   processChildren(nodes: Node[]) {
-    return super.processChildren(headingsToList()(nodes));
+    return super.processChildren(headingsToList({ level: 1 })(nodes));
   }
 
   transform(): RenderableTreeNodes {
