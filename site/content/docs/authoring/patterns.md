@@ -180,16 +180,20 @@ size: 'large'
 
 Rune schemas should produce **semantic output** — meta tags with values and content in named containers. The **engine config** should inject visual structure.
 
+{% diff language="typescript" mode="split" %}
+
 ```typescript
-// Bad: hardcoding visual structure in the rune
+// Hardcoding visual structure in the rune
 transform() {
   const icon = new Tag('span', { class: 'icon' });
   const title = new Tag('span', {}, [this.type]);
   const header = new Tag('div', {}, [icon, title]);
   return new Tag('section', {}, [header, body]);
 }
+```
 
-// Good: semantic output, visual structure in engine config
+```typescript
+// Semantic output, visual structure in engine config
 transform() {
   const hintType = new Tag('meta', { content: this.type });
   return createComponentRenderable(schema.Hint, {
@@ -199,14 +203,19 @@ transform() {
     children: [hintType, children.next()],
   });
 }
+```
 
-// Engine config handles the visual structure:
-// structure: {
-//   header: { tag: 'div', before: true, children: [
-//     { tag: 'span', ref: 'icon', icon: { group: 'hint', variant: 'hintType' } },
-//     { tag: 'span', ref: 'title', metaText: 'hintType' },
-//   ]},
-// }
+{% /diff %}
+
+The engine config then handles the visual structure declaratively:
+
+```typescript
+structure: {
+  header: { tag: 'div', before: true, children: [
+    { tag: 'span', ref: 'icon', icon: { group: 'hint', variant: 'hintType' } },
+    { tag: 'span', ref: 'title', metaText: 'hintType' },
+  ]},
+}
 ```
 
 This separation means:

@@ -9,23 +9,21 @@ Every rune is a class that extends `Model`. This page covers the base class life
 
 ## Model lifecycle
 
-```
-new Model(node, config)
-    |
-    | Constructor: runs @id decorators (generates IDs)
-    v
-processChildren(nodes)
-    |
-    | Runs @group decorators (partitions children into named streams)
-    | Your override can restructure children before grouping
-    v
-transform()
-    |
-    | Your implementation: calls transformChildren(), builds output
-    | Returns RenderableTreeNodes via createComponentRenderable()
-    v
-Output Tag
-```
+{% steps %}
+
+### Constructor
+
+`new Model(node, config)` — runs `@id` decorators to generate IDs.
+
+### processChildren
+
+`processChildren(nodes)` — runs `@group` decorators to partition children into named streams. Your override can restructure children before grouping.
+
+### transform
+
+`transform()` — your implementation calls `transformChildren()`, builds output, and returns `RenderableTreeNodes` via `createComponentRenderable()`.
+
+{% /steps %}
 
 ### `processChildren(nodes: Node[]): Node[]`
 

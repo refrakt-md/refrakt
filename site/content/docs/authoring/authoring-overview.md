@@ -13,26 +13,29 @@ This guide covers how to write runes — the schema code that interprets content
 
 Rune code lives in stage 2 of the transformation pipeline:
 
-```
-Markdown source
-    |
-    v
-1. Parse        Markdoc.parse() -> AST nodes
-    |
-    v
-2. Transform    Rune schemas interpret children,     <-- your code here
-    |           emit typeof markers and meta tags
-    v
-3. Serialize    Tag instances -> plain {$$mdtype:'Tag'} objects
-    |           (required for server/client boundary)
-    v
-4. Identity     Engine adds BEM classes, injects
-   Transform    structural elements, consumes meta
-    |
-    v
-5. Render       Svelte dispatches on typeof ->
-                registered component or HTML element
-```
+{% steps %}
+
+### Parse
+
+`Markdoc.parse()` turns Markdown source into AST nodes.
+
+### Transform
+
+Rune schemas interpret children, emit `typeof` markers and meta tags.
+
+### Serialize
+
+Tag instances become plain `{$$mdtype:'Tag'}` objects (required for the server/client boundary).
+
+### Identity Transform
+
+The engine adds BEM classes, injects structural elements, and consumes meta tags.
+
+### Render
+
+Svelte dispatches on `typeof` to a registered component or generic HTML element.
+
+{% /steps %}
 
 Your rune defines how Markdown content is **interpreted** (stage 2). The engine config defines how the result is **presented** (stage 4). This separation keeps rune output framework-agnostic.
 

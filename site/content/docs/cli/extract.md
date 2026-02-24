@@ -19,10 +19,25 @@ This scans `./src` for source files, extracts all exported symbols, and writes o
 
 The language is auto-detected from file extensions and the presence of `tsconfig.json`. You can override it explicitly:
 
+{% tabs %}
+
+{% tab name="TypeScript" %}
+
 ```shell
 refrakt extract ./src -o ./content/api --lang typescript
+```
+
+{% /tab %}
+
+{% tab name="Python" %}
+
+```shell
 refrakt extract ./lib -o ./content/api --lang python
 ```
+
+{% /tab %}
+
+{% /tabs %}
 
 ## Source links
 

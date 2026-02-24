@@ -285,17 +285,48 @@ Rune transform():
   </section>
 
 Engine identity transform:
-  1. Reads typeof="Hint" -> finds Hint config
-  2. Reads <meta property="hintType" content="warning">
-  3. Adds class: rf-hint rf-hint--warning
-  4. Adds data-hint-type="warning"
-  5. Injects structure.header before children:
-     <div data-name="header" class="rf-hint__header">
-       <span data-name="icon" class="rf-hint__icon" />
-       <span data-name="title" class="rf-hint__title">warning</span>
-     </div>
-  6. Adds BEM element class to body: rf-hint__body
-  7. Removes the consumed meta tag
+```
+
+{% steps %}
+
+### Look up config
+
+Reads `typeof="Hint"` and finds the Hint config.
+
+### Read modifier
+
+Reads `<meta property="hintType" content="warning">`.
+
+### Add modifier class
+
+Adds class: `rf-hint rf-hint--warning`.
+
+### Set data attribute
+
+Adds `data-hint-type="warning"` to the root element.
+
+### Inject structure
+
+Injects `structure.header` before children:
+
+```html
+<div data-name="header" class="rf-hint__header">
+  <span data-name="icon" class="rf-hint__icon" />
+  <span data-name="title" class="rf-hint__title">warning</span>
+</div>
+```
+
+### Add BEM element class
+
+Adds `rf-hint__body` to the body ref.
+
+### Clean up
+
+Removes the consumed meta tag from the output.
+
+{% /steps %}
+
+```
 
 Final output:
   <section class="rf-hint rf-hint--warning" data-hint-type="warning">

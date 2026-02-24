@@ -96,8 +96,26 @@ refrakt inspect hint --audit --css packages/my-theme/styles/runes
 
 ## Typical workflow
 
-1. Add or modify a rune config in your theme's `config.ts`
-2. Run `refrakt inspect <rune>` to see the generated HTML structure
-3. Write CSS targeting the selectors you see
-4. Run `refrakt inspect <rune> --audit` to verify coverage
-5. Run `refrakt inspect --all --audit` before committing to catch any gaps
+{% steps %}
+
+### Modify the config
+
+Add or modify a rune config in your theme's `config.ts`.
+
+### Preview the output
+
+Run `refrakt inspect <rune>` to see the generated HTML structure.
+
+### Write CSS
+
+Target the selectors you see in the inspect output.
+
+### Verify coverage
+
+Run `refrakt inspect <rune> --audit` to confirm your CSS covers all generated selectors.
+
+### Audit before committing
+
+Run `refrakt inspect --all --audit` to catch any gaps across all runes.
+
+{% /steps %}

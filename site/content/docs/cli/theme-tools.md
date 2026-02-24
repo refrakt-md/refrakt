@@ -111,16 +111,33 @@ Manage themes in your project.
 
 Installs a theme package and updates `refrakt.config.json`:
 
+{% tabs %}
+
+{% tab name="npm" %}
+
 ```shell
-# From a local directory
-refrakt theme install ./my-theme
-
-# From a tarball
-refrakt theme install /path/to/theme.tgz
-
-# From npm
 refrakt theme install @my-org/my-theme
 ```
+
+{% /tab %}
+
+{% tab name="Local directory" %}
+
+```shell
+refrakt theme install ./my-theme
+```
+
+{% /tab %}
+
+{% tab name="Tarball" %}
+
+```shell
+refrakt theme install /path/to/theme.tgz
+```
+
+{% /tab %}
+
+{% /tabs %}
 
 The command auto-detects your package manager (npm, yarn, or pnpm), installs the theme, updates `refrakt.config.json` with the new theme name, and validates that the theme exports the expected entry points (`./svelte`, `./transform`, rune CSS).
 

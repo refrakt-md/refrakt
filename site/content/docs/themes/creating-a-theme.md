@@ -69,7 +69,9 @@ This guide walks through building a custom theme package from the ground up, usi
 - Basic knowledge of Node.js and npm
 - Understanding of the [theme overview](/docs/themes/overview) and [configuration reference](/docs/themes/configuration)
 
-### Step 1: Create the package
+{% steps %}
+
+### Create the package
 
 Set up a new package in your project or monorepo:
 
@@ -118,7 +120,7 @@ The key exports:
 - `./manifest` — Theme metadata
 - `./svelte` — Svelte adapter (registry re-export)
 
-### Step 2: Write your config
+### Write your config
 
 Create `src/config.ts`:
 
@@ -157,7 +159,7 @@ The base config already defines all 74 rune configurations. Your config only nee
 If you change the `prefix` (e.g., from `'rf'` to `'mt'`), all your CSS selectors must use the new prefix: `.mt-hint` instead of `.rf-hint`. Most themes keep `'rf'` for compatibility.
 {% /hint %}
 
-### Step 3: Define design tokens
+### Define design tokens
 
 Create `tokens/base.css` with your visual language:
 
@@ -237,11 +239,13 @@ Create `tokens/dark.css` for dark mode:
 }
 ```
 
-### Step 4: Write rune CSS
+### Write rune CSS
 
 Create a `styles/runes/` directory. Start with a simple rune and build from there.
 
-### Starting with a simple rune
+{% tabs %}
+
+{% tab name="Simple (Grid)" %}
 
 `styles/runes/grid.css`:
 
@@ -256,7 +260,9 @@ Create a `styles/runes/` directory. Start with a simple rune and build from ther
 }
 ```
 
-### Adding a rune with structural elements
+{% /tab %}
+
+{% tab name="With structure (Hint)" %}
 
 `styles/runes/hint.css`:
 
@@ -291,7 +297,11 @@ Create a `styles/runes/` directory. Start with a simple rune and build from ther
 .rf-hint--check { --hint-color: var(--rf-color-success); --hint-bg: var(--rf-color-success-bg); }
 ```
 
-### Working through all runes
+{% /tab %}
+
+{% /tabs %}
+
+#### Working through all runes
 
 The base config defines 74 rune configurations. You don't need CSS for all of them immediately — the identity transform still produces valid HTML with BEM classes even without CSS. Prioritize the runes your content uses most.
 
@@ -301,7 +311,7 @@ A good order:
 3. **Structural runes**: recipe, api, event, howto
 4. **Everything else**: design tokens, code, data, creative runes
 
-### Step 5: Add icons
+### Add icons
 
 Icons are SVG strings organized by group in the theme config. There are two types of icon groups:
 
@@ -331,7 +341,7 @@ icons: {
 
 Use `stroke="currentColor"` so icons inherit color from CSS.
 
-### Step 6: Create your manifest
+### Create your manifest
 
 Create `manifest.json` at the package root:
 
@@ -353,7 +363,7 @@ Create `manifest.json` at the package root:
 
 The manifest declares your theme's identity and capabilities to tooling and documentation generators.
 
-### Step 7: Create the CSS entry point
+### Create the CSS entry point
 
 Create `index.css` that imports everything:
 
@@ -367,7 +377,7 @@ Create `index.css` that imports everything:
 /* Add imports as you create more rune CSS files */
 ```
 
-### Step 8: SvelteKit integration
+### SvelteKit integration
 
 Create `svelte/index.ts` to re-export the component registry from theme-base:
 
@@ -389,7 +399,7 @@ export const registry = {
 };
 ```
 
-### Step 9: Build and test
+### Build and test
 
 Add a `tsconfig.json`:
 
@@ -410,7 +420,7 @@ Build:
 npm run build
 ```
 
-### Testing CSS coverage
+#### Testing CSS coverage
 
 The quickest way to check coverage is the CLI audit:
 
@@ -431,6 +441,8 @@ For automated CI testing, you can add CSS coverage tests similar to Lumina's. Cr
 3. Asserts that expected selectors exist
 
 See Lumina's `packages/lumina/test/css-coverage.test.ts` for the full pattern.
+
+{% /steps %}
 
 ## Using your theme in a site
 
