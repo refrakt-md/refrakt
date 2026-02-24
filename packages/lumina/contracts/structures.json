@@ -1278,6 +1278,12 @@
 					"classPattern": ".rf-palette--{value}",
 					"dataAttribute": "data-columns"
 				}
+			},
+			"contextModifiers": {
+				"DesignContext": {
+					"suffix": "in-design-context",
+					"selector": ".rf-palette--in-design-context"
+				}
 			}
 		},
 		"Typography": {
@@ -1308,6 +1314,12 @@
 					"classPattern": ".rf-typography--{value}",
 					"dataAttribute": "data-show-charset"
 				}
+			},
+			"contextModifiers": {
+				"DesignContext": {
+					"suffix": "in-design-context",
+					"selector": ".rf-typography--in-design-context"
+				}
 			}
 		},
 		"Spacing": {
@@ -1322,6 +1334,12 @@
 					"source": "meta",
 					"classPattern": ".rf-spacing--{value}",
 					"dataAttribute": "data-title"
+				}
+			},
+			"contextModifiers": {
+				"DesignContext": {
+					"suffix": "in-design-context",
+					"selector": ".rf-spacing--in-design-context"
 				}
 			}
 		},
