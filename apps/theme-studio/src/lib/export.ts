@@ -61,23 +61,27 @@ export function generateManifest(name: string, description: string): string {
 	);
 }
 
-export function generatePackageJson(name: string, description: string): string {
+export function generatePackageJson(name: string, description: string, hasIconOverrides = false): string {
 	const pkgName = toPackageName(name);
+	const exports: Record<string, string> = {
+		'.': './index.css',
+		'./base.css': './base.css',
+		'./manifest': './manifest.json',
+		'./transform': './transform.js',
+		'./svelte': './svelte/index.js',
+		'./svelte/tokens.css': './svelte/tokens.css',
+		'./styles/runes/*.css': './styles/runes/*.css',
+	};
+	if (hasIconOverrides) {
+		exports['./icons'] = './icons.js';
+	}
 	return JSON.stringify(
 		{
 			name: pkgName,
 			description,
 			version: '1.0.0',
 			type: 'module',
-			exports: {
-				'.': './index.css',
-				'./base.css': './base.css',
-				'./manifest': './manifest.json',
-				'./transform': './transform.js',
-				'./svelte': './svelte/index.js',
-				'./svelte/tokens.css': './svelte/tokens.css',
-				'./styles/runes/*.css': './styles/runes/*.css',
-			},
+			exports,
 			dependencies: {
 				'@refrakt-md/lumina': '^0.5.0',
 				'@refrakt-md/theme-base': '^0.5.0',
@@ -106,12 +110,28 @@ function generateSvelteIndex(): string {
 	return `export { theme } from '@refrakt-md/lumina/svelte';\n`;
 }
 
-function generateTransformIndex(): string {
+function generateTransformIndex(hasIconOverrides: boolean): string {
+	if (hasIconOverrides) {
+		return [
+			`import { luminaConfig, createTransform } from '@refrakt-md/lumina/transform';`,
+			`import { mergeThemeConfig } from '@refrakt-md/theme-base';`,
+			`import { iconOverrides } from './icons.js';`,
+			``,
+			`export const themeConfig = mergeThemeConfig(luminaConfig, { icons: iconOverrides });`,
+			`export const identityTransform = createTransform(themeConfig);`,
+			`export { createTransform };`,
+			``,
+		].join('\n');
+	}
 	return [
 		`export { luminaConfig, identityTransform, createTransform } from '@refrakt-md/lumina/transform';`,
 		`export { luminaConfig as themeConfig } from '@refrakt-md/lumina/transform';`,
 		``,
 	].join('\n');
+}
+
+function generateIconsModule(overrides: Record<string, Record<string, string>>): string {
+	return `/** Custom icon overrides for mergeThemeConfig */\nexport const iconOverrides = ${JSON.stringify(overrides, null, '\t')};\n`;
 }
 
 interface ThemeExportData {
@@ -120,6 +140,7 @@ interface ThemeExportData {
 	lightTokens: Record<string, string>;
 	darkTokens: Record<string, string>;
 	runeOverrides?: Record<string, string>;
+	iconOverrides?: Record<string, Record<string, string>>;
 }
 
 export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
@@ -134,7 +155,11 @@ export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
 				.map(([block]) => block)
 		: [];
 
-	root.file('package.json', generatePackageJson(data.name, data.description));
+	// Detect global icon overrides early (needed for package.json + transform.js)
+	const globalIcons = data.iconOverrides?.['global'];
+	const hasIconOverrides = !!globalIcons && Object.keys(globalIcons).length > 0;
+
+	root.file('package.json', generatePackageJson(data.name, data.description, hasIconOverrides));
 	root.file('manifest.json', generateManifest(data.name, data.description));
 	root.file('index.css', generateIndexCss(pkgName, runeBlocks));
 	root.file('base.css', generateIndexCss(pkgName, runeBlocks));
@@ -152,7 +177,21 @@ export async function buildThemeZip(data: ThemeExportData): Promise<Blob> {
 		}
 	}
 
-	root.file('transform.js', generateTransformIndex());
+	// Global icon overrides
+	if (hasIconOverrides) {
+		// Only export non-hint groups (hint icons flow through CSS)
+		const exportableOverrides: Record<string, Record<string, string>> = {};
+		for (const [group, icons] of Object.entries(data.iconOverrides!)) {
+			if (group !== 'hint') {
+				exportableOverrides[group] = icons;
+			}
+		}
+		if (Object.keys(exportableOverrides).length > 0) {
+			root.file('icons.js', generateIconsModule(exportableOverrides));
+		}
+	}
+
+	root.file('transform.js', generateTransformIndex(hasIconOverrides));
 
 	const svelte = root.folder('svelte')!;
 	svelte.file('tokens.css', generateSvelteTokensCss());

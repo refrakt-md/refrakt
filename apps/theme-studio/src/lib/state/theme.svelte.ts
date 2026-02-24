@@ -2,6 +2,7 @@ import { getDefaults, getToken } from '../tokens.js';
 import { compileThemeCss } from '../compiler.js';
 import { fixtures, presets, ALL_TOKEN_GROUPS, type TokenGroup } from '../fixtures.js';
 import { historyState } from './history.svelte.js';
+import { generateHintIconCss, mergeIconCssIntoRuneOverride } from '../icons/svg-utils.js';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -24,6 +25,9 @@ class ThemeState {
 
 	/** Per-rune CSS overrides keyed by block name */
 	runeOverrides: Record<string, string> = $state({});
+
+	/** Icon SVG overrides: group → variant → SVG string */
+	iconOverrides: Record<string, Record<string, string>> = $state({});
 
 	/** The CSS string for the current theme (both light and dark tokens) */
 	css = $derived(compileThemeCss(this.tokens.light, this.tokens.dark));
@@ -122,6 +126,45 @@ class ThemeState {
 		this.runeOverrides = next;
 	}
 
+	/** Update a single icon in a group */
+	updateIcon(group: string, variant: string, svg: string): void {
+		historyState.push();
+		const groupOverrides = { ...this.iconOverrides[group], [variant]: svg };
+		this.iconOverrides = { ...this.iconOverrides, [group]: groupOverrides };
+		if (group === 'hint') this.syncHintIconCss();
+	}
+
+	/** Remove a single icon override (revert to default) */
+	removeIcon(group: string, variant: string): void {
+		historyState.push();
+		const groupOverrides = { ...this.iconOverrides[group] };
+		delete groupOverrides[variant];
+		if (Object.keys(groupOverrides).length === 0) {
+			const next = { ...this.iconOverrides };
+			delete next[group];
+			this.iconOverrides = next;
+		} else {
+			this.iconOverrides = { ...this.iconOverrides, [group]: groupOverrides };
+		}
+		if (group === 'hint') this.syncHintIconCss();
+	}
+
+	/** Regenerate hint mask-image CSS from icon overrides into runeOverrides */
+	syncHintIconCss(): void {
+		const hintIcons = this.iconOverrides['hint'] ?? {};
+		const iconCss = generateHintIconCss(hintIcons);
+		const existingCss = this.runeOverrides['hint'] ?? '';
+		const merged = mergeIconCssIntoRuneOverride(existingCss, iconCss);
+		if (merged) {
+			this.runeOverrides = { ...this.runeOverrides, hint: merged };
+		} else {
+			// If no icon CSS and no other hint CSS, clean up
+			const next = { ...this.runeOverrides };
+			delete next['hint'];
+			this.runeOverrides = next;
+		}
+	}
+
 	/** Reset all tokens to defaults */
 	resetAll(): void {
 		historyState.push();
@@ -130,6 +173,7 @@ class ThemeState {
 		this.overrides.light = new Set();
 		this.overrides.dark = new Set();
 		this.runeOverrides = {};
+		this.iconOverrides = {};
 	}
 
 	/** Toggle between light and dark mode */
@@ -146,6 +190,7 @@ class ThemeState {
 		overrides: { light: string[]; dark: string[] };
 		selectedFixtures: string[];
 		runeOverrides?: Record<string, string>;
+		iconOverrides?: Record<string, Record<string, string>>;
 	}): void {
 		this.name = data.name;
 		this.description = data.description;
@@ -156,6 +201,7 @@ class ThemeState {
 		this.overrides.dark = new Set(data.overrides.dark);
 		this.selectedFixtures = new Set(data.selectedFixtures);
 		this.runeOverrides = data.runeOverrides ?? {};
+		this.iconOverrides = data.iconOverrides ?? {};
 	}
 }
 

@@ -25,6 +25,9 @@
 			.map(([block]) => block)
 			.sort(),
 	);
+	let hasIconOverrides = $derived(
+		Object.keys(themeState.iconOverrides['global'] ?? {}).length > 0,
+	);
 
 	let displayedCss = $derived(
 		cssSection === 'base' ? baseCss : cssSection === 'dark' ? darkCss : fullCss,
@@ -45,6 +48,7 @@
 				lightTokens: themeState.tokens.light,
 				darkTokens: themeState.tokens.dark,
 				runeOverrides: themeState.runeOverrides,
+				iconOverrides: themeState.iconOverrides,
 			});
 			downloadBlob(blob, `${pkgName}.zip`);
 		} finally {
@@ -137,6 +141,9 @@
 						<div class="tree-item indent">index.css</div>
 						<div class="tree-item indent">base.css</div>
 						<div class="tree-item indent">transform.js</div>
+						{#if hasIconOverrides}
+							<div class="tree-item indent">icons.js</div>
+						{/if}
 						<div class="tree-item indent">tokens/</div>
 						<div class="tree-item indent2">base.css</div>
 						<div class="tree-item indent2">dark.css</div>

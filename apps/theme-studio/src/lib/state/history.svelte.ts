@@ -8,6 +8,17 @@ export interface ThemeSnapshot {
 	tokens: { light: Record<string, string>; dark: Record<string, string> };
 	overrides: { light: string[]; dark: string[] };
 	runeOverrides: Record<string, string>;
+	iconOverrides: Record<string, Record<string, string>>;
+}
+
+function cloneIconOverrides(
+	src: Record<string, Record<string, string>>,
+): Record<string, Record<string, string>> {
+	const result: Record<string, Record<string, string>> = {};
+	for (const [group, variants] of Object.entries(src)) {
+		result[group] = { ...variants };
+	}
+	return result;
 }
 
 function takeSnapshot(): ThemeSnapshot {
@@ -23,6 +34,7 @@ function takeSnapshot(): ThemeSnapshot {
 			dark: [...themeState.overrides.dark],
 		},
 		runeOverrides: { ...themeState.runeOverrides },
+		iconOverrides: cloneIconOverrides(themeState.iconOverrides),
 	};
 }
 
@@ -34,6 +46,7 @@ function restoreSnapshot(snapshot: ThemeSnapshot): void {
 	themeState.overrides.light = new Set(snapshot.overrides.light);
 	themeState.overrides.dark = new Set(snapshot.overrides.dark);
 	themeState.runeOverrides = { ...snapshot.runeOverrides };
+	themeState.iconOverrides = cloneIconOverrides(snapshot.iconOverrides ?? {});
 }
 
 class HistoryState {

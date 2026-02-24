@@ -10,12 +10,13 @@
 	import PromptBar from '$lib/PromptBar.svelte';
 	import ExportPanel from '$lib/ExportPanel.svelte';
 	import RuneEditor from '$lib/RuneEditor.svelte';
+	import IconPanel from '$lib/IconPanel.svelte';
 
 	const tokenGroups = getTokensByCategory();
 	const categories = [...tokenGroups.entries()];
 
 	let showExport = $state(false);
-	let showRuneEditor = $state(false);
+	let rightPanelTab: 'rune-css' | 'icons' | null = $state(null);
 
 	onMount(() => {
 		return initPersistence();
@@ -34,6 +35,9 @@
 		} else if (e.key === 'd') {
 			e.preventDefault();
 			themeState.toggleMode();
+		} else if (e.key === 'i') {
+			e.preventDefault();
+			rightPanelTab = rightPanelTab === 'icons' ? null : 'icons';
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			// Focus the prompt bar input
@@ -101,10 +105,18 @@
 			</button>
 			<button
 				class="rune-css-btn"
-				class:active={showRuneEditor}
-				onclick={() => (showRuneEditor = !showRuneEditor)}
+				class:active={rightPanelTab === 'rune-css'}
+				onclick={() => (rightPanelTab = rightPanelTab === 'rune-css' ? null : 'rune-css')}
 			>
 				Rune CSS
+			</button>
+			<button
+				class="icons-btn"
+				class:active={rightPanelTab === 'icons'}
+				onclick={() => (rightPanelTab = rightPanelTab === 'icons' ? null : 'icons')}
+				title="Icon customization (Ctrl+I)"
+			>
+				Icons
 			</button>
 			<button class="export-btn" onclick={() => (showExport = true)}>
 				Export
@@ -126,9 +138,13 @@
 			<PreviewPanel />
 		</main>
 
-		{#if showRuneEditor}
+		{#if rightPanelTab}
 			<aside class="rune-panel">
-				<RuneEditor onclose={() => (showRuneEditor = false)} />
+				{#if rightPanelTab === 'rune-css'}
+					<RuneEditor onclose={() => (rightPanelTab = null)} />
+				{:else}
+					<IconPanel onclose={() => (rightPanelTab = null)} />
+				{/if}
 			</aside>
 		{/if}
 	</div>
@@ -263,6 +279,28 @@
 	}
 
 	.rune-css-btn.active {
+		border-color: #0ea5e9;
+		color: #0ea5e9;
+		background: #f0f9ff;
+	}
+
+	.icons-btn {
+		padding: 6px 12px;
+		border: 1px solid #e5e5e5;
+		border-radius: 6px;
+		background: white;
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 600;
+		color: #555;
+	}
+
+	.icons-btn:hover {
+		border-color: #ccc;
+		background: #fafafa;
+	}
+
+	.icons-btn.active {
 		border-color: #0ea5e9;
 		color: #0ea5e9;
 		background: #f0f9ff;
