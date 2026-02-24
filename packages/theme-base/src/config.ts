@@ -362,6 +362,7 @@ export const baseConfig: ThemeConfig = {
 				showA11y: { source: 'meta' },
 				columns: { source: 'meta' },
 			},
+			contextModifiers: { DesignContext: 'in-design-context' },
 		},
 		Typography: {
 			block: 'typography',
@@ -371,12 +372,14 @@ export const baseConfig: ThemeConfig = {
 				showWeights: { source: 'meta' },
 				showCharset: { source: 'meta' },
 			},
+			contextModifiers: { DesignContext: 'in-design-context' },
 		},
 		Spacing: {
 			block: 'spacing',
 			modifiers: {
 				title: { source: 'meta' },
 			},
+			contextModifiers: { DesignContext: 'in-design-context' },
 		},
 		DesignContext: {
 			block: 'design-context',

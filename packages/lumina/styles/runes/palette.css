@@ -84,3 +84,8 @@
 	margin-top: 0.25rem;
 	font-size: 0.8rem;
 }
+
+/* Context-aware: no outer margin when inside design-context */
+.rf-palette--in-design-context {
+	margin: 0;
+}

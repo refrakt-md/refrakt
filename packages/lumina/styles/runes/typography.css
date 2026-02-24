@@ -89,3 +89,16 @@
 	word-break: break-all;
 	color: var(--rf-color-text-muted, #6b7280);
 }
+
+/* Context-aware: no outer border when inside design-context (parent already has one) */
+.rf-typography--in-design-context {
+	margin: 0;
+}
+.rf-typography--in-design-context .rf-typography__specimen {
+	border: none;
+	border-radius: 0;
+	padding: 0;
+}
+.rf-typography--in-design-context .rf-typography__specimen + .rf-typography__specimen {
+	padding-top: 1.5rem;
+}
