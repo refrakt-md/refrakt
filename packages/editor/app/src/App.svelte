@@ -16,6 +16,7 @@
 		fetchTree, fetchFile, saveFile,
 		createPage, createDirectory,
 		renameFile, duplicateFile, deleteFile, toggleDraft,
+		fetchRunes,
 	} from './lib/api/client.js';
 	import { onMount } from 'svelte';
 
@@ -34,7 +35,9 @@
 	onMount(async () => {
 		editorState.treeLoading = true;
 		try {
-			editorState.tree = await fetchTree();
+			const [tree, runes] = await Promise.all([fetchTree(), fetchRunes()]);
+			editorState.tree = tree;
+			editorState.runes = runes;
 		} catch (e) {
 			editorState.error = e instanceof Error ? e.message : 'Failed to load content tree';
 		} finally {

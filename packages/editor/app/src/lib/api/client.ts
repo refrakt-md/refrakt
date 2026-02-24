@@ -141,3 +141,27 @@ export async function fetchPagesList(): Promise<PageListItem[]> {
 	const data = await res.json();
 	return data.pages;
 }
+
+// ── Rune metadata ───────────────────────────────────────────────────────
+
+export interface RuneAttributeInfo {
+	type: string;
+	required: boolean;
+	values?: string[];
+}
+
+export interface RuneInfo {
+	name: string;
+	aliases: string[];
+	description: string;
+	selfClosing: boolean;
+	category: string;
+	attributes: Record<string, RuneAttributeInfo>;
+}
+
+export async function fetchRunes(): Promise<RuneInfo[]> {
+	const res = await fetch(`${BASE}/api/runes`);
+	if (!res.ok) throw new Error(`Failed to load runes: ${res.status}`);
+	const data = await res.json();
+	return data.runes;
+}

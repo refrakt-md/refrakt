@@ -12,8 +12,12 @@
 	import { syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 	import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 	import { tags } from '@lezer/highlight';
+	import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 	import { untrack } from 'svelte';
 	import { editorState } from '../state/editor.svelte.js';
+	import { runeCompletionSource } from '../editor/rune-palette.js';
+	import { attributeCompletionSource } from '../editor/attribute-completion.js';
+	import { markdocHighlight } from '../editor/markdoc-highlight.js';
 
 	let container: HTMLElement;
 	let editorView: EditorView;
@@ -60,6 +64,55 @@
 			'&.cm-focused': {
 				outline: 'none',
 			},
+			// Autocomplete dropdown styling
+			'.cm-tooltip.cm-tooltip-autocomplete': {
+				border: '1px solid #e2e8f0',
+				borderRadius: '6px',
+				boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+				backgroundColor: '#ffffff',
+				overflow: 'hidden',
+			},
+			'.cm-tooltip.cm-tooltip-autocomplete ul': {
+				fontFamily: 'system-ui, -apple-system, sans-serif',
+				fontSize: '12px',
+				maxHeight: '280px',
+			},
+			'.cm-tooltip.cm-tooltip-autocomplete ul li': {
+				padding: '4px 8px',
+				borderBottom: '1px solid #f1f5f9',
+			},
+			'.cm-tooltip.cm-tooltip-autocomplete ul li[aria-selected]': {
+				backgroundColor: '#f0f9ff',
+				color: '#0369a1',
+			},
+			'.cm-tooltip.cm-completionInfo': {
+				border: '1px solid #e2e8f0',
+				borderRadius: '6px',
+				boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+				backgroundColor: '#ffffff',
+				padding: '6px 10px',
+				fontFamily: 'system-ui, -apple-system, sans-serif',
+				fontSize: '12px',
+				color: '#475569',
+				maxWidth: '300px',
+			},
+			'.cm-completionDetail': {
+				color: '#94a3b8',
+				fontStyle: 'normal',
+				marginLeft: '0.5em',
+			},
+			// Markdoc tag highlighting
+			'.cm-markdoc-tag': {
+				backgroundColor: 'rgba(217, 119, 6, 0.06)',
+				borderRadius: '2px',
+			},
+			'.cm-markdoc-bracket': {
+				color: '#94a3b8',
+			},
+			'.cm-markdoc-name': {
+				color: '#d97706',
+				fontWeight: '600',
+			},
 		},
 		{ dark: false },
 	);
@@ -96,13 +149,27 @@
 				lightTheme,
 				syntaxHighlighting(highlightTheme),
 				highlightSelectionMatches(),
-				keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
+				keymap.of([
+					...defaultKeymap,
+					...historyKeymap,
+					...searchKeymap,
+					{ key: 'Mod-/', run: (view) => { startCompletion(view); return true; } },
+				]),
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
 						editorState.updateBody(update.state.doc.toString());
 					}
 				}),
 				EditorView.lineWrapping,
+				// Markdoc extensions
+				markdocHighlight(),
+				autocompletion({
+					override: [
+						runeCompletionSource(() => editorState.runes),
+						attributeCompletionSource(() => editorState.runes),
+					],
+					icons: false,
+				}),
 			],
 		});
 

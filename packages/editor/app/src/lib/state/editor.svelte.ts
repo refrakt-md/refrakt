@@ -1,4 +1,5 @@
 import { parseFrontmatterClient, serializeFrontmatter, type Frontmatter } from '../utils/frontmatter.js';
+import type { RuneInfo } from '../api/client.js';
 
 interface TreeNode {
 	name: string;
@@ -26,6 +27,9 @@ class EditorState {
 	fileLoading = $state(false);
 	saving = $state(false);
 	error: string | null = $state(null);
+
+	/** Rune metadata for autocomplete/palette */
+	runes: RuneInfo[] = $state([]);
 
 	/** Directories the user has collapsed */
 	collapsedDirs: Set<string> = $state(new Set());
@@ -99,4 +103,4 @@ class EditorState {
 
 export const editorState = new EditorState();
 
-export type { TreeNode, Frontmatter };
+export type { TreeNode, Frontmatter, RuneInfo };

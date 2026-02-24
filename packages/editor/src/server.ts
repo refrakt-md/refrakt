@@ -5,6 +5,7 @@ import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
 import { ContentTree } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
+import { runes as allRunes } from '@refrakt-md/runes';
 import type { ThemeConfig } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent } from './preview.js';
@@ -120,6 +121,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				await handleToggleDraft(req, res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/pages-list') {
 				await handlePagesList(res, absContentDir);
+			} else if (method === 'GET' && url.pathname === '/api/runes') {
+				handleGetRunes(res);
 			} else if (method === 'GET') {
 				// Serve static frontend (SPA fallback to index.html)
 				serveStatic(res, appDistDir, url.pathname);
@@ -532,6 +535,79 @@ async function handlePagesList(
 
 	walk(tree.root);
 	serveJson(res, { pages });
+}
+
+// ── Rune metadata ────────────────────────────────────────────────────────
+
+const CHILD_RUNES = new Set([
+	'tab', 'step', 'tier', 'accordion-item', 'timeline-entry', 'changelog-release',
+	'cast-member', 'conversation-message', 'reveal-step', 'bento-cell',
+	'storyboard-panel', 'note', 'form-field', 'comparison-column', 'comparison-row',
+	'symbol-group', 'symbol-member', 'map-pin', 'definition', 'region',
+]);
+
+const RUNE_CATEGORIES: Record<string, string> = {
+	hero: 'Section', cta: 'Section', feature: 'Section', pricing: 'Section',
+	comparison: 'Section', testimonial: 'Section',
+
+	hint: 'Content', steps: 'Content', sidenote: 'Content', figure: 'Content',
+	details: 'Content', embed: 'Content', icon: 'Content', form: 'Content',
+
+	grid: 'Layout', tabs: 'Layout', accordion: 'Layout', bento: 'Layout',
+	reveal: 'Layout', annotate: 'Layout',
+
+	codegroup: 'Code & Data', compare: 'Code & Data', diff: 'Code & Data',
+	api: 'Code & Data', symbol: 'Code & Data', datatable: 'Code & Data',
+	chart: 'Code & Data', diagram: 'Code & Data', preview: 'Code & Data',
+	sandbox: 'Code & Data',
+
+	recipe: 'Semantic', howto: 'Semantic', event: 'Semantic', cast: 'Semantic',
+	organization: 'Semantic', timeline: 'Semantic', changelog: 'Semantic',
+	conversation: 'Semantic', storyboard: 'Semantic', map: 'Semantic',
+	'music-playlist': 'Semantic', 'music-recording': 'Semantic', error: 'Semantic',
+
+	swatch: 'Design', palette: 'Design', typography: 'Design',
+	spacing: 'Design', 'design-context': 'Design',
+
+	nav: 'Site', layout: 'Site', toc: 'Site', breadcrumb: 'Site',
+};
+
+let cachedRuneData: unknown[] | null = null;
+
+function handleGetRunes(res: import('node:http').ServerResponse): void {
+	if (!cachedRuneData) {
+		cachedRuneData = [];
+		for (const rune of Object.values(allRunes)) {
+			if (CHILD_RUNES.has(rune.name)) continue;
+
+			const attrs: Record<string, { type: string; required: boolean; values?: string[] }> = {};
+			if (rune.schema.attributes) {
+				for (const [name, attr] of Object.entries(rune.schema.attributes)) {
+					const typeName = typeof attr.type === 'function'
+						? attr.type.name
+						: Array.isArray(attr.type)
+							? attr.type.map((t: unknown) => (t as { name?: string }).name ?? 'unknown').join(' | ')
+							: 'String';
+					attrs[name] = {
+						type: typeName,
+						required: attr.required ?? false,
+						...(Array.isArray(attr.matches) ? { values: attr.matches.map(String) } : {}),
+					};
+				}
+			}
+
+			cachedRuneData.push({
+				name: rune.name,
+				aliases: rune.aliases,
+				description: rune.description,
+				selfClosing: rune.schema.selfClosing ?? false,
+				category: RUNE_CATEGORIES[rune.name] ?? 'Other',
+				attributes: attrs,
+			});
+		}
+	}
+
+	serveJson(res, { runes: cachedRuneData });
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────
