@@ -1,3 +1,5 @@
+import { parseFrontmatterClient, serializeFrontmatter, type Frontmatter } from '../utils/frontmatter.js';
+
 interface TreeNode {
 	name: string;
 	type: 'directory' | 'page' | 'layout';
@@ -12,7 +14,13 @@ class EditorState {
 	currentPath: string | null = $state(null);
 	savedContent = $state('');
 	editorContent = $state('');
-	frontmatter: Record<string, unknown> = $state({});
+	frontmatter: Frontmatter = $state({});
+	bodyContent = $state('');
+
+	/** Whether the frontmatter panel is open */
+	frontmatterOpen = $state(true);
+	/** Whether raw YAML mode is active */
+	frontmatterRawMode = $state(false);
 
 	treeLoading = $state(false);
 	fileLoading = $state(false);
@@ -23,6 +31,51 @@ class EditorState {
 	collapsedDirs: Set<string> = $state(new Set());
 
 	dirty = $derived(this.editorContent !== this.savedContent);
+
+	/**
+	 * Load a file's raw content into the editor, splitting frontmatter and body.
+	 */
+	loadFile(path: string, raw: string) {
+		const { frontmatter, body } = parseFrontmatterClient(raw);
+		this.currentPath = path;
+		this.savedContent = raw;
+		this.editorContent = raw;
+		this.frontmatter = frontmatter;
+		this.bodyContent = body;
+		this.frontmatterRawMode = false;
+	}
+
+	/**
+	 * Update the markdown body (called from CodeMirror).
+	 * Reconstructs editorContent from frontmatter + new body.
+	 */
+	updateBody(body: string) {
+		this.bodyContent = body;
+		this.editorContent = serializeFrontmatter(this.frontmatter, body);
+	}
+
+	/**
+	 * Update a single frontmatter field.
+	 * Reconstructs editorContent from updated frontmatter + body.
+	 */
+	updateFrontmatterField(key: string, value: unknown) {
+		if (value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
+			const { [key]: _, ...rest } = this.frontmatter;
+			this.frontmatter = rest;
+		} else {
+			this.frontmatter = { ...this.frontmatter, [key]: value };
+		}
+		this.editorContent = serializeFrontmatter(this.frontmatter, this.bodyContent);
+	}
+
+	/**
+	 * Replace the entire frontmatter object (e.g. from raw YAML editor).
+	 * Reconstructs editorContent from new frontmatter + body.
+	 */
+	replaceFrontmatter(fm: Frontmatter) {
+		this.frontmatter = fm;
+		this.editorContent = serializeFrontmatter(fm, this.bodyContent);
+	}
 
 	toggleDir(path: string): void {
 		const next = new Set(this.collapsedDirs);
@@ -41,4 +94,4 @@ class EditorState {
 
 export const editorState = new EditorState();
 
-export type { TreeNode };
+export type { TreeNode, Frontmatter };

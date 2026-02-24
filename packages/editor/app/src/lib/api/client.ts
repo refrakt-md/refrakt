@@ -39,3 +39,92 @@ export async function fetchPreviewHtml(path: string, content: string): Promise<s
 	if (!res.ok) throw new Error(`Preview failed: ${res.status}`);
 	return res.text();
 }
+
+// ── File operations ──────────────────────────────────────────────────
+
+export interface CreatePageOptions {
+	directory?: string;
+	slug: string;
+	title: string;
+	template?: string;
+	draft?: boolean;
+}
+
+export async function createPage(options: CreatePageOptions): Promise<{ path: string }> {
+	const res = await fetch(`${BASE}/api/pages`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(options),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to create page: ${res.status}`);
+	}
+	return res.json();
+}
+
+export async function createDirectory(options: {
+	parent?: string;
+	name: string;
+	createLayout?: boolean;
+}): Promise<{ path: string }> {
+	const res = await fetch(`${BASE}/api/directories`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(options),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to create directory: ${res.status}`);
+	}
+	return res.json();
+}
+
+export async function renameFile(oldPath: string, newName: string): Promise<{ newPath: string }> {
+	const res = await fetch(`${BASE}/api/rename`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ oldPath, newName }),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to rename: ${res.status}`);
+	}
+	return res.json();
+}
+
+export async function duplicateFile(path: string): Promise<{ path: string }> {
+	const res = await fetch(`${BASE}/api/duplicate`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ path }),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to duplicate: ${res.status}`);
+	}
+	return res.json();
+}
+
+export async function deleteFile(path: string): Promise<void> {
+	const res = await fetch(`${BASE}/api/files/${encodeURIComponent(path)}`, {
+		method: 'DELETE',
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to delete: ${res.status}`);
+	}
+}
+
+export async function toggleDraft(path: string): Promise<{ draft: boolean }> {
+	const res = await fetch(`${BASE}/api/toggle-draft`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ path }),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to toggle draft: ${res.status}`);
+	}
+	return res.json();
+}

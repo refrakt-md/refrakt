@@ -86,7 +86,7 @@
 		if (!container) return;
 
 		const state = EditorState.create({
-			doc: untrack(() => editorState.editorContent),
+			doc: untrack(() => editorState.bodyContent),
 			extensions: [
 				lineNumbers(),
 				highlightActiveLineGutter(),
@@ -99,7 +99,7 @@
 				keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
-						editorState.editorContent = update.state.doc.toString();
+						editorState.updateBody(update.state.doc.toString());
 					}
 				}),
 				EditorView.lineWrapping,
@@ -115,7 +115,7 @@
 
 	// Sync external value changes (file switch) into CodeMirror
 	$effect(() => {
-		const current = editorState.editorContent;
+		const current = editorState.bodyContent;
 		if (!editorView) return;
 
 		const cmContent = editorView.state.doc.toString();
@@ -140,7 +140,8 @@
 
 <style>
 	.md-editor {
-		height: 100%;
+		flex: 1;
+		min-height: 0;
 		overflow: hidden;
 	}
 

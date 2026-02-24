@@ -6,9 +6,17 @@
 		node: TreeNode;
 		depth: number;
 		onselectfile: (path: string) => void;
+		oncontextmenu?: (e: MouseEvent, node: TreeNode) => void;
 	}
 
-	let { node, depth, onselectfile }: Props = $props();
+	let { node, depth, onselectfile, oncontextmenu }: Props = $props();
+
+	function handleContextMenu(e: MouseEvent, targetNode: TreeNode) {
+		if (oncontextmenu) {
+			e.preventDefault();
+			oncontextmenu(e, targetNode);
+		}
+	}
 
 	function handleFileClick(path: string) {
 		onselectfile(path);
@@ -27,6 +35,7 @@
 			class="tree-dir"
 			style="--depth: {depth - 1}"
 			onclick={handleDirToggle}
+			oncontextmenu={(e) => handleContextMenu(e, node)}
 		>
 			<span class="tree-dir__arrow" class:collapsed={!expanded}>▸</span>
 			{node.name}
@@ -41,6 +50,7 @@
 				class:draft={node.layout.draft}
 				style="--depth: {depth}"
 				onclick={() => handleFileClick(node.layout!.path)}
+				oncontextmenu={(e) => handleContextMenu(e, node.layout!)}
 			>
 				_layout.md
 			</button>
@@ -48,7 +58,7 @@
 
 		{#each node.children ?? [] as child}
 			{#if child.type === 'directory'}
-				<FileTreeNode node={child} depth={depth + 1} {onselectfile} />
+				<FileTreeNode node={child} depth={depth + 1} {onselectfile} {oncontextmenu} />
 			{:else}
 				<button
 					class="tree-item"
@@ -56,6 +66,7 @@
 					class:draft={child.draft}
 					style="--depth: {depth}"
 					onclick={() => handleFileClick(child.path)}
+					oncontextmenu={(e) => handleContextMenu(e, child)}
 				>
 					{child.name}
 				</button>

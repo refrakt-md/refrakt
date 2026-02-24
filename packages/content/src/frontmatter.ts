@@ -30,3 +30,14 @@ export function parseFrontmatter(raw: string): { frontmatter: Frontmatter; conte
 
   return { frontmatter, content };
 }
+
+/**
+ * Serialize a frontmatter object and body content back into a raw markdown string.
+ * If frontmatter has no keys, returns just the body content.
+ */
+export function serializeFrontmatter(frontmatter: Frontmatter, content: string): string {
+  const keys = Object.keys(frontmatter);
+  if (keys.length === 0) return content;
+  const yamlStr = yaml.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
+  return `---\n${yamlStr}\n---\n${content}`;
+}
