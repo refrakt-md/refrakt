@@ -1,17 +1,12 @@
 /* Symbol */
 .rf-symbol {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
 	margin: 1.5rem 0;
-	overflow: hidden;
 }
 .rf-symbol__header {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	padding: 0.75rem 1.25rem;
-	background: var(--rf-color-surface-hover);
-	border-bottom: 1px solid var(--rf-color-border);
+	padding: 0.5rem 0;
 	flex-wrap: wrap;
 }
 .rf-symbol__kind-badge {
@@ -56,7 +51,7 @@
 	color: var(--rf-color-primary);
 }
 .rf-symbol__body {
-	padding: 1.25rem;
+	padding: 0;
 }
 .rf-symbol__body > header {
 	margin-bottom: 1rem;
@@ -100,6 +95,9 @@
 	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
 	font-size: 0.9375rem;
 }
+.rf-symbol__body blockquote::before {
+	content: none;
+}
 
 /* Deprecated symbol */
 [data-deprecated] .rf-symbol__body > header h2,
@@ -132,10 +130,7 @@
 /* SymbolMember */
 .rf-symbol-member {
 	margin: 1.25rem 0;
-	padding: 1rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	background: var(--rf-color-surface);
+	padding: 0;
 }
 .rf-symbol-member h4 {
 	margin: 0 0 0.5rem;
@@ -161,4 +156,7 @@
 	margin: 0.5rem 0;
 	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
 	font-size: 0.875rem;
+}
+.rf-symbol-member blockquote::before {
+	content: none;
 }
