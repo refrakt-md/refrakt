@@ -179,6 +179,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
+		background: #f8fafc;
 	}
 
 	.layout-editor__empty {

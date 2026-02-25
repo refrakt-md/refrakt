@@ -86,7 +86,7 @@
 	}
 
 	.nav-item:hover {
-		background: #f1f5f9;
+		background: #edf2f7;
 	}
 
 	.nav-item__grip {

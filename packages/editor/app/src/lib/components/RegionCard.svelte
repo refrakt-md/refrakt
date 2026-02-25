@@ -114,18 +114,15 @@
 
 <style>
 	.region-card {
-		border: 1px solid #e2e8f0;
-		border-radius: 6px;
-		background: #ffffff;
-		overflow: hidden;
+		background: transparent;
 	}
 
 	.region-card__header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.5rem 0.75rem;
-		background: #f8fafc;
+		padding: 0.5rem 0;
+		background: transparent;
 		border-bottom: 1px solid #e2e8f0;
 		gap: 0.5rem;
 	}

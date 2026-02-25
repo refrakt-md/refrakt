@@ -242,39 +242,37 @@
 
 <style>
 	.nav-editor {
-		padding: 0.5rem 0.75rem;
+		padding: 0.5rem 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 1rem;
 	}
 
 	.nav-editor__group {
-		border: 1px solid #e2e8f0;
-		border-radius: 5px;
-		overflow: hidden;
 	}
 
 	.nav-editor__group-header {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.35rem 0.5rem;
-		background: #f8fafc;
+		padding: 0.25rem 0;
+		background: transparent;
 		border-bottom: 1px solid #e2e8f0;
+		margin-bottom: 0.25rem;
 	}
 
 	.nav-editor__group-title {
 		flex: 1;
 		font-size: 0.75rem;
 		font-weight: 600;
-		color: #1a1a2e;
+		color: #64748b;
 		border: 1px solid transparent;
 		border-radius: 3px;
 		padding: 0.1rem 0.25rem;
 		background: transparent;
 		outline: none;
 		text-transform: uppercase;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.05em;
 	}
 
 	.nav-editor__group-title:focus {
@@ -302,7 +300,7 @@
 	}
 
 	.nav-editor__items {
-		padding: 0.25rem 0.25rem;
+		padding: 0;
 	}
 
 	.nav-editor__item-wrapper.drag-over {
@@ -330,7 +328,7 @@
 		background: none;
 		border: none;
 		cursor: pointer;
-		padding: 0.2rem 0.5rem 0.35rem;
+		padding: 0.2rem 0.25rem;
 		text-align: left;
 	}
 
