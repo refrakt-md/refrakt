@@ -9,130 +9,18 @@
 	} from '@codemirror/view';
 	import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 	import { markdown } from '@codemirror/lang-markdown';
-	import { syntaxHighlighting, HighlightStyle } from '@codemirror/language';
+	import { syntaxHighlighting } from '@codemirror/language';
 	import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
-	import { tags } from '@lezer/highlight';
 	import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 	import { untrack } from 'svelte';
 	import { editorState } from '../state/editor.svelte.js';
 	import { runeCompletionSource } from '../editor/rune-palette.js';
 	import { attributeCompletionSource } from '../editor/attribute-completion.js';
 	import { markdocHighlight } from '../editor/markdoc-highlight.js';
+	import { lightTheme, highlightTheme } from '../editor/codemirror-theme.js';
 
 	let container: HTMLElement;
 	let editorView: EditorView;
-
-	const lightTheme = EditorView.theme(
-		{
-			'&': {
-				backgroundColor: '#f8fafc',
-				color: '#1a1a2e',
-				fontSize: '13px',
-				height: '100%',
-			},
-			'.cm-scroller': {
-				overflow: 'auto',
-				fontFamily: "'SF Mono', 'Fira Code', ui-monospace, monospace",
-				lineHeight: '1.6',
-			},
-			'.cm-content': {
-				padding: '1rem 0',
-				caretColor: '#1e293b',
-			},
-			'.cm-gutters': {
-				backgroundColor: '#f8fafc',
-				color: '#94a3b8',
-				border: 'none',
-				paddingRight: '0.5rem',
-			},
-			'.cm-activeLineGutter': {
-				backgroundColor: '#e2e8f0',
-				color: '#64748b',
-			},
-			'.cm-activeLine': {
-				backgroundColor: 'rgba(0, 0, 0, 0.03)',
-			},
-			'.cm-cursor': {
-				borderLeftColor: '#1e293b',
-			},
-			'&.cm-focused .cm-selectionBackground, ::selection': {
-				backgroundColor: 'rgba(14, 165, 233, 0.2)',
-			},
-			'.cm-selectionBackground': {
-				backgroundColor: 'rgba(14, 165, 233, 0.12)',
-			},
-			'&.cm-focused': {
-				outline: 'none',
-			},
-			// Autocomplete dropdown styling
-			'.cm-tooltip.cm-tooltip-autocomplete': {
-				border: '1px solid #e2e8f0',
-				borderRadius: '6px',
-				boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-				backgroundColor: '#ffffff',
-				overflow: 'hidden',
-			},
-			'.cm-tooltip.cm-tooltip-autocomplete ul': {
-				fontFamily: 'system-ui, -apple-system, sans-serif',
-				fontSize: '12px',
-				maxHeight: '280px',
-			},
-			'.cm-tooltip.cm-tooltip-autocomplete ul li': {
-				padding: '4px 8px',
-				borderBottom: '1px solid #f1f5f9',
-			},
-			'.cm-tooltip.cm-tooltip-autocomplete ul li[aria-selected]': {
-				backgroundColor: '#f0f9ff',
-				color: '#0369a1',
-			},
-			'.cm-tooltip.cm-completionInfo': {
-				border: '1px solid #e2e8f0',
-				borderRadius: '6px',
-				boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-				backgroundColor: '#ffffff',
-				padding: '6px 10px',
-				fontFamily: 'system-ui, -apple-system, sans-serif',
-				fontSize: '12px',
-				color: '#475569',
-				maxWidth: '300px',
-			},
-			'.cm-completionDetail': {
-				color: '#94a3b8',
-				fontStyle: 'normal',
-				marginLeft: '0.5em',
-			},
-			// Markdoc tag highlighting
-			'.cm-markdoc-tag': {
-				backgroundColor: 'rgba(217, 119, 6, 0.06)',
-				borderRadius: '2px',
-			},
-			'.cm-markdoc-bracket': {
-				color: '#94a3b8',
-			},
-			'.cm-markdoc-name': {
-				color: '#d97706',
-				fontWeight: '600',
-			},
-		},
-		{ dark: false },
-	);
-
-	const highlightTheme = HighlightStyle.define([
-		{ tag: tags.heading1, color: '#0369a1', fontWeight: 'bold', fontSize: '1.4em' },
-		{ tag: tags.heading2, color: '#0369a1', fontWeight: 'bold', fontSize: '1.2em' },
-		{ tag: tags.heading3, color: '#0369a1', fontWeight: 'bold', fontSize: '1.1em' },
-		{ tag: tags.heading, color: '#0369a1', fontWeight: 'bold' },
-		{ tag: tags.emphasis, color: '#9333ea', fontStyle: 'italic' },
-		{ tag: tags.strong, color: '#9333ea', fontWeight: 'bold' },
-		{ tag: tags.link, color: '#0ea5e9', textDecoration: 'underline' },
-		{ tag: tags.url, color: '#0ea5e9' },
-		{ tag: tags.quote, color: '#64748b' },
-		{ tag: tags.monospace, color: '#16a34a' },
-		{ tag: tags.processingInstruction, color: '#d97706' },
-		{ tag: tags.meta, color: '#94a3b8' },
-		{ tag: tags.comment, color: '#94a3b8' },
-		{ tag: tags.punctuation, color: '#94a3b8' },
-	]);
 
 	// Create CodeMirror when container is available, destroy on cleanup
 	$effect(() => {

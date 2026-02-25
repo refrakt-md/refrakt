@@ -207,9 +207,9 @@
 	.fm-editor__header {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.6rem;
 		width: 100%;
-		padding: 0.5rem 0.75rem;
+		padding: 0.6rem 1rem;
 		font-size: 0.75rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -263,31 +263,31 @@
 	}
 
 	.fm-editor__body {
-		padding: 0.5rem 0.75rem 0.75rem;
+		padding: 0.75rem 1rem 1rem;
 	}
 
 	.fm-editor__fields {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
 	.fm-editor__row {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
 	.fm-field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
+		gap: 0.3rem;
 	}
 
 	.fm-field--checkbox {
 		flex-direction: row;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.6rem;
 		padding-top: 1.2rem;
 	}
 
@@ -300,7 +300,7 @@
 	}
 
 	.fm-field__input {
-		padding: 0.3rem 0.5rem;
+		padding: 0.4rem 0.75rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -315,7 +315,7 @@
 	}
 
 	.fm-field__textarea {
-		padding: 0.3rem 0.5rem;
+		padding: 0.4rem 0.75rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -334,7 +334,7 @@
 	.fm-editor__custom-section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 0.6rem;
 		padding-top: 0.25rem;
 	}
 
@@ -348,7 +348,7 @@
 
 	.fm-field__custom-row {
 		display: flex;
-		gap: 0.25rem;
+		gap: 0.35rem;
 	}
 
 	.fm-field__custom-row .fm-field__input {
@@ -373,7 +373,7 @@
 
 	.fm-editor__add-field {
 		display: flex;
-		gap: 0.25rem;
+		gap: 0.35rem;
 		padding-top: 0.25rem;
 	}
 

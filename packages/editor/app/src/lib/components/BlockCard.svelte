@@ -13,10 +13,12 @@
 		rebuildFenceSource,
 	} from '../editor/block-parser.js';
 	import RuneAttributes from './RuneAttributes.svelte';
+	import InlineEditor from './InlineEditor.svelte';
 
 	interface Props {
 		block: ParsedBlock;
 		runeMap: Map<string, RuneInfo>;
+		runes: () => RuneInfo[];
 		dragHandle?: boolean;
 		onupdate: (block: ParsedBlock) => void;
 		onremove: () => void;
@@ -28,6 +30,7 @@
 	let {
 		block,
 		runeMap,
+		runes,
 		dragHandle = true,
 		onupdate,
 		onremove,
@@ -36,7 +39,7 @@
 		ondrop,
 	}: Props = $props();
 
-	let expanded = $state(true);
+	let expanded = $state(false);
 
 	/** Label shown in the block header */
 	let label = $derived.by(() => {
@@ -141,32 +144,35 @@
 			<span class="block-card__drag" title="Drag to reorder">&#x2630;</span>
 		{/if}
 
-		<span class="block-card__type">{label}</span>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="block-card__header-toggle"
+			onclick={() => { expanded = !expanded; }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); expanded = !expanded; } }}
+			tabindex="0"
+			role="button"
+			aria-expanded={expanded}
+		>
+			<span class="block-card__type">{label}</span>
 
-		{#if category}
-			<span class="block-card__category">{category}</span>
-		{/if}
+			{#if category}
+				<span class="block-card__category">{category}</span>
+			{/if}
 
-		{#if block.type === 'heading'}
-			<span class="block-card__preview">{(block as HeadingBlock).text}</span>
-		{:else if block.type === 'paragraph'}
-			<span class="block-card__preview">{block.source.slice(0, 60)}{block.source.length > 60 ? '...' : ''}</span>
-		{/if}
+			{#if block.type === 'heading'}
+				<span class="block-card__preview">{(block as HeadingBlock).text}</span>
+			{:else if block.type === 'paragraph'}
+				<span class="block-card__preview">{block.source.slice(0, 60)}{block.source.length > 60 ? '...' : ''}</span>
+			{/if}
 
-		<div class="block-card__actions">
-			<button
-				class="block-card__btn"
-				onclick={() => { expanded = !expanded; }}
-				title={expanded ? 'Collapse' : 'Expand'}
-			>
-				<span class="block-card__chevron" class:collapsed={!expanded}>&#x25B8;</span>
-			</button>
-			<button
-				class="block-card__btn block-card__btn--danger"
-				onclick={onremove}
-				title="Remove block"
-			>&times;</button>
+			<span class="block-card__chevron" class:collapsed={!expanded}>&#x25B8;</span>
 		</div>
+
+		<button
+			class="block-card__btn block-card__btn--danger"
+			onclick={onremove}
+			title="Remove block"
+		>&times;</button>
 	</div>
 
 	<!-- Expanded body -->
@@ -229,17 +235,6 @@
 						{/each}
 					</div>
 				{/if}
-				{#if !rb.selfClosing}
-					<div class="block-card__content-section">
-						<span class="block-card__field-label">Content</span>
-						<textarea
-							class="block-card__textarea"
-							value={rb.innerContent}
-							oninput={(e) => handleRuneContentChange((e.target as HTMLTextAreaElement).value)}
-							rows={Math.max(3, rb.innerContent.split('\n').length)}
-						></textarea>
-					</div>
-				{/if}
 
 			{:else if block.type === 'fence'}
 				{@const fb = block as FenceBlock}
@@ -272,6 +267,18 @@
 				></textarea>
 			{/if}
 		</div>
+
+		<!-- Footer: rune content editor -->
+		{#if block.type === 'rune' && !(block as RuneBlock).selfClosing}
+			{@const rb = block as RuneBlock}
+			<div class="block-card__footer">
+				<InlineEditor
+					content={rb.innerContent}
+					onchange={handleRuneContentChange}
+					{runes}
+				/>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -291,27 +298,14 @@
 		border-color: #f1f5f9;
 	}
 
-	/* Type color accents */
-	.block-card--rune {
-		border-left: 3px solid #d97706;
-	}
-
-	.block-card--heading {
-		border-left: 3px solid #0ea5e9;
-	}
-
-	.block-card--content {
-		border-left: 3px solid #e2e8f0;
-	}
-
 	/* Header */
 	.block-card__header {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.5rem;
+		gap: 0.6rem;
+		padding: 0.6rem 0.75rem;
 		cursor: default;
-		min-height: 32px;
+		min-height: 36px;
 	}
 
 	.block-card__drag {
@@ -362,11 +356,20 @@
 		min-width: 0;
 	}
 
-	.block-card__actions {
+	.block-card__header-toggle {
 		display: flex;
 		align-items: center;
-		gap: 0.15rem;
-		margin-left: auto;
+		gap: 0.6rem;
+		flex: 1;
+		min-width: 0;
+		cursor: pointer;
+		border-radius: 3px;
+		padding: 0.15rem 0.25rem;
+		outline: none;
+	}
+
+	.block-card__header-toggle:focus-visible {
+		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
 	}
 
 	.block-card__btn {
@@ -395,6 +398,9 @@
 		transition: transform 0.15s;
 		transform: rotate(90deg);
 		font-size: 0.65rem;
+		color: #94a3b8;
+		margin-left: auto;
+		flex-shrink: 0;
 	}
 
 	.block-card__chevron.collapsed {
@@ -403,23 +409,30 @@
 
 	/* Body */
 	.block-card__body {
-		padding: 0.5rem;
+		padding: 0.75rem;
 		border-top: 1px solid #f1f5f9;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
+	}
+
+	/* Footer */
+	.block-card__footer {
+		border-top: 1px solid #f1f5f9;
+		overflow: hidden;
+		border-radius: 0 0 6px 6px;
 	}
 
 	.block-card__row {
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		align-items: flex-end;
 	}
 
 	.block-card__inline-field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.15rem;
+		gap: 0.25rem;
 	}
 
 	.block-card__inline-field--grow {
@@ -435,7 +448,7 @@
 	}
 
 	.block-card__input {
-		padding: 0.3rem 0.5rem;
+		padding: 0.4rem 0.75rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -451,7 +464,7 @@
 	}
 
 	.block-card__select {
-		padding: 0.3rem 0.4rem;
+		padding: 0.4rem 0.6rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -467,7 +480,7 @@
 	}
 
 	.block-card__textarea {
-		padding: 0.4rem 0.5rem;
+		padding: 0.6rem 0.75rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -491,18 +504,10 @@
 		background: #f8fafc;
 	}
 
-	.block-card__content-section {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		padding-top: 0.25rem;
-		border-top: 1px solid #f1f5f9;
-	}
-
 	.block-card__unknown {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 0.6rem;
 	}
 
 	.block-card__unknown-label {

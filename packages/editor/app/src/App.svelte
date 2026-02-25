@@ -44,6 +44,14 @@
 			editorState.tree = tree;
 			editorState.runes = runes;
 			editorState.previewRuntimeAvailable = config.previewRuntime;
+
+			// Auto-open index.md if present at content root
+			const indexPage = tree.children?.find(
+				(c: TreeNode) => c.type === 'page' && c.name === 'index.md'
+			);
+			if (indexPage) {
+				handleSelectFile(indexPage.path);
+			}
 		} catch (e) {
 			editorState.error = e instanceof Error ? e.message : 'Failed to load content tree';
 		} finally {
@@ -357,14 +365,14 @@
 		display: flex;
 		align-items: center;
 		gap: 0;
-		padding: 0.35rem 0.75rem;
+		padding: 0.5rem 1rem;
 		border-bottom: 1px solid #e2e8f0;
 		background: #fafbfc;
 		flex-shrink: 0;
 	}
 
 	.mode-toggle__btn {
-		padding: 0.2rem 0.6rem;
+		padding: 0.3rem 0.8rem;
 		border: 1px solid #e2e8f0;
 		background: #ffffff;
 		color: #64748b;

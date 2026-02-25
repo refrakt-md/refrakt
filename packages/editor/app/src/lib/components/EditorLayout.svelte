@@ -12,8 +12,20 @@
 
 	let leftWidth = $state(260);
 	let rightWidth = $state(400);
+	let layoutWidth = $state(0);
+	let initialized = false;
 
 	const MIN_PANEL = 180;
+
+	$effect(() => {
+		if (layoutWidth > 0 && !initialized) {
+			initialized = true;
+			const available = layoutWidth - leftWidth - 8;
+			if (available > MIN_PANEL * 2) {
+				rightWidth = Math.floor(available / 2);
+			}
+		}
+	});
 
 	function handleLeftResize(delta: number) {
 		leftWidth = Math.max(MIN_PANEL, leftWidth + delta);
@@ -26,6 +38,7 @@
 
 <div
 	class="layout"
+	bind:clientWidth={layoutWidth}
 	style="grid-template-columns: {leftWidth}px 4px 1fr 4px {rightWidth}px"
 >
 	<div class="layout__panel layout__panel--left">

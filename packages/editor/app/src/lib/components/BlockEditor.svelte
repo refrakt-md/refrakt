@@ -204,6 +204,7 @@
 				<BlockCard
 					{block}
 					{runeMap}
+					runes={() => editorState.runes}
 					onupdate={(updated) => handleUpdateBlock(i, updated)}
 					onremove={() => handleRemoveBlock(i)}
 					ondragstart={(e) => handleDragStart(e, i)}
@@ -265,10 +266,11 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 0.75rem;
+		padding: 1rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
+		background: #f8fafc;
 	}
 
 	.block-editor.hidden {
@@ -278,7 +280,7 @@
 	.block-editor__list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
 	.block-editor__item {
@@ -342,17 +344,17 @@
 		border: 1px solid #e2e8f0;
 		border-radius: 8px;
 		background: #ffffff;
-		padding: 0.75rem;
+		padding: 1rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
+		gap: 0.8rem;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	}
 
 	.insert-menu__section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
+		gap: 0.4rem;
 	}
 
 	.insert-menu__label {
@@ -366,7 +368,7 @@
 	.insert-menu__options {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: 0.35rem;
 	}
 
 	.insert-menu__btn {

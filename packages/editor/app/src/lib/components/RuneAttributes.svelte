@@ -91,13 +91,13 @@
 	.rune-attrs {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 0.6rem;
 	}
 
 	.rune-attr {
 		display: flex;
 		flex-direction: column;
-		gap: 0.15rem;
+		gap: 0.25rem;
 	}
 
 	.rune-attr__label {
@@ -113,7 +113,7 @@
 	}
 
 	.rune-attr__input {
-		padding: 0.3rem 0.5rem;
+		padding: 0.4rem 0.75rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -129,7 +129,7 @@
 	}
 
 	.rune-attr__select {
-		padding: 0.3rem 0.4rem;
+		padding: 0.4rem 0.6rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -149,7 +149,7 @@
 	.rune-attr__toggle-row {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.6rem;
 	}
 
 	.rune-attr__toggle {
