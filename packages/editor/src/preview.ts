@@ -39,7 +39,7 @@ export function renderPreviewContent(
 	const renderable = Markdoc.transform(ast, {
 		tags,
 		nodes,
-		variables: { __source: content },
+		variables: { __source: content, __icons: themeConfig.icons },
 	});
 	const serialized = serializeTree(renderable) as RendererNode;
 

@@ -8,13 +8,12 @@ import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { PageServerLoad } from './$types';
 import type { RefraktConfig } from '@refrakt-md/types';
-import { siteIcons } from '$lib/icons.js';
 
 const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
 const contentDir = path.resolve(config.contentDir);
 const icons = {
 	...luminaConfig.icons,
-	global: { ...luminaConfig.icons.global, ...siteIcons },
+	global: { ...luminaConfig.icons.global, ...(config.icons ?? {}) },
 };
 
 let _hl: HighlightTransform | null = null;

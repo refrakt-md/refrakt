@@ -13,6 +13,8 @@ export interface RefraktConfig {
 		/** Shiki theme — a built-in theme name, or { light, dark } pair for dual themes */
 		theme?: string | { light: string; dark: string };
 	};
+	/** Custom icon SVGs — merged into the theme's global icon group (icon name → SVG string) */
+	icons?: Record<string, string>;
 }
 
 /** Theme manifest — the universal contract between content and rendering */

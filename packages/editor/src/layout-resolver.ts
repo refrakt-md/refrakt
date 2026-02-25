@@ -51,7 +51,7 @@ export class LayoutResolver {
 		const rendered = Markdoc.transform(ast, {
 			tags,
 			nodes,
-			variables: { __source: content },
+			variables: { __source: content, __icons: this.themeConfig.icons },
 		});
 		const serialized = serializeTree(rendered) as RendererNode;
 		let transformed = identityTransform(serialized);

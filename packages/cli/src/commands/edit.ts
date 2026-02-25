@@ -1,5 +1,6 @@
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
+import type { RefraktConfig } from '@refrakt-md/types';
 import { loadRefraktConfigFile } from '../config-file.js';
 
 export interface EditOptions {
@@ -16,6 +17,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	let contentDir = options.contentDir;
 	let themeName: string | undefined;
 	let configDir = cwd;
+	let projectConfig: RefraktConfig | undefined;
 
 	if (!contentDir) {
 		try {
@@ -23,6 +25,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 			configDir = dirname(configPath);
 			contentDir = resolve(configDir, config.contentDir);
 			themeName = config.theme;
+			projectConfig = config;
 		} catch {
 			console.error('Error: No refrakt.config.json found. Specify --content-dir or run from a refrakt.md project.');
 			process.exit(1);
@@ -37,7 +40,18 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	}
 
 	// Resolve theme config, CSS, and Svelte entry
-	const { themeConfig, themeCssPath, themeSveltePath } = await resolveTheme(themeName, configDir);
+	let { themeConfig, themeCssPath, themeSveltePath } = await resolveTheme(themeName, configDir);
+
+	// Merge project-level custom icons into the theme's global icon group
+	if (projectConfig?.icons && Object.keys(projectConfig.icons).length > 0) {
+		themeConfig = {
+			...themeConfig,
+			icons: {
+				...themeConfig.icons,
+				global: { ...themeConfig.icons.global, ...projectConfig.icons },
+			},
+		};
+	}
 
 	// Resolve static assets directory (SvelteKit convention: {projectRoot}/static/)
 	const staticPath = resolve(configDir, 'static');
