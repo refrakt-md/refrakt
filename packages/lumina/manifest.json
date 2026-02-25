@@ -9,5 +9,17 @@
     "attribute": "data-theme",
     "values": { "dark": "dark", "light": "light" },
     "systemPreference": true
+  },
+  "layouts": {
+    "default": {
+      "regions": ["header", "footer"]
+    },
+    "docs": {
+      "regions": ["header", "nav", "sidebar", "footer"],
+      "requiredRegions": ["nav"]
+    },
+    "blog": {
+      "regions": ["header", "sidebar", "footer"]
+    }
   }
 }

@@ -33,9 +33,26 @@ describe('loadVirtualModule', () => {
 		target: 'svelte',
 	};
 
-	it('generates theme re-export from theme/target adapter', () => {
+	it('generates theme with routeRules injection from config', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/theme', config);
-		expect(result).toBe("export { theme } from '@refrakt-md/lumina/svelte';");
+		expect(result).toContain("import { theme as _base } from '@refrakt-md/lumina/svelte';");
+		expect(result).toContain('routeRules:');
+		// Default fallback when no routeRules in config
+		expect(result).toContain('"**"');
+		expect(result).toContain('"default"');
+	});
+
+	it('injects site config routeRules into theme', () => {
+		const configWithRules = {
+			...config,
+			routeRules: [
+				{ pattern: 'docs/**', layout: 'docs' },
+				{ pattern: '**', layout: 'default' },
+			],
+		};
+		const result = loadVirtualModule('\0virtual:refrakt/theme', configWithRules);
+		expect(result).toContain('"docs/**"');
+		expect(result).toContain('"docs"');
 	});
 
 	it('generates tokens CSS import from theme/target adapter', () => {
@@ -58,7 +75,7 @@ describe('loadVirtualModule', () => {
 	it('works with different theme package names', () => {
 		const customConfig = { ...config, theme: '@refrakt-md/aurora' };
 		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
-			.toBe("export { theme } from '@refrakt-md/aurora/svelte';");
+			.toContain("import { theme as _base } from '@refrakt-md/aurora/svelte';");
 		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig))
 			.toBe("import '@refrakt-md/aurora/svelte/tokens.css';");
 	});

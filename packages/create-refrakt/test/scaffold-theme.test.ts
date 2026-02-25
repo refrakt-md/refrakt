@@ -101,8 +101,7 @@ describe('scaffoldTheme', () => {
 		expect(manifest.name).toBe('my-theme');
 		expect(manifest.target).toBe('svelte');
 		expect(manifest.layouts.default).toBeDefined();
-		expect(manifest.routeRules).toHaveLength(1);
-		expect(manifest.routeRules[0].pattern).toBe('**');
+		expect(manifest.routeRules).toBeUndefined();
 	});
 
 	it('generates dependency versions matching the package version', () => {

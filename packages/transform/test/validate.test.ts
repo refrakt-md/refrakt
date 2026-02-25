@@ -241,6 +241,13 @@ describe('validateManifest', () => {
 		expect(result.errors.some(e => e.path === 'layouts.bad.regions')).toBe(true);
 	});
 
+	it('passes for a manifest without routeRules (now optional)', () => {
+		const { routeRules, ...manifestWithoutRules } = validManifest;
+		const result = validateManifest(manifestWithoutRules);
+		expect(result.valid).toBe(true);
+		expect(result.errors).toHaveLength(0);
+	});
+
 	it('validates routeRules entries have pattern and layout', () => {
 		const result = validateManifest({
 			...validManifest,

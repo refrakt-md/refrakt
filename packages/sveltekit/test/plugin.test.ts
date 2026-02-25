@@ -118,8 +118,10 @@ describe('refrakt plugin', () => {
 		// Call config first to load the config
 		(plugin.config as Function)({}, { command: 'serve' });
 
-		expect((plugin.load as Function)('\0virtual:refrakt/theme'))
-			.toBe("export { theme } from '@refrakt-md/lumina/svelte';");
+		const result = (plugin.load as Function)('\0virtual:refrakt/theme');
+		expect(result).toContain("import { theme as _base } from '@refrakt-md/lumina/svelte'");
+		expect(result).toContain('routeRules:');
+		expect(result).toContain('export const theme');
 
 		rmSync(dir, { recursive: true });
 	});

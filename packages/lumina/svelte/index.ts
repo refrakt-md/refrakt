@@ -1,13 +1,28 @@
 import type { SvelteTheme } from '@refrakt-md/svelte';
-import manifest from './manifest.json';
+import adapterManifest from './manifest.json';
 import { registry } from './registry.js';
 import { elements } from './elements.js';
 import DocsLayout from './layouts/DocsLayout.svelte';
 import DefaultLayout from './layouts/DefaultLayout.svelte';
 import BlogLayout from './layouts/BlogLayout.svelte';
 
-/** Re-export the raw manifest for server-side use (no Svelte imports) */
-export { default as manifest } from './manifest.json';
+// Layout region metadata from the base theme manifest (packages/lumina/manifest.json).
+// Merged with adapter manifest component paths to produce full LayoutDefinitions.
+const layoutRegions: Record<string, { regions: string[]; requiredRegions?: string[] }> = {
+	default: { regions: ['header', 'footer'] },
+	docs: { regions: ['header', 'nav', 'sidebar', 'footer'], requiredRegions: ['nav'] },
+	blog: { regions: ['header', 'sidebar', 'footer'] },
+};
+
+const layouts: Record<string, any> = {};
+for (const [name, adapter] of Object.entries(adapterManifest.layouts)) {
+	layouts[name] = { ...layoutRegions[name], ...adapter };
+}
+
+const manifest = { ...adapterManifest, layouts };
+
+/** Re-export the merged manifest for server-side use (no Svelte imports) */
+export { manifest };
 
 /** The structured theme object consumed by ThemeShell */
 export const theme: SvelteTheme = {

@@ -112,6 +112,9 @@ function generateRefraktConfig(theme: string): string {
 		contentDir: './content',
 		theme,
 		target: 'svelte',
+		routeRules: [
+			{ pattern: '**', layout: 'default' },
+		],
 	};
 	return JSON.stringify(config, null, '\t') + '\n';
 }
@@ -335,9 +338,6 @@ function generateThemeManifest(packageName: string): string {
 				regions: ['content'],
 			},
 		},
-		routeRules: [
-			{ pattern: '**', layout: 'default' },
-		],
 		components: {},
 		unsupportedRuneBehavior: 'passthrough',
 	};

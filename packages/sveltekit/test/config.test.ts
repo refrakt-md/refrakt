@@ -88,6 +88,58 @@ describe('loadRefraktConfig', () => {
 		rmSync(dir, { recursive: true });
 	});
 
+	it('loads config with routeRules', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		const rules = [
+			{ pattern: 'docs/**', layout: 'docs' },
+			{ pattern: '**', layout: 'default' },
+		];
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			routeRules: rules,
+		}));
+
+		const config = loadRefraktConfig(configPath);
+		expect(config.routeRules).toEqual(rules);
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when routeRules is not an array', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			routeRules: 'not-an-array',
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('"routeRules" must be an array');
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when routeRules entry is missing pattern', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			routeRules: [{ layout: 'default' }],
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('routeRules[0].pattern is required');
+
+		rmSync(dir, { recursive: true });
+	});
+
 	it('ignores extra fields', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');

@@ -31,28 +31,39 @@ export function loadVirtualModule(
 
 	if (id === `${RESOLVED_PREFIX}theme`) {
 		const overrides = config.overrides;
-		if (overrides && Object.keys(overrides).length > 0) {
+		const hasOverrides = overrides && Object.keys(overrides).length > 0;
+		const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+
+		// Always generate the expanded form to inject routeRules from site config
+		const lines = [`import { theme as _base } from '${themeAdapter}';`];
+
+		if (hasOverrides) {
 			const entries = Object.entries(overrides);
-			const imports = entries
-				.map(([, path], i) => `import _o${i} from '${path}';`)
-				.join('\n');
-			const mappings = entries
-				.map(([typeName], i) => `\t\t'${typeName}': _o${i},`)
-				.join('\n');
-			return [
-				`import { theme as _base } from '${themeAdapter}';`,
-				imports,
-				'',
-				'export const theme = {',
-				'\t..._base,',
-				'\tcomponents: {',
-				'\t\t..._base.components,',
-				mappings,
-				'\t}',
-				'};',
-			].join('\n');
+			for (let i = 0; i < entries.length; i++) {
+				lines.push(`import _o${i} from '${entries[i][1]}';`);
+			}
 		}
-		return `export { theme } from '${themeAdapter}';`;
+
+		lines.push('');
+		lines.push('export const theme = {');
+		lines.push('\t..._base,');
+		lines.push('\tmanifest: {');
+		lines.push('\t\t..._base.manifest,');
+		lines.push(`\t\trouteRules: ${JSON.stringify(routeRules)},`);
+		lines.push('\t},');
+
+		if (hasOverrides) {
+			const entries = Object.entries(overrides);
+			lines.push('\tcomponents: {');
+			lines.push('\t\t..._base.components,');
+			for (let i = 0; i < entries.length; i++) {
+				lines.push(`\t\t'${entries[i][0]}': _o${i},`);
+			}
+			lines.push('\t},');
+		}
+
+		lines.push('};');
+		return lines.join('\n');
 	}
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {

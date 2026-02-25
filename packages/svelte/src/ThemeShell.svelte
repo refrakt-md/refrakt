@@ -49,7 +49,7 @@
 	setContext('pages', page.pages);
 
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)
-	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules));
+	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules ?? []));
 	const Layout = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
 
 	// Initialize rune behaviors after render, re-run on navigation.

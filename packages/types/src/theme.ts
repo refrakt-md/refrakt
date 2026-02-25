@@ -8,6 +8,8 @@ export interface RefraktConfig {
 	target: string;
 	/** Component overrides — maps typeof names to relative paths of replacement components */
 	overrides?: Record<string, string>;
+	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
+	routeRules?: RouteRule[];
 	/** Syntax highlighting options */
 	highlight?: {
 		/** Shiki theme — a built-in theme name, or { light, dark } pair for dual themes */
@@ -28,8 +30,10 @@ export interface ThemeManifest {
 	designTokens: string;
 	/** Layout definitions keyed by name */
 	layouts: Record<string, LayoutDefinition>;
-	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
-	routeRules: RouteRule[];
+	/** Route-to-layout mapping rules, evaluated in order (first match wins).
+	 * Prefer defining routeRules in refrakt.config.json instead — the site config
+	 * takes precedence and keeps content structure independent of the theme. */
+	routeRules?: RouteRule[];
 	/** Rune-to-component mappings keyed by typeof name */
 	components: Record<string, ComponentDefinition>;
 	/** Behavior when a rune has no matching component */

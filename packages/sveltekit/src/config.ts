@@ -55,6 +55,27 @@ function validateConfig(raw: unknown): RefraktConfig {
 		overrides = entries as Record<string, string>;
 	}
 
+	let routeRules: RefraktConfig['routeRules'];
+	if (obj.routeRules !== undefined) {
+		if (!Array.isArray(obj.routeRules)) {
+			throw new Error('refrakt.config.json: "routeRules" must be an array');
+		}
+		for (let i = 0; i < obj.routeRules.length; i++) {
+			const rule = obj.routeRules[i];
+			if (typeof rule !== 'object' || rule === null || Array.isArray(rule)) {
+				throw new Error(`refrakt.config.json: routeRules[${i}] must be an object with "pattern" and "layout" strings`);
+			}
+			const r = rule as Record<string, unknown>;
+			if (typeof r.pattern !== 'string' || !r.pattern) {
+				throw new Error(`refrakt.config.json: routeRules[${i}].pattern is required and must be a non-empty string`);
+			}
+			if (typeof r.layout !== 'string' || !r.layout) {
+				throw new Error(`refrakt.config.json: routeRules[${i}].layout is required and must be a non-empty string`);
+			}
+		}
+		routeRules = obj.routeRules as RefraktConfig['routeRules'];
+	}
+
 	let highlight: RefraktConfig['highlight'];
 	if (obj.highlight !== undefined) {
 		if (typeof obj.highlight !== 'object' || obj.highlight === null || Array.isArray(obj.highlight)) {
@@ -81,6 +102,7 @@ function validateConfig(raw: unknown): RefraktConfig {
 		theme: obj.theme,
 		target: obj.target,
 		...(overrides && { overrides }),
+		...(routeRules && { routeRules }),
 		...(highlight && { highlight }),
 	};
 }

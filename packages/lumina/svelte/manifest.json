@@ -6,27 +6,10 @@
 	"designTokens": "tokens.css",
 
 	"layouts": {
-		"default": {
-			"component": "layouts/DefaultLayout.svelte",
-			"regions": ["header", "footer"]
-		},
-		"docs": {
-			"component": "layouts/DocsLayout.svelte",
-			"regions": ["header", "nav", "sidebar", "footer"],
-			"requiredRegions": ["nav"]
-		},
-		"blog": {
-			"component": "layouts/BlogLayout.svelte",
-			"regions": ["header", "sidebar", "footer"]
-		}
+		"default": { "component": "layouts/DefaultLayout.svelte" },
+		"docs": { "component": "layouts/DocsLayout.svelte" },
+		"blog": { "component": "layouts/BlogLayout.svelte" }
 	},
-
-	"routeRules": [
-		{ "pattern": "docs/**", "layout": "docs" },
-		{ "pattern": "blog", "layout": "blog" },
-		{ "pattern": "blog/**", "layout": "blog" },
-		{ "pattern": "**", "layout": "default" }
-	],
 
 	"components": {
 		"Hint": { "component": "components/Hint.svelte" },
