@@ -177,6 +177,7 @@
 
 	<!-- Expanded body -->
 	{#if expanded}
+		{#if block.type !== 'paragraph'}
 		<div class="block-card__body">
 			{#if block.type === 'heading'}
 				{@const hb = block as HeadingBlock}
@@ -250,15 +251,8 @@
 						/>
 					</label>
 				</div>
-				<textarea
-					class="block-card__textarea block-card__textarea--code"
-					value={fb.code}
-					oninput={(e) => handleFenceCodeChange((e.target as HTMLTextAreaElement).value)}
-					rows={Math.max(3, fb.code.split('\n').length)}
-				></textarea>
-
-			{:else}
-				<!-- Paragraph, list, quote, etc. - edit raw source -->
+				{:else if block.type !== 'paragraph'}
+				<!-- List, quote, etc. - edit raw source -->
 				<textarea
 					class="block-card__textarea"
 					value={block.source}
@@ -267,14 +261,31 @@
 				></textarea>
 			{/if}
 		</div>
+		{/if}
 
-		<!-- Footer: rune content editor -->
+		<!-- Footer: content editor for runes, paragraphs, and fences -->
 		{#if block.type === 'rune' && !(block as RuneBlock).selfClosing}
 			{@const rb = block as RuneBlock}
 			<div class="block-card__footer">
 				<InlineEditor
 					content={rb.innerContent}
 					onchange={handleRuneContentChange}
+					{runes}
+				/>
+			</div>
+		{:else if block.type === 'paragraph'}
+			<div class="block-card__footer">
+				<InlineEditor
+					content={block.source}
+					onchange={handleSourceChange}
+					{runes}
+				/>
+			</div>
+		{:else if block.type === 'fence'}
+			<div class="block-card__footer">
+				<InlineEditor
+					content={(block as FenceBlock).code}
+					onchange={handleFenceCodeChange}
 					{runes}
 				/>
 			</div>
