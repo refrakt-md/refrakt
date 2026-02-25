@@ -44,15 +44,15 @@
 
 <style>
 	.resize-handle {
-		width: 4px;
+		width: 8px;
 		cursor: col-resize;
-		background: #e2e8f0;
+		background: #e2e8f036;
 		transition: background 0.15s;
 		flex-shrink: 0;
 	}
 
 	.resize-handle:hover,
 	.resize-handle.active {
-		background: #0ea5e9;
+		background: #e2e8f0;
 	}
 </style>

@@ -19,12 +19,12 @@ class EditorState {
 	bodyContent = $state('');
 
 	/** Whether the frontmatter panel is open */
-	frontmatterOpen = $state(true);
+	frontmatterOpen = $state(false);
 	/** Whether raw YAML mode is active */
 	frontmatterRawMode = $state(false);
 
 	/** Editor view mode: 'code' (CodeMirror) or 'visual' (block editor) */
-	editorMode: 'code' | 'visual' = $state('code');
+	editorMode: 'code' | 'visual' = $state('visual');
 
 	treeLoading = $state(false);
 	fileLoading = $state(false);
@@ -33,6 +33,9 @@ class EditorState {
 
 	/** Rune metadata for autocomplete/palette */
 	runes: RuneInfo[] = $state([]);
+
+	/** Preview viewport preset */
+	viewport: 'desktop' | 'tablet' | 'mobile' = $state('desktop');
 
 	/** Whether the Svelte preview runtime is available */
 	previewRuntimeAvailable = $state(false);

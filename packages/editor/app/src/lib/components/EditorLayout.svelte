@@ -69,7 +69,6 @@
 
 	.layout__panel--left {
 		background: #f8fafc;
-		border-right: 1px solid #e2e8f0;
 	}
 
 	.layout__panel--center {
@@ -77,7 +76,6 @@
 	}
 
 	.layout__panel--right {
-		background: #ffffff;
-		border-left: 1px solid #e2e8f0;
+		background: #f8fafc;
 	}
 </style>

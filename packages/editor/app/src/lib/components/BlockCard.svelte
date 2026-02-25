@@ -296,9 +296,6 @@
 
 <style>
 	.block-card {
-		border: 1px solid #e2e8f0;
-		border-radius: 6px;
-		background: #ffffff;
 		transition: box-shadow 0.15s;
 	}
 
@@ -460,12 +457,12 @@
 	}
 
 	.block-card__input {
-		padding: 0.4rem 0.75rem;
+		padding: 0.8rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
 		color: #1a1a2e;
-		background: #ffffff;
+		background: #e2e8f036;
 		outline: none;
 		font-family: inherit;
 	}
@@ -476,12 +473,12 @@
 	}
 
 	.block-card__select {
-		padding: 0.4rem 0.6rem;
+		padding: 0.8rem;
 		border: 1px solid #e2e8f0;
 		border-radius: 4px;
 		font-size: 0.8rem;
 		color: #1a1a2e;
-		background: #ffffff;
+		background: #e2e8f036;
 		outline: none;
 		cursor: pointer;
 	}

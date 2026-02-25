@@ -266,7 +266,6 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
@@ -280,7 +279,6 @@
 	.block-editor__list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
 	}
 
 	.block-editor__item {
