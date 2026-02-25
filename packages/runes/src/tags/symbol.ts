@@ -105,7 +105,7 @@ class SymbolModel extends Model {
 	@group({ include: ['heading', 'paragraph', 'image'] })
 	header: NodeStream;
 
-	@group({ include: ['fence', 'list', 'blockquote', 'tag', 'hr', 'table'] })
+	@group({ include: ['heading', 'paragraph', 'fence', 'list', 'blockquote', 'tag', 'hr', 'table'] })
 	body: NodeStream;
 
 	convertGroupHeadings(nodes: Node[]) {

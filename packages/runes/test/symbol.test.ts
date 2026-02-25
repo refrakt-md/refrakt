@@ -231,6 +231,55 @@ useRuneContext(): RuneContext | null
 		expect(kind!.attributes.content).toBe('hook');
 	});
 
+	it('should include description paragraphs after code fence for class kind', () => {
+		const result = parse(`{% symbol kind="class" lang="typescript" %}
+## AnalyticsClient
+
+\`\`\`typescript
+class AnalyticsClient extends BaseClient
+\`\`\`
+
+Provides methods for interacting with the Analytics API.
+
+This client handles all analytics-related operations including:
+- Global state analytics
+- Pool-level state analytics
+
+### Constructor
+
+Creates a new instance.
+
+### Methods
+
+#### getStates
+
+Get global state analytics.
+
+\`\`\`typescript
+getStates(params?: Params): Promise<Response>
+\`\`\`
+
+- **params** \`Params\` *(optional)* -- Query parameters
+
+> Returns \`Promise<Response>\` -- Analytics response
+{% /symbol %}`);
+
+		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		expect(tag).toBeDefined();
+
+		// Description paragraphs should be in the body, not dropped
+		const body = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'body');
+		expect(body.length).toBeGreaterThan(0);
+
+		// Both groups should be present
+		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		expect(groups.length).toBe(2);
+
+		// Methods group should have one member
+		const members = findAllTags(tag!, t => t.attributes.typeof === 'SymbolMember');
+		expect(members.length).toBe(1);
+	});
+
 	it('should handle function kind without groups even with ### headings', () => {
 		const result = parse(`{% symbol kind="function" %}
 ## myFunction
