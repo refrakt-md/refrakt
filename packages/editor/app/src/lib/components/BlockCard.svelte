@@ -286,6 +286,7 @@
 				<InlineEditor
 					content={(block as FenceBlock).code}
 					onchange={handleFenceCodeChange}
+					language={(block as FenceBlock).language}
 					{runes}
 				/>
 			</div>
@@ -314,7 +315,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		padding: 0.6rem 0.75rem;
+		padding: 1rem;
 		cursor: default;
 		min-height: 36px;
 	}
@@ -420,7 +421,7 @@
 
 	/* Body */
 	.block-card__body {
-		padding: 0.75rem;
+		padding: 1rem;
 		border-top: 1px solid #f1f5f9;
 		display: flex;
 		flex-direction: column;

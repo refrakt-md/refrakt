@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { EditorState } from '@codemirror/state';
+	import { EditorState, Compartment } from '@codemirror/state';
 	import { EditorView, keymap } from '@codemirror/view';
 	import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 	import { markdown } from '@codemirror/lang-markdown';
-	import { syntaxHighlighting } from '@codemirror/language';
+	import { syntaxHighlighting, LanguageDescription, defaultHighlightStyle } from '@codemirror/language';
+	import { languages } from '@codemirror/language-data';
 	import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 	import { autocompletion, startCompletion } from '@codemirror/autocomplete';
 	import { untrack } from 'svelte';
@@ -17,12 +18,17 @@
 		content: string;
 		onchange: (content: string) => void;
 		runes: () => RuneInfo[];
+		language?: string;
 	}
 
-	let { content, onchange, runes }: Props = $props();
+	let { content, onchange, runes, language }: Props = $props();
 
 	let container: HTMLElement;
-	let editorView: EditorView;
+	let view = $state<EditorView | undefined>(undefined);
+
+	const langCompartment = new Compartment();
+	const markdocCompartment = new Compartment();
+	const completionCompartment = new Compartment();
 
 	const inlineTheme = EditorView.theme(
 		{
@@ -57,7 +63,6 @@
 			'.cm-activeLine': {
 				backgroundColor: 'transparent',
 			},
-			// Autocomplete dropdown styling
 			'.cm-tooltip.cm-tooltip-autocomplete': {
 				border: '1px solid #e2e8f0',
 				borderRadius: '6px',
@@ -94,7 +99,6 @@
 				fontStyle: 'normal',
 				marginLeft: '0.5em',
 			},
-			// Markdoc tag highlighting
 			'.cm-markdoc-tag': {
 				backgroundColor: 'rgba(217, 119, 6, 0.06)',
 				borderRadius: '2px',
@@ -110,22 +114,34 @@
 		{ dark: false },
 	);
 
+	// Create the CodeMirror instance (once, when container is available)
 	$effect(() => {
 		if (!container) return;
+
+		const codeMode = !!(untrack(() => language)?.trim());
 
 		const state = EditorState.create({
 			doc: untrack(() => content),
 			extensions: [
+				langCompartment.of(markdown()),
+				markdocCompartment.of(codeMode ? [] : markdocHighlight()),
+				completionCompartment.of(codeMode ? [] : autocompletion({
+					override: [
+						runeCompletionSource(runes),
+						attributeCompletionSource(runes),
+					],
+					icons: false,
+				})),
 				history(),
-				markdown(),
 				inlineTheme,
 				syntaxHighlighting(highlightTheme),
+				syntaxHighlighting(defaultHighlightStyle),
 				highlightSelectionMatches(),
 				keymap.of([
 					...defaultKeymap,
 					...historyKeymap,
 					...searchKeymap,
-					{ key: 'Mod-/', run: (view) => { startCompletion(view); return true; } },
+					{ key: 'Mod-/', run: (v) => { startCompletion(v); return true; } },
 				]),
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
@@ -133,33 +149,74 @@
 					}
 				}),
 				EditorView.lineWrapping,
-				markdocHighlight(),
-				autocompletion({
-					override: [
-						runeCompletionSource(runes),
-						attributeCompletionSource(runes),
-					],
-					icons: false,
-				}),
 			],
 		});
 
-		editorView = new EditorView({ state, parent: container });
+		const editor = new EditorView({ state, parent: container });
+		view = editor;
 
 		return () => {
-			editorView?.destroy();
+			view = undefined;
+			editor.destroy();
 		};
+	});
+
+	// Load and apply the correct language when `language` prop or `view` changes
+	$effect(() => {
+		const editor = view;
+		if (!editor) return;
+
+		const lang = language?.trim();
+		if (!lang) {
+			// No language — use markdown with markdoc extras
+			editor.dispatch({
+				effects: [
+					langCompartment.reconfigure(markdown()),
+					markdocCompartment.reconfigure(markdocHighlight()),
+					completionCompartment.reconfigure(autocompletion({
+						override: [
+							runeCompletionSource(runes),
+							attributeCompletionSource(runes),
+						],
+						icons: false,
+					})),
+				],
+			});
+			return;
+		}
+
+		// Code mode — disable markdoc/rune extras
+		editor.dispatch({
+			effects: [
+				markdocCompartment.reconfigure([]),
+				completionCompartment.reconfigure([]),
+			],
+		});
+
+		// Find and load the language
+		const desc = LanguageDescription.matchLanguageName(languages, lang, true);
+		if (desc) {
+			desc.load().then((langSupport) => {
+				// Guard: only apply if this editor is still the current one
+				if (view === editor) {
+					editor.dispatch({
+						effects: langCompartment.reconfigure(langSupport),
+					});
+				}
+			});
+		}
 	});
 
 	// Sync external content changes into the CodeMirror instance
 	$effect(() => {
 		const current = content;
-		if (!editorView) return;
+		const editor = view;
+		if (!editor) return;
 
-		const cmContent = editorView.state.doc.toString();
+		const cmContent = editor.state.doc.toString();
 		if (current !== cmContent) {
-			editorView.dispatch({
-				changes: { from: 0, to: editorView.state.doc.length, insert: current },
+			editor.dispatch({
+				changes: { from: 0, to: editor.state.doc.length, insert: current },
 			});
 		}
 	});

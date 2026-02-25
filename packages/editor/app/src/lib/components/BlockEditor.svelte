@@ -280,7 +280,7 @@
 	.block-editor__list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0.4rem;
 	}
 
 	.block-editor__item {
