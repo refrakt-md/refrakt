@@ -16,7 +16,9 @@ export async function loadExtractor(
 		}
 		case 'python': {
 			const { PythonExtractor } = await import('./python.js');
-			return new PythonExtractor(rootDir, sourceUrl);
+			const extractor = new PythonExtractor(rootDir, sourceUrl);
+			await extractor.init();
+			return extractor;
 		}
 		default:
 			throw new Error(`Unsupported language: ${lang}`);

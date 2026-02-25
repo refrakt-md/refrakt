@@ -59,12 +59,15 @@ function walkFiles(dir: string, ext: RegExp): string[] {
 	const files: string[] = [];
 	const entries = readdirSync(dir);
 	for (const entry of entries) {
-		if (entry === 'node_modules' || entry.startsWith('.')) continue;
+		if (entry === 'node_modules' || entry === '__pycache__' || entry.startsWith('.')) continue;
 		const fullPath = resolve(dir, entry);
 		const stat = statSync(fullPath);
 		if (stat.isDirectory()) {
 			files.push(...walkFiles(fullPath, ext));
-		} else if (ext.test(entry) && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.spec.ts')) {
+		} else if (ext.test(entry)
+			&& !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.spec.ts')
+			&& !entry.startsWith('test_') && !entry.endsWith('_test.py')
+			&& entry !== 'conftest.py' && entry !== 'setup.py') {
 			files.push(fullPath);
 		}
 	}
@@ -123,13 +126,13 @@ export async function extractCommand(opts: ExtractOptions): Promise<void> {
 	for (const [slug, docs] of slugMap) {
 		if (docs.length === 1) {
 			const filePath = join(outputPath, `${slug}.md`);
-			generated.set(filePath, generateSymbolMarkdown(docs[0]));
+			generated.set(filePath, generateSymbolMarkdown(docs[0], { lang }));
 		} else {
 			// Resolve collisions by appending kind
 			for (const doc of docs) {
 				const uniqueSlug = `${slug}-${doc.kind}`;
 				const filePath = join(outputPath, `${uniqueSlug}.md`);
-				generated.set(filePath, generateSymbolMarkdown(doc));
+				generated.set(filePath, generateSymbolMarkdown(doc, { lang }));
 			}
 		}
 	}

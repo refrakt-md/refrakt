@@ -5,6 +5,8 @@ export interface GeneratorOptions {
 	headingLevel?: number;
 	/** Whether to include frontmatter (default: true) */
 	frontmatter?: boolean;
+	/** Language for code fences and symbol tag (default: 'typescript') */
+	lang?: string;
 }
 
 const GROUP_KINDS: SymbolKind[] = ['class', 'interface', 'module'];
@@ -46,7 +48,7 @@ function formatChildParameter(param: SymbolParameter): string {
 	return `  - **${param.name}** \`${param.type}\`${optionalMark}${desc}${defaultMark}`;
 }
 
-function writeMember(lines: string[], member: SymbolMemberDoc, memberLevel: number): void {
+function writeMember(lines: string[], member: SymbolMemberDoc, memberLevel: number, lang = 'typescript'): void {
 	lines.push(heading(memberLevel, member.name));
 	lines.push('');
 
@@ -55,7 +57,7 @@ function writeMember(lines: string[], member: SymbolMemberDoc, memberLevel: numb
 		lines.push('');
 	}
 
-	lines.push('```typescript');
+	lines.push(`\`\`\`${lang}`);
 	lines.push(member.signature);
 	lines.push('```');
 	lines.push('');
@@ -105,8 +107,9 @@ export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOption
 	}
 
 	// Opening tag
+	const lang = options?.lang ?? 'typescript';
 	const attrs: string[] = [`kind="${doc.kind}"`];
-	attrs.push(`lang="typescript"`);
+	attrs.push(`lang="${lang}"`);
 	if (doc.since) attrs.push(`since="${doc.since}"`);
 	if (doc.deprecated) attrs.push(`deprecated="${doc.deprecated}"`);
 	if (doc.source) attrs.push(`source="${doc.source}"`);
@@ -128,7 +131,7 @@ export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOption
 	}
 
 	// Type signature
-	lines.push('```typescript');
+	lines.push(`\`\`\`${lang}`);
 	lines.push(doc.signature);
 	lines.push('```');
 	lines.push('');
@@ -190,7 +193,7 @@ export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOption
 					lines.push('');
 				}
 
-				lines.push('```typescript');
+				lines.push(`\`\`\`${lang}`);
 				lines.push(member.signature);
 				lines.push('```');
 				lines.push('');
@@ -208,7 +211,7 @@ export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOption
 				}
 			} else {
 				for (const member of group.members) {
-					writeMember(lines, member, memberLevel);
+					writeMember(lines, member, memberLevel, lang);
 				}
 			}
 		}
