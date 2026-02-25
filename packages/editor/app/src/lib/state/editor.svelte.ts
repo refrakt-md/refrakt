@@ -45,6 +45,9 @@ class EditorState {
 	/** Directories the user has collapsed */
 	collapsedDirs: Set<string> = $state(new Set());
 
+	/** External file change notification (set by SSE watcher) */
+	externalChange: { path: string; event: string } | null = $state(null);
+
 	dirty = $derived(this.editorContent !== this.savedContent);
 
 	/** Whether the current file is a layout or a regular page */

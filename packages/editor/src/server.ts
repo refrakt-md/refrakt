@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSync, statSync, renameSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSync, statSync, renameSync, watch } from 'node:fs';
 import { basename, dirname } from 'node:path';
 import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
@@ -78,6 +78,37 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	const absContentDir = resolve(contentDir);
 	const appDistDir = resolveAppDist();
 
+	// ── Own-write suppression ────────────────────────────────────
+	// When the server writes a file, record the path so the watcher
+	// can skip the resulting fs event. Entries expire after 2 seconds.
+	const ownWrites = new Map<string, number>();
+
+	function markOwnWrite(relPath: string) {
+		ownWrites.set(relPath, Date.now() + 2000);
+	}
+
+	function isOwnWrite(relPath: string): boolean {
+		const deadline = ownWrites.get(relPath);
+		if (!deadline) return false;
+		if (Date.now() > deadline) {
+			ownWrites.delete(relPath);
+			return false;
+		}
+		ownWrites.delete(relPath);
+		return true;
+	}
+
+	// ── SSE client connections ──────────────────────────────────
+	type SSEClient = import('node:http').ServerResponse;
+	const sseClients = new Set<SSEClient>();
+
+	function broadcastSSE(event: string, data: Record<string, unknown>) {
+		const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+		for (const client of sseClients) {
+			client.write(payload);
+		}
+	}
+
 	// Bundle theme CSS once on startup
 	let themeCss = '';
 	if (themeCssPath && existsSync(themeCssPath)) {
@@ -131,6 +162,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				handleGetFile(res, absContentDir, filePath);
 			} else if (method === 'PUT' && url.pathname.startsWith('/api/files/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/files/'.length));
+				markOwnWrite(filePath);
 				await handlePutFile(req, res, absContentDir, filePath);
 				// Refresh layout resolver so layout changes propagate to preview
 				layoutResolver.refresh().catch(() => {});
@@ -140,18 +172,19 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'POST' && url.pathname === '/api/preview') {
 				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform);
 			} else if (method === 'POST' && url.pathname === '/api/pages') {
-				await handleCreatePage(req, res, absContentDir);
+				await handleCreatePage(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/directories') {
-				await handleCreateDirectory(req, res, absContentDir);
+				await handleCreateDirectory(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/rename') {
-				await handleRename(req, res, absContentDir);
+				await handleRename(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/duplicate') {
-				await handleDuplicate(req, res, absContentDir);
+				await handleDuplicate(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'DELETE' && url.pathname.startsWith('/api/files/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/files/'.length));
+				markOwnWrite(filePath);
 				handleDelete(res, absContentDir, filePath);
 			} else if (method === 'POST' && url.pathname === '/api/toggle-draft') {
-				await handleToggleDraft(req, res, absContentDir);
+				await handleToggleDraft(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'GET' && url.pathname === '/api/pages-list') {
 				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/runes') {
@@ -163,6 +196,18 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				});
 			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
 				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
+			} else if (method === 'GET' && url.pathname === '/api/events') {
+				// SSE endpoint — keep connection open for file-change push events
+				res.writeHead(200, {
+					'Content-Type': 'text/event-stream',
+					'Cache-Control': 'no-cache',
+					'Connection': 'keep-alive',
+					'Access-Control-Allow-Origin': '*',
+				});
+				res.write(': connected\n\n');
+				sseClients.add(res);
+				req.on('close', () => { sseClients.delete(res); });
+				return;
 			} else if (previewRuntimeDir && method === 'GET' && url.pathname === '/preview/theme.css') {
 				res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
 				res.end(themeCss);
@@ -211,6 +256,45 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 					: 'xdg-open';
 			exec(`${cmd} ${url}`);
 		}
+	});
+
+	// ── File watcher ─────────────────────────────────────────────
+	// Watch content directory for external changes (other editors, git, etc.)
+	const watchDebounce = new Map<string, ReturnType<typeof setTimeout>>();
+
+	watch(absContentDir, { recursive: true }, (eventType, filename) => {
+		if (!filename) return;
+
+		// Skip hidden files and directories (.DS_Store, .git, etc.)
+		if (filename.split('/').some(part => part.startsWith('.'))) return;
+
+		// Only care about markdown files
+		if (!filename.endsWith('.md')) return;
+
+		const relPath = filename;
+
+		// Skip our own writes
+		if (isOwnWrite(relPath)) return;
+
+		// Debounce: coalesce rapid events for the same file (300ms)
+		clearTimeout(watchDebounce.get(relPath));
+		watchDebounce.set(relPath, setTimeout(() => {
+			watchDebounce.delete(relPath);
+
+			const fullPath = join(absContentDir, relPath);
+			let event: string;
+
+			if (eventType === 'rename') {
+				event = existsSync(fullPath) ? 'file-created' : 'file-deleted';
+			} else {
+				event = 'file-changed';
+			}
+
+			broadcastSSE(event, { path: relPath });
+
+			// Refresh layout resolver so layout changes propagate
+			layoutResolver.refresh().catch(() => {});
+		}, 300));
 	});
 }
 
@@ -364,6 +448,7 @@ async function handleCreatePage(
 	req: import('node:http').IncomingMessage,
 	res: import('node:http').ServerResponse,
 	contentDir: string,
+	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { directory = '', slug, title, template = 'blank', draft } = JSON.parse(body) as {
@@ -400,6 +485,7 @@ async function handleCreatePage(
 	writeFileSync(fullPath, content, 'utf-8');
 
 	const relativePath = directory ? `${directory}/${fileName}` : fileName;
+	markOwnWrite(relativePath);
 	serveJson(res, { ok: true, path: relativePath });
 }
 
@@ -407,6 +493,7 @@ async function handleCreateDirectory(
 	req: import('node:http').IncomingMessage,
 	res: import('node:http').ServerResponse,
 	contentDir: string,
+	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { parent = '', name, createLayout } = JSON.parse(body) as {
@@ -438,6 +525,8 @@ async function handleCreateDirectory(
 
 	if (createLayout) {
 		const layoutContent = serializeFrontmatter({ title: name }, '\n');
+		const layoutRelPath = parent ? `${parent}/${name}/_layout.md` : `${name}/_layout.md`;
+		markOwnWrite(layoutRelPath);
 		writeFileSync(join(dirPath, '_layout.md'), layoutContent, 'utf-8');
 	}
 
@@ -449,6 +538,7 @@ async function handleRename(
 	req: import('node:http').IncomingMessage,
 	res: import('node:http').ServerResponse,
 	contentDir: string,
+	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { oldPath, newName } = JSON.parse(body) as { oldPath: string; newName: string };
@@ -485,6 +575,8 @@ async function handleRename(
 
 	const parentRelative = dirname(oldPath);
 	const newPath = parentRelative === '.' ? newName : `${parentRelative}/${newName}`;
+	markOwnWrite(oldPath);
+	markOwnWrite(newPath);
 	serveJson(res, { ok: true, oldPath, newPath });
 }
 
@@ -492,6 +584,7 @@ async function handleDuplicate(
 	req: import('node:http').IncomingMessage,
 	res: import('node:http').ServerResponse,
 	contentDir: string,
+	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { path: filePath } = JSON.parse(body) as { path: string };
@@ -525,6 +618,7 @@ async function handleDuplicate(
 
 	const parentRelative = dirname(filePath);
 	const newPath = parentRelative === '.' ? copyName : `${parentRelative}/${copyName}`;
+	markOwnWrite(newPath);
 	serveJson(res, { ok: true, path: newPath });
 }
 
@@ -555,6 +649,7 @@ async function handleToggleDraft(
 	req: import('node:http').IncomingMessage,
 	res: import('node:http').ServerResponse,
 	contentDir: string,
+	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { path: filePath } = JSON.parse(body) as { path: string };
@@ -582,6 +677,7 @@ async function handleToggleDraft(
 	}
 
 	const newRaw = serializeFrontmatter(frontmatter, content);
+	markOwnWrite(filePath);
 	writeFileSync(fullPath, newRaw, 'utf-8');
 
 	serveJson(res, { ok: true, draft: frontmatter.draft ?? false });

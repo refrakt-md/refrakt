@@ -12,12 +12,13 @@
 	import ContextMenu from './lib/components/ContextMenu.svelte';
 	import RenameDialog from './lib/components/RenameDialog.svelte';
 	import ConfirmDialog from './lib/components/ConfirmDialog.svelte';
+	import ExternalChangeBanner from './lib/components/ExternalChangeBanner.svelte';
 	import { editorState, type TreeNode } from './lib/state/editor.svelte.js';
 	import {
 		fetchTree, fetchFile, saveFile,
 		createPage, createDirectory,
 		renameFile, duplicateFile, deleteFile, toggleDraft,
-		fetchRunes, fetchConfig,
+		fetchRunes, fetchConfig, connectEvents,
 	} from './lib/api/client.js';
 	import { onMount } from 'svelte';
 
@@ -32,31 +33,58 @@
 	let renameTarget: TreeNode | null = $state(null);
 	let deleteTarget: TreeNode | null = $state(null);
 
-	// ── Lifecycle ───────────────────────────────────────────────
-	onMount(async () => {
-		editorState.treeLoading = true;
-		try {
-			const [tree, runes, config] = await Promise.all([
-				fetchTree(),
-				fetchRunes(),
-				fetchConfig(),
-			]);
-			editorState.tree = tree;
-			editorState.runes = runes;
-			editorState.previewRuntimeAvailable = config.previewRuntime;
+	// ── Own-save suppression ─────────────────────────────────────
+	let lastSavePath = '';
+	let lastSaveTime = 0;
 
-			// Auto-open index.md if present at content root
-			const indexPage = tree.children?.find(
-				(c: TreeNode) => c.type === 'page' && c.name === 'index.md'
-			);
-			if (indexPage) {
-				handleSelectFile(indexPage.path);
+	// ── Lifecycle ───────────────────────────────────────────────
+	onMount(() => {
+		// Async init wrapped in IIFE so onMount can return cleanup
+		(async () => {
+			editorState.treeLoading = true;
+			try {
+				const [tree, runes, config] = await Promise.all([
+					fetchTree(),
+					fetchRunes(),
+					fetchConfig(),
+				]);
+				editorState.tree = tree;
+				editorState.runes = runes;
+				editorState.previewRuntimeAvailable = config.previewRuntime;
+
+				// Auto-open index.md if present at content root
+				const indexPage = tree.children?.find(
+					(c: TreeNode) => c.type === 'page' && c.name === 'index.md'
+				);
+				if (indexPage) {
+					handleSelectFile(indexPage.path);
+				}
+			} catch (e) {
+				editorState.error = e instanceof Error ? e.message : 'Failed to load content tree';
+			} finally {
+				editorState.treeLoading = false;
 			}
-		} catch (e) {
-			editorState.error = e instanceof Error ? e.message : 'Failed to load content tree';
-		} finally {
-			editorState.treeLoading = false;
-		}
+		})();
+
+		// SSE — listen for external file changes
+		let treeTimer: ReturnType<typeof setTimeout>;
+		const disconnect = connectEvents((event, data) => {
+			// Debounced tree refresh for all events
+			clearTimeout(treeTimer);
+			treeTimer = setTimeout(() => refreshTree(), 500);
+
+			// Show banner if currently open file was changed/deleted
+			if (data.path === editorState.currentPath) {
+				// Skip if this was our own save (within 2s)
+				if (lastSavePath === data.path && Date.now() - lastSaveTime < 2000) return;
+				editorState.externalChange = { path: data.path, event };
+			}
+		});
+
+		return () => {
+			disconnect();
+			clearTimeout(treeTimer);
+		};
 	});
 
 	async function refreshTree() {
@@ -73,6 +101,7 @@
 			if (!confirm('You have unsaved changes. Discard them?')) return;
 		}
 
+		editorState.externalChange = null;
 		editorState.fileLoading = true;
 		editorState.error = null;
 		try {
@@ -92,6 +121,8 @@
 		editorState.saving = true;
 		editorState.error = null;
 		try {
+			lastSavePath = editorState.currentPath;
+			lastSaveTime = Date.now();
 			await saveFile(editorState.currentPath, editorState.editorContent);
 			editorState.savedContent = editorState.editorContent;
 		} catch (e) {
@@ -208,6 +239,21 @@
 		}
 	}
 
+	async function handleReloadExternalChange() {
+		if (editorState.dirty && !confirm('You have unsaved changes. Reload will discard them.')) return;
+		if (editorState.externalChange?.event === 'file-deleted') {
+			editorState.currentPath = null;
+			editorState.editorContent = '';
+			editorState.savedContent = '';
+			editorState.bodyContent = '';
+			editorState.frontmatter = {};
+		} else if (editorState.externalChange) {
+			const file = await fetchFile(editorState.externalChange.path);
+			editorState.loadFile(file.path, file.raw);
+		}
+		editorState.externalChange = null;
+	}
+
 	async function handleToggleDraft(node: TreeNode) {
 		try {
 			await toggleDraft(node.path);
@@ -237,6 +283,7 @@
 			/>
 		{/snippet}
 		{#snippet center()}
+			<ExternalChangeBanner onreload={handleReloadExternalChange} />
 			{#if editorState.currentFileType === 'layout'}
 				<LayoutEditor />
 			{:else}

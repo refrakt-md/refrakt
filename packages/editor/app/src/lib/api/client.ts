@@ -186,3 +186,20 @@ export async function fetchRunes(): Promise<RuneInfo[]> {
 	const data = await res.json();
 	return data.runes;
 }
+
+// ── Server-Sent Events ──────────────────────────────────────────────
+
+export interface FileChangeEvent {
+	path: string;
+	type: string;
+}
+
+export type FileEventHandler = (event: string, data: FileChangeEvent) => void;
+
+export function connectEvents(handler: FileEventHandler): () => void {
+	const source = new EventSource(`${BASE}/api/events`);
+	source.addEventListener('file-changed', (e) => handler('file-changed', JSON.parse(e.data)));
+	source.addEventListener('file-created', (e) => handler('file-created', JSON.parse(e.data)));
+	source.addEventListener('file-deleted', (e) => handler('file-deleted', JSON.parse(e.data)));
+	return () => source.close();
+}
