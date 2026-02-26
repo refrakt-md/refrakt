@@ -76,10 +76,9 @@ describe('renderToHtml', () => {
 			class: 'rf-hint',
 		}, ['text']);
 		const html = renderToHtml(tag);
-		expect(html).toBe('<section class="rf-hint">text</section>');
+		expect(html).toBe('<section property="contentSection" class="rf-hint">text</section>');
 		expect(html).not.toContain('typeof');
 		expect(html).not.toContain('$$mdtype');
-		expect(html).not.toContain('property');
 	});
 
 	it('escapes attribute values', () => {

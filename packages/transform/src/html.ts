@@ -7,7 +7,7 @@ const VOID_ELEMENTS = new Set([
 ]);
 
 /** Attributes that are internal markers and should not appear in HTML output */
-const INTERNAL_ATTRS = new Set(['$$mdtype', 'typeof', 'property']);
+const INTERNAL_ATTRS = new Set(['$$mdtype', 'typeof']);
 
 function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -58,7 +58,11 @@ function renderFlat(node: RendererNode): string {
 		return `<${tag}${attrs} />`;
 	}
 
-	const children = node.children.map(renderFlat).join('');
+	// data-codeblock children are raw HTML from Shiki — don't escape
+	const raw = node.attributes?.['data-codeblock'];
+	const children = raw
+		? node.children.map(c => typeof c === 'string' ? c : renderFlat(c)).join('')
+		: node.children.map(renderFlat).join('');
 	return `<${tag}${attrs}>${children}</${tag}>`;
 }
 

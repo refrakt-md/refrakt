@@ -23,6 +23,7 @@ const SVELTE_COMPONENT_TYPES = new Set([
 export function renderBlockPreview(
 	source: string,
 	themeConfig: ThemeConfig,
+	highlightTransform?: ((tree: RendererNode) => RendererNode) | null,
 ): { html: string; isComponent: boolean } {
 	const ast = Markdoc.parse(source);
 	const renderable = Markdoc.transform(ast, {
@@ -36,7 +37,13 @@ export function renderBlockPreview(
 	const isComponent = checkIsComponent(serialized);
 
 	const transform = createTransform(themeConfig);
-	const transformed = transform(serialized);
+	let transformed = transform(serialized);
+
+	// Apply syntax highlighting if available
+	if (highlightTransform) {
+		transformed = highlightTransform(transformed);
+	}
+
 	const html = renderToHtml(transformed);
 
 	return { html, isComponent };

@@ -54,6 +54,16 @@
 				editorState.themeCss = config.themeCss;
 				editorState.themeConfig = config.themeConfig;
 
+				// Lazy-load Shiki syntax highlighting (non-blocking)
+				import('@refrakt-md/highlight').then(({ createHighlightTransform }) =>
+					createHighlightTransform().then((ht) => {
+						editorState.highlightTransform = ht;
+						editorState.highlightCss = ht.css;
+					})
+				).catch(() => {
+					// Shiki failed to load — block previews work fine without highlighting
+				});
+
 				// Auto-open index.md if present at content root
 				const indexPage = tree.children?.find(
 					(c: TreeNode) => c.type === 'page' && c.name === 'index.md'

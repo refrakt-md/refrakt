@@ -14,6 +14,7 @@
 	} from '../editor/block-parser.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
+	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 	import RuneAttributes from './RuneAttributes.svelte';
 	import InlineEditor from './InlineEditor.svelte';
 
@@ -47,6 +48,7 @@
 	let previewContainer: HTMLDivElement | undefined = $state();
 	let shadowRoot: ShadowRoot | null = null;
 	let previewDebounce: ReturnType<typeof setTimeout>;
+	let behaviorCleanup: (() => void) | null = null;
 
 	$effect(() => {
 		if (!previewContainer || !editorState.themeConfig) return;
@@ -59,12 +61,21 @@
 		const source = block.source;
 		const config = editorState.themeConfig;
 		const css = editorState.themeCss;
+		const hlCss = editorState.highlightCss || '';
+		const hlTransform = editorState.highlightTransform;
 
 		clearTimeout(previewDebounce);
 		previewDebounce = setTimeout(() => {
 			if (!shadowRoot) return;
+
+			// Clean up previous behaviors before re-rendering
+			if (behaviorCleanup) {
+				behaviorCleanup();
+				behaviorCleanup = null;
+			}
+
 			try {
-				const { html, isComponent } = renderBlockPreview(source, config);
+				const { html, isComponent } = renderBlockPreview(source, config, hlTransform);
 				if (isComponent) {
 					shadowRoot.innerHTML = `<style>
 						:host { display: block; padding: 0.75rem 1.5rem; }
@@ -82,10 +93,17 @@
 					// Re-scope :root to :host so CSS custom properties apply within the shadow tree
 					const scopedCss = css.replace(/:root/g, ':host');
 					shadowRoot.innerHTML = `<style>${scopedCss}
+${hlCss}
 						:host { display: block; }
 						.rf-preview-wrapper { padding: 0.5rem 1.5rem; font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif); color: var(--rf-color-text, #1a1a2e); line-height: 1.6; }
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
+
+					// Run behaviors (tabs, accordion, copy, etc.) on the rendered content
+					const wrapper = shadowRoot.querySelector('.rf-preview-wrapper') as HTMLElement | null;
+					if (wrapper) {
+						behaviorCleanup = initRuneBehaviors(wrapper);
+					}
 				}
 			} catch {
 				if (shadowRoot) {
@@ -94,7 +112,13 @@
 			}
 		}, 50);
 
-		return () => clearTimeout(previewDebounce);
+		return () => {
+			clearTimeout(previewDebounce);
+			if (behaviorCleanup) {
+				behaviorCleanup();
+				behaviorCleanup = null;
+			}
+		};
 	});
 
 	/** Label shown in the block header */
