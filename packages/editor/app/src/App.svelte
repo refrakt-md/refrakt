@@ -277,7 +277,7 @@
 
 <div class="editor-app">
 	<HeaderBar onsave={handleSave} />
-	<EditorLayout>
+	<EditorLayout hideRight={editorState.editorMode === 'visual' && !editorState.fullPreview}>
 		{#snippet left()}
 			<FileTree
 				onselectfile={handleSelectFile}
@@ -303,7 +303,7 @@
 							<button
 								class="mode-toggle__btn"
 								class:active={editorState.editorMode === 'visual'}
-								onclick={() => { editorState.editorMode = 'visual'; }}
+								onclick={() => { editorState.editorMode = 'visual'; editorState.fullPreview = false; }}
 							>Visual</button>
 						</div>
 					</div>

@@ -41,7 +41,7 @@
 		ondrop,
 	}: Props = $props();
 
-	let expanded = $state(false);
+	let editing = $state(false);
 
 	// ── Inline preview via Shadow DOM ─────────────────────────────
 	let previewContainer: HTMLDivElement | undefined = $state();
@@ -49,7 +49,7 @@
 	let previewDebounce: ReturnType<typeof setTimeout>;
 
 	$effect(() => {
-		if (!expanded || !previewContainer || !editorState.themeConfig) return;
+		if (!previewContainer || !editorState.themeConfig) return;
 
 		// Attach shadow root once
 		if (!shadowRoot) {
@@ -67,7 +67,7 @@
 				const { html, isComponent } = renderBlockPreview(source, config);
 				if (isComponent) {
 					shadowRoot.innerHTML = `<style>
-						:host { display: block; padding: 1rem; }
+						:host { display: block; padding: 0.75rem 1.5rem; }
 						.placeholder { display: flex; align-items: center; gap: 0.5rem; color: #888; font-family: system-ui, sans-serif; font-size: 13px; }
 						.placeholder svg { opacity: 0.5; }
 					</style>
@@ -79,15 +79,17 @@
 						Interactive component — see full preview
 					</div>`;
 				} else {
-					shadowRoot.innerHTML = `<style>${css}
+					// Re-scope :root to :host so CSS custom properties apply within the shadow tree
+					const scopedCss = css.replace(/:root/g, ':host');
+					shadowRoot.innerHTML = `<style>${scopedCss}
 						:host { display: block; }
-						.rf-preview-wrapper { padding: 1rem; font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif); color: var(--rf-color-text, #1a1a2e); line-height: 1.6; }
+						.rf-preview-wrapper { padding: 0.5rem 1.5rem; font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif); color: var(--rf-color-text, #1a1a2e); line-height: 1.6; }
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 				}
 			} catch {
 				if (shadowRoot) {
-					shadowRoot.innerHTML = `<style>:host { display: block; padding: 0.75rem; color: #999; font-family: system-ui; font-size: 12px; }</style><em>Preview unavailable</em>`;
+					shadowRoot.innerHTML = `<style>:host { display: block; padding: 0.75rem 1.5rem; color: #999; font-family: system-ui; font-size: 12px; }</style><em>Preview unavailable</em>`;
 				}
 			}
 		}, 50);
@@ -186,13 +188,13 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="block-card block-card--{typeClass}"
-	class:collapsed={!expanded}
+	class:editing
 	draggable={dragHandle ? 'true' : 'false'}
 	ondragstart={ondragstart}
 	ondragover={ondragover}
 	ondrop={ondrop}
 >
-	<!-- Header bar -->
+	<!-- Thin block header — visible on hover -->
 	<div class="block-card__header">
 		{#if dragHandle}
 			<span class="block-card__drag" title="Drag to reorder">
@@ -210,11 +212,11 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="block-card__header-toggle"
-			onclick={() => { expanded = !expanded; }}
-			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); expanded = !expanded; } }}
+			onclick={() => { editing = !editing; }}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); editing = !editing; } }}
 			tabindex="0"
 			role="button"
-			aria-expanded={expanded}
+			aria-expanded={editing}
 		>
 			<span class="block-card__type">{label}</span>
 
@@ -222,13 +224,7 @@
 				<span class="block-card__category">{category}</span>
 			{/if}
 
-			{#if block.type === 'heading'}
-				<span class="block-card__preview">{(block as HeadingBlock).text}</span>
-			{:else if block.type === 'paragraph'}
-				<span class="block-card__preview">{block.source.slice(0, 60)}{block.source.length > 60 ? '...' : ''}</span>
-			{/if}
-
-			<svg class="block-card__chevron" class:collapsed={!expanded} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<svg class="block-card__chevron" class:collapsed={!editing} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<polyline points="6 4 10 8 6 12" />
 			</svg>
 		</div>
@@ -240,10 +236,10 @@
 		>&times;</button>
 	</div>
 
-	<!-- Expanded body -->
-	{#if expanded}
+	<!-- Editing controls — shown when editing -->
+	{#if editing}
 		{#if block.type !== 'paragraph'}
-		<div class="block-card__body">
+		<div class="block-card__editor">
 			{#if block.type === 'heading'}
 				{@const hb = block as HeadingBlock}
 				<div class="block-card__row">
@@ -328,7 +324,7 @@
 		</div>
 		{/if}
 
-		<!-- Footer: content editor for runes, paragraphs, and fences -->
+		<!-- Content editor for runes, paragraphs, and fences -->
 		{#if block.type === 'rune' && !(block as RuneBlock).selfClosing}
 			{@const rb = block as RuneBlock}
 			<div class="block-card__footer">
@@ -356,55 +352,69 @@
 				/>
 			</div>
 		{/if}
+	{/if}
 
-		<!-- Inline preview (Shadow DOM) -->
-		{#if editorState.themeConfig}
-			<div class="block-card__inline-preview" bind:this={previewContainer}></div>
-		{/if}
+	<!-- Inline preview (Shadow DOM) — always visible -->
+	{#if editorState.themeConfig}
+		<div class="block-card__inline-preview" bind:this={previewContainer}></div>
 	{/if}
 </div>
 
 <style>
 	.block-card {
-		background: var(--ed-surface-0);
-		border: 1px solid var(--ed-border-default);
-		border-left: 3px solid var(--ed-border-strong);
-		border-radius: var(--ed-radius-lg);
-		box-shadow: var(--ed-shadow-sm);
-		transition: box-shadow var(--ed-transition-fast);
+		position: relative;
+		border-left: 2px solid transparent;
+		transition: border-color var(--ed-transition-fast);
 	}
 
 	.block-card:hover {
-		box-shadow: var(--ed-shadow-md);
-	}
-
-	/* Type accent borders */
-	.block-card--heading {
-		border-left-color: var(--ed-heading);
-	}
-
-	.block-card--rune {
-		border-left-color: var(--ed-warning);
-	}
-
-	.block-card--content {
 		border-left-color: var(--ed-border-strong);
 	}
 
-	/* Header */
+	.block-card.editing {
+		border-left-color: var(--ed-accent);
+	}
+
+	/* Type accent on hover */
+	.block-card--heading:hover {
+		border-left-color: var(--ed-heading);
+	}
+
+	.block-card--rune:hover {
+		border-left-color: var(--ed-warning);
+	}
+
+	.block-card--heading.editing {
+		border-left-color: var(--ed-heading);
+	}
+
+	.block-card--rune.editing {
+		border-left-color: var(--ed-warning);
+	}
+
+	/* Header — thin overlay, shows on hover */
 	.block-card__header {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: var(--ed-space-2) var(--ed-space-3);
+		gap: 0.4rem;
+		padding: 0.15rem var(--ed-space-3);
 		cursor: default;
-		min-height: 34px;
+		min-height: 28px;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast);
+		background: var(--ed-surface-0);
+		border-bottom: 1px solid var(--ed-border-subtle);
+	}
+
+	.block-card:hover .block-card__header,
+	.block-card.editing .block-card__header {
+		opacity: 1;
 	}
 
 	.block-card__drag {
 		cursor: grab;
 		color: var(--ed-text-muted);
-		padding: 0.15rem 0.1rem;
+		padding: 0.1rem;
 		user-select: none;
 		display: flex;
 		align-items: center;
@@ -421,9 +431,9 @@
 	}
 
 	.block-card__type {
-		font-size: var(--ed-text-sm);
+		font-size: 11px;
 		font-weight: 600;
-		color: var(--ed-text-secondary);
+		color: var(--ed-text-tertiary);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
@@ -450,25 +460,15 @@
 		line-height: 1.2;
 	}
 
-	.block-card__preview {
-		font-size: var(--ed-text-sm);
-		color: var(--ed-text-muted);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		flex: 1;
-		min-width: 0;
-	}
-
 	.block-card__header-toggle {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.4rem;
 		flex: 1;
 		min-width: 0;
 		cursor: pointer;
 		border-radius: var(--ed-radius-sm);
-		padding: 0.15rem var(--ed-space-1);
+		padding: 0.1rem var(--ed-space-1);
 		outline: none;
 	}
 
@@ -510,10 +510,11 @@
 		transform: rotate(0deg);
 	}
 
-	/* Body — expand animation */
-	.block-card__body {
+	/* Editor panel — editing controls */
+	.block-card__editor {
 		padding: var(--ed-space-3) var(--ed-space-4);
-		border-top: 1px solid var(--ed-border-subtle);
+		border-bottom: 1px solid var(--ed-border-subtle);
+		background: var(--ed-surface-1);
 		display: flex;
 		flex-direction: column;
 		gap: var(--ed-space-3);
@@ -525,11 +526,10 @@
 		to { opacity: 1; }
 	}
 
-	/* Footer */
+	/* Footer — content editor */
 	.block-card__footer {
-		border-top: 1px solid var(--ed-border-subtle);
+		border-bottom: 1px solid var(--ed-border-subtle);
 		overflow: hidden;
-		border-radius: 0 0 var(--ed-radius-md) var(--ed-radius-md);
 		animation: card-expand var(--ed-transition-slow);
 	}
 
@@ -623,12 +623,8 @@
 		font-style: italic;
 	}
 
-	/* Inline preview */
+	/* Inline preview — always visible, seamless */
 	.block-card__inline-preview {
-		border-top: 1px solid var(--ed-border-subtle);
-		background: var(--ed-surface-1);
-		border-radius: 0 0 var(--ed-radius-lg) var(--ed-radius-lg);
 		overflow: hidden;
-		animation: card-expand var(--ed-transition-slow);
 	}
 </style>

@@ -313,8 +313,7 @@
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
-		gap: var(--ed-space-3);
-		background: var(--ed-surface-1);
+		background: var(--ed-surface-0);
 	}
 
 	.block-editor.hidden {
@@ -324,6 +323,10 @@
 	.block-editor__list {
 		display: flex;
 		flex-direction: column;
+		max-width: 900px;
+		margin: 0 auto;
+		width: 100%;
+		padding: var(--ed-space-4) 0;
 	}
 
 	.block-editor__item {

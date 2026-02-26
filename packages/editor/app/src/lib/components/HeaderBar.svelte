@@ -46,44 +46,46 @@
 	<div class="header__spacer"></div>
 
 	{#if editorState.currentPath}
-		<div class="header__viewports">
-			<div class="segmented-track">
-				<button
-					class="header__device"
-					class:header__device--active={editorState.viewport === 'desktop'}
-					onclick={() => editorState.viewport = 'desktop'}
-					title="Desktop"
-				>
-					<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="1.5" y="2" width="13" height="9" rx="1" />
-						<line x1="5.5" y1="14" x2="10.5" y2="14" />
-						<line x1="8" y1="11" x2="8" y2="14" />
-					</svg>
-				</button>
-				<button
-					class="header__device"
-					class:header__device--active={editorState.viewport === 'tablet'}
-					onclick={() => editorState.viewport = 'tablet'}
-					title="Tablet"
-				>
-					<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="3" y="1.5" width="10" height="13" rx="1.5" />
-						<line x1="7" y1="12.5" x2="9" y2="12.5" />
-					</svg>
-				</button>
-				<button
-					class="header__device"
-					class:header__device--active={editorState.viewport === 'mobile'}
-					onclick={() => editorState.viewport = 'mobile'}
-					title="Mobile"
-				>
-					<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="4" y="1.5" width="8" height="13" rx="2" />
-						<line x1="7" y1="12.5" x2="9" y2="12.5" />
-					</svg>
-				</button>
+		{#if editorState.editorMode !== 'visual' || editorState.fullPreview}
+			<div class="header__viewports">
+				<div class="segmented-track">
+					<button
+						class="header__device"
+						class:header__device--active={editorState.viewport === 'desktop'}
+						onclick={() => editorState.viewport = 'desktop'}
+						title="Desktop"
+					>
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="1.5" y="2" width="13" height="9" rx="1" />
+							<line x1="5.5" y1="14" x2="10.5" y2="14" />
+							<line x1="8" y1="11" x2="8" y2="14" />
+						</svg>
+					</button>
+					<button
+						class="header__device"
+						class:header__device--active={editorState.viewport === 'tablet'}
+						onclick={() => editorState.viewport = 'tablet'}
+						title="Tablet"
+					>
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="1.5" width="10" height="13" rx="1.5" />
+							<line x1="7" y1="12.5" x2="9" y2="12.5" />
+						</svg>
+					</button>
+					<button
+						class="header__device"
+						class:header__device--active={editorState.viewport === 'mobile'}
+						onclick={() => editorState.viewport = 'mobile'}
+						title="Mobile"
+					>
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="4" y="1.5" width="8" height="13" rx="2" />
+							<line x1="7" y1="12.5" x2="9" y2="12.5" />
+						</svg>
+					</button>
+				</div>
 			</div>
-		</div>
+		{/if}
 
 		<button
 			class="header__preview-toggle"

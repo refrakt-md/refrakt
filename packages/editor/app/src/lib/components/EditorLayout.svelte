@@ -7,9 +7,10 @@
 		left: Snippet;
 		center: Snippet;
 		right: Snippet;
+		hideRight?: boolean;
 	}
 
-	let { left, center, right }: Props = $props();
+	let { left, center, right, hideRight = false }: Props = $props();
 
 	let leftWidth = $state(260);
 	let rightWidth = $state(400);
@@ -37,7 +38,7 @@
 	}
 
 	let gridColumns = $derived(
-		editorState.fullPreview
+		editorState.fullPreview || hideRight
 			? `${leftWidth}px 4px 1fr`
 			: `${leftWidth}px 4px 1fr 4px ${rightWidth}px`
 	);
@@ -55,6 +56,10 @@
 	{#if editorState.fullPreview}
 		<div class="layout__panel layout__panel--center layout__panel--full-preview">
 			{@render right()}
+		</div>
+	{:else if hideRight}
+		<div class="layout__panel layout__panel--center">
+			{@render center()}
 		</div>
 	{:else}
 		<div class="layout__panel layout__panel--center">
