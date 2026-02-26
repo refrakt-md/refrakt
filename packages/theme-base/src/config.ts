@@ -1,5 +1,176 @@
-import type { ThemeConfig, SerializedTag } from '@refrakt-md/transform';
+import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta } from '@refrakt-md/transform';
+
+// ─── Comparison postTransform helpers ───
+
+/** Recursively find all nodes with a specific typeof attribute */
+function collectByTypeof(children: RendererNode[], typeName: string): SerializedTag[] {
+	const results: SerializedTag[] = [];
+	for (const c of children) {
+		if (isTag(c)) {
+			if (c.attributes?.typeof === typeName) {
+				results.push(c);
+			} else {
+				results.push(...collectByTypeof(c.children, typeName));
+			}
+		}
+	}
+	return results;
+}
+
+/** Read text content from a property span child */
+function readPropText(node: SerializedTag, prop: string): string {
+	for (const c of node.children) {
+		if (isTag(c) && c.attributes?.property === prop) {
+			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
+		}
+	}
+	return '';
+}
+
+/** Read meta tag value from within a node (for non-modifier metas not consumed by engine) */
+function readLocalMeta(node: SerializedTag, prop: string): string {
+	for (const c of node.children) {
+		if (isTag(c) && c.name === 'meta' && c.attributes?.property === prop) {
+			return c.attributes.content ?? '';
+		}
+	}
+	return '';
+}
+
+/** Find body ref children from a ComparisonRow, filtered to valid content */
+function getRowBody(row: SerializedTag): (SerializedTag | string)[] {
+	for (const c of row.children) {
+		if (isTag(c) && c.attributes?.['data-name'] === 'body') {
+			return c.children.filter((ch): ch is SerializedTag | string =>
+				typeof ch === 'string' || isTag(ch)
+			);
+		}
+	}
+	return [];
+}
+
+interface ComparisonColData {
+	name: string;
+	highlighted: boolean;
+	rows: SerializedTag[];
+}
+
+function buildComparisonCards(block: string, columns: ComparisonColData[]): SerializedTag {
+	const cards = columns.map(col => {
+		const cardCls = col.highlighted
+			? 'rf-comparison-card rf-comparison-card--highlighted'
+			: 'rf-comparison-card';
+
+		const cardChildren: (SerializedTag | string)[] = [];
+		if (col.highlighted) {
+			cardChildren.push(makeTag('div', { class: 'rf-comparison-card__badge' }, ['Recommended']));
+		}
+		cardChildren.push(makeTag('h3', { class: 'rf-comparison-card__name' }, [col.name]));
+
+		const rowItems: SerializedTag[] = [];
+		for (const row of col.rows) {
+			const rType = row.attributes['data-row-type'] || 'text';
+			if (rType === 'empty') continue;
+
+			const label = readPropText(row, 'label');
+			const body = getRowBody(row);
+
+			let liCls = 'rf-comparison-card__row';
+			if (rType === 'negative') liCls += ' rf-comparison-card__row--negative';
+			if (rType === 'callout') liCls += ' rf-comparison-card__row--callout';
+
+			const liChildren: (SerializedTag | string)[] = [];
+			if (rType === 'check') {
+				liChildren.push(makeTag('span', { class: `${block}__row-icon ${block}__row-icon--check`, 'aria-label': 'Supported' }, ['\u2713']));
+				if (label) liChildren.push(makeTag('strong', {}, [label]));
+				liChildren.push(...body);
+			} else if (rType === 'cross') {
+				liChildren.push(makeTag('span', { class: `${block}__row-icon ${block}__row-icon--cross`, 'aria-label': 'Not supported' }, ['\u2717']));
+				if (label) liChildren.push(makeTag('strong', {}, [label]));
+				liChildren.push(...body);
+			} else if (rType === 'negative') {
+				if (label) liChildren.push(makeTag('strong', {}, [label]));
+				if (body.length) liChildren.push(makeTag('span', { class: `${block}__negative` }, body));
+			} else if (rType === 'callout') {
+				liChildren.push(makeTag('div', { class: `${block}__callout-badge` }, body));
+			} else {
+				if (label) liChildren.push(makeTag('strong', {}, [label]));
+				liChildren.push(...body);
+			}
+
+			rowItems.push(makeTag('li', { class: liCls }, liChildren));
+		}
+
+		cardChildren.push(makeTag('ul', { class: 'rf-comparison-card__rows' }, rowItems));
+		return makeTag('div', { class: cardCls }, cardChildren);
+	});
+
+	return makeTag('div', { class: `${block}__cards` }, cards);
+}
+
+function buildComparisonTable(
+	block: string,
+	columns: ComparisonColData[],
+	rowLabels: string[],
+	labelsPosition: string,
+): SerializedTag {
+	// Header row
+	const headerCells: SerializedTag[] = [];
+	if (labelsPosition !== 'hidden') {
+		headerCells.push(makeTag('th', { class: `${block}__label-col` }, []));
+	}
+	for (const col of columns) {
+		const thCls = col.highlighted ? `${block}__col-header--highlighted` : '';
+		const thChildren: (SerializedTag | string)[] = [col.name];
+		if (col.highlighted) {
+			thChildren.push(makeTag('span', { class: `${block}__recommended-badge` }, ['Recommended']));
+		}
+		headerCells.push(makeTag('th', thCls ? { class: thCls } : {}, thChildren));
+	}
+	const thead = makeTag('thead', {}, [makeTag('tr', {}, headerCells)]);
+
+	// Body rows
+	const bodyRows: SerializedTag[] = [];
+	for (let i = 0; i < rowLabels.length; i++) {
+		const cells: SerializedTag[] = [];
+		if (labelsPosition !== 'hidden') {
+			cells.push(makeTag('th', { class: `${block}__row-label`, scope: 'row' }, [rowLabels[i]]));
+		}
+		for (const col of columns) {
+			const row = col.rows[i];
+			const rType = row ? (row.attributes['data-row-type'] || 'text') : 'empty';
+			const body = row ? getRowBody(row) : [];
+
+			let cellCls = `${block}__cell`;
+			if (col.highlighted) cellCls += ` ${block}__cell--highlighted`;
+			if (rType === 'empty') cellCls += ` ${block}__cell--empty`;
+
+			const cellChildren: (SerializedTag | string)[] = [];
+			if (rType === 'check') {
+				cellChildren.push(makeTag('span', { class: `${block}__row-icon ${block}__row-icon--check`, 'aria-label': 'Supported' }, ['\u2713']));
+			} else if (rType === 'cross') {
+				cellChildren.push(makeTag('span', { class: `${block}__row-icon ${block}__row-icon--cross`, 'aria-label': 'Not supported' }, ['\u2717']));
+			} else if (rType === 'negative' && body.length) {
+				cellChildren.push(makeTag('span', { class: `${block}__negative` }, body));
+			} else if (rType === 'empty') {
+				cellChildren.push(makeTag('span', { class: `${block}__cell--empty`, 'aria-label': 'Not applicable' }, ['\u2014']));
+			} else if (rType === 'callout' && body.length) {
+				cellChildren.push(makeTag('span', { class: `${block}__callout-badge` }, body));
+			} else if (body.length) {
+				cellChildren.push(...body);
+			}
+
+			cells.push(makeTag('td', { class: cellCls }, cellChildren));
+		}
+		bodyRows.push(makeTag('tr', {}, cells));
+	}
+	const tbody = makeTag('tbody', {}, bodyRows);
+
+	return makeTag('div', { class: `${block}__table-wrapper` }, [
+		makeTag('table', { class: `${block}__table` }, [thead, tbody]),
+	]);
+}
 
 /** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
@@ -31,10 +202,89 @@ export const baseConfig: ThemeConfig = {
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
-		Embed: { block: 'embed' },
+		Embed: {
+			block: 'embed',
+			postTransform(node) {
+				const block = node.attributes.class?.split(' ')[0] || 'rf-embed';
+				const embedUrl = readMeta(node, 'embedUrl') || readMeta(node, 'url') || '';
+				const title = readMeta(node, 'title') || 'Embedded content';
+				const aspect = readMeta(node, 'aspect') || '16:9';
+				const provider = readMeta(node, 'provider') || '';
+
+				const [w, h] = aspect.split(':').map(Number);
+				const paddingPercent = h && w ? (h / w) * 100 : 56.25;
+
+				// Filter out consumed meta tags
+				const contentChildren = node.children.filter(child => {
+					if (!isTag(child) || child.name !== 'meta') return true;
+					const prop = child.attributes.property;
+					return !['embedUrl', 'url', 'title', 'aspect', 'provider', 'type'].includes(prop);
+				});
+
+				const children: (SerializedTag | string)[] = [];
+				if (embedUrl) {
+					children.push(
+						makeTag('div', { class: `${block}__wrapper`, style: `padding-bottom: ${paddingPercent}%` }, [
+							makeTag('iframe', {
+								src: embedUrl,
+								title,
+								frameborder: '0',
+								allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+								allowfullscreen: '',
+								loading: 'lazy',
+							}, []),
+						])
+					);
+				}
+				children.push(makeTag('div', { class: `${block}__fallback` }, contentChildren));
+
+				return {
+					...node,
+					attributes: {
+						...node.attributes,
+						...(provider ? { 'data-provider': provider } : {}),
+					},
+					children,
+				};
+			},
+		},
 		Breadcrumb: { block: 'breadcrumb' },
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
-		Testimonial: { block: 'testimonial' },
+		Testimonial: {
+			block: 'testimonial',
+			postTransform(node) {
+				const block = node.attributes.class?.split(' ')[0] || 'rf-testimonial';
+				const ratingStr = readMeta(node, 'rating');
+
+				// Filter out consumed meta tags, wrap remaining children in content div
+				const contentChildren = node.children.filter(child => {
+					if (!isTag(child) || child.name !== 'meta') return true;
+					return child.attributes.property !== 'rating';
+				});
+
+				const children: (SerializedTag | string)[] = [];
+
+				// Inject star rating if present
+				if (ratingStr) {
+					const stars = Math.min(5, Math.max(0, Number(ratingStr)));
+					const starSpans: SerializedTag[] = [];
+					for (let i = 0; i < 5; i++) {
+						const cls = i < stars
+							? `${block}__star ${block}__star--filled`
+							: `${block}__star`;
+						starSpans.push(makeTag('span', { class: cls }, ['\u2605']));
+					}
+					children.push(makeTag('div', {
+						class: `${block}__rating`,
+						'aria-label': `${stars} out of 5 stars`,
+					}, starSpans));
+				}
+
+				children.push(makeTag('div', { class: `${block}__content` }, contentChildren));
+
+				return { ...node, children };
+			},
+		},
 		Timeline: { block: 'timeline', modifiers: { direction: { source: 'meta', default: 'vertical' } } },
 		TimelineEntry: { block: 'timeline-entry', parent: 'Timeline' },
 		Changelog: { block: 'changelog' },
@@ -169,7 +419,128 @@ export const baseConfig: ThemeConfig = {
 			block: 'diff',
 			modifiers: { mode: { source: 'meta', default: 'unified' } },
 		},
-		Chart: { block: 'chart' },
+		Chart: {
+			block: 'chart',
+			postTransform(node) {
+				const block = node.attributes.class?.split(' ')[0] || 'rf-chart';
+				const chartType = readMeta(node, 'type') || 'bar';
+				const title = readMeta(node, 'title') || '';
+				const dataJson = findByDataName(node, 'data')?.attributes?.content || '{}';
+
+				let chartData: { headers: string[]; rows: string[][] } = { headers: [], rows: [] };
+				try { chartData = JSON.parse(dataJson); } catch { /* fallback */ }
+
+				const colors = [
+					'var(--rf-color-info)', 'var(--rf-color-success)',
+					'var(--rf-color-warning)', 'var(--rf-color-danger)',
+					'#7c3aed', '#0891b2',
+				];
+
+				const svgW = 600, svgH = 300;
+				const pad = { top: 30, right: 20, bottom: 40, left: 50 };
+				const cw = svgW - pad.left - pad.right;
+				const ch = svgH - pad.top - pad.bottom;
+
+				const labels = chartData.rows.map(r => r[0] || '');
+				const series = chartData.headers.slice(1);
+				const values = chartData.rows.map(r => r.slice(1).map(v => parseFloat(v) || 0));
+				const maxVal = Math.max(...values.flat(), 1);
+
+				const bgw = cw / Math.max(labels.length, 1);
+				const bw = bgw / Math.max(series.length + 1, 2);
+
+				// Build SVG children
+				const svgChildren: SerializedTag[] = [];
+
+				// Axes
+				svgChildren.push(makeTag('line', {
+					x1: String(pad.left), y1: String(pad.top),
+					x2: String(pad.left), y2: String(svgH - pad.bottom),
+					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
+				}, []));
+				svgChildren.push(makeTag('line', {
+					x1: String(pad.left), y1: String(svgH - pad.bottom),
+					x2: String(svgW - pad.right), y2: String(svgH - pad.bottom),
+					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
+				}, []));
+
+				if (chartType === 'bar') {
+					for (let i = 0; i < labels.length; i++) {
+						for (let si = 0; si < series.length; si++) {
+							const h = (values[i][si] / maxVal) * ch;
+							svgChildren.push(makeTag('rect', {
+								x: String(pad.left + i * bgw + si * bw + bw * 0.25),
+								y: String(pad.top + ch - h),
+								width: String(bw * 0.75),
+								height: String(h),
+								style: `fill: ${colors[si % colors.length]}`,
+								rx: '2',
+							}, []));
+						}
+						svgChildren.push(makeTag('text', {
+							x: String(pad.left + i * bgw + bgw / 2),
+							y: String(svgH - pad.bottom + 20),
+							'text-anchor': 'middle', 'font-size': '12',
+							fill: 'var(--rf-color-muted)',
+						}, [labels[i]]));
+					}
+				} else if (chartType === 'line') {
+					for (let si = 0; si < series.length; si++) {
+						const pts = labels.map((_, i) =>
+							`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`
+						).join(' ');
+						svgChildren.push(makeTag('polyline', {
+							points: pts, fill: 'none',
+							style: `stroke: ${colors[si % colors.length]}`,
+							'stroke-width': '2',
+						}, []));
+						for (let i = 0; i < labels.length; i++) {
+							svgChildren.push(makeTag('circle', {
+								cx: String(pad.left + i * bgw + bgw / 2),
+								cy: String(pad.top + ch - (values[i][si] / maxVal) * ch),
+								r: '4',
+								style: `fill: ${colors[si % colors.length]}`,
+							}, []));
+						}
+					}
+					for (let i = 0; i < labels.length; i++) {
+						svgChildren.push(makeTag('text', {
+							x: String(pad.left + i * bgw + bgw / 2),
+							y: String(svgH - pad.bottom + 20),
+							'text-anchor': 'middle', 'font-size': '12',
+							fill: 'var(--rf-color-muted)',
+						}, [labels[i]]));
+					}
+				}
+
+				const children: (SerializedTag | string)[] = [];
+				if (title) {
+					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
+				}
+				children.push(makeTag('div', { class: `${block}__container` }, [
+					makeTag('svg', {
+						viewBox: `0 0 ${svgW} ${svgH}`,
+						class: `${block}__svg`,
+					}, svgChildren),
+				]));
+
+				// Legend
+				if (series.length > 1) {
+					const legendItems = series.map((name, i) =>
+						makeTag('span', { class: `${block}__legend-item` }, [
+							makeTag('span', {
+								class: `${block}__legend-color`,
+								style: `background: ${colors[i % colors.length]};`,
+							}, []),
+							name,
+						])
+					);
+					children.push(makeTag('div', { class: `${block}__legend` }, legendItems));
+				}
+
+				return { ...node, children };
+			},
+		},
 		MusicPlaylist: { block: 'music-playlist' },
 		MusicRecording: { block: 'music-recording', parent: 'MusicPlaylist' },
 
@@ -247,7 +618,57 @@ export const baseConfig: ThemeConfig = {
 			modifiers: { size: { source: 'meta', default: 'medium' } },
 			autoLabel: { name: 'title' },
 		},
-		Comparison: { block: 'comparison' },
+		Comparison: {
+			block: 'comparison',
+			postTransform(node) {
+				const block = 'rf-comparison';
+				const layout = readMeta(node, 'layout') || 'table';
+				const verdict = readMeta(node, 'verdict') || '';
+				const labelsPosition = readMeta(node, 'labels') || 'left';
+				const rowLabelsJson = readMeta(node, 'rowLabels') || '[]';
+				let rowLabels: string[] = [];
+				try { rowLabels = JSON.parse(rowLabelsJson); } catch { /* fallback */ }
+
+				// Find title heading
+				const titleTag = node.children.find(c => isTag(c) && /^h[1-6]$/.test(c.name));
+				const titleText = titleTag && isTag(titleTag)
+					? titleTag.children.filter((c): c is string => typeof c === 'string').join('')
+					: '';
+
+				// Find ComparisonColumn children (inside the grid wrapper)
+				const columns = collectByTypeof(node.children, 'ComparisonColumn');
+
+				// Extract structured data from each column
+				const columnData: ComparisonColData[] = columns.map(col => ({
+					name: readPropText(col, 'name'),
+					highlighted: readLocalMeta(col, 'highlighted') === 'true',
+					rows: collectByTypeof(col.children, 'ComparisonRow'),
+				}));
+
+				// Build layout
+				const children: (SerializedTag | string)[] = [];
+				if (titleText) {
+					children.push(makeTag('h2', { class: `${block}__title` }, [titleText]));
+				}
+				if (layout === 'cards') {
+					children.push(buildComparisonCards(block, columnData));
+				} else {
+					children.push(buildComparisonTable(block, columnData, rowLabels, labelsPosition));
+				}
+				if (verdict) {
+					children.push(makeTag('p', { class: `${block}__verdict` }, [verdict]));
+				}
+
+				return {
+					...node,
+					attributes: {
+						...node.attributes,
+						class: `${block} ${block}--${layout}`,
+					},
+					children,
+				};
+			},
+		},
 		ComparisonColumn: { block: 'comparison-column', parent: 'Comparison' },
 		ComparisonRow: {
 			block: 'comparison-row',
