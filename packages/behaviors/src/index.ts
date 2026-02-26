@@ -108,3 +108,7 @@ export { previewBehavior } from './behaviors/preview.js';
 export { scrollspyBehavior } from './behaviors/scrollspy.js';
 export { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
+
+// Web component elements — framework-neutral custom elements for interactive runes
+export { registerElements, RfContext, RfDiagram, RfNav, RfMap, RfSandbox } from './elements/index.js';
+export type { PageEntry, DesignTokens } from './elements/index.js';

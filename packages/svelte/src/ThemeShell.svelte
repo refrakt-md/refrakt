@@ -4,7 +4,7 @@
 	import { setRegistry, setElementOverrides } from './context.js';
 	import { setContext, tick } from 'svelte';
 	import { matchRouteRule } from './route-rules.js';
-	import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
+	import { initRuneBehaviors, initLayoutBehaviors, registerElements, RfContext } from '@refrakt-md/behaviors';
 	import { layoutTransform } from '@refrakt-md/transform';
 	import Renderer from './Renderer.svelte';
 
@@ -54,6 +54,13 @@
 	// svelte-ignore state_referenced_locally
 	setContext('currentUrl', page.url);
 
+	// Populate RfContext for framework-neutral web components (Nav, Sandbox, etc.)
+	// svelte-ignore state_referenced_locally
+	RfContext.pages = page.pages;
+	// svelte-ignore state_referenced_locally
+	RfContext.currentUrl = page.url;
+	registerElements();
+
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules ?? []));
 	const layoutEntry = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
@@ -64,6 +71,9 @@
 	// elements are simply discarded (no cleanup/restore conflicts with Svelte).
 	$effect(() => {
 		void page.url; // re-run when page changes
+		// Keep RfContext in sync for web components on client-side navigation
+		RfContext.pages = page.pages;
+		RfContext.currentUrl = page.url;
 		let cleanupRunes: (() => void) | undefined;
 		let cleanupLayout: (() => void) | undefined;
 		let active = true;

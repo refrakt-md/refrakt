@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta } from '@refrakt-md/transform';
 
 /** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
@@ -109,9 +109,43 @@ export const baseConfig: ThemeConfig = {
 		FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 		Steps: { block: 'steps' },
 		Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
-		Nav: { block: 'nav' },
+		Nav: {
+			block: 'nav',
+			postTransform(node) {
+				return { ...node, name: 'rf-nav' };
+			},
+		},
 		NavGroup: { block: 'nav-group', parent: 'Nav' },
-		NavItem: { block: 'nav-item', parent: 'Nav' },
+		NavItem: {
+			block: 'nav-item',
+			parent: 'Nav',
+			postTransform(node) {
+				// Extract slug from span[property="slug"] child → data-slug attribute
+				// Keep slug text as visible fallback for SSR; web component replaces with <a> links
+				let slug = '';
+				const children = node.children.filter(child => {
+					if (isTag(child) && child.name === 'span' && child.attributes.property === 'slug') {
+						slug = child.children.filter((c): c is string => typeof c === 'string').join('');
+						return false; // remove slug span from DOM
+					}
+					return true;
+				});
+
+				// Add slug text as visible fallback content (replaced by web component at runtime)
+				if (slug) {
+					children.unshift(slug);
+				}
+
+				return {
+					...node,
+					attributes: {
+						...node.attributes,
+						...(slug ? { 'data-slug': slug } : {}),
+					},
+					children,
+				};
+			},
+		},
 		Api: {
 			block: 'api',
 			contentWrapper: { tag: 'div', ref: 'body' },
@@ -277,12 +311,69 @@ export const baseConfig: ThemeConfig = {
 			},
 		},
 		RevealStep: { block: 'reveal-step', parent: 'Reveal' },
-		Diagram: { block: 'diagram' },
+		Diagram: {
+			block: 'diagram',
+			postTransform(node) {
+				const block = node.attributes.class?.split(' ')[0] || 'rf-diagram';
+				const language = readMeta(node, 'language') || 'mermaid';
+				const title = readMeta(node, 'title') || '';
+				const sourceMeta = findByDataName(node, 'source');
+				const source = sourceMeta?.attributes?.content || '';
+
+				// Build fallback HTML (visible in SSR, replaced by web component)
+				const children: (SerializedTag | string)[] = [];
+				if (title) {
+					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
+				}
+				const containerChildren: (SerializedTag | string)[] = source
+					? [makeTag('pre', { class: `${block}__source` }, [makeTag('code', {}, [source])])]
+					: [];
+				children.push(makeTag('div', { class: `${block}__container` }, containerChildren));
+
+				// Hidden source for web component to read
+				if (source) {
+					children.push(makeTag('div', { 'data-content': 'source', style: 'display:none' }, [source]));
+				}
+
+				return {
+					...node,
+					name: 'rf-diagram',
+					attributes: { ...node.attributes, 'data-language': language },
+					children,
+				};
+			},
+		},
 		Map: {
 			block: 'map',
 			modifiers: {
 				style: { source: 'meta', default: 'street' },
 				height: { source: 'meta', default: 'medium' },
+			},
+			postTransform(node) {
+				// Move remaining meta values to data attributes for the web component
+				const metaProps = ['zoom', 'center', 'provider', 'interactive', 'route', 'cluster', 'apiKey'] as const;
+				const dataAttrs: Record<string, string> = {};
+				for (const prop of metaProps) {
+					const val = readMeta(node, prop);
+					if (val) {
+						const kebab = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+						dataAttrs[`data-${kebab}`] = val;
+					}
+				}
+
+				// Remove consumed meta children
+				const children = node.children.filter(child => {
+					if (!isTag(child) || child.name !== 'meta') return true;
+					const prop = child.attributes.property;
+					return !(metaProps as readonly string[]).includes(prop);
+				});
+
+				return {
+					...node,
+					name: 'rf-map',
+					attributes: { ...node.attributes, ...dataAttrs },
+					children,
+				};
 			},
 		},
 		MapPin: { block: 'map-pin', parent: 'Map' },
@@ -324,7 +415,43 @@ export const baseConfig: ThemeConfig = {
 				return { ...node, children: [...node.children, themedPre] };
 			},
 		},
-		Sandbox: { block: 'sandbox' },
+		Sandbox: {
+			block: 'sandbox',
+			postTransform(node) {
+				// Read meta values
+				const content = readMeta(node, 'content') || '';
+				const framework = readMeta(node, 'framework') || '';
+				const dependencies = readMeta(node, 'dependencies') || '';
+				const label = readMeta(node, 'label') || '';
+				const height = readMeta(node, 'height') || 'auto';
+
+				// Keep non-meta children (fallback pre, source panels)
+				const fallbackChildren = node.children.filter(child => {
+					if (!isTag(child)) return true;
+					if (child.name === 'meta') return false;
+					return true;
+				});
+
+				// Add hidden content div for web component
+				const children = [
+					...fallbackChildren,
+					makeTag('div', { 'data-content': 'source', style: 'display:none' }, [content]),
+				];
+
+				return {
+					...node,
+					name: 'rf-sandbox',
+					attributes: {
+						...node.attributes,
+						...(framework ? { 'data-framework': framework } : {}),
+						...(dependencies ? { 'data-dependencies': dependencies } : {}),
+						...(label ? { 'data-label': label } : {}),
+						'data-height': height,
+					},
+					children,
+				};
+			},
+		},
 		Symbol: {
 			block: 'symbol',
 			contentWrapper: { tag: 'div', ref: 'body' },
