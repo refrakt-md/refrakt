@@ -1,0 +1,71 @@
+:root {
+	/* ── Surfaces ────────────────────────────────────────── */
+	--ed-surface-0: #ffffff;        /* cards, inputs, modals */
+	--ed-surface-1: #f8fafc;        /* sidebar, header, code bg */
+	--ed-surface-2: #f1f5f9;        /* hover states, gutters */
+	--ed-surface-3: #e2e8f0;        /* active states, separators */
+
+	/* ── Borders ─────────────────────────────────────────── */
+	--ed-border-default: #e2e8f0;
+	--ed-border-subtle: #f1f5f9;
+	--ed-border-strong: #cbd5e1;
+
+	/* ── Text ────────────────────────────────────────────── */
+	--ed-text-primary: #1a1a2e;
+	--ed-text-secondary: #475569;
+	--ed-text-tertiary: #64748b;
+	--ed-text-muted: #94a3b8;
+
+	/* ── Accent ──────────────────────────────────────────── */
+	--ed-accent: #0ea5e9;
+	--ed-accent-hover: #0284c7;
+	--ed-accent-subtle: #e0f2fe;
+	--ed-accent-muted: #f0f9ff;
+	--ed-accent-ring: rgba(14, 165, 233, 0.15);
+
+	/* ── Semantic ────────────────────────────────────────── */
+	--ed-warning: #d97706;
+	--ed-warning-subtle: #fef3c7;
+	--ed-warning-text: #92400e;
+	--ed-danger: #ef4444;
+	--ed-danger-hover: #dc2626;
+	--ed-danger-subtle: #fef2f2;
+	--ed-danger-text: #b91c1c;
+	--ed-success: #16a34a;
+	--ed-heading: #0369a1;
+	--ed-unsaved: #f59e0b;
+
+	/* ── Typography ──────────────────────────────────────── */
+	--ed-font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--ed-font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+	--ed-text-xs: 0.6875rem;   /* 11px */
+	--ed-text-sm: 0.75rem;     /* 12px */
+	--ed-text-base: 0.8125rem; /* 13px */
+	--ed-text-md: 0.875rem;    /* 14px */
+	--ed-text-lg: 1rem;        /* 16px */
+
+	/* ── Spacing ─────────────────────────────────────────── */
+	--ed-space-1: 0.25rem;  /* 4px */
+	--ed-space-2: 0.5rem;   /* 8px */
+	--ed-space-3: 0.75rem;  /* 12px */
+	--ed-space-4: 1rem;     /* 16px */
+	--ed-space-5: 1.25rem;  /* 20px */
+	--ed-space-6: 1.5rem;   /* 24px */
+
+	/* ── Radii ───────────────────────────────────────────── */
+	--ed-radius-sm: 4px;
+	--ed-radius-md: 6px;
+	--ed-radius-lg: 8px;
+
+	/* ── Shadows ─────────────────────────────────────────── */
+	--ed-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--ed-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
+	--ed-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.04);
+	--ed-shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+	/* ── Transitions ─────────────────────────────────────── */
+	--ed-transition-fast: 120ms ease;
+	--ed-transition-normal: 180ms ease;
+	--ed-transition-slow: 280ms ease;
+}

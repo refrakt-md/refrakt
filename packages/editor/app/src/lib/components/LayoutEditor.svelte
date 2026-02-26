@@ -60,13 +60,18 @@
 				<span class="layout-editor__path">{editorState.currentPath}</span>
 			{/if}
 		</div>
-		<button
-			class="layout-editor__mode-toggle"
-			class:active={rawMode}
-			onclick={() => { rawMode = !rawMode; }}
-		>
-			{rawMode ? 'Visual' : 'Raw'}
-		</button>
+		<div class="layout-editor__mode-track">
+			<button
+				class="layout-editor__mode-btn"
+				class:active={!rawMode}
+				onclick={() => { rawMode = false; }}
+			>Visual</button>
+			<button
+				class="layout-editor__mode-btn"
+				class:active={rawMode}
+				onclick={() => { rawMode = true; }}
+			>Raw</button>
+		</div>
 	</div>
 
 	{#if rawMode}
@@ -111,9 +116,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid #e2e8f0;
-		background: #f8fafc;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border-bottom: 1px solid var(--ed-border-default);
+		background: var(--ed-surface-1);
 		flex-shrink: 0;
 	}
 
@@ -125,44 +130,53 @@
 	}
 
 	.layout-editor__icon {
-		color: #d97706;
+		color: var(--ed-warning);
 		flex-shrink: 0;
 	}
 
 	.layout-editor__title {
-		font-size: 0.8rem;
+		font-size: var(--ed-text-base);
 		font-weight: 600;
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 	}
 
 	.layout-editor__path {
-		font-size: 0.7rem;
-		color: #94a3b8;
+		font-size: var(--ed-text-xs);
+		color: var(--ed-text-muted);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.layout-editor__mode-toggle {
-		font-size: 0.7rem;
-		padding: 0.2rem 0.6rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		background: #ffffff;
-		color: #64748b;
-		cursor: pointer;
+	.layout-editor__mode-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
 		flex-shrink: 0;
 	}
 
-	.layout-editor__mode-toggle:hover {
-		border-color: #0ea5e9;
-		color: #0ea5e9;
+	.layout-editor__mode-btn {
+		font-size: var(--ed-text-xs);
+		padding: 0.15rem var(--ed-space-2);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
+		color: var(--ed-text-tertiary);
+		cursor: pointer;
+		font-weight: 500;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
-	.layout-editor__mode-toggle.active {
-		background: #0ea5e9;
-		color: #ffffff;
-		border-color: #0ea5e9;
+	.layout-editor__mode-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
+	}
+
+	.layout-editor__mode-btn.active {
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.layout-editor__raw {
@@ -175,18 +189,18 @@
 	.layout-editor__regions {
 		flex: 1;
 		overflow-y: auto;
-		padding: 0.75rem;
+		padding: var(--ed-space-3);
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		background: #f8fafc;
+		gap: var(--ed-space-3);
+		background: var(--ed-surface-1);
 	}
 
 	.layout-editor__empty {
 		text-align: center;
-		padding: 2rem 1rem;
-		color: #94a3b8;
-		font-size: 0.85rem;
+		padding: 2rem var(--ed-space-4);
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-md);
 	}
 
 	.layout-editor__empty p {
@@ -198,17 +212,17 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.35rem;
-		padding: 0.5rem 1rem;
-		border: 1px dashed #e2e8f0;
-		border-radius: 6px;
+		padding: var(--ed-space-2) var(--ed-space-4);
+		border: 1px dashed var(--ed-border-default);
+		border-radius: var(--ed-radius-md);
 		background: none;
-		color: #94a3b8;
-		font-size: 0.8rem;
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-base);
 		cursor: pointer;
 	}
 
 	.layout-editor__add-btn:hover {
-		border-color: #0ea5e9;
-		color: #0ea5e9;
+		border-color: var(--ed-accent);
+		color: var(--ed-accent);
 	}
 </style>

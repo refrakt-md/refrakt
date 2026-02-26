@@ -37,8 +37,20 @@
 			onclick={handleDirToggle}
 			oncontextmenu={(e) => handleContextMenu(e, node)}
 		>
-			<span class="tree-dir__arrow" class:collapsed={!expanded}>▸</span>
-			{node.name}
+			<svg class="tree-dir__chevron" class:collapsed={!expanded} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="6 4 10 8 6 12" />
+			</svg>
+			{#if expanded}
+				<svg class="tree-dir__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M1.5 4h4.5l1.5 1.5H14.5v8.5h-13z" />
+					<path d="M1.5 4v-1.5h4.5l1.5 1.5" />
+				</svg>
+			{:else}
+				<svg class="tree-dir__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M1.5 4h4.5l1.5 1.5H14.5v8.5h-13V2.5h4.5l1.5 1.5" />
+				</svg>
+			{/if}
+			<span class="tree-dir__name">{node.name}</span>
 		</button>
 	{/if}
 
@@ -47,12 +59,16 @@
 			<button
 				class="tree-item tree-item--layout"
 				class:active={editorState.currentPath === node.layout.path}
-				class:draft={node.layout.draft}
 				style="--depth: {depth}"
 				onclick={() => handleFileClick(node.layout!.path)}
 				oncontextmenu={(e) => handleContextMenu(e, node.layout!)}
 			>
-				_layout.md
+				<svg class="tree-item__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+					<line x1="1.5" y1="5.5" x2="14.5" y2="5.5" />
+					<line x1="6" y1="5.5" x2="6" y2="14.5" />
+				</svg>
+				<span class="tree-item__name">_layout.md</span>
 			</button>
 		{/if}
 
@@ -63,12 +79,18 @@
 				<button
 					class="tree-item"
 					class:active={editorState.currentPath === child.path}
-					class:draft={child.draft}
 					style="--depth: {depth}"
 					onclick={() => handleFileClick(child.path)}
 					oncontextmenu={(e) => handleContextMenu(e, child)}
 				>
-					{child.name}
+					<svg class="tree-item__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M9 1.5H4a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 4 14.5h8A1.5 1.5 0 0 0 13.5 13V6L9 1.5Z" />
+						<polyline points="9 1.5 9 6 13.5 6" />
+					</svg>
+					<span class="tree-item__name">{child.name}</span>
+					{#if child.draft}
+						<span class="tree-item__badge">Draft</span>
+					{/if}
 				</button>
 			{/if}
 		{/each}
@@ -76,67 +98,109 @@
 {/if}
 
 <style>
+	/* Directory row */
 	.tree-dir {
 		display: flex;
 		align-items: center;
 		gap: 0.3rem;
 		width: 100%;
-		padding: 0.35rem 0.75rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
-		font-size: 0.75rem;
+		padding: 0.3rem var(--ed-space-3) 0.3rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem);
+		font-size: var(--ed-text-sm);
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: #64748b;
-		margin-top: 0.5rem;
+		color: var(--ed-text-secondary);
 		background: none;
 		border: none;
 		cursor: pointer;
 		text-align: left;
+		border-radius: 0;
+		transition: background var(--ed-transition-fast);
 	}
 
 	.tree-dir:hover {
-		color: #1a1a2e;
+		background: var(--ed-surface-2);
+		color: var(--ed-text-primary);
 	}
 
-	.tree-dir__arrow {
-		display: inline-block;
-		transition: transform 0.15s;
-		font-size: 0.65rem;
+	.tree-dir__chevron {
+		flex-shrink: 0;
+		transition: transform var(--ed-transition-fast);
 		transform: rotate(90deg);
+		color: var(--ed-text-muted);
 	}
 
-	.tree-dir__arrow.collapsed {
+	.tree-dir__chevron.collapsed {
 		transform: rotate(0deg);
 	}
 
+	.tree-dir__icon {
+		flex-shrink: 0;
+		color: var(--ed-text-muted);
+	}
+
+	.tree-dir__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* File row */
 	.tree-item {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
 		width: 100%;
-		padding: 0.35rem 0.75rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
-		font-size: 0.8rem;
+		padding: 0.3rem var(--ed-space-3) 0.3rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem + 12px + 0.3rem);
+		font-size: var(--ed-text-sm);
 		cursor: pointer;
-		transition: background 0.1s;
-		color: #1a1a2e;
+		transition: background var(--ed-transition-fast);
+		color: var(--ed-text-primary);
 		background: none;
 		border: none;
+		border-left: 3px solid transparent;
 		text-align: left;
 	}
 
 	.tree-item:hover {
-		background: #e2e8f0;
+		background: var(--ed-surface-2);
 	}
 
 	.tree-item.active {
-		background: #e0f2fe;
-		color: #0ea5e9;
+		background: var(--ed-accent-subtle);
+		border-left-color: var(--ed-accent);
+		color: var(--ed-accent-hover);
 	}
 
-	.tree-item--layout {
-		color: #d97706;
-		font-style: italic;
+	.tree-item__icon {
+		flex-shrink: 0;
+		color: var(--ed-text-muted);
 	}
 
-	.tree-item.draft {
-		opacity: 0.5;
+	.tree-item.active .tree-item__icon {
+		color: var(--ed-accent);
+	}
+
+	.tree-item--layout .tree-item__icon {
+		color: var(--ed-warning);
+	}
+
+	.tree-item__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* Draft badge */
+	.tree-item__badge {
+		font-size: 10px;
+		font-weight: 600;
+		padding: 0.1rem 0.4rem;
+		border-radius: 99px;
+		background: var(--ed-warning-subtle);
+		color: var(--ed-warning-text);
+		white-space: nowrap;
+		line-height: 1.2;
+		flex-shrink: 0;
 	}
 </style>

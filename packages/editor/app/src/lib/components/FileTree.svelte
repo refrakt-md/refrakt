@@ -31,9 +31,18 @@
 		</div>
 	</div>
 	{#if editorState.treeLoading}
-		<div class="file-tree__loading">Loading content tree...</div>
+		<div class="file-tree__skeleton">
+			<div class="skeleton-bar" style="width: 70%"></div>
+			<div class="skeleton-bar" style="width: 55%"></div>
+			<div class="skeleton-bar" style="width: 85%"></div>
+			<div class="skeleton-bar" style="width: 60%; margin-left: 1rem"></div>
+			<div class="skeleton-bar" style="width: 50%; margin-left: 1rem"></div>
+			<div class="skeleton-bar" style="width: 75%"></div>
+		</div>
 	{:else if editorState.tree}
-		<FileTreeNode node={editorState.tree} depth={0} {onselectfile} {oncontextmenu} />
+		<div class="file-tree__list">
+			<FileTreeNode node={editorState.tree} depth={0} {onselectfile} {oncontextmenu} />
+		</div>
 	{:else}
 		<div class="file-tree__empty">No content found</div>
 	{/if}
@@ -51,17 +60,19 @@
 	.file-tree__header {
 		display: flex;
 		align-items: center;
-		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid #e2e8f0;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		box-shadow: 0 1px 0 var(--ed-border-default);
 		flex-shrink: 0;
+		position: relative;
+		z-index: 1;
 	}
 
 	.file-tree__title {
-		font-size: 0.7rem;
+		font-size: var(--ed-text-xs);
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: #64748b;
+		color: var(--ed-text-muted);
 	}
 
 	.file-tree__actions {
@@ -77,21 +88,48 @@
 		width: 22px;
 		height: 22px;
 		border: none;
-		background: none;
-		color: #94a3b8;
+		background: transparent;
+		color: var(--ed-text-muted);
 		cursor: pointer;
-		border-radius: 3px;
+		border-radius: var(--ed-radius-sm);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
 
 	.file-tree__btn:hover {
-		background: #e2e8f0;
-		color: #0ea5e9;
+		background: var(--ed-surface-2);
+		color: var(--ed-accent);
 	}
 
-	.file-tree__loading,
+	.file-tree__list {
+		flex: 1;
+		overflow-y: auto;
+		padding: var(--ed-space-1) 0;
+	}
+
+	/* Skeleton loading */
+	.file-tree__skeleton {
+		display: flex;
+		flex-direction: column;
+		gap: var(--ed-space-2);
+		padding: var(--ed-space-3);
+	}
+
+	.skeleton-bar {
+		height: 12px;
+		border-radius: var(--ed-radius-sm);
+		background: linear-gradient(90deg, var(--ed-surface-2) 25%, var(--ed-surface-3) 50%, var(--ed-surface-2) 75%);
+		background-size: 200% 100%;
+		animation: shimmer 1.5s ease-in-out infinite;
+	}
+
+	@keyframes shimmer {
+		0% { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
+	}
+
 	.file-tree__empty {
-		color: #64748b;
-		padding: 1rem;
-		font-size: 0.8rem;
+		color: var(--ed-text-muted);
+		padding: var(--ed-space-4);
+		font-size: var(--ed-text-sm);
 	}
 </style>

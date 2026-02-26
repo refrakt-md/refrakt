@@ -59,31 +59,31 @@
 	}
 
 	.raw-yaml__editor {
-		font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
-		font-size: 0.8rem;
+		font-family: var(--ed-font-mono);
+		font-size: var(--ed-text-base);
 		line-height: 1.5;
-		padding: 0.5rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		background: #f8fafc;
-		color: #1a1a2e;
+		padding: var(--ed-space-2);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		background: var(--ed-surface-1);
+		color: var(--ed-text-primary);
 		resize: vertical;
 		min-height: 80px;
 		outline: none;
 	}
 
 	.raw-yaml__editor:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.raw-yaml__editor.error {
-		border-color: #ef4444;
+		border-color: var(--ed-danger);
 	}
 
 	.raw-yaml__error {
-		color: #ef4444;
-		font-size: 0.7rem;
-		margin-top: 0.25rem;
+		color: var(--ed-danger);
+		font-size: var(--ed-text-xs);
+		margin-top: var(--ed-space-1);
 	}
 </style>

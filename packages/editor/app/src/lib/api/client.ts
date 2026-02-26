@@ -53,6 +53,8 @@ export async function fetchPreviewData(path: string, content: string): Promise<u
 export interface EditorConfig {
 	previewRuntime: boolean;
 	devServerUrl: string | null;
+	themeCss: string;
+	themeConfig: import('@refrakt-md/transform').ThemeConfig;
 }
 
 export async function fetchConfig(): Promise<EditorConfig> {

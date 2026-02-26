@@ -74,21 +74,21 @@ function uid(): string {
 
 // ── Rune tag regex helpers ───────────────────────────────────────────
 
-/** Matches an opening rune tag: {% name attr="val" %} or self-closing {% name /%} */
-const RUNE_OPEN_RE = /^\{%\s+(\w[\w-]*)((?:\s+\w[\w-]*(?:="[^"]*")?)*)\s*(\/?)\s*%\}/;
+/** Matches an opening rune tag: {% name attr="val" attr=2 %} or self-closing {% name /%} */
+const RUNE_OPEN_RE = /^\{%\s+(\w[\w-]*)((?:\s+\w[\w-]*(?:="[^"]*"|=[\w.-]+)?)*)\s*(\/?)\s*%\}/;
 
 /** Matches a closing rune tag: {% /name %} */
 function runeCloseRe(name: string): RegExp {
 	return new RegExp(`^\\{%\\s+/${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*%\\}`);
 }
 
-/** Parse attribute string like `method="POST" path="/users" auth` into Record */
+/** Parse attribute string like `method="POST" path="/users" count=3 auth` into Record */
 function parseAttributes(raw: string): Record<string, string> {
 	const attrs: Record<string, string> = {};
-	const re = /(\w[\w-]*)(?:="([^"]*)")?/g;
+	const re = /(\w[\w-]*)(?:="([^"]*)"|=([\w.-]+))?/g;
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(raw)) !== null) {
-		attrs[m[1]] = m[2] ?? 'true';
+		attrs[m[1]] = m[2] ?? m[3] ?? 'true';
 	}
 	return attrs;
 }
@@ -369,4 +369,30 @@ export function buildRuneMap(runes: RuneInfo[]): Map<string, RuneInfo> {
 		}
 	}
 	return map;
+}
+
+/** Human-readable label for a block, used in rail labels and edit panel header */
+export function blockLabel(block: ParsedBlock): string {
+	switch (block.type) {
+		case 'heading':
+			return `H${(block as HeadingBlock).level}`;
+		case 'rune':
+			return (block as RuneBlock).runeName;
+		case 'fence': {
+			const lang = (block as FenceBlock).language;
+			return lang ? `Code (${lang})` : 'Code';
+		}
+		case 'list':
+			return (block as ListBlock).ordered ? 'Ordered List' : 'List';
+		case 'quote':
+			return 'Blockquote';
+		case 'hr':
+			return 'Divider';
+		case 'image':
+			return 'Image';
+		case 'paragraph':
+			return 'Paragraph';
+		default:
+			return block.type;
+	}
 }

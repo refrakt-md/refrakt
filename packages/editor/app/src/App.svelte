@@ -51,6 +51,18 @@
 				editorState.tree = tree;
 				editorState.runes = runes;
 				editorState.previewRuntimeAvailable = config.previewRuntime;
+				editorState.themeCss = config.themeCss;
+				editorState.themeConfig = config.themeConfig;
+
+				// Lazy-load Shiki syntax highlighting (non-blocking)
+				import('@refrakt-md/highlight').then(({ createHighlightTransform }) =>
+					createHighlightTransform().then((ht) => {
+						editorState.highlightTransform = ht;
+						editorState.highlightCss = ht.css;
+					})
+				).catch(() => {
+					// Shiki failed to load — block previews work fine without highlighting
+				});
 
 				// Auto-open index.md if present at content root
 				const indexPage = tree.children?.find(
@@ -125,6 +137,8 @@
 			lastSaveTime = Date.now();
 			await saveFile(editorState.currentPath, editorState.editorContent);
 			editorState.savedContent = editorState.editorContent;
+			editorState.saveJustCompleted = true;
+			setTimeout(() => { editorState.saveJustCompleted = false; }, 1500);
 		} catch (e) {
 			editorState.error = e instanceof Error ? e.message : 'Failed to save file';
 		} finally {
@@ -273,7 +287,7 @@
 
 <div class="editor-app">
 	<HeaderBar onsave={handleSave} />
-	<EditorLayout>
+	<EditorLayout hideRight={editorState.editorMode === 'visual' && !editorState.fullPreview}>
 		{#snippet left()}
 			<FileTree
 				onselectfile={handleSelectFile}
@@ -290,16 +304,18 @@
 				<FrontmatterEditor />
 				{#if editorState.currentPath}
 					<div class="mode-toggle">
-						<button
-							class="mode-toggle__btn"
-							class:active={editorState.editorMode === 'code'}
-							onclick={() => { editorState.editorMode = 'code'; }}
-						>Code</button>
-						<button
-							class="mode-toggle__btn"
-							class:active={editorState.editorMode === 'visual'}
-							onclick={() => { editorState.editorMode = 'visual'; }}
-						>Visual</button>
+						<div class="segmented-track">
+							<button
+								class="mode-toggle__btn"
+								class:active={editorState.editorMode === 'code'}
+								onclick={() => { editorState.editorMode = 'code'; }}
+							>Code</button>
+							<button
+								class="mode-toggle__btn"
+								class:active={editorState.editorMode === 'visual'}
+								onclick={() => { editorState.editorMode = 'visual'; editorState.fullPreview = false; }}
+							>Visual</button>
+						</div>
 					</div>
 				{/if}
 				{#if editorState.editorMode === 'visual'}
@@ -359,6 +375,8 @@
 {/if}
 
 <style>
+	@import './lib/styles/tokens.css';
+
 	:global(*) {
 		box-sizing: border-box;
 		margin: 0;
@@ -382,7 +400,7 @@
 
 	:global(::-webkit-scrollbar-thumb) {
 		background: transparent;
-		border-radius: 4px;
+		border-radius: var(--ed-radius-sm);
 	}
 
 	:global(*:hover::-webkit-scrollbar-thumb) {
@@ -394,11 +412,16 @@
 	}
 
 	:global(body) {
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family: var(--ed-font-sans);
 		height: 100vh;
 		overflow: hidden;
-		background: #f8fafc;
-		color: #1a1a2e;
+		background: var(--ed-surface-1);
+		color: var(--ed-text-primary);
+	}
+
+	:global(:focus-visible) {
+		outline: none;
+		box-shadow: 0 0 0 3px var(--ed-accent-ring);
 	}
 
 	.editor-app {
@@ -407,44 +430,44 @@
 		height: 100vh;
 	}
 
-	/* Code / Visual mode toggle */
+	/* Segmented control track */
+	.segmented-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
+	}
+
+	/* Code / Visual mode toggle — segmented control */
 	.mode-toggle {
 		display: flex;
 		align-items: center;
-		gap: 0;
-		padding: 0.5rem 1rem;
-		border-bottom: 1px solid #e2e8f0;
-		background: #fafbfc;
+		padding: var(--ed-space-2) var(--ed-space-4);
+		border-bottom: 1px solid var(--ed-border-default);
+		background: var(--ed-surface-1);
 		flex-shrink: 0;
 	}
 
 	.mode-toggle__btn {
-		padding: 0.3rem 0.8rem;
-		border: 1px solid #e2e8f0;
-		background: #ffffff;
-		color: #64748b;
-		font-size: 0.7rem;
+		padding: var(--ed-space-1) var(--ed-space-3);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
+		color: var(--ed-text-tertiary);
+		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.1s, color 0.1s;
-	}
-
-	.mode-toggle__btn:first-child {
-		border-radius: 4px 0 0 4px;
-	}
-
-	.mode-toggle__btn:last-child {
-		border-radius: 0 4px 4px 0;
-		border-left: none;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
 	.mode-toggle__btn:hover:not(.active) {
-		background: #f1f5f9;
+		color: var(--ed-text-secondary);
 	}
 
 	.mode-toggle__btn.active {
-		background: #0ea5e9;
-		color: #ffffff;
-		border-color: #0ea5e9;
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 </style>

@@ -20,6 +20,7 @@
 - css
 - creating-a-theme
 - components
+- layouts
 
 ## Authoring
 

@@ -29,41 +29,41 @@
 	.banner {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.6rem 1rem;
-		background: #fef3c7;
+		gap: var(--ed-space-3);
+		padding: 0.6rem var(--ed-space-4);
+		background: var(--ed-warning-subtle);
 		border-bottom: 1px solid #fbbf24;
 		flex-shrink: 0;
 	}
 
 	.banner__text {
-		font-size: 0.8rem;
-		color: #92400e;
+		font-size: var(--ed-text-base);
+		color: var(--ed-warning-text);
 		flex: 1;
 	}
 
 	.banner__btn {
 		padding: 0.3rem 0.7rem;
-		border-radius: 4px;
-		font-size: 0.75rem;
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
 		border: none;
 	}
 
 	.banner__btn--reload {
-		background: #0ea5e9;
+		background: var(--ed-accent);
 		color: #ffffff;
 	}
 
 	.banner__btn--reload:hover {
-		background: #0284c7;
+		background: var(--ed-accent-hover);
 	}
 
 	.banner__btn--dismiss {
 		background: transparent;
-		color: #92400e;
-		border: 1px solid #d97706;
+		color: var(--ed-warning-text);
+		border: 1px solid var(--ed-warning);
 	}
 
 	.banner__btn--dismiss:hover {

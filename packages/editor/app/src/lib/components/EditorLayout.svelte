@@ -1,14 +1,16 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { editorState } from '../state/editor.svelte.js';
 	import ResizeHandle from './ResizeHandle.svelte';
 
 	interface Props {
 		left: Snippet;
 		center: Snippet;
 		right: Snippet;
+		hideRight?: boolean;
 	}
 
-	let { left, center, right }: Props = $props();
+	let { left, center, right, hideRight = false }: Props = $props();
 
 	let leftWidth = $state(260);
 	let rightWidth = $state(400);
@@ -34,24 +36,40 @@
 	function handleRightResize(delta: number) {
 		rightWidth = Math.max(MIN_PANEL, rightWidth - delta);
 	}
+
+	let gridColumns = $derived(
+		editorState.fullPreview || hideRight
+			? `${leftWidth}px 4px 1fr`
+			: `${leftWidth}px 4px 1fr 4px ${rightWidth}px`
+	);
 </script>
 
 <div
 	class="layout"
 	bind:clientWidth={layoutWidth}
-	style="grid-template-columns: {leftWidth}px 4px 1fr 4px {rightWidth}px"
+	style="grid-template-columns: {gridColumns}"
 >
 	<div class="layout__panel layout__panel--left">
 		{@render left()}
 	</div>
 	<ResizeHandle onresize={handleLeftResize} />
-	<div class="layout__panel layout__panel--center">
-		{@render center()}
-	</div>
-	<ResizeHandle onresize={handleRightResize} />
-	<div class="layout__panel layout__panel--right">
-		{@render right()}
-	</div>
+	{#if editorState.fullPreview}
+		<div class="layout__panel layout__panel--center layout__panel--full-preview">
+			{@render right()}
+		</div>
+	{:else if hideRight}
+		<div class="layout__panel layout__panel--center">
+			{@render center()}
+		</div>
+	{:else}
+		<div class="layout__panel layout__panel--center">
+			{@render center()}
+		</div>
+		<ResizeHandle onresize={handleRightResize} />
+		<div class="layout__panel layout__panel--right">
+			{@render right()}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -68,14 +86,18 @@
 	}
 
 	.layout__panel--left {
-		background: #f8fafc;
+		background: var(--ed-surface-1);
 	}
 
 	.layout__panel--center {
-		background: #ffffff;
+		background: var(--ed-surface-0);
 	}
 
 	.layout__panel--right {
-		background: #f8fafc;
+		background: var(--ed-surface-1);
+	}
+
+	.layout__panel--full-preview {
+		background: var(--ed-surface-1);
 	}
 </style>

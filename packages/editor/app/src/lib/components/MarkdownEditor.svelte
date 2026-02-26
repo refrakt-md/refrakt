@@ -117,7 +117,7 @@
 	}
 
 	.md-editor__empty-text {
-		color: #475569;
-		font-size: 0.9rem;
+		color: var(--ed-text-secondary);
+		font-size: var(--ed-text-md);
 	}
 </style>
