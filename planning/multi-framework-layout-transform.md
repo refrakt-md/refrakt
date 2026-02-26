@@ -51,15 +51,23 @@ into the structure. Identical to how the engine injects headers, icons, and badg
 
 ### 3. Derived Content (new — but small scope)
 
-Only two cases across all three layouts:
+Six identified cases (three in current layouts, three common across docs/blog sites):
 
 - **Breadcrumbs** (DocsLayout): walks the nav region tree to build `slug → groupTitle` map,
   renders `category › page`. Pure function on nav tree + current URL.
 - **Blog post index** (BlogLayout): filters the `pages` list by `/blog/` prefix, renders post
   cards. Pure function on page list.
+- **Table of contents** (DocsLayout): filters page headings (h2/h3), renders anchor links with
+  scroll-spy. Pure function on headings array. Conditionally visible (2+ headings, frontmatter
+  opt-out).
+- **Prev/next navigation**: walks nav tree to find current page's neighbors, emits previous/next
+  links. Universal in docs sites (Docusaurus, VitePress, GitBook, ReadTheDocs).
+- **Related pages**: filters pages list by shared tags, emits a sidebar list. Common in knowledge
+  bases and blog sidebars.
+- **Reading time**: counts words in content tree, emits "5 min read" span. Common in blog themes.
 
-Both can be **computed at transform time** as pre-built `SerializedTag` trees and injected as
-structural elements. The content system already has the page list and nav tree.
+All can be **computed at transform time** as pre-built `SerializedTag` trees and injected as
+structural elements. The content system already has the page list, nav tree, and headings.
 
 ### 4. Interactive Behavior (solved by `@refrakt-md/behaviors`)
 
@@ -70,6 +78,10 @@ event listeners, return cleanup function.
 New behaviors needed:
 - `mobile-menu` — toggle panel visibility, body scroll lock, escape dismiss
 - `mobile-nav-panel` — secondary panel for docs nav, same pattern
+- ~~`scrollspy` — highlight active heading in TOC~~ **Already implemented** in
+  `packages/behaviors/src/behaviors/scrollspy.ts` — pure DOM IntersectionObserver, discovers
+  `[data-scrollspy]` containers, sets `data-active` on active `<li>`. Registered in
+  `initRuneBehaviors()` alongside `copyBehavior`.
 
 ### 5. SPA Concerns (framework-specific, thin)
 
@@ -91,8 +103,8 @@ interface LayoutConfig {
   /** Structural slots — where regions and content go */
   slots: Record<string, LayoutSlot>;
 
-  /** Static chrome injected into the structure (buttons, icons, panels) */
-  chrome?: Record<string, StructureEntry>;
+  /** Static chrome injected into the structure (buttons, icons, panels, page metadata) */
+  chrome?: Record<string, LayoutStructureEntry>;
 
   /** Computed content — built from page data at transform time */
   computed?: Record<string, ComputedContent>;
@@ -110,25 +122,49 @@ interface LayoutSlot {
    *  - 'region:<name>' — contents of a named region
    *  - 'content' — the main page renderable
    *  - 'computed:<name>' — output of a computed content builder
-   *  - 'clone:region:<name>' — cloned copy of a region (for mobile panels) */
-  source: string;
-  /** Only render this slot if the source region exists */
+   *  - 'clone:region:<name>' — cloned copy of a region (for mobile panels)
+   *  - 'chrome:<name>' — output of a named chrome entry */
+  source?: string;
+  /** Only render this slot if the source region/computed exists */
   conditional?: boolean;
+  /** Only render this slot if a frontmatter key is truthy (or not explicitly false) */
+  frontmatterCondition?: string;
   /** Wrapper element for inner content */
-  wrapper?: { tag: string; class: string };
-  /** Static children or nested structure */
-  children?: (string | LayoutSlot | StructureEntry)[];
+  wrapper?: { tag: string; class: string; conditionalModifier?: { computed: string; modifier: string } };
+  /** Static children or nested structure (when present, `source` on parent is omitted) */
+  children?: (string | LayoutSlot | LayoutStructureEntry)[];
   /** Conditional BEM modifier class based on region existence */
   conditionalModifier?: { region: string; modifier: string };
 }
 
 interface ComputedContent {
   /** Type of computed content */
-  type: 'breadcrumb' | 'post-index' | 'toc';
-  /** Data source: region name, 'pages', 'frontmatter', etc. */
+  type: 'breadcrumb' | 'post-index' | 'toc' | 'prev-next' | 'related-pages' | 'reading-time';
+  /** Data source: region name, 'pages', 'headings', 'content', etc. */
   source: string;
   /** Type-specific options */
   options?: Record<string, any>;
+  /** When to show this computed content (if omitted, always shown) */
+  visibility?: {
+    /** Minimum count of source items needed */
+    minCount?: number;
+    /** Frontmatter key that can disable it (value=false hides) */
+    frontmatterToggle?: string;
+  };
+}
+
+/** Extended StructureEntry for layout chrome — adds page data access and iteration */
+interface LayoutStructureEntry extends StructureEntry {
+  /** Inject text from page-level data: 'title', 'url', 'frontmatter.date', etc. */
+  pageText?: string;
+  /** Only inject this element if the referenced page field is truthy */
+  pageCondition?: string;
+  /** Date formatting when pageText resolves to a date string */
+  dateFormat?: Intl.DateTimeFormatOptions;
+  /** Repeat this element for each item in a page data array (e.g. 'frontmatter.tags') */
+  iterate?: { source: string };
+  /** Set attributes from page data (parallel to StructureEntry's fromModifier) */
+  attrs?: Record<string, string | { fromModifier: string } | { fromPageData: string }>;
 }
 ```
 
@@ -177,9 +213,22 @@ const docsLayout: LayoutConfig = {
     content: {
       tag: 'main',
       class: 'rf-docs-content',
-      source: 'content',
-      wrapper: { tag: 'div', class: 'rf-docs-content__inner' },
       conditionalModifier: { region: 'nav', modifier: 'has-nav' },
+      wrapper: {
+        tag: 'div',
+        class: 'rf-docs-content__inner',
+        conditionalModifier: { computed: 'toc', modifier: 'has-toc' },
+      },
+      children: [
+        { tag: 'div', class: 'rf-docs-content__body', source: 'content' },
+        { tag: 'aside', class: 'rf-docs-toc', source: 'computed:toc', conditional: true },
+      ],
+    },
+    'prev-next': {
+      tag: 'nav',
+      class: 'rf-docs-prev-next',
+      source: 'computed:prevNext',
+      conditional: true,
     },
   },
   computed: {
@@ -192,6 +241,35 @@ const docsLayout: LayoutConfig = {
       //          <span class="rf-docs-breadcrumb-sep">›</span>
       //          <span class="rf-docs-breadcrumb-page">Page Title</span>
       //        </div>
+    },
+    toc: {
+      type: 'toc',
+      source: 'headings',
+      options: { levels: [2, 3] },
+      visibility: { minCount: 2, frontmatterToggle: 'toc' },
+      // emits: <nav class="rf-on-this-page" data-scrollspy>
+      //          <p class="rf-on-this-page__title">On this page</p>
+      //          <ul class="rf-on-this-page__list">
+      //            <li class="rf-on-this-page__item" data-level="2">
+      //              <a href="#id">Heading text</a>
+      //            </li>
+      //          </ul>
+      //        </nav>
+      // The data-scrollspy attribute enables scrollspyBehavior (already in @refrakt-md/behaviors)
+      // to discover the TOC and highlight the active heading as the user scrolls.
+    },
+    prevNext: {
+      type: 'prev-next',
+      source: 'region:nav',
+      // walks nav tree to find current page, emits:
+      // <a data-name="prev" href="/prev-url">
+      //   <span data-name="label">Previous</span>
+      //   <span data-name="title">Page Title</span>
+      // </a>
+      // <a data-name="next" href="/next-url">
+      //   <span data-name="label">Next</span>
+      //   <span data-name="title">Page Title</span>
+      // </a>
     },
   },
   chrome: {
@@ -236,6 +314,7 @@ function layoutTransform(
     url: string;
     pages: PageEntry[];
     frontmatter: Record<string, unknown>;
+    headings?: Array<{ level: number; text: string; id: string }>;
   }
 ): SerializedTag {
   // 1. Build computed content (breadcrumbs, post index, etc.)
@@ -266,7 +345,7 @@ function layoutTransform(
   let { theme, page } = $props();
 
   const tree = $derived(layoutTransform(
-    theme.layouts[matchRouteRule(page.url, theme.routeRules)],
+    theme.layouts[matchRouteRule(page.url, theme.manifest.routeRules ?? [])],
     page
   ));
 
@@ -321,11 +400,19 @@ const tree = layoutTransform(layoutConfig, page);
 
 ### Phase 1: Layout Transform (framework-agnostic)
 
-1. Add `LayoutConfig` interface to `packages/transform/src/types.ts`
-2. Implement `layoutTransform()` in `packages/transform/src/layout.ts`
-3. Implement computed content builders (breadcrumb, post-index)
+1. Add interfaces to `packages/transform/src/types.ts`:
+   `LayoutConfig`, `LayoutSlot`, `ComputedContent`, `LayoutStructureEntry`
+2. Implement `layoutTransform()` in `packages/transform/src/layout.ts`:
+   slot resolution, chrome building (with `pageText`/`pageCondition`/`iterate`/`dateFormat`),
+   frontmatter conditions, conditional modifiers
+3. Implement computed content builders:
+   - `breadcrumb` — nav tree → slug/groupTitle map
+   - `post-index` — pages list → filtered/sorted post cards
+   - `toc` — headings → anchor links with `data-scrollspy`
+   - `prev-next` — nav tree → previous/next page links
 4. Add layout behavior(s) to `packages/behaviors/` (mobile-menu, mobile-nav-panel)
-5. Convert existing DocsLayout config as proof — verify output matches current HTML
+   — Note: `scrollspyBehavior` is already done (`packages/behaviors/src/behaviors/scrollspy.ts`)
+5. Convert DocsLayout + BlogLayout configs as proof — verify output matches current HTML
 
 ### Phase 2: Migrate Svelte Adapter
 
@@ -372,8 +459,156 @@ They should share the same discovery mechanism:
 
 Both return cleanup functions, both are initialized by the same `initBehaviors()` entry point.
 
+### TOC as Computed Content (validated by implementation)
+
+The existing `OnThisPage.svelte` component in lumina is a pure function from headings → HTML.
+Under the layout transform model, the `toc` computed content builder produces this as a
+`SerializedTag` tree instead, which the Renderer walks like any other markup. This eliminates the
+Svelte component entirely — the scoped styles move to `packages/lumina/styles/` as regular CSS
+(consistent with how all other rune styles work).
+
+Key details:
+- Builder emits `data-scrollspy` on the `<nav>` so `scrollspyBehavior` discovers it automatically
+- Visibility is resolved at transform time: check heading count against `visibility.minCount` and
+  frontmatter against `visibility.frontmatterToggle` — if conditions fail, omit the computed node
+  and the `--has-toc` modifier on the wrapper
+- CSS handles responsive hiding (`@media (max-width: 1100px)`) — not a transform concern
+- The `__inner` flex wrapper pattern (content body + computed sidebar) may generalize to other
+  layouts wanting an adjacent sidebar (e.g. "related articles")
+
 ### Escape Hatch
 
 Like `RuneConfig.postTransform`, `LayoutConfig` should support a `postTransform` hook for cases
 that can't be expressed declaratively. This keeps the system extensible without abandoning the
 declarative model.
+
+## Additional Layout Examples
+
+### Blog Article Layout (with frontmatter-sourced chrome)
+
+Demonstrates `LayoutStructureEntry` with `pageText`, `pageCondition`, `iterate`, and `dateFormat`:
+
+```ts
+const blogArticleLayout: LayoutConfig = {
+  block: 'blog-article',
+  slots: {
+    header: { tag: 'header', class: 'rf-blog-header', source: 'region:header',
+              conditional: true, wrapper: { tag: 'div', class: 'rf-blog-header__inner' } },
+    content: {
+      tag: 'article', class: 'rf-blog-article',
+      children: [
+        { tag: 'header', class: 'rf-blog-article__header', source: 'chrome:article-header' },
+        { tag: 'div', class: 'rf-blog-article__body', source: 'content' },
+      ],
+    },
+    sidebar: { tag: 'aside', class: 'rf-blog-sidebar', source: 'region:sidebar',
+               conditional: true, frontmatterCondition: 'sidebar' },
+    footer: { tag: 'footer', class: 'rf-blog-footer', source: 'region:footer',
+              conditional: true },
+  },
+  chrome: {
+    'article-header': {
+      tag: 'header', ref: 'article-header',
+      children: [
+        { tag: 'h1', ref: 'title', pageText: 'title' },
+        { tag: 'div', ref: 'meta', pageCondition: 'frontmatter.date', children: [
+          { tag: 'time', ref: 'date', pageText: 'frontmatter.date',
+            dateFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+            attrs: { datetime: { fromPageData: 'frontmatter.date' } } },
+          { tag: 'span', ref: 'author', pageText: 'frontmatter.author',
+            pageCondition: 'frontmatter.author' },
+        ]},
+        { tag: 'div', ref: 'tags', pageCondition: 'frontmatter.tags', children: [
+          { tag: 'span', ref: 'tag', iterate: { source: 'frontmatter.tags' } },
+        ]},
+      ],
+    },
+  },
+  behaviors: ['mobile-menu'],
+};
+```
+
+### Tutorial Layout (Docusaurus/VitePress-style)
+
+Same as DocsLayout but with prev/next navigation, demonstrating computed content reuse:
+
+```ts
+const tutorialLayout: LayoutConfig = {
+  block: 'tutorial',
+  slots: {
+    header: { tag: 'header', source: 'region:header', conditional: true },
+    sidebar: { tag: 'aside', source: 'region:nav', conditional: true },
+    content: {
+      tag: 'main',
+      conditionalModifier: { region: 'nav', modifier: 'has-nav' },
+      wrapper: { tag: 'div', class: 'rf-tutorial-content__inner',
+                 conditionalModifier: { computed: 'toc', modifier: 'has-toc' } },
+      children: [
+        { tag: 'div', source: 'content' },
+        { tag: 'aside', source: 'computed:toc', conditional: true },
+      ],
+    },
+    'prev-next': { tag: 'nav', source: 'computed:prevNext', conditional: true },
+  },
+  computed: {
+    toc: { type: 'toc', source: 'headings', options: { levels: [2, 3] },
+           visibility: { minCount: 2, frontmatterToggle: 'toc' } },
+    prevNext: { type: 'prev-next', source: 'region:nav' },
+  },
+  behaviors: ['mobile-menu', 'mobile-nav-panel', 'scrollspy'],
+};
+```
+
+## Pattern Coverage Assessment
+
+### Expressible with current interfaces
+
+| Pattern | Example sites | How |
+|---------|--------------|-----|
+| Docs with sidebar + TOC | Stripe, Tailwind, Next.js | DocsLayout config (above) |
+| Simple content page | Landing pages, marketing | DefaultLayout config |
+| Knowledge base / wiki | Notion-style | Default + breadcrumb computed |
+| Changelog | Release notes | Default layout, content via runes |
+
+### Expressible with new computed content types (no interface changes)
+
+| Pattern | ComputedContent type | Source |
+|---------|---------------------|--------|
+| Prev/next navigation | `prev-next` | `region:nav` — walks nav tree |
+| Related pages sidebar | `related-pages` | `pages` — matches by tags |
+| Reading time estimate | `reading-time` | `content` — word count |
+
+### Requires LayoutStructureEntry extensions
+
+| Pattern | What's needed | Extension |
+|---------|--------------|-----------|
+| Blog article header (title, date, author) | Inject text from frontmatter | `pageText`, `pageCondition` |
+| Tags/categories pill list | Repeat element per array item | `iterate` |
+| Date formatting ("February 26, 2026") | Format date strings | `dateFormat` |
+| Conditional author bio | Show only if frontmatter field exists | `pageCondition` |
+
+### Requires LayoutSlot extension
+
+| Pattern | What's needed | Extension |
+|---------|--------------|-----------|
+| Optional sidebar via frontmatter | `sidebar: false` in frontmatter hides slot | `frontmatterCondition` |
+
+### Out of scope (component/behavior territory)
+
+| Pattern | Why | How to support |
+|---------|-----|---------------|
+| Search interface | Live query + results overlay | `{% search %}` rune + component |
+| Dark mode toggle | localStorage + DOM class toggle | Behavior or component in header region |
+| Version selector dropdown | Interactive dropdown + redirect | Component in header region |
+| Collapsible nav sections | Expand/collapse on click | Behavior on Nav rune |
+| Language switcher | Sync all code blocks on page | Behavior coordinating TabGroups |
+
+## Priority Order for New Capabilities
+
+1. **Prev/next navigation** (ComputedContent) — universal docs expectation, pure function
+2. **Frontmatter-sourced chrome** (LayoutStructureEntry) — unlocks blog article layout as
+   declarative config; `pageText`, `pageCondition`, `dateFormat`
+3. **Iterable chrome** (LayoutStructureEntry) — tags, categories, author lists; `iterate`
+4. **Frontmatter slot conditions** (LayoutSlot) — optional sidebars; `frontmatterCondition`
+5. **Related pages** (ComputedContent) — knowledge base / blog sidebar engagement
+6. **Reading time** (ComputedContent) — blog article headers
