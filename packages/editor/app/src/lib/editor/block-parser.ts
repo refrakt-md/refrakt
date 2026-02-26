@@ -370,3 +370,29 @@ export function buildRuneMap(runes: RuneInfo[]): Map<string, RuneInfo> {
 	}
 	return map;
 }
+
+/** Human-readable label for a block, used in rail labels and edit panel header */
+export function blockLabel(block: ParsedBlock): string {
+	switch (block.type) {
+		case 'heading':
+			return `H${(block as HeadingBlock).level}`;
+		case 'rune':
+			return (block as RuneBlock).runeName;
+		case 'fence': {
+			const lang = (block as FenceBlock).language;
+			return lang ? `Code (${lang})` : 'Code';
+		}
+		case 'list':
+			return (block as ListBlock).ordered ? 'Ordered List' : 'List';
+		case 'quote':
+			return 'Blockquote';
+		case 'hr':
+			return 'Divider';
+		case 'image':
+			return 'Image';
+		case 'paragraph':
+			return 'Paragraph';
+		default:
+			return block.type;
+	}
+}

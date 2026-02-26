@@ -4,9 +4,11 @@
 		parseBlocks,
 		serializeBlocks,
 		buildRuneMap,
+		blockLabel,
 		type ParsedBlock,
 	} from '../editor/block-parser.js';
 	import BlockCard from './BlockCard.svelte';
+	import BlockEditPanel from './BlockEditPanel.svelte';
 
 	let blocks: ParsedBlock[] = $state([]);
 	let runeMap = $derived(buildRuneMap(editorState.runes));
@@ -20,6 +22,8 @@
 		if (body !== lastParsedSource) {
 			blocks = parseBlocks(body);
 			lastParsedSource = body;
+			// Close edit panel when switching files
+			activeIndex = null;
 		}
 	});
 
@@ -30,6 +34,20 @@
 		editorState.updateBody(newSource);
 	}
 
+	// ── Active block (rail selection) ────────────────────────────
+
+	let activeIndex: number | null = $state(null);
+
+	function toggleBlock(index: number) {
+		activeIndex = activeIndex === index ? null : index;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && activeIndex !== null) {
+			activeIndex = null;
+		}
+	}
+
 	// ── Block operations ─────────────────────────────────────────
 
 	function handleUpdateBlock(index: number, updated: ParsedBlock) {
@@ -38,6 +56,14 @@
 	}
 
 	function handleRemoveBlock(index: number) {
+		// Adjust activeIndex
+		if (activeIndex !== null) {
+			if (activeIndex === index) {
+				activeIndex = null;
+			} else if (activeIndex > index) {
+				activeIndex--;
+			}
+		}
 		blocks = blocks.filter((_, i) => i !== index);
 		syncToSource();
 	}
@@ -70,6 +96,23 @@
 			const next = blocks.filter((_, i) => i !== dragIndex);
 			next.splice(index, 0, moved);
 			blocks = next;
+
+			// Update activeIndex to follow the active block
+			if (activeIndex !== null) {
+				if (activeIndex === dragIndex) {
+					activeIndex = index > dragIndex ? index - 1 : index;
+				} else {
+					// Adjust if the move shifts the active block's position
+					let newActive = activeIndex;
+					if (dragIndex < activeIndex && index >= activeIndex) {
+						newActive--;
+					} else if (dragIndex > activeIndex && index <= activeIndex) {
+						newActive++;
+					}
+					activeIndex = newActive;
+				}
+			}
+
 			syncToSource();
 		}
 		dragIndex = null;
@@ -188,6 +231,8 @@
 	});
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <div class="block-editor" class:hidden={!editorState.currentPath}>
 	{#if blocks.length === 0 && editorState.currentPath}
 		<div class="block-editor__empty">
@@ -202,95 +247,120 @@
 		</div>
 	{/if}
 
-	<div class="block-editor__list">
-		{#each blocks as block, i (block.id)}
-			<div
-				class="block-editor__item"
-				class:drag-source={dragIndex === i}
-				class:drag-over={dropIndex === i && dragIndex !== i}
-			>
-				<BlockCard
-					{block}
+	<div class="block-editor__stage" class:editing={activeIndex !== null}>
+		<!-- Scrollable list + rail area -->
+		<div class="block-editor__scroll">
+			<div class="block-editor__list-wrap">
+				{#each blocks as block, i (block.id)}
+					<div
+						class="block-editor__row"
+						class:drag-source={dragIndex === i}
+						class:drag-over={dropIndex === i && dragIndex !== i}
+					>
+						<div class="block-editor__block-cell">
+							<BlockCard
+								{block}
+								ondragstart={(e) => handleDragStart(e, i)}
+								ondragover={(e) => handleDragOver(e, i)}
+								ondrop={(e) => handleDrop(e, i)}
+							/>
+						</div>
+						<button
+							class="block-editor__rail-label"
+							class:active={activeIndex === i}
+							onclick={() => toggleBlock(i)}
+							aria-pressed={activeIndex === i}
+						>
+							{blockLabel(block)}
+						</button>
+					</div>
+				{/each}
+
+				<!-- Insert block bar -->
+				{#if editorState.currentPath}
+					<div class="block-editor__insert">
+						{#if showInsertMenu}
+							<div class="insert-menu">
+								<div class="insert-menu__section">
+									<span class="insert-menu__label">Content</span>
+									<div class="insert-menu__grid">
+										<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
+											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+												<path d="M3 3v10M13 3v10M3 8h10" />
+											</svg>
+											Heading
+										</button>
+										<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
+											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+												<line x1="2" y1="4" x2="14" y2="4" />
+												<line x1="2" y1="8" x2="14" y2="8" />
+												<line x1="2" y1="12" x2="10" y2="12" />
+											</svg>
+											Paragraph
+										</button>
+										<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
+											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+												<polyline points="5 4 2 8 5 12" />
+												<polyline points="11 4 14 8 11 12" />
+											</svg>
+											Code Block
+										</button>
+										<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
+											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+												<line x1="2" y1="8" x2="14" y2="8" />
+											</svg>
+											Divider
+										</button>
+									</div>
+								</div>
+								{#each [...runesByCategory.entries()] as [category, runes]}
+									<div class="insert-menu__section">
+										<span class="insert-menu__label">{category}</span>
+										<div class="insert-menu__grid">
+											{#each runes as rune}
+												<button
+													class="insert-menu__btn insert-menu__btn--rune"
+													onclick={() => insertBlock('rune', rune.name)}
+												>
+													<span class="insert-menu__rune-dot"></span>
+													<span class="insert-menu__rune-info">
+														<span class="insert-menu__rune-name">{rune.name}</span>
+														{#if rune.description}
+															<span class="insert-menu__rune-desc">{rune.description}</span>
+														{/if}
+													</span>
+												</button>
+											{/each}
+										</div>
+									</div>
+								{/each}
+								<button class="insert-menu__close" onclick={() => { showInsertMenu = false; }}>&times; Close</button>
+							</div>
+						{:else}
+							<button
+								class="block-editor__add-btn"
+								onclick={() => { showInsertMenu = true; }}
+							>+ Add block</button>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Edit panel — slides in from the right -->
+		{#if activeIndex !== null && blocks[activeIndex]}
+			<div class="block-editor__edit-panel">
+				<BlockEditPanel
+					block={blocks[activeIndex]}
 					{runeMap}
 					runes={() => editorState.runes}
-					onupdate={(updated) => handleUpdateBlock(i, updated)}
-					onremove={() => handleRemoveBlock(i)}
-					ondragstart={(e) => handleDragStart(e, i)}
-					ondragover={(e) => handleDragOver(e, i)}
-					ondrop={(e) => handleDrop(e, i)}
+					onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
+					onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
+					onclose={() => { activeIndex = null; }}
 				/>
 			</div>
-		{/each}
+		{/if}
 	</div>
-
-	<!-- Insert block bar -->
-	{#if editorState.currentPath}
-		<div class="block-editor__insert">
-			{#if showInsertMenu}
-				<div class="insert-menu">
-					<div class="insert-menu__section">
-						<span class="insert-menu__label">Content</span>
-						<div class="insert-menu__grid">
-							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<path d="M3 3v10M13 3v10M3 8h10" />
-								</svg>
-								Heading
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="4" x2="14" y2="4" />
-									<line x1="2" y1="8" x2="14" y2="8" />
-									<line x1="2" y1="12" x2="10" y2="12" />
-								</svg>
-								Paragraph
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="5 4 2 8 5 12" />
-									<polyline points="11 4 14 8 11 12" />
-								</svg>
-								Code Block
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="8" x2="14" y2="8" />
-								</svg>
-								Divider
-							</button>
-						</div>
-					</div>
-					{#each [...runesByCategory.entries()] as [category, runes]}
-						<div class="insert-menu__section">
-							<span class="insert-menu__label">{category}</span>
-							<div class="insert-menu__grid">
-								{#each runes as rune}
-									<button
-										class="insert-menu__btn insert-menu__btn--rune"
-										onclick={() => insertBlock('rune', rune.name)}
-									>
-										<span class="insert-menu__rune-dot"></span>
-										<span class="insert-menu__rune-info">
-											<span class="insert-menu__rune-name">{rune.name}</span>
-											{#if rune.description}
-												<span class="insert-menu__rune-desc">{rune.description}</span>
-											{/if}
-										</span>
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/each}
-					<button class="insert-menu__close" onclick={() => { showInsertMenu = false; }}>&times; Close</button>
-				</div>
-			{:else}
-				<button
-					class="block-editor__add-btn"
-					onclick={() => { showInsertMenu = true; }}
-				>+ Add block</button>
-			{/if}
-		</div>
-	{/if}
 </div>
 
 {#if !editorState.currentPath}
@@ -310,7 +380,6 @@
 	.block-editor {
 		flex: 1;
 		min-height: 0;
-		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		background: var(--ed-surface-1);
@@ -320,30 +389,141 @@
 		display: none;
 	}
 
-	.block-editor__list {
+	/* Stage: flex container for scroll area + edit panel */
+	.block-editor__stage {
 		display: flex;
-		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+		position: relative;
+	}
+
+	/* Scrollable block list + rail area */
+	.block-editor__scroll {
+		flex: 1;
+		overflow-y: auto;
+		transition: margin-right var(--ed-transition-slow);
+	}
+
+	.block-editor__stage.editing .block-editor__scroll {
+		margin-right: 400px;
+	}
+
+	.block-editor__list-wrap {
 		max-width: 1100px;
 		margin: 0 auto;
 		width: 100%;
-		padding: var(--ed-space-4) var(--ed-space-4);
+		padding: var(--ed-space-4);
 		min-height: 100%;
 	}
 
-	.block-editor__item {
+	/* Block row: preview cell + rail label */
+	.block-editor__row {
+		display: flex;
+		align-items: flex-start;
 		transition: transform var(--ed-transition-fast), opacity var(--ed-transition-fast);
+	}
+
+	.block-editor__block-cell {
+		flex: 1;
+		min-width: 0;
 		background: var(--ed-surface-0);
 	}
 
-	.block-editor__item.drag-source {
+	.block-editor__row.drag-source {
 		opacity: 0.6;
 		transform: rotate(0.5deg);
 	}
 
-	.block-editor__item.drag-over {
+	.block-editor__row.drag-over {
 		box-shadow: 0 -3px 10px var(--ed-accent-ring);
 		border-top: 2px solid var(--ed-accent);
 		padding-top: 2px;
+	}
+
+	/* Rail labels — aligned to the right of each block */
+	.block-editor__rail-label {
+		position: relative;
+		width: 80px;
+		flex-shrink: 0;
+		margin-left: var(--ed-space-5);
+		padding: 0.5rem 0.6rem 0.5rem 0.75rem;
+		font-size: 10px;
+		font-weight: 600;
+		color: var(--ed-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		text-align: left;
+		background: none;
+		border: none;
+		border-left: 1px solid var(--ed-border-subtle);
+		cursor: pointer;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		transition: color var(--ed-transition-fast);
+		align-self: stretch;
+		line-height: 1.3;
+	}
+
+	/* Gap in the line at the label — cut the border around the text */
+	.block-editor__rail-label::before {
+		content: '';
+		position: absolute;
+		left: -1px;
+		top: 0;
+		height: 4px;
+		width: 1px;
+		background: var(--ed-surface-1);
+	}
+
+	.block-editor__rail-label::after {
+		content: '';
+		position: absolute;
+		left: -1px;
+		top: calc(0.5rem + 1.3em + 2px);
+		bottom: 0;
+		width: 1px;
+		background: var(--ed-surface-1);
+	}
+
+	/* First label: hide top gap masker */
+	.block-editor__row:first-of-type .block-editor__rail-label::before {
+		top: 0;
+		height: 0.5rem;
+	}
+
+	/* Last label: extend bottom gap masker */
+	.block-editor__row:last-of-type .block-editor__rail-label::after {
+		bottom: 0;
+	}
+
+	.block-editor__rail-label:hover {
+		color: var(--ed-text-secondary);
+	}
+
+	.block-editor__rail-label.active {
+		color: var(--ed-accent);
+		font-weight: 700;
+	}
+
+	/* Edit panel — absolutely positioned on the right */
+	.block-editor__edit-panel {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 400px;
+		overflow-y: auto;
+		background: transparent;
+		border-left: 1px solid var(--ed-border-default);
+		transform: translateX(100%);
+		transition: transform var(--ed-transition-slow);
+		z-index: 2;
+	}
+
+	.block-editor__stage.editing .block-editor__edit-panel {
+		transform: translateX(0);
 	}
 
 	/* Empty state */
