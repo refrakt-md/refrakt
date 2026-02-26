@@ -313,7 +313,7 @@
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
-		background: var(--ed-surface-0);
+		background: var(--ed-surface-1);
 	}
 
 	.block-editor.hidden {
@@ -323,14 +323,16 @@
 	.block-editor__list {
 		display: flex;
 		flex-direction: column;
-		max-width: 900px;
+		max-width: 1100px;
 		margin: 0 auto;
 		width: 100%;
-		padding: var(--ed-space-4) 0;
+		padding: var(--ed-space-4) var(--ed-space-4);
+		min-height: 100%;
 	}
 
 	.block-editor__item {
 		transition: transform var(--ed-transition-fast), opacity var(--ed-transition-fast);
+		background: var(--ed-surface-0);
 	}
 
 	.block-editor__item.drag-source {
