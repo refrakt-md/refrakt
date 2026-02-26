@@ -22,7 +22,9 @@ export interface StoredPage {
 	conversationId: string;
 	title: string;
 	description: string;
-	pins: any[];
+	body: string;
+	/** @deprecated Legacy pin-based data — migrated to body on load */
+	pins?: any[];
 }
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -149,7 +151,7 @@ export async function updateConversationModel(id: string, model: string): Promis
 
 export async function savePage(
 	conversationId: string,
-	page: { title: string; description: string; pins: any[] },
+	page: { title: string; description: string; body: string },
 ): Promise<void> {
 	const db = await getDB();
 	await db.put('pages', { conversationId, ...page });
@@ -157,9 +159,14 @@ export async function savePage(
 
 export async function loadPage(
 	conversationId: string,
-): Promise<{ title: string; description: string; pins: any[] } | undefined> {
+): Promise<{ title: string; description: string; body: string; pins?: any[] } | undefined> {
 	const db = await getDB();
 	const stored = await db.get('pages', conversationId);
 	if (!stored) return undefined;
-	return { title: stored.title, description: stored.description, pins: stored.pins };
+	return {
+		title: stored.title ?? '',
+		description: stored.description ?? '',
+		body: stored.body ?? '',
+		pins: stored.pins,
+	};
 }

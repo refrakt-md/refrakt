@@ -20,11 +20,29 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./block-editor": {
+      "svelte": "./app/src/lib/components/BlockEditor.svelte",
+      "default": "./app/src/lib/components/BlockEditor.svelte"
+    },
+    "./block-card": {
+      "svelte": "./app/src/lib/components/BlockCard.svelte",
+      "default": "./app/src/lib/components/BlockCard.svelte"
+    },
+    "./block-edit-panel": {
+      "svelte": "./app/src/lib/components/BlockEditPanel.svelte",
+      "default": "./app/src/lib/components/BlockEditPanel.svelte"
+    },
+    "./block-parser": "./app/src/lib/editor/block-parser.ts",
+    "./block-renderer": "./app/src/lib/preview/block-renderer.ts"
   },
   "files": [
     "dist",
     "app/dist",
+    "app/src/lib/components",
+    "app/src/lib/editor/block-parser.ts",
+    "app/src/lib/preview/block-renderer.ts",
+    "app/src/lib/api/client.ts",
     "preview-runtime"
   ],
   "scripts": {

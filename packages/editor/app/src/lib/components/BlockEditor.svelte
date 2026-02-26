@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { editorState } from '../state/editor.svelte.js';
+	import type { RuneInfo } from '../api/client.js';
+	import type { RendererNode } from '@refrakt-md/transform';
+	import type { ThemeConfig } from '@refrakt-md/transform';
 	import {
 		parseBlocks,
 		serializeBlocks,
@@ -10,15 +12,37 @@
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 
+	interface Props {
+		bodyContent: string;
+		onchange: (body: string) => void;
+		runes: RuneInfo[];
+		themeConfig: ThemeConfig | null;
+		themeCss: string;
+		highlightCss?: string;
+		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
+		showInsertMenu?: boolean;
+	}
+
+	let {
+		bodyContent,
+		onchange,
+		runes,
+		themeConfig,
+		themeCss,
+		highlightCss = '',
+		highlightTransform = null,
+		showInsertMenu: showInsertMenuProp = true,
+	}: Props = $props();
+
 	let blocks: ParsedBlock[] = $state([]);
-	let runeMap = $derived(buildRuneMap(editorState.runes));
+	let runeMap = $derived(buildRuneMap(runes));
 
 	// Track the source we last parsed from, to avoid re-parsing our own updates
 	let lastParsedSource = '';
 
 	// Parse blocks when body content changes (from outside, e.g. file switch)
 	$effect(() => {
-		const body = editorState.bodyContent;
+		const body = bodyContent;
 		if (body !== lastParsedSource) {
 			blocks = parseBlocks(body);
 			lastParsedSource = body;
@@ -31,7 +55,7 @@
 	function syncToSource() {
 		const newSource = serializeBlocks(blocks);
 		lastParsedSource = newSource;
-		editorState.updateBody(newSource);
+		onchange(newSource);
 	}
 
 	// ── Active block (rail selection) ────────────────────────────
@@ -221,8 +245,8 @@
 
 	// Group runes by category for the insert menu
 	let runesByCategory = $derived.by(() => {
-		const map = new Map<string, typeof editorState.runes>();
-		for (const r of editorState.runes) {
+		const map = new Map<string, RuneInfo[]>();
+		for (const r of runes) {
 			const list = map.get(r.category) ?? [];
 			list.push(r);
 			map.set(r.category, list);
@@ -233,8 +257,8 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="block-editor" class:hidden={!editorState.currentPath}>
-	{#if blocks.length === 0 && editorState.currentPath}
+<div class="block-editor">
+	{#if blocks.length === 0}
 		<div class="block-editor__empty">
 			<svg class="block-editor__empty-icon" width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 				<rect x="6" y="8" width="36" height="32" rx="3" />
@@ -260,6 +284,10 @@
 						<div class="block-editor__block-cell">
 							<BlockCard
 								{block}
+								{themeConfig}
+								{themeCss}
+								{highlightCss}
+								{highlightTransform}
 								ondragstart={(e) => handleDragStart(e, i)}
 								ondragover={(e) => handleDragOver(e, i)}
 								ondrop={(e) => handleDrop(e, i)}
@@ -277,7 +305,7 @@
 				{/each}
 
 				<!-- Insert block bar -->
-				{#if editorState.currentPath}
+				{#if showInsertMenuProp}
 					<div class="block-editor__insert">
 						{#if showInsertMenu}
 							<div class="insert-menu">
@@ -353,7 +381,7 @@
 				<BlockEditPanel
 					block={blocks[activeIndex]}
 					{runeMap}
-					runes={() => editorState.runes}
+					runes={() => runes}
 					onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
 					onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
 					onclose={() => { activeIndex = null; }}
@@ -363,18 +391,6 @@
 	</div>
 </div>
 
-{#if !editorState.currentPath}
-	<div class="block-editor__placeholder">
-		<svg class="block-editor__placeholder-icon" width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-			<rect x="6" y="4" width="24" height="32" rx="2" />
-			<polyline points="20 4 20 14 30 14" />
-			<line x1="12" y1="22" x2="24" y2="22" />
-			<line x1="12" y1="27" x2="20" y2="27" />
-			<path d="M34 24l6 6M34 36l6-6" />
-		</svg>
-		<span class="block-editor__placeholder-text">Select a file to edit</span>
-	</div>
-{/if}
 
 <style>
 	.block-editor {
@@ -383,10 +399,6 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--ed-surface-1);
-	}
-
-	.block-editor.hidden {
-		display: none;
 	}
 
 	/* Stage: flex container for scroll area + edit panel */
@@ -558,26 +570,6 @@
 	.block-editor__empty-hint {
 		color: var(--ed-text-muted);
 		font-size: var(--ed-text-sm);
-	}
-
-	/* Placeholder (no file selected) */
-	.block-editor__placeholder {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		gap: var(--ed-space-3);
-	}
-
-	.block-editor__placeholder-icon {
-		color: var(--ed-border-strong);
-	}
-
-	.block-editor__placeholder-text {
-		color: var(--ed-text-muted);
-		font-size: var(--ed-text-md);
 	}
 
 	/* Insert block controls */

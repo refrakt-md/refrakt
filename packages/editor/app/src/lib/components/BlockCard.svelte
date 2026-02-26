@@ -1,11 +1,15 @@
 <script lang="ts">
 	import type { ParsedBlock } from '../editor/block-parser.js';
-	import { editorState } from '../state/editor.svelte.js';
+	import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 
 	interface Props {
 		block: ParsedBlock;
+		themeConfig: ThemeConfig | null;
+		themeCss: string;
+		highlightCss?: string;
+		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
 		dragHandle?: boolean;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
@@ -14,6 +18,10 @@
 
 	let {
 		block,
+		themeConfig,
+		themeCss,
+		highlightCss: hlCssProp = '',
+		highlightTransform: hlTransformProp = null,
 		dragHandle = true,
 		ondragstart,
 		ondragover,
@@ -27,7 +35,7 @@
 	let behaviorCleanup: (() => void) | null = null;
 
 	$effect(() => {
-		if (!previewContainer || !editorState.themeConfig) return;
+		if (!previewContainer || !themeConfig) return;
 
 		// Attach shadow root once
 		if (!shadowRoot) {
@@ -35,10 +43,10 @@
 		}
 
 		const source = block.source;
-		const config = editorState.themeConfig;
-		const css = editorState.themeCss;
-		const hlCss = editorState.highlightCss || '';
-		const hlTransform = editorState.highlightTransform;
+		const config = themeConfig;
+		const css = themeCss;
+		const hlCss = hlCssProp || '';
+		const hlTransform = hlTransformProp;
 
 		clearTimeout(previewDebounce);
 		previewDebounce = setTimeout(() => {
@@ -120,7 +128,7 @@ ${hlCss}
 	{/if}
 
 	<!-- Inline preview (Shadow DOM) — always visible -->
-	{#if editorState.themeConfig}
+	{#if themeConfig}
 		<div class="block-card__inline-preview" bind:this={previewContainer}></div>
 	{/if}
 </div>

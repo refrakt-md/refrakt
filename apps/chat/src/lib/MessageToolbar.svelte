@@ -30,23 +30,13 @@
 
 	function handlePinAll() {
 		if (sections.length === 0) return;
-		pageStore.pinSections(
-			messageIndex,
-			sections.map((s) => s.id),
-			sections,
-			messageContent,
-		);
+		pageStore.appendSections(messageContent, sections);
 	}
 
 	function handlePinSelected(e: CustomEvent<{ sectionIds: string[] }>) {
 		const selected = sections.filter((s) => e.detail.sectionIds.includes(s.id));
 		if (selected.length > 0) {
-			pageStore.pinSections(
-				messageIndex,
-				selected.map((s) => s.id),
-				selected,
-				messageContent,
-			);
+			pageStore.appendSections(messageContent, selected);
 		}
 		outlineOpen = false;
 	}
