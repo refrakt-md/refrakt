@@ -57,14 +57,10 @@
     "@refrakt-md/svelte": "0.5.1"
   },
   "peerDependencies": {
-    "svelte": "^5.0.0",
-    "@sveltejs/kit": "^2.0.0"
+    "svelte": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "svelte": {
-      "optional": true
-    },
-    "@sveltejs/kit": {
       "optional": true
     }
   }

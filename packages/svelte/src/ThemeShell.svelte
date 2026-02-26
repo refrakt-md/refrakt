@@ -48,6 +48,8 @@
 	if (theme.elements) setElementOverrides(theme.elements);
 	// svelte-ignore state_referenced_locally
 	setContext('pages', page.pages);
+	// svelte-ignore state_referenced_locally
+	setContext('currentUrl', page.url);
 
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules ?? []));

@@ -2,7 +2,6 @@
 	import type { SerializedTag, RendererNode } from '@refrakt-md/svelte';
 	import type { Snippet } from 'svelte';
 	import { getContext } from 'svelte';
-	import { page } from '$app/state';
 
 	interface PageEntry {
 		url: string;
@@ -13,6 +12,7 @@
 	let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
 	const typeName = $derived(tag.attributes.typeof);
 	const pages = getContext<PageEntry[]>('pages');
+	const currentUrl = getContext<string>('currentUrl');
 
 	function getSlug(tag: SerializedTag): string | null {
 		for (const child of tag.children) {
@@ -52,7 +52,7 @@
 		{@render children()}
 	</div>
 {:else if typeName === 'NavItem' && linkedPage}
-	<a href={linkedPage.url} class="rf-nav-item__link" class:rf-nav-item__link--active={page.url.pathname === linkedPage.url}>
+	<a href={linkedPage.url} class="rf-nav-item__link" class:rf-nav-item__link--active={currentUrl === linkedPage.url}>
 		{linkedPage.title}
 	</a>
 {:else}

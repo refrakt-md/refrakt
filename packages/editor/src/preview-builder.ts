@@ -59,9 +59,6 @@ export async function buildPreviewRuntime(
 			},
 			resolve: {
 				dedupe: ['svelte', '@refrakt-md/svelte', '@refrakt-md/behaviors'],
-				alias: {
-					'$app/state': resolve(runtimeDir, 'app-state-shim.svelte.ts'),
-				},
 			},
 			logLevel: 'warn',
 		});

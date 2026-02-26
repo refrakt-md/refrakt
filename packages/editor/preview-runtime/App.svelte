@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ThemeShell } from '@refrakt-md/svelte';
 	import { theme } from 'virtual:refrakt-theme';
-	import { setPreviewUrl } from './app-state-shim.svelte.ts';
 
 	let pageData: any = $state(null);
 
@@ -10,7 +9,6 @@
 		function onMessage(e: MessageEvent) {
 			if (e.data?.type === 'preview-update') {
 				pageData = e.data.page;
-				if (e.data.page.url) setPreviewUrl(e.data.page.url);
 			}
 		}
 		window.addEventListener('message', onMessage);
