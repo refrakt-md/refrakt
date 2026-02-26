@@ -401,7 +401,7 @@
 	/* Scrollable block list + rail area */
 	.block-editor__scroll {
 		flex: 1;
-		overflow-y: auto;
+		overflow: hidden;
 		padding: var(--ed-space-5);
 		transition: margin-right var(--ed-transition-slow);
 	}
@@ -415,7 +415,8 @@
 		margin: 0 auto;
 		width: 100%;
 		padding: var(--ed-space-4);
-		min-height: 100%;
+		min-height: 0;
+		overflow-y: auto;
 		background: var(--ed-surface-0);
 		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-lg);
