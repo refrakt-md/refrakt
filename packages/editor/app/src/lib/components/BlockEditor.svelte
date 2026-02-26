@@ -402,6 +402,7 @@
 	.block-editor__scroll {
 		flex: 1;
 		overflow-y: auto;
+		padding: var(--ed-space-5);
 		transition: margin-right var(--ed-transition-slow);
 	}
 
@@ -415,6 +416,10 @@
 		width: 100%;
 		padding: var(--ed-space-4);
 		min-height: 100%;
+		background: var(--ed-surface-0);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-lg);
+		box-shadow: var(--ed-shadow-md);
 	}
 
 	/* Block row: preview cell + rail label */
@@ -427,7 +432,6 @@
 	.block-editor__block-cell {
 		flex: 1;
 		min-width: 0;
-		background: var(--ed-surface-0);
 	}
 
 	.block-editor__row.drag-source {
@@ -474,7 +478,7 @@
 		top: 0;
 		height: 4px;
 		width: 1px;
-		background: var(--ed-surface-1);
+		background: var(--ed-surface-0);
 	}
 
 	.block-editor__rail-label::after {
@@ -484,7 +488,7 @@
 		top: calc(0.5rem + 1.3em + 2px);
 		bottom: 0;
 		width: 1px;
-		background: var(--ed-surface-1);
+		background: var(--ed-surface-0);
 	}
 
 	/* First label: hide top gap masker */
