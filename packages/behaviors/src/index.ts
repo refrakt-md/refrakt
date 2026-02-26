@@ -7,6 +7,7 @@ import { revealBehavior } from './behaviors/reveal.js';
 import { datatableBehavior } from './behaviors/datatable.js';
 import { formBehavior } from './behaviors/form.js';
 import { previewBehavior } from './behaviors/preview.js';
+import { scrollspyBehavior } from './behaviors/scrollspy.js';
 
 /** Map of rune type → behavior function */
 const behaviors: Record<string, BehaviorFn> = {
@@ -57,6 +58,10 @@ export function initRuneBehaviors(
 	const copyCleanup = copyBehavior(container);
 	cleanups.push(copyCleanup);
 
+	// Scroll-spy for "On This Page" navigation (not rune-specific)
+	const scrollspyCleanup = scrollspyBehavior(container);
+	cleanups.push(scrollspyCleanup);
+
 	return () => cleanups.forEach((fn) => fn());
 }
 
@@ -67,4 +72,5 @@ export { revealBehavior } from './behaviors/reveal.js';
 export { datatableBehavior } from './behaviors/datatable.js';
 export { formBehavior } from './behaviors/form.js';
 export { previewBehavior } from './behaviors/preview.js';
+export { scrollspyBehavior } from './behaviors/scrollspy.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';

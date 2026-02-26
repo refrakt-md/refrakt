@@ -36,6 +36,7 @@
 		}>;
 		url: string;
 		seo?: PageSeo;
+		headings?: Array<{ level: number; text: string; id: string }>;
 	}
 
 	let { theme, page }: { theme: SvelteTheme; page: PageData } = $props();
@@ -110,6 +111,7 @@
 			renderable={page.renderable}
 			pages={page.pages}
 			url={page.url}
+			headings={page.headings}
 		/>
 	{/if}
 {/key}

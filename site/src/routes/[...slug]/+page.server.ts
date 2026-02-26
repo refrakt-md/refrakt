@@ -56,6 +56,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		),
 		seo: page.seo,
 		url,
+		headings: page.headings,
 		highlightCss: hl.css,
 	};
 };

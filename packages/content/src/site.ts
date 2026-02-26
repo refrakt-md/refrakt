@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
-import type { PageSeo } from '@refrakt-md/runes';
+import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -24,18 +24,19 @@ export interface SitePage {
   frontmatter: Frontmatter;
   content: string;
   renderable: RenderableTreeNodes;
+  headings: HeadingInfo[];
   layout: ResolvedLayout;
   seo: PageSeo;
 }
 
-function transformContent(content: string, path: string, icons?: Record<string, Record<string, string>>): RenderableTreeNodes {
+function transformContent(content: string, path: string, icons?: Record<string, Record<string, string>>): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
   const config = { tags, nodes, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content,
     ...(icons ? { __icons: icons } : {}),
   } };
-  return Markdoc.transform(ast, config);
+  return { renderable: Markdoc.transform(ast, config), headings };
 }
 
 /**
@@ -50,10 +51,10 @@ export async function loadContent(dirPath: string, basePath: string = '/', icons
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
-    const renderable = transformContent(content, route.url, icons);
+    const { renderable, headings } = transformContent(content, route.url, icons);
     const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
 
-    pages.push({ route, frontmatter, content, renderable, layout, seo });
+    pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
   }
 
   return {

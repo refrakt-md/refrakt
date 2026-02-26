@@ -21,5 +21,6 @@
 		renderable: data.renderable,
 		pages: data.pages,
 		url: data.url,
+		headings: data.headings,
 	}}
 />

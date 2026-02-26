@@ -1,16 +1,23 @@
 <script lang="ts">
 	import { Renderer } from '@refrakt-md/svelte';
+	import OnThisPage from '../components/OnThisPage.svelte';
 
-	let { title, regions, renderable, url, pages }: {
+	let { title, regions, renderable, url, pages, headings, frontmatter }: {
 		title: string;
 		description: string;
 		regions: Record<string, { name: string; mode: string; content: any[] }>;
 		renderable: any;
 		url: string;
 		pages: Array<{ url: string; title: string; draft: boolean }>;
+		headings?: Array<{ level: number; text: string; id: string }>;
+		frontmatter?: Record<string, unknown>;
 	} = $props();
 
 	const hasNav = $derived(!!regions.nav);
+
+	// Show TOC when 2+ qualifying headings (h2/h3) and not opted out via frontmatter
+	const tocHeadings = $derived((headings ?? []).filter(h => h.level >= 2 && h.level <= 3));
+	const showToc = $derived(tocHeadings.length >= 2 && frontmatter?.toc !== false);
 
 	// Mobile panel state
 	let menuOpen = $state(false);
@@ -149,7 +156,14 @@
 {/if}
 
 <main class="rf-docs-content" class:rf-docs-content--has-nav={hasNav}>
-	<div class="rf-docs-content__inner">
-		<Renderer node={renderable} />
+	<div class="rf-docs-content__inner" class:rf-docs-content__inner--has-toc={showToc}>
+		<div class="rf-docs-content__body">
+			<Renderer node={renderable} />
+		</div>
+		{#if showToc}
+			<aside class="rf-docs-toc">
+				<OnThisPage headings={tocHeadings} />
+			</aside>
+		{/if}
 	</div>
 </main>
