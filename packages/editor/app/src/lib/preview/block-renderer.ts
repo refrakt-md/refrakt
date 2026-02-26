@@ -2,15 +2,30 @@ import Markdoc from '@markdoc/markdoc';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import { baseConfig } from '@refrakt-md/theme-base';
 
-/** Set of typeof values that are rendered by Svelte components and cannot be inlined */
-const SVELTE_COMPONENT_TYPES = new Set([
-	'Diagram', 'Nav', 'NavGroup', 'NavItem',
-	'Chart', 'Comparison', 'ComparisonColumn', 'ComparisonRow',
-	'Embed', 'Testimonial',
-	'Map', 'MapPin',
-	'Sandbox', 'DesignContext',
+/** Runes needing external resources or runtime data — show placeholder in editor */
+const RUNTIME_ONLY_TYPES = new Set([
+	'Diagram',                      // needs Mermaid library
+	'Nav', 'NavGroup', 'NavItem',   // needs RfContext.pages
+	'Map', 'MapPin',                // needs Leaflet library
+	'Sandbox',                      // needs runtime eval
 ]);
+
+/**
+ * Restore postTransform hooks that were stripped during JSON serialization.
+ * The server strips functions from the themeConfig before sending it as JSON;
+ * we merge them back from the statically-imported baseConfig.
+ */
+function restorePostTransforms(config: ThemeConfig): ThemeConfig {
+	const runes = { ...config.runes };
+	for (const [name, rune] of Object.entries(baseConfig.runes)) {
+		if (rune.postTransform && runes[name]) {
+			runes[name] = { ...runes[name], postTransform: rune.postTransform };
+		}
+	}
+	return { ...config, runes };
+}
 
 /**
  * Render a single block's Markdoc source to HTML via the identity transform.
@@ -18,7 +33,7 @@ const SVELTE_COMPONENT_TYPES = new Set([
  *
  * Returns `{ html, isComponent }`:
  * - `html`: the rendered HTML string
- * - `isComponent`: true if the block's root rune is a Svelte component (needs placeholder)
+ * - `isComponent`: true if the block's root rune needs runtime resources (needs placeholder)
  */
 export function renderBlockPreview(
 	source: string,
@@ -26,17 +41,18 @@ export function renderBlockPreview(
 	highlightTransform?: ((tree: RendererNode) => RendererNode) | null,
 ): { html: string; isComponent: boolean } {
 	const ast = Markdoc.parse(source);
+	const fullConfig = restorePostTransforms(themeConfig);
 	const renderable = Markdoc.transform(ast, {
 		tags,
 		nodes,
-		variables: { __source: source, __icons: themeConfig.icons },
+		variables: { __source: source, __icons: fullConfig.icons },
 	});
 	const serialized = serializeTree(renderable) as RendererNode;
 
-	// Check if the root rune is a Svelte component
-	const isComponent = checkIsComponent(serialized);
+	// Check if the root rune needs runtime resources (placeholder)
+	const isComponent = checkIsRuntimeOnly(serialized);
 
-	const transform = createTransform(themeConfig);
+	const transform = createTransform(fullConfig);
 	let transformed = transform(serialized);
 
 	// Apply syntax highlighting if available
@@ -49,13 +65,13 @@ export function renderBlockPreview(
 	return { html, isComponent };
 }
 
-/** Walk the tree to check if any root-level rune is a Svelte component */
-function checkIsComponent(node: RendererNode): boolean {
+/** Walk the tree to check if any root-level rune needs runtime resources */
+function checkIsRuntimeOnly(node: RendererNode): boolean {
 	if (node === null || node === undefined) return false;
 	if (typeof node === 'string' || typeof node === 'number') return false;
-	if (Array.isArray(node)) return node.some(checkIsComponent);
+	if (Array.isArray(node)) return node.some(checkIsRuntimeOnly);
 	if ('attributes' in node && node.attributes?.typeof) {
-		return SVELTE_COMPONENT_TYPES.has(node.attributes.typeof);
+		return RUNTIME_ONLY_TYPES.has(node.attributes.typeof);
 	}
 	return false;
 }

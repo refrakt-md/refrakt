@@ -35,6 +35,7 @@
     "@refrakt-md/content": "0.5.1",
     "@refrakt-md/highlight": "0.5.1",
     "@refrakt-md/runes": "0.5.1",
+    "@refrakt-md/theme-base": "0.5.1",
     "@refrakt-md/transform": "0.5.1",
     "@refrakt-md/types": "0.5.1"
   },
