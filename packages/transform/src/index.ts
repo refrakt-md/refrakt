@@ -1,8 +1,15 @@
 // The engine
 export { createTransform } from './engine.js';
 
+// Layout transform
+export { layoutTransform } from './layout.js';
+
+// Computed content builders
+export { buildBreadcrumb, buildToc, buildPrevNext } from './computed.js';
+
 // Configuration types
 export type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
+export type { LayoutConfig, LayoutSlot, LayoutPageData, ComputedContent, LayoutStructureEntry } from './types.js';
 
 // Re-export serialized tree types for convenience
 export type { SerializedTag, RendererNode } from '@refrakt-md/types';

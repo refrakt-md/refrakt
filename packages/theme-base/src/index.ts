@@ -2,5 +2,8 @@ export { baseConfig } from './config.js';
 export { mergeThemeConfig } from './merge.js';
 export type { ThemeConfigOverrides } from './merge.js';
 
+// Layout configs
+export { defaultLayout, docsLayout, blogArticleLayout } from './layouts.js';
+
 // Re-export transform types for convenience
-export type { ThemeConfig, RuneConfig, StructureEntry } from '@refrakt-md/transform';
+export type { ThemeConfig, RuneConfig, StructureEntry, LayoutConfig } from '@refrakt-md/transform';

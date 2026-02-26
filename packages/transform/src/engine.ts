@@ -245,7 +245,7 @@ function buildStructureElement(
 		for (const [key, val] of Object.entries(entry.attrs)) {
 			if (typeof val === 'string') {
 				extraAttrs[key] = val;
-			} else {
+			} else if ('fromModifier' in val) {
 				extraAttrs[key] = modifierValues[val.fromModifier] ?? '';
 			}
 		}

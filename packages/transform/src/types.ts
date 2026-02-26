@@ -1,4 +1,4 @@
-import type { SerializedTag } from '@refrakt-md/types';
+import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
 /** Configuration for a single rune's identity transform */
 export interface RuneConfig {
@@ -70,8 +70,8 @@ export interface StructureEntry {
 	condition?: string;
 	/** Only inject if ANY of the named modifiers has a truthy value */
 	conditionAny?: string[];
-	/** Extra attributes. String values are literal; objects reference modifiers */
-	attrs?: Record<string, string | { fromModifier: string }>;
+	/** Extra attributes. String values are literal; objects reference modifiers or page data */
+	attrs?: Record<string, string | { fromModifier: string } | { fromPageData: string }>;
 	/** Transform applied to metaText value before injection */
 	transform?: 'duration' | 'uppercase' | 'capitalize';
 	/** Static text prepended to metaText value */
@@ -93,4 +93,132 @@ export interface ThemeConfig {
 
 	/** Per-rune transform configuration */
 	runes: Record<string, RuneConfig>;
+}
+
+// ─── Layout Transform Types ───────────────────────────────────────────
+
+/** Page data provided to the layout transform */
+export interface LayoutPageData {
+	renderable: RendererNode;
+	regions: Record<string, { name: string; mode: string; content: RendererNode[] }>;
+	title: string;
+	url: string;
+	pages: Array<{
+		url: string;
+		title: string;
+		draft: boolean;
+		description?: string;
+		date?: string;
+		author?: string;
+		tags?: string[];
+		image?: string;
+	}>;
+	frontmatter: Record<string, unknown>;
+	headings?: Array<{ level: number; text: string; id: string }>;
+}
+
+/** Declarative layout configuration */
+export interface LayoutConfig {
+	/** BEM block name (e.g., 'docs' → .rf-layout-docs) */
+	block: string;
+
+	/** Root element tag, defaults to 'div' */
+	tag?: string;
+
+	/** Structural slots — where regions, content, and computed go */
+	slots: Record<string, LayoutSlot>;
+
+	/** Static chrome elements reusable across slots (buttons, icons, panels) */
+	chrome?: Record<string, LayoutStructureEntry>;
+
+	/** Computed content — built from page data at transform time */
+	computed?: Record<string, ComputedContent>;
+
+	/** Layout behaviors to attach via @refrakt-md/behaviors */
+	behaviors?: string[];
+
+	/** Programmatic escape hatch — runs after all declarative processing */
+	postTransform?: (node: SerializedTag, page: LayoutPageData) => SerializedTag;
+}
+
+/** A structural slot in a layout */
+export interface LayoutSlot {
+	/** HTML tag name */
+	tag: string;
+
+	/** CSS class(es) */
+	class?: string;
+
+	/** Content source:
+	 *  - 'region:<name>' — contents of a named region
+	 *  - 'content' — the main page renderable
+	 *  - 'computed:<name>' — output of a computed content builder
+	 *  - 'clone:region:<name>' — deep-cloned copy of a region (for mobile panels)
+	 *  - 'chrome:<name>' — output of a named chrome entry */
+	source?: string;
+
+	/** Only render this slot if the source content is non-empty */
+	conditional?: boolean;
+
+	/** Only render this slot if the named region exists (independent of source) */
+	conditionalRegion?: string;
+
+	/** Only render this slot if frontmatter[key] is truthy */
+	frontmatterCondition?: string;
+
+	/** Wrapper element for inner content */
+	wrapper?: {
+		tag: string;
+		class: string;
+		/** Add modifier class to wrapper when named computed content is present */
+		conditionalModifier?: { computed: string; modifier: string };
+	};
+
+	/** Child slots, chrome references, or structure entries.
+	 *  Strings starting with 'chrome:' reference named chrome entries. */
+	children?: Array<string | LayoutSlot | LayoutStructureEntry>;
+
+	/** Add BEM modifier class when named region exists */
+	conditionalModifier?: { region: string; modifier: string };
+
+	/** Extra attributes on the slot element */
+	attrs?: Record<string, string>;
+}
+
+/** Computed content derived from page data at transform time */
+export interface ComputedContent {
+	/** Type of computed content */
+	type: 'breadcrumb' | 'toc' | 'prev-next';
+
+	/** Data source: 'region:nav', 'headings', etc. */
+	source: string;
+
+	/** Type-specific options */
+	options?: Record<string, any>;
+
+	/** Visibility rules — skip if conditions fail */
+	visibility?: {
+		/** Minimum count of source items needed */
+		minCount?: number;
+		/** Frontmatter key that disables when set to false */
+		frontmatterToggle?: string;
+	};
+}
+
+/** Extended structure entry for layout chrome — adds page data access */
+export interface LayoutStructureEntry extends StructureEntry {
+	/** Inject text from page data or frontmatter (dot-path, e.g. 'title', 'frontmatter.date') */
+	pageText?: string;
+
+	/** Only inject if page data field at dot-path is truthy */
+	pageCondition?: string;
+
+	/** Date formatting when pageText resolves to a date string */
+	dateFormat?: Intl.DateTimeFormatOptions;
+
+	/** Repeat child element for each item in a page data array */
+	iterate?: { source: string; tag: string; class?: string };
+
+	/** Inline SVG string (for icon buttons) */
+	svg?: string;
 }
