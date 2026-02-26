@@ -50,42 +50,19 @@ The content editor (`packages/editor/`) is functionally solid but feels like a d
 
 ---
 
-## Phase 2: Unified UI Primitives
+## Phase 2: Unified UI Primitives ✅ COMPLETE (commit `7e22bb6`)
 
-Define consistent patterns for the 5 most repeated UI elements. Each component's `<style>` block adopts these patterns (no component library — just consistent specs).
+Unified the 5 most repeated UI patterns across all components (commit `7e22bb6`):
 
-### Inputs
-**Problem:** 5 different background colors, 3 different paddings, 3 different border-radius values.
-**Fix:** All inputs get: `padding: var(--ed-space-2) var(--ed-space-3)`, `background: var(--ed-surface-0)`, `border-radius: var(--ed-radius-sm)`, `border: 1px solid var(--ed-border-default)`. Focus state: `border-color: var(--ed-accent); box-shadow: 0 0 0 3px var(--ed-accent-ring)`.
-**Affects:** BlockCard, RuneAttributes, FrontmatterEditor, modals, NavEditor, TagsInput
-
-### Buttons (3 tiers)
-**Problem:** 8+ distinct button styles.
-**Fix:**
-- **Primary** (Save, Create): `background: var(--ed-accent)`, white text, `box-shadow: var(--ed-shadow-sm)`, hover lifts 1px
-- **Secondary** (Cancel, mode toggles, add-field): `background: var(--ed-surface-0)`, `border: 1px solid var(--ed-border-default)`, hover fills `var(--ed-surface-2)`
-- **Ghost** (icon buttons, remove, file-tree actions): transparent bg, hover fills `var(--ed-surface-2)`
-- **Danger**: Same as primary but red
-**Affects:** HeaderBar, modals, BlockCard, InsertMenu, FrontmatterEditor, FileTree, ContextMenu
-
-### Cards
-**Problem:** BlockCards have no baseline shadow, barely visible borders when collapsed.
-**Fix:** `background: var(--ed-surface-0); border: 1px solid var(--ed-border-default); border-radius: var(--ed-radius-lg); box-shadow: var(--ed-shadow-sm)`. Hover: `box-shadow: var(--ed-shadow-md)`.
-**Affects:** BlockCard, RegionCard, InsertMenu panel
-
-### Segmented Controls
-**Problem:** Mode toggles (Code/Visual, replace/prepend/append) use bordered buttons with blue active fill — looks dated.
-**Fix:** iOS/Linear-style: gray track (`var(--ed-surface-2)`) with white active segment + shadow. Much more modern and approachable.
-**Affects:** App.svelte mode-toggle, FrontmatterEditor form/raw toggle, LayoutEditor visual/raw toggle, RegionCard mode buttons
-
-### Badges
-**Problem:** Category badges are rectangular with inconsistent sizing.
-**Fix:** Pill shape (`border-radius: 99px`), consistent padding, `font-size: var(--ed-text-xs)`, `font-weight: 600`.
-**Affects:** BlockCard category, FileTree draft indicator
+- **Inputs**: Consistent padding, background, border-radius, focus ring across BlockCard, RuneAttributes, FrontmatterEditor, modals, NavEditor, TagsInput
+- **Buttons (3 tiers)**: Primary (accent bg, white text), Secondary (surface bg, border), Ghost (transparent, hover fill), Danger (red variant)
+- **Cards**: Baseline shadow + consistent border-radius on BlockCard, RegionCard, InsertMenu
+- **Segmented Controls**: iOS/Linear-style with gray track + white active segment + shadow (mode toggles, form/raw toggles)
+- **Badges**: Pill shape with consistent sizing (BlockCard category, FileTree draft indicator)
 
 ---
 
-## Phase 3: Component-Level Polish
+## Phase 3: Component-Level Polish ✅ COMPLETE
 
 ### 3A. HeaderBar
 - Replace `border-bottom` with `box-shadow` for depth separation from content
@@ -143,7 +120,7 @@ Define consistent patterns for the 5 most repeated UI elements. Each component's
 
 ---
 
-## Phase 4: Interaction Polish
+## Phase 4: Interaction Polish ✅ COMPLETE
 
 ### Global focus ring
 Add to `App.svelte` global styles:
@@ -206,204 +183,92 @@ Three decorative illustrations (48px inline SVG + text):
 
 ---
 
----
+## Svelte Component → Identity Transform Migration Analysis
 
-## Phase 5: Block Editor as Primary Editing Surface
+5 runes can move from Svelte components to identity transform via `postTransform`:
 
-### Context
+| Component | Effort | Approach |
+|---|---|---|
+| **Testimonial** | ~30 lines | Inject 5 star spans, CSS handles fill via `[data-rating]` + `:nth-child` |
+| **DesignContext** | Trivial | Already a wrapper. Sandbox reads tokens from its own meta tags instead |
+| **Embed** | ~40 lines | Create iframe with `aspect-ratio` CSS (replaces JS padding hack) |
+| **Chart** | ~100 lines | Parse JSON data from meta, compute SVG geometry (deterministic math) |
+| **Comparison** | ~150 lines | Build table or card grid from children |
 
-The visual polish (Phases 1–4) establishes a consistent design system. This phase addresses a deeper UX question: **what is the primary editing surface?** Currently, Visual mode feels secondary to Code mode — block cards show raw form controls, and the preview is a passive iframe. For non-engineer users, the block editor should feel like *the* editor, with the preview serving as real-time confirmation.
+4 runes must remain as Svelte components: **Diagram** (Mermaid.js), **Map** (Leaflet), **Nav** (app context), **Sandbox** (interactive iframe).
 
-After evaluating three approaches:
-- **A: Block Editor Primary** — enhance the center panel with inline WYSIWYG editing
-- **B: Preview Primary** — make the preview interactive, center becomes property inspector
-- **C: Convergence** — collapse editor and preview into one editable surface
-
-**Decision: Block Editor Primary (A)** with a targeted borrow from B (click-to-highlight bridge).
-
-**Why not Preview Primary or Convergence?**
-- The iframe **must stay** for multi-framework support — React/Astro renderers will run inside it. No alternative (Shadow DOM, CSS Layers, direct embedding) provides equivalent CSS + JS + framework isolation.
-- Making the preview editable requires source-position tracking through the entire transform pipeline and cooperation from every framework renderer. Very high complexity, fragile.
-- Convergence requires reverse-mapping rendered DOM to Markdoc source and editing UI inside the iframe mixed with theme CSS. Even higher complexity, and each framework renderer must support editing. Prohibitive for multi-framework.
-
-**Why Block Editor Primary works:**
-- The block editor operates on Markdoc source, fully decoupled from the rendering framework. When React/Astro renderers arrive, the editor needs zero changes.
-- The current block parser architecture (`ParsedBlock[]` → serialize → `editorState.updateBody()`) already supports incremental enhancement of individual block types.
-- The iframe preview provides true WYSIWYG confirmation, and click-to-highlight creates the bridge between "what I see" and "what I edit."
-
-### 5A. Inline Heading Editing
-
-**What changes:** The heading block card replaces its `<input>` field with a contenteditable element styled as the appropriate heading level (h1–h6).
-
-**Behavior:**
-- Font sizes approximate the theme's heading scale (not exact theme values — the editor has its own design system, but h1 is visually large, h2 smaller, etc.)
-- Basic text editing: typing, selection, cut/copy/paste
-- Enter commits the edit (no multi-line headings)
-- Escape reverts to the saved value
-- On blur, serialize back to the markdown heading syntax (`# `, `## `, etc.)
-
-**Files:**
-- `packages/editor/app/src/lib/components/BlockCard.svelte` — heading block rendering
-- `packages/editor/app/src/lib/editor/block-parser.ts` — ensure heading round-trip fidelity
-
-### 5B. Inline Paragraph Editing
-
-**What changes:** Paragraph blocks replace their CodeMirror/InlineEditor with a contenteditable `<div>` that supports basic inline formatting.
-
-**Behavior:**
-- Renders formatted text (bold, italic, links visible inline)
-- Keyboard shortcuts: Cmd+B bold, Cmd+I italic, Cmd+K insert link
-- On blur, serialize back to Markdoc syntax (`**bold**`, `*italic*`, `[text](url)`)
-- Multi-line supported (paragraphs can contain line breaks)
-- No block-level formatting inside paragraphs (that's what adding new blocks is for)
-
-**Files:**
-- `packages/editor/app/src/lib/components/BlockCard.svelte` — paragraph block rendering
-- `packages/editor/app/src/lib/components/InlineEditor.svelte` — may be replaced or significantly reworked for paragraphs
-- `packages/editor/app/src/lib/editor/block-parser.ts` — round-trip for inline formatting marks
-
-### 5C. Click-to-Highlight Preview Bridge
-
-**What changes:** Clicking an element in the preview scrolls to and highlights the corresponding block in the block editor.
-
-**Implementation:**
-
-1. **Block index injection (editor-specific):** When preparing preview data, inject `data-block-index` attributes onto top-level rendered elements. This maps each rendered element to its position in the `ParsedBlock[]` array from the block parser. This injection happens in the editor's preview data pipeline, NOT in the core identity transform engine.
-
-2. **Preview runtime click handling:** Extend `preview-runtime/App.svelte` to intercept clicks, walk up to the nearest `[data-block-index]` ancestor, and send `postMessage({ type: 'preview-select', blockIndex: N })` to the parent editor.
-
-3. **Selection overlay in preview:** Show a subtle highlight (blue outline + light fill) on the clicked element in the preview to confirm what was selected.
-
-4. **Editor-side response:** `PreviewPane.svelte` receives the message and updates `editorState.selectedBlockIndex`. `BlockEditor.svelte` scrolls to that block card and applies a brief highlight animation (glow + fade).
-
-5. **Graceful degradation:** In HTML fallback mode (no Svelte runtime), click-to-highlight is not available. No errors, just no click interception.
-
-**Files:**
-- `packages/editor/app/src/lib/components/PreviewPane.svelte` — message handler for `preview-select`
-- `packages/editor/preview-runtime/App.svelte` — click interception, selection overlay
-- `packages/editor/app/src/lib/components/BlockEditor.svelte` — scroll-to-block, highlight state
-- `packages/editor/app/src/lib/state/editor.svelte.ts` — `selectedBlockIndex` state
-- Editor server-side preview data endpoint — inject block indices into serialized tree
-
-### 5D. Improved Rune Attribute Editing
-
-**What changes:** Better visual treatment for rune attribute forms. Not adding mini-previews — the live preview with click-to-highlight provides sufficient visual feedback.
-
-**Improvements:**
-- Clearer field labels with short descriptions for non-obvious attributes
-- Logical field grouping (primary attributes first, advanced collapsed)
-- Consistent use of unified input primitives from Phase 2
-- Type-appropriate inputs (color pickers for color values, dropdowns for enums, toggles for booleans)
-
-**Files:**
-- `packages/editor/app/src/lib/components/RuneAttributes.svelte` — layout, labels, field grouping
-
-### 5E. Page-Oriented File Tree
-
-**What changes:** The sidebar shows page titles from frontmatter instead of filenames. Non-engineers think in pages ("Getting Started"), not files (`getting-started.md`).
-
-**Implementation:**
-- Extend `GET /api/tree` response to include `title` and `description` from frontmatter in each `TreeNode`. The server already parses frontmatter to extract `draft` — extracting `title` is trivial.
-- `FileTreeNode` displays `title` (falling back to `name` if no title). Optional truncated description snippet in muted text below the title.
-- Keep the tree structure — the content model is hierarchical and a tree is the right UI.
-- Breadcrumbs already planned in Phase 3A.
-
-**Files:**
-- `packages/editor/src/server.ts` — extend `directoryToJson()` to include `title` and `description`
-- `packages/editor/app/src/lib/state/editor.svelte.ts` — extend `TreeNode` type with optional `title` and `description`
-- `packages/editor/app/src/lib/components/FileTreeNode.svelte` — display title, optional description
-
-### 5F. Auto-Save with Status Indicator
-
-**What changes:** Content saves automatically after ~2s of inactivity. No more losing work.
-
-**Behavior:**
-- Debounce `editorContent` changes, auto-save after ~2s of inactivity
-- Show status in header: "Saving..." → "Saved 2s ago" (relative time, updating)
-- `Cmd+S` triggers immediate save (bypasses debounce)
-- Configurable: user can toggle auto-save off, reverting to manual save with Save button
-- Auto-save preference persisted in `localStorage`
-- When auto-save is OFF: show current Save button with unsaved dot. `Cmd+S` still works.
-- Own-write SSE suppression already exists, no changes needed.
-
-**Files:**
-- `packages/editor/app/src/lib/state/editor.svelte.ts` — `autoSave`, `saveStatus`, `lastSavedAt` state
-- `packages/editor/app/src/App.svelte` — auto-save `$effect` with debounce, `localStorage` persistence
-- `packages/editor/app/src/lib/components/HeaderBar.svelte` — status indicator, auto-save toggle
-
-### 5G. Document-Level Undo/Redo
-
-**What changes:** Cmd+Z / Cmd+Shift+Z work in Visual mode, undoing/redoing content changes.
-
-**Approach:** Document-level snapshots of `editorContent`. Simple stack-based history.
-
-**Behavior:**
-- Push to undo stack on "meaningful changes" — block add/remove/reorder, attribute edit, text edit commit (on blur, not per-keystroke)
-- `Cmd+Z` pops undo stack → pushes current state to redo → restores previous
-- `Cmd+Shift+Z` pops redo stack → pushes current to undo
-- Redo stack clears on new edits (standard)
-- Stack capped at ~50 entries
-- Only active in Visual mode — CodeMirror has its own undo in Code mode
-
-**Files:**
-- `packages/editor/app/src/lib/state/editor.svelte.ts` — `undoStack`, `redoStack`, `pushUndo()`, `undo()`, `redo()`
-- `packages/editor/app/src/App.svelte` — keyboard handler for Cmd+Z/Cmd+Shift+Z in visual mode
-- `packages/editor/app/src/lib/components/BlockEditor.svelte` — call `pushUndo()` before mutations
-
-### 5H. Contextual Floating Toolbar
-
-**What changes:** Floating toolbar appears on text selection in contenteditable paragraph blocks.
-
-**Pairs with 5B** — without contenteditable paragraphs, there's nothing to show a toolbar for.
-
-**Behavior:**
-- Appears on text selection within a contenteditable block
-- Shows: Bold (B), Italic (I), Link (chain icon)
-- Positioned above the selection, centered horizontally
-- Disappears on selection collapse or click outside
-- Keyboard shortcuts still work — the toolbar is a visual affordance, not the only way
-
-**Files:**
-- New: `packages/editor/app/src/lib/components/FloatingToolbar.svelte`
-- `packages/editor/app/src/lib/components/BlockCard.svelte` — selection listener, toolbar positioning
-
-### Implementation Order
-
-Within Phase 5:
-1. Inline heading editing (5A) — highest visual impact, lowest complexity
-2. Inline paragraph editing (5B) — contenteditable with basic formatting
-3. Contextual floating toolbar (5H) — pairs with paragraph editing
-4. Auto-save (5F) — replaces manual save, immediate UX improvement
-5. Document-level undo/redo (5G) — safety net for visual editing
-6. Smooth block interactions (already in Phase 4, continued here)
-7. Page-oriented file tree (5E) — titles from frontmatter
-8. Click-to-highlight bridge (5C) — preview → editor selection
-9. Attribute form improvements (5D) — better rune editing UX
+No engine changes needed — all use `postTransform`. Inline preview coverage goes from ~90% to ~96%.
 
 ---
 
-## Architectural Decisions Record
+## Phase 5: Inline Block Previews (Shadow DOM) ✅ COMPLETE
 
-### Iframe stays (multi-framework requirement)
+### Architecture Decision
 
-**Evaluated alternatives:**
+Evaluated four approaches for inline preview:
+- **Option A (side-by-side)**: Current layout — works but cognitive disconnect between editing and seeing
+- **Option B (per-block iframes)**: Rejected — 20+ iframes causes memory/performance problems
+- **Option C (Shadow DOM per block)**: **Selected** — inline HTML previews via Shadow DOM, ~90% pixel-perfect, ~10% placeholder for Svelte-component runes
+- **Option D (single iframe editor)**: Investigated — CSS isolation problem (theme global resets bleed into editor controls), state management split via postMessage, behavior conflicts. ~5-8 weeks vs ~2-3 weeks for Option C. Not recommended.
 
-| Alternative | CSS Isolation | Framework Isolation | Verdict |
-|---|---|---|---|
-| Shadow DOM | Partial (inherited props leak) | None — need to mount foreign frameworks | Breaks with React/Astro |
-| CSS Layers | Weak (selectors match across boundaries) | None | Insufficient |
-| CSS Containment | None (perf optimization only) | None | Irrelevant |
-| Direct embedding | None without extra work | Same-framework only | Harmful for multi-framework |
+The identity transform pipeline (`createTransform()` + `renderToHtml()`) is fully client-safe (zero `node:` imports, pure functions, sub-millisecond per block). CSS isolation is clean: theme uses `--rf-*` tokens, editor uses `--ed-*` — zero collision. Shadow DOM traps theme `global.css` resets.
 
-The iframe provides: complete CSS isolation (`--ed-*` vs `--rf-*` namespaces), complete JS isolation (separate document/framework runtime), proper document context (`<head>`, `<body>`, `document.querySelector` for behaviors), and framework-agnostic hosting (any renderer runs inside it).
+### 5A. Server — Expose Theme Data
 
-### No rune mini-previews in block editor
+Add `themeCss` and a JSON-safe `themeConfig` to the existing `/api/config` response in `packages/editor/src/server.ts`. Both values are already computed at startup. Strip the single `postTransform` function from the config (only the `Preview` rune uses it).
 
-The live preview pane with click-to-highlight provides sufficient visual feedback. Mini-previews would require Shadow DOM isolation per block card with injected theme CSS — significant complexity for marginal UX gain.
+### 5B. Client State — Store Theme Data
 
-### Block index mapping is editor-specific
+Add `themeCss: string` and `themeConfig: ThemeConfig | null` fields to `EditorState`. Fetch on init alongside the existing config request.
 
-The `data-block-index` injection happens in the editor's preview data pipeline, not in the core identity transform engine (`packages/transform/src/engine.ts`). This keeps the transform engine clean and avoids coupling it to the editor's block parser.
+### 5C. Client Renderer Module
+
+Create `packages/editor/app/src/lib/preview/block-renderer.ts`:
+- Import Markdoc (already an editor dependency), rune schemas, `createTransform` + `renderToHtml` from `@refrakt-md/transform`
+- Export `renderBlockPreview(source: string, themeConfig: ThemeConfig): string`
+- Pure function: parse → transform → identity transform → HTML string
+- Sub-millisecond per block, no server round-trip
+
+### 5D. BlockCard — Shadow DOM Preview
+
+In `BlockCard.svelte`, add a preview section below the form controls:
+- Attach Shadow DOM, inject theme CSS + rendered HTML
+- Re-render on block source changes with ~50ms debounce
+- Svelte-component runes (~10%) show a styled placeholder
+- Preview is visible when the card is expanded
+
+### 5E. Preview Toggle
+
+Add a "Full Preview" button in `HeaderBar.svelte`:
+- Center panel switches from BlockEditor to full-width PreviewPane
+- Reuses the existing iframe mechanism
+- Provides layout context and full-fidelity rendering for all rune types
+
+### Critical files
+
+| File | Changes |
+|------|---------|
+| `packages/editor/src/server.ts` | Add `themeCss` + `themeConfig` to `/api/config` |
+| `packages/editor/app/src/lib/state/editor.svelte.ts` | `themeCss`, `themeConfig` fields |
+| `packages/editor/app/src/lib/preview/block-renderer.ts` | **New** — client-side Markdoc→HTML pipeline |
+| `packages/editor/app/src/lib/components/BlockCard.svelte` | Shadow DOM preview section |
+| `packages/editor/app/src/lib/components/BlockEditor.svelte` | Pass theme data context |
+| `packages/editor/app/src/lib/components/HeaderBar.svelte` | "Full Preview" toggle |
+| `packages/editor/app/src/lib/components/EditorLayout.svelte` | Panel layout switching for preview mode |
+
+---
+
+## Future Enhancements (post Phase 5)
+
+These items were considered during planning and remain good candidates for future work:
+
+- **Inline heading/paragraph editing** — contenteditable with Markdoc round-trip
+- **Click-to-highlight preview bridge** — clicking in preview scrolls to block in editor
+- **Page-oriented file tree** — show titles from frontmatter instead of filenames
+- **Auto-save with status indicator** — debounced save after ~2s of inactivity
+- **Document-level undo/redo** — Cmd+Z/Cmd+Shift+Z in Visual mode
+- **Floating toolbar** — formatting toolbar on text selection
+- **Focus preview for complex runes** — single shared iframe renders the selected Svelte-component rune with full fidelity (enhancement to Phase 5)
 
 ---
 
@@ -413,11 +278,4 @@ The `data-block-index` injection happens in the editor's preview data pipeline, 
 2. **Interaction check**: Test save, expand/collapse, drag-drop, mode switching, file navigation, context menus, modals
 3. **Browser compatibility**: Check in Chrome and Safari (macOS primary targets)
 4. **No functional regressions**: All editing, saving, preview, and file operations must work identically
-5. **Inline editing round-trip**: Edit a heading in the block editor → confirm correct markdown in Code mode and in preview
-6. **Paragraph formatting**: Apply bold/italic via keyboard shortcuts → confirm Markdoc syntax round-trip
-7. **Floating toolbar**: Select text in paragraph → toolbar appears → click Bold → text wraps in `**`
-8. **Auto-save**: Edit content → wait 2s → "Saved" status in header. Toggle off → Save button reappears.
-9. **Undo/redo**: Edit a block → Cmd+Z → previous state restores. Cmd+Shift+Z → redo works, clears on new edit.
-10. **File tree titles**: Tree shows page titles from frontmatter, falls back to filename when no title
-11. **Click-to-highlight**: Click an element in the preview → confirm block editor scrolls to correct block with highlight animation
-12. **Fallback mode**: Test with HTML fallback preview (no Svelte runtime) → click-to-highlight should be absent but no errors
+5. **Inline preview** (Phase 5): Expand a rune block card → verify Shadow DOM preview renders correctly with theme CSS. Check Hint, Api, Hero, Steps for variety. Verify Svelte-component runes (Diagram, Map) show placeholders. Toggle full preview and verify it shows the complete page.

@@ -51,6 +51,8 @@
 				editorState.tree = tree;
 				editorState.runes = runes;
 				editorState.previewRuntimeAvailable = config.previewRuntime;
+				editorState.themeCss = config.themeCss;
+				editorState.themeConfig = config.themeConfig;
 
 				// Auto-open index.md if present at content root
 				const indexPage = tree.children?.find(
@@ -125,6 +127,8 @@
 			lastSaveTime = Date.now();
 			await saveFile(editorState.currentPath, editorState.editorContent);
 			editorState.savedContent = editorState.editorContent;
+			editorState.saveJustCompleted = true;
+			setTimeout(() => { editorState.saveJustCompleted = false; }, 1500);
 		} catch (e) {
 			editorState.error = e instanceof Error ? e.message : 'Failed to save file';
 		} finally {
@@ -403,6 +407,11 @@
 		overflow: hidden;
 		background: var(--ed-surface-1);
 		color: var(--ed-text-primary);
+	}
+
+	:global(:focus-visible) {
+		outline: none;
+		box-shadow: 0 0 0 3px var(--ed-accent-ring);
 	}
 
 	.editor-app {

@@ -12,6 +12,8 @@
 		rebuildHeadingSource,
 		rebuildFenceSource,
 	} from '../editor/block-parser.js';
+	import { editorState } from '../state/editor.svelte.js';
+	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import RuneAttributes from './RuneAttributes.svelte';
 	import InlineEditor from './InlineEditor.svelte';
 
@@ -40,6 +42,58 @@
 	}: Props = $props();
 
 	let expanded = $state(false);
+
+	// ── Inline preview via Shadow DOM ─────────────────────────────
+	let previewContainer: HTMLDivElement | undefined = $state();
+	let shadowRoot: ShadowRoot | null = null;
+	let previewDebounce: ReturnType<typeof setTimeout>;
+
+	$effect(() => {
+		if (!expanded || !previewContainer || !editorState.themeConfig) return;
+
+		// Attach shadow root once
+		if (!shadowRoot) {
+			shadowRoot = previewContainer.attachShadow({ mode: 'open' });
+		}
+
+		const source = block.source;
+		const config = editorState.themeConfig;
+		const css = editorState.themeCss;
+
+		clearTimeout(previewDebounce);
+		previewDebounce = setTimeout(() => {
+			if (!shadowRoot) return;
+			try {
+				const { html, isComponent } = renderBlockPreview(source, config);
+				if (isComponent) {
+					shadowRoot.innerHTML = `<style>
+						:host { display: block; padding: 1rem; }
+						.placeholder { display: flex; align-items: center; gap: 0.5rem; color: #888; font-family: system-ui, sans-serif; font-size: 13px; }
+						.placeholder svg { opacity: 0.5; }
+					</style>
+					<div class="placeholder">
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="2" y="2" width="12" height="12" rx="2" />
+							<path d="M6 6l4 4M10 6l-4 4" />
+						</svg>
+						Interactive component — see full preview
+					</div>`;
+				} else {
+					shadowRoot.innerHTML = `<style>${css}
+						:host { display: block; }
+						.rf-preview-wrapper { padding: 1rem; font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif); color: var(--rf-color-text, #1a1a2e); line-height: 1.6; }
+					</style>
+					<div class="rf-preview-wrapper">${html}</div>`;
+				}
+			} catch {
+				if (shadowRoot) {
+					shadowRoot.innerHTML = `<style>:host { display: block; padding: 0.75rem; color: #999; font-family: system-ui; font-size: 12px; }</style><em>Preview unavailable</em>`;
+				}
+			}
+		}, 50);
+
+		return () => clearTimeout(previewDebounce);
+	});
 
 	/** Label shown in the block header */
 	let label = $derived.by(() => {
@@ -141,7 +195,16 @@
 	<!-- Header bar -->
 	<div class="block-card__header">
 		{#if dragHandle}
-			<span class="block-card__drag" title="Drag to reorder">&#x2630;</span>
+			<span class="block-card__drag" title="Drag to reorder">
+				<svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor">
+					<circle cx="2" cy="2" r="1.2" />
+					<circle cx="6" cy="2" r="1.2" />
+					<circle cx="2" cy="7" r="1.2" />
+					<circle cx="6" cy="7" r="1.2" />
+					<circle cx="2" cy="12" r="1.2" />
+					<circle cx="6" cy="12" r="1.2" />
+				</svg>
+			</span>
 		{/if}
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -165,7 +228,9 @@
 				<span class="block-card__preview">{block.source.slice(0, 60)}{block.source.length > 60 ? '...' : ''}</span>
 			{/if}
 
-			<span class="block-card__chevron" class:collapsed={!expanded}>&#x25B8;</span>
+			<svg class="block-card__chevron" class:collapsed={!expanded} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="6 4 10 8 6 12" />
+			</svg>
 		</div>
 
 		<button
@@ -291,6 +356,11 @@
 				/>
 			</div>
 		{/if}
+
+		<!-- Inline preview (Shadow DOM) -->
+		{#if editorState.themeConfig}
+			<div class="block-card__inline-preview" bind:this={previewContainer}></div>
+		{/if}
 	{/if}
 </div>
 
@@ -298,6 +368,7 @@
 	.block-card {
 		background: var(--ed-surface-0);
 		border: 1px solid var(--ed-border-default);
+		border-left: 3px solid var(--ed-border-strong);
 		border-radius: var(--ed-radius-lg);
 		box-shadow: var(--ed-shadow-sm);
 		transition: box-shadow var(--ed-transition-fast);
@@ -307,22 +378,42 @@
 		box-shadow: var(--ed-shadow-md);
 	}
 
+	/* Type accent borders */
+	.block-card--heading {
+		border-left-color: var(--ed-heading);
+	}
+
+	.block-card--rune {
+		border-left-color: var(--ed-warning);
+	}
+
+	.block-card--content {
+		border-left-color: var(--ed-border-strong);
+	}
+
 	/* Header */
 	.block-card__header {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-		padding: var(--ed-space-4);
+		gap: 0.5rem;
+		padding: var(--ed-space-2) var(--ed-space-3);
 		cursor: default;
-		min-height: 36px;
+		min-height: 34px;
 	}
 
 	.block-card__drag {
 		cursor: grab;
 		color: var(--ed-text-muted);
-		font-size: var(--ed-text-sm);
-		padding: 0 0.15rem;
+		padding: 0.15rem 0.1rem;
 		user-select: none;
+		display: flex;
+		align-items: center;
+		opacity: 0.5;
+		transition: opacity var(--ed-transition-fast);
+	}
+
+	.block-card:hover .block-card__drag {
+		opacity: 1;
 	}
 
 	.block-card__drag:active {
@@ -349,9 +440,9 @@
 	.block-card__category {
 		display: inline-flex;
 		align-items: center;
-		font-size: var(--ed-text-xs);
+		font-size: 10px;
 		font-weight: 600;
-		padding: 0.15rem 0.5rem;
+		padding: 0.1rem 0.4rem;
 		border-radius: 99px;
 		background: var(--ed-warning-subtle);
 		color: var(--ed-warning-text);
@@ -372,7 +463,7 @@
 	.block-card__header-toggle {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.5rem;
 		flex: 1;
 		min-width: 0;
 		cursor: pointer;
@@ -394,6 +485,7 @@
 		font-size: var(--ed-text-base);
 		line-height: 1;
 		border-radius: var(--ed-radius-sm);
+		transition: color var(--ed-transition-fast), background var(--ed-transition-fast);
 	}
 
 	.block-card__btn:hover {
@@ -407,10 +499,8 @@
 	}
 
 	.block-card__chevron {
-		display: inline-block;
 		transition: transform var(--ed-transition-fast);
 		transform: rotate(90deg);
-		font-size: var(--ed-text-xs);
 		color: var(--ed-text-muted);
 		margin-left: auto;
 		flex-shrink: 0;
@@ -420,13 +510,19 @@
 		transform: rotate(0deg);
 	}
 
-	/* Body */
+	/* Body — expand animation */
 	.block-card__body {
-		padding: var(--ed-space-4);
+		padding: var(--ed-space-3) var(--ed-space-4);
 		border-top: 1px solid var(--ed-border-subtle);
 		display: flex;
 		flex-direction: column;
 		gap: var(--ed-space-3);
+		animation: card-expand var(--ed-transition-slow);
+	}
+
+	@keyframes card-expand {
+		from { opacity: 0; }
+		to { opacity: 1; }
 	}
 
 	/* Footer */
@@ -434,6 +530,7 @@
 		border-top: 1px solid var(--ed-border-subtle);
 		overflow: hidden;
 		border-radius: 0 0 var(--ed-radius-md) var(--ed-radius-md);
+		animation: card-expand var(--ed-transition-slow);
 	}
 
 	.block-card__row {
@@ -469,6 +566,7 @@
 		background: var(--ed-surface-0);
 		outline: none;
 		font-family: inherit;
+		transition: border-color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
 	.block-card__input:focus {
@@ -485,6 +583,7 @@
 		background: var(--ed-surface-0);
 		outline: none;
 		cursor: pointer;
+		transition: border-color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
 	.block-card__select:focus {
@@ -512,11 +611,6 @@
 		box-shadow: 0 0 0 3px var(--ed-accent-ring);
 	}
 
-	.block-card__textarea--code {
-		font-family: var(--ed-font-mono);
-		font-size: var(--ed-text-sm);
-	}
-
 	.block-card__unknown {
 		display: flex;
 		flex-direction: column;
@@ -527,5 +621,14 @@
 		font-size: var(--ed-text-sm);
 		color: var(--ed-unsaved);
 		font-style: italic;
+	}
+
+	/* Inline preview */
+	.block-card__inline-preview {
+		border-top: 1px solid var(--ed-border-subtle);
+		background: var(--ed-surface-1);
+		border-radius: 0 0 var(--ed-radius-lg) var(--ed-radius-lg);
+		overflow: hidden;
+		animation: card-expand var(--ed-transition-slow);
 	}
 </style>

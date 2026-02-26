@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { editorState } from '../state/editor.svelte.js';
 	import ResizeHandle from './ResizeHandle.svelte';
 
 	interface Props {
@@ -34,24 +35,36 @@
 	function handleRightResize(delta: number) {
 		rightWidth = Math.max(MIN_PANEL, rightWidth - delta);
 	}
+
+	let gridColumns = $derived(
+		editorState.fullPreview
+			? `${leftWidth}px 4px 1fr`
+			: `${leftWidth}px 4px 1fr 4px ${rightWidth}px`
+	);
 </script>
 
 <div
 	class="layout"
 	bind:clientWidth={layoutWidth}
-	style="grid-template-columns: {leftWidth}px 4px 1fr 4px {rightWidth}px"
+	style="grid-template-columns: {gridColumns}"
 >
 	<div class="layout__panel layout__panel--left">
 		{@render left()}
 	</div>
 	<ResizeHandle onresize={handleLeftResize} />
-	<div class="layout__panel layout__panel--center">
-		{@render center()}
-	</div>
-	<ResizeHandle onresize={handleRightResize} />
-	<div class="layout__panel layout__panel--right">
-		{@render right()}
-	</div>
+	{#if editorState.fullPreview}
+		<div class="layout__panel layout__panel--center layout__panel--full-preview">
+			{@render right()}
+		</div>
+	{:else}
+		<div class="layout__panel layout__panel--center">
+			{@render center()}
+		</div>
+		<ResizeHandle onresize={handleRightResize} />
+		<div class="layout__panel layout__panel--right">
+			{@render right()}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -76,6 +89,10 @@
 	}
 
 	.layout__panel--right {
+		background: var(--ed-surface-1);
+	}
+
+	.layout__panel--full-preview {
 		background: var(--ed-surface-1);
 	}
 </style>

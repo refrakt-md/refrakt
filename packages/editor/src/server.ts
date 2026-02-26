@@ -193,6 +193,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				serveJson(res, {
 					previewRuntime: previewRuntimeDir !== null,
 					devServerUrl: devServer ?? null,
+					themeCss,
+					themeConfig: stripFunctions(themeConfig),
 				});
 			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
 				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
@@ -854,4 +856,14 @@ function serveJson(res: import('node:http').ServerResponse, data: unknown): void
 function serveHtml(res: import('node:http').ServerResponse, html: string): void {
 	res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
 	res.end(html);
+}
+
+/** Strip non-serializable function values (postTransform) from ThemeConfig for JSON transport */
+function stripFunctions(config: ThemeConfig): ThemeConfig {
+	const runes: Record<string, import('@refrakt-md/transform').RuneConfig> = {};
+	for (const [name, rune] of Object.entries(config.runes)) {
+		const { postTransform, ...rest } = rune;
+		runes[name] = rest;
+	}
+	return { ...config, runes };
 }

@@ -46,6 +46,16 @@
 
 	.dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
+		backdrop-filter: blur(4px);
+	}
+
+	.dialog[open] {
+		animation: dialog-enter 180ms ease-out;
+	}
+
+	@keyframes dialog-enter {
+		from { opacity: 0; transform: translateY(8px) scale(0.98); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
 	}
 
 	.dialog__form {

@@ -22,6 +22,18 @@
 	let adjustedX = $state(x);
 	let adjustedY = $state(y);
 
+	/** Map labels to inline SVG icon paths */
+	function getIcon(label: string): string | null {
+		switch (label) {
+			case 'Rename': return 'M12.5 3.5l-9 9L2 16l3.5-1.5 9-9zM10.5 5.5l2 2';
+			case 'Duplicate': return 'M5 3h6l3 3v7H5zM3 6v9h8';
+			case 'Delete': return 'M3 5h12M6 5V3h6v2M5 5v9h8V5';
+			case 'Publish':
+			case 'Set as Draft': return 'M2 8h5v6H2zM9 4h5v10H9z';
+			default: return null;
+		}
+	}
+
 	onMount(() => {
 		if (menuEl) {
 			const rect = menuEl.getBoundingClientRect();
@@ -63,11 +75,17 @@
 	style="left: {adjustedX}px; top: {adjustedY}px"
 >
 	{#each items as item}
+		{@const icon = getIcon(item.label)}
 		<button
 			class="context-menu__item"
 			class:danger={item.danger}
 			onclick={() => handleItemClick(item.action)}
 		>
+			{#if icon}
+				<svg class="context-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+					<path d={icon} />
+				</svg>
+			{/if}
 			{item.label}
 		</button>
 	{/each}
@@ -82,20 +100,30 @@
 		border-radius: var(--ed-radius-md);
 		box-shadow: var(--ed-shadow-lg);
 		padding: var(--ed-space-1);
-		min-width: 140px;
+		min-width: 160px;
+		animation: ctx-enter 120ms ease-out;
+		transform-origin: top left;
+	}
+
+	@keyframes ctx-enter {
+		from { opacity: 0; transform: scale(0.95); }
+		to { opacity: 1; transform: scale(1); }
 	}
 
 	.context-menu__item {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		width: 100%;
 		padding: var(--ed-space-2) var(--ed-space-3);
-		font-size: var(--ed-text-base);
+		font-size: var(--ed-text-sm);
 		color: var(--ed-text-primary);
 		background: none;
 		border: none;
 		cursor: pointer;
 		text-align: left;
 		border-radius: var(--ed-radius-sm);
+		transition: background var(--ed-transition-fast);
 	}
 
 	.context-menu__item:hover {
@@ -108,5 +136,14 @@
 
 	.context-menu__item.danger:hover {
 		background: var(--ed-danger-subtle);
+	}
+
+	.context-menu__icon {
+		flex-shrink: 0;
+		opacity: 0.6;
+	}
+
+	.context-menu__item.danger .context-menu__icon {
+		opacity: 0.8;
 	}
 </style>

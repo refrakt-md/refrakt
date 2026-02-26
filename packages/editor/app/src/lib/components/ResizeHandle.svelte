@@ -40,19 +40,61 @@
 	onpointerup={handlePointerUp}
 	role="separator"
 	aria-orientation="vertical"
-></div>
+>
+	<div class="resize-handle__grip">
+		<span class="resize-handle__dot"></span>
+		<span class="resize-handle__dot"></span>
+		<span class="resize-handle__dot"></span>
+	</div>
+</div>
 
 <style>
 	.resize-handle {
 		width: 8px;
 		cursor: col-resize;
-		background: color-mix(in srgb, var(--ed-border-default) 20%, transparent);
-		transition: background var(--ed-transition-fast);
+		background: transparent;
+		transition: background var(--ed-transition-fast), width var(--ed-transition-fast);
 		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
 	}
 
-	.resize-handle:hover,
+	.resize-handle__grip {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast);
+	}
+
+	.resize-handle:hover .resize-handle__grip {
+		opacity: 1;
+	}
+
+	.resize-handle__dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: var(--ed-text-muted);
+	}
+
+	.resize-handle:hover {
+		background: var(--ed-accent-subtle);
+		width: 10px;
+	}
+
 	.resize-handle.active {
-		background: var(--ed-border-default);
+		background: color-mix(in srgb, var(--ed-accent) 20%, transparent);
+		width: 10px;
+	}
+
+	.resize-handle.active .resize-handle__grip {
+		opacity: 1;
+	}
+
+	.resize-handle.active .resize-handle__dot {
+		background: var(--ed-accent);
 	}
 </style>

@@ -191,7 +191,14 @@
 <div class="block-editor" class:hidden={!editorState.currentPath}>
 	{#if blocks.length === 0 && editorState.currentPath}
 		<div class="block-editor__empty">
+			<svg class="block-editor__empty-icon" width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+				<rect x="6" y="8" width="36" height="32" rx="3" />
+				<line x1="14" y1="18" x2="34" y2="18" />
+				<line x1="14" y1="24" x2="28" y2="24" />
+				<line x1="14" y1="30" x2="22" y2="30" />
+			</svg>
 			<span class="block-editor__empty-text">No content blocks yet</span>
+			<span class="block-editor__empty-hint">Click "Add block" below to start building</span>
 		</div>
 	{/if}
 
@@ -199,6 +206,7 @@
 		{#each blocks as block, i (block.id)}
 			<div
 				class="block-editor__item"
+				class:drag-source={dragIndex === i}
 				class:drag-over={dropIndex === i && dragIndex !== i}
 			>
 				<BlockCard
@@ -222,23 +230,53 @@
 				<div class="insert-menu">
 					<div class="insert-menu__section">
 						<span class="insert-menu__label">Content</span>
-						<div class="insert-menu__options">
-							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>Heading</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>Paragraph</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>Code Block</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>Divider</button>
+						<div class="insert-menu__grid">
+							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<path d="M3 3v10M13 3v10M3 8h10" />
+								</svg>
+								Heading
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="2" y1="4" x2="14" y2="4" />
+									<line x1="2" y1="8" x2="14" y2="8" />
+									<line x1="2" y1="12" x2="10" y2="12" />
+								</svg>
+								Paragraph
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="5 4 2 8 5 12" />
+									<polyline points="11 4 14 8 11 12" />
+								</svg>
+								Code Block
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="2" y1="8" x2="14" y2="8" />
+								</svg>
+								Divider
+							</button>
 						</div>
 					</div>
 					{#each [...runesByCategory.entries()] as [category, runes]}
 						<div class="insert-menu__section">
 							<span class="insert-menu__label">{category}</span>
-							<div class="insert-menu__options">
+							<div class="insert-menu__grid">
 								{#each runes as rune}
 									<button
 										class="insert-menu__btn insert-menu__btn--rune"
 										onclick={() => insertBlock('rune', rune.name)}
-										title={rune.description}
-									>{rune.name}</button>
+									>
+										<span class="insert-menu__rune-dot"></span>
+										<span class="insert-menu__rune-info">
+											<span class="insert-menu__rune-name">{rune.name}</span>
+											{#if rune.description}
+												<span class="insert-menu__rune-desc">{rune.description}</span>
+											{/if}
+										</span>
+									</button>
 								{/each}
 							</div>
 						</div>
@@ -257,6 +295,13 @@
 
 {#if !editorState.currentPath}
 	<div class="block-editor__placeholder">
+		<svg class="block-editor__placeholder-icon" width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="6" y="4" width="24" height="32" rx="2" />
+			<polyline points="20 4 20 14 30 14" />
+			<line x1="12" y1="22" x2="24" y2="22" />
+			<line x1="12" y1="27" x2="20" y2="27" />
+			<path d="M34 24l6 6M34 36l6-6" />
+		</svg>
 		<span class="block-editor__placeholder-text">Select a file to edit</span>
 	</div>
 {/if}
@@ -282,36 +327,63 @@
 	}
 
 	.block-editor__item {
-		transition: transform var(--ed-transition-fast);
+		transition: transform var(--ed-transition-fast), opacity var(--ed-transition-fast);
+	}
+
+	.block-editor__item.drag-source {
+		opacity: 0.6;
+		transform: rotate(0.5deg);
 	}
 
 	.block-editor__item.drag-over {
+		box-shadow: 0 -3px 10px var(--ed-accent-ring);
 		border-top: 2px solid var(--ed-accent);
 		padding-top: 2px;
 	}
 
+	/* Empty state */
 	.block-editor__empty {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: 3rem 2rem;
+		gap: var(--ed-space-2);
+	}
+
+	.block-editor__empty-icon {
+		color: var(--ed-border-strong);
+		margin-bottom: var(--ed-space-1);
 	}
 
 	.block-editor__empty-text {
-		color: var(--ed-text-muted);
+		color: var(--ed-text-secondary);
 		font-size: var(--ed-text-md);
+		font-weight: 500;
 	}
 
+	.block-editor__empty-hint {
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-sm);
+	}
+
+	/* Placeholder (no file selected) */
 	.block-editor__placeholder {
 		flex: 1;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		height: 100%;
+		gap: var(--ed-space-3);
+	}
+
+	.block-editor__placeholder-icon {
+		color: var(--ed-border-strong);
 	}
 
 	.block-editor__placeholder-text {
-		color: var(--ed-text-secondary);
+		color: var(--ed-text-muted);
 		font-size: var(--ed-text-md);
 	}
 
@@ -327,7 +399,7 @@
 		border-radius: var(--ed-radius-md);
 		background: transparent;
 		color: var(--ed-text-muted);
-		font-size: var(--ed-text-base);
+		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		transition: border-color var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
@@ -340,13 +412,19 @@
 	/* Insert menu */
 	.insert-menu {
 		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-lg);
+		border-radius: 10px;
 		background: var(--ed-surface-0);
 		padding: var(--ed-space-4);
 		display: flex;
 		flex-direction: column;
 		gap: var(--ed-space-3);
-		box-shadow: var(--ed-shadow-md);
+		box-shadow: var(--ed-shadow-lg);
+		animation: menu-enter var(--ed-transition-normal);
+	}
+
+	@keyframes menu-enter {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 
 	.insert-menu__section {
@@ -363,14 +441,17 @@
 		letter-spacing: 0.05em;
 	}
 
-	.insert-menu__options {
-		display: flex;
-		flex-wrap: wrap;
+	.insert-menu__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 		gap: 0.35rem;
 	}
 
 	.insert-menu__btn {
-		padding: var(--ed-space-1) var(--ed-space-2);
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: var(--ed-space-2) var(--ed-space-2);
 		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-sm);
 		background: var(--ed-surface-1);
@@ -378,6 +459,7 @@
 		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		transition: background var(--ed-transition-fast), border-color var(--ed-transition-fast);
+		text-align: left;
 	}
 
 	.insert-menu__btn:hover {
@@ -386,17 +468,48 @@
 		color: var(--ed-heading);
 	}
 
+	.insert-menu__icon {
+		flex-shrink: 0;
+		opacity: 0.6;
+	}
+
+	/* Rune buttons */
 	.insert-menu__btn--rune {
-		background: var(--ed-warning-subtle);
-		border-color: var(--ed-warning);
-		color: var(--ed-warning-text);
+		align-items: flex-start;
+		padding: var(--ed-space-2);
+	}
+
+	.insert-menu__rune-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--ed-warning);
+		flex-shrink: 0;
+		margin-top: 0.3rem;
+	}
+
+	.insert-menu__rune-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+	}
+
+	.insert-menu__rune-name {
+		font-weight: 500;
+	}
+
+	.insert-menu__rune-desc {
+		font-size: 10px;
+		color: var(--ed-text-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.insert-menu__btn--rune:hover {
 		background: var(--ed-warning-subtle);
 		border-color: var(--ed-warning);
-		color: var(--ed-warning-text);
-		filter: brightness(0.95);
 	}
 
 	.insert-menu__close {

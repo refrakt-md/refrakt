@@ -29,6 +29,7 @@ class EditorState {
 	treeLoading = $state(false);
 	fileLoading = $state(false);
 	saving = $state(false);
+	saveJustCompleted = $state(false);
 	error: string | null = $state(null);
 
 	/** Rune metadata for autocomplete/palette */
@@ -36,6 +37,14 @@ class EditorState {
 
 	/** Preview viewport preset */
 	viewport: 'desktop' | 'tablet' | 'mobile' = $state('desktop');
+
+	/** Theme CSS for inline block previews */
+	themeCss = $state('');
+	/** Theme config for inline block previews (JSON-safe, no postTransform) */
+	themeConfig: import('@refrakt-md/transform').ThemeConfig | null = $state(null);
+
+	/** Full preview mode: center panel shows PreviewPane instead of BlockEditor */
+	fullPreview = $state(false);
 
 	/** Whether the Svelte preview runtime is available */
 	previewRuntimeAvailable = $state(false);
