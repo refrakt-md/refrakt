@@ -97,52 +97,52 @@
 	.rune-attr {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: var(--ed-space-1);
 	}
 
 	.rune-attr__label {
-		font-size: 0.65rem;
+		font-size: var(--ed-text-xs);
 		font-weight: 600;
-		color: #64748b;
+		color: var(--ed-text-tertiary);
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
 	}
 
 	.rune-attr__required {
-		color: #ef4444;
+		color: var(--ed-danger);
 	}
 
 	.rune-attr__input {
-		padding: 0.8rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		color: #1a1a2e;
-		background: #e2e8f036;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-0);
 		outline: none;
 		font-family: inherit;
 	}
 
 	.rune-attr__input:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.rune-attr__select {
-		padding: 0.8rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		color: #1a1a2e;
-		background: #e2e8f036;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-0);
 		outline: none;
 		font-family: inherit;
 		cursor: pointer;
 	}
 
 	.rune-attr__select:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	/* Toggle switch */
@@ -157,16 +157,16 @@
 		width: 32px;
 		height: 18px;
 		border-radius: 9px;
-		border: 1px solid #cbd5e1;
-		background: #e2e8f0;
+		border: 1px solid var(--ed-border-strong);
+		background: var(--ed-surface-3);
 		cursor: pointer;
-		transition: background 0.15s, border-color 0.15s;
+		transition: background var(--ed-transition-fast), border-color var(--ed-transition-fast);
 		padding: 0;
 	}
 
 	.rune-attr__toggle.active {
-		background: #0ea5e9;
-		border-color: #0ea5e9;
+		background: var(--ed-accent);
+		border-color: var(--ed-accent);
 	}
 
 	.rune-attr__toggle-knob {
@@ -176,8 +176,8 @@
 		width: 12px;
 		height: 12px;
 		border-radius: 50%;
-		background: #ffffff;
-		transition: transform 0.15s;
+		background: var(--ed-surface-0);
+		transition: transform var(--ed-transition-fast);
 	}
 
 	.rune-attr__toggle.active .rune-attr__toggle-knob {
@@ -185,13 +185,13 @@
 	}
 
 	.rune-attr__toggle-label {
-		font-size: 0.75rem;
-		color: #64748b;
+		font-size: var(--ed-text-sm);
+		color: var(--ed-text-tertiary);
 	}
 
 	.rune-attrs__empty {
-		font-size: 0.75rem;
-		color: #94a3b8;
+		font-size: var(--ed-text-sm);
+		color: var(--ed-text-muted);
 		font-style: italic;
 	}
 </style>

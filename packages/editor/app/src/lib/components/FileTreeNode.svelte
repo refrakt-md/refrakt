@@ -81,13 +81,13 @@
 		align-items: center;
 		gap: 0.3rem;
 		width: 100%;
-		padding: 0.35rem 0.75rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
-		font-size: 0.75rem;
+		padding: 0.35rem var(--ed-space-3) 0.35rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem);
+		font-size: var(--ed-text-sm);
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: #64748b;
-		margin-top: 0.5rem;
+		color: var(--ed-text-tertiary);
+		margin-top: var(--ed-space-2);
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -95,13 +95,13 @@
 	}
 
 	.tree-dir:hover {
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 	}
 
 	.tree-dir__arrow {
 		display: inline-block;
-		transition: transform 0.15s;
-		font-size: 0.65rem;
+		transition: transform var(--ed-transition-fast);
+		font-size: var(--ed-text-xs);
 		transform: rotate(90deg);
 	}
 
@@ -112,27 +112,27 @@
 	.tree-item {
 		display: block;
 		width: 100%;
-		padding: 0.35rem 0.75rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
-		font-size: 0.8rem;
+		padding: 0.35rem var(--ed-space-3) 0.35rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem);
+		font-size: var(--ed-text-base);
 		cursor: pointer;
-		transition: background 0.1s;
-		color: #1a1a2e;
+		transition: background var(--ed-transition-fast);
+		color: var(--ed-text-primary);
 		background: none;
 		border: none;
 		text-align: left;
 	}
 
 	.tree-item:hover {
-		background: #e2e8f0;
+		background: var(--ed-surface-3);
 	}
 
 	.tree-item.active {
-		background: #e0f2fe;
-		color: #0ea5e9;
+		background: var(--ed-accent-subtle);
+		color: var(--ed-accent);
 	}
 
 	.tree-item--layout {
-		color: #d97706;
+		color: var(--ed-warning);
 		font-style: italic;
 	}
 

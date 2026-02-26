@@ -296,15 +296,15 @@
 
 <style>
 	.block-card {
-		transition: box-shadow 0.15s;
+		transition: box-shadow var(--ed-transition-fast);
 	}
 
 	.block-card:hover {
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+		box-shadow: var(--ed-shadow-md);
 	}
 
 	.block-card.collapsed {
-		border-color: #f1f5f9;
+		border-color: var(--ed-border-subtle);
 	}
 
 	/* Header */
@@ -312,15 +312,15 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		padding: 1rem;
+		padding: var(--ed-space-4);
 		cursor: default;
 		min-height: 36px;
 	}
 
 	.block-card__drag {
 		cursor: grab;
-		color: #94a3b8;
-		font-size: 0.75rem;
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-sm);
 		padding: 0 0.15rem;
 		user-select: none;
 	}
@@ -330,34 +330,34 @@
 	}
 
 	.block-card__type {
-		font-size: 0.7rem;
+		font-size: var(--ed-text-sm);
 		font-weight: 600;
-		color: #475569;
+		color: var(--ed-text-secondary);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
 	}
 
 	.block-card--rune .block-card__type {
-		color: #d97706;
+		color: var(--ed-warning);
 	}
 
 	.block-card--heading .block-card__type {
-		color: #0369a1;
+		color: var(--ed-heading);
 	}
 
 	.block-card__category {
-		font-size: 0.6rem;
+		font-size: var(--ed-text-xs);
 		padding: 0.1rem 0.35rem;
 		border-radius: 3px;
-		background: #fef3c7;
-		color: #92400e;
+		background: var(--ed-warning-subtle);
+		color: var(--ed-warning-text);
 		white-space: nowrap;
 	}
 
 	.block-card__preview {
-		font-size: 0.75rem;
-		color: #94a3b8;
+		font-size: var(--ed-text-sm);
+		color: var(--ed-text-muted);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -372,42 +372,42 @@
 		flex: 1;
 		min-width: 0;
 		cursor: pointer;
-		border-radius: 3px;
-		padding: 0.15rem 0.25rem;
+		border-radius: var(--ed-radius-sm);
+		padding: 0.15rem var(--ed-space-1);
 		outline: none;
 	}
 
 	.block-card__header-toggle:focus-visible {
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.block-card__btn {
 		background: none;
 		border: none;
-		color: #94a3b8;
+		color: var(--ed-text-muted);
 		cursor: pointer;
-		padding: 0.1rem 0.25rem;
-		font-size: 0.8rem;
+		padding: 0.1rem var(--ed-space-1);
+		font-size: var(--ed-text-base);
 		line-height: 1;
-		border-radius: 3px;
+		border-radius: var(--ed-radius-sm);
 	}
 
 	.block-card__btn:hover {
-		color: #475569;
-		background: #f1f5f9;
+		color: var(--ed-text-secondary);
+		background: var(--ed-surface-2);
 	}
 
 	.block-card__btn--danger:hover {
-		color: #ef4444;
-		background: #fef2f2;
+		color: var(--ed-danger);
+		background: var(--ed-danger-subtle);
 	}
 
 	.block-card__chevron {
 		display: inline-block;
-		transition: transform 0.15s;
+		transition: transform var(--ed-transition-fast);
 		transform: rotate(90deg);
-		font-size: 0.65rem;
-		color: #94a3b8;
+		font-size: var(--ed-text-xs);
+		color: var(--ed-text-muted);
 		margin-left: auto;
 		flex-shrink: 0;
 	}
@@ -418,30 +418,30 @@
 
 	/* Body */
 	.block-card__body {
-		padding: 1rem;
-		border-top: 1px solid #f1f5f9;
+		padding: var(--ed-space-4);
+		border-top: 1px solid var(--ed-border-subtle);
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: var(--ed-space-3);
 	}
 
 	/* Footer */
 	.block-card__footer {
-		border-top: 1px solid #f1f5f9;
+		border-top: 1px solid var(--ed-border-subtle);
 		overflow: hidden;
-		border-radius: 0 0 6px 6px;
+		border-radius: 0 0 var(--ed-radius-md) var(--ed-radius-md);
 	}
 
 	.block-card__row {
 		display: flex;
-		gap: 0.75rem;
+		gap: var(--ed-space-3);
 		align-items: flex-end;
 	}
 
 	.block-card__inline-field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: var(--ed-space-1);
 	}
 
 	.block-card__inline-field--grow {
@@ -449,52 +449,52 @@
 	}
 
 	.block-card__field-label {
-		font-size: 0.65rem;
+		font-size: var(--ed-text-xs);
 		font-weight: 600;
-		color: #64748b;
+		color: var(--ed-text-tertiary);
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
 	}
 
 	.block-card__input {
-		padding: 0.8rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		color: #1a1a2e;
-		background: #e2e8f036;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-0);
 		outline: none;
 		font-family: inherit;
 	}
 
 	.block-card__input:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.block-card__select {
-		padding: 0.8rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		color: #1a1a2e;
-		background: #e2e8f036;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-0);
 		outline: none;
 		cursor: pointer;
 	}
 
 	.block-card__select:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.block-card__textarea {
-		padding: 0.6rem 0.75rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		color: #1a1a2e;
-		background: #fafbfc;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-1);
 		outline: none;
 		resize: vertical;
 		font-family: inherit;
@@ -503,14 +503,14 @@
 	}
 
 	.block-card__textarea:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.block-card__textarea--code {
-		font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
-		font-size: 0.75rem;
-		background: #f8fafc;
+		font-family: var(--ed-font-mono);
+		font-size: var(--ed-text-sm);
+		background: var(--ed-surface-1);
 	}
 
 	.block-card__unknown {
@@ -520,8 +520,8 @@
 	}
 
 	.block-card__unknown-label {
-		font-size: 0.7rem;
-		color: #f59e0b;
+		font-size: var(--ed-text-sm);
+		color: var(--ed-unsaved);
 		font-style: italic;
 	}
 </style>

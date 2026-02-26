@@ -121,26 +121,26 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.5rem 0;
+		padding: var(--ed-space-2) 0;
 		background: transparent;
-		border-bottom: 1px solid #e2e8f0;
-		gap: 0.5rem;
+		border-bottom: 1px solid var(--ed-border-default);
+		gap: var(--ed-space-2);
 	}
 
 	.region-card__name-row {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		gap: var(--ed-space-3);
 		flex: 1;
 		min-width: 0;
 	}
 
 	.region-card__name {
-		font-size: 0.8rem;
+		font-size: var(--ed-text-base);
 		font-weight: 600;
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 		border: 1px solid transparent;
-		border-radius: 3px;
+		border-radius: var(--ed-radius-sm);
 		padding: 0.15rem 0.35rem;
 		background: transparent;
 		outline: none;
@@ -149,15 +149,15 @@
 	}
 
 	.region-card__name:focus {
-		border-color: #0ea5e9;
-		background: #ffffff;
+		border-color: var(--ed-accent);
+		background: var(--ed-surface-0);
 	}
 
 	.region-card__mode {
 		display: flex;
 		gap: 1px;
-		background: #e2e8f0;
-		border-radius: 4px;
+		background: var(--ed-surface-3);
+		border-radius: var(--ed-radius-sm);
 		overflow: hidden;
 		flex-shrink: 0;
 	}
@@ -166,47 +166,47 @@
 		font-size: 0.65rem;
 		padding: 0.15rem 0.4rem;
 		border: none;
-		background: #f1f5f9;
-		color: #64748b;
+		background: var(--ed-surface-2);
+		color: var(--ed-text-tertiary);
 		cursor: pointer;
 		text-transform: capitalize;
 	}
 
 	.region-card__mode-btn:hover {
-		background: #e2e8f0;
+		background: var(--ed-surface-3);
 	}
 
 	.region-card__mode-btn.active {
-		background: #0ea5e9;
+		background: var(--ed-accent);
 		color: #ffffff;
 	}
 
 	.region-card__actions {
 		display: flex;
 		align-items: center;
-		gap: 0.25rem;
+		gap: var(--ed-space-1);
 		flex-shrink: 0;
 	}
 
 	.region-card__toggle-btn {
 		font-size: 0.65rem;
-		padding: 0.15rem 0.5rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 3px;
-		background: #ffffff;
-		color: #64748b;
+		padding: 0.15rem var(--ed-space-2);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		background: var(--ed-surface-0);
+		color: var(--ed-text-tertiary);
 		cursor: pointer;
 	}
 
 	.region-card__toggle-btn:hover {
-		border-color: #0ea5e9;
-		color: #0ea5e9;
+		border-color: var(--ed-accent);
+		color: var(--ed-accent);
 	}
 
 	.region-card__toggle-btn.active {
-		background: #0ea5e9;
+		background: var(--ed-accent);
 		color: #ffffff;
-		border-color: #0ea5e9;
+		border-color: var(--ed-accent);
 	}
 
 	.region-card__delete-btn {
@@ -217,14 +217,14 @@
 		height: 22px;
 		border: none;
 		background: none;
-		color: #94a3b8;
+		color: var(--ed-text-muted);
 		cursor: pointer;
-		border-radius: 3px;
+		border-radius: var(--ed-radius-sm);
 	}
 
 	.region-card__delete-btn:hover {
-		background: #fef2f2;
-		color: #ef4444;
+		background: var(--ed-danger-subtle);
+		color: var(--ed-danger);
 	}
 
 	.region-card__body {
@@ -234,18 +234,18 @@
 	.region-card__textarea {
 		width: 100%;
 		min-height: 80px;
-		padding: 0.75rem;
+		padding: var(--ed-space-3);
 		border: none;
 		outline: none;
 		resize: none;
-		font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-		font-size: 0.8rem;
+		font-family: var(--ed-font-mono);
+		font-size: var(--ed-text-base);
 		line-height: 1.5;
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 		background: transparent;
 	}
 
 	.region-card__textarea::placeholder {
-		color: #94a3b8;
+		color: var(--ed-text-muted);
 	}
 </style>

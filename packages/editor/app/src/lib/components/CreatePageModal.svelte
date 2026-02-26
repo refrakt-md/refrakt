@@ -128,9 +128,9 @@
 <style>
 	.modal {
 		border: none;
-		border-radius: 8px;
+		border-radius: var(--ed-radius-lg);
 		padding: 0;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+		box-shadow: var(--ed-shadow-xl);
 		max-width: 420px;
 		width: 90vw;
 	}
@@ -142,14 +142,14 @@
 	.modal__form {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		padding: 1.25rem;
+		gap: var(--ed-space-3);
+		padding: var(--ed-space-5);
 	}
 
 	.modal__title {
-		font-size: 1rem;
+		font-size: var(--ed-text-lg);
 		font-weight: 600;
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 		margin: 0;
 	}
 
@@ -160,33 +160,33 @@
 	}
 
 	.modal__label {
-		font-size: 0.7rem;
+		font-size: var(--ed-text-xs);
 		font-weight: 500;
-		color: #64748b;
+		color: var(--ed-text-tertiary);
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
 	}
 
 	.modal__input,
 	.modal__select {
-		padding: 0.4rem 0.5rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.85rem;
-		color: #1a1a2e;
-		background: #ffffff;
+		padding: var(--ed-space-2) var(--ed-space-2);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-md);
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-0);
 		outline: none;
 	}
 
 	.modal__input:focus,
 	.modal__select:focus {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.modal__hint {
 		font-size: 0.65rem;
-		color: #94a3b8;
+		color: var(--ed-text-muted);
 	}
 
 	.modal__fieldset {
@@ -208,13 +208,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.4rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
+		padding: var(--ed-space-2);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
 		cursor: pointer;
-		font-size: 0.8rem;
-		color: #64748b;
-		transition: all 0.1s;
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-tertiary);
+		transition: all var(--ed-transition-fast);
 	}
 
 	.modal__template input {
@@ -222,14 +222,14 @@
 	}
 
 	.modal__template:hover {
-		border-color: #0ea5e9;
-		color: #0ea5e9;
+		border-color: var(--ed-accent);
+		color: var(--ed-accent);
 	}
 
 	.modal__template.selected {
-		border-color: #0ea5e9;
-		background: #e0f2fe;
-		color: #0369a1;
+		border-color: var(--ed-accent);
+		background: var(--ed-accent-subtle);
+		color: var(--ed-heading);
 	}
 
 	.modal__template-name {
@@ -240,42 +240,42 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		font-size: 0.8rem;
-		color: #475569;
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-secondary);
 	}
 
 	.modal__actions {
 		display: flex;
-		gap: 0.5rem;
+		gap: var(--ed-space-2);
 		justify-content: flex-end;
-		padding-top: 0.25rem;
+		padding-top: var(--ed-space-1);
 	}
 
 	.modal__btn {
-		padding: 0.4rem 0.8rem;
-		border-radius: 4px;
-		font-size: 0.8rem;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border-radius: var(--ed-radius-sm);
+		font-size: var(--ed-text-base);
 		cursor: pointer;
-		border: 1px solid #e2e8f0;
+		border: 1px solid var(--ed-border-default);
 	}
 
 	.modal__btn--cancel {
-		background: #ffffff;
-		color: #64748b;
+		background: var(--ed-surface-0);
+		color: var(--ed-text-tertiary);
 	}
 
 	.modal__btn--cancel:hover {
-		background: #f8fafc;
+		background: var(--ed-surface-1);
 	}
 
 	.modal__btn--primary {
-		background: #0ea5e9;
+		background: var(--ed-accent);
 		color: #ffffff;
-		border-color: #0ea5e9;
+		border-color: var(--ed-accent);
 	}
 
 	.modal__btn--primary:hover:not(:disabled) {
-		background: #0284c7;
+		background: var(--ed-accent-hover);
 	}
 
 	.modal__btn--primary:disabled {

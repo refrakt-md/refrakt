@@ -77,11 +77,11 @@
 	.context-menu {
 		position: fixed;
 		z-index: 1000;
-		background: #ffffff;
-		border: 1px solid #e2e8f0;
-		border-radius: 6px;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
-		padding: 0.25rem;
+		background: var(--ed-surface-0);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-md);
+		box-shadow: var(--ed-shadow-lg);
+		padding: var(--ed-space-1);
 		min-width: 140px;
 	}
 
@@ -89,24 +89,24 @@
 		display: block;
 		width: 100%;
 		padding: 0.35rem 0.6rem;
-		font-size: 0.8rem;
-		color: #1a1a2e;
+		font-size: var(--ed-text-base);
+		color: var(--ed-text-primary);
 		background: none;
 		border: none;
 		cursor: pointer;
 		text-align: left;
-		border-radius: 4px;
+		border-radius: var(--ed-radius-sm);
 	}
 
 	.context-menu__item:hover {
-		background: #f1f5f9;
+		background: var(--ed-surface-2);
 	}
 
 	.context-menu__item.danger {
-		color: #ef4444;
+		color: var(--ed-danger);
 	}
 
 	.context-menu__item.danger:hover {
-		background: #fef2f2;
+		background: var(--ed-danger-subtle);
 	}
 </style>

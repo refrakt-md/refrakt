@@ -68,14 +68,14 @@
 	}
 
 	.layout__panel--left {
-		background: #f8fafc;
+		background: var(--ed-surface-1);
 	}
 
 	.layout__panel--center {
-		background: #ffffff;
+		background: var(--ed-surface-0);
 	}
 
 	.layout__panel--right {
-		background: #f8fafc;
+		background: var(--ed-surface-1);
 	}
 </style>

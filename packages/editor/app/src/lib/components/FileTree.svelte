@@ -51,17 +51,17 @@
 	.file-tree__header {
 		display: flex;
 		align-items: center;
-		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid #e2e8f0;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border-bottom: 1px solid var(--ed-border-default);
 		flex-shrink: 0;
 	}
 
 	.file-tree__title {
-		font-size: 0.7rem;
+		font-size: var(--ed-text-sm);
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: #64748b;
+		color: var(--ed-text-tertiary);
 	}
 
 	.file-tree__actions {
@@ -78,20 +78,20 @@
 		height: 22px;
 		border: none;
 		background: none;
-		color: #94a3b8;
+		color: var(--ed-text-muted);
 		cursor: pointer;
-		border-radius: 3px;
+		border-radius: var(--ed-radius-sm);
 	}
 
 	.file-tree__btn:hover {
-		background: #e2e8f0;
-		color: #0ea5e9;
+		background: var(--ed-surface-3);
+		color: var(--ed-accent);
 	}
 
 	.file-tree__loading,
 	.file-tree__empty {
-		color: #64748b;
-		padding: 1rem;
-		font-size: 0.8rem;
+		color: var(--ed-text-tertiary);
+		padding: var(--ed-space-4);
+		font-size: var(--ed-text-base);
 	}
 </style>

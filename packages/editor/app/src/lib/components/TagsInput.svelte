@@ -54,18 +54,18 @@
 	.tags-input {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: var(--ed-space-1);
 		padding: 0.3rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		background: #ffffff;
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		background: var(--ed-surface-0);
 		min-height: 2rem;
 		align-items: center;
 	}
 
 	.tags-input:focus-within {
-		border-color: #0ea5e9;
-		box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+		border-color: var(--ed-accent);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
 	}
 
 	.tags-input__tag {
@@ -73,17 +73,17 @@
 		align-items: center;
 		gap: 0.2rem;
 		padding: 0.1rem 0.4rem;
-		background: #e0f2fe;
-		color: #0369a1;
+		background: var(--ed-accent-subtle);
+		color: var(--ed-heading);
 		border-radius: 3px;
-		font-size: 0.75rem;
+		font-size: var(--ed-text-sm);
 		line-height: 1.4;
 	}
 
 	.tags-input__remove {
 		background: none;
 		border: none;
-		color: #0369a1;
+		color: var(--ed-heading);
 		cursor: pointer;
 		font-size: 0.85rem;
 		padding: 0;
@@ -100,9 +100,9 @@
 		min-width: 60px;
 		border: none;
 		outline: none;
-		font-size: 0.8rem;
+		font-size: var(--ed-text-base);
 		padding: 0.15rem 0.25rem;
 		background: transparent;
-		color: #1a1a2e;
+		color: var(--ed-text-primary);
 	}
 </style>

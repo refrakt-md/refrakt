@@ -46,13 +46,13 @@
 	.resize-handle {
 		width: 8px;
 		cursor: col-resize;
-		background: #e2e8f036;
-		transition: background 0.15s;
+		background: color-mix(in srgb, var(--ed-border-default) 20%, transparent);
+		transition: background var(--ed-transition-fast);
 		flex-shrink: 0;
 	}
 
 	.resize-handle:hover,
 	.resize-handle.active {
-		background: #e2e8f0;
+		background: var(--ed-border-default);
 	}
 </style>
