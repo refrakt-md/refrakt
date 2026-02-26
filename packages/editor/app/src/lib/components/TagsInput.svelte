@@ -72,12 +72,13 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.2rem;
-		padding: 0.1rem 0.4rem;
+		padding: 0.15rem 0.5rem;
 		background: var(--ed-accent-subtle);
 		color: var(--ed-heading);
-		border-radius: 3px;
-		font-size: var(--ed-text-sm);
-		line-height: 1.4;
+		border-radius: 99px;
+		font-size: var(--ed-text-xs);
+		font-weight: 600;
+		line-height: 1.2;
 	}
 
 	.tags-input__remove {
@@ -101,7 +102,7 @@
 		border: none;
 		outline: none;
 		font-size: var(--ed-text-base);
-		padding: 0.15rem 0.25rem;
+		padding: var(--ed-space-1) var(--ed-space-2);
 		background: transparent;
 		color: var(--ed-text-primary);
 	}

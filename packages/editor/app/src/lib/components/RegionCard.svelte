@@ -139,46 +139,51 @@
 		font-size: var(--ed-text-base);
 		font-weight: 600;
 		color: var(--ed-text-primary);
-		border: 1px solid transparent;
+		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-sm);
-		padding: 0.15rem 0.35rem;
-		background: transparent;
+		padding: var(--ed-space-2) var(--ed-space-3);
+		background: var(--ed-surface-0);
 		outline: none;
 		min-width: 80px;
 		max-width: 160px;
+		transition: border-color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
 	.region-card__name:focus {
 		border-color: var(--ed-accent);
-		background: var(--ed-surface-0);
+		box-shadow: 0 0 0 3px var(--ed-accent-ring);
 	}
 
 	.region-card__mode {
-		display: flex;
-		gap: 1px;
-		background: var(--ed-surface-3);
-		border-radius: var(--ed-radius-sm);
-		overflow: hidden;
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
 		flex-shrink: 0;
 	}
 
 	.region-card__mode-btn {
-		font-size: 0.65rem;
-		padding: 0.15rem 0.4rem;
+		font-size: var(--ed-text-xs);
+		padding: var(--ed-space-1) var(--ed-space-2);
 		border: none;
-		background: var(--ed-surface-2);
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
 		color: var(--ed-text-tertiary);
 		cursor: pointer;
 		text-transform: capitalize;
+		font-weight: 500;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
-	.region-card__mode-btn:hover {
-		background: var(--ed-surface-3);
+	.region-card__mode-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
 	}
 
 	.region-card__mode-btn.active {
-		background: var(--ed-accent);
-		color: #ffffff;
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.region-card__actions {
@@ -189,24 +194,25 @@
 	}
 
 	.region-card__toggle-btn {
-		font-size: 0.65rem;
+		font-size: var(--ed-text-xs);
 		padding: 0.15rem var(--ed-space-2);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-0);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
 		color: var(--ed-text-tertiary);
 		cursor: pointer;
+		font-weight: 500;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
-	.region-card__toggle-btn:hover {
-		border-color: var(--ed-accent);
-		color: var(--ed-accent);
+	.region-card__toggle-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
 	}
 
 	.region-card__toggle-btn.active {
-		background: var(--ed-accent);
-		color: #ffffff;
-		border-color: var(--ed-accent);
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.region-card__delete-btn {
@@ -216,10 +222,11 @@
 		width: 22px;
 		height: 22px;
 		border: none;
-		background: none;
+		background: transparent;
 		color: var(--ed-text-muted);
 		cursor: pointer;
 		border-radius: var(--ed-radius-sm);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
 
 	.region-card__delete-btn:hover {

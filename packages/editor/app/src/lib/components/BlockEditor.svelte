@@ -387,28 +387,32 @@
 	}
 
 	.insert-menu__btn--rune {
-		background: #fffbeb;
-		border-color: #fde68a;
+		background: var(--ed-warning-subtle);
+		border-color: var(--ed-warning);
 		color: var(--ed-warning-text);
 	}
 
 	.insert-menu__btn--rune:hover {
 		background: var(--ed-warning-subtle);
 		border-color: var(--ed-warning);
-		color: #78350f;
+		color: var(--ed-warning-text);
+		filter: brightness(0.95);
 	}
 
 	.insert-menu__close {
 		align-self: flex-end;
-		padding: 0.2rem var(--ed-space-2);
+		padding: var(--ed-space-1) var(--ed-space-2);
 		border: none;
-		background: none;
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
 		color: var(--ed-text-muted);
 		font-size: var(--ed-text-sm);
 		cursor: pointer;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
 
 	.insert-menu__close:hover {
+		background: var(--ed-surface-2);
 		color: var(--ed-text-secondary);
 	}
 </style>

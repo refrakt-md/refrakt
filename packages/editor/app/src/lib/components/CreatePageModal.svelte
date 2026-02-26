@@ -169,7 +169,7 @@
 
 	.modal__input,
 	.modal__select {
-		padding: var(--ed-space-2) var(--ed-space-2);
+		padding: var(--ed-space-2) var(--ed-space-3);
 		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-sm);
 		font-size: var(--ed-text-md);
@@ -254,9 +254,10 @@
 	.modal__btn {
 		padding: var(--ed-space-2) var(--ed-space-3);
 		border-radius: var(--ed-radius-sm);
-		font-size: var(--ed-text-base);
+		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		border: 1px solid var(--ed-border-default);
+		transition: background var(--ed-transition-fast);
 	}
 
 	.modal__btn--cancel {
@@ -265,13 +266,16 @@
 	}
 
 	.modal__btn--cancel:hover {
-		background: var(--ed-surface-1);
+		background: var(--ed-surface-2);
 	}
 
 	.modal__btn--primary {
+		padding: var(--ed-space-2) var(--ed-space-4);
 		background: var(--ed-accent);
 		color: #ffffff;
 		border-color: var(--ed-accent);
+		font-weight: 500;
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.modal__btn--primary:hover:not(:disabled) {

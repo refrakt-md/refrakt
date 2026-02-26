@@ -43,13 +43,19 @@
 			<span class="fm-editor__arrow" class:collapsed={!editorState.frontmatterOpen}>▸</span>
 			<span class="fm-editor__label">Frontmatter</span>
 			{#if editorState.frontmatterOpen}
-				<button
-					class="fm-editor__mode-btn"
-					class:active={editorState.frontmatterRawMode}
-					onclick={(e) => { e.stopPropagation(); editorState.frontmatterRawMode = !editorState.frontmatterRawMode; }}
-				>
-					{editorState.frontmatterRawMode ? 'Form' : 'YAML'}
-				</button>
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="fm-editor__mode-track" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
+					<button
+						class="fm-editor__mode-btn"
+						class:active={!editorState.frontmatterRawMode}
+						onclick={() => { editorState.frontmatterRawMode = false; }}
+					>Form</button>
+					<button
+						class="fm-editor__mode-btn"
+						class:active={editorState.frontmatterRawMode}
+						onclick={() => { editorState.frontmatterRawMode = true; }}
+					>YAML</button>
+				</div>
 			{/if}
 		</div>
 
@@ -238,28 +244,36 @@
 		transform: rotate(0deg);
 	}
 
+	.fm-editor__mode-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
+	}
+
 	.fm-editor__mode-btn {
-		font-size: 0.65rem;
-		padding: 0.15rem 0.4rem;
-		border: 1px solid var(--ed-border-strong);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-0);
+		font-size: var(--ed-text-xs);
+		padding: 0.15rem var(--ed-space-2);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
 		color: var(--ed-text-tertiary);
 		cursor: pointer;
 		text-transform: none;
 		letter-spacing: 0;
 		font-weight: 500;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
-	.fm-editor__mode-btn:hover {
-		border-color: var(--ed-accent);
-		color: var(--ed-accent);
+	.fm-editor__mode-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
 	}
 
 	.fm-editor__mode-btn.active {
-		background: var(--ed-accent);
-		color: #ffffff;
-		border-color: var(--ed-accent);
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.fm-editor__body {
@@ -382,14 +396,15 @@
 	}
 
 	.fm-editor__add-btn {
-		padding: 0.3rem 0.6rem;
-		border: 1px solid var(--ed-border-strong);
+		padding: var(--ed-space-2) var(--ed-space-3);
+		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-sm);
 		background: var(--ed-surface-0);
 		color: var(--ed-text-tertiary);
 		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		white-space: nowrap;
+		transition: background var(--ed-transition-fast);
 	}
 
 	.fm-editor__add-btn:hover:not(:disabled) {

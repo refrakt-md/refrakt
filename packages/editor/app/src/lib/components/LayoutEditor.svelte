@@ -60,13 +60,18 @@
 				<span class="layout-editor__path">{editorState.currentPath}</span>
 			{/if}
 		</div>
-		<button
-			class="layout-editor__mode-toggle"
-			class:active={rawMode}
-			onclick={() => { rawMode = !rawMode; }}
-		>
-			{rawMode ? 'Visual' : 'Raw'}
-		</button>
+		<div class="layout-editor__mode-track">
+			<button
+				class="layout-editor__mode-btn"
+				class:active={!rawMode}
+				onclick={() => { rawMode = false; }}
+			>Visual</button>
+			<button
+				class="layout-editor__mode-btn"
+				class:active={rawMode}
+				onclick={() => { rawMode = true; }}
+			>Raw</button>
+		</div>
 	</div>
 
 	{#if rawMode}
@@ -143,26 +148,35 @@
 		white-space: nowrap;
 	}
 
-	.layout-editor__mode-toggle {
-		font-size: var(--ed-text-xs);
-		padding: 0.2rem 0.6rem;
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-0);
-		color: var(--ed-text-tertiary);
-		cursor: pointer;
+	.layout-editor__mode-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
 		flex-shrink: 0;
 	}
 
-	.layout-editor__mode-toggle:hover {
-		border-color: var(--ed-accent);
-		color: var(--ed-accent);
+	.layout-editor__mode-btn {
+		font-size: var(--ed-text-xs);
+		padding: 0.15rem var(--ed-space-2);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
+		color: var(--ed-text-tertiary);
+		cursor: pointer;
+		font-weight: 500;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
-	.layout-editor__mode-toggle.active {
-		background: var(--ed-accent);
-		color: #ffffff;
-		border-color: var(--ed-accent);
+	.layout-editor__mode-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
+	}
+
+	.layout-editor__mode-btn.active {
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.layout-editor__raw {

@@ -78,9 +78,10 @@
 	.dialog__btn {
 		padding: var(--ed-space-2) var(--ed-space-3);
 		border-radius: var(--ed-radius-sm);
-		font-size: var(--ed-text-base);
+		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		border: 1px solid var(--ed-border-default);
+		transition: background var(--ed-transition-fast);
 	}
 
 	.dialog__btn--cancel {
@@ -89,13 +90,16 @@
 	}
 
 	.dialog__btn--cancel:hover {
-		background: var(--ed-surface-1);
+		background: var(--ed-surface-2);
 	}
 
 	.dialog__btn--danger {
+		padding: var(--ed-space-2) var(--ed-space-4);
 		background: var(--ed-danger);
 		color: #ffffff;
 		border-color: var(--ed-danger);
+		font-weight: 500;
+		box-shadow: var(--ed-shadow-sm);
 	}
 
 	.dialog__btn--danger:hover {

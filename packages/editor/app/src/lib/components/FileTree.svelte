@@ -77,14 +77,15 @@
 		width: 22px;
 		height: 22px;
 		border: none;
-		background: none;
+		background: transparent;
 		color: var(--ed-text-muted);
 		cursor: pointer;
 		border-radius: var(--ed-radius-sm);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
 
 	.file-tree__btn:hover {
-		background: var(--ed-surface-3);
+		background: var(--ed-surface-2);
 		color: var(--ed-accent);
 	}
 

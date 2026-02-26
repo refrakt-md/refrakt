@@ -290,16 +290,18 @@
 				<FrontmatterEditor />
 				{#if editorState.currentPath}
 					<div class="mode-toggle">
-						<button
-							class="mode-toggle__btn"
-							class:active={editorState.editorMode === 'code'}
-							onclick={() => { editorState.editorMode = 'code'; }}
-						>Code</button>
-						<button
-							class="mode-toggle__btn"
-							class:active={editorState.editorMode === 'visual'}
-							onclick={() => { editorState.editorMode = 'visual'; }}
-						>Visual</button>
+						<div class="segmented-track">
+							<button
+								class="mode-toggle__btn"
+								class:active={editorState.editorMode === 'code'}
+								onclick={() => { editorState.editorMode = 'code'; }}
+							>Code</button>
+							<button
+								class="mode-toggle__btn"
+								class:active={editorState.editorMode === 'visual'}
+								onclick={() => { editorState.editorMode = 'visual'; }}
+							>Visual</button>
+						</div>
 					</div>
 				{/if}
 				{#if editorState.editorMode === 'visual'}
@@ -409,11 +411,19 @@
 		height: 100vh;
 	}
 
-	/* Code / Visual mode toggle */
+	/* Segmented control track */
+	.segmented-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
+	}
+
+	/* Code / Visual mode toggle — segmented control */
 	.mode-toggle {
 		display: flex;
 		align-items: center;
-		gap: 0;
 		padding: var(--ed-space-2) var(--ed-space-4);
 		border-bottom: 1px solid var(--ed-border-default);
 		background: var(--ed-surface-1);
@@ -421,32 +431,24 @@
 	}
 
 	.mode-toggle__btn {
-		padding: 0.3rem 0.8rem;
-		border: 1px solid var(--ed-border-default);
-		background: var(--ed-surface-0);
+		padding: var(--ed-space-1) var(--ed-space-3);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
 		color: var(--ed-text-tertiary);
 		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
-	}
-
-	.mode-toggle__btn:first-child {
-		border-radius: var(--ed-radius-sm) 0 0 var(--ed-radius-sm);
-	}
-
-	.mode-toggle__btn:last-child {
-		border-radius: 0 var(--ed-radius-sm) 0 var(--ed-radius-sm);
-		border-left: none;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
 	}
 
 	.mode-toggle__btn:hover:not(.active) {
-		background: var(--ed-surface-2);
+		color: var(--ed-text-secondary);
 	}
 
 	.mode-toggle__btn.active {
-		background: var(--ed-accent);
-		color: var(--ed-surface-0);
-		border-color: var(--ed-accent);
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
 	}
 </style>

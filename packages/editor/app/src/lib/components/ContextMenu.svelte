@@ -88,7 +88,7 @@
 	.context-menu__item {
 		display: block;
 		width: 100%;
-		padding: 0.35rem 0.6rem;
+		padding: var(--ed-space-2) var(--ed-space-3);
 		font-size: var(--ed-text-base);
 		color: var(--ed-text-primary);
 		background: none;
