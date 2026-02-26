@@ -399,6 +399,49 @@ export const registry = {
 };
 ```
 
+### Define layouts
+
+Your theme needs layout configs that describe page structure. The simplest approach is to use the built-in layouts from `@refrakt-md/theme-base`:
+
+```typescript
+// svelte/index.ts
+import { registry } from '@refrakt-md/theme-base/svelte/registry';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/theme-base';
+import type { SvelteTheme } from '@refrakt-md/svelte';
+import { myThemeConfig } from '../src/config.js';
+
+export { registry };
+
+export const theme: SvelteTheme = {
+  config: myThemeConfig,
+  registry,
+  layouts: {
+    'default': defaultLayout,
+    'docs': docsLayout,
+    'blog-article': blogArticleLayout,
+  },
+};
+```
+
+To customize a layout, create your own `LayoutConfig` object:
+
+```typescript
+import type { LayoutConfig } from '@refrakt-md/transform';
+import { docsLayout } from '@refrakt-md/theme-base';
+
+// Start from the docs layout and override slots
+export const myDocsLayout: LayoutConfig = {
+  ...docsLayout,
+  // Remove the toolbar (no breadcrumbs)
+  slots: {
+    ...docsLayout.slots,
+    toolbar: undefined as any,
+  },
+};
+```
+
+Layout CSS goes in `styles/layouts/`. The built-in layouts use classes like `.rf-mobile-panel`, `.rf-docs-header`, `.rf-docs-sidebar`, etc. See the [layouts reference](/docs/themes/layouts) for all generated classes and data attributes.
+
 ### Build and test
 
 Add a `tsconfig.json`:
@@ -474,10 +517,13 @@ packages/my-theme/
 │   └── dark.css
 ├── styles/
 │   ├── global.css
-│   └── runes/
-│       ├── hint.css
-│       ├── grid.css
-│       └── ...
+│   ├── runes/
+│   │   ├── hint.css
+│   │   ├── grid.css
+│   │   └── ...
+│   └── layouts/
+│       ├── mobile.css
+│       └── on-this-page.css
 ├── test/
 │   └── css-coverage.test.ts
 ├── index.css

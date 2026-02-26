@@ -400,27 +400,51 @@ const tree = layoutTransform(layoutConfig, page);
 
 ## Implementation Plan
 
-### Phase 1: Layout Transform (framework-agnostic)
+### Phase 1: Layout Transform (framework-agnostic) — Complete (`cdbaef2`)
 
-1. Add interfaces to `packages/transform/src/types.ts`:
-   `LayoutConfig`, `LayoutSlot`, `ComputedContent`, `LayoutStructureEntry`
-2. Implement `layoutTransform()` in `packages/transform/src/layout.ts`:
-   slot resolution, chrome building (with `pageText`/`pageCondition`/`iterate`/`dateFormat`),
-   frontmatter conditions, conditional modifiers
-3. Implement computed content builders:
-   - `breadcrumb` — nav tree → slug/groupTitle map
-   - `toc` — headings → anchor links with `data-scrollspy`
-   - `prev-next` — nav tree → previous/next page links
-4. Add layout behavior(s) to `packages/behaviors/` (mobile-menu, mobile-nav-panel)
-   — Note: `scrollspyBehavior` is already done (`packages/behaviors/src/behaviors/scrollspy.ts`)
-5. Convert DocsLayout + BlogArticleLayout configs as proof — verify output matches current HTML
+Built the core layout transform engine and all supporting infrastructure:
 
-### Phase 2: Migrate Svelte Adapter
+- **Types** (`packages/transform/src/types.ts`): `LayoutConfig`, `LayoutSlot`, `ComputedContent`,
+  `LayoutStructureEntry`, `LayoutPageData` interfaces
+- **Engine** (`packages/transform/src/layout.ts`): `layoutTransform()` with slot resolution,
+  chrome building (with `pageText`/`pageCondition`/`iterate`/`dateFormat`/`svg`),
+  frontmatter conditions, conditional modifiers, `conditionalRegion`
+- **Computed builders** (`packages/transform/src/computed.ts`):
+  - `buildBreadcrumb()` — nav tree → slug/groupTitle map → breadcrumb trail
+  - `buildToc()` — headings → anchor links with `data-scrollspy`
+  - `buildPrevNext()` — nav tree → previous/next page links
+- **Layout behaviors** (`packages/behaviors/src/`):
+  - `mobileMenuBehavior` — panel toggling via `[data-open]` attribute model
+  - `initLayoutBehaviors()` — discovers `[data-layout-behaviors]` elements
+- **Tests**: 30 layout transform tests covering slots, chrome, computed content, behaviors,
+  conditional rendering, and edge cases
 
-1. Define layout configs in `packages/theme-base/src/layouts.ts` (alongside rune configs)
-2. Simplify `ThemeShell.svelte` to call `layoutTransform()` + render tree
-3. Keep existing Svelte layouts as fallback during migration
-4. Verify site renders identically
+### Phase 2: Migrate Svelte Adapter — Complete (`d8812f3`)
+
+Integrated the layout transform into the Svelte rendering pipeline:
+
+- **Svelte types** (`packages/svelte/src/theme.ts`): `SvelteTheme` union type with
+  `layouts: Record<string, Component<any> | LayoutConfig>` + `isLayoutConfig()` discriminator
+- **Dual-mode rendering** (`packages/svelte/src/ThemeShell.svelte`): detects `LayoutConfig` vs
+  Svelte component at render time, calls `layoutTransform()` for config-based layouts
+- **Layout configs** (`packages/theme-base/src/layouts.ts`): `defaultLayout`, `docsLayout`,
+  `blogArticleLayout` — three declarative configs replacing the three Svelte layout components
+- **Mobile CSS** (`packages/lumina/styles/layouts/mobile.css`): `[data-open]` visibility model
+  for panels, body scroll lock coordination
+- **OnThisPage styles** (`packages/lumina/styles/layouts/on-this-page.css`): extracted from
+  Svelte component to CSS (works with both component and layout transform output)
+- **Renderer** (`packages/svelte/src/Renderer.svelte`): added `data-raw-html` support for
+  injecting SVG strings without escaping
+- **Site config** (`site/svelte.config.js`): `handleMissingId: 'warn'` for pre-existing
+  heading ID mismatches in rune-restructured content
+
+Runtime fixes during integration:
+- `structuredClone` for `clone:region:` sources (replaces `JSON.parse/stringify`, handles
+  potential circular references in deeply nested content trees)
+- Shallow copy `[...region.content]` in `resolveSource` for `region:` sources (prevents
+  mutation of original region data when slots add children, which caused circular references)
+- `conditionalRegion` on outer header slots (checks region existence without adding content
+  as children, preventing duplicated content when inner child also sources the same region)
 
 ### Phase 3: Astro Integration
 

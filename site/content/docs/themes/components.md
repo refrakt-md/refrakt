@@ -69,6 +69,24 @@ The action handles initialization on mount, re-initialization on updates, and cl
 Behaviors skip elements managed by framework components. If a rune has a registered Svelte component, the behavior won't apply — the component handles interactivity instead.
 {% /hint %}
 
+#### Layout behaviors
+
+Layout behaviors work like rune behaviors but operate on the page layout structure rather than individual runes. They're initialized separately via `initLayoutBehaviors()`:
+
+```typescript
+import { initLayoutBehaviors } from '@refrakt-md/behaviors';
+
+const cleanup = initLayoutBehaviors(document.querySelector('[data-layout]'));
+```
+
+`initLayoutBehaviors()` scans for elements with `data-layout-behaviors` attributes (set by the layout transform) and wires up the matching behaviors.
+
+Currently one layout behavior is available:
+
+- **`mobile-menu`** — handles mobile panel toggling via `[data-mobile-menu-open]`, `[data-mobile-menu-close]`, and `[data-mobile-nav-toggle]` data attributes. Panels are shown/hidden via a `[data-open]` attribute. Also handles escape key dismissal and body scroll lock.
+
+See the [layouts reference](/docs/themes/layouts) for details on how layout behaviors connect to `LayoutConfig`.
+
 ### Path 3: Svelte components
 
 For runes that need external libraries or complex rendering logic, register a Svelte component in the component registry.
