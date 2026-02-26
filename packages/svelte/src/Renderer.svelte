@@ -79,7 +79,7 @@
 	{:else}
 		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
 			{#each node.children as child}
-				{#if node.attributes?.['data-codeblock'] && typeof child === 'string'}
+				{#if (node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html']) && typeof child === 'string'}
 					{@html child}
 				{:else}
 					<Renderer node={child} overrides={merged} />

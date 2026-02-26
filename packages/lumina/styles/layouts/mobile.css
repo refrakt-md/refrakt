@@ -74,11 +74,13 @@
 	padding: 1rem 1.5rem;
 }
 
+/* Panel opens via data-open attribute (set by mobile-menu behavior) */
+.rf-mobile-panel[data-open] {
+	display: block;
+}
+
 @media (max-width: 768px) {
 	.rf-mobile-menu-btn {
-		display: block;
-	}
-	.rf-mobile-panel {
 		display: block;
 	}
 }

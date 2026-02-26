@@ -5,4 +5,5 @@ export { serialize, serializeTree } from './serialize.js';
 export { setRegistry, getComponent, setElementOverrides, getElementOverrides } from './context.js';
 export type { ComponentRegistry, ElementOverrides } from './context.js';
 export type { SvelteTheme } from './theme.js';
+export { isLayoutConfig } from './theme.js';
 export { matchRouteRule } from './route-rules.js';

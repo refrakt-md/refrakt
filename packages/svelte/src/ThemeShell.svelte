@@ -1,9 +1,12 @@
 <script lang="ts">
 	import type { SvelteTheme } from './theme.js';
+	import { isLayoutConfig } from './theme.js';
 	import { setRegistry, setElementOverrides } from './context.js';
 	import { setContext, tick } from 'svelte';
 	import { matchRouteRule } from './route-rules.js';
-	import { initRuneBehaviors } from '@refrakt-md/behaviors';
+	import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
+	import { layoutTransform } from '@refrakt-md/transform';
+	import Renderer from './Renderer.svelte';
 
 	interface OgMeta {
 		title?: string;
@@ -53,22 +56,27 @@
 
 	// Pick layout via route rules (reactive so layout updates on client-side navigation)
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules ?? []));
-	const Layout = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
+	const layoutEntry = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
 
-	// Initialize rune behaviors after render, re-run on navigation.
+	// Initialize rune + layout behaviors after render, re-run on navigation.
 	// The {#key page.url} block in the template ensures full DOM recreation on
 	// navigation, so behaviors always run on fresh DOM and old behavior-modified
 	// elements are simply discarded (no cleanup/restore conflicts with Svelte).
 	$effect(() => {
 		void page.url; // re-run when page changes
-		let cleanup: (() => void) | undefined;
+		let cleanupRunes: (() => void) | undefined;
+		let cleanupLayout: (() => void) | undefined;
 		let active = true;
 		tick().then(() => {
-			if (active) cleanup = initRuneBehaviors();
+			if (active) {
+				cleanupRunes = initRuneBehaviors();
+				cleanupLayout = initLayoutBehaviors();
+			}
 		});
 		return () => {
 			active = false;
-			cleanup?.();
+			cleanupRunes?.();
+			cleanupLayout?.();
 		};
 	});
 </script>
@@ -104,8 +112,11 @@
 </svelte:head>
 
 {#key page.url}
-	{#if Layout}
-		<Layout
+	{#if isLayoutConfig(layoutEntry)}
+		{@const tree = layoutTransform(layoutEntry, page, 'rf')}
+		<Renderer node={tree} />
+	{:else if layoutEntry}
+		<svelte:component this={layoutEntry}
 			title={page.title}
 			description={page.description}
 			frontmatter={page.frontmatter}

@@ -242,15 +242,15 @@ function resolveSource(
 	if (source.startsWith('region:')) {
 		const name = source.slice(7);
 		const region = page.regions[name];
-		return region ? region.content : [];
+		return region ? [...region.content] : [];
 	}
 
 	if (source.startsWith('clone:region:')) {
 		const name = source.slice(13);
 		const region = page.regions[name];
 		if (!region) return [];
-		// Deep clone — SerializedTag trees are plain objects
-		return JSON.parse(JSON.stringify(region.content));
+		// Deep clone — use structuredClone to handle potential circular references
+		return structuredClone(region.content);
 	}
 
 	if (source.startsWith('computed:')) {
@@ -316,8 +316,9 @@ function buildLayoutChrome(
 		}
 	}
 
-	// SVG content
+	// SVG content — mark for raw HTML rendering
 	if (entry.svg) {
+		resolvedAttrs['data-raw-html'] = 'true';
 		return makeTag(entry.tag, resolvedAttrs, [entry.svg]);
 	}
 

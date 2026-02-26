@@ -4,8 +4,7 @@
 	"target": "svelte",
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },
-		{ "pattern": "blog", "layout": "blog" },
-		{ "pattern": "blog/**", "layout": "blog" },
+		{ "pattern": "blog/*", "layout": "blog-article" },
 		{ "pattern": "**", "layout": "default" }
 	],
 	"icons": {

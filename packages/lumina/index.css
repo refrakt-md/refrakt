@@ -17,6 +17,7 @@
 @import './styles/layouts/default.css';
 @import './styles/layouts/docs.css';
 @import './styles/layouts/blog.css';
+@import './styles/layouts/on-this-page.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';

@@ -2,16 +2,14 @@ import type { SvelteTheme } from '@refrakt-md/svelte';
 import adapterManifest from './manifest.json';
 import { registry } from './registry.js';
 import { elements } from './elements.js';
-import DocsLayout from './layouts/DocsLayout.svelte';
-import DefaultLayout from './layouts/DefaultLayout.svelte';
-import BlogLayout from './layouts/BlogLayout.svelte';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/theme-base';
 
 // Layout region metadata from the base theme manifest (packages/lumina/manifest.json).
 // Merged with adapter manifest component paths to produce full LayoutDefinitions.
 const layoutRegions: Record<string, { regions: string[]; requiredRegions?: string[] }> = {
 	default: { regions: ['header', 'footer'] },
 	docs: { regions: ['header', 'nav', 'sidebar', 'footer'], requiredRegions: ['nav'] },
-	blog: { regions: ['header', 'sidebar', 'footer'] },
+	'blog-article': { regions: ['header', 'sidebar', 'footer'] },
 };
 
 const layouts: Record<string, any> = {};
@@ -27,7 +25,11 @@ export { manifest };
 /** The structured theme object consumed by ThemeShell */
 export const theme: SvelteTheme = {
 	manifest: manifest as any,
-	layouts: { default: DefaultLayout, docs: DocsLayout, blog: BlogLayout },
+	layouts: {
+		default: defaultLayout,
+		docs: docsLayout,
+		'blog-article': blogArticleLayout,
+	},
 	components: registry,
 	elements,
 };

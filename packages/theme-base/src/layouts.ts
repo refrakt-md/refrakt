@@ -46,8 +46,7 @@ export const defaultLayout: LayoutConfig = {
 		header: {
 			tag: 'header',
 			class: 'rf-header',
-			conditional: true,
-			source: 'region:header',
+			conditionalRegion: 'header',
 			children: [
 				{
 					tag: 'div',
@@ -130,8 +129,7 @@ export const docsLayout: LayoutConfig = {
 		header: {
 			tag: 'header',
 			class: 'rf-docs-header',
-			conditional: true,
-			source: 'region:header',
+			conditionalRegion: 'header',
 			children: [
 				{
 					tag: 'div',
@@ -281,8 +279,7 @@ export const blogArticleLayout: LayoutConfig = {
 		header: {
 			tag: 'header',
 			class: 'rf-blog-header',
-			conditional: true,
-			source: 'region:header',
+			conditionalRegion: 'header',
 			children: [
 				{
 					tag: 'div',
