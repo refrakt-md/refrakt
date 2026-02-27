@@ -46,11 +46,48 @@
 	// Track the source we last parsed from, to avoid re-parsing our own updates
 	let lastParsedSource = '';
 
+	/** Match new blocks to old blocks and reuse IDs for edited-in-place blocks */
+	function reconcileIds(prev: ParsedBlock[], next: ParsedBlock[]): void {
+		if (prev.length === 0) return;
+
+		const prevIdSet = new Set(prev.map(b => b.id));
+		const nextIdSet = new Set(next.map(b => b.id));
+
+		// Old blocks whose content changed (ID no longer present in next)
+		const lost = prev.filter(b => !nextIdSet.has(b.id));
+		// New blocks with no matching old ID
+		const gained = next.filter(b => !prevIdSet.has(b.id));
+
+		if (lost.length === 0 || gained.length === 0) return;
+
+		// Match each gained block to the closest lost block by position + type
+		const available = [...lost];
+		for (const nb of gained) {
+			let best = -1;
+			let bestScore = Infinity;
+			for (let j = 0; j < available.length; j++) {
+				const ob = available[j];
+				const typeBonus = ob.type === nb.type ? 0 : 1000;
+				const score = Math.abs(ob.startLine - nb.startLine) + typeBonus;
+				if (score < bestScore) {
+					bestScore = score;
+					best = j;
+				}
+			}
+			if (best >= 0) {
+				nb.id = available[best].id;
+				available.splice(best, 1);
+			}
+		}
+	}
+
 	// Parse blocks when body content changes (from outside, e.g. file switch)
 	$effect(() => {
 		const body = bodyContent;
 		if (body !== lastParsedSource) {
-			blocks = parseBlocks(body);
+			const newBlocks = parseBlocks(body);
+			reconcileIds(blocks, newBlocks);
+			blocks = newBlocks;
 			lastParsedSource = body;
 			// Close edit panel when switching files
 			activeIndex = null;

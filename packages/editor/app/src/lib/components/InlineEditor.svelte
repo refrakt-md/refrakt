@@ -33,7 +33,6 @@
 	const inlineTheme = EditorView.theme(
 		{
 			'&': {
-				backgroundColor: '#e2e8f036',
 				color: '#1a1a2e',
 				fontSize: '13px',
 				height: 'auto',

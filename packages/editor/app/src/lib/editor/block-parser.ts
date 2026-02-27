@@ -67,9 +67,21 @@ export type ParsedBlock =
 	| ListBlock
 	| (Block & { type: 'paragraph' | 'quote' | 'hr' | 'image' });
 
-let nextId = 0;
-function uid(): string {
-	return `blk_${++nextId}`;
+/** Deterministic hash (djb2) for stable block IDs across re-parses */
+function hashSource(s: string): string {
+	let h = 5381;
+	for (let i = 0; i < s.length; i++) {
+		h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+	}
+	return h.toString(36);
+}
+
+/** Generate a stable ID from block source content, deduplicating identical blocks */
+function stableId(source: string, seen: Map<string, number>): string {
+	const hash = hashSource(source);
+	const count = seen.get(hash) ?? 0;
+	seen.set(hash, count + 1);
+	return count === 0 ? `blk_${hash}` : `blk_${hash}_${count}`;
 }
 
 // ── Rune tag regex helpers ───────────────────────────────────────────
@@ -115,6 +127,7 @@ export function serializeAttributes(attrs: Record<string, string>): string {
 export function parseBlocks(source: string): ParsedBlock[] {
 	const lines = source.split('\n');
 	const blocks: ParsedBlock[] = [];
+	const seen = new Map<string, number>();
 	let i = 0;
 
 	while (i < lines.length) {
@@ -141,7 +154,7 @@ export function parseBlocks(source: string): ParsedBlock[] {
 			if (i < lines.length) i++; // skip closing fence
 			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'fence',
 				source: src,
 				startLine: start,
@@ -162,10 +175,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 
 			if (selfClose) {
 				i++;
+				const src = lines.slice(start, i).join('\n');
 				blocks.push({
-					id: uid(),
+					id: stableId(src, seen),
 					type: 'rune',
-					source: lines.slice(start, i).join('\n'),
+					source: src,
 					startLine: start,
 					endLine: i,
 					runeName: name,
@@ -194,10 +208,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 					i++;
 				}
 				if (i < lines.length) i++; // skip close tag
+				const src = lines.slice(start, i).join('\n');
 				blocks.push({
-					id: uid(),
+					id: stableId(src, seen),
 					type: 'rune',
-					source: lines.slice(start, i).join('\n'),
+					source: src,
 					startLine: start,
 					endLine: i,
 					runeName: name,
@@ -214,10 +229,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 		if (headingMatch) {
 			const start = i;
 			i++;
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'heading',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 				level: headingMatch[1].length,
@@ -230,10 +246,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 		if (/^(---+|___+|\*\*\*+)\s*$/.test(trimmed)) {
 			const start = i;
 			i++;
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'hr',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 			});
@@ -244,10 +261,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 		if (/^!\[.*\]\(.*\)\s*$/.test(trimmed)) {
 			const start = i;
 			i++;
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'image',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 			});
@@ -260,10 +278,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 			while (i < lines.length && (lines[i].trimStart().startsWith('>') || (lines[i].trim() !== '' && !isBlockStart(lines[i])))) {
 				i++;
 			}
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'quote',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 			});
@@ -284,10 +303,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 					break;
 				}
 			}
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'list',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 				ordered,
@@ -301,10 +321,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 			while (i < lines.length && lines[i].trim() !== '' && !isBlockStart(lines[i])) {
 				i++;
 			}
+			const src = lines.slice(start, i).join('\n');
 			blocks.push({
-				id: uid(),
+				id: stableId(src, seen),
 				type: 'paragraph',
-				source: lines.slice(start, i).join('\n'),
+				source: src,
 				startLine: start,
 				endLine: i,
 			});
