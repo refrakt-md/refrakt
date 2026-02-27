@@ -1,0 +1,17 @@
+{
+	"name": "lumina",
+	"version": "0.1.0",
+	"description": "A clean, light documentation theme for refrakt.md",
+	"target": "astro",
+	"designTokens": "tokens.css",
+
+	"layouts": {
+		"default": {},
+		"docs": {},
+		"blog-article": {}
+	},
+
+	"components": {},
+
+	"unsupportedRuneBehavior": "passthrough"
+}

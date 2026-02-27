@@ -30,7 +30,13 @@
     },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./svelte/tokens.css": "./svelte/tokens.css",
-    "./svelte/manifest": "./svelte/manifest.json"
+    "./svelte/manifest": "./svelte/manifest.json",
+    "./astro": {
+      "types": "./astro/index.ts",
+      "default": "./astro/index.ts"
+    },
+    "./astro/tokens.css": "./astro/tokens.css",
+    "./astro/manifest": "./astro/manifest.json"
   },
   "files": [
     "dist",
@@ -40,12 +46,14 @@
     "styles",
     "contracts",
     "manifest.json",
-    "svelte"
+    "svelte",
+    "astro"
   ],
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
+    "@refrakt-md/astro": "0.5.1",
     "@refrakt-md/theme-base": "0.5.1",
     "@refrakt-md/transform": "0.5.1",
     "@refrakt-md/types": "0.5.1",
@@ -53,7 +61,8 @@
   },
   "peerDependencies": {
     "svelte": "^5.0.0",
-    "@sveltejs/kit": "^2.0.0"
+    "@sveltejs/kit": "^2.0.0",
+    "astro": "^5.0.0"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
@@ -63,6 +72,9 @@
       "optional": true
     },
     "@sveltejs/kit": {
+      "optional": true
+    },
+    "astro": {
       "optional": true
     }
   }

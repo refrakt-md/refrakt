@@ -31,3 +31,9 @@ export type { ValidationResult, ValidationError, ValidationWarning } from './val
 
 // Selector extraction
 export { extractSelectors } from './selectors.js';
+
+// Serialization (Markdoc Tag → plain SerializedTag)
+export { serialize, serializeTree } from './serialize.js';
+
+// Route rule matching
+export { matchRouteRule } from './route-rules.js';

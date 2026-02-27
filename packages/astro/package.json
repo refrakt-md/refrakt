@@ -1,0 +1,42 @@
+{
+  "name": "@refrakt-md/astro",
+  "description": "Astro integration for refrakt.md",
+  "version": "0.5.1",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/astro"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./virtual": {
+      "types": "./virtual.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "virtual.d.ts"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/transform": "0.5.1",
+    "@refrakt-md/types": "0.5.1"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  }
+}
