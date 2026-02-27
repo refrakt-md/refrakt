@@ -18,11 +18,13 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	let themeName: string | undefined;
 	let configDir = cwd;
 	let projectConfig: RefraktConfig | undefined;
+	let projectConfigPath: string | undefined;
 
 	if (!contentDir) {
 		try {
-			const { path: configPath, config } = loadRefraktConfigFile(cwd);
-			configDir = dirname(configPath);
+			const { path: cfgPath, config } = loadRefraktConfigFile(cwd);
+			projectConfigPath = cfgPath;
+			configDir = dirname(cfgPath);
 			contentDir = resolve(configDir, config.contentDir);
 			themeName = config.theme;
 			projectConfig = config;
@@ -69,6 +71,8 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		staticDir,
 		devServer: options.devServer,
 		open: !options.noOpen,
+		configPath: projectConfigPath,
+		routeRules: projectConfig?.routeRules,
 	});
 }
 

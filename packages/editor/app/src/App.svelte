@@ -1,7 +1,7 @@
 <script lang="ts">
 	import HeaderBar from './lib/components/HeaderBar.svelte';
 	import EditorLayout from './lib/components/EditorLayout.svelte';
-	import FileTree from './lib/components/FileTree.svelte';
+	import CategoryNav from './lib/components/CategoryNav.svelte';
 	import FrontmatterEditor from './lib/components/FrontmatterEditor.svelte';
 	import MarkdownEditor from './lib/components/MarkdownEditor.svelte';
 	import BlockEditor from './lib/components/BlockEditor.svelte';
@@ -11,6 +11,7 @@
 
 	import CreatePageModal from './lib/components/CreatePageModal.svelte';
 	import CreateDirectoryModal from './lib/components/CreateDirectoryModal.svelte';
+	import CreateCategoryModal from './lib/components/CreateCategoryModal.svelte';
 	import ContextMenu from './lib/components/ContextMenu.svelte';
 	import RenameDialog from './lib/components/RenameDialog.svelte';
 	import ConfirmDialog from './lib/components/ConfirmDialog.svelte';
@@ -20,7 +21,7 @@
 		fetchTree, fetchFile, saveFile,
 		createPage, createDirectory,
 		renameFile, duplicateFile, deleteFile, toggleDraft,
-		fetchRunes, fetchConfig, connectEvents,
+		fetchRunes, fetchConfig, fetchRouteRules, updateRouteRules, connectEvents,
 	} from './lib/api/client.js';
 	import { RfDiagram, RfSandbox, RfMap } from '@refrakt-md/behaviors';
 	import { onMount } from 'svelte';
@@ -39,6 +40,14 @@
 	// ── Modal state ─────────────────────────────────────────────
 	let showPageModal = $state(false);
 	let showDirModal = $state(false);
+	let showCategoryModal = $state(false);
+
+	/** Pre-selected directory for new page creation (set by CategoryNav) */
+	let newPageDirectory = $state('');
+
+	/** Anchor rects for positioned popovers */
+	let pageModalAnchor: { x: number; y: number; width: number; height: number } | null = $state(null);
+	let categoryModalAnchor: { x: number; y: number; width: number; height: number } | null = $state(null);
 
 	// ── Context menu state ──────────────────────────────────────
 	let contextMenu: { x: number; y: number; node: TreeNode } | null = $state(null);
@@ -57,16 +66,18 @@
 		(async () => {
 			editorState.treeLoading = true;
 			try {
-				const [tree, runes, config] = await Promise.all([
+				const [tree, runes, config, routeRules] = await Promise.all([
 					fetchTree(),
 					fetchRunes(),
 					fetchConfig(),
+					fetchRouteRules(),
 				]);
 				editorState.tree = tree;
 				editorState.runes = runes;
 				editorState.previewRuntimeAvailable = config.previewRuntime;
 				editorState.themeCss = config.themeCss;
 				editorState.themeConfig = config.themeConfig;
+				editorState.routeRules = routeRules ?? [];
 
 				// Lazy-load Shiki syntax highlighting (non-blocking)
 				import('@refrakt-md/highlight').then(({ createHighlightTransform }) =>
@@ -188,9 +199,36 @@
 		try {
 			await createDirectory(options);
 			showDirModal = false;
+			showPageModal = false;
 			await refreshTree();
 		} catch (e) {
 			editorState.error = e instanceof Error ? e.message : 'Failed to create directory';
+		}
+	}
+
+	// ── Category creation ───────────────────────────────────────
+	async function handleCreateCategory(options: { name: string; layout: string }) {
+		try {
+			// 1. Create the directory with a layout file
+			await createDirectory({ parent: '', name: options.name, createLayout: true });
+
+			// 2. Add a route rule for this category (before the catch-all **)
+			const newRule = { pattern: `${options.name}/**`, layout: options.layout };
+			const rules = [...editorState.routeRules];
+			// Insert before the last catch-all rule if present
+			const catchAllIdx = rules.findIndex((r) => r.pattern === '**');
+			if (catchAllIdx >= 0) {
+				rules.splice(catchAllIdx, 0, newRule);
+			} else {
+				rules.push(newRule);
+			}
+			await updateRouteRules(rules);
+			editorState.routeRules = rules;
+
+			showCategoryModal = false;
+			await refreshTree();
+		} catch (e) {
+			editorState.error = e instanceof Error ? e.message : 'Failed to create category';
 		}
 	}
 
@@ -305,10 +343,11 @@
 			<HeaderBar onsave={handleSave} />
 		{/snippet}
 		{#snippet left()}
-			<FileTree
+			<CategoryNav
 				onselectfile={handleSelectFile}
-				onnewpage={() => { showPageModal = true; }}
-				onnewdirectory={() => { showDirModal = true; }}
+				onnewpage={(directory, anchorRect) => { newPageDirectory = directory ?? ''; pageModalAnchor = anchorRect; showPageModal = true; }}
+				onnewdirectory={(parent) => { showDirModal = true; }}
+				onnewcategory={(anchorRect) => { categoryModalAnchor = anchorRect; showCategoryModal = true; }}
 				oncontextmenu={handleContextMenu}
 			/>
 		{/snippet}
@@ -357,10 +396,21 @@
 </div>
 
 <!-- Modals -->
-{#if showPageModal}
+{#if showPageModal && pageModalAnchor}
 	<CreatePageModal
 		oncreate={handleCreatePage}
+		oncreatefolder={handleCreateDirectory}
 		onclose={() => { showPageModal = false; }}
+		initialDirectory={newPageDirectory}
+		anchorRect={pageModalAnchor}
+	/>
+{/if}
+
+{#if showCategoryModal && categoryModalAnchor}
+	<CreateCategoryModal
+		oncreate={handleCreateCategory}
+		onclose={() => { showCategoryModal = false; }}
+		anchorRect={categoryModalAnchor}
 	/>
 {/if}
 

@@ -30,6 +30,17 @@
 		editorState.previewRuntimeAvailable && editorState.previewRuntimeReady,
 	);
 
+	// Forward routeRules changes to the preview iframe
+	$effect(() => {
+		const rules = editorState.routeRules;
+		if (useRuntime && previewIframe?.contentWindow) {
+			previewIframe.contentWindow.postMessage(
+				{ type: 'route-rules-update', routeRules: rules },
+				'*',
+			);
+		}
+	});
+
 	// Main preview effect — debounces content changes
 	$effect(() => {
 		const path = editorState.currentPath;

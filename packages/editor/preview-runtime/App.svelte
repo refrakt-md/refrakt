@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { ThemeShell } from '@refrakt-md/svelte';
-	import { theme } from 'virtual:refrakt-theme';
+	import { theme as baseTheme } from 'virtual:refrakt-theme';
 
 	let pageData: any = $state(null);
 
-	// Listen for preview data from parent editor
+	// Reactive copy so we can patch routeRules at runtime
+	let theme: typeof baseTheme = $state({ ...baseTheme });
+
+	// Listen for preview data and route-rules updates from parent editor
 	$effect(() => {
 		function onMessage(e: MessageEvent) {
 			if (e.data?.type === 'preview-update') {
 				pageData = e.data.page;
+			} else if (e.data?.type === 'route-rules-update') {
+				theme = {
+					...theme,
+					manifest: { ...theme.manifest, routeRules: e.data.routeRules },
+				};
 			}
 		}
 		window.addEventListener('message', onMessage);
