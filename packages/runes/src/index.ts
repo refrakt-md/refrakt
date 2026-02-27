@@ -27,6 +27,7 @@ import { timeline, timelineEntry } from './tags/timeline.js';
 import { changelog, changelogRelease } from './tags/changelog.js';
 import { embed } from './tags/embed.js';
 import { breadcrumb } from './tags/breadcrumb.js';
+import { budget, budgetCategory, budgetLineItem } from './tags/budget.js';
 import { compare } from './tags/compare.js';
 import { recipe } from './tags/recipe.js';
 import { howto } from './tags/howto.js';
@@ -298,6 +299,27 @@ export const runes = {
     reinterprets: { list: 'breadcrumb path items', link: 'breadcrumb link' },
     seoType: 'BreadcrumbList',
     type: schema.Breadcrumb,
+  }),
+  budget: defineRune({
+    name: 'budget',
+    schema: budget,
+    description: 'Structured cost breakdown with categories, line items, and auto-calculated totals',
+    reinterprets: { heading: 'category label', list: 'line items (Description: $amount)' },
+    seoType: 'ItemList',
+    type: schema.Budget,
+  }),
+  'budget-category': defineRune({
+    name: 'budget-category',
+    schema: budgetCategory,
+    description: 'Cost category within a budget containing line items',
+    reinterprets: { list: 'line items (Description: $amount)' },
+    type: schema.BudgetCategory,
+  }),
+  'budget-line-item': defineRune({
+    name: 'budget-line-item',
+    schema: budgetLineItem,
+    description: 'Individual budget line item with description and amount',
+    type: schema.BudgetLineItem,
   }),
   compare: defineRune({
     name: 'compare',
