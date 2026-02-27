@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { editorState } from '../state/editor.svelte.js';
-	import ResizeHandle from './ResizeHandle.svelte';
 
 	interface Props {
 		left: Snippet;
@@ -11,29 +10,21 @@
 
 	let { left, center, right }: Props = $props();
 
-	let leftWidth = $state(260);
 	let layoutWidth = $state(0);
 
-	const MIN_PANEL = 180;
+	const LEFT_WIDTH = 260;
 
-	function handleLeftResize(delta: number) {
-		leftWidth = Math.max(MIN_PANEL, leftWidth + delta);
-	}
-
-	// Fixed content width for the center panel — prevents text reflow during transition
 	let gridColumns = $derived.by(() => {
-		const available = Math.max(0, layoutWidth - leftWidth - 4);
+		const available = Math.max(0, layoutWidth - LEFT_WIDTH);
 		if (editorState.editorMode === 'code') {
 			const half = Math.floor(available / 2);
-			return `${leftWidth}px 4px ${half}px ${available - half}px`;
+			return `${LEFT_WIDTH}px ${half}px ${available - half}px`;
 		}
-		// Preview and Blocks: center collapsed, right fills
-		return `${leftWidth}px 4px 0px ${available}px`;
+		return `${LEFT_WIDTH}px 0px ${available}px`;
 	});
 
-	// min-width for center inner — prevents text reflow during Blocks↔Code transition
 	const codeCenterWidth = $derived(
-		Math.floor(Math.max(0, layoutWidth - leftWidth - 4) / 2)
+		Math.floor(Math.max(0, layoutWidth - LEFT_WIDTH) / 2)
 	);
 </script>
 
@@ -45,7 +36,6 @@
 	<div class="layout__panel layout__panel--left">
 		{@render left()}
 	</div>
-	<ResizeHandle onresize={handleLeftResize} />
 	<div class="layout__panel layout__panel--center">
 		<div class="layout__center-inner" class:slide-out={editorState.editorMode !== 'code'} style="min-width: {codeCenterWidth}px">
 			{@render center()}

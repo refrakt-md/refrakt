@@ -21,6 +21,21 @@
 <header class="header">
 	<h1 class="header__logo"><span class="header__accent">refrakt</span> editor</h1>
 
+	{#if showModeControls}
+		<div class="header__group">
+			<button
+				class="header__btn"
+				class:header__btn--active={isEdit}
+				onclick={() => { editorState.editorMode = 'blocks'; }}
+			>Edit</button>
+			<button
+				class="header__btn"
+				class:header__btn--active={isPreview}
+				onclick={() => { editorState.editorMode = 'preview'; }}
+			>Preview</button>
+		</div>
+	{/if}
+
 	{#if editorState.currentPath}
 		<nav class="header__breadcrumbs" aria-label="File path">
 			{#each breadcrumbs as segment, i}
@@ -47,21 +62,6 @@
 
 	{#if editorState.error}
 		<span class="header__error">{editorState.error}</span>
-	{/if}
-
-	{#if showModeControls}
-		<div class="header__center">
-			<button
-				class="header__btn"
-				class:header__btn--active={isEdit}
-				onclick={() => { editorState.editorMode = 'blocks'; }}
-			>Edit</button>
-			<button
-				class="header__btn"
-				class:header__btn--active={isPreview}
-				onclick={() => { editorState.editorMode = 'preview'; }}
-			>Preview</button>
-		</div>
 	{/if}
 
 	<div class="header__spacer"></div>
@@ -155,6 +155,8 @@
 	}
 
 	.header__logo {
+		width: 260px;
+		flex-shrink: 0;
 		font-size: var(--ed-text-md);
 		font-weight: 600;
 		letter-spacing: 0.05em;
@@ -236,17 +238,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		max-width: 300px;
-	}
-
-	/* ── Center mode toggle (Edit | Preview) ──────────── */
-
-	.header__center {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		display: inline-flex;
-		gap: var(--ed-space-2);
 	}
 
 	.header__spacer {
