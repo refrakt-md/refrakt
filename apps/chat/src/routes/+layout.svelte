@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '@refrakt-md/lumina/svelte/tokens.css';
+	import '$lib/editor-theme.css';
 	import { setRegistry, setElementOverrides } from '@refrakt-md/svelte';
 	import { theme } from '@refrakt-md/lumina/svelte';
 

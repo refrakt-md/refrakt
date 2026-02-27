@@ -256,7 +256,7 @@
 		</div>
 
 		{#if pageStore.isOpen}
-			<PagePanel {pageStore} mode={chat.effectiveMode} model={chat.effectiveModel} />
+			<PagePanel {pageStore} />
 		{/if}
 	</div>
 </div>

@@ -319,7 +319,28 @@
 					</div>
 				{/if}
 				{#if editorState.editorMode === 'visual'}
-					<BlockEditor />
+					{#if editorState.currentPath}
+						<BlockEditor
+							bodyContent={editorState.bodyContent}
+							onchange={(body) => editorState.updateBody(body)}
+							runes={editorState.runes}
+							themeConfig={editorState.themeConfig}
+							themeCss={editorState.themeCss}
+							highlightCss={editorState.highlightCss}
+							highlightTransform={editorState.highlightTransform}
+						/>
+					{:else}
+						<div class="block-editor-placeholder">
+							<svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<rect x="6" y="4" width="24" height="32" rx="2" />
+								<polyline points="20 4 20 14 30 14" />
+								<line x1="12" y1="22" x2="24" y2="22" />
+								<line x1="12" y1="27" x2="20" y2="27" />
+								<path d="M34 24l6 6M34 36l6-6" />
+							</svg>
+							<span>Select a file to edit</span>
+						</div>
+					{/if}
 				{:else}
 					<MarkdownEditor />
 				{/if}
@@ -376,6 +397,22 @@
 
 <style>
 	@import './lib/styles/tokens.css';
+
+	.block-editor-placeholder {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		gap: var(--ed-space-3);
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-md);
+	}
+
+	.block-editor-placeholder svg {
+		color: var(--ed-border-strong);
+	}
 
 	:global(*) {
 		box-sizing: border-box;
