@@ -180,6 +180,7 @@ export interface RuneInfo {
 	selfClosing: boolean;
 	category: string;
 	attributes: Record<string, RuneAttributeInfo>;
+	example?: string;
 }
 
 export async function fetchRunes(): Promise<RuneInfo[]> {

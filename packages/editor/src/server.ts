@@ -5,7 +5,7 @@ import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
 import { ContentTree } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
-import { runes as allRunes } from '@refrakt-md/runes';
+import { runes as allRunes, RUNE_EXAMPLES } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import { createTransform } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
@@ -778,6 +778,7 @@ function handleGetRunes(res: import('node:http').ServerResponse): void {
 				selfClosing: rune.schema.selfClosing ?? false,
 				category: RUNE_CATEGORIES[rune.name] ?? 'Other',
 				attributes: attrs,
+				example: RUNE_EXAMPLES[rune.name],
 			});
 		}
 	}

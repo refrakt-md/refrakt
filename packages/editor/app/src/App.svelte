@@ -8,7 +8,7 @@
 	import LayoutEditor from './lib/components/LayoutEditor.svelte';
 	import PreviewPane from './lib/components/PreviewPane.svelte';
 	import PageCard from './lib/components/PageCard.svelte';
-	import ModeBar from './lib/components/ModeBar.svelte';
+
 	import CreatePageModal from './lib/components/CreatePageModal.svelte';
 	import CreateDirectoryModal from './lib/components/CreateDirectoryModal.svelte';
 	import ContextMenu from './lib/components/ContextMenu.svelte';
@@ -301,9 +301,6 @@
 
 <div class="editor-app">
 	<HeaderBar onsave={handleSave} />
-	{#if editorState.currentPath && editorState.currentFileType !== 'layout'}
-		<ModeBar />
-	{/if}
 	<EditorLayout>
 		{#snippet left()}
 			<FileTree

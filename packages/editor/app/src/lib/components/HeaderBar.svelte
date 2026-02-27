@@ -10,6 +10,12 @@
 	let breadcrumbs = $derived(
 		editorState.currentPath ? editorState.currentPath.split('/') : []
 	);
+
+	const showModeControls = $derived(
+		editorState.currentPath && editorState.currentFileType !== 'layout'
+	);
+	const isPreview = $derived(editorState.editorMode === 'preview');
+	const isEdit = $derived(editorState.editorMode === 'blocks' || editorState.editorMode === 'code');
 </script>
 
 <header class="header">
@@ -43,12 +49,81 @@
 		<span class="header__error">{editorState.error}</span>
 	{/if}
 
+	{#if showModeControls}
+		<div class="header__center">
+			<button
+				class="header__btn"
+				class:header__btn--active={isEdit}
+				onclick={() => { editorState.editorMode = 'blocks'; }}
+			>Edit</button>
+			<button
+				class="header__btn"
+				class:header__btn--active={isPreview}
+				onclick={() => { editorState.editorMode = 'preview'; }}
+			>Preview</button>
+		</div>
+	{/if}
+
 	<div class="header__spacer"></div>
+
+	{#if showModeControls}
+		{#if isPreview}
+			<div class="header__group">
+				<button
+					class="header__btn header__btn--icon"
+					class:header__btn--active={editorState.viewport === 'desktop'}
+					onclick={() => editorState.viewport = 'desktop'}
+					title="Desktop"
+				>
+					<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="1.5" y="2" width="13" height="9" rx="1" />
+						<line x1="5.5" y1="14" x2="10.5" y2="14" />
+						<line x1="8" y1="11" x2="8" y2="14" />
+					</svg>
+				</button>
+				<button
+					class="header__btn header__btn--icon"
+					class:header__btn--active={editorState.viewport === 'tablet'}
+					onclick={() => editorState.viewport = 'tablet'}
+					title="Tablet"
+				>
+					<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="3" y="1.5" width="10" height="13" rx="1.5" />
+						<line x1="7" y1="12.5" x2="9" y2="12.5" />
+					</svg>
+				</button>
+				<button
+					class="header__btn header__btn--icon"
+					class:header__btn--active={editorState.viewport === 'mobile'}
+					onclick={() => editorState.viewport = 'mobile'}
+					title="Mobile"
+				>
+					<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="4" y="1.5" width="8" height="13" rx="2" />
+						<line x1="7" y1="12.5" x2="9" y2="12.5" />
+					</svg>
+				</button>
+			</div>
+		{:else if isEdit}
+			<div class="header__group">
+				<button
+					class="header__btn"
+					class:header__btn--active={editorState.editorMode === 'code'}
+					onclick={() => { editorState.editorMode = 'code'; }}
+				>Code</button>
+				<button
+					class="header__btn"
+					class:header__btn--active={editorState.editorMode === 'blocks'}
+					onclick={() => { editorState.editorMode = 'blocks'; }}
+				>Blocks</button>
+			</div>
+		{/if}
+	{/if}
 
 	{#if editorState.currentPath}
 		<button
-			class="header__save"
-			class:header__save--success={editorState.saveJustCompleted}
+			class="header__btn header__btn--active"
+			class:header__btn--success={editorState.saveJustCompleted}
 			onclick={onsave}
 			disabled={!editorState.dirty || editorState.saving}
 		>
@@ -71,11 +146,9 @@
 	.header {
 		display: flex;
 		align-items: center;
-		gap: var(--ed-space-4);
+		gap: var(--ed-space-3);
 		padding: 0 var(--ed-space-5);
-		height: 52px;
-		background: var(--ed-surface-0);
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.04);
+		height: 60px;
 		flex-shrink: 0;
 		position: relative;
 		z-index: 10;
@@ -165,44 +238,82 @@
 		max-width: 300px;
 	}
 
+	/* ── Center mode toggle (Edit | Preview) ──────────── */
+
+	.header__center {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		display: inline-flex;
+		gap: var(--ed-space-2);
+	}
+
 	.header__spacer {
 		flex: 1;
 	}
 
-	/* Save button */
-	.header__save {
+	/* ── Button group ─────────────────────────────────── */
+
+	.header__group {
+		display: inline-flex;
+		gap: var(--ed-space-2);
+	}
+
+	/* ── Unified button style ─────────────────────────── */
+
+	.header__btn {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: var(--ed-space-2);
-		padding: var(--ed-space-1) var(--ed-space-3);
-		border: none;
+		height: 30px;
+		padding: 0 var(--ed-space-3);
+		border: 1px solid var(--ed-text-secondary);
 		border-radius: var(--ed-radius-sm);
-		background: var(--ed-accent);
-		color: #ffffff;
+		background: transparent;
+		color: var(--ed-text-secondary);
 		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background var(--ed-transition-fast), transform var(--ed-transition-fast);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), border-color var(--ed-transition-fast);
 		white-space: nowrap;
-		box-shadow: var(--ed-shadow-sm);
-		height: 30px;
 	}
 
-	.header__save:hover:not(:disabled) {
-		background: var(--ed-accent-hover);
-		transform: translateY(-0.5px);
+	.header__btn:hover:not(.header__btn--active):not(:disabled) {
+		border-color: var(--ed-text-primary);
+		color: var(--ed-text-primary);
 	}
 
-	.header__save:disabled {
+	.header__btn--active {
+		background: var(--ed-text-primary);
+		color: #ffffff;
+		border-color: var(--ed-text-primary);
+	}
+
+	.header__btn--active:hover:not(:disabled) {
+		background: var(--ed-text-secondary);
+		border-color: var(--ed-text-secondary);
+	}
+
+	.header__btn:disabled {
 		opacity: 0.4;
 		cursor: default;
 	}
 
-	.header__save--success {
-		background: var(--ed-success);
+	.header__btn--icon {
+		width: 30px;
+		padding: 0;
 	}
 
-	.header__save--success:disabled {
+	/* ── Save success state ───────────────────────────── */
+
+	.header__btn--success {
+		background: var(--ed-success);
+		border-color: var(--ed-success);
+	}
+
+	.header__btn--success:disabled {
 		opacity: 1;
 	}
 
@@ -215,6 +326,4 @@
 		font-family: var(--ed-font-sans);
 		line-height: 1;
 	}
-
-
 </style>

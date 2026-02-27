@@ -392,6 +392,24 @@ export function buildRuneMap(runes: RuneInfo[]): Map<string, RuneInfo> {
 	return map;
 }
 
+// ── Example content extraction ───────────────────────────────────────
+
+/** Extract the inner content from a full rune example string, stripping the opening/closing tags */
+export function extractRuneInner(example: string, name: string): string {
+	const lines = example.split('\n');
+	// Strip opening tag line ({% name ... %})
+	const openRe = new RegExp(`^\\{%\\s+${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b.*%\\}\\s*$`);
+	const closeRe = new RegExp(`^\\{%\\s+/${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*%\\}\\s*$`);
+
+	let start = 0;
+	let end = lines.length;
+
+	if (openRe.test(lines[0].trim())) start = 1;
+	if (end > start && closeRe.test(lines[end - 1].trim())) end -= 1;
+
+	return lines.slice(start, end).join('\n').trim();
+}
+
 /** Human-readable label for a block, used in rail labels and edit panel header */
 export function blockLabel(block: ParsedBlock): string {
 	switch (block.type) {

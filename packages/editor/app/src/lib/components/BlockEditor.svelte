@@ -7,6 +7,7 @@
 		serializeBlocks,
 		buildRuneMap,
 		blockLabel,
+		extractRuneInner,
 		type ParsedBlock,
 	} from '../editor/block-parser.js';
 	import { editorState } from '../state/editor.svelte.js';
@@ -310,16 +311,17 @@
 						innerContent: '',
 					};
 				} else {
+					const inner = info?.example ? extractRuneInner(info.example, name) : '';
 					newBlock = {
 						id,
 						type: 'rune',
-						source: `{% ${name}${attrPart} %}\n\n{% /${name} %}`,
+						source: `{% ${name}${attrPart} %}\n${inner}\n{% /${name} %}`,
 						startLine: 0,
 						endLine: 0,
 						runeName: name,
 						selfClosing: false,
 						attributes: attrs,
-						innerContent: '',
+						innerContent: inner,
 					};
 				}
 				break;
@@ -330,6 +332,8 @@
 		blocks = [...blocks.slice(0, pos), newBlock, ...blocks.slice(pos)];
 		insertAtIndex = null;
 		showInsertMenu = false;
+		editingFrontmatter = false;
+		activeIndex = pos;
 		syncToSource();
 	}
 
@@ -799,7 +803,7 @@
 	/* Edit panel — fixed to right edge of viewport, outside the card */
 	.block-editor__edit-panel {
 		position: fixed;
-		top: 88px;
+		top: 60px;
 		right: 0;
 		bottom: 0;
 		width: 480px;
