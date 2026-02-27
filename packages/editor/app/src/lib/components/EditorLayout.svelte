@@ -38,7 +38,7 @@
 	}
 
 	let gridColumns = $derived(
-		editorState.fullPreview || hideRight
+		editorState.editorMode === 'preview' || hideRight
 			? `${leftWidth}px 4px 1fr`
 			: `${leftWidth}px 4px 1fr 4px ${rightWidth}px`
 	);
@@ -53,7 +53,7 @@
 		{@render left()}
 	</div>
 	<ResizeHandle onresize={handleLeftResize} />
-	{#if editorState.fullPreview}
+	{#if editorState.editorMode === 'preview'}
 		<div class="layout__panel layout__panel--center layout__panel--full-preview">
 			{@render right()}
 		</div>

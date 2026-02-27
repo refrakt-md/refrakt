@@ -46,9 +46,29 @@
 	<div class="header__spacer"></div>
 
 	{#if editorState.currentPath}
-		{#if editorState.editorMode !== 'visual' || editorState.fullPreview}
+		{#if editorState.currentFileType !== 'layout'}
+			<div class="header__mode-toggle">
+				<button
+					class="header__mode-btn"
+					class:active={editorState.editorMode === 'visual'}
+					onclick={() => { editorState.editorMode = 'visual'; }}
+				>Visual</button>
+				<button
+					class="header__mode-btn"
+					class:active={editorState.editorMode === 'code'}
+					onclick={() => { editorState.editorMode = 'code'; }}
+				>Code</button>
+				<button
+					class="header__mode-btn"
+					class:active={editorState.editorMode === 'preview'}
+					onclick={() => { editorState.editorMode = 'preview'; }}
+				>Preview</button>
+			</div>
+		{/if}
+
+		{#if editorState.editorMode !== 'visual'}
 			<div class="header__viewports">
-				<div class="segmented-track">
+				<div class="header__viewport-track">
 					<button
 						class="header__device"
 						class:header__device--active={editorState.viewport === 'desktop'}
@@ -86,26 +106,6 @@
 				</div>
 			</div>
 		{/if}
-
-		<button
-			class="header__preview-toggle"
-			class:header__preview-toggle--active={editorState.fullPreview}
-			onclick={() => editorState.fullPreview = !editorState.fullPreview}
-			title={editorState.fullPreview ? 'Back to editor' : 'Full preview'}
-		>
-			{#if editorState.fullPreview}
-				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<polyline points="10 3 5 8 10 13" />
-				</svg>
-				Editor
-			{:else}
-				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<rect x="2" y="3" width="12" height="10" rx="1.5" />
-					<line x1="2" y1="6" x2="14" y2="6" />
-				</svg>
-				Preview
-			{/if}
-		</button>
 
 		<button
 			class="header__save"
@@ -230,6 +230,38 @@
 		flex: 1;
 	}
 
+	/* Mode toggle — 3-segment control */
+	.header__mode-toggle {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
+	}
+
+	.header__mode-btn {
+		padding: var(--ed-space-1) var(--ed-space-3);
+		border: none;
+		border-radius: calc(var(--ed-radius-md) - 2px);
+		background: transparent;
+		color: var(--ed-text-tertiary);
+		font-size: var(--ed-text-sm);
+		font-weight: 500;
+		cursor: pointer;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
+		white-space: nowrap;
+	}
+
+	.header__mode-btn:hover:not(.active) {
+		color: var(--ed-text-secondary);
+	}
+
+	.header__mode-btn.active {
+		background: var(--ed-surface-0);
+		color: var(--ed-text-primary);
+		box-shadow: var(--ed-shadow-sm);
+	}
+
 	/* Save button */
 	.header__save {
 		display: flex;
@@ -277,39 +309,18 @@
 		line-height: 1;
 	}
 
-	/* Preview toggle */
-	.header__preview-toggle {
-		display: flex;
-		align-items: center;
-		gap: var(--ed-space-1);
-		padding: var(--ed-space-1) var(--ed-space-2);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-0);
-		color: var(--ed-text-tertiary);
-		font-size: var(--ed-text-sm);
-		font-weight: 500;
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), border-color var(--ed-transition-fast);
-		white-space: nowrap;
-		height: 30px;
-	}
-
-	.header__preview-toggle:hover {
-		color: var(--ed-text-secondary);
-		border-color: var(--ed-border-strong);
-	}
-
-	.header__preview-toggle--active {
-		background: var(--ed-accent-muted);
-		border-color: var(--ed-accent);
-		color: var(--ed-accent);
-	}
-
 	/* Viewport toggles */
 	.header__viewports {
 		display: flex;
 		align-items: center;
+	}
+
+	.header__viewport-track {
+		display: inline-flex;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-md);
+		padding: 2px;
+		gap: 2px;
 	}
 
 	.header__device {

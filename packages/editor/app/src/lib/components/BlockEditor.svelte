@@ -11,6 +11,7 @@
 	} from '../editor/block-parser.js';
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
+	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -21,6 +22,7 @@
 		highlightCss?: string;
 		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
 		showInsertMenu?: boolean;
+		frontmatter?: Record<string, unknown>;
 	}
 
 	let {
@@ -32,6 +34,7 @@
 		highlightCss = '',
 		highlightTransform = null,
 		showInsertMenu: showInsertMenuProp = true,
+		frontmatter = {},
 	}: Props = $props();
 
 	let blocks: ParsedBlock[] = $state([]);
@@ -58,17 +61,33 @@
 		onchange(newSource);
 	}
 
+	// ── Frontmatter summary for visual mode header ──────────────
+
+	let editingFrontmatter = $state(false);
+	let fmTitle = $derived((frontmatter.title as string) || '');
+	let fmDesc = $derived(() => {
+		const desc = (frontmatter.description as string) || '';
+		return desc.length > 80 ? desc.slice(0, 80) + '...' : desc;
+	});
+
 	// ── Active block (rail selection) ────────────────────────────
 
 	let activeIndex: number | null = $state(null);
 
 	function toggleBlock(index: number) {
+		editingFrontmatter = false;
 		activeIndex = activeIndex === index ? null : index;
 	}
 
+	function toggleFrontmatter() {
+		activeIndex = null;
+		editingFrontmatter = !editingFrontmatter;
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && activeIndex !== null) {
+		if (e.key === 'Escape' && (activeIndex !== null || editingFrontmatter)) {
 			activeIndex = null;
+			editingFrontmatter = false;
 		}
 	}
 
@@ -271,10 +290,31 @@
 		</div>
 	{/if}
 
-	<div class="block-editor__stage" class:editing={activeIndex !== null}>
+	<div class="block-editor__stage" class:editing={activeIndex !== null || editingFrontmatter}>
 		<!-- Scrollable list + rail area -->
 		<div class="block-editor__scroll">
 			<div class="block-editor__list-wrap">
+				<!-- Frontmatter summary header -->
+				<div class="block-editor__fm-header">
+					<div class="block-editor__fm-info">
+						<span class="block-editor__fm-title">{fmTitle || 'Untitled'}</span>
+						{#if fmDesc()}
+							<span class="block-editor__fm-desc">{fmDesc()}</span>
+						{/if}
+					</div>
+					<button
+						class="block-editor__fm-edit"
+						class:active={editingFrontmatter}
+						onclick={toggleFrontmatter}
+						title="Edit frontmatter"
+					>
+						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
+						</svg>
+						Edit
+					</button>
+				</div>
+
 				{#each blocks as block, i (block.id)}
 					<div
 						class="block-editor__row"
@@ -376,7 +416,13 @@
 		</div>
 
 		<!-- Edit panel — slides in from the right -->
-		{#if activeIndex !== null && blocks[activeIndex]}
+		{#if editingFrontmatter}
+			<div class="block-editor__edit-panel">
+				<FrontmatterEditPanel
+					onclose={() => { editingFrontmatter = false; }}
+				/>
+			</div>
+		{:else if activeIndex !== null && blocks[activeIndex]}
 			<div class="block-editor__edit-panel">
 				<BlockEditPanel
 					block={blocks[activeIndex]}
@@ -436,6 +482,69 @@
 		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-lg);
 		box-shadow: var(--ed-shadow-md);
+	}
+
+	/* Frontmatter summary header */
+	.block-editor__fm-header {
+		display: flex;
+		align-items: center;
+		gap: var(--ed-space-3);
+		padding: var(--ed-space-3) var(--ed-space-4);
+		border-bottom: 1px solid var(--ed-border-subtle);
+		margin-bottom: var(--ed-space-2);
+	}
+
+	.block-editor__fm-info {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.block-editor__fm-title {
+		font-size: var(--ed-text-md);
+		font-weight: 600;
+		color: var(--ed-text-primary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.block-editor__fm-desc {
+		font-size: var(--ed-text-sm);
+		color: var(--ed-text-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.block-editor__fm-edit {
+		display: flex;
+		align-items: center;
+		gap: var(--ed-space-1);
+		padding: var(--ed-space-1) var(--ed-space-2);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		background: var(--ed-surface-0);
+		color: var(--ed-text-tertiary);
+		font-size: var(--ed-text-xs);
+		font-weight: 500;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: color var(--ed-transition-fast), border-color var(--ed-transition-fast), background var(--ed-transition-fast);
+		flex-shrink: 0;
+	}
+
+	.block-editor__fm-edit:hover {
+		color: var(--ed-text-secondary);
+		border-color: var(--ed-border-strong);
+	}
+
+	.block-editor__fm-edit.active {
+		background: var(--ed-accent-muted);
+		border-color: var(--ed-accent);
+		color: var(--ed-accent);
 	}
 
 	/* Block row: preview cell + rail label */

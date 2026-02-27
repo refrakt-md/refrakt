@@ -3,6 +3,15 @@
 	import TagsInput from './TagsInput.svelte';
 	import RawYamlEditor from './RawYamlEditor.svelte';
 
+	let { forceRawMode = false }: { forceRawMode?: boolean } = $props();
+
+	// When forceRawMode is set (code mode), force YAML editing
+	$effect(() => {
+		if (forceRawMode) {
+			editorState.frontmatterRawMode = true;
+		}
+	});
+
 	/** Known frontmatter field keys that get dedicated form controls */
 	const KNOWN_KEYS = new Set([
 		'title', 'description', 'tags', 'draft', 'order', 'date', 'author', 'slug',
@@ -65,7 +74,7 @@
 					</span>
 				{/if}
 			</span>
-			{#if editorState.frontmatterOpen}
+			{#if editorState.frontmatterOpen && !forceRawMode}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="fm-editor__mode-track" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
 					<button

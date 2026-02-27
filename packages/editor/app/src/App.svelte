@@ -299,7 +299,7 @@
 
 <div class="editor-app">
 	<HeaderBar onsave={handleSave} />
-	<EditorLayout hideRight={editorState.editorMode === 'visual' && !editorState.fullPreview}>
+	<EditorLayout hideRight={editorState.editorMode === 'visual'}>
 		{#snippet left()}
 			<FileTree
 				onselectfile={handleSelectFile}
@@ -312,50 +312,35 @@
 			<ExternalChangeBanner onreload={handleReloadExternalChange} />
 			{#if editorState.currentFileType === 'layout'}
 				<LayoutEditor />
-			{:else}
-				<FrontmatterEditor />
+			{:else if editorState.editorMode === 'visual'}
 				{#if editorState.currentPath}
-					<div class="mode-toggle">
-						<div class="segmented-track">
-							<button
-								class="mode-toggle__btn"
-								class:active={editorState.editorMode === 'code'}
-								onclick={() => { editorState.editorMode = 'code'; }}
-							>Code</button>
-							<button
-								class="mode-toggle__btn"
-								class:active={editorState.editorMode === 'visual'}
-								onclick={() => { editorState.editorMode = 'visual'; editorState.fullPreview = false; }}
-							>Visual</button>
-						</div>
+					<BlockEditor
+						bodyContent={editorState.bodyContent}
+						onchange={(body) => editorState.updateBody(body)}
+						runes={editorState.runes}
+						themeConfig={editorState.themeConfig}
+						themeCss={editorState.themeCss}
+						highlightCss={editorState.highlightCss}
+						highlightTransform={editorState.highlightTransform}
+						frontmatter={editorState.frontmatter}
+					/>
+				{:else}
+					<div class="editor-placeholder">
+						<svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="6" y="4" width="24" height="32" rx="2" />
+							<polyline points="20 4 20 14 30 14" />
+							<line x1="12" y1="22" x2="24" y2="22" />
+							<line x1="12" y1="27" x2="20" y2="27" />
+							<path d="M34 24l6 6M34 36l6-6" />
+						</svg>
+						<span>Select a file to edit</span>
 					</div>
 				{/if}
-				{#if editorState.editorMode === 'visual'}
-					{#if editorState.currentPath}
-						<BlockEditor
-							bodyContent={editorState.bodyContent}
-							onchange={(body) => editorState.updateBody(body)}
-							runes={editorState.runes}
-							themeConfig={editorState.themeConfig}
-							themeCss={editorState.themeCss}
-							highlightCss={editorState.highlightCss}
-							highlightTransform={editorState.highlightTransform}
-						/>
-					{:else}
-						<div class="block-editor-placeholder">
-							<svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-								<rect x="6" y="4" width="24" height="32" rx="2" />
-								<polyline points="20 4 20 14 30 14" />
-								<line x1="12" y1="22" x2="24" y2="22" />
-								<line x1="12" y1="27" x2="20" y2="27" />
-								<path d="M34 24l6 6M34 36l6-6" />
-							</svg>
-							<span>Select a file to edit</span>
-						</div>
-					{/if}
-				{:else}
-					<MarkdownEditor />
-				{/if}
+			{:else if editorState.editorMode === 'code'}
+				<FrontmatterEditor forceRawMode />
+				<MarkdownEditor />
+			{:else}
+				<!-- Preview mode: center is empty, EditorLayout renders PreviewPane here -->
 			{/if}
 		{/snippet}
 		{#snippet right()}
@@ -410,7 +395,7 @@
 <style>
 	@import './lib/styles/tokens.css';
 
-	.block-editor-placeholder {
+	.editor-placeholder {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
@@ -422,7 +407,7 @@
 		font-size: var(--ed-text-md);
 	}
 
-	.block-editor-placeholder svg {
+	.editor-placeholder svg {
 		color: var(--ed-border-strong);
 	}
 
@@ -479,44 +464,4 @@
 		height: 100vh;
 	}
 
-	/* Segmented control track */
-	.segmented-track {
-		display: inline-flex;
-		background: var(--ed-surface-2);
-		border-radius: var(--ed-radius-md);
-		padding: 2px;
-		gap: 2px;
-	}
-
-	/* Code / Visual mode toggle — segmented control */
-	.mode-toggle {
-		display: flex;
-		align-items: center;
-		padding: var(--ed-space-2) var(--ed-space-4);
-		border-bottom: 1px solid var(--ed-border-default);
-		background: var(--ed-surface-1);
-		flex-shrink: 0;
-	}
-
-	.mode-toggle__btn {
-		padding: var(--ed-space-1) var(--ed-space-3);
-		border: none;
-		border-radius: calc(var(--ed-radius-md) - 2px);
-		background: transparent;
-		color: var(--ed-text-tertiary);
-		font-size: var(--ed-text-sm);
-		font-weight: 500;
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
-	}
-
-	.mode-toggle__btn:hover:not(.active) {
-		color: var(--ed-text-secondary);
-	}
-
-	.mode-toggle__btn.active {
-		background: var(--ed-surface-0);
-		color: var(--ed-text-primary);
-		box-shadow: var(--ed-shadow-sm);
-	}
 </style>

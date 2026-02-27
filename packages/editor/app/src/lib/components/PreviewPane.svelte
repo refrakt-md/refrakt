@@ -95,12 +95,6 @@
 	</div>
 {:else}
 	<div class="preview__container">
-		<div class="preview__header">
-			<span class="preview__header-label">Preview</span>
-			{#if loading}
-				<span class="preview__header-status">Updating...</span>
-			{/if}
-		</div>
 		{#if loading}
 			<div class="preview__progress"></div>
 		{/if}
@@ -130,31 +124,6 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-	}
-
-	.preview__header {
-		display: flex;
-		align-items: center;
-		gap: var(--ed-space-2);
-		padding: var(--ed-space-1) var(--ed-space-3);
-		background: var(--ed-surface-1);
-		border-bottom: 1px solid var(--ed-border-default);
-		flex-shrink: 0;
-		height: 28px;
-	}
-
-	.preview__header-label {
-		font-size: var(--ed-text-xs);
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--ed-text-muted);
-	}
-
-	.preview__header-status {
-		font-size: var(--ed-text-xs);
-		color: var(--ed-text-muted);
-		margin-left: auto;
 	}
 
 	/* Indeterminate progress bar */
