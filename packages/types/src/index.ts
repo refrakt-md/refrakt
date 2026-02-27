@@ -39,6 +39,7 @@ export { Timeline, TimelineProperties, TimelineComponent, TimelineEntry, Timelin
 export { Changelog, ChangelogProperties, ChangelogComponent, ChangelogRelease, ChangelogReleaseComponent } from './schema/changelog.js';
 export { Embed, EmbedComponent } from './schema/embed.js';
 export { Breadcrumb, BreadcrumbComponent, BreadcrumbItem, BreadcrumbItemComponent } from './schema/breadcrumb.js';
+export { Budget, BudgetProperties, BudgetComponent, BudgetCategory, BudgetCategoryProperties, BudgetCategoryComponent, BudgetLineItem, BudgetLineItemComponent } from './schema/budget.js';
 export { Compare, CompareComponent } from './schema/compare.js';
 export { Recipe, RecipeProperties, RecipeComponent, RecipeIngredient, RecipeIngredientComponent } from './schema/recipe.js';
 export { HowTo, HowToProperties, HowToComponent } from './schema/howto.js';
