@@ -1,19 +1,19 @@
 ---
 title: Interactive Components
-description: When and how to use Svelte components for runes that need JavaScript behavior
+description: How runes achieve interactivity through behaviors, postTransform hooks, and element overrides
 ---
 
 # Interactive Components
 
-Most runes are styled entirely through the identity transform and CSS. But some runes need JavaScript — for external libraries, complex data rendering, or interactive state. This page covers the three approaches to interactivity and when to use each.
+All runes are rendered through the identity transform — there are no framework-specific component overrides in the base theme. Interactivity is achieved through progressive enhancement and engine-level hooks. This page covers the three approaches and when to use each.
 
 ## Three paths to interactivity
 
 | Approach | When to use | Examples |
 |----------|-------------|---------|
 | **Identity transform + CSS** | Layout, styling, structural decoration | Grid, Hint, Recipe, Feature, Hero |
-| **Behaviors library** | Progressive enhancement of native HTML | Accordion, Tabs, DataTable, Form, Reveal |
-| **Svelte component** | External libraries, complex rendering | Chart, Map, Diagram, Comparison, Sandbox |
+| **Behaviors library** | Progressive enhancement of native HTML | Accordion, Tabs, DataTable, Form, Reveal, Preview, CodeGroup, Details |
+| **postTransform hooks** | Data rendering or custom element output | Chart, Map, Diagram, Comparison, Embed, Sandbox |
 
 ### Path 1: Identity transform + CSS only
 
@@ -32,6 +32,7 @@ Some runes need interactivity but not a full component. The `@refrakt-md/behavio
 - **Reveal** — Step-through content display
 - **Preview** — Live code preview with iframe
 - **CodeGroup** — Tab-like code block switching
+- **Details** — Enhanced native `<details>` elements
 
 Behaviors work by scanning the DOM for `[data-rune]` attributes (set by the identity transform) and enhancing the elements with event listeners and ARIA attributes:
 
@@ -65,10 +66,6 @@ In SvelteKit, behaviors are typically applied via a Svelte action:
 
 The action handles initialization on mount, re-initialization on updates, and cleanup on destroy.
 
-{% hint type="note" %}
-Behaviors skip elements managed by framework components. If a rune has a registered Svelte component, the behavior won't apply — the component handles interactivity instead.
-{% /hint %}
-
 #### Layout behaviors
 
 Layout behaviors work like rune behaviors but operate on the page layout structure rather than individual runes. They're initialized separately via `initLayoutBehaviors()`:
@@ -87,153 +84,38 @@ Currently one layout behavior is available:
 
 See the [layouts reference](/docs/themes/layouts) for details on how layout behaviors connect to `LayoutConfig`.
 
-### Path 3: Svelte components
+### Path 3: postTransform hooks
 
-For runes that need external libraries or complex rendering logic, register a Svelte component in the component registry.
+For runes that need external libraries or complex data rendering, `postTransform` hooks in the engine config generate the required output during the identity transform. There are two patterns:
 
-## The component registry
-
-The registry maps `typeof` attribute values to Svelte components. It lives in your theme's Svelte adapter:
+**Data rendering** — the hook generates complete HTML structure from the rune's metadata:
 
 ```typescript
-// packages/theme-base/svelte/registry.ts
-import type { ComponentRegistry } from '@refrakt-md/svelte';
-import Chart from './components/Chart.svelte';
-import Diagram from './components/Diagram.svelte';
-import Embed from './components/Embed.svelte';
-// ...
-
-export const registry: ComponentRegistry = {
-  'Chart': Chart,
-  'Diagram': Diagram,
-  'Embed': Embed,
-  'Map': MapComponent,
-  'MapPin': MapComponent,
-  'Comparison': Comparison,
-  'ComparisonColumn': Comparison,
-  'ComparisonRow': Comparison,
-  'Testimonial': Testimonial,
-  'Sandbox': Sandbox,
-  'DesignContext': DesignContext,
-  'Nav': Nav,
-  'NavGroup': Nav,
-  'NavItem': Nav,
-};
+// In the engine config
+Chart: {
+  block: 'chart',
+  modifiers: { chartType: { source: 'meta', default: 'bar' } },
+  postTransform: (node, { modifiers }) => {
+    // Generate chart markup from metadata
+    return node;
+  },
+},
 ```
 
-The registry is set in Svelte context during app initialization. The Renderer checks it when rendering each node:
+**Custom elements** — the hook produces a custom element tag, and `@refrakt-md/behaviors` initializes it as a framework-neutral web component:
 
-1. If `typeof` attribute exists and matches a registry entry → use the component
-2. If `node.name` matches an element override (e.g., `table`, `pre`) → use the override
-3. Otherwise → render as generic HTML with `<svelte:element>`
-
-## Writing a component
-
-Every registered component receives two props:
-
-```svelte
-<script lang="ts">
-  import type { SerializedTag } from '@refrakt-md/types';
-  import type { Snippet } from 'svelte';
-
-  let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
-</script>
+```typescript
+// In the engine config
+Diagram: {
+  block: 'diagram',
+  postTransform: (node, { modifiers }) => {
+    // Produce <rf-diagram> custom element
+    return node;
+  },
+},
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `tag` | `SerializedTag` | The full serialized node with attributes and children |
-| `children` | `Snippet` | Pre-rendered child content (use `{@render children()}` to output) |
-
-### Reading metadata
-
-Components extract configuration from meta tag children:
-
-```svelte
-<script lang="ts">
-  let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
-
-  // Helper to read meta tag values
-  const getMeta = (prop: string) =>
-    tag.children
-      .find((c: any) => c?.name === 'meta' && c?.attributes?.property === prop)
-      ?.attributes?.content;
-
-  const embedUrl = getMeta('embedUrl') || getMeta('url') || '';
-  const title = getMeta('title') || 'Embedded content';
-</script>
-```
-
-### Reading data attributes
-
-The identity transform sets data attributes from resolved modifiers. Components can read these:
-
-```svelte
-<script lang="ts">
-  const method = tag.attributes['data-method'] || 'GET';
-  const difficulty = tag.attributes['data-difficulty'] || 'medium';
-</script>
-```
-
-### Rendering children
-
-Use the `children` snippet for the rune's content, or iterate `tag.children` for custom rendering:
-
-```svelte
-<!-- Simple: render all children as-is -->
-<div class="rf-my-rune">
-  {@render children()}
-</div>
-
-<!-- Custom: process children individually -->
-<div class="rf-my-rune">
-  {#each tag.children as child}
-    {#if isTag(child) && child.attributes?.typeof === 'ChildRune'}
-      <!-- Handle specific child types -->
-    {:else}
-      <Renderer node={child} />
-    {/if}
-  {/each}
-</div>
-```
-
-### Example: Embed component
-
-A complete component that reads metadata and renders an iframe:
-
-```svelte
-<script lang="ts">
-  import type { SerializedTag } from '@refrakt-md/types';
-  import type { Snippet } from 'svelte';
-
-  let { tag, children }: { tag: SerializedTag; children: Snippet } = $props();
-
-  const getMeta = (prop: string) =>
-    tag.children
-      .find((c: any) => c?.name === 'meta' && c?.attributes?.property === prop)
-      ?.attributes?.content;
-
-  const embedUrl = getMeta('embedUrl') || getMeta('url') || '';
-  const title = getMeta('title') || 'Embedded content';
-  const aspectRatio = getMeta('aspectRatio') || '16/9';
-</script>
-
-<div class="rf-embed">
-  {#if embedUrl}
-    <div class="rf-embed__frame" style="aspect-ratio: {aspectRatio}">
-      <iframe
-        src={embedUrl}
-        title={title}
-        loading="lazy"
-        allowfullscreen
-      ></iframe>
-    </div>
-  {/if}
-  <div class="rf-embed__caption">
-    {@render children()}
-  </div>
-</div>
-```
+Runes using this pattern include Chart, Map, Diagram, Comparison, Embed, Testimonial, Sandbox, Nav, and DesignContext.
 
 ## Element overrides
 
@@ -247,7 +129,7 @@ export const elements: ElementOverrides = {
 };
 ```
 
-Element overrides receive the same `tag` and `children` props as components. Example — wrapping tables with a scrollable container:
+Element overrides receive `tag` and `children` props. Example — wrapping tables with a scrollable container:
 
 ```svelte
 <div class="table-wrapper">
@@ -266,6 +148,24 @@ Element overrides receive the same `tag` and `children` props as components. Exa
 </style>
 ```
 
+These are the only Svelte-specific pieces in the base theme — lightweight wrappers for standard HTML elements, not rune components.
+
+## The component registry
+
+The component registry still exists in `@refrakt-md/theme-base` but is empty by default. It's preserved as an extension point — if your site needs a custom Svelte component for a specific rune, you can register it:
+
+```typescript
+import { registry as baseRegistry } from '@refrakt-md/theme-base/svelte/registry';
+import MyCustomChart from './components/MyChart.svelte';
+
+export const registry = {
+  ...baseRegistry,
+  'Chart': MyCustomChart,
+};
+```
+
+When the Renderer encounters a node with a `typeof` attribute, it checks the registry. If a match is found, the component handles rendering. Otherwise, the node is rendered as generic HTML — which is the default path for all runes.
+
 ## Deciding which approach to use
 
 Ask these questions in order:
@@ -274,6 +174,4 @@ Ask these questions in order:
 
 2. **Does it need DOM enhancement?** If you need ARIA attributes, keyboard navigation, or simple event handling on native HTML elements, use the behaviors library.
 
-3. **Does it need Svelte state, external libraries, or complex rendering?** If yes, create a Svelte component and register it.
-
-The majority of runes fall into category 1. A handful need category 2. Very few need category 3 — the base theme has only 9 registered components out of 74 rune configurations.
+3. **Does it need data rendering or external libraries?** If yes, use a `postTransform` hook to generate the markup, potentially combined with a behavior or custom element for client-side initialization.

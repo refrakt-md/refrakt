@@ -5,7 +5,7 @@ description: What a refrakt.md theme is, how the two-layer system works, and how
 
 # Theme Overview
 
-A refrakt.md theme controls how runes are rendered — from colors and typography to layout structure and interactive behavior. Themes are npm packages that extend a shared base configuration with custom styling, design tokens, and optionally Svelte components.
+A refrakt.md theme controls how runes are rendered — from colors and typography to layout structure and interactive behavior. Themes are npm packages that extend a shared base configuration with custom styling and design tokens.
 
 ## What a theme provides
 
@@ -16,9 +16,8 @@ A theme consists of four parts:
 | **Configuration** | Yes | Maps rune types to BEM classes, modifiers, structural elements |
 | **CSS** | Yes | Styles the generated HTML using BEM selectors and design tokens |
 | **Design tokens** | Yes | CSS custom properties for colors, typography, spacing, radii, shadows |
-| **Components** | No | Svelte components for interactive runes that need JavaScript |
 
-Most runes (~75%) are rendered entirely through configuration and CSS. Only runes requiring external libraries (charts, maps, diagrams) or complex interactive state need Svelte components.
+All runes are rendered through configuration and CSS. Runes that need client-side interactivity use the `@refrakt-md/behaviors` library for progressive enhancement.
 
 ## The two-layer system
 
@@ -42,21 +41,15 @@ The result is semantic HTML with BEM classes and data attributes. Your CSS style
 Content tree → Identity Transform (config) → BEM-classed HTML → CSS → Styled output
 ```
 
-### Layer 2: Svelte components (interactive runes)
+### Interactive runes (behaviors + postTransform)
 
-Some runes need behavior that CSS alone can't provide:
+Some runes need behavior that CSS alone can't provide. These are handled through two mechanisms — both built on top of the identity transform:
 
-- **Chart** — renders data with D3/visualization libraries
-- **Map** — integrates with mapping APIs
-- **Diagram** — processes Mermaid/DOT syntax
-- **Comparison** — complex table rendering from nested rune data
-- **Sandbox** — live code preview with iframe isolation
+- **Behavior-driven runes** (Tabs, Accordion, DataTable, Form, Reveal, Preview, CodeGroup, Details) — the identity transform produces semantic HTML, and `@refrakt-md/behaviors` progressively enhances it with ARIA attributes, keyboard navigation, and event listeners. No framework dependency required.
+- **Data rendering runes** (Chart, Comparison, Embed, Testimonial) — `postTransform` hooks in the engine config generate the complete HTML structure during the identity transform.
+- **Lifecycle runes** (Diagram, Map, Nav, Sandbox) — `postTransform` hooks produce custom element tags, and `@refrakt-md/behaviors` initializes them as framework-neutral web components.
 
-These are registered as Svelte components. The Renderer checks the component registry first — if a match is found, the component handles rendering. Otherwise, the generic HTML renderer outputs the identity-transformed tree.
-
-{% hint type="note" %}
-Many runes that *appear* interactive — Tabs, Accordion, DataTable, Form — actually use Layer 1 (identity transform + CSS) for structure and styling, with lightweight JavaScript from `@refrakt-md/behaviors` for progressive enhancement. They don't need custom Svelte components.
-{% /hint %}
+All runes flow through the same identity transform pipeline. The Renderer outputs the transformed tree as generic HTML.
 
 ## Site layouts
 
@@ -97,8 +90,7 @@ The shared foundation. Contains:
 - **`baseConfig`** — Universal rune-to-BEM mappings for all 74 rune configurations (including child runes like AccordionItem, Tier, Tab, etc.). Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
 - **Layout configs** — `defaultLayout`, `docsLayout`, `blogArticleLayout` — declarative layout configurations for common site patterns.
 - **`mergeThemeConfig()`** — Utility to extend the base config with theme-specific overrides (icons, modified rune behavior, custom prefix).
-- **Interactive components** — Svelte components for the ~10 runes that require JavaScript (Chart, Map, Diagram, etc.), shared across all themes.
-- **Component registry** — Maps `typeof` values to Svelte components.
+- **Element overrides** — Svelte wrappers for standard HTML elements (e.g., `<table>`, `<pre>`) that need additional structure, shared across all themes.
 
 ### Your theme package (e.g., `@refrakt-md/lumina`)
 
@@ -193,5 +185,5 @@ Your CSS targets these selectors:
 - [Configuration Reference](/docs/themes/configuration) — Complete reference for `ThemeConfig` and `RuneConfig`
 - [CSS Architecture](/docs/themes/css) — BEM conventions, design tokens, variant styling patterns
 - [Creating a Theme](/docs/themes/creating-a-theme) — Step-by-step guide to building a custom theme
-- [Interactive Components](/docs/themes/components) — When and how to use Svelte components
+- [Interactive Components](/docs/themes/components) — How interactivity works without framework components
 - [Layouts](/docs/themes/layouts) — Declarative page layout system with `LayoutConfig`

@@ -33,7 +33,7 @@ The engine adds BEM classes, injects structural elements, and consumes meta tags
 
 ### Render
 
-Svelte dispatches on `typeof` to a registered component or generic HTML element.
+The Renderer outputs the identity-transformed tree as HTML elements.
 
 {% /steps %}
 
@@ -177,6 +177,5 @@ Every new rune needs:
 If the rune needs CSS (most do), also add:
 - `packages/lumina/styles/runes/{block}.css` — Lumina theme styles
 
-If the rune needs JavaScript interactivity, choose one of:
-- `packages/behaviors/src/{name}.ts` — Progressive enhancement (preferred)
-- `packages/lumina/sveltekit/components/{Name}.svelte` — Full Svelte component
+If the rune needs JavaScript interactivity:
+- `packages/behaviors/src/{name}.ts` — Progressive enhancement via `@refrakt-md/behaviors`
