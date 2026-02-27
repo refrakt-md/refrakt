@@ -1,0 +1,173 @@
+/* Itinerary */
+.rf-itinerary {
+	margin: 2rem 0;
+}
+.rf-itinerary > header {
+	margin-bottom: 1.5rem;
+}
+
+/* Day grouping */
+.rf-itinerary-day {
+	margin-bottom: 2rem;
+}
+.rf-itinerary-day:last-child {
+	margin-bottom: 0;
+}
+.rf-itinerary-day__header {
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--rf-color-text);
+	margin-bottom: 1rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid var(--rf-color-border);
+}
+.rf-itinerary-day__header:empty {
+	display: none;
+}
+.rf-itinerary-day ol {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+/* Stop */
+.rf-itinerary-stop {
+	position: relative;
+	padding-left: 2rem;
+	padding-bottom: 1.5rem;
+	border-left: 2px solid var(--rf-color-border);
+	margin-left: 0.375rem;
+}
+.rf-itinerary-stop:last-child {
+	border-left-color: transparent;
+	padding-bottom: 0;
+}
+.rf-itinerary-stop::before {
+	content: '';
+	position: absolute;
+	left: -0.4375rem;
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background: var(--rf-color-primary);
+	border: 2px solid var(--rf-color-bg);
+	box-shadow: 0 0 0 2px var(--rf-color-primary);
+}
+
+/* Stop time */
+.rf-itinerary-stop__time {
+	display: block;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--rf-color-primary);
+	letter-spacing: 0.02em;
+	margin-bottom: 0.15rem;
+}
+
+/* Stop location */
+.rf-itinerary-stop__location {
+	display: block;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--rf-color-text);
+	margin-bottom: 0.35rem;
+}
+
+/* Stop body */
+.rf-itinerary-stop__body {
+	font-size: 0.925rem;
+	line-height: 1.65;
+	color: var(--rf-color-muted);
+}
+.rf-itinerary-stop__body p:last-child {
+	margin-bottom: 0;
+}
+
+/* Duration badge */
+.rf-itinerary-stop[data-duration]::after {
+	content: attr(data-duration);
+	position: absolute;
+	top: 0.15rem;
+	right: 0;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+	padding: 0.1rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+}
+
+/* Activity variant dots */
+.rf-itinerary-stop--transport::before {
+	background: var(--rf-color-info);
+	box-shadow: 0 0 0 2px var(--rf-color-info);
+}
+.rf-itinerary-stop--food::before {
+	background: var(--rf-color-warning);
+	box-shadow: 0 0 0 2px var(--rf-color-warning);
+}
+.rf-itinerary-stop--sightseeing::before {
+	background: var(--rf-color-primary);
+	box-shadow: 0 0 0 2px var(--rf-color-primary);
+}
+.rf-itinerary-stop--lodging::before {
+	background: var(--rf-color-success);
+	box-shadow: 0 0 0 2px var(--rf-color-success);
+}
+.rf-itinerary-stop--activity::before {
+	background: var(--rf-color-accent);
+	box-shadow: 0 0 0 2px var(--rf-color-accent);
+}
+.rf-itinerary-stop--rest::before {
+	background: var(--rf-color-muted);
+	box-shadow: 0 0 0 2px var(--rf-color-muted);
+}
+
+/* Horizontal direction */
+.rf-itinerary--horizontal .rf-itinerary-day ol {
+	display: flex;
+	gap: 2rem;
+	overflow-x: auto;
+	padding: 2rem 0 1rem;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop {
+	min-width: 14rem;
+	padding-left: 0;
+	padding-top: 1.5rem;
+	padding-bottom: 0;
+	border-left: none;
+	border-top: 2px solid var(--rf-color-border);
+	margin-left: 0;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop:last-child {
+	border-top-color: transparent;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop::before {
+	left: 0.5rem;
+	top: -0.4375rem;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop[data-duration]::after {
+	position: static;
+	display: inline-block;
+	margin-top: 0.5rem;
+}
+
+/* Compact style */
+.rf-itinerary--compact .rf-itinerary-stop__body {
+	display: none;
+}
+.rf-itinerary--compact .rf-itinerary-stop {
+	padding-bottom: 0.75rem;
+}
+.rf-itinerary--compact .rf-itinerary-stop__location {
+	display: inline;
+	font-size: 0.925rem;
+}
+.rf-itinerary--compact .rf-itinerary-stop__time {
+	display: inline;
+	margin-bottom: 0;
+}
+.rf-itinerary--compact .rf-itinerary-stop__time::after {
+	content: ' — ';
+}

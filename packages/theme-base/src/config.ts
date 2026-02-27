@@ -764,6 +764,27 @@ export const baseConfig: ThemeConfig = {
 				};
 			},
 		},
+		Itinerary: {
+			block: 'itinerary',
+			modifiers: {
+				style: { source: 'meta', default: 'day-by-day' },
+				direction: { source: 'meta', default: 'vertical' },
+			},
+		},
+		ItineraryDay: {
+			block: 'itinerary-day',
+			parent: 'Itinerary',
+			autoLabel: { label: 'header' },
+		},
+		ItineraryStop: {
+			block: 'itinerary-stop',
+			parent: 'Itinerary',
+			modifiers: {
+				activity: { source: 'meta' },
+				duration: { source: 'meta' },
+			},
+			autoLabel: { time: 'time', location: 'location' },
+		},
 		Map: {
 			block: 'map',
 			modifiers: {

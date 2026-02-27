@@ -1070,6 +1070,77 @@
 				"{content}"
 			]
 		},
+		"Itinerary": {
+			"block": "itinerary",
+			"root": ".rf-itinerary",
+			"dataRune": "itinerary",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"style": {
+					"source": "meta",
+					"default": "day-by-day",
+					"classPattern": ".rf-itinerary--{value}",
+					"dataAttribute": "data-style"
+				},
+				"direction": {
+					"source": "meta",
+					"default": "vertical",
+					"classPattern": ".rf-itinerary--{value}",
+					"dataAttribute": "data-direction"
+				}
+			}
+		},
+		"ItineraryDay": {
+			"block": "itinerary-day",
+			"root": ".rf-itinerary-day",
+			"dataRune": "itineraryday",
+			"parent": "Itinerary",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"header": {
+					"tag": "label",
+					"selector": ".rf-itinerary-day__header",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"ItineraryStop": {
+			"block": "itinerary-stop",
+			"root": ".rf-itinerary-stop",
+			"dataRune": "itinerarystop",
+			"parent": "Itinerary",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"activity": {
+					"source": "meta",
+					"classPattern": ".rf-itinerary-stop--{value}",
+					"dataAttribute": "data-activity"
+				},
+				"duration": {
+					"source": "meta",
+					"classPattern": ".rf-itinerary-stop--{value}",
+					"dataAttribute": "data-duration"
+				}
+			},
+			"elements": {
+				"time": {
+					"tag": "time",
+					"selector": ".rf-itinerary-stop__time",
+					"source": "autoLabel"
+				},
+				"location": {
+					"tag": "location",
+					"selector": ".rf-itinerary-stop__location",
+					"source": "autoLabel"
+				}
+			}
+		},
 		"Map": {
 			"block": "map",
 			"root": ".rf-map",

@@ -46,6 +46,7 @@ import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
+import { itinerary, itineraryDay, itineraryStop } from './tags/itinerary.js';
 import { map, mapPin } from './tags/map.js';
 import { preview } from './tags/preview.js';
 import { sandbox } from './tags/sandbox.js';
@@ -501,6 +502,27 @@ export const runes = {
     schema: comparisonRow,
     description: 'Individual row/cell within a comparison column',
     type: schema.ComparisonRow,
+  }),
+  itinerary: defineRune({
+    name: 'itinerary',
+    aliases: ['trip', 'travel-plan'],
+    schema: itinerary,
+    description: 'Travel itinerary with day groupings and timed stops. Headings become stops with "time — location" parsing; h2 headings create day groups.',
+    reinterprets: { heading: 'stop time and location (h2 = day group, h3 = stop)', paragraph: 'stop description' },
+    seoType: 'ItemList',
+    type: schema.Itinerary,
+  }),
+  'itinerary-day': defineRune({
+    name: 'itinerary-day',
+    schema: itineraryDay,
+    description: 'Day grouping within an itinerary',
+    type: schema.ItineraryDay,
+  }),
+  'itinerary-stop': defineRune({
+    name: 'itinerary-stop',
+    schema: itineraryStop,
+    description: 'Individual stop within an itinerary with time, location, and optional duration/activity',
+    type: schema.ItineraryStop,
   }),
   map: defineRune({
     name: 'map',
