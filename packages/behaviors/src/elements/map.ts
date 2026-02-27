@@ -80,7 +80,7 @@ export class RfMap extends SafeHTMLElement {
 		const pinsContainer = this.querySelector('ol');
 		if (!pinsContainer) return result;
 
-		for (const li of pinsContainer.querySelectorAll<HTMLElement>('li[data-typeof="MapPin"], li[typeof="MapPin"]')) {
+		for (const li of pinsContainer.querySelectorAll<HTMLElement>('li[data-rune="mappin"], li[data-typeof="MapPin"], li[typeof="MapPin"]')) {
 			const readMeta = (prop: string) =>
 				li.querySelector<HTMLMetaElement>(`meta[property="${prop}"]`)?.content || '';
 			const readSpan = (prop: string) =>
@@ -104,12 +104,16 @@ export class RfMap extends SafeHTMLElement {
 		this.initializing = true;
 
 		try {
+			// Inject CSS into shadow root if available, otherwise document.head
+			const root = this.getRootNode() as ShadowRoot | Document;
+			const cssTarget = root instanceof ShadowRoot ? root : document.head;
+
 			// Load Leaflet CSS
-			if (!document.querySelector('link[href*="leaflet@1.9.4"]')) {
+			if (!root.querySelector('link[href*="leaflet@1.9.4"]')) {
 				const linkEl = document.createElement('link');
 				linkEl.rel = 'stylesheet';
 				linkEl.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-				document.head.appendChild(linkEl);
+				cssTarget.appendChild(linkEl);
 			}
 
 			// Load Leaflet JS
@@ -254,11 +258,11 @@ export class RfMap extends SafeHTMLElement {
 					const clusterDefaultCss = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
 
 					for (const href of [clusterCss, clusterDefaultCss]) {
-						if (!document.querySelector(`link[href="${href}"]`)) {
+						if (!root.querySelector(`link[href="${href}"]`)) {
 							const link = document.createElement('link');
 							link.rel = 'stylesheet';
 							link.href = href;
-							document.head.appendChild(link);
+							cssTarget.appendChild(link);
 						}
 					}
 

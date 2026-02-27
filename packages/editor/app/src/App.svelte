@@ -20,17 +20,18 @@
 		renameFile, duplicateFile, deleteFile, toggleDraft,
 		fetchRunes, fetchConfig, connectEvents,
 	} from './lib/api/client.js';
-	import { RfDiagram, RfSandbox } from '@refrakt-md/behaviors';
+	import { RfDiagram, RfSandbox, RfMap } from '@refrakt-md/behaviors';
 	import { onMount } from 'svelte';
 
-	// Register web components that work in Shadow DOM.
-	// Map is excluded — Leaflet CSS injected into document.head doesn't cascade
-	// into Shadow DOM, so it renders its static fallback (pins list) instead.
+	// Register web components for inline block previews
 	if (!customElements.get('rf-diagram')) {
 		customElements.define('rf-diagram', RfDiagram);
 	}
 	if (!customElements.get('rf-sandbox')) {
 		customElements.define('rf-sandbox', RfSandbox);
+	}
+	if (!customElements.get('rf-map')) {
+		customElements.define('rf-map', RfMap);
 	}
 
 	// ── Modal state ─────────────────────────────────────────────
