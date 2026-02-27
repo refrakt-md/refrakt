@@ -40,7 +40,7 @@ export class RfSandbox extends SafeHTMLElement {
 	private themeCleanup: (() => void) | null = null;
 
 	connectedCallback() {
-		const content = readHiddenContent(this, 'source');
+		const content = this.dataset.sourceContent || readHiddenContent(this, 'source');
 		const framework = this.dataset.framework || '';
 		const dependencies = this.dataset.dependencies || '';
 		const label = this.dataset.label || 'Sandbox';

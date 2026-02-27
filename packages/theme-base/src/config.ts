@@ -864,6 +864,7 @@ export const baseConfig: ThemeConfig = {
 					name: 'rf-sandbox',
 					attributes: {
 						...node.attributes,
+						'data-source-content': content,
 						...(framework ? { 'data-framework': framework } : {}),
 						...(dependencies ? { 'data-dependencies': dependencies } : {}),
 						...(label ? { 'data-label': label } : {}),

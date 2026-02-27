@@ -20,14 +20,17 @@
 		renameFile, duplicateFile, deleteFile, toggleDraft,
 		fetchRunes, fetchConfig, connectEvents,
 	} from './lib/api/client.js';
-	import { RfDiagram } from '@refrakt-md/behaviors';
+	import { RfDiagram, RfSandbox } from '@refrakt-md/behaviors';
 	import { onMount } from 'svelte';
 
-	// Register rf-diagram only — Mermaid produces inline SVG that works in Shadow DOM.
-	// Map and Sandbox web components don't work in Shadow DOM (Leaflet CSS isolation,
-	// content extraction issues), so they render their static fallback content instead.
+	// Register web components that work in Shadow DOM.
+	// Map is excluded — Leaflet CSS injected into document.head doesn't cascade
+	// into Shadow DOM, so it renders its static fallback (pins list) instead.
 	if (!customElements.get('rf-diagram')) {
 		customElements.define('rf-diagram', RfDiagram);
+	}
+	if (!customElements.get('rf-sandbox')) {
+		customElements.define('rf-sandbox', RfSandbox);
 	}
 
 	// ── Modal state ─────────────────────────────────────────────
