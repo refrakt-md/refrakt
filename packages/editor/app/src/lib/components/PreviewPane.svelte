@@ -104,14 +104,13 @@
 		{#if loading}
 			<div class="preview__progress"></div>
 		{/if}
-		<div class="preview__viewport" class:preview__viewport--constrained={constrained}>
+		<div class="preview__viewport">
 			{#if editorState.previewRuntimeAvailable}
 				<iframe
 					bind:this={previewIframe}
 					title="Preview"
 					src="/preview/"
 					class="preview__iframe"
-					class:preview__iframe--constrained={constrained}
 					style={constrained ? `width: ${viewportWidth}px; max-width: 100%;` : ''}
 				></iframe>
 			{:else}
@@ -119,7 +118,6 @@
 					title="Preview"
 					srcdoc={previewHtml}
 					class="preview__iframe"
-					class:preview__iframe--constrained={constrained}
 					style={constrained ? `width: ${viewportWidth}px; max-width: 100%;` : ''}
 				></iframe>
 			{/if}
@@ -187,9 +185,6 @@
 	.preview__viewport {
 		flex: 1;
 		overflow: hidden;
-	}
-
-	.preview__viewport--constrained {
 		display: flex;
 		justify-content: center;
 		padding: var(--ed-space-4);
@@ -198,15 +193,12 @@
 
 	.preview__iframe {
 		width: 100%;
+		max-width: 1200px;
 		height: 100%;
-		border: none;
-		background: var(--ed-surface-0);
-	}
-
-	.preview__iframe--constrained {
 		border: 1px solid var(--ed-border-default);
 		border-radius: var(--ed-radius-lg);
 		box-shadow: var(--ed-shadow-md);
+		background: var(--ed-surface-0);
 	}
 
 	/* Empty state */
