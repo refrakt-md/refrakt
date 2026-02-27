@@ -9,6 +9,7 @@
 		blockLabel,
 		type ParsedBlock,
 	} from '../editor/block-parser.js';
+	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
@@ -23,6 +24,7 @@
 		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
 		showInsertMenu?: boolean;
 		frontmatter?: Record<string, unknown>;
+		readOnly?: boolean;
 	}
 
 	let {
@@ -35,6 +37,7 @@
 		highlightTransform = null,
 		showInsertMenu: showInsertMenuProp = true,
 		frontmatter = {},
+		readOnly = false,
 	}: Props = $props();
 
 	let blocks: ParsedBlock[] = $state([]);
@@ -52,6 +55,12 @@
 			// Close edit panel when switching files
 			activeIndex = null;
 		}
+	});
+
+	// Sync edit panel open state to global state (for layout adjustments)
+	$effect(() => {
+		editorState.editPanelOpen = !readOnly && (activeIndex !== null || editingFrontmatter);
+		return () => { editorState.editPanelOpen = false; };
 	});
 
 	/** Sync blocks back to source text */
@@ -85,6 +94,7 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		if (readOnly) return;
 		if (e.key === 'Escape' && (activeIndex !== null || editingFrontmatter)) {
 			activeIndex = null;
 			editingFrontmatter = false;
@@ -277,7 +287,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="block-editor">
-	{#if blocks.length === 0}
+	{#if blocks.length === 0 && !readOnly}
 		<div class="block-editor__empty">
 			<svg class="block-editor__empty-icon" width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 				<rect x="6" y="8" width="36" height="32" rx="3" />
@@ -290,36 +300,38 @@
 		</div>
 	{/if}
 
-	<div class="block-editor__stage" class:editing={activeIndex !== null || editingFrontmatter}>
+	<div class="block-editor__stage" class:editing={!readOnly && (activeIndex !== null || editingFrontmatter)}>
 		<!-- Scrollable list + rail area -->
 		<div class="block-editor__scroll">
 			<div class="block-editor__list-wrap">
-				<!-- Frontmatter summary header -->
-				<div class="block-editor__fm-header">
-					<div class="block-editor__fm-info">
-						<span class="block-editor__fm-title">{fmTitle || 'Untitled'}</span>
-						{#if fmDesc()}
-							<span class="block-editor__fm-desc">{fmDesc()}</span>
-						{/if}
+				<!-- Frontmatter summary header (blocks mode only) -->
+				{#if !readOnly}
+					<div class="block-editor__fm-header">
+						<div class="block-editor__fm-info">
+							<span class="block-editor__fm-title">{fmTitle || 'Untitled'}</span>
+							{#if fmDesc()}
+								<span class="block-editor__fm-desc">{fmDesc()}</span>
+							{/if}
+						</div>
+						<button
+							class="block-editor__fm-edit"
+							class:active={editingFrontmatter}
+							onclick={toggleFrontmatter}
+							title="Edit frontmatter"
+						>
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
+							</svg>
+							Edit
+						</button>
 					</div>
-					<button
-						class="block-editor__fm-edit"
-						class:active={editingFrontmatter}
-						onclick={toggleFrontmatter}
-						title="Edit frontmatter"
-					>
-						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />
-						</svg>
-						Edit
-					</button>
-				</div>
+				{/if}
 
 				{#each blocks as block, i (block.id)}
 					<div
 						class="block-editor__row"
-						class:drag-source={dragIndex === i}
-						class:drag-over={dropIndex === i && dragIndex !== i}
+						class:drag-source={!readOnly && dragIndex === i}
+						class:drag-over={!readOnly && dropIndex === i && dragIndex !== i}
 					>
 						<div class="block-editor__block-cell">
 							<BlockCard
@@ -328,24 +340,26 @@
 								{themeCss}
 								{highlightCss}
 								{highlightTransform}
-								ondragstart={(e) => handleDragStart(e, i)}
-								ondragover={(e) => handleDragOver(e, i)}
-								ondrop={(e) => handleDrop(e, i)}
+								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
+								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
+								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
 							/>
 						</div>
-						<button
-							class="block-editor__rail-label"
-							class:active={activeIndex === i}
-							onclick={() => toggleBlock(i)}
-							aria-pressed={activeIndex === i}
-						>
-							{blockLabel(block)}
-						</button>
+						{#if !readOnly}
+							<button
+								class="block-editor__rail-label"
+								class:active={activeIndex === i}
+								onclick={() => toggleBlock(i)}
+								aria-pressed={activeIndex === i}
+							>
+								{blockLabel(block)}
+							</button>
+						{/if}
 					</div>
 				{/each}
 
-				<!-- Insert block bar -->
-				{#if showInsertMenuProp}
+				<!-- Insert block bar (blocks mode only) -->
+				{#if !readOnly && showInsertMenuProp}
 					<div class="block-editor__insert">
 						{#if showInsertMenu}
 							<div class="insert-menu">
@@ -415,23 +429,23 @@
 			</div>
 		</div>
 
-		<!-- Edit panel — slides in from the right -->
-		{#if editingFrontmatter}
+		<!-- Edit panel — slides in from the right (blocks mode only) -->
+		{#if !readOnly}
 			<div class="block-editor__edit-panel">
-				<FrontmatterEditPanel
-					onclose={() => { editingFrontmatter = false; }}
-				/>
-			</div>
-		{:else if activeIndex !== null && blocks[activeIndex]}
-			<div class="block-editor__edit-panel">
-				<BlockEditPanel
-					block={blocks[activeIndex]}
-					{runeMap}
-					runes={() => runes}
-					onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
-					onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
-					onclose={() => { activeIndex = null; }}
-				/>
+				{#if editingFrontmatter}
+					<FrontmatterEditPanel
+						onclose={() => { editingFrontmatter = false; }}
+					/>
+				{:else if activeIndex !== null && blocks[activeIndex]}
+					<BlockEditPanel
+						block={blocks[activeIndex]}
+						{runeMap}
+						runes={() => runes}
+						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
+						onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
+						onclose={() => { activeIndex = null; }}
+					/>
+				{/if}
 			</div>
 		{/if}
 	</div>
@@ -444,7 +458,6 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		background: var(--ed-surface-1);
 	}
 
 	/* Stage: flex container for scroll area + edit panel */
@@ -462,26 +475,16 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		padding: var(--ed-space-5);
 		transition: margin-right var(--ed-transition-slow);
 	}
 
-	.block-editor__stage.editing .block-editor__scroll {
-		margin-right: 480px;
-	}
 
 	.block-editor__list-wrap {
-		max-width: 1100px;
-		margin: 0 auto;
 		width: 100%;
 		padding: var(--ed-space-4);
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		background: var(--ed-surface-0);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-lg);
-		box-shadow: var(--ed-shadow-md);
 	}
 
 	/* Frontmatter summary header */
@@ -636,10 +639,10 @@
 		font-weight: 700;
 	}
 
-	/* Edit panel — absolutely positioned on the right */
+	/* Edit panel — fixed to right edge of viewport, outside the card */
 	.block-editor__edit-panel {
-		position: absolute;
-		top: 0;
+		position: fixed;
+		top: 88px;
 		right: 0;
 		bottom: 0;
 		width: 480px;
@@ -648,7 +651,7 @@
 		border-left: 1px solid var(--ed-border-default);
 		transform: translateX(100%);
 		transition: transform var(--ed-transition-slow);
-		z-index: 2;
+		z-index: 10;
 	}
 
 	.block-editor__stage.editing .block-editor__edit-panel {

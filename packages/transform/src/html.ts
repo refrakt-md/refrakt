@@ -52,6 +52,12 @@ function renderFlat(node: RendererNode): string {
 	if (!isTag(node)) return '';
 
 	const tag = node.name;
+
+	// Null-named tags (Markdoc document root) — render children without wrapper
+	if (!tag) {
+		return node.children.map(renderFlat).join('');
+	}
+
 	const attrs = renderAttrs(node.attributes);
 
 	if (VOID_ELEMENTS.has(tag)) {
@@ -74,6 +80,15 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 	if (!isTag(node)) return '';
 
 	const tag = node.name;
+
+	// Null-named tags (Markdoc document root) — render children without wrapper
+	if (!tag) {
+		return node.children
+			.map(c => renderPretty(c, depth, indent))
+			.filter(Boolean)
+			.join('\n');
+	}
+
 	const attrs = renderAttrs(node.attributes);
 	const pad = indent.repeat(depth);
 
@@ -110,6 +125,12 @@ function renderFlatChild(node: RendererNode): string {
 	if (!isTag(node)) return '';
 
 	const tag = node.name;
+
+	// Null-named tags (Markdoc document root) — render children without wrapper
+	if (!tag) {
+		return node.children.map(renderFlatChild).join('');
+	}
+
 	const attrs = renderAttrs(node.attributes);
 
 	if (VOID_ELEMENTS.has(tag)) return `<${tag}${attrs} />`;

@@ -46,67 +46,6 @@
 	<div class="header__spacer"></div>
 
 	{#if editorState.currentPath}
-		{#if editorState.currentFileType !== 'layout'}
-			<div class="header__mode-toggle">
-				<button
-					class="header__mode-btn"
-					class:active={editorState.editorMode === 'visual'}
-					onclick={() => { editorState.editorMode = 'visual'; }}
-				>Visual</button>
-				<button
-					class="header__mode-btn"
-					class:active={editorState.editorMode === 'code'}
-					onclick={() => { editorState.editorMode = 'code'; }}
-				>Code</button>
-				<button
-					class="header__mode-btn"
-					class:active={editorState.editorMode === 'preview'}
-					onclick={() => { editorState.editorMode = 'preview'; }}
-				>Preview</button>
-			</div>
-		{/if}
-
-		{#if editorState.editorMode !== 'visual'}
-			<div class="header__viewports">
-				<div class="header__viewport-track">
-					<button
-						class="header__device"
-						class:header__device--active={editorState.viewport === 'desktop'}
-						onclick={() => editorState.viewport = 'desktop'}
-						title="Desktop"
-					>
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="1.5" y="2" width="13" height="9" rx="1" />
-							<line x1="5.5" y1="14" x2="10.5" y2="14" />
-							<line x1="8" y1="11" x2="8" y2="14" />
-						</svg>
-					</button>
-					<button
-						class="header__device"
-						class:header__device--active={editorState.viewport === 'tablet'}
-						onclick={() => editorState.viewport = 'tablet'}
-						title="Tablet"
-					>
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="3" y="1.5" width="10" height="13" rx="1.5" />
-							<line x1="7" y1="12.5" x2="9" y2="12.5" />
-						</svg>
-					</button>
-					<button
-						class="header__device"
-						class:header__device--active={editorState.viewport === 'mobile'}
-						onclick={() => editorState.viewport = 'mobile'}
-						title="Mobile"
-					>
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="4" y="1.5" width="8" height="13" rx="2" />
-							<line x1="7" y1="12.5" x2="9" y2="12.5" />
-						</svg>
-					</button>
-				</div>
-			</div>
-		{/if}
-
 		<button
 			class="header__save"
 			class:header__save--success={editorState.saveJustCompleted}
@@ -230,38 +169,6 @@
 		flex: 1;
 	}
 
-	/* Mode toggle — 3-segment control */
-	.header__mode-toggle {
-		display: inline-flex;
-		background: var(--ed-surface-2);
-		border-radius: var(--ed-radius-md);
-		padding: 2px;
-		gap: 2px;
-	}
-
-	.header__mode-btn {
-		padding: var(--ed-space-1) var(--ed-space-3);
-		border: none;
-		border-radius: calc(var(--ed-radius-md) - 2px);
-		background: transparent;
-		color: var(--ed-text-tertiary);
-		font-size: var(--ed-text-sm);
-		font-weight: 500;
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
-		white-space: nowrap;
-	}
-
-	.header__mode-btn:hover:not(.active) {
-		color: var(--ed-text-secondary);
-	}
-
-	.header__mode-btn.active {
-		background: var(--ed-surface-0);
-		color: var(--ed-text-primary);
-		box-shadow: var(--ed-shadow-sm);
-	}
-
 	/* Save button */
 	.header__save {
 		display: flex;
@@ -309,41 +216,5 @@
 		line-height: 1;
 	}
 
-	/* Viewport toggles */
-	.header__viewports {
-		display: flex;
-		align-items: center;
-	}
 
-	.header__viewport-track {
-		display: inline-flex;
-		background: var(--ed-surface-2);
-		border-radius: var(--ed-radius-md);
-		padding: 2px;
-		gap: 2px;
-	}
-
-	.header__device {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 26px;
-		border: none;
-		border-radius: calc(var(--ed-radius-md) - 2px);
-		background: transparent;
-		color: var(--ed-text-muted);
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), box-shadow var(--ed-transition-fast);
-	}
-
-	.header__device:hover:not(.header__device--active) {
-		color: var(--ed-text-tertiary);
-	}
-
-	.header__device--active {
-		background: var(--ed-surface-0);
-		color: var(--ed-accent);
-		box-shadow: var(--ed-shadow-sm);
-	}
 </style>

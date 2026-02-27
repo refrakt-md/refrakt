@@ -7,6 +7,8 @@
 	import BlockEditor from './lib/components/BlockEditor.svelte';
 	import LayoutEditor from './lib/components/LayoutEditor.svelte';
 	import PreviewPane from './lib/components/PreviewPane.svelte';
+	import PageCard from './lib/components/PageCard.svelte';
+	import ModeBar from './lib/components/ModeBar.svelte';
 	import CreatePageModal from './lib/components/CreatePageModal.svelte';
 	import CreateDirectoryModal from './lib/components/CreateDirectoryModal.svelte';
 	import ContextMenu from './lib/components/ContextMenu.svelte';
@@ -299,7 +301,10 @@
 
 <div class="editor-app">
 	<HeaderBar onsave={handleSave} />
-	<EditorLayout hideRight={editorState.editorMode === 'visual'}>
+	{#if editorState.currentPath && editorState.currentFileType !== 'layout'}
+		<ModeBar />
+	{/if}
+	<EditorLayout>
 		{#snippet left()}
 			<FileTree
 				onselectfile={handleSelectFile}
@@ -312,39 +317,42 @@
 			<ExternalChangeBanner onreload={handleReloadExternalChange} />
 			{#if editorState.currentFileType === 'layout'}
 				<LayoutEditor />
-			{:else if editorState.editorMode === 'visual'}
-				{#if editorState.currentPath}
-					<BlockEditor
-						bodyContent={editorState.bodyContent}
-						onchange={(body) => editorState.updateBody(body)}
-						runes={editorState.runes}
-						themeConfig={editorState.themeConfig}
-						themeCss={editorState.themeCss}
-						highlightCss={editorState.highlightCss}
-						highlightTransform={editorState.highlightTransform}
-						frontmatter={editorState.frontmatter}
-					/>
-				{:else}
-					<div class="editor-placeholder">
-						<svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="6" y="4" width="24" height="32" rx="2" />
-							<polyline points="20 4 20 14 30 14" />
-							<line x1="12" y1="22" x2="24" y2="22" />
-							<line x1="12" y1="27" x2="20" y2="27" />
-							<path d="M34 24l6 6M34 36l6-6" />
-						</svg>
-						<span>Select a file to edit</span>
-					</div>
-				{/if}
-			{:else if editorState.editorMode === 'code'}
+			{:else if editorState.currentPath}
 				<FrontmatterEditor forceRawMode />
 				<MarkdownEditor />
-			{:else}
-				<!-- Preview mode: center is empty, EditorLayout renders PreviewPane here -->
 			{/if}
 		{/snippet}
 		{#snippet right()}
-			<PreviewPane onnavigate={handleSelectFile} />
+			{#if !editorState.currentPath}
+				<div class="editor-placeholder">
+					<svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="6" y="4" width="24" height="32" rx="2" />
+						<polyline points="20 4 20 14 30 14" />
+						<line x1="12" y1="22" x2="24" y2="22" />
+						<line x1="12" y1="27" x2="20" y2="27" />
+						<path d="M34 24l6 6M34 36l6-6" />
+					</svg>
+					<span>Select a file to edit</span>
+				</div>
+			{:else if editorState.currentFileType !== 'layout'}
+				<PageCard>
+					{#if editorState.editorMode === 'preview'}
+						<PreviewPane onnavigate={handleSelectFile} />
+					{:else}
+						<BlockEditor
+							bodyContent={editorState.bodyContent}
+							onchange={(body) => editorState.updateBody(body)}
+							runes={editorState.runes}
+							themeConfig={editorState.themeConfig}
+							themeCss={editorState.themeCss}
+							highlightCss={editorState.highlightCss}
+							highlightTransform={editorState.highlightTransform}
+							frontmatter={editorState.frontmatter}
+							readOnly={editorState.editorMode === 'code'}
+						/>
+					{/if}
+				</PageCard>
+			{/if}
 		{/snippet}
 	</EditorLayout>
 </div>

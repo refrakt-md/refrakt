@@ -7,40 +7,33 @@
 		left: Snippet;
 		center: Snippet;
 		right: Snippet;
-		hideRight?: boolean;
 	}
 
-	let { left, center, right, hideRight = false }: Props = $props();
+	let { left, center, right }: Props = $props();
 
 	let leftWidth = $state(260);
-	let rightWidth = $state(400);
 	let layoutWidth = $state(0);
-	let initialized = false;
 
 	const MIN_PANEL = 180;
-
-	$effect(() => {
-		if (layoutWidth > 0 && !initialized) {
-			initialized = true;
-			const available = layoutWidth - leftWidth - 8;
-			if (available > MIN_PANEL * 2) {
-				rightWidth = Math.floor(available / 2);
-			}
-		}
-	});
 
 	function handleLeftResize(delta: number) {
 		leftWidth = Math.max(MIN_PANEL, leftWidth + delta);
 	}
 
-	function handleRightResize(delta: number) {
-		rightWidth = Math.max(MIN_PANEL, rightWidth - delta);
-	}
+	// Fixed content width for the center panel — prevents text reflow during transition
+	let gridColumns = $derived.by(() => {
+		const available = Math.max(0, layoutWidth - leftWidth - 4);
+		if (editorState.editorMode === 'code') {
+			const half = Math.floor(available / 2);
+			return `${leftWidth}px 4px ${half}px ${available - half}px`;
+		}
+		// Preview and Blocks: center collapsed, right fills
+		return `${leftWidth}px 4px 0px ${available}px`;
+	});
 
-	let gridColumns = $derived(
-		editorState.editorMode === 'preview' || hideRight
-			? `${leftWidth}px 4px 1fr`
-			: `${leftWidth}px 4px 1fr 4px ${rightWidth}px`
+	// min-width for center inner — prevents text reflow during Blocks↔Code transition
+	const codeCenterWidth = $derived(
+		Math.floor(Math.max(0, layoutWidth - leftWidth - 4) / 2)
 	);
 </script>
 
@@ -53,23 +46,14 @@
 		{@render left()}
 	</div>
 	<ResizeHandle onresize={handleLeftResize} />
-	{#if editorState.editorMode === 'preview'}
-		<div class="layout__panel layout__panel--center layout__panel--full-preview">
-			{@render right()}
-		</div>
-	{:else if hideRight}
-		<div class="layout__panel layout__panel--center">
+	<div class="layout__panel layout__panel--center">
+		<div class="layout__center-inner" class:slide-out={editorState.editorMode !== 'code'} style="min-width: {codeCenterWidth}px">
 			{@render center()}
 		</div>
-	{:else}
-		<div class="layout__panel layout__panel--center">
-			{@render center()}
-		</div>
-		<ResizeHandle onresize={handleRightResize} />
-		<div class="layout__panel layout__panel--right">
-			{@render right()}
-		</div>
-	{/if}
+	</div>
+	<div class="layout__panel layout__panel--right" class:panel-editing={editorState.editPanelOpen}>
+		{@render right()}
+	</div>
 </div>
 
 <style>
@@ -77,6 +61,7 @@
 		display: grid;
 		flex: 1;
 		overflow: hidden;
+		transition: grid-template-columns var(--ed-transition-slow);
 	}
 
 	.layout__panel {
@@ -93,11 +78,25 @@
 		background: var(--ed-surface-0);
 	}
 
-	.layout__panel--right {
-		background: var(--ed-surface-1);
+	.layout__center-inner {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		transition: transform var(--ed-transition-slow);
 	}
 
-	.layout__panel--full-preview {
+	.layout__center-inner.slide-out {
+		transform: translateX(-100%);
+	}
+
+	.layout__panel--right {
 		background: var(--ed-surface-1);
+		align-items: center;
+		transition: padding-right var(--ed-transition-slow);
+	}
+
+	.layout__panel--right.panel-editing {
+		padding-right: 480px;
 	}
 </style>

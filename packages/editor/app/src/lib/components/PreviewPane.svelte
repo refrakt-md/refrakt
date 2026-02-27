@@ -10,16 +10,6 @@
 	let pageMap: Map<string, string> = new Map(); // url → file path
 	let loading = $state(false);
 
-	// Viewport presets
-	const VIEWPORT_WIDTHS: Record<string, number | null> = {
-		desktop: null,
-		tablet: 768,
-		mobile: 375,
-	};
-
-	const constrained = $derived(editorState.viewport !== 'desktop');
-	const viewportWidth = $derived(VIEWPORT_WIDTHS[editorState.viewport]);
-
 	// Listen for messages from the preview runtime iframe
 	$effect(() => {
 		function onMessage(e: MessageEvent) {
@@ -105,14 +95,12 @@
 					title="Preview"
 					src="/preview/"
 					class="preview__iframe"
-					style={constrained ? `width: ${viewportWidth}px; max-width: 100%;` : ''}
 				></iframe>
 			{:else}
 				<iframe
 					title="Preview"
 					srcdoc={previewHtml}
 					class="preview__iframe"
-					style={constrained ? `width: ${viewportWidth}px; max-width: 100%;` : ''}
 				></iframe>
 			{/if}
 		</div>
@@ -155,18 +143,12 @@
 		flex: 1;
 		overflow: hidden;
 		display: flex;
-		justify-content: center;
-		padding: var(--ed-space-4);
-		background: var(--ed-surface-1);
 	}
 
 	.preview__iframe {
 		width: 100%;
-		max-width: 1200px;
 		height: 100%;
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-lg);
-		box-shadow: var(--ed-shadow-md);
+		border: none;
 		background: var(--ed-surface-0);
 	}
 

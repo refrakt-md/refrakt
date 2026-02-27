@@ -85,6 +85,29 @@ describe('renderToHtml', () => {
 		const tag = makeTag('div', { 'data-value': 'a "quoted" & <special>' }, ['text']);
 		expect(renderToHtml(tag)).toBe('<div data-value="a &quot;quoted&quot; &amp; &lt;special&gt;">text</div>');
 	});
+
+	it('renders null-named tags (document root) without a wrapper element', () => {
+		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
+			makeTag('p', {}, ['Hello']),
+			makeTag('p', {}, ['World']),
+		]};
+		expect(renderToHtml(root)).toBe('<p>Hello</p><p>World</p>');
+	});
+
+	it('renders null-named tags with nested rune content correctly', () => {
+		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
+			makeTag('div', { class: 'rf-preview', 'data-rune': 'preview' }, [
+				makeTag('div', { class: 'rf-hint', 'data-rune': 'hint' }, [
+					makeTag('p', {}, ['Nested content']),
+				]),
+			]),
+		]};
+		const html = renderToHtml(root);
+		expect(html).not.toContain('<null>');
+		expect(html).toBe(
+			'<div class="rf-preview" data-rune="preview"><div class="rf-hint" data-rune="hint"><p>Nested content</p></div></div>'
+		);
+	});
 });
 
 describe('renderToHtml pretty printing', () => {
@@ -137,5 +160,19 @@ describe('renderToHtml pretty printing', () => {
 		]);
 		const expected = '<div>\n\t<p>text</p>\n</div>';
 		expect(renderToHtml(tag, { pretty: true, indent: '\t' })).toBe(expected);
+	});
+
+	it('pretty-prints null-named tags without a wrapper element', () => {
+		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
+			makeTag('div', { class: 'outer' }, [
+				makeTag('p', {}, ['Content']),
+			]),
+		]};
+		const expected = [
+			'<div class="outer">',
+			'  <p>Content</p>',
+			'</div>',
+		].join('\n');
+		expect(renderToHtml(root, { pretty: true })).toBe(expected);
 	});
 });
