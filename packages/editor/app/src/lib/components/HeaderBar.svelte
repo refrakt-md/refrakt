@@ -19,7 +19,16 @@
 </script>
 
 <header class="header">
-	<h1 class="header__logo"><span class="header__accent">refrakt</span> editor</h1>
+	<button
+		class="header__sidebar-toggle"
+		onclick={() => { editorState.sidenavOpen = !editorState.sidenavOpen; }}
+		title={editorState.sidenavOpen ? 'Hide sidebar' : 'Show sidebar'}
+	>
+		<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+			<line x1="5.5" y1="2.5" x2="5.5" y2="13.5" />
+		</svg>
+	</button>
 
 	{#if showModeControls}
 		<div class="header__group">
@@ -154,30 +163,23 @@
 		z-index: 10;
 	}
 
-	.header__logo {
-		width: 260px;
-		flex-shrink: 0;
-		font-size: var(--ed-text-md);
-		font-weight: 600;
-		letter-spacing: 0.05em;
-		color: var(--ed-text-tertiary);
-		white-space: nowrap;
+	.header__sidebar-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		border: none;
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
+		color: var(--ed-text-muted);
+		cursor: pointer;
+		transition: color var(--ed-transition-fast), background var(--ed-transition-fast);
 	}
 
-	.header__accent {
-		color: var(--ed-accent);
-		position: relative;
-	}
-
-	.header__accent::before {
-		content: '';
-		position: absolute;
-		top: -1px;
-		left: -8px;
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--ed-accent);
+	.header__sidebar-toggle:hover {
+		color: var(--ed-text-primary);
+		background: var(--ed-surface-2);
 	}
 
 	/* Breadcrumbs */

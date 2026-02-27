@@ -300,8 +300,10 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="editor-app">
-	<HeaderBar onsave={handleSave} />
 	<EditorLayout>
+		{#snippet header()}
+			<HeaderBar onsave={handleSave} />
+		{/snippet}
 		{#snippet left()}
 			<FileTree
 				onselectfile={handleSelectFile}

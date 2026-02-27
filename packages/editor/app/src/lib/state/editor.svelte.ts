@@ -60,6 +60,9 @@ class EditorState {
 	/** External file change notification (set by SSE watcher) */
 	externalChange: { path: string; event: string } | null = $state(null);
 
+	/** Whether the left sidenav is open */
+	sidenavOpen = $state(true);
+
 	/** Whether the block edit panel is open (set by BlockEditor) */
 	editPanelOpen = $state(false);
 

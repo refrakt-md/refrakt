@@ -60,8 +60,8 @@
 	.file-tree__header {
 		display: flex;
 		align-items: center;
-		padding: var(--ed-space-2) var(--ed-space-3);
-		box-shadow: 0 1px 0 var(--ed-border-default);
+		height: 60px;
+		padding: 0 var(--ed-space-3);
 		flex-shrink: 0;
 		position: relative;
 		z-index: 1;

@@ -3,51 +3,85 @@
 	import { editorState } from '../state/editor.svelte.js';
 
 	interface Props {
+		header: Snippet;
 		left: Snippet;
 		center: Snippet;
 		right: Snippet;
 	}
 
-	let { left, center, right }: Props = $props();
+	let { header, left, center, right }: Props = $props();
 
-	let layoutWidth = $state(0);
+	let mainWidth = $state(0);
 
-	const LEFT_WIDTH = 260;
+	const LEFT_WIDTH = 360;
 
-	let gridColumns = $derived.by(() => {
-		const available = Math.max(0, layoutWidth - LEFT_WIDTH);
+	let contentColumns = $derived.by(() => {
 		if (editorState.editorMode === 'code') {
-			const half = Math.floor(available / 2);
-			return `${LEFT_WIDTH}px ${half}px ${available - half}px`;
+			return '1fr 1fr';
 		}
-		return `${LEFT_WIDTH}px 0px ${available}px`;
+		return '0px 1fr';
 	});
 
 	const codeCenterWidth = $derived(
-		Math.floor(Math.max(0, layoutWidth - LEFT_WIDTH) / 2)
+		Math.floor(Math.max(0, mainWidth) / 2)
 	);
 </script>
 
-<div
-	class="layout"
-	bind:clientWidth={layoutWidth}
-	style="grid-template-columns: {gridColumns}"
->
-	<div class="layout__panel layout__panel--left">
+<div class="layout" class:layout--sidenav-closed={!editorState.sidenavOpen}>
+	<div class="layout__left" style="width: {LEFT_WIDTH}px">
 		{@render left()}
 	</div>
-	<div class="layout__panel layout__panel--center">
-		<div class="layout__center-inner" class:slide-out={editorState.editorMode !== 'code'} style="min-width: {codeCenterWidth}px">
-			{@render center()}
+	<div class="layout__main" bind:clientWidth={mainWidth}>
+		<div class="layout__header">
+			{@render header()}
 		</div>
-	</div>
-	<div class="layout__panel layout__panel--right" class:panel-editing={editorState.editPanelOpen}>
-		{@render right()}
+		<div class="layout__content" style="grid-template-columns: {contentColumns}">
+			<div class="layout__panel layout__panel--center">
+				<div class="layout__center-inner" class:slide-out={editorState.editorMode !== 'code'} style="min-width: {codeCenterWidth}px">
+					{@render center()}
+				</div>
+			</div>
+			<div class="layout__panel layout__panel--right" class:panel-editing={editorState.editPanelOpen}>
+				{@render right()}
+			</div>
+		</div>
 	</div>
 </div>
 
 <style>
 	.layout {
+		display: flex;
+		flex: 1;
+		overflow: hidden;
+	}
+
+	.layout__left {
+		flex-shrink: 0;
+		background: var(--ed-surface-1);
+		border-right: 1px solid var(--ed-border-default);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		transition: margin-left var(--ed-transition-slow), opacity var(--ed-transition-slow);
+	}
+
+	.layout--sidenav-closed .layout__left {
+		margin-left: -360px;
+	}
+
+	.layout__main {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		min-width: 0;
+	}
+
+	.layout__header {
+		flex-shrink: 0;
+	}
+
+	.layout__content {
 		display: grid;
 		flex: 1;
 		overflow: hidden;
@@ -58,10 +92,6 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-	}
-
-	.layout__panel--left {
-		background: var(--ed-surface-1);
 	}
 
 	.layout__panel--center {
