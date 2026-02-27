@@ -6,10 +6,7 @@ import { baseConfig } from '@refrakt-md/theme-base';
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
-	'Diagram',                      // needs Mermaid library
 	'Nav', 'NavGroup', 'NavItem',   // needs RfContext.pages
-	'Map', 'MapPin',                // needs Leaflet library
-	'Sandbox',                      // needs runtime eval
 ]);
 
 /**
