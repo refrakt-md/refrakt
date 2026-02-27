@@ -132,9 +132,13 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (readOnly) return;
-		if (e.key === 'Escape' && (activeIndex !== null || editingFrontmatter)) {
-			activeIndex = null;
-			editingFrontmatter = false;
+		if (e.key === 'Escape') {
+			if (showInsertMenu) {
+				closeInsertMenu();
+			} else if (activeIndex !== null || editingFrontmatter) {
+				activeIndex = null;
+				editingFrontmatter = false;
+			}
 		}
 	}
 
@@ -212,6 +216,24 @@
 	// ── Insert block menu ────────────────────────────────────────
 
 	let showInsertMenu = $state(false);
+	let insertAtIndex: number | null = $state(null);
+
+	function openInsertAt(index: number) {
+		insertAtIndex = index;
+		showInsertMenu = true;
+	}
+
+	function closeInsertMenu() {
+		showInsertMenu = false;
+		insertAtIndex = null;
+	}
+
+	function handleClickOutside(e: MouseEvent) {
+		if (!showInsertMenu) return;
+		const target = e.target as HTMLElement;
+		if (target.closest('.insert-menu--floating') || target.closest('.block-editor__insert-dot')) return;
+		closeInsertMenu();
+	}
 
 	function insertBlock(type: 'heading' | 'paragraph' | 'fence' | 'hr' | 'rune', runeName?: string) {
 		let newBlock: ParsedBlock;
@@ -304,7 +326,9 @@
 			}
 		}
 
-		blocks = [...blocks, newBlock];
+		const pos = insertAtIndex ?? blocks.length;
+		blocks = [...blocks.slice(0, pos), newBlock, ...blocks.slice(pos)];
+		insertAtIndex = null;
 		showInsertMenu = false;
 		syncToSource();
 	}
@@ -321,7 +345,7 @@
 	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} onmousedown={handleClickOutside} />
 
 <div class="block-editor">
 	{#if blocks.length === 0 && !readOnly}
@@ -333,13 +357,13 @@
 				<line x1="14" y1="30" x2="22" y2="30" />
 			</svg>
 			<span class="block-editor__empty-text">No content blocks yet</span>
-			<span class="block-editor__empty-hint">Click "Add block" below to start building</span>
+			<span class="block-editor__empty-hint">Click a + dot in the rail to add blocks</span>
 		</div>
 	{/if}
 
 	<div class="block-editor__stage" class:editing={!readOnly && (activeIndex !== null || editingFrontmatter)}>
 		<!-- Scrollable list + rail area -->
-		<div class="block-editor__scroll">
+		<div class="block-editor__scroll" class:has-rail={!readOnly}>
 			<div class="block-editor__list-wrap">
 				<!-- Frontmatter summary header (blocks mode only) -->
 				{#if !readOnly}
@@ -362,6 +386,85 @@
 							Edit
 						</button>
 					</div>
+				{/if}
+
+				{#snippet insertMenuContent()}
+					<div class="insert-menu__section">
+						<span class="insert-menu__label">Content</span>
+						<div class="insert-menu__grid">
+							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<path d="M3 3v10M13 3v10M3 8h10" />
+								</svg>
+								Heading
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="2" y1="4" x2="14" y2="4" />
+									<line x1="2" y1="8" x2="14" y2="8" />
+									<line x1="2" y1="12" x2="10" y2="12" />
+								</svg>
+								Paragraph
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="5 4 2 8 5 12" />
+									<polyline points="11 4 14 8 11 12" />
+								</svg>
+								Code Block
+							</button>
+							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
+								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="2" y1="8" x2="14" y2="8" />
+								</svg>
+								Divider
+							</button>
+						</div>
+					</div>
+					{#each [...runesByCategory.entries()] as [category, categoryRunes]}
+						<div class="insert-menu__section">
+							<span class="insert-menu__label">{category}</span>
+							<div class="insert-menu__grid">
+								{#each categoryRunes as rune}
+									<button
+										class="insert-menu__btn insert-menu__btn--rune"
+										onclick={() => insertBlock('rune', rune.name)}
+									>
+										<span class="insert-menu__rune-dot"></span>
+										<span class="insert-menu__rune-info">
+											<span class="insert-menu__rune-name">{rune.name}</span>
+											{#if rune.description}
+												<span class="insert-menu__rune-desc">{rune.description}</span>
+											{/if}
+										</span>
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/each}
+					<button class="insert-menu__close" onclick={closeInsertMenu}>&times; Close</button>
+				{/snippet}
+
+				{#snippet insertZone(pos: number)}
+					<div class="block-editor__insert-zone">
+						<div class="block-editor__insert-zone-spacer"></div>
+						<button
+							class="block-editor__insert-dot"
+							onclick={() => openInsertAt(pos)}
+							title="Insert block"
+						>
+							<span class="block-editor__dot-icon"></span>
+						</button>
+						{#if showInsertMenu && insertAtIndex === pos}
+							<div class="insert-menu insert-menu--floating">
+								{@render insertMenuContent()}
+							</div>
+						{/if}
+					</div>
+				{/snippet}
+
+				{#if !readOnly && showInsertMenuProp}
+					{@render insertZone(0)}
 				{/if}
 
 				{#each blocks as block, i (block.id)}
@@ -393,76 +496,10 @@
 							</button>
 						{/if}
 					</div>
+					{#if !readOnly && showInsertMenuProp}
+						{@render insertZone(i + 1)}
+					{/if}
 				{/each}
-
-				<!-- Insert block bar (blocks mode only) -->
-				{#if !readOnly && showInsertMenuProp}
-					<div class="block-editor__insert">
-						{#if showInsertMenu}
-							<div class="insert-menu">
-								<div class="insert-menu__section">
-									<span class="insert-menu__label">Content</span>
-									<div class="insert-menu__grid">
-										<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
-											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-												<path d="M3 3v10M13 3v10M3 8h10" />
-											</svg>
-											Heading
-										</button>
-										<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
-											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-												<line x1="2" y1="4" x2="14" y2="4" />
-												<line x1="2" y1="8" x2="14" y2="8" />
-												<line x1="2" y1="12" x2="10" y2="12" />
-											</svg>
-											Paragraph
-										</button>
-										<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
-											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-												<polyline points="5 4 2 8 5 12" />
-												<polyline points="11 4 14 8 11 12" />
-											</svg>
-											Code Block
-										</button>
-										<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
-											<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-												<line x1="2" y1="8" x2="14" y2="8" />
-											</svg>
-											Divider
-										</button>
-									</div>
-								</div>
-								{#each [...runesByCategory.entries()] as [category, runes]}
-									<div class="insert-menu__section">
-										<span class="insert-menu__label">{category}</span>
-										<div class="insert-menu__grid">
-											{#each runes as rune}
-												<button
-													class="insert-menu__btn insert-menu__btn--rune"
-													onclick={() => insertBlock('rune', rune.name)}
-												>
-													<span class="insert-menu__rune-dot"></span>
-													<span class="insert-menu__rune-info">
-														<span class="insert-menu__rune-name">{rune.name}</span>
-														{#if rune.description}
-															<span class="insert-menu__rune-desc">{rune.description}</span>
-														{/if}
-													</span>
-												</button>
-											{/each}
-										</div>
-									</div>
-								{/each}
-								<button class="insert-menu__close" onclick={() => { showInsertMenu = false; }}>&times; Close</button>
-							</div>
-						{:else}
-							<button
-								class="block-editor__add-btn"
-								onclick={() => { showInsertMenu = true; }}
-							>+ Add block</button>
-						{/if}
-					</div>
-				{/if}
 			</div>
 		</div>
 
@@ -515,13 +552,40 @@
 		transition: margin-right var(--ed-transition-slow);
 	}
 
-
 	.block-editor__list-wrap {
 		width: 100%;
 		padding: var(--ed-space-4);
+		padding-right: 0;
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
+	}
+
+	/* Rail column: vertical border + diagonal stripe background */
+	.block-editor__scroll.has-rail .block-editor__list-wrap {
+		background-origin: content-box;
+		background-clip: border-box;
+		background:
+			/* Vertical border at left edge of rail */
+			linear-gradient(to right,
+				transparent calc(100% - 91px),
+				var(--ed-border-default) calc(100% - 91px),
+				var(--ed-border-default) calc(100% - 90px),
+				transparent calc(100% - 90px)
+			),
+			/* Solid background masking stripes in the content area */
+			linear-gradient(to right,
+				var(--ed-surface-0) calc(100% - 90px),
+				transparent calc(100% - 90px)
+			),
+			/* Stripe pattern */
+			repeating-linear-gradient(
+				-45deg,
+				transparent,
+				transparent 4px,
+				rgba(0, 0, 0, 0.04) 4px,
+				rgba(0, 0, 0, 0.04) 5px
+			);
 	}
 
 	/* Frontmatter summary header */
@@ -612,20 +676,18 @@
 
 	/* Rail labels — aligned to the right of each block */
 	.block-editor__rail-label {
-		position: relative;
 		width: 80px;
 		flex-shrink: 0;
 		margin-left: var(--ed-space-5);
-		padding: 0.5rem 0.6rem 0.5rem 0.75rem;
+		padding: 0.5rem 0.6rem 0.5rem 1rem;
 		font-size: 10px;
 		font-weight: 600;
 		color: var(--ed-text-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
 		text-align: left;
-		background: none;
+		background: transparent;
 		border: none;
-		border-left: 1px solid var(--ed-border-subtle);
 		cursor: pointer;
 		white-space: nowrap;
 		overflow: hidden;
@@ -635,38 +697,6 @@
 		line-height: 1.3;
 	}
 
-	/* Gap in the line at the label — cut the border around the text */
-	.block-editor__rail-label::before {
-		content: '';
-		position: absolute;
-		left: -1px;
-		top: 0;
-		height: 4px;
-		width: 1px;
-		background: var(--ed-surface-0);
-	}
-
-	.block-editor__rail-label::after {
-		content: '';
-		position: absolute;
-		left: -1px;
-		top: calc(0.5rem + 1.3em + 2px);
-		bottom: 0;
-		width: 1px;
-		background: var(--ed-surface-0);
-	}
-
-	/* First label: hide top gap masker */
-	.block-editor__row:first-of-type .block-editor__rail-label::before {
-		top: 0;
-		height: 0.5rem;
-	}
-
-	/* Last label: extend bottom gap masker */
-	.block-editor__row:last-of-type .block-editor__rail-label::after {
-		bottom: 0;
-	}
-
 	.block-editor__rail-label:hover {
 		color: var(--ed-text-secondary);
 	}
@@ -674,6 +704,96 @@
 	.block-editor__rail-label.active {
 		color: var(--ed-accent);
 		font-weight: 700;
+	}
+
+	/* Insert zones — between blocks in the rail */
+	.block-editor__insert-zone {
+		display: flex;
+		align-items: center;
+		height: 12px;
+		position: relative;
+		overflow: visible;
+		z-index: 2;
+	}
+
+	.block-editor__insert-zone-spacer {
+		flex: 1;
+	}
+
+	.block-editor__insert-dot {
+		width: 80px;
+		flex-shrink: 0;
+		margin-left: var(--ed-space-5);
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		height: 100%;
+		padding: 0;
+		position: relative;
+		overflow: visible;
+	}
+
+	.block-editor__dot-icon {
+		position: absolute;
+		left: 1px;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--ed-text-muted);
+		transition: width var(--ed-transition-fast), height var(--ed-transition-fast), background var(--ed-transition-fast);
+	}
+
+	.block-editor__insert-dot:hover .block-editor__dot-icon {
+		width: 18px;
+		height: 18px;
+		background: var(--ed-accent);
+	}
+
+	.block-editor__dot-icon::before,
+	.block-editor__dot-icon::after {
+		content: '';
+		position: absolute;
+		background: white;
+		border-radius: 1px;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast);
+	}
+
+	.block-editor__dot-icon::before {
+		width: 10px;
+		height: 1.5px;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	.block-editor__dot-icon::after {
+		width: 1.5px;
+		height: 10px;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	.block-editor__insert-dot:hover .block-editor__dot-icon::before,
+	.block-editor__insert-dot:hover .block-editor__dot-icon::after {
+		opacity: 1;
+	}
+
+	/* Floating insert menu — anchored to the insert zone */
+	.insert-menu--floating {
+		position: absolute;
+		right: 0;
+		top: 100%;
+		z-index: 20;
+		width: 360px;
+		max-height: 400px;
+		overflow-y: auto;
 	}
 
 	/* Edit panel — fixed to right edge of viewport, outside the card */
@@ -721,29 +841,7 @@
 		font-size: var(--ed-text-sm);
 	}
 
-	/* Insert block controls */
-	.block-editor__insert {
-		padding-top: var(--ed-space-1);
-	}
-
-	.block-editor__add-btn {
-		width: 100%;
-		padding: var(--ed-space-2);
-		border: 2px dashed var(--ed-border-default);
-		border-radius: var(--ed-radius-md);
-		background: transparent;
-		color: var(--ed-text-muted);
-		font-size: var(--ed-text-sm);
-		cursor: pointer;
-		transition: border-color var(--ed-transition-fast), color var(--ed-transition-fast);
-	}
-
-	.block-editor__add-btn:hover {
-		border-color: var(--ed-accent);
-		color: var(--ed-accent);
-	}
-
-	/* Insert menu */
+	/* Insert menu (shared between floating and any future inline) */
 	.insert-menu {
 		border: 1px solid var(--ed-border-default);
 		border-radius: 10px;
