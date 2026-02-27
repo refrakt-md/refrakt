@@ -99,9 +99,7 @@ The root tag gets `typeof="ComponentName"`:
 <section typeof="Hint" property="contentSection">
 ```
 
-Two consumers use this:
-1. **Identity transform engine** — looks up the rune config by typeof name to apply BEM classes, modifiers, and structure
-2. **Svelte Renderer** — looks up a registered component by typeof name. If found, renders the component; otherwise renders generic HTML
+The identity transform engine uses this to look up the rune config by typeof name, applying BEM classes, modifiers, and structure. The Renderer then outputs the transformed tree as generic HTML.
 
 ## Type definitions
 

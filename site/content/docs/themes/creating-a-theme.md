@@ -108,8 +108,7 @@ Configure `package.json` with the required exports:
   "dependencies": {
     "@refrakt-md/theme-base": "0.4.0",
     "@refrakt-md/transform": "0.4.0",
-    "@refrakt-md/types": "0.4.0",
-    "@refrakt-md/svelte": "0.4.0"
+    "@refrakt-md/types": "0.4.0"
   }
 }
 ```
@@ -118,7 +117,7 @@ The key exports:
 - `.` — Your CSS entry point (tokens + rune styles)
 - `./transform` — Your theme config, compiled to JS
 - `./manifest` — Theme metadata
-- `./svelte` — Svelte adapter (registry re-export)
+- `./svelte` — Svelte adapter (element overrides, behaviors)
 
 ### Write your config
 
@@ -379,25 +378,15 @@ Create `index.css` that imports everything:
 
 ### SvelteKit integration
 
-Create `svelte/index.ts` to re-export the component registry from theme-base:
+Create `svelte/index.ts` to re-export element overrides and behaviors from theme-base:
 
 ```typescript
+export { elements } from '@refrakt-md/theme-base/svelte/elements';
+export { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
 export { registry } from '@refrakt-md/theme-base/svelte/registry';
 ```
 
-This gives SvelteKit sites access to the interactive components (Chart, Map, Diagram, etc.) that are shared across all themes.
-
-If your theme needs to override or add components, you can create your own registry:
-
-```typescript
-import { registry as baseRegistry } from '@refrakt-md/theme-base/svelte/registry';
-import MyCustomComponent from './components/MyComponent.svelte';
-
-export const registry = {
-  ...baseRegistry,
-  'MyRune': MyCustomComponent,
-};
-```
+The element overrides provide enhanced rendering for standard HTML elements like `<table>` and `<pre>`. The behaviors action wires up progressive enhancement. The registry is empty by default but available as an extension point if you need custom Svelte components for specific runes.
 
 ### Define layouts
 

@@ -137,13 +137,13 @@ Don't inline item logic in the parent's `transform()`. Separate item models:
 |------|-------------|---------|
 | **Identity transform + CSS** | Layout, styling, structural decoration | Grid, Hint, Recipe, Feature, Hero |
 | **Behaviors library** | Progressive enhancement of native HTML | Accordion, Tabs, DataTable, Form, Reveal |
-| **Svelte component** | External libraries, complex rendering | Chart, Map, Diagram, Sandbox |
+| **postTransform hooks** | Data rendering, custom elements | Chart, Map, Diagram, Comparison, Sandbox |
 
 **Default to CSS.** About 75% of runes need nothing beyond the identity transform and CSS. If you can achieve the interaction with `:target`, `:checked`, sibling selectors, or scroll-driven effects, you don't need JavaScript.
 
 **Use behaviors** for progressive enhancement. The behaviors library adds ARIA attributes, keyboard navigation, and event listeners to existing HTML. The rune still works without JavaScript — it just gets enhanced.
 
-**Use a Svelte component** only when you need an external library (syntax highlighting, chart rendering, map tiles) or complex client-side state that can't be expressed in CSS.
+**Use postTransform hooks** when you need to generate complex HTML structure from metadata, produce custom element tags for client-side initialization, or integrate with external libraries. These hooks run during the identity transform and keep rendering framework-agnostic.
 
 ---
 
