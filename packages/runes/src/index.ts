@@ -56,6 +56,9 @@ import { typography } from './tags/typography.js';
 import { spacing } from './tags/spacing.js';
 import { designContext } from './tags/design-context.js';
 import { icon } from './tags/icon.js';
+import { pullquote } from './tags/pullquote.js';
+import { textblock } from './tags/textblock.js';
+import { mediatext } from './tags/mediatext.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -585,6 +588,30 @@ export const runes = {
     description: 'Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection',
     reinterprets: {},
     type: schema.DesignContext,
+  }),
+  pullquote: defineRune({
+    name: 'pullquote',
+    aliases: ['pull-quote'],
+    schema: pullquote,
+    description: 'Decorative pull quote for magazine-style emphasis with float and block modes',
+    reinterprets: { blockquote: 'quote text', paragraph: 'quote text' },
+    type: schema.PullQuote,
+  }),
+  textblock: defineRune({
+    name: 'textblock',
+    aliases: ['text-block', 'prose'],
+    schema: textblock,
+    description: 'Text formatting block with drop caps, multi-column layout, lead paragraphs, and alignment control',
+    reinterprets: { paragraph: 'formatted text' },
+    type: schema.TextBlock,
+  }),
+  mediatext: defineRune({
+    name: 'mediatext',
+    aliases: ['media-text'],
+    schema: mediatext,
+    description: 'Image and text side by side with configurable ratio and optional text wrapping',
+    reinterprets: { image: 'media image', paragraph: 'body text' },
+    type: schema.MediaText,
   }),
   icon: defineRune({
     name: 'icon',

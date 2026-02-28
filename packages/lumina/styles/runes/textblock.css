@@ -1,0 +1,64 @@
+/* TextBlock */
+.rf-textblock {
+	margin: 1.5rem 0;
+}
+.rf-textblock__body {
+	display: block;
+}
+
+/* Drop cap — decorative first letter */
+.rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
+	float: left;
+	font-size: 3.5em;
+	font-weight: 700;
+	line-height: 0.8;
+	padding-right: 0.1em;
+	margin-top: 0.05em;
+	color: var(--rf-color-primary);
+	font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Lead paragraph — emphasized opening text */
+.rf-textblock--lead .rf-textblock__body > p:first-child {
+	font-size: 1.25rem;
+	line-height: 1.6;
+	font-weight: 400;
+	color: var(--rf-color-text);
+}
+
+/* Multi-column text flow */
+.rf-textblock[data-columns="2"] .rf-textblock__body {
+	column-count: 2;
+	column-gap: 2rem;
+	column-rule: 1px solid var(--rf-color-border);
+}
+.rf-textblock[data-columns="3"] .rf-textblock__body {
+	column-count: 3;
+	column-gap: 2rem;
+	column-rule: 1px solid var(--rf-color-border);
+}
+.rf-textblock[data-columns="4"] .rf-textblock__body {
+	column-count: 4;
+	column-gap: 2rem;
+	column-rule: 1px solid var(--rf-color-border);
+}
+
+/* Text alignment */
+.rf-textblock--center .rf-textblock__body { text-align: center; }
+.rf-textblock--right .rf-textblock__body { text-align: right; }
+.rf-textblock--justify .rf-textblock__body { text-align: justify; }
+
+/* Responsive — columns collapse on smaller screens */
+@media (max-width: 768px) {
+	.rf-textblock[data-columns="3"] .rf-textblock__body,
+	.rf-textblock[data-columns="4"] .rf-textblock__body {
+		column-count: 2;
+	}
+}
+@media (max-width: 480px) {
+	.rf-textblock[data-columns="2"] .rf-textblock__body,
+	.rf-textblock[data-columns="3"] .rf-textblock__body,
+	.rf-textblock[data-columns="4"] .rf-textblock__body {
+		column-count: 1;
+	}
+}
