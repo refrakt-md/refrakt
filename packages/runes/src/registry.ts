@@ -82,6 +82,9 @@ import {
   Typography, TypographyComponent,
   Spacing, SpacingComponent,
   DesignContext, DesignContextComponent,
+  PullQuote, PullQuoteComponent,
+  TextBlock, TextBlockComponent,
+  MediaText, MediaTextComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -181,4 +184,7 @@ export const schema = {
   Typography: useSchema(Typography).defineType<TypographyComponent>('Typography'),
   Spacing: useSchema(Spacing).defineType<SpacingComponent>('Spacing'),
   DesignContext: useSchema(DesignContext).defineType<DesignContextComponent>('DesignContext'),
+  PullQuote: useSchema(PullQuote).defineType<PullQuoteComponent>('PullQuote'),
+  TextBlock: useSchema(TextBlock).defineType<TextBlockComponent>('TextBlock'),
+  MediaText: useSchema(MediaText).defineType<MediaTextComponent>('MediaText'),
 }
