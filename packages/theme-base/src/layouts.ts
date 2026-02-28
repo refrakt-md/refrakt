@@ -8,6 +8,8 @@ const CLOSE_X_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="cur
 
 const HAMBURGER_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>';
 
+const SEARCH_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+
 // ─── Shared Chrome ────────────────────────────────────────────────────
 
 const menuButton: LayoutStructureEntry = {
@@ -32,15 +34,40 @@ const closeButton: LayoutStructureEntry = {
 	svg: CLOSE_X_SVG,
 };
 
+const searchButton: LayoutStructureEntry = {
+	tag: 'button',
+	ref: 'search-trigger',
+	attrs: {
+		class: 'rf-search-trigger',
+		'aria-label': 'Search',
+		'data-search-trigger': '',
+	},
+	svg: SEARCH_SVG,
+	children: [
+		{
+			tag: 'span',
+			ref: 'search-label',
+			attrs: { class: 'rf-search-trigger__label' },
+			children: ['Search'],
+		} as LayoutStructureEntry,
+		{
+			tag: 'kbd',
+			ref: 'search-kbd',
+			attrs: { class: 'rf-search-trigger__kbd' },
+		} as LayoutStructureEntry,
+	],
+};
+
 // ─── Default Layout ───────────────────────────────────────────────────
 // Matches DefaultLayout.svelte: header + mobile panel + main content
 
 export const defaultLayout: LayoutConfig = {
 	block: 'default',
-	behaviors: ['mobile-menu'],
+	behaviors: ['mobile-menu', 'search'],
 	chrome: {
 		menuButton,
 		closeButton,
+		searchButton,
 	},
 	slots: {
 		header: {
@@ -52,7 +79,7 @@ export const defaultLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-header__inner',
 					source: 'region:header',
-					children: ['chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:menuButton'],
 				},
 			],
 		},
@@ -86,6 +113,7 @@ export const defaultLayout: LayoutConfig = {
 			tag: 'main',
 			class: 'rf-page-content',
 			source: 'content',
+			attrs: { 'data-pagefind-body': '' },
 		},
 	},
 };
@@ -95,7 +123,7 @@ export const defaultLayout: LayoutConfig = {
 
 export const docsLayout: LayoutConfig = {
 	block: 'docs',
-	behaviors: ['mobile-menu'],
+	behaviors: ['mobile-menu', 'search'],
 	computed: {
 		breadcrumb: {
 			type: 'breadcrumb',
@@ -114,6 +142,7 @@ export const docsLayout: LayoutConfig = {
 	chrome: {
 		menuButton,
 		closeButton,
+		searchButton,
 		hamburger: {
 			tag: 'button',
 			ref: 'toolbar-hamburger',
@@ -135,7 +164,7 @@ export const docsLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-docs-header__inner',
 					source: 'region:header',
-					children: ['chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:menuButton'],
 				},
 			],
 		},
@@ -210,6 +239,7 @@ export const docsLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-docs-content__body',
 					source: 'content',
+					attrs: { 'data-pagefind-body': '' },
 				},
 				{
 					tag: 'aside',
@@ -228,10 +258,11 @@ export const docsLayout: LayoutConfig = {
 
 export const blogArticleLayout: LayoutConfig = {
 	block: 'blog-article',
-	behaviors: ['mobile-menu'],
+	behaviors: ['mobile-menu', 'search'],
 	chrome: {
 		menuButton,
 		closeButton,
+		searchButton,
 		articleHeader: {
 			tag: 'header',
 			ref: 'article-header',
@@ -285,7 +316,7 @@ export const blogArticleLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-blog-header__inner',
 					source: 'region:header',
-					children: ['chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:menuButton'],
 				},
 			],
 		},
@@ -329,6 +360,7 @@ export const blogArticleLayout: LayoutConfig = {
 							tag: 'div',
 							class: 'rf-blog-article__body',
 							source: 'content',
+							attrs: { 'data-pagefind-body': '' },
 						},
 					],
 				},
