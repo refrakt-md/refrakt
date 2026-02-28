@@ -59,6 +59,7 @@ export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from
 export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
 export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
+export { Mockup, MockupComponent } from './schema/mockup.js';
 export { Preview, PreviewComponent } from './schema/preview.js';
 export { Sandbox, SandboxComponent } from './schema/sandbox.js';
 export { Symbol, SymbolComponent, SymbolGroup, SymbolGroupComponent, SymbolMember, SymbolMemberComponent } from './schema/symbol.js';

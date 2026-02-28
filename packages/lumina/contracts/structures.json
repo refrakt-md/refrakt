@@ -1133,6 +1133,28 @@
 				}
 			}
 		},
+		"Mockup": {
+			"block": "mockup",
+			"root": ".rf-mockup",
+			"dataRune": "mockup",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"device": {
+					"source": "meta",
+					"default": "browser",
+					"classPattern": ".rf-mockup--{value}",
+					"dataAttribute": "data-device"
+				},
+				"color": {
+					"source": "meta",
+					"default": "dark",
+					"classPattern": ".rf-mockup--{value}",
+					"dataAttribute": "data-color"
+				}
+			}
+		},
 		"Sandbox": {
 			"block": "sandbox",
 			"root": ".rf-sandbox",

@@ -47,6 +47,7 @@ import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
 import { map, mapPin } from './tags/map.js';
+import { mockup } from './tags/mockup.js';
 import { preview } from './tags/preview.js';
 import { sandbox } from './tags/sandbox.js';
 import { symbol, symbolGroup, symbolMember } from './tags/symbol.js';
@@ -515,6 +516,13 @@ export const runes = {
     schema: mapPin,
     description: 'Individual map pin with location data',
     type: schema.MapPin,
+  }),
+  mockup: defineRune({
+    name: 'mockup',
+    schema: mockup,
+    description: 'Device frame chrome (phone, tablet, browser, laptop) wrapping content for realistic device context',
+    reinterprets: {},
+    type: schema.Mockup,
   }),
   preview: defineRune({
     name: 'preview',
