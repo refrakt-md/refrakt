@@ -7,7 +7,7 @@ import type {
 	ComputedContent,
 } from './types.js';
 import { isTag, makeTag } from './helpers.js';
-import { buildBreadcrumb, buildToc, buildPrevNext } from './computed.js';
+import { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
 
 /**
  * Transform a declarative layout config + page data into a SerializedTag tree.
@@ -102,6 +102,10 @@ function resolveComputed(
 				if (region) {
 					result = buildPrevNext(region.content, page.url, page.pages, prefix);
 				}
+				break;
+			}
+			case 'version-switcher': {
+				result = buildVersionSwitcher(page.url, page.pages, page.frontmatter, prefix);
 				break;
 			}
 		}
