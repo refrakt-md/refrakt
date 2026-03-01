@@ -17,6 +17,13 @@ export interface RefraktConfig {
 	};
 	/** Custom icon SVGs — merged into the theme's global icon group (icon name → SVG string) */
 	icons?: Record<string, string>;
+	/** Community rune packages to load (npm package names) */
+	packages?: string[];
+	/** Rune resolution configuration */
+	runes?: {
+		/** Resolve name collisions between community packages: rune name → preferred package name */
+		prefer?: Record<string, string>;
+	};
 }
 
 /** Theme manifest — the universal contract between content and rendering */

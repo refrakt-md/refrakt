@@ -78,5 +78,14 @@ export type {
   ComponentDefinition,
 } from './theme.js';
 
+// Community rune package types
+export type {
+  RunePackage,
+  RunePackageEntry,
+  RunePackageAttribute,
+  RuneExtension,
+  RunePackageThemeConfig,
+} from './package.js';
+
 // Serialized tree types
 export type { SerializedTag, RendererNode } from './serialized.js';

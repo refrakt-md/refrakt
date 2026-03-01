@@ -1,5 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import { ContentTree } from './content-tree.js';
@@ -29,10 +29,16 @@ export interface SitePage {
   seo: PageSeo;
 }
 
-function transformContent(content: string, path: string, icons?: Record<string, Record<string, string>>): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
+function transformContent(
+  content: string,
+  path: string,
+  icons?: Record<string, Record<string, string>>,
+  additionalTags?: Record<string, Schema>,
+): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
-  const config = { tags, nodes, variables: {
+  const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
+  const config = { tags: mergedTags, nodes, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content,
     ...(icons ? { __icons: icons } : {}),
   } };
@@ -42,7 +48,12 @@ function transformContent(content: string, path: string, icons?: Record<string, 
 /**
  * Load a content directory and resolve all pages, routes, layouts, and navigation.
  */
-export async function loadContent(dirPath: string, basePath: string = '/', icons?: Record<string, Record<string, string>>): Promise<Site> {
+export async function loadContent(
+  dirPath: string,
+  basePath: string = '/',
+  icons?: Record<string, Record<string, string>>,
+  additionalTags?: Record<string, Schema>,
+): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
   const pages: SitePage[] = [];
@@ -51,7 +62,7 @@ export async function loadContent(dirPath: string, basePath: string = '/', icons
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
-    const { renderable, headings } = transformContent(content, route.url, icons);
+    const { renderable, headings } = transformContent(content, route.url, icons, additionalTags);
     const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
 
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
