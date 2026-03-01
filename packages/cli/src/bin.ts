@@ -202,17 +202,47 @@ function runInspect(inspectArgs: string[]): void {
 		import('@refrakt-md/transform'),
 		import('@refrakt-md/theme-base'),
 		import('@markdoc/markdoc'),
-	]).then(([
+	]).then(async ([
 		{ inspectCommand },
-		{ runes, tags, nodes, serializeTree, extractHeadings },
+		runesModule,
 		{ createTransform, renderToHtml, extractSelectors },
-		{ baseConfig },
+		themeBaseModule,
 		markdocModule,
 	]) => {
+		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages } = runesModule;
+		const { baseConfig, mergeThemeConfig } = themeBaseModule;
 		const Markdoc = markdocModule.default ?? markdocModule;
+
+		let mergedRunes = runes;
+		let mergedTags = tags;
+		let mergedConfig = baseConfig;
+
+		// Try loading community packages from refrakt.config.json
+		try {
+			const { loadRefraktConfigFile } = await import('./config-file.js');
+			const { config } = loadRefraktConfigFile();
+			if (config.packages && config.packages.length > 0) {
+				const coreRuneNames = new Set(Object.keys(runes));
+				const loaded = await Promise.all(
+					config.packages.map((name: string) => loadRunePackage(name))
+				);
+				const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+				mergedRunes = { ...runes, ...merged.runes };
+				mergedTags = { ...tags, ...merged.tags };
+				if (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0) {
+					mergedConfig = mergeThemeConfig(baseConfig, {
+						runes: merged.themeRunes,
+						icons: merged.themeIcons,
+					});
+				}
+			}
+		} catch {
+			// No config file or community packages — use core runes only
+		}
+
 		return inspectCommand(
 			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
-			{ Markdoc, runes, tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig },
+			{ Markdoc, runes: mergedRunes, tags: mergedTags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: mergedConfig },
 		);
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
