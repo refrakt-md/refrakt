@@ -68,6 +68,13 @@ export { Typography, TypographySpecimen, TypographyComponent } from './schema/ty
 export { Spacing, SpacingScale, SpacingRadius, SpacingShadow, SpacingComponent } from './schema/spacing.js';
 export { DesignContext, DesignContextComponent } from './schema/design-context.js';
 export type { DesignTokens } from './schema/design-context.js';
+export { StorySection, StorySectionComponent } from './schema/story-section.js';
+export { Character, CharacterComponent } from './schema/character.js';
+export { Realm, RealmComponent } from './schema/realm.js';
+export { Lore, LoreComponent } from './schema/lore.js';
+export { Faction, FactionComponent } from './schema/faction.js';
+export { Plot, PlotComponent, Beat, BeatComponent } from './schema/plot.js';
+export { Bond, BondComponent } from './schema/bond.js';
 
 // Theme system types
 export type {

@@ -1,0 +1,81 @@
+/* Faction */
+.rf-faction {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-faction__badge {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+.rf-faction__type-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rf-radius-full);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	background: var(--rf-color-muted-bg);
+	color: var(--rf-color-muted);
+}
+.rf-faction__alignment-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rf-radius-full);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	background: var(--rf-color-muted-bg);
+	color: var(--rf-color-muted);
+}
+.rf-faction__size-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rf-radius-full);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	background: var(--rf-color-muted-bg);
+	color: var(--rf-color-muted);
+}
+.rf-faction__sections {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.rf-faction__content {
+	/* content wrapper */
+}
+.rf-faction__content ul,
+.rf-faction__content ol {
+	padding-left: 1.5rem;
+}
+.rf-faction > span[property="name"] {
+	display: block;
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+	color: var(--rf-color-heading);
+}
+
+/* Faction Section */
+.rf-faction-section {
+	padding: 0.75rem 0;
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-faction-section__header {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+	color: var(--rf-color-heading);
+}
+.rf-faction-section__body ul,
+.rf-faction-section__body ol {
+	padding-left: 1.5rem;
+}

@@ -496,6 +496,74 @@ Free forever, community-driven, and fully extensible.
 **Send Message**
 {% /form %}`,
 
+	character: `{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
+## Backstory
+
+Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necromancy at a young age.
+
+## Abilities
+
+- Bone conjuration
+- Spirit binding
+- Plague whisper
+{% /character %}`,
+
+	realm: `{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
+![Scene](/images/rivendell.jpg)
+
+The Last Homely House East of the Sea.
+
+## Geography
+
+A hidden valley in the foothills of the Misty Mountains.
+
+## Notable Features
+
+- Hall of Fire
+- Council chamber
+- Extensive libraries
+{% /realm %}`,
+
+	lore: `{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
+An ancient text found in the ruins of the First Temple.
+
+> *When darkness covers the land and the last star fades,
+> one shall rise from forgotten blood to forge the world anew.*
+
+The prophecy has been interpreted differently by various factions throughout history.
+{% /lore %}`,
+
+	faction: `{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
+A prestigious order of knights sworn to protect the realm.
+
+## Ranks
+
+- Initiate
+- Knight
+- Commander
+- Grand Master
+
+## Holdings
+
+Their fortress overlooks the capital city from the northern cliffs.
+{% /faction %}`,
+
+	plot: `{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
+The heroes must recover the lost crown before the solstice.
+
+- [x] **Discovery** — Find the ancient map in the library
+- [x] **Departure** — Leave the city under cover of darkness
+- [>] **Trial** — Cross the Whispering Wastes
+- [ ] **Confrontation** — Face the guardian of the vault
+- [-] **Return** — Bring the crown back to the capital
+{% /plot %}`,
+
+	bond: `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
+Forged during the Council of Elrond, their bond was tested through the
+War of the Ring. Despite their different backgrounds, they developed
+a deep mutual respect.
+{% /bond %}`,
+
 	storyboard: `{% storyboard columns=3 style="clean" %}
 ![Research](/images/step-research.png)
 
