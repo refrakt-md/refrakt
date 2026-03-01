@@ -56,6 +56,12 @@ import { typography } from './tags/typography.js';
 import { spacing } from './tags/spacing.js';
 import { designContext } from './tags/design-context.js';
 import { icon } from './tags/icon.js';
+import { character, characterSection } from './tags/character.js';
+import { realm, realmSection } from './tags/realm.js';
+import { lore } from './tags/lore.js';
+import { faction, factionSection } from './tags/faction.js';
+import { plot, beat } from './tags/plot.js';
+import { bond } from './tags/bond.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -591,6 +597,83 @@ export const runes = {
     schema: icon,
     description: 'Inline icon resolved by name from the theme icon registry. Self-closing.',
     reinterprets: {},
+  }),
+  character: defineRune({
+    name: 'character',
+    aliases: ['npc', 'pc'],
+    schema: character,
+    description: 'Character profile with portrait, role, status, and sectioned details. Headings become sections.',
+    reinterprets: { heading: 'character detail section', paragraph: 'description', image: 'portrait', list: 'traits or inventory' },
+    seoType: 'Person',
+    type: schema.Character,
+  }),
+  'character-section': defineRune({
+    name: 'character-section',
+    schema: characterSection,
+    description: 'Individual section within a character profile',
+    type: schema.CharacterSection,
+  }),
+  realm: defineRune({
+    name: 'realm',
+    aliases: ['location', 'place'],
+    schema: realm,
+    description: 'Location or realm description with scene image, scale, and sectioned details. Headings become sections.',
+    reinterprets: { heading: 'realm detail section', paragraph: 'description', image: 'scene image', list: 'features or inhabitants' },
+    seoType: 'Place',
+    type: schema.Realm,
+  }),
+  'realm-section': defineRune({
+    name: 'realm-section',
+    schema: realmSection,
+    description: 'Individual section within a realm description',
+    type: schema.RealmSection,
+  }),
+  lore: defineRune({
+    name: 'lore',
+    aliases: ['legend', 'myth'],
+    schema: lore,
+    description: 'Lore entry for world-building details, legends, or historical records. Supports spoiler mode.',
+    reinterprets: { heading: 'lore title', paragraph: 'content', blockquote: 'in-world quote' },
+    seoType: 'Article',
+    type: schema.Lore,
+  }),
+  faction: defineRune({
+    name: 'faction',
+    aliases: ['guild', 'order'],
+    schema: faction,
+    description: 'Faction or organization within a story world with alignment, size, and sectioned details.',
+    reinterprets: { heading: 'faction detail section', paragraph: 'description', list: 'members or resources' },
+    seoType: 'Organization',
+    type: schema.Faction,
+  }),
+  'faction-section': defineRune({
+    name: 'faction-section',
+    schema: factionSection,
+    description: 'Individual section within a faction description',
+    type: schema.FactionSection,
+  }),
+  plot: defineRune({
+    name: 'plot',
+    aliases: ['storyline', 'arc'],
+    schema: plot,
+    description: 'Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints.',
+    reinterprets: { heading: 'plot title', paragraph: 'summary', list: 'beat checkpoints (with status markers)' },
+    seoType: 'CreativeWork',
+    type: schema.Plot,
+  }),
+  beat: defineRune({
+    name: 'beat',
+    schema: beat,
+    description: 'Individual plot beat within a plot arc',
+    type: schema.Beat,
+  }),
+  bond: defineRune({
+    name: 'bond',
+    aliases: ['relationship'],
+    schema: bond,
+    description: 'Relationship between two named entities with type, status, and directional indicator.',
+    reinterprets: { paragraph: 'relationship description' },
+    type: schema.Bond,
   }),
 };
 

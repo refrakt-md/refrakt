@@ -1,0 +1,104 @@
+/* Character */
+.rf-character {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-character__badge {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+.rf-character__role-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rf-radius-full);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	background: var(--rf-color-muted-bg);
+	color: var(--rf-color-muted);
+}
+.rf-character__status-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rf-radius-full);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	background: var(--rf-color-muted-bg);
+	color: var(--rf-color-muted);
+}
+.rf-character__portrait {
+	float: right;
+	margin-left: 1.5rem;
+	margin-bottom: 1rem;
+	width: 120px;
+	height: 120px;
+	border-radius: var(--rf-radius-full);
+	overflow: hidden;
+}
+.rf-character__portrait img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.rf-character__sections {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.rf-character__content {
+	clear: both;
+}
+.rf-character__content ul,
+.rf-character__content ol {
+	padding-left: 1.5rem;
+}
+.rf-character > span[property="name"] {
+	display: block;
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+	color: var(--rf-color-heading);
+}
+
+/* Role variant colors */
+.rf-character[data-role="protagonist"] .rf-character__role-badge {
+	background: var(--rf-color-success-bg);
+	color: var(--rf-color-success);
+}
+.rf-character[data-role="antagonist"] .rf-character__role-badge {
+	background: var(--rf-color-danger-bg);
+	color: var(--rf-color-danger);
+}
+
+/* Status indicators */
+.rf-character[data-status="dead"] .rf-character__status-badge {
+	background: var(--rf-color-danger-bg);
+	color: var(--rf-color-danger);
+}
+.rf-character[data-status="missing"] .rf-character__status-badge {
+	background: var(--rf-color-warning-bg);
+	color: var(--rf-color-warning);
+}
+
+/* Character Section */
+.rf-character-section {
+	padding: 0.75rem 0;
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-character-section__header {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+	color: var(--rf-color-heading);
+}
+.rf-character-section__body ul,
+.rf-character-section__body ol {
+	padding-left: 1.5rem;
+}

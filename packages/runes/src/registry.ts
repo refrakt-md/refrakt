@@ -82,6 +82,14 @@ import {
   Typography, TypographyComponent,
   Spacing, SpacingComponent,
   DesignContext, DesignContextComponent,
+  StorySection, StorySectionComponent,
+  Character, CharacterComponent,
+  Realm, RealmComponent,
+  Lore, LoreComponent,
+  Faction, FactionComponent,
+  Plot, PlotComponent,
+  Beat, BeatComponent,
+  Bond, BondComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -181,4 +189,14 @@ export const schema = {
   Typography: useSchema(Typography).defineType<TypographyComponent>('Typography'),
   Spacing: useSchema(Spacing).defineType<SpacingComponent>('Spacing'),
   DesignContext: useSchema(DesignContext).defineType<DesignContextComponent>('DesignContext'),
+  Character: useSchema(Character).defineType<CharacterComponent>('Character'),
+  CharacterSection: useSchema(StorySection).defineType<StorySectionComponent>('CharacterSection'),
+  Realm: useSchema(Realm).defineType<RealmComponent>('Realm'),
+  RealmSection: useSchema(StorySection).defineType<StorySectionComponent>('RealmSection'),
+  Lore: useSchema(Lore).defineType<LoreComponent>('Lore'),
+  Faction: useSchema(Faction).defineType<FactionComponent>('Faction'),
+  FactionSection: useSchema(StorySection).defineType<StorySectionComponent>('FactionSection'),
+  Plot: useSchema(Plot).defineType<PlotComponent>('Plot'),
+  Beat: useSchema(Beat).defineType<BeatComponent>('Beat'),
+  Bond: useSchema(Bond).defineType<BondComponent>('Bond'),
 }

@@ -1357,6 +1357,387 @@
 					"dataAttribute": "data-title"
 				}
 			}
+		},
+		"Character": {
+			"block": "character",
+			"root": ".rf-character",
+			"dataRune": "character",
+			"childOrder": [
+				"badge",
+				"{content:content}"
+			],
+			"modifiers": {
+				"role": {
+					"source": "meta",
+					"default": "supporting",
+					"classPattern": ".rf-character--{value}",
+					"dataAttribute": "data-role"
+				},
+				"status": {
+					"source": "meta",
+					"default": "alive",
+					"classPattern": ".rf-character--{value}",
+					"dataAttribute": "data-status"
+				},
+				"aliases": {
+					"source": "meta",
+					"classPattern": ".rf-character--{value}",
+					"dataAttribute": "data-aliases"
+				},
+				"tags": {
+					"source": "meta",
+					"classPattern": ".rf-character--{value}",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"badge": {
+					"tag": "div",
+					"selector": ".rf-character__badge",
+					"source": "structure"
+				},
+				"role-badge": {
+					"tag": "span",
+					"selector": ".rf-character__role-badge",
+					"source": "structure",
+					"parent": "badge"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-character__status-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "status"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-character__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"CharacterSection": {
+			"block": "character-section",
+			"root": ".rf-character-section",
+			"dataRune": "charactersection",
+			"parent": "Character",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"header": {
+					"tag": "span",
+					"selector": ".rf-character-section__header",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Realm": {
+			"block": "realm",
+			"root": ".rf-realm",
+			"dataRune": "realm",
+			"childOrder": [
+				"badge",
+				"{content:content}"
+			],
+			"modifiers": {
+				"realmType": {
+					"source": "meta",
+					"default": "place",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-realm-type"
+				},
+				"scale": {
+					"source": "meta",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-scale"
+				},
+				"tags": {
+					"source": "meta",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-tags"
+				},
+				"parent": {
+					"source": "meta",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-parent"
+				}
+			},
+			"elements": {
+				"badge": {
+					"tag": "div",
+					"selector": ".rf-realm__badge",
+					"source": "structure"
+				},
+				"type-badge": {
+					"tag": "span",
+					"selector": ".rf-realm__type-badge",
+					"source": "structure",
+					"parent": "badge"
+				},
+				"scale-badge": {
+					"tag": "span",
+					"selector": ".rf-realm__scale-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "scale"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-realm__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"RealmSection": {
+			"block": "realm-section",
+			"root": ".rf-realm-section",
+			"dataRune": "realmsection",
+			"parent": "Realm",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"header": {
+					"tag": "span",
+					"selector": ".rf-realm-section__header",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Lore": {
+			"block": "lore",
+			"root": ".rf-lore",
+			"dataRune": "lore",
+			"childOrder": [
+				"badge",
+				"{content:content}"
+			],
+			"modifiers": {
+				"category": {
+					"source": "meta",
+					"classPattern": ".rf-lore--{value}",
+					"dataAttribute": "data-category"
+				},
+				"spoiler": {
+					"source": "meta",
+					"default": "false",
+					"classPattern": ".rf-lore--{value}",
+					"dataAttribute": "data-spoiler"
+				},
+				"tags": {
+					"source": "meta",
+					"classPattern": ".rf-lore--{value}",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"badge": {
+					"tag": "div",
+					"selector": ".rf-lore__badge",
+					"source": "structure",
+					"conditionAny": [
+						"category"
+					]
+				},
+				"category-badge": {
+					"tag": "span",
+					"selector": ".rf-lore__category-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "category"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-lore__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Faction": {
+			"block": "faction",
+			"root": ".rf-faction",
+			"dataRune": "faction",
+			"childOrder": [
+				"badge",
+				"{content:content}"
+			],
+			"modifiers": {
+				"factionType": {
+					"source": "meta",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-faction-type"
+				},
+				"alignment": {
+					"source": "meta",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-alignment"
+				},
+				"size": {
+					"source": "meta",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-size"
+				},
+				"tags": {
+					"source": "meta",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"badge": {
+					"tag": "div",
+					"selector": ".rf-faction__badge",
+					"source": "structure",
+					"conditionAny": [
+						"factionType",
+						"alignment",
+						"size"
+					]
+				},
+				"type-badge": {
+					"tag": "span",
+					"selector": ".rf-faction__type-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "factionType"
+				},
+				"alignment-badge": {
+					"tag": "span",
+					"selector": ".rf-faction__alignment-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "alignment"
+				},
+				"size-badge": {
+					"tag": "span",
+					"selector": ".rf-faction__size-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "size"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-faction__content",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"FactionSection": {
+			"block": "faction-section",
+			"root": ".rf-faction-section",
+			"dataRune": "factionsection",
+			"parent": "Faction",
+			"childOrder": [
+				"{content}"
+			],
+			"elements": {
+				"header": {
+					"tag": "span",
+					"selector": ".rf-faction-section__header",
+					"source": "autoLabel"
+				}
+			}
+		},
+		"Plot": {
+			"block": "plot",
+			"root": ".rf-plot",
+			"dataRune": "plot",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"plotType": {
+					"source": "meta",
+					"default": "arc",
+					"classPattern": ".rf-plot--{value}",
+					"dataAttribute": "data-plot-type"
+				},
+				"structure": {
+					"source": "meta",
+					"default": "linear",
+					"classPattern": ".rf-plot--{value}",
+					"dataAttribute": "data-structure"
+				},
+				"tags": {
+					"source": "meta",
+					"classPattern": ".rf-plot--{value}",
+					"dataAttribute": "data-tags"
+				}
+			}
+		},
+		"Beat": {
+			"block": "beat",
+			"root": ".rf-beat",
+			"dataRune": "beat",
+			"parent": "Plot",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"status": {
+					"source": "meta",
+					"default": "planned",
+					"classPattern": ".rf-beat--{value}",
+					"dataAttribute": "data-status"
+				},
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-beat--{value}",
+					"dataAttribute": "data-id"
+				},
+				"track": {
+					"source": "meta",
+					"classPattern": ".rf-beat--{value}",
+					"dataAttribute": "data-track"
+				},
+				"follows": {
+					"source": "meta",
+					"classPattern": ".rf-beat--{value}",
+					"dataAttribute": "data-follows"
+				}
+			}
+		},
+		"Bond": {
+			"block": "bond",
+			"root": ".rf-bond",
+			"dataRune": "bond",
+			"childOrder": [
+				"{content}",
+				"connector"
+			],
+			"modifiers": {
+				"bondType": {
+					"source": "meta",
+					"classPattern": ".rf-bond--{value}",
+					"dataAttribute": "data-bond-type"
+				},
+				"status": {
+					"source": "meta",
+					"default": "active",
+					"classPattern": ".rf-bond--{value}",
+					"dataAttribute": "data-status"
+				},
+				"bidirectional": {
+					"source": "meta",
+					"default": "true",
+					"classPattern": ".rf-bond--{value}",
+					"dataAttribute": "data-bidirectional"
+				}
+			},
+			"elements": {
+				"connector": {
+					"tag": "div",
+					"selector": ".rf-bond__connector",
+					"source": "structure"
+				},
+				"arrow": {
+					"tag": "span",
+					"selector": ".rf-bond__arrow",
+					"source": "structure",
+					"parent": "connector"
+				}
+			}
 		}
 	}
 }
