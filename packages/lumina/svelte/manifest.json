@@ -6,29 +6,12 @@
 	"designTokens": "tokens.css",
 
 	"layouts": {
-		"default": { "component": "layouts/DefaultLayout.svelte" },
-		"docs": { "component": "layouts/DocsLayout.svelte" },
-		"blog": { "component": "layouts/BlogLayout.svelte" }
+		"default": {},
+		"docs": {},
+		"blog": {}
 	},
 
-	"components": {
-		"Hint": { "component": "components/Hint.svelte" },
-		"CallToAction": { "component": "components/CallToAction.svelte" },
-		"Feature": { "component": "components/Feature.svelte" },
-		"FeatureDefinition": { "component": "components/Feature.svelte" },
-		"Grid": { "component": "components/Grid.svelte" },
-		"Steps": { "component": "components/Steps.svelte" },
-		"Step": { "component": "components/Steps.svelte" },
-		"TabGroup": { "component": "components/Tabs.svelte" },
-		"Tab": { "component": "components/Tabs.svelte" },
-		"CodeGroup": { "component": "components/CodeGroup.svelte" },
-		"Pricing": { "component": "components/Pricing.svelte" },
-		"Tier": { "component": "components/Pricing.svelte" },
-		"PageSection": { "component": "components/PageSection.svelte" },
-		"Nav": { "component": "components/Nav.svelte" },
-		"NavGroup": { "component": "components/Nav.svelte" },
-		"NavItem": { "component": "components/Nav.svelte" }
-	},
+	"components": {},
 
 	"unsupportedRuneBehavior": "passthrough"
 }
