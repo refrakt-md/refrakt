@@ -120,6 +120,83 @@ describe('mode guidance', () => {
 	});
 });
 
+describe('AI prompt extensions from packages', () => {
+	it('includes prompt extension text in rune description', () => {
+		const runesWithPrompt: Record<string, any> = {
+			'custom-widget': {
+				name: 'custom-widget',
+				aliases: [],
+				description: 'A custom widget for dashboards',
+				reinterprets: {},
+				schema: { attributes: {} },
+				prompt: 'Use this rune to create dashboard widgets with real-time data. Best for metrics displays.',
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithPrompt);
+		expect(prompt).toContain('### custom-widget');
+		expect(prompt).toContain('A custom widget for dashboards');
+		expect(prompt).toContain('Use this rune to create dashboard widgets with real-time data');
+	});
+
+	it('omits prompt section when not provided', () => {
+		const runesWithoutPrompt: Record<string, any> = {
+			'simple-rune': {
+				name: 'simple-rune',
+				aliases: [],
+				description: 'A simple rune',
+				reinterprets: {},
+				schema: { attributes: {} },
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithoutPrompt);
+		expect(prompt).toContain('### simple-rune');
+		expect(prompt).toContain('A simple rune');
+	});
+
+	it('includes prompt extensions alongside other metadata', () => {
+		const runesWithAll: Record<string, any> = {
+			'full-rune': {
+				name: 'full-rune',
+				aliases: ['fr'],
+				description: 'A fully-configured rune',
+				reinterprets: { heading: 'title', paragraph: 'body' },
+				schema: {
+					attributes: {
+						variant: { type: String, matches: ['a', 'b', 'c'] },
+					},
+				},
+				prompt: 'This rune supports dynamic data binding and auto-refresh intervals.',
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithAll);
+		expect(prompt).toContain('### full-rune');
+		expect(prompt).toContain('Aliases: fr');
+		expect(prompt).toContain('This rune supports dynamic data binding');
+		expect(prompt).toContain('"a" | "b" | "c"');
+		expect(prompt).toContain('heading → title');
+	});
+
+	it('handles empty prompt string gracefully', () => {
+		const runesWithEmptyPrompt: Record<string, any> = {
+			'empty-prompt-rune': {
+				name: 'empty-prompt-rune',
+				aliases: [],
+				description: 'A rune with empty prompt',
+				reinterprets: {},
+				schema: { attributes: {} },
+				prompt: '',
+			},
+		};
+
+		// Should not throw
+		const prompt = generateSystemPrompt(runesWithEmptyPrompt);
+		expect(prompt).toContain('### empty-prompt-rune');
+	});
+});
+
 describe('rune classification', () => {
 	it('excludes hero/cta/feature from design mode', () => {
 		const designRunes = getChatModeRunes('design')!;

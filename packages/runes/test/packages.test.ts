@@ -8,14 +8,19 @@ import type { RuneConfig, RuneProvenance } from '@refrakt-md/transform';
 
 function makeLoadedPackage(pkg: RunePackage, npmName: string): LoadedPackage {
 	const runes: Record<string, Rune> = {};
+	const fixtures: Record<string, string> = {};
 	for (const [name, entry] of Object.entries(pkg.runes)) {
 		runes[name] = defineRune({
 			name,
 			schema: entry.transform as any,
-			description: `Community rune from ${pkg.name}`,
+			description: entry.description ?? `Community rune from ${pkg.name}`,
+			prompt: entry.prompt,
 		});
+		if (entry.fixture) {
+			fixtures[name] = entry.fixture;
+		}
 	}
-	return { pkg, npmName, runes, fixtures: {} };
+	return { pkg, npmName, runes, fixtures };
 }
 
 const gameSystemPkg: RunePackage = {
@@ -26,10 +31,15 @@ const gameSystemPkg: RunePackage = {
 		'item': {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
+			fixture: '{% item name="Sword" %}content{% /item %}',
+			prompt: 'Use for RPG items with rarity.',
+			description: 'Game item with name and rarity',
 		},
 		'spell': {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
+			fixture: '{% spell name="Fireball" %}content{% /spell %}',
+			description: 'Magic spell',
 		},
 	},
 	extends: {
@@ -264,7 +274,7 @@ describe('mergePackages', () => {
 
 		expect(Object.keys(result.runes)).toContain('item');
 		// The preferred one should be from game-system
-		expect(result.runes['item'].description).toContain('game-system');
+		expect(result.provenance['item'].packageName).toBe('game-system');
 	});
 
 	it('throws when prefer references unknown package', () => {
@@ -300,6 +310,23 @@ describe('mergePackages', () => {
 		expect(Object.keys(result.runes)).toHaveLength(0);
 		expect(Object.keys(result.tags)).toHaveLength(0);
 		expect(result.packages).toHaveLength(0);
+	});
+
+	it('collects fixtures from resolved runes', () => {
+		const loaded = [makeLoadedPackage(gameSystemPkg, '@refrakt-community/game-system')];
+		const result = mergePackages(loaded, coreRuneNames);
+
+		expect(result.fixtures['item']).toContain('{% item');
+		expect(result.fixtures['spell']).toContain('{% spell');
+	});
+
+	it('propagates prompt field on runes', () => {
+		const loaded = [makeLoadedPackage(gameSystemPkg, '@refrakt-community/game-system')];
+		const result = mergePackages(loaded, coreRuneNames);
+
+		// item has prompt, spell does not
+		expect(result.runes['item'].prompt).toBe('Use for RPG items with rarity.');
+		expect(result.runes['spell'].prompt).toBeUndefined();
 	});
 
 	it('merges extensions from multiple packages', () => {

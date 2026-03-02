@@ -25,6 +25,8 @@ if (command === 'write') {
 	runExtract(args.slice(1));
 } else if (command === 'edit') {
 	runEdit(args.slice(1));
+} else if (command === 'package') {
+	runPackage(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -48,6 +50,7 @@ Commands:
   theme <subcommand>   Manage themes (install, info)
   extract <path>       Extract symbols from source code into {% symbol %} Markdown
   edit                 Launch the browser-based content editor
+  package <subcommand> Manage rune packages (validate)
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -115,9 +118,19 @@ Examples:
   refrakt extract ./src -o ./content/api
   refrakt extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
   refrakt extract ./src -o ./content/api --validate
+  refrakt package validate
+  refrakt package validate ./runes/marketing
+  refrakt package validate --json
   refrakt edit
   refrakt edit --port 3000 --content-dir ./content
   refrakt edit --dev-server http://localhost:5173
+
+Package Subcommands:
+  package validate [dir]   Validate a rune package before publishing
+
+Package Validate Options:
+  --json                   Output as JSON
+  <dir>                    Package directory (default: current directory)
 
 Edit Options:
   --port, -p <number>      Editor port (default: 4800)
@@ -615,6 +628,66 @@ function runExtract(extractArgs: string[]): void {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
 	});
+}
+
+function runPackage(packageArgs: string[]): void {
+	const subcommand = packageArgs[0];
+
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`
+Usage: refrakt package <subcommand> [options]
+
+Subcommands:
+  validate [dir]   Validate a rune package before publishing
+
+Validate Options:
+  --json           Output as JSON
+  <dir>            Package directory (default: current directory)
+
+Examples:
+  refrakt package validate
+  refrakt package validate ./runes/marketing
+  refrakt package validate --json
+`);
+		process.exit(subcommand ? 0 : 1);
+	}
+
+	if (subcommand === 'validate') {
+		let packageDir: string | undefined;
+		let json = false;
+
+		for (let i = 1; i < packageArgs.length; i++) {
+			const arg = packageArgs[i];
+
+			if (arg === '--json') {
+				json = true;
+			} else if (arg === '--help' || arg === '-h') {
+				printUsage();
+				process.exit(0);
+			} else if (arg.startsWith('-')) {
+				console.error(`Error: Unknown flag "${arg}"\n`);
+				printUsage();
+				process.exit(1);
+			} else if (!packageDir) {
+				packageDir = arg;
+			} else {
+				console.error(`Error: Unexpected argument "${arg}"\n`);
+				printUsage();
+				process.exit(1);
+			}
+		}
+
+		import('./commands/package-validate.js').then(({ packageValidateCommand }) => {
+			return packageValidateCommand({ packageDir, json });
+		}).catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+	} else {
+		console.error(`Error: Unknown package subcommand "${subcommand}"\n`);
+		console.error('Available subcommands: validate');
+		process.exit(1);
+	}
 }
 
 function runEdit(editArgs: string[]): void {
