@@ -12,7 +12,7 @@
 	"homepage": "https://github.com/refrakt-md/refrakt",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build && npx pagefind --site build",
+		"build": "vite build && npx pagefind --site build && cp -r build/pagefind static/pagefind",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"

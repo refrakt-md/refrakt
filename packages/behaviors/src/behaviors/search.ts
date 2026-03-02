@@ -81,7 +81,10 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 		// Handle keydown inside dialog
 		const onKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'ArrowDown') {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				d.close();
+			} else if (e.key === 'ArrowDown') {
 				e.preventDefault();
 				navigateResults(1);
 			} else if (e.key === 'ArrowUp') {
@@ -97,7 +100,11 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 		// Close on backdrop click
 		const onClick = (e: MouseEvent) => {
-			if (e.target === d) {
+			const rect = d.getBoundingClientRect();
+			if (
+				e.clientX < rect.left || e.clientX > rect.right ||
+				e.clientY < rect.top || e.clientY > rect.bottom
+			) {
 				d.close();
 			}
 		};

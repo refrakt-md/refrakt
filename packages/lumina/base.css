@@ -10,9 +10,13 @@
 /* Element Overrides */
 @import './styles/elements/table.css';
 @import './styles/elements/blockquote.css';
+@import './styles/elements/code.css';
 
 /* Layouts */
 @import './styles/layouts/mobile.css';
 @import './styles/layouts/default.css';
 @import './styles/layouts/docs.css';
 @import './styles/layouts/blog.css';
+@import './styles/layouts/on-this-page.css';
+@import './styles/layouts/search.css';
+@import './styles/layouts/version-switcher.css';

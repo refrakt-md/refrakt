@@ -13,8 +13,17 @@
 .rf-docs-header__inner {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	gap: 1rem;
 	padding: 1.125rem 1.5rem;
+}
+.rf-docs-header__inner .rf-search-trigger {
+	margin-left: auto;
+}
+.rf-docs-header__inner p ~ p {
+	order: 1;
+}
+.rf-docs-header__inner .rf-mobile-menu-btn {
+	order: 2;
 }
 .rf-docs-header p {
 	margin: 0;
