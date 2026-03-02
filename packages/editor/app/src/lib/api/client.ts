@@ -63,6 +63,32 @@ export async function fetchConfig(): Promise<EditorConfig> {
 	return res.json();
 }
 
+// ── Route rules ─────────────────────────────────────────────────────
+
+export interface RouteRule {
+	pattern: string;
+	layout: string;
+}
+
+export async function fetchRouteRules(): Promise<RouteRule[]> {
+	const res = await fetch(`${BASE}/api/route-rules`);
+	if (!res.ok) throw new Error(`Failed to load route rules: ${res.status}`);
+	const data = await res.json();
+	return data.routeRules;
+}
+
+export async function updateRouteRules(routeRules: RouteRule[]): Promise<void> {
+	const res = await fetch(`${BASE}/api/route-rules`, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ routeRules }),
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Failed to update route rules: ${res.status}`);
+	}
+}
+
 // ── File operations ──────────────────────────────────────────────────
 
 export interface CreatePageOptions {

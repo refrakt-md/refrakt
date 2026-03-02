@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig } from '@refrakt-md/transform';
+import type { ThemeConfig, RuneConfig, StructureEntry } from '@refrakt-md/transform';
 
 export interface ThemeConfigOverrides {
 	prefix?: string;
@@ -20,6 +20,55 @@ export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverri
 		prefix: overrides.prefix ?? base.prefix,
 		tokenPrefix: overrides.tokenPrefix ?? base.tokenPrefix,
 		icons: { ...base.icons, ...overrides.icons },
+		runes: mergedRunes,
+	};
+}
+
+/** Extension data for a single rune from a community package */
+export interface RuneConfigExtension {
+	/** Additional modifier definitions to merge */
+	modifiers?: Record<string, { source: 'meta' | 'attribute'; default?: string }>;
+	/** Additional structural elements to inject */
+	structure?: Record<string, StructureEntry>;
+}
+
+/**
+ * Apply community package extensions to core rune configs.
+ *
+ * Extensions are additive — community modifiers and structure entries are
+ * appended to existing config, never replacing core definitions.
+ *
+ * @param config - The base theme config to extend
+ * @param extensions - Map of typeof name → extension config
+ * @returns A new ThemeConfig with extensions applied
+ */
+export function applyRuneExtensions(
+	config: ThemeConfig,
+	extensions: Record<string, RuneConfigExtension>,
+): ThemeConfig {
+	const mergedRunes = { ...config.runes };
+
+	for (const [typeofName, ext] of Object.entries(extensions)) {
+		const existing = mergedRunes[typeofName];
+		if (!existing) continue; // Skip extensions for runes not in config
+
+		const merged: RuneConfig = { ...existing };
+
+		// Append additional modifiers
+		if (ext.modifiers) {
+			merged.modifiers = { ...existing.modifiers, ...ext.modifiers };
+		}
+
+		// Append additional structure entries
+		if (ext.structure) {
+			merged.structure = { ...existing.structure, ...ext.structure };
+		}
+
+		mergedRunes[typeofName] = merged;
+	}
+
+	return {
+		...config,
 		runes: mergedRunes,
 	};
 }

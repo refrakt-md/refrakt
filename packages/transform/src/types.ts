@@ -112,6 +112,8 @@ export interface LayoutPageData {
 		author?: string;
 		tags?: string[];
 		image?: string;
+		version?: string;
+		versionGroup?: string;
 	}>;
 	frontmatter: Record<string, unknown>;
 	headings?: Array<{ level: number; text: string; id: string }>;
@@ -188,7 +190,7 @@ export interface LayoutSlot {
 /** Computed content derived from page data at transform time */
 export interface ComputedContent {
 	/** Type of computed content */
-	type: 'breadcrumb' | 'toc' | 'prev-next';
+	type: 'breadcrumb' | 'toc' | 'prev-next' | 'version-switcher';
 
 	/** Data source: 'region:nav', 'headings', etc. */
 	source: string;

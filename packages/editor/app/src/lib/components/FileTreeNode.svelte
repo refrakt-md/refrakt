@@ -7,9 +7,10 @@
 		depth: number;
 		onselectfile: (path: string) => void;
 		oncontextmenu?: (e: MouseEvent, node: TreeNode) => void;
+		onnewpage?: (directory: string, anchorRect: DOMRect) => void;
 	}
 
-	let { node, depth, onselectfile, oncontextmenu }: Props = $props();
+	let { node, depth, onselectfile, oncontextmenu, onnewpage }: Props = $props();
 
 	function handleContextMenu(e: MouseEvent, targetNode: TreeNode) {
 		if (oncontextmenu) {
@@ -31,10 +32,13 @@
 
 {#if node.type === 'directory'}
 	{#if depth > 0}
-		<button
+		<div
 			class="tree-dir"
+			role="treeitem"
+			tabindex="0"
 			style="--depth: {depth - 1}"
 			onclick={handleDirToggle}
+			onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDirToggle(); } }}
 			oncontextmenu={(e) => handleContextMenu(e, node)}
 		>
 			<svg class="tree-dir__chevron" class:collapsed={!expanded} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -51,7 +55,19 @@
 				</svg>
 			{/if}
 			<span class="tree-dir__name">{node.name}</span>
-		</button>
+			{#if onnewpage}
+				<button
+					class="tree-dir__add"
+					title="New page in {node.name}"
+					onclick={(e) => { e.stopPropagation(); onnewpage(node.path, (e.currentTarget as HTMLElement).getBoundingClientRect()); }}
+				>
+					<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+						<line x1="8" y1="3" x2="8" y2="13" />
+						<line x1="3" y1="8" x2="13" y2="8" />
+					</svg>
+				</button>
+			{/if}
+		</div>
 	{/if}
 
 	{#if depth === 0 || expanded}
@@ -74,7 +90,7 @@
 
 		{#each node.children ?? [] as child}
 			{#if child.type === 'directory'}
-				<FileTreeNode node={child} depth={depth + 1} {onselectfile} {oncontextmenu} />
+				<FileTreeNode node={child} depth={depth + 1} {onselectfile} {oncontextmenu} {onnewpage} />
 			{:else}
 				<button
 					class="tree-item"
@@ -104,7 +120,8 @@
 		align-items: center;
 		gap: 0.3rem;
 		width: 100%;
-		padding: 0.3rem var(--ed-space-3) 0.3rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem);
+		min-height: 30px;
+		padding: 0.35rem var(--ed-space-3) 0.35rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem);
 		font-size: var(--ed-text-sm);
 		font-weight: 600;
 		color: var(--ed-text-secondary);
@@ -114,6 +131,7 @@
 		text-align: left;
 		border-radius: 0;
 		transition: background var(--ed-transition-fast);
+		user-select: none;
 	}
 
 	.tree-dir:hover {
@@ -141,6 +159,34 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.tree-dir__add {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		margin-left: auto;
+		border: none;
+		background: transparent;
+		color: var(--ed-text-muted);
+		cursor: pointer;
+		border-radius: var(--ed-radius-sm);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), opacity var(--ed-transition-fast);
+		flex-shrink: 0;
+		opacity: 0;
+	}
+
+	.tree-dir:hover .tree-dir__add {
+		opacity: 1;
+	}
+
+	.tree-dir__add:hover {
+		background: var(--ed-surface-3);
+		color: var(--ed-accent);
 	}
 
 	/* File row */
@@ -149,7 +195,8 @@
 		align-items: center;
 		gap: 0.4rem;
 		width: 100%;
-		padding: 0.3rem var(--ed-space-3) 0.3rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem + 12px + 0.3rem);
+		min-height: 30px;
+		padding: 0.35rem var(--ed-space-3) 0.35rem calc(var(--ed-space-3) + var(--depth, 0) * 1rem + 12px + 0.3rem);
 		font-size: var(--ed-text-sm);
 		cursor: pointer;
 		transition: background var(--ed-transition-fast);

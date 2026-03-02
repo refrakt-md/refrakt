@@ -159,4 +159,101 @@ describe('loadRefraktConfig', () => {
 
 		rmSync(dir, { recursive: true });
 	});
+
+	it('loads config with packages array', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			packages: ['@refrakt-community/dnd-5e', '@refrakt-community/screenplay'],
+		}));
+
+		const config = loadRefraktConfig(configPath);
+		expect(config.packages).toEqual(['@refrakt-community/dnd-5e', '@refrakt-community/screenplay']);
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when packages is not an array', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			packages: 'not-an-array',
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('"packages" must be an array');
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when packages entry is not a string', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			packages: [123],
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('packages[0] must be a non-empty string');
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('loads config with runes.prefer', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			packages: ['@refrakt-community/dnd-5e', '@refrakt-community/pathfinder-2e'],
+			runes: { prefer: { item: 'dnd-5e', spell: 'dnd-5e' } },
+		}));
+
+		const config = loadRefraktConfig(configPath);
+		expect(config.runes?.prefer).toEqual({ item: 'dnd-5e', spell: 'dnd-5e' });
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when runes is not an object', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			runes: 'not-an-object',
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('"runes" must be an object');
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when runes.prefer value is not a string', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: 'sveltekit',
+			runes: { prefer: { item: 123 } },
+		}));
+
+		expect(() => loadRefraktConfig(configPath))
+			.toThrow('runes.prefer["item"] must be a non-empty string');
+
+		rmSync(dir, { recursive: true });
+	});
 });

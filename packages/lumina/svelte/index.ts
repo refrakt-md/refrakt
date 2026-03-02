@@ -34,8 +34,4 @@ export const theme: SvelteTheme = {
 	elements,
 };
 
-// Backward-compatible named exports
 export { registry };
-export { default as DocsLayout } from './layouts/DocsLayout.svelte';
-export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
-export { default as BlogLayout } from './layouts/BlogLayout.svelte';

@@ -1,0 +1,108 @@
+/* PullQuote */
+.rf-pullquote {
+	margin: 2rem 0;
+	padding: 1.5rem 2rem;
+	border: none;
+	font-size: 1.375rem;
+	font-style: italic;
+	font-weight: 500;
+	line-height: 1.5;
+	color: var(--rf-color-text);
+	background: none;
+	position: relative;
+}
+.rf-pullquote::before {
+	content: '\201C';
+	position: absolute;
+	top: -0.25rem;
+	left: 0;
+	font-size: 4rem;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--rf-color-primary);
+	opacity: 0.3;
+}
+.rf-pullquote p {
+	margin: 0;
+}
+.rf-pullquote p + p {
+	margin-top: 0.75rem;
+}
+
+/* Alignment — block modes */
+.rf-pullquote--center {
+	text-align: center;
+	max-width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+}
+.rf-pullquote--center::before {
+	left: 50%;
+	transform: translateX(-50%);
+}
+.rf-pullquote--left {
+	text-align: left;
+	border-left: 4px solid var(--rf-color-primary);
+	padding-left: 1.5rem;
+}
+.rf-pullquote--left::before {
+	display: none;
+}
+.rf-pullquote--right {
+	text-align: right;
+	border-right: 4px solid var(--rf-color-primary);
+	padding-right: 1.5rem;
+	margin-left: auto;
+}
+.rf-pullquote--right::before {
+	display: none;
+}
+
+/* Float modes — left/right pull quotes can float for text wrapping */
+.rf-pullquote[data-align="left"] {
+	float: left;
+	width: 40%;
+	margin: 0.5rem 2rem 1rem 0;
+}
+.rf-pullquote[data-align="right"] {
+	float: right;
+	width: 40%;
+	margin: 0.5rem 0 1rem 2rem;
+}
+
+/* Style: accent — uses primary color background tint */
+.rf-pullquote--accent {
+	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem 2.5rem;
+}
+.rf-pullquote--accent::before {
+	color: var(--rf-color-primary);
+	opacity: 0.5;
+}
+
+/* Style: editorial — decorative top/bottom rules */
+.rf-pullquote--editorial {
+	border-top: 3px solid var(--rf-color-text);
+	border-bottom: 3px solid var(--rf-color-text);
+	padding: 1.5rem 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	letter-spacing: 0.01em;
+}
+.rf-pullquote--editorial::before {
+	display: none;
+}
+
+/* Responsive — floated quotes become full-width on mobile */
+@media (max-width: 768px) {
+	.rf-pullquote[data-align="left"],
+	.rf-pullquote[data-align="right"] {
+		float: none;
+		width: 100%;
+		margin: 1.5rem 0;
+	}
+	.rf-pullquote--center {
+		max-width: 100%;
+	}
+}

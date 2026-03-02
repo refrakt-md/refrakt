@@ -62,6 +62,9 @@ import { lore } from './tags/lore.js';
 import { faction, factionSection } from './tags/faction.js';
 import { plot, beat } from './tags/plot.js';
 import { bond } from './tags/bond.js';
+import { pullquote } from './tags/pullquote.js';
+import { textblock } from './tags/textblock.js';
+import { mediatext } from './tags/mediatext.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -79,6 +82,8 @@ export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
 export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';
+export { loadRunePackage, mergePackages } from './packages.js';
+export type { LoadedPackage, MergedPackageResult } from './packages.js';
 
 export const documents = {
   doc: new DocPage(),
@@ -591,6 +596,30 @@ export const runes = {
     description: 'Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection',
     reinterprets: {},
     type: schema.DesignContext,
+  }),
+  pullquote: defineRune({
+    name: 'pullquote',
+    aliases: ['pull-quote'],
+    schema: pullquote,
+    description: 'Decorative pull quote for magazine-style emphasis with float and block modes',
+    reinterprets: { blockquote: 'quote text', paragraph: 'quote text' },
+    type: schema.PullQuote,
+  }),
+  textblock: defineRune({
+    name: 'textblock',
+    aliases: ['text-block', 'prose'],
+    schema: textblock,
+    description: 'Text formatting block with drop caps, multi-column layout, lead paragraphs, and alignment control',
+    reinterprets: { paragraph: 'formatted text' },
+    type: schema.TextBlock,
+  }),
+  mediatext: defineRune({
+    name: 'mediatext',
+    aliases: ['media-text'],
+    schema: mediatext,
+    description: 'Image and text side by side with configurable ratio and optional text wrapping',
+    reinterprets: { image: 'media image', paragraph: 'body text' },
+    type: schema.MediaText,
   }),
   icon: defineRune({
     name: 'icon',

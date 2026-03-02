@@ -90,6 +90,9 @@ import {
   Plot, PlotComponent,
   Beat, BeatComponent,
   Bond, BondComponent,
+  PullQuote, PullQuoteComponent,
+  TextBlock, TextBlockComponent,
+  MediaText, MediaTextComponent,
 } from '@refrakt-md/types';
 
 export const schema = {
@@ -199,4 +202,7 @@ export const schema = {
   Plot: useSchema(Plot).defineType<PlotComponent>('Plot'),
   Beat: useSchema(Beat).defineType<BeatComponent>('Beat'),
   Bond: useSchema(Bond).defineType<BondComponent>('Bond'),
+  PullQuote: useSchema(PullQuote).defineType<PullQuoteComponent>('PullQuote'),
+  TextBlock: useSchema(TextBlock).defineType<TextBlockComponent>('TextBlock'),
+  MediaText: useSchema(MediaText).defineType<MediaTextComponent>('MediaText'),
 }

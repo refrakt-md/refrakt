@@ -75,6 +75,9 @@ export { Lore, LoreComponent } from './schema/lore.js';
 export { Faction, FactionComponent } from './schema/faction.js';
 export { Plot, PlotComponent, Beat, BeatComponent } from './schema/plot.js';
 export { Bond, BondComponent } from './schema/bond.js';
+export { PullQuote, PullQuoteComponent } from './schema/pullquote.js';
+export { TextBlock, TextBlockComponent } from './schema/textblock.js';
+export { MediaText, MediaTextComponent } from './schema/mediatext.js';
 
 // Theme system types
 export type {
@@ -84,6 +87,15 @@ export type {
   RouteRule,
   ComponentDefinition,
 } from './theme.js';
+
+// Community rune package types
+export type {
+  RunePackage,
+  RunePackageEntry,
+  RunePackageAttribute,
+  RuneExtension,
+  RunePackageThemeConfig,
+} from './package.js';
 
 // Serialized tree types
 export type { SerializedTag, RendererNode } from './serialized.js';

@@ -1,6 +1,6 @@
 export { baseConfig } from './config.js';
-export { mergeThemeConfig } from './merge.js';
-export type { ThemeConfigOverrides } from './merge.js';
+export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
+export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // Layout configs
 export { defaultLayout, docsLayout, blogArticleLayout } from './layouts.js';
