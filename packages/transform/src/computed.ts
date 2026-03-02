@@ -217,3 +217,56 @@ export function buildPrevNext(
 
 	return makeTag('nav', { class: `${prefix}-prev-next` }, children);
 }
+
+/**
+ * Build version switcher from page frontmatter.
+ * Finds peer pages with the same versionGroup and builds a <select> dropdown.
+ *
+ * Emits:
+ * ```html
+ * <nav class="rf-version-switcher" data-version-switcher>
+ *   <label class="rf-version-switcher__label">Version</label>
+ *   <select class="rf-version-switcher__select">
+ *     <option value="/docs/v1/getting-started">1.0</option>
+ *     <option value="/docs/v2/getting-started" selected>2.0</option>
+ *   </select>
+ * </nav>
+ * ```
+ */
+export function buildVersionSwitcher(
+	currentUrl: string,
+	pages: LayoutPageData['pages'],
+	frontmatter: Record<string, unknown>,
+	prefix: string,
+): SerializedTag | null {
+	const version = frontmatter.version as string | undefined;
+	const versionGroup = frontmatter.versionGroup as string | undefined;
+
+	if (!version || !versionGroup) return null;
+
+	// Find peer pages: same versionGroup, not drafts
+	const peers = pages.filter(p => p.versionGroup === versionGroup && !p.draft);
+
+	// Need at least 2 versions (current + at least one other)
+	if (peers.length < 2) return null;
+
+	// Sort by version using natural string comparison
+	const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+	const sorted = [...peers].sort((a, b) => collator.compare(a.version ?? '', b.version ?? ''));
+
+	const options = sorted.map(p => {
+		const attrs: Record<string, any> = { value: p.url };
+		if (p.url === currentUrl) {
+			attrs.selected = '';
+		}
+		return makeTag('option', attrs, [p.version ?? '']);
+	});
+
+	return makeTag('nav', {
+		class: `${prefix}-version-switcher`,
+		'data-version-switcher': '',
+	}, [
+		makeTag('label', { class: `${prefix}-version-switcher__label` }, ['Version']),
+		makeTag('select', { class: `${prefix}-version-switcher__select` }, options),
+	]);
+}

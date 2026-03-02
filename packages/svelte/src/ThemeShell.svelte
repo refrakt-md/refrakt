@@ -36,6 +36,8 @@
 			author?: string;
 			tags?: string[];
 			image?: string;
+			version?: string;
+			versionGroup?: string;
 		}>;
 		url: string;
 		seo?: PageSeo;

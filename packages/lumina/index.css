@@ -18,6 +18,7 @@
 @import './styles/layouts/docs.css';
 @import './styles/layouts/blog.css';
 @import './styles/layouts/on-this-page.css';
+@import './styles/layouts/version-switcher.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';

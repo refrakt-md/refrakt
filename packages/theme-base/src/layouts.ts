@@ -110,6 +110,10 @@ export const docsLayout: LayoutConfig = {
 				frontmatterToggle: 'toc',
 			},
 		},
+		'version-switcher': {
+			type: 'version-switcher',
+			source: 'frontmatter',
+		},
 	},
 	chrome: {
 		menuButton,
@@ -209,7 +213,17 @@ export const docsLayout: LayoutConfig = {
 				{
 					tag: 'div',
 					class: 'rf-docs-content__body',
-					source: 'content',
+					children: [
+						{
+							tag: 'div',
+							source: 'computed:version-switcher',
+							conditional: true,
+						},
+						{
+							tag: 'div',
+							source: 'content',
+						},
+					],
 				},
 				{
 					tag: 'aside',

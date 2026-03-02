@@ -16,6 +16,8 @@ export async function load() {
 			author: p.frontmatter.author,
 			tags: p.frontmatter.tags,
 			image: p.frontmatter.image,
+			version: p.frontmatter.version as string | undefined,
+			versionGroup: p.frontmatter.versionGroup as string | undefined,
 		})),
 	};
 }
