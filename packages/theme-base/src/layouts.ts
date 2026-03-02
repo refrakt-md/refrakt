@@ -242,7 +242,6 @@ export const docsLayout: LayoutConfig = {
 				{
 					tag: 'div',
 					class: 'rf-docs-content__body',
-					source: 'content',
 					attrs: { 'data-pagefind-body': '' },
 					children: [
 						{

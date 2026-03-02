@@ -67,15 +67,20 @@
 	const layoutName = $derived(matchRouteRule(page.url, theme.manifest.routeRules ?? []));
 	const layoutEntry = $derived(theme.layouts[layoutName] ?? theme.layouts['default']);
 
+	// Keep RfContext in sync for web components BEFORE DOM updates.
+	// $effect.pre runs before {#key page.url} recreates the DOM, so
+	// RfNav.connectedCallback sees the new URL when it fires.
+	$effect.pre(() => {
+		RfContext.pages = page.pages;
+		RfContext.currentUrl = page.url;
+	});
+
 	// Initialize rune + layout behaviors after render, re-run on navigation.
 	// The {#key page.url} block in the template ensures full DOM recreation on
 	// navigation, so behaviors always run on fresh DOM and old behavior-modified
 	// elements are simply discarded (no cleanup/restore conflicts with Svelte).
 	$effect(() => {
 		void page.url; // re-run when page changes
-		// Keep RfContext in sync for web components on client-side navigation
-		RfContext.pages = page.pages;
-		RfContext.currentUrl = page.url;
 		let cleanupRunes: (() => void) | undefined;
 		let cleanupLayout: (() => void) | undefined;
 		let active = true;
