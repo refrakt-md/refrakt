@@ -200,17 +200,14 @@ function runInspect(inspectArgs: string[]): void {
 		import('./commands/inspect.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-		import('@refrakt-md/theme-base'),
 		import('@markdoc/markdoc'),
 	]).then(async ([
 		{ inspectCommand },
 		runesModule,
-		{ createTransform, renderToHtml, extractSelectors },
-		themeBaseModule,
+		{ createTransform, renderToHtml, extractSelectors, mergeThemeConfig },
 		markdocModule,
 	]) => {
-		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages } = runesModule;
-		const { baseConfig, mergeThemeConfig } = themeBaseModule;
+		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages, baseConfig } = runesModule;
 		const Markdoc = markdocModule.default ?? markdocModule;
 
 		let mergedRunes = runes;

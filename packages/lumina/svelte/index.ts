@@ -2,7 +2,7 @@ import type { SvelteTheme } from '@refrakt-md/svelte';
 import adapterManifest from './manifest.json';
 import { registry } from './registry.js';
 import { elements } from './elements.js';
-import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/theme-base';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
 // Layout region metadata from the base theme manifest (packages/lumina/manifest.json).
 // Merged with adapter manifest component paths to produce full LayoutDefinitions.

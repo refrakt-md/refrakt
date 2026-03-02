@@ -16,7 +16,6 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
 	'@refrakt-md/transform',
-	'@refrakt-md/theme-base',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {
@@ -74,8 +73,8 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 					// Merge community theme config into base config for CSS tree-shaking
 					if (Object.keys(merged.themeRunes).length > 0) {
-						const themeBasePkg = '@refrakt-md/theme-base';
-						const { mergeThemeConfig } = await import(themeBasePkg);
+						const transformPkg = '@refrakt-md/transform';
+						const { mergeThemeConfig } = await import(transformPkg);
 						// Theme config merging happens in buildStart for CSS analysis
 					}
 				} catch (err) {

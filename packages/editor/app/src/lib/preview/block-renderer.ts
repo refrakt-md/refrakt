@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([

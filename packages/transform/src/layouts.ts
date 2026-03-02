@@ -1,4 +1,4 @@
-import type { LayoutConfig, LayoutStructureEntry } from '@refrakt-md/transform';
+import type { LayoutConfig, LayoutStructureEntry } from './types.js';
 
 // ─── Shared SVG Icons ─────────────────────────────────────────────────
 

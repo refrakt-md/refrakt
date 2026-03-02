@@ -1,4 +1,4 @@
-import type { ElementOverrides } from '@refrakt-md/svelte';
+import type { ElementOverrides } from './context.js';
 import Table from './elements/Table.svelte';
 import Pre from './elements/Pre.svelte';
 

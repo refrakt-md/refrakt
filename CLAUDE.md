@@ -24,7 +24,7 @@ npx vitest run packages/runes/test/diff.test.ts
 cd site && npm run dev
 ```
 
-Build order: types → create-refrakt + lumina → runes + sveltekit → content + ai → cli. Getting this wrong causes missing type errors.
+Build order: types → create-refrakt + transform + behaviors → runes → lumina + highlight + sveltekit → content + ai → editor → cli. Getting this wrong causes missing type errors.
 
 ### CSS Coverage Tests
 
@@ -97,24 +97,23 @@ Five stages from content to output:
 
 Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside `{% nav %}` becomes a group title; a list inside `{% recipe %}` becomes ingredients. Same primitives, different meaning based on context.
 
-Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/theme-base/src/config.ts`), and optionally a Svelte component (`packages/theme-base/svelte/components/`).
+Each rune has: a schema (`packages/runes/src/tags/`), a type definition (`packages/types/src/schema/`), an engine config entry (`packages/runes/src/config.ts`), and optionally a Svelte component override registered via `@refrakt-md/svelte`.
 
 ### Two-Layer Theme System
 
-**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/theme-base/src/config.ts`. Most runes (~75%) need only this layer.
+**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/runes/src/config.ts`. Most runes (~75%) need only this layer.
 
-**Layer 2 — Svelte Components** (`packages/theme-base/svelte/components/`): Only for interactive runes requiring external libraries or complex rendering (Chart, Map, Diagram, Comparison, etc.). Registered in `packages/theme-base/svelte/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
+**Layer 2 — Svelte Components** (`packages/svelte/src/elements/`): Element overrides for HTML elements (Table, Pre) plus a component registry for custom rune renderers. Registered in `packages/svelte/src/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
 
 ### Package Relationships
 
 - `types` — foundational, no deps on other packages
-- `transform` — depends on types; identity transform engine + config interfaces
-- `runes` — depends on types; defines rune schemas (~52 files, some covering parent + child)
-- `theme-base` — depends on transform + types; base config + shared interactive components
-- `lumina` — depends on theme-base + transform; design tokens, CSS, icon overrides
+- `transform` — depends on types; identity transform engine + config interfaces + merge utilities + layout configs
+- `runes` — depends on types + transform; rune schemas (~52 files) + core RuneConfig (`coreConfig`/`baseConfig`)
+- `lumina` — depends on runes + transform; design tokens, CSS, icon overrides
 - `behaviors` — no deps; progressive enhancement JS for interactive runes
 - `content` — depends on runes + types; content loading, routing, layout cascade
-- `svelte` — depends on types; Renderer + ThemeShell components
+- `svelte` — depends on types + behaviors; Renderer + ThemeShell + element overrides + component registry
 - `sveltekit` — depends on types; Vite plugin with virtual modules + content HMR
 - `ai` + `cli` — content generation + inspect tooling
 
@@ -141,7 +140,7 @@ Comprehensive rune authoring documentation lives at `site/content/docs/authoring
 
 ### Engine Config Pattern
 
-Non-interactive runes are configured declaratively in `packages/theme-base/src/config.ts`:
+Non-interactive runes are configured declaratively in `packages/runes/src/config.ts`:
 - `block`: BEM block name
 - `modifiers`: `{ name: { source: 'meta', default?: string } }` — reads meta tag, adds modifier class + data attribute
 - `contextModifiers`: `{ 'ParentType': 'suffix' }` — adds BEM modifier when nested inside a parent rune
@@ -159,16 +158,17 @@ Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `R
 Theme developer documentation lives at `site/content/docs/themes/` (6 pages: overview, configuration, css, creating-a-theme, components, tooling). Refer to these when working on themes.
 
 **Key files for theme work:**
-- `packages/theme-base/src/config.ts` — base config with all 74 rune configurations (source of truth)
-- `packages/theme-base/src/merge.ts` — `mergeThemeConfig()` for extending base with theme overrides
+- `packages/runes/src/config.ts` — core config with all rune configurations (source of truth, exported as `coreConfig`/`baseConfig`)
+- `packages/transform/src/merge.ts` — `mergeThemeConfig()` for extending base with theme overrides
 - `packages/transform/src/engine.ts` — identity transform implementation
 - `packages/transform/src/types.ts` — `ThemeConfig`, `RuneConfig`, `StructureEntry` interfaces
+- `packages/transform/src/layouts.ts` — layout configs (`defaultLayout`, `docsLayout`, `blogArticleLayout`)
 - `packages/lumina/styles/runes/` — 48 per-rune CSS files (reference implementation)
 - `packages/lumina/tokens/base.css` — design token definitions
-- `packages/theme-base/svelte/registry.ts` — component registry for interactive runes
+- `packages/svelte/src/registry.ts` — component registry for interactive runes
 
 **When writing CSS for a rune:**
-1. Check the rune's config in `packages/theme-base/src/config.ts` to understand what selectors the engine produces
+1. Check the rune's config in `packages/runes/src/config.ts` to understand what selectors the engine produces
 2. Use `refrakt inspect <rune>` to see the actual HTML output with BEM classes and data attributes
 3. Style the block (`.rf-{block}`), element (`.rf-{block}__{name}`), and modifier (`.rf-{block}--{value}`) selectors
 4. Use `[data-*]` attribute selectors for variant styling on children, not BEM modifiers
@@ -176,7 +176,7 @@ Theme developer documentation lives at `site/content/docs/themes/` (6 pages: ove
 6. Run `npx vitest run packages/lumina/test/css-coverage.test.ts` to verify coverage
 
 **When adding a new rune config:**
-1. Add the `RuneConfig` entry to `packages/theme-base/src/config.ts`
+1. Add the `RuneConfig` entry to `packages/runes/src/config.ts`
 2. Write CSS in `packages/lumina/styles/runes/{block}.css`
 3. Import the CSS file in `packages/lumina/index.css`
 4. Run CSS coverage tests to verify all selectors are styled
@@ -201,13 +201,12 @@ All `@refrakt-md/*` packages and `create-refrakt` are versioned together (Change
 
 ```
 packages/types/       — Shared TypeScript interfaces
-packages/runes/       — rune schemas (~52) + SEO extraction
-packages/transform/   — Identity transform engine + types (ThemeConfig, RuneConfig)
-packages/theme-base/  — Base theme config (all rune mappings) + shared interactive components
+packages/runes/       — Rune schemas (~52) + SEO extraction + core RuneConfig
+packages/transform/   — Identity transform engine + types + merge utilities + layout configs
 packages/lumina/      — Lumina theme (tokens, CSS, icon overrides)
 packages/behaviors/   — Progressive enhancement JS (tabs, accordion, datatable, form)
 packages/content/     — Content loading, routing, layout cascade
-packages/svelte/      — Renderer.svelte + ThemeShell.svelte
+packages/svelte/      — Renderer.svelte + ThemeShell + element overrides + component registry
 packages/sveltekit/   — Vite plugin + virtual modules + HMR
 packages/ai/          — AI prompt building + providers
 packages/cli/         — refrakt CLI (write + inspect + contracts)

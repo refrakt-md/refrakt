@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import postcss from 'postcss';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 import type { RuneConfig, StructureEntry } from '@refrakt-md/transform';
 
 // ─── Known gaps ───

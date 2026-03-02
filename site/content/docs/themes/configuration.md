@@ -341,7 +341,8 @@ Built-in transforms applied to `metaText` values:
 Combines the base config with theme-specific overrides.
 
 ```typescript
-import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 
 const myConfig = mergeThemeConfig(baseConfig, {
   // Override the BEM prefix (optional)

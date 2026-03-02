@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig, StructureEntry } from '@refrakt-md/transform';
+import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 
 export interface ThemeConfigOverrides {
 	prefix?: string;

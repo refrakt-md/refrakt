@@ -1,4 +1,4 @@
-import type { ComponentRegistry } from '@refrakt-md/svelte';
+import type { ComponentRegistry } from './context.js';
 
 /** Maps typeof attribute values to base theme Svelte components.
  *

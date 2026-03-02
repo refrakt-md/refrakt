@@ -83,13 +83,23 @@ The engine. Provides `createTransform(config)` which returns the identity transf
 
 This package has no framework dependencies — it works with any rendering target.
 
-### `@refrakt-md/theme-base`
+### `@refrakt-md/runes`
 
-The shared foundation. Contains:
+Contains the shared base configuration:
 
 - **`baseConfig`** — Universal rune-to-BEM mappings for all 74 rune configurations (including child runes like AccordionItem, Tier, Tab, etc.). Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
+
+### `@refrakt-md/transform`
+
+In addition to the engine, also provides:
+
 - **Layout configs** — `defaultLayout`, `docsLayout`, `blogArticleLayout` — declarative layout configurations for common site patterns.
 - **`mergeThemeConfig()`** — Utility to extend the base config with theme-specific overrides (icons, modified rune behavior, custom prefix).
+
+### `@refrakt-md/svelte`
+
+In addition to the Renderer, also provides:
+
 - **Element overrides** — Svelte wrappers for standard HTML elements (e.g., `<table>`, `<pre>`) that need additional structure, shared across all themes.
 
 ### Your theme package (e.g., `@refrakt-md/lumina`)
@@ -127,7 +137,8 @@ packages/lumina/
 Lumina's config is minimal — it adds icon SVGs and a curated content icon set to the base config:
 
 ```typescript
-import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 import { icons as lucideIcons } from './icons.js';
 
 export const luminaConfig = mergeThemeConfig(baseConfig, {
@@ -143,7 +154,7 @@ export const luminaConfig = mergeThemeConfig(baseConfig, {
 });
 ```
 
-All the structural configuration — which BEM block each rune maps to, how modifiers work, what elements get injected — comes from `baseConfig` in `@refrakt-md/theme-base`.
+All the structural configuration — which BEM block each rune maps to, how modifiers work, what elements get injected — comes from `baseConfig` in `@refrakt-md/runes`.
 
 ## The identity transform in detail
 

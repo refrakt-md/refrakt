@@ -86,6 +86,7 @@ export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';
 export { loadRunePackage, mergePackages } from './packages.js';
 export type { LoadedPackage, MergedPackageResult } from './packages.js';
+export { coreConfig, baseConfig } from './config.js';
 
 export const documents = {
   doc: new DocPage(),

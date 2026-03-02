@@ -209,9 +209,9 @@ function parseBudgetAmount(str: string): number {
 	return isNaN(num) ? 0 : num;
 }
 
-/** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
+/** Core theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
-export const baseConfig: ThemeConfig = {
+export const coreConfig: ThemeConfig = {
 	prefix: 'rf',
 	tokenPrefix: '--rf',
 	icons: {},
@@ -1241,3 +1241,6 @@ export const baseConfig: ThemeConfig = {
 		},
 	},
 };
+
+/** @deprecated Use `coreConfig` instead. Alias kept for backwards compatibility during transition. */
+export const baseConfig = coreConfig;

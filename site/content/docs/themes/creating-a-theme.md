@@ -17,7 +17,7 @@ Use `mergeThemeConfig` with Lumina's config as the base:
 
 ```typescript
 // src/config.ts
-import { mergeThemeConfig } from '@refrakt-md/theme-base';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 import { luminaConfig } from '@refrakt-md/lumina/transform';
 
 export const myThemeConfig = mergeThemeConfig(luminaConfig, {
@@ -106,8 +106,9 @@ Configure `package.json` with the required exports:
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/theme-base": "0.4.0",
+    "@refrakt-md/runes": "0.4.0",
     "@refrakt-md/transform": "0.4.0",
+    "@refrakt-md/svelte": "0.4.0",
     "@refrakt-md/types": "0.4.0"
   }
 }
@@ -124,7 +125,8 @@ The key exports:
 Create `src/config.ts`:
 
 ```typescript
-import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 
 export const myThemeConfig = mergeThemeConfig(baseConfig, {
   // Optional: use a different BEM prefix
@@ -381,21 +383,21 @@ Create `index.css` that imports everything:
 Create `svelte/index.ts` to re-export element overrides and behaviors from theme-base:
 
 ```typescript
-export { elements } from '@refrakt-md/theme-base/svelte/elements';
-export { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
-export { registry } from '@refrakt-md/theme-base/svelte/registry';
+export { elements } from '@refrakt-md/svelte';
+export { behaviors } from '@refrakt-md/svelte';
+export { registry } from '@refrakt-md/svelte';
 ```
 
 The element overrides provide enhanced rendering for standard HTML elements like `<table>` and `<pre>`. The behaviors action wires up progressive enhancement. The registry is empty by default but available as an extension point if you need custom Svelte components for specific runes.
 
 ### Define layouts
 
-Your theme needs layout configs that describe page structure. The simplest approach is to use the built-in layouts from `@refrakt-md/theme-base`:
+Your theme needs layout configs that describe page structure. The simplest approach is to use the built-in layouts from `@refrakt-md/transform`:
 
 ```typescript
 // svelte/index.ts
-import { registry } from '@refrakt-md/theme-base/svelte/registry';
-import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/theme-base';
+import { registry } from '@refrakt-md/svelte';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 import type { SvelteTheme } from '@refrakt-md/svelte';
 import { myThemeConfig } from '../src/config.js';
 
@@ -416,7 +418,7 @@ To customize a layout, create your own `LayoutConfig` object:
 
 ```typescript
 import type { LayoutConfig } from '@refrakt-md/transform';
-import { docsLayout } from '@refrakt-md/theme-base';
+import { docsLayout } from '@refrakt-md/transform';
 
 // Start from the docs layout and override slots
 export const myDocsLayout: LayoutConfig = {

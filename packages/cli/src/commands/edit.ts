@@ -87,7 +87,7 @@ async function resolveTheme(
 	configDir: string,
 ): Promise<ResolvedTheme> {
 	// Always use baseConfig as the foundation
-	const { baseConfig } = await import('@refrakt-md/theme-base');
+	const { baseConfig } = await import('@refrakt-md/runes');
 
 	if (!themeName) {
 		return { themeConfig: baseConfig };

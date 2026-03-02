@@ -56,7 +56,7 @@ In SvelteKit, behaviors are typically applied via a Svelte action:
 
 ```svelte
 <script>
-  import { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
+  import { behaviors } from '@refrakt-md/svelte';
 </script>
 
 <div use:behaviors>
@@ -152,10 +152,10 @@ These are the only Svelte-specific pieces in the base theme — lightweight wrap
 
 ## The component registry
 
-The component registry still exists in `@refrakt-md/theme-base` but is empty by default. It's preserved as an extension point — if your site needs a custom Svelte component for a specific rune, you can register it:
+The component registry still exists in `@refrakt-md/svelte` but is empty by default. It's preserved as an extension point — if your site needs a custom Svelte component for a specific rune, you can register it:
 
 ```typescript
-import { registry as baseRegistry } from '@refrakt-md/theme-base/svelte/registry';
+import { registry as baseRegistry } from '@refrakt-md/svelte';
 import MyCustomChart from './components/MyChart.svelte';
 
 export const registry = {

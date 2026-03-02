@@ -1,7 +1,7 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { generateStructureContract } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 
 export interface ContractsOptions {
 	output?: string;

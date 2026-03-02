@@ -275,7 +275,7 @@ The behavior also handles:
 
 ## Example: docs layout
 
-The `docsLayout` config from `@refrakt-md/theme-base` demonstrates a complete layout with all features. It produces a documentation page with header, mobile panels, toolbar with breadcrumbs, sidebar navigation, content area, and table of contents.
+The `docsLayout` config from `@refrakt-md/transform` demonstrates a complete layout with all features. It produces a documentation page with header, mobile panels, toolbar with breadcrumbs, sidebar navigation, content area, and table of contents.
 
 ```typescript
 import type { LayoutConfig } from '@refrakt-md/transform';
@@ -390,7 +390,7 @@ Layouts are part of the `SvelteTheme` configuration passed to `ThemeShell`:
 
 ```typescript
 import type { SvelteTheme } from '@refrakt-md/svelte';
-import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/theme-base';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
 export const theme: SvelteTheme = {
   config: myThemeConfig,

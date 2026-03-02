@@ -271,7 +271,7 @@ function generateThemePackageJson(packageName: string): string {
 			test: 'vitest run',
 		},
 		dependencies: {
-			'@refrakt-md/theme-base': `~${getRefraktVersion()}`,
+			'@refrakt-md/runes': `~${getRefraktVersion()}`,
 			'@refrakt-md/transform': `~${getRefraktVersion()}`,
 			'@refrakt-md/types': `~${getRefraktVersion()}`,
 			'@refrakt-md/svelte': `~${getRefraktVersion()}`,
@@ -285,7 +285,8 @@ function generateThemePackageJson(packageName: string): string {
 }
 
 function generateThemeConfig(): string {
-	return `import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+	return `import { baseConfig } from '@refrakt-md/runes';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 
 export const themeConfig = mergeThemeConfig(baseConfig, {
 \t// Provide icon SVGs for runes that display them (e.g., Hint)
@@ -307,8 +308,8 @@ export const themeConfig = mergeThemeConfig(baseConfig, {
 function generateThemeSvelteIndex(): string {
 	return `import type { SvelteTheme } from '@refrakt-md/svelte';
 import manifest from '../manifest.json';
-import { registry } from '@refrakt-md/theme-base/svelte/registry';
-import { elements } from '@refrakt-md/theme-base/svelte/elements';
+import { registry } from '@refrakt-md/svelte';
+import { elements } from '@refrakt-md/svelte';
 import DefaultLayout from './layouts/DefaultLayout.svelte';
 
 export { default as manifest } from '../manifest.json';
@@ -321,7 +322,7 @@ export const theme: SvelteTheme = {
 };
 
 export { registry };
-export { behaviors } from '@refrakt-md/theme-base/svelte/behaviors';
+export { behaviors } from '@refrakt-md/svelte';
 export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 `;
 }

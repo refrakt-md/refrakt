@@ -7,3 +7,6 @@ export type { ComponentRegistry, ElementOverrides } from './context.js';
 export type { SvelteTheme } from './theme.js';
 export { isLayoutConfig } from './theme.js';
 export { matchRouteRule } from './route-rules.js';
+export { registry } from './registry.js';
+export { elements } from './elements.js';
+export { behaviors } from './behaviors.js';

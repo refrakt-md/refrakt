@@ -6,7 +6,7 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 import { generateStructureContract } from '@refrakt-md/transform';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

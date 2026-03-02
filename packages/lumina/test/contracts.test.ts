@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { generateStructureContract } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 
 const CONTRACTS_PATH = join(__dirname, '..', 'contracts', 'structures.json');
 
