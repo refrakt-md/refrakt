@@ -1,0 +1,77 @@
+/* Bond */
+.rf-bond {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 1rem 1.5rem;
+	margin: 1rem 0;
+}
+.rf-bond > span[property="from"],
+.rf-bond > span[property="to"] {
+	font-weight: 600;
+	font-size: 1rem;
+	color: var(--rf-color-heading);
+	white-space: nowrap;
+}
+.rf-bond__connector {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+.rf-bond__arrow {
+	display: inline-block;
+	width: 2rem;
+	height: 2px;
+	background: var(--rf-color-border);
+	position: relative;
+}
+.rf-bond__arrow::after {
+	content: '';
+	position: absolute;
+	right: -1px;
+	top: 50%;
+	transform: translateY(-50%);
+	border: 4px solid transparent;
+	border-left: 6px solid var(--rf-color-border);
+}
+.rf-bond[data-bidirectional="true"] .rf-bond__arrow::before {
+	content: '';
+	position: absolute;
+	left: -1px;
+	top: 50%;
+	transform: translateY(-50%);
+	border: 4px solid transparent;
+	border-right: 6px solid var(--rf-color-border);
+}
+.rf-bond__body {
+	flex: 1;
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+}
+
+/* Status variants */
+.rf-bond--active .rf-bond__arrow,
+.rf-bond--active .rf-bond__arrow::after {
+	border-left-color: var(--rf-color-primary);
+}
+.rf-bond--active .rf-bond__arrow {
+	background: var(--rf-color-primary);
+}
+.rf-bond--active[data-bidirectional="true"] .rf-bond__arrow::before {
+	border-right-color: var(--rf-color-primary);
+}
+
+.rf-bond[data-status="broken"] .rf-bond__arrow {
+	background: repeating-linear-gradient(
+		90deg,
+		var(--rf-color-muted) 0,
+		var(--rf-color-muted) 4px,
+		transparent 4px,
+		transparent 8px
+	);
+}
+.rf-bond[data-status="broken"] {
+	opacity: 0.6;
+}

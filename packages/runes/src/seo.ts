@@ -385,20 +385,34 @@ function extractEvent(tag: Tag): object {
 
 function extractPerson(tag: Tag): object | object[] {
 	const members = findAll(tag, t => t.attributes.typeof === 'CastMember');
-	if (members.length === 0) return { '@context': 'https://schema.org', '@type': 'Person' };
 
-	const people = members.map(member => {
-		const name = findProperty(member, 'name');
-		const role = findProperty(member, 'role');
-		return {
-			'@context': 'https://schema.org',
-			'@type': 'Person',
-			name: name ? textContent(name) : undefined,
-			jobTitle: role ? textContent(role) : undefined,
-		};
-	});
+	if (members.length > 0) {
+		const people = members.map(member => {
+			const name = findProperty(member, 'name');
+			const role = findProperty(member, 'role');
+			return {
+				'@context': 'https://schema.org',
+				'@type': 'Person',
+				name: name ? textContent(name) : undefined,
+				jobTitle: role ? textContent(role) : undefined,
+			};
+		});
 
-	return people.length === 1 ? people[0] : people;
+		return people.length === 1 ? people[0] : people;
+	}
+
+	// Character rune: single person
+	const name = findProperty(tag, 'name');
+	const role = metaContent(tag, 'role') as string | undefined;
+	const img = findFirst(tag, t => t.name === 'img');
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: name ? textContent(name) : undefined,
+		jobTitle: role || undefined,
+		image: img?.attributes?.src || undefined,
+	};
 }
 
 function extractOrganization(tag: Tag): object {
@@ -428,6 +442,44 @@ function extractDataset(tag: Tag): object {
 	};
 }
 
+function extractPlace(tag: Tag): object {
+	const name = findProperty(tag, 'name');
+	const img = findFirst(tag, t => t.name === 'img');
+	const realmType = metaContent(tag, 'realmType') as string | undefined;
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Place',
+		name: name ? textContent(name) : undefined,
+		additionalType: realmType || undefined,
+		image: img?.attributes?.src || undefined,
+	};
+}
+
+function extractArticle(tag: Tag): object {
+	const title = findProperty(tag, 'title');
+	const category = metaContent(tag, 'category') as string | undefined;
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'Article',
+		headline: title ? textContent(title) : undefined,
+		articleSection: category || undefined,
+	};
+}
+
+function extractCreativeWork(tag: Tag): object {
+	const title = findProperty(tag, 'title');
+	const plotType = metaContent(tag, 'plotType') as string | undefined;
+
+	return {
+		'@context': 'https://schema.org',
+		'@type': 'CreativeWork',
+		name: title ? textContent(title) : undefined,
+		genre: plotType || undefined,
+	};
+}
+
 // ─── Extractor registry ───
 
 const extractors: Record<string, Extractor> = {
@@ -445,6 +497,9 @@ const extractors: Record<string, Extractor> = {
 	Person: extractPerson,
 	Organization: extractOrganization,
 	Dataset: extractDataset,
+	Place: extractPlace,
+	Article: extractArticle,
+	CreativeWork: extractCreativeWork,
 };
 
 // Child types extracted inline by their parent — skip as top-level

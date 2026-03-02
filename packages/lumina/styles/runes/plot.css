@@ -1,0 +1,80 @@
+/* Plot */
+.rf-plot {
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	padding: 2rem;
+	margin: 1.5rem 0;
+}
+.rf-plot > span[property="title"] {
+	display: block;
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin-bottom: 1rem;
+	color: var(--rf-color-heading);
+}
+.rf-plot ol {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+	position: relative;
+}
+.rf-plot--linear ol {
+	border-left: 2px solid var(--rf-color-border);
+	padding-left: 1.5rem;
+}
+
+/* Beat */
+.rf-beat {
+	position: relative;
+	padding: 0.75rem 0;
+}
+.rf-beat::before {
+	content: '';
+	position: absolute;
+	left: -1.75rem;
+	top: 1rem;
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: var(--rf-radius-full);
+	background: var(--rf-color-border);
+	border: 2px solid var(--rf-color-bg);
+}
+.rf-beat > span[property="label"] {
+	font-weight: 600;
+	font-size: 1rem;
+	color: var(--rf-color-heading);
+}
+.rf-beat__body {
+	margin-top: 0.25rem;
+	font-size: 0.9375rem;
+	color: var(--rf-color-text);
+}
+
+/* Beat status variants */
+.rf-beat--complete::before {
+	background: var(--rf-color-success);
+}
+.rf-beat--complete > span[property="label"] {
+	color: var(--rf-color-muted);
+}
+
+.rf-beat--active::before {
+	background: var(--rf-color-primary);
+	box-shadow: 0 0 0 3px var(--rf-color-primary-bg);
+}
+.rf-beat--active > span[property="label"] {
+	color: var(--rf-color-primary);
+}
+
+.rf-beat--planned::before {
+	background: var(--rf-color-muted-bg);
+	border-color: var(--rf-color-border);
+}
+
+.rf-beat--abandoned > span[property="label"] {
+	text-decoration: line-through;
+	color: var(--rf-color-muted);
+}
+.rf-beat--abandoned::before {
+	background: var(--rf-color-muted);
+}
