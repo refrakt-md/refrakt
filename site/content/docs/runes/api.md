@@ -3,6 +3,10 @@ title: API
 description: API endpoint documentation with method, path, and parameters
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/docs**. Install with `npm install @refrakt/docs` and add `"@refrakt/docs"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # API
 
 API endpoint documentation. Headings become the endpoint title, tables become parameter lists, code blocks become request/response examples, and blockquotes become notes.

@@ -3,6 +3,10 @@ title: Timeline
 description: Chronological events displayed as a timeline
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/business**. Install with `npm install @refrakt/business` and add `"@refrakt/business"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Timeline
 
 Chronological events. Headings with a `date - label` pattern are automatically converted into timeline entries.

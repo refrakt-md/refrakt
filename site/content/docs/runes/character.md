@@ -3,6 +3,10 @@ title: Character
 description: Rich character profiles with sections for backstory, abilities, and more
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/storytelling**. Install with `npm install @refrakt/storytelling` and add `"@refrakt/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Character
 
 Character profiles for worldbuilding and storytelling. Headings within the rune are automatically converted into named sections, and the first image becomes the character portrait.

@@ -3,6 +3,10 @@ title: Steps
 description: Step-by-step instructions with numbered indicators
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/marketing**. Install with `npm install @refrakt/marketing` and add `"@refrakt/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Steps
 
 Step-by-step instructions with numbered indicators. Ordered list items become individual steps.

@@ -3,6 +3,10 @@ title: Bento
 description: Magazine-style bento grid where heading levels control cell size
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/marketing**. Install with `npm install @refrakt/marketing` and add `"@refrakt/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Bento
 
 Magazine-style bento grid. Heading levels determine cell size — larger headings get more space.

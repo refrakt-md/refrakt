@@ -3,6 +3,10 @@ title: Event
 description: Event information with date, location, and agenda
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/places**. Install with `npm install @refrakt/places` and add `"@refrakt/places"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Event
 
 Event information with date, location, and agenda. Lists become speaker/agenda items, links become registration URLs.

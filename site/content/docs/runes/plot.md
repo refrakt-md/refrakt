@@ -3,6 +3,10 @@ title: Plot
 description: Story arcs and quest trackers with progress markers
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/storytelling**. Install with `npm install @refrakt/storytelling` and add `"@refrakt/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Plot
 
 Story arcs, quests, and narrative structures with progress tracking. List items are parsed as beats with status markers — use checkbox syntax to track progress through a storyline.
