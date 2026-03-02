@@ -8,6 +8,7 @@ import { datatableBehavior } from './behaviors/datatable.js';
 import { formBehavior } from './behaviors/form.js';
 import { previewBehavior } from './behaviors/preview.js';
 import { scrollspyBehavior } from './behaviors/scrollspy.js';
+import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 import { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 import { searchBehavior } from './behaviors/search.js';
 
@@ -64,6 +65,10 @@ export function initRuneBehaviors(
 	const scrollspyCleanup = scrollspyBehavior(container);
 	cleanups.push(scrollspyCleanup);
 
+	// Version switcher for versioned pages (not rune-specific)
+	const versionSwitcherCleanup = versionSwitcherBehavior(container);
+	cleanups.push(versionSwitcherCleanup);
+
 	return () => cleanups.forEach((fn) => fn());
 }
 
@@ -108,6 +113,7 @@ export { datatableBehavior } from './behaviors/datatable.js';
 export { formBehavior } from './behaviors/form.js';
 export { previewBehavior } from './behaviors/preview.js';
 export { scrollspyBehavior } from './behaviors/scrollspy.js';
+export { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 export { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 export { searchBehavior } from './behaviors/search.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';

@@ -7,6 +7,7 @@ import { ContentTree } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import { runes as allRunes, RUNE_EXAMPLES } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import type { RouteRule } from '@refrakt-md/types';
 import { createTransform } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent } from './preview.js';
@@ -31,6 +32,10 @@ export interface EditorOptions {
 	staticDir?: string;
 	/** Whether to open browser automatically (default: true) */
 	open?: boolean;
+	/** Absolute path to refrakt.config.json (needed for routeRules editing) */
+	configPath?: string;
+	/** Route rules from refrakt.config.json */
+	routeRules?: RouteRule[];
 }
 
 const MIME_TYPES: Record<string, string> = {
@@ -73,7 +78,10 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		staticDir,
 		devServer,
 		open = true,
+		configPath,
 	} = options;
+
+	let routeRules: RouteRule[] = options.routeRules ?? [];
 
 	const absContentDir = resolve(contentDir);
 	const appDistDir = resolveAppDist();
@@ -196,6 +204,24 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 					themeCss,
 					themeConfig: stripFunctions(themeConfig),
 				});
+			} else if (method === 'GET' && url.pathname === '/api/route-rules') {
+				serveJson(res, { routeRules });
+			} else if (method === 'PUT' && url.pathname === '/api/route-rules') {
+				if (!configPath) {
+					res.writeHead(404, { 'Content-Type': 'application/json' });
+					res.end(JSON.stringify({ error: 'No config file path available' }));
+				} else {
+					const body = await readBody(req);
+					const { routeRules: newRules } = JSON.parse(body) as { routeRules: RouteRule[] };
+					// Update in-memory rules
+					routeRules = newRules;
+					// Read existing config, update routeRules field, write back
+					const configRaw = readFileSync(configPath, 'utf-8');
+					const config = JSON.parse(configRaw);
+					config.routeRules = newRules;
+					writeFileSync(configPath, JSON.stringify(config, null, '\t') + '\n', 'utf-8');
+					serveJson(res, { ok: true });
+				}
 			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
 				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
 			} else if (method === 'GET' && url.pathname === '/api/events') {

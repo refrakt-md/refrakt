@@ -19,6 +19,7 @@
 @import './styles/layouts/blog.css';
 @import './styles/layouts/on-this-page.css';
 @import './styles/layouts/search.css';
+@import './styles/layouts/version-switcher.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';
@@ -69,3 +70,6 @@
 @import './styles/runes/typography.css';
 @import './styles/runes/spacing.css';
 @import './styles/runes/design-context.css';
+@import './styles/runes/pullquote.css';
+@import './styles/runes/textblock.css';
+@import './styles/runes/mediatext.css';

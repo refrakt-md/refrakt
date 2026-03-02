@@ -1,5 +1,5 @@
 import { parseFrontmatterClient, serializeFrontmatter, type Frontmatter } from '../utils/frontmatter.js';
-import type { RuneInfo } from '../api/client.js';
+import type { RuneInfo, RouteRule } from '../api/client.js';
 import type { RendererNode } from '@refrakt-md/transform';
 
 interface TreeNode {
@@ -36,6 +36,9 @@ class EditorState {
 	/** Rune metadata for autocomplete/palette */
 	runes: RuneInfo[] = $state([]);
 
+	/** Route rules from refrakt.config.json */
+	routeRules: RouteRule[] = $state([]);
+
 	/** Preview viewport preset */
 	viewport: 'desktop' | 'tablet' | 'mobile' = $state('desktop');
 
@@ -54,8 +57,8 @@ class EditorState {
 	/** Whether the preview runtime iframe has signalled ready */
 	previewRuntimeReady = $state(false);
 
-	/** Directories the user has collapsed */
-	collapsedDirs: Set<string> = $state(new Set());
+	/** Directories the user has explicitly expanded (all start collapsed) */
+	expandedDirs: Set<string> = $state(new Set());
 
 	/** External file change notification (set by SSE watcher) */
 	externalChange: { path: string; event: string } | null = $state(null);
@@ -119,17 +122,17 @@ class EditorState {
 	}
 
 	toggleDir(path: string): void {
-		const next = new Set(this.collapsedDirs);
+		const next = new Set(this.expandedDirs);
 		if (next.has(path)) {
 			next.delete(path);
 		} else {
 			next.add(path);
 		}
-		this.collapsedDirs = next;
+		this.expandedDirs = next;
 	}
 
 	isDirExpanded(path: string): boolean {
-		return !this.collapsedDirs.has(path);
+		return this.expandedDirs.has(path);
 	}
 }
 

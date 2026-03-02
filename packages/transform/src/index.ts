@@ -5,7 +5,7 @@ export { createTransform } from './engine.js';
 export { layoutTransform } from './layout.js';
 
 // Computed content builders
-export { buildBreadcrumb, buildToc, buildPrevNext } from './computed.js';
+export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
 
 // Configuration types
 export type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
