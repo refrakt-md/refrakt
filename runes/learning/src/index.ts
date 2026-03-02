@@ -14,12 +14,44 @@ export const learning: RunePackage = {
       description: 'Step-by-step how-to guide with tools/materials list and instructions',
       seoType: 'HowTo',
       reinterprets: { 'ordered list': 'steps', list: 'tools/materials', heading: 'title' },
+      fixture: `{% howto estimatedTime="PT45M" difficulty="easy" %}
+# Set Up a Refrakt Theme
+
+- Node.js 20+
+- A code editor
+- Basic CSS knowledge
+
+1. Create a new directory for your theme
+2. Run \`npm init\` and add the theme-base dependency
+3. Create your \`theme.config.ts\` extending baseConfig
+4. Write CSS targeting the BEM selectors from \`refrakt inspect\`
+5. Test with \`refrakt inspect --serve\`
+{% /howto %}`,
     },
     'recipe': {
       transform: recipe,
       description: 'Recipe with ingredients, steps, and chef tips. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
       seoType: 'Recipe',
       reinterprets: { list: 'ingredients', 'ordered list': 'steps', blockquote: 'chef tips', image: 'recipe photo', heading: 'recipe name' },
+      fixture: `{% recipe prepTime="PT15M" cookTime="PT30M" servings="4" difficulty="medium" %}
+# Classic Margherita Pizza
+
+- 500g bread flour
+- 7g dried yeast
+- 1 tsp salt
+- 300ml warm water
+- San Marzano tomatoes
+- Fresh mozzarella
+- Fresh basil leaves
+
+1. Mix flour, yeast, and salt in a large bowl
+2. Add warm water and knead for 10 minutes until smooth
+3. Let the dough rise for 1 hour at room temperature
+4. Shape into rounds and add toppings
+5. Bake at 250°C for 8-10 minutes
+
+> For the best crust, preheat your oven with a pizza stone for at least 30 minutes before baking.
+{% /recipe %}`,
     },
   },
   theme: {

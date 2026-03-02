@@ -213,6 +213,7 @@ function runInspect(inspectArgs: string[]): void {
 		let mergedRunes = runes;
 		let mergedTags: Record<string, any> = tags;
 		let mergedConfig = baseConfig;
+		let packageFixtures: Record<string, string> = {};
 
 		// Try loading community packages from refrakt.config.json
 		try {
@@ -228,6 +229,7 @@ function runInspect(inspectArgs: string[]): void {
 				merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
 				mergedRunes = { ...runes, ...merged.runes };
 				mergedTags = { ...tags, ...merged.tags };
+				packageFixtures = merged.fixtures;
 			}
 
 			// Load local runes if configured
@@ -261,7 +263,7 @@ function runInspect(inspectArgs: string[]): void {
 
 		return inspectCommand(
 			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
-			{ Markdoc, runes: mergedRunes, tags: mergedTags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: mergedConfig },
+			{ Markdoc, runes: mergedRunes, tags: mergedTags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: mergedConfig, packageFixtures },
 		);
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
@@ -335,7 +337,8 @@ function runWrite(writeArgs: string[]): void {
 	Promise.all([
 		import('./config.js'),
 		import('./commands/write.js'),
-	]).then(([{ detectProvider }, { writeCommand }]) => {
+		import('@refrakt-md/runes'),
+	]).then(async ([{ detectProvider }, { writeCommand }, runesModule]) => {
 		let resolved;
 		try {
 			resolved = detectProvider(providerName);
@@ -344,8 +347,25 @@ function runWrite(writeArgs: string[]): void {
 			process.exit(1);
 		}
 
+		// Load community packages to include in AI prompt
+		const { runes } = runesModule;
+		let mergedRunes: Record<string, any> = runes;
+		try {
+			const { loadRefraktConfigFile } = await import('./config-file.js');
+			const { config } = loadRefraktConfigFile();
+			if (config.packages && config.packages.length > 0) {
+				const loaded = await Promise.all(
+					config.packages.map((name: string) => runesModule.loadRunePackage(name))
+				);
+				const merged = runesModule.mergePackages(loaded, new Set(Object.keys(runes)), config.runes?.prefer);
+				mergedRunes = { ...runes, ...merged.runes };
+			}
+		} catch {
+			// No config file or packages — use core runes only
+		}
+
 		const modelName = model ?? resolved.defaultModel;
-		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output, outputDir });
+		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output, outputDir, runes: mergedRunes });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);

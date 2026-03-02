@@ -13,11 +13,20 @@ export const media: RunePackage = {
       description: 'Music playlist with track listing',
       reinterprets: { heading: 'playlist name', list: 'track listing' },
       seoType: 'MusicPlaylist',
+      fixture: `{% music-playlist audio="/audio/album.mp3" %}
+# Album Title
+
+![Album Cover](/images/cover.jpg)
+
+- Track One | 3:42
+- Track Two | 4:15
+{% /music-playlist %}`,
     },
     'music-recording': {
       transform: musicRecording,
       description: 'Individual music track metadata',
       seoType: 'MusicRecording',
+      fixture: `{% music-recording title="Moonlight Sonata" artist="Beethoven" duration="PT15M" genre="Classical" /%}`,
     },
   },
   theme: {

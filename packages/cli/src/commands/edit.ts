@@ -55,6 +55,86 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		};
 	}
 
+	// Load community packages for editor palette + preview
+	let extraTags: Record<string, import('@markdoc/markdoc').Schema> | undefined;
+	let communityRuneEntries: Array<{
+		name: string; aliases: string[]; description: string;
+		selfClosing: boolean; category: string;
+		attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
+		example?: string;
+	}> | undefined;
+
+	if (projectConfig?.packages?.length) {
+		try {
+			const { loadRunePackage, mergePackages, runes: coreRuneMap } = await import('@refrakt-md/runes');
+
+			const loaded = await Promise.all(
+				projectConfig.packages.map((name: string) => loadRunePackage(name))
+			);
+
+			const merged = mergePackages(
+				loaded,
+				new Set(Object.keys(coreRuneMap)),
+				projectConfig.runes?.prefer,
+			);
+
+			extraTags = merged.tags;
+
+			// Merge community theme rune configs into themeConfig
+			if (Object.keys(merged.themeRunes).length > 0) {
+				themeConfig = {
+					...themeConfig,
+					runes: { ...themeConfig.runes, ...merged.themeRunes },
+				};
+			}
+
+			// Merge community icons
+			for (const [group, icons] of Object.entries(merged.themeIcons)) {
+				themeConfig = {
+					...themeConfig,
+					icons: { ...themeConfig.icons, [group]: { ...(themeConfig.icons[group] ?? {}), ...icons } },
+				};
+			}
+
+			// Build community rune entries for the editor palette
+			communityRuneEntries = [];
+			for (const [name, rune] of Object.entries(merged.runes)) {
+				const srcPkg = loaded.find(p => p.runes[name]);
+				const entry = srcPkg ? srcPkg.pkg.runes[name] : undefined;
+				// Skip child runes (no reinterprets and no fixture)
+				if (entry && !entry.reinterprets && !entry.fixture) continue;
+
+				const attrs: Record<string, { type: string; required: boolean; values?: string[] }> = {};
+				if (rune.schema.attributes) {
+					for (const [attrName, attr] of Object.entries(rune.schema.attributes)) {
+						const typeName = typeof attr.type === 'function'
+							? attr.type.name
+							: Array.isArray(attr.type)
+								? attr.type.map((t: unknown) => (t as { name?: string }).name ?? 'unknown').join(' | ')
+								: 'String';
+						attrs[attrName] = {
+							type: typeName,
+							required: attr.required ?? false,
+							...(Array.isArray(attr.matches) ? { values: attr.matches.map(String) } : {}),
+						};
+					}
+				}
+
+				communityRuneEntries.push({
+					name,
+					aliases: rune.aliases ?? [],
+					description: rune.description ?? '',
+					selfClosing: rune.schema.selfClosing ?? false,
+					category: srcPkg?.pkg.displayName ?? 'Community',
+					attributes: attrs,
+					example: merged.fixtures[name],
+				});
+			}
+		} catch (err) {
+			console.warn('Warning: Could not load community packages:', (err as Error).message);
+		}
+	}
+
 	// Resolve static assets directory (SvelteKit convention: {projectRoot}/static/)
 	const staticPath = resolve(configDir, 'static');
 	const staticDir = existsSync(staticPath) ? staticPath : undefined;
@@ -73,6 +153,8 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		open: !options.noOpen,
 		configPath: projectConfigPath,
 		routeRules: projectConfig?.routeRules,
+		extraTags,
+		communityRunes: communityRuneEntries,
 	});
 }
 

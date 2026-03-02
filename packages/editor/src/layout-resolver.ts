@@ -1,4 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
+import type { Schema } from '@markdoc/markdoc';
 import { ContentTree, resolveLayouts, Router, parseFrontmatter } from '@refrakt-md/content';
 import type { ContentPage } from '@refrakt-md/content';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
@@ -23,10 +24,15 @@ export class LayoutResolver {
 	private router = new Router('/');
 	private pagesList: Array<{ url: string; path: string; title: string; draft: boolean }> = [];
 
+	private mergedTags: Record<string, Schema>;
+
 	constructor(
 		private contentDir: string,
 		private themeConfig: ThemeConfig,
-	) {}
+		extraTags?: Record<string, Schema>,
+	) {
+		this.mergedTags = extraTags ? { ...tags, ...extraTags } : tags;
+	}
 
 	/** Build/refresh the ContentTree (call on startup + after file saves) */
 	async refresh(): Promise<void> {
@@ -49,7 +55,7 @@ export class LayoutResolver {
 		// Run Markdoc pipeline on page content
 		const ast = Markdoc.parse(content);
 		const rendered = Markdoc.transform(ast, {
-			tags,
+			tags: this.mergedTags,
 			nodes,
 			variables: { __source: content, __icons: this.themeConfig.icons },
 		});

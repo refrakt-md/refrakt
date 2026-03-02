@@ -15,7 +15,7 @@ function makeLoadedPackage(pkg: RunePackage, npmName: string): LoadedPackage {
 			description: `Community rune from ${pkg.name}`,
 		});
 	}
-	return { pkg, npmName, runes };
+	return { pkg, npmName, runes, fixtures: {} };
 }
 
 const gameSystemPkg: RunePackage = {

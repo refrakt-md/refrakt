@@ -11,6 +11,8 @@ export interface LoadedPackage {
 	npmName: string;
 	/** Rune instances created from the package's entries */
 	runes: Record<string, Rune>;
+	/** Fixture strings for the inspect command (keyed by rune name) */
+	fixtures: Record<string, string>;
 }
 
 /** Result of merging multiple community packages */
@@ -29,6 +31,8 @@ export interface MergedPackageResult {
 	packages: RunePackage[];
 	/** Source provenance for every resolved rune name */
 	provenance: Record<string, RuneProvenance>;
+	/** Fixture strings from packages for the inspect command */
+	fixtures: Record<string, string>;
 }
 
 /**
@@ -54,8 +58,9 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 	// Validate required fields
 	validateRunePackage(pkg, npmPackageName);
 
-	// Create Rune instances from package entries
+	// Create Rune instances and collect fixtures from package entries
 	const runes: Record<string, Rune> = {};
+	const fixtures: Record<string, string> = {};
 	for (const [runeName, entry] of Object.entries(pkg.runes)) {
 		runes[runeName] = defineRune({
 			name: runeName,
@@ -65,9 +70,12 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 			seoType: entry.seoType,
 			reinterprets: entry.reinterprets,
 		});
+		if (entry.fixture) {
+			fixtures[runeName] = entry.fixture;
+		}
 	}
 
-	return { pkg, npmName: npmPackageName, runes };
+	return { pkg, npmName: npmPackageName, runes, fixtures };
 }
 
 /**
@@ -233,6 +241,17 @@ export function mergePackages(
 		}
 	}
 
+	// Collect fixtures from resolved runes
+	const fixtures: Record<string, string> = {};
+	for (const name of Object.keys(runes)) {
+		for (const loadedPkg of loaded) {
+			if (loadedPkg.fixtures[name]) {
+				fixtures[name] = loadedPkg.fixtures[name];
+				break;
+			}
+		}
+	}
+
 	return {
 		runes,
 		tags,
@@ -241,6 +260,7 @@ export function mergePackages(
 		extensions,
 		packages: loaded.map(l => l.pkg),
 		provenance,
+		fixtures,
 	};
 }
 
@@ -336,6 +356,7 @@ export async function loadLocalRunes(
 		},
 		npmName: '__local__',
 		runes,
+		fixtures: {},
 	};
 }
 

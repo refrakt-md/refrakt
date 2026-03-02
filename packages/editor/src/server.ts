@@ -36,6 +36,15 @@ export interface EditorOptions {
 	configPath?: string;
 	/** Route rules from refrakt.config.json */
 	routeRules?: RouteRule[];
+	/** Extra Markdoc tags from community packages (merged into preview pipeline) */
+	extraTags?: Record<string, import('@markdoc/markdoc').Schema>;
+	/** Community rune metadata for the editor palette */
+	communityRunes?: Array<{
+		name: string; aliases: string[]; description: string;
+		selfClosing: boolean; category: string;
+		attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
+		example?: string;
+	}>;
 }
 
 const MIME_TYPES: Record<string, string> = {
@@ -79,6 +88,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		devServer,
 		open = true,
 		configPath,
+		extraTags,
+		communityRunes,
 	} = options;
 
 	let routeRules: RouteRule[] = options.routeRules ?? [];
@@ -140,7 +151,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	}
 
 	// Initialize layout resolver for full-page preview with layouts
-	const layoutResolver = new LayoutResolver(absContentDir, themeConfig);
+	const layoutResolver = new LayoutResolver(absContentDir, themeConfig, extraTags);
 	await layoutResolver.refresh();
 
 	// Create identity transform once (reused across preview requests)
@@ -176,9 +187,9 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				layoutResolver.refresh().catch(() => {});
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
-				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform);
+				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform, extraTags);
 			} else if (method === 'POST' && url.pathname === '/api/preview') {
-				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform);
+				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform, extraTags);
 			} else if (method === 'POST' && url.pathname === '/api/pages') {
 				await handleCreatePage(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/directories') {
@@ -196,7 +207,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'GET' && url.pathname === '/api/pages-list') {
 				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/runes') {
-				handleGetRunes(res);
+				handleGetRunes(res, communityRunes);
 			} else if (method === 'GET' && url.pathname === '/api/config') {
 				serveJson(res, {
 					previewRuntime: previewRuntimeDir !== null,
@@ -412,6 +423,7 @@ function handlePreview(
 	themeConfig: ThemeConfig,
 	themeCss: string,
 	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
+	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
 ): void {
 	const fullPath = safePath(contentDir, filePath);
 	if (!fullPath) {
@@ -426,7 +438,7 @@ function handlePreview(
 		return;
 	}
 
-	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight);
+	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight, extraTags);
 	serveHtml(res, html);
 }
 
@@ -436,11 +448,12 @@ async function handlePreviewContent(
 	themeConfig: ThemeConfig,
 	themeCss: string,
 	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
+	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { content } = JSON.parse(body) as { content: string };
 
-	const html = renderPreviewContent(content, themeConfig, themeCss, highlight);
+	const html = renderPreviewContent(content, themeConfig, themeCss, highlight, extraTags);
 	serveHtml(res, html);
 }
 
@@ -745,6 +758,8 @@ const CHILD_RUNES = new Set([
 	'cast-member', 'conversation-message', 'reveal-step', 'bento-cell',
 	'storyboard-panel', 'note', 'form-field', 'comparison-column', 'comparison-row',
 	'symbol-group', 'symbol-member', 'map-pin', 'definition', 'region',
+	'beat', 'character-section', 'realm-section', 'faction-section',
+	'itinerary-day', 'itinerary-stop',
 ]);
 
 const RUNE_CATEGORIES: Record<string, string> = {
@@ -775,7 +790,10 @@ const RUNE_CATEGORIES: Record<string, string> = {
 
 let cachedRuneData: unknown[] | null = null;
 
-function handleGetRunes(res: import('node:http').ServerResponse): void {
+function handleGetRunes(
+	res: import('node:http').ServerResponse,
+	communityRunes?: EditorOptions['communityRunes'],
+): void {
 	if (!cachedRuneData) {
 		cachedRuneData = [];
 		for (const rune of Object.values(allRunes)) {
@@ -806,6 +824,13 @@ function handleGetRunes(res: import('node:http').ServerResponse): void {
 				attributes: attrs,
 				example: RUNE_EXAMPLES[rune.name],
 			});
+		}
+
+		// Append community runes from packages
+		if (communityRunes) {
+			for (const entry of communityRunes) {
+				cachedRuneData.push(entry);
+			}
 		}
 	}
 
