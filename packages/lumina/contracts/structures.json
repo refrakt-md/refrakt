@@ -929,6 +929,93 @@
 				}
 			}
 		},
+		"PullQuote": {
+			"block": "pullquote",
+			"root": ".rf-pullquote",
+			"dataRune": "pullquote",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"align": {
+					"source": "meta",
+					"default": "center",
+					"classPattern": ".rf-pullquote--{value}",
+					"dataAttribute": "data-align"
+				},
+				"style": {
+					"source": "meta",
+					"default": "default",
+					"classPattern": ".rf-pullquote--{value}",
+					"dataAttribute": "data-style"
+				}
+			}
+		},
+		"TextBlock": {
+			"block": "textblock",
+			"root": ".rf-textblock",
+			"dataRune": "textblock",
+			"childOrder": [
+				"{content:body}"
+			],
+			"modifiers": {
+				"dropcap": {
+					"source": "meta",
+					"classPattern": ".rf-textblock--{value}",
+					"dataAttribute": "data-dropcap"
+				},
+				"columns": {
+					"source": "meta",
+					"classPattern": ".rf-textblock--{value}",
+					"dataAttribute": "data-columns"
+				},
+				"lead": {
+					"source": "meta",
+					"classPattern": ".rf-textblock--{value}",
+					"dataAttribute": "data-lead"
+				},
+				"align": {
+					"source": "meta",
+					"default": "left",
+					"classPattern": ".rf-textblock--{value}",
+					"dataAttribute": "data-align"
+				}
+			},
+			"elements": {
+				"body": {
+					"tag": "div",
+					"selector": ".rf-textblock__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"MediaText": {
+			"block": "mediatext",
+			"root": ".rf-mediatext",
+			"dataRune": "mediatext",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"align": {
+					"source": "meta",
+					"default": "left",
+					"classPattern": ".rf-mediatext--{value}",
+					"dataAttribute": "data-align"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1:1",
+					"classPattern": ".rf-mediatext--{value}",
+					"dataAttribute": "data-ratio"
+				},
+				"wrap": {
+					"source": "meta",
+					"classPattern": ".rf-mediatext--{value}",
+					"dataAttribute": "data-wrap"
+				}
+			}
+		},
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",

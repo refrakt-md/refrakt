@@ -694,6 +694,34 @@ export const baseConfig: ThemeConfig = {
 			},
 		},
 
+		// ─── Text formatting & layout runes ───
+
+		PullQuote: {
+			block: 'pullquote',
+			modifiers: {
+				align: { source: 'meta', default: 'center' },
+				style: { source: 'meta', default: 'default' },
+			},
+		},
+		TextBlock: {
+			block: 'textblock',
+			contentWrapper: { tag: 'div', ref: 'body' },
+			modifiers: {
+				dropcap: { source: 'meta' },
+				columns: { source: 'meta' },
+				lead: { source: 'meta' },
+				align: { source: 'meta', default: 'left' },
+			},
+		},
+		MediaText: {
+			block: 'mediatext',
+			modifiers: {
+				align: { source: 'meta', default: 'left' },
+				ratio: { source: 'meta', default: '1:1' },
+				wrap: { source: 'meta' },
+			},
+		},
+
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
 		TabGroup: { block: 'tabs' },

@@ -68,6 +68,9 @@ export { Typography, TypographySpecimen, TypographyComponent } from './schema/ty
 export { Spacing, SpacingScale, SpacingRadius, SpacingShadow, SpacingComponent } from './schema/spacing.js';
 export { DesignContext, DesignContextComponent } from './schema/design-context.js';
 export type { DesignTokens } from './schema/design-context.js';
+export { PullQuote, PullQuoteComponent } from './schema/pullquote.js';
+export { TextBlock, TextBlockComponent } from './schema/textblock.js';
+export { MediaText, MediaTextComponent } from './schema/mediatext.js';
 
 // Theme system types
 export type {
