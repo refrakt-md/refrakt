@@ -22,6 +22,9 @@ class BondModel extends Model {
 	transform() {
 		const fromTag = new Tag('span', {}, [this.from]);
 		const toTag = new Tag('span', {}, [this.to]);
+		const connector = new Tag('div', { 'data-name': 'connector' }, [
+			new Tag('span', { 'data-name': 'arrow' }),
+		]);
 		const bondTypeMeta = new Tag('meta', { content: this.type });
 		const statusMeta = new Tag('meta', { content: this.status });
 		const bidirectionalMeta = new Tag('meta', { content: String(this.bidirectional) });
@@ -37,9 +40,10 @@ class BondModel extends Model {
 				bidirectional: bidirectionalMeta,
 			},
 			refs: {
+				connector,
 				body: body.tag('div'),
 			},
-			children: [fromTag, toTag, bondTypeMeta, statusMeta, bidirectionalMeta, body.next()],
+			children: [fromTag, connector, toTag, bondTypeMeta, statusMeta, bidirectionalMeta, body.next()],
 		});
 	}
 }

@@ -7,9 +7,9 @@ description: Styled text blocks with drop caps, columns, and lead paragraphs
 
 Typography-focused text wrapper for magazine-style layouts. Adds drop caps, multi-column text, lead paragraph styling, and text alignment without any custom markup inside the content.
 
-## Basic usage
+## Drop cap
 
-Wrap text in a textblock with a drop cap for an editorial feel.
+The `dropcap` attribute adds a large decorative first letter for an editorial feel.
 
 {% preview source=true %}
 

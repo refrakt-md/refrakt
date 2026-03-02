@@ -69,4 +69,29 @@ Best friends.
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
 		expect(tag).toBeDefined();
 	});
+
+	it('should place connector between from and to in children order', () => {
+		const result = parse(`{% bond from="Aragorn" to="Legolas" %}
+A fellowship bond.
+{% /bond %}`);
+
+		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		expect(tag).toBeDefined();
+
+		const connector = findTag(tag!, t => t.attributes['data-name'] === 'connector');
+		expect(connector).toBeDefined();
+		expect(connector!.name).toBe('div');
+
+		const arrow = findTag(connector!, t => t.attributes['data-name'] === 'arrow');
+		expect(arrow).toBeDefined();
+		expect(arrow!.name).toBe('span');
+
+		// Verify order: from, connector, to
+		const children = tag!.children.filter((c: any) => c && typeof c === 'object' && c.name);
+		const fromIdx = children.findIndex((c: any) => c.attributes?.property === 'from');
+		const connIdx = children.findIndex((c: any) => c.attributes?.['data-name'] === 'connector');
+		const toIdx = children.findIndex((c: any) => c.attributes?.property === 'to');
+		expect(fromIdx).toBeLessThan(connIdx);
+		expect(connIdx).toBeLessThan(toIdx);
+	});
 });

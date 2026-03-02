@@ -18,6 +18,7 @@ export interface BondComponent extends ComponentType<Bond> {
 		bidirectional: 'meta',
 	},
 	refs: {
+		connector: 'div',
 		body: 'div',
 	}
 }

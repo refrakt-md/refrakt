@@ -22,9 +22,9 @@ class TextBlockModel extends Model {
 	transform(): RenderableTreeNodes {
 		const children = this.transformChildren();
 
-		const dropcapMeta = this.dropcap ? new Tag('meta', { content: 'true' }) : undefined;
+		const dropcapMeta = this.dropcap ? new Tag('meta', { content: 'dropcap' }) : undefined;
 		const columnsMeta = this.columns > 1 ? new Tag('meta', { content: String(this.columns) }) : undefined;
-		const leadMeta = this.lead ? new Tag('meta', { content: 'true' }) : undefined;
+		const leadMeta = this.lead ? new Tag('meta', { content: 'lead' }) : undefined;
 		const alignMeta = this.align !== 'left' ? new Tag('meta', { content: this.align }) : undefined;
 
 		const body = children.wrap('div');

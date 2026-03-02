@@ -846,7 +846,6 @@ export const baseConfig: ThemeConfig = {
 		},
 		TextBlock: {
 			block: 'textblock',
-			contentWrapper: { tag: 'div', ref: 'body' },
 			modifiers: {
 				dropcap: { source: 'meta' },
 				columns: { source: 'meta' },
@@ -1238,14 +1237,6 @@ export const baseConfig: ThemeConfig = {
 				bondType: { source: 'meta' },
 				status: { source: 'meta', default: 'active' },
 				bidirectional: { source: 'meta', default: 'true' },
-			},
-			structure: {
-				connector: {
-					tag: 'div', before: false,
-					children: [
-						{ tag: 'span', ref: 'arrow' },
-					],
-				},
 			},
 		},
 	},
