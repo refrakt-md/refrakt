@@ -27,6 +27,7 @@ import { timeline, timelineEntry } from './tags/timeline.js';
 import { changelog, changelogRelease } from './tags/changelog.js';
 import { embed } from './tags/embed.js';
 import { breadcrumb } from './tags/breadcrumb.js';
+import { budget, budgetCategory, budgetLineItem } from './tags/budget.js';
 import { compare } from './tags/compare.js';
 import { recipe } from './tags/recipe.js';
 import { howto } from './tags/howto.js';
@@ -46,6 +47,7 @@ import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
+import { itinerary, itineraryDay, itineraryStop } from './tags/itinerary.js';
 import { map, mapPin } from './tags/map.js';
 import { preview } from './tags/preview.js';
 import { sandbox } from './tags/sandbox.js';
@@ -310,6 +312,27 @@ export const runes = {
     seoType: 'BreadcrumbList',
     type: schema.Breadcrumb,
   }),
+  budget: defineRune({
+    name: 'budget',
+    schema: budget,
+    description: 'Structured cost breakdown with categories, line items, and auto-calculated totals',
+    reinterprets: { heading: 'category label', list: 'line items (Description: $amount)' },
+    seoType: 'ItemList',
+    type: schema.Budget,
+  }),
+  'budget-category': defineRune({
+    name: 'budget-category',
+    schema: budgetCategory,
+    description: 'Cost category within a budget containing line items',
+    reinterprets: { list: 'line items (Description: $amount)' },
+    type: schema.BudgetCategory,
+  }),
+  'budget-line-item': defineRune({
+    name: 'budget-line-item',
+    schema: budgetLineItem,
+    description: 'Individual budget line item with description and amount',
+    type: schema.BudgetLineItem,
+  }),
   compare: defineRune({
     name: 'compare',
     schema: compare,
@@ -512,6 +535,27 @@ export const runes = {
     schema: comparisonRow,
     description: 'Individual row/cell within a comparison column',
     type: schema.ComparisonRow,
+  }),
+  itinerary: defineRune({
+    name: 'itinerary',
+    aliases: ['trip', 'travel-plan'],
+    schema: itinerary,
+    description: 'Travel itinerary with day groupings and timed stops. Headings become stops with "time — location" parsing; h2 headings create day groups.',
+    reinterprets: { heading: 'stop time and location (h2 = day group, h3 = stop)', paragraph: 'stop description' },
+    seoType: 'ItemList',
+    type: schema.Itinerary,
+  }),
+  'itinerary-day': defineRune({
+    name: 'itinerary-day',
+    schema: itineraryDay,
+    description: 'Day grouping within an itinerary',
+    type: schema.ItineraryDay,
+  }),
+  'itinerary-stop': defineRune({
+    name: 'itinerary-stop',
+    schema: itineraryStop,
+    description: 'Individual stop within an itinerary with time, location, and optional duration/activity',
+    type: schema.ItineraryStop,
   }),
   map: defineRune({
     name: 'map',

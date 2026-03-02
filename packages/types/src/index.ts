@@ -39,6 +39,7 @@ export { Timeline, TimelineProperties, TimelineComponent, TimelineEntry, Timelin
 export { Changelog, ChangelogProperties, ChangelogComponent, ChangelogRelease, ChangelogReleaseComponent } from './schema/changelog.js';
 export { Embed, EmbedComponent } from './schema/embed.js';
 export { Breadcrumb, BreadcrumbComponent, BreadcrumbItem, BreadcrumbItemComponent } from './schema/breadcrumb.js';
+export { Budget, BudgetProperties, BudgetComponent, BudgetCategory, BudgetCategoryProperties, BudgetCategoryComponent, BudgetLineItem, BudgetLineItemComponent } from './schema/budget.js';
 export { Compare, CompareComponent } from './schema/compare.js';
 export { Recipe, RecipeProperties, RecipeComponent, RecipeIngredient, RecipeIngredientComponent } from './schema/recipe.js';
 export { HowTo, HowToProperties, HowToComponent } from './schema/howto.js';
@@ -58,6 +59,7 @@ export { Storyboard, StoryboardComponent, StoryboardPanel, StoryboardPanelCompon
 export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from './schema/annotate.js';
 export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
 export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
+export { Itinerary, ItineraryProperties, ItineraryComponent, ItineraryDay, ItineraryDayComponent, ItineraryStop, ItineraryStopComponent } from './schema/itinerary.js';
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
 export { Preview, PreviewComponent } from './schema/preview.js';
 export { Sandbox, SandboxComponent } from './schema/sandbox.js';
