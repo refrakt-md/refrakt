@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 import { extractPaletteTokens } from './palette.js';
 import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';

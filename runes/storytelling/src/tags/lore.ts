@@ -1,6 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 class LoreModel extends Model {
 	@attribute({ type: String, required: true })

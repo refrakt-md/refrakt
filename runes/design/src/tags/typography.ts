@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {

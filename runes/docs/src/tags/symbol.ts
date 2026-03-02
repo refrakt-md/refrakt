@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 // Kinds that use group/member heading structure
 const GROUP_KINDS = ['class', 'interface', 'module'];

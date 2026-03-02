@@ -1,6 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const alignType = ['left', 'center', 'right'] as const;
 

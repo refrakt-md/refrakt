@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const styleType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
 const heightType = ['small', 'medium', 'large', 'full'] as const;

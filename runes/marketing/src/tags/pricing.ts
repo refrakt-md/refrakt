@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const NAME_PRICE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;
 

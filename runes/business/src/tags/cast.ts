@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties } from '@refrakt-md/runes';
+import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const layoutType = ['grid', 'list'] as const;
 const NAME_ROLE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;

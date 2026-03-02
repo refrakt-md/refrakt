@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 // Parse "v2.1.0 - 2024-01-15" or "0.1.0 — January 2024"
 const VERSION_DATE_PATTERN = /^v?([\d.]+(?:-[\w.]+)?)\s*[-–—]\s*(.+)$/;
