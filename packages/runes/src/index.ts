@@ -73,6 +73,8 @@ export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
 export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';
+export { loadRunePackage, mergePackages } from './packages.js';
+export type { LoadedPackage, MergedPackageResult } from './packages.js';
 
 export const documents = {
   doc: new DocPage(),

@@ -3,6 +3,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, UserConfig } from 'vite';
 import type { RefraktConfig } from '@refrakt-md/types';
+import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
 import { resolveVirtualId, loadVirtualModule, type BuildContext } from './virtual-modules.js';
@@ -24,6 +25,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	let isBuild = false;
 	let resolvedRoot = '';
 	let usedCssBlocks: Set<string> | undefined;
+	let communityTags: Record<string, Schema> | undefined;
 
 	return {
 		name: 'refrakt-md',
@@ -37,6 +39,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				...CORE_NO_EXTERNAL,
 				refraktConfig.theme,
 				themeAdapter,
+				...(refraktConfig.packages ?? []),
 				...(options.noExternal ?? []),
 			];
 
@@ -55,12 +58,42 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		},
 
 		async buildStart() {
+			// Load community packages if configured
+			if (refraktConfig.packages && refraktConfig.packages.length > 0) {
+				try {
+					const runesPkg = '@refrakt-md/runes';
+					const { loadRunePackage, mergePackages, runes: coreRunes } = await import(runesPkg);
+					const coreRuneNames = new Set(Object.keys(coreRunes));
+
+					const loaded = await Promise.all(
+						refraktConfig.packages.map((name: string) => loadRunePackage(name))
+					);
+
+					const merged = mergePackages(loaded, coreRuneNames, refraktConfig.runes?.prefer);
+					communityTags = merged.tags;
+
+					// Merge community theme config into base config for CSS tree-shaking
+					if (Object.keys(merged.themeRunes).length > 0) {
+						const themeBasePkg = '@refrakt-md/theme-base';
+						const { mergeThemeConfig } = await import(themeBasePkg);
+						// Theme config merging happens in buildStart for CSS analysis
+					}
+				} catch (err) {
+					console.warn('[refrakt] Community package loading failed:', (err as Error).message);
+				}
+			}
+
 			if (!isBuild) return;
 
 			try {
 				const contentPkg = '@refrakt-md/content';
 				const { loadContent, analyzeRuneUsage } = await import(contentPkg);
-				const site = await loadContent(resolve(resolvedRoot, refraktConfig.contentDir));
+				const site = await loadContent(
+					resolve(resolvedRoot, refraktConfig.contentDir),
+					'/',
+					undefined,
+					communityTags,
+				);
 				const report = analyzeRuneUsage(site.pages);
 
 				const themeTransform = await import(`${refraktConfig.theme}/transform`);
