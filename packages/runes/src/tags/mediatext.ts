@@ -24,22 +24,30 @@ class MediaTextModel extends Model {
 		const ratioMeta = new Tag('meta', { content: this.ratio });
 		const wrapMeta = this.wrap ? new Tag('meta', { content: 'true' }) : undefined;
 
-		// First image(s) become the media portion
-		const images = children.tag('img');
-		// Also catch images wrapped in paragraphs
-		const imgParagraphs = children.tag('p');
+		// Separate image paragraphs from body content.
+		// Markdown wraps ![img](url) in <p> tags, so we check for paragraphs
+		// containing only an image and extract the <img> from them.
 		const mediaChildren: any[] = [];
+		const bodyChildren: any[] = [];
 
-		if (images.count() > 0) {
-			mediaChildren.push(...images.toArray());
+		for (const node of children.toArray()) {
+			if (Markdoc.Tag.isTag(node) && node.name === 'p' &&
+				node.children.length === 1 &&
+				Markdoc.Tag.isTag(node.children[0]) && node.children[0].name === 'img') {
+				mediaChildren.push(node.children[0]);
+			} else if (Markdoc.Tag.isTag(node) && node.name === 'img') {
+				mediaChildren.push(node);
+			} else {
+				bodyChildren.push(node);
+			}
 		}
 
 		const mediaTag = new Tag('div', {}, mediaChildren);
-		const bodyTag = children.wrap('div');
+		const bodyTag = new Tag('div', {}, bodyChildren);
 
 		const childNodes: any[] = [alignMeta, ratioMeta];
 		if (wrapMeta) childNodes.push(wrapMeta);
-		childNodes.push(mediaTag, bodyTag.next());
+		childNodes.push(mediaTag, bodyTag);
 
 		return createComponentRenderable(schema.MediaText, {
 			tag: 'div',
@@ -50,7 +58,7 @@ class MediaTextModel extends Model {
 			},
 			refs: {
 				media: mediaTag,
-				body: bodyTag.tag('div'),
+				body: bodyTag,
 			},
 			children: childNodes,
 		});
