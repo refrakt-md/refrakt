@@ -38,3 +38,10 @@ export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // Layout configs
 export { defaultLayout, docsLayout, blogArticleLayout } from './layouts.js';
+
+// Provenance tracking
+export type { RuneProvenance } from './provenance.js';
+
+// Config assembly
+export { assembleThemeConfig } from './assemble.js';
+export type { AssembleInput, AssembleResult } from './assemble.js';

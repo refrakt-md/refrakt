@@ -204,34 +204,56 @@ function runInspect(inspectArgs: string[]): void {
 	]).then(async ([
 		{ inspectCommand },
 		runesModule,
-		{ createTransform, renderToHtml, extractSelectors, mergeThemeConfig },
+		{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
 		markdocModule,
 	]) => {
-		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages, baseConfig } = runesModule;
+		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages, applyAliases, loadLocalRunes, baseConfig } = runesModule;
 		const Markdoc = markdocModule.default ?? markdocModule;
 
 		let mergedRunes = runes;
-		let mergedTags = tags;
+		let mergedTags: Record<string, any> = tags;
 		let mergedConfig = baseConfig;
 
 		// Try loading community packages from refrakt.config.json
 		try {
 			const { loadRefraktConfigFile } = await import('./config-file.js');
 			const { config } = loadRefraktConfigFile();
+			const coreRuneNames = new Set(Object.keys(runes));
+			let merged;
+
 			if (config.packages && config.packages.length > 0) {
-				const coreRuneNames = new Set(Object.keys(runes));
 				const loaded = await Promise.all(
 					config.packages.map((name: string) => loadRunePackage(name))
 				);
-				const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+				merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
 				mergedRunes = { ...runes, ...merged.runes };
 				mergedTags = { ...tags, ...merged.tags };
-				if (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0) {
-					mergedConfig = mergeThemeConfig(baseConfig, {
-						runes: merged.themeRunes,
-						icons: merged.themeIcons,
-					});
-				}
+			}
+
+			// Load local runes if configured
+			if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
+				const local = await loadLocalRunes(config.runes.local, process.cwd());
+				mergedRunes = { ...mergedRunes, ...local.runes };
+				const localTags = runesModule.runeTagMap(local.runes);
+				mergedTags = { ...mergedTags, ...localTags };
+			}
+
+			// Apply config-level aliases
+			if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
+				const provenance = merged?.provenance ?? {};
+				const aliased = applyAliases(mergedRunes, mergedTags, config.runes.aliases, provenance);
+				mergedTags = aliased.tags;
+			}
+
+			// Assemble theme config using the centralized function
+			if (merged) {
+				const assembled = assembleThemeConfig({
+					coreConfig: baseConfig,
+					packageRunes: merged.themeRunes,
+					packageIcons: merged.themeIcons,
+					provenance: merged.provenance,
+				});
+				mergedConfig = assembled.config;
 			}
 		} catch {
 			// No config file or community packages — use core runes only

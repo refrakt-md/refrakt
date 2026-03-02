@@ -129,7 +129,37 @@ function validateConfig(raw: unknown): RefraktConfig {
 			}
 			prefer = preferObj as Record<string, string>;
 		}
-		runes = { ...(prefer && { prefer }) };
+		let aliases: Record<string, string> | undefined;
+		if (runesObj.aliases !== undefined) {
+			if (typeof runesObj.aliases !== 'object' || runesObj.aliases === null || Array.isArray(runesObj.aliases)) {
+				throw new Error('refrakt.config.json: "runes.aliases" must be an object mapping alias names to rune names');
+			}
+			const aliasesObj = runesObj.aliases as Record<string, unknown>;
+			for (const [key, value] of Object.entries(aliasesObj)) {
+				if (typeof value !== 'string' || !value) {
+					throw new Error(`refrakt.config.json: runes.aliases["${key}"] must be a non-empty string`);
+				}
+			}
+			aliases = aliasesObj as Record<string, string>;
+		}
+		let local: Record<string, string> | undefined;
+		if (runesObj.local !== undefined) {
+			if (typeof runesObj.local !== 'object' || runesObj.local === null || Array.isArray(runesObj.local)) {
+				throw new Error('refrakt.config.json: "runes.local" must be an object mapping rune names to module paths');
+			}
+			const localObj = runesObj.local as Record<string, unknown>;
+			for (const [key, value] of Object.entries(localObj)) {
+				if (typeof value !== 'string' || !value) {
+					throw new Error(`refrakt.config.json: runes.local["${key}"] must be a non-empty string path`);
+				}
+			}
+			local = localObj as Record<string, string>;
+		}
+		runes = {
+			...(prefer && { prefer }),
+			...(aliases && { aliases }),
+			...(local && { local }),
+		};
 	}
 
 	return {

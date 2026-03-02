@@ -15,6 +15,10 @@ export interface RunePackageEntry {
 	transform: Record<string, unknown>;
 	/** Attribute schema for tooling and validation */
 	schema?: Record<string, RunePackageAttribute>;
+	/** Markdoc fixture string for the inspect command */
+	fixture?: string;
+	/** AI prompt extension (appended to rune description in prompts) */
+	prompt?: string;
 }
 
 /** Additive extension to a core rune's schema */
@@ -45,4 +49,7 @@ export interface RunePackage {
 	extends?: Record<string, RuneExtension>;
 	/** Identity transform config and icons for this package's runes */
 	theme?: RunePackageThemeConfig;
+	/** Client-side behavior functions keyed by rune typeof name (lowercase).
+	 *  Typed as unknown here — actual BehaviorFn type lives in @refrakt-md/behaviors. */
+	behaviors?: Record<string, unknown>;
 }
