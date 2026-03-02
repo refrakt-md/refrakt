@@ -60,7 +60,10 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 		runes[runeName] = defineRune({
 			name: runeName,
 			schema: entry.transform as Schema,
-			description: `Community rune from ${pkg.displayName ?? pkg.name}`,
+			description: entry.description ?? `Community rune from ${pkg.displayName ?? pkg.name}`,
+			aliases: entry.aliases,
+			seoType: entry.seoType,
+			reinterprets: entry.reinterprets,
 		});
 	}
 

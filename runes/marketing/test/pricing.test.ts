@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '../src/index.js';
+import { runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
 
+// Build SEO type map: start with core runes, then add marketing-specific typeof→seoType mappings
 const seoTypeMap = buildSeoTypeMap(runes);
+seoTypeMap.set('Pricing', 'Product');
+seoTypeMap.set('Tier', 'Offer');
+seoTypeMap.set('FeaturedTier', 'Offer');
 
 function seo(content: string) {
 	const tree = parse(content);

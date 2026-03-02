@@ -25,7 +25,7 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('returns null for unknown document', () => {
-    const doc = TextDocument.create('file:///test.md', 'markdown', 1, '{% hero %}\n{% /hero %}');
+    const doc = TextDocument.create('file:///test.md', 'markdown', 1, '{% hint %}\n{% /hint %}');
     const documents = {
       get: () => undefined,
     } as unknown as TextDocuments<TextDocument>;
@@ -35,14 +35,14 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('returns result for cursor inside a rune tag', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
-    const result = inspect(content, 1); // Cursor on the heading line inside hero
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
+    const result = inspect(content, 1); // Cursor on the content line inside hint
     expect(result).not.toBeNull();
-    expect(result!.runeName).toBe('hero');
+    expect(result!.runeName).toBe('hint');
   });
 
   it('returns all 4 stage keys', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
     const result = inspect(content, 1);
     expect(result).not.toBeNull();
     expect(result!.stages).toHaveProperty('ast');
@@ -52,16 +52,16 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('AST stage contains tag name', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
     const result = inspect(content, 1);
     expect(result).not.toBeNull();
     const ast = result!.stages.ast as Record<string, unknown>;
-    expect(ast.tag).toBe('hero');
+    expect(ast.tag).toBe('hint');
     expect(ast.type).toBe('tag');
   });
 
   it('transform stage has content', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
     const result = inspect(content, 1);
     expect(result).not.toBeNull();
     expect(result!.stages.transform).toBeDefined();
@@ -69,7 +69,7 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('serialized stage contains $$mdtype Tag', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
     const result = inspect(content, 0);
     expect(result).not.toBeNull();
     const serialized = result!.stages.serialized as Record<string, unknown>;
@@ -77,7 +77,7 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('identity stage is null when no workspaceRoot', () => {
-    const content = '{% hero %}\n# Hello World\n{% /hero %}';
+    const content = '{% hint type="note" %}\nBe careful!\n{% /hint %}';
     const result = inspect(content, 1);
     expect(result).not.toBeNull();
     expect(result!.stages.identity).toBeNull();
@@ -92,7 +92,7 @@ describe('inspectRuneAtPosition', () => {
   });
 
   it('returns null for cursor on plain text before runes', () => {
-    const content = 'Some text\n\n{% hero %}\n# Hello\n{% /hero %}';
+    const content = 'Some text\n\n{% hint type="note" %}\nHello\n{% /hint %}';
     const result = inspect(content, 0); // Cursor on "Some text"
     expect(result).toBeNull();
   });

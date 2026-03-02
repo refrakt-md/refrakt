@@ -5,7 +5,7 @@ import { getRune, getAllRunes, getAllNames, findSimilar } from '../src/registry/
 describe('registry loader', () => {
   it('loads all runes', () => {
     const runes = getAllRunes();
-    expect(runes.length).toBeGreaterThan(40);
+    expect(runes.length).toBeGreaterThan(30);
   });
 
   it('resolves primary name', () => {
@@ -44,15 +44,14 @@ describe('registry loader', () => {
   });
 
   it('provides reinterprets metadata', () => {
-    const hero = getRune('hero');
-    expect(hero).toBeDefined();
-    expect(hero!.reinterprets.heading).toBeDefined();
-    expect(hero!.reinterprets.image).toBeDefined();
+    const hint = getRune('hint');
+    expect(hint).toBeDefined();
+    expect(hint!.reinterprets.paragraph).toBeDefined();
   });
 
   it('provides seoType when available', () => {
-    const recipe = getRune('recipe');
-    expect(recipe!.seoType).toBe('Recipe');
+    const accordion = getRune('accordion');
+    expect(accordion!.seoType).toBe('FAQPage');
   });
 });
 

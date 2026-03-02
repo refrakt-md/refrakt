@@ -27,9 +27,9 @@ function complete(content: string, cursorOffset?: number) {
 describe('tag name completion', () => {
   it('completes rune names after {%', () => {
     const items = complete('{% ');
-    expect(items.length).toBeGreaterThan(40);
+    expect(items.length).toBeGreaterThan(30);
     expect(items.some(i => i.label === 'hint')).toBe(true);
-    expect(items.some(i => i.label === 'hero')).toBe(true);
+    expect(items.some(i => i.label === 'accordion')).toBe(true);
   });
 
   it('filters by prefix', () => {
@@ -40,7 +40,7 @@ describe('tag name completion', () => {
 
   it('includes aliases', () => {
     const items = complete('{% call');
-    expect(items.some(i => i.label === 'call-to-action')).toBe(true);
+    expect(items.some(i => i.label === 'callout')).toBe(true);
   });
 
   it('includes descriptions', () => {

@@ -27,11 +27,11 @@ describe('scaffoldCssCommand', () => {
 
 		scaffoldCssCommand({ outputDir, force: false });
 
-		// Check that some key rune CSS files were generated
+		// Check that some key core rune CSS files were generated
 		expect(existsSync(join(outputDir, 'hint.css'))).toBe(true);
 		expect(existsSync(join(outputDir, 'grid.css'))).toBe(true);
-		expect(existsSync(join(outputDir, 'recipe.css'))).toBe(true);
-		expect(existsSync(join(outputDir, 'api.css'))).toBe(true);
+		expect(existsSync(join(outputDir, 'accordion.css'))).toBe(true);
+		expect(existsSync(join(outputDir, 'budget.css'))).toBe(true);
 	});
 
 	it('generates root block selector', () => {
@@ -77,26 +77,16 @@ describe('scaffoldCssCommand', () => {
 		expect(hintCss).toContain('.rf-hint--in-hero {');
 	});
 
-	it('generates static modifier selectors', () => {
-		const outputDir = tmpOutputDir();
-		cleanupDirs.push(outputDir);
-
-		scaffoldCssCommand({ outputDir, force: false });
-
-		const tierCss = readFileSync(join(outputDir, 'tier.css'), 'utf-8');
-		expect(tierCss).toContain('.rf-tier--featured {');
-	});
-
 	it('includes comment annotations', () => {
 		const outputDir = tmpOutputDir();
 		cleanupDirs.push(outputDir);
 
 		scaffoldCssCommand({ outputDir, force: false });
 
-		const apiCss = readFileSync(join(outputDir, 'api.css'), 'utf-8');
-		expect(apiCss).toContain('/* Api rune */');
-		expect(apiCss).toContain('/* Elements */');
-		expect(apiCss).toContain('from structure');
+		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
+		expect(hintCss).toContain('/* Hint rune */');
+		expect(hintCss).toContain('/* Elements */');
+		expect(hintCss).toContain('from structure');
 	});
 
 	it('skips existing files by default', () => {

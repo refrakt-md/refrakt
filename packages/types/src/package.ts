@@ -19,6 +19,14 @@ export interface RunePackageEntry {
 	fixture?: string;
 	/** AI prompt extension (appended to rune description in prompts) */
 	prompt?: string;
+	/** Human-readable description of what this rune does */
+	description?: string;
+	/** Alternative tag names that resolve to this rune */
+	aliases?: string[];
+	/** Schema.org type for SEO extraction (e.g., 'Product', 'Event') */
+	seoType?: string;
+	/** Describes how Markdown primitives are reinterpreted inside this rune */
+	reinterprets?: Record<string, string>;
 }
 
 /** Additive extension to a core rune's schema */

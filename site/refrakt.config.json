@@ -2,6 +2,16 @@
 	"contentDir": "./content",
 	"theme": "@refrakt-md/lumina",
 	"target": "svelte",
+	"packages": [
+		"@refrakt/marketing",
+		"@refrakt/docs",
+		"@refrakt/storytelling",
+		"@refrakt/places",
+		"@refrakt/business",
+		"@refrakt/design",
+		"@refrakt/learning",
+		"@refrakt/media"
+	],
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },
 		{ "pattern": "blog/*", "layout": "blog-article" },

@@ -8,26 +8,24 @@ describe('generateSystemPrompt', () => {
 
 	it('includes top-level rune names as headings', () => {
 		expect(prompt).toContain('### hint');
-		expect(prompt).toContain('### cta');
-		expect(prompt).toContain('### feature');
 		expect(prompt).toContain('### grid');
-		expect(prompt).toContain('### steps');
 		expect(prompt).toContain('### tabs');
 		expect(prompt).toContain('### codegroup');
-		expect(prompt).toContain('### pricing');
 		expect(prompt).toContain('### nav');
+		expect(prompt).toContain('### accordion');
+		expect(prompt).toContain('### embed');
 	});
 
 	it('includes rune descriptions', () => {
 		expect(prompt).toContain('Callout/admonition block');
-		expect(prompt).toContain('Call-to-action section');
-		expect(prompt).toContain('Sequential step-by-step instructions');
+		expect(prompt).toContain('Grid layout container');
+		expect(prompt).toContain('Tabbed interface');
 	});
 
 	it('includes aliases', () => {
 		expect(prompt).toContain('Aliases: callout, alert');
-		expect(prompt).toContain('Aliases: call-to-action');
 		expect(prompt).toContain('Aliases: columns');
+		expect(prompt).toContain('Aliases: faq');
 	});
 
 	it('includes attribute types and constraints', () => {
@@ -46,25 +44,22 @@ describe('generateSystemPrompt', () => {
 
 	it('includes reinterprets', () => {
 		expect(prompt).toContain('paragraph → message body');
-		expect(prompt).toContain('heading → section headline');
 		expect(prompt).toContain('fence → tab content');
+		expect(prompt).toContain('hr → grid cell delimiter');
 	});
 
 	it('includes examples with rune syntax', () => {
 		expect(prompt).toContain('{% hint type="note" %}');
-		expect(prompt).toContain('{% cta %}');
-		expect(prompt).toContain('{% /cta %}');
 		expect(prompt).toContain('{% grid %}');
-		expect(prompt).toContain('{% steps %}');
+		expect(prompt).toContain('{% tabs %}');
 	});
 
 	it('excludes child-only runes', () => {
 		// These should NOT appear as section headings
 		expect(prompt).not.toMatch(/^### error$/m);
-		expect(prompt).not.toMatch(/^### definition$/m);
-		expect(prompt).not.toMatch(/^### step$/m);
 		expect(prompt).not.toMatch(/^### tab$/m);
-		expect(prompt).not.toMatch(/^### music-recording$/m);
+		expect(prompt).not.toMatch(/^### budget-category$/m);
+		expect(prompt).not.toMatch(/^### conversation-message$/m);
 	});
 
 	it('does not include frontmatter instructions in base prompt', () => {

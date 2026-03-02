@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag } from './helpers.js';
 import { parseSvgToTags } from '../src/lib/svg.js';
 
 const testIcons = {
@@ -78,34 +78,3 @@ describe('icon rune', () => {
 	});
 });
 
-describe('feature + icon integration', () => {
-	it('should extract icon SVG into the image property slot', () => {
-		const result = parse(`{% feature %}
-## What you get
-
-- {% icon name="rocket" /%} **Fast deploys**
-
-  Ship code in seconds.
-
-- {% icon name="star" /%} **Beautiful output**
-
-  Gorgeous by default.
-{% /feature %}`, { __icons: testIcons });
-
-		const featureTag = findTag(result as any, t => t.attributes.typeof === 'Feature');
-		expect(featureTag).toBeDefined();
-
-		const definitions = findAllTags(featureTag!, t => t.attributes.typeof === 'FeatureDefinition');
-		expect(definitions.length).toBe(2);
-
-		// Check that the first definition has an SVG in its image property
-		const firstDef = definitions[0];
-		const svg = findTag(firstDef, t => t.name === 'svg');
-		expect(svg).toBeDefined();
-		expect(svg!.attributes['data-icon']).toBe('rocket');
-
-		// Check that the name span is also present alongside the icon
-		const nameSpan = findTag(firstDef, t => t.name === 'span' && t.children.includes('Fast deploys'));
-		expect(nameSpan).toBeDefined();
-	});
-});

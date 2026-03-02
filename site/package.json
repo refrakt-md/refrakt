@@ -25,7 +25,15 @@
 		"@refrakt-md/sveltekit": "0.6.0",
 		"@refrakt-md/lumina": "0.6.0",
 		"@refrakt-md/highlight": "0.6.0",
-		"@refrakt-md/types": "0.6.0"
+		"@refrakt-md/types": "0.6.0",
+		"@refrakt/marketing": "0.6.0",
+		"@refrakt/docs": "0.6.0",
+		"@refrakt/storytelling": "0.6.0",
+		"@refrakt/places": "0.6.0",
+		"@refrakt/business": "0.6.0",
+		"@refrakt/design": "0.6.0",
+		"@refrakt/learning": "0.6.0",
+		"@refrakt/media": "0.6.0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.0",

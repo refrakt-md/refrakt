@@ -19,24 +19,14 @@ export interface RuneInfo {
 /** Runes that are internal or child-only — excluded from prompts */
 const EXCLUDED_RUNES = new Set([
 	'error',
-	'definition',
-	'step',
 	'tab',
-	'music-recording',
 	'accordion-item',
-	'timeline-entry',
-	'changelog-release',
-	'breadcrumb-item',
-	'cast-member',
-	'map-pin',
-	'character-section',
-	'realm-section',
-	'faction-section',
-	'beat',
 	'budget-category',
 	'budget-line-item',
-	'itinerary-day',
-	'itinerary-stop',
+	'conversation-message',
+	'reveal-step',
+	'note',
+	'form-field',
 ]);
 
 /** Attributes to hide from the AI prompt (rune.attribute format) */
