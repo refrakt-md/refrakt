@@ -99,8 +99,8 @@
 }
 .rf-docs-content__inner--has-toc {
 	display: flex;
-	gap: 0;
-	max-width: calc(60rem + 220px);
+	gap: 6rem;
+	max-width: calc(60rem + 220px + 6rem);
 }
 .rf-docs-content__inner--has-toc .rf-docs-content__body {
 	flex: 1;
