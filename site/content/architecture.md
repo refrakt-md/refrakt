@@ -55,7 +55,7 @@ The architecture is organized into several focused packages:
 
 ## 2. Rune Library
 
-refrakt.md ships 47 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships 58 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
 ### Layout & Structure
 
@@ -130,6 +130,32 @@ refrakt.md ships 47 author-facing runes (plus internal child runes). Each rune d
 | `timeline` | -- | Heading as dated milestone ("2023 - Company founded" pattern), paragraph as event description | `ItemList` |
 | `changelog` | -- | Heading as version + date ("v2.1.0 - 2024-01-15"), list as categorized changes, strong as change category | -- |
 | `map` | -- | List items as map pins (bold as name, italic as description, coordinates or address as location), heading as pin group label, blockquote as caption | `Place` |
+
+### Storytelling
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `character` | -- | Heading as section name (Backstory, Abilities, etc.), first image as portrait, list as section content | -- |
+| `realm` | -- | Heading as section name (Geography, Features, etc.), first image as scene illustration, list as section content | -- |
+| `lore` | -- | All content as lore body text, blockquote as excerpts or quotations | -- |
+| `faction` | -- | Heading as section name (Ranks, Holdings, etc.), list as section content | -- |
+| `plot` | -- | List items as plot beats with status markers (`[x]`=complete, `[>]`=active, `[ ]`=planned, `[-]`=abandoned), bold as beat label | -- |
+| `bond` | -- | All content as relationship description | -- |
+
+### Travel
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `itinerary` | -- | H2 as day label, H3 as timed stops ("9:00 AM — Location" pattern), paragraph as stop description | -- |
+| `budget` | -- | Heading as budget category, list items as line items ("Description: $amount" pattern), automatic subtotals | -- |
+
+### Magazine
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `pullquote` | -- | Blockquote or paragraph as pull quote text, alignment and style variants | -- |
+| `textblock` | -- | All content as styled text body with drop caps, columns, and lead paragraph options | -- |
+| `mediatext` | -- | First image as media column, remaining text as body column, configurable ratio and wrapping | -- |
 
 ### Music
 

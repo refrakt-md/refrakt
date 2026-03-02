@@ -86,6 +86,26 @@
 - storyboard
 - annotate
 
+## Storytelling
+
+- character
+- realm
+- lore
+- faction
+- plot
+- bond
+
+## Travel
+
+- itinerary
+- budget
+
+## Magazine
+
+- pullquote
+- textblock
+- mediatext
+
 ## Design
 
 - swatch

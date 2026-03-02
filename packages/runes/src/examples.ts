@@ -577,4 +577,63 @@ Our team creates wireframes and visual prototypes.
 
 We ship, measure, and iterate together.
 {% /storyboard %}`,
+
+	itinerary: `{% itinerary style="day-by-day" %}
+## Day 1 — Arrival
+
+### 9:00 AM — Narita Airport
+
+Clear customs and pick up your Japan Rail Pass.
+
+### 12:00 PM — Shinjuku
+
+Check in to the hotel and grab lunch at a nearby ramen shop.
+
+### 6:00 PM — Shibuya
+
+Explore the famous crossing and have dinner in the area.
+
+## Day 2 — Temples & Gardens
+
+### 8:00 AM — Meiji Shrine
+
+Start the day with a peaceful walk through the shrine grounds.
+
+### 11:00 AM — Harajuku
+
+Browse Takeshita Street and the backstreet boutiques.
+{% /itinerary %}`,
+
+	budget: `{% budget title="Tokyo Trip" currency="JPY" travelers=2 duration="5 days" %}
+## Accommodation
+
+- Hotel in Shinjuku: ¥15000
+- Ryokan in Hakone: ¥25000
+
+## Transportation
+
+- Japan Rail Pass (7-day): ¥29650
+- Airport transfer: ¥3000
+
+## Food & Dining
+
+- Daily meals: ¥5000
+- Sushi experience: ¥8000
+{% /budget %}`,
+
+	pullquote: `{% pullquote align="center" style="accent" %}
+> Design is not just what it looks like and feels like. Design is how it works.
+{% /pullquote %}`,
+
+	textblock: `{% textblock dropcap=true columns=2 %}
+The invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.
+
+With movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.
+{% /textblock %}`,
+
+	mediatext: `{% mediatext align="left" ratio="1:1" %}
+![Mountain landscape](https://picsum.photos/seed/mountain/600/400)
+
+The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
+{% /mediatext %}`,
 };

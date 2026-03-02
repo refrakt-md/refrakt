@@ -29,6 +29,14 @@ const EXCLUDED_RUNES = new Set([
 	'breadcrumb-item',
 	'cast-member',
 	'map-pin',
+	'character-section',
+	'realm-section',
+	'faction-section',
+	'beat',
+	'budget-category',
+	'budget-line-item',
+	'itinerary-day',
+	'itinerary-stop',
 ]);
 
 /** Attributes to hide from the AI prompt (rune.attribute format) */
