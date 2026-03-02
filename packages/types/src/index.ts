@@ -58,6 +58,7 @@ export { Storyboard, StoryboardComponent, StoryboardPanel, StoryboardPanelCompon
 export { Annotate, AnnotateComponent, AnnotateNote, AnnotateNoteComponent } from './schema/annotate.js';
 export { Form, FormComponent, FormField, FormFieldComponent } from './schema/form.js';
 export { Comparison, ComparisonProperties, ComparisonComponent, ComparisonColumn, ComparisonColumnComponent, ComparisonRow, ComparisonRowComponent } from './schema/comparison.js';
+export { Itinerary, ItineraryProperties, ItineraryComponent, ItineraryDay, ItineraryDayComponent, ItineraryStop, ItineraryStopComponent } from './schema/itinerary.js';
 export { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
 export { Preview, PreviewComponent } from './schema/preview.js';
 export { Sandbox, SandboxComponent } from './schema/sandbox.js';
