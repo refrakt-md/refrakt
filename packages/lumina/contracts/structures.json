@@ -127,6 +127,116 @@
 				"{content}"
 			]
 		},
+		"Budget": {
+			"block": "budget",
+			"root": ".rf-budget",
+			"dataRune": "budget",
+			"childOrder": [
+				"header",
+				"{content}"
+			],
+			"modifiers": {
+				"title": {
+					"source": "meta",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-title"
+				},
+				"currency": {
+					"source": "meta",
+					"default": "USD",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-currency"
+				},
+				"travelers": {
+					"source": "meta",
+					"default": "1",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-travelers"
+				},
+				"duration": {
+					"source": "meta",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-duration"
+				},
+				"showPerPerson": {
+					"source": "meta",
+					"default": "true",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-show-per-person"
+				},
+				"showPerDay": {
+					"source": "meta",
+					"default": "true",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-show-per-day"
+				},
+				"style": {
+					"source": "meta",
+					"default": "detailed",
+					"classPattern": ".rf-budget--{value}",
+					"dataAttribute": "data-style"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-budget__header",
+					"source": "structure",
+					"conditionAny": [
+						"title",
+						"currency",
+						"travelers",
+						"duration"
+					]
+				},
+				"title": {
+					"tag": "h2",
+					"selector": ".rf-budget__title",
+					"source": "structure",
+					"parent": "header",
+					"condition": "title"
+				},
+				"meta": {
+					"tag": "div",
+					"selector": ".rf-budget__meta",
+					"source": "structure",
+					"parent": "header"
+				},
+				"meta-item": {
+					"tag": "span",
+					"selector": ".rf-budget__meta-item",
+					"source": "structure",
+					"parent": "meta",
+					"condition": "currency"
+				}
+			}
+		},
+		"BudgetCategory": {
+			"block": "budget-category",
+			"root": ".rf-budget-category",
+			"dataRune": "budgetcategory",
+			"parent": "Budget",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"estimate": {
+					"source": "meta",
+					"default": "false",
+					"classPattern": ".rf-budget-category--{value}",
+					"dataAttribute": "data-estimate"
+				}
+			}
+		},
+		"BudgetLineItem": {
+			"block": "budget-line-item",
+			"root": ".rf-budget-line-item",
+			"dataRune": "budgetlineitem",
+			"parent": "Budget",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Testimonial": {
 			"block": "testimonial",
 			"root": ".rf-testimonial",

@@ -172,6 +172,43 @@ function buildComparisonTable(
 	]);
 }
 
+// ─── Budget postTransform helpers ───
+
+const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
+	USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
+	AUD: 'A$', CAD: 'C$', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr',
+	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
+};
+
+function formatBudgetAmount(amount: number, symbol: string): string {
+	const parts = (amount % 1 === 0 ? String(amount) : amount.toFixed(2)).split('.');
+	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+	return symbol + parts.join('.');
+}
+
+function parseBudgetDays(duration: string): number {
+	let days = 0;
+	const dayMatch = duration.match(/(\d+)\s*day/i);
+	const weekMatch = duration.match(/(\d+)\s*week/i);
+	const monthMatch = duration.match(/(\d+)\s*month/i);
+	if (dayMatch) days += parseInt(dayMatch[1]);
+	if (weekMatch) days += parseInt(weekMatch[1]) * 7;
+	if (monthMatch) days += parseInt(monthMatch[1]) * 30;
+	if (days === 0) {
+		const num = parseInt(duration);
+		if (!isNaN(num)) days = num;
+	}
+	return days;
+}
+
+function parseBudgetAmount(str: string): number {
+	const cleaned = str.replace(/[€$£¥₹₩\s]/g, '').replace(/,/g, '');
+	const range = cleaned.match(/^([\d.]+)\s*[-–]\s*([\d.]+)/);
+	if (range) return (parseFloat(range[1]) + parseFloat(range[2])) / 2;
+	const num = parseFloat(cleaned);
+	return isNaN(num) ? 0 : num;
+}
+
 /** Base theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
 export const baseConfig: ThemeConfig = {
@@ -250,6 +287,110 @@ export const baseConfig: ThemeConfig = {
 		},
 		Breadcrumb: { block: 'breadcrumb' },
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
+		Budget: {
+			block: 'budget',
+			modifiers: {
+				title: { source: 'meta' },
+				currency: { source: 'meta', default: 'USD' },
+				travelers: { source: 'meta', default: '1' },
+				duration: { source: 'meta' },
+				showPerPerson: { source: 'meta', default: 'true' },
+				showPerDay: { source: 'meta', default: 'true' },
+				style: { source: 'meta', default: 'detailed' },
+			},
+			structure: {
+				header: {
+					tag: 'div', before: true,
+					conditionAny: ['title', 'currency', 'travelers', 'duration'],
+					children: [
+						{ tag: 'h2', ref: 'title', metaText: 'title', condition: 'title' },
+						{
+							tag: 'div', ref: 'meta',
+							children: [
+								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'travelers', textPrefix: 'Travelers: ', condition: 'travelers' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'duration', textPrefix: 'Duration: ', condition: 'duration' },
+							],
+						},
+					],
+				},
+			},
+			postTransform(node) {
+				const block = 'rf-budget';
+				const catBlock = 'rf-budget-category';
+
+				const currency = readMeta(node, 'currency') || 'USD';
+				const travelersStr = readMeta(node, 'travelers') || '1';
+				const travelers = parseInt(travelersStr) || 1;
+				const duration = readMeta(node, 'duration') || '';
+				const showPerPerson = readMeta(node, 'showPerPerson') !== 'false';
+				const showPerDay = readMeta(node, 'showPerDay') !== 'false';
+
+				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
+
+				// Find all BudgetCategory children and compute totals
+				const categories = collectByTypeof(node.children, 'BudgetCategory');
+				let grandTotal = 0;
+
+				for (const cat of categories) {
+					const label = readPropText(cat, 'label');
+					const subtotalStr = readPropText(cat, 'subtotal');
+					const subtotal = parseFloat(subtotalStr) || 0;
+					grandTotal += subtotal;
+
+					// Inject category header with label and formatted subtotal
+					const catHeader = makeTag('div', { class: `${catBlock}__header` }, [
+						makeTag('span', { class: `${catBlock}__label` }, [label]),
+						makeTag('span', { class: `${catBlock}__subtotal` }, [formatBudgetAmount(subtotal, symbol)]),
+					]);
+					cat.children.unshift(catHeader);
+				}
+
+				// Build footer with totals
+				const footerChildren: (SerializedTag | string)[] = [
+					makeTag('div', { class: `${block}__total` }, [
+						makeTag('span', { class: `${block}__total-label` }, ['Total']),
+						makeTag('span', { class: `${block}__total-amount` }, [formatBudgetAmount(grandTotal, symbol)]),
+					]),
+				];
+
+				if (travelers > 1 && showPerPerson) {
+					const perPerson = grandTotal / travelers;
+					footerChildren.push(
+						makeTag('div', { class: `${block}__per-person` }, [
+							makeTag('span', { class: `${block}__per-person-label` }, ['Per person']),
+							makeTag('span', { class: `${block}__per-person-amount` }, [formatBudgetAmount(perPerson, symbol)]),
+						])
+					);
+				}
+
+				if (duration && showPerDay) {
+					const days = parseBudgetDays(duration);
+					if (days > 0) {
+						const perDay = grandTotal / days;
+						footerChildren.push(
+							makeTag('div', { class: `${block}__per-day` }, [
+								makeTag('span', { class: `${block}__per-day-label` }, ['Per day']),
+								makeTag('span', { class: `${block}__per-day-amount` }, [formatBudgetAmount(perDay, symbol)]),
+							])
+						);
+					}
+				}
+
+				const footer = makeTag('div', { class: `${block}__footer` }, footerChildren);
+
+				return {
+					...node,
+					children: [...node.children, footer],
+				};
+			},
+		},
+		BudgetCategory: {
+			block: 'budget-category',
+			parent: 'Budget',
+			modifiers: { estimate: { source: 'meta', default: 'false' } },
+		},
+		BudgetLineItem: { block: 'budget-line-item', parent: 'Budget' },
 		Testimonial: {
 			block: 'testimonial',
 			postTransform(node) {
