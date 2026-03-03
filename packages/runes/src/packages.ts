@@ -2,9 +2,6 @@ import type { Schema } from '@markdoc/markdoc';
 import type { RunePackage, RuneExtension } from '@refrakt-md/types';
 import type { RuneConfig, RuneProvenance } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { createRequire } from 'node:module';
 
 /** A loaded community package with its parsed rune definitions */
 export interface LoadedPackage {
@@ -80,7 +77,7 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 	}
 
 	// Discover file-based fixtures from the package's fixtures/ directory
-	const fileFixtures = discoverPackageFixtures(npmPackageName);
+	const fileFixtures = await discoverPackageFixtures(npmPackageName);
 	for (const [runeName, content] of Object.entries(fileFixtures)) {
 		// Inline fixtures take priority over file-based ones
 		if (!fixtures[runeName]) {
@@ -381,10 +378,16 @@ export async function loadLocalRunes(
  *
  * Returns a map of rune name → fixture content string.
  */
-export function discoverPackageFixtures(npmPackageName: string): Record<string, string> {
+export async function discoverPackageFixtures(npmPackageName: string): Promise<Record<string, string>> {
 	const fixtures: Record<string, string> = {};
 
 	try {
+		// Dynamic imports to avoid top-level Node.js built-in references
+		// that break Vite browser bundling
+		const { createRequire } = await import('node:module');
+		const { existsSync, readFileSync, readdirSync } = await import('node:fs');
+		const { dirname, join } = await import('node:path');
+
 		// Resolve the package's directory by finding its package.json
 		const require = createRequire(import.meta.url);
 		const pkgJsonPath = require.resolve(`${npmPackageName}/package.json`);
