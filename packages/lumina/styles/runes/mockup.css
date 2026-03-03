@@ -1,0 +1,503 @@
+/* Mockup — Device frame chrome around content */
+
+.rf-mockup {
+	--mockup-bezel-dark: #1a1a1a;
+	--mockup-bezel-light: #e5e5e5;
+	--mockup-bezel: var(--mockup-bezel-dark);
+	--mockup-chrome: #2a2a2a;
+	--mockup-chrome-text: #999;
+	--mockup-shadow: var(--rf-shadow-lg);
+	--mockup-scale: 1;
+	display: inline-block;
+	margin: 1.5rem 0;
+	transform: scale(var(--mockup-scale));
+	transform-origin: top center;
+}
+
+/* ── Color modifiers ── */
+
+.rf-mockup--dark {
+	--mockup-bezel: var(--mockup-bezel-dark);
+	--mockup-chrome: #2a2a2a;
+	--mockup-chrome-text: #999;
+	--mockup-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.rf-mockup--light {
+	--mockup-bezel: var(--mockup-bezel-light);
+	--mockup-chrome: #f5f5f5;
+	--mockup-chrome-text: #666;
+	--mockup-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.rf-mockup--auto {
+	--mockup-bezel: var(--mockup-bezel-dark);
+	--mockup-chrome: #2a2a2a;
+	--mockup-chrome-text: #999;
+}
+
+/* ── Frame (wraps everything) ── */
+
+.rf-mockup__frame {
+	position: relative;
+	box-shadow: var(--mockup-shadow);
+}
+
+/* ── Viewport (content area) ── */
+
+.rf-mockup__viewport {
+	overflow: auto;
+	background: var(--rf-color-bg);
+}
+
+.rf-mockup__viewport > *:first-child {
+	margin-top: 0;
+}
+
+.rf-mockup__viewport > *:last-child {
+	margin-bottom: 0;
+}
+
+/* ── Label ── */
+
+.rf-mockup__label {
+	text-align: center;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	margin-top: 0.75rem;
+}
+
+/* ═══════════════════════════════════════
+   MOBILE DEVICES
+   ═══════════════════════════════════════ */
+
+/* ── Bezel (mobile/tablet outer shell) ── */
+
+.rf-mockup__bezel {
+	background: var(--mockup-bezel);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* ── Notch variants ── */
+
+.rf-mockup__notch {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+}
+
+.rf-mockup__notch--dynamic-island {
+	width: 120px;
+	height: 34px;
+	top: 12px;
+	background: #000;
+	border-radius: 20px;
+}
+
+.rf-mockup__notch--classic {
+	width: 150px;
+	height: 28px;
+	top: 0;
+	background: var(--mockup-bezel);
+	border-radius: 0 0 20px 20px;
+}
+
+.rf-mockup__notch--punch-hole {
+	width: 12px;
+	height: 12px;
+	top: 16px;
+	background: #000;
+	border-radius: var(--rf-radius-full);
+}
+
+/* ── Status bar ── */
+
+.rf-mockup__status-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 1.5rem;
+	height: 44px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rf-color-text);
+	background: var(--rf-color-bg);
+	position: relative;
+	z-index: 1;
+}
+
+.rf-mockup__status-time {
+	font-variant-numeric: tabular-nums;
+}
+
+.rf-mockup__status-icons::after {
+	content: '\25CF\25CF\25CF \25AE 100%';
+	font-size: 0.625rem;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+
+/* ── Home indicator ── */
+
+.rf-mockup__home-indicator {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 32px;
+	background: var(--rf-color-bg);
+}
+
+.rf-mockup__home-indicator::after {
+	content: '';
+	display: block;
+	width: 134px;
+	height: 5px;
+	background: var(--rf-color-text);
+	border-radius: var(--rf-radius-full);
+	opacity: 0.2;
+}
+
+/* ── iPhone 15 ── */
+
+.rf-mockup--iphone-15 .rf-mockup__frame {
+	width: 393px;
+	border-radius: 55px;
+}
+
+.rf-mockup--iphone-15 .rf-mockup__bezel {
+	border-radius: 55px;
+	border: 10px solid var(--mockup-bezel);
+}
+
+.rf-mockup--iphone-15 .rf-mockup__viewport {
+	height: 852px;
+	border-radius: 0;
+}
+
+/* ── iPhone SE ── */
+
+.rf-mockup--iphone-se .rf-mockup__frame {
+	width: 375px;
+	border-radius: 40px;
+}
+
+.rf-mockup--iphone-se .rf-mockup__bezel {
+	border-radius: 40px;
+	border: 10px solid var(--mockup-bezel);
+	padding-bottom: 60px;
+}
+
+.rf-mockup--iphone-se .rf-mockup__notch--classic {
+	position: relative;
+	top: auto;
+	left: auto;
+	transform: none;
+	width: 100%;
+	height: 60px;
+	background: var(--mockup-bezel);
+	border-radius: 0;
+}
+
+.rf-mockup--iphone-se .rf-mockup__bezel::after {
+	content: '';
+	position: absolute;
+	bottom: 14px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 36px;
+	height: 36px;
+	border: 2px solid var(--mockup-chrome-text);
+	border-radius: var(--rf-radius-full);
+	opacity: 0.5;
+}
+
+.rf-mockup--iphone-se .rf-mockup__viewport {
+	height: 667px;
+}
+
+/* ── Pixel ── */
+
+.rf-mockup--pixel .rf-mockup__frame {
+	width: 412px;
+	border-radius: 40px;
+}
+
+.rf-mockup--pixel .rf-mockup__bezel {
+	border-radius: 40px;
+	border: 8px solid var(--mockup-bezel);
+}
+
+.rf-mockup--pixel .rf-mockup__viewport {
+	height: 915px;
+}
+
+/* ── Generic phone ── */
+
+.rf-mockup--phone .rf-mockup__frame {
+	width: 390px;
+	border-radius: 48px;
+}
+
+.rf-mockup--phone .rf-mockup__bezel {
+	border-radius: 48px;
+	border: 10px solid var(--mockup-bezel);
+}
+
+.rf-mockup--phone .rf-mockup__viewport {
+	height: 844px;
+}
+
+/* ═══════════════════════════════════════
+   TABLET DEVICES
+   ═══════════════════════════════════════ */
+
+/* ── iPad ── */
+
+.rf-mockup--ipad .rf-mockup__frame {
+	width: 820px;
+	border-radius: 24px;
+}
+
+.rf-mockup--ipad .rf-mockup__bezel {
+	border-radius: 24px;
+	border: 12px solid var(--mockup-bezel);
+}
+
+.rf-mockup--ipad .rf-mockup__viewport {
+	height: 1180px;
+}
+
+/* ── Generic tablet ── */
+
+.rf-mockup--tablet .rf-mockup__frame {
+	width: 800px;
+	border-radius: 20px;
+}
+
+.rf-mockup--tablet .rf-mockup__bezel {
+	border-radius: 20px;
+	border: 14px solid var(--mockup-bezel);
+}
+
+.rf-mockup--tablet .rf-mockup__viewport {
+	height: 1100px;
+}
+
+/* ═══════════════════════════════════════
+   DESKTOP DEVICES
+   ═══════════════════════════════════════ */
+
+/* ── Title bar (browser / macbook) ── */
+
+.rf-mockup__title-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.625rem 1rem;
+	background: var(--mockup-chrome);
+	min-height: 2.5rem;
+}
+
+/* ── Traffic lights ── */
+
+.rf-mockup__traffic-lights {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+}
+
+.rf-mockup__traffic-light {
+	display: block;
+	width: 12px;
+	height: 12px;
+	border-radius: var(--rf-radius-full);
+}
+
+.rf-mockup__traffic-light--close {
+	background: #ff5f57;
+}
+
+.rf-mockup__traffic-light--minimize {
+	background: #febc2e;
+}
+
+.rf-mockup__traffic-light--maximize {
+	background: #28c840;
+}
+
+/* ── Address bar (browser only) ── */
+
+.rf-mockup__address-bar {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	max-width: 60%;
+	margin: 0 auto;
+	padding: 0.25rem 0.75rem;
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: var(--rf-radius-sm);
+	min-height: 1.75rem;
+}
+
+.rf-mockup__url {
+	font-size: 0.75rem;
+	font-family: var(--rf-font-sans);
+	color: var(--mockup-chrome-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ── Browser ── */
+
+.rf-mockup--browser .rf-mockup__frame {
+	width: 100%;
+	max-width: 960px;
+	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+	overflow: hidden;
+}
+
+.rf-mockup--browser .rf-mockup__title-bar {
+	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+}
+
+.rf-mockup--browser .rf-mockup__viewport {
+	height: 800px;
+	border: 1px solid var(--rf-color-border);
+	border-top: none;
+}
+
+/* ── Browser dark ── */
+
+.rf-mockup--browser-dark .rf-mockup__frame {
+	width: 100%;
+	max-width: 960px;
+	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+	overflow: hidden;
+}
+
+.rf-mockup--browser-dark .rf-mockup__title-bar {
+	background: #1a1a1a;
+	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+}
+
+.rf-mockup--browser-dark .rf-mockup__address-bar {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.rf-mockup--browser-dark .rf-mockup__viewport {
+	height: 800px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-top: none;
+}
+
+/* ── MacBook ── */
+
+.rf-mockup--macbook .rf-mockup__frame {
+	width: 1440px;
+	max-width: 100%;
+}
+
+.rf-mockup--macbook .rf-mockup__title-bar {
+	border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+	border: 3px solid var(--mockup-bezel);
+	border-bottom: none;
+}
+
+.rf-mockup--macbook .rf-mockup__viewport {
+	height: 900px;
+	border: 3px solid var(--mockup-bezel);
+	border-top: none;
+	border-bottom: none;
+}
+
+/* ── Keyboard ── */
+
+.rf-mockup__keyboard {
+	background: linear-gradient(to bottom, var(--mockup-bezel), color-mix(in srgb, var(--mockup-bezel), #000 15%));
+	padding: 0.5rem 2rem 0.75rem;
+	border-radius: 0 0 var(--rf-radius-md) var(--rf-radius-md);
+	display: flex;
+	justify-content: center;
+}
+
+.rf-mockup__trackpad {
+	width: 40%;
+	height: 6px;
+	background: color-mix(in srgb, var(--mockup-bezel), #fff 10%);
+	border-radius: var(--rf-radius-full);
+	margin-top: 0.25rem;
+}
+
+/* ═══════════════════════════════════════
+   SPECIAL DEVICES
+   ═══════════════════════════════════════ */
+
+/* ── Watch ── */
+
+.rf-mockup--watch .rf-mockup__frame {
+	width: 198px;
+	border-radius: 40px;
+	position: relative;
+}
+
+.rf-mockup--watch .rf-mockup__bezel {
+	border-radius: 40px;
+	border: 14px solid var(--mockup-bezel);
+}
+
+.rf-mockup--watch .rf-mockup__bezel::after {
+	content: '';
+	position: absolute;
+	right: -6px;
+	top: 35%;
+	width: 6px;
+	height: 28px;
+	background: var(--mockup-bezel);
+	border-radius: 0 3px 3px 0;
+}
+
+.rf-mockup--watch .rf-mockup__viewport {
+	height: 242px;
+	border-radius: 26px;
+}
+
+/* ── None (no frame) ── */
+
+.rf-mockup--none .rf-mockup__frame {
+	box-shadow: none;
+}
+
+.rf-mockup--none .rf-mockup__viewport {
+	border: 1px dashed var(--rf-color-border);
+	border-radius: var(--rf-radius-sm);
+}
+
+/* ═══════════════════════════════════════
+   CONTEXT: inside preview
+   ═══════════════════════════════════════ */
+
+.rf-preview .rf-mockup {
+	margin: 0;
+}
+
+/* ═══════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+	.rf-mockup--auto {
+		--mockup-bezel: var(--mockup-bezel-light);
+		--mockup-chrome: #3a3a3a;
+		--mockup-chrome-text: #aaa;
+	}
+
+	.rf-mockup--light .rf-mockup__address-bar {
+		background: rgba(0, 0, 0, 0.15);
+	}
+}

@@ -5,6 +5,7 @@ import { typography } from './tags/typography.js';
 import { spacing } from './tags/spacing.js';
 import { preview } from './tags/preview.js';
 import { designContext } from './tags/design-context.js';
+import { mockup } from './tags/mockup.js';
 import { config } from './config.js';
 
 export const design: RunePackage = {
@@ -77,6 +78,16 @@ export const design: RunePackage = {
 <button class="rf-btn rf-btn--primary">Primary</button>
 <button class="rf-btn rf-btn--secondary">Secondary</button>
 {% /preview %}`,
+    },
+    'mockup': {
+      transform: mockup,
+      description: 'Device frame chrome (phone, tablet, browser, laptop) wrapping content for realistic device context',
+      reinterprets: {},
+      fixture: `{% mockup device="browser" url="https://example.com" %}
+
+A landing page with a hero section and call to action.
+
+{% /mockup %}`,
     },
     'design-context': {
       transform: designContext,

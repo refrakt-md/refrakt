@@ -112,6 +112,7 @@
 - palette
 - typography
 - spacing
+- mockup
 - design-context
 
 ## Site
