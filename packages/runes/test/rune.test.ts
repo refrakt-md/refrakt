@@ -22,10 +22,6 @@ describe('Rune abstraction', () => {
   });
 
   it('rune.names includes primary name and aliases', () => {
-    const ctaRune = runes.cta;
-    expect(ctaRune.names).toContain('cta');
-    expect(ctaRune.names).toContain('call-to-action');
-
     const hintRune = runes.hint;
     expect(hintRune.names).toContain('hint');
     expect(hintRune.names).toContain('callout');
@@ -34,6 +30,10 @@ describe('Rune abstraction', () => {
     const gridRune = runes.grid;
     expect(gridRune.names).toContain('grid');
     expect(gridRune.names).toContain('columns');
+
+    const accordionRune = runes.accordion;
+    expect(accordionRune.names).toContain('accordion');
+    expect(accordionRune.names).toContain('faq');
   });
 
   it('tags map includes all rune names and aliases', () => {
@@ -46,18 +46,18 @@ describe('Rune abstraction', () => {
   });
 
   it('runes with reinterprets describe their markdown reinterpretation', () => {
-    const stepsRune = runes.steps;
-    expect(stepsRune.reinterprets.heading).toBe('step name');
+    const hintRune = runes.hint;
+    expect(hintRune.reinterprets.paragraph).toBe('message body');
 
-    const ctaRune = runes.cta;
-    expect(ctaRune.reinterprets.fence).toBe('command');
+    const gridRune = runes.grid;
+    expect(gridRune.reinterprets.hr).toBe('grid cell delimiter');
   });
 
   it('runes with seoType declare their schema.org type', () => {
-    expect(runes.pricing.seoType).toBe('Product');
-    expect(runes.tier.seoType).toBe('Offer');
-    expect(runes['music-playlist'].seoType).toBe('MusicPlaylist');
-    expect(runes['music-recording'].seoType).toBe('MusicRecording');
+    expect(runes.accordion.seoType).toBe('FAQPage');
+    expect(runes.datatable.seoType).toBe('Dataset');
+    expect(runes.embed.seoType).toBe('VideoObject');
+    expect(runes.breadcrumb.seoType).toBe('BreadcrumbList');
   });
 
   it('runes without seoType have undefined', () => {

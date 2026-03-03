@@ -16,7 +16,6 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
 	'@refrakt-md/transform',
-	'@refrakt-md/theme-base',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {
@@ -26,6 +25,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	let resolvedRoot = '';
 	let usedCssBlocks: Set<string> | undefined;
 	let communityTags: Record<string, Schema> | undefined;
+	let assembledResult: { config: Record<string, any>; provenance: Record<string, any> } | undefined;
 
 	return {
 		name: 'refrakt-md',
@@ -58,28 +58,64 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		},
 
 		async buildStart() {
-			// Load community packages if configured
-			if (refraktConfig.packages && refraktConfig.packages.length > 0) {
+			// Load community/official packages and local runes if configured
+			const hasPackages = refraktConfig.packages && refraktConfig.packages.length > 0;
+			const hasLocal = refraktConfig.runes?.local && Object.keys(refraktConfig.runes.local).length > 0;
+			const hasAliases = refraktConfig.runes?.aliases && Object.keys(refraktConfig.runes.aliases).length > 0;
+
+			if (hasPackages || hasLocal || hasAliases) {
 				try {
 					const runesPkg = '@refrakt-md/runes';
-					const { loadRunePackage, mergePackages, runes: coreRunes } = await import(runesPkg);
+					const { loadRunePackage, mergePackages, applyAliases, loadLocalRunes, runes: coreRunes, runeTagMap } = await import(runesPkg);
 					const coreRuneNames = new Set(Object.keys(coreRunes));
 
-					const loaded = await Promise.all(
-						refraktConfig.packages.map((name: string) => loadRunePackage(name))
-					);
+					let mergedRunes = { ...coreRunes };
+					let mergedTags: Record<string, Schema> = {};
+					let merged;
 
-					const merged = mergePackages(loaded, coreRuneNames, refraktConfig.runes?.prefer);
-					communityTags = merged.tags;
+					// Load installed packages
+					if (hasPackages) {
+						const loaded = await Promise.all(
+							refraktConfig.packages!.map((name: string) => loadRunePackage(name))
+						);
+						merged = mergePackages(loaded, coreRuneNames, refraktConfig.runes?.prefer);
+						mergedRunes = { ...coreRunes, ...merged.runes };
+						mergedTags = merged.tags;
+					}
 
-					// Merge community theme config into base config for CSS tree-shaking
-					if (Object.keys(merged.themeRunes).length > 0) {
-						const themeBasePkg = '@refrakt-md/theme-base';
-						const { mergeThemeConfig } = await import(themeBasePkg);
-						// Theme config merging happens in buildStart for CSS analysis
+					// Load local runes (highest priority)
+					if (hasLocal) {
+						const local = await loadLocalRunes(refraktConfig.runes!.local!, resolvedRoot);
+						mergedRunes = { ...mergedRunes, ...local.runes };
+						mergedTags = { ...mergedTags, ...runeTagMap(local.runes) };
+					}
+
+					// Apply config-level aliases
+					if (hasAliases && merged) {
+						const aliased = applyAliases(
+							mergedRunes,
+							mergedTags,
+							refraktConfig.runes!.aliases!,
+							merged.provenance,
+						);
+						mergedTags = aliased.tags;
+					}
+
+					communityTags = Object.keys(mergedTags).length > 0 ? mergedTags : undefined;
+
+					// Assemble theme config for CSS tree-shaking
+					if (merged && (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0)) {
+						const { assembleThemeConfig } = await import('@refrakt-md/transform');
+						const { baseConfig } = await import(runesPkg);
+						assembledResult = assembleThemeConfig({
+							coreConfig: baseConfig,
+							packageRunes: merged.themeRunes,
+							packageIcons: merged.themeIcons,
+							provenance: merged.provenance,
+						});
 					}
 				} catch (err) {
-					console.warn('[refrakt] Community package loading failed:', (err as Error).message);
+					console.warn('[refrakt] Package loading failed:', (err as Error).message);
 				}
 			}
 

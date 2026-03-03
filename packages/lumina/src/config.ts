@@ -1,4 +1,5 @@
-import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 import { icons as lucideIcons } from './icons.js';
 
 /** Lumina theme configuration — extends base with icon SVGs */

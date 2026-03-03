@@ -3,6 +3,10 @@ title: CTA
 description: Focused call-to-action blocks with headlines, descriptions, and action buttons
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/marketing**. Install with `npm install @refrakt/marketing` and add `"@refrakt/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # CTA
 
 A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/docs/runes/hero) instead.

@@ -22,6 +22,9 @@ export interface RuneDescriptor {
 
   /** The Type from the registry this rune renders as */
   type?: Type<ComponentType<object>>;
+
+  /** AI prompt extension — additional context appended to the rune description in AI prompts */
+  prompt?: string;
 }
 
 export class Rune {
@@ -32,6 +35,7 @@ export class Rune {
   readonly reinterprets: Record<string, string>;
   readonly seoType: string | undefined;
   readonly type: Type<ComponentType<object>> | undefined;
+  readonly prompt: string | undefined;
 
   constructor(descriptor: RuneDescriptor) {
     this.name = descriptor.name;
@@ -41,6 +45,7 @@ export class Rune {
     this.reinterprets = descriptor.reinterprets ?? {};
     this.seoType = descriptor.seoType;
     this.type = descriptor.type;
+    this.prompt = descriptor.prompt;
   }
 
   /** All names this rune can be referenced by (primary + aliases) */

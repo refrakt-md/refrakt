@@ -3,6 +3,10 @@ title: Bond
 description: Relationship connections between characters or entities
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/storytelling**. Install with `npm install @refrakt/storytelling` and add `"@refrakt/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Bond
 
 Relationships and connections between characters or entities. Content within the rune describes the nature and history of the relationship.

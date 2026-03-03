@@ -29,23 +29,23 @@
 - output-contract
 - patterns
 
-## Sections
+## Rune Catalog
 
-- hero
-- cta
-- feature
-- pricing
-- comparison
-- testimonial
+- rune-catalog
 
 ## Content
 
 - hint
-- steps
-- icon
 - figure
 - sidenote
-- form
+- annotate
+- pullquote
+- textblock
+- mediatext
+- conversation
+- reveal
+- embed
+- icon
 
 ## Layout
 
@@ -53,7 +53,6 @@
 - tabs
 - accordion
 - details
-- preview
 - sandbox
 
 ## Code & Data
@@ -61,58 +60,11 @@
 - codegroup
 - compare
 - diff
-- api
-- symbol
 - datatable
 - chart
 - diagram
-
-## Semantic
-
-- recipe
-- howto
-- event
-- cast
-- organization
-- timeline
-- changelog
-- map
-
-## Creative
-
-- conversation
-- reveal
-- bento
-- storyboard
-- annotate
-
-## Storytelling
-
-- character
-- realm
-- lore
-- faction
-- plot
-- bond
-
-## Travel
-
-- itinerary
 - budget
-
-## Magazine
-
-- pullquote
-- textblock
-- mediatext
-
-## Design
-
-- swatch
-- palette
-- typography
-- spacing
-- design-context
+- form
 
 ## Site
 
@@ -120,7 +72,59 @@
 - nav
 - toc
 - breadcrumb
-- embed
+
+## @refrakt/marketing
+
+- hero
+- cta
+- bento
+- feature
+- steps
+- pricing
+- testimonial
+- comparison
+
+## @refrakt/docs
+
+- api
+- symbol
+- changelog
+
+## @refrakt/storytelling
+
+- character
+- realm
+- lore
+- faction
+- plot
+- bond
+- storyboard
+
+## @refrakt/places
+
+- event
+- map
+- itinerary
+
+## @refrakt/business
+
+- cast
+- organization
+- timeline
+
+## @refrakt/learning
+
+- howto
+- recipe
+
+## @refrakt/design
+
+- swatch
+- palette
+- typography
+- spacing
+- preview
+- design-context
 
 {% /nav %}
 {% /region %}

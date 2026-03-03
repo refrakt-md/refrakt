@@ -8,26 +8,24 @@ describe('generateSystemPrompt', () => {
 
 	it('includes top-level rune names as headings', () => {
 		expect(prompt).toContain('### hint');
-		expect(prompt).toContain('### cta');
-		expect(prompt).toContain('### feature');
 		expect(prompt).toContain('### grid');
-		expect(prompt).toContain('### steps');
 		expect(prompt).toContain('### tabs');
 		expect(prompt).toContain('### codegroup');
-		expect(prompt).toContain('### pricing');
 		expect(prompt).toContain('### nav');
+		expect(prompt).toContain('### accordion');
+		expect(prompt).toContain('### embed');
 	});
 
 	it('includes rune descriptions', () => {
 		expect(prompt).toContain('Callout/admonition block');
-		expect(prompt).toContain('Call-to-action section');
-		expect(prompt).toContain('Sequential step-by-step instructions');
+		expect(prompt).toContain('Grid layout container');
+		expect(prompt).toContain('Tabbed interface');
 	});
 
 	it('includes aliases', () => {
 		expect(prompt).toContain('Aliases: callout, alert');
-		expect(prompt).toContain('Aliases: call-to-action');
 		expect(prompt).toContain('Aliases: columns');
+		expect(prompt).toContain('Aliases: faq');
 	});
 
 	it('includes attribute types and constraints', () => {
@@ -46,25 +44,22 @@ describe('generateSystemPrompt', () => {
 
 	it('includes reinterprets', () => {
 		expect(prompt).toContain('paragraph → message body');
-		expect(prompt).toContain('heading → section headline');
 		expect(prompt).toContain('fence → tab content');
+		expect(prompt).toContain('hr → grid cell delimiter');
 	});
 
 	it('includes examples with rune syntax', () => {
 		expect(prompt).toContain('{% hint type="note" %}');
-		expect(prompt).toContain('{% cta %}');
-		expect(prompt).toContain('{% /cta %}');
 		expect(prompt).toContain('{% grid %}');
-		expect(prompt).toContain('{% steps %}');
+		expect(prompt).toContain('{% tabs %}');
 	});
 
 	it('excludes child-only runes', () => {
 		// These should NOT appear as section headings
 		expect(prompt).not.toMatch(/^### error$/m);
-		expect(prompt).not.toMatch(/^### definition$/m);
-		expect(prompt).not.toMatch(/^### step$/m);
 		expect(prompt).not.toMatch(/^### tab$/m);
-		expect(prompt).not.toMatch(/^### music-recording$/m);
+		expect(prompt).not.toMatch(/^### budget-category$/m);
+		expect(prompt).not.toMatch(/^### conversation-message$/m);
 	});
 
 	it('does not include frontmatter instructions in base prompt', () => {
@@ -122,6 +117,83 @@ describe('mode guidance', () => {
 		const travelRunes = getChatModeRunes('travel');
 		const [, runeVocab] = generateSystemPromptParts(runes, travelRunes, 'travel');
 		expect(runeVocab).toContain('Travel Mode Guidelines');
+	});
+});
+
+describe('AI prompt extensions from packages', () => {
+	it('includes prompt extension text in rune description', () => {
+		const runesWithPrompt: Record<string, any> = {
+			'custom-widget': {
+				name: 'custom-widget',
+				aliases: [],
+				description: 'A custom widget for dashboards',
+				reinterprets: {},
+				schema: { attributes: {} },
+				prompt: 'Use this rune to create dashboard widgets with real-time data. Best for metrics displays.',
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithPrompt);
+		expect(prompt).toContain('### custom-widget');
+		expect(prompt).toContain('A custom widget for dashboards');
+		expect(prompt).toContain('Use this rune to create dashboard widgets with real-time data');
+	});
+
+	it('omits prompt section when not provided', () => {
+		const runesWithoutPrompt: Record<string, any> = {
+			'simple-rune': {
+				name: 'simple-rune',
+				aliases: [],
+				description: 'A simple rune',
+				reinterprets: {},
+				schema: { attributes: {} },
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithoutPrompt);
+		expect(prompt).toContain('### simple-rune');
+		expect(prompt).toContain('A simple rune');
+	});
+
+	it('includes prompt extensions alongside other metadata', () => {
+		const runesWithAll: Record<string, any> = {
+			'full-rune': {
+				name: 'full-rune',
+				aliases: ['fr'],
+				description: 'A fully-configured rune',
+				reinterprets: { heading: 'title', paragraph: 'body' },
+				schema: {
+					attributes: {
+						variant: { type: String, matches: ['a', 'b', 'c'] },
+					},
+				},
+				prompt: 'This rune supports dynamic data binding and auto-refresh intervals.',
+			},
+		};
+
+		const prompt = generateSystemPrompt(runesWithAll);
+		expect(prompt).toContain('### full-rune');
+		expect(prompt).toContain('Aliases: fr');
+		expect(prompt).toContain('This rune supports dynamic data binding');
+		expect(prompt).toContain('"a" | "b" | "c"');
+		expect(prompt).toContain('heading → title');
+	});
+
+	it('handles empty prompt string gracefully', () => {
+		const runesWithEmptyPrompt: Record<string, any> = {
+			'empty-prompt-rune': {
+				name: 'empty-prompt-rune',
+				aliases: [],
+				description: 'A rune with empty prompt',
+				reinterprets: {},
+				schema: { attributes: {} },
+				prompt: '',
+			},
+		};
+
+		// Should not throw
+		const prompt = generateSystemPrompt(runesWithEmptyPrompt);
+		expect(prompt).toContain('### empty-prompt-rune');
 	});
 });
 

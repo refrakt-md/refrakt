@@ -31,3 +31,17 @@ export type { ValidationResult, ValidationError, ValidationWarning } from './val
 
 // Selector extraction
 export { extractSelectors } from './selectors.js';
+
+// Theme config merging
+export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
+export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
+
+// Layout configs
+export { defaultLayout, docsLayout, blogArticleLayout } from './layouts.js';
+
+// Provenance tracking
+export type { RuneProvenance } from './provenance.js';
+
+// Config assembly
+export { assembleThemeConfig } from './assemble.js';
+export type { AssembleInput, AssembleResult } from './assemble.js';

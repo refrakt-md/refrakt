@@ -49,20 +49,20 @@ describe('rune name hover', () => {
   });
 
   it('shows reinterprets in hover', () => {
-    const text = '{% hero %}';
-    const offset = text.indexOf('hero') + 2;
+    const text = '{% hint type="note" %}';
+    const offset = text.indexOf('hint') + 2;
     const result = hover(text, offset);
     const value = (result!.contents as { value: string }).value;
     expect(value).toContain('Reinterprets');
-    expect(value).toContain('heading');
+    expect(value).toContain('paragraph');
   });
 
   it('shows SEO type in hover', () => {
-    const text = '{% recipe %}';
-    const offset = text.indexOf('recipe') + 2;
+    const text = '{% accordion %}';
+    const offset = text.indexOf('accordion') + 2;
     const result = hover(text, offset);
     const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('Recipe');
+    expect(value).toContain('FAQPage');
   });
 
   it('shows attributes in hover', () => {

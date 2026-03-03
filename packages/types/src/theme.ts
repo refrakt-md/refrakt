@@ -21,8 +21,15 @@ export interface RefraktConfig {
 	packages?: string[];
 	/** Rune resolution configuration */
 	runes?: {
-		/** Resolve name collisions between community packages: rune name → preferred package name */
+		/** Resolve name collisions between community packages: rune name → preferred package name.
+		 *  Use "__core__" as the value to force the core version when a package overrides it. */
 		prefer?: Record<string, string>;
+		/** Tag name aliases: alias → canonical rune name.
+		 *  Resolved after package merge — can alias any resolved name (core, package, or local). */
+		aliases?: Record<string, string>;
+		/** Local rune module paths: rune name → relative path to module exporting a rune entry.
+		 *  Local runes have highest priority in the resolution order. */
+		local?: Record<string, string>;
 	};
 }
 

@@ -3,6 +3,10 @@ title: Typography
 description: Font specimen display with live Google Fonts loading
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/design**. Install with `npm install @refrakt/design` and add `"@refrakt/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Typography
 
 Displays font specimens with live-loaded typefaces. List items are parsed as `role: Family Name (weight1, weight2)`. Supported roles: `heading`, `body`, `mono`, `display`, `caption`.

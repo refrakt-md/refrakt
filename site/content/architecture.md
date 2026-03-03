@@ -46,7 +46,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker with configurable themes (any built-in Shiki theme or light/dark pair), pluggable highlighter |
 | `@refrakt-md/behaviors` | Vanilla JS behavior library -- interactive behaviors for tabs, accordion, datatable, form, reveal, preview, and copy-to-clipboard. Framework-agnostic. |
-| `@refrakt-md/theme-base` | Shared theme infrastructure -- BEM config for all runes, per-rune CSS files, base component registry |
+| `@refrakt-md/theme-base` | Shared theme infrastructure -- per-rune CSS files. BEM config for all runes lives in `@refrakt-md/runes`, layout configs and `mergeThemeConfig` live in `@refrakt-md/transform`, and the component registry and element overrides live in `@refrakt-md/svelte` |
 | `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/svelte`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`) |

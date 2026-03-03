@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
+import type { Schema } from '@markdoc/markdoc';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
@@ -16,10 +17,11 @@ export function renderPreviewPage(
 	themeConfig: ThemeConfig,
 	themeCss: string,
 	highlightTransform?: (tree: RendererNode) => RendererNode,
+	extraTags?: Record<string, Schema>,
 ): string {
 	const fullPath = join(contentDir, filePath);
 	const raw = readFileSync(fullPath, 'utf-8');
-	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform);
+	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform, extraTags);
 }
 
 /**
@@ -31,13 +33,15 @@ export function renderPreviewContent(
 	themeConfig: ThemeConfig,
 	themeCss: string,
 	highlightTransform?: (tree: RendererNode) => RendererNode,
+	extraTags?: Record<string, Schema>,
 ): string {
 	const { frontmatter, content } = parseFrontmatter(raw);
 
 	// Run the Markdoc pipeline
 	const ast = Markdoc.parse(content);
+	const mergedTags = extraTags ? { ...tags, ...extraTags } : tags;
 	const renderable = Markdoc.transform(ast, {
-		tags,
+		tags: mergedTags,
 		nodes,
 		variables: { __source: content, __icons: themeConfig.icons },
 	});

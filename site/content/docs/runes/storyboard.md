@@ -3,6 +3,10 @@ title: Storyboard
 description: Comic and storyboard layouts from images and captions
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/storytelling**. Install with `npm install @refrakt/storytelling` and add `"@refrakt/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Storyboard
 
 Comic/storyboard layout. Images become panels, following paragraphs become captions.

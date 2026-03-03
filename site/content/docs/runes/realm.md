@@ -3,6 +3,10 @@ title: Realm
 description: Location profiles for worldbuilding with geography and notable features
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/storytelling**. Install with `npm install @refrakt/storytelling` and add `"@refrakt/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Realm
 
 Location and place profiles for worldbuilding. Headings within the rune become named sections, and the first image is extracted as a scene illustration.

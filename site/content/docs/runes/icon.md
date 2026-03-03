@@ -86,7 +86,7 @@ Site users can add or override icons without modifying the theme. Add an `icons`
 
 ```typescript
 import { luminaConfig } from '@refrakt-md/lumina/transform';
-import { mergeThemeConfig } from '@refrakt-md/theme-base';
+import { mergeThemeConfig } from '@refrakt-md/transform';
 
 const config = mergeThemeConfig(luminaConfig, {
   icons: {

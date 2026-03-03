@@ -57,7 +57,7 @@ describe('scaffoldTheme', () => {
 		expect(pkg.exports['./transform']).toBeDefined();
 		expect(pkg.exports['./svelte']).toBeDefined();
 		expect(pkg.exports['./manifest']).toBe('./manifest.json');
-		expect(pkg.dependencies['@refrakt-md/theme-base']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/runes']).toBeDefined();
 		expect(pkg.dependencies['@refrakt-md/transform']).toBeDefined();
 		expect(pkg.dependencies['@refrakt-md/types']).toBeDefined();
 		expect(pkg.scripts.build).toBe('tsc');
@@ -70,7 +70,8 @@ describe('scaffoldTheme', () => {
 		scaffoldTheme({ themeName: 'my-theme', targetDir });
 
 		const config = readFileSync(join(targetDir, 'src', 'config.ts'), 'utf-8');
-		expect(config).toContain("import { baseConfig, mergeThemeConfig } from '@refrakt-md/theme-base'");
+		expect(config).toContain("import { baseConfig } from '@refrakt-md/runes'");
+		expect(config).toContain("import { mergeThemeConfig } from '@refrakt-md/transform'");
 		expect(config).toContain('mergeThemeConfig(baseConfig,');
 		expect(config).toContain('icons:');
 		expect(config).toContain('runes:');
@@ -87,8 +88,9 @@ describe('scaffoldTheme', () => {
 		expect(svelteIndex).toContain('export const theme: SvelteTheme');
 		expect(svelteIndex).toContain('layouts: { default: DefaultLayout }');
 		expect(svelteIndex).toContain('components: registry');
-		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/registry");
-		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/elements");
+		expect(svelteIndex).toContain("from '@refrakt-md/svelte'");
+		expect(svelteIndex).toContain("import { registry } from '@refrakt-md/svelte'");
+		expect(svelteIndex).toContain("import { elements } from '@refrakt-md/svelte'");
 	});
 
 	it('generates manifest.json with correct structure', () => {
@@ -113,7 +115,7 @@ describe('scaffoldTheme', () => {
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
 		const expected = `~${ownPkg.version}`;
-		expect(pkg.dependencies['@refrakt-md/theme-base']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/runes']).toBe(expected);
 		expect(pkg.dependencies['@refrakt-md/transform']).toBe(expected);
 		expect(pkg.dependencies['@refrakt-md/types']).toBe(expected);
 		expect(pkg.dependencies['@refrakt-md/svelte']).toBe(expected);
@@ -188,7 +190,7 @@ describe('scaffoldTheme', () => {
 		scaffoldTheme({ themeName: 'my-theme', targetDir });
 
 		const svelteIndex = readFileSync(join(targetDir, 'svelte', 'index.ts'), 'utf-8');
-		expect(svelteIndex).toContain("@refrakt-md/theme-base/svelte/behaviors");
+		expect(svelteIndex).toContain("export { behaviors } from '@refrakt-md/svelte'");
 		expect(svelteIndex).toContain("behaviors");
 	});
 

@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { validateThemeConfig, validateManifest, type ValidationResult } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 
 export interface ValidateOptions {
 	configPath?: string;

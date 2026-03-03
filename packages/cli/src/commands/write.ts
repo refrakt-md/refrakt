@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { generateSystemPrompt, writePrompt } from '@refrakt-md/ai';
-import { runes } from '@refrakt-md/runes';
-import type { AIProvider, Message } from '@refrakt-md/ai';
+import { runes as coreRunes } from '@refrakt-md/runes';
+import type { AIProvider, Message, RuneInfo } from '@refrakt-md/ai';
 
 export interface WriteOptions {
 	prompt: string;
@@ -12,6 +12,8 @@ export interface WriteOptions {
 	model?: string;
 	output?: string;
 	outputDir?: string;
+	/** Merged runes (core + packages). Falls back to core-only if not provided. */
+	runes?: Record<string, RuneInfo>;
 }
 
 function log(message: string): void {
@@ -62,7 +64,8 @@ export async function writeCommand(options: WriteOptions): Promise<void> {
 	log(`Using ${providerName} (${modelName})\n`);
 
 	const multiFile = !!outputDir;
-	const systemPrompt = generateSystemPrompt(runes) + writePrompt({ multiFile });
+	const allRunes = options.runes ?? coreRunes;
+	const systemPrompt = generateSystemPrompt(allRunes) + writePrompt({ multiFile });
 
 	const messages: Message[] = [
 		{ role: 'system', content: systemPrompt },

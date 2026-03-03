@@ -3,6 +3,10 @@ title: Preview
 description: Component showcase with theme toggle, responsive viewports, and adjustable width
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/design**. Install with `npm install @refrakt/design` and add `"@refrakt/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Preview
 
 A component showcase wrapper that renders content in a framed environment with a theme toggle toolbar, responsive viewport simulation, and adjustable width. Useful for documentation sites, design systems, and theme demonstrations.

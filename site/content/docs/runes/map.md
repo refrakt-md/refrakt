@@ -3,6 +3,10 @@ title: Map
 description: Interactive map visualization from Markdown lists of locations
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/places**. Install with `npm install @refrakt/places` and add `"@refrakt/places"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Map
 
 Transform lists of locations into interactive maps. Supports named pins with coordinates or addresses, route lines, and grouped layers.

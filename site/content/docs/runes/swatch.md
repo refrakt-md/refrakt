@@ -3,6 +3,10 @@ title: Swatch
 description: Inline color chip for referencing colors in prose
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/design**. Install with `npm install @refrakt/design` and add `"@refrakt/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Swatch
 
 An inline color chip for referencing colors within body text. Self-closing — no children needed.

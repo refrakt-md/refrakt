@@ -2,8 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import postcss from 'postcss';
-import { baseConfig } from '@refrakt-md/theme-base';
-import type { RuneConfig, StructureEntry } from '@refrakt-md/transform';
+import { baseConfig } from '@refrakt-md/runes';
+import type { RuneConfig, StructureEntry, ThemeConfig } from '@refrakt-md/transform';
+import marketing from '@refrakt/marketing';
+import docs from '@refrakt/docs';
+import storytelling from '@refrakt/storytelling';
+import places from '@refrakt/places';
+import business from '@refrakt/business';
+import design from '@refrakt/design';
+import learning from '@refrakt/learning';
+import media from '@refrakt/media';
 
 // ─── Known gaps ───
 // Blocks/selectors that intentionally lack CSS. Keeping them documented here
@@ -105,10 +113,27 @@ function expectedSelectors(prefix: string, config: RuneConfig): string[] {
 	return [...new Set(selectors)].sort();
 }
 
+// ─── Assemble full config (core + all rune packages) ───
+
+const fullRunes: Record<string, RuneConfig> = {
+	...baseConfig.runes,
+	...marketing.theme?.runes as Record<string, RuneConfig>,
+	...docs.theme?.runes as Record<string, RuneConfig>,
+	...storytelling.theme?.runes as Record<string, RuneConfig>,
+	...places.theme?.runes as Record<string, RuneConfig>,
+	...business.theme?.runes as Record<string, RuneConfig>,
+	...design.theme?.runes as Record<string, RuneConfig>,
+	...learning.theme?.runes as Record<string, RuneConfig>,
+	...media.theme?.runes as Record<string, RuneConfig>,
+};
+
+const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
+
 // ─── Test data ───
 
 const allCssSelectors = parseAllCssSelectors();
-const { prefix, runes } = baseConfig;
+const { prefix } = fullConfig;
+const runes = fullRunes;
 
 // Build test entries: [runeName, blockName, config]
 const runeEntries = Object.entries(runes).map(

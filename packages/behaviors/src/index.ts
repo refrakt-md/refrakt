@@ -12,7 +12,7 @@ import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 import { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 import { searchBehavior } from './behaviors/search.js';
 
-/** Map of rune type → behavior function */
+/** Map of rune type → behavior function (mutable — packages can register additional behaviors) */
 const behaviors: Record<string, BehaviorFn> = {
 	accordion: accordionBehavior,
 	accordionitem: accordionBehavior,
@@ -23,6 +23,27 @@ const behaviors: Record<string, BehaviorFn> = {
 	form: formBehavior,
 	preview: previewBehavior,
 };
+
+/**
+ * Register additional behavior functions (e.g., from community/official packages).
+ * New entries are added; existing entries are NOT overwritten.
+ * Use overrideBehavior() to explicitly replace an existing behavior.
+ */
+export function registerBehaviors(additional: Record<string, BehaviorFn>): void {
+	for (const [name, fn] of Object.entries(additional)) {
+		if (!(name in behaviors)) {
+			behaviors[name] = fn;
+		}
+	}
+}
+
+/**
+ * Replace a registered behavior with a new implementation.
+ * Use this when a package explicitly overrides a core behavior.
+ */
+export function overrideBehavior(name: string, fn: BehaviorFn): void {
+	behaviors[name] = fn;
+}
 
 /**
  * Scan a container for rune elements and attach interactive behaviors.

@@ -1,7 +1,7 @@
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';
 import { generateStructureContract, type RuneContract } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/theme-base';
+import { baseConfig } from '@refrakt-md/runes';
 
 export interface ScaffoldCssOptions {
 	outputDir: string;

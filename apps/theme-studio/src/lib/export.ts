@@ -84,7 +84,8 @@ export function generatePackageJson(name: string, description: string, hasIconOv
 			exports,
 			dependencies: {
 				'@refrakt-md/lumina': '^0.5.0',
-				'@refrakt-md/theme-base': '^0.5.0',
+				'@refrakt-md/runes': '^0.5.0',
+				'@refrakt-md/transform': '^0.5.0',
 			},
 			peerDependencies: {
 				svelte: '^5.0.0',
@@ -114,7 +115,7 @@ function generateTransformIndex(hasIconOverrides: boolean): string {
 	if (hasIconOverrides) {
 		return [
 			`import { luminaConfig, createTransform } from '@refrakt-md/lumina/transform';`,
-			`import { mergeThemeConfig } from '@refrakt-md/theme-base';`,
+			`import { mergeThemeConfig } from '@refrakt-md/transform';`,
 			`import { iconOverrides } from './icons.js';`,
 			``,
 			`export const themeConfig = mergeThemeConfig(luminaConfig, { icons: iconOverrides });`,

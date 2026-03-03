@@ -14,29 +14,21 @@ export interface RuneInfo {
 			matches?: unknown;
 		}>;
 	};
+	/** AI prompt extension from community/official packages — additional context appended after description */
+	prompt?: string;
 }
 
 /** Runes that are internal or child-only — excluded from prompts */
 const EXCLUDED_RUNES = new Set([
 	'error',
-	'definition',
-	'step',
 	'tab',
-	'music-recording',
 	'accordion-item',
-	'timeline-entry',
-	'changelog-release',
-	'breadcrumb-item',
-	'cast-member',
-	'map-pin',
-	'character-section',
-	'realm-section',
-	'faction-section',
-	'beat',
 	'budget-category',
 	'budget-line-item',
-	'itinerary-day',
-	'itinerary-stop',
+	'conversation-message',
+	'reveal-step',
+	'note',
+	'form-field',
 ]);
 
 /** Attributes to hide from the AI prompt (rune.attribute format) */
@@ -87,6 +79,11 @@ function describeRune(rune: RuneInfo): string {
 	}
 	if (rune.aliases.length > 0) {
 		lines.push(`Aliases: ${rune.aliases.join(', ')}`);
+	}
+
+	// AI prompt extension from package
+	if (rune.prompt) {
+		lines.push(rune.prompt);
 	}
 
 	// Attributes

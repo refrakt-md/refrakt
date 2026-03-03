@@ -36,6 +36,8 @@ export interface InspectDeps {
 	renderToHtml: (node: any, options?: { pretty?: boolean }) => string;
 	extractSelectors: (node: any, prefix: string) => string[];
 	baseConfig: ThemeConfig;
+	/** Fixture strings from community packages (keyed by rune name) */
+	packageFixtures?: Record<string, string>;
 }
 
 export interface InspectOptions {
@@ -305,7 +307,7 @@ function runPipeline(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ): { tree: any; source: string } {
-	const source = getFixture(rune.name, flags);
+	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 

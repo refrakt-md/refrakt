@@ -3,6 +3,10 @@ title: Feature
 description: Feature showcases with name, description, and optional icons
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt/marketing**. Install with `npm install @refrakt/marketing` and add `"@refrakt/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Feature
 
 Feature showcases. List items become feature definitions — bold text is the feature name, the following paragraph is the description.
