@@ -139,10 +139,10 @@ function transformRune(
 		children = [wrapped];
 	}
 
-	// 6. Apply BEM element classes to data-name children (recursively for structural elements)
+	// 6. Apply BEM element classes to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, typeof_);
-		return applyBemClasses(child, block, recurse, typeof_);
+		return recurse(applyBemClasses(child, block), typeof_);
 	});
 
 	// 7. Remove consumed meta tags
@@ -197,13 +197,9 @@ function transformRune(
 	return result;
 }
 
-/** Recursively apply BEM element classes to data-name elements within a rune's children */
-function applyBemClasses(
-	child: SerializedTag,
-	block: string,
-	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
-	parentTypeof?: string
-): RendererNode {
+/** Recursively apply BEM element classes to data-name elements within a rune's children.
+ *  Pure decoration — does not recurse into the transform pipeline. */
+function applyBemClasses(child: SerializedTag, block: string): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -211,19 +207,18 @@ function applyBemClasses(
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, recurse, parentTypeof);
+			return applyBemClasses(c, block);
 		});
-		return recurse({
+		return {
 			...child,
 			attributes: {
 				...child.attributes,
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
 			},
 			children: nestedChildren,
-		}, parentTypeof);
+		};
 	}
-
-	return recurse(child, parentTypeof);
+	return child;
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */

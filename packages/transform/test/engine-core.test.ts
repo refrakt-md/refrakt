@@ -862,6 +862,91 @@ describe('BEM class application', () => {
 		expect(hint.attributes.class).toContain('rf-hint');
 		expect(hint.attributes.class).not.toContain('rf-grid__');
 	});
+
+	it('does not duplicate block class for runes inside a single data-name wrapper', () => {
+		const config: ThemeConfig = {
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Outer: {
+					block: 'outer',
+					contentWrapper: { tag: 'div', ref: 'body' },
+				},
+				Inner: { block: 'inner' },
+			},
+		};
+		const transform = createTransform(config);
+		const tag = makeTag('section', { typeof: 'Outer' }, [
+			makeTag('div', { typeof: 'Inner' }, ['content']),
+		]);
+
+		const result = asTag(transform(tag));
+		const body = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'body'
+		) as SerializedTag;
+		const inner = findByTypeof(body, 'Inner')!;
+		expect(inner.attributes.class).toBe('rf-inner');
+	});
+
+	it('does not duplicate block class for runes nested inside multiple data-name elements', () => {
+		const config: ThemeConfig = {
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Parent: {
+					block: 'parent',
+					contentWrapper: { tag: 'div', ref: 'content' },
+				},
+				Child: { block: 'child' },
+			},
+		};
+		const transform = createTransform(config);
+		const tag = makeTag('section', { typeof: 'Parent' }, [
+			makeTag('div', { 'data-name': 'items' }, [
+				makeTag('div', { typeof: 'Child' }, ['Nested rune']),
+			]),
+		]);
+
+		const result = asTag(transform(tag));
+		const wrapper = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'content'
+		) as SerializedTag;
+		expect(wrapper.attributes.class).toContain('rf-parent__content');
+
+		const items = wrapper.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'items'
+		) as SerializedTag;
+		expect(items.attributes.class).toContain('rf-parent__items');
+
+		const child = findByTypeof(items, 'Child')!;
+		expect(child.attributes.class).toBe('rf-child');
+	});
+
+	it('context modifiers work through data-name wrapper elements', () => {
+		const config: ThemeConfig = {
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Parent: {
+					block: 'parent',
+					contentWrapper: { tag: 'div', ref: 'body' },
+				},
+				Child: {
+					block: 'child',
+					contextModifiers: { 'Parent': 'in-parent' },
+				},
+			},
+		};
+		const transform = createTransform(config);
+		const tag = makeTag('section', { typeof: 'Parent' }, [
+			makeTag('div', { typeof: 'Child' }, ['Nested child']),
+		]);
+
+		const result = asTag(transform(tag));
+		const body = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'body'
+		) as SerializedTag;
+		const child = findByTypeof(body, 'Child')!;
+		expect(child.attributes.class).toContain('rf-child--in-parent');
+		expect(child.attributes.class).toBe('rf-child rf-child--in-parent');
+	});
 });
 
 // ---------------------------------------------------------------------------
