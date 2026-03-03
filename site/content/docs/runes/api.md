@@ -4,7 +4,7 @@ description: API endpoint documentation with method, path, and parameters
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt/docs**. Install with `npm install @refrakt/docs` and add `"@refrakt/docs"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/docs**. Install with `npm install @refrakt-md/docs` and add `"@refrakt-md/docs"` to the `packages` array in your `refrakt.config.json`.
 {% /hint %}
 
 # API

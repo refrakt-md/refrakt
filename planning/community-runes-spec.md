@@ -18,17 +18,17 @@ Community runes exist because some content types are too domain-specific for the
 | Tier | Scope | Maintained by | Install | Examples |
 |---|---|---|---|---|
 | Core | Universal primitives, ships with refrakt.md | refrakt.md team | Built-in, always available | hint, tabs, figure, datatable, budget |
-| Official packages | Domain-specific rune sets, maintained by refrakt.md | refrakt.md team | `npm install @refrakt/...` | `@refrakt/landing`, `@refrakt/storytelling` |
+| Official packages | Domain-specific rune sets, maintained by refrakt.md | refrakt.md team | `npm install @refrakt-md/...` | `@refrakt-md/landing`, `@refrakt-md/storytelling` |
 | Community packages | Domain-specific rune sets, maintained by third parties | Community authors | `npm install @refrakt-community/...` | `@refrakt-community/dnd-5e`, `@refrakt-community/screenplay` |
 | Local | Per-project declarations | Project author | Config only | A custom product card, a pricing calculator |
 
 All tiers produce runes that are indistinguishable to the rendering pipeline. A `{% stat-block %}` from a community package goes through the same parse → rune transform → identity transform → render chain as a `{% hint %}` from the core.
 
-The `@refrakt/` namespace signals official packages maintained by the refrakt.md team. `@refrakt-community/` signals third-party packages. Both go through the same pipeline. The distinction is trust and maintenance commitment, not technical capability.
+The `@refrakt-md/` namespace signals official packages maintained by the refrakt.md team. `@refrakt-community/` signals third-party packages. Both go through the same pipeline. The distinction is trust and maintenance commitment, not technical capability.
 
 ### New Project Defaults
 
-New projects include official packages relevant to their use case. "Starting a landing page" pre-installs `@refrakt/landing`. "Starting a docs site" pre-installs `@refrakt/docs`. Users can remove packages they don't need or add community packages. Core runes are always available and cannot be removed.
+New projects include official packages relevant to their use case. "Starting a landing page" pre-installs `@refrakt-md/landing`. "Starting a docs site" pre-installs `@refrakt-md/docs`. Users can remove packages they don't need or add community packages. Core runes are always available and cannot be removed.
 
 ---
 
@@ -84,7 +84,7 @@ Runes that nearly every refrakt.md project uses regardless of domain. These are 
 | `sandbox` | — | Isolated HTML/CSS/JS with optional framework loading |
 | `form` | `contact-form` | Interactive form from list-based field definitions |
 
-### `@refrakt/marketing` (8 runes)
+### `@refrakt-md/marketing` (8 runes)
 
 Marketing sites, product pages, landing pages. If you're building a website that needs to sell, convert, or present a business, you need these. If you're writing docs or a blog, you don't.
 
@@ -99,7 +99,7 @@ Marketing sites, product pages, landing pages. If you're building a website that
 | `testimonial` | `review` | Customer testimonials with attribution |
 | `comparison` | `versus`, `vs` | Feature comparison grid with positive/negative indicators |
 
-### `@refrakt/docs` (3 runes)
+### `@refrakt-md/docs` (3 runes)
 
 Developer documentation. API references, code documentation, changelogs.
 
@@ -109,7 +109,7 @@ Developer documentation. API references, code documentation, changelogs.
 | `symbol` | — | Code construct documentation (functions, classes, types) |
 | `changelog` | — | Versioned change history with categorized entries |
 
-### `@refrakt/learning` (8 runes)
+### `@refrakt-md/learning` (8 runes)
 
 Structured educational and instructional content. Courses, tutorials, training materials, how-to guides, recipes.
 
@@ -130,7 +130,7 @@ Structured educational and instructional content. Courses, tutorials, training m
 
 Runes compose naturally within a lesson page: `objective` at the top declares what the student will learn, `concept` runes introduce new terminology, `howto` or `recipe` runes teach procedures, `exercise` runes provide practice, and a `quiz` at the end tests retention. A `glossary` page collects all `concept` definitions and auto-links terms wherever they appear across the site. `prerequisite` runes build a dependency graph between lessons that themes can render as a learning path.
 
-### `@refrakt/storytelling` (7 runes)
+### `@refrakt-md/storytelling` (7 runes)
 
 Writers, game masters, TTRPG players, worldbuilders. See the Storytelling Runes specification for full details.
 
@@ -144,7 +144,7 @@ Writers, game masters, TTRPG players, worldbuilders. See the Storytelling Runes 
 | `bond` | Connections between entities, relationship map data |
 | `storyboard` | Visual panels with captions for sequential storytelling |
 
-### `@refrakt/places` (3 runes)
+### `@refrakt-md/places` (3 runes)
 
 Places, events, and journeys. Geographic and time-based real-world content.
 
@@ -156,7 +156,7 @@ Places, events, and journeys. Geographic and time-based real-world content.
 
 **Audience:** Travel bloggers, city guide creators, event organisers, tourism sites, conference sites. Future candidates for this package: `accommodation` (hotel/Airbnb card with amenities), `venue` (restaurant or bar with hours and atmosphere).
 
-### `@refrakt/business` (5 runes)
+### `@refrakt-md/business` (5 runes)
 
 Professional and organisational content. Company sites, agency portfolios, nonprofit pages, careers pages.
 
@@ -170,7 +170,7 @@ Professional and organisational content. Company sites, agency portfolios, nonpr
 
 **Audience:** Company about pages, agency portfolios, nonprofit sites, startup pitch sites, careers pages, investor relations. Team page, company history, partner logos, job listings.
 
-### `@refrakt/design` (5 runes)
+### `@refrakt-md/design` (5 runes)
 
 Design systems and component libraries. For teams documenting their visual language.
 
@@ -182,7 +182,7 @@ Design systems and component libraries. For teams documenting their visual langu
 | `spacing` | — | Spacing, radius, and shadow tokens |
 | `preview` | `showcase` | Component preview with theme toggle, viewport simulation, source view |
 
-### `@refrakt/media` (6 runes)
+### `@refrakt-md/media` (6 runes)
 
 Time-based media content: music, podcasts, audiobooks, video, talks. Covers both metadata (describing media that lives on external platforms) and playback (embedding self-hosted media). `embed` in core handles third-party player widgets (YouTube, Spotify embeds). This package handles everything else.
 
@@ -213,14 +213,14 @@ The distinction: you *reference* a track (metadata card with links to where you 
 | Package | Runes | Audience |
 |---|---|---|
 | **Core** (built-in) | ~30 | Everyone |
-| `@refrakt/marketing` | 8 | Marketing sites, product pages |
-| `@refrakt/docs` | 3 | Developer documentation |
-| `@refrakt/learning` | 8 | Courses, tutorials, training materials |
-| `@refrakt/storytelling` | 7 | Writers, game masters, worldbuilders |
-| `@refrakt/places` | 3 | Travel, events, local guides |
-| `@refrakt/business` | 5 | Company sites, agency portfolios |
-| `@refrakt/design` | 5 | Design systems, component libraries |
-| `@refrakt/media` | 6 | Music, podcasts, video, audio content |
+| `@refrakt-md/marketing` | 8 | Marketing sites, product pages |
+| `@refrakt-md/docs` | 3 | Developer documentation |
+| `@refrakt-md/learning` | 8 | Courses, tutorials, training materials |
+| `@refrakt-md/storytelling` | 7 | Writers, game masters, worldbuilders |
+| `@refrakt-md/places` | 3 | Travel, events, local guides |
+| `@refrakt-md/business` | 5 | Company sites, agency portfolios |
+| `@refrakt-md/design` | 5 | Design systems, component libraries |
+| `@refrakt-md/media` | 6 | Music, podcasts, video, audio content |
 | **Total** | **~75** | |
 
 ---
@@ -847,14 +847,14 @@ refrakt.md infrastructure (available to all)
 └── Theme system             ← identity transform, BEM contract
 
 Official packages (maintained by refrakt.md team)
-├── @refrakt/marketing       ← hero, cta, bento, feature, steps, pricing, testimonial, comparison
-├── @refrakt/docs            ← api, symbol, changelog
-├── @refrakt/learning        ← howto, recipe, concept, exercise, quiz, glossary, prerequisite, objective
-├── @refrakt/storytelling    ← character, realm, faction, lore, plot, bond, storyboard
-├── @refrakt/places          ← event, map, itinerary
-├── @refrakt/business        ← cast, organization, timeline, partner, job
-├── @refrakt/design          ← swatch, palette, typography, spacing, preview
-└── @refrakt/media           ← track, playlist, album, artist, video, audio
+├── @refrakt-md/marketing       ← hero, cta, bento, feature, steps, pricing, testimonial, comparison
+├── @refrakt-md/docs            ← api, symbol, changelog
+├── @refrakt-md/learning        ← howto, recipe, concept, exercise, quiz, glossary, prerequisite, objective
+├── @refrakt-md/storytelling    ← character, realm, faction, lore, plot, bond, storyboard
+├── @refrakt-md/places          ← event, map, itinerary
+├── @refrakt-md/business        ← cast, organization, timeline, partner, job
+├── @refrakt-md/design          ← swatch, palette, typography, spacing, preview
+└── @refrakt-md/media           ← track, playlist, album, artist, video, audio
 
 Community packages (npm ecosystem)
 ├── Domain rune sets (dnd-5e, pathfinder-2e, screenplay, music-theory, ...)

@@ -4,7 +4,7 @@ description: Customer testimonials and reviews
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt/marketing**. Install with `npm install @refrakt/marketing` and add `"@refrakt/marketing"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `packages` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Testimonial

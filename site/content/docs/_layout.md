@@ -73,7 +73,7 @@
 - toc
 - breadcrumb
 
-## @refrakt/marketing
+## @refrakt-md/marketing
 
 - hero
 - cta
@@ -84,13 +84,13 @@
 - testimonial
 - comparison
 
-## @refrakt/docs
+## @refrakt-md/docs
 
 - api
 - symbol
 - changelog
 
-## @refrakt/storytelling
+## @refrakt-md/storytelling
 
 - character
 - realm
@@ -100,24 +100,24 @@
 - bond
 - storyboard
 
-## @refrakt/places
+## @refrakt-md/places
 
 - event
 - map
 - itinerary
 
-## @refrakt/business
+## @refrakt-md/business
 
 - cast
 - organization
 - timeline
 
-## @refrakt/learning
+## @refrakt-md/learning
 
 - howto
 - recipe
 
-## @refrakt/design
+## @refrakt-md/design
 
 - swatch
 - palette

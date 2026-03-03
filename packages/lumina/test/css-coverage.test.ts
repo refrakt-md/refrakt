@@ -4,14 +4,14 @@ import { join } from 'path';
 import postcss from 'postcss';
 import { baseConfig } from '@refrakt-md/runes';
 import type { RuneConfig, StructureEntry, ThemeConfig } from '@refrakt-md/transform';
-import marketing from '@refrakt/marketing';
-import docs from '@refrakt/docs';
-import storytelling from '@refrakt/storytelling';
-import places from '@refrakt/places';
-import business from '@refrakt/business';
-import design from '@refrakt/design';
-import learning from '@refrakt/learning';
-import media from '@refrakt/media';
+import marketing from '@refrakt-md/marketing';
+import docs from '@refrakt-md/docs';
+import storytelling from '@refrakt-md/storytelling';
+import places from '@refrakt-md/places';
+import business from '@refrakt-md/business';
+import design from '@refrakt-md/design';
+import learning from '@refrakt-md/learning';
+import media from '@refrakt-md/media';
 
 // ─── Known gaps ───
 // Blocks/selectors that intentionally lack CSS. Keeping them documented here

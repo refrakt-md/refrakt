@@ -65,16 +65,16 @@ These runes are available out of the box — no extra installation needed. They 
 
 Official rune packages are maintained by the refrakt team and styled by the Lumina theme. Install the packages you need and add them to your config.
 
-### @refrakt/marketing
+### @refrakt-md/marketing
 
 Landing page and conversion runes for marketing sites and product pages.
 
 ```bash
-npm install @refrakt/marketing
+npm install @refrakt-md/marketing
 ```
 
 ```json
-{ "packages": ["@refrakt/marketing"] }
+{ "packages": ["@refrakt-md/marketing"] }
 ```
 
 | Rune | Description |
@@ -88,16 +88,16 @@ npm install @refrakt/marketing
 | [testimonial](/docs/runes/testimonial) | Customer testimonials and reviews |
 | [comparison](/docs/runes/comparison) | Product and feature comparison matrices from Markdown |
 
-### @refrakt/docs
+### @refrakt-md/docs
 
 Technical documentation runes for API references, code symbols, and changelogs.
 
 ```bash
-npm install @refrakt/docs
+npm install @refrakt-md/docs
 ```
 
 ```json
-{ "packages": ["@refrakt/docs"] }
+{ "packages": ["@refrakt-md/docs"] }
 ```
 
 | Rune | Description |
@@ -106,16 +106,16 @@ npm install @refrakt/docs
 | [symbol](/docs/runes/symbol) | Code construct documentation for functions, classes, interfaces, enums, and type aliases |
 | [changelog](/docs/runes/changelog) | Version history with release notes |
 
-### @refrakt/storytelling
+### @refrakt-md/storytelling
 
 Worldbuilding and narrative runes for fiction, games, and creative writing.
 
 ```bash
-npm install @refrakt/storytelling
+npm install @refrakt-md/storytelling
 ```
 
 ```json
-{ "packages": ["@refrakt/storytelling"] }
+{ "packages": ["@refrakt-md/storytelling"] }
 ```
 
 | Rune | Description |
@@ -128,16 +128,16 @@ npm install @refrakt/storytelling
 | [bond](/docs/runes/bond) | Relationship connections between characters or entities |
 | [storyboard](/docs/runes/storyboard) | Comic and storyboard layouts from images and captions |
 
-### @refrakt/places
+### @refrakt-md/places
 
 Event planning and location runes for travel guides and venue pages.
 
 ```bash
-npm install @refrakt/places
+npm install @refrakt-md/places
 ```
 
 ```json
-{ "packages": ["@refrakt/places"] }
+{ "packages": ["@refrakt-md/places"] }
 ```
 
 | Rune | Description |
@@ -146,16 +146,16 @@ npm install @refrakt/places
 | [map](/docs/runes/map) | Interactive map visualization from Markdown lists of locations |
 | [itinerary](/docs/runes/itinerary) | Day-by-day travel itineraries with timed stops and locations |
 
-### @refrakt/business
+### @refrakt-md/business
 
 Organizational runes for team directories, company profiles, and timelines.
 
 ```bash
-npm install @refrakt/business
+npm install @refrakt-md/business
 ```
 
 ```json
-{ "packages": ["@refrakt/business"] }
+{ "packages": ["@refrakt-md/business"] }
 ```
 
 | Rune | Description |
@@ -164,16 +164,16 @@ npm install @refrakt/business
 | [organization](/docs/runes/organization) | Structured business or organization information |
 | [timeline](/docs/runes/timeline) | Chronological events displayed as a timeline |
 
-### @refrakt/learning
+### @refrakt-md/learning
 
 Educational runes for tutorials, recipes, and instructional content.
 
 ```bash
-npm install @refrakt/learning
+npm install @refrakt-md/learning
 ```
 
 ```json
-{ "packages": ["@refrakt/learning"] }
+{ "packages": ["@refrakt-md/learning"] }
 ```
 
 | Rune | Description |
@@ -181,16 +181,16 @@ npm install @refrakt/learning
 | [howto](/docs/runes/howto) | Step-by-step how-to guide with tools and instructions |
 | [recipe](/docs/runes/recipe) | Structured recipe with ingredients, steps, and chef tips |
 
-### @refrakt/design
+### @refrakt-md/design
 
 Design system runes for color palettes, typography specimens, and token visualization.
 
 ```bash
-npm install @refrakt/design
+npm install @refrakt-md/design
 ```
 
 ```json
-{ "packages": ["@refrakt/design"] }
+{ "packages": ["@refrakt-md/design"] }
 ```
 
 | Rune | Description |
@@ -202,16 +202,16 @@ npm install @refrakt/design
 | [preview](/docs/runes/preview) | Component showcase with theme toggle, responsive viewports, and adjustable width |
 | [design-context](/docs/runes/design-context) | Unified design token card composing palette, typography, and spacing runes |
 
-### @refrakt/media
+### @refrakt-md/media
 
 Audio and music runes for playlists and recordings. Documentation coming soon.
 
 ```bash
-npm install @refrakt/media
+npm install @refrakt-md/media
 ```
 
 ```json
-{ "packages": ["@refrakt/media"] }
+{ "packages": ["@refrakt-md/media"] }
 ```
 
 | Rune | Description |

@@ -4,7 +4,7 @@ description: Structured recipe with ingredients, steps, and chef tips
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt/learning**. Install with `npm install @refrakt/learning` and add `"@refrakt/learning"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/learning**. Install with `npm install @refrakt-md/learning` and add `"@refrakt-md/learning"` to the `packages` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Recipe

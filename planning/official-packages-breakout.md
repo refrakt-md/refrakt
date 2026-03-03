@@ -7,7 +7,7 @@
 
 ## Overview
 
-This plan covers breaking existing core runes out of `packages/runes/`, `packages/theme-base/`, `packages/lumina/`, and `packages/behaviors/` into official `@refrakt/` packages, and filling infrastructure gaps in the community rune system to support this.
+This plan covers breaking existing core runes out of `packages/runes/`, `packages/theme-base/`, `packages/lumina/`, and `packages/behaviors/` into official `@refrakt-md/` packages, and filling infrastructure gaps in the community rune system to support this.
 
 Currently all ~93 rune configs live in `packages/theme-base/src/config.ts`, all ~62 rune schemas live in `packages/runes/src/tags/`, and all CSS lives in `packages/lumina/styles/runes/`. After breakout, only the ~30 core runes remain in `packages/runes/`. Everything else moves into official packages. CSS stays in themes — rune packages define structure, themes define appearance. `theme-base` is dissolved entirely — its contents are absorbed into existing packages.
 
@@ -28,20 +28,20 @@ refract.md/
     behaviors/             # core rune behaviors
     ...
     # theme-base/ — REMOVED (dissolved into runes, transform, lumina, svelte)
-  runes/                   # official rune packages (@refrakt/*)
-    marketing/             # @refrakt/marketing
-    docs/                  # @refrakt/docs
-    learning/              # @refrakt/learning
-    storytelling/          # @refrakt/storytelling
-    places/                # @refrakt/places
-    business/              # @refrakt/business
-    design/                # @refrakt/design
-    media/                 # @refrakt/media
+  runes/                   # official rune packages (@refrakt-md/*)
+    marketing/             # @refrakt-md/marketing
+    docs/                  # @refrakt-md/docs
+    learning/              # @refrakt-md/learning
+    storytelling/          # @refrakt-md/storytelling
+    places/                # @refrakt-md/places
+    business/              # @refrakt-md/business
+    design/                # @refrakt-md/design
+    media/                 # @refrakt-md/media
   site/
   planning/
 ```
 
-No naming conflict: `packages/runes/` is `@refrakt-md/runes` (core schemas), `runes/marketing/` is `@refrakt/marketing` (official package). Different npm scopes.
+No naming conflict: `packages/runes/` is `@refrakt-md/runes` (core schemas), `runes/marketing/` is `@refrakt-md/marketing` (official package). Different npm scopes.
 
 ---
 
@@ -51,14 +51,14 @@ No naming conflict: `packages/runes/` is `@refrakt-md/runes` (core schemas), `ru
 
 | Package | Already built | Unbuilt (see unbuilt-runes-spec.md) |
 |---------|--------------|-------------------------------------|
-| `@refrakt/marketing` | hero, cta, bento, feature, steps, pricing, testimonial, comparison | — |
-| `@refrakt/docs` | api, symbol, changelog | — |
-| `@refrakt/learning` | howto, recipe | concept, exercise, quiz, glossary, prerequisite, objective |
-| `@refrakt/storytelling` | character, realm, faction, lore, plot, bond, storyboard | — |
-| `@refrakt/places` | event, map, itinerary | — |
-| `@refrakt/business` | cast, organization, timeline | partner, job |
-| `@refrakt/design` | swatch, palette, typography, spacing, preview | — |
-| `@refrakt/media` | music-playlist, music-recording (redesign needed) | track, playlist, album, artist, video, audio |
+| `@refrakt-md/marketing` | hero, cta, bento, feature, steps, pricing, testimonial, comparison | — |
+| `@refrakt-md/docs` | api, symbol, changelog | — |
+| `@refrakt-md/learning` | howto, recipe | concept, exercise, quiz, glossary, prerequisite, objective |
+| `@refrakt-md/storytelling` | character, realm, faction, lore, plot, bond, storyboard | — |
+| `@refrakt-md/places` | event, map, itinerary | — |
+| `@refrakt-md/business` | cast, organization, timeline | partner, job |
+| `@refrakt-md/design` | swatch, palette, typography, spacing, preview | — |
+| `@refrakt-md/media` | music-playlist, music-recording (redesign needed) | track, playlist, album, artist, video, audio |
 
 **Totals:** 33 already built runes to move, 17 new runes to build, ~30 runes stay in core.
 
@@ -82,7 +82,7 @@ Each official package follows the `RunePackage` structure from `packages/types/s
 
 ```
 runes/marketing/
-  package.json              # @refrakt/marketing, depends on @refrakt-md/types
+  package.json              # @refrakt-md/marketing, depends on @refrakt-md/types
   src/
     index.ts                # exports RunePackage registration object
     tags/
@@ -103,7 +103,7 @@ runes/marketing/
 
 Rune packages define **structure** (schemas, RuneConfig, behaviors, fixtures). Themes define **appearance** (CSS). This separation is critical for multi-theme support.
 
-**Tier 1 — Official packages (`@refrakt/*`): zero CSS**
+**Tier 1 — Official packages (`@refrakt-md/*`): zero CSS**
 
 Official rune packages ship no CSS. Themes provide all styling:
 
@@ -119,7 +119,7 @@ Third-party community packages (e.g., `@refrakt-community/dnd-5e`) may ship defa
 The CSS resolution order is: **theme CSS first → package CSS second**. If a theme provides CSS for a community rune, the theme's CSS wins. If not, the package's default CSS is used.
 
 ```
-runes/marketing/                    # @refrakt/marketing — official, zero CSS
+runes/marketing/                    # @refrakt-md/marketing — official, zero CSS
   src/
     ...
   # NO styles/ directory
@@ -192,7 +192,7 @@ export const coreConfig: ThemeConfig = {
 1. Create `runes/<name>/` with `package.json`, `tsconfig.json`, `src/index.ts`
 2. Move rune schemas from `packages/runes/src/tags/<rune>.ts`
 3. Move `RuneConfig` entries from `packages/theme-base/src/config.ts` into `src/config.ts`
-4. Move behaviors from `packages/behaviors/src/behaviors/` if applicable (note: most behaviors stay in core — only `preview` clearly moves to `@refrakt/design`)
+4. Move behaviors from `packages/behaviors/src/behaviors/` if applicable (note: most behaviors stay in core — only `preview` clearly moves to `@refrakt-md/design`)
 5. Export `RunePackage` object from `src/index.ts`
 6. Create inspector fixtures as `.md` files in `fixtures/` (currently hardcoded as strings in `packages/cli/src/lib/fixtures.ts` — must migrate to file-based fixtures first, see gap #5)
 7. Remove migrated schemas and configs from core packages
@@ -299,7 +299,7 @@ CLI command for package authors to validate their package before publishing.
 The `create-refrakt` scaffold should pre-install official packages based on project type.
 
 **What to implement:**
-- Template mapping: "landing page" → `@refrakt/marketing`, "docs site" → `@refrakt/docs`, etc.
+- Template mapping: "landing page" → `@refrakt-md/marketing`, "docs site" → `@refrakt-md/docs`, etc.
 - Pre-populate `packages` array in `refrakt.config.json`
 - Add to `package.json` dependencies
 
@@ -354,7 +354,7 @@ Current: core runes always take priority over community packages.
 Spec: local > packages > core (core is lowest priority).
 
 **What to implement:**
-- This reversal is necessary for the breakout to work. Once hero moves from core to `@refrakt/marketing`, it IS a package rune — it needs to be discoverable through the package system, not shadowed by a core rune that no longer exists.
+- This reversal is necessary for the breakout to work. Once hero moves from core to `@refrakt-md/marketing`, it IS a package rune — it needs to be discoverable through the package system, not shadowed by a core rune that no longer exists.
 - For the transition: dual-register broken-out runes in both core and the official package, with core versions emitting a deprecation warning. Then remove from core.
 - `mergePackages` in `packages/runes/src/packages.ts` needs to be updated: instead of skipping community runes that shadow core names, allow package runes to replace core runes (with the core rune as fallback if the package rune fails to load).
 
@@ -395,7 +395,7 @@ Fill the 10 gaps listed above. This is prerequisite work — the package system 
 Create the 8 official package structures in `runes/` with `package.json`, `tsconfig.json`, and empty `src/index.ts` files. Also:
 
 1. Add `"runes/*"` to `workspaces` in root `package.json`
-2. Add `@refrakt/*` to the fixed versioning group in `.changeset/config.json` (currently only covers `@refrakt-md/*` and `create-refrakt`)
+2. Add `@refrakt-md/*` to the fixed versioning group in `.changeset/config.json` (currently only covers `@refrakt-md/*` and `create-refrakt`)
 3. Update the root `build` script to include `runes/*` packages in the correct position (after `types` + `transform`, before packages that consume them)
 4. Verify the monorepo still builds end-to-end
 
@@ -403,14 +403,14 @@ Create the 8 official package structures in `runes/` with `package.json`, `tscon
 
 Move runes package by package, starting with the simplest (all runes already built, no interactive components):
 
-1. `@refrakt/marketing` — 8 runes, all built, mostly identity-transform-only
-2. `@refrakt/docs` — 3 runes, all built, identity-transform-only
-3. `@refrakt/storytelling` — 7 runes, all built, identity-transform-only
-4. `@refrakt/places` — 3 runes, all built, but Map has a Svelte component
-5. `@refrakt/business` — 3 built + 2 to build
-6. `@refrakt/design` — 5 runes, Preview and Sandbox have components
-7. `@refrakt/learning` — 2 built + 6 to build
-8. `@refrakt/media` — 2 built (redesign) + 4 to build
+1. `@refrakt-md/marketing` — 8 runes, all built, mostly identity-transform-only
+2. `@refrakt-md/docs` — 3 runes, all built, identity-transform-only
+3. `@refrakt-md/storytelling` — 7 runes, all built, identity-transform-only
+4. `@refrakt-md/places` — 3 runes, all built, but Map has a Svelte component
+5. `@refrakt-md/business` — 3 built + 2 to build
+6. `@refrakt-md/design` — 5 runes, Preview and Sandbox have components
+7. `@refrakt-md/learning` — 2 built + 6 to build
+8. `@refrakt-md/media` — 2 built (redesign) + 4 to build
 
 ### Phase 5: Tooling
 
@@ -424,17 +424,17 @@ The rune documentation currently lives flat in `site/content/docs/runes/` (60 `.
 
 1. Update the `{% nav %}` sections in `site/content/docs/_layout.md` to group runes by package:
    - **Core** — hint, details, figure, tabs, accordion, chart, diagram, etc. (~30 runes)
-   - **@refrakt/marketing** — hero, cta, bento, feature, steps, pricing, testimonial, comparison
-   - **@refrakt/docs** — api, symbol, changelog
-   - **@refrakt/storytelling** — character, realm, faction, lore, plot, bond, storyboard
-   - **@refrakt/places** — event, map, itinerary
-   - **@refrakt/business** — cast, organization, timeline
-   - **@refrakt/learning** — howto, recipe
-   - **@refrakt/design** — swatch, palette, typography, spacing, preview
-   - **@refrakt/media** — music-playlist, music-recording
-2. Each package section heading should indicate it's a separate install (e.g., link to the package or note `npm install @refrakt/marketing`)
+   - **@refrakt-md/marketing** — hero, cta, bento, feature, steps, pricing, testimonial, comparison
+   - **@refrakt-md/docs** — api, symbol, changelog
+   - **@refrakt-md/storytelling** — character, realm, faction, lore, plot, bond, storyboard
+   - **@refrakt-md/places** — event, map, itinerary
+   - **@refrakt-md/business** — cast, organization, timeline
+   - **@refrakt-md/learning** — howto, recipe
+   - **@refrakt-md/design** — swatch, palette, typography, spacing, preview
+   - **@refrakt-md/media** — music-playlist, music-recording
+2. Each package section heading should indicate it's a separate install (e.g., link to the package or note `npm install @refrakt-md/marketing`)
 3. Add a rune catalog/overview page listing all packages, what they contain, and install instructions
-4. Individual rune doc pages should note which package they belong to (core or `@refrakt/*`)
+4. Individual rune doc pages should note which package they belong to (core or `@refrakt-md/*`)
 
 ### Phase 7: Scaffold + defaults
 
@@ -469,7 +469,7 @@ The fix follows the same pattern the SvelteKit plugin (`buildStart` in `packages
 4. Feed merged rune metadata into the `/api/runes` response
 5. Feed merged RuneConfigs into the `themeConfig` sent to the client for preview rendering
 
-This is not caused by the breakout but becomes critical once official packages exist — after breakout, even official `@refrakt/*` packages would be invisible to the editor without this fix. Should be addressed in Phase 2 (infrastructure gaps) or as a prerequisite.
+This is not caused by the breakout but becomes critical once official packages exist — after breakout, even official `@refrakt-md/*` packages would be invisible to the editor without this fix. Should be addressed in Phase 2 (infrastructure gaps) or as a prerequisite.
 
 ---
 
@@ -479,17 +479,17 @@ This is not caused by the breakout but becomes critical once official packages e
 
 Projects using runes that move out of core need to:
 
-1. Install the relevant official package: `npm install @refrakt/marketing`
-2. Add to config: `"packages": ["@refrakt/marketing"]`
+1. Install the relevant official package: `npm install @refrakt-md/marketing`
+2. Add to config: `"packages": ["@refrakt-md/marketing"]`
 
 ### Transition period
 
 During the transition, broken-out runes remain available in core with a deprecation warning:
 
 ```
-⚠ Rune 'hero' is moving to @refrakt/marketing in the next major version.
-  Install: npm install @refrakt/marketing
-  Config:  "packages": ["@refrakt/marketing"]
+⚠ Rune 'hero' is moving to @refrakt-md/marketing in the next major version.
+  Install: npm install @refrakt-md/marketing
+  Config:  "packages": ["@refrakt-md/marketing"]
 ```
 
 The deprecation period lasts one minor version. After that, the rune is removed from core and only available through the package.

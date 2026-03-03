@@ -4,7 +4,7 @@ description: Event information with date, location, and agenda
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt/places**. Install with `npm install @refrakt/places` and add `"@refrakt/places"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/places**. Install with `npm install @refrakt-md/places` and add `"@refrakt-md/places"` to the `packages` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Event
