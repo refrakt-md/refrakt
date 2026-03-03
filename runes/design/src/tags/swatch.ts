@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 class SwatchModel extends Model {
 	@attribute({ type: String, required: true })

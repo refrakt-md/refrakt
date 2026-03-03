@@ -3,6 +3,10 @@ title: Symbol
 description: Code construct documentation for functions, classes, interfaces, enums, and type aliases
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/docs**. Install with `npm install @refrakt-md/docs` and add `"@refrakt-md/docs"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Symbol
 
 Code construct documentation. Headings become the construct name, code fences become type signatures, lists become parameter definitions, and blockquotes become typed annotations (returns, throws, deprecation).

@@ -3,6 +3,10 @@ title: Pricing
 description: Pricing tables with tier comparison
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Pricing
 
 Pricing tables with tier comparison. Write natural markdown headings with `## Name — Price` to auto-generate tiers, or use explicit `{% tier %}` tags for full control.

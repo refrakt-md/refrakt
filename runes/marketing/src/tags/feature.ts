@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag, Ast } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitablePageSectionModel, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitablePageSectionModel, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 export class DefinitionModel extends Model {
   @group({ include: [{ node: 'paragraph', descendant: 'image' }, { node: 'paragraph', descendantTag: 'icon' }, { node: 'paragraph', descendant: 'strong' }, 'heading'] })

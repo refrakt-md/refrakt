@@ -1,8 +1,11 @@
 import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
-import { identityTransform, luminaConfig } from '@refrakt-md/lumina/transform';
+import { luminaConfig } from '@refrakt-md/lumina/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import type { HighlightTransform } from '@refrakt-md/highlight';
+import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import type { Schema } from '@markdoc/markdoc';
 import { error } from '@sveltejs/kit';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
@@ -26,11 +29,53 @@ async function getHighlightTransform(): Promise<HighlightTransform> {
 	return hl;
 }
 
+let _communityTags: Record<string, Schema> | undefined;
+let _transform: ((tree: any) => any) | null = null;
+
+async function getTransform(): Promise<(tree: any) => any> {
+	if (_transform) return _transform;
+
+	const packageNames = config.packages ?? [];
+	if (packageNames.length === 0) {
+		_transform = createTransform(luminaConfig);
+		return _transform;
+	}
+
+	const loaded = await Promise.all(
+		packageNames.map((name: string) => loadRunePackage(name))
+	);
+	const coreRuneNames = new Set(Object.keys(coreRunes));
+	const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+
+	_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+
+	const { config: assembledConfig } = assembleThemeConfig({
+		coreConfig: luminaConfig,
+		packageRunes: merged.themeRunes,
+		packageIcons: merged.themeIcons,
+		extensions: merged.extensions,
+		provenance: merged.provenance,
+	});
+
+	_transform = createTransform(assembledConfig);
+	return _transform;
+}
+
+async function getCommunityTags(): Promise<Record<string, Schema> | undefined> {
+	await getTransform();
+	return _communityTags;
+}
+
 export const prerender = true;
 
 export const load: PageServerLoad = async ({ params }) => {
-	const site = await loadContent(contentDir, '/', icons);
-	const hl = await getHighlightTransform();
+	const [transform, communityTags, hl] = await Promise.all([
+		getTransform(),
+		getCommunityTags(),
+		getHighlightTransform(),
+	]);
+
+	const site = await loadContent(contentDir, '/', icons, communityTags);
 	const slug = params.slug || '';
 	const url = '/' + slug;
 
@@ -41,7 +86,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	const serialized = serializeTree(page.renderable);
-	const renderable = hl(identityTransform(serialized));
+	const renderable = hl(transform(serialized));
 
 	return {
 		title: page.frontmatter.title ?? '',
@@ -51,7 +96,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(identityTransform(serialize(c)))) }
+				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(transform(serialize(c)))) }
 			])
 		),
 		seo: page.seo,
@@ -62,7 +107,8 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export async function entries() {
-	const site = await loadContent(contentDir, '/', icons);
+	const communityTags = await getCommunityTags();
+	const site = await loadContent(contentDir, '/', icons, communityTags);
 	return site.pages
 		.filter(p => !p.route.draft)
 		.map(p => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));

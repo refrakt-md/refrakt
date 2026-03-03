@@ -3,14 +3,14 @@
 	"theme": "@refrakt-md/lumina",
 	"target": "svelte",
 	"packages": [
-		"@refrakt/marketing",
-		"@refrakt/docs",
-		"@refrakt/storytelling",
-		"@refrakt/places",
-		"@refrakt/business",
-		"@refrakt/design",
-		"@refrakt/learning",
-		"@refrakt/media"
+		"@refrakt-md/marketing",
+		"@refrakt-md/docs",
+		"@refrakt-md/storytelling",
+		"@refrakt-md/places",
+		"@refrakt-md/business",
+		"@refrakt-md/design",
+		"@refrakt-md/learning",
+		"@refrakt-md/media"
 	],
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },

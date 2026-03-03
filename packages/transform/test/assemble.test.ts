@@ -80,7 +80,7 @@ describe('assembleThemeConfig', () => {
 
 	it('preserves and enriches provenance from packages', () => {
 		const packageProvenance: Record<string, RuneProvenance> = {
-			Hero: { qualifiedId: 'marketing:Hero', source: 'package', packageName: 'marketing', origin: '@refrakt/marketing' },
+			Hero: { qualifiedId: 'marketing:Hero', source: 'package', packageName: 'marketing', origin: '@refrakt-md/marketing' },
 		};
 		const packageRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },

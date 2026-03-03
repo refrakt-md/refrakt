@@ -3,6 +3,10 @@ title: Organization
 description: Structured business or organization information
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/business**. Install with `npm install @refrakt-md/business` and add `"@refrakt-md/business"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Organization
 
 Structured business or organization information. Headings become the organization name, images become the logo, and links become website/social profiles.

@@ -3,6 +3,10 @@ title: Design Context
 description: Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Design Context
 
 Wraps palette, typography, and spacing runes into a unified token card. Automatically extracts design tokens and injects them as CSS custom properties into any sandbox in the same document or chat conversation.

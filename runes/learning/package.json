@@ -1,19 +1,29 @@
 {
-  "name": "@refrakt/learning",
+  "name": "@refrakt-md/learning",
   "description": "Learning runes for refrakt.md — how-to guides and recipes",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/refrakt-md/refrakt.git", "directory": "runes/learning" },
-  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "runes/learning"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": { "build": "tsc" },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
-    "@refrakt-md/types": "0.6.0",
-    "@refrakt-md/transform": "0.6.0",
-    "@refrakt-md/runes": "0.6.0",
+    "@refrakt-md/types": "0.7.1",
+    "@refrakt-md/transform": "0.7.1",
+    "@refrakt-md/runes": "0.7.1",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0"
   }

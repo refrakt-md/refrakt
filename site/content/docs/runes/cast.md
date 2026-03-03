@@ -3,6 +3,10 @@ title: Cast / Team
 description: People directory for team pages and speaker lineups
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/business**. Install with `npm install @refrakt-md/business` and add `"@refrakt-md/business"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Cast / Team
 
 People directory for team pages, cast lists, or speaker lineups. List items with a "Name - Role" pattern are automatically parsed into entries.

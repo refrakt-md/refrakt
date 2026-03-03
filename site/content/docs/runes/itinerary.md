@@ -3,6 +3,10 @@ title: Itinerary
 description: Day-by-day travel itineraries with timed stops and locations
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/places**. Install with `npm install @refrakt-md/places` and add `"@refrakt-md/places"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Itinerary
 
 Day-by-day travel itineraries. H2 headings become days, and H3 headings with a "time — location" pattern are parsed into timed stops. Content below each stop becomes the stop description.

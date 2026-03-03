@@ -3,6 +3,10 @@ title: Changelog
 description: Version history with release notes
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/docs**. Install with `npm install @refrakt-md/docs` and add `"@refrakt-md/docs"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Changelog
 
 Version history and release notes. Headings with a `v1.0.0 - date` pattern are automatically converted into release entries.

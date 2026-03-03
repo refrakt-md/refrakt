@@ -1,5 +1,26 @@
 # @refrakt-md/editor
 
+## 0.7.1
+
+### Patch Changes
+
+- @refrakt-md/content@0.7.1
+- @refrakt-md/highlight@0.7.1
+- @refrakt-md/runes@0.7.1
+- @refrakt-md/transform@0.7.1
+- @refrakt-md/types@0.7.1
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.7.0
+  - @refrakt-md/content@0.7.0
+  - @refrakt-md/highlight@0.7.0
+  - @refrakt-md/transform@0.7.0
+  - @refrakt-md/types@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

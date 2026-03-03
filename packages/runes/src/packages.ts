@@ -69,9 +69,19 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 			aliases: entry.aliases,
 			seoType: entry.seoType,
 			reinterprets: entry.reinterprets,
+			prompt: entry.prompt,
 		});
 		if (entry.fixture) {
 			fixtures[runeName] = entry.fixture;
+		}
+	}
+
+	// Discover file-based fixtures from the package's fixtures/ directory
+	const fileFixtures = await discoverPackageFixtures(npmPackageName);
+	for (const [runeName, content] of Object.entries(fileFixtures)) {
+		// Inline fixtures take priority over file-based ones
+		if (!fixtures[runeName]) {
+			fixtures[runeName] = content;
 		}
 	}
 
@@ -358,6 +368,50 @@ export async function loadLocalRunes(
 		runes,
 		fixtures: {},
 	};
+}
+
+/**
+ * Discover file-based fixtures from an installed package's fixtures/ directory.
+ *
+ * Looks for .md files in the package's fixtures/ directory. Each file's name
+ * (without extension) becomes the fixture key (rune name).
+ *
+ * Returns a map of rune name → fixture content string.
+ */
+export async function discoverPackageFixtures(npmPackageName: string): Promise<Record<string, string>> {
+	const fixtures: Record<string, string> = {};
+
+	try {
+		// Dynamic imports to avoid top-level Node.js built-in references
+		// that break Vite browser bundling
+		const { createRequire } = await import('node:module');
+		const { existsSync, readFileSync, readdirSync } = await import('node:fs');
+		const { dirname, join } = await import('node:path');
+
+		// Resolve the package's directory by finding its package.json
+		const require = createRequire(import.meta.url);
+		const pkgJsonPath = require.resolve(`${npmPackageName}/package.json`);
+		const pkgDir = dirname(pkgJsonPath);
+		const fixturesDir = join(pkgDir, 'fixtures');
+
+		if (!existsSync(fixturesDir)) {
+			return fixtures;
+		}
+
+		const files = readdirSync(fixturesDir);
+		for (const file of files) {
+			if (!file.endsWith('.md')) continue;
+			const runeName = file.slice(0, -3); // strip .md extension
+			const content = readFileSync(join(fixturesDir, file), 'utf-8');
+			if (content.trim()) {
+				fixtures[runeName] = content;
+			}
+		}
+	} catch {
+		// Package not resolvable via require (e.g., workspace link) — skip file fixtures
+	}
+
+	return fixtures;
 }
 
 /** Find the RunePackage export from a dynamically imported module */

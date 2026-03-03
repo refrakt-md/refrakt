@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties } from '@refrakt-md/runes';
+import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const orgType = ['Organization', 'LocalBusiness', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'NonProfit'] as const;
 

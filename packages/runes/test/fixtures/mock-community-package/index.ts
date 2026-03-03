@@ -65,6 +65,9 @@ export const gameSystem: RunePackage = {
 				name: { type: 'string', required: true },
 				rarity: { type: 'string', matches: ['common', 'uncommon', 'rare', 'legendary'] },
 			},
+			fixture: '{% item name="Sword of Truth" rarity="rare" %}\nA legendary blade.\n{% /item %}',
+			prompt: 'Use this rune for RPG game items with rarity levels. Supports equipment, consumables, and quest items.',
+			description: 'Game item with name and rarity',
 		},
 		'spell': {
 			transform: spellSchema,
@@ -73,6 +76,8 @@ export const gameSystem: RunePackage = {
 				level: { type: 'number' },
 				school: { type: 'string' },
 			},
+			fixture: '{% spell name="Fireball" level=3 school="evocation" %}\nHurls a ball of fire.\n{% /spell %}',
+			description: 'Magic spell with school and level',
 		},
 	},
 	extends: {

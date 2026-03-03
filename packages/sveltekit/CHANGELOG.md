@@ -1,5 +1,18 @@
 # @refrakt-md/sveltekit
 
+## 0.7.1
+
+### Patch Changes
+
+- Fix production builds excluding CSS for runes from @refrakt-md/\* rune packages. The CSS tree-shaker now uses the assembled config (core + package runes) instead of only the core theme config when determining which rune CSS files to include.
+  - @refrakt-md/types@0.7.1
+
+## 0.7.0
+
+### Patch Changes
+
+- @refrakt-md/types@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

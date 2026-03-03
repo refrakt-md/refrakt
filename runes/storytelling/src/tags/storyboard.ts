@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, NodeStream, attribute, group, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 const styleType = ['comic', 'clean', 'polaroid'] as const;
 

@@ -3,6 +3,10 @@ title: Palette
 description: Color swatch grid with optional WCAG contrast and accessibility info
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Palette
 
 Displays a grid of color swatches. List items are parsed as `name: #value` pairs. Use `##` headings to create groups. Comma-separated values render as a neutral scale strip.

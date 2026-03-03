@@ -1,5 +1,23 @@
 # @refrakt-md/runes
 
+## 0.7.1
+
+### Patch Changes
+
+- @refrakt-md/transform@0.7.1
+- @refrakt-md/types@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
+
+### Patch Changes
+
+- @refrakt-md/transform@0.7.0
+- @refrakt-md/types@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

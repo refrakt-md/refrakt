@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties, NodeStream } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties, NodeStream } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 import { CommaSeparatedList, SpaceSeparatedNumberList } from '../attributes.js';
 import { MusicRecordingNode } from './music-recording.js';
 

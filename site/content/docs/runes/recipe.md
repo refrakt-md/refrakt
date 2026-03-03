@@ -3,6 +3,10 @@ title: Recipe
 description: Structured recipe with ingredients, steps, and chef tips
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/learning**. Install with `npm install @refrakt-md/learning` and add `"@refrakt-md/learning"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Recipe
 
 Structured recipe content. Unordered lists become ingredients, ordered lists become steps, and blockquotes become chef's tips.

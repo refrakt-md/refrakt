@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, attribute, group, createComponentRenderable, createSchema, NodeStream, headingsToList, SplitablePageSectionModel, nameHelper as name, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, createComponentRenderable, createSchema, NodeStream, headingsToList, SplitablePageSectionModel, nameHelper as name, pageSectionProperties } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 class StepsModel extends SplitablePageSectionModel {
   @attribute({ type: Number, required: false })

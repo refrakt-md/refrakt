@@ -110,7 +110,7 @@ These are universal primitives that belong in the built-in core, not in a packag
 
 ---
 
-## @refrakt/learning (6)
+## @refrakt-md/learning (6)
 
 Educational and instructional content. These compose within a lesson page: objective at the top, concept runes introduce terminology, howto/recipe teach procedures, exercise provides practice, quiz tests retention.
 
@@ -325,7 +325,7 @@ After completing this lesson, you will be able to:
 
 ---
 
-## @refrakt/business (2)
+## @refrakt-md/business (2)
 
 ### `partner`
 
@@ -405,7 +405,7 @@ Example:
 
 ---
 
-## @refrakt/media (6)
+## @refrakt-md/media (6)
 
 Time-based media content. The existing `music-playlist` and `music-recording` runes are music-specific. The spec generalizes them into type-polymorphic runes that handle music, podcasts, audiobooks, video, and talks via a `type` attribute.
 

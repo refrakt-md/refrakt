@@ -3,6 +3,10 @@ title: Lore
 description: In-world knowledge entries for myths, prophecies, and historical records
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Lore
 
 In-world knowledge entries for worldbuilding — myths, prophecies, historical records, legends, or encyclopedia articles. Content is rendered directly as the lore body, with optional spoiler protection.

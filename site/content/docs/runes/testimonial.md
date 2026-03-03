@@ -3,6 +3,10 @@ title: Testimonial
 description: Customer testimonials and reviews
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Testimonial
 
 Customer testimonials. A blockquote becomes the testimonial text, and a paragraph with `**Name** — Role, Company` becomes the attribution.

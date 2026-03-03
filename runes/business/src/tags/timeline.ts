@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema, NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 
 // Parse "2023 - Company founded" or "2020-2023: Growth phase"
 const DATE_LABEL_PATTERN = /^(.+?)\s*[-–—:]\s*(.+)$/;

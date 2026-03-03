@@ -62,6 +62,16 @@ After packages are published to npm:
 | `.github/workflows/release.yml` | CI workflow that versions and publishes on merge to `main` |
 | `scripts/generate-changelog.mjs` | Aggregates changelogs into `site/content/releases.md` |
 
+## First-time publishing new packages
+
+When adding a new `@refrakt-md/*` scoped package, it must be published manually the first time since npm requires explicit `--access public` for initial scoped package publishes. Each package's `publishConfig.access` is set to `"public"` in its `package.json`, so:
+
+```bash
+npm publish -w runes/<package-name> --otp=<code>
+```
+
+After the first publish, CI will handle subsequent releases automatically.
+
 ## Semver note (0.x)
 
 While packages are pre-1.0, caret ranges (`^0.x.0`) only allow patch updates — `^0.4.0` means `>=0.4.0 <0.5.0`. The `create-refrakt` template uses tilde ranges (`~0.x.0`) derived from its own package version to ensure scaffolded sites install the correct minor version.

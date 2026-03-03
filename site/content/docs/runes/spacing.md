@@ -3,6 +3,10 @@ title: Spacing
 description: Spacing scale, border radius, and shadow token display
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Spacing
 
 Displays design tokens for spacing, border radius, and shadows. Content is organized by `##` sections — `Spacing`, `Radius`, and `Shadows` — with `name: value` list items in each.

@@ -3,6 +3,10 @@ title: Hero
 description: Full-width intro sections for landing pages with background support and action buttons
 ---
 
+{% hint type="note" %}
+This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `packages` array in your `refrakt.config.json`.
+{% /hint %}
+
 # Hero
 
 Full-width intro section for the top of a page. Headings and paragraphs become the header, links become action buttons, and code fences become copyable command blocks. The first link is styled as a primary button. For smaller, focused action blocks that can appear anywhere, use [CTA](/docs/runes/cta) instead.

@@ -14,6 +14,8 @@ export interface RuneInfo {
 			matches?: unknown;
 		}>;
 	};
+	/** AI prompt extension from community/official packages — additional context appended after description */
+	prompt?: string;
 }
 
 /** Runes that are internal or child-only — excluded from prompts */
@@ -77,6 +79,11 @@ function describeRune(rune: RuneInfo): string {
 	}
 	if (rune.aliases.length > 0) {
 		lines.push(`Aliases: ${rune.aliases.join(', ')}`);
+	}
+
+	// AI prompt extension from package
+	if (rune.prompt) {
+		lines.push(rune.prompt);
 	}
 
 	// Attributes

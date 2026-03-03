@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, Node, RenderableTreeNodes } from '@markdoc/markdoc';
 import { NodeType } from '@refrakt-md/types';
-import { schema, TypedNode, attribute, group, Model, createComponentRenderable, createSchema, RenderableNodeCursor, NodeStream } from '@refrakt-md/runes';
+import { TypedNode, attribute, group, Model, createComponentRenderable, createSchema, RenderableNodeCursor, NodeStream } from '@refrakt-md/runes';
+import { schema } from '../types.js';
 import * as Duration from 'iso8601-duration';
 
 class MusicRecordingModel extends Model {
