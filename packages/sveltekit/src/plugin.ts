@@ -134,6 +134,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 				const themeTransform = await import(`${refraktConfig.theme}/transform`);
 				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
+				const effectiveConfig = assembledResult?.config ?? themeConfig;
 
 				usedCssBlocks = new Set<string>();
 
@@ -143,7 +144,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				const stylesDir = join(themeDir, 'styles', 'runes');
 
 				for (const typeName of report.allTypes) {
-					const runeConfig = themeConfig.runes[typeName];
+					const runeConfig = effectiveConfig.runes[typeName];
 					if (runeConfig && existsSync(join(stylesDir, `${runeConfig.block}.css`))) {
 						usedCssBlocks.add(runeConfig.block);
 					}
