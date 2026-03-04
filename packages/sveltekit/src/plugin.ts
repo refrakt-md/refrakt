@@ -27,6 +27,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	let communityTags: Record<string, Schema> | undefined;
 	let assembledResult: { config: Record<string, any>; provenance: Record<string, any> } | undefined;
 	let mergedPackages: RunePackage[] | undefined;
+	let contentLoaded = false;
 
 	return {
 		name: 'refrakt-md',
@@ -122,6 +123,8 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			}
 
 			if (!isBuild) return;
+			if (contentLoaded) return;
+			contentLoaded = true;
 
 			try {
 				const contentPkg = '@refrakt-md/content';
