@@ -1,6 +1,9 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition } from './types.js';
 import { isTag, makeTag, readMeta } from './helpers.js';
+
+/** The 6 tint colour tokens */
+const TINT_TOKENS = ['background', 'surface', 'primary', 'secondary', 'accent', 'border'] as const;
 
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
@@ -28,7 +31,7 @@ const transforms: Record<string, (v: string) => string> = {
  * - Recurses into children for nested runes
  */
 export function createTransform(config: ThemeConfig) {
-	const { prefix, runes, icons = {} } = config;
+	const { prefix, runes, icons = {}, tints = {} } = config;
 
 	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
@@ -38,7 +41,7 @@ export function createTransform(config: ThemeConfig) {
 
 		const typeof_ = tree.attributes?.typeof;
 		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, identityTransform, parentTypeof);
+			return transformRune(tree, runes[typeof_], prefix, icons, tints, identityTransform, parentTypeof);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
@@ -54,6 +57,7 @@ function transformRune(
 	config: RuneConfig,
 	prefix: string,
 	icons: Record<string, Record<string, string>>,
+	tints: Record<string, TintDefinition>,
 	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
 	parentTypeof?: string
 ): SerializedTag {
@@ -85,6 +89,81 @@ function transformRune(
 		for (const mod of config.staticModifiers) {
 			modifierClasses.push(`${block}--${mod}`);
 		}
+	}
+
+	// 1d. Tint processing — read tint meta tags and resolve colour tokens
+	const tintMetaProps = new Set<string>();
+	const tintDataAttrs: Record<string, string> = {};
+	const tintStyleParts: string[] = [];
+
+	const tintName = readMeta(tag, 'tint');
+	const tintMode = readMeta(tag, 'tint-mode');
+
+	if (tintName || tintMode) {
+		// Resolve named tint definition
+		let lightTokens: Record<string, string> = {};
+		let darkTokens: Record<string, string> = {};
+		let resolvedMode = tintMode;
+
+		if (tintName && tintName !== 'custom' && tints[tintName]) {
+			const def = tints[tintName];
+			if (def.light) {
+				for (const [k, v] of Object.entries(def.light)) {
+					if (v) lightTokens[k] = v;
+				}
+			}
+			if (def.dark) {
+				for (const [k, v] of Object.entries(def.dark)) {
+					if (v) darkTokens[k] = v;
+				}
+			}
+			if (!resolvedMode && def.mode && def.mode !== 'auto') {
+				resolvedMode = def.mode;
+			}
+		}
+
+		// Read inline tint token metas (override preset values)
+		for (const token of TINT_TOKENS) {
+			const val = readMeta(tag, `tint-${token}`);
+			if (val) {
+				lightTokens[token] = val;
+				tintMetaProps.add(`tint-${token}`);
+			}
+			const darkVal = readMeta(tag, `tint-dark-${token}`);
+			if (darkVal) {
+				darkTokens[token] = darkVal;
+				tintMetaProps.add(`tint-dark-${token}`);
+			}
+		}
+
+		// Set data attributes
+		const hasTokens = Object.keys(lightTokens).length > 0;
+		if (tintName || hasTokens) {
+			tintDataAttrs['data-tint'] = tintName || 'custom';
+		}
+		if (resolvedMode && resolvedMode !== 'auto') {
+			tintDataAttrs['data-color-scheme'] = resolvedMode;
+		}
+		if (Object.keys(darkTokens).length > 0) {
+			tintDataAttrs['data-tint-dark'] = '';
+		}
+
+		// Build inline styles for tint tokens
+		for (const [token, value] of Object.entries(lightTokens)) {
+			tintStyleParts.push(`--tint-${token}: ${value}`);
+		}
+		for (const [token, value] of Object.entries(darkTokens)) {
+			tintStyleParts.push(`--tint-dark-${token}: ${value}`);
+		}
+
+		// Add --tinted BEM modifier when colour tokens are present
+		if (hasTokens || (tintName && tintName !== 'custom' && tints[tintName])) {
+			modifierClasses.push(`${block}--tinted`);
+		}
+
+		// Track consumed meta properties
+		tintMetaProps.add('tint');
+		tintMetaProps.add('tint-mode');
 	}
 
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
@@ -138,32 +217,36 @@ function transformRune(
 		return recurse(applyBemClasses(child, block), typeof_);
 	});
 
-	// 7. Remove consumed meta tags
+	// 7. Remove consumed meta tags (modifiers + tint)
 	const filteredChildren = enhancedChildren.filter(child => {
 		if (!isTag(child as any)) return true;
 		const c = child as SerializedTag;
 		if (c.name !== 'meta' || !c.attributes.property) return true;
-		return !config.modifiers || !(c.attributes.property in config.modifiers);
+		const prop = c.attributes.property;
+		if (config.modifiers && prop in config.modifiers) return false;
+		if (tintMetaProps.has(prop)) return false;
+		return true;
 	});
 
-	// 8. Build inline styles from styles config
+	// 8. Build inline styles from styles config + tint tokens
 	let inlineStyle = tag.attributes.style || '';
+	const styleParts: string[] = [];
 	if (config.styles) {
-		const parts: string[] = [];
 		for (const [modName, spec] of Object.entries(config.styles)) {
 			const val = modifierValues[modName];
 			if (!val) continue;
 			if (typeof spec === 'string') {
-				parts.push(`${spec}: ${val}`);
+				styleParts.push(`${spec}: ${val}`);
 			} else {
-				parts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
+				styleParts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
 			}
 		}
-		if (parts.length) {
-			inlineStyle = inlineStyle
-				? `${inlineStyle}; ${parts.join('; ')}`
-				: parts.join('; ');
-		}
+	}
+	styleParts.push(...tintStyleParts);
+	if (styleParts.length) {
+		inlineStyle = inlineStyle
+			? `${inlineStyle}; ${styleParts.join('; ')}`
+			: styleParts.join('; ');
 	}
 
 	const result: SerializedTag = {
@@ -171,6 +254,7 @@ function transformRune(
 		attributes: {
 			...tag.attributes,
 			...modDataAttrs,
+			...tintDataAttrs,
 			class: bemClass,
 			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),

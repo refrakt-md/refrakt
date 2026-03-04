@@ -7,6 +7,9 @@ import { GeneratedAttributeAnnotation } from './annotations/id.js';
 import { AbstractGroupAnnotation } from './annotations/group.js';
 
 export class Model {
+  /** Extracted tint child node (set by processChildren before @group runs) */
+  _tintNode: Node | null = null;
+
   constructor(
     public readonly node: Node,
     public readonly config: Config
@@ -17,6 +20,14 @@ export class Model {
   }
 
   processChildren(nodes: Node[]) {
+    // Extract tint tag before @group processing so it doesn't interfere
+    // with header/body splitting (tint has type 'tag', which breaks @group)
+    const tintIdx = nodes.findIndex(n => n.type === 'tag' && n.tag === 'tint');
+    if (tintIdx !== -1) {
+      this._tintNode = nodes[tintIdx];
+      nodes = [...nodes.slice(0, tintIdx), ...nodes.slice(tintIdx + 1)];
+    }
+
     let index = 0;
 
     for (const annotation of AbstractGroupAnnotation.onClass(this.constructor, true)) {

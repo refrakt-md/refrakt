@@ -80,6 +80,28 @@ export interface StructureEntry {
 	textSuffix?: string;
 }
 
+// ─── Tint Types ──────────────────────────────────────────────────────
+
+/** Set of colour tokens that a tint can override */
+export interface TintTokenSet {
+	background?: string;
+	surface?: string;
+	primary?: string;
+	secondary?: string;
+	accent?: string;
+	border?: string;
+}
+
+/** Named tint definition in theme config */
+export interface TintDefinition {
+	/** Colour scheme override: 'auto' follows page, 'dark'/'light' forces scheme */
+	mode?: 'auto' | 'dark' | 'light';
+	/** Light-mode token values */
+	light?: TintTokenSet;
+	/** Dark-mode token values */
+	dark?: TintTokenSet;
+}
+
 /** Top-level theme configuration */
 export interface ThemeConfig {
 	/** BEM prefix. E.g., 'rf' → .rf-hint */
@@ -93,6 +115,9 @@ export interface ThemeConfig {
 
 	/** Per-rune transform configuration */
 	runes: Record<string, RuneConfig>;
+
+	/** Named tint definitions for section-level colour overrides */
+	tints?: Record<string, TintDefinition>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────

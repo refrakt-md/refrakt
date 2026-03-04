@@ -1,10 +1,11 @@
-import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition } from './types.js';
 
 export interface ThemeConfigOverrides {
 	prefix?: string;
 	tokenPrefix?: string;
 	icons?: Record<string, Record<string, string>>;
 	runes?: Record<string, Partial<RuneConfig>>;
+	tints?: Record<string, TintDefinition>;
 }
 
 /** Deep-merge a base theme config with theme-specific overrides.
@@ -21,6 +22,7 @@ export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverri
 		tokenPrefix: overrides.tokenPrefix ?? base.tokenPrefix,
 		icons: { ...base.icons, ...overrides.icons },
 		runes: mergedRunes,
+		tints: { ...base.tints, ...overrides.tints },
 	};
 }
 

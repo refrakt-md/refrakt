@@ -62,6 +62,7 @@
 - accordion
 - details
 - sandbox
+- tint
 
 ## Code & Data
 

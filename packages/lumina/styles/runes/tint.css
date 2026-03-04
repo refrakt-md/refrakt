@@ -1,0 +1,200 @@
+/* Tint Rune — Colour Token Bridge
+ *
+ * Maps --tint-* custom properties (set by the identity transform) to
+ * Lumina's internal --rf-color-* tokens.
+ *
+ * The six bridgeable tokens are registered with @property so that when a
+ * tint doesn't override a particular token, the property falls back to
+ * its inherited value instead of becoming guaranteed-invalid (which would
+ * happen with a self-referencing var() fallback — a CSS cycle). */
+
+/* ── 0. Token registration ────────────────────────────────────────────────
+ * @property makes guaranteed-invalid fall back to the inherited value
+ * (inherits: true) rather than propagating as invalid through children.
+ * initial-value matches the light-mode defaults from tokens/base.css. */
+
+@property --rf-color-bg {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #ffffff;
+}
+@property --rf-color-surface {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #f8fafc;
+}
+@property --rf-color-text {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #1a1a2e;
+}
+@property --rf-color-muted {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #64748b;
+}
+@property --rf-color-primary {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #0ea5e9;
+}
+@property --rf-color-border {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: #e2e8f0;
+}
+
+/* ── 1. Colour scheme override ──────────────────────────────────────────────
+ * Forces dark or light mode tokens on a subtree. The six tint-bridgeable
+ * tokens are also exposed as --cs-* intermediaries so compound selectors
+ * in step 4 can fall back to them without a cycle. */
+
+[data-color-scheme="dark"] {
+	color-scheme: dark;
+	background-color: var(--rf-color-bg);
+
+	--cs-bg: #0c1222;
+	--cs-surface: #0f172a;
+	--cs-text: #e2e8f0;
+	--cs-muted: #94a3b8;
+	--cs-accent: #38bdf8;
+	--cs-border: rgba(255, 255, 255, 0.1);
+
+	--rf-color-bg: var(--cs-bg);
+	--rf-color-surface: var(--cs-surface);
+	--rf-color-text: var(--cs-text);
+	--rf-color-muted: var(--cs-muted);
+	--rf-color-primary: var(--cs-accent);
+	--rf-color-border: var(--cs-border);
+
+	--rf-color-primary-hover: #7dd3fc;
+	--rf-color-surface-hover: #1e293b;
+	--rf-color-surface-active: #334155;
+	--rf-color-surface-raised: #1e293b;
+
+	--rf-color-info: #60a5fa;
+	--rf-color-info-bg: rgba(59, 130, 246, 0.1);
+	--rf-color-info-border: rgba(59, 130, 246, 0.3);
+	--rf-color-warning: #fbbf24;
+	--rf-color-warning-bg: rgba(245, 158, 11, 0.1);
+	--rf-color-warning-border: rgba(245, 158, 11, 0.3);
+	--rf-color-danger: #f87171;
+	--rf-color-danger-bg: rgba(239, 68, 68, 0.1);
+	--rf-color-danger-border: rgba(239, 68, 68, 0.3);
+	--rf-color-success: #34d399;
+	--rf-color-success-bg: rgba(16, 185, 129, 0.1);
+	--rf-color-success-border: rgba(16, 185, 129, 0.3);
+
+	--rf-color-code-bg: #0f172a;
+	--rf-color-code-text: #e2e8f0;
+	--rf-color-inline-code-bg: rgba(255, 255, 255, 0.08);
+
+	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+}
+
+[data-color-scheme="light"] {
+	color-scheme: light;
+	background-color: var(--rf-color-bg);
+
+	--cs-bg: #ffffff;
+	--cs-surface: #f8fafc;
+	--cs-text: #1a1a2e;
+	--cs-muted: #64748b;
+	--cs-accent: #0ea5e9;
+	--cs-border: #e2e8f0;
+
+	--rf-color-bg: var(--cs-bg);
+	--rf-color-surface: var(--cs-surface);
+	--rf-color-text: var(--cs-text);
+	--rf-color-muted: var(--cs-muted);
+	--rf-color-primary: var(--cs-accent);
+	--rf-color-border: var(--cs-border);
+
+	--rf-color-primary-hover: #0284c7;
+	--rf-color-surface-hover: #f1f5f9;
+	--rf-color-surface-active: #e2e8f0;
+	--rf-color-surface-raised: #ffffff;
+
+	--rf-color-info: #3b82f6;
+	--rf-color-info-bg: #eff6ff;
+	--rf-color-info-border: #bfdbfe;
+	--rf-color-warning: #f59e0b;
+	--rf-color-warning-bg: #fffbeb;
+	--rf-color-warning-border: #fde68a;
+	--rf-color-danger: #ef4444;
+	--rf-color-danger-bg: #fef2f2;
+	--rf-color-danger-border: #fecaca;
+	--rf-color-success: #10b981;
+	--rf-color-success-bg: #ecfdf5;
+	--rf-color-success-border: #a7f3d0;
+
+	--rf-color-inline-code-bg: #f1f5f9;
+
+	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* ── 2. Tint bridge — light mode (default) ────────────────────────────────
+ * Maps --tint-* → --rf-color-*. No fallback needed — when --tint-* is
+ * unset, var() produces guaranteed-invalid, and @property makes the
+ * token inherit from the parent element.
+ *
+ * :where() background gives tinted elements a painted background at zero
+ * specificity — runes with their own background naturally override it. */
+
+:where([data-tint]) {
+	background-color: var(--rf-color-bg);
+}
+
+[data-tint] {
+	--rf-color-bg: var(--tint-background);
+	--rf-color-surface: var(--tint-surface);
+	--rf-color-text: var(--tint-primary);
+	--rf-color-muted: var(--tint-secondary);
+	--rf-color-primary: var(--tint-accent);
+	--rf-color-border: var(--tint-border);
+}
+
+/* ── 3. Tint bridge — dark ancestor ───────────────────────────────────────
+ * When a dark context is on an ancestor (data-theme on html, or
+ * data-color-scheme on a parent), prefer dark tint values.
+ * Uses descendant combinator — does NOT match same-element.
+ * Unset tokens → guaranteed-invalid → @property inherits from parent
+ * (which carries the dark theme value). */
+
+:is([data-theme="dark"], [data-color-scheme="dark"]) [data-tint] {
+	--rf-color-bg: var(--tint-dark-background, var(--tint-background));
+	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface));
+	--rf-color-text: var(--tint-dark-primary, var(--tint-primary));
+	--rf-color-muted: var(--tint-dark-secondary, var(--tint-secondary));
+	--rf-color-primary: var(--tint-dark-accent, var(--tint-accent));
+	--rf-color-border: var(--tint-dark-border, var(--tint-border));
+}
+
+/* ── 4. Tint bridge — colour scheme + tint on SAME element ────────────────
+ * Compound selectors (no space) match when both attributes sit on the
+ * same element. Falls back to --cs-* intermediaries so that unlisted
+ * tint tokens use the colour-scheme value, not the page-level value. */
+
+[data-color-scheme="dark"][data-tint] {
+	--rf-color-bg: var(--tint-dark-background, var(--tint-background, var(--cs-bg)));
+	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface, var(--cs-surface)));
+	--rf-color-text: var(--tint-dark-primary, var(--tint-primary, var(--cs-text)));
+	--rf-color-muted: var(--tint-dark-secondary, var(--tint-secondary, var(--cs-muted)));
+	--rf-color-primary: var(--tint-dark-accent, var(--tint-accent, var(--cs-accent)));
+	--rf-color-border: var(--tint-dark-border, var(--tint-border, var(--cs-border)));
+}
+
+[data-color-scheme="light"][data-tint] {
+	--rf-color-bg: var(--tint-background, var(--cs-bg));
+	--rf-color-surface: var(--tint-surface, var(--cs-surface));
+	--rf-color-text: var(--tint-primary, var(--cs-text));
+	--rf-color-muted: var(--tint-secondary, var(--cs-muted));
+	--rf-color-primary: var(--tint-accent, var(--cs-accent));
+	--rf-color-border: var(--tint-border, var(--cs-border));
+}

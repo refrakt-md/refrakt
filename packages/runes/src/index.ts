@@ -33,6 +33,7 @@ import { icon } from './tags/icon.js';
 import { pullquote } from './tags/pullquote.js';
 import { textblock } from './tags/textblock.js';
 import { mediatext } from './tags/mediatext.js';
+import { tint } from './tags/tint.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -60,6 +61,8 @@ export type { LoadedPackage, MergedPackageResult } from './packages.js';
 export { coreConfig, baseConfig, corePipelineHooks, type PageTreeNode } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
+export { TINT_TOKENS } from './tags/tint.js';
+export type { TintToken } from './tags/tint.js';
 
 export const documents = {
   doc: new DocPage(),
@@ -334,6 +337,13 @@ export const runes = {
     schema: icon,
     description: 'Inline icon resolved by name from the theme icon registry. Self-closing.',
     reinterprets: {},
+  }),
+  tint: defineRune({
+    name: 'tint',
+    schema: tint,
+    description: 'Section-level colour override via CSS custom properties. Declared as first child of a block rune.',
+    reinterprets: { heading: 'light/dark section separator', list: 'token key-value pairs' },
+    type: schema.Tint,
   }),
 };
 

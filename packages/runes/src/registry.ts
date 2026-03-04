@@ -29,6 +29,7 @@ import {Sandbox} from './schema/sandbox.js';
 import {PullQuote} from './schema/pullquote.js';
 import {TextBlock} from './schema/textblock.js';
 import {MediaText} from './schema/mediatext.js';
+import {Tint} from './schema/tint.js';
 
 export const schema = {
   Page: useSchema(Page).defineType('Page'),
@@ -78,4 +79,5 @@ export const schema = {
   PullQuote: useSchema(PullQuote).defineType('PullQuote'),
   TextBlock: useSchema(TextBlock).defineType('TextBlock'),
   MediaText: useSchema(MediaText).defineType('MediaText'),
+  Tint: useSchema(Tint).defineType('Tint'),
 }
