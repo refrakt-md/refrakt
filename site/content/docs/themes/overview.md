@@ -87,7 +87,8 @@ This package has no framework dependencies — it works with any rendering targe
 
 Contains the shared base configuration:
 
-- **`baseConfig`** — Universal rune-to-BEM mappings for all 74 rune configurations (including child runes like AccordionItem, Tier, Tab, etc.). Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
+- **`baseConfig`** — Universal rune-to-BEM mappings for core rune configurations (grid, hint, tabs, nav, datatable, etc., plus their child runes like AccordionItem, Tab, etc.). Every rune has a `block` name and, where applicable, modifier definitions, structural elements, context modifiers, and auto-labeling rules.
+- **Community packages** (e.g., `@refrakt-md/marketing`, `@refrakt-md/docs`) contribute their own `theme.runes` config alongside their rune schemas. When packages are loaded, their theme configs are merged in automatically. A theme author does not need to manually add config for community package runes.
 
 ### `@refrakt-md/transform`
 

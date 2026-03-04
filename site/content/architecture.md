@@ -49,29 +49,34 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/theme-base` | Shared theme infrastructure -- per-rune CSS files. BEM config for all runes lives in `@refrakt-md/runes`, layout configs and `mergeThemeConfig` live in `@refrakt-md/transform`, and the component registry and element overrides live in `@refrakt-md/svelte` |
 | `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/svelte`) |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
-| `@refrakt-md/cli` | CLI tool (`refrakt write`) |
+| `@refrakt-md/cli` | CLI tool (`refrakt write`, `refrakt inspect`, `refrakt contracts`) |
+| `@refrakt-md/marketing` | Official community package -- landing page runes (hero, cta, bento, feature, steps, pricing, testimonial, comparison, storyboard) |
+| `@refrakt-md/docs` | Official community package -- technical documentation runes (api, symbol, changelog) |
+| `@refrakt-md/design` | Official community package -- design system runes (palette, typography, spacing, preview, mockup, design-context, swatch) |
+| `@refrakt-md/learning` | Official community package -- educational runes (recipe, howto) |
+| `@refrakt-md/storytelling` | Official community package -- fiction and world-building runes (character, realm, faction, lore, plot, bond, storyboard) |
+| `@refrakt-md/business` | Official community package -- organizational runes (cast, organization, timeline) |
+| `@refrakt-md/places` | Official community package -- location and travel runes (event, map, itinerary) |
+| `@refrakt-md/media` | Official community package -- media runes (music-playlist, music-recording) |
 
 ---
 
 ## 2. Rune Library
 
-refrakt.md ships 58 author-facing runes (plus internal child runes). Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
+refrakt.md ships ~26 core author-facing runes in `@refrakt-md/runes`, plus ~65 more across 8 official community packages. Each rune defines which Markdown primitives it reinterprets and, where applicable, which schema.org type it generates.
 
-### Layout & Structure
+### Core Runes (`@refrakt-md/runes`)
+
+These runes are available in every refrakt.md project without any additional installation.
+
+#### Layout & Structure
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
 | `grid` | `columns` | `hr` as grid cell delimiter | -- |
-| `cta` | `call-to-action` | Heading as headline, paragraph as blurb, list as action buttons, fence as command | -- |
-| `hero` | -- | Heading as hero title, paragraph as subtitle/tagline, list as action buttons, fence as command | -- |
-| `bento` | -- | Heading as cell title (level determines size: h2=large, h3=medium, h4+=small), paragraph as cell content, image as cell background | -- |
-| `feature` | -- | Heading as section headline, paragraph as description, list items as feature definitions with icon/name/description | -- |
-| `steps` | -- | Heading as step name, paragraph as step content (ordered list auto-converted) | -- |
-| `storyboard` | `comic` | Image as panel visual, paragraph as caption/dialogue | -- |
-| `preview` | `showcase` | Children pass through unchanged; wrapper provides theme toggle, responsive viewport simulation, and source view | -- |
 | `sandbox` | -- | Raw HTML/CSS/JS rendered in an isolated iframe with optional framework loading (Tailwind, Bootstrap, Bulma, Pico) | -- |
 
-### Content
+#### Content
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
@@ -81,23 +86,27 @@ refrakt.md ships 58 author-facing runes (plus internal child runes). Each rune d
 | `sidenote` | `footnote`, `marginnote` | Paragraph as margin note content | -- |
 | `annotate` | -- | Paragraph as main content, nested `{% note %}` tags as margin annotations | -- |
 | `embed` | -- | Paragraph as fallback text. Auto-detects YouTube, Vimeo, Twitter/X, CodePen, Spotify | `VideoObject` |
-| `breadcrumb` | -- | List as breadcrumb path items, links as breadcrumb links | `BreadcrumbList` |
+| `breadcrumb` | -- | List as breadcrumb path items, links as breadcrumb links; `auto` mode resolves from page tree | `BreadcrumbList` |
 | `toc` | `table-of-contents` | Auto-generated from document headings (configurable depth) | -- |
 | `reveal` | -- | Heading as reveal step label, paragraph as revealed content (progressive disclosure) | -- |
 | `conversation` | `dialogue`, `chat` | Blockquote as speaker message, strong as speaker name | -- |
 | `form` | `contact-form` | List items as form fields (type inferred from name), blockquote as help text or selection group, heading as fieldset group, strong as submit button label | -- |
 | `icon` | -- | Self-closing. Resolves `name` attribute to inline SVG from theme icon registry | -- |
+| `pullquote` | -- | Blockquote or paragraph as pull quote text, alignment and style variants | -- |
+| `textblock` | -- | All content as styled text body with drop caps, columns, and lead paragraph options | -- |
+| `mediatext` | -- | First image as media column, remaining text as body column, configurable ratio and wrapping | -- |
+| `budget` | -- | Heading as budget category, list items as line items ("Description: $amount" pattern), automatic subtotals | -- |
 
-### Navigation & Disclosure
+#### Navigation & Disclosure
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
 | `tabs` | -- | Heading as tab name, content below heading as tab panel | -- |
 | `accordion` | `faq` | Heading as section header (toggleable), content below as collapsible panel | `FAQPage` |
-| `nav` | -- | Heading as nav group title, list items as page references (slugs) | -- |
+| `nav` | -- | Heading as nav group title, list items as page references (slugs); `auto` mode resolves from page tree | -- |
 | `layout` + `region` | -- | Layout wraps `_layout.md` definitions; region creates named content blocks (header, nav, footer, sidebar) with mode (replace/prepend/append) | -- |
 
-### Data & Code
+#### Data & Code
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
@@ -106,72 +115,127 @@ refrakt.md ships 58 author-facing runes (plus internal child runes). Each rune d
 | `diagram` | -- | Fenced code block as diagram source (Mermaid, PlantUML, ASCII art) | -- |
 | `compare` | -- | Fenced code blocks as side-by-side comparison panels with labels | -- |
 | `diff` | -- | Two fenced code blocks as before/after code (unified or side-by-side mode) | -- |
-| `api` | `endpoint` | Heading as endpoint title, fence as request/response examples, table as parameter list, blockquote as notes/warnings | -- |
-| `symbol` | -- | Heading as construct name, fence as type signature, list as parameter definitions, blockquote as returns/throws/deprecation | `TechArticle` |
 | `codegroup` | -- | Fenced code blocks as language-tabbed code block (auto-detects language as tab name) | -- |
 
-### Commercial
+---
+
+### Official Community Packages
+
+Community packages are installed separately and registered in `refrakt.config.json`.
+
+```json
+{
+  "packages": ["@refrakt-md/marketing", "@refrakt-md/docs"]
+}
+```
+
+#### @refrakt-md/marketing
+
+```bash
+npm install @refrakt-md/marketing
+```
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
+| `hero` | -- | Heading as hero title, paragraph as subtitle/tagline, list as action buttons, fence as command | -- |
+| `cta` | `call-to-action` | Heading as headline, paragraph as blurb, list as action buttons, fence as command | -- |
+| `bento` | -- | Heading as cell title (level determines size: h2=large, h3=medium, h4+=small), paragraph as cell content, image as cell background | -- |
+| `feature` | -- | Heading as section headline, paragraph as description, list items as feature definitions with icon/name/description | -- |
+| `steps` | -- | Heading as step name, paragraph as step content (ordered list auto-converted) | -- |
 | `pricing` | -- | Heading as section headline, contains `{% tier %}` children with name, price, feature lists | `Product` + `Offer` |
 | `testimonial` | `review` | Blockquote as testimonial quote, strong as author name, paragraph as author role, image as avatar | `Review` |
-| `comparison` | `versus`, `vs` | Heading as column header (thing being compared), list as feature rows, strong as row alignment label, `s` (strikethrough) as negative indicator, blockquote as callout badge | -- |
+| `comparison` | `versus`, `vs` | Heading as column header, list as feature rows, `s` (strikethrough) as negative indicator | -- |
+| `storyboard` | `comic` | Image as panel visual, paragraph as caption/dialogue | -- |
 
-### Semantic
+#### @refrakt-md/docs
+
+```bash
+npm install @refrakt-md/docs
+```
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `api` | `endpoint` | Heading as endpoint title, fence as request/response examples, table as parameter list, blockquote as notes/warnings | -- |
+| `symbol` | -- | Heading as construct name, fence as type signature, list as parameter definitions, blockquote as returns/throws/deprecation | `TechArticle` |
+| `changelog` | -- | Heading as version + date ("v2.1.0 - 2024-01-15"), list as categorized changes, strong as change category | -- |
+
+#### @refrakt-md/design
+
+```bash
+npm install @refrakt-md/design
+```
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `swatch` | -- | Inline color chip from `color` + `label` attributes | -- |
+| `palette` | -- | List items as `name: #value` color entries, `##` headings as groups | -- |
+| `typography` | -- | List items as `role: Family Name (weights)` font specimens | -- |
+| `spacing` | -- | `##` sections (Spacing, Radius, Shadows) with `name: value` list items | -- |
+| `preview` | `showcase` | Children pass through unchanged; wrapper provides theme toggle, responsive viewport simulation, and source view | -- |
+| `mockup` | -- | Device frame chrome wrapping content (phone, tablet, browser) | -- |
+| `design-context` | -- | Unified design token card combining palette, typography, and spacing | -- |
+
+#### @refrakt-md/learning
+
+```bash
+npm install @refrakt-md/learning
+```
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
 | `recipe` | -- | Unordered list as ingredients, ordered list as steps, blockquote as chef tips, image as recipe photo, heading as recipe name | `Recipe` |
 | `howto` | `how-to` | Ordered list as steps, unordered list as tools/materials, heading as title | `HowTo` |
-| `event` | -- | Heading as event name, list as speakers/agenda, blockquote as venue description, link as registration URL | `Event` |
+
+#### @refrakt-md/storytelling
+
+```bash
+npm install @refrakt-md/storytelling
+```
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
+| `character` | `npc`, `pc` | Heading as section name (Backstory, Abilities, etc.), first image as portrait, list as section content | `Person` |
+| `realm` | `location`, `place` | Heading as section name (Geography, Features, etc.), first image as scene illustration, list as section content | `Place` |
+| `faction` | `guild`, `order` | Heading as section name (Ranks, Holdings, etc.), list as section content | `Organization` |
+| `lore` | `legend`, `myth` | All content as lore body text, blockquote as excerpts or quotations | `Article` |
+| `plot` | `storyline`, `arc` | List items as plot beats with status markers (`[x]`=complete, `[>]`=active, `[ ]`=planned, `[-]`=abandoned) | `CreativeWork` |
+| `bond` | `relationship` | All content as relationship description between two named entities | -- |
+| `storyboard` | `comic` | Image as panel visual, paragraph as caption/dialogue | -- |
+
+#### @refrakt-md/business
+
+```bash
+npm install @refrakt-md/business
+```
+
+| Rune | Aliases | Reinterprets | Schema.org |
+|------|---------|-------------|------------|
 | `cast` | `team` | List items as people entries ("Name - Role" pattern), image as avatar/headshot, link as profile URL | `Person` |
 | `organization` | `business` | Heading as organization name, image as logo, link as website/social profiles | `Organization` |
 | `timeline` | -- | Heading as dated milestone ("2023 - Company founded" pattern), paragraph as event description | `ItemList` |
-| `changelog` | -- | Heading as version + date ("v2.1.0 - 2024-01-15"), list as categorized changes, strong as change category | -- |
-| `map` | -- | List items as map pins (bold as name, italic as description, coordinates or address as location), heading as pin group label, blockquote as caption | `Place` |
 
-### Storytelling
+#### @refrakt-md/places
 
-| Rune | Aliases | Reinterprets | Schema.org |
-|------|---------|-------------|------------|
-| `character` | -- | Heading as section name (Backstory, Abilities, etc.), first image as portrait, list as section content | -- |
-| `realm` | -- | Heading as section name (Geography, Features, etc.), first image as scene illustration, list as section content | -- |
-| `lore` | -- | All content as lore body text, blockquote as excerpts or quotations | -- |
-| `faction` | -- | Heading as section name (Ranks, Holdings, etc.), list as section content | -- |
-| `plot` | -- | List items as plot beats with status markers (`[x]`=complete, `[>]`=active, `[ ]`=planned, `[-]`=abandoned), bold as beat label | -- |
-| `bond` | -- | All content as relationship description | -- |
-
-### Travel
+```bash
+npm install @refrakt-md/places
+```
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
-| `itinerary` | -- | H2 as day label, H3 as timed stops ("9:00 AM — Location" pattern), paragraph as stop description | -- |
-| `budget` | -- | Heading as budget category, list items as line items ("Description: $amount" pattern), automatic subtotals | -- |
+| `event` | -- | Heading as event name, list as speakers/agenda, blockquote as venue description, link as registration URL | `Event` |
+| `map` | -- | List items as map pins (bold as name, italic as description, coordinates or address as location) | `Place` |
+| `itinerary` | `trip`, `travel-plan` | H2 as day label, H3 as timed stops ("9:00 AM — Location" pattern), paragraph as stop description | `ItemList` |
 
-### Magazine
+#### @refrakt-md/media
 
-| Rune | Aliases | Reinterprets | Schema.org |
-|------|---------|-------------|------------|
-| `pullquote` | -- | Blockquote or paragraph as pull quote text, alignment and style variants | -- |
-| `textblock` | -- | All content as styled text body with drop caps, columns, and lead paragraph options | -- |
-| `mediatext` | -- | First image as media column, remaining text as body column, configurable ratio and wrapping | -- |
-
-### Music
+```bash
+npm install @refrakt-md/media
+```
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
 | `music-playlist` | -- | Heading as playlist name, list items as tracks (pipe-delimited fields), image as album art | `MusicPlaylist` |
 | `music-recording` | -- | Heading as track name; attributes for artist, duration (ISO 8601), copyright year | `MusicRecording` |
-
-### Design
-
-| Rune | Aliases | Reinterprets | Schema.org |
-|------|---------|-------------|------------|
-| `swatch` | -- | Inline color chip from `color` + `label` attributes | -- |
-| `palette` | -- | List items as `name: #value` color entries, `##` headings as groups, comma-separated values as neutral scales | -- |
-| `typography` | -- | List items as `role: Family Name (weights)` font specimens | -- |
-| `spacing` | -- | `##` sections (Spacing, Radius, Shadows) with `name: value` list items | -- |
 
 ---
 
@@ -568,7 +632,7 @@ This produces a virtual module that imports the base theme, imports the override
 
 ### Content Pipeline
 
-The full content pipeline flows through these stages:
+The full content pipeline flows through these stages. Steps marked **(build only)** run at build time across all pages, not on individual page requests in dev mode.
 
 {% steps headingLevel=3 %}
 ### Content analysis (build only)
@@ -583,8 +647,17 @@ YAML extraction and route resolution.
 ### Layout resolution
 Walk directory tree, collect `_layout.md` chain, merge regions by mode.
 
-### Markdoc transform
-Parse AST, apply rune schemas, transform to renderable tree.
+### Markdoc transform (Phase 1)
+Parse AST, apply rune schemas (core + community packages), transform to renderable tree. Each page's renderable is available as a `TransformedPage`.
+
+### Register (Phase 2, build only)
+Each package's `register()` hook scans all `TransformedPage`s and indexes named entities (pages, headings, characters, terms, etc.) into the site-wide `EntityRegistry`. Core always runs first, registering every page and heading.
+
+### Aggregate (Phase 3, build only)
+Each package's `aggregate()` hook builds cross-page indexes from the full registry. Core produces `pageTree`, `breadcrumbPaths`, `pagesByUrl`, and `headingIndex`.
+
+### Post-process (Phase 4, build only)
+Each page passes through all packages' `postProcess()` hooks. Resolves deferred sentinels using aggregated data -- for example, `breadcrumb auto` resolves to the actual ancestor breadcrumb path.
 
 ### SEO extraction
 Walk renderable tree, generate JSON-LD and Open Graph meta.
@@ -648,7 +721,7 @@ ANTHROPIC_API_KEY=sk-... refrakt write "Create a landing page with pricing"
 
 | Provider | Detection | Default Model |
 |----------|-----------|---------------|
-| **Anthropic** (Claude) | `ANTHROPIC_API_KEY` environment variable | `claude-sonnet-4-5-20250929` |
+| **Anthropic** (Claude) | `ANTHROPIC_API_KEY` environment variable | `claude-sonnet-4-6` |
 | **Gemini** (Google) | `GOOGLE_API_KEY` environment variable | `gemini-2.0-flash` |
 | **Ollama** (local models) | `OLLAMA_HOST` env var, or default `localhost:11434` | `llama3.2` |
 

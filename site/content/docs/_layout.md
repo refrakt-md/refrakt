@@ -33,6 +33,13 @@
 
 - rune-catalog
 
+## Packages
+
+- packages
+- authoring
+- pipeline
+- extending-core
+
 ## Content
 
 - hint

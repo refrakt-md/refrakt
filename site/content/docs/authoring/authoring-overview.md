@@ -9,6 +9,10 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 
 This guide covers how to write runes — the schema code that interprets content, the type definitions that enforce contracts, and the engine configuration that produces styled output.
 
+{% hint type="note" %}
+New runes almost always belong in a **community package** (`runes/{your-package}/`), not in the core rune library. The core library is for universal, domain-neutral runes that every project might use. Domain-specific runes (marketing, storytelling, API docs, etc.) belong in packages. See the [community package rune checklist](#community-package-rune) below, and [Building a Custom Package](/docs/packages/authoring) for the full guide.
+{% /hint %}
+
 ## The pipeline
 
 Rune code lives in stage 2 of the transformation pipeline:
@@ -41,7 +45,7 @@ Your rune defines how Markdown content is **interpreted** (stage 2). The engine 
 
 ## Anatomy of a rune
 
-Every rune has five parts. Here's the Hint rune as an example:
+Every core rune has five parts. Here's the Hint rune as an example (core rune — lives in `packages/runes/src/tags/`):
 
 ### 1. Schema file
 
@@ -113,7 +117,7 @@ The class defines modifier fields with defaults. The interface maps those fields
 
 ### 3. Engine config entry
 
-`packages/theme-base/src/config.ts`
+`packages/runes/src/config.ts`
 
 ```typescript
 Hint: {
@@ -162,13 +166,15 @@ Tests verify that the schema transform produces the expected output structure. S
 
 ## Rune checklist
 
-Every new rune needs:
+### Core rune
+
+For runes that belong in the core library (`packages/runes/src/tags/` — universal, domain-neutral runes only):
 
 | File | Purpose |
 |------|---------|
 | `packages/runes/src/tags/{name}.ts` | Schema — Model class with `transform()` |
 | `packages/types/src/schema/{name}.ts` | Type definition — class + component interface |
-| `packages/theme-base/src/config.ts` | Engine config — BEM block, modifiers, structure |
+| `packages/runes/src/config.ts` | Engine config — BEM block, modifiers, structure |
 | `packages/runes/src/registry.ts` | Type registration — `useSchema().defineType()` |
 | `packages/runes/src/rune.ts` | Rune catalog — `defineRune()` with description |
 | `packages/runes/test/{name}.test.ts` | Tests — output structure verification |
@@ -179,3 +185,17 @@ If the rune needs CSS (most do), also add:
 
 If the rune needs JavaScript interactivity:
 - `packages/behaviors/src/{name}.ts` — Progressive enhancement via `@refrakt-md/behaviors`
+
+### Community package rune
+
+For domain-specific runes (marketing, storytelling, API docs, games, etc.) that live in a community package under `runes/{package}/`:
+
+| File | Purpose |
+|------|---------|
+| `runes/{package}/src/{name}.ts` | Schema — Model class with `transform()`, same API as core |
+| `runes/{package}/src/index.ts` | Add the rune to the package's `RunePackage.runes` map |
+| `runes/{package}/styles/{block}.css` | CSS for the identity transform output |
+| `runes/{package}/test/{name}.test.ts` | Tests — output structure verification |
+| `site/content/docs/runes/{name}.md` | User docs — usage guide with preview examples |
+
+Theme config (BEM blocks, structure, icons) lives in the `RunePackage.theme.runes` field rather than in a separate config file. See [Building a Custom Package](/docs/packages/authoring) for the full authoring guide.
