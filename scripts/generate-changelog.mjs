@@ -10,6 +10,7 @@ const outPath = join(root, 'site', 'content', 'releases.md');
 // Collect CHANGELOG.md files from all workspace packages
 const dirs = [
   ...glob('packages'),
+  ...glob('runes'),
   ...glob('themes'),
 ];
 
@@ -59,33 +60,124 @@ function glob(subdir) {
 }
 
 function parseChangelog(text, versions) {
+  const lines = text.split('\n');
   let currentVersion = null;
+  let bulletLines = null;
 
-  for (const line of text.split('\n')) {
+  function flushBullet() {
+    if (bulletLines && currentVersion) {
+      // Strip trailing blank lines
+      while (bulletLines.length && bulletLines[bulletLines.length - 1].trim() === '') {
+        bulletLines.pop();
+      }
+      processBulletBlock(bulletLines, versions.get(currentVersion));
+    }
+    bulletLines = null;
+  }
+
+  for (const line of lines) {
     // Version heading: ## 0.2.0
     const versionMatch = line.match(/^## (\d+\.\d+\.\d+(?:-[\w.]+)?)/);
     if (versionMatch) {
+      flushBullet();
       currentVersion = versionMatch[1];
       if (!versions.has(currentVersion)) versions.set(currentVersion, new Set());
       continue;
     }
 
-    // Skip category headings (### Patch Changes, ### Minor Changes, etc.)
-    if (line.match(/^###\s/)) continue;
+    // Category heading at column 0: ### Patch Changes, ### Minor Changes
+    if (/^###\s/.test(line)) {
+      flushBullet();
+      continue;
+    }
 
     if (!currentVersion) continue;
 
-    // Match top-level and indented bullet lines (changesets nests content under a single `- ` entry)
-    const bulletMatch = line.match(/^(\s*)- (.+)/);
-    if (!bulletMatch) continue;
+    // Top-level bullet start: "- something"
+    if (/^- .+/.test(line)) {
+      flushBullet();
+      bulletLines = [line];
+      continue;
+    }
 
-    const content = bulletMatch[2];
+    // Inside a bullet: accumulate blank or indented continuation lines
+    if (bulletLines !== null) {
+      if (line.trim() === '' || /^\s/.test(line)) {
+        bulletLines.push(line);
+      } else {
+        flushBullet();
+      }
+      continue;
+    }
+  }
 
-    // Skip heading-style category labels (- ### New packages, - ### Theme restructuring, etc.)
-    if (content.match(/^#{1,6}\s/)) continue;
+  flushBullet();
+}
 
-    const cleaned = cleanEntry(`- ${content}`);
-    if (cleaned) versions.get(currentVersion).add(cleaned);
+function processBulletBlock(lines, versionSet) {
+  if (!lines.length || !versionSet) return;
+
+  const firstContent = lines[0].replace(/^- /, '');
+
+  // Heading-label bullets (- ### Editor): extract sub-bullets only
+  if (/^#{1,6}\s/.test(firstContent)) {
+    for (const line of lines) {
+      const subMatch = line.match(/^\s+- (.+)/);
+      if (!subMatch) continue;
+      if (/^#{1,6}\s/.test(subMatch[1])) continue;
+      const cleaned = cleanEntry(`- ${subMatch[1]}`);
+      if (cleaned) versionSet.add(cleaned);
+    }
+    return;
+  }
+
+  // Split into paragraphs (separated by blank lines)
+  const paragraphs = [];
+  let current = [];
+  for (const line of lines) {
+    if (line.trim() === '') {
+      if (current.length) { paragraphs.push(current); current = []; }
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length) paragraphs.push(current);
+
+  for (const para of paragraphs) {
+    // Separate sub-bullets from prose lines
+    const subBullets = [];
+    const proseLines = [];
+    for (const l of para) {
+      if (/^\s+- .+/.test(l)) subBullets.push(l);
+      else proseLines.push(l);
+    }
+
+    // Process sub-bullets individually
+    for (const sb of subBullets) {
+      const content = sb.replace(/^\s+- /, '');
+      if (/^#{1,6}\s/.test(content)) continue;
+      if (/^@[\w-]+\/[\w-]+@\d/.test(content)) continue;
+      const cleaned = cleanEntry(`- ${content}`);
+      if (cleaned) versionSet.add(cleaned);
+    }
+
+    if (!proseLines.length) continue;
+
+    // Skip inline heading labels (  ### Section Name)
+    if (proseLines.length === 1 && /^\s+#{1,6}\s/.test(proseLines[0])) continue;
+
+    // Skip category labels (single short line ending with ":")
+    if (proseLines.length === 1 && /^\s+\S.*:\s*$/.test(proseLines[0]) && proseLines[0].trim().length < 80) continue;
+
+    // Prose paragraph: unwrap into a single line
+    const unwrapped = proseLines
+      .map(l => l.replace(/^- /, '').replace(/^\s+/, ''))
+      .join(' ')
+      .trim();
+
+    if (!unwrapped) continue;
+    const cleaned = cleanEntry(`- ${unwrapped}`);
+    if (cleaned) versionSet.add(cleaned);
   }
 }
 
@@ -115,12 +207,21 @@ function cleanEntry(line) {
 
 function getTagDate(version) {
   // Changesets creates tags like "@refrakt-md/types@0.2.0" and "create-refrakt@0.2.0"
-  // Try package-scoped tags first, then plain version tags
+  // Try well-known tags first, then fall back to any tag matching this version
   const candidates = [
     `@refrakt-md/types@${version}`,
     `v${version}`,
     version,
   ];
+
+  // Find any tag ending with @{version} as fallback
+  try {
+    const tags = execSync(`git tag -l "*@${version}"`, {
+      cwd: root, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
+    }).trim();
+    if (tags) candidates.push(...tags.split('\n'));
+  } catch {}
+
   for (const tag of candidates) {
     try {
       const iso = execSync(`git log -1 --format=%aI "${tag}"`, {

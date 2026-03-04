@@ -6,9 +6,13 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.7.2
+## v0.7.2 - March 4, 2026
 
-- Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`,
+- Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`, and `PackagePipelineHooks`. Includes nav auto mode, pipeline build output, design token context propagation, and editor preview/autocomplete support for community runes.
+- Fix duplicate BEM classes on runes nested inside `data-name` elements. Make `autoLabel` recursive in the identity transform engine so eyebrow, headline, and blurb children inside `<header>` wrappers receive BEM classes. Add `pageSectionAutoLabel` to all marketing and core page-section runes.
+- Add pill-badge eyebrow variant: an eyebrow paragraph containing a link renders as a rounded pill with a border, muted prose text, and primary-colored link. The entire pill is clickable via a CSS `::before` overlay.
+- Add `mockup` rune to `@refrakt-md/design` for wrapping content in device frames.
+- Fix multiple preview runtime issues: `structuredClone` errors, `DataCloneError` when sending `routeRules` via `postMessage`, and cache not invalidating on source changes. Remove `ComponentType` and `PropertyNodes` from the schema system.
 
 ## v0.7.1 - March 3, 2026
 
@@ -18,7 +22,7 @@ description: Release history for refrakt.md
 
 - Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
 
-## v0.6.0
+## v0.6.0 - March 2, 2026
 
 - WYSIWYG block editor with stacked previews, Shadow DOM isolation, and rail navigation
 - Three-mode editor toggle: Visual, Code, and Preview with unified header bar
@@ -130,6 +134,9 @@ description: Release history for refrakt.md
 ## v0.3.0 - February 13, 2026
 
 - New runes and bug fixes
+- recipe — Ingredients, steps, chef's tips with prep/cook time metadata howto — Step-by-step instructions with tools/materials list event — Event info with date, location, registration URL cast (alias: team) — People directory with name/role parsing organization (alias: business) — Structured business information
+- datatable (alias: data-table) — Interactive table with sortable/searchable attributes api (alias: endpoint) — API endpoint documentation with method badges diff — Side-by-side or unified diff between two code blocks 0chart — Bar/line/pie/area charts from Markdown tables diagram — Mermaid.js diagram rendering
+- Other: sidenote (aliases: footnote, marginnote) — Margin notes, footnotes, and tooltips
 
 ## v0.2.0 - February 12, 2026
 
