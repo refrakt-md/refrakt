@@ -14,6 +14,21 @@
 	color: var(--rf-color-primary);
 	margin: 0 0 0.5rem;
 }
+.rf-steps__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+	padding: 0.25rem 0.875rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-full);
+	color: var(--rf-color-text);
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: 0;
+	transition: border-color 150ms ease;
+}
+.rf-steps__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
+.rf-steps__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-steps__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .rf-steps__headline {
 	margin-top: 0;
 }
