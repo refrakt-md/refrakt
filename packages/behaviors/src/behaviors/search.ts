@@ -183,12 +183,13 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		activeIndex = -1;
 
 		resultsContainer.innerHTML = results
-			.map(
-				(r: any) => `<a class="rf-search-result" href="${escapeAttr(r.url)}">
-				<span class="rf-search-result__title">${escapeHtml(r.meta?.title ?? r.url)}</span>
+			.map((r: any) => {
+				const url = r.url.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+				return `<a class="rf-search-result" href="${escapeAttr(url)}">
+				<span class="rf-search-result__title">${escapeHtml(r.meta?.title ?? url)}</span>
 				<span class="rf-search-result__excerpt">${r.excerpt ?? ''}</span>
-			</a>`,
-			)
+			</a>`;
+			})
 			.join('');
 	}
 
