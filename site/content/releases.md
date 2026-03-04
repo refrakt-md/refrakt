@@ -6,11 +6,15 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.7.1
+## v0.7.2
+
+- Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`,
+
+## v0.7.1 - March 3, 2026
 
 - Fix production builds excluding CSS for runes from @refrakt-md/\* rune packages. The CSS tree-shaker now uses the assembled config (core + package runes) instead of only the core theme config when determining which rune CSS files to include.
 
-## v0.7.0
+## v0.7.0 - March 3, 2026
 
 - Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
 
