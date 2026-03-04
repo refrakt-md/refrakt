@@ -12,6 +12,7 @@
 		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
 		communityTags?: Record<string, unknown> | null;
 		communityPostTransforms?: Record<string, Function> | null;
+		aggregated?: Record<string, unknown>;
 		dragHandle?: boolean;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
@@ -26,6 +27,7 @@
 		highlightTransform: hlTransformProp = null,
 		communityTags = null,
 		communityPostTransforms = null,
+		aggregated = {},
 		dragHandle = true,
 		ondragstart,
 		ondragover,
@@ -69,6 +71,7 @@
 				hlTransform,
 				communityTags ?? undefined,
 				communityPostTransforms ?? undefined,
+				aggregated,
 			);
 				if (isComponent) {
 					shadowRoot.innerHTML = `<style>

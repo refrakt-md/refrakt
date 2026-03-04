@@ -54,7 +54,7 @@
 				autocompletion({
 					override: [
 						runeCompletionSource(() => editorState.runes),
-						attributeCompletionSource(() => editorState.runes),
+						attributeCompletionSource(() => editorState.runes, () => editorState.aggregated),
 					],
 					icons: false,
 				}),

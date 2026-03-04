@@ -6,6 +6,8 @@ import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import { parseFrontmatter } from '@refrakt-md/content';
+import type { HookSet } from '@refrakt-md/content';
+import type { AggregatedData, TransformedPage, PipelineWarning, PipelineContext } from '@refrakt-md/types';
 
 /**
  * Render a markdown file through the full refrakt.md pipeline,
@@ -18,10 +20,20 @@ export function renderPreviewPage(
 	themeCss: string,
 	highlightTransform?: (tree: RendererNode) => RendererNode,
 	extraTags?: Record<string, Schema>,
+	pipelineOptions?: PreviewPipelineOptions,
 ): string {
 	const fullPath = join(contentDir, filePath);
 	const raw = readFileSync(fullPath, 'utf-8');
-	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform, extraTags);
+	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform, extraTags, pipelineOptions);
+}
+
+export interface PreviewPipelineOptions {
+	/** Cached aggregated data from the cross-page pipeline */
+	aggregated?: AggregatedData;
+	/** HookSets to run as Phase 4 postProcess before serialization */
+	hookSets?: HookSet[];
+	/** URL of the page being previewed (for postProcess context) */
+	url?: string;
 }
 
 /**
@@ -34,17 +46,30 @@ export function renderPreviewContent(
 	themeCss: string,
 	highlightTransform?: (tree: RendererNode) => RendererNode,
 	extraTags?: Record<string, Schema>,
+	pipelineOptions?: PreviewPipelineOptions,
 ): string {
 	const { frontmatter, content } = parseFrontmatter(raw);
 
 	// Run the Markdoc pipeline
 	const ast = Markdoc.parse(content);
 	const mergedTags = extraTags ? { ...tags, ...extraTags } : tags;
-	const renderable = Markdoc.transform(ast, {
+	let renderable = Markdoc.transform(ast, {
 		tags: mergedTags,
 		nodes,
 		variables: { __source: content, __icons: themeConfig.icons },
 	});
+
+	// Phase 4: run postProcess hooks before serialization
+	if (pipelineOptions?.hookSets?.length && pipelineOptions.aggregated) {
+		renderable = runPreviewPostProcess(
+			renderable,
+			pipelineOptions.aggregated,
+			pipelineOptions.hookSets,
+			pipelineOptions.url ?? '/',
+			frontmatter as Record<string, unknown>,
+		) as typeof renderable;
+	}
+
 	const serialized = serializeTree(renderable) as RendererNode;
 
 	// Apply identity transform (BEM classes, structure injection, meta consumption)
@@ -91,4 +116,35 @@ function escapeHtml(s: string): string {
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
 		.replace(/"/g, '&quot;');
+}
+
+function runPreviewPostProcess(
+	renderable: unknown,
+	aggregated: AggregatedData,
+	hookSets: HookSet[],
+	url: string,
+	frontmatter: Record<string, unknown>,
+): unknown {
+	let page: TransformedPage = {
+		url,
+		title: (frontmatter.title as string) ?? '',
+		renderable,
+		frontmatter,
+		headings: [],
+	};
+	const warnings: PipelineWarning[] = [];
+	for (const { packageName, hooks } of hookSets) {
+		if (!hooks.postProcess) continue;
+		const ctx: PipelineContext = {
+			info(message, u) { warnings.push({ severity: 'info', phase: 'postProcess', packageName, url: u ?? url, message }); },
+			warn(message, u) { warnings.push({ severity: 'warning', phase: 'postProcess', packageName, url: u ?? url, message }); },
+			error(message, u) { warnings.push({ severity: 'error', phase: 'postProcess', packageName, url: u ?? url, message }); },
+		};
+		try {
+			page = hooks.postProcess(page, aggregated, ctx) as TransformedPage;
+		} catch {
+			// Degrade silently
+		}
+	}
+	return page.renderable;
 }

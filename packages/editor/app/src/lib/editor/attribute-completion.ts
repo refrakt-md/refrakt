@@ -5,6 +5,8 @@ import {
 } from '@codemirror/autocomplete';
 import type { RuneInfo } from '../api/client.js';
 
+type AggregatedData = Record<string, unknown>;
+
 /**
  * Find the Markdoc tag context at the cursor position.
  * Returns the tag name and whether we're completing an attribute value.
@@ -47,10 +49,30 @@ function findTagContext(
 }
 
 /**
- * Creates a CompletionSource for Markdoc tag attribute names and values.
- * Accepts a getter function so runes are read at query time (not creation time).
+ * Returns dynamic completion values for a given rune + attribute combination.
+ * Currently supports:
+ *   - sandbox.context  → design-context scope names
+ *   - design-context.scope → existing scope names (to warn of collisions)
  */
-export function attributeCompletionSource(getRunes: () => RuneInfo[]): CompletionSource {
+function getDynamicValues(tagName: string, attrName: string, aggregated: AggregatedData): string[] {
+	const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
+	if (!design?.contexts) return [];
+	const scopes = Object.keys(design.contexts);
+	if ((tagName === 'sandbox' && attrName === 'context') ||
+		(tagName === 'design-context' && attrName === 'scope')) {
+		return scopes;
+	}
+	return [];
+}
+
+/**
+ * Creates a CompletionSource for Markdoc tag attribute names and values.
+ * Accepts getter functions so runes and aggregated data are read at query time.
+ */
+export function attributeCompletionSource(
+	getRunes: () => RuneInfo[],
+	getAggregated?: () => AggregatedData,
+): CompletionSource {
 	return (context: CompletionContext): CompletionResult | null => {
 		const doc = context.state.doc.toString();
 		const pos = context.pos;
@@ -73,16 +95,35 @@ export function attributeCompletionSource(getRunes: () => RuneInfo[]): Completio
 		// Completing attribute value
 		if (tagCtx.attrName && tagCtx.valueStart !== undefined) {
 			const attr = rune.attributes[tagCtx.attrName];
-			if (!attr?.values?.length) return null;
 
-			return {
-				from: tagCtx.valueStart,
-				options: attr.values.map((v) => ({
-					label: v,
-					type: 'enum',
-				})),
-				filter: true,
-			};
+			// Try static enum values first
+			if (attr?.values?.length) {
+				return {
+					from: tagCtx.valueStart,
+					options: attr.values.map((v) => ({
+						label: v,
+						type: 'enum',
+					})),
+					filter: true,
+				};
+			}
+
+			// Fall back to dynamic values from aggregated data
+			const dynamic = getAggregated
+				? getDynamicValues(tagCtx.tagName, tagCtx.attrName, getAggregated())
+				: [];
+			if (dynamic.length) {
+				return {
+					from: tagCtx.valueStart,
+					options: dynamic.map((v) => ({
+						label: v,
+						type: 'variable',
+					})),
+					filter: true,
+				};
+			}
+
+			return null;
 		}
 
 		// Completing attribute name

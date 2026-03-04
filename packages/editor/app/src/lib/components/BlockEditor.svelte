@@ -28,6 +28,7 @@
 		readOnly?: boolean;
 		communityTags?: Record<string, unknown> | null;
 		communityPostTransforms?: Record<string, Function> | null;
+		aggregated?: Record<string, unknown>;
 	}
 
 	let {
@@ -43,6 +44,7 @@
 		readOnly = false,
 		communityTags = null,
 		communityPostTransforms = null,
+		aggregated = {},
 	}: Props = $props();
 
 	let blocks: ParsedBlock[] = $state([]);
@@ -490,6 +492,7 @@
 								{highlightTransform}
 								{communityTags}
 								{communityPostTransforms}
+								{aggregated}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
@@ -525,6 +528,7 @@
 						block={blocks[activeIndex]}
 						{runeMap}
 						runes={() => runes}
+					{aggregated}
 						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
 						onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
 						onclose={() => { activeIndex = null; }}

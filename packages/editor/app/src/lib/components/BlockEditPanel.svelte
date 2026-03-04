@@ -19,12 +19,13 @@
 		block: ParsedBlock;
 		runeMap: Map<string, RuneInfo>;
 		runes: () => RuneInfo[];
+		aggregated?: Record<string, unknown>;
 		onupdate: (block: ParsedBlock) => void;
 		onremove: () => void;
 		onclose: () => void;
 	}
 
-	let { block, runeMap, runes, onupdate, onremove, onclose }: Props = $props();
+	let { block, runeMap, runes, aggregated = {}, onupdate, onremove, onclose }: Props = $props();
 
 	let label = $derived(blockLabel(block));
 
@@ -173,6 +174,7 @@
 						content={rb.innerContent}
 						onchange={handleRuneContentChange}
 						{runes}
+						aggregated={() => aggregated}
 					/>
 				</div>
 			{/if}
@@ -198,6 +200,7 @@
 					language={fb.language}
 					{runes}
 				/>
+					aggregated={() => aggregated}
 			</div>
 
 		{:else if block.type === 'paragraph'}
@@ -207,6 +210,7 @@
 					onchange={handleSourceChange}
 					{runes}
 				/>
+					aggregated={() => aggregated}
 			</div>
 
 		{:else}

@@ -1,9 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import { ContentTree, resolveLayouts, Router, parseFrontmatter } from '@refrakt-md/content';
-import type { ContentPage } from '@refrakt-md/content';
+import type { ContentPage, HookSet } from '@refrakt-md/content';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import type { AggregatedData, TransformedPage, PipelineWarning, PipelineContext } from '@refrakt-md/types';
 
 export interface PagePreviewData {
 	renderable: unknown;
@@ -23,6 +24,8 @@ export class LayoutResolver {
 	private tree: ContentTree | null = null;
 	private router = new Router('/');
 	private pagesList: Array<{ url: string; path: string; title: string; draft: boolean }> = [];
+	private hookSets: HookSet[] = [];
+	private aggregated: AggregatedData = {};
 
 	private mergedTags: Record<string, Schema>;
 
@@ -32,6 +35,12 @@ export class LayoutResolver {
 		extraTags?: Record<string, Schema>,
 	) {
 		this.mergedTags = extraTags ? { ...tags, ...extraTags } : tags;
+	}
+
+	/** Update the cached aggregated data and hook sets for Phase 4 preview support */
+	setAggregated(aggregated: AggregatedData, hookSets: HookSet[]): void {
+		this.aggregated = aggregated;
+		this.hookSets = hookSets;
 	}
 
 	/** Build/refresh the ContentTree (call on startup + after file saves) */
@@ -59,15 +68,17 @@ export class LayoutResolver {
 			nodes,
 			variables: { __source: content, __icons: this.themeConfig.icons },
 		});
-		const serialized = serializeTree(rendered) as RendererNode;
+
+		// Phase 4: run postProcess hooks before serialization
+		const url = this.router.filePathToUrl(filePath);
+		const postProcessed = this.runPostProcess(rendered, url, frontmatter as Record<string, unknown>);
+
+		const serialized = serializeTree(postProcessed as import('@markdoc/markdoc').RenderableTreeNodes) as RendererNode;
 		let transformed = identityTransform(serialized);
 		if (highlightTransform) transformed = highlightTransform(transformed);
 
 		// Resolve layouts and transform region content
 		const regions = this.resolveAndTransformRegions(filePath, identityTransform, highlightTransform);
-
-		// Compute URL for route rule matching
-		const url = this.router.filePathToUrl(filePath);
 
 		return {
 			renderable: transformed,
@@ -210,4 +221,46 @@ export class LayoutResolver {
 		}
 		return pages;
 	}
+
+	/**
+	 * Run Phase 4 postProcess hooks on a pre-serialized Markdoc renderable.
+	 * Returns the (possibly modified) renderable. Errors degrade silently.
+	 */
+	private runPostProcess(
+		renderable: unknown,
+		url: string,
+		frontmatter: Record<string, unknown>,
+	): unknown {
+		if (this.hookSets.length === 0) return renderable;
+		let page: TransformedPage = {
+			url,
+			title: (frontmatter.title as string) ?? '',
+			renderable,
+			frontmatter,
+			headings: [],
+		};
+		const warnings: PipelineWarning[] = [];
+		for (const { packageName, hooks } of this.hookSets) {
+			if (!hooks.postProcess) continue;
+			const ctx = makeEditorContext(warnings, packageName, url);
+			try {
+				page = hooks.postProcess(page, this.aggregated, ctx) as TransformedPage;
+			} catch {
+				// Degrade silently in preview
+			}
+		}
+		return page.renderable;
+	}
+}
+
+function makeEditorContext(
+	warnings: PipelineWarning[],
+	packageName: string,
+	url: string,
+): PipelineContext {
+	return {
+		info(message, infoUrl) { warnings.push({ severity: 'info', phase: 'postProcess', packageName, url: infoUrl ?? url, message }); },
+		warn(message, warnUrl) { warnings.push({ severity: 'warning', phase: 'postProcess', packageName, url: warnUrl ?? url, message }); },
+		error(message, errUrl) { warnings.push({ severity: 'error', phase: 'postProcess', packageName, url: errUrl ?? url, message }); },
+	};
 }

@@ -68,6 +68,9 @@ class EditorState {
 	/** Community rune postTransform functions (loaded from /api/community-tags.js bundle) */
 	communityPostTransforms: Record<string, Function> | null = $state(null);
 
+	/** Aggregated cross-page pipeline data (fetched from /api/aggregated on startup) */
+	aggregated: Record<string, unknown> = $state({});
+
 	/** Whether the left sidenav is open */
 	sidenavOpen = $state(true);
 

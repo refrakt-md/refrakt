@@ -18,10 +18,11 @@
 		content: string;
 		onchange: (content: string) => void;
 		runes: () => RuneInfo[];
+		aggregated?: () => Record<string, unknown>;
 		language?: string;
 	}
 
-	let { content, onchange, runes, language }: Props = $props();
+	let { content, onchange, runes, aggregated, language }: Props = $props();
 
 	let container: HTMLElement;
 	let view = $state<EditorView | undefined>(undefined);
@@ -127,7 +128,7 @@
 				completionCompartment.of(codeMode ? [] : autocompletion({
 					override: [
 						runeCompletionSource(runes),
-						attributeCompletionSource(runes),
+						attributeCompletionSource(runes, aggregated),
 					],
 					icons: false,
 				})),
@@ -175,7 +176,7 @@
 					completionCompartment.reconfigure(autocompletion({
 						override: [
 							runeCompletionSource(runes),
-							attributeCompletionSource(runes),
+							attributeCompletionSource(runes, aggregated),
 						],
 						icons: false,
 					})),

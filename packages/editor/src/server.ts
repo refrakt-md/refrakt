@@ -3,14 +3,15 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSyn
 import { basename, dirname } from 'node:path';
 import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
-import { ContentTree } from '@refrakt-md/content';
+import { ContentTree, loadContent } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
-import { runes as allRunes, RUNE_EXAMPLES } from '@refrakt-md/runes';
+import type { HookSet } from '@refrakt-md/content';
+import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
-import type { RouteRule } from '@refrakt-md/types';
+import type { RouteRule, RunePackage, AggregatedData } from '@refrakt-md/types';
 import { createTransform } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
-import { renderPreviewPage, renderPreviewContent } from './preview.js';
+import { renderPreviewPage, renderPreviewContent, type PreviewPipelineOptions } from './preview.js';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import { buildPreviewRuntime } from './preview-builder.js';
 import { buildCommunityTagsBundle } from './community-tags-builder.js';
@@ -39,6 +40,8 @@ export interface EditorOptions {
 	routeRules?: RouteRule[];
 	/** npm package names of community rune packages (used to build client-side tags bundle) */
 	packageNames?: string[];
+	/** Community rune packages (for cross-page pipeline hooks) */
+	packages?: RunePackage[];
 	/** Extra Markdoc tags from community packages (merged into preview pipeline) */
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>;
 	/** Community rune metadata for the editor palette */
@@ -170,6 +173,32 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	// Create identity transform once (reused across preview requests)
 	const identityTransform = createTransform(themeConfig);
 
+	// ── Cross-page pipeline cache ──────────────────────────────────
+	// Runs Phases 2+3 over all pages. Cached result is used for Phase 4
+	// (postProcess) in preview and for /api/aggregated autocomplete support.
+	let cachedAggregated: AggregatedData = {};
+
+	function buildHookSets(): HookSet[] {
+		const sets: HookSet[] = [{ packageName: '__core__', hooks: corePipelineHooks }];
+		for (const pkg of options.packages ?? []) {
+			if (pkg.pipeline) sets.push({ packageName: pkg.name, hooks: pkg.pipeline });
+		}
+		return sets;
+	}
+
+	async function refreshPipelineCache(): Promise<void> {
+		try {
+			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.packages);
+			cachedAggregated = site.aggregated;
+			layoutResolver.setAggregated(site.aggregated, buildHookSets());
+		} catch {
+			// Non-fatal: preview degrades gracefully without aggregated data
+		}
+	}
+
+	// Run initial pipeline cache (after layoutResolver is ready)
+	await refreshPipelineCache();
+
 	const server = createServer(async (req, res) => {
 		try {
 			const url = new URL(req.url!, `http://localhost:${port}`);
@@ -198,11 +227,15 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				await handlePutFile(req, res, absContentDir, filePath);
 				// Refresh layout resolver so layout changes propagate to preview
 				layoutResolver.refresh().catch(() => {});
+				refreshPipelineCache().catch(() => {});
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
-				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform, extraTags);
+				const previewUrl = '/' + filePath.replace(/\.md$/, '').replace(/\/index$/, '');
+				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform, extraTags,
+					{ aggregated: cachedAggregated, hookSets: buildHookSets(), url: previewUrl });
 			} else if (method === 'POST' && url.pathname === '/api/preview') {
-				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform, extraTags);
+				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform, extraTags,
+					{ aggregated: cachedAggregated, hookSets: buildHookSets() });
 			} else if (method === 'POST' && url.pathname === '/api/pages') {
 				await handleCreatePage(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/directories') {
@@ -257,6 +290,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				}
 			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
 				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
+			} else if (method === 'GET' && url.pathname === '/api/aggregated') {
+				serveJson(res, cachedAggregated);
 			} else if (method === 'GET' && url.pathname === '/api/events') {
 				// SSE endpoint — keep connection open for file-change push events
 				res.writeHead(200, {
@@ -355,6 +390,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 			// Refresh layout resolver so layout changes propagate
 			layoutResolver.refresh().catch(() => {});
+			refreshPipelineCache().catch(() => {});
 		}, 300));
 	});
 }
@@ -446,6 +482,7 @@ function handlePreview(
 	themeCss: string,
 	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
+	pipelineOptions?: PreviewPipelineOptions,
 ): void {
 	const fullPath = safePath(contentDir, filePath);
 	if (!fullPath) {
@@ -460,7 +497,7 @@ function handlePreview(
 		return;
 	}
 
-	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight, extraTags);
+	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight, extraTags, pipelineOptions);
 	serveHtml(res, html);
 }
 
@@ -471,11 +508,12 @@ async function handlePreviewContent(
 	themeCss: string,
 	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
+	pipelineOptions?: PreviewPipelineOptions,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { content } = JSON.parse(body) as { content: string };
 
-	const html = renderPreviewContent(content, themeConfig, themeCss, highlight, extraTags);
+	const html = renderPreviewContent(content, themeConfig, themeCss, highlight, extraTags, pipelineOptions);
 	serveHtml(res, html);
 }
 

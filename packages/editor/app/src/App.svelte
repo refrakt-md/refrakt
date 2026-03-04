@@ -21,7 +21,7 @@
 		fetchTree, fetchFile, saveFile,
 		createPage, createDirectory,
 		renameFile, duplicateFile, deleteFile, toggleDraft,
-		fetchRunes, fetchConfig, fetchRouteRules, updateRouteRules, connectEvents,
+		fetchRunes, fetchConfig, fetchRouteRules, updateRouteRules, connectEvents, fetchAggregated,
 	} from './lib/api/client.js';
 	import { RfDiagram, RfSandbox, RfMap } from '@refrakt-md/behaviors';
 	import { onMount } from 'svelte';
@@ -66,11 +66,12 @@
 		(async () => {
 			editorState.treeLoading = true;
 			try {
-				const [tree, runes, config, routeRules] = await Promise.all([
+				const [tree, runes, config, routeRules, aggregated] = await Promise.all([
 					fetchTree(),
 					fetchRunes(),
 					fetchConfig(),
 					fetchRouteRules(),
+									fetchAggregated(),
 				]);
 				editorState.tree = tree;
 				editorState.runes = runes;
@@ -78,6 +79,7 @@
 				editorState.themeCss = config.themeCss;
 				editorState.themeConfig = config.themeConfig;
 				editorState.routeRules = routeRules ?? [];
+				editorState.aggregated = aggregated;
 
 				// Load community tags bundle for client-side block preview (non-blocking)
 				if (config.hasCommunityTags) {
@@ -399,6 +401,7 @@
 							readOnly={editorState.editorMode === 'code'}
 							communityTags={editorState.communityTags}
 							communityPostTransforms={editorState.communityPostTransforms}
+							aggregated={editorState.aggregated}
 						/>
 					{/if}
 				</PageCard>

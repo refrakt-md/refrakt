@@ -217,6 +217,14 @@ export async function fetchRunes(): Promise<RuneInfo[]> {
 	return data.runes;
 }
 
+// ── Aggregated pipeline data ─────────────────────────────────────────
+
+export async function fetchAggregated(): Promise<Record<string, unknown>> {
+	const res = await fetch(`${BASE}/api/aggregated`);
+	if (!res.ok) return {};
+	return res.json();
+}
+
 // ── Server-Sent Events ──────────────────────────────────────────────
 
 export interface FileChangeEvent {

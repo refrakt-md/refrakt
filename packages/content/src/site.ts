@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap, corePipelineHooks } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { RunePackage, PipelineWarning } from '@refrakt-md/types';
+import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
@@ -24,6 +24,8 @@ export interface Site {
   pipelineWarnings: PipelineWarning[];
   /** Build-phase statistics from the pipeline run */
   pipelineStats: PipelineStats;
+  /** Cross-page data produced by all aggregate hooks, keyed by package name */
+  aggregated: AggregatedData;
 }
 
 export interface SitePage {
@@ -88,7 +90,7 @@ export async function loadContent(
     }
   }
 
-  const { pages: enrichedPages, warnings, stats } = await runPipeline(pages, hookSets);
+  const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
 
   return {
     tree,
@@ -96,5 +98,6 @@ export async function loadContent(
     navigation: [], // TODO: Extract from resolved layouts
     pipelineWarnings: warnings,
     pipelineStats: stats,
+    aggregated,
   };
 }
