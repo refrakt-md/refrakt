@@ -12,5 +12,9 @@ export default defineConfig({
 	build: {
 		outDir: 'dist',
 		emptyOutDir: true,
+		rollupOptions: {
+			// /api/community-tags.js is served at runtime by the editor server — not a build-time module
+			external: [/^\/api\/community-tags\.js$/],
+		},
 	},
 });

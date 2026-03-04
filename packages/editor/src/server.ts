@@ -13,6 +13,7 @@ import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent } from './preview.js';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import { buildPreviewRuntime } from './preview-builder.js';
+import { buildCommunityTagsBundle } from './community-tags-builder.js';
 import { LayoutResolver } from './layout-resolver.js';
 
 export interface EditorOptions {
@@ -36,6 +37,8 @@ export interface EditorOptions {
 	configPath?: string;
 	/** Route rules from refrakt.config.json */
 	routeRules?: RouteRule[];
+	/** npm package names of community rune packages (used to build client-side tags bundle) */
+	packageNames?: string[];
 	/** Extra Markdoc tags from community packages (merged into preview pipeline) */
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>;
 	/** Community rune metadata for the editor palette */
@@ -150,6 +153,16 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		}
 	}
 
+	// Build community tags bundle for client-side block preview
+	let communityTagsBundlePath: string | null = null;
+	if (options.packageNames && options.packageNames.length > 0) {
+		const result = await buildCommunityTagsBundle(options.packageNames, process.cwd());
+		if (result.success) {
+			communityTagsBundlePath = result.outputPath;
+			console.log('  Community tags: bundled \u2713');
+		}
+	}
+
 	// Initialize layout resolver for full-page preview with layouts
 	const layoutResolver = new LayoutResolver(absContentDir, themeConfig, extraTags);
 	await layoutResolver.refresh();
@@ -208,9 +221,18 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/runes') {
 				handleGetRunes(res, communityRunes);
+			} else if (method === 'GET' && url.pathname === '/api/community-tags.js') {
+				if (communityTagsBundlePath) {
+					const content = readFileSync(communityTagsBundlePath, 'utf-8');
+					res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+					res.end(content);
+				} else {
+					res.writeHead(404).end('');
+				}
 			} else if (method === 'GET' && url.pathname === '/api/config') {
 				serveJson(res, {
 					previewRuntime: previewRuntimeDir !== null,
+					hasCommunityTags: communityTagsBundlePath !== null,
 					devServerUrl: devServer ?? null,
 					themeCss,
 					themeConfig: stripFunctions(themeConfig),

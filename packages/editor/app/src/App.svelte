@@ -79,6 +79,16 @@
 				editorState.themeConfig = config.themeConfig;
 				editorState.routeRules = routeRules ?? [];
 
+				// Load community tags bundle for client-side block preview (non-blocking)
+				if (config.hasCommunityTags) {
+					import('/api/community-tags.js').then((mod) => {
+						editorState.communityTags = mod.communityTags ?? null;
+						editorState.communityPostTransforms = mod.communityPostTransforms ?? null;
+					}).catch(() => {
+						// Preview degrades to core-only rendering — not a fatal error
+					});
+				}
+
 				// Lazy-load Shiki syntax highlighting (non-blocking)
 				import('@refrakt-md/highlight').then(({ createHighlightTransform }) =>
 					createHighlightTransform().then((ht) => {
@@ -387,6 +397,8 @@
 							highlightTransform={editorState.highlightTransform}
 							frontmatter={editorState.frontmatter}
 							readOnly={editorState.editorMode === 'code'}
+							communityTags={editorState.communityTags}
+							communityPostTransforms={editorState.communityPostTransforms}
 						/>
 					{/if}
 				</PageCard>

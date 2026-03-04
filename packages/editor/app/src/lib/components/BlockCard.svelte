@@ -10,6 +10,8 @@
 		themeCss: string;
 		highlightCss?: string;
 		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
+		communityTags?: Record<string, unknown> | null;
+		communityPostTransforms?: Record<string, Function> | null;
 		dragHandle?: boolean;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
@@ -22,6 +24,8 @@
 		themeCss,
 		highlightCss: hlCssProp = '',
 		highlightTransform: hlTransformProp = null,
+		communityTags = null,
+		communityPostTransforms = null,
 		dragHandle = true,
 		ondragstart,
 		ondragover,
@@ -59,7 +63,13 @@
 			}
 
 			try {
-				const { html, isComponent } = renderBlockPreview(source, config, hlTransform);
+				const { html, isComponent } = renderBlockPreview(
+				source,
+				config,
+				hlTransform,
+				communityTags ?? undefined,
+				communityPostTransforms ?? undefined,
+			);
 				if (isComponent) {
 					shadowRoot.innerHTML = `<style>
 						:host { display: block; padding: 0.75rem 1.5rem; }

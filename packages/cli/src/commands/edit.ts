@@ -153,6 +153,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		open: !options.noOpen,
 		configPath: projectConfigPath,
 		routeRules: projectConfig?.routeRules,
+		packageNames: projectConfig?.packages ?? [],
 		extraTags,
 		communityRunes: communityRuneEntries,
 	});

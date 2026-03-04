@@ -2,7 +2,10 @@ import Markdoc from '@markdoc/markdoc';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import type { SerializedTag } from '@refrakt-md/types';
 import { baseConfig } from '@refrakt-md/runes';
+
+type PostTransformFn = (node: SerializedTag, context: { modifiers: Record<string, string>; parentType?: string }) => SerializedTag;
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
@@ -12,13 +15,24 @@ const RUNTIME_ONLY_TYPES = new Set([
 /**
  * Restore postTransform hooks that were stripped during JSON serialization.
  * The server strips functions from the themeConfig before sending it as JSON;
- * we merge them back from the statically-imported baseConfig.
+ * we merge them back from the statically-imported baseConfig (core runes)
+ * and from the community tags bundle (community runes).
  */
-function restorePostTransforms(config: ThemeConfig): ThemeConfig {
+function restorePostTransforms(
+	config: ThemeConfig,
+	communityPostTransforms?: Record<string, PostTransformFn>,
+): ThemeConfig {
 	const runes = { ...config.runes };
 	for (const [name, rune] of Object.entries(baseConfig.runes)) {
 		if (rune.postTransform && runes[name]) {
 			runes[name] = { ...runes[name], postTransform: rune.postTransform };
+		}
+	}
+	if (communityPostTransforms) {
+		for (const [name, postTransform] of Object.entries(communityPostTransforms)) {
+			if (runes[name]) {
+				runes[name] = { ...runes[name], postTransform };
+			}
 		}
 	}
 	return { ...config, runes };
@@ -36,11 +50,14 @@ export function renderBlockPreview(
 	source: string,
 	themeConfig: ThemeConfig,
 	highlightTransform?: ((tree: RendererNode) => RendererNode) | null,
+	extraTags?: Record<string, unknown>,
+	communityPostTransforms?: Record<string, PostTransformFn>,
 ): { html: string; isComponent: boolean } {
 	const ast = Markdoc.parse(source);
-	const fullConfig = restorePostTransforms(themeConfig);
+	const fullConfig = restorePostTransforms(themeConfig, communityPostTransforms);
+	const mergedTags = extraTags ? { ...tags, ...extraTags as Record<string, import('@markdoc/markdoc').Schema> } : tags;
 	const renderable = Markdoc.transform(ast, {
-		tags,
+		tags: mergedTags,
 		nodes,
 		variables: { __source: source, __icons: fullConfig.icons },
 	});

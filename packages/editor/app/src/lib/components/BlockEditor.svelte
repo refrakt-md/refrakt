@@ -26,6 +26,8 @@
 		showInsertMenu?: boolean;
 		frontmatter?: Record<string, unknown>;
 		readOnly?: boolean;
+		communityTags?: Record<string, unknown> | null;
+		communityPostTransforms?: Record<string, Function> | null;
 	}
 
 	let {
@@ -39,6 +41,8 @@
 		showInsertMenu: showInsertMenuProp = true,
 		frontmatter = {},
 		readOnly = false,
+		communityTags = null,
+		communityPostTransforms = null,
 	}: Props = $props();
 
 	let blocks: ParsedBlock[] = $state([]);
@@ -484,6 +488,8 @@
 								{themeCss}
 								{highlightCss}
 								{highlightTransform}
+								{communityTags}
+								{communityPostTransforms}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
