@@ -355,9 +355,12 @@
 
 /* ── Browser ── */
 
+.rf-mockup--browser {
+	display: block;
+}
+
 .rf-mockup--browser .rf-mockup__frame {
 	width: 100%;
-	max-width: 960px;
 	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
 	overflow: hidden;
 }
@@ -374,9 +377,12 @@
 
 /* ── Browser dark ── */
 
+.rf-mockup--browser-dark {
+	display: block;
+}
+
 .rf-mockup--browser-dark .rf-mockup__frame {
 	width: 100%;
-	max-width: 960px;
 	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
 	overflow: hidden;
 }

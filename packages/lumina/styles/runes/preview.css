@@ -93,6 +93,9 @@
 	padding: 2rem 2.5rem;
 	background: var(--rf-color-bg);
 }
+.rf-preview__canvas:has(.rf-mockup) {
+	text-align: center;
+}
 .rf-preview__canvas > *:first-child {
 	margin-top: 0;
 }
