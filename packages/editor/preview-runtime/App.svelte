@@ -2,7 +2,7 @@
 	import { ThemeShell } from '@refrakt-md/svelte';
 	import { theme as baseTheme } from 'virtual:refrakt-theme';
 
-	let pageData: any = $state(null);
+	let pageData: any = $state.raw(null);
 
 	// Reactive copy so we can patch routeRules at runtime
 	let theme: typeof baseTheme = $state.raw({ ...baseTheme });
