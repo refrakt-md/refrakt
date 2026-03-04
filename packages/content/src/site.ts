@@ -3,6 +3,7 @@ import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap, corePipelineHooks } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { RunePackage, PipelineWarning } from '@refrakt-md/types';
+import type { PipelineStats } from './pipeline.js';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -21,6 +22,8 @@ export interface Site {
   navigation: NavTree[];
   /** Diagnostics from the cross-page pipeline (empty when no pipeline hooks ran) */
   pipelineWarnings: PipelineWarning[];
+  /** Build-phase statistics from the pipeline run */
+  pipelineStats: PipelineStats;
 }
 
 export interface SitePage {
@@ -87,29 +90,11 @@ export async function loadContent(
 
   const { pages: enrichedPages, warnings, stats } = await runPipeline(pages, hookSets);
 
-  if (process.env.REFRAKT_BUILD_OUTPUT !== 'silent') {
-    const pad = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - s.length));
-    process.stderr.write(`  ${pad('Phase 2: Register', 30)} ${stats.entityCount} entities\n`);
-    process.stderr.write(`  ${pad('Phase 3: Aggregate', 30)} ${stats.packageCount} packages\n`);
-    process.stderr.write(`  ${pad('Phase 4: Post-process', 30)} ${stats.pageCount} pages\n`);
-
-    const errorCount = warnings.filter(w => w.severity === 'error').length;
-    const warnCount = warnings.filter(w => w.severity === 'warning').length;
-
-    for (const w of warnings) {
-      const icon = w.severity === 'error' ? '✗  error' : w.severity === 'info' ? 'ℹ  info ' : '⚠  warn ';
-      const location = w.url ? `  ${w.url}` : '';
-      process.stderr.write(`\n  ${icon}  ${w.message}${location}\n`);
-    }
-
-    const status = errorCount > 0 ? '✗' : '✓';
-    process.stderr.write(`\n  ${status}  Build complete (${errorCount} error${errorCount !== 1 ? 's' : ''}, ${warnCount} warning${warnCount !== 1 ? 's' : ''})\n\n`);
-  }
-
   return {
     tree,
     pages: enrichedPages,
     navigation: [], // TODO: Extract from resolved layouts
     pipelineWarnings: warnings,
+    pipelineStats: stats,
   };
 }

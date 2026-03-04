@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, UserConfig } from 'vite';
-import type { RefraktConfig, RunePackage } from '@refrakt-md/types';
+import type { RefraktConfig, RunePackage, PipelineWarning } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
@@ -136,6 +136,23 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					communityTags,
 					mergedPackages,
 				);
+
+				const { pipelineStats: stats } = site;
+				const warnings: PipelineWarning[] = site.pipelineWarnings;
+				const pad = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - s.length));
+				process.stderr.write(`  ${pad('Phase 2: Register', 30)} ${stats.entityCount} entities\n`);
+				process.stderr.write(`  ${pad('Phase 3: Aggregate', 30)} ${stats.packageCount} packages\n`);
+				process.stderr.write(`  ${pad('Phase 4: Post-process', 30)} ${stats.pageCount} pages\n`);
+				const errorCount = warnings.filter(w => w.severity === 'error').length;
+				const warnCount = warnings.filter(w => w.severity === 'warning').length;
+				for (const w of warnings) {
+					const icon = w.severity === 'error' ? '✗  error' : w.severity === 'info' ? 'ℹ  info ' : '⚠  warn ';
+					const location = w.url ? `  ${w.url}` : '';
+					process.stderr.write(`\n  ${icon}  ${w.message}${location}\n`);
+				}
+				const status = errorCount > 0 ? '✗' : '✓';
+				process.stderr.write(`\n  ${status}  Build complete (${errorCount} error${errorCount !== 1 ? 's' : ''}, ${warnCount} warning${warnCount !== 1 ? 's' : ''})\n\n`);
+
 				const report = analyzeRuneUsage(site.pages);
 
 				const themeTransform = await import(`${refraktConfig.theme}/transform`);
