@@ -227,6 +227,20 @@ A more complete example using Tailwind's utility classes for a responsive card l
 {% /sandbox %}
 {% /preview %}
 
+## Design token context
+
+When your site uses `{% design-context %}` runes to define tokens, a sandbox can receive those tokens automatically at build time. Use the `context` attribute to reference a named design context by its `scope`.
+
+```markdoc
+{% sandbox context="brand" %}
+<div style="color: var(--color-primary); font-family: var(--font-body)">
+  Styled with brand tokens
+</div>
+{% /sandbox %}
+```
+
+Tokens are injected into the iframe as CSS custom properties and Google Fonts links, using the same names the design-context defines (`--color-*`, `--font-*`, `--spacing-unit`, `--radius-*`, `--shadow-*`). If `context` is omitted or no matching design context exists for the default scope, no tokens are injected.
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
@@ -235,3 +249,4 @@ A more complete example using Tailwind's utility classes for a responsive card l
 | `dependencies` | `string` | — | Comma-separated URLs of scripts/stylesheets to load |
 | `label` | `string` | — | Label for the sandbox (used when inside compare) |
 | `height` | `number` | auto | Fixed height in pixels (auto-sizes by default) |
+| `context` | `string` | `default` | Name of the design context scope to inject tokens from |
