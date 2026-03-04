@@ -115,4 +115,4 @@ Each community package exports a `RunePackage` object containing:
 
 The Vite plugin merges all packages together before each build, resolving collisions and assembling the final rune set that the content pipeline uses.
 
-See [Building a Custom Package](authoring) for details on authoring your own packages, and [Cross-Page Pipeline](pipeline) for packages that need to build site-wide indexes.
+See [Building a Custom Package](/docs/packages/authoring) for details on authoring your own packages, and [Cross-Page Pipeline](/docs/packages/pipeline) for packages that need to build site-wide indexes.
