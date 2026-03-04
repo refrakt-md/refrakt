@@ -40,3 +40,15 @@ export type {
 
 // Serialized tree types
 export type { SerializedTag, RendererNode } from './serialized.js';
+
+// Cross-page pipeline types
+export type {
+	TransformedPage,
+	PipelineHeadingInfo,
+	EntityRegistration,
+	EntityRegistry,
+	AggregatedData,
+	PipelineContext,
+	PipelineWarning,
+	PackagePipelineHooks,
+} from './pipeline.js';

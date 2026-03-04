@@ -57,7 +57,9 @@ export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';
 export { loadRunePackage, mergePackages, applyAliases, loadLocalRunes, discoverPackageFixtures } from './packages.js';
 export type { LoadedPackage, MergedPackageResult } from './packages.js';
-export { coreConfig, baseConfig } from './config.js';
+export { coreConfig, baseConfig, corePipelineHooks, type PageTreeNode } from './config.js';
+export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
+export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 
 export const documents = {
   doc: new DocPage(),

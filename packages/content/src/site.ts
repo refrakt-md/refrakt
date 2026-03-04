@@ -1,12 +1,15 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap, corePipelineHooks } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
+import type { RunePackage, PipelineWarning } from '@refrakt-md/types';
+import type { PipelineStats } from './pipeline.js';
 import { ContentTree } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { NavTree } from './navigation.js';
+import { runPipeline, type HookSet } from './pipeline.js';
 
 const seoTypeMap = buildSeoTypeMap(runes);
 
@@ -17,6 +20,10 @@ export interface Site {
   pages: SitePage[];
   /** Navigation trees found in layouts */
   navigation: NavTree[];
+  /** Diagnostics from the cross-page pipeline (empty when no pipeline hooks ran) */
+  pipelineWarnings: PipelineWarning[];
+  /** Build-phase statistics from the pipeline run */
+  pipelineStats: PipelineStats;
 }
 
 export interface SitePage {
@@ -47,12 +54,17 @@ function transformContent(
 
 /**
  * Load a content directory and resolve all pages, routes, layouts, and navigation.
+ *
+ * When `packages` are provided, the cross-page pipeline runs after loading:
+ * core hooks + package hooks register entities, aggregate cross-page data,
+ * and post-process pages before returning.
  */
 export async function loadContent(
   dirPath: string,
   basePath: string = '/',
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
+  packages?: RunePackage[],
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
@@ -68,9 +80,21 @@ export async function loadContent(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
   }
 
+  // Build hook sets: core always runs first, then community packages in config order
+  const hookSets: HookSet[] = [{ packageName: '__core__', hooks: corePipelineHooks }];
+  for (const pkg of packages ?? []) {
+    if (pkg.pipeline) {
+      hookSets.push({ packageName: pkg.name, hooks: pkg.pipeline });
+    }
+  }
+
+  const { pages: enrichedPages, warnings, stats } = await runPipeline(pages, hookSets);
+
   return {
     tree,
-    pages,
+    pages: enrichedPages,
     navigation: [], // TODO: Extract from resolved layouts
+    pipelineWarnings: warnings,
+    pipelineStats: stats,
   };
 }
