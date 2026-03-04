@@ -18,7 +18,9 @@ A feature grid with named items and descriptions.
 {% preview source=true %}
 
 {% feature %}
-## What you get
+what you get
+
+## Structured data
 
 - **Semantic runes**
 
@@ -42,6 +44,7 @@ Add a paragraph after the heading to introduce the feature set.
 {% preview source=true %}
 
 {% feature %}
+what you get
 ## Built for content teams
 
 Refrakt gives you the building blocks to ship structured content sites without fighting your framework.
@@ -64,7 +67,9 @@ Use `split` to place definitions alongside a showcase — an image, code block, 
 {% preview source=true %}
 
 {% feature split=true %}
-## Why Refrakt
+why Refrakt
+
+## Built for versatility
 
 - **Zero config**
 
@@ -105,6 +110,7 @@ Add `mirror` to swap the column order — showcase on the left, definitions on t
 {% preview source=true %}
 
 {% feature split=true mirror=true %}
+pipeline
 ## How it works
 
 - **Parse**

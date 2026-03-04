@@ -61,6 +61,7 @@
 .rf-feature--split .rf-feature__body {
 	display: block;
 }
+.rf-feature--split .rf-feature__header,
 .rf-feature--split h2 {
 	text-align: left;
 }
