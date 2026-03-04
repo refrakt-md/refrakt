@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 export interface PreviewBuildResult {
@@ -21,7 +21,14 @@ export async function buildPreviewRuntime(
 	themeSveltePath: string,
 ): Promise<PreviewBuildResult> {
 	const cacheDir = resolve(import.meta.dirname, '..', '.preview-cache');
-	const hash = createHash('md5').update(themeSveltePath).digest('hex').slice(0, 8);
+	const runtimeDir = resolve(import.meta.dirname, '..', 'preview-runtime');
+
+	// Cache key includes theme path + runtime source content so any source change busts the cache
+	const hasher = createHash('md5').update(themeSveltePath);
+	for (const file of ['App.svelte', 'index.html']) {
+		try { hasher.update(readFileSync(resolve(runtimeDir, file))); } catch { /**/ }
+	}
+	const hash = hasher.digest('hex').slice(0, 8);
 	const outputDir = resolve(cacheDir, hash);
 
 	// Skip rebuild if cache exists
@@ -33,8 +40,6 @@ export async function buildPreviewRuntime(
 		// Dynamic imports — these may not be installed at runtime
 		const { build } = await import('vite');
 		const { svelte } = await import('@sveltejs/vite-plugin-svelte');
-
-		const runtimeDir = resolve(import.meta.dirname, '..', 'preview-runtime');
 
 		if (!existsSync(resolve(runtimeDir, 'index.html'))) {
 			console.warn('Preview runtime source files not found');
