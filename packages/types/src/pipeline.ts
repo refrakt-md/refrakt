@@ -53,6 +53,8 @@ export interface EntityRegistry {
 	getByUrl(type: string, url: string): EntityRegistration[];
 	/** Find a specific entity by type and id */
 	getById(type: string, id: string): EntityRegistration | undefined;
+	/** All registered entity type names */
+	getTypes(): string[];
 }
 
 /**
@@ -63,13 +65,14 @@ export type AggregatedData = Record<string, unknown>;
 
 /** Context object passed to each pipeline hook for emitting structured warnings */
 export interface PipelineContext {
+	info(message: string, url?: string): void;
 	warn(message: string, url?: string): void;
 	error(message: string, url?: string): void;
 }
 
 /** A diagnostic emitted by a pipeline hook */
 export interface PipelineWarning {
-	severity: 'warning' | 'error';
+	severity: 'info' | 'warning' | 'error';
 	phase: 'register' | 'aggregate' | 'postProcess';
 	packageName: string;
 	/** Page URL that triggered the warning, if applicable */

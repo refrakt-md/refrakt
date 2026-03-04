@@ -15,11 +15,12 @@ function makePage(url: string, title: string, headings: Array<{ level: number; t
 }
 
 function makeCtx() {
-	const warnings: Array<{ severity: string; message: string }> = [];
+	const warnings: Array<{ severity: string; message: string; url?: string }> = [];
 	return {
 		ctx: {
-			warn(message: string) { warnings.push({ severity: 'warning', message }); },
-			error(message: string) { warnings.push({ severity: 'error', message }); },
+			info(message: string, url?: string) { warnings.push({ severity: 'info', message, url }); },
+			warn(message: string, url?: string) { warnings.push({ severity: 'warning', message, url }); },
+			error(message: string, url?: string) { warnings.push({ severity: 'error', message, url }); },
 		},
 		warnings,
 	};
@@ -152,5 +153,57 @@ describe('corePipelineHooks.aggregate', () => {
 			text: 'API Reference',
 			headingId: 'api-reference',
 		});
+	});
+});
+
+describe('corePipelineHooks validations', () => {
+	it('warns when the same page URL is registered by multiple sources', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx, warnings } = makeCtx();
+
+		// Register a page first from a "shadow" source
+		registry.register({ type: 'page', id: '/docs/', sourceUrl: '/other/', data: { url: '/docs/', title: 'Shadow', parentUrl: '/' } });
+
+		// Now run the register hook — it should detect the collision
+		corePipelineHooks.register!([makePage('/docs/', 'Docs')], registry, ctx);
+
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0].severity).toBe('warning');
+		expect(warnings[0].message).toContain('/docs/');
+	});
+
+	it('does not warn for normal (unique) page registration', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx, warnings } = makeCtx();
+
+		corePipelineHooks.register!([
+			makePage('/', 'Home'),
+			makePage('/docs/', 'Docs'),
+		], registry, ctx);
+
+		expect(warnings).toHaveLength(0);
+	});
+
+	it('warns when a page has an orphaned parent URL', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx, warnings } = makeCtx();
+
+		// Register a page that has a parent that doesn't exist
+		corePipelineHooks.register!([makePage('/docs/guide/', 'Guide')], registry, ctx);
+		corePipelineHooks.aggregate!(registry, ctx);
+
+		// /docs/guide/ → parentUrl = /docs/ → not registered → warning
+		expect(warnings.some(w => w.message.includes('/docs/guide/') && w.message.includes('/docs/'))).toBe(true);
+	});
+
+	it('does not warn about orphaned parent for root page', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx, warnings } = makeCtx();
+
+		corePipelineHooks.register!([makePage('/', 'Home')], registry, ctx);
+		corePipelineHooks.aggregate!(registry, ctx);
+
+		// Root points to itself as parent — no orphan warning
+		expect(warnings).toHaveLength(0);
 	});
 });

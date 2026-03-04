@@ -5,6 +5,9 @@ import { schema } from '../registry.js';
 import { attribute, Model } from '../lib/index.js';
 import { createComponentRenderable, createSchema } from '../lib/index.js';
 
+/** Sentinel meta property written by nav auto mode; consumed by corePipelineHooks.postProcess */
+export const NAV_AUTO_SENTINEL = '__nav-auto';
+
 class NavItemModel extends Model {
   transform(): RenderableTreeNodes {
     const children = this.transformChildren({
@@ -37,11 +40,34 @@ class NavModel extends Model {
   @attribute({ type: Boolean, required: false })
   ordered: boolean = false;
 
+  /**
+   * When true, emit a placeholder that the cross-page pipeline will resolve
+   * into a nav populated with the current page's direct children.
+   * The rune content is ignored in auto mode.
+   */
+  @attribute({ type: Boolean, required: false })
+  auto: boolean = false;
+
   processChildren(nodes: Node[]) {
     return super.processChildren(headingsToList({ level: 1 })(nodes));
   }
 
   transform(): RenderableTreeNodes {
+    if (this.auto) {
+      // Emit a placeholder with an empty nav and a sentinel meta tag.
+      // The core post-process hook will replace this with resolved child page items.
+      const sentinelMeta = new Markdoc.Tag('meta', { property: NAV_AUTO_SENTINEL, content: 'true' });
+
+      return createComponentRenderable(schema.Nav, {
+        tag: 'nav',
+        properties: {
+          group: [],
+          item: [],
+        },
+        children: [sentinelMeta],
+      });
+    }
+
     const children = this.transformChildren({
       item: navItem,
       list: (node, config) => {

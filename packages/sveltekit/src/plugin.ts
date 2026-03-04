@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, UserConfig } from 'vite';
-import type { RefraktConfig } from '@refrakt-md/types';
+import type { RefraktConfig, RunePackage } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
@@ -26,6 +26,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	let usedCssBlocks: Set<string> | undefined;
 	let communityTags: Record<string, Schema> | undefined;
 	let assembledResult: { config: Record<string, any>; provenance: Record<string, any> } | undefined;
+	let mergedPackages: RunePackage[] | undefined;
 
 	return {
 		name: 'refrakt-md',
@@ -81,6 +82,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 						merged = mergePackages(loaded, coreRuneNames, refraktConfig.runes?.prefer);
 						mergedRunes = { ...coreRunes, ...merged.runes };
 						mergedTags = merged.tags;
+						mergedPackages = merged.packages;
 					}
 
 					// Load local runes (highest priority)
@@ -129,7 +131,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					'/',
 					undefined,
 					communityTags,
-					merged?.packages,
+					mergedPackages,
 				);
 				const report = analyzeRuneUsage(site.pages);
 

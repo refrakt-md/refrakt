@@ -7,4 +7,4 @@ export { loadContent, type Site, type SitePage } from './site.js';
 export { generateSitemap, type SitemapEntry } from './sitemap.js';
 export { collectRuneTypes, analyzeRuneUsage, type RuneUsageReport } from './analyze.js';
 export { EntityRegistryImpl } from './registry.js';
-export { runPipeline, type HookSet, type PipelineResult } from './pipeline.js';
+export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';

@@ -6,6 +6,7 @@ const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
 import { schema } from './registry.js';
 import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
+import { NAV_AUTO_SENTINEL } from './tags/nav.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -775,15 +776,100 @@ function buildAutoBreadcrumb(
 	});
 }
 
+/** Walk a Markdoc renderable tree, resolving any auto-nav placeholders */
+function resolveAutoNavs(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	ctx: PipelineContext,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveAutoNavs(c, pageUrl, pagesByUrl, ctx)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	// Check if this is a Nav auto placeholder
+	if (tag.attributes?.typeof === 'Nav') {
+		const hasSentinel = tag.children?.some(
+			(c: any) => Tag.isTag(c) && c.attributes?.property === NAV_AUTO_SENTINEL
+		);
+
+		if (hasSentinel) {
+			return buildAutoNav(pageUrl, pagesByUrl, ctx);
+		}
+	}
+
+	// Recurse into children
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveAutoNavs(c, pageUrl, pagesByUrl, ctx)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
+/** Build a resolved nav Tag from the direct children of the current page */
+function buildAutoNav(
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	ctx: PipelineContext,
+): unknown {
+	// Find direct children: pages whose parentUrl is this page's URL (excluding self)
+	const children = Array.from(pagesByUrl.values()).filter(
+		p => p.parentUrl === pageUrl && p.url !== pageUrl,
+	);
+
+	if (children.length === 0) {
+		ctx.warn(`Nav auto: page '${pageUrl}' has no registered child pages`, pageUrl);
+	}
+
+	const listItems: any[] = children.map(child => {
+		const titleSpan = new Tag('span', { property: 'slug' }, [child.title]);
+		const link = new Tag('a', { href: child.url }, [titleSpan]);
+
+		return createComponentRenderable(schema.NavItem, {
+			tag: 'li',
+			properties: { slug: titleSpan },
+			children: [link],
+		});
+	});
+
+	const itemsList = new Tag('ul', {}, listItems);
+
+	return createComponentRenderable(schema.Nav, {
+		tag: 'nav',
+		properties: {
+			group: [],
+			item: listItems,
+		},
+		children: [itemsList],
+	});
+}
+
 /**
  * Core cross-page pipeline hooks.
  * Run for every site, before any community package hooks.
  * Registers page and heading entities, aggregates the page tree and breadcrumb paths.
  */
 export const corePipelineHooks: PackagePipelineHooks = {
-	register(pages: readonly TransformedPage[], registry: EntityRegistry): void {
+	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {
 			const parentUrl = deriveParentUrl(page.url);
+
+			const existingPage = registry.getById('page', page.url);
+			if (existingPage && existingPage.sourceUrl !== page.url) {
+				ctx.warn(
+					`Page '${page.url}' already registered from '${existingPage.sourceUrl}'`,
+					page.url,
+				);
+			}
 
 			registry.register({
 				type: 'page',
@@ -801,9 +887,17 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			});
 
 			for (const h of page.headings) {
+				const headingId = `${page.url}#${h.id}`;
+				const existingHeading = registry.getById('heading', headingId);
+				if (existingHeading && existingHeading.sourceUrl !== page.url) {
+					ctx.warn(
+						`Heading '${headingId}' already registered from '${existingHeading.sourceUrl}'`,
+						page.url,
+					);
+				}
 				registry.register({
 					type: 'heading',
-					id: `${page.url}#${h.id}`,
+					id: headingId,
 					sourceUrl: page.url,
 					data: { level: h.level, text: h.text, headingId: h.id, url: page.url },
 				});
@@ -811,8 +905,8 @@ export const corePipelineHooks: PackagePipelineHooks = {
 		}
 	},
 
-	aggregate(registry: Readonly<EntityRegistry>) {
-		const pageEntities = registry.getAll('page') as Array<{
+	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
+		const pageEntities = registry.getAll('page') as unknown as Array<{
 			id: string;
 			data: { url: string; title: string; parentUrl: string };
 		}>;
@@ -829,6 +923,16 @@ export const corePipelineHooks: PackagePipelineHooks = {
 		// Quick lookup: url → { url, title } for postProcess use
 		const pagesByUrl = new Map(pages.map(p => [p.url, p]));
 
+		// Detect orphaned parents: pages whose parentUrl doesn't exist in the registry
+		for (const p of pages) {
+			if (p.parentUrl !== p.url && !pagesByUrl.has(p.parentUrl)) {
+				ctx.warn(
+					`Page '${p.url}' has parent '${p.parentUrl}' which is not registered`,
+					p.url,
+				);
+			}
+		}
+
 		// Build heading index: "url#id" → heading data
 		const headingIndex = new Map<string, Record<string, unknown>>();
 		for (const h of registry.getAll('heading')) {
@@ -841,12 +945,12 @@ export const corePipelineHooks: PackagePipelineHooks = {
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
 		const coreData = aggregated['__core__'] as {
 			breadcrumbPaths: Map<string, string[]>;
-			pagesByUrl: Map<string, { url: string; title: string }>;
+			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
 		} | undefined;
 
 		if (!coreData) return page;
 
-		const newRenderable = resolveAutoBreadcrumbs(
+		let renderable = resolveAutoBreadcrumbs(
 			page.renderable,
 			page.url,
 			coreData.breadcrumbPaths,
@@ -854,7 +958,14 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			ctx,
 		);
 
-		if (newRenderable === page.renderable) return page;
-		return { ...page, renderable: newRenderable };
+		renderable = resolveAutoNavs(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
+			ctx,
+		);
+
+		if (renderable === page.renderable) return page;
+		return { ...page, renderable };
 	},
 };

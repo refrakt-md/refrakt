@@ -15,6 +15,16 @@ export interface HookSet {
 	hooks: PackagePipelineHooks;
 }
 
+/** Build-phase statistics from the pipeline run */
+export interface PipelineStats {
+	/** Total pages processed */
+	pageCount: number;
+	/** Total entities registered across all packages */
+	entityCount: number;
+	/** Number of packages that ran at least one hook */
+	packageCount: number;
+}
+
 /** Result of running the cross-page pipeline */
 export interface PipelineResult {
 	/** Pages with renderables updated by any postProcess hooks */
@@ -23,6 +33,8 @@ export interface PipelineResult {
 	aggregated: AggregatedData;
 	/** Diagnostics collected across all phases */
 	warnings: PipelineWarning[];
+	/** Counts for build summary output */
+	stats: PipelineStats;
 }
 
 /**
@@ -93,7 +105,21 @@ export async function runPipeline(
 		renderable: working[i].renderable as typeof page.renderable,
 	}));
 
-	return { pages: resultPages, aggregated, warnings };
+	// Tally entity count across all registered types
+	const entityCount = registry.getTypes().reduce(
+		(sum, type) => sum + registry.getAll(type).length,
+		0,
+	);
+
+	const stats: PipelineStats = {
+		pageCount: pages.length,
+		entityCount,
+		packageCount: hookSets.filter(
+			hs => hs.hooks.register || hs.hooks.aggregate || hs.hooks.postProcess
+		).length,
+	};
+
+	return { pages: resultPages, aggregated, warnings, stats };
 }
 
 function pageToTransformed(page: SitePage): TransformedPage {
@@ -113,6 +139,9 @@ function makeContext(
 	url?: string,
 ): PipelineContext {
 	return {
+		info(message, infoUrl) {
+			warnings.push({ severity: 'info', phase, packageName, url: infoUrl ?? url, message });
+		},
 		warn(message, warnUrl) {
 			warnings.push({ severity: 'warning', phase, packageName, url: warnUrl ?? url, message });
 		},

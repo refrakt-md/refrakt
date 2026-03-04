@@ -58,4 +58,9 @@ export class EntityRegistryImpl implements EntityRegistry {
 	getById(type: string, id: string): EntityRegistration | undefined {
 		return this.byTypeAndId.get(type)?.get(id);
 	}
+
+	/** All registered entity type names */
+	getTypes(): string[] {
+		return [...this.byTypeAndId.keys()];
+	}
 }
