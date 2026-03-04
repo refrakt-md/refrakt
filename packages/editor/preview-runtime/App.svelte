@@ -5,7 +5,7 @@
 	let pageData: any = $state(null);
 
 	// Reactive copy so we can patch routeRules at runtime
-	let theme: typeof baseTheme = $state({ ...baseTheme });
+	let theme: typeof baseTheme = $state.raw({ ...baseTheme });
 
 	// Listen for preview data and route-rules updates from parent editor
 	$effect(() => {
