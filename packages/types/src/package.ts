@@ -60,4 +60,7 @@ export interface RunePackage {
 	/** Client-side behavior functions keyed by rune typeof name (lowercase).
 	 *  Typed as unknown here — actual BehaviorFn type lives in @refrakt-md/behaviors. */
 	behaviors?: Record<string, unknown>;
+	/** Build-time cross-page pipeline hooks.
+	 *  Optional — packages that don't need cross-page awareness omit this entirely. */
+	pipeline?: import('./pipeline.js').PackagePipelineHooks;
 }

@@ -129,6 +129,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					'/',
 					undefined,
 					communityTags,
+					merged?.packages,
 				);
 				const report = analyzeRuneUsage(site.pages);
 

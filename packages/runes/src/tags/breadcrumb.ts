@@ -4,12 +4,42 @@ const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
+/** Sentinel meta property written by breadcrumb auto mode; consumed by corePipelineHooks.postProcess */
+export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
+
 class BreadcrumbModel extends Model {
 	@attribute({ type: String, required: false })
 	separator: string = '/';
 
+	/**
+	 * When true, emit a placeholder that the cross-page pipeline will resolve
+	 * into a fully populated breadcrumb using the site's page hierarchy.
+	 * The rune content is ignored in auto mode.
+	 */
+	@attribute({ type: Boolean, required: false })
+	auto: boolean = false;
+
 	transform(): RenderableTreeNodes {
 		const separatorMeta = new Tag('meta', { content: this.separator });
+
+		if (this.auto) {
+			// Emit a placeholder with an empty items list and a sentinel meta tag.
+			// The core post-process hook will replace the empty ol with resolved items.
+			const sentinelMeta = new Tag('meta', { property: BREADCRUMB_AUTO_SENTINEL, content: 'true' });
+			const emptyList = new Tag('ol', {}, []);
+
+			return createComponentRenderable(schema.Breadcrumb, {
+				tag: 'nav',
+				properties: {
+					separator: separatorMeta,
+				},
+				refs: {
+					items: emptyList,
+				},
+				children: [separatorMeta, sentinelMeta, emptyList],
+			});
+		}
+
 		const children = this.transformChildren();
 
 		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item

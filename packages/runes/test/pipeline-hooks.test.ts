@@ -1,0 +1,156 @@
+import 'reflect-metadata';
+import { describe, it, expect } from 'vitest';
+import { corePipelineHooks } from '../src/config.js';
+import { EntityRegistryImpl } from '../../content/src/registry.js';
+import type { TransformedPage } from '@refrakt-md/types';
+
+function makePage(url: string, title: string, headings: Array<{ level: number; text: string; id: string }> = []): TransformedPage {
+	return {
+		url,
+		title,
+		headings,
+		frontmatter: { title },
+		renderable: null,
+	};
+}
+
+function makeCtx() {
+	const warnings: Array<{ severity: string; message: string }> = [];
+	return {
+		ctx: {
+			warn(message: string) { warnings.push({ severity: 'warning', message }); },
+			error(message: string) { warnings.push({ severity: 'error', message }); },
+		},
+		warnings,
+	};
+}
+
+describe('corePipelineHooks.register', () => {
+	it('registers page entities for all pages', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/', 'Home'),
+			makePage('/docs/', 'Docs'),
+			makePage('/docs/guide/', 'Guide'),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+
+		const pageEntities = registry.getAll('page');
+		expect(pageEntities).toHaveLength(3);
+
+		const docsEntity = registry.getById('page', '/docs/');
+		expect(docsEntity?.data.title).toBe('Docs');
+		expect(docsEntity?.data.parentUrl).toBe('/');
+
+		const guideEntity = registry.getById('page', '/docs/guide/');
+		expect(guideEntity?.data.parentUrl).toBe('/docs/');
+	});
+
+	it('registers heading entities for each heading', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/docs/', 'Docs', [
+				{ level: 1, text: 'Introduction', id: 'introduction' },
+				{ level: 2, text: 'Setup', id: 'setup' },
+			]),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+
+		const headings = registry.getAll('heading');
+		expect(headings).toHaveLength(2);
+		expect(registry.getById('heading', '/docs/#introduction')).toBeDefined();
+		expect(registry.getById('heading', '/docs/#setup')).toBeDefined();
+	});
+});
+
+describe('corePipelineHooks.aggregate', () => {
+	it('builds breadcrumb paths for nested pages', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/', 'Home'),
+			makePage('/docs/', 'Docs'),
+			makePage('/docs/guide/', 'Guide'),
+			makePage('/docs/guide/advanced/', 'Advanced'),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
+
+		expect(result.breadcrumbPaths).toBeDefined();
+
+		// Root has no ancestors
+		expect(result.breadcrumbPaths.get('/')).toEqual([]);
+
+		// /docs/ has root as ancestor
+		expect(result.breadcrumbPaths.get('/docs/')).toEqual(['/']);
+
+		// /docs/guide/ has root and /docs/ as ancestors
+		expect(result.breadcrumbPaths.get('/docs/guide/')).toEqual(['/', '/docs/']);
+
+		// /docs/guide/advanced/ has full chain
+		expect(result.breadcrumbPaths.get('/docs/guide/advanced/')).toEqual(['/', '/docs/', '/docs/guide/']);
+	});
+
+	it('builds a page tree', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/', 'Home'),
+			makePage('/docs/', 'Docs'),
+			makePage('/about/', 'About'),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
+
+		expect(result.pageTree).toBeDefined();
+		expect(result.pageTree.url).toBe('/');
+		expect(result.pageTree.children).toHaveLength(2);
+
+		const childUrls = result.pageTree.children.map((c: any) => c.url).sort();
+		expect(childUrls).toEqual(['/about/', '/docs/']);
+	});
+
+	it('builds a pagesByUrl map', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/', 'Home'),
+			makePage('/docs/', 'Docs'),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
+
+		expect(result.pagesByUrl.get('/')).toEqual({ url: '/', title: 'Home', parentUrl: '/' });
+		expect(result.pagesByUrl.get('/docs/')).toEqual({ url: '/docs/', title: 'Docs', parentUrl: '/' });
+	});
+
+	it('builds a heading index', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [
+			makePage('/docs/', 'Docs', [{ level: 2, text: 'API Reference', id: 'api-reference' }]),
+		];
+
+		corePipelineHooks.register!(pages, registry, ctx);
+		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
+
+		expect(result.headingIndex.get('/docs/#api-reference')).toMatchObject({
+			level: 2,
+			text: 'API Reference',
+			headingId: 'api-reference',
+		});
+	});
+});

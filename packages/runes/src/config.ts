@@ -1,5 +1,11 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta } from '@refrakt-md/transform';
+import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import { createComponentRenderable } from './lib/index.js';
+import { schema } from './registry.js';
+import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -592,3 +598,263 @@ export const coreConfig: ThemeConfig = {
 
 /** @deprecated Use `coreConfig` instead. Alias kept for backwards compatibility during transition. */
 export const baseConfig = coreConfig;
+
+// ─── Cross-page pipeline helpers ───
+
+/** Node in the page tree built from registered page entities */
+export interface PageTreeNode {
+	url: string;
+	title: string;
+	children: PageTreeNode[];
+}
+
+/** Build a page tree from a flat list of page entities */
+function buildPageTree(
+	pages: Array<{ url: string; title: string; parentUrl: string }>,
+): PageTreeNode {
+	const byUrl = new Map<string, PageTreeNode>();
+
+	// Create nodes for all pages
+	for (const p of pages) {
+		byUrl.set(p.url, { url: p.url, title: p.title, children: [] });
+	}
+
+	const root: PageTreeNode = { url: '/', title: 'Root', children: [] };
+
+	// Attach each page to its parent
+	for (const p of pages) {
+		const node = byUrl.get(p.url)!;
+		if (p.url === '/') {
+			// Root page merges into the virtual root
+			root.title = p.title;
+			root.children = node.children;
+			byUrl.set('/', root);
+		} else {
+			const parent = byUrl.get(p.parentUrl) ?? root;
+			parent.children.push(node);
+		}
+	}
+
+	return root;
+}
+
+/** Build breadcrumb paths: url → ordered ancestor urls (root first, parent last) */
+function buildBreadcrumbPaths(
+	pages: Array<{ url: string; parentUrl: string }>,
+): Map<string, string[]> {
+	const parentOf = new Map<string, string>();
+	for (const p of pages) {
+		if (p.url !== '/') {
+			parentOf.set(p.url, p.parentUrl);
+		}
+	}
+
+	const paths = new Map<string, string[]>();
+	for (const p of pages) {
+		const ancestors: string[] = [];
+		let current = parentOf.get(p.url);
+		while (current !== undefined) {
+			ancestors.unshift(current);
+			current = parentOf.get(current);
+		}
+		paths.set(p.url, ancestors);
+	}
+
+	return paths;
+}
+
+/** Derive the parent url by stripping the last path segment */
+function deriveParentUrl(url: string): string {
+	if (url === '/' || !url.includes('/')) return '/';
+	// '/docs/guide/' → strip trailing slash, then strip last segment
+	const trimmed = url.endsWith('/') ? url.slice(0, -1) : url;
+	const parent = trimmed.lastIndexOf('/');
+	return parent <= 0 ? '/' : trimmed.slice(0, parent + 1);
+}
+
+/** Walk a Markdoc renderable tree, resolving any auto-breadcrumb placeholders */
+function resolveAutoBreadcrumbs(
+	renderable: unknown,
+	pageUrl: string,
+	breadcrumbPaths: Map<string, string[]>,
+	pagesByUrl: Map<string, { url: string; title: string }>,
+	ctx: PipelineContext,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx)
+			);
+			// Return original if nothing changed
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	// Check if this is a Breadcrumb auto placeholder
+	if (tag.attributes?.typeof === 'Breadcrumb') {
+		const hasSentinel = tag.children?.some(
+			(c: any) => Tag.isTag(c) && c.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+		);
+
+		if (hasSentinel) {
+			return buildAutoBreadcrumb(tag, pageUrl, breadcrumbPaths, pagesByUrl, ctx);
+		}
+	}
+
+	// Recurse into children
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
+/** Build a resolved breadcrumb Tag from the page hierarchy */
+function buildAutoBreadcrumb(
+	originalTag: any,
+	pageUrl: string,
+	breadcrumbPaths: Map<string, string[]>,
+	pagesByUrl: Map<string, { url: string; title: string }>,
+	ctx: PipelineContext,
+): unknown {
+	const ancestorUrls = breadcrumbPaths.get(pageUrl);
+	if (ancestorUrls === undefined) {
+		ctx.warn(`Breadcrumb auto: page URL "${pageUrl}" not found in page registry`, pageUrl);
+		return originalTag;
+	}
+
+	// Find separator from existing meta child
+	const separatorMeta = originalTag.children?.find(
+		(c: any) => Tag.isTag(c) && c.name === 'meta' && !c.attributes?.property
+	);
+	const separator = separatorMeta?.attributes?.content ?? '/';
+
+	// Build breadcrumb items: ancestor pages + current page (no link)
+	const listItems: any[] = [];
+
+	for (const ancestorUrl of ancestorUrls) {
+		const ancestorPage = pagesByUrl.get(ancestorUrl);
+		if (!ancestorPage) continue;
+
+		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
+		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
+
+		listItems.push(
+			createComponentRenderable(schema.BreadcrumbItem, {
+				tag: 'li',
+				properties: { name: nameSpan, url: urlLink },
+				children: [nameSpan, urlLink],
+			}) as any
+		);
+	}
+
+	// Add current page as the last item (no link)
+	const currentPage = pagesByUrl.get(pageUrl);
+	const currentTitle = currentPage?.title ?? pageUrl;
+	const currentSpan = new Tag('span', {}, [currentTitle]);
+	listItems.push(
+		createComponentRenderable(schema.BreadcrumbItem, {
+			tag: 'li',
+			properties: { name: currentSpan },
+			children: [currentSpan],
+		}) as any
+	);
+
+	const newSeparatorMeta = new Tag('meta', { content: separator });
+	const itemsList = new Tag('ol', {}, listItems);
+
+	return createComponentRenderable(schema.Breadcrumb, {
+		tag: 'nav',
+		properties: { separator: newSeparatorMeta },
+		refs: { items: itemsList },
+		children: [newSeparatorMeta, itemsList],
+	});
+}
+
+/**
+ * Core cross-page pipeline hooks.
+ * Run for every site, before any community package hooks.
+ * Registers page and heading entities, aggregates the page tree and breadcrumb paths.
+ */
+export const corePipelineHooks: PackagePipelineHooks = {
+	register(pages: readonly TransformedPage[], registry: EntityRegistry): void {
+		for (const page of pages) {
+			const parentUrl = deriveParentUrl(page.url);
+
+			registry.register({
+				type: 'page',
+				id: page.url,
+				sourceUrl: page.url,
+				data: {
+					title: page.title,
+					url: page.url,
+					parentUrl,
+					draft: page.frontmatter.draft ?? false,
+					description: page.frontmatter.description,
+					date: page.frontmatter.date,
+					order: page.frontmatter.order,
+				},
+			});
+
+			for (const h of page.headings) {
+				registry.register({
+					type: 'heading',
+					id: `${page.url}#${h.id}`,
+					sourceUrl: page.url,
+					data: { level: h.level, text: h.text, headingId: h.id, url: page.url },
+				});
+			}
+		}
+	},
+
+	aggregate(registry: Readonly<EntityRegistry>) {
+		const pageEntities = registry.getAll('page') as Array<{
+			id: string;
+			data: { url: string; title: string; parentUrl: string };
+		}>;
+
+		const pages = pageEntities.map(e => ({
+			url: e.data.url,
+			title: e.data.title,
+			parentUrl: e.data.parentUrl,
+		}));
+
+		const pageTree = buildPageTree(pages);
+		const breadcrumbPaths = buildBreadcrumbPaths(pages);
+
+		// Quick lookup: url → { url, title } for postProcess use
+		const pagesByUrl = new Map(pages.map(p => [p.url, p]));
+
+		// Build heading index: "url#id" → heading data
+		const headingIndex = new Map<string, Record<string, unknown>>();
+		for (const h of registry.getAll('heading')) {
+			headingIndex.set(h.id, h.data);
+		}
+
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex };
+	},
+
+	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
+		const coreData = aggregated['__core__'] as {
+			breadcrumbPaths: Map<string, string[]>;
+			pagesByUrl: Map<string, { url: string; title: string }>;
+		} | undefined;
+
+		if (!coreData) return page;
+
+		const newRenderable = resolveAutoBreadcrumbs(
+			page.renderable,
+			page.url,
+			coreData.breadcrumbPaths,
+			coreData.pagesByUrl,
+			ctx,
+		);
+
+		if (newRenderable === page.renderable) return page;
+		return { ...page, renderable: newRenderable };
+	},
+};
