@@ -96,7 +96,7 @@ export const myPackage: RunePackage = {
 
 ## Writing the Rune Schema
 
-Rune schemas are standard Markdoc `Schema` objects built using the same Model API documented in the [Authoring Guide](authoring-overview). Use `@refrakt-md/runes` model utilities:
+Rune schemas are standard Markdoc `Schema` objects built using the same Model API documented in the [Authoring Guide](/docs/authoring/authoring-overview). Use `@refrakt-md/runes` model utilities:
 
 ```typescript
 // src/game-item.ts
