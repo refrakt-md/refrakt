@@ -7,6 +7,7 @@ import { preview } from './tags/preview.js';
 import { designContext } from './tags/design-context.js';
 import { mockup } from './tags/mockup.js';
 import { config } from './config.js';
+import { designPipelineHooks } from './pipeline.js';
 
 export const design: RunePackage = {
   name: 'design',
@@ -120,6 +121,7 @@ A landing page with a hero section and call to action.
   theme: {
     runes: config as unknown as Record<string, Record<string, unknown>>,
   },
+  pipeline: designPipelineHooks,
 };
 
 export default design;

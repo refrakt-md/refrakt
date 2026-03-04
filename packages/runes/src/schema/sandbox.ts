@@ -6,6 +6,7 @@ export class Sandbox {
 	label: string = '';
 	height: string = 'auto';
 	content: string = '';
+	context: string = 'default';
 }
 
 export interface SandboxComponent extends ComponentType<Sandbox> {
@@ -16,6 +17,7 @@ export interface SandboxComponent extends ComponentType<Sandbox> {
 		label: 'meta',
 		height: 'meta',
 		content: 'meta',
+		context: 'meta',
 	},
 	refs: {}
 }

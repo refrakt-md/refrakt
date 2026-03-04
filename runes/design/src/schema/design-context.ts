@@ -3,6 +3,7 @@ import { ComponentType } from "@refrakt-md/types";
 export class DesignContext {
 	title: string = '';
 	tokens: string = '';
+	scope: string = 'default';
 }
 
 export interface DesignContextComponent extends ComponentType<DesignContext> {
@@ -10,6 +11,7 @@ export interface DesignContextComponent extends ComponentType<DesignContext> {
 	properties: {
 		title: 'meta',
 		tokens: 'meta',
+		scope: 'meta',
 	},
 	refs: {}
 }

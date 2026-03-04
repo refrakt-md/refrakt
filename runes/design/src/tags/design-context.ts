@@ -12,6 +12,9 @@ class DesignContextModel extends Model {
 	@attribute({ type: String, required: false })
 	title: string = '';
 
+	@attribute({ type: String, required: false })
+	scope: string = 'default';
+
 	@group({ include: ['tag'] })
 	body: NodeStream;
 
@@ -41,6 +44,7 @@ class DesignContextModel extends Model {
 		// Meta tags
 		const titleMeta = new Tag('meta', { content: this.title });
 		const tokensMeta = new Tag('meta', { content: JSON.stringify(tokens) });
+		const scopeMeta = new Tag('meta', { content: this.scope });
 
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
 			titleMeta,
@@ -60,6 +64,7 @@ class DesignContextModel extends Model {
 			properties: {
 				title: titleMeta,
 				tokens: tokensMeta,
+				scope: scopeMeta,
 			},
 			children: topChildren,
 		});

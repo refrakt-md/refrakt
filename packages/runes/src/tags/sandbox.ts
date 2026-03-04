@@ -51,6 +51,9 @@ class SandboxModel extends Model {
 	@attribute({ type: Number, required: false })
 	height: number | undefined;
 
+	@attribute({ type: String, required: false })
+	context: string = 'default';
+
 	transform(): RenderableTreeNodes {
 		// Extract raw content via __source + node.lines
 		// This bypasses Markdoc HTML parsing entirely — Markdoc cannot
@@ -69,6 +72,7 @@ class SandboxModel extends Model {
 		const dependenciesMeta = new Tag('meta', { content: this.dependencies });
 		const labelMeta = this.label ? new Tag('meta', { content: this.label }) : undefined;
 		const heightMeta = new Tag('meta', { content: this.height != null ? String(this.height) : 'auto' });
+		const contextMeta = new Tag('meta', { content: this.context });
 
 		// Static fallback: render content as a pre/code block for SSR
 		const fallbackPre = rawContent ? new Tag('pre', { 'data-language': 'html' }, [
@@ -90,6 +94,7 @@ class SandboxModel extends Model {
 			dependenciesMeta,
 			...(labelMeta ? [labelMeta] : []),
 			heightMeta,
+			contextMeta,
 			...(fallbackPre ? [fallbackPre] : []),
 			...panelNodes,
 		];
@@ -102,6 +107,7 @@ class SandboxModel extends Model {
 				dependencies: dependenciesMeta,
 				...(labelMeta ? { label: labelMeta } : {}),
 				height: heightMeta,
+				context: contextMeta,
 			},
 			children: childNodes,
 		});

@@ -565,6 +565,7 @@ export const coreConfig: ThemeConfig = {
 				const dependencies = readMeta(node, 'dependencies') || '';
 				const label = readMeta(node, 'label') || '';
 				const height = readMeta(node, 'height') || 'auto';
+				const designTokens = readMeta(node, 'design-tokens') || '';
 
 				// Keep non-meta children (fallback pre, source panels)
 				const fallbackChildren = node.children.filter(child => {
@@ -589,6 +590,7 @@ export const coreConfig: ThemeConfig = {
 						...(dependencies ? { 'data-dependencies': dependencies } : {}),
 						...(label ? { 'data-label': label } : {}),
 						'data-height': height,
+						...(designTokens ? { 'data-design-tokens': designTokens } : {}),
 					},
 					children,
 				};

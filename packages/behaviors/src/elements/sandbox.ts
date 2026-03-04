@@ -46,7 +46,9 @@ export class RfSandbox extends SafeHTMLElement {
 		const label = this.dataset.label || 'Sandbox';
 		const heightAttr = this.dataset.height || 'auto';
 
-		const srcdoc = this.buildSrcdoc(content, framework, dependencies);
+		const tokensAttr = this.dataset.designTokens;
+		const tokens: DesignTokens | null = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
+		const srcdoc = this.buildSrcdoc(content, framework, dependencies, tokens);
 
 		// Create iframe
 		this.iframe = document.createElement('iframe');
@@ -94,8 +96,8 @@ export class RfSandbox extends SafeHTMLElement {
 		this.iframe = null;
 	}
 
-	private buildSrcdoc(content: string, framework: string, dependencies: string): string {
-		const depTags = this.buildDependencyTags(framework, dependencies);
+	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null): string {
+		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
 		const theme = RfContext.theme;
 		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark"'
 			: theme === 'light' ? ' data-theme="light"'
@@ -152,9 +154,8 @@ ${renderedContent}
 </html>`;
 	}
 
-	private buildDependencyTags(framework: string, dependencies: string): string {
+	private buildDependencyTags(framework: string, dependencies: string, tokens: DesignTokens | null): string {
 		const tags: string[] = [];
-		const tokens = RfContext.designTokens;
 
 		// Design tokens (injected before framework so they serve as defaults)
 		if (tokens) {
