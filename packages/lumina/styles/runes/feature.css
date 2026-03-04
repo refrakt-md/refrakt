@@ -48,7 +48,7 @@
 }
 .rf-feature dl {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(max(240px, calc((100% - 3rem) / 3)), 1fr));
 	gap: 1.5rem;
 	margin: 0;
 }

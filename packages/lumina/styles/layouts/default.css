@@ -1,5 +1,9 @@
 /* Default layout */
 .rf-header {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	background: var(--rf-color-bg);
 	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-header__inner {
@@ -59,7 +63,7 @@
 .rf-page-content {
 	padding-top: 2.5rem;
 	padding-bottom: 4rem;
-	max-width: 64rem;
+	max-width: 80rem;
 	margin: 0 auto;
 	padding-left: 1.5rem;
 	padding-right: 1.5rem;
