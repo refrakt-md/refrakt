@@ -44,3 +44,7 @@ Another small cell sits neatly in the grid.
 | `headingLevel` | `number` | `2` | Base heading level for cells |
 | `columns` | `number` | `4` | Number of grid columns |
 | `gap` | `string` | `1rem` | Grid gap |
+
+## Section header
+
+Bento supports an optional eyebrow, headline, and blurb above the section above the grid. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

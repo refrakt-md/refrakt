@@ -91,3 +91,7 @@ Walk through the theater district.
 | `activity` | `string` | — | Activity name |
 | `lat` | `string` | — | Latitude coordinate |
 | `lng` | `string` | — | Longitude coordinate |
+
+## Section header
+
+Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

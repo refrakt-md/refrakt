@@ -131,3 +131,7 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 | Text after bold | Feature description |
 | `~~Strikethrough~~` | Negative indicator — limitation or missing capability |
 | Blockquote | Callout badge within a column |
+
+## Section header
+
+Comparison supports an optional eyebrow, headline, and blurb above the section above the comparison table. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

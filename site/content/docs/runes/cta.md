@@ -45,3 +45,7 @@ npm install @refrakt-md/runes
 {% /cta %}
 
 {% /preview %}
+
+## Section header
+
+CTA supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

@@ -174,13 +174,22 @@ function buildComparisonTable(
 
 // ─── RuneConfig entries ───
 
+const pageSectionAutoLabel = {
+	header: 'header',
+	eyebrow: 'eyebrow',
+	headline: 'headline',
+	blurb: 'blurb',
+	image: 'image',
+};
+
 export const config: Record<string, RuneConfig> = {
 	Hero: {
 		block: 'hero',
 		modifiers: { align: { source: 'meta', default: 'center' } },
 		contextModifiers: { 'Feature': 'in-feature' },
+		autoLabel: pageSectionAutoLabel,
 	},
-	CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' } },
+	CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -191,6 +200,7 @@ export const config: Record<string, RuneConfig> = {
 			columns: '--bento-columns',
 			gap: '--bento-gap',
 		},
+		autoLabel: pageSectionAutoLabel,
 	},
 	BentoCell: {
 		block: 'bento-cell',
@@ -198,11 +208,11 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: { size: { source: 'meta', default: 'medium' } },
 		autoLabel: { name: 'title' },
 	},
-	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' } },
+	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
-	Steps: { block: 'steps' },
+	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
 	Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
-	Pricing: { block: 'pricing' },
+	Pricing: { block: 'pricing', autoLabel: pageSectionAutoLabel },
 	Tier: { block: 'tier', parent: 'Pricing' },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
 	Testimonial: {

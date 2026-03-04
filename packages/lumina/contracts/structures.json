@@ -9,7 +9,34 @@
 			"dataRune": "accordion",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-accordion__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-accordion__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-accordion__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-accordion__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-accordion__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"AccordionItem": {
 			"block": "accordion-item",
@@ -523,7 +550,34 @@
 			"dataRune": "tabgroup",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-tabs__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-tabs__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-tabs__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-tabs__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-tabs__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"Tab": {
 			"block": "tab",
@@ -639,6 +693,33 @@
 					"classPattern": ".rf-reveal--{value}",
 					"dataAttribute": "data-mode"
 				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-reveal__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-reveal__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-reveal__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-reveal__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-reveal__image",
+					"source": "autoLabel"
+				}
 			}
 		},
 		"RevealStep": {
@@ -686,6 +767,33 @@
 					"suffix": "in-feature",
 					"selector": ".rf-hero--in-feature"
 				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-hero__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-hero__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-hero__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-hero__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-hero__image",
+					"source": "autoLabel"
+				}
 			}
 		},
 		"CallToAction": {
@@ -703,6 +811,33 @@
 				"Pricing": {
 					"suffix": "in-pricing",
 					"selector": ".rf-cta--in-pricing"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-cta__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-cta__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-cta__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-cta__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-cta__image",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -725,6 +860,33 @@
 					"default": "1rem",
 					"classPattern": ".rf-bento--{value}",
 					"dataAttribute": "data-gap"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-bento__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-bento__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-bento__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-bento__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-bento__image",
+					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
@@ -784,6 +946,33 @@
 					"suffix": "in-grid",
 					"selector": ".rf-feature--in-grid"
 				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-feature__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-feature__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-feature__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-feature__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-feature__image",
+					"source": "autoLabel"
+				}
 			}
 		},
 		"FeatureDefinition": {
@@ -801,7 +990,34 @@
 			"dataRune": "steps",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-steps__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-steps__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-steps__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-steps__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-steps__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"Step": {
 			"block": "step",
@@ -830,7 +1046,34 @@
 			"dataRune": "pricing",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-pricing__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-pricing__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-pricing__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-pricing__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-pricing__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"Tier": {
 			"block": "tier",

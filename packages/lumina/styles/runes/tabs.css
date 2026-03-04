@@ -6,6 +6,27 @@
 	margin: 1.5rem 0;
 	background: var(--rf-color-bg);
 }
+.rf-tabs__header {
+	margin-bottom: 1.5rem;
+}
+.rf-tabs__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-tabs__headline {
+	margin-top: 0;
+}
+.rf-tabs__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-tabs__image {
+	margin-bottom: 1rem;
+}
 .rf-tabs__tabs,
 .rf-tabs__panels {
 	list-style: none;

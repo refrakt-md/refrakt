@@ -18,6 +18,9 @@ A centered hero section with headline, description, and action buttons.
 {% preview source=true %}
 
 {% hero %}
+
+Whats new [Version 1.0](#)
+
 # Build with refrakt.md
 
 A content framework that turns Markdown into rich, semantic pages. Write standard Markdown — runes decide how it's interpreted.
@@ -71,3 +74,7 @@ Semantic runes transform your Markdown into structured, accessible content.
 | `background` | `string` | — | CSS background color |
 | `backgroundImage` | `string` | — | Background image URL |
 | `align` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
+
+## Section header
+
+Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

@@ -38,3 +38,7 @@ Join us for three days of talks, workshops, and networking with the web developm
 | `endDate` | `string` | — | Event end date |
 | `location` | `string` | — | Venue name or "Online" |
 | `url` | `string` | — | Event or registration URL |
+
+## Section header
+
+Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

@@ -70,6 +70,15 @@ function readPropText(node: SerializedTag, prop: string): string {
 	return '';
 }
 
+/** autoLabel entries shared by all PageSection-based runes */
+const pageSectionAutoLabel = {
+	header: 'header',     // <header> wrapper element
+	eyebrow: 'eyebrow',   // property="eyebrow"
+	headline: 'headline', // property="headline"
+	blurb: 'blurb',       // property="blurb"
+	image: 'image',       // property="image"
+};
+
 /** Core theme configuration — universal rune-to-BEM-block mappings shared by all themes.
  *  Icons are empty; themes provide their own icon SVGs via mergeThemeConfig. */
 export const coreConfig: ThemeConfig = {
@@ -79,7 +88,7 @@ export const coreConfig: ThemeConfig = {
 	runes: {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
-		Accordion: { block: 'accordion' },
+		Accordion: { block: 'accordion', autoLabel: pageSectionAutoLabel },
 		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
 		Grid: { block: 'grid' },
@@ -488,7 +497,7 @@ export const coreConfig: ThemeConfig = {
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs' },
+		TabGroup: { block: 'tabs', autoLabel: pageSectionAutoLabel },
 		Tab: { block: 'tab', parent: 'TabGroup' },
 		DataTable: {
 			block: 'datatable',
@@ -522,6 +531,7 @@ export const coreConfig: ThemeConfig = {
 			modifiers: {
 				mode: { source: 'meta', default: 'click' },
 			},
+			autoLabel: pageSectionAutoLabel,
 		},
 		RevealStep: { block: 'reveal-step', parent: 'Reveal' },
 		Diagram: {

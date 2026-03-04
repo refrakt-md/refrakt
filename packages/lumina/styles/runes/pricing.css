@@ -2,12 +2,29 @@
 .rf-pricing {
 	padding: 2rem 0;
 }
-.rf-pricing > header {
+.rf-pricing > header,
+.rf-pricing__header {
 	text-align: center;
 	margin-bottom: 2rem;
 }
-.rf-pricing > header h1 {
+.rf-pricing > header h1,
+.rf-pricing__headline {
 	margin-top: 0;
+}
+.rf-pricing__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-pricing__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-pricing__image {
+	margin-bottom: 1rem;
 }
 .rf-pricing__tiers {
 	display: grid;

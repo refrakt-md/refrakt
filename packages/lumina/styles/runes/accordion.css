@@ -5,6 +5,27 @@
 	overflow: hidden;
 	margin: 1.5rem 0;
 }
+.rf-accordion__header {
+	margin-bottom: 1.5rem;
+}
+.rf-accordion__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-accordion__headline {
+	margin-top: 0;
+}
+.rf-accordion__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-accordion__image {
+	margin-bottom: 1rem;
+}
 .rf-accordion__items {
 	display: contents;
 }

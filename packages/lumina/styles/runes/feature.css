@@ -2,6 +2,28 @@
 .rf-feature {
 	padding: 2.5rem 0 2rem;
 }
+.rf-feature__header {
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+.rf-feature__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-feature__headline {
+	margin-top: 0;
+}
+.rf-feature__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-feature__image {
+	margin-bottom: 1rem;
+}
 .rf-feature__body {
 	display: contents;
 }

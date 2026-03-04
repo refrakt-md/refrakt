@@ -29,6 +29,10 @@ Create Markdown files with runes and watch them transform.
 
 {% /preview %}
 
+## Section header
+
+Reveal supports an optional eyebrow, headline, and blurb above the steps. Place a short paragraph or heading before your step headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

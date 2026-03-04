@@ -334,10 +334,12 @@ return createComponentRenderable(schema.MyRune, {
 ```
 
 Returns `{ eyebrow, headline, image, blurb }` where:
-- `eyebrow` — first heading if there are 2+ headings
-- `headline` — first (or only) heading
+- `eyebrow` — paragraph before the first heading (badge/label pattern), or first of two consecutive headings
+- `headline` — the (or second) heading
 - `image` — first `<img>` element
-- `blurb` — first `<p>` element
+- `blurb` — first `<p>` after the headline (or any paragraph when there is no headline)
+
+See [Page sections](/docs/authoring/page-sections) for content author syntax examples.
 
 ### `SplitablePageSectionModel`
 

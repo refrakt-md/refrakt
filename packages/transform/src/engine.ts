@@ -98,17 +98,10 @@ function transformRune(
 	const existingClass = tag.attributes.class || '';
 	const bemClass = [block, ...modifierClasses, existingClass].filter(Boolean).join(' ');
 
-	// 4. Auto-label children by tag name or property attribute
+	// 4. Auto-label children by tag name or property attribute (recursive)
 	let children = tag.children;
 	if (config.autoLabel) {
-		children = children.map(child => {
-			if (!isTag(child)) return child;
-			const label = config.autoLabel![child.name] ?? config.autoLabel![child.attributes?.property];
-			if (label && !child.attributes['data-name']) {
-				return { ...child, attributes: { ...child.attributes, 'data-name': label } };
-			}
-			return child;
-		});
+		children = applyAutoLabel(children, config.autoLabel);
 	}
 
 	// 5. Inject structural elements from config
@@ -195,6 +188,19 @@ function transformRune(
 	}
 
 	return result;
+}
+
+/** Recursively apply autoLabel mapping to all descendant nodes. */
+function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, string>): RendererNode[] {
+	return children.map(child => {
+		if (!isTag(child)) return child;
+		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.property];
+		const labeled = label && !child.attributes['data-name']
+			? { ...child, attributes: { ...child.attributes, 'data-name': label } }
+			: child;
+		if (labeled.children.length === 0) return labeled;
+		return { ...labeled, children: applyAutoLabel(labeled.children, autoLabel) };
+	});
 }
 
 /** Recursively apply BEM element classes to data-name elements within a rune's children.

@@ -2,6 +2,27 @@
 .rf-bento {
 	margin: 1.5rem 0;
 }
+.rf-bento__header {
+	margin-bottom: 1.5rem;
+}
+.rf-bento__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-bento__headline {
+	margin-top: 0;
+}
+.rf-bento__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-bento__image {
+	margin-bottom: 1rem;
+}
 .rf-bento__grid {
 	display: grid;
 	grid-template-columns: repeat(var(--bento-columns, 4), 1fr);

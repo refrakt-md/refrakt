@@ -41,3 +41,7 @@ You will need these tools:
 | `estimatedTime` | `string` | — | Estimated time in ISO 8601 duration (e.g. "PT1H") |
 | `difficulty` | `string` | — | Difficulty level: `easy`, `medium`, or `hard` |
 | `headingLevel` | `number` | — | Heading level to convert into steps (auto-detected if omitted) |
+
+## Section header
+
+How-to supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

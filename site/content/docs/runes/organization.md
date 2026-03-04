@@ -54,3 +54,7 @@ Enterprise solutions for the modern web.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `type` | `string` | `Organization` | Organization type: `Organization`, `LocalBusiness`, `Corporation`, `EducationalOrganization`, `GovernmentOrganization`, `NonProfit` |
+
+## Section header
+
+Organization supports an optional eyebrow, headline, and blurb above the section above details. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

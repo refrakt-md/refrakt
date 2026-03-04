@@ -40,14 +40,19 @@ class BentoModel extends Model {
 	@attribute({ type: Number, required: false })
 	columns: number = 4;
 
+	@group({ include: ['heading', 'paragraph'] })
+	header: NodeStream;
+
 	@group({ include: ['tag'] })
 	cellgroup: NodeStream;
 
 	convertHeadings(nodes: Node[]) {
 		const baseLevel = this.headingLevel;
+		const preamble: Node[] = [];
 		const cells: Node[] = [];
 		let currentHeading: Node | null = null;
 		let currentChildren: Node[] = [];
+		let seenFirstCellHeading = false;
 
 		const flush = () => {
 			if (currentHeading) {
@@ -63,16 +68,19 @@ class BentoModel extends Model {
 
 		for (const node of nodes) {
 			if (node.type === 'heading' && node.attributes.level >= baseLevel) {
+				seenFirstCellHeading = true;
 				flush();
 				currentHeading = node;
 				currentChildren = [];
+			} else if (!seenFirstCellHeading) {
+				preamble.push(node);
 			} else {
 				currentChildren.push(node);
 			}
 		}
 		flush();
 
-		return cells;
+		return [...preamble, ...cells];
 	}
 
 	processChildren(nodes: Node[]) {
@@ -80,6 +88,7 @@ class BentoModel extends Model {
 	}
 
 	transform(): RenderableTreeNodes {
+		const header = this.header.transform();
 		const cellStream = this.cellgroup.transform();
 		const gapMeta = new Tag('meta', { content: this.gap });
 		const columnsMeta = new Tag('meta', { content: String(this.columns) });
@@ -87,14 +96,19 @@ class BentoModel extends Model {
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
+		const children = header.count() > 0
+			? [header.wrap('header').next(), gapMeta, columnsMeta, grid.next()]
+			: [gapMeta, columnsMeta, grid.next()];
+
 		return createComponentRenderable(schema.Bento, {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
+				...pageSectionProperties(header),
 				cell: cells,
 			},
 			refs: { grid },
-			children: [gapMeta, columnsMeta, grid.next()],
+			children,
 		});
 	}
 }

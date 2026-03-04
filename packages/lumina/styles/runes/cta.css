@@ -3,9 +3,26 @@
 	text-align: center;
 	padding: 3.5rem 2rem 3rem;
 }
+.rf-cta__header {
+	margin-bottom: 1.5rem;
+}
+/* Higher specificity needed to override .rf-cta p (0,1,1) */
+.rf-cta .rf-cta__eyebrow {
+	font-size: 0.875rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.75rem;
+	max-width: none;
+}
+.rf-cta__image {
+	margin-bottom: 1.5rem;
+}
 .rf-cta h1,
 .rf-cta h2,
-.rf-cta h3 {
+.rf-cta h3,
+.rf-cta__headline {
 	font-size: 2.5rem;
 	font-weight: 750;
 	letter-spacing: -0.03em;
@@ -17,7 +34,9 @@
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
 }
-.rf-cta p {
+/* Higher specificity needed to override .rf-cta p (0,1,1) */
+.rf-cta p,
+.rf-cta .rf-cta__blurb {
 	font-size: 1.15rem;
 	color: var(--rf-color-muted);
 	max-width: 540px;

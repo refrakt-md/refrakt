@@ -6,6 +6,22 @@
 	background-position: center;
 	overflow: hidden;
 }
+.rf-hero__header {
+	margin-bottom: 2rem;
+}
+/* Higher specificity needed to override .rf-hero p (0,1,1) */
+.rf-hero .rf-hero__eyebrow {
+	font-size: 0.875rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 1rem;
+	max-width: none;
+}
+.rf-hero__image {
+	margin-bottom: 1.5rem;
+}
 .rf-hero__actions {
 	max-width: 720px;
 	margin: 0 auto;
@@ -43,7 +59,8 @@
 	border: 1px solid var(--rf-color-border);
 	white-space: nowrap;
 }
-.rf-hero h1 {
+.rf-hero h1,
+.rf-hero__headline {
 	font-size: 3.25rem;
 	font-weight: 800;
 	letter-spacing: -0.035em;
@@ -54,13 +71,16 @@
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
 }
-.rf-hero p {
+/* Higher specificity needed to override .rf-hero p (0,1,1) */
+.rf-hero p,
+.rf-hero .rf-hero__blurb {
 	font-size: 1.2rem;
 	line-height: 1.65;
 	color: var(--rf-color-muted);
 	margin: 0 0 2rem;
 }
-.rf-hero--center p {
+.rf-hero--center p,
+.rf-hero--center .rf-hero__blurb {
 	max-width: 560px;
 	margin-left: auto;
 	margin-right: auto;

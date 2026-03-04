@@ -46,3 +46,7 @@ A rich and creamy Italian pasta dish.
 | `cookTime` | `string` | — | Cook time in ISO 8601 duration |
 | `servings` | `number` | — | Number of servings |
 | `difficulty` | `string` | `medium` | Difficulty level: `easy`, `medium`, or `hard` |
+
+## Section header
+
+Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

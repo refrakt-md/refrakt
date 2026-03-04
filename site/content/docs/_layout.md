@@ -28,6 +28,7 @@
 - model-api
 - output-contract
 - patterns
+- page-sections
 
 ## Rune Catalog
 

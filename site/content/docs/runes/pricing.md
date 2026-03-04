@@ -80,3 +80,7 @@ Use `{% tier %}` tags when you need full control over attributes like `featured`
 | `price` | `string` | **required** | Display price (e.g. `$19`, `€29/mo`, `Custom`) |
 | `featured` | `boolean` | `false` | Highlight this tier as the recommended option |
 | `currency` | `string` | — | ISO currency code for SEO (auto-inferred from price symbol if omitted) |
+
+## Section header
+
+Pricing supports an optional eyebrow, headline, and blurb above the section above pricing tiers. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
