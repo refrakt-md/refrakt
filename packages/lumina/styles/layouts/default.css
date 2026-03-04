@@ -61,14 +61,30 @@
 	vertical-align: -0.15em;
 }
 .rf-page-content {
+	--rf-content-max: 80rem;
+	--rf-content-gutter: 1.5rem;
+
 	padding-top: 2.5rem;
 	padding-bottom: 4rem;
-	max-width: 80rem;
-	margin: 0 auto;
-	padding-left: 1.5rem;
-	padding-right: 1.5rem;
-	--rf-content-padding: 1.5rem;
 	container-type: inline-size;
+}
+/* Markdoc wraps content in <article>; make it the grid container */
+.rf-page-content > article {
+	display: grid;
+	grid-template-columns:
+		1fr
+		min(var(--rf-content-max), 100% - var(--rf-content-gutter) * 2)
+		1fr;
+}
+.rf-page-content > article > * {
+	grid-column: 2;
+}
+/* Collapse top/bottom padding when a full-bleed section is first/last */
+.rf-page-content:has(> article > :first-child:is(.rf-hero, .rf-cta, .rf-feature, .rf-pricing, [data-tint])) {
+	padding-top: 0;
+}
+.rf-page-content:has(> article > :last-child:is(.rf-hero, .rf-cta, .rf-feature, .rf-pricing, [data-tint])) {
+	padding-bottom: 0;
 }
 
 @media (max-width: 768px) {

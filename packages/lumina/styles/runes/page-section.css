@@ -12,6 +12,17 @@
 	gap: 3rem;
 	align-items: start;
 }
+
+/* Full-bleed: any tinted element breaks out to full viewport width,
+   then re-constrains inner content via padding. */
+.rf-page-content > article > [data-tint] {
+	grid-column: 1 / -1;
+	padding-inline: max(
+		var(--rf-content-gutter, 1.5rem),
+		calc((100% - var(--rf-content-max, 80rem)) / 2)
+	);
+}
+
 @media (max-width: 768px) {
 	.rf-page-section--split {
 		grid-template-columns: 1fr;
