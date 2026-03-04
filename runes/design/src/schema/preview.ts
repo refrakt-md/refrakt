@@ -1,22 +1,6 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class Preview {
 	title: string = '';
 	theme: string = 'auto';
 	width: string = 'wide';
 	responsive: string = '';
-}
-
-export interface PreviewComponent extends ComponentType<Preview> {
-	tag: 'div',
-	properties: {
-		title: 'meta',
-		theme: 'meta',
-		width: 'meta',
-		source: 'pre',
-		htmlSource: 'pre',
-		themedSource: 'pre',
-		responsive: 'meta',
-	},
-	refs: {}
 }

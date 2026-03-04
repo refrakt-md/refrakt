@@ -1,9 +1,9 @@
-import { ComponentType, Newable } from "../interfaces.js";
+import { Newable } from "../interfaces.js";
 
-export class Type<T extends ComponentType<object>> {
+export class Type<TSchema extends object = object> {
   constructor(
     public readonly name: string,
-    private schemaCtr: Newable<T["schema"]>,
+    private schemaCtr: Newable<TSchema>,
     public context: Record<string, string> = {},
   ) {}
 
@@ -15,8 +15,8 @@ export class Type<T extends ComponentType<object>> {
 export class TypeFactory<TSchema extends object> {
   constructor(private schema: Newable<TSchema>) {}
 
-  defineType<T extends ComponentType<TSchema>>(name: string, context: Record<string, string> = {}) {
-    return new Type<T>(name, this.schema, context);
+  defineType(name: string, context: Record<string, string> = {}) {
+    return new Type<TSchema>(name, this.schema, context);
   }
 }
 

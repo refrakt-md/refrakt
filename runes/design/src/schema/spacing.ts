@@ -1,5 +1,3 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class SpacingScale {
 	unit: string = '';
 	scale: string[] = [];
@@ -17,14 +15,4 @@ export class SpacingShadow {
 
 export class Spacing {
 	title: string = '';
-}
-
-export interface SpacingComponent extends ComponentType<Spacing> {
-	tag: 'section',
-	properties: {
-		title: 'meta',
-	},
-	refs: {
-		sections: 'div',
-	}
 }

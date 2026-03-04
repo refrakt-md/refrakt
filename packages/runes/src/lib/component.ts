@@ -1,37 +1,24 @@
-import { ComponentType, Type } from '@refrakt-md/types';
+import { NodeType, Type } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
 import { RenderableNodeCursor } from './renderable.js';
 
-export type PropertyInput<TSchema, T extends ComponentType<TSchema>> = {
-  [P in keyof T["properties"]]:
-    RenderableNodeCursor<Tag<T["properties"][P]>> |
-    Tag<T["properties"][P]> |
-    Tag<T["properties"][P]>[]
-};
-
-export type RefInput<TSchema, T extends ComponentType<TSchema>> = {
-  [P in keyof T["refs"]]:
-    RenderableNodeCursor<Tag<T["refs"][P]>> |
-    Tag<T["refs"][P]> |
-    Tag<T["refs"][P]>[]
-};
-
-export interface TransformResult<TSchema, T extends ComponentType<TSchema>> {
-  tag: T["tag"],
+export interface TransformResult {
+  tag: NodeType;
   id?: string;
   class?: string;
   property?: string;
-  properties: Partial<PropertyInput<TSchema, T>>,
-  refs?: Partial<RefInput<TSchema, T>>,
+  properties?: Record<string, RenderableNodeCursor<Tag> | Tag | Tag[] | undefined>;
+  refs?: Record<string, RenderableNodeCursor<Tag> | Tag | Tag[] | undefined>;
   children: RenderableTreeNodes;
 }
 
-export function createComponentRenderable<TOutput extends ComponentType<object>>(
-  type: Type<TOutput>,
-  result: TransformResult<TOutput["schema"], TOutput>
+export function createComponentRenderable(
+  type: Type,
+  result: TransformResult
 ) {
-  for (const [k, v] of Object.entries(result.properties)) {
+  for (const [k, v] of Object.entries(result.properties ?? {})) {
+    if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
     tags.forEach(n => {
@@ -42,6 +29,7 @@ export function createComponentRenderable<TOutput extends ComponentType<object>>
   }
 
   for (const [k, v] of Object.entries(result.refs || {})) {
+    if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
     tags.forEach(n => {

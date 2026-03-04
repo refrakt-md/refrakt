@@ -1,4 +1,3 @@
-import { ComponentType } from "@refrakt-md/types";
 import { StorySection } from "./story-section.js";
 
 export class Realm {
@@ -8,21 +7,4 @@ export class Realm {
 	tags: string = '';
 	parent: string = '';
 	section: StorySection[] = [];
-}
-
-export interface RealmComponent extends ComponentType<Realm> {
-	tag: 'article',
-	properties: {
-		name: 'span',
-		realmType: 'meta',
-		scale: 'meta',
-		tags: 'meta',
-		parent: 'meta',
-		section: 'div',
-	},
-	refs: {
-		scene: 'div',
-		sections: 'div',
-		body: 'div',
-	}
 }

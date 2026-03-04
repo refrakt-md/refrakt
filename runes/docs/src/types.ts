@@ -1,13 +1,13 @@
-import { useSchema } from '@refrakt-md/types';
-import { Api, ApiComponent } from './schema/api.js';
-import { Changelog, ChangelogComponent, ChangelogRelease, ChangelogReleaseComponent } from './schema/changelog.js';
-import { Symbol, SymbolComponent, SymbolGroup, SymbolGroupComponent, SymbolMember, SymbolMemberComponent } from './schema/symbol.js';
+import {useSchema} from '@refrakt-md/types';
+import {Api} from './schema/api.js';
+import {Changelog, ChangelogRelease} from './schema/changelog.js';
+import {Symbol, SymbolGroup, SymbolMember} from './schema/symbol.js';
 
 export const schema = {
-  Api: useSchema(Api).defineType<ApiComponent>('Api'),
-  Changelog: useSchema(Changelog).defineType<ChangelogComponent>('Changelog'),
-  ChangelogRelease: useSchema(ChangelogRelease).defineType<ChangelogReleaseComponent>('ChangelogRelease'),
-  Symbol: useSchema(Symbol).defineType<SymbolComponent>('Symbol'),
-  SymbolGroup: useSchema(SymbolGroup).defineType<SymbolGroupComponent>('SymbolGroup'),
-  SymbolMember: useSchema(SymbolMember).defineType<SymbolMemberComponent>('SymbolMember'),
+  Api: useSchema(Api).defineType('Api'),
+  Changelog: useSchema(Changelog).defineType('Changelog'),
+  ChangelogRelease: useSchema(ChangelogRelease).defineType('ChangelogRelease'),
+  Symbol: useSchema(Symbol).defineType('Symbol'),
+  SymbolGroup: useSchema(SymbolGroup).defineType('SymbolGroup'),
+  SymbolMember: useSchema(SymbolMember).defineType('SymbolMember'),
 };

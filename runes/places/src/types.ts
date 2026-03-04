@@ -1,13 +1,13 @@
-import { useSchema } from '@refrakt-md/types';
-import { Event, EventComponent } from './schema/event.js';
-import { Itinerary, ItineraryComponent, ItineraryDay, ItineraryDayComponent, ItineraryStop, ItineraryStopComponent } from './schema/itinerary.js';
-import { Map, MapComponent, MapPin, MapPinComponent } from './schema/map.js';
+import {useSchema} from '@refrakt-md/types';
+import {Event} from './schema/event.js';
+import {Itinerary, ItineraryDay, ItineraryStop} from './schema/itinerary.js';
+import {Map, MapPin} from './schema/map.js';
 
 export const schema = {
-  Event: useSchema(Event).defineType<EventComponent>('Event'),
-  Itinerary: useSchema(Itinerary).defineType<ItineraryComponent>('Itinerary'),
-  ItineraryDay: useSchema(ItineraryDay).defineType<ItineraryDayComponent>('ItineraryDay'),
-  ItineraryStop: useSchema(ItineraryStop).defineType<ItineraryStopComponent>('ItineraryStop'),
-  Map: useSchema(Map).defineType<MapComponent>('Map'),
-  MapPin: useSchema(MapPin).defineType<MapPinComponent>('MapPin'),
+  Event: useSchema(Event).defineType('Event'),
+  Itinerary: useSchema(Itinerary).defineType('Itinerary'),
+  ItineraryDay: useSchema(ItineraryDay).defineType('ItineraryDay'),
+  ItineraryStop: useSchema(ItineraryStop).defineType('ItineraryStop'),
+  Map: useSchema(Map).defineType('Map'),
+  MapPin: useSchema(MapPin).defineType('MapPin'),
 };

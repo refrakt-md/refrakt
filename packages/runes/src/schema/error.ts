@@ -1,14 +1,5 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class DebugInfo {
   error: Error[] = [];
-}
-
-export interface DebugInfoComponent extends ComponentType<DebugInfo> {
-  tag: 'section',
-  properties: {
-    error: 'tr',
-  },
 }
 
 export class Error {
@@ -16,14 +7,4 @@ export class Error {
   tag: string = '';
   level: 'debug' | 'info' | 'warning' | 'error' | 'critical' = 'debug';
   message: string = '';
-}
-
-export interface ErrorComponent extends ComponentType<Error> {
-  tag: 'tr',
-  properties: {
-    code: 'td',
-    tag: 'td',
-    level: 'td',
-    message: 'td',
-  },
 }

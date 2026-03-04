@@ -1,5 +1,3 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class PaletteEntry {
 	name: string = '';
 	value: string = '';
@@ -17,17 +15,4 @@ export class Palette {
 	showContrast: boolean = false;
 	showA11y: boolean = false;
 	columns: number | undefined = undefined;
-}
-
-export interface PaletteComponent extends ComponentType<Palette> {
-	tag: 'section',
-	properties: {
-		title: 'meta',
-		showContrast: 'meta',
-		showA11y: 'meta',
-		columns: 'meta',
-	},
-	refs: {
-		grid: 'div',
-	}
 }

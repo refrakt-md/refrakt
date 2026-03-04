@@ -2,8 +2,6 @@ export interface Newable<T> {
   new (...args: any[]): T;
 }
 
-export type PropertyNodes<TSchema> = { [P in keyof TSchema ]: NodeType };
-
 export type NodeType =
   'document' |
 
@@ -94,14 +92,3 @@ export type NodeType =
   'th' |
   'thead' |
   'tr';
-
-
-export interface ComponentType<TSchema> {
-  tag: NodeType;
-
-  schema: TSchema;
-
-  properties: PropertyNodes<TSchema>;
-
-  refs: Record<string, NodeType>
-}

@@ -1,17 +1,5 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class FormField {
 	fieldType: string = 'text';
-}
-
-export interface FormFieldComponent extends ComponentType<FormField> {
-	tag: 'div',
-	properties: {
-		fieldType: 'meta',
-	},
-	refs: {
-		body: 'div',
-	}
 }
 
 export class Form {
@@ -22,20 +10,4 @@ export class Form {
 	style: string = 'stacked';
 	honeypot: string = 'true';
 	field: FormField[] = [];
-}
-
-export interface FormComponent extends ComponentType<Form> {
-	tag: 'form',
-	properties: {
-		action: 'meta',
-		method: 'meta',
-		success: 'meta',
-		error: 'meta',
-		style: 'meta',
-		honeypot: 'meta',
-		field: 'div',
-	},
-	refs: {
-		body: 'div',
-	}
 }

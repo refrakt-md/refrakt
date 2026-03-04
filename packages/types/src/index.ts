@@ -2,8 +2,6 @@
 export {
   Newable,
   NodeType,
-  PropertyNodes,
-  ComponentType,
 } from './interfaces.js';
 
 // Schema definition utilities
@@ -14,8 +12,8 @@ export {
 } from './schema/index.js';
 
 // Foundational schema data classes (shared across packages)
-export { Page, PageSection, PageSectionProperties, PageSectionComponent, PageProperties, PageComponent } from './schema/page.js';
-export { LinkItem, Command, LinkItemComponent, CommandComponent } from './schema/common.js';
+export { Page, PageSection } from './schema/page.js';
+export { LinkItem, Command } from './schema/common.js';
 
 // Design tokens (standalone interface, not tied to a rune schema)
 export type { DesignTokens } from './tokens.js';

@@ -1,5 +1,3 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class TypographySpecimen {
 	role: string = '';
 	family: string = '';
@@ -12,18 +10,4 @@ export class Typography {
 	showSizes: boolean = true;
 	showWeights: boolean = true;
 	showCharset: boolean = false;
-}
-
-export interface TypographyComponent extends ComponentType<Typography> {
-	tag: 'section',
-	properties: {
-		title: 'meta',
-		sample: 'meta',
-		showSizes: 'meta',
-		showWeights: 'meta',
-		showCharset: 'meta',
-	},
-	refs: {
-		specimens: 'div',
-	}
 }

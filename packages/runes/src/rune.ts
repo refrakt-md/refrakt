@@ -1,5 +1,5 @@
 import type { Schema } from '@markdoc/markdoc';
-import { Type, ComponentType } from '@refrakt-md/types';
+import { Type } from '@refrakt-md/types';
 
 export interface RuneDescriptor {
   /** The primary tag name used in Markdoc (e.g., 'cta') */
@@ -21,7 +21,7 @@ export interface RuneDescriptor {
   seoType?: string;
 
   /** The Type from the registry this rune renders as */
-  type?: Type<ComponentType<object>>;
+  type?: Type;
 
   /** AI prompt extension — additional context appended to the rune description in AI prompts */
   prompt?: string;
@@ -34,7 +34,7 @@ export class Rune {
   readonly description: string;
   readonly reinterprets: Record<string, string>;
   readonly seoType: string | undefined;
-  readonly type: Type<ComponentType<object>> | undefined;
+  readonly type: Type | undefined;
   readonly prompt: string | undefined;
 
   constructor(descriptor: RuneDescriptor) {

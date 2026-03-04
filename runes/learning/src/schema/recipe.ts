@@ -1,4 +1,4 @@
-import { ComponentType, PageSection, PageSectionProperties } from "@refrakt-md/types";
+import { PageSection } from "@refrakt-md/types";
 
 export class RecipeIngredient {
 	amount: string = '';
@@ -6,36 +6,9 @@ export class RecipeIngredient {
 	name: string = '';
 }
 
-export interface RecipeIngredientComponent extends ComponentType<RecipeIngredient> {
-	tag: 'li',
-	properties: {
-		amount: 'span',
-		unit: 'span',
-		name: 'span',
-	},
-	refs: {}
-}
-
 export class Recipe extends PageSection {
 	prepTime: string = '';
 	cookTime: string = '';
 	servings: number | undefined = undefined;
 	difficulty: string = 'medium';
-}
-
-export interface RecipeProperties extends PageSectionProperties {
-	prepTime: 'meta',
-	cookTime: 'meta',
-	servings: 'meta',
-	difficulty: 'meta',
-}
-
-export interface RecipeComponent extends ComponentType<Recipe> {
-	tag: 'article',
-	properties: RecipeProperties,
-	refs: {
-		ingredients: 'ul',
-		steps: 'ol',
-		tips: 'div',
-	}
 }

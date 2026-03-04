@@ -1,8 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { useSchema, type ComponentType } from '@refrakt-md/types';
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import {useSchema} from '@refrakt-md/types';
+import {attribute, Model, createComponentRenderable, createSchema} from '@refrakt-md/runes';
 
 class Mockup {
 	device: string = 'browser';
@@ -13,22 +13,7 @@ class Mockup {
 	scale: string = '1';
 }
 
-interface MockupComponent extends ComponentType<Mockup> {
-	tag: 'div',
-	properties: {
-		device: 'meta',
-		label: 'meta',
-		color: 'meta',
-		statusBar: 'meta',
-		url: 'meta',
-		scale: 'meta',
-	},
-	refs: {
-		viewport: 'div',
-	}
-}
-
-const MockupType = useSchema(Mockup).defineType<MockupComponent>('Mockup');
+const MockupType = useSchema(Mockup).defineType('Mockup');
 
 const deviceType = ['iphone-15', 'iphone-se', 'pixel', 'phone', 'ipad', 'tablet', 'browser', 'browser-dark', 'macbook', 'watch', 'none'] as const;
 const colorType = ['dark', 'light', 'auto'] as const;

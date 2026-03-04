@@ -1,5 +1,3 @@
-import { ComponentType } from "@refrakt-md/types";
-
 export class MapPin {
 	name: string = '';
 	description: string = '';
@@ -8,20 +6,6 @@ export class MapPin {
 	address: string = '';
 	url: string = '';
 	group: string = '';
-}
-
-export interface MapPinComponent extends ComponentType<MapPin> {
-	tag: 'li',
-	properties: {
-		name: 'span',
-		description: 'span',
-		lat: 'meta',
-		lng: 'meta',
-		address: 'meta',
-		url: 'meta',
-		group: 'meta',
-	},
-	refs: {}
 }
 
 export class Map {
@@ -34,22 +18,4 @@ export class Map {
 	interactive: string = 'true';
 	route: string = 'false';
 	cluster: string = 'false';
-}
-
-export interface MapComponent extends ComponentType<Map> {
-	tag: 'div',
-	properties: {
-		pin: 'li',
-		zoom: 'meta',
-		center: 'meta',
-		style: 'meta',
-		height: 'meta',
-		provider: 'meta',
-		interactive: 'meta',
-		route: 'meta',
-		cluster: 'meta',
-	},
-	refs: {
-		pins: 'ol',
-	}
 }

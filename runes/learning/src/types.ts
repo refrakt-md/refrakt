@@ -1,9 +1,9 @@
-import { useSchema } from '@refrakt-md/types';
-import { Recipe, RecipeComponent, RecipeIngredient, RecipeIngredientComponent } from './schema/recipe.js';
-import { HowTo, HowToComponent } from './schema/howto.js';
+import {useSchema} from '@refrakt-md/types';
+import {Recipe, RecipeIngredient} from './schema/recipe.js';
+import {HowTo} from './schema/howto.js';
 
 export const schema = {
-  Recipe: useSchema(Recipe).defineType<RecipeComponent>('Recipe'),
-  RecipeIngredient: useSchema(RecipeIngredient).defineType<RecipeIngredientComponent>('RecipeIngredient'),
-  HowTo: useSchema(HowTo).defineType<HowToComponent>('HowTo'),
+  Recipe: useSchema(Recipe).defineType('Recipe'),
+  RecipeIngredient: useSchema(RecipeIngredient).defineType('RecipeIngredient'),
+  HowTo: useSchema(HowTo).defineType('HowTo'),
 };
