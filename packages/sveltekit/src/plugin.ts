@@ -140,6 +140,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				const { pipelineStats: stats } = site;
 				const warnings: PipelineWarning[] = site.pipelineWarnings;
 				const pad = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - s.length));
+				process.stderr.write(`  ${pad('Phase 1: Parse', 30)} ${stats.pageCount} pages\n`);
 				process.stderr.write(`  ${pad('Phase 2: Register', 30)} ${stats.entityCount} entities\n`);
 				process.stderr.write(`  ${pad('Phase 3: Aggregate', 30)} ${stats.packageCount} packages\n`);
 				process.stderr.write(`  ${pad('Phase 4: Post-process', 30)} ${stats.pageCount} pages\n`);
