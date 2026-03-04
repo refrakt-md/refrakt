@@ -184,26 +184,4 @@ describe('corePipelineHooks validations', () => {
 		expect(warnings).toHaveLength(0);
 	});
 
-	it('warns when a page has an orphaned parent URL', () => {
-		const registry = new EntityRegistryImpl();
-		const { ctx, warnings } = makeCtx();
-
-		// Register a page that has a parent that doesn't exist
-		corePipelineHooks.register!([makePage('/docs/guide/', 'Guide')], registry, ctx);
-		corePipelineHooks.aggregate!(registry, ctx);
-
-		// /docs/guide/ → parentUrl = /docs/ → not registered → warning
-		expect(warnings.some(w => w.message.includes('/docs/guide/') && w.message.includes('/docs/'))).toBe(true);
-	});
-
-	it('does not warn about orphaned parent for root page', () => {
-		const registry = new EntityRegistryImpl();
-		const { ctx, warnings } = makeCtx();
-
-		corePipelineHooks.register!([makePage('/', 'Home')], registry, ctx);
-		corePipelineHooks.aggregate!(registry, ctx);
-
-		// Root points to itself as parent — no orphan warning
-		expect(warnings).toHaveLength(0);
-	});
 });

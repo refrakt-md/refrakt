@@ -923,16 +923,6 @@ export const corePipelineHooks: PackagePipelineHooks = {
 		// Quick lookup: url → { url, title } for postProcess use
 		const pagesByUrl = new Map(pages.map(p => [p.url, p]));
 
-		// Detect orphaned parents: pages whose parentUrl doesn't exist in the registry
-		for (const p of pages) {
-			if (p.parentUrl !== p.url && !pagesByUrl.has(p.parentUrl)) {
-				ctx.warn(
-					`Page '${p.url}' has parent '${p.parentUrl}' which is not registered`,
-					p.url,
-				);
-			}
-		}
-
 		// Build heading index: "url#id" → heading data
 		const headingIndex = new Map<string, Record<string, unknown>>();
 		for (const h of registry.getAll('heading')) {
