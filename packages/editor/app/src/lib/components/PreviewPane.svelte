@@ -32,7 +32,7 @@
 
 	// Forward routeRules changes to the preview iframe
 	$effect(() => {
-		const rules = editorState.routeRules;
+		const rules = $state.snapshot(editorState.routeRules);
 		if (useRuntime && previewIframe?.contentWindow) {
 			previewIframe.contentWindow.postMessage(
 				{ type: 'route-rules-update', routeRules: rules },
