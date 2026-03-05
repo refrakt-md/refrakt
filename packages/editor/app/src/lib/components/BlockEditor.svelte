@@ -633,7 +633,6 @@
 	.block-editor__rail-label {
 		width: 80px;
 		flex-shrink: 0;
-		margin-left: var(--ed-space-5);
 		padding: 0.5rem 0.6rem 0.5rem 1rem;
 		font-size: 10px;
 		font-weight: 600;
@@ -665,7 +664,6 @@
 	.block-editor__insert-zone {
 		display: flex;
 		align-items: center;
-		height: 12px;
 		position: relative;
 		overflow: visible;
 		z-index: 2;
@@ -696,17 +694,15 @@
 		left: 1px;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		width: 5px;
-		height: 5px;
+		width: 18px;
+		height: 18px;
 		border-radius: 50%;
-		background: var(--ed-text-muted);
-		transition: width var(--ed-transition-fast), height var(--ed-transition-fast), background var(--ed-transition-fast);
+		background: var(--ed-accent);
+		transition: box-shadow var(--ed-transition-fast);
 	}
 
 	.block-editor__insert-dot:hover .block-editor__dot-icon {
-		width: 18px;
-		height: 18px;
-		background: var(--ed-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--ed-accent) 30%, transparent);
 	}
 
 	.block-editor__dot-icon::before,
@@ -715,8 +711,6 @@
 		position: absolute;
 		background: white;
 		border-radius: 1px;
-		opacity: 0;
-		transition: opacity var(--ed-transition-fast);
 	}
 
 	.block-editor__dot-icon::before {
@@ -733,11 +727,6 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-	}
-
-	.block-editor__insert-dot:hover .block-editor__dot-icon::before,
-	.block-editor__insert-dot:hover .block-editor__dot-icon::after {
-		opacity: 1;
 	}
 
 	/* Edit panel — fixed to right edge of viewport, outside the card */
