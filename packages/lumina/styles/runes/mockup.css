@@ -49,6 +49,9 @@
 	overflow: auto;
 	background: var(--rf-color-bg);
 }
+.rf-mockup__viewport img {
+	display: block;
+}
 
 .rf-mockup__viewport > *:first-child {
 	margin-top: 0;
@@ -370,7 +373,7 @@
 }
 
 .rf-mockup--browser .rf-mockup__viewport {
-	height: 800px;
+	min-height: 12rem;
 	border: 1px solid var(--rf-color-border);
 	border-top: none;
 }
@@ -397,7 +400,7 @@
 }
 
 .rf-mockup--browser-dark .rf-mockup__viewport {
-	height: 800px;
+	min-height: 12rem;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-top: none;
 }
@@ -416,7 +419,7 @@
 }
 
 .rf-mockup--macbook .rf-mockup__viewport {
-	height: 900px;
+	min-height: 12rem;
 	border: 3px solid var(--mockup-bezel);
 	border-top: none;
 	border-bottom: none;

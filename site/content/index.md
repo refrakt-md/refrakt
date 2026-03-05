@@ -3,7 +3,7 @@ title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
 
-{% hero justify="left" %}
+{% hero justify="left" tint-mode="dark" spacing="loose" %}
 
 # Write Markdown. Get structure.
 
@@ -17,59 +17,34 @@ npm create refrakt
 
 ---
 
-{% grid align="center" %}
+{% grid align="center" gap="loose" %}
 
 {% codegroup %}
 ```markdoc
-{% mockup device="watch" color="dark" %}
-{% sandbox height=242 %}
-<style>
-  html, body { height: 100%; }
-  body { margin: 0; font-family: system-ui, sans-serif; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; box-sizing: border-box; }
-  .time { font-size: 36px; font-weight: 200; letter-spacing: 2px; }
-  .date { font-size: 11px; color: #f97316; margin-top: 2px; font-weight: 600; }
-  .rings { display: flex; gap: 8px; margin-top: 12px; }
-  .ring { width: 24px; height: 24px; border-radius: 50%; border: 3px solid; }
-</style>
-<div class="time">10:09</div>
-<div class="date">TUE MAR 4</div>
-<div class="rings">
-  <div class="ring" style="border-color: #ef4444;"></div>
-  <div class="ring" style="border-color: #22c55e;"></div>
-  <div class="ring" style="border-color: #06b6d4;"></div>
-</div>
-{% /sandbox %}
-{% /mockup %}
+## Getting started
+
+Install the CLI and scaffold a new project.
+
+{% hint type="warning" %}
+Requires Node.js 18 or later.
+{% /hint %}
 ```
 {% /codegroup %}
 
 ---
 
-{% mockup device="watch" color="dark" %}
-{% sandbox height=242 %}
-<style>
-  html, body { height: 100%; }
-  body { margin: 0; font-family: system-ui, sans-serif; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; box-sizing: border-box; }
-  .time { font-size: 36px; font-weight: 200; letter-spacing: 2px; }
-  .date { font-size: 11px; color: #f97316; margin-top: 2px; font-weight: 600; }
-  .rings { display: flex; gap: 8px; margin-top: 12px; }
-  .ring { width: 24px; height: 24px; border-radius: 50%; border: 3px solid; }
-</style>
-<div class="time">10:09</div>
-<div class="date">TUE MAR 4</div>
-<div class="rings">
-  <div class="ring" style="border-color: #ef4444;"></div>
-  <div class="ring" style="border-color: #22c55e;"></div>
-  <div class="ring" style="border-color: #06b6d4;"></div>
-</div>
-{% /sandbox %}
-{% /mockup %}
+## Getting started
+
+Install the CLI and scaffold a new project.
+
+{% hint type="warning" %}
+Requires Node.js 18 or later.
+{% /hint %}
+
 {% /grid %}
-
-
 {% /hero %}
 
-{% feature %}
+{% feature justify="left" spacing="breathe" %}
 
 ## Why refrakt.md?
 
@@ -99,25 +74,22 @@ npm create refrakt
 
 {% /feature %}
 
-{% feature tint-mode="dark" layout="split" justify="left" ratio="1 2" %}
-feature
-## Why refrakt.md?
+{% feature tint-mode="dark" layout="split" justify="left" ratio="1 1" align="center" collapse="md" spacing="tight" gap="loose" %}
+Composable by design
+## Runes that work together
 
-Present bla bla bla
+Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each rune handles its own structure while combining into something greater than the parts.
 
 ---
 
-{% showcase bleed="bottom" offset="10rem" %}
-{% mockup %}
-{% grid gap="loose" %}
+{% showcase bleed="both" offset="10rem" shadow="elevated" %}
+{% mockup device="iphone-15" %}
 
-{% map zoom="13" center="48.8566, 2.3522" %}
-- **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
-- **Eiffel Tower** - *Iconic iron lattice tower* - 48.8584, 2.2945
-- **Notre-Dame** - *Medieval Catholic cathedral* - 48.8530, 2.3499
+{% map zoom="12" center="40.7580, -73.9855" %}
+- **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
+- **Central Park** - *Urban green oasis* - 40.7829, -73.9654
+- **Times Square** - *The Crossroads of the World* - 40.7580, -73.9855
 {% /map %}
-
----
 
 {% itinerary %}
 ### 10:00 AM — Museum of Modern Art
@@ -132,123 +104,104 @@ Picnic lunch on the Great Lawn.
 
 Walk through the theater district.
 {% /itinerary %}
-{% /grid %}
 {% /mockup %}
 {% /showcase %}
 
 {% /feature %}
 
-{% testimonial variant="quote" %}
+
+{% feature layout="stacked" justify="left" align="center" spacing="loose" %}
+Built-in SEO
+## Structured data from plain Markdown
+
+Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdown — headings, lists, paragraphs — and the framework extracts Recipe schema, ingredient lists, and step instructions without any manual wiring.
+
+---
+
+{% preview source=true width="medium" %}
+{% recipe prepTime="10 min" cookTime="10 min" servings=2 difficulty="easy" %}
+## Classic Margherita Pizza
+
+A simple Neapolitan-style pizza with fresh ingredients.
+
+- 250g pizza dough
+- 80ml San Marzano tomato sauce
+- 125g fresh mozzarella
+- Fresh basil leaves
+- Extra virgin olive oil
+
+1. Set your oven to 250°C with a pizza stone inside.
+1. Stretch the dough into a 30cm round. Spread the tomato sauce evenly, leaving a 2cm border.
+1. Tear the mozzarella over the sauce. Bake for 8–10 minutes until the crust is charred. Finish with fresh basil and a drizzle of olive oil.
+{% /recipe %}
+{% /preview %}
+
+{% /feature %}
+
+
+{% feature layout="stacked" justify="left" align="center" spacing="loose" tint="warm" %}
+Visual authoring
+## Edit runes without leaving your browser
+
+A block-based editor that understands every rune. Preview content as you write, adjust attributes with a visual inspector, and see structured data output in real time — no context switching required.
+
+---
+
+{% mockup %}
+![Editor](/editor.png)
+{% /mockup %}
+
+
+{% /feature %}
+
+{% feature spacing="loose" tint-mode="dark" justify="left" %}
+8 packages, 60+ runes
+## A rune for every domain
+
+Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packages add domain-specific runes — install only what you need.
+
+
+- {% icon name="rocket" /%} **Marketing**
+
+  `hero`, `cta`, `feature`, `pricing`, `testimonial`, `bento`, `steps`, `comparison`
+
+- {% icon name="book-open" /%} **Docs**
+
+  `api`, `symbol`, `changelog`
+
+- {% icon name="palette" /%} **Design**
+
+  `swatch`, `palette`, `typography`, `spacing`, `preview`, `mockup`
+
+- {% icon name="lightbulb" /%} **Learning**
+
+  `howto`, `recipe`
+
+- {% icon name="heart" /%} **Storytelling**
+
+  `character`, `realm`, `faction`, `lore`, `plot`, `bond`, `storyboard`
+
+- {% icon name="briefcase" /%} **Business**
+
+  `cast`, `organization`, `timeline`
+
+- {% icon name="map-pin" /%} **Places**
+
+  `event`, `map`, `itinerary`
+
+- {% icon name="video" /%} **Media**
+
+  `music-playlist`, `music-recording`
+
+{% /feature %}
+
+{% testimonial variant="quote" spacing="breathe" tint="warm" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
-## Under the hood
-
-A single hint tag flows through five pipeline stages — from the Markdown you type to styled, semantic HTML.
-
-{% steps headingLevel=2 %}
-
-## You write Markdown
-
-Wrap content in a rune tag. The `type` attribute tells the system this is a warning.
-
-```markdoc
-{% hint type="warning" %}
-Back up your data before proceeding.
-{% /hint %}
-```
-
-## Markdoc parses it
-
-Markdoc turns your text into an abstract syntax tree — a structured representation of every tag, heading, and paragraph.
-
-```text
-Document
-└── Tag(hint) { type: "warning" }
-    └── Paragraph
-        └── "Back up your data before proceeding."
-```
-
-## Rune schema interprets
-
-The Hint model reads `type`, emits a `hintType` meta tag, and wraps content in a body container. The `typeof` marker carries semantic meaning forward.
-
-```text
-section { typeof: "Hint" }
-├── meta { property: "hintType", content: "warning" }
-└── div { data-name: "body" }
-    └── p "Back up your data before proceeding."
-```
-
-## Theme engine styles
-
-The identity transform reads the meta tag, injects a header with icon and title, adds BEM classes, and strips the consumed metadata.
-
-```text
-section.rf-hint.rf-hint--warning
-├── div.rf-hint__header
-│   ├── span.rf-hint__icon
-│   └── span.rf-hint__title "warning"
-└── div.rf-hint__body
-    └── p "Back up your data before proceeding."
-```
-
-## Renderer outputs HTML
-
-The framework renderer walks the styled tree and produces clean, semantic HTML.
-
-```html
-<section class="rf-hint rf-hint--warning">
-  <div class="rf-hint__header">
-    <span class="rf-hint__icon"></span>
-    <span class="rf-hint__title">warning</span>
-  </div>
-  <div class="rf-hint__body">
-    <p>Back up your data before proceeding.</p>
-  </div>
-</section>
-```
-
-{% /steps %}
-
-{% hint type="warning" %}
-Back up your data before proceeding.
-{% /hint %}
-
-## See it in action
-
-Pure Markdown in, structured HTML out. The source tabs show exactly what you write and what the framework receives.
-
-{% preview source=true %}
-{% comparison highlighted="refrakt.md" %}
-
-## refrakt.md
-
-- **Syntax** — Standard Markdown + Markdoc tags
-- **Content model** — Semantic runes with structured output
-- **SEO** — Automatic JSON-LD and Open Graph from content
-- **Portability** — Plain Markdown files, no lock-in
-
-## MDX
-
-- **Syntax** — Markdown + JSX (custom syntax)
-- **Content model** — React components embedded in Markdown
-- **SEO** — ~~Manual~~ — you wire it yourself
-- **Portability** — ~~Tied to React ecosystem~~
-
-## Plain Markdown
-
-- **Syntax** — Standard Markdown only
-- **Content model** — Paragraphs, lists, headings — that's it
-- **SEO** — ~~None~~ — no structured data support
-- **Portability** — Universal, but limited expressiveness
-
-{% /comparison %}
-{% /preview %}
-
-{% cta %}
+{% cta spacing="breath" %}
 
 ## Ready to get started?
 

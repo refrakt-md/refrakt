@@ -34,6 +34,7 @@
 .rf-feature__blurb {
 	color: var(--rf-color-muted);
 	margin-bottom: 0;
+	max-width: 40rem;
 }
 .rf-feature__image {
 	margin-bottom: 1rem;

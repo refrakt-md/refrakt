@@ -104,22 +104,62 @@
 	);
 }
 
-/* Section spacing — vertical rhythm between block runes */
+/* Section spacing — vertical rhythm between block runes
+ * Symmetric margins collapse between plain sections (no visual change)
+ * but ensure correct gaps at plain→tinted boundaries (where tinted
+ * sections use padding instead of margin). */
 .rf-page-content > article > * + * {
 	margin-top: var(--rf-spacing-section, 4rem);
+	margin-bottom: var(--rf-spacing-section, 4rem);
 }
 .rf-page-content > article > [data-spacing="flush"] {
 	margin-top: 0;
+	margin-bottom: 0;
 }
 .rf-page-content > article > [data-spacing="tight"] {
 	margin-top: var(--rf-spacing-section-tight, 1.5rem);
+	margin-bottom: var(--rf-spacing-section-tight, 1.5rem);
 }
 .rf-page-content > article > [data-spacing="loose"] {
 	margin-top: var(--rf-spacing-section-loose, 8rem);
+	margin-bottom: var(--rf-spacing-section-loose, 8rem);
 }
 .rf-page-content > article > [data-spacing="breathe"] {
 	margin-top: var(--rf-spacing-section-breathe, 12rem);
 	margin-bottom: var(--rf-spacing-section-breathe, 12rem);
+}
+
+/* Spacing on tinted/dark sections — use padding so space is inside the painted background */
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="flush"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="tight"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-tight, 1.5rem);
+	padding-bottom: var(--rf-spacing-section-tight, 1.5rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="default"],
+.rf-page-content > article > :is([data-color-scheme], [data-tint]):not([data-spacing]) {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section, 4rem);
+	padding-bottom: var(--rf-spacing-section, 4rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="loose"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-loose, 8rem);
+	padding-bottom: var(--rf-spacing-section-loose, 8rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="breathe"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-breathe, 12rem);
+	padding-bottom: var(--rf-spacing-section-breathe, 12rem);
 }
 
 /* Collapse top/bottom padding when a full-bleed section is first/last */
