@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { RuneInfo, RuneAttributeInfo } from '../api/client.js';
+	import LayoutToolbar, { TOOLBAR_ATTR_NAMES } from './LayoutToolbar.svelte';
 
 	interface Props {
 		runeInfo: RuneInfo;
@@ -19,14 +20,27 @@
 		onchange(next);
 	}
 
-	/** All schema attributes, sorted with required first */
+	/** Whether any toolbar attrs exist for this rune */
+	let hasToolbarAttrs = $derived(
+		Object.keys(runeInfo.attributes).some(name => TOOLBAR_ATTR_NAMES.has(name))
+	);
+
+	/** All schema attributes, sorted with required first, excluding toolbar-handled attrs */
 	let sortedAttrs = $derived(
 		Object.entries(runeInfo.attributes)
+			.filter(([name]) => !TOOLBAR_ATTR_NAMES.has(name))
 			.sort(([, a], [, b]) => (a.required === b.required ? 0 : a.required ? -1 : 1))
 	);
 </script>
 
 <div class="rune-attrs">
+	{#if hasToolbarAttrs}
+		<LayoutToolbar
+			schema={runeInfo.attributes}
+			{attributes}
+			{onchange}
+		/>
+	{/if}
 	{#each sortedAttrs as [name, info] (name)}
 		{@const value = attributes[name] ?? ''}
 		<label class="rune-attr">
