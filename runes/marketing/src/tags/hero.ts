@@ -15,11 +15,14 @@ class HeroModel extends Model {
 	@attribute({ type: String, required: false, matches: alignType.slice() })
 	align: typeof alignType[number] = 'center';
 
-	@group({ include: ['heading', 'paragraph'] })
+	@group({ section: 0, include: ['heading', 'paragraph'] })
 	header: NodeStream;
 
-	@group({ include: ['list', 'fence'] })
+	@group({ section: 0, include: ['list', 'fence'] })
 	actions: NodeStream;
+
+	@group({ section: 1 })
+	showcase: NodeStream;
 
 	transform() {
 		const header = this.header.transform();
@@ -38,11 +41,14 @@ class HeroModel extends Model {
 			})
 			.transform();
 
+		const side = this.showcase.transform();
+
 		const backgroundMeta = new Tag('meta', { content: this.background });
 		const backgroundImageMeta = new Tag('meta', { content: this.backgroundImage });
 		const alignMeta = new Tag('meta', { content: this.align });
 
 		const actionsDiv = actions.wrap('div');
+		const showcaseDiv = side.wrap('div');
 
 		return createComponentRenderable(schema.Hero, {
 			tag: 'section',
@@ -57,6 +63,7 @@ class HeroModel extends Model {
 			refs: {
 				actions: actionsDiv,
 				body: header.wrap('div'),
+				showcase: showcaseDiv,
 			},
 			children: [
 				backgroundMeta,
@@ -64,6 +71,7 @@ class HeroModel extends Model {
 				alignMeta,
 				header.wrap('header').next(),
 				actionsDiv.next(),
+				...(side.toArray().length > 0 ? [showcaseDiv.next()] : []),
 			],
 		});
 	}

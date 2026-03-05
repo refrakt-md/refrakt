@@ -187,7 +187,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'hero',
 		modifiers: { align: { source: 'meta', default: 'center' } },
 		contextModifiers: { 'Feature': 'in-feature' },
-		autoLabel: pageSectionAutoLabel,
+		autoLabel: { ...pageSectionAutoLabel, showcase: 'showcase' },
 	},
 	CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {

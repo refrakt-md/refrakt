@@ -170,3 +170,16 @@
 	border-color: var(--rf-color-surface-active);
 	text-decoration: none;
 }
+.rf-hero__showcase {
+	margin-top: 3rem;
+	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
+}
+.rf-hero__showcase img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+.rf-hero__showcase pre {
+	margin: 0;
+}
