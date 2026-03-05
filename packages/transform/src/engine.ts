@@ -334,6 +334,8 @@ function transformRune(
 				styleParts.push(`${spec.prop}: ${spec.transform(val)}`);
 			} else if (spec.template) {
 				styleParts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
+			} else {
+				styleParts.push(`${spec.prop}: ${val}`);
 			}
 		}
 	}

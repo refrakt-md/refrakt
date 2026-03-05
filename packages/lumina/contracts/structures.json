@@ -94,6 +94,22 @@
 				"stack": {
 					"source": "meta",
 					"dataAttribute": "data-stack"
+				},
+				"ratio": {
+					"source": "meta",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"dataAttribute": "data-gap"
+				},
+				"min": {
+					"source": "meta",
+					"dataAttribute": "data-min"
 				}
 			},
 			"inlineStyles": {

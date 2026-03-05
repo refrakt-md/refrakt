@@ -17,7 +17,7 @@ npm create refrakt
 
 ---
 
-{% grid layout="2 1" align="center" %}
+{% grid layout="2 1" stack="natual" align="center" %}
 
 {% codegroup %}
 ```markdoc

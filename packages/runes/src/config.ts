@@ -98,6 +98,10 @@ export const coreConfig: ThemeConfig = {
 				collapse: { source: 'meta', noBemClass: true },
 				aspect: { source: 'meta', noBemClass: true },
 				stack: { source: 'meta', noBemClass: true },
+				ratio: { source: 'meta', noBemClass: true },
+				align: { source: 'meta', noBemClass: true },
+				gap: { source: 'meta', noBemClass: true },
+				min: { source: 'meta', noBemClass: true },
 			},
 			styles: {
 				ratio: { prop: '--grid-ratio', transform: ratioToFr },
