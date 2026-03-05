@@ -11,7 +11,25 @@ export class Annotation {
   public static onClass<T extends Annotation>(
     this: StaticThis<T>, ctr: Function | Constructor<any>, inherit?: boolean): T[]
   {
-    return ofInstance(this, annotations(ctr).read(inherit));
+    if (!inherit) {
+      return ofInstance(this, annotations(ctr).read(false));
+    }
+    // Walk prototype chain explicitly and merge annotations from all ancestors.
+    // Reflect.getMetadata returns only the first match, which misses parent
+    // annotations when a child class defines its own decorators.
+    const seen = new Set<any>();
+    const all: any[] = [];
+    let current: any = ctr;
+    while (current && current !== Function.prototype) {
+      for (const a of (annotations(current).read(false) || [])) {
+        if (!seen.has(a)) {
+          seen.add(a);
+          all.push(a);
+        }
+      }
+      current = Object.getPrototypeOf(current);
+    }
+    return ofInstance(this, all);
   }
 
   public static onProperty<T extends Annotation>(
@@ -30,8 +48,8 @@ export class Annotation {
   }
 
   public static existsOnClass<T extends Annotation>(
-    this: StaticThis<T>, ctr: Function | Constructor<any>, inherit?: boolean): boolean
+    this: StaticThis<T> & typeof Annotation, ctr: Function | Constructor<any>, inherit?: boolean): boolean
   {
-    return ofInstance(this, annotations(ctr).read(inherit)).length > 0;
+    return this.onClass(ctr, inherit).length > 0;
   }
 }
