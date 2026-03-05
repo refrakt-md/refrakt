@@ -115,11 +115,11 @@
 	margin-top: var(--rf-spacing-section-tight, 1.5rem);
 }
 .rf-page-content > article > [data-spacing="loose"] {
-	margin-top: var(--rf-spacing-section-loose, 6rem);
+	margin-top: var(--rf-spacing-section-loose, 8rem);
 }
 .rf-page-content > article > [data-spacing="breathe"] {
-	margin-top: var(--rf-spacing-section-breathe, 8rem);
-	margin-bottom: var(--rf-spacing-section-breathe, 8rem);
+	margin-top: var(--rf-spacing-section-breathe, 12rem);
+	margin-bottom: var(--rf-spacing-section-breathe, 12rem);
 }
 
 /* Collapse top/bottom padding when a full-bleed section is first/last */

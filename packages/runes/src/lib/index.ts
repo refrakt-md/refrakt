@@ -139,7 +139,17 @@ export function createSchema<TInput extends Model>(
       model.node.children = model.processChildren(node.children);
 
       const result = model.transform();
-      return injectBgMetas(injectTintMetas(result, model), model);
+      const output = injectBgMetas(injectTintMetas(result, model), model);
+
+      // Forward universal layout attributes to the output tag
+      if (Markdoc.Tag.isTag(output)) {
+        const width = (model as any).width as string | undefined;
+        const spacing = (model as any).spacing as string | undefined;
+        if (width) output.attributes.width = width;
+        if (spacing) output.attributes.spacing = spacing;
+      }
+
+      return output;
     }
   };
 
