@@ -77,9 +77,23 @@
 				"{content}"
 			],
 			"modifiers": {
+				"mode": {
+					"source": "meta",
+					"default": "columns",
+					"classPattern": ".rf-grid--{value}",
+					"dataAttribute": "data-mode"
+				},
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"stack": {
+					"source": "meta",
+					"dataAttribute": "data-stack"
 				}
 			},
 			"inlineStyles": {
@@ -91,7 +105,9 @@
 				},
 				"gap": {
 					"prop": "--grid-gap"
-				}
+				},
+				"min": "--grid-min",
+				"aspect": "--grid-aspect"
 			}
 		},
 		"CodeGroup": {

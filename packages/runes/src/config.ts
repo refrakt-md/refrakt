@@ -94,12 +94,17 @@ export const coreConfig: ThemeConfig = {
 		Grid: {
 			block: 'grid',
 			modifiers: {
+				mode: { source: 'meta', default: 'columns' },
 				collapse: { source: 'meta', noBemClass: true },
+				aspect: { source: 'meta', noBemClass: true },
+				stack: { source: 'meta', noBemClass: true },
 			},
 			styles: {
 				ratio: { prop: '--grid-ratio', transform: ratioToFr },
 				align: { prop: '--grid-align' },
 				gap: { prop: '--grid-gap', transform: resolveGap },
+				min: '--grid-min',
+				aspect: '--grid-aspect',
 			},
 		},
 		CodeGroup: {

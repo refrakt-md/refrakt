@@ -30,6 +30,29 @@
 /* Cell styling */
 .rf-grid [data-name="cell"] p:first-child { margin-top: 0; }
 .rf-grid [data-name="cell"] p:last-child { margin-bottom: 0; }
+/* Auto mode — responsive auto-fill */
+.rf-grid[data-mode="auto"] [data-layout="grid"] {
+	grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 250px), 1fr));
+}
+/* Masonry mode — progressive enhancement */
+.rf-grid[data-mode="masonry"] [data-layout="grid"] {
+	grid-template-rows: masonry;
+}
+/* Aspect ratio enforcement on cells */
+.rf-grid[data-aspect] [data-name="cell"] {
+	aspect-ratio: var(--grid-aspect);
+	overflow: hidden;
+}
+.rf-grid[data-aspect] [data-name="cell"] > img,
+.rf-grid[data-aspect] [data-name="cell"] > video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+/* Stack order when collapsed */
+.rf-grid[data-stack="reverse"] [data-name="cell"]:last-child {
+	order: -1;
+}
 /* Collapse breakpoints */
 @media (max-width: 640px) {
 	.rf-grid[data-collapse="sm"] [data-layout="grid"] { grid-template-columns: 1fr; }
