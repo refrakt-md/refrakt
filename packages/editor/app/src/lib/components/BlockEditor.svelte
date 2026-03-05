@@ -29,6 +29,7 @@
 		readOnly?: boolean;
 		communityTags?: Record<string, unknown> | null;
 		communityPostTransforms?: Record<string, Function> | null;
+		communityStyles?: Record<string, Record<string, unknown>> | null;
 		aggregated?: Record<string, unknown>;
 	}
 
@@ -45,6 +46,7 @@
 		readOnly = false,
 		communityTags = null,
 		communityPostTransforms = null,
+		communityStyles = null,
 		aggregated = {},
 	}: Props = $props();
 
@@ -422,6 +424,7 @@
 								{highlightTransform}
 								{communityTags}
 								{communityPostTransforms}
+								{communityStyles}
 								{aggregated}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}

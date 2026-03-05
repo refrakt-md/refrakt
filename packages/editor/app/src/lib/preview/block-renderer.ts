@@ -13,25 +13,40 @@ const RUNTIME_ONLY_TYPES = new Set([
 ]);
 
 /**
- * Restore postTransform hooks that were stripped during JSON serialization.
- * The server strips functions from the themeConfig before sending it as JSON;
- * we merge them back from the statically-imported baseConfig (core runes)
- * and from the community tags bundle (community runes).
+ * Restore functions that were lost during JSON serialization.
+ * The server sends themeConfig as JSON; JSON.stringify silently drops functions.
+ * We merge postTransform and styles (which may contain transform functions)
+ * back from the statically-imported baseConfig (core runes) and from the
+ * community tags bundle (community runes).
  */
-function restorePostTransforms(
+function restoreFunctions(
 	config: ThemeConfig,
 	communityPostTransforms?: Record<string, PostTransformFn>,
+	communityStyles?: Record<string, Record<string, unknown>>,
 ): ThemeConfig {
 	const runes = { ...config.runes };
+	// Core runes: restore from baseConfig
 	for (const [name, rune] of Object.entries(baseConfig.runes)) {
-		if (rune.postTransform && runes[name]) {
-			runes[name] = { ...runes[name], postTransform: rune.postTransform };
+		if (!runes[name]) continue;
+		const patches: Record<string, unknown> = {};
+		if (rune.postTransform) patches.postTransform = rune.postTransform;
+		if (rune.styles) patches.styles = rune.styles;
+		if (Object.keys(patches).length) {
+			runes[name] = { ...runes[name], ...patches };
 		}
 	}
+	// Community runes: restore from bundle exports
 	if (communityPostTransforms) {
 		for (const [name, postTransform] of Object.entries(communityPostTransforms)) {
 			if (runes[name]) {
 				runes[name] = { ...runes[name], postTransform };
+			}
+		}
+	}
+	if (communityStyles) {
+		for (const [name, styles] of Object.entries(communityStyles)) {
+			if (runes[name]) {
+				runes[name] = { ...runes[name], styles };
 			}
 		}
 	}
@@ -53,9 +68,10 @@ export function renderBlockPreview(
 	extraTags?: Record<string, unknown>,
 	communityPostTransforms?: Record<string, PostTransformFn>,
 	aggregated?: AggregatedData,
+	communityStyles?: Record<string, Record<string, unknown>>,
 ): { html: string; isComponent: boolean } {
 	const ast = Markdoc.parse(source);
-	const fullConfig = restorePostTransforms(themeConfig, communityPostTransforms);
+	const fullConfig = restoreFunctions(themeConfig, communityPostTransforms, communityStyles);
 	const mergedTags = extraTags ? { ...tags, ...extraTags as Record<string, import('@markdoc/markdoc').Schema> } : tags;
 	const renderable = Markdoc.transform(ast, {
 		tags: mergedTags,
