@@ -55,12 +55,17 @@ export class DefinitionModel extends Model {
 
 export const definition = createSchema(DefinitionModel);
 
+const alignType = ['left', 'center', 'right'] as const;
+
 class FeatureModel extends SplitablePageSectionModel {
   @attribute({ type: Boolean, required: false })
   split: boolean = false;
 
   @attribute({ type: Boolean, required: false })
   mirror: boolean = false;
+
+  @attribute({ type: String, required: false, matches: alignType.slice() })
+  align: typeof alignType[number] = 'center';
 
   @group({ section: 0, include: ['heading', 'paragraph'] })
   header: NodeStream;
@@ -90,10 +95,12 @@ class FeatureModel extends SplitablePageSectionModel {
 
     const splitMeta = this.split ? new Tag('meta', { content: 'split' }) : undefined;
     const mirrorMeta = this.mirror ? new Tag('meta', { content: 'mirror' }) : undefined;
+    const alignMeta = new Tag('meta', { content: this.align });
 
     const children = [
       ...(splitMeta ? [splitMeta] : []),
       ...(mirrorMeta ? [mirrorMeta] : []),
+      alignMeta,
       mainContent.next(),
       ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
     ];
@@ -106,6 +113,7 @@ class FeatureModel extends SplitablePageSectionModel {
         featureItem: definitions.flatten().tag('div'),
         split: splitMeta,
         mirror: mirrorMeta,
+        align: alignMeta,
       },
       refs: {
         body: mainContent,

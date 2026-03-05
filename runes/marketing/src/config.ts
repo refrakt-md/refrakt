@@ -208,7 +208,7 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: { size: { source: 'meta', default: 'medium' } },
 		autoLabel: { name: 'title' },
 	},
-	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
+	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' }, align: { source: 'meta', default: 'center' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
 	Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },

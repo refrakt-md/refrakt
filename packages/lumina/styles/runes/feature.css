@@ -12,7 +12,6 @@
 }
 .rf-feature__header {
 	margin-bottom: 1.5rem;
-	text-align: center;
 }
 .rf-feature__eyebrow {
 	font-size: 0.8125rem;
@@ -51,8 +50,19 @@
 	display: contents;
 }
 .rf-feature h2 {
-	text-align: center;
 	margin-bottom: 2rem;
+}
+.rf-feature--center .rf-feature__header,
+.rf-feature--center h2 {
+	text-align: center;
+}
+.rf-feature--left .rf-feature__header,
+.rf-feature--left h2 {
+	text-align: left;
+}
+.rf-feature--right .rf-feature__header,
+.rf-feature--right h2 {
+	text-align: right;
 }
 .rf-feature dl {
 	display: grid;
