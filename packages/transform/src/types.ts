@@ -15,6 +15,8 @@ export interface RuneConfig {
 		source: 'meta' | 'attribute';
 		/** Default value if not found */
 		default?: string;
+		/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
+		noBemClass?: boolean;
 	}>;
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
@@ -37,8 +39,9 @@ export interface RuneConfig {
 	/** Map modifier names to CSS properties set as inline style on root.
 	 *  Simple form: `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"`
 	 *  Template form: `{ columns: { prop: 'grid-template-columns', template: 'repeat({}, 1fr)' } }`
-	 *    → `style="grid-template-columns: repeat(3, 1fr)"` */
-	styles?: Record<string, string | { prop: string; template: string }>;
+	 *    → `style="grid-template-columns: repeat(3, 1fr)"`
+	 *  Transform form: `{ ratio: { prop: '--split-ratio', transform: v => v.split(' ').map(n => n+'fr').join(' ') } }` */
+	styles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */

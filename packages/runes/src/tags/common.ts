@@ -4,12 +4,31 @@ import { schema } from '../registry.js';
 import { attribute, createComponentRenderable, createSchema, Model } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
+/** @deprecated Use SplitLayoutModel instead */
 export class SplitablePageSectionModel extends Model {
   @attribute({ type: Boolean, required: false })
   split: boolean = false;
 
   @attribute({ type: Boolean, required: false })
   mirror: boolean = false;
+}
+
+/** Base model for section runes with split layout support */
+export class SplitLayoutModel extends Model {
+  @attribute({ type: String, required: false, matches: ['stacked', 'split', 'split-reverse'] })
+  layout: 'stacked' | 'split' | 'split-reverse' = 'stacked';
+
+  @attribute({ type: String, required: false })
+  ratio: string = '1 1';
+
+  @attribute({ type: String, required: false, matches: ['start', 'center', 'end'] })
+  align: 'start' | 'center' | 'end' = 'start';
+
+  @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'] })
+  gap: string = 'default';
+
+  @attribute({ type: String, required: false, matches: ['sm', 'md', 'lg', 'never'] })
+  collapse: string | undefined = undefined;
 }
 
 class LinkItemModel extends Model {

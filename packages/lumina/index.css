@@ -20,6 +20,7 @@
 @import './styles/layouts/on-this-page.css';
 @import './styles/layouts/search.css';
 @import './styles/layouts/version-switcher.css';
+@import './styles/layouts/split.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';

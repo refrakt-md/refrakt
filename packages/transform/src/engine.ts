@@ -74,7 +74,9 @@ function transformRune(
 				: tag.attributes[name] ?? mod.default;
 			if (value) {
 				modifierValues[name] = value;
-				modifierClasses.push(`${block}--${value}`);
+				if (!mod.noBemClass) {
+					modifierClasses.push(`${block}--${value}`);
+				}
 			}
 		}
 	}
@@ -249,7 +251,9 @@ function transformRune(
 			if (!val) continue;
 			if (typeof spec === 'string') {
 				styleParts.push(`${spec}: ${val}`);
-			} else {
+			} else if (spec.transform) {
+				styleParts.push(`${spec.prop}: ${spec.transform(val)}`);
+			} else if (spec.template) {
 				styleParts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
 			}
 		}

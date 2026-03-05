@@ -75,7 +75,24 @@
 			"dataRune": "grid",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--grid-ratio"
+				},
+				"align": {
+					"prop": "--grid-align"
+				},
+				"gap": {
+					"prop": "--grid-gap"
+				}
+			}
 		},
 		"CodeGroup": {
 			"block": "codegroup",
@@ -755,11 +772,36 @@
 				"{content}"
 			],
 			"modifiers": {
-				"align": {
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"justify": {
 					"source": "meta",
 					"default": "center",
 					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-justify"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
 					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"contextModifiers": {
@@ -794,10 +836,21 @@
 					"selector": ".rf-hero__image",
 					"source": "autoLabel"
 				},
-				"showcase": {
-					"tag": "showcase",
-					"selector": ".rf-hero__showcase",
+				"media": {
+					"tag": "media",
+					"selector": ".rf-hero__media",
 					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -931,21 +984,36 @@
 				"{content}"
 			],
 			"modifiers": {
-				"split": {
+				"layout": {
 					"source": "meta",
+					"default": "stacked",
 					"classPattern": ".rf-feature--{value}",
-					"dataAttribute": "data-split"
+					"dataAttribute": "data-layout"
 				},
-				"mirror": {
-					"source": "meta",
-					"classPattern": ".rf-feature--{value}",
-					"dataAttribute": "data-mirror"
-				},
-				"align": {
+				"justify": {
 					"source": "meta",
 					"default": "center",
 					"classPattern": ".rf-feature--{value}",
+					"dataAttribute": "data-justify"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
 					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"contextModifiers": {
@@ -983,6 +1051,17 @@
 					"tag": "image",
 					"selector": ".rf-feature__image",
 					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1039,15 +1118,41 @@
 				"{content}"
 			],
 			"modifiers": {
-				"split": {
+				"layout": {
 					"source": "meta",
+					"default": "stacked",
 					"classPattern": ".rf-step--{value}",
-					"dataAttribute": "data-split"
+					"dataAttribute": "data-layout"
 				},
-				"mirror": {
+				"ratio": {
 					"source": "meta",
-					"classPattern": ".rf-step--{value}",
-					"dataAttribute": "data-mirror"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1116,7 +1221,15 @@
 			"dataRune": "testimonial",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"variant": {
+					"source": "meta",
+					"default": "card",
+					"classPattern": ".rf-testimonial--{value}",
+					"dataAttribute": "data-variant"
+				}
+			}
 		},
 		"Comparison": {
 			"block": "comparison",

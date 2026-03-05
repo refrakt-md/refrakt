@@ -1,0 +1,28 @@
+/* Shared split layout — used by Feature, Hero, Step, and any rune with data-layout */
+
+[data-layout="split"],
+[data-layout="split-reverse"] {
+  display: grid;
+  grid-template-columns: var(--split-ratio, 1fr 1fr);
+  align-items: var(--split-align, start);
+  gap: var(--split-gap, var(--rf-spacing-lg));
+}
+
+[data-layout="split-reverse"] > [data-name="content"] { order: 2; }
+[data-layout="split-reverse"] > [data-name="media"] { order: 1; }
+
+/* Collapse breakpoints */
+@media (max-width: 640px) {
+  [data-layout^="split"][data-collapse="sm"] { grid-template-columns: 1fr; }
+  [data-layout^="split"][data-collapse="sm"] > * { order: unset; }
+}
+
+@media (max-width: 768px) {
+  [data-layout^="split"][data-collapse="md"] { grid-template-columns: 1fr; }
+  [data-layout^="split"][data-collapse="md"] > * { order: unset; }
+}
+
+@media (max-width: 1024px) {
+  [data-layout^="split"][data-collapse="lg"] { grid-template-columns: 1fr; }
+  [data-layout^="split"][data-collapse="lg"] > * { order: unset; }
+}

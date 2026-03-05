@@ -1,6 +1,6 @@
 import { Newable } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes, Schema, SchemaAttribute, Tag } from '@markdoc/markdoc';
+import type { RenderableTreeNodes, Schema, SchemaAttribute, Tag, ValidationError } from '@markdoc/markdoc';
 
 import { Model } from './model.js';
 import { AttributeAnnotation } from './annotations/attribute.js';
@@ -10,6 +10,14 @@ export { attribute } from './annotations/attribute.js';
 export { group, groupList } from './annotations/group.js';
 export { id } from './annotations/id.js';
 export { Model } from './model.js';
+
+/** Rule for mapping a deprecated attribute to its replacement */
+export interface DeprecationRule {
+  /** New attribute name to copy the value to */
+  newName: string;
+  /** Optional transform — receives the old value and all attributes, returns the new value */
+  transform?: (value: any, allAttrs: Record<string, any>) => any;
+}
 
 /**
  * Inject tint meta tags into the result renderable.
@@ -54,7 +62,10 @@ function injectTintMetas(result: RenderableTreeNodes, model: Model): RenderableT
   return result;
 }
 
-export function createSchema<TInput extends Model>(ModelCtr: Newable<TInput>): Schema {
+export function createSchema<TInput extends Model>(
+  ModelCtr: Newable<TInput>,
+  deprecations?: Record<string, DeprecationRule>,
+): Schema {
   const attributes: Record<string, SchemaAttribute> = {};
 
   for (const attr of AttributeAnnotation.onClass(ModelCtr, true)) {
@@ -69,9 +80,33 @@ export function createSchema<TInput extends Model>(ModelCtr: Newable<TInput>): S
   attributes['width'] = { type: String, required: false, matches: ['content', 'wide', 'full'] };
   attributes['spacing'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
 
-  return {
+  // Register deprecated attribute names so Markdoc accepts them
+  if (deprecations) {
+    for (const [oldName, rule] of Object.entries(deprecations)) {
+      if (!attributes[oldName]) {
+        // Inherit type from the target attribute if possible
+        const target = attributes[rule.newName];
+        attributes[oldName] = { type: target?.type ?? String, required: false };
+      }
+    }
+  }
+
+  const schema: Schema = {
     attributes,
     transform: (node, config) => {
+      // Resolve deprecated attributes before model construction
+      if (deprecations) {
+        for (const [oldName, rule] of Object.entries(deprecations)) {
+          if (node.attributes[oldName] !== undefined && node.attributes[rule.newName] === undefined) {
+            const newVal = rule.transform
+              ? rule.transform(node.attributes[oldName], node.attributes)
+              : node.attributes[oldName];
+            if (newVal !== undefined) {
+              node.attributes[rule.newName] = newVal;
+            }
+          }
+        }
+      }
 
       const model = new ModelCtr(node, config);
       const attr = node.transformAttributes(config);
@@ -83,5 +118,24 @@ export function createSchema<TInput extends Model>(ModelCtr: Newable<TInput>): S
       const result = model.transform();
       return injectTintMetas(result, model);
     }
+  };
+
+  // Add validation for deprecation warnings
+  if (deprecations) {
+    schema.validate = (node) => {
+      const errors: ValidationError[] = [];
+      for (const [oldName, rule] of Object.entries(deprecations)) {
+        if (node.attributes[oldName] !== undefined) {
+          errors.push({
+            id: 'deprecated-attribute',
+            level: 'warning',
+            message: `Attribute "${oldName}" is deprecated. Use "${rule.newName}" instead.`,
+          });
+        }
+      }
+      return errors;
+    };
   }
+
+  return schema;
 }

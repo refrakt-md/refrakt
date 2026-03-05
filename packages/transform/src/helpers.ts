@@ -34,3 +34,23 @@ export function readMeta(tag: SerializedTag, property: string, defaultValue?: st
 	const meta = findMeta(tag, property);
 	return meta?.attributes.content ?? defaultValue;
 }
+
+// ─── Layout Transform Helpers ─────────────────────────────────────────
+
+/** Named gap presets → CSS values */
+const GAP_PRESETS: Record<string, string> = {
+	none: '0',
+	tight: 'var(--rf-spacing-sm)',
+	default: 'var(--rf-spacing-md)',
+	loose: 'var(--rf-spacing-xl)',
+};
+
+/** Resolve a gap preset name to its CSS value. Raw CSS values pass through. */
+export function resolveGap(value: string): string {
+	return GAP_PRESETS[value] ?? value;
+}
+
+/** Convert space-separated ratio numbers to CSS fr units: "2 1" → "2fr 1fr" */
+export function ratioToFr(value: string): string {
+	return value.split(/\s+/).map(n => `${n}fr`).join(' ');
+}

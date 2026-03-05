@@ -3,7 +3,7 @@ title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
 
-{% hero %}
+{% hero justify="left" %}
 
 # Write Markdown. Get structure.
 
@@ -14,6 +14,58 @@ npm create refrakt
 ```
 
 - [Get Started](/docs/getting-started)
+
+---
+
+{% grid layout="2 1" align="center" %}
+
+{% codegroup %}
+```markdoc
+{% mockup device="watch" color="dark" %}
+{% sandbox height=242 %}
+<style>
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; box-sizing: border-box; }
+  .time { font-size: 36px; font-weight: 200; letter-spacing: 2px; }
+  .date { font-size: 11px; color: #f97316; margin-top: 2px; font-weight: 600; }
+  .rings { display: flex; gap: 8px; margin-top: 12px; }
+  .ring { width: 24px; height: 24px; border-radius: 50%; border: 3px solid; }
+</style>
+<div class="time">10:09</div>
+<div class="date">TUE MAR 4</div>
+<div class="rings">
+  <div class="ring" style="border-color: #ef4444;"></div>
+  <div class="ring" style="border-color: #22c55e;"></div>
+  <div class="ring" style="border-color: #06b6d4;"></div>
+</div>
+{% /sandbox %}
+{% /mockup %}
+```
+{% /codegroup %}
+
+---
+
+{% mockup device="watch" color="dark" %}
+{% sandbox height=242 %}
+<style>
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; box-sizing: border-box; }
+  .time { font-size: 36px; font-weight: 200; letter-spacing: 2px; }
+  .date { font-size: 11px; color: #f97316; margin-top: 2px; font-weight: 600; }
+  .rings { display: flex; gap: 8px; margin-top: 12px; }
+  .ring { width: 24px; height: 24px; border-radius: 50%; border: 3px solid; }
+</style>
+<div class="time">10:09</div>
+<div class="date">TUE MAR 4</div>
+<div class="rings">
+  <div class="ring" style="border-color: #ef4444;"></div>
+  <div class="ring" style="border-color: #22c55e;"></div>
+  <div class="ring" style="border-color: #06b6d4;"></div>
+</div>
+{% /sandbox %}
+{% /mockup %}
+{% /grid %}
+
 
 {% /hero %}
 
@@ -47,7 +99,42 @@ npm create refrakt
 
 {% /feature %}
 
-{% testimonial layout="quote" %}
+{% feature tint-mode="dark" %}
+feature
+## Why refrakt.md?
+
+Present bla bla bla
+
+---
+
+{% grid %}
+
+{% map zoom="13" center="48.8566, 2.3522" %}
+- **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
+- **Eiffel Tower** - *Iconic iron lattice tower* - 48.8584, 2.2945
+- **Notre-Dame** - *Medieval Catholic cathedral* - 48.8530, 2.3499
+{% /map %}
+
+---
+
+{% itinerary %}
+### 10:00 AM — Museum of Modern Art
+
+Spend the morning exploring the permanent collection.
+
+### 1:00 PM — Central Park
+
+Picnic lunch on the Great Lawn.
+
+### 3:00 PM — Times Square
+
+Walk through the theater district.
+{% /itinerary %}
+{% /grid %}
+
+{% /feature %}
+
+{% testimonial variant="quote" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic
@@ -130,7 +217,7 @@ Back up your data before proceeding.
 
 Pure Markdown in, structured HTML out. The source tabs show exactly what you write and what the framework receives.
 
-{% preview source=true width="wide" %}
+{% preview source=true %}
 {% comparison highlighted="refrakt.md" %}
 
 ## refrakt.md
