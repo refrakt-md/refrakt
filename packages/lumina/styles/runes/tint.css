@@ -51,6 +51,7 @@
 
 [data-color-scheme="dark"] {
 	color-scheme: dark;
+	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
 	--cs-bg: #0c1222;
@@ -97,6 +98,7 @@
 
 [data-color-scheme="light"] {
 	color-scheme: light;
+	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
 	--cs-bg: #ffffff;
@@ -152,6 +154,7 @@
 }
 
 [data-tint] {
+	color: var(--rf-color-text);
 	--rf-color-bg: var(--tint-background);
 	--rf-color-surface: var(--tint-surface);
 	--rf-color-text: var(--tint-primary);
