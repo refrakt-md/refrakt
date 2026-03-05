@@ -820,6 +820,7 @@ const CHILD_RUNES = new Set([
 	'symbol-group', 'symbol-member', 'map-pin', 'definition', 'region',
 	'beat', 'character-section', 'realm-section', 'faction-section',
 	'itinerary-day', 'itinerary-stop',
+	'tint', 'bg', 'budget-category', 'budget-line-item',
 ]);
 
 const RUNE_CATEGORIES: Record<string, string> = {
@@ -828,15 +829,17 @@ const RUNE_CATEGORIES: Record<string, string> = {
 
 	hint: 'Content', steps: 'Content', sidenote: 'Content', figure: 'Content',
 	details: 'Content', embed: 'Content', icon: 'Content', form: 'Content',
+	pullquote: 'Content', textblock: 'Content',
 
 	grid: 'Layout', tabs: 'Layout', accordion: 'Layout', bento: 'Layout',
-	reveal: 'Layout', annotate: 'Layout',
+	reveal: 'Layout', annotate: 'Layout', mediatext: 'Layout', showcase: 'Layout',
 
 	codegroup: 'Code & Data', compare: 'Code & Data', diff: 'Code & Data',
 	api: 'Code & Data', symbol: 'Code & Data', datatable: 'Code & Data',
 	chart: 'Code & Data', diagram: 'Code & Data', preview: 'Code & Data',
 	sandbox: 'Code & Data',
 
+	budget: 'Semantic',
 	recipe: 'Semantic', howto: 'Semantic', event: 'Semantic', cast: 'Semantic',
 	organization: 'Semantic', timeline: 'Semantic', changelog: 'Semantic',
 	conversation: 'Semantic', storyboard: 'Semantic', map: 'Semantic',

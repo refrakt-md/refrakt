@@ -231,4 +231,10 @@ With movable type, ideas could be reproduced quickly and cheaply. This democrati
 
 The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
 {% /mediatext %}`,
+
+	showcase: `{% showcase shadow="soft" %}
+![Product screenshot](https://picsum.photos/seed/showcase/800/500)
+{% /showcase %}`,
+
+	icon: `{% icon name="check" /%}`,
 };
