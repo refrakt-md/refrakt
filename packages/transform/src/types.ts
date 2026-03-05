@@ -44,6 +44,11 @@ export interface RuneConfig {
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
 	staticModifiers?: string[];
 
+	/** Default page grid width for this rune.
+	 *  Runes like hero/feature/cta default to 'full' (full-bleed).
+	 *  Omit or set to 'content' for standard content-width runes. */
+	defaultWidth?: 'content' | 'wide' | 'full';
+
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */

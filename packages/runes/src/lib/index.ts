@@ -65,6 +65,10 @@ export function createSchema<TInput extends Model>(ModelCtr: Newable<TInput>): S
   attributes['tint'] = { type: String, required: false };
   attributes['tint-mode'] = { type: String, required: false, matches: ['auto', 'dark', 'light'] };
 
+  // Add width and spacing as universal layout attributes on all runes
+  attributes['width'] = { type: String, required: false, matches: ['content', 'wide', 'full'] };
+  attributes['spacing'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
+
   return {
     attributes,
     transform: (node, config) => {

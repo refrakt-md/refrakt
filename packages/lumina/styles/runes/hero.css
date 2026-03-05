@@ -6,14 +6,6 @@
 	background-position: center;
 	overflow: hidden;
 }
-/* Full-bleed in default layout */
-.rf-page-content > article > .rf-hero {
-	grid-column: 1 / -1;
-	padding-inline: max(
-		var(--rf-content-gutter, 1.5rem),
-		calc((100% - var(--rf-content-max, 80rem)) / 2)
-	);
-}
 .rf-hero__header {
 	margin-bottom: 2rem;
 }

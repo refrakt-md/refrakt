@@ -793,6 +793,11 @@
 					"tag": "image",
 					"selector": ".rf-hero__image",
 					"source": "autoLabel"
+				},
+				"showcase": {
+					"tag": "showcase",
+					"selector": ".rf-hero__showcase",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -935,6 +940,12 @@
 					"source": "meta",
 					"classPattern": ".rf-feature--{value}",
 					"dataAttribute": "data-mirror"
+				},
+				"align": {
+					"source": "meta",
+					"default": "center",
+					"classPattern": ".rf-feature--{value}",
+					"dataAttribute": "data-align"
 				}
 			},
 			"contextModifiers": {

@@ -185,11 +185,12 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Hero: {
 		block: 'hero',
+		defaultWidth: 'full',
 		modifiers: { align: { source: 'meta', default: 'center' } },
 		contextModifiers: { 'Feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, showcase: 'showcase' },
 	},
-	CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -208,11 +209,11 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: { size: { source: 'meta', default: 'medium' } },
 		autoLabel: { name: 'title' },
 	},
-	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' }, align: { source: 'meta', default: 'center' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
+	Feature: { block: 'feature', defaultWidth: 'full', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' }, align: { source: 'meta', default: 'center' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
 	Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
-	Pricing: { block: 'pricing', autoLabel: pageSectionAutoLabel },
+	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel },
 	Tier: { block: 'tier', parent: 'Pricing' },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
 	Testimonial: {

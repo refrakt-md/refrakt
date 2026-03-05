@@ -166,6 +166,18 @@ function transformRune(
 		tintMetaProps.add('tint-mode');
 	}
 
+	// 1e. Width and spacing — universal base attributes on all block runes
+	const widthValue = tag.attributes?.width ?? config.defaultWidth;
+	if (widthValue && widthValue !== 'content') {
+		modifierValues['width'] = widthValue;
+		modifierClasses.push(`${block}--${widthValue}`);
+	}
+	const spacingValue = tag.attributes?.spacing;
+	if (spacingValue && spacingValue !== 'default') {
+		modifierValues['spacing'] = spacingValue;
+		modifierClasses.push(`${block}--spacing-${spacingValue}`);
+	}
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -249,10 +261,13 @@ function transformRune(
 			: styleParts.join('; ');
 	}
 
+	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
+	const { width: _w, spacing: _s, ...passAttrs } = tag.attributes;
+
 	const result: SerializedTag = {
 		...tag,
 		attributes: {
-			...tag.attributes,
+			...passAttrs,
 			...modDataAttrs,
 			...tintDataAttrs,
 			class: bemClass,
