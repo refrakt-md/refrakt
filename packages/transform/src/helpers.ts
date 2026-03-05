@@ -54,3 +54,15 @@ export function resolveGap(value: string): string {
 export function ratioToFr(value: string): string {
 	return value.split(/\s+/).map(n => `${n}fr`).join(' ');
 }
+
+/** Named offset presets → CSS spacing token values */
+const OFFSET_PRESETS: Record<string, string> = {
+	sm: 'var(--rf-spacing-sm)',
+	md: 'var(--rf-spacing-md)',
+	lg: 'var(--rf-spacing-lg)',
+};
+
+/** Resolve an offset preset name to its CSS value. Raw CSS values pass through. */
+export function resolveOffset(value: string): string {
+	return OFFSET_PRESETS[value] ?? value;
+}

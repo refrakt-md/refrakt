@@ -62,6 +62,29 @@ function injectTintMetas(result: RenderableTreeNodes, model: Model): RenderableT
   return result;
 }
 
+/**
+ * Inject bg meta tags into the result renderable.
+ * Transforms the extracted _bgNode and appends its meta tags to the parent.
+ */
+function injectBgMetas(result: RenderableTreeNodes, model: Model): RenderableTreeNodes {
+  if (!Markdoc.Tag.isTag(result) || !model._bgNode) return result;
+
+  const bgResult = Markdoc.transform(model._bgNode, model.config);
+  if (Markdoc.Tag.isTag(bgResult)) {
+    const metas: Tag[] = [];
+    for (const child of bgResult.children) {
+      if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
+        metas.push(child);
+      }
+    }
+    if (metas.length > 0) {
+      result.children = [...result.children, ...metas];
+    }
+  }
+
+  return result;
+}
+
 export function createSchema<TInput extends Model>(
   ModelCtr: Newable<TInput>,
   deprecations?: Record<string, DeprecationRule>,
@@ -116,7 +139,7 @@ export function createSchema<TInput extends Model>(
       model.node.children = model.processChildren(node.children);
 
       const result = model.transform();
-      return injectTintMetas(result, model);
+      return injectBgMetas(injectTintMetas(result, model), model);
     }
   };
 

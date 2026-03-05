@@ -34,6 +34,8 @@ import { pullquote } from './tags/pullquote.js';
 import { textblock } from './tags/textblock.js';
 import { mediatext } from './tags/mediatext.js';
 import { tint } from './tags/tint.js';
+import { showcase } from './tags/showcase.js';
+import { bg } from './tags/bg.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -345,6 +347,18 @@ export const runes = {
     description: 'Section-level colour override via CSS custom properties. Declared as first child of a block rune.',
     reinterprets: { heading: 'light/dark section separator', list: 'token key-value pairs' },
     type: schema.Tint,
+  }),
+  showcase: defineRune({
+    name: 'showcase',
+    schema: showcase,
+    description: 'Media presentation wrapper with shadow, bleed displacement, and aspect ratio enforcement',
+    type: schema.Showcase,
+  }),
+  bg: defineRune({
+    name: 'bg',
+    schema: bg,
+    description: 'Background image/video directive — modifies parent section backdrop',
+    type: schema.Bg,
   }),
 };
 

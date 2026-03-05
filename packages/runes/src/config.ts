@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset } from '@refrakt-md/transform';
 import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -502,6 +502,20 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'left' },
 				ratio: { source: 'meta', default: '1:1' },
 				wrap: { source: 'meta' },
+			},
+		},
+
+		Showcase: {
+			block: 'showcase',
+			modifiers: {
+				shadow: { source: 'meta', default: 'none' },
+				bleed: { source: 'meta', default: 'none' },
+				aspect: { source: 'meta', noBemClass: true },
+				offset: { source: 'meta', noBemClass: true },
+			},
+			styles: {
+				offset: { prop: '--showcase-offset', transform: resolveOffset },
+				aspect: '--showcase-aspect',
 			},
 		},
 

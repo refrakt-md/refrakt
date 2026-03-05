@@ -180,6 +180,79 @@ function transformRune(
 		modifierClasses.push(`${block}--spacing-${spacingValue}`);
 	}
 
+	// 1f. Background processing — read bg-* meta tags and build background layer
+	const bgMetaProps = new Set<string>();
+	const bgDataAttrs: Record<string, string> = {};
+	let bgElement: SerializedTag | null = null;
+
+	const bgSrc = readMeta(tag, 'bg-src');
+	const bgVideo = readMeta(tag, 'bg-video');
+
+	if (bgSrc || bgVideo) {
+		const bgOverlay = readMeta(tag, 'bg-overlay');
+		const bgBlur = readMeta(tag, 'bg-blur');
+		const bgPosition = readMeta(tag, 'bg-position');
+		const bgFit = readMeta(tag, 'bg-fit');
+		const bgOpacity = readMeta(tag, 'bg-opacity');
+		const bgFixed = readMeta(tag, 'bg-fixed');
+
+		// Blur presets
+		const BLUR_PRESETS: Record<string, string> = { sm: '4px', md: '8px', lg: '16px' };
+
+		// Build bg layer style
+		const bgStyleParts: string[] = [];
+		if (bgSrc) bgStyleParts.push(`--bg-image: url(${bgSrc})`);
+		if (bgPosition) bgStyleParts.push(`--bg-position: ${bgPosition}`);
+		if (bgBlur) bgStyleParts.push(`--bg-blur: ${BLUR_PRESETS[bgBlur] ?? bgBlur}`);
+		if (bgFit) bgStyleParts.push(`--bg-fit: ${bgFit}`);
+		if (bgOpacity) bgStyleParts.push(`--bg-opacity: ${bgOpacity}`);
+
+		const bgAttrs: Record<string, any> = { 'data-name': 'bg' };
+		if (bgStyleParts.length) bgAttrs.style = bgStyleParts.join('; ');
+		if (bgFixed) bgAttrs['data-bg-fixed'] = '';
+
+		// Build bg layer children
+		const bgChildren: RendererNode[] = [];
+
+		if (bgVideo) {
+			bgChildren.push(makeTag('video', {
+				'data-name': 'bg-video',
+				autoplay: '',
+				muted: '',
+				loop: '',
+				playsinline: '',
+				src: bgVideo,
+				...(bgStyleParts.length ? { style: bgStyleParts.filter(s => !s.startsWith('--bg-image')).join('; ') } : {}),
+			}));
+		}
+
+		if (bgOverlay) {
+			const overlayAttrs: Record<string, string> = { 'data-name': 'bg-overlay' };
+			if (bgOverlay === 'dark' || bgOverlay === 'light') {
+				overlayAttrs['data-bg-overlay'] = bgOverlay;
+			} else {
+				overlayAttrs.style = `background: ${bgOverlay}`;
+			}
+			bgChildren.push(makeTag('div', overlayAttrs));
+		}
+
+		bgElement = makeTag('div', bgAttrs, bgChildren);
+
+		// Add has-bg modifier and class
+		modifierClasses.push(`${block}--has-bg`);
+		bgDataAttrs['data-bg'] = '';
+
+		// Track consumed meta properties
+		bgMetaProps.add('bg-src');
+		bgMetaProps.add('bg-video');
+		bgMetaProps.add('bg-overlay');
+		bgMetaProps.add('bg-blur');
+		bgMetaProps.add('bg-position');
+		bgMetaProps.add('bg-fit');
+		bgMetaProps.add('bg-opacity');
+		bgMetaProps.add('bg-fixed');
+	}
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -225,6 +298,11 @@ function transformRune(
 		children = [wrapped];
 	}
 
+	// 5b. Prepend bg layer element if present (before content, after structural elements)
+	if (bgElement) {
+		children = [bgElement, ...children];
+	}
+
 	// 6. Apply BEM element classes to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, typeof_);
@@ -239,6 +317,7 @@ function transformRune(
 		const prop = c.attributes.property;
 		if (config.modifiers && prop in config.modifiers) return false;
 		if (tintMetaProps.has(prop)) return false;
+		if (bgMetaProps.has(prop)) return false;
 		return true;
 	});
 
@@ -274,6 +353,7 @@ function transformRune(
 			...passAttrs,
 			...modDataAttrs,
 			...tintDataAttrs,
+			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),

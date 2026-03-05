@@ -30,6 +30,8 @@ import {PullQuote} from './schema/pullquote.js';
 import {TextBlock} from './schema/textblock.js';
 import {MediaText} from './schema/mediatext.js';
 import {Tint} from './schema/tint.js';
+import {Showcase} from './schema/showcase.js';
+import {Bg} from './schema/bg.js';
 
 export const schema = {
   Page: useSchema(Page).defineType('Page'),
@@ -80,4 +82,6 @@ export const schema = {
   TextBlock: useSchema(TextBlock).defineType('TextBlock'),
   MediaText: useSchema(MediaText).defineType('MediaText'),
   Tint: useSchema(Tint).defineType('Tint'),
+  Showcase: useSchema(Showcase).defineType('Showcase'),
+  Bg: useSchema(Bg).defineType('Bg'),
 }

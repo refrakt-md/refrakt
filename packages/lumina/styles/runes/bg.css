@@ -1,0 +1,53 @@
+/* Background — Directive rune for background images, video, overlays, blur */
+
+/* Background layer — absolute positioned behind content */
+[data-name="bg"] {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+	background-image: var(--bg-image);
+	background-size: var(--bg-fit, cover);
+	background-position: var(--bg-position, center);
+	background-repeat: no-repeat;
+}
+/* Blur and opacity applied when set via custom properties */
+[data-name="bg"][style*="--bg-blur"] {
+	filter: blur(var(--bg-blur));
+}
+[data-name="bg"][style*="--bg-opacity"] {
+	opacity: var(--bg-opacity);
+}
+/* Fixed (parallax) background */
+[data-name="bg"][data-bg-fixed] {
+	background-attachment: fixed;
+}
+/* Content above background — any sibling of bg layer gets z-index */
+.rf-has-bg > :not([data-name="bg"]) {
+	position: relative;
+	z-index: 1;
+}
+/* Video background */
+[data-name="bg-video"] {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: var(--bg-position, center);
+}
+[data-name="bg-video"][style*="--bg-blur"] {
+	filter: blur(var(--bg-blur));
+}
+[data-name="bg-video"][style*="--bg-opacity"] {
+	opacity: var(--bg-opacity);
+}
+/* Overlay */
+[data-name="bg-overlay"] {
+	position: absolute;
+	inset: 0;
+}
+[data-name="bg-overlay"][data-bg-overlay="dark"] {
+	background: rgba(0, 0, 0, 0.5);
+}
+[data-name="bg-overlay"][data-bg-overlay="light"] {
+	background: rgba(255, 255, 255, 0.6);
+}

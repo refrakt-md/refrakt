@@ -561,6 +561,42 @@
 				}
 			}
 		},
+		"Showcase": {
+			"block": "showcase",
+			"root": ".rf-showcase",
+			"dataRune": "showcase",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"shadow": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-shadow"
+				},
+				"bleed": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-bleed"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"offset": {
+					"source": "meta",
+					"dataAttribute": "data-offset"
+				}
+			},
+			"inlineStyles": {
+				"offset": {
+					"prop": "--showcase-offset"
+				},
+				"aspect": "--showcase-aspect"
+			}
+		},
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",

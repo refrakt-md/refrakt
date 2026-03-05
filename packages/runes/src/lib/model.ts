@@ -9,6 +9,8 @@ import { AbstractGroupAnnotation } from './annotations/group.js';
 export class Model {
   /** Extracted tint child node (set by processChildren before @group runs) */
   _tintNode: Node | null = null;
+  /** Extracted bg child node (set by processChildren before @group runs) */
+  _bgNode: Node | null = null;
 
   constructor(
     public readonly node: Node,
@@ -26,6 +28,13 @@ export class Model {
     if (tintIdx !== -1) {
       this._tintNode = nodes[tintIdx];
       nodes = [...nodes.slice(0, tintIdx), ...nodes.slice(tintIdx + 1)];
+    }
+
+    // Extract bg tag before @group processing (same pattern as tint)
+    const bgIdx = nodes.findIndex(n => n.type === 'tag' && n.tag === 'bg');
+    if (bgIdx !== -1) {
+      this._bgNode = nodes[bgIdx];
+      nodes = [...nodes.slice(0, bgIdx), ...nodes.slice(bgIdx + 1)];
     }
 
     let index = 0;
