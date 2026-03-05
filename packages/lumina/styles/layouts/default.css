@@ -96,7 +96,7 @@
 	);
 }
 /* Tinted sections also break out to full width */
-.rf-page-content > article > [data-tint]:not([data-width]) {
+.rf-page-content > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
 	grid-column: full;
 	padding-inline: max(
 		var(--rf-content-gutter, 1.5rem),

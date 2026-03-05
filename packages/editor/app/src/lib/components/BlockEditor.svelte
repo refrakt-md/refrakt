@@ -14,6 +14,7 @@
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
+	import InsertBlockDialog from './InsertBlockDialog.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -140,9 +141,7 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (readOnly) return;
 		if (e.key === 'Escape') {
-			if (showInsertMenu) {
-				closeInsertMenu();
-			} else if (activeIndex !== null || editingFrontmatter) {
+			if (activeIndex !== null || editingFrontmatter) {
 				activeIndex = null;
 				editingFrontmatter = false;
 			}
@@ -233,13 +232,6 @@
 	function closeInsertMenu() {
 		showInsertMenu = false;
 		insertAtIndex = null;
-	}
-
-	function handleClickOutside(e: MouseEvent) {
-		if (!showInsertMenu) return;
-		const target = e.target as HTMLElement;
-		if (target.closest('.insert-menu--floating') || target.closest('.block-editor__insert-dot')) return;
-		closeInsertMenu();
 	}
 
 	function insertBlock(type: 'heading' | 'paragraph' | 'fence' | 'hr' | 'rune', runeName?: string) {
@@ -355,7 +347,7 @@
 	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} onmousedown={handleClickOutside} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="block-editor">
 	{#if blocks.length === 0 && !readOnly}
@@ -398,63 +390,6 @@
 					</div>
 				{/if}
 
-				{#snippet insertMenuContent()}
-					<div class="insert-menu__section">
-						<span class="insert-menu__label">Content</span>
-						<div class="insert-menu__grid">
-							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<path d="M3 3v10M13 3v10M3 8h10" />
-								</svg>
-								Heading
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="4" x2="14" y2="4" />
-									<line x1="2" y1="8" x2="14" y2="8" />
-									<line x1="2" y1="12" x2="10" y2="12" />
-								</svg>
-								Paragraph
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="5 4 2 8 5 12" />
-									<polyline points="11 4 14 8 11 12" />
-								</svg>
-								Code Block
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="8" x2="14" y2="8" />
-								</svg>
-								Divider
-							</button>
-						</div>
-					</div>
-					{#each [...runesByCategory.entries()] as [category, categoryRunes]}
-						<div class="insert-menu__section">
-							<span class="insert-menu__label">{category}</span>
-							<div class="insert-menu__grid">
-								{#each categoryRunes as rune}
-									<button
-										class="insert-menu__btn insert-menu__btn--rune"
-										onclick={() => insertBlock('rune', rune.name)}
-									>
-										<span class="insert-menu__rune-dot"></span>
-										<span class="insert-menu__rune-info">
-											<span class="insert-menu__rune-name">{rune.name}</span>
-											{#if rune.description}
-												<span class="insert-menu__rune-desc">{rune.description}</span>
-											{/if}
-										</span>
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/each}
-					<button class="insert-menu__close" onclick={closeInsertMenu}>&times; Close</button>
-				{/snippet}
-
 				{#snippet insertZone(pos: number)}
 					<div class="block-editor__insert-zone">
 						<div class="block-editor__insert-zone-spacer"></div>
@@ -465,11 +400,6 @@
 						>
 							<span class="block-editor__dot-icon"></span>
 						</button>
-						{#if showInsertMenu && insertAtIndex === pos}
-							<div class="insert-menu insert-menu--floating">
-								{@render insertMenuContent()}
-							</div>
-						{/if}
 					</div>
 				{/snippet}
 
@@ -537,6 +467,15 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if showInsertMenu}
+		<InsertBlockDialog
+			{runes}
+			{runesByCategory}
+			oninsert={insertBlock}
+			onclose={closeInsertMenu}
+		/>
+	{/if}
 </div>
 
 
@@ -568,8 +507,7 @@
 
 	.block-editor__list-wrap {
 		width: 100%;
-		padding: var(--ed-space-4);
-		padding-right: 0;
+		padding: 0;
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
@@ -799,17 +737,6 @@
 		opacity: 1;
 	}
 
-	/* Floating insert menu — anchored to the insert zone */
-	.insert-menu--floating {
-		position: absolute;
-		right: 0;
-		top: 100%;
-		z-index: 20;
-		width: 360px;
-		max-height: 400px;
-		overflow-y: auto;
-	}
-
 	/* Edit panel — fixed to right edge of viewport, outside the card */
 	.block-editor__edit-panel {
 		position: fixed;
@@ -855,123 +782,4 @@
 		font-size: var(--ed-text-sm);
 	}
 
-	/* Insert menu (shared between floating and any future inline) */
-	.insert-menu {
-		border: 1px solid var(--ed-border-default);
-		border-radius: 10px;
-		background: var(--ed-surface-0);
-		padding: var(--ed-space-4);
-		display: flex;
-		flex-direction: column;
-		gap: var(--ed-space-3);
-		box-shadow: var(--ed-shadow-lg);
-		animation: menu-enter var(--ed-transition-normal);
-	}
-
-	@keyframes menu-enter {
-		from { opacity: 0; transform: translateY(4px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.insert-menu__section {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.insert-menu__label {
-		font-size: var(--ed-text-xs);
-		font-weight: 600;
-		color: var(--ed-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.insert-menu__grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-		gap: 0.35rem;
-	}
-
-	.insert-menu__btn {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: var(--ed-space-2) var(--ed-space-2);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-1);
-		color: var(--ed-text-secondary);
-		font-size: var(--ed-text-sm);
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), border-color var(--ed-transition-fast);
-		text-align: left;
-	}
-
-	.insert-menu__btn:hover {
-		background: var(--ed-accent-muted);
-		border-color: var(--ed-accent);
-		color: var(--ed-heading);
-	}
-
-	.insert-menu__icon {
-		flex-shrink: 0;
-		opacity: 0.6;
-	}
-
-	/* Rune buttons */
-	.insert-menu__btn--rune {
-		align-items: flex-start;
-		padding: var(--ed-space-2);
-	}
-
-	.insert-menu__rune-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: var(--ed-warning);
-		flex-shrink: 0;
-		margin-top: 0.3rem;
-	}
-
-	.insert-menu__rune-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		min-width: 0;
-	}
-
-	.insert-menu__rune-name {
-		font-weight: 500;
-	}
-
-	.insert-menu__rune-desc {
-		font-size: 10px;
-		color: var(--ed-text-muted);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.insert-menu__btn--rune:hover {
-		background: var(--ed-warning-subtle);
-		border-color: var(--ed-warning);
-	}
-
-	.insert-menu__close {
-		align-self: flex-end;
-		padding: var(--ed-space-1) var(--ed-space-2);
-		border: none;
-		border-radius: var(--ed-radius-sm);
-		background: transparent;
-		color: var(--ed-text-muted);
-		font-size: var(--ed-text-sm);
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
-	}
-
-	.insert-menu__close:hover {
-		background: var(--ed-surface-2);
-		color: var(--ed-text-secondary);
-	}
 </style>
