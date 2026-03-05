@@ -491,6 +491,9 @@
    CONTEXT: inside preview
    ═══════════════════════════════════════ */
 
+.rf-grid .rf-mockup {
+	justify-self: center;
+}
 .rf-preview .rf-mockup {
 	margin: 0;
 }

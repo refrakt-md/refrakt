@@ -45,8 +45,10 @@ Requires Node.js 18 or later.
 {% /hero %}
 
 {% feature justify="left" spacing="breathe" %}
-
+The framework
 ## Why refrakt.md?
+
+Markdown is powerful but limited. Runes extend it with semantic structure — without inventing a new syntax or locking you into a framework.
 
 - {% icon name="puzzle" /%} **Built on Markdoc**
 
@@ -74,7 +76,7 @@ Requires Node.js 18 or later.
 
 {% /feature %}
 
-{% feature tint-mode="dark" layout="split" justify="left" ratio="1 1" align="center" collapse="md" spacing="tight" gap="loose" %}
+{% feature tint-mode="dark" layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" %}
 Composable by design
 ## Runes that work together
 
@@ -110,7 +112,7 @@ Walk through the theater district.
 {% /feature %}
 
 
-{% feature layout="stacked" justify="left" align="center" spacing="loose" %}
+{% feature layout="stacked" justify="left" align="center" %}
 Built-in SEO
 ## Structured data from plain Markdown
 
@@ -195,7 +197,7 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" tint="warm" %}
+{% testimonial variant="quote" spacing="breathe" tint="cool" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic
