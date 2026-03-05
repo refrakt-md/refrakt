@@ -17,7 +17,7 @@ npm create refrakt
 
 ---
 
-{% grid layout="2 1" stack="natual" align="center" %}
+{% grid align="center" %}
 
 {% codegroup %}
 ```markdoc
@@ -99,7 +99,7 @@ npm create refrakt
 
 {% /feature %}
 
-{% feature tint-mode="dark" %}
+{% feature tint-mode="dark" layout="split" justify="left" ratio="1 2" %}
 feature
 ## Why refrakt.md?
 
@@ -107,7 +107,9 @@ Present bla bla bla
 
 ---
 
-{% grid %}
+{% showcase bleed="bottom" offset="10rem" %}
+{% mockup %}
+{% grid gap="loose" %}
 
 {% map zoom="13" center="48.8566, 2.3522" %}
 - **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
@@ -131,6 +133,8 @@ Picnic lunch on the Great Lawn.
 Walk through the theater district.
 {% /itinerary %}
 {% /grid %}
+{% /mockup %}
+{% /showcase %}
 
 {% /feature %}
 

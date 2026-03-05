@@ -53,3 +53,14 @@ const data = await fetch('/api').then(r => r.json());
 |-----------|------|---------|-------------|
 | `layout` | `string` | `side-by-side` | Display layout: `side-by-side` or `stacked` |
 | `labels` | `string` | — | Comma-separated custom labels for each panel |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

@@ -188,3 +188,14 @@ legacyRender(source: string): any
 | `deprecated` | `string` | -- | Version when deprecated, or `"true"` for general deprecation |
 | `source` | `string` | -- | URL to source code (GitHub permalink, etc.) |
 | `headingLevel` | `number` | `2` | Base heading level for construct name (shifts all heading interpretations) |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

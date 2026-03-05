@@ -60,3 +60,14 @@ When text wrapping is enabled, the body text flows around the media element rath
 | `align` | `string` | `left` | Image placement: `left` or `right` |
 | `ratio` | `string` | `1:1` | Image-to-text width ratio: `1:2`, `1:1`, or `2:1` |
 | `wrap` | `boolean` | `false` | Enable text wrapping around the image instead of side-by-side columns |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

@@ -79,3 +79,14 @@ Creates a new user account.
 | `method` | `string` | `GET` | HTTP method: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS` |
 | `path` | `string` | — | Endpoint path (required) |
 | `auth` | `string` | — | Authentication requirement |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

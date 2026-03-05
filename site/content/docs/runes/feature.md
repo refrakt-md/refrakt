@@ -62,11 +62,11 @@ Refrakt gives you the building blocks to ship structured content sites without f
 
 ## Split layout
 
-Use `split` to place definitions alongside a showcase — an image, code block, or any other content. A horizontal rule (`---`) separates the two sections.
+Use `layout="split"` to place definitions alongside a media column — an image, code block, or any other content. A horizontal rule (`---`) separates the two sections.
 
 {% preview source=true %}
 
-{% feature split=true %}
+{% feature layout="split" %}
 why Refrakt
 
 ## Built for versatility
@@ -103,13 +103,13 @@ title: Home
 
 {% /preview %}
 
-## Split with mirror
+## Split reversed
 
-Add `mirror` to swap the column order — showcase on the left, definitions on the right.
+Use `layout="split-reverse"` to swap the column order — media on the left, definitions on the right.
 
 {% preview source=true %}
 
-{% feature split=true mirror=true %}
+{% feature layout="split-reverse" %}
 pipeline
 ## How it works
 
@@ -152,9 +152,24 @@ const tree = Markdoc.transform(ast, {
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `split` | `boolean` | `false` | Enable two-column split layout |
-| `mirror` | `boolean` | `false` | Swap the column order |
+| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
+| `justify` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
+| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
+| `align` | `string` | `start` | Vertical alignment in split layout: `start`, `center`, or `end` |
+| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
+| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
 
 ## Section header
 
 Feature supports an optional eyebrow, headline, and blurb above the section above feature items. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

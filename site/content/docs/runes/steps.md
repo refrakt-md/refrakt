@@ -60,9 +60,30 @@ Verify everything works with `npm test`.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `headingLevel` | `number` | — | Convert headings at this level into steps |
-| `split` | `boolean` | `false` | Enable two-column split layout |
-| `mirror` | `boolean` | `false` | Swap the column order |
+
+### Step attributes
+
+Individual steps (list items or heading-delimited blocks) accept these layout attributes.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
+| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
+| `align` | `string` | `start` | Vertical alignment in split layout: `start`, `center`, or `end` |
+| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
+| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
 
 ## Section header
 
 Steps supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

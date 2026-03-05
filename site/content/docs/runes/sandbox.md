@@ -250,3 +250,14 @@ Tokens are injected into the iframe as CSS custom properties and Google Fonts li
 | `label` | `string` | — | Label for the sandbox (used when inside compare) |
 | `height` | `number` | auto | Fixed height in pixels (auto-sizes by default) |
 | `context` | `string` | `default` | Name of the design context scope to inject tokens from |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

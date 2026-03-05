@@ -61,3 +61,14 @@ An underground network of spies and thieves operating across the port cities.
 | `alignment` | `string` | — | Alignment descriptor (e.g. `lawful`, `chaotic`, `neutral`) |
 | `size` | `string` | — | Size or scope descriptor (e.g. `small`, `medium`, `large`) |
 | `tags` | `string` | — | Comma-separated metadata tags |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

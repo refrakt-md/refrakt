@@ -63,3 +63,14 @@ A long-running conflict with multiple factions vying for control.
 | `[>]` | Active | Currently in progress |
 | `[ ]` | Planned | Not yet started |
 | `[-]` | Abandoned | Dropped from the storyline |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
