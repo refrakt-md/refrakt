@@ -129,6 +129,7 @@
 	// ── Active block (rail selection) ────────────────────────────
 
 	let activeIndex: number | null = $state(null);
+	let hoveredIndex: number | null = $state(null);
 
 	function toggleBlock(index: number) {
 		editingFrontmatter = false;
@@ -361,13 +362,13 @@
 				<line x1="14" y1="30" x2="22" y2="30" />
 			</svg>
 			<span class="block-editor__empty-text">No content blocks yet</span>
-			<span class="block-editor__empty-hint">Click a + dot in the rail to add blocks</span>
+			<span class="block-editor__empty-hint">Use the + button to add your first block</span>
 		</div>
 	{/if}
 
 	<div class="block-editor__stage" class:editing={!readOnly && (activeIndex !== null || editingFrontmatter)}>
-		<!-- Scrollable list + rail area -->
-		<div class="block-editor__scroll" class:has-rail={!readOnly}>
+		<!-- Scrollable block list -->
+		<div class="block-editor__scroll">
 			<div class="block-editor__list-wrap">
 				<!-- Frontmatter summary header (blocks mode only) -->
 				{#if !readOnly}
@@ -392,28 +393,15 @@
 					</div>
 				{/if}
 
-				{#snippet insertZone(pos: number)}
-					<div class="block-editor__insert-zone">
-						<div class="block-editor__insert-zone-spacer"></div>
-						<button
-							class="block-editor__insert-dot"
-							onclick={() => openInsertAt(pos)}
-							title="Insert block"
-						>
-							<span class="block-editor__dot-icon"></span>
-						</button>
-					</div>
-				{/snippet}
-
-				{#if !readOnly && showInsertMenuProp}
-					{@render insertZone(0)}
-				{/if}
-
 				{#each blocks as block, i (block.id)}
 					<div
 						class="block-editor__row"
+						class:hovered={!readOnly && hoveredIndex === i}
+						class:active={!readOnly && activeIndex === i}
 						class:drag-source={!readOnly && dragIndex === i}
 						class:drag-over={!readOnly && dropIndex === i && dragIndex !== i}
+						onmouseenter={() => { if (!readOnly) hoveredIndex = i; }}
+						onmouseleave={() => { if (!readOnly && hoveredIndex === i) hoveredIndex = null; }}
 					>
 						<div class="block-editor__block-cell">
 							<BlockCard
@@ -431,10 +419,33 @@
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
 							/>
 						</div>
-						{#if !readOnly}
+						{#if !readOnly && showInsertMenuProp}
+							<!-- Insert markers — top and bottom edges -->
 							<button
-								class="block-editor__rail-label"
-								class:active={activeIndex === i}
+								class="block-editor__insert-marker block-editor__insert-marker--top"
+								onclick={() => openInsertAt(i)}
+								title="Insert block above"
+							>
+								<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="5" y1="2" x2="5" y2="8" />
+									<line x1="2" y1="5" x2="8" y2="5" />
+								</svg>
+							</button>
+							<button
+								class="block-editor__insert-marker block-editor__insert-marker--bottom"
+								onclick={() => openInsertAt(i + 1)}
+								title="Insert block below"
+							>
+								<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="5" y1="2" x2="5" y2="8" />
+									<line x1="2" y1="5" x2="8" y2="5" />
+								</svg>
+							</button>
+						{/if}
+						{#if !readOnly}
+							<!-- Block label — slides in from right on hover, pinned when active -->
+							<button
+								class="block-editor__hover-label"
 								onclick={() => toggleBlock(i)}
 								aria-pressed={activeIndex === i}
 							>
@@ -442,9 +453,6 @@
 							</button>
 						{/if}
 					</div>
-					{#if !readOnly && showInsertMenuProp}
-						{@render insertZone(i + 1)}
-					{/if}
 				{/each}
 			</div>
 		</div>
@@ -501,7 +509,7 @@
 		position: relative;
 	}
 
-	/* Scrollable block list + rail area */
+	/* Scrollable block list */
 	.block-editor__scroll {
 		flex: 1;
 		min-height: 0;
@@ -516,33 +524,6 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-	}
-
-	/* Rail column: vertical border + diagonal stripe background */
-	.block-editor__scroll.has-rail .block-editor__list-wrap {
-		background-origin: content-box;
-		background-clip: border-box;
-		background:
-			/* Vertical border at left edge of rail */
-			linear-gradient(to right,
-				transparent calc(100% - 91px),
-				var(--ed-border-default) calc(100% - 91px),
-				var(--ed-border-default) calc(100% - 90px),
-				transparent calc(100% - 90px)
-			),
-			/* Solid background masking stripes in the content area */
-			linear-gradient(to right,
-				var(--ed-surface-0) calc(100% - 90px),
-				transparent calc(100% - 90px)
-			),
-			/* Stripe pattern */
-			repeating-linear-gradient(
-				-45deg,
-				transparent,
-				transparent 4px,
-				rgba(0, 0, 0, 0.04) 4px,
-				rgba(0, 0, 0, 0.04) 5px
-			);
 	}
 
 	/* Frontmatter summary header */
@@ -608,15 +589,13 @@
 		color: var(--ed-accent);
 	}
 
-	/* Block row: preview cell + rail label */
+	/* Block row */
 	.block-editor__row {
-		display: flex;
-		align-items: flex-start;
+		position: relative;
 		transition: transform var(--ed-transition-fast), opacity var(--ed-transition-fast);
 	}
 
 	.block-editor__block-cell {
-		flex: 1;
 		min-width: 0;
 	}
 
@@ -631,104 +610,92 @@
 		padding-top: 2px;
 	}
 
-	/* Rail labels — aligned to the right of each block */
-	.block-editor__rail-label {
-		width: 80px;
-		flex-shrink: 0;
-		padding: 0.5rem 0.6rem 0.5rem 1rem;
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--ed-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-		text-align: left;
-		background: transparent;
+	/* ── Hover controls (insert markers + label) ─────────────── */
+
+	/* Shared base for insert markers and label */
+	.block-editor__insert-marker,
+	.block-editor__hover-label {
+		position: absolute;
+		right: 20px;
+		z-index: 2;
 		border: none;
 		cursor: pointer;
+		border-radius: 9999px;
+		background: var(--ed-surface-2);
+		color: var(--ed-text-muted);
+		font-size: 10px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 100ms ease-out, transform 100ms ease-out, background 100ms ease-out, color 100ms ease-out;
+	}
+
+	/* Insert markers — top/bottom edges */
+	.block-editor__insert-marker {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		padding: 0;
+		color: var(--ed-text-tertiary);
+	}
+
+	.block-editor__insert-marker--top {
+		top: -11px;
+	}
+
+	.block-editor__insert-marker--bottom {
+		bottom: -11px;
+	}
+
+	/* Label — right side, vertically centered */
+	.block-editor__hover-label {
+		top: 50%;
+		transform: translateX(6px) translateY(-50%);
+		padding: 4px 10px;
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		transition: color var(--ed-transition-fast);
-		align-self: stretch;
 		line-height: 1.3;
 	}
 
-	.block-editor__rail-label:hover {
-		color: var(--ed-text-secondary);
+	/* Show controls on hover */
+	.block-editor__row.hovered .block-editor__insert-marker,
+	.block-editor__row.hovered .block-editor__hover-label {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
-	.block-editor__rail-label.active {
+	.block-editor__row.hovered .block-editor__hover-label {
+		transform: translateX(0) translateY(-50%);
+	}
+
+	/* Pinned label when edit panel is open */
+	.block-editor__row.active .block-editor__hover-label {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateX(0) translateY(-50%);
+		background: var(--ed-accent-muted);
 		color: var(--ed-accent);
 		font-weight: 700;
 	}
 
-	/* Insert zones — between blocks in the rail */
-	.block-editor__insert-zone {
-		display: flex;
-		align-items: center;
-		position: relative;
-		overflow: visible;
-		z-index: 2;
-	}
-
-	.block-editor__insert-zone-spacer {
-		flex: 1;
-	}
-
-	.block-editor__insert-dot {
-		width: 80px;
-		flex-shrink: 0;
-		margin-left: var(--ed-space-5);
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		border: none;
-		background: transparent;
-		cursor: pointer;
-		height: 100%;
-		padding: 0;
-		position: relative;
-		overflow: visible;
-	}
-
-	.block-editor__dot-icon {
-		position: absolute;
-		left: 1px;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: 18px;
-		height: 18px;
-		border-radius: 50%;
+	/* Insert marker hover */
+	.block-editor__insert-marker:hover {
 		background: var(--ed-accent);
-		transition: box-shadow var(--ed-transition-fast);
+		color: white;
 	}
 
-	.block-editor__insert-dot:hover .block-editor__dot-icon {
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--ed-accent) 30%, transparent);
+	/* Label hover */
+	.block-editor__hover-label:hover {
+		color: var(--ed-text-secondary);
+		background: var(--ed-surface-3, var(--ed-border-default));
 	}
 
-	.block-editor__dot-icon::before,
-	.block-editor__dot-icon::after {
-		content: '';
-		position: absolute;
-		background: white;
-		border-radius: 1px;
-	}
-
-	.block-editor__dot-icon::before {
-		width: 10px;
-		height: 1.5px;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.block-editor__dot-icon::after {
-		width: 1.5px;
-		height: 10px;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
+	.block-editor__row.active .block-editor__hover-label:hover {
+		background: var(--ed-accent);
+		color: white;
 	}
 
 	/* Edit panel — fixed to right edge of viewport, outside the card */
