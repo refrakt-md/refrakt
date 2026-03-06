@@ -42,6 +42,9 @@ class EditorState {
 	/** Preview viewport preset */
 	viewport: 'desktop' | 'tablet' | 'mobile' = $state('desktop');
 
+	/** Preview color scheme */
+	previewTheme: 'light' | 'dark' = $state('light');
+
 	/** Theme CSS for inline block previews */
 	themeCss = $state('');
 	/** Theme config for inline block previews (JSON-safe, no postTransform) */

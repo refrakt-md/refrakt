@@ -6,9 +6,15 @@
 
 	let previewHtml = $state('');
 	let previewIframe: HTMLIFrameElement | undefined = $state();
+	let fallbackIframe: HTMLIFrameElement | undefined = $state();
 	let debounceTimer: ReturnType<typeof setTimeout>;
 	let pageMap: Map<string, string> = new Map(); // url → file path
 	let loading = $state(false);
+
+	// Inject data-theme into fallback srcdoc HTML
+	const themedPreviewHtml = $derived(
+		previewHtml.replace('<html', `<html data-theme="${editorState.previewTheme}"`)
+	);
 
 	// Listen for messages from the preview runtime iframe
 	$effect(() => {
@@ -36,6 +42,17 @@
 		if (useRuntime && previewIframe?.contentWindow) {
 			previewIframe.contentWindow.postMessage(
 				{ type: 'route-rules-update', routeRules: rules },
+				'*',
+			);
+		}
+	});
+
+	// Forward theme changes to the preview iframe
+	$effect(() => {
+		const theme = editorState.previewTheme;
+		if (useRuntime && previewIframe?.contentWindow) {
+			previewIframe.contentWindow.postMessage(
+				{ type: 'theme-update', theme },
 				'*',
 			);
 		}
@@ -109,8 +126,9 @@
 				></iframe>
 			{:else}
 				<iframe
+					bind:this={fallbackIframe}
 					title="Preview"
-					srcdoc={previewHtml}
+					srcdoc={themedPreviewHtml}
 					class="preview__iframe"
 				></iframe>
 			{/if}

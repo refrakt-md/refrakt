@@ -17,6 +17,8 @@
 					...theme,
 					manifest: { ...theme.manifest, routeRules: e.data.routeRules },
 				};
+			} else if (e.data?.type === 'theme-update') {
+				document.documentElement.setAttribute('data-theme', e.data.theme);
 			}
 		}
 		window.addEventListener('message', onMessage);
