@@ -348,6 +348,189 @@ function isBlockStart(line: string): boolean {
 	return false;
 }
 
+// ── Content tree parser (for nested rune editing) ────────────────────
+
+export interface ContentNode {
+	type: 'rune' | 'heading' | 'paragraph' | 'fence' | 'list' | 'quote' | 'hr' | 'image';
+	label: string;
+	source: string;
+	// Rune-specific
+	runeName?: string;
+	selfClosing?: boolean;
+	attributes?: Record<string, string>;
+	innerContent?: string;
+	children?: ContentNode[];
+	// Type-specific (populated during parsing)
+	headingLevel?: number;
+	headingText?: string;
+	fenceLanguage?: string;
+	fenceCode?: string;
+	listOrdered?: boolean;
+}
+
+/**
+ * Parse a content string into a tree of ContentNodes.
+ * Similar to parseBlocks() but builds a tree: rune nodes recursively
+ * parse their inner content into children.
+ */
+export function parseContentTree(content: string): ContentNode[] {
+	if (!content.trim()) return [];
+
+	const lines = content.split('\n');
+	const nodes: ContentNode[] = [];
+	let i = 0;
+
+	while (i < lines.length) {
+		const line = lines[i];
+		const trimmed = line.trimStart();
+
+		if (trimmed === '') { i++; continue; }
+
+		// Fenced code
+		if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+			const fence = trimmed.slice(0, 3);
+			const lang = trimmed.slice(3).trim();
+			const start = i;
+			i++;
+			const codeStart = i;
+			while (i < lines.length && !lines[i].trimStart().startsWith(fence)) i++;
+			const code = lines.slice(codeStart, i).join('\n');
+			if (i < lines.length) i++;
+			nodes.push({
+				type: 'fence',
+				label: lang ? `Code (${lang})` : 'Code',
+				source: lines.slice(start, i).join('\n'),
+				fenceLanguage: lang,
+				fenceCode: code,
+			});
+			continue;
+		}
+
+		// Rune tags
+		const runeMatch = RUNE_OPEN_RE.exec(trimmed);
+		if (runeMatch) {
+			const name = runeMatch[1];
+			const attrStr = runeMatch[2] ?? '';
+			const selfClose = runeMatch[3] === '/';
+			const start = i;
+
+			if (selfClose) {
+				i++;
+				nodes.push({
+					type: 'rune',
+					label: name,
+					source: lines.slice(start, i).join('\n'),
+					runeName: name,
+					selfClosing: true,
+					attributes: parseAttributes(attrStr),
+					innerContent: '',
+					children: [],
+				});
+			} else {
+				i++;
+				const closeRe = runeCloseRe(name);
+				const innerLines: string[] = [];
+				let depth = 1;
+				while (i < lines.length) {
+					const lt = lines[i].trimStart();
+					const nestedOpen = RUNE_OPEN_RE.exec(lt);
+					if (nestedOpen && nestedOpen[1] === name && nestedOpen[3] !== '/') depth++;
+					if (closeRe.test(lt)) { depth--; if (depth === 0) break; }
+					innerLines.push(lines[i]);
+					i++;
+				}
+				if (i < lines.length) i++;
+				const inner = innerLines.join('\n');
+				nodes.push({
+					type: 'rune',
+					label: name,
+					source: lines.slice(start, i).join('\n'),
+					runeName: name,
+					selfClosing: false,
+					attributes: parseAttributes(attrStr),
+					innerContent: inner,
+					children: parseContentTree(inner),
+				});
+			}
+			continue;
+		}
+
+		// Heading
+		const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)/);
+		if (headingMatch) {
+			const level = headingMatch[1].length;
+			const text = headingMatch[2];
+			i++;
+			nodes.push({
+				type: 'heading',
+				label: `${'#'.repeat(level)} ${text}`,
+				source: lines.slice(i - 1, i).join('\n'),
+				headingLevel: level,
+				headingText: text,
+			});
+			continue;
+		}
+
+		// HR
+		if (/^(---+|___+|\*\*\*+)\s*$/.test(trimmed)) {
+			i++;
+			nodes.push({ type: 'hr', label: 'Divider', source: lines.slice(i - 1, i).join('\n') });
+			continue;
+		}
+
+		// Image
+		if (/^!\[.*\]\(.*\)\s*$/.test(trimmed)) {
+			i++;
+			nodes.push({ type: 'image', label: 'Image', source: lines.slice(i - 1, i).join('\n') });
+			continue;
+		}
+
+		// Blockquote
+		if (trimmed.startsWith('>')) {
+			const start = i;
+			while (i < lines.length && (lines[i].trimStart().startsWith('>') || (lines[i].trim() !== '' && !isBlockStart(lines[i])))) i++;
+			const src = lines.slice(start, i).join('\n');
+			nodes.push({ type: 'quote', label: 'Blockquote', source: src });
+			continue;
+		}
+
+		// List
+		if (/^(\d+\.|[-*+])\s/.test(trimmed)) {
+			const start = i;
+			while (i < lines.length) {
+				const lt = lines[i].trimStart();
+				if (/^(\d+\.|[-*+])\s/.test(lt) || (lt === '' && i + 1 < lines.length && /^(\s+|\d+\.|[-*+]\s)/.test(lines[i + 1])) || (lt !== '' && lines[i].startsWith('  '))) {
+					i++;
+				} else { break; }
+			}
+			const ordered = /^\d+\./.test(trimmed);
+			nodes.push({ type: 'list', label: ordered ? 'Ordered list' : 'List', source: lines.slice(start, i).join('\n'), listOrdered: ordered });
+			continue;
+		}
+
+		// Paragraph
+		{
+			const start = i;
+			while (i < lines.length && lines[i].trim() !== '' && !isBlockStart(lines[i])) i++;
+			const src = lines.slice(start, i).join('\n');
+			const preview = src.length > 40 ? src.slice(0, 40) + '…' : src;
+			nodes.push({ type: 'paragraph', label: preview, source: src });
+		}
+	}
+
+	return nodes;
+}
+
+/**
+ * Replace a nested rune node's source within a parent content string.
+ * Finds the node's original source and replaces it with the new source.
+ */
+export function replaceNodeSource(parentContent: string, oldSource: string, newSource: string): string {
+	const idx = parentContent.indexOf(oldSource);
+	if (idx === -1) return parentContent;
+	return parentContent.slice(0, idx) + newSource + parentContent.slice(idx + oldSource.length);
+}
+
 // ── Serialization ────────────────────────────────────────────────────
 
 /** Reconstruct source text from blocks */

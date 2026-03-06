@@ -457,15 +457,17 @@
 						onclose={() => { editingFrontmatter = false; }}
 					/>
 				{:else if activeIndex !== null && blocks[activeIndex]}
-					<BlockEditPanel
-						block={blocks[activeIndex]}
-						{runeMap}
-						runes={() => runes}
-					{aggregated}
-						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
-						onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
-						onclose={() => { activeIndex = null; }}
-					/>
+					{#key activeIndex}
+						<BlockEditPanel
+							block={blocks[activeIndex]}
+							{runeMap}
+							runes={() => runes}
+							{aggregated}
+							onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
+							onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
+							onclose={() => { activeIndex = null; }}
+						/>
+					{/key}
 				{/if}
 			</div>
 		{/if}
