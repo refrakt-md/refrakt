@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero justify="left" tint-mode="dark" spacing="default" inset="loose" %}
+{% hero justify="left" tint-mode="dark" spacing="default" %}
 Version 0.7.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
@@ -16,13 +16,11 @@ npm create refrakt
 - [Get Started](/docs/getting-started)
 
 ---
-
+{% showcase bleed="none" bg="surface-dark" inset="tight" shadow="elevated" %}
 {% grid align="center" gap="loose" %}
 
 {% codegroup %}
 ```markdoc
-## Getting started
-
 Install the CLI and scaffold a new project.
 
 {% hint type="warning" %}
@@ -32,20 +30,18 @@ Requires Node.js 18 or later.
 {% /codegroup %}
 
 ---
-{% showcase bleed="top" offset="3rem" %}
-## Getting started
 
 Install the CLI and scaffold a new project.
 
 {% hint type="warning" %}
 Requires Node.js 18 or later.
 {% /hint %}
-{% /showcase %}
 
 {% /grid %}
+{% /showcase %}
 {% /hero %}
 
-{% feature justify="left" spacing="breathe" %}
+{% feature justify="left" spacing="default" %}
 The framework
 ## Why refrakt.md?
 
@@ -74,7 +70,6 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 - {% icon name="package" /%} **Portable content**
 
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
-
 {% /feature %}
 
 {% feature tint-mode="dark" layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" %}

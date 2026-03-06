@@ -20,8 +20,8 @@
 	"backgrounds": {
 		"surface-dark": {
 			"style": {
-				"background": "linear-gradient(145deg, #1e293b 0%, #0f172a 100%)",
-				"border-radius": "var(--rf-radius-lg, 12px)"
+				"border-radius": "var(--rf-radius-lg, 12px)",
+				"border": "1px solid rgba(255, 255, 255, 0.12)"
 			}
 		}
 	},

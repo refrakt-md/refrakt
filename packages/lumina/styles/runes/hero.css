@@ -4,7 +4,6 @@
 	padding: 7rem 2rem 6.5rem;
 	background-size: cover;
 	background-position: center;
-	overflow: hidden;
 }
 .rf-hero__header {
 	margin-bottom: 2rem;
@@ -165,7 +164,6 @@
 .rf-hero__media {
 	margin-top: 3rem;
 	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
 }
 .rf-hero__media img {
 	display: block;

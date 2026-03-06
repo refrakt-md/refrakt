@@ -52,6 +52,16 @@
 	display: flex;
 	justify-content: var(--showcase-justify);
 }
+/* Spacing — vertical margin around the showcase */
+.rf-showcase[data-spacing="flush"]   { margin-top: 0; margin-bottom: 0; }
+.rf-showcase[data-spacing="tight"]   { margin-top: var(--rf-spacing-section-tight, 1.5rem); margin-bottom: var(--rf-spacing-section-tight, 1.5rem); }
+.rf-showcase[data-spacing="loose"]   { margin-top: var(--rf-spacing-section-loose, 8rem); margin-bottom: var(--rf-spacing-section-loose, 8rem); }
+.rf-showcase[data-spacing="breathe"] { margin-top: var(--rf-spacing-section-breathe, 12rem); margin-bottom: var(--rf-spacing-section-breathe, 12rem); }
+/* Inset — all-around padding (not just inline, since showcase is a contained frame) */
+.rf-showcase[data-inset="flush"]   { padding: 0; }
+.rf-showcase[data-inset="tight"]   { padding: var(--rf-inset-tight, 1rem); }
+.rf-showcase[data-inset="loose"]   { padding: var(--rf-inset-loose, 4rem); }
+.rf-showcase[data-inset="breathe"] { padding: var(--rf-inset-breathe, 8rem); }
 /* Responsive: collapse bleed on mobile */
 @media (max-width: 768px) {
 	.rf-showcase[data-bleed] {
