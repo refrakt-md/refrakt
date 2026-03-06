@@ -110,6 +110,18 @@ export interface TintDefinition {
 	dark?: TintTokenSet;
 }
 
+// ─── Background Preset Types ─────────────────────────────────────────
+
+/** Named background preset definition in theme config */
+export interface BgPresetDefinition {
+	/** CSS properties applied to the bg layer (Tier 1 — CSS-only presets) */
+	style?: Record<string, string>;
+	/** Default params for render function (Tier 2 — structural presets) */
+	params?: Record<string, string>;
+	/** Base preset to extend (e.g., "extends": "particles" to customize a package preset) */
+	extends?: string;
+}
+
 /** Top-level theme configuration */
 export interface ThemeConfig {
 	/** BEM prefix. E.g., 'rf' → .rf-hint */
@@ -126,6 +138,9 @@ export interface ThemeConfig {
 
 	/** Named tint definitions for section-level colour overrides */
 	tints?: Record<string, TintDefinition>;
+
+	/** Named background preset definitions for section-level backgrounds */
+	backgrounds?: Record<string, BgPresetDefinition>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────

@@ -11,6 +11,7 @@ const { Tag } = Markdoc;
  */
 export const bg: Schema = {
 	attributes: {
+		preset: { type: String, required: false },
 		src: { type: String, required: false },
 		video: { type: String, required: false },
 		overlay: { type: String, required: false },
@@ -23,6 +24,10 @@ export const bg: Schema = {
 	transform(node: Node, config): RenderableTreeNodes {
 		const attrs = node.transformAttributes(config);
 		const metas: any[] = [];
+
+		if (attrs.preset) {
+			metas.push(new Tag('meta', { property: 'bg-preset', content: attrs.preset }));
+		}
 
 		if (attrs.src) {
 			metas.push(new Tag('meta', { property: 'bg-src', content: attrs.src }));

@@ -162,6 +162,22 @@ function validateConfig(raw: unknown): RefraktConfig {
 		};
 	}
 
+	let tints: Record<string, Record<string, unknown>> | undefined;
+	if (obj.tints !== undefined) {
+		if (typeof obj.tints !== 'object' || obj.tints === null || Array.isArray(obj.tints)) {
+			throw new Error('refrakt.config.json: "tints" must be an object mapping tint names to tint definitions');
+		}
+		tints = obj.tints as Record<string, Record<string, unknown>>;
+	}
+
+	let backgrounds: Record<string, Record<string, unknown>> | undefined;
+	if (obj.backgrounds !== undefined) {
+		if (typeof obj.backgrounds !== 'object' || obj.backgrounds === null || Array.isArray(obj.backgrounds)) {
+			throw new Error('refrakt.config.json: "backgrounds" must be an object mapping preset names to definitions');
+		}
+		backgrounds = obj.backgrounds as Record<string, Record<string, unknown>>;
+	}
+
 	return {
 		contentDir: obj.contentDir,
 		theme: obj.theme,
@@ -170,6 +186,8 @@ function validateConfig(raw: unknown): RefraktConfig {
 		...(routeRules && { routeRules }),
 		...(highlight && { highlight }),
 		...(packages && { packages }),
+		...(tints && { tints }),
+		...(backgrounds && { backgrounds }),
 		...(runes && { runes }),
 	};
 }

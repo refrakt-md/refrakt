@@ -19,6 +19,10 @@ export interface RefraktConfig {
 	icons?: Record<string, string>;
 	/** Community rune packages to load (npm package names) */
 	packages?: string[];
+	/** Project-level tint presets — merged after theme tints (last wins) */
+	tints?: Record<string, Record<string, unknown>>;
+	/** Project-level background presets — merged after theme backgrounds (last wins) */
+	backgrounds?: Record<string, Record<string, unknown>>;
 	/** Rune resolution configuration */
 	runes?: {
 		/** Resolve name collisions between community packages: rune name → preferred package name.

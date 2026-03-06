@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition } from './types.js';
 import { isTag, makeTag, readMeta } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -31,7 +31,7 @@ const transforms: Record<string, (v: string) => string> = {
  * - Recurses into children for nested runes
  */
 export function createTransform(config: ThemeConfig) {
-	const { prefix, runes, icons = {}, tints = {} } = config;
+	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
 	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
@@ -41,7 +41,7 @@ export function createTransform(config: ThemeConfig) {
 
 		const typeof_ = tree.attributes?.typeof;
 		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, tints, identityTransform, parentTypeof);
+			return transformRune(tree, runes[typeof_], prefix, icons, tints, backgrounds, identityTransform, parentTypeof);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
@@ -58,6 +58,7 @@ function transformRune(
 	prefix: string,
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
+	backgrounds: Record<string, BgPresetDefinition>,
 	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
 	parentTypeof?: string
 ): SerializedTag {
@@ -185,10 +186,27 @@ function transformRune(
 	const bgDataAttrs: Record<string, string> = {};
 	let bgElement: SerializedTag | null = null;
 
+	const bgPreset = readMeta(tag, 'bg-preset');
 	const bgSrc = readMeta(tag, 'bg-src');
 	const bgVideo = readMeta(tag, 'bg-video');
 
-	if (bgSrc || bgVideo) {
+	if (bgPreset || bgSrc || bgVideo) {
+		// Resolve preset styles (Tier 1 — CSS-only presets)
+		let presetStyles: Record<string, string> = {};
+		if (bgPreset && backgrounds[bgPreset]) {
+			let preset = backgrounds[bgPreset];
+
+			// Resolve extends chain (single level)
+			if (preset.extends && backgrounds[preset.extends]) {
+				const base = backgrounds[preset.extends];
+				preset = { ...base, params: { ...base.params, ...preset.params }, style: { ...base.style, ...preset.style } };
+			}
+
+			if (preset.style) {
+				presetStyles = { ...preset.style };
+			}
+		}
+
 		const bgOverlay = readMeta(tag, 'bg-overlay');
 		const bgBlur = readMeta(tag, 'bg-blur');
 		const bgPosition = readMeta(tag, 'bg-position');
@@ -199,8 +217,11 @@ function transformRune(
 		// Blur presets
 		const BLUR_PRESETS: Record<string, string> = { sm: '4px', md: '8px', lg: '16px' };
 
-		// Build bg layer style
+		// Build bg layer style — preset styles first, then explicit overrides
 		const bgStyleParts: string[] = [];
+		for (const [prop, value] of Object.entries(presetStyles)) {
+			bgStyleParts.push(`${prop}: ${value}`);
+		}
 		if (bgSrc) bgStyleParts.push(`--bg-image: url(${bgSrc})`);
 		if (bgPosition) bgStyleParts.push(`--bg-position: ${bgPosition}`);
 		if (bgBlur) bgStyleParts.push(`--bg-blur: ${BLUR_PRESETS[bgBlur] ?? bgBlur}`);
@@ -208,6 +229,7 @@ function transformRune(
 		if (bgOpacity) bgStyleParts.push(`--bg-opacity: ${bgOpacity}`);
 
 		const bgAttrs: Record<string, any> = { 'data-name': 'bg' };
+		if (bgPreset) bgAttrs['data-bg-preset'] = bgPreset;
 		if (bgStyleParts.length) bgAttrs.style = bgStyleParts.join('; ');
 		if (bgFixed) bgAttrs['data-bg-fixed'] = '';
 
@@ -243,6 +265,7 @@ function transformRune(
 		bgDataAttrs['data-bg'] = '';
 
 		// Track consumed meta properties
+		bgMetaProps.add('bg-preset');
 		bgMetaProps.add('bg-src');
 		bgMetaProps.add('bg-video');
 		bgMetaProps.add('bg-overlay');

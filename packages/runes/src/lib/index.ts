@@ -64,24 +64,38 @@ function injectTintMetas(result: RenderableTreeNodes, model: Model): RenderableT
 
 /**
  * Inject bg meta tags into the result renderable.
- * Transforms the extracted _bgNode and appends its meta tags to the parent.
+ * Handles both the universal `bg="preset-name"` attribute and
+ * the inline child rune form (extracted _bgNode on the model).
  */
 function injectBgMetas(result: RenderableTreeNodes, model: Model): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result) || !model._bgNode) return result;
+  if (!Markdoc.Tag.isTag(result)) return result;
 
-  const bgResult = Markdoc.transform(model._bgNode, model.config);
-  if (Markdoc.Tag.isTag(bgResult)) {
-    const metas: Tag[] = [];
-    for (const child of bgResult.children) {
-      if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
-        metas.push(child);
+  const metas: Tag[] = [];
+  const bgAttr = (model as any).bg as string | undefined;
+
+  // Inline bg child rune takes priority — transform it and extract metas
+  if (model._bgNode) {
+    const bgResult = Markdoc.transform(model._bgNode, model.config);
+    if (Markdoc.Tag.isTag(bgResult)) {
+      for (const child of bgResult.children) {
+        if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
+          metas.push(child);
+        }
       }
-    }
-    if (metas.length > 0) {
-      result.children = [...result.children, ...metas];
     }
   }
 
+  // Universal bg attribute: emit a bg-preset meta tag if not already set by inline child
+  const hasPresetMeta = metas.some(
+    m => Markdoc.Tag.isTag(m) && m.attributes.property === 'bg-preset'
+  );
+  if (bgAttr && !hasPresetMeta) {
+    metas.push(new Markdoc.Tag('meta', { property: 'bg-preset', content: bgAttr }));
+  }
+
+  if (metas.length === 0) return result;
+
+  result.children = [...result.children, ...metas];
   return result;
 }
 
@@ -98,6 +112,9 @@ export function createSchema<TInput extends Model>(
   // Add tint and tint-mode as universal attributes on all runes
   attributes['tint'] = { type: String, required: false };
   attributes['tint-mode'] = { type: String, required: false, matches: ['auto', 'dark', 'light'] };
+
+  // Add bg as universal attribute on all runes (like tint)
+  attributes['bg'] = { type: String, required: false };
 
   // Add width and spacing as universal layout attributes on all runes
   attributes['width'] = { type: String, required: false, matches: ['content', 'wide', 'full'] };

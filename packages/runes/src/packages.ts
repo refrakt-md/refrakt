@@ -25,6 +25,8 @@ export interface MergedPackageResult {
 	themeRunes: Record<string, RuneConfig>;
 	/** Theme icon entries from all packages */
 	themeIcons: Record<string, Record<string, string>>;
+	/** Theme background preset entries from all packages */
+	themeBackgrounds: Record<string, Record<string, unknown>>;
 	/** Schema extensions for core runes (keyed by core rune name) */
 	extensions: Record<string, RuneExtension>;
 	/** Source package metadata */
@@ -222,6 +224,7 @@ export function mergePackages(
 	// Collect theme config entries
 	const themeRunes: Record<string, RuneConfig> = {};
 	const themeIcons: Record<string, Record<string, string>> = {};
+	const themeBackgrounds: Record<string, Record<string, unknown>> = {};
 
 	for (const loadedPkg of loaded) {
 		if (loadedPkg.pkg.theme?.runes) {
@@ -232,6 +235,11 @@ export function mergePackages(
 		if (loadedPkg.pkg.theme?.icons) {
 			for (const [group, icons] of Object.entries(loadedPkg.pkg.theme.icons)) {
 				themeIcons[group] = { ...themeIcons[group], ...icons };
+			}
+		}
+		if (loadedPkg.pkg.theme?.backgrounds) {
+			for (const [name, preset] of Object.entries(loadedPkg.pkg.theme.backgrounds)) {
+				themeBackgrounds[name] = preset;
 			}
 		}
 	}
@@ -267,6 +275,7 @@ export function mergePackages(
 		tags,
 		themeRunes,
 		themeIcons,
+		themeBackgrounds,
 		extensions,
 		packages: loaded.map(l => l.pkg),
 		provenance,
