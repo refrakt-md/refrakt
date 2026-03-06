@@ -66,6 +66,12 @@
 	--rf-spacing-section-loose: 6rem;
 	--rf-spacing-section-breathe: 8rem;
 
+	/* Inset (horizontal padding) */
+	--rf-inset-flush: 0;
+	--rf-inset-tight: 1rem;
+	--rf-inset-loose: 4rem;
+	--rf-inset-breathe: 8rem;
+
 	/* Shadows */
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);

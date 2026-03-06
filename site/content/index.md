@@ -2,7 +2,9 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero justify="left" tint-mode="dark" spacing="loose" %}
+{% hero justify="left" tint-mode="dark" spacing="default" inset="loose" %}
+Version 0.7.2 released [Check out what's new](/releases)
+
 # Write Markdown. Get structure.
 
 A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
@@ -30,7 +32,7 @@ Requires Node.js 18 or later.
 {% /codegroup %}
 
 ---
-
+{% showcase bleed="top" offset="3rem" %}
 ## Getting started
 
 Install the CLI and scaffold a new project.
@@ -38,6 +40,7 @@ Install the CLI and scaffold a new project.
 {% hint type="warning" %}
 Requires Node.js 18 or later.
 {% /hint %}
+{% /showcase %}
 
 {% /grid %}
 {% /hero %}

@@ -162,6 +162,20 @@
 	padding-bottom: var(--rf-spacing-section-breathe, 12rem);
 }
 
+/* Inset — horizontal padding within block runes */
+.rf-page-content > article > [data-inset="flush"] {
+	padding-inline: 0;
+}
+.rf-page-content > article > [data-inset="tight"] {
+	padding-inline: var(--rf-inset-tight, 1rem);
+}
+.rf-page-content > article > [data-inset="loose"] {
+	padding-inline: var(--rf-inset-loose, 4rem);
+}
+.rf-page-content > article > [data-inset="breathe"] {
+	padding-inline: var(--rf-inset-breathe, 8rem);
+}
+
 /* Collapse top/bottom padding when a full-bleed section is first/last */
 .rf-page-content:has(> article > :first-child:is([data-width="full"], [data-tint])) {
 	padding-top: 0;

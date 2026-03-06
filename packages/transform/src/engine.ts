@@ -180,6 +180,11 @@ function transformRune(
 		modifierValues['spacing'] = spacingValue;
 		modifierClasses.push(`${block}--spacing-${spacingValue}`);
 	}
+	const insetValue = tag.attributes?.inset;
+	if (insetValue && insetValue !== 'default') {
+		modifierValues['inset'] = insetValue;
+		modifierClasses.push(`${block}--inset-${insetValue}`);
+	}
 
 	// 1f. Background processing — read bg-* meta tags and build background layer
 	const bgMetaProps = new Set<string>();
@@ -370,7 +375,7 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, ...passAttrs } = tag.attributes;
 
 	const result: SerializedTag = {
 		...tag,

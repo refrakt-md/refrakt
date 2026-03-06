@@ -119,6 +119,7 @@ export function createSchema<TInput extends Model>(
   // Add width and spacing as universal layout attributes on all runes
   attributes['width'] = { type: String, required: false, matches: ['content', 'wide', 'full'] };
   attributes['spacing'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
+  attributes['inset'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
 
   // Register deprecated attribute names so Markdoc accepts them
   if (deprecations) {
@@ -162,8 +163,10 @@ export function createSchema<TInput extends Model>(
       if (Markdoc.Tag.isTag(output)) {
         const width = (model as any).width as string | undefined;
         const spacing = (model as any).spacing as string | undefined;
+        const inset = (model as any).inset as string | undefined;
         if (width) output.attributes.width = width;
         if (spacing) output.attributes.spacing = spacing;
+        if (inset) output.attributes.inset = inset;
       }
 
       return output;
