@@ -71,8 +71,6 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `background` | `string` | — | CSS background color |
-| `backgroundImage` | `string` | — | Background image URL |
 | `justify` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
 | `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
 | `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |

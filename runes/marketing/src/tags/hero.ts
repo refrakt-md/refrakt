@@ -6,12 +6,6 @@ import { schema } from '../types.js';
 const justifyType = ['left', 'center', 'right'] as const;
 
 class HeroModel extends SplitLayoutModel {
-	@attribute({ type: String, required: false })
-	background: string = '';
-
-	@attribute({ type: String, required: false })
-	backgroundImage: string = '';
-
 	@attribute({ type: String, required: false, matches: justifyType.slice() })
 	justify: typeof justifyType[number] = 'center';
 
@@ -43,8 +37,6 @@ class HeroModel extends SplitLayoutModel {
 
 		const side = this.media.transform();
 
-		const backgroundMeta = new Tag('meta', { content: this.background });
-		const backgroundImageMeta = new Tag('meta', { content: this.backgroundImage });
 		const justifyMeta = new Tag('meta', { content: this.justify });
 		const layoutMeta = new Tag('meta', { content: this.layout });
 		const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
@@ -60,8 +52,6 @@ class HeroModel extends SplitLayoutModel {
 			property: 'contentSection',
 			properties: {
 				...pageSectionProperties(header),
-				background: backgroundMeta,
-				backgroundImage: backgroundImageMeta,
 				justify: justifyMeta,
 				layout: layoutMeta,
 				ratio: ratioMeta,
@@ -76,8 +66,6 @@ class HeroModel extends SplitLayoutModel {
 				media: mediaDiv,
 			},
 			children: [
-				backgroundMeta,
-				backgroundImageMeta,
 				justifyMeta,
 				layoutMeta,
 				...(ratioMeta ? [ratioMeta] : []),

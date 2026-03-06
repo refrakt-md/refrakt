@@ -28,21 +28,6 @@ Description text.
 		expect(justifyMeta).toBeDefined();
 	});
 
-	it('should pass background attributes as meta', () => {
-		const result = parse(`{% hero background="#0f172a" backgroundImage="/hero.jpg" %}
-# Title
-{% /hero %}`);
-
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
-		expect(tag).toBeDefined();
-
-		const bgMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '#0f172a');
-		expect(bgMeta).toBeDefined();
-
-		const bgImgMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '/hero.jpg');
-		expect(bgImgMeta).toBeDefined();
-	});
-
 	it('should handle action links as LinkItem components', () => {
 		const result = parse(`{% hero %}
 # Get Started
