@@ -2,9 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-
 {% hero justify="left" tint-mode="dark" spacing="loose" %}
-
 # Write Markdown. Get structure.
 
 A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
@@ -111,7 +109,6 @@ Walk through the theater district.
 
 {% /feature %}
 
-
 {% feature layout="stacked" justify="left" align="center" %}
 Built-in SEO
 ## Structured data from plain Markdown
@@ -137,22 +134,6 @@ A simple Neapolitan-style pizza with fresh ingredients.
 1. Tear the mozzarella over the sauce. Bake for 8–10 minutes until the crust is charred. Finish with fresh basil and a drizzle of olive oil.
 {% /recipe %}
 {% /preview %}
-
-{% /feature %}
-
-
-{% feature layout="stacked" justify="left" align="center" spacing="loose" tint="warm" %}
-Visual authoring
-## Edit runes without leaving your browser
-
-A block-based editor that understands every rune. Preview content as you write, adjust attributes with a visual inspector, and see structured data output in real time — no context switching required.
-
----
-
-{% mockup %}
-![Editor](/editor.png)
-{% /mockup %}
-
 
 {% /feature %}
 
