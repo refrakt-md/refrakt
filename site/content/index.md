@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero justify="left" tint-mode="dark" spacing="default" %}
+{% hero justify="left" tint-mode="auto" spacing="default" tint="warm" %}
 Version 0.7.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
@@ -72,7 +72,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 {% /feature %}
 
-{% feature tint-mode="dark" layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" %}
+{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="warm" %}
 Composable by design
 ## Runes that work together
 
@@ -82,14 +82,13 @@ Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each
 
 {% showcase bleed="both" offset="10rem" shadow="elevated" %}
 {% mockup device="iphone-15" %}
-
 {% map zoom="12" center="40.7580, -73.9855" %}
 - **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
 - **Central Park** - *Urban green oasis* - 40.7829, -73.9654
 - **Times Square** - *The Crossroads of the World* - 40.7580, -73.9855
 {% /map %}
 
-{% itinerary %}
+{% itinerary inset="tight" %}
 ### 10:00 AM — Museum of Modern Art
 
 Spend the morning exploring the permanent collection.
@@ -104,7 +103,6 @@ Walk through the theater district.
 {% /itinerary %}
 {% /mockup %}
 {% /showcase %}
-
 {% /feature %}
 
 {% feature layout="stacked" justify="left" align="center" %}

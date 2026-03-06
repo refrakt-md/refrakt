@@ -11,10 +11,12 @@
 [data-layout="split-reverse"] > [data-name="content"] { order: 2; }
 [data-layout="split-reverse"] > [data-name="media"] { order: 1; }
 
-/* Center inline-block children (mockups, etc.) in media sections by default */
+/* Center children in media sections without inheriting text-align */
 [data-layout="split"] > [data-name="media"],
 [data-layout="split-reverse"] > [data-name="media"] {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Collapse breakpoints */

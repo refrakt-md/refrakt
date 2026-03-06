@@ -1,7 +1,11 @@
 /* Call to Action */
 .rf-cta {
-	text-align: center;
 	padding: 3.5rem 2rem 3rem;
+}
+.rf-cta .rf-cta__header,
+.rf-cta > h1, .rf-cta > h2, .rf-cta > h3,
+.rf-cta > p {
+	text-align: center;
 }
 .rf-cta__header {
 	margin-bottom: 1.5rem;
@@ -124,8 +128,12 @@
 
 /* Context-aware: CTA inside pricing — compact, left-aligned */
 .rf-cta--in-pricing {
-	text-align: left;
 	padding: 1.5rem 0 0;
+}
+.rf-cta--in-pricing .rf-cta__header,
+.rf-cta--in-pricing > h1, .rf-cta--in-pricing > h2, .rf-cta--in-pricing > h3,
+.rf-cta--in-pricing > p {
+	text-align: left;
 }
 .rf-cta--in-pricing p {
 	margin: 0 0 1rem;
