@@ -38,9 +38,9 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Preview: {
 		block: 'preview',
+		defaultWidth: 'wide',
 		modifiers: {
 			theme: { source: 'meta', default: 'auto' },
-			width: { source: 'meta', default: 'wide' },
 			responsive: { source: 'meta' },
 			title: { source: 'meta' },
 		},

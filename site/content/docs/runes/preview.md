@@ -1,6 +1,6 @@
 ---
 title: Preview
-description: Component showcase with theme toggle, responsive viewports, and adjustable width
+description: Component showcase with theme toggle and responsive viewports
 ---
 
 {% hint type="note" %}
@@ -9,7 +9,7 @@ This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-
 
 # Preview
 
-A component showcase wrapper that renders content in a framed environment with a theme toggle toolbar, responsive viewport simulation, and adjustable width. Useful for documentation sites, design systems, and theme demonstrations.
+A component showcase wrapper that renders content in a framed environment with a theme toggle toolbar and responsive viewport simulation. Useful for documentation sites, design systems, and theme demonstrations.
 
 ## Basic usage
 
@@ -20,24 +20,6 @@ Wrap any content in a preview to give it a visual frame with a theme toggle.
 {% hint type="note" %}
 This is a note inside a preview.
 {% /hint %}
-{% /preview %}
-```
-
-## Width control
-
-The `width` attribute controls how wide the preview renders. This is especially useful in narrow content layouts where components need more room.
-
-- `narrow` -- stays within the parent container width
-- `medium` -- slightly wider than the content area
-- `wide` -- comfortably wider (default)
-- `full` -- spans the full available width
-
-```markdoc
-{% preview title="Full width" width="full" %}
-{% hero %}
-# Welcome
-Build something great.
-{% /hero %}
 {% /preview %}
 ```
 
@@ -151,7 +133,6 @@ See the [sandbox rune docs](/docs/runes/sandbox) for full details on framework p
 |-----------|------|---------|-------------|
 | `title` | `string` | -- | Optional label displayed in the toolbar |
 | `theme` | `"auto"` \| `"light"` \| `"dark"` | `"auto"` | Initial theme mode (user can toggle) |
-| `width` | `"narrow"` \| `"medium"` \| `"wide"` \| `"full"` | `"wide"` | Canvas width control |
 | `source` | `boolean` | `false` | Auto-infer source code from children's Markdoc text |
 | `responsive` | `string` | -- | Comma-separated viewport presets: `mobile`, `tablet`, `desktop` |
 
@@ -161,7 +142,7 @@ All block runes share these attributes for layout and theming.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `width` | `string` | `wide` | Page grid width: `content`, `wide`, or `full` |
 | `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
 | `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
 | `tint` | `string` | — | Named colour tint from theme configuration |

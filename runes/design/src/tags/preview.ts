@@ -78,9 +78,6 @@ class PreviewModel extends Model {
 	@attribute({ type: String, required: false, matches: ['auto', 'light', 'dark'] })
 	theme: string = 'auto';
 
-	@attribute({ type: String, required: false, matches: ['narrow', 'medium', 'wide', 'full'] })
-	width: string = 'wide';
-
 	@attribute({ type: Boolean, required: false })
 	source: boolean = false;
 
@@ -130,13 +127,11 @@ class PreviewModel extends Model {
 
 		const titleMeta = this.title ? new Tag('meta', { content: this.title }) : undefined;
 		const themeMeta = new Tag('meta', { content: this.theme });
-		const widthMeta = new Tag('meta', { content: this.width });
 		const responsiveMeta = this.responsive ? new Tag('meta', { content: this.responsive }) : undefined;
 
 		const childNodes = [
 			...(titleMeta ? [titleMeta] : []),
 			themeMeta,
-			widthMeta,
 			...(responsiveMeta ? [responsiveMeta] : []),
 			...(sourcePre ? [sourcePre] : []),
 			...(htmlSourcePre ? [htmlSourcePre] : []),
@@ -148,7 +143,6 @@ class PreviewModel extends Model {
 			properties: {
 				...(titleMeta ? { title: titleMeta } : {}),
 				theme: themeMeta,
-				width: widthMeta,
 				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
 				...(sourcePre ? { source: sourcePre } : {}),
 				...(htmlSourcePre ? { htmlSource: htmlSourcePre } : {}),

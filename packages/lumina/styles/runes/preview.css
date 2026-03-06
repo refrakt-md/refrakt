@@ -7,10 +7,6 @@
 }
 
 /* Width variants */
-.rf-preview[data-width="medium"] {
-	width: calc(100% + 4rem);
-	margin-left: -2rem;
-}
 @container (min-width: 1008px) {
 	.rf-preview[data-width="wide"] {
 		width: calc(100% + 8rem);

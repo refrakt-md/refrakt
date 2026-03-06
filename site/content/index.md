@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero justify="left" tint-mode="auto" spacing="default" tint="warm" %}
+{% hero justify="left" tint-mode="auto" spacing="breathe" tint="subtle" %}
 Version 0.7.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
@@ -14,31 +14,6 @@ npm create refrakt
 ```
 
 - [Get Started](/docs/getting-started)
-
----
-{% showcase bleed="none" bg="surface-dark" inset="tight" shadow="elevated" %}
-{% grid align="center" gap="loose" %}
-
-{% codegroup %}
-```markdoc
-Install the CLI and scaffold a new project.
-
-{% hint type="warning" %}
-Requires Node.js 18 or later.
-{% /hint %}
-```
-{% /codegroup %}
-
----
-
-Install the CLI and scaffold a new project.
-
-{% hint type="warning" %}
-Requires Node.js 18 or later.
-{% /hint %}
-
-{% /grid %}
-{% /showcase %}
 {% /hero %}
 
 {% feature justify="left" spacing="default" %}
@@ -72,7 +47,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 {% /feature %}
 
-{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="warm" %}
+{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="subtle" %}
 Composable by design
 ## Runes that work together
 
@@ -81,7 +56,7 @@ Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each
 ---
 
 {% showcase bleed="both" offset="10rem" shadow="elevated" %}
-{% mockup device="iphone-15" %}
+{% mockup device="iphone-15" tint="base" %}
 {% map zoom="12" center="40.7580, -73.9855" %}
 - **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
 - **Central Park** - *Urban green oasis* - 40.7829, -73.9654
@@ -113,7 +88,7 @@ Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdo
 
 ---
 
-{% preview source=true width="medium" %}
+{% preview source="true" width="content" %}
 {% recipe prepTime="10 min" cookTime="10 min" servings=2 difficulty="easy" %}
 ## Classic Margherita Pizza
 
@@ -130,10 +105,9 @@ A simple Neapolitan-style pizza with fresh ingredients.
 1. Tear the mozzarella over the sauce. Bake for 8–10 minutes until the crust is charred. Finish with fresh basil and a drizzle of olive oil.
 {% /recipe %}
 {% /preview %}
-
 {% /feature %}
 
-{% feature spacing="loose" tint-mode="dark" justify="left" %}
+{% feature spacing="loose" tint-mode="auto" justify="left" %}
 8 packages, 60+ runes
 ## A rune for every domain
 
@@ -171,10 +145,9 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 - {% icon name="video" /%} **Media**
 
   `music-playlist`, `music-recording`
-
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" tint="cool" %}
+{% testimonial variant="quote" spacing="breathe" tint="cool" width="content" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic
