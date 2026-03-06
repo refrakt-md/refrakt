@@ -67,6 +67,20 @@
 .rf-bento-cell--span {
 	grid-column: span var(--cell-span, 1);
 }
+.rf-bento-cell__icon {
+	margin-bottom: 0.75rem;
+	line-height: 0;
+}
+.rf-bento-cell__icon svg {
+	width: 1.5rem;
+	height: 1.5rem;
+	color: var(--rf-color-accent);
+}
+.rf-bento-cell__icon .rf-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+	color: var(--rf-color-accent);
+}
 .rf-bento-cell__title {
 	font-size: 1rem;
 	font-weight: 600;

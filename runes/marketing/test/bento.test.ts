@@ -200,4 +200,83 @@ Spans 7 columns.
     expect(spanMetas[0]!.attributes.content).toBe('8');
     expect(spanMetas[1]!.attributes.content).toBe('7');
   });
+
+  it('should extract icon from heading into a separate icon element', () => {
+    const result = parse(`{% bento %}
+## {% icon name="rocket" /%} Fast
+
+Performance content.
+
+## {% icon name="shield" /%} Secure
+
+Security content.
+{% /bento %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    expect(tag).toBeDefined();
+
+    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    expect(cells.length).toBe(2);
+
+    // Each cell should have an icon wrapper with data-name="icon"
+    for (const cell of cells) {
+      const iconWrapper = findTag(cell, t => t.attributes?.['data-name'] === 'icon');
+      expect(iconWrapper).toBeDefined();
+      // Icon falls back to span.rf-icon when __icons not configured
+      const iconSpan = findTag(iconWrapper!, t => t.attributes?.class === 'rf-icon');
+      expect(iconSpan).toBeDefined();
+    }
+  });
+
+  it('should extract icon from heading with resolved SVG when __icons provided', () => {
+    const result = parse(`{% bento %}
+## {% icon name="rocket" /%} Launch
+
+Content here.
+{% /bento %}`, {
+      __icons: { global: { rocket: '<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>' } },
+    });
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    expect(cells.length).toBe(1);
+
+    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
+    expect(iconWrapper).toBeDefined();
+    // Should contain an SVG element
+    const svg = findTag(iconWrapper!, t => t.name === 'svg');
+    expect(svg).toBeDefined();
+  });
+
+  it('should not create icon wrapper when heading has no icon', () => {
+    const result = parse(`{% bento %}
+## Plain Cell
+
+No icon here.
+{% /bento %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    expect(cells.length).toBe(1);
+
+    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
+    expect(iconWrapper).toBeUndefined();
+  });
+
+  it('should preserve cell name text when icon is present', () => {
+    const result = parse(`{% bento %}
+## {% icon name="rocket" /%} Fast Performance
+
+Content.
+{% /bento %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    expect(cells.length).toBe(1);
+
+    // The name property should contain the heading text (without the icon)
+    const nameTag = findTag(cells[0], t => t.attributes?.property === 'name');
+    expect(nameTag).toBeDefined();
+    expect(nameTag!.children.join('').trim()).toBe('Fast Performance');
+  });
 });
