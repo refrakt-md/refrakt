@@ -526,7 +526,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: var(--ed-space-3) var(--ed-space-4);
+		padding: var(--ed-space-4) var(--ed-space-5);
 		border-bottom: 1px solid var(--ed-border-default);
 		background: transparent;
 		position: sticky;
@@ -587,10 +587,10 @@
 	.edit-panel__body {
 		flex: 1;
 		overflow-y: auto;
-		padding: var(--ed-space-4);
+		padding: var(--ed-space-5);
 		display: flex;
 		flex-direction: column;
-		gap: var(--ed-space-4);
+		gap: var(--ed-space-5);
 	}
 
 	.edit-panel__field-group {

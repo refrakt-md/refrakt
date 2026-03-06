@@ -531,8 +531,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--ed-space-3);
-		padding: var(--ed-space-3) var(--ed-space-4);
-		border-bottom: 1px solid var(--ed-border-subtle);
+		padding: var(--ed-space-5) var(--ed-space-5);
 		margin-bottom: var(--ed-space-2);
 	}
 
@@ -701,13 +700,14 @@
 	/* Edit panel — fixed to right edge of viewport, outside the card */
 	.block-editor__edit-panel {
 		position: fixed;
-		top: 60px;
+		top: calc(60px + var(--ed-space-4));
 		right: 0;
 		bottom: 0;
 		width: 480px;
 		overflow-y: auto;
-		background: var(--ed-surface-1);
-		border-left: 1px solid var(--ed-border-default);
+		background: var(--ed-surface-0);
+		border-radius: var(--ed-radius-lg) 0 0 0;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 		transform: translateX(100%);
 		transition: transform var(--ed-transition-slow);
 		z-index: 10;
