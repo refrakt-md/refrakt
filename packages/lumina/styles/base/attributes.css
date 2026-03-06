@@ -1,0 +1,20 @@
+/* Universal Rune Attributes — spacing & inset
+ *
+ * Compound attribute selectors [data-rune][data-*] give specificity (0,2,0):
+ *   - Overrides rune defaults like .rf-itinerary { margin: 2rem 0 } at (0,1,0)
+ *   - Overridden by layout-level rules in default.css at (0,2,1)
+ *   - Per-rune overrides (e.g. showcase) win via source order (loaded after) */
+
+/* ── Spacing — vertical rhythm ─────────────────────────────────────── */
+
+[data-rune][data-spacing="flush"]   { margin-top: 0; margin-bottom: 0; }
+[data-rune][data-spacing="tight"]   { margin-top: var(--rf-spacing-section-tight, 1.5rem); margin-bottom: var(--rf-spacing-section-tight, 1.5rem); }
+[data-rune][data-spacing="loose"]   { margin-top: var(--rf-spacing-section-loose, 8rem); margin-bottom: var(--rf-spacing-section-loose, 8rem); }
+[data-rune][data-spacing="breathe"] { margin-top: var(--rf-spacing-section-breathe, 12rem); margin-bottom: var(--rf-spacing-section-breathe, 12rem); }
+
+/* ── Inset — horizontal padding ────────────────────────────────────── */
+
+[data-rune][data-inset="flush"]   { padding-inline: 0; }
+[data-rune][data-inset="tight"]   { padding-inline: var(--rf-inset-tight, 1rem); }
+[data-rune][data-inset="loose"]   { padding-inline: var(--rf-inset-loose, 4rem); }
+[data-rune][data-inset="breathe"] { padding-inline: var(--rf-inset-breathe, 8rem); }

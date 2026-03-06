@@ -7,11 +7,31 @@
 	--mockup-chrome: #2a2a2a;
 	--mockup-chrome-text: #999;
 	--mockup-scale: 1;
-	display: inline-block;
+	display: block;
+	width: 100%;
+	container-type: inline-size;
 	margin: 1.5rem 0;
-	transform: scale(var(--mockup-scale));
-	transform-origin: top center;
 	background-color: transparent;
+}
+
+/* ── Fit mode: none (native pixel size) ── */
+
+.rf-mockup[data-fit="none"] {
+	display: inline-block;
+	width: auto;
+	container-type: normal;
+}
+
+.rf-mockup[data-fit="none"] .rf-mockup__frame {
+	zoom: normal;
+	transform: scale(var(--mockup-scale, 1));
+	transform-origin: top center;
+	margin-inline: 0;
+}
+
+.rf-mockup[data-fit="none"].rf-mockup--browser,
+.rf-mockup[data-fit="none"].rf-mockup--browser-dark {
+	display: block;
 }
 
 /* ── Color modifiers ── */
@@ -38,6 +58,8 @@
 
 .rf-mockup__frame {
 	position: relative;
+	margin-inline: auto;
+	zoom: calc(var(--mockup-scale, 1) * min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
 }
 
 /* ── Viewport (content area) ── */
@@ -165,6 +187,7 @@
 /* ── iPhone 15 ── */
 
 .rf-mockup--iphone-15 .rf-mockup__frame {
+	--mockup-device-width: 393px;
 	width: 393px;
 	border-radius: 55px;
 }
@@ -182,6 +205,7 @@
 /* ── iPhone SE ── */
 
 .rf-mockup--iphone-se .rf-mockup__frame {
+	--mockup-device-width: 375px;
 	width: 375px;
 	border-radius: 40px;
 }
@@ -223,6 +247,7 @@
 /* ── Pixel ── */
 
 .rf-mockup--pixel .rf-mockup__frame {
+	--mockup-device-width: 412px;
 	width: 412px;
 	border-radius: 40px;
 }
@@ -239,6 +264,7 @@
 /* ── Generic phone ── */
 
 .rf-mockup--phone .rf-mockup__frame {
+	--mockup-device-width: 390px;
 	width: 390px;
 	border-radius: 48px;
 }
@@ -259,6 +285,7 @@
 /* ── iPad ── */
 
 .rf-mockup--ipad .rf-mockup__frame {
+	--mockup-device-width: 820px;
 	width: 820px;
 	border-radius: 24px;
 }
@@ -275,6 +302,7 @@
 /* ── Generic tablet ── */
 
 .rf-mockup--tablet .rf-mockup__frame {
+	--mockup-device-width: 800px;
 	width: 800px;
 	border-radius: 20px;
 }
@@ -355,10 +383,6 @@
 
 /* ── Browser ── */
 
-.rf-mockup--browser {
-	display: block;
-}
-
 .rf-mockup--browser .rf-mockup__frame {
 	width: 100%;
 	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
@@ -376,10 +400,6 @@
 }
 
 /* ── Browser dark ── */
-
-.rf-mockup--browser-dark {
-	display: block;
-}
 
 .rf-mockup--browser-dark .rf-mockup__frame {
 	width: 100%;
@@ -405,8 +425,8 @@
 /* ── MacBook ── */
 
 .rf-mockup--macbook .rf-mockup__frame {
+	--mockup-device-width: 1440px;
 	width: 1440px;
-	max-width: 100%;
 }
 
 .rf-mockup--macbook .rf-mockup__title-bar {
@@ -447,6 +467,7 @@
 /* ── Watch ── */
 
 .rf-mockup--watch .rf-mockup__frame {
+	--mockup-device-width: 198px;
 	width: 198px;
 	border-radius: 40px;
 	position: relative;

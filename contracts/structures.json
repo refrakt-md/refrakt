@@ -75,7 +75,56 @@
 			"dataRune": "grid",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"mode": {
+					"source": "meta",
+					"default": "columns",
+					"classPattern": ".rf-grid--{value}",
+					"dataAttribute": "data-mode"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"stack": {
+					"source": "meta",
+					"dataAttribute": "data-stack"
+				},
+				"ratio": {
+					"source": "meta",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"dataAttribute": "data-gap"
+				},
+				"min": {
+					"source": "meta",
+					"dataAttribute": "data-min"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--grid-ratio"
+				},
+				"align": {
+					"prop": "--grid-align"
+				},
+				"gap": {
+					"prop": "--grid-gap"
+				},
+				"min": "--grid-min",
+				"aspect": "--grid-aspect"
+			}
 		},
 		"CodeGroup": {
 			"block": "codegroup",
@@ -542,6 +591,47 @@
 					"classPattern": ".rf-mediatext--{value}",
 					"dataAttribute": "data-wrap"
 				}
+			}
+		},
+		"Showcase": {
+			"block": "showcase",
+			"root": ".rf-showcase",
+			"dataRune": "showcase",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"shadow": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-shadow"
+				},
+				"bleed": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-bleed"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"offset": {
+					"source": "meta",
+					"dataAttribute": "data-offset"
+				},
+				"justify": {
+					"source": "meta",
+					"dataAttribute": "data-justify"
+				}
+			},
+			"inlineStyles": {
+				"offset": {
+					"prop": "--showcase-offset"
+				},
+				"aspect": "--showcase-aspect",
+				"justify": "--showcase-justify"
 			}
 		},
 		"TabGroup": {

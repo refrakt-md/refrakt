@@ -22,6 +22,9 @@
 @import './styles/layouts/version-switcher.css';
 @import './styles/layouts/split.css';
 
+/* Universal Rune Attributes */
+@import './styles/base/attributes.css';
+
 /* Runes */
 @import './styles/runes/accordion.css';
 @import './styles/runes/annotate.css';

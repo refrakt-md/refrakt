@@ -79,6 +79,7 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: {
 			device: { source: 'meta', default: 'browser' },
 			color: { source: 'meta', default: 'dark' },
+			fit: { source: 'meta', default: 'auto', noBemClass: true },
 		},
 		postTransform(node) {
 			const block = node.attributes.class?.split(' ')[0] || 'rf-mockup';
