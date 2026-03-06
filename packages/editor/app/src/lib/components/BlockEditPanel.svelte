@@ -84,12 +84,34 @@
 		return activeNode.type;
 	});
 
+	let showTreeDropdown: boolean = $state(false);
+	let treeDropdownEl: HTMLDivElement;
+
 	function handleTreeSelect(path: number[]) {
 		activePath = path;
+		showTreeDropdown = false;
 	}
 
 	function navigateToRoot() {
 		activePath = [];
+		showTreeDropdown = false;
+	}
+
+	function toggleTreeDropdown() {
+		showTreeDropdown = !showTreeDropdown;
+	}
+
+	function handleTreeClickOutside(e: MouseEvent) {
+		if (showTreeDropdown && treeDropdownEl && !treeDropdownEl.contains(e.target as Node)) {
+			showTreeDropdown = false;
+		}
+	}
+
+	function handleTreeKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && showTreeDropdown) {
+			showTreeDropdown = false;
+			e.stopPropagation();
+		}
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -219,31 +241,61 @@
 
 </script>
 
+<svelte:window onmousedown={handleTreeClickOutside} onkeydown={handleTreeKeydown} />
+
 <div class="edit-panel">
-	<div class="edit-panel__header">
-		<span class="edit-panel__type">{headerLabel}</span>
-		{#if !activeIsContent && category}
-			<span class="edit-panel__category">{category}</span>
+	<div class="edit-panel__header-wrap" bind:this={treeDropdownEl}>
+		<div class="edit-panel__header">
+			<span class="edit-panel__type">{headerLabel}</span>
+			{#if !activeIsContent && category}
+				<span class="edit-panel__category">{category}</span>
+			{/if}
+			{#if hasNestedRunes}
+				<button
+					class="edit-panel__btn"
+					class:active={showTreeDropdown}
+					onclick={toggleTreeDropdown}
+					title="Content tree"
+				>
+					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M2 3h4M2 7h4M6 11h4M6 15h4M4 3v8M8 11v4" />
+					</svg>
+				</button>
+			{/if}
+			<div class="edit-panel__spacer"></div>
+			<button
+				class="edit-panel__btn edit-panel__btn--danger"
+				onclick={onremove}
+				title="Remove block"
+			>
+				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="3 6 3 14 13 14 13 6" />
+					<line x1="1" y1="4" x2="15" y2="4" />
+					<line x1="6" y1="2" x2="10" y2="2" />
+					<line x1="6" y1="8" x2="6" y2="12" />
+					<line x1="10" y1="8" x2="10" y2="12" />
+				</svg>
+			</button>
+			<button
+				class="edit-panel__btn"
+				onclick={onclose}
+				title="Close panel"
+			>&times;</button>
+		</div>
+
+		{#if showTreeDropdown && hasNestedRunes && block.type === 'rune'}
+			{@const rb = block as RuneBlock}
+			<div class="edit-panel__tree-dropdown">
+				<ContentTree
+					nodes={contentTree}
+					{activePath}
+					onselect={handleTreeSelect}
+					rootLabel={rb.runeName}
+					onrootclick={navigateToRoot}
+					isRootActive={activePath.length === 0}
+				/>
+			</div>
 		{/if}
-		<div class="edit-panel__spacer"></div>
-		<button
-			class="edit-panel__btn edit-panel__btn--danger"
-			onclick={onremove}
-			title="Remove block"
-		>
-			<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-				<polyline points="3 6 3 14 13 14 13 6" />
-				<line x1="1" y1="4" x2="15" y2="4" />
-				<line x1="6" y1="2" x2="10" y2="2" />
-				<line x1="6" y1="8" x2="6" y2="12" />
-				<line x1="10" y1="8" x2="10" y2="12" />
-			</svg>
-		</button>
-		<button
-			class="edit-panel__btn"
-			onclick={onclose}
-			title="Close panel"
-		>&times;</button>
 	</div>
 
 	<div class="edit-panel__body">
@@ -278,20 +330,6 @@
 
 		{:else if block.type === 'rune'}
 			{@const rb = block as RuneBlock}
-
-			<!-- Content tree at the top (when there are nested runes) -->
-			{#if hasNestedRunes}
-				<div class="edit-panel__tree">
-					<ContentTree
-						nodes={contentTree}
-						{activePath}
-						onselect={handleTreeSelect}
-						rootLabel={rb.runeName}
-						onrootclick={navigateToRoot}
-						isRootActive={activePath.length === 0}
-					/>
-				</div>
-			{/if}
 
 			<!-- Editor for the active node -->
 			{#if activeIsContent && activeNode}
@@ -652,9 +690,30 @@
 		font-style: italic;
 	}
 
-	/* Content tree */
-	.edit-panel__tree {
-		padding-bottom: var(--ed-space-2);
-		border-bottom: 1px solid var(--ed-border-subtle);
+	/* Header wrap (contains header + tree dropdown) */
+	.edit-panel__header-wrap {
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	/* Tree button active state */
+	.edit-panel__btn.active {
+		color: var(--ed-accent);
+		background: var(--ed-accent-muted);
+	}
+
+	/* Content tree dropdown */
+	.edit-panel__tree-dropdown {
+		padding: 0.5rem;
+		border-bottom: 1px solid var(--ed-border-default);
+		background: var(--ed-surface-0);
+		max-height: 300px;
+		overflow-y: auto;
+		animation: tree-dropdown-enter 0.1s ease-out;
+	}
+
+	@keyframes tree-dropdown-enter {
+		from { opacity: 0; transform: translateY(-4px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 </style>

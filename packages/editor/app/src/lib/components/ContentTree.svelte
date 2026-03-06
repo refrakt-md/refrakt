@@ -118,7 +118,7 @@
 		border-radius: calc(var(--ed-radius-sm, 4px) - 1px);
 		background: transparent;
 		color: var(--ed-text-secondary);
-		font-size: var(--ed-text-sm);
+		font-size: var(--ed-text-base);
 		cursor: pointer;
 		text-align: left;
 		transition: background var(--ed-transition-fast);
@@ -139,7 +139,7 @@
 
 	.tree-node__btn--content {
 		color: var(--ed-text-muted);
-		font-size: var(--ed-text-xs);
+		font-size: var(--ed-text-sm);
 	}
 
 	.tree-node__btn--content.active {
@@ -148,8 +148,8 @@
 	}
 
 	.tree-node__indicator {
-		width: 10px;
-		font-size: 9px;
+		width: 12px;
+		font-size: 10px;
 		color: var(--ed-text-muted);
 		flex-shrink: 0;
 		text-align: center;

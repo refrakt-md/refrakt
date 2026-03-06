@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { RuneInfo, RuneAttributeInfo } from '../api/client.js';
-	import LayoutToolbar, { TOOLBAR_ATTR_NAMES } from './LayoutToolbar.svelte';
 
 	interface Props {
 		runeInfo: RuneInfo;
@@ -9,6 +8,9 @@
 	}
 
 	let { runeInfo, attributes, onchange }: Props = $props();
+
+	/** Attributes that only apply when layout is split or split-reverse */
+	const SPLIT_ONLY_ATTRS = new Set(['ratio', 'align', 'gap', 'collapse']);
 
 	function updateAttr(name: string, value: string) {
 		const next = { ...attributes };
@@ -20,80 +22,166 @@
 		onchange(next);
 	}
 
-	/** Whether any toolbar attrs exist for this rune */
-	let hasToolbarAttrs = $derived(
-		Object.keys(runeInfo.attributes).some(name => TOOLBAR_ATTR_NAMES.has(name))
-	);
+	/** Format kebab-case attribute name for display */
+	function formatLabel(name: string): string {
+		return name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+	}
 
-	/** All schema attributes, sorted with required first, excluding toolbar-handled attrs */
+	/** Check if split-only attrs should be hidden */
+	function isSplitOnly(name: string): boolean {
+		if (!SPLIT_ONLY_ATTRS.has(name)) return false;
+		if (!('layout' in runeInfo.attributes)) return false;
+		const layout = attributes['layout'] ?? '';
+		return layout !== 'split' && layout !== 'split-reverse';
+	}
+
+	/** All schema attributes, sorted with required first */
 	let sortedAttrs = $derived(
 		Object.entries(runeInfo.attributes)
-			.filter(([name]) => !TOOLBAR_ATTR_NAMES.has(name))
+			.filter(([name]) => !isSplitOnly(name))
 			.sort(([, a], [, b]) => (a.required === b.required ? 0 : a.required ? -1 : 1))
 	);
+
+	// ── Dropdown state ──────────────────────────────────────────
+	let openDropdown: string | null = $state(null);
+	let attrsEl: HTMLDivElement;
+
+	function toggleDropdown(name: string) {
+		openDropdown = openDropdown === name ? null : name;
+	}
+
+	function selectValue(name: string, value: string) {
+		updateAttr(name, value);
+		openDropdown = null;
+	}
+
+	function handleClickOutside(e: MouseEvent) {
+		if (openDropdown && attrsEl && !attrsEl.contains(e.target as Node)) {
+			openDropdown = null;
+		}
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && openDropdown) {
+			openDropdown = null;
+			e.stopPropagation();
+		}
+	}
+
+	// ── Inline text editing state ────────────────────────────────
+	let editingAttr: string | null = $state(null);
+	let editValue: string = $state('');
+
+	function startEditing(name: string, currentValue: string) {
+		editingAttr = name;
+		editValue = currentValue;
+	}
+
+	function commitEdit(name: string) {
+		updateAttr(name, editValue);
+		editingAttr = null;
+	}
+
+	function handleEditKeydown(e: KeyboardEvent, name: string) {
+		if (e.key === 'Enter') {
+			commitEdit(name);
+		} else if (e.key === 'Escape') {
+			editingAttr = null;
+			e.stopPropagation();
+		}
+	}
 </script>
 
-<div class="rune-attrs">
-	{#if hasToolbarAttrs}
-		<LayoutToolbar
-			schema={runeInfo.attributes}
-			{attributes}
-			{onchange}
-		/>
-	{/if}
+<svelte:window onmousedown={handleClickOutside} onkeydown={handleKeydown} />
+
+<div class="rune-attrs" bind:this={attrsEl}>
 	{#each sortedAttrs as [name, info] (name)}
 		{@const value = attributes[name] ?? ''}
-		<label class="rune-attr">
-			<span class="rune-attr__label">
-				{name}
+		<div class="rune-attrs__row">
+			<span class="rune-attrs__label">
+				{formatLabel(name)}
 				{#if info.required}
-					<span class="rune-attr__required">*</span>
+					<span class="rune-attrs__required">*</span>
 				{/if}
 			</span>
 
 			{#if info.type === 'Boolean'}
-				<div class="rune-attr__toggle-row">
-					<button
-						class="rune-attr__toggle"
-						class:active={value === 'true'}
-						onclick={() => updateAttr(name, value === 'true' ? '' : 'true')}
-						type="button"
-					>
-						<span class="rune-attr__toggle-knob"></span>
-					</button>
-					<span class="rune-attr__toggle-label">{value === 'true' ? 'Yes' : 'No'}</span>
-				</div>
-			{:else if info.values && info.values.length > 0}
-				<select
-					class="rune-attr__select"
-					value={value}
-					onchange={(e) => updateAttr(name, (e.target as HTMLSelectElement).value)}
+				<button
+					type="button"
+					class="rune-attrs__value"
+					class:active={value === 'true'}
+					onclick={() => updateAttr(name, value === 'true' ? '' : 'true')}
 				>
-					{#if !info.required}
-						<option value="">-- none --</option>
+					{value === 'true' ? 'Yes' : 'No'}
+				</button>
+
+			{:else if info.values && info.values.length > 0}
+				<div class="rune-attrs__enum">
+					<button
+						type="button"
+						class="rune-attrs__value"
+						class:active={!!value}
+						class:open={openDropdown === name}
+						onclick={() => toggleDropdown(name)}
+					>
+						{value || 'default'}
+					</button>
+
+					{#if openDropdown === name}
+						<div class="rune-attrs__dropdown">
+							<button
+								type="button"
+								class="rune-attrs__option"
+								class:selected={!value}
+								onclick={() => selectValue(name, '')}
+							>
+								<span class="rune-attrs__option-label rune-attrs__option-label--default">default</span>
+								{#if !value}
+									<svg class="rune-attrs__check" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M3 8l3.5 3.5L13 5" />
+									</svg>
+								{/if}
+							</button>
+							{#each info.values as opt}
+								<button
+									type="button"
+									class="rune-attrs__option"
+									class:selected={value === opt}
+									onclick={() => selectValue(name, opt)}
+								>
+									<span class="rune-attrs__option-label">{opt}</span>
+									{#if value === opt}
+										<svg class="rune-attrs__check" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M3 8l3.5 3.5L13 5" />
+										</svg>
+									{/if}
+								</button>
+							{/each}
+						</div>
 					{/if}
-					{#each info.values as opt}
-						<option value={opt}>{opt}</option>
-					{/each}
-				</select>
-			{:else if info.type === 'Number'}
+				</div>
+
+			{:else if editingAttr === name}
 				<input
-					class="rune-attr__input"
-					type="number"
-					value={value}
-					oninput={(e) => updateAttr(name, (e.target as HTMLInputElement).value)}
-					placeholder={info.required ? 'required' : ''}
+					class="rune-attrs__inline-input"
+					type={info.type === 'Number' ? 'number' : 'text'}
+					bind:value={editValue}
+					onblur={() => commitEdit(name)}
+					onkeydown={(e) => handleEditKeydown(e, name)}
+					autofocus
 				/>
+
 			{:else}
-				<input
-					class="rune-attr__input"
-					type="text"
-					value={value}
-					oninput={(e) => updateAttr(name, (e.target as HTMLInputElement).value)}
-					placeholder={info.required ? 'required' : ''}
-				/>
+				<button
+					type="button"
+					class="rune-attrs__value"
+					class:active={!!value}
+					onclick={() => startEditing(name, value)}
+				>
+					{value || (info.required ? 'required' : 'default')}
+				</button>
 			{/if}
-		</label>
+		</div>
 	{/each}
 
 	{#if sortedAttrs.length === 0}
@@ -105,106 +193,153 @@
 	.rune-attrs {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
 	}
 
-	.rune-attr {
+	.rune-attrs__row {
 		display: flex;
-		flex-direction: column;
-		gap: var(--ed-space-1);
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.4rem 0;
+		border-bottom: 1px solid var(--ed-border-subtle);
+		position: relative;
 	}
 
-	.rune-attr__label {
-		font-size: var(--ed-text-xs);
-		font-weight: 600;
+	.rune-attrs__row:last-child {
+		border-bottom: none;
+	}
+
+	.rune-attrs__label {
+		font-size: var(--ed-text-base);
 		color: var(--ed-text-tertiary);
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
-	.rune-attr__required {
+	.rune-attrs__required {
 		color: var(--ed-danger);
 	}
 
-	.rune-attr__input {
-		padding: var(--ed-space-2) var(--ed-space-3);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
+	/* Clickable value button */
+	.rune-attrs__value {
 		font-size: var(--ed-text-base);
-		color: var(--ed-text-primary);
-		background: var(--ed-surface-0);
-		outline: none;
-		font-family: inherit;
-	}
-
-	.rune-attr__input:focus {
-		border-color: var(--ed-accent);
-		box-shadow: 0 0 0 2px var(--ed-accent-ring);
-	}
-
-	.rune-attr__select {
-		padding: var(--ed-space-2) var(--ed-space-3);
-		border: 1px solid var(--ed-border-default);
+		color: var(--ed-text-muted);
+		font-style: italic;
+		background: none;
+		border: none;
+		padding: 0.15rem 0.4rem;
 		border-radius: var(--ed-radius-sm);
-		font-size: var(--ed-text-base);
-		color: var(--ed-text-primary);
-		background: var(--ed-surface-0);
-		outline: none;
-		font-family: inherit;
 		cursor: pointer;
+		text-align: right;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.rune-attr__select:focus {
-		border-color: var(--ed-accent);
-		box-shadow: 0 0 0 2px var(--ed-accent-ring);
+	.rune-attrs__value:hover {
+		background: var(--ed-surface-2);
+		color: var(--ed-text-secondary);
 	}
 
-	/* Toggle switch */
-	.rune-attr__toggle-row {
+	.rune-attrs__value.active {
+		color: var(--ed-text-primary);
+		font-style: normal;
+		font-weight: 500;
+	}
+
+	.rune-attrs__value.open {
+		background: var(--ed-surface-2);
+		color: var(--ed-text-primary);
+	}
+
+	/* Enum dropdown container */
+	.rune-attrs__enum {
+		position: relative;
+		display: flex;
+		justify-content: flex-end;
+		min-width: 0;
+	}
+
+	.rune-attrs__dropdown {
+		position: absolute;
+		top: calc(100% + 4px);
+		right: 0;
+		z-index: 10;
+		min-width: 130px;
+		background: var(--ed-surface-0);
+		border: 1px solid var(--ed-border-default);
+		border-radius: var(--ed-radius-sm);
+		box-shadow: var(--ed-shadow-lg);
+		padding: 4px;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		animation: dropdown-enter 0.1s ease-out;
+	}
+
+	@keyframes dropdown-enter {
+		from { opacity: 0; transform: translateY(-4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.rune-attrs__option {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-	}
-
-	.rune-attr__toggle {
-		position: relative;
-		width: 32px;
-		height: 18px;
-		border-radius: 9px;
-		border: 1px solid var(--ed-border-strong);
-		background: var(--ed-surface-3);
+		gap: 0.5rem;
+		padding: 0.3rem 0.5rem;
+		border: none;
+		border-radius: calc(var(--ed-radius-sm) - 2px);
+		background: transparent;
+		color: var(--ed-text-secondary);
+		font-size: var(--ed-text-base);
 		cursor: pointer;
-		transition: background var(--ed-transition-fast), border-color var(--ed-transition-fast);
-		padding: 0;
+		white-space: nowrap;
+		transition: background var(--ed-transition-fast);
 	}
 
-	.rune-attr__toggle.active {
-		background: var(--ed-accent);
-		border-color: var(--ed-accent);
+	.rune-attrs__option:hover {
+		background: var(--ed-surface-2);
 	}
 
-	.rune-attr__toggle-knob {
-		position: absolute;
-		top: 2px;
-		left: 2px;
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
+	.rune-attrs__option.selected {
+		color: var(--ed-accent);
+		font-weight: 500;
+	}
+
+	.rune-attrs__option-label {
+		flex: 1;
+		text-align: left;
+	}
+
+	.rune-attrs__option-label--default {
+		color: var(--ed-text-muted);
+		font-style: italic;
+	}
+
+	.rune-attrs__check {
+		flex-shrink: 0;
+		color: var(--ed-accent);
+	}
+
+	/* Inline text input */
+	.rune-attrs__inline-input {
+		font-size: var(--ed-text-base);
+		padding: 0.1rem 0.35rem;
+		border: 1px solid var(--ed-accent);
+		border-radius: var(--ed-radius-sm);
 		background: var(--ed-surface-0);
-		transition: transform var(--ed-transition-fast);
-	}
-
-	.rune-attr__toggle.active .rune-attr__toggle-knob {
-		transform: translateX(14px);
-	}
-
-	.rune-attr__toggle-label {
-		font-size: var(--ed-text-sm);
-		color: var(--ed-text-tertiary);
+		color: var(--ed-text-primary);
+		outline: none;
+		box-shadow: 0 0 0 2px var(--ed-accent-ring);
+		text-align: right;
+		width: 8rem;
+		font-family: inherit;
 	}
 
 	.rune-attrs__empty {
-		font-size: var(--ed-text-sm);
+		font-size: var(--ed-text-base);
 		color: var(--ed-text-muted);
 		font-style: italic;
 	}
