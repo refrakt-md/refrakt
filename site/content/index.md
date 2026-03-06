@@ -47,7 +47,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 {% /feature %}
 
-{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="subtle" %}
+{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="subtle" spacing="flush" %}
 Composable by design
 ## Runes that work together
 
@@ -55,8 +55,8 @@ Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each
 
 ---
 
-{% showcase bleed="both" offset="10rem" shadow="elevated" %}
-{% mockup device="iphone-15" tint="base" %}
+{% showcase bleed="none" offset="0" shadow="elevated" %}
+{% mockup device="iphone-15" tint="base" scale="0.9" tint-mode="auto" %}
 {% map zoom="12" center="40.7580, -73.9855" %}
 - **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
 - **Central Park** - *Urban green oasis* - 40.7829, -73.9654

@@ -109,11 +109,7 @@ function parseAttributes(raw: string): Record<string, string> {
 export function serializeAttributes(attrs: Record<string, string>): string {
 	const parts: string[] = [];
 	for (const [key, value] of Object.entries(attrs)) {
-		if (value === 'true') {
-			parts.push(key);
-		} else {
-			parts.push(`${key}="${value}"`);
-		}
+		parts.push(`${key}="${value}"`);
 	}
 	return parts.length > 0 ? ' ' + parts.join(' ') : '';
 }

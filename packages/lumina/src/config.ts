@@ -5,6 +5,42 @@ import { icons as lucideIcons } from './icons.js';
 /** Lumina theme configuration — extends base with icon SVGs and tint presets */
 export const luminaConfig = mergeThemeConfig(baseConfig, {
 	tints: {
+		base: {
+			light: {
+				background: '#ffffff',
+				surface: '#f8fafc',
+				primary: '#1a1a2e',
+				secondary: '#64748b',
+				accent: '#0ea5e9',
+				border: '#e2e8f0',
+			},
+			dark: {
+				background: '#0c1222',
+				surface: '#0f172a',
+				primary: '#e2e8f0',
+				secondary: '#94a3b8',
+				accent: '#38bdf8',
+				border: 'rgba(255, 255, 255, 0.1)',
+			},
+		},
+		subtle: {
+			light: {
+				background: '#f8f9fb',
+				surface: '#f8fafc',
+				primary: '#1a1a2e',
+				secondary: '#64748b',
+				accent: '#0ea5e9',
+				border: '#e2e8f0',
+			},
+			dark: {
+				background: '#111827',
+				surface: '#0f172a',
+				primary: '#e2e8f0',
+				secondary: '#94a3b8',
+				accent: '#38bdf8',
+				border: 'rgba(255, 255, 255, 0.1)',
+			},
+		},
 		warm: {
 			light: {
 				background: '#fdf6e3',
