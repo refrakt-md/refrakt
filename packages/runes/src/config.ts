@@ -521,10 +521,12 @@ export const coreConfig: ThemeConfig = {
 				bleed: { source: 'meta', default: 'none' },
 				aspect: { source: 'meta', noBemClass: true },
 				offset: { source: 'meta', noBemClass: true },
+				justify: { source: 'meta', noBemClass: true },
 			},
 			styles: {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
+				justify: '--showcase-justify',
 			},
 		},
 

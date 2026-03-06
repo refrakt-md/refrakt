@@ -47,6 +47,11 @@
 	height: 100%;
 	object-fit: cover;
 }
+/* Explicit content alignment via justify attribute */
+.rf-showcase[data-justify] .rf-showcase__viewport {
+	display: flex;
+	justify-content: var(--showcase-justify);
+}
 /* Responsive: collapse bleed on mobile */
 @media (max-width: 768px) {
 	.rf-showcase[data-bleed] {

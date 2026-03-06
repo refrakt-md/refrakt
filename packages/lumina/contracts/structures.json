@@ -620,13 +620,18 @@
 				"offset": {
 					"source": "meta",
 					"dataAttribute": "data-offset"
+				},
+				"justify": {
+					"source": "meta",
+					"dataAttribute": "data-justify"
 				}
 			},
 			"inlineStyles": {
 				"offset": {
 					"prop": "--showcase-offset"
 				},
-				"aspect": "--showcase-aspect"
+				"aspect": "--showcase-aspect",
+				"justify": "--showcase-justify"
 			}
 		},
 		"TabGroup": {

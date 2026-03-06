@@ -11,6 +11,12 @@
 [data-layout="split-reverse"] > [data-name="content"] { order: 2; }
 [data-layout="split-reverse"] > [data-name="media"] { order: 1; }
 
+/* Center inline-block children (mockups, etc.) in media sections by default */
+[data-layout="split"] > [data-name="media"],
+[data-layout="split-reverse"] > [data-name="media"] {
+  text-align: center;
+}
+
 /* Collapse breakpoints */
 @media (max-width: 640px) {
   [data-layout^="split"][data-collapse="sm"] { grid-template-columns: 1fr; }
