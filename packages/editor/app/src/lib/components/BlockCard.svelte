@@ -12,6 +12,7 @@
 		highlightTransform?: ((tree: RendererNode) => RendererNode) | null;
 		communityTags?: Record<string, unknown> | null;
 		communityPostTransforms?: Record<string, Function> | null;
+		communityStyles?: Record<string, Record<string, unknown>> | null;
 		aggregated?: Record<string, unknown>;
 		dragHandle?: boolean;
 		ondragstart: (e: DragEvent) => void;
@@ -27,6 +28,7 @@
 		highlightTransform: hlTransformProp = null,
 		communityTags = null,
 		communityPostTransforms = null,
+		communityStyles = null,
 		aggregated = {},
 		dragHandle = true,
 		ondragstart,
@@ -72,6 +74,7 @@
 				communityTags ?? undefined,
 				communityPostTransforms ?? undefined,
 				aggregated,
+				communityStyles ?? undefined,
 			);
 				if (isComponent) {
 					shadowRoot.innerHTML = `<style>
@@ -92,7 +95,30 @@
 					shadowRoot.innerHTML = `<style>${scopedCss}
 ${hlCss}
 						:host { display: block; }
-						.rf-preview-wrapper { padding: 0.5rem 1.5rem; font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif); color: var(--rf-color-text, #1a1a2e); line-height: 1.6; }
+						.rf-preview-wrapper {
+							font-family: var(--rf-font-sans, system-ui, -apple-system, sans-serif);
+							color: var(--rf-color-text, #1a1a2e);
+							line-height: 1.6;
+							--rf-content-max: calc(100% - 6rem);
+							--rf-content-gutter: 1.5rem;
+						}
+						.rf-preview-wrapper > article {
+							display: grid;
+							grid-template-columns:
+								[full-start] 1fr
+								[wide-start] minmax(0, var(--rf-wide-inset, 8rem))
+								[content-start] min(var(--rf-content-max), 100% - var(--rf-content-gutter) * 2)
+								[content-end] minmax(0, var(--rf-wide-inset, 8rem))
+								[wide-end] 1fr
+								[full-end];
+						}
+						.rf-preview-wrapper > article > * { grid-column: content; }
+						.rf-preview-wrapper > article > [data-width="wide"] { grid-column: wide; }
+						.rf-preview-wrapper > article > [data-width="full"],
+						.rf-preview-wrapper > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
+							grid-column: full;
+							padding-inline: max(var(--rf-content-gutter, 1.5rem), calc((100% - var(--rf-content-max)) / 2));
+						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 

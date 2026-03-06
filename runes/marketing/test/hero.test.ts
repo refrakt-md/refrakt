@@ -14,8 +14,8 @@ Build something amazing with our platform.
 		expect(tag!.name).toBe('section');
 	});
 
-	it('should pass align attribute as meta', () => {
-		const result = parse(`{% hero align="left" %}
+	it('should pass justify attribute as meta', () => {
+		const result = parse(`{% hero justify="left" %}
 # Title
 
 Description text.
@@ -24,23 +24,8 @@ Description text.
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
 		expect(tag).toBeDefined();
 
-		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
-		expect(alignMeta).toBeDefined();
-	});
-
-	it('should pass background attributes as meta', () => {
-		const result = parse(`{% hero background="#0f172a" backgroundImage="/hero.jpg" %}
-# Title
-{% /hero %}`);
-
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
-		expect(tag).toBeDefined();
-
-		const bgMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '#0f172a');
-		expect(bgMeta).toBeDefined();
-
-		const bgImgMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '/hero.jpg');
-		expect(bgImgMeta).toBeDefined();
+		const justifyMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
+		expect(justifyMeta).toBeDefined();
 	});
 
 	it('should handle action links as LinkItem components', () => {

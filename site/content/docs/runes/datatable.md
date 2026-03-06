@@ -51,3 +51,14 @@ Use `pageSize` to paginate large tables.
 | `searchable` | `boolean` | `false` | Enable search/filter input |
 | `pageSize` | `number` | `0` | Rows per page (0 = show all) |
 | `defaultSort` | `string` | — | Column to sort by default |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

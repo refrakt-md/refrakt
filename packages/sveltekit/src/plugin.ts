@@ -107,13 +107,14 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					communityTags = Object.keys(mergedTags).length > 0 ? mergedTags : undefined;
 
 					// Assemble theme config for CSS tree-shaking
-					if (merged && (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0)) {
+					if (merged && (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0 || Object.keys(merged.themeBackgrounds).length > 0)) {
 						const { assembleThemeConfig } = await import('@refrakt-md/transform');
 						const { baseConfig } = await import(runesPkg);
 						assembledResult = assembleThemeConfig({
 							coreConfig: baseConfig,
 							packageRunes: merged.themeRunes,
 							packageIcons: merged.themeIcons,
+							packageBackgrounds: merged.themeBackgrounds,
 							provenance: merged.provenance,
 						});
 					}

@@ -52,6 +52,20 @@
 	--rf-radius-lg: 16px;
 	--rf-radius-full: 9999px;
 
+	/* Spacing */
+	--rf-spacing-xs: 0.25rem;
+	--rf-spacing-sm: 0.5rem;
+	--rf-spacing-md: 1.5rem;
+	--rf-spacing-lg: 2rem;
+	--rf-spacing-xl: 3rem;
+	--rf-spacing-2xl: 4rem;
+
+	/* Section spacing */
+	--rf-spacing-section: 4rem;
+	--rf-spacing-section-tight: 1.5rem;
+	--rf-spacing-section-loose: 6rem;
+	--rf-spacing-section-breathe: 8rem;
+
 	/* Shadows */
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);

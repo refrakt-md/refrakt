@@ -44,7 +44,7 @@
 	padding-left: 0;
 	margin: 0;
 }
-.rf-step__main {
+.rf-step__content {
 	display: contents;
 }
 .rf-step {
@@ -99,15 +99,7 @@
 	font-size: 0.925rem;
 	line-height: 1.65;
 }
-.rf-step--split {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 2rem;
-}
-.rf-step--mirror .rf-step__showcase {
-	order: -1;
-}
-.rf-step__showcase {
+.rf-step__media {
 	border-radius: var(--rf-radius-md);
 	overflow: hidden;
 }

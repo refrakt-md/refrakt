@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset } from '@refrakt-md/transform';
 import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -91,7 +91,26 @@ export const coreConfig: ThemeConfig = {
 		Accordion: { block: 'accordion', autoLabel: pageSectionAutoLabel },
 		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' } },
-		Grid: { block: 'grid' },
+		Grid: {
+			block: 'grid',
+			modifiers: {
+				mode: { source: 'meta', default: 'columns' },
+				collapse: { source: 'meta', noBemClass: true },
+				aspect: { source: 'meta', noBemClass: true },
+				stack: { source: 'meta', noBemClass: true },
+				ratio: { source: 'meta', noBemClass: true },
+				align: { source: 'meta', noBemClass: true },
+				gap: { source: 'meta', noBemClass: true },
+				min: { source: 'meta', noBemClass: true },
+			},
+			styles: {
+				ratio: { prop: '--grid-ratio', transform: ratioToFr },
+				align: { prop: '--grid-align' },
+				gap: { prop: '--grid-gap', transform: resolveGap },
+				min: '--grid-min',
+				aspect: '--grid-aspect',
+			},
+		},
 		CodeGroup: {
 			block: 'codegroup',
 			modifiers: { title: { source: 'meta' } },
@@ -492,6 +511,22 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'left' },
 				ratio: { source: 'meta', default: '1:1' },
 				wrap: { source: 'meta' },
+			},
+		},
+
+		Showcase: {
+			block: 'showcase',
+			modifiers: {
+				shadow: { source: 'meta', default: 'none' },
+				bleed: { source: 'meta', default: 'none' },
+				aspect: { source: 'meta', noBemClass: true },
+				offset: { source: 'meta', noBemClass: true },
+				justify: { source: 'meta', noBemClass: true },
+			},
+			styles: {
+				offset: { prop: '--showcase-offset', transform: resolveOffset },
+				aspect: '--showcase-aspect',
+				justify: '--showcase-justify',
 			},
 		},
 

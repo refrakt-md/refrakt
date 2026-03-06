@@ -9,7 +9,7 @@ export interface RuneContract {
 	modifiers?: Record<string, {
 		source: string;
 		default?: string;
-		classPattern: string;
+		classPattern?: string;
 		dataAttribute: string;
 	}>;
 	contextModifiers?: Record<string, {
@@ -28,7 +28,7 @@ export interface RuneContract {
 		condition?: string;
 		conditionAny?: string[];
 	}>;
-	inlineStyles?: Record<string, string | { prop: string; template: string }>;
+	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
 }
 
@@ -81,7 +81,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 			contract.modifiers[name] = {
 				source: mod.source,
 				...(mod.default !== undefined ? { default: mod.default } : {}),
-				classPattern: `.${block}--{value}`,
+				...(mod.noBemClass ? {} : { classPattern: `.${block}--{value}` }),
 				dataAttribute: `data-${kebab}`,
 			};
 		}

@@ -53,11 +53,11 @@ npm create refrakt
 
 ## Left-aligned
 
-Use `align="left"` for a more editorial feel.
+Use `justify="left"` for a more editorial feel.
 
 {% preview source=true %}
 
-{% hero align="left" %}
+{% hero justify="left" %}
 # Documentation that writes itself
 
 Semantic runes transform your Markdown into structured, accessible content.
@@ -71,10 +71,24 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `background` | `string` | — | CSS background color |
-| `backgroundImage` | `string` | — | Background image URL |
-| `align` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
+| `justify` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
+| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
+| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
+| `align` | `string` | `start` | Vertical alignment in split layout: `start`, `center`, or `end` |
+| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
+| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
 
 ## Section header
 
 Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

@@ -67,6 +67,8 @@ class EditorState {
 	communityTags: Record<string, unknown> | null = $state(null);
 	/** Community rune postTransform functions (loaded from /api/community-tags.js bundle) */
 	communityPostTransforms: Record<string, Function> | null = $state(null);
+	/** Community rune styles configs (loaded from /api/community-tags.js bundle) */
+	communityStyles: Record<string, Record<string, unknown>> | null = $state(null);
 
 	/** Aggregated cross-page pipeline data (fetched from /api/aggregated on startup) */
 	aggregated: Record<string, unknown> = $state({});

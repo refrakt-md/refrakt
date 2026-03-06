@@ -41,6 +41,8 @@ export interface RunePackageThemeConfig {
 	runes?: Record<string, Record<string, unknown>>;
 	/** Additional icon SVGs (group name → icon name → SVG string) */
 	icons?: Record<string, Record<string, string>>;
+	/** Background preset definitions for this package's runes */
+	backgrounds?: Record<string, Record<string, unknown>>;
 }
 
 /** A community rune package's exported registration object */

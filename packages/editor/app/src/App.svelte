@@ -86,6 +86,7 @@
 					import('/api/community-tags.js').then((mod) => {
 						editorState.communityTags = mod.communityTags ?? null;
 						editorState.communityPostTransforms = mod.communityPostTransforms ?? null;
+						editorState.communityStyles = mod.communityStyles ?? null;
 					}).catch(() => {
 						// Preview degrades to core-only rendering — not a fatal error
 					});
@@ -401,6 +402,7 @@
 							readOnly={editorState.editorMode === 'code'}
 							communityTags={editorState.communityTags}
 							communityPostTransforms={editorState.communityPostTransforms}
+							communityStyles={editorState.communityStyles}
 							aggregated={editorState.aggregated}
 						/>
 					{/if}

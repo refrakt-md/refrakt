@@ -266,6 +266,7 @@ function runInspect(inspectArgs: string[]): void {
 					coreConfig: baseConfig,
 					packageRunes: merged.themeRunes,
 					packageIcons: merged.themeIcons,
+					packageBackgrounds: merged.themeBackgrounds,
 					provenance: merged.provenance,
 				});
 				mergedConfig = assembled.config;

@@ -48,3 +48,14 @@ Video could not be loaded. [Watch on the original site](https://example.com/vide
 | `type` | `string` | — | Content type (auto-detected from URL if omitted) |
 | `aspect` | `string` | `16:9` | Aspect ratio: `16:9`, `4:3`, `1:1`, or `auto` |
 | `title` | `string` | — | Accessible title for the iframe |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

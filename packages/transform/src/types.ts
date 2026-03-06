@@ -15,6 +15,8 @@ export interface RuneConfig {
 		source: 'meta' | 'attribute';
 		/** Default value if not found */
 		default?: string;
+		/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
+		noBemClass?: boolean;
 	}>;
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
@@ -37,12 +39,18 @@ export interface RuneConfig {
 	/** Map modifier names to CSS properties set as inline style on root.
 	 *  Simple form: `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"`
 	 *  Template form: `{ columns: { prop: 'grid-template-columns', template: 'repeat({}, 1fr)' } }`
-	 *    → `style="grid-template-columns: repeat(3, 1fr)"` */
-	styles?: Record<string, string | { prop: string; template: string }>;
+	 *    → `style="grid-template-columns: repeat(3, 1fr)"`
+	 *  Transform form: `{ ratio: { prop: '--split-ratio', transform: v => v.split(' ').map(n => n+'fr').join(' ') } }` */
+	styles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
 	staticModifiers?: string[];
+
+	/** Default page grid width for this rune.
+	 *  Runes like hero/feature/cta default to 'full' (full-bleed).
+	 *  Omit or set to 'content' for standard content-width runes. */
+	defaultWidth?: 'content' | 'wide' | 'full';
 
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
@@ -102,6 +110,18 @@ export interface TintDefinition {
 	dark?: TintTokenSet;
 }
 
+// ─── Background Preset Types ─────────────────────────────────────────
+
+/** Named background preset definition in theme config */
+export interface BgPresetDefinition {
+	/** CSS properties applied to the bg layer (Tier 1 — CSS-only presets) */
+	style?: Record<string, string>;
+	/** Default params for render function (Tier 2 — structural presets) */
+	params?: Record<string, string>;
+	/** Base preset to extend (e.g., "extends": "particles" to customize a package preset) */
+	extends?: string;
+}
+
 /** Top-level theme configuration */
 export interface ThemeConfig {
 	/** BEM prefix. E.g., 'rf' → .rf-hint */
@@ -118,6 +138,9 @@ export interface ThemeConfig {
 
 	/** Named tint definitions for section-level colour overrides */
 	tints?: Record<string, TintDefinition>;
+
+	/** Named background preset definitions for section-level backgrounds */
+	backgrounds?: Record<string, BgPresetDefinition>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────

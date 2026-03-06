@@ -1,19 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitLayoutModel, linkItem, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-const alignType = ['left', 'center', 'right'] as const;
+const justifyType = ['left', 'center', 'right'] as const;
 
-class HeroModel extends Model {
-	@attribute({ type: String, required: false })
-	background: string = '';
-
-	@attribute({ type: String, required: false })
-	backgroundImage: string = '';
-
-	@attribute({ type: String, required: false, matches: alignType.slice() })
-	align: typeof alignType[number] = 'center';
+class HeroModel extends SplitLayoutModel {
+	@attribute({ type: String, required: false, matches: justifyType.slice() })
+	justify: typeof justifyType[number] = 'center';
 
 	@group({ section: 0, include: ['heading', 'paragraph'] })
 	header: NodeStream;
@@ -22,7 +16,7 @@ class HeroModel extends Model {
 	actions: NodeStream;
 
 	@group({ section: 1 })
-	showcase: NodeStream;
+	media: NodeStream;
 
 	transform() {
 		const header = this.header.transform();
@@ -41,40 +35,51 @@ class HeroModel extends Model {
 			})
 			.transform();
 
-		const side = this.showcase.transform();
+		const side = this.media.transform();
 
-		const backgroundMeta = new Tag('meta', { content: this.background });
-		const backgroundImageMeta = new Tag('meta', { content: this.backgroundImage });
-		const alignMeta = new Tag('meta', { content: this.align });
+		const justifyMeta = new Tag('meta', { content: this.justify });
+		const layoutMeta = new Tag('meta', { content: this.layout });
+		const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
+		const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+		const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
+		const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
 		const actionsDiv = actions.wrap('div');
-		const showcaseDiv = side.wrap('div');
+		const mediaDiv = side.wrap('div');
 
 		return createComponentRenderable(schema.Hero, {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
 				...pageSectionProperties(header),
-				background: backgroundMeta,
-				backgroundImage: backgroundImageMeta,
+				justify: justifyMeta,
+				layout: layoutMeta,
+				ratio: ratioMeta,
 				align: alignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
 				action: actions.flatten().tags('li', 'div'),
 			},
 			refs: {
 				actions: actionsDiv,
-				body: header.wrap('div'),
-				showcase: showcaseDiv,
+				content: header.wrap('div'),
+				media: mediaDiv,
 			},
 			children: [
-				backgroundMeta,
-				backgroundImageMeta,
-				alignMeta,
+				justifyMeta,
+				layoutMeta,
+				...(ratioMeta ? [ratioMeta] : []),
+				...(alignMeta ? [alignMeta] : []),
+				...(gapMeta ? [gapMeta] : []),
+				...(collapseMeta ? [collapseMeta] : []),
 				header.wrap('header').next(),
 				actionsDiv.next(),
-				...(side.toArray().length > 0 ? [showcaseDiv.next()] : []),
+				...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 			],
 		});
 	}
 }
 
-export const hero = createSchema(HeroModel);
+export const hero = createSchema(HeroModel, {
+	align: { newName: 'justify' },
+});

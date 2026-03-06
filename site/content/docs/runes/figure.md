@@ -36,3 +36,14 @@ Photo taken at the summit.
 | `caption` | `string` | — | Caption text (falls back to first paragraph) |
 | `size` | `string` | — | One of `small`, `medium`, `large`, `full` |
 | `align` | `string` | — | One of `left`, `center`, `right` |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

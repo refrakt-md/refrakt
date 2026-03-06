@@ -53,9 +53,18 @@ async function getTransform(): Promise<(tree: any) => any> {
 		coreConfig: luminaConfig,
 		packageRunes: merged.themeRunes,
 		packageIcons: merged.themeIcons,
+		packageBackgrounds: merged.themeBackgrounds,
 		extensions: merged.extensions,
 		provenance: merged.provenance,
 	});
+
+	// Merge project-level presets (last wins)
+	if (config.tints) {
+		assembledConfig.tints = { ...assembledConfig.tints, ...config.tints } as any;
+	}
+	if (config.backgrounds) {
+		assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...config.backgrounds } as any;
+	}
 
 	_transform = createTransform(assembledConfig);
 	return _transform;

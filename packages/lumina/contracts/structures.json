@@ -75,7 +75,56 @@
 			"dataRune": "grid",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"mode": {
+					"source": "meta",
+					"default": "columns",
+					"classPattern": ".rf-grid--{value}",
+					"dataAttribute": "data-mode"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"stack": {
+					"source": "meta",
+					"dataAttribute": "data-stack"
+				},
+				"ratio": {
+					"source": "meta",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"dataAttribute": "data-gap"
+				},
+				"min": {
+					"source": "meta",
+					"dataAttribute": "data-min"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--grid-ratio"
+				},
+				"align": {
+					"prop": "--grid-align"
+				},
+				"gap": {
+					"prop": "--grid-gap"
+				},
+				"min": "--grid-min",
+				"aspect": "--grid-aspect"
+			}
 		},
 		"CodeGroup": {
 			"block": "codegroup",
@@ -544,6 +593,47 @@
 				}
 			}
 		},
+		"Showcase": {
+			"block": "showcase",
+			"root": ".rf-showcase",
+			"dataRune": "showcase",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"shadow": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-shadow"
+				},
+				"bleed": {
+					"source": "meta",
+					"default": "none",
+					"classPattern": ".rf-showcase--{value}",
+					"dataAttribute": "data-bleed"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
+				},
+				"offset": {
+					"source": "meta",
+					"dataAttribute": "data-offset"
+				},
+				"justify": {
+					"source": "meta",
+					"dataAttribute": "data-justify"
+				}
+			},
+			"inlineStyles": {
+				"offset": {
+					"prop": "--showcase-offset"
+				},
+				"aspect": "--showcase-aspect",
+				"justify": "--showcase-justify"
+			}
+		},
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",
@@ -755,11 +845,36 @@
 				"{content}"
 			],
 			"modifiers": {
-				"align": {
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"justify": {
 					"source": "meta",
 					"default": "center",
 					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-justify"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
 					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"contextModifiers": {
@@ -793,6 +908,22 @@
 					"tag": "image",
 					"selector": ".rf-hero__image",
 					"source": "autoLabel"
+				},
+				"media": {
+					"tag": "media",
+					"selector": ".rf-hero__media",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -926,15 +1057,36 @@
 				"{content}"
 			],
 			"modifiers": {
-				"split": {
+				"layout": {
 					"source": "meta",
+					"default": "stacked",
 					"classPattern": ".rf-feature--{value}",
-					"dataAttribute": "data-split"
+					"dataAttribute": "data-layout"
 				},
-				"mirror": {
+				"justify": {
 					"source": "meta",
+					"default": "center",
 					"classPattern": ".rf-feature--{value}",
-					"dataAttribute": "data-mirror"
+					"dataAttribute": "data-justify"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"contextModifiers": {
@@ -972,6 +1124,17 @@
 					"tag": "image",
 					"selector": ".rf-feature__image",
 					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1028,15 +1191,41 @@
 				"{content}"
 			],
 			"modifiers": {
-				"split": {
+				"layout": {
 					"source": "meta",
+					"default": "stacked",
 					"classPattern": ".rf-step--{value}",
-					"dataAttribute": "data-split"
+					"dataAttribute": "data-layout"
 				},
-				"mirror": {
+				"ratio": {
 					"source": "meta",
-					"classPattern": ".rf-step--{value}",
-					"dataAttribute": "data-mirror"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"align": {
+					"source": "meta",
+					"default": "start",
+					"dataAttribute": "data-align"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"align": {
+					"prop": "--split-align"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1105,7 +1294,15 @@
 			"dataRune": "testimonial",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"variant": {
+					"source": "meta",
+					"default": "card",
+					"classPattern": ".rf-testimonial--{value}",
+					"dataAttribute": "data-variant"
+				}
+			}
 		},
 		"Comparison": {
 			"block": "comparison",

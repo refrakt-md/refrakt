@@ -17,6 +17,9 @@ export interface AssembleInput {
 	/** Package-contributed icons */
 	packageIcons?: Record<string, Record<string, string>>;
 
+	/** Package-contributed background presets */
+	packageBackgrounds?: Record<string, Record<string, unknown>>;
+
 	/** Package-contributed extensions to core rune configs */
 	extensions?: Record<string, RuneConfigExtension>;
 
@@ -51,6 +54,7 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		themeOverrides,
 		packageRunes,
 		packageIcons,
+		packageBackgrounds,
 		extensions,
 		provenance: inputProvenance = {},
 	} = input;
@@ -58,15 +62,17 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 	// Step 1: Start with core config
 	let config = coreConfig;
 
-	// Step 2: Merge package-contributed rune configs and icons
-	if (packageRunes && Object.keys(packageRunes).length > 0) {
-		const packageOverrides: ThemeConfigOverrides = { runes: packageRunes };
-		if (packageIcons && Object.keys(packageIcons).length > 0) {
-			packageOverrides.icons = packageIcons;
-		}
+	// Step 2: Merge package-contributed rune configs, icons, and backgrounds
+	const hasPackageRunes = packageRunes && Object.keys(packageRunes).length > 0;
+	const hasPackageIcons = packageIcons && Object.keys(packageIcons).length > 0;
+	const hasPackageBgs = packageBackgrounds && Object.keys(packageBackgrounds).length > 0;
+
+	if (hasPackageRunes || hasPackageIcons || hasPackageBgs) {
+		const packageOverrides: ThemeConfigOverrides = {};
+		if (hasPackageRunes) packageOverrides.runes = packageRunes;
+		if (hasPackageIcons) packageOverrides.icons = packageIcons;
+		if (hasPackageBgs) packageOverrides.backgrounds = packageBackgrounds as Record<string, any>;
 		config = mergeThemeConfig(config, packageOverrides);
-	} else if (packageIcons && Object.keys(packageIcons).length > 0) {
-		config = mergeThemeConfig(config, { icons: packageIcons });
 	}
 
 	// Step 3: Apply theme overrides (highest non-extension priority)

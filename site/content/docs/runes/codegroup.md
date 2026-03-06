@@ -76,3 +76,14 @@ app.get('/', (req, res) => {
 |-----------|------|---------|-------------|
 | `labels` | `string` | — | Comma-separated custom tab names |
 | `title` | `string` | — | Filename or label shown in the topbar |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

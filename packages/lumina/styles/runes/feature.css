@@ -2,14 +2,6 @@
 .rf-feature {
 	padding: 2.5rem 0 2rem;
 }
-/* Full-bleed in default layout */
-.rf-page-content > article > .rf-feature {
-	grid-column: 1 / -1;
-	padding-inline: max(
-		var(--rf-content-gutter, 1.5rem),
-		calc((100% - var(--rf-content-max, 80rem)) / 2)
-	);
-}
 .rf-feature__header {
 	margin-bottom: 1.5rem;
 }
@@ -42,26 +34,27 @@
 .rf-feature__blurb {
 	color: var(--rf-color-muted);
 	margin-bottom: 0;
+	max-width: 40rem;
 }
 .rf-feature__image {
 	margin-bottom: 1rem;
 }
-.rf-feature__body {
+.rf-feature__content {
 	display: contents;
 }
 .rf-feature h2 {
 	margin-bottom: 2rem;
 }
-.rf-feature--center .rf-feature__header,
-.rf-feature--center h2 {
+.rf-feature[data-justify="center"] .rf-feature__header,
+.rf-feature[data-justify="center"] h2 {
 	text-align: center;
 }
-.rf-feature--left .rf-feature__header,
-.rf-feature--left h2 {
+.rf-feature[data-justify="left"] .rf-feature__header,
+.rf-feature[data-justify="left"] h2 {
 	text-align: left;
 }
-.rf-feature--right .rf-feature__header,
-.rf-feature--right h2 {
+.rf-feature[data-justify="right"] .rf-feature__header,
+.rf-feature[data-justify="right"] h2 {
 	text-align: right;
 }
 .rf-feature dl {
@@ -70,29 +63,26 @@
 	gap: 1.5rem;
 	margin: 0;
 }
-.rf-feature--split {
-	display: grid;
-	align-items: center;
-	grid-template-columns: 1fr 1fr;
-	gap: 3rem;
-}
-.rf-feature--split .rf-feature__body {
+/* Split layout: override defaults when in split mode */
+.rf-feature[data-layout="split"] .rf-feature__content,
+.rf-feature[data-layout="split-reverse"] .rf-feature__content {
 	display: block;
 }
-.rf-feature--split .rf-feature__header,
-.rf-feature--split h2 {
+.rf-feature[data-layout="split"] .rf-feature__header,
+.rf-feature[data-layout="split-reverse"] .rf-feature__header,
+.rf-feature[data-layout="split"] h2,
+.rf-feature[data-layout="split-reverse"] h2 {
 	text-align: left;
 }
-.rf-feature--split dl {
+.rf-feature[data-layout="split"] dl,
+.rf-feature[data-layout="split-reverse"] dl {
 	display: block;
 }
-.rf-feature--split .rf-feature-definition {
+.rf-feature[data-layout="split"] .rf-feature-definition,
+.rf-feature[data-layout="split-reverse"] .rf-feature-definition {
 	border: none;
 	background: none;
 	padding: 0.75rem 0;
-}
-.rf-feature--mirror .rf-feature__showcase {
-	order: -1;
 }
 .rf-feature-definition {
 	padding: 1.75rem;

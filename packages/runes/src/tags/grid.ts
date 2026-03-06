@@ -1,3 +1,5 @@
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
 import { attribute, groupList, Model } from '../lib/index.js';
@@ -18,7 +20,31 @@ class GridModel extends Model {
   flow: GridFlow;
 
   @attribute({ type: SpaceSeparatedList, required: false })
-  layout: string[];
+  spans: string[];
+
+  @attribute({ type: String, required: false })
+  ratio: string | undefined = undefined;
+
+  @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'] })
+  gap: string | undefined = undefined;
+
+  @attribute({ type: String, required: false, matches: ['start', 'center', 'end'] })
+  align: string | undefined = undefined;
+
+  @attribute({ type: String, required: false, matches: ['sm', 'md', 'lg', 'never'] })
+  collapse: string | undefined = undefined;
+
+  @attribute({ type: String, required: false, matches: ['columns', 'auto', 'masonry'] })
+  mode: string = 'columns';
+
+  @attribute({ type: String, required: false })
+  min: string | undefined = undefined;
+
+  @attribute({ type: String, required: false })
+  aspect: string | undefined = undefined;
+
+  @attribute({ type: String, required: false, matches: ['natural', 'reverse'] })
+  stack: string | undefined = undefined;
 
   @groupList({ delimiter: 'hr' })
   tiles: NodeStream[];
@@ -27,21 +53,54 @@ class GridModel extends Model {
     const tiles = this.tiles.map(t => t.transform());
 
     const layout = gridLayout({
-      items: gridItems(this.layout, tiles),
+      items: gridItems(this.spans, tiles),
       rows: this.rows,
       columns: this.columns,
       flow: this.flow
     })
 
+    const ratioMeta = this.ratio ? new Tag('meta', { content: this.ratio }) : undefined;
+    const gapMeta = this.gap && this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
+    const alignMeta = this.align ? new Tag('meta', { content: this.align }) : undefined;
+    const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
+    const modeMeta = this.mode && this.mode !== 'columns' ? new Tag('meta', { content: this.mode }) : undefined;
+    const minMeta = this.min ? new Tag('meta', { content: this.min }) : undefined;
+    const aspectMeta = this.aspect ? new Tag('meta', { content: this.aspect }) : undefined;
+    const stackMeta = this.stack ? new Tag('meta', { content: this.stack }) : undefined;
+
+    const metas: any[] = [ratioMeta, gapMeta, alignMeta, collapseMeta, modeMeta, minMeta, aspectMeta, stackMeta].filter(Boolean);
+
     return createComponentRenderable(schema.Grid, {
       tag: 'section',
-      children: layout,
-      properties: {},
+      children: [...metas, layout],
+      properties: {
+        ...(modeMeta ? { mode: modeMeta } : {}),
+        ratio: ratioMeta,
+        gap: gapMeta,
+        align: alignMeta,
+        collapse: collapseMeta,
+        ...(minMeta ? { min: minMeta } : {}),
+        ...(aspectMeta ? { aspect: aspectMeta } : {}),
+        ...(stackMeta ? { stack: stackMeta } : {}),
+      },
       refs: {
-        item: new RenderableNodeCursor(layout.children).tag('div'),
+        cell: new RenderableNodeCursor(layout.children).tag('div'),
       }
     })
   }
 }
 
-export const grid = createSchema(GridModel);
+const GRID_MODES = ['columns', 'auto', 'masonry'];
+
+export const grid = createSchema(GridModel, {
+  layout: {
+    newName: 'spans',
+    transform: (val: any, attrs: Record<string, any>) => {
+      if (typeof val === 'string' && GRID_MODES.includes(val)) {
+        attrs.mode = val;
+        return undefined;
+      }
+      return val;
+    },
+  },
+});

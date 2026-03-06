@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag, Ast } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitablePageSectionModel, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 export class DefinitionModel extends Model {
@@ -55,17 +55,11 @@ export class DefinitionModel extends Model {
 
 export const definition = createSchema(DefinitionModel);
 
-const alignType = ['left', 'center', 'right'] as const;
+const justifyType = ['left', 'center', 'right'] as const;
 
-class FeatureModel extends SplitablePageSectionModel {
-  @attribute({ type: Boolean, required: false })
-  split: boolean = false;
-
-  @attribute({ type: Boolean, required: false })
-  mirror: boolean = false;
-
-  @attribute({ type: String, required: false, matches: alignType.slice() })
-  align: typeof alignType[number] = 'center';
+class FeatureModel extends SplitLayoutModel {
+  @attribute({ type: String, required: false, matches: justifyType.slice() })
+  justify: typeof justifyType[number] = 'center';
 
   @group({ section: 0, include: ['heading', 'paragraph'] })
   header: NodeStream;
@@ -74,7 +68,7 @@ class FeatureModel extends SplitablePageSectionModel {
   definitions: NodeStream;
 
   @group({ section: 1 })
-  showcase: NodeStream;
+  media: NodeStream;
 
   transform(): RenderableTreeNodes {
     const header = this.header.transform();
@@ -83,26 +77,32 @@ class FeatureModel extends SplitablePageSectionModel {
         return Markdoc.transform(new Ast.Node('tag', {}, node.children, 'definition'), config);
       })
       .useNode('list', (node, config) => {
-        return new Tag('dl', this.split ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(config));
+        return new Tag('dl', this.layout !== 'stacked' ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(config));
       })
       .transform();
 
-    const side = this.showcase.transform();
+    const side = this.media.transform();
 
     const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
     const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
-    const showcaseContent = side.wrap('div');
+    const mediaContent = side.wrap('div');
 
-    const splitMeta = this.split ? new Tag('meta', { content: 'split' }) : undefined;
-    const mirrorMeta = this.mirror ? new Tag('meta', { content: 'mirror' }) : undefined;
-    const alignMeta = new Tag('meta', { content: this.align });
+    const layoutMeta = new Tag('meta', { content: this.layout });
+    const justifyMeta = new Tag('meta', { content: this.justify });
+    const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
+    const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+    const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
+    const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
     const children = [
-      ...(splitMeta ? [splitMeta] : []),
-      ...(mirrorMeta ? [mirrorMeta] : []),
-      alignMeta,
+      layoutMeta,
+      justifyMeta,
+      ...(ratioMeta ? [ratioMeta] : []),
+      ...(alignMeta ? [alignMeta] : []),
+      ...(gapMeta ? [gapMeta] : []),
+      ...(collapseMeta ? [collapseMeta] : []),
       mainContent.next(),
-      ...(side.toArray().length > 0 ? [showcaseContent.next()] : []),
+      ...(side.toArray().length > 0 ? [mediaContent.next()] : []),
     ];
 
     return createComponentRenderable(schema.Feature, {
@@ -111,17 +111,27 @@ class FeatureModel extends SplitablePageSectionModel {
       properties: {
         ...pageSectionProperties(header),
         featureItem: definitions.flatten().tag('div'),
-        split: splitMeta,
-        mirror: mirrorMeta,
+        layout: layoutMeta,
+        justify: justifyMeta,
+        ratio: ratioMeta,
         align: alignMeta,
+        gap: gapMeta,
+        collapse: collapseMeta,
       },
       refs: {
-        body: mainContent,
-        showcase: showcaseContent,
+        content: mainContent,
+        media: mediaContent,
       },
       children,
     });
   }
 }
 
-export const feature = createSchema(FeatureModel);
+export const feature = createSchema(FeatureModel, {
+  split: {
+    newName: 'layout',
+    transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
+  },
+  mirror: { newName: '_consumed' },
+  align: { newName: 'justify' },
+});

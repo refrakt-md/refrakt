@@ -14,6 +14,7 @@
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
+	import InsertBlockDialog from './InsertBlockDialog.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -28,6 +29,7 @@
 		readOnly?: boolean;
 		communityTags?: Record<string, unknown> | null;
 		communityPostTransforms?: Record<string, Function> | null;
+		communityStyles?: Record<string, Record<string, unknown>> | null;
 		aggregated?: Record<string, unknown>;
 	}
 
@@ -44,6 +46,7 @@
 		readOnly = false,
 		communityTags = null,
 		communityPostTransforms = null,
+		communityStyles = null,
 		aggregated = {},
 	}: Props = $props();
 
@@ -126,6 +129,7 @@
 	// ── Active block (rail selection) ────────────────────────────
 
 	let activeIndex: number | null = $state(null);
+	let hoveredIndex: number | null = $state(null);
 
 	function toggleBlock(index: number) {
 		editingFrontmatter = false;
@@ -140,9 +144,7 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (readOnly) return;
 		if (e.key === 'Escape') {
-			if (showInsertMenu) {
-				closeInsertMenu();
-			} else if (activeIndex !== null || editingFrontmatter) {
+			if (activeIndex !== null || editingFrontmatter) {
 				activeIndex = null;
 				editingFrontmatter = false;
 			}
@@ -233,13 +235,6 @@
 	function closeInsertMenu() {
 		showInsertMenu = false;
 		insertAtIndex = null;
-	}
-
-	function handleClickOutside(e: MouseEvent) {
-		if (!showInsertMenu) return;
-		const target = e.target as HTMLElement;
-		if (target.closest('.insert-menu--floating') || target.closest('.block-editor__insert-dot')) return;
-		closeInsertMenu();
 	}
 
 	function insertBlock(type: 'heading' | 'paragraph' | 'fence' | 'hr' | 'rune', runeName?: string) {
@@ -355,7 +350,7 @@
 	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} onmousedown={handleClickOutside} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="block-editor">
 	{#if blocks.length === 0 && !readOnly}
@@ -367,13 +362,13 @@
 				<line x1="14" y1="30" x2="22" y2="30" />
 			</svg>
 			<span class="block-editor__empty-text">No content blocks yet</span>
-			<span class="block-editor__empty-hint">Click a + dot in the rail to add blocks</span>
+			<span class="block-editor__empty-hint">Use the + button to add your first block</span>
 		</div>
 	{/if}
 
 	<div class="block-editor__stage" class:editing={!readOnly && (activeIndex !== null || editingFrontmatter)}>
-		<!-- Scrollable list + rail area -->
-		<div class="block-editor__scroll" class:has-rail={!readOnly}>
+		<!-- Scrollable block list -->
+		<div class="block-editor__scroll">
 			<div class="block-editor__list-wrap">
 				<!-- Frontmatter summary header (blocks mode only) -->
 				{#if !readOnly}
@@ -398,90 +393,15 @@
 					</div>
 				{/if}
 
-				{#snippet insertMenuContent()}
-					<div class="insert-menu__section">
-						<span class="insert-menu__label">Content</span>
-						<div class="insert-menu__grid">
-							<button class="insert-menu__btn" onclick={() => insertBlock('heading')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<path d="M3 3v10M13 3v10M3 8h10" />
-								</svg>
-								Heading
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('paragraph')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="4" x2="14" y2="4" />
-									<line x1="2" y1="8" x2="14" y2="8" />
-									<line x1="2" y1="12" x2="10" y2="12" />
-								</svg>
-								Paragraph
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('fence')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-									<polyline points="5 4 2 8 5 12" />
-									<polyline points="11 4 14 8 11 12" />
-								</svg>
-								Code Block
-							</button>
-							<button class="insert-menu__btn" onclick={() => insertBlock('hr')}>
-								<svg class="insert-menu__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-									<line x1="2" y1="8" x2="14" y2="8" />
-								</svg>
-								Divider
-							</button>
-						</div>
-					</div>
-					{#each [...runesByCategory.entries()] as [category, categoryRunes]}
-						<div class="insert-menu__section">
-							<span class="insert-menu__label">{category}</span>
-							<div class="insert-menu__grid">
-								{#each categoryRunes as rune}
-									<button
-										class="insert-menu__btn insert-menu__btn--rune"
-										onclick={() => insertBlock('rune', rune.name)}
-									>
-										<span class="insert-menu__rune-dot"></span>
-										<span class="insert-menu__rune-info">
-											<span class="insert-menu__rune-name">{rune.name}</span>
-											{#if rune.description}
-												<span class="insert-menu__rune-desc">{rune.description}</span>
-											{/if}
-										</span>
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/each}
-					<button class="insert-menu__close" onclick={closeInsertMenu}>&times; Close</button>
-				{/snippet}
-
-				{#snippet insertZone(pos: number)}
-					<div class="block-editor__insert-zone">
-						<div class="block-editor__insert-zone-spacer"></div>
-						<button
-							class="block-editor__insert-dot"
-							onclick={() => openInsertAt(pos)}
-							title="Insert block"
-						>
-							<span class="block-editor__dot-icon"></span>
-						</button>
-						{#if showInsertMenu && insertAtIndex === pos}
-							<div class="insert-menu insert-menu--floating">
-								{@render insertMenuContent()}
-							</div>
-						{/if}
-					</div>
-				{/snippet}
-
-				{#if !readOnly && showInsertMenuProp}
-					{@render insertZone(0)}
-				{/if}
-
 				{#each blocks as block, i (block.id)}
 					<div
 						class="block-editor__row"
+						class:hovered={!readOnly && hoveredIndex === i}
+						class:active={!readOnly && activeIndex === i}
 						class:drag-source={!readOnly && dragIndex === i}
 						class:drag-over={!readOnly && dropIndex === i && dragIndex !== i}
+						onmouseenter={() => { if (!readOnly) hoveredIndex = i; }}
+						onmouseleave={() => { if (!readOnly && hoveredIndex === i) hoveredIndex = null; }}
 					>
 						<div class="block-editor__block-cell">
 							<BlockCard
@@ -492,16 +412,40 @@
 								{highlightTransform}
 								{communityTags}
 								{communityPostTransforms}
+								{communityStyles}
 								{aggregated}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
 							/>
 						</div>
-						{#if !readOnly}
+						{#if !readOnly && showInsertMenuProp}
+							<!-- Insert markers — top and bottom edges -->
 							<button
-								class="block-editor__rail-label"
-								class:active={activeIndex === i}
+								class="block-editor__insert-marker block-editor__insert-marker--top"
+								onclick={() => openInsertAt(i)}
+								title="Insert block above"
+							>
+								<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="5" y1="2" x2="5" y2="8" />
+									<line x1="2" y1="5" x2="8" y2="5" />
+								</svg>
+							</button>
+							<button
+								class="block-editor__insert-marker block-editor__insert-marker--bottom"
+								onclick={() => openInsertAt(i + 1)}
+								title="Insert block below"
+							>
+								<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+									<line x1="5" y1="2" x2="5" y2="8" />
+									<line x1="2" y1="5" x2="8" y2="5" />
+								</svg>
+							</button>
+						{/if}
+						{#if !readOnly}
+							<!-- Block label — slides in from right on hover, pinned when active -->
+							<button
+								class="block-editor__hover-label"
 								onclick={() => toggleBlock(i)}
 								aria-pressed={activeIndex === i}
 							>
@@ -509,9 +453,6 @@
 							</button>
 						{/if}
 					</div>
-					{#if !readOnly && showInsertMenuProp}
-						{@render insertZone(i + 1)}
-					{/if}
 				{/each}
 			</div>
 		</div>
@@ -524,19 +465,30 @@
 						onclose={() => { editingFrontmatter = false; }}
 					/>
 				{:else if activeIndex !== null && blocks[activeIndex]}
-					<BlockEditPanel
-						block={blocks[activeIndex]}
-						{runeMap}
-						runes={() => runes}
-					{aggregated}
-						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
-						onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
-						onclose={() => { activeIndex = null; }}
-					/>
+					{#key activeIndex}
+						<BlockEditPanel
+							block={blocks[activeIndex]}
+							{runeMap}
+							runes={() => runes}
+							{aggregated}
+							onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
+							onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
+							onclose={() => { activeIndex = null; }}
+						/>
+					{/key}
 				{/if}
 			</div>
 		{/if}
 	</div>
+
+	{#if showInsertMenu}
+		<InsertBlockDialog
+			{runes}
+			{runesByCategory}
+			oninsert={insertBlock}
+			onclose={closeInsertMenu}
+		/>
+	{/if}
 </div>
 
 
@@ -557,7 +509,7 @@
 		position: relative;
 	}
 
-	/* Scrollable block list + rail area */
+	/* Scrollable block list */
 	.block-editor__scroll {
 		flex: 1;
 		min-height: 0;
@@ -568,38 +520,10 @@
 
 	.block-editor__list-wrap {
 		width: 100%;
-		padding: var(--ed-space-4);
-		padding-right: 0;
+		padding: 0;
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-	}
-
-	/* Rail column: vertical border + diagonal stripe background */
-	.block-editor__scroll.has-rail .block-editor__list-wrap {
-		background-origin: content-box;
-		background-clip: border-box;
-		background:
-			/* Vertical border at left edge of rail */
-			linear-gradient(to right,
-				transparent calc(100% - 91px),
-				var(--ed-border-default) calc(100% - 91px),
-				var(--ed-border-default) calc(100% - 90px),
-				transparent calc(100% - 90px)
-			),
-			/* Solid background masking stripes in the content area */
-			linear-gradient(to right,
-				var(--ed-surface-0) calc(100% - 90px),
-				transparent calc(100% - 90px)
-			),
-			/* Stripe pattern */
-			repeating-linear-gradient(
-				-45deg,
-				transparent,
-				transparent 4px,
-				rgba(0, 0, 0, 0.04) 4px,
-				rgba(0, 0, 0, 0.04) 5px
-			);
 	}
 
 	/* Frontmatter summary header */
@@ -607,8 +531,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--ed-space-3);
-		padding: var(--ed-space-3) var(--ed-space-4);
-		border-bottom: 1px solid var(--ed-border-subtle);
+		padding: var(--ed-space-5) var(--ed-space-5);
 		margin-bottom: var(--ed-space-2);
 	}
 
@@ -665,15 +588,13 @@
 		color: var(--ed-accent);
 	}
 
-	/* Block row: preview cell + rail label */
+	/* Block row */
 	.block-editor__row {
-		display: flex;
-		align-items: flex-start;
+		position: relative;
 		transition: transform var(--ed-transition-fast), opacity var(--ed-transition-fast);
 	}
 
 	.block-editor__block-cell {
-		flex: 1;
 		min-width: 0;
 	}
 
@@ -688,138 +609,105 @@
 		padding-top: 2px;
 	}
 
-	/* Rail labels — aligned to the right of each block */
-	.block-editor__rail-label {
-		width: 80px;
-		flex-shrink: 0;
-		margin-left: var(--ed-space-5);
-		padding: 0.5rem 0.6rem 0.5rem 1rem;
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--ed-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-		text-align: left;
-		background: transparent;
+	/* ── Hover controls (insert markers + label) ─────────────── */
+
+	/* Shared base for insert markers and label */
+	.block-editor__insert-marker,
+	.block-editor__hover-label {
+		position: absolute;
+		right: 20px;
+		z-index: 2;
 		border: none;
 		cursor: pointer;
+		border-radius: 9999px;
+		background: var(--ed-surface-2);
+		color: var(--ed-text-muted);
+		font-size: 10px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 100ms ease-out, transform 100ms ease-out, background 100ms ease-out, color 100ms ease-out;
+	}
+
+	/* Insert markers — top/bottom edges */
+	.block-editor__insert-marker {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		padding: 0;
+		color: var(--ed-text-tertiary);
+	}
+
+	.block-editor__insert-marker--top {
+		top: -11px;
+	}
+
+	.block-editor__insert-marker--bottom {
+		bottom: -11px;
+	}
+
+	/* Label — right side, vertically centered */
+	.block-editor__hover-label {
+		top: 50%;
+		transform: translateX(6px) translateY(-50%);
+		padding: 4px 10px;
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		transition: color var(--ed-transition-fast);
-		align-self: stretch;
 		line-height: 1.3;
 	}
 
-	.block-editor__rail-label:hover {
-		color: var(--ed-text-secondary);
+	/* Show controls on hover */
+	.block-editor__row.hovered .block-editor__insert-marker,
+	.block-editor__row.hovered .block-editor__hover-label {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
-	.block-editor__rail-label.active {
+	.block-editor__row.hovered .block-editor__hover-label {
+		transform: translateX(0) translateY(-50%);
+	}
+
+	/* Pinned label when edit panel is open */
+	.block-editor__row.active .block-editor__hover-label {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateX(0) translateY(-50%);
+		background: var(--ed-accent-muted);
 		color: var(--ed-accent);
 		font-weight: 700;
 	}
 
-	/* Insert zones — between blocks in the rail */
-	.block-editor__insert-zone {
-		display: flex;
-		align-items: center;
-		height: 12px;
-		position: relative;
-		overflow: visible;
-		z-index: 2;
-	}
-
-	.block-editor__insert-zone-spacer {
-		flex: 1;
-	}
-
-	.block-editor__insert-dot {
-		width: 80px;
-		flex-shrink: 0;
-		margin-left: var(--ed-space-5);
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		border: none;
-		background: transparent;
-		cursor: pointer;
-		height: 100%;
-		padding: 0;
-		position: relative;
-		overflow: visible;
-	}
-
-	.block-editor__dot-icon {
-		position: absolute;
-		left: 1px;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--ed-text-muted);
-		transition: width var(--ed-transition-fast), height var(--ed-transition-fast), background var(--ed-transition-fast);
-	}
-
-	.block-editor__insert-dot:hover .block-editor__dot-icon {
-		width: 18px;
-		height: 18px;
+	/* Insert marker hover */
+	.block-editor__insert-marker:hover {
 		background: var(--ed-accent);
+		color: white;
 	}
 
-	.block-editor__dot-icon::before,
-	.block-editor__dot-icon::after {
-		content: '';
-		position: absolute;
-		background: white;
-		border-radius: 1px;
-		opacity: 0;
-		transition: opacity var(--ed-transition-fast);
+	/* Label hover */
+	.block-editor__hover-label:hover {
+		color: var(--ed-text-secondary);
+		background: var(--ed-surface-3, var(--ed-border-default));
 	}
 
-	.block-editor__dot-icon::before {
-		width: 10px;
-		height: 1.5px;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.block-editor__dot-icon::after {
-		width: 1.5px;
-		height: 10px;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.block-editor__insert-dot:hover .block-editor__dot-icon::before,
-	.block-editor__insert-dot:hover .block-editor__dot-icon::after {
-		opacity: 1;
-	}
-
-	/* Floating insert menu — anchored to the insert zone */
-	.insert-menu--floating {
-		position: absolute;
-		right: 0;
-		top: 100%;
-		z-index: 20;
-		width: 360px;
-		max-height: 400px;
-		overflow-y: auto;
+	.block-editor__row.active .block-editor__hover-label:hover {
+		background: var(--ed-accent);
+		color: white;
 	}
 
 	/* Edit panel — fixed to right edge of viewport, outside the card */
 	.block-editor__edit-panel {
 		position: fixed;
-		top: 60px;
+		top: calc(60px + var(--ed-space-4));
 		right: 0;
 		bottom: 0;
 		width: 480px;
 		overflow-y: auto;
-		background: var(--ed-surface-1);
-		border-left: 1px solid var(--ed-border-default);
+		background: var(--ed-surface-0);
+		border-radius: var(--ed-radius-lg) 0 0 0;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 		transform: translateX(100%);
 		transition: transform var(--ed-transition-slow);
 		z-index: 10;
@@ -855,123 +743,4 @@
 		font-size: var(--ed-text-sm);
 	}
 
-	/* Insert menu (shared between floating and any future inline) */
-	.insert-menu {
-		border: 1px solid var(--ed-border-default);
-		border-radius: 10px;
-		background: var(--ed-surface-0);
-		padding: var(--ed-space-4);
-		display: flex;
-		flex-direction: column;
-		gap: var(--ed-space-3);
-		box-shadow: var(--ed-shadow-lg);
-		animation: menu-enter var(--ed-transition-normal);
-	}
-
-	@keyframes menu-enter {
-		from { opacity: 0; transform: translateY(4px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.insert-menu__section {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.insert-menu__label {
-		font-size: var(--ed-text-xs);
-		font-weight: 600;
-		color: var(--ed-text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.insert-menu__grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-		gap: 0.35rem;
-	}
-
-	.insert-menu__btn {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: var(--ed-space-2) var(--ed-space-2);
-		border: 1px solid var(--ed-border-default);
-		border-radius: var(--ed-radius-sm);
-		background: var(--ed-surface-1);
-		color: var(--ed-text-secondary);
-		font-size: var(--ed-text-sm);
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), border-color var(--ed-transition-fast);
-		text-align: left;
-	}
-
-	.insert-menu__btn:hover {
-		background: var(--ed-accent-muted);
-		border-color: var(--ed-accent);
-		color: var(--ed-heading);
-	}
-
-	.insert-menu__icon {
-		flex-shrink: 0;
-		opacity: 0.6;
-	}
-
-	/* Rune buttons */
-	.insert-menu__btn--rune {
-		align-items: flex-start;
-		padding: var(--ed-space-2);
-	}
-
-	.insert-menu__rune-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: var(--ed-warning);
-		flex-shrink: 0;
-		margin-top: 0.3rem;
-	}
-
-	.insert-menu__rune-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		min-width: 0;
-	}
-
-	.insert-menu__rune-name {
-		font-weight: 500;
-	}
-
-	.insert-menu__rune-desc {
-		font-size: 10px;
-		color: var(--ed-text-muted);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.insert-menu__btn--rune:hover {
-		background: var(--ed-warning-subtle);
-		border-color: var(--ed-warning);
-	}
-
-	.insert-menu__close {
-		align-self: flex-end;
-		padding: var(--ed-space-1) var(--ed-space-2);
-		border: none;
-		border-radius: var(--ed-radius-sm);
-		background: transparent;
-		color: var(--ed-text-muted);
-		font-size: var(--ed-text-sm);
-		cursor: pointer;
-		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
-	}
-
-	.insert-menu__close:hover {
-		background: var(--ed-surface-2);
-		color: var(--ed-text-secondary);
-	}
 </style>

@@ -55,6 +55,14 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		};
 	}
 
+	// Merge project-level tint and background presets
+	if (projectConfig?.tints) {
+		themeConfig = { ...themeConfig, tints: { ...themeConfig.tints, ...projectConfig.tints } as any };
+	}
+	if (projectConfig?.backgrounds) {
+		themeConfig = { ...themeConfig, backgrounds: { ...themeConfig.backgrounds, ...projectConfig.backgrounds } as any };
+	}
+
 	// Load community packages for editor palette + preview
 	let extraTags: Record<string, import('@markdoc/markdoc').Schema> | undefined;
 	let communityRuneEntries: Array<{

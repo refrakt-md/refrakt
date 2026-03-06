@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition } from './types.js';
 import { isTag, makeTag, readMeta } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -31,7 +31,7 @@ const transforms: Record<string, (v: string) => string> = {
  * - Recurses into children for nested runes
  */
 export function createTransform(config: ThemeConfig) {
-	const { prefix, runes, icons = {}, tints = {} } = config;
+	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
 	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
@@ -41,7 +41,7 @@ export function createTransform(config: ThemeConfig) {
 
 		const typeof_ = tree.attributes?.typeof;
 		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, tints, identityTransform, parentTypeof);
+			return transformRune(tree, runes[typeof_], prefix, icons, tints, backgrounds, identityTransform, parentTypeof);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
@@ -58,6 +58,7 @@ function transformRune(
 	prefix: string,
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
+	backgrounds: Record<string, BgPresetDefinition>,
 	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
 	parentTypeof?: string
 ): SerializedTag {
@@ -74,7 +75,9 @@ function transformRune(
 				: tag.attributes[name] ?? mod.default;
 			if (value) {
 				modifierValues[name] = value;
-				modifierClasses.push(`${block}--${value}`);
+				if (!mod.noBemClass) {
+					modifierClasses.push(`${block}--${value}`);
+				}
 			}
 		}
 	}
@@ -166,6 +169,113 @@ function transformRune(
 		tintMetaProps.add('tint-mode');
 	}
 
+	// 1e. Width and spacing — universal base attributes on all block runes
+	const widthValue = tag.attributes?.width ?? config.defaultWidth;
+	if (widthValue && widthValue !== 'content') {
+		modifierValues['width'] = widthValue;
+		modifierClasses.push(`${block}--${widthValue}`);
+	}
+	const spacingValue = tag.attributes?.spacing;
+	if (spacingValue && spacingValue !== 'default') {
+		modifierValues['spacing'] = spacingValue;
+		modifierClasses.push(`${block}--spacing-${spacingValue}`);
+	}
+
+	// 1f. Background processing — read bg-* meta tags and build background layer
+	const bgMetaProps = new Set<string>();
+	const bgDataAttrs: Record<string, string> = {};
+	let bgElement: SerializedTag | null = null;
+
+	const bgPreset = readMeta(tag, 'bg-preset');
+	const bgSrc = readMeta(tag, 'bg-src');
+	const bgVideo = readMeta(tag, 'bg-video');
+
+	if (bgPreset || bgSrc || bgVideo) {
+		// Resolve preset styles (Tier 1 — CSS-only presets)
+		let presetStyles: Record<string, string> = {};
+		if (bgPreset && backgrounds[bgPreset]) {
+			let preset = backgrounds[bgPreset];
+
+			// Resolve extends chain (single level)
+			if (preset.extends && backgrounds[preset.extends]) {
+				const base = backgrounds[preset.extends];
+				preset = { ...base, params: { ...base.params, ...preset.params }, style: { ...base.style, ...preset.style } };
+			}
+
+			if (preset.style) {
+				presetStyles = { ...preset.style };
+			}
+		}
+
+		const bgOverlay = readMeta(tag, 'bg-overlay');
+		const bgBlur = readMeta(tag, 'bg-blur');
+		const bgPosition = readMeta(tag, 'bg-position');
+		const bgFit = readMeta(tag, 'bg-fit');
+		const bgOpacity = readMeta(tag, 'bg-opacity');
+		const bgFixed = readMeta(tag, 'bg-fixed');
+
+		// Blur presets
+		const BLUR_PRESETS: Record<string, string> = { sm: '4px', md: '8px', lg: '16px' };
+
+		// Build bg layer style — preset styles first, then explicit overrides
+		const bgStyleParts: string[] = [];
+		for (const [prop, value] of Object.entries(presetStyles)) {
+			bgStyleParts.push(`${prop}: ${value}`);
+		}
+		if (bgSrc) bgStyleParts.push(`--bg-image: url(${bgSrc})`);
+		if (bgPosition) bgStyleParts.push(`--bg-position: ${bgPosition}`);
+		if (bgBlur) bgStyleParts.push(`--bg-blur: ${BLUR_PRESETS[bgBlur] ?? bgBlur}`);
+		if (bgFit) bgStyleParts.push(`--bg-fit: ${bgFit}`);
+		if (bgOpacity) bgStyleParts.push(`--bg-opacity: ${bgOpacity}`);
+
+		const bgAttrs: Record<string, any> = { 'data-name': 'bg' };
+		if (bgPreset) bgAttrs['data-bg-preset'] = bgPreset;
+		if (bgStyleParts.length) bgAttrs.style = bgStyleParts.join('; ');
+		if (bgFixed) bgAttrs['data-bg-fixed'] = '';
+
+		// Build bg layer children
+		const bgChildren: RendererNode[] = [];
+
+		if (bgVideo) {
+			bgChildren.push(makeTag('video', {
+				'data-name': 'bg-video',
+				autoplay: '',
+				muted: '',
+				loop: '',
+				playsinline: '',
+				src: bgVideo,
+				...(bgStyleParts.length ? { style: bgStyleParts.filter(s => !s.startsWith('--bg-image')).join('; ') } : {}),
+			}));
+		}
+
+		if (bgOverlay) {
+			const overlayAttrs: Record<string, string> = { 'data-name': 'bg-overlay' };
+			if (bgOverlay === 'dark' || bgOverlay === 'light') {
+				overlayAttrs['data-bg-overlay'] = bgOverlay;
+			} else {
+				overlayAttrs.style = `background: ${bgOverlay}`;
+			}
+			bgChildren.push(makeTag('div', overlayAttrs));
+		}
+
+		bgElement = makeTag('div', bgAttrs, bgChildren);
+
+		// Add has-bg modifier and class
+		modifierClasses.push(`${block}--has-bg`);
+		bgDataAttrs['data-bg'] = '';
+
+		// Track consumed meta properties
+		bgMetaProps.add('bg-preset');
+		bgMetaProps.add('bg-src');
+		bgMetaProps.add('bg-video');
+		bgMetaProps.add('bg-overlay');
+		bgMetaProps.add('bg-blur');
+		bgMetaProps.add('bg-position');
+		bgMetaProps.add('bg-fit');
+		bgMetaProps.add('bg-opacity');
+		bgMetaProps.add('bg-fixed');
+	}
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -211,6 +321,11 @@ function transformRune(
 		children = [wrapped];
 	}
 
+	// 5b. Prepend bg layer element if present (before content, after structural elements)
+	if (bgElement) {
+		children = [bgElement, ...children];
+	}
+
 	// 6. Apply BEM element classes to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, typeof_);
@@ -225,6 +340,7 @@ function transformRune(
 		const prop = c.attributes.property;
 		if (config.modifiers && prop in config.modifiers) return false;
 		if (tintMetaProps.has(prop)) return false;
+		if (bgMetaProps.has(prop)) return false;
 		return true;
 	});
 
@@ -237,8 +353,12 @@ function transformRune(
 			if (!val) continue;
 			if (typeof spec === 'string') {
 				styleParts.push(`${spec}: ${val}`);
-			} else {
+			} else if (spec.transform) {
+				styleParts.push(`${spec.prop}: ${spec.transform(val)}`);
+			} else if (spec.template) {
 				styleParts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
+			} else {
+				styleParts.push(`${spec.prop}: ${val}`);
 			}
 		}
 	}
@@ -249,12 +369,16 @@ function transformRune(
 			: styleParts.join('; ');
 	}
 
+	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
+	const { width: _w, spacing: _s, ...passAttrs } = tag.attributes;
+
 	const result: SerializedTag = {
 		...tag,
 		attributes: {
-			...tag.attributes,
+			...passAttrs,
 			...modDataAttrs,
 			...tintDataAttrs,
+			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),

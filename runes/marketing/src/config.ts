@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, readMeta } from '@refrakt-md/transform';
+import { isTag, makeTag, readMeta, resolveGap, ratioToFr } from '@refrakt-md/transform';
 
 // ─── Comparison postTransform helpers ───
 
@@ -185,11 +185,24 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Hero: {
 		block: 'hero',
-		modifiers: { align: { source: 'meta', default: 'center' } },
+		defaultWidth: 'full',
+		modifiers: {
+			layout: { source: 'meta', default: 'stacked' },
+			justify: { source: 'meta', default: 'center' },
+			ratio: { source: 'meta', default: '1 1', noBemClass: true },
+			align: { source: 'meta', default: 'start', noBemClass: true },
+			gap: { source: 'meta', default: 'default', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			ratio: { prop: '--split-ratio', transform: ratioToFr },
+			align: { prop: '--split-align' },
+			gap: { prop: '--split-gap', transform: resolveGap },
+		},
 		contextModifiers: { 'Feature': 'in-feature' },
-		autoLabel: { ...pageSectionAutoLabel, showcase: 'showcase' },
+		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 	},
-	CallToAction: { block: 'cta', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -208,15 +221,49 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: { size: { source: 'meta', default: 'medium' } },
 		autoLabel: { name: 'title' },
 	},
-	Feature: { block: 'feature', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' }, align: { source: 'meta', default: 'center' } }, contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' }, autoLabel: pageSectionAutoLabel },
+	Feature: {
+		block: 'feature',
+		defaultWidth: 'full',
+		modifiers: {
+			layout: { source: 'meta', default: 'stacked' },
+			justify: { source: 'meta', default: 'center' },
+			ratio: { source: 'meta', default: '1 1', noBemClass: true },
+			align: { source: 'meta', default: 'start', noBemClass: true },
+			gap: { source: 'meta', default: 'default', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			ratio: { prop: '--split-ratio', transform: ratioToFr },
+			align: { prop: '--split-align' },
+			gap: { prop: '--split-gap', transform: resolveGap },
+		},
+		contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
+		autoLabel: pageSectionAutoLabel,
+	},
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
-	Step: { block: 'step', parent: 'Steps', modifiers: { split: { source: 'meta' }, mirror: { source: 'meta' } } },
-	Pricing: { block: 'pricing', autoLabel: pageSectionAutoLabel },
+	Step: {
+		block: 'step',
+		parent: 'Steps',
+		modifiers: {
+			layout: { source: 'meta', default: 'stacked' },
+			ratio: { source: 'meta', default: '1 1', noBemClass: true },
+			align: { source: 'meta', default: 'start', noBemClass: true },
+			gap: { source: 'meta', default: 'default', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			ratio: { prop: '--split-ratio', transform: ratioToFr },
+			align: { prop: '--split-align' },
+			gap: { prop: '--split-gap', transform: resolveGap },
+		},
+	},
+	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel },
 	Tier: { block: 'tier', parent: 'Pricing' },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
 	Testimonial: {
 		block: 'testimonial',
+		modifiers: { variant: { source: 'meta', default: 'card' } },
 		postTransform(node) {
 			const block = node.attributes.class?.split(' ')[0] || 'rf-testimonial';
 			const ratingStr = readMeta(node, 'rating');

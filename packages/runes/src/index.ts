@@ -34,6 +34,8 @@ import { pullquote } from './tags/pullquote.js';
 import { textblock } from './tags/textblock.js';
 import { mediatext } from './tags/mediatext.js';
 import { tint } from './tags/tint.js';
+import { showcase } from './tags/showcase.js';
+import { bg } from './tags/bg.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -44,12 +46,13 @@ export { Rune, defineRune, runeTagMap } from './rune.js';
 export { RenderableNodeCursor } from './lib/renderable.js';
 export { schema } from './registry.js';
 export { createSchema, createComponentRenderable } from './lib/index.js';
+export type { DeprecationRule } from './lib/index.js';
 export { attribute } from './lib/annotations/attribute.js';
 export { group, groupList } from './lib/annotations/group.js';
 export { id } from './lib/annotations/id.js';
 export { Model } from './lib/model.js';
 export { NodeStream } from './lib/node.js';
-export { linkItem, pageSectionProperties, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel } from './tags/common.js';
+export { linkItem, pageSectionProperties, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel } from './tags/common.js';
 export { extractHeadings, headingsToList } from './util.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
@@ -344,6 +347,18 @@ export const runes = {
     description: 'Section-level colour override via CSS custom properties. Declared as first child of a block rune.',
     reinterprets: { heading: 'light/dark section separator', list: 'token key-value pairs' },
     type: schema.Tint,
+  }),
+  showcase: defineRune({
+    name: 'showcase',
+    schema: showcase,
+    description: 'Media presentation wrapper with shadow, bleed displacement, and aspect ratio enforcement',
+    type: schema.Showcase,
+  }),
+  bg: defineRune({
+    name: 'bg',
+    schema: bg,
+    description: 'Background image/video directive — modifies parent section backdrop',
+    type: schema.Bg,
   }),
 };
 

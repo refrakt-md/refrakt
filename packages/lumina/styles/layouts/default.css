@@ -68,22 +68,105 @@
 	padding-bottom: 4rem;
 	container-type: inline-size;
 }
-/* Markdoc wraps content in <article>; make it the grid container */
+/* Markdoc wraps content in <article>; make it the grid container.
+   5-track named grid: full | wide | content | wide | full */
 .rf-page-content > article {
 	display: grid;
 	grid-template-columns:
-		1fr
-		min(var(--rf-content-max), 100% - var(--rf-content-gutter) * 2)
-		1fr;
+		[full-start] 1fr
+		[wide-start] minmax(0, var(--rf-wide-inset, 8rem))
+		[content-start] min(var(--rf-content-max), 100% - var(--rf-content-gutter) * 2)
+		[content-end] minmax(0, var(--rf-wide-inset, 8rem))
+		[wide-end] 1fr
+		[full-end];
 }
 .rf-page-content > article > * {
-	grid-column: 2;
+	grid-column: content;
 }
+
+/* Width breakout via data-width attribute */
+.rf-page-content > article > [data-width="wide"] {
+	grid-column: wide;
+}
+.rf-page-content > article > [data-width="full"] {
+	grid-column: full;
+	padding-inline: max(
+		var(--rf-content-gutter, 1.5rem),
+		calc((100% - var(--rf-content-max, 80rem)) / 2)
+	);
+}
+/* Tinted sections also break out to full width */
+.rf-page-content > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
+	grid-column: full;
+	padding-inline: max(
+		var(--rf-content-gutter, 1.5rem),
+		calc((100% - var(--rf-content-max, 80rem)) / 2)
+	);
+}
+
+/* Section spacing — vertical rhythm between block runes
+ * Symmetric margins collapse between plain sections (no visual change)
+ * but ensure correct gaps at plain→tinted boundaries (where tinted
+ * sections use padding instead of margin). */
+.rf-page-content > article > * + * {
+	margin-top: var(--rf-spacing-section, 4rem);
+	margin-bottom: var(--rf-spacing-section, 4rem);
+}
+.rf-page-content > article > [data-spacing="flush"] {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+.rf-page-content > article > [data-spacing="tight"] {
+	margin-top: var(--rf-spacing-section-tight, 1.5rem);
+	margin-bottom: var(--rf-spacing-section-tight, 1.5rem);
+}
+.rf-page-content > article > [data-spacing="loose"] {
+	margin-top: var(--rf-spacing-section-loose, 8rem);
+	margin-bottom: var(--rf-spacing-section-loose, 8rem);
+}
+.rf-page-content > article > [data-spacing="breathe"] {
+	margin-top: var(--rf-spacing-section-breathe, 12rem);
+	margin-bottom: var(--rf-spacing-section-breathe, 12rem);
+}
+
+/* Spacing on tinted/dark sections — use padding so space is inside the painted background */
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="flush"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="tight"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-tight, 1.5rem);
+	padding-bottom: var(--rf-spacing-section-tight, 1.5rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="default"],
+.rf-page-content > article > :is([data-color-scheme], [data-tint]):not([data-spacing]) {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section, 4rem);
+	padding-bottom: var(--rf-spacing-section, 4rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="loose"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-loose, 8rem);
+	padding-bottom: var(--rf-spacing-section-loose, 8rem);
+}
+.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="breathe"] {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: var(--rf-spacing-section-breathe, 12rem);
+	padding-bottom: var(--rf-spacing-section-breathe, 12rem);
+}
+
 /* Collapse top/bottom padding when a full-bleed section is first/last */
-.rf-page-content:has(> article > :first-child:is(.rf-hero, .rf-cta, .rf-feature, .rf-pricing, [data-tint])) {
+.rf-page-content:has(> article > :first-child:is([data-width="full"], [data-tint])) {
 	padding-top: 0;
 }
-.rf-page-content:has(> article > :last-child:is(.rf-hero, .rf-cta, .rf-feature, .rf-pricing, [data-tint])) {
+.rf-page-content:has(> article > :last-child:is([data-width="full"], [data-tint])) {
 	padding-bottom: 0;
 }
 

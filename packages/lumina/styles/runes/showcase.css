@@ -1,0 +1,61 @@
+/* Showcase — Media presentation wrapper with shadows, bleed, and aspect ratio */
+.rf-showcase {
+	position: relative;
+}
+.rf-showcase__viewport {
+	position: relative;
+}
+/* Shadows */
+.rf-showcase[data-shadow="soft"] {
+	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+.rf-showcase[data-shadow="hard"] {
+	filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+}
+.rf-showcase[data-shadow="elevated"] {
+	filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.2));
+}
+/* Bleed displacement via negative margins */
+.rf-showcase[data-bleed="top"] {
+	margin-top: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+.rf-showcase[data-bleed="bottom"] {
+	margin-bottom: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+.rf-showcase[data-bleed="both"] {
+	margin-top: calc(-1 * var(--showcase-offset, 2rem));
+	margin-bottom: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+/* Parent needs overflow visible for bleed */
+:has(> .rf-showcase[data-bleed]) {
+	overflow: visible;
+}
+/* Aspect ratio enforcement */
+.rf-showcase[data-aspect] .rf-showcase__viewport {
+	aspect-ratio: var(--showcase-aspect);
+	overflow: hidden;
+}
+.rf-showcase[data-aspect] .rf-showcase__viewport > img,
+.rf-showcase[data-aspect] .rf-showcase__viewport > video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+/* Explicit content alignment via justify attribute */
+.rf-showcase[data-justify] .rf-showcase__viewport {
+	display: flex;
+	justify-content: var(--showcase-justify);
+}
+/* Responsive: collapse bleed on mobile */
+@media (max-width: 768px) {
+	.rf-showcase[data-bleed] {
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+}

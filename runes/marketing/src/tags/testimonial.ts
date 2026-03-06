@@ -4,14 +4,14 @@ const { Tag } = Markdoc;
 import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-const layoutType = ['card', 'inline', 'quote'] as const;
+const variantType = ['card', 'inline', 'quote'] as const;
 
 class TestimonialModel extends Model {
 	@attribute({ type: Number, required: false })
 	rating: number | undefined = undefined;
 
-	@attribute({ type: String, required: false, matches: layoutType.slice() })
-	layout: typeof layoutType[number] = 'card';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'card';
 
 	transform(): RenderableTreeNodes {
 		const children = this.transformChildren();
@@ -58,14 +58,14 @@ class TestimonialModel extends Model {
 		}
 
 		const ratingMeta = this.rating !== undefined ? new Tag('meta', { content: this.rating }) : undefined;
-		const layoutMeta = new Tag('meta', { content: this.layout });
+		const variantMeta = new Tag('meta', { content: this.variant });
 
 		const resultChildren: any[] = [];
 		if (quoteTag) resultChildren.push(quoteTag);
 		if (authorNameTag) resultChildren.push(authorNameTag);
 		if (authorRoleTag) resultChildren.push(authorRoleTag);
 		if (ratingMeta) resultChildren.push(ratingMeta);
-		resultChildren.push(layoutMeta);
+		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
 
 		return createComponentRenderable(schema.Testimonial, {
@@ -82,4 +82,6 @@ class TestimonialModel extends Model {
 	}
 }
 
-export const testimonial = createSchema(TestimonialModel);
+export const testimonial = createSchema(TestimonialModel, {
+	layout: { newName: 'variant' },
+});

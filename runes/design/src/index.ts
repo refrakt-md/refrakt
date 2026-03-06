@@ -67,8 +67,7 @@ export const design: RunePackage = {
     },
     'preview': {
       transform: preview,
-      aliases: ['showcase'],
-      description: 'Component showcase with theme toggle and adjustable width for documentation and design systems',
+      description: 'Component preview with theme toggle and adjustable width for documentation and design systems',
       reinterprets: {},
       fixture: `{% preview title="Button Variants" theme="auto" responsive="mobile,tablet,desktop" %}
 \`\`\`html

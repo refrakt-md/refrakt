@@ -62,6 +62,8 @@
 - accordion
 - details
 - sandbox
+- showcase
+- bg
 - tint
 
 ## Code & Data

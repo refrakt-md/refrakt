@@ -68,3 +68,14 @@ Once the warden of the Eastern March, Lord Ashford fell during the Siege of Thor
 | `status` | `string` | `alive` | Character status: `alive`, `dead`, `unknown`, or `missing` |
 | `aliases` | `string` | — | Comma-separated list of aliases or nicknames |
 | `tags` | `string` | — | Comma-separated metadata tags |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

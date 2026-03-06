@@ -38,6 +38,7 @@ ${imports}
 
 const communityTags = {};
 const communityPostTransforms = {};
+const communityStyles = {};
 for (const pkg of [${pkgArray}]) {
   for (const [name, entry] of Object.entries(pkg.runes ?? {})) {
     if (entry.transform) {
@@ -51,9 +52,12 @@ for (const pkg of [${pkgArray}]) {
     if (typeof runeConfig.postTransform === 'function') {
       communityPostTransforms[name] = runeConfig.postTransform;
     }
+    if (runeConfig.styles) {
+      communityStyles[name] = runeConfig.styles;
+    }
   }
 }
-export { communityTags, communityPostTransforms };
+export { communityTags, communityPostTransforms, communityStyles };
 `;
 
 	try {

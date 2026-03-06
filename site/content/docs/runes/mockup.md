@@ -438,3 +438,14 @@ Content without any device chrome.
 | `statusBar` | `boolean` | `true` | Show status bar on mobile devices |
 | `url` | `string` | — | URL to display in browser address bar |
 | `scale` | `number` | `1` | CSS transform scale factor |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |

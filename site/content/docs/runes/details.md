@@ -37,3 +37,14 @@ Since `open=true` is set, this block is expanded when the page loads.
 |-----------|------|---------|-------------|
 | `summary` | `string` | `"Details"` | The clickable summary text |
 | `open` | `boolean` | `false` | Whether the block is initially expanded |
+
+### Common attributes
+
+All block runes share these attributes for layout and theming.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
+| `spacing` | `string` | — | Vertical spacing: `tight`, `default`, or `loose` |
+| `tint` | `string` | — | Named colour tint from theme configuration |
+| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
