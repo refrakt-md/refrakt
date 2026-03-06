@@ -253,7 +253,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'GET' && url.pathname === '/api/pages-list') {
 				await handlePagesList(res, absContentDir);
 			} else if (method === 'GET' && url.pathname === '/api/runes') {
-				handleGetRunes(res, communityRunes);
+				handleGetRunes(res, communityRunes, themeConfig);
 			} else if (method === 'GET' && url.pathname === '/api/community-tags.js') {
 				if (communityTagsBundlePath) {
 					const content = readFileSync(communityTagsBundlePath, 'utf-8');
@@ -856,6 +856,7 @@ let cachedRuneData: unknown[] | null = null;
 function handleGetRunes(
 	res: import('node:http').ServerResponse,
 	communityRunes?: EditorOptions['communityRunes'],
+	themeConfig?: ThemeConfig,
 ): void {
 	if (!cachedRuneData) {
 		cachedRuneData = [];
@@ -878,6 +879,16 @@ function handleGetRunes(
 				}
 			}
 
+			// Inject preset names for universal attributes from themeConfig
+			if (themeConfig?.tints && attrs['tint'] && !attrs['tint'].values) {
+				const names = Object.keys(themeConfig.tints);
+				if (names.length > 0) attrs['tint'].values = names;
+			}
+			if (themeConfig?.backgrounds && attrs['bg'] && !attrs['bg'].values) {
+				const names = Object.keys(themeConfig.backgrounds);
+				if (names.length > 0) attrs['bg'].values = names;
+			}
+
 			cachedRuneData.push({
 				name: rune.name,
 				aliases: rune.aliases,
@@ -892,6 +903,15 @@ function handleGetRunes(
 		// Append community runes from packages
 		if (communityRunes) {
 			for (const entry of communityRunes) {
+				// Inject preset names for universal attributes on community runes too
+				if (themeConfig?.tints && entry.attributes['tint'] && !entry.attributes['tint'].values) {
+					const names = Object.keys(themeConfig.tints);
+					if (names.length > 0) entry.attributes['tint'].values = names;
+				}
+				if (themeConfig?.backgrounds && entry.attributes['bg'] && !entry.attributes['bg'].values) {
+					const names = Object.keys(themeConfig.backgrounds);
+					if (names.length > 0) entry.attributes['bg'].values = names;
+				}
 				cachedRuneData.push(entry);
 			}
 		}
