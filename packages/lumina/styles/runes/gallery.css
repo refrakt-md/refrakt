@@ -1,0 +1,182 @@
+/* Gallery — Multi-image container with grid/carousel/masonry layout */
+.rf-gallery {
+	margin: 1.5rem 0;
+	position: relative;
+}
+
+/* Layout modifier classes */
+.rf-gallery--grid {}
+.rf-gallery--carousel {}
+.rf-gallery--masonry {}
+
+/* Items container — grid layout by default */
+.rf-gallery__items {
+	display: grid;
+	grid-template-columns: repeat(var(--gallery-columns, 3), 1fr);
+	gap: var(--gallery-gap, var(--rf-spacing-md));
+}
+
+/* Individual gallery items */
+.rf-gallery__item {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--rf-radius-md);
+}
+.rf-gallery__item img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.rf-gallery__item figcaption {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 0.5rem 0.75rem;
+	background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+	color: white;
+	font-size: 0.825rem;
+}
+
+/* Gallery caption */
+.rf-gallery > figcaption {
+	margin-top: 0.625rem;
+	font-size: 0.825rem;
+	color: var(--rf-color-muted);
+	text-align: center;
+	font-style: italic;
+}
+
+/* Carousel layout */
+.rf-gallery[data-layout="carousel"] .rf-gallery__items {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	-webkit-overflow-scrolling: touch;
+}
+.rf-gallery[data-layout="carousel"] .rf-gallery__item {
+	flex: 0 0 calc(100% / var(--gallery-columns, 3));
+	scroll-snap-align: start;
+}
+
+/* Carousel nav buttons */
+.rf-gallery__nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 2;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	border: none;
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
+	box-shadow: var(--rf-shadow-md);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem;
+	opacity: 0.8;
+	transition: opacity 0.2s;
+}
+.rf-gallery__nav:hover {
+	opacity: 1;
+}
+.rf-gallery__nav--prev {
+	left: 0.5rem;
+}
+.rf-gallery__nav--next {
+	right: 0.5rem;
+}
+
+/* Masonry layout (CSS progressive enhancement) */
+.rf-gallery[data-layout="masonry"] .rf-gallery__items {
+	grid-template-rows: masonry;
+}
+
+/* Lightbox cursor hint */
+.rf-gallery[data-lightbox="true"] .rf-gallery__item {
+	cursor: zoom-in;
+}
+
+/* Lightbox overlay */
+.rf-gallery__lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: rgba(0, 0, 0, 0.9);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-gallery__lightbox img {
+	max-width: 90vw;
+	max-height: 90vh;
+	object-fit: contain;
+	border-radius: var(--rf-radius-md);
+}
+.rf-gallery__lightbox-close {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	border: none;
+	background: rgba(255, 255, 255, 0.15);
+	color: white;
+	font-size: 1.5rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-gallery__lightbox-nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	border: none;
+	background: rgba(255, 255, 255, 0.15);
+	color: white;
+	font-size: 1.5rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-gallery__lightbox-nav--prev {
+	left: 1rem;
+}
+.rf-gallery__lightbox-nav--next {
+	right: 1rem;
+}
+
+/* Column count overrides */
+.rf-gallery[data-columns="1"] .rf-gallery__items { grid-template-columns: 1fr; }
+.rf-gallery[data-columns="2"] .rf-gallery__items { grid-template-columns: repeat(2, 1fr); }
+.rf-gallery[data-columns="4"] .rf-gallery__items { grid-template-columns: repeat(4, 1fr); }
+.rf-gallery[data-columns="5"] .rf-gallery__items { grid-template-columns: repeat(5, 1fr); }
+.rf-gallery[data-columns="6"] .rf-gallery__items { grid-template-columns: repeat(6, 1fr); }
+
+/* Responsive: collapse to fewer columns on small screens */
+@media (max-width: 768px) {
+	.rf-gallery__items {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
+		flex-basis: 80%;
+	}
+}
+@media (max-width: 480px) {
+	.rf-gallery__items {
+		grid-template-columns: 1fr;
+	}
+	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
+		flex-basis: 100%;
+	}
+}

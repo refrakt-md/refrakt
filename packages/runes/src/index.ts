@@ -13,6 +13,7 @@ import { region } from './tags/region.js';
 import { layout } from './tags/layout.js';
 import { details } from './tags/details.js';
 import { figure } from './tags/figure.js';
+import { gallery } from './tags/gallery.js';
 import { accordion, accordionItem } from './tags/accordion.js';
 import { toc } from './tags/toc.js';
 import { embed } from './tags/embed.js';
@@ -145,6 +146,14 @@ export const runes = {
     reinterprets: { image: 'figure image', paragraph: 'caption' },
     seoType: 'ImageObject',
     type: schema.Figure,
+  }),
+  gallery: defineRune({
+    name: 'gallery',
+    schema: gallery,
+    description: 'Multi-image container with grid, carousel, or masonry layout and optional lightbox',
+    reinterprets: { image: 'gallery item', heading: 'section title' },
+    seoType: 'ImageGallery',
+    type: schema.Gallery,
   }),
   accordion: defineRune({
     name: 'accordion',
