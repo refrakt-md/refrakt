@@ -70,12 +70,27 @@ app.get('/', (req, res) => {
 
 {% /preview %}
 
+## Overflow control
+
+Use the `overflow` attribute to control how long lines are handled. The default is `scroll` (horizontal scrollbar). Use `wrap` to wrap lines, or `hide` to clip without a scrollbar.
+
+{% preview source=true %}
+
+{% codegroup overflow="wrap" title="wrapped.ts" %}
+```ts
+const result = await fetchUserDataFromRemoteService(userId, { includeMetadata: true, resolveReferences: true, maxDepth: 3, timeout: 5000 });
+```
+{% /codegroup %}
+
+{% /preview %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `labels` | `string` | — | Comma-separated custom tab names |
 | `title` | `string` | — | Filename or label shown in the topbar |
+| `overflow` | `string` | `scroll` | Line overflow: `scroll`, `wrap`, or `hide` |
 
 ### Common attributes
 

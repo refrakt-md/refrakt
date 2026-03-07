@@ -139,6 +139,12 @@
 					"source": "meta",
 					"classPattern": ".rf-codegroup--{value}",
 					"dataAttribute": "data-title"
+				},
+				"overflow": {
+					"source": "meta",
+					"default": "scroll",
+					"classPattern": ".rf-codegroup--{value}",
+					"dataAttribute": "data-overflow"
 				}
 			},
 			"elements": {

@@ -75,3 +75,12 @@
 	font-family: var(--rf-font-mono);
 	font-size: 0.85rem;
 }
+/* Overflow modes */
+.rf-codegroup[data-overflow="wrap"] pre {
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-x: hidden;
+}
+.rf-codegroup[data-overflow="hide"] pre {
+	overflow-x: hidden;
+}

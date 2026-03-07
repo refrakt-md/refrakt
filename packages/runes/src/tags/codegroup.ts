@@ -19,12 +19,17 @@ function prettifyLanguage(lang: string): string {
   return languageNames[lang] || lang.charAt(0).toUpperCase() + lang.slice(1);
 }
 
+const overflowValues = ['scroll', 'wrap', 'hide'] as const;
+
 class CodeGroupModel extends Model {
   @attribute({ type: String, required: false })
   title: string | undefined;
 
   @attribute({ type: String, required: false })
   labels: string | undefined;
+
+  @attribute({ type: String, required: false, matches: overflowValues.slice() })
+  overflow: typeof overflowValues[number] | undefined;
 
   transform() {
     const customLabels = this.labels?.split(',').map(l => l.trim()) ?? [];
@@ -64,6 +69,12 @@ class CodeGroupModel extends Model {
       const titleMeta = new Tag('meta', { content: this.title });
       properties.title = titleMeta;
       children.push(titleMeta);
+    }
+
+    if (this.overflow && this.overflow !== 'scroll') {
+      const overflowMeta = new Tag('meta', { content: this.overflow });
+      properties.overflow = overflowMeta;
+      children.push(overflowMeta);
     }
 
     children.push(tabList.next(), panelList.next());

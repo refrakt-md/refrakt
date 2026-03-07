@@ -2,7 +2,7 @@
 
 :root {
 	/* Typography */
-	--rf-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--rf-font-sans: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--rf-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
 	/* Primary scale (sky-blue) */

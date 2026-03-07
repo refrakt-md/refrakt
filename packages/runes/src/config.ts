@@ -113,7 +113,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		CodeGroup: {
 			block: 'codegroup',
-			modifiers: { title: { source: 'meta' } },
+			modifiers: { title: { source: 'meta' }, overflow: { source: 'meta', default: 'scroll' } },
 			structure: {
 				topbar: {
 					tag: 'div', before: true,
