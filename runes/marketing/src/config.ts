@@ -208,6 +208,7 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
 			gap: { source: 'meta', default: '1rem' },
+			sizing: { source: 'meta', default: 'tiered' },
 		},
 		styles: {
 			columns: '--bento-columns',
@@ -218,7 +219,13 @@ export const config: Record<string, RuneConfig> = {
 	BentoCell: {
 		block: 'bento-cell',
 		parent: 'Bento',
-		modifiers: { size: { source: 'meta', default: 'medium' } },
+		modifiers: {
+			size: { source: 'meta', default: 'medium' },
+			span: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			span: '--cell-span',
+		},
 		autoLabel: { name: 'title' },
 	},
 	Feature: {
