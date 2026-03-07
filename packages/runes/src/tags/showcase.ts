@@ -5,7 +5,7 @@ import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
 const shadowValues = ['none', 'soft', 'hard', 'elevated'] as const;
-const bleedValues = ['none', 'top', 'bottom', 'both'] as const;
+const bleedValues = ['none', 'top', 'bottom', 'both', 'end', 'bottom-end', 'top-end'] as const;
 
 class ShowcaseModel extends Model {
 	@attribute({ type: String, required: false, matches: shadowValues.slice() })

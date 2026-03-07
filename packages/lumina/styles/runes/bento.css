@@ -95,6 +95,22 @@
 	border-radius: var(--rf-radius-sm);
 	margin-bottom: 0.75rem;
 }
+/* Remove padding on bleed edges when showcase bleeds inside a cell */
+.rf-bento-cell:has(.rf-showcase[data-bleed="bottom"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) {
+	padding-bottom: 0;
+}
+.rf-bento-cell:has(.rf-showcase[data-bleed="end"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
+	padding-inline-end: 0;
+}
+.rf-bento-cell:has(.rf-showcase[data-bleed="top"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
+.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
+	padding-top: 0;
+}
 @media (max-width: 768px) {
 	.rf-bento__grid { grid-template-columns: repeat(2, 1fr) !important; }
 	.rf-bento-cell--full { grid-column: 1 / -1; }

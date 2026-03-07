@@ -523,6 +523,7 @@ export const coreConfig: ThemeConfig = {
 				offset: { source: 'meta', noBemClass: true },
 				justify: { source: 'meta', noBemClass: true },
 			},
+			contextModifiers: { 'BentoCell': 'in-bento-cell' },
 			styles: {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',

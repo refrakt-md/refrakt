@@ -32,9 +32,31 @@
 	position: relative;
 	z-index: 1;
 }
-/* Parent needs overflow visible for bleed */
-:has(> .rf-showcase[data-bleed]) {
+.rf-showcase[data-bleed="end"] {
+	margin-inline-end: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+.rf-showcase[data-bleed="bottom-end"] {
+	margin-bottom: calc(-1 * var(--showcase-offset, 2rem));
+	margin-inline-end: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+.rf-showcase[data-bleed="top-end"] {
+	margin-top: calc(-1 * var(--showcase-offset, 2rem));
+	margin-inline-end: calc(-1 * var(--showcase-offset, 2rem));
+	position: relative;
+	z-index: 1;
+}
+/* Parent needs overflow visible for bleed — except inside clipping containers like bento cells */
+:has(> .rf-showcase[data-bleed]:not(.rf-showcase--in-bento-cell)) {
 	overflow: visible;
+}
+/* Bento cell context — showcase fills remaining space */
+.rf-showcase--in-bento-cell {
+	flex: 1;
+	min-height: 0;
 }
 /* Aspect ratio enforcement */
 .rf-showcase[data-aspect] .rf-showcase__viewport {
@@ -67,5 +89,6 @@
 	.rf-showcase[data-bleed] {
 		margin-top: 0;
 		margin-bottom: 0;
+		margin-inline-end: 0;
 	}
 }
