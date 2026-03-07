@@ -10,6 +10,7 @@ import {Grid} from './schema/grid.js';
 import {Error, DebugInfo} from './schema/error.js';
 import {Details} from './schema/details.js';
 import {Figure} from './schema/figure.js';
+import {Gallery} from './schema/gallery.js';
 import {Accordion, AccordionItem} from './schema/accordion.js';
 import {TableOfContents} from './schema/toc.js';
 import {Embed} from './schema/embed.js';
@@ -54,6 +55,7 @@ export const schema = {
   NavItem: useSchema(NavItem).defineType('NavItem'),
   Details: useSchema(Details).defineType('Details'),
   Figure: useSchema(Figure).defineType('Figure'),
+  Gallery: useSchema(Gallery).defineType('Gallery'),
   Accordion: useSchema(Accordion).defineType('Accordion'),
   AccordionItem: useSchema(AccordionItem).defineType('AccordionItem'),
   TableOfContents: useSchema(TableOfContents).defineType('TableOfContents'),
