@@ -84,7 +84,16 @@
 	grid-column: content;
 }
 
-/* Width breakout via data-width attribute */
+/* Width constraint via data-width attribute — narrower than content */
+.rf-page-content > article > [data-width="compact"] {
+	max-width: var(--rf-width-compact, 30rem);
+	margin-inline: auto;
+}
+.rf-page-content > article > [data-width="narrow"] {
+	max-width: var(--rf-width-narrow, 40rem);
+	margin-inline: auto;
+}
+/* Width breakout via data-width attribute — wider than content */
 .rf-page-content > article > [data-width="wide"] {
 	grid-column: wide;
 }

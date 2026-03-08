@@ -117,7 +117,7 @@ export function createSchema<TInput extends Model>(
   attributes['bg'] = { type: String, required: false };
 
   // Add width and spacing as universal layout attributes on all runes
-  attributes['width'] = { type: String, required: false, matches: ['content', 'wide', 'full'] };
+  attributes['width'] = { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'] };
   attributes['spacing'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
   attributes['inset'] = { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] };
 
