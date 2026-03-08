@@ -10,15 +10,15 @@
 
 	// Viewport presets for preview mode card width
 	const VIEWPORT_WIDTHS: Record<string, number> = {
-		desktop: 1200,
+		desktop: 1440,
 		tablet: 768,
 		mobile: 375,
 	};
 
 	const cardMaxWidth = $derived(
 		editorState.editorMode === 'preview'
-			? VIEWPORT_WIDTHS[editorState.viewport] ?? 1200
-			: 1200
+			? VIEWPORT_WIDTHS[editorState.viewport] ?? 1440
+			: 1440
 	);
 </script>
 
