@@ -1,5 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, Tag as TagType } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
@@ -33,7 +33,7 @@ class BentoCellModel extends Model {
 		const hasIcon = iconContent.count() > 0;
 
 		const properties: Record<string, any> = { name: nameTag, size: sizeMeta };
-		const refs: Record<string, RenderableNodeCursor> = { body: body.tag('div') };
+		const refs: Record<string, RenderableNodeCursor<TagType>> = { body: body.tag('div') };
 		const children: any[] = [];
 
 		if (hasIcon) {

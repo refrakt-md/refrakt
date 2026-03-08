@@ -110,6 +110,7 @@
 	line-height: 1.65;
 	color: var(--rf-color-muted);
 	margin: 0 0 2rem;
+	max-width: 40rem;
 }
 .rf-hero[data-justify="center"] > p,
 .rf-hero[data-justify="center"] .rf-hero__blurb {
