@@ -541,8 +541,8 @@ export const coreConfig: ThemeConfig = {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
 			},
-			postTransform(node) {
-				const placeValue = readMeta(node, 'place');
+			postTransform(node, context) {
+				const placeValue = context.modifiers['place'];
 				if (placeValue) {
 					const { x, y } = parsePlacement(placeValue);
 					const existing = node.attributes.style || '';

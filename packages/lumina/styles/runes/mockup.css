@@ -14,6 +14,16 @@
 	background-color: transparent;
 }
 
+/* Inside a placed showcase, let device frame use natural width */
+.rf-showcase[data-place] .rf-mockup {
+	width: auto;
+	max-width: 100%;
+	container-type: normal;
+}
+.rf-showcase[data-place] .rf-mockup__frame {
+	zoom: var(--mockup-scale, 1);
+}
+
 /* ── Fit mode: none (native pixel size) ── */
 
 .rf-mockup[data-fit="none"] {

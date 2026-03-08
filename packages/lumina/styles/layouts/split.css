@@ -11,11 +11,10 @@
 [data-layout="split-reverse"] > [data-name="content"] { order: 2; }
 [data-layout="split-reverse"] > [data-name="media"] { order: 1; }
 
-/* Center children in media sections — grid so children can use justify-self/align-self */
+/* Grid so children can use justify-self/align-self (default: stretch) */
 [data-layout="split"] > [data-name="media"],
 [data-layout="split-reverse"] > [data-name="media"] {
   display: grid;
-  justify-items: center;
 }
 
 /* Collapse breakpoints */
