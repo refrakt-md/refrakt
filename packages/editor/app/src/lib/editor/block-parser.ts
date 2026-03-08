@@ -105,11 +105,22 @@ function parseAttributes(raw: string): Record<string, string> {
 	return attrs;
 }
 
+/** Check if a string value represents a number */
+function isNumericValue(value: string): boolean {
+	return value !== '' && !isNaN(Number(value));
+}
+
 /** Serialize attributes back to Markdoc syntax */
 export function serializeAttributes(attrs: Record<string, string>): string {
 	const parts: string[] = [];
 	for (const [key, value] of Object.entries(attrs)) {
-		parts.push(`${key}="${value}"`);
+		if (value === 'true') {
+			parts.push(key);
+		} else if (value === 'false' || isNumericValue(value)) {
+			parts.push(`${key}=${value}`);
+		} else {
+			parts.push(`${key}="${value}"`);
+		}
 	}
 	return parts.length > 0 ? ' ' + parts.join(' ') : '';
 }
