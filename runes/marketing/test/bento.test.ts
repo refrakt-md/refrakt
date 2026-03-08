@@ -263,6 +263,28 @@ No icon here.
     expect(iconWrapper).toBeUndefined();
   });
 
+  it('should not duplicate icon in the body when heading has an icon', () => {
+    const result = parse(`{% bento %}
+## {% icon name="rocket" /%} Fast
+
+Performance content.
+{% /bento %}`);
+
+    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    expect(cells.length).toBe(1);
+
+    // Icon should exist in the icon wrapper
+    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
+    expect(iconWrapper).toBeDefined();
+
+    // Icon should NOT exist inside the body
+    const body = findTag(cells[0], t => t.attributes?.['data-name'] === 'body');
+    expect(body).toBeDefined();
+    const iconInBody = findTag(body!, t => t.attributes?.class === 'rf-icon' || t.name === 'svg');
+    expect(iconInBody).toBeUndefined();
+  });
+
   it('should preserve cell name text when icon is present', () => {
     const result = parse(`{% bento %}
 ## {% icon name="rocket" /%} Fast Performance

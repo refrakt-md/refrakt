@@ -17,6 +17,16 @@ class BentoCellModel extends Model {
 	@group({ include: [{ node: 'paragraph', descendantTag: 'icon' }] })
 	iconGroup: NodeStream;
 
+	processChildren(nodes: Node[]) {
+		const result = super.processChildren(nodes);
+		// Remove icon paragraphs from children — they're captured by @group(iconGroup)
+		// but @group doesn't remove them, so transformChildren() would include them in the body
+		return result.filter(n => {
+			if (n.type !== 'paragraph') return true;
+			return !Array.from(n.walk()).some(c => c.type === 'tag' && c.tag === 'icon');
+		});
+	}
+
 	transform(): RenderableTreeNodes {
 		const nameTag = new Tag('span', {}, [this.name]);
 		const sizeMeta = new Tag('meta', { content: this.size });
