@@ -18,7 +18,7 @@ export const marketing: RunePackage = {
       transform: hero,
       description: 'Full-width introductory section for landing pages with title, subtitle, and call-to-action',
       reinterprets: { heading: 'hero title', paragraph: 'subtitle/tagline', list: 'action buttons', image: 'hero image' },
-      fixture: `{% hero justify="center" %}
+      fixture: `{% hero align="center" %}
 # Build Beautiful Documentation
 From Markdown to pixel-perfect pages in minutes.
 

@@ -264,10 +264,10 @@ Tokens cover typography, a full color scale (primary 50-950, semantic colors, su
 
 **2. Identity Transform Engine** -- A pure function that walks the serialized tag tree and enhances it with BEM classes, context-aware modifiers, structural elements, and modifier data attributes. This is where the `typeof` attribute on rendered tags gets resolved into a theme-specific presentation. The engine threads parent rune context through the recursion, so nested runes can receive additional BEM modifiers based on their parent -- for example, a Hint inside a Hero automatically gets `rf-hint--in-hero`, allowing CSS to style it differently without any framework code.
 
-For example, a `Hero` rune with `justify="center"` is transformed into:
+For example, a `Hero` rune with `align="center"` is transformed into:
 
 ```html
-<section typeof="Hero" class="rf-hero rf-hero--center" data-justify="center">
+<section typeof="Hero" class="rf-hero rf-hero--center" data-align="center">
   <header data-name="header" class="rf-hero__header">
     <h1 property="headline" class="rf-hero__headline">...</h1>
     <p property="blurb" class="rf-hero__blurb">...</p>

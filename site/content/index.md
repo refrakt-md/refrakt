@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero justify="left" tint-mode="auto" spacing="breathe" %}
+{% hero align="left" tint-mode="auto" spacing="breathe" %}
 Version 0.7.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
@@ -16,7 +16,7 @@ npm create refrakt
 - [Get Started](/docs/getting-started)
 {% /hero %}
 
-{% feature justify="left" spacing="default" %}
+{% feature align="left" spacing="default" %}
 The framework
 ## Why refrakt.md?
 
@@ -47,7 +47,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 {% /feature %}
 
-{% feature layout="split" justify="left" ratio="1 1" align="center" collapse="md" gap="loose" tint="subtle" spacing="tight" %}
+{% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" tint="subtle" spacing="tight" %}
 Composable by design
 ## Runes that work together
 
@@ -80,7 +80,7 @@ Walk through the theater district.
 {% /showcase %}
 {% /feature %}
 
-{% feature layout="stacked" justify="left" align="center" %}
+{% feature layout="stacked" align="left" %}
 Built-in SEO
 ## Structured data from plain Markdown
 
@@ -107,7 +107,7 @@ A simple Neapolitan-style pizza with fresh ingredients.
 {% /preview %}
 {% /feature %}
 
-{% feature spacing="loose" tint-mode="auto" justify="left" %}
+{% feature spacing="loose" tint-mode="auto" align="left" %}
 8 packages, 60+ runes
 ## A rune for every domain
 

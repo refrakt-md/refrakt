@@ -188,7 +188,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultWidth: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
-			justify: { source: 'meta', default: 'center' },
+			align: { source: 'meta', default: 'center' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
 			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },
@@ -233,7 +233,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultWidth: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
-			justify: { source: 'meta', default: 'center' },
+			align: { source: 'meta', default: 'center' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
 			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },

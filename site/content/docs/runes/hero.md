@@ -53,11 +53,11 @@ npm create refrakt
 
 ## Left-aligned
 
-Use `justify="left"` for a more editorial feel.
+Use `align="left"` for a more editorial feel.
 
 {% preview source=true %}
 
-{% hero justify="left" %}
+{% hero align="left" %}
 # Documentation that writes itself
 
 Semantic runes transform your Markdown into structured, accessible content.
@@ -71,7 +71,7 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `justify` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
+| `align` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
 | `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
 | `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
 | `valign` | `string` | `top` | Vertical alignment in split layout: `top`, `center`, or `bottom` |
