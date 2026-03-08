@@ -11,66 +11,76 @@ Multi-image container with grid, carousel, or masonry layout and optional lightb
 
 Images are displayed in a responsive grid by default.
 
-```markdoc
+{% preview source=true %}
+
 {% gallery %}
-![Mountain sunrise](/images/sunrise.jpg)
-![Forest path](/images/forest.jpg)
-![Ocean waves](/images/ocean.jpg)
-![Desert dunes](/images/desert.jpg)
-![Snowy peaks](/images/peaks.jpg)
-![River valley](/images/valley.jpg)
+![Mountain sunrise](https://picsum.photos/seed/sunrise/600/400)
+![Forest path](https://picsum.photos/seed/forest/600/400)
+![Ocean waves](https://picsum.photos/seed/ocean/600/400)
+![Desert dunes](https://picsum.photos/seed/desert/600/400)
+![Snowy peaks](https://picsum.photos/seed/peaks/600/400)
+![River valley](https://picsum.photos/seed/valley/600/400)
 {% /gallery %}
-```
+
+{% /preview %}
 
 ## Carousel layout
 
 Horizontal scrolling with snap points and prev/next navigation.
 
-```markdoc
+{% preview source=true %}
+
 {% gallery layout="carousel" %}
-![Slide 1](/images/slide1.jpg)
-![Slide 2](/images/slide2.jpg)
-![Slide 3](/images/slide3.jpg)
-![Slide 4](/images/slide4.jpg)
+![Coastal cliffs](https://picsum.photos/seed/cliffs/600/400)
+![Autumn leaves](https://picsum.photos/seed/autumn/600/400)
+![Starry night](https://picsum.photos/seed/stars/600/400)
+![Rolling hills](https://picsum.photos/seed/hills/600/400)
 {% /gallery %}
-```
+
+{% /preview %}
 
 ## Masonry layout
 
 Variable-height items arranged in a masonry grid (CSS progressive enhancement).
 
-```markdoc
+{% preview source=true %}
+
 {% gallery layout="masonry" columns=4 %}
-![Tall image](/images/tall.jpg)
-![Wide image](/images/wide.jpg)
-![Square image](/images/square.jpg)
-![Another tall](/images/tall2.jpg)
+![Tall waterfall](https://picsum.photos/seed/waterfall/600/800)
+![Wide panorama](https://picsum.photos/seed/panorama/800/400)
+![Square garden](https://picsum.photos/seed/garden/500/500)
+![Tall canyon](https://picsum.photos/seed/canyon/600/800)
 {% /gallery %}
-```
+
+{% /preview %}
 
 ## Without lightbox
 
 Disable the click-to-enlarge overlay.
 
-```markdoc
+{% preview source=true %}
+
 {% gallery lightbox=false %}
-![Photo 1](/images/photo1.jpg)
-![Photo 2](/images/photo2.jpg)
+![Lakeside cabin](https://picsum.photos/seed/cabin/600/400)
+![Wildflower meadow](https://picsum.photos/seed/meadow/600/400)
 {% /gallery %}
-```
+
+{% /preview %}
 
 ## Custom columns and gap
 
 Control the number of columns and spacing between items.
 
-```markdoc
+{% preview source=true %}
+
 {% gallery columns=2 gap="loose" caption="Vacation highlights" %}
-![Beach](/images/beach.jpg)
-![Sunset](/images/sunset.jpg)
-![Market](/images/market.jpg)
-![Temple](/images/temple.jpg)
+![Sandy beach](https://picsum.photos/seed/beach/600/400)
+![Golden sunset](https://picsum.photos/seed/sunset/600/400)
+![Local market](https://picsum.photos/seed/market/600/400)
+![Ancient temple](https://picsum.photos/seed/temple/600/400)
 {% /gallery %}
-```
+
+{% /preview %}
 
 ### Attributes
 

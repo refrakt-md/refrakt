@@ -58,6 +58,7 @@
 ## Layout
 
 - grid
+- gallery
 - tabs
 - accordion
 - details
