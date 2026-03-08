@@ -14,8 +14,8 @@ Build something amazing with our platform.
 		expect(tag!.name).toBe('section');
 	});
 
-	it('should pass justify attribute as meta', () => {
-		const result = parse(`{% hero justify="left" %}
+	it('should pass align attribute as meta', () => {
+		const result = parse(`{% hero align="left" %}
 # Title
 
 Description text.
@@ -24,8 +24,8 @@ Description text.
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
 		expect(tag).toBeDefined();
 
-		const justifyMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
-		expect(justifyMeta).toBeDefined();
+		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
+		expect(alignMeta).toBeDefined();
 	});
 
 	it('should handle action links as LinkItem components', () => {

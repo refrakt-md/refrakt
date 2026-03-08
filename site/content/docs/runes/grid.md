@@ -65,11 +65,11 @@ Control spacing between cells with the `gap` attribute.
 
 ## Alignment
 
-Vertically align cells within their row using the `align` attribute. Useful when cells have different heights.
+Vertically align cells within their row using the `valign` attribute. Useful when cells have different heights.
 
 {% preview source=true %}
 
-{% grid align="center" spans="2 1" %}
+{% grid valign="center" spans="2 1" %}
 **Tall cell.** This cell has more content and takes up more vertical space. The adjacent cell will be vertically centred relative to this one.
 
 Additional paragraph to increase the height of this cell.
@@ -191,7 +191,7 @@ Sidebar (appears first on mobile).
 | `spans` | `string` | — | Space-separated column span values (e.g., `"2 1"`) |
 | `ratio` | `string` | — | Column width ratio as CSS grid-template-columns value |
 | `gap` | `string` | `default` | Gap between cells: `none`, `tight`, `default`, or `loose` |
-| `align` | `string` | — | Vertical cell alignment: `start`, `center`, or `end` |
+| `valign` | `string` | — | Vertical cell alignment: `top`, `center`, or `bottom` |
 | `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
 | `mode` | `string` | `columns` | Layout mode: `columns`, `auto`, or `masonry` |
 | `min` | `string` | `250px` | Minimum column width in auto mode (e.g., `200px`, `15rem`) |

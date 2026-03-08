@@ -55,11 +55,11 @@ export class DefinitionModel extends Model {
 
 export const definition = createSchema(DefinitionModel);
 
-const justifyType = ['left', 'center', 'right'] as const;
+const alignType = ['left', 'center', 'right'] as const;
 
 class FeatureModel extends SplitLayoutModel {
-  @attribute({ type: String, required: false, matches: justifyType.slice() })
-  justify: typeof justifyType[number] = 'center';
+  @attribute({ type: String, required: false, matches: alignType.slice() })
+  align: typeof alignType[number] = 'center';
 
   @group({ section: 0, include: ['heading', 'paragraph'] })
   header: NodeStream;
@@ -88,17 +88,17 @@ class FeatureModel extends SplitLayoutModel {
     const mediaContent = side.wrap('div');
 
     const layoutMeta = new Tag('meta', { content: this.layout });
-    const justifyMeta = new Tag('meta', { content: this.justify });
+    const alignMeta = new Tag('meta', { content: this.align });
     const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-    const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+    const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
     const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
     const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
     const children = [
       layoutMeta,
-      justifyMeta,
+      alignMeta,
       ...(ratioMeta ? [ratioMeta] : []),
-      ...(alignMeta ? [alignMeta] : []),
+      ...(valignMeta ? [valignMeta] : []),
       ...(gapMeta ? [gapMeta] : []),
       ...(collapseMeta ? [collapseMeta] : []),
       mainContent.next(),
@@ -112,9 +112,9 @@ class FeatureModel extends SplitLayoutModel {
         ...pageSectionProperties(header),
         featureItem: definitions.flatten().tag('div'),
         layout: layoutMeta,
-        justify: justifyMeta,
-        ratio: ratioMeta,
         align: alignMeta,
+        ratio: ratioMeta,
+        valign: valignMeta,
         gap: gapMeta,
         collapse: collapseMeta,
       },
@@ -133,5 +133,5 @@ export const feature = createSchema(FeatureModel, {
     transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
   },
   mirror: { newName: '_consumed' },
-  align: { newName: 'justify' },
+  justify: { newName: 'align' },
 });

@@ -66,3 +66,37 @@ const OFFSET_PRESETS: Record<string, string> = {
 export function resolveOffset(value: string): string {
 	return OFFSET_PRESETS[value] ?? value;
 }
+
+/** Map spatial valign values (top/center/bottom) to CSS align-items values */
+const VALIGN_MAP: Record<string, string> = {
+	top: 'start',
+	center: 'center',
+	bottom: 'end',
+	stretch: 'stretch',
+	baseline: 'baseline',
+};
+
+/** Resolve a spatial valign value to its CSS equivalent. */
+export function resolveValign(value: string): string {
+	return VALIGN_MAP[value] ?? value;
+}
+
+/** Map spatial place values to CSS justify-self / align-self pairs */
+const PLACE_MAP: Record<string, { x: string; y: string }> = {
+	'left':           { x: 'start',  y: 'center' },
+	'center':         { x: 'center', y: 'center' },
+	'right':          { x: 'end',    y: 'center' },
+	'top':            { x: 'center', y: 'start' },
+	'bottom':         { x: 'center', y: 'end' },
+	'top left':       { x: 'start',  y: 'start' },
+	'top center':     { x: 'center', y: 'start' },
+	'top right':      { x: 'end',    y: 'start' },
+	'bottom left':    { x: 'start',  y: 'end' },
+	'bottom center':  { x: 'center', y: 'end' },
+	'bottom right':   { x: 'end',    y: 'end' },
+};
+
+/** Parse a spatial place value into CSS justify-self (x) and align-self (y) values. */
+export function parsePlacement(value: string): { x: string; y: string } {
+	return PLACE_MAP[value] ?? { x: 'center', y: 'center' };
+}

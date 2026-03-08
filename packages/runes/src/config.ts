@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
 import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -99,13 +99,13 @@ export const coreConfig: ThemeConfig = {
 				aspect: { source: 'meta', noBemClass: true },
 				stack: { source: 'meta', noBemClass: true },
 				ratio: { source: 'meta', noBemClass: true },
-				align: { source: 'meta', noBemClass: true },
+				valign: { source: 'meta', noBemClass: true },
 				gap: { source: 'meta', noBemClass: true },
 				min: { source: 'meta', noBemClass: true },
 			},
 			styles: {
 				ratio: { prop: '--grid-ratio', transform: ratioToFr },
-				align: { prop: '--grid-align' },
+				valign: { prop: '--grid-valign', transform: resolveValign },
 				gap: { prop: '--grid-gap', transform: resolveGap },
 				min: '--grid-min',
 				aspect: '--grid-aspect',
@@ -316,7 +316,7 @@ export const coreConfig: ThemeConfig = {
 		ConversationMessage: {
 			block: 'conversation-message',
 			parent: 'Conversation',
-			modifiers: { alignment: { source: 'meta', default: 'left' } },
+			modifiers: { align: { source: 'meta', default: 'left' } },
 		},
 		Annotate: {
 			block: 'annotate',
@@ -521,13 +521,22 @@ export const coreConfig: ThemeConfig = {
 				bleed: { source: 'meta', default: 'none' },
 				aspect: { source: 'meta', noBemClass: true },
 				offset: { source: 'meta', noBemClass: true },
-				justify: { source: 'meta', noBemClass: true },
+				place: { source: 'meta', noBemClass: true },
 			},
 			contextModifiers: { 'BentoCell': 'in-bento-cell' },
 			styles: {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
-				justify: '--showcase-justify',
+			},
+			postTransform(node) {
+				const placeValue = readMeta(node, 'place');
+				if (placeValue) {
+					const { x, y } = parsePlacement(placeValue);
+					const existing = node.attributes.style || '';
+					const placeParts = `--place-x: ${x}; --place-y: ${y}`;
+					node.attributes.style = existing ? `${existing}; ${placeParts}` : placeParts;
+				}
+				return node;
 			},
 		},
 

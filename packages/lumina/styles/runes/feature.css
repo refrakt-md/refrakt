@@ -45,16 +45,16 @@
 .rf-feature h2 {
 	margin-bottom: 2rem;
 }
-.rf-feature[data-justify="center"] .rf-feature__header,
-.rf-feature[data-justify="center"] h2 {
+.rf-feature[data-align="center"] .rf-feature__header,
+.rf-feature[data-align="center"] h2 {
 	text-align: center;
 }
-.rf-feature[data-justify="left"] .rf-feature__header,
-.rf-feature[data-justify="left"] h2 {
+.rf-feature[data-align="left"] .rf-feature__header,
+.rf-feature[data-align="left"] h2 {
 	text-align: left;
 }
-.rf-feature[data-justify="right"] .rf-feature__header,
-.rf-feature[data-justify="right"] h2 {
+.rf-feature[data-align="right"] .rf-feature__header,
+.rf-feature[data-align="right"] h2 {
 	text-align: right;
 }
 .rf-feature dl {

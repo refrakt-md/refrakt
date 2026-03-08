@@ -69,10 +69,10 @@
 	height: 100%;
 	object-fit: cover;
 }
-/* Explicit content alignment via justify attribute */
-.rf-showcase[data-justify] .rf-showcase__viewport {
-	display: flex;
-	justify-content: var(--showcase-justify);
+/* Self-positioning within parent via place attribute */
+.rf-showcase[data-place] {
+	justify-self: var(--place-x, auto);
+	align-self: var(--place-y, auto);
 }
 /* Spacing — vertical margin around the showcase */
 .rf-showcase[data-spacing="flush"]   { margin-top: 0; margin-bottom: 0; }

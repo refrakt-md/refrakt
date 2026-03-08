@@ -3,11 +3,11 @@ const { Tag } = Markdoc;
 import { attribute, group, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitLayoutModel, linkItem, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-const justifyType = ['left', 'center', 'right'] as const;
+const alignType = ['left', 'center', 'right'] as const;
 
 class HeroModel extends SplitLayoutModel {
-	@attribute({ type: String, required: false, matches: justifyType.slice() })
-	justify: typeof justifyType[number] = 'center';
+	@attribute({ type: String, required: false, matches: alignType.slice() })
+	align: typeof alignType[number] = 'center';
 
 	@group({ section: 0, include: ['heading', 'paragraph'] })
 	header: NodeStream;
@@ -37,10 +37,10 @@ class HeroModel extends SplitLayoutModel {
 
 		const side = this.media.transform();
 
-		const justifyMeta = new Tag('meta', { content: this.justify });
+		const alignMeta = new Tag('meta', { content: this.align });
 		const layoutMeta = new Tag('meta', { content: this.layout });
 		const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-		const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+		const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
 		const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
 		const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
@@ -52,10 +52,10 @@ class HeroModel extends SplitLayoutModel {
 			property: 'contentSection',
 			properties: {
 				...pageSectionProperties(header),
-				justify: justifyMeta,
+				align: alignMeta,
 				layout: layoutMeta,
 				ratio: ratioMeta,
-				align: alignMeta,
+				valign: valignMeta,
 				gap: gapMeta,
 				collapse: collapseMeta,
 				action: actions.flatten().tags('li', 'div'),
@@ -66,10 +66,10 @@ class HeroModel extends SplitLayoutModel {
 				media: mediaDiv,
 			},
 			children: [
-				justifyMeta,
+				alignMeta,
 				layoutMeta,
 				...(ratioMeta ? [ratioMeta] : []),
-				...(alignMeta ? [alignMeta] : []),
+				...(valignMeta ? [valignMeta] : []),
 				...(gapMeta ? [gapMeta] : []),
 				...(collapseMeta ? [collapseMeta] : []),
 				header.wrap('header').next(),
@@ -81,5 +81,5 @@ class HeroModel extends SplitLayoutModel {
 }
 
 export const hero = createSchema(HeroModel, {
-	align: { newName: 'justify' },
+	justify: { newName: 'align' },
 });

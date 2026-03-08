@@ -20,8 +20,12 @@ class ShowcaseModel extends Model {
 	@attribute({ type: String, required: false })
 	aspect: string = '';
 
-	@attribute({ type: String, required: false, matches: ['start', 'center', 'end'] })
-	justify: string = '';
+	@attribute({ type: String, required: false, matches: [
+		'left', 'center', 'right', 'top', 'bottom',
+		'top left', 'top center', 'top right',
+		'bottom left', 'bottom center', 'bottom right',
+	] })
+	place: string = '';
 
 	transform(): RenderableTreeNodes {
 		const children = this.transformChildren();
@@ -53,9 +57,9 @@ class ShowcaseModel extends Model {
 			childNodes.push(meta);
 		}
 
-		if (this.justify) {
-			const meta = new Tag('meta', { content: this.justify });
-			properties.justify = meta;
+		if (this.place) {
+			const meta = new Tag('meta', { content: this.place });
+			properties.place = meta;
 			childNodes.push(meta);
 		}
 
