@@ -304,6 +304,19 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'center' },
 			},
 		},
+		Gallery: {
+			block: 'gallery',
+			modifiers: {
+				layout: { source: 'meta', default: 'grid' },
+				lightbox: { source: 'meta', default: 'true', noBemClass: true },
+				gap: { source: 'meta', default: 'default', noBemClass: true },
+				columns: { source: 'meta', noBemClass: true },
+			},
+			styles: {
+				columns: '--gallery-columns',
+				gap: { prop: '--gallery-gap', transform: resolveGap },
+			},
+		},
 		Sidenote: {
 			block: 'sidenote',
 			modifiers: { style: { source: 'meta', default: 'sidenote' } },

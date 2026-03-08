@@ -828,8 +828,8 @@ const RUNE_CATEGORIES: Record<string, string> = {
 	comparison: 'Section', testimonial: 'Section',
 
 	hint: 'Content', steps: 'Content', sidenote: 'Content', figure: 'Content',
-	details: 'Content', embed: 'Content', icon: 'Content', form: 'Content',
-	pullquote: 'Content', textblock: 'Content',
+	gallery: 'Content', details: 'Content', embed: 'Content', icon: 'Content',
+	form: 'Content', pullquote: 'Content', textblock: 'Content',
 
 	grid: 'Layout', tabs: 'Layout', accordion: 'Layout', bento: 'Layout',
 	reveal: 'Layout', annotate: 'Layout', mediatext: 'Layout', showcase: 'Layout',
