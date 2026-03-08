@@ -45,6 +45,8 @@ class HeroModel extends SplitLayoutModel {
 		const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
 		const actionsDiv = actions.wrap('div');
+		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
+		const mainContent = new RenderableNodeCursor([...headerContent, ...(actions.count() > 0 ? [actionsDiv.next()] : [])]).wrap('div');
 		const mediaDiv = side.wrap('div');
 
 		return createComponentRenderable(schema.Hero, {
@@ -62,7 +64,7 @@ class HeroModel extends SplitLayoutModel {
 			},
 			refs: {
 				actions: actionsDiv,
-				content: header.wrap('div'),
+				content: mainContent,
 				media: mediaDiv,
 			},
 			children: [
@@ -72,8 +74,7 @@ class HeroModel extends SplitLayoutModel {
 				...(valignMeta ? [valignMeta] : []),
 				...(gapMeta ? [gapMeta] : []),
 				...(collapseMeta ? [collapseMeta] : []),
-				header.wrap('header').next(),
-				actionsDiv.next(),
+				mainContent.next(),
 				...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 			],
 		});
