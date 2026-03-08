@@ -127,7 +127,7 @@ export function createSchema<TInput extends Model>(
       if (!attributes[oldName]) {
         // Inherit type from the target attribute if possible
         const target = attributes[rule.newName];
-        attributes[oldName] = { type: target?.type ?? String, required: false };
+        attributes[oldName] = { type: target?.type ?? String, required: false, deprecated: true } as SchemaAttribute;
       }
     }
   }

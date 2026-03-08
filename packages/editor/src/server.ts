@@ -866,6 +866,7 @@ function handleGetRunes(
 			const attrs: Record<string, { type: string; required: boolean; values?: string[] }> = {};
 			if (rune.schema.attributes) {
 				for (const [name, attr] of Object.entries(rune.schema.attributes)) {
+					if ((attr as any).deprecated) continue;
 					const typeName = typeof attr.type === 'function'
 						? attr.type.name
 						: Array.isArray(attr.type)
