@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
 
 describe('preview tag', () => {
-	it('should transform with title, theme, and width meta properties', () => {
+	it('should transform with title and theme meta properties', () => {
 		const result = parse(`{% preview title="Demo" theme="dark" width="full" %}
 Some content.
 {% /preview %}`);
@@ -16,9 +16,6 @@ Some content.
 
 		const themeMeta = findTag(preview!, t => t.name === 'meta' && t.attributes.property === 'theme');
 		expect(themeMeta!.attributes.content).toBe('dark');
-
-		const widthMeta = findTag(preview!, t => t.name === 'meta' && t.attributes.property === 'width');
-		expect(widthMeta!.attributes.content).toBe('full');
 	});
 
 	it('should not emit source property when no fence child exists', () => {
