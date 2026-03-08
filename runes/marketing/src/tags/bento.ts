@@ -174,9 +174,9 @@ class BentoModel extends Model {
 		const header = this.header.transform();
 		const cellStream = this.cellgroup.transform();
 		const cols = this.effectiveColumns;
-		const gapMeta = new Tag('meta', { content: this.gap });
-		const columnsMeta = new Tag('meta', { content: String(cols) });
-		const sizingMeta = new Tag('meta', { content: this.sizing });
+		const gapMeta = new Tag('meta', { property: 'gap', content: this.gap });
+		const columnsMeta = new Tag('meta', { property: 'columns', content: String(cols) });
+		const sizingMeta = new Tag('meta', { property: 'sizing', content: this.sizing });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
