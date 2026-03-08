@@ -3,4 +3,5 @@ export class Showcase {
 	bleed: string = '';
 	offset: string = '';
 	aspect: string = '';
+	place: string = '';
 }
