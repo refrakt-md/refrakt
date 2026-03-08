@@ -25,7 +25,7 @@ class GalleryModel extends Model {
 	transform() {
 		const children = this.transformChildren();
 
-		const images = children.tag('img').toArray();
+		const images = children.flatten().tag('img').toArray();
 		const items = images.map(img => {
 			const alt = img.attributes?.alt || '';
 			const itemChildren: any[] = [img];
