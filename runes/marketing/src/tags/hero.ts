@@ -40,7 +40,7 @@ class HeroModel extends SplitLayoutModel {
 		const justifyMeta = new Tag('meta', { content: this.justify });
 		const layoutMeta = new Tag('meta', { content: this.layout });
 		const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-		const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+		const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
 		const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
 		const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
@@ -55,7 +55,7 @@ class HeroModel extends SplitLayoutModel {
 				justify: justifyMeta,
 				layout: layoutMeta,
 				ratio: ratioMeta,
-				align: alignMeta,
+				valign: valignMeta,
 				gap: gapMeta,
 				collapse: collapseMeta,
 				action: actions.flatten().tags('li', 'div'),
@@ -69,7 +69,7 @@ class HeroModel extends SplitLayoutModel {
 				justifyMeta,
 				layoutMeta,
 				...(ratioMeta ? [ratioMeta] : []),
-				...(alignMeta ? [alignMeta] : []),
+				...(valignMeta ? [valignMeta] : []),
 				...(gapMeta ? [gapMeta] : []),
 				...(collapseMeta ? [collapseMeta] : []),
 				header.wrap('header').next(),

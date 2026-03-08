@@ -69,7 +69,7 @@ Individual steps (list items or heading-delimited blocks) accept these layout at
 |-----------|------|---------|-------------|
 | `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
 | `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
-| `align` | `string` | `start` | Vertical alignment in split layout: `start`, `center`, or `end` |
+| `valign` | `string` | `top` | Vertical alignment in split layout: `top`, `center`, or `bottom` |
 | `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
 | `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
 

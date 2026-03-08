@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, readMeta, resolveGap, ratioToFr } from '@refrakt-md/transform';
+import { isTag, makeTag, readMeta, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
 
 // ─── Comparison postTransform helpers ───
 
@@ -190,13 +190,13 @@ export const config: Record<string, RuneConfig> = {
 			layout: { source: 'meta', default: 'stacked' },
 			justify: { source: 'meta', default: 'center' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			align: { source: 'meta', default: 'start', noBemClass: true },
+			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			ratio: { prop: '--split-ratio', transform: ratioToFr },
-			align: { prop: '--split-align' },
+			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		contextModifiers: { 'Feature': 'in-feature' },
@@ -235,13 +235,13 @@ export const config: Record<string, RuneConfig> = {
 			layout: { source: 'meta', default: 'stacked' },
 			justify: { source: 'meta', default: 'center' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			align: { source: 'meta', default: 'start', noBemClass: true },
+			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			ratio: { prop: '--split-ratio', transform: ratioToFr },
-			align: { prop: '--split-align' },
+			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
@@ -255,13 +255,13 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			align: { source: 'meta', default: 'start', noBemClass: true },
+			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			ratio: { prop: '--split-ratio', transform: ratioToFr },
-			align: { prop: '--split-align' },
+			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 	},

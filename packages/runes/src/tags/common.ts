@@ -21,8 +21,8 @@ export class SplitLayoutModel extends Model {
   @attribute({ type: String, required: false })
   ratio: string = '1 1';
 
-  @attribute({ type: String, required: false, matches: ['start', 'center', 'end'] })
-  align: 'start' | 'center' | 'end' = 'start';
+  @attribute({ type: String, required: false, matches: ['top', 'center', 'bottom'] })
+  valign: 'top' | 'center' | 'bottom' = 'top';
 
   @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'] })
   gap: string = 'default';

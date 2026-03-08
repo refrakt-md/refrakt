@@ -50,14 +50,14 @@ class StepModel extends SplitLayoutModel {
 
     const layoutMeta = new Tag('meta', { content: this.layout });
     const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-    const alignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.align }) : undefined;
+    const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
     const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
     const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
 
     const children = [
       layoutMeta,
       ...(ratioMeta ? [ratioMeta] : []),
-      ...(alignMeta ? [alignMeta] : []),
+      ...(valignMeta ? [valignMeta] : []),
       ...(gapMeta ? [gapMeta] : []),
       ...(collapseMeta ? [collapseMeta] : []),
       mainContent.next(),
@@ -70,7 +70,7 @@ class StepModel extends SplitLayoutModel {
         name: name(main),
         layout: layoutMeta,
         ratio: ratioMeta,
-        align: alignMeta,
+        valign: valignMeta,
         gap: gapMeta,
         collapse: collapseMeta,
       },

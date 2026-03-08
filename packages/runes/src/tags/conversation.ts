@@ -9,24 +9,24 @@ class ConversationMessageModel extends Model {
 	@attribute({ type: String, required: false })
 	speaker: string = '';
 
-	@attribute({ type: String, required: false })
-	alignment: string = 'left';
+	@attribute({ type: String, required: false, matches: ['left', 'right'] })
+	align: string = 'left';
 
 	transform(): RenderableTreeNodes {
 		const speakerTag = new Tag('span', {}, [this.speaker]);
-		const alignmentMeta = new Tag('meta', { content: this.alignment });
+		const alignMeta = new Tag('meta', { content: this.align });
 		const body = this.transformChildren().wrap('div');
 
 		return createComponentRenderable(schema.ConversationMessage, {
 			tag: 'div',
 			properties: {
 				speaker: speakerTag,
-				alignment: alignmentMeta,
+				align: alignMeta,
 			},
 			refs: {
 				body: body.tag('div'),
 			},
-			children: [speakerTag, alignmentMeta, body.next()],
+			children: [speakerTag, alignMeta, body.next()],
 		});
 	}
 }
@@ -70,11 +70,11 @@ class ConversationModel extends Model {
 					speaker = speakerList[messageIndex % speakerList.length];
 				}
 
-				const alignment = messageIndex % 2 === 0 ? 'left' : 'right';
+				const align = messageIndex % 2 === 0 ? 'left' : 'right';
 
 				converted.push(new Ast.Node('tag', {
 					speaker,
-					alignment,
+					align,
 				}, node.children, 'conversation-message'));
 
 				messageIndex++;

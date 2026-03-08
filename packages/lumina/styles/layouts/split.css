@@ -4,7 +4,7 @@
 [data-layout="split-reverse"] {
   display: grid;
   grid-template-columns: var(--split-ratio, 1fr 1fr);
-  align-items: var(--split-align, start);
+  align-items: var(--split-valign, start);
   gap: var(--split-gap, var(--rf-spacing-lg));
 }
 

@@ -99,9 +99,9 @@
 					"source": "meta",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"dataAttribute": "data-align"
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -116,8 +116,8 @@
 				"ratio": {
 					"prop": "--grid-ratio"
 				},
-				"align": {
-					"prop": "--grid-align"
+				"valign": {
+					"prop": "--grid-valign"
 				},
 				"gap": {
 					"prop": "--grid-gap"
@@ -436,11 +436,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"alignment": {
+				"align": {
 					"source": "meta",
 					"default": "left",
 					"classPattern": ".rf-conversation-message--{value}",
-					"dataAttribute": "data-alignment"
+					"dataAttribute": "data-align"
 				}
 			}
 		},
@@ -627,9 +627,9 @@
 					"source": "meta",
 					"dataAttribute": "data-offset"
 				},
-				"justify": {
+				"place": {
 					"source": "meta",
-					"dataAttribute": "data-justify"
+					"dataAttribute": "data-place"
 				}
 			},
 			"contextModifiers": {
@@ -642,8 +642,7 @@
 				"offset": {
 					"prop": "--showcase-offset"
 				},
-				"aspect": "--showcase-aspect",
-				"justify": "--showcase-justify"
+				"aspect": "--showcase-aspect"
 			}
 		},
 		"TabGroup": {
@@ -874,10 +873,10 @@
 					"default": "1 1",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"default": "start",
-					"dataAttribute": "data-align"
+					"default": "top",
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -931,8 +930,8 @@
 				"ratio": {
 					"prop": "--split-ratio"
 				},
-				"align": {
-					"prop": "--split-align"
+				"valign": {
+					"prop": "--split-valign"
 				},
 				"gap": {
 					"prop": "--split-gap"
@@ -1099,10 +1098,10 @@
 					"default": "1 1",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"default": "start",
-					"dataAttribute": "data-align"
+					"default": "top",
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -1155,8 +1154,8 @@
 				"ratio": {
 					"prop": "--split-ratio"
 				},
-				"align": {
-					"prop": "--split-align"
+				"valign": {
+					"prop": "--split-valign"
 				},
 				"gap": {
 					"prop": "--split-gap"
@@ -1227,10 +1226,10 @@
 					"default": "1 1",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"default": "start",
-					"dataAttribute": "data-align"
+					"default": "top",
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -1246,8 +1245,8 @@
 				"ratio": {
 					"prop": "--split-ratio"
 				},
-				"align": {
-					"prop": "--split-align"
+				"valign": {
+					"prop": "--split-valign"
 				},
 				"gap": {
 					"prop": "--split-gap"

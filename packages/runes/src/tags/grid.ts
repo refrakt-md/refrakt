@@ -28,8 +28,8 @@ class GridModel extends Model {
   @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'] })
   gap: string | undefined = undefined;
 
-  @attribute({ type: String, required: false, matches: ['start', 'center', 'end'] })
-  align: string | undefined = undefined;
+  @attribute({ type: String, required: false, matches: ['top', 'center', 'bottom', 'stretch', 'baseline'] })
+  valign: string | undefined = undefined;
 
   @attribute({ type: String, required: false, matches: ['sm', 'md', 'lg', 'never'] })
   collapse: string | undefined = undefined;
@@ -61,14 +61,14 @@ class GridModel extends Model {
 
     const ratioMeta = this.ratio ? new Tag('meta', { content: this.ratio }) : undefined;
     const gapMeta = this.gap && this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
-    const alignMeta = this.align ? new Tag('meta', { content: this.align }) : undefined;
+    const valignMeta = this.valign ? new Tag('meta', { content: this.valign }) : undefined;
     const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
     const modeMeta = this.mode && this.mode !== 'columns' ? new Tag('meta', { content: this.mode }) : undefined;
     const minMeta = this.min ? new Tag('meta', { content: this.min }) : undefined;
     const aspectMeta = this.aspect ? new Tag('meta', { content: this.aspect }) : undefined;
     const stackMeta = this.stack ? new Tag('meta', { content: this.stack }) : undefined;
 
-    const metas: any[] = [ratioMeta, gapMeta, alignMeta, collapseMeta, modeMeta, minMeta, aspectMeta, stackMeta].filter(Boolean);
+    const metas: any[] = [ratioMeta, gapMeta, valignMeta, collapseMeta, modeMeta, minMeta, aspectMeta, stackMeta].filter(Boolean);
 
     return createComponentRenderable(schema.Grid, {
       tag: 'section',
@@ -77,7 +77,7 @@ class GridModel extends Model {
         ...(modeMeta ? { mode: modeMeta } : {}),
         ratio: ratioMeta,
         gap: gapMeta,
-        align: alignMeta,
+        valign: valignMeta,
         collapse: collapseMeta,
         ...(minMeta ? { min: minMeta } : {}),
         ...(aspectMeta ? { aspect: aspectMeta } : {}),
