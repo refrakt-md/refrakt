@@ -73,8 +73,8 @@
 	display: block;
 }
 .rf-annotate-note__body p:last-child { margin-bottom: 0; }
-.rf-annotate-note__body span[property],
-.rf-annotate-note__body meta { display: none; }
+.rf-annotate-note__body > span[property],
+.rf-annotate-note__body > meta { display: none; }
 @media (max-width: 768px) {
 	.rf-annotate--margin .rf-annotate-note {
 		float: none;

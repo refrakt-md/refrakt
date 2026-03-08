@@ -86,8 +86,8 @@
 	font-weight: 600;
 	margin: 0 0 0.5rem;
 }
-.rf-bento-cell__body span[property],
-.rf-bento-cell__body meta { display: none; }
+.rf-bento-cell__body > span[property],
+.rf-bento-cell__body > meta { display: none; }
 .rf-bento-cell__body p:last-child { margin-bottom: 0; }
 .rf-bento-cell img {
 	width: 100%;

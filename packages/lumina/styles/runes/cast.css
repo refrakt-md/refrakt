@@ -45,7 +45,7 @@
 	color: var(--rf-color-muted);
 }
 .rf-cast-member__body:empty { display: none; }
-.rf-cast-member__body span[property] { display: none; }
+.rf-cast-member__body > span[property] { display: none; }
 .rf-cast-member img {
 	width: 80px;
 	height: 80px;

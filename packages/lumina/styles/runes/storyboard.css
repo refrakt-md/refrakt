@@ -54,8 +54,8 @@
 	height: auto;
 	display: block;
 }
-.rf-storyboard-panel__body span[property],
-.rf-storyboard-panel__body meta { display: none; }
+.rf-storyboard-panel__body > span[property],
+.rf-storyboard-panel__body > meta { display: none; }
 .rf-storyboard-panel__body p:last-child { margin-bottom: 0; }
 @media (max-width: 768px) {
 	.rf-storyboard__panels { grid-template-columns: repeat(2, 1fr) !important; }

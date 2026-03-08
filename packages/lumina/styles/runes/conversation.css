@@ -48,7 +48,7 @@
 }
 .rf-conversation-message__body p { margin: 0; }
 .rf-conversation-message__body p + p { margin-top: 0.5rem; }
-.rf-conversation-message__body span[property],
-.rf-conversation-message__body meta { display: none; }
-.rf-conversation-message span[property="speaker"],
-.rf-conversation-message meta[property] { display: none; }
+.rf-conversation-message__body > span[property],
+.rf-conversation-message__body > meta { display: none; }
+.rf-conversation-message > span[property="speaker"],
+.rf-conversation-message > meta[property] { display: none; }

@@ -16,8 +16,8 @@
 	font-weight: 700;
 	color: var(--rf-color-text);
 }
-.rf-comparison meta,
-.rf-comparison span[property] { display: none; }
+.rf-comparison > meta,
+.rf-comparison > span[property] { display: none; }
 /* Table layout */
 .rf-comparison__table-wrapper {
 	overflow-x: auto;
