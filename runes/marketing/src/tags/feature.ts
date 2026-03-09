@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createContentModelSchema, createComponentRenderable, createSchema, asNodes, NodeStream, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 export class DefinitionModel extends Model {
@@ -57,81 +58,121 @@ export const definition = createSchema(DefinitionModel);
 
 const alignType = ['left', 'center', 'right'] as const;
 
-class FeatureModel extends SplitLayoutModel {
-  @attribute({ type: String, required: false, matches: alignType.slice() })
-  align: typeof alignType[number] = 'center';
+export const feature = createContentModelSchema({
+	base: SplitLayoutModel,
+	attributes: {
+		align: { type: String, required: false, matches: alignType.slice() },
+	},
+	contentModel: {
+		type: 'delimited',
+		delimiter: 'hr',
+		zones: [
+			{
+				name: 'content',
+				type: 'sequence',
+				fields: [
+					{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+					{ name: 'definitions', match: 'list', optional: true, greedy: true },
+				],
+			},
+			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
+		],
+	},
+	transform(resolved, attrs, config) {
+		const contentZone = (resolved.content ?? {}) as ResolvedContent;
+		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
-  @group({ section: 0, include: ['heading', 'paragraph'] })
-  header: NodeStream;
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(contentZone.header), config) as RenderableTreeNode[],
+		);
 
-  @group({ section: 0, include: ['list'] })
-  definitions: NodeStream;
+		// Transform definitions with custom node overrides
+		const defConfig = {
+			...config,
+			nodes: {
+				...config.nodes,
+				item: {
+					transform(node: Node, innerConfig: Record<string, any>) {
+						return Markdoc.transform(new Ast.Node('tag', {}, node.children, 'definition'), innerConfig);
+					},
+				},
+				list: {
+					transform(node: Node, innerConfig: Record<string, any>) {
+						const layout = (attrs.layout as string) || 'stacked';
+						return new Tag('dl', layout !== 'stacked' ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(innerConfig));
+					},
+				},
+			},
+		};
+		const definitions = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(contentZone.definitions), defConfig) as RenderableTreeNode[],
+		);
 
-  @group({ section: 1 })
-  media: NodeStream;
+		const side = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[],
+		);
 
-  transform(): RenderableTreeNodes {
-    const header = this.header.transform();
-    const definitions = this.definitions
-      .useNode('item', (node, config) => {
-        return Markdoc.transform(new Ast.Node('tag', {}, node.children, 'definition'), config);
-      })
-      .useNode('list', (node, config) => {
-        return new Tag('dl', this.layout !== 'stacked' ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(config));
-      })
-      .transform();
+		const align = (attrs.align as string) || 'center';
+		const layout = (attrs.layout as string) || 'stacked';
+		const ratio = (attrs.ratio as string) || '1 1';
+		const valign = (attrs.valign as string) || 'top';
+		const gap = (attrs.gap as string) || 'default';
+		const collapse = attrs.collapse as string | undefined;
 
-    const side = this.media.transform();
+		const layoutMeta = new Tag('meta', { content: layout });
+		const alignMeta = new Tag('meta', { content: align });
+		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
 
-    const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-    const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
-    const mediaContent = side.wrap('div');
+		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
+		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
+		const mediaContent = side.wrap('div');
 
-    const layoutMeta = new Tag('meta', { content: this.layout });
-    const alignMeta = new Tag('meta', { content: this.align });
-    const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-    const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
-    const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
-    const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
+		const children = [
+			layoutMeta,
+			alignMeta,
+			...(ratioMeta ? [ratioMeta] : []),
+			...(valignMeta ? [valignMeta] : []),
+			...(gapMeta ? [gapMeta] : []),
+			...(collapseMeta ? [collapseMeta] : []),
+			mainContent.next(),
+			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
+		];
 
-    const children = [
-      layoutMeta,
-      alignMeta,
-      ...(ratioMeta ? [ratioMeta] : []),
-      ...(valignMeta ? [valignMeta] : []),
-      ...(gapMeta ? [gapMeta] : []),
-      ...(collapseMeta ? [collapseMeta] : []),
-      mainContent.next(),
-      ...(side.toArray().length > 0 ? [mediaContent.next()] : []),
-    ];
-
-    return createComponentRenderable(schema.Feature, {
-      tag: 'section',
-      property: 'contentSection',
-      properties: {
-        ...pageSectionProperties(header),
-        featureItem: definitions.flatten().tag('div'),
-        layout: layoutMeta,
-        align: alignMeta,
-        ratio: ratioMeta,
-        valign: valignMeta,
-        gap: gapMeta,
-        collapse: collapseMeta,
-      },
-      refs: {
-        content: mainContent,
-        media: mediaContent,
-      },
-      children,
-    });
-  }
-}
-
-export const feature = createSchema(FeatureModel, {
-  split: {
-    newName: 'layout',
-    transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
-  },
-  mirror: { newName: '_consumed' },
-  justify: { newName: 'align' },
+		return createComponentRenderable(schema.Feature, {
+			tag: 'section',
+			property: 'contentSection',
+			properties: {
+				...pageSectionProperties(header),
+				featureItem: definitions.flatten().tag('div'),
+				layout: layoutMeta,
+				align: alignMeta,
+				ratio: ratioMeta,
+				valign: valignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
+			},
+			refs: {
+				content: mainContent,
+				media: mediaContent,
+			},
+			children,
+		});
+	},
+	deprecations: {
+		split: {
+			newName: 'layout',
+			transform: (val: any, attrs: Record<string, any>) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
+		},
+		mirror: { newName: '_consumed' },
+		justify: { newName: 'align' },
+	},
 });

@@ -46,7 +46,7 @@ export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
 export { RenderableNodeCursor } from './lib/renderable.js';
 export { schema } from './registry.js';
-export { createSchema, createContentModelSchema, createComponentRenderable } from './lib/index.js';
+export { createSchema, createContentModelSchema, createComponentRenderable, asNodes } from './lib/index.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, matchesType } from './lib/resolver.js';
 export { attribute } from './lib/annotations/attribute.js';

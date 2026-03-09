@@ -14,6 +14,13 @@ export { id } from './annotations/id.js';
 export { Model } from './model.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, matchesType } from './resolver.js';
 
+/** Normalize resolver output (single Node, Node[], or undefined) into Node[]. */
+export function asNodes(value: unknown): Node[] {
+  if (Array.isArray(value)) return value as Node[];
+  if (value != null) return [value as Node];
+  return [];
+}
+
 /** Rule for mapping a deprecated attribute to its replacement */
 export interface DeprecationRule {
   /** New attribute name to copy the value to */
