@@ -35,7 +35,8 @@ export const figure = createContentModelSchema({
 		const sizeMeta = attrs.size ? new Tag('meta', { content: attrs.size }) : undefined;
 		const alignMeta = attrs.align ? new Tag('meta', { content: attrs.align }) : undefined;
 
-		const childNodes: any[] = [...children.tag('img').toArray()];
+		const imgs = children.tag('img').toArray();
+		const childNodes: any[] = [...imgs];
 		if (captionTag) childNodes.push(captionTag);
 		if (sizeMeta) childNodes.push(sizeMeta);
 		if (alignMeta) childNodes.push(alignMeta);
@@ -46,6 +47,10 @@ export const figure = createContentModelSchema({
 				...(captionTag ? { caption: captionTag } : {}),
 				...(sizeMeta ? { size: sizeMeta } : {}),
 				...(alignMeta ? { align: alignMeta } : {}),
+			},
+			schema: {
+				...(imgs.length > 0 ? { contentUrl: imgs[0] } : {}),
+				...(captionTag ? { caption: captionTag } : {}),
 			},
 			children: childNodes,
 		});

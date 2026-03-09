@@ -25,18 +25,24 @@ export const organization = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 		const typeMeta = new Tag('meta', { content: attrs.type ?? 'Organization' });
+		const sectionProps = pageSectionProperties(header);
 
 		const bodyDiv = body.wrap('div');
 
 		return createComponentRenderable(schema.Organization, {
 			tag: 'article',
 			property: 'contentSection',
+			typeof: attrs.type || undefined,
 			properties: {
-				...pageSectionProperties(header),
+				...sectionProps,
 				type: typeMeta,
 			},
 			refs: {
 				body: bodyDiv,
+			},
+			schema: {
+				name: sectionProps.headline,
+				description: sectionProps.blurb,
 			},
 			children: [
 				typeMeta,

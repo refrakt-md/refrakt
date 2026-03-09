@@ -87,6 +87,10 @@ class FactionModel extends Model {
 
 		const children: any[] = [nameTag, factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta];
 
+		const schemaMap = {
+			name: nameTag,
+		};
+
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
 			children.push(sectionsContainer.next());
@@ -103,6 +107,7 @@ class FactionModel extends Model {
 					section: sections,
 				},
 				refs: { sections: sectionsContainer },
+				schema: schemaMap,
 				children,
 			});
 		} else {
@@ -120,6 +125,7 @@ class FactionModel extends Model {
 					tags: tagsMeta,
 				},
 				refs: { body },
+				schema: schemaMap,
 				children,
 			});
 		}

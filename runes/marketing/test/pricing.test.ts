@@ -1,16 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
-
-// Build SEO type map: start with core runes, then add marketing-specific typeof→seoType mappings
-const seoTypeMap = buildSeoTypeMap(runes);
-seoTypeMap.set('pricing', 'Product');
-seoTypeMap.set('tier', 'Offer');
-seoTypeMap.set('featured-tier', 'Offer');
+import { extractSeo } from '@refrakt-md/runes';
 
 function seo(content: string) {
 	const tree = parse(content);
-	return extractSeo(tree, seoTypeMap, {} as any, '/test');
+	return extractSeo(tree, {} as any, '/test');
 }
 
 describe('pricing tag', () => {
@@ -248,7 +242,7 @@ Features.
 {% /pricing %}`);
 
 		const product = result.jsonLd[0] as any;
-		expect(product.offers[0].priceCurrency).toBe('EUR');
+		expect(product.offers.priceCurrency).toBe('EUR');
 	});
 
 	it('should use explicit currency over inferred in SEO', () => {
@@ -261,6 +255,6 @@ Features.
 {% /pricing %}`);
 
 		const product = result.jsonLd[0] as any;
-		expect(product.offers[0].priceCurrency).toBe('CAD');
+		expect(product.offers.priceCurrency).toBe('CAD');
 	});
 });

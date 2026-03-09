@@ -53,6 +53,10 @@ class MusicRecordingModel extends Model {
         copyrightYear,
         duration,
       },
+      schema: {
+        name,
+        ...(this.duration ? { duration } : {}),
+      },
       children: children.concat(byArtist, copyrightYear, duration).toArray(),
     });
   }

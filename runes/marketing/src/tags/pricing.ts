@@ -6,6 +6,18 @@ import { schema } from '../types.js';
 
 const NAME_PRICE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  '$': 'USD', '€': 'EUR', '£': 'GBP', '¥': 'JPY', '₹': 'INR',
+  'kr': 'SEK', 'CHF': 'CHF', 'A$': 'AUD', 'C$': 'CAD',
+};
+
+function inferCurrency(priceText: string): string {
+  for (const [symbol, code] of Object.entries(CURRENCY_SYMBOLS)) {
+    if (priceText.startsWith(symbol)) return code;
+  }
+  return 'USD';
+}
+
 class PricingModel extends Model {
   @attribute({ type: Number, required: false })
   headingLevel: number | undefined = undefined;
@@ -57,6 +69,7 @@ class PricingModel extends Model {
     const header = this.header.transform();
     const tiers = this.tiers.transform();
 
+    const sectionProps = pageSectionProperties(header);
     const tierItems = tiers.tag('li');
     const tiersList = tiers.wrap('ul', { 'data-layout': 'grid', 'data-columns': tiers.nodes.length });
 
@@ -64,11 +77,16 @@ class PricingModel extends Model {
       tag: 'section',
       property: 'contentSection',
       properties: {
-        ...pageSectionProperties(header),
+        ...sectionProps,
         tier: tierItems,
       },
       refs: {
         tiers: tiersList.tag('ul'),
+      },
+      schema: {
+        name: sectionProps.headline,
+        description: sectionProps.blurb,
+        offers: tierItems,
       },
       children: [
         header.wrap('header').next(),
@@ -108,6 +126,11 @@ export class TierModel extends Model {
 
     const currencyMeta = this.currency ? new Tag('meta', { content: this.currency }) : undefined;
 
+    // Schema.org price parsing: extract numeric value and infer currency
+    const numericMatch = priceValue.match(/[\d.]+/);
+    const parsedPriceMeta = new Tag('meta', { content: numericMatch ? numericMatch[0] : priceValue });
+    const resolvedCurrencyMeta = new Tag('meta', { content: this.currency || inferCurrency(priceValue) });
+
     return createComponentRenderable(type, {
       tag: 'li',
       properties: {
@@ -120,7 +143,12 @@ export class TierModel extends Model {
       refs: {
         body: body.tag('div'),
       },
-      children: [nameTag, priceTag, ...(currencyMeta ? [currencyMeta] : []), body.next()],
+      schema: {
+        name: nameTag,
+        price: parsedPriceMeta,
+        priceCurrency: resolvedCurrencyMeta,
+      },
+      children: [nameTag, priceTag, parsedPriceMeta, resolvedCurrencyMeta, ...(currencyMeta ? [currencyMeta] : []), body.next()],
     })
   }
 }

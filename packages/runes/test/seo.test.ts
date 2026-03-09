@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '../src/index.js';
-
-const seoTypeMap = buildSeoTypeMap(runes);
+import { extractSeo } from '../src/index.js';
 
 function seo(content: string, frontmatter: Record<string, any> = {}, url = '/test') {
 	const tree = parse(content);
-	return extractSeo(tree, seoTypeMap, frontmatter as any, url);
+	return extractSeo(tree, frontmatter as any, url);
 }
 
 describe('JSON-LD extraction', () => {

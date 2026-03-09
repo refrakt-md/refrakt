@@ -28,6 +28,10 @@ class CastMemberModel extends Model {
 			refs: {
 				body: body.tag('div'),
 			},
+			schema: {
+				name: nameTag,
+				jobTitle: roleTag,
+			},
 			children: [nameTag, roleTag, body.next()],
 		});
 	}

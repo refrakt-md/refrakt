@@ -80,6 +80,22 @@ export const testimonial = createContentModelSchema({
 		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
 
+		// Schema.org nested entities for Person author and Rating
+		if (authorNameTag) {
+			const authorMetas: any[] = [
+				new Tag('meta', { property: 'name', content: authorNameTag.children.filter((c: any) => typeof c === 'string').join('') }),
+			];
+			if (authorRoleTag) {
+				authorMetas.push(new Tag('meta', { property: 'jobTitle', content: authorRoleTag.children.filter((c: any) => typeof c === 'string').join('') }));
+			}
+			resultChildren.push(new Tag('span', { typeof: 'Person', property: 'author' }, authorMetas));
+		}
+		if (rating !== undefined) {
+			resultChildren.push(new Tag('span', { typeof: 'Rating', property: 'reviewRating' }, [
+				new Tag('meta', { property: 'ratingValue', content: rating }),
+			]));
+		}
+
 		return createComponentRenderable(schema.Testimonial, {
 			tag: 'article',
 			properties: {
@@ -88,6 +104,9 @@ export const testimonial = createContentModelSchema({
 				authorRole: authorRoleTag,
 				rating: ratingMeta,
 				avatar: avatarTag,
+			},
+			schema: {
+				reviewBody: quoteTag,
 			},
 			children: resultChildren,
 		});

@@ -30,14 +30,30 @@ export const event = createContentModelSchema({
 		const endDateMeta = new Tag('meta', { content: attrs.endDate ?? '' });
 		const locationMeta = new Tag('meta', { content: attrs.location ?? '' });
 		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
+		const sectionProps = pageSectionProperties(header);
 
 		const bodyDiv = body.wrap('div');
+
+		// Schema.org nested Place for location
+		const locationWrapper = attrs.location ? new Tag('span', { typeof: 'Place', property: 'location' }, [
+			new Tag('meta', { property: 'name', content: attrs.location }),
+		]) : undefined;
+
+		const resultChildren: any[] = [
+			dateMeta,
+			endDateMeta,
+			locationMeta,
+			urlMeta,
+			header.wrap('header').next(),
+			bodyDiv.next(),
+		];
+		if (locationWrapper) resultChildren.push(locationWrapper);
 
 		return createComponentRenderable(schema.Event, {
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...sectionProps,
 				date: dateMeta,
 				endDate: endDateMeta,
 				location: locationMeta,
@@ -46,14 +62,14 @@ export const event = createContentModelSchema({
 			refs: {
 				body: bodyDiv,
 			},
-			children: [
-				dateMeta,
-				endDateMeta,
-				locationMeta,
-				urlMeta,
-				header.wrap('header').next(),
-				bodyDiv.next(),
-			],
+			schema: {
+				name: sectionProps.headline,
+				description: sectionProps.blurb,
+				startDate: dateMeta,
+				endDate: endDateMeta,
+				url: urlMeta,
+			},
+			children: resultChildren,
 		});
 	},
 });

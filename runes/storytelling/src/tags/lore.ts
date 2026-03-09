@@ -38,6 +38,10 @@ export const lore = createContentModelSchema({
 			refs: {
 				body: body.tag('div'),
 			},
+			schema: {
+				headline: titleTag,
+				articleSection: categoryMeta,
+			},
 			children: [titleTag, categoryMeta, spoilerMeta, tagsMeta, body.next()],
 		});
 	},

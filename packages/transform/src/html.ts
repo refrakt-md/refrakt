@@ -7,7 +7,7 @@ const VOID_ELEMENTS = new Set([
 ]);
 
 /** Attributes that are internal markers and should not appear in HTML output */
-const INTERNAL_ATTRS = new Set(['$$mdtype', 'typeof']);
+const INTERNAL_ATTRS = new Set(['$$mdtype']);
 
 function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

@@ -4,9 +4,9 @@ import {Cast, CastMember} from './schema/cast.js';
 import {Organization} from './schema/organization.js';
 
 export const schema = {
-  Timeline: useSchema(Timeline).defineType('Timeline'),
-  TimelineEntry: useSchema(TimelineEntry).defineType('TimelineEntry'),
+  Timeline: useSchema(Timeline).defineType('Timeline', {}, 'ItemList'),
+  TimelineEntry: useSchema(TimelineEntry).defineType('TimelineEntry', {}, 'ListItem'),
   Cast: useSchema(Cast).defineType('Cast'),
-  CastMember: useSchema(CastMember).defineType('CastMember'),
-  Organization: useSchema(Organization).defineType('Organization'),
+  CastMember: useSchema(CastMember).defineType('CastMember', {}, 'Person'),
+  Organization: useSchema(Organization).defineType('Organization', {}, 'Organization'),
 };

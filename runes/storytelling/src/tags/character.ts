@@ -96,6 +96,11 @@ class CharacterModel extends Model {
 		const children: any[] = [nameTag, roleMeta, statusMeta, aliasesMeta, tagsMeta];
 		if (portraitDiv) children.push(portraitDiv.next());
 
+		const schemaMap = {
+			name: nameTag,
+			jobTitle: roleMeta,
+		};
+
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
 			children.push(sectionsContainer.next());
@@ -115,6 +120,7 @@ class CharacterModel extends Model {
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					sections: sectionsContainer,
 				},
+				schema: schemaMap,
 				children,
 			});
 		} else {
@@ -135,6 +141,7 @@ class CharacterModel extends Model {
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					body,
 				},
+				schema: schemaMap,
 				children,
 			});
 		}

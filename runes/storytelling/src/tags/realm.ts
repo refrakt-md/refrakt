@@ -93,6 +93,11 @@ class RealmModel extends Model {
 		const children: any[] = [nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta];
 		if (sceneDiv) children.push(sceneDiv.next());
 
+		const schemaMap = {
+			name: nameTag,
+			additionalType: realmTypeMeta,
+		};
+
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
 			children.push(sectionsContainer.next());
@@ -112,6 +117,7 @@ class RealmModel extends Model {
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					sections: sectionsContainer,
 				},
+				schema: schemaMap,
 				children,
 			});
 		} else {
@@ -132,6 +138,7 @@ class RealmModel extends Model {
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					body,
 				},
+				schema: schemaMap,
 				children,
 			});
 		}

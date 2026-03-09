@@ -57,7 +57,7 @@ export { NodeStream } from './lib/node.js';
 export { linkItem, pageSectionProperties, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel } from './tags/common.js';
 export { extractHeadings, headingsToList } from './util.js';
 export type { HeadingInfo } from './util.js';
-export { extractSeo, buildSeoTypeMap, textContent } from './seo.js';
+export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
 export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';

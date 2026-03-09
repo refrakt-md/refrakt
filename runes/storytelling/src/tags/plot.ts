@@ -160,6 +160,10 @@ class PlotModel extends Model {
 				beat: beats,
 			},
 			refs: { beats: beatsList },
+			schema: {
+				name: titleTag,
+				genre: plotTypeMeta,
+			},
 			children,
 		});
 	}

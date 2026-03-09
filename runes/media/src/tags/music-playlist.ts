@@ -45,6 +45,9 @@ class MusicPlaylistModel extends Model {
 
     const tracks = this.tracks.transform();
 
+    const sectionProps = pageSectionProperties(header);
+    const trackItems = tracks.tag('li').typeof('MusicRecording');
+
     const mainContent = header.wrap('div', { 'data-name': 'main' });
     const sideContent = tracks.wrap('ol').wrap('div', { 'data-name': 'showcase' });
 
@@ -66,8 +69,12 @@ class MusicPlaylistModel extends Model {
       tag: 'section',
       property: 'contentSection',
       properties: {
-        ...pageSectionProperties(header),
-        track: tracks.tag('li').typeof('MusicRecording'),
+        ...sectionProps,
+        track: trackItems,
+      },
+      schema: {
+        name: sectionProps.headline,
+        track: trackItems,
       },
       children,
     });

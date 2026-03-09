@@ -68,7 +68,7 @@ describe('renderToHtml', () => {
 		expect(renderToHtml(42 as any)).toBe('42');
 	});
 
-	it('omits internal attributes ($$mdtype, typeof, property)', () => {
+	it('omits internal attributes ($$mdtype)', () => {
 		const tag = makeTag('section', {
 			$$mdtype: 'Tag',
 			typeof: 'Hint',
@@ -76,8 +76,7 @@ describe('renderToHtml', () => {
 			class: 'rf-hint',
 		}, ['text']);
 		const html = renderToHtml(tag);
-		expect(html).toBe('<section property="contentSection" class="rf-hint">text</section>');
-		expect(html).not.toContain('typeof');
+		expect(html).toBe('<section typeof="Hint" property="contentSection" class="rf-hint">text</section>');
 		expect(html).not.toContain('$$mdtype');
 	});
 

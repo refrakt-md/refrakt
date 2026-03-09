@@ -4,6 +4,14 @@ const { Tag } = Markdoc;
 import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
+function tagText(nodes: any[]): string {
+	return nodes.map((n: any) => {
+		if (typeof n === 'string') return n;
+		if (Markdoc.Tag.isTag(n)) return tagText(n.children);
+		return '';
+	}).join('').trim();
+}
+
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
 class RecipeModel extends Model {
@@ -52,6 +60,23 @@ class RecipeModel extends Model {
 			}
 		}
 
+		// Annotate ingredient lis with recipeIngredient property
+		for (const li of ingredients) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.property = 'recipeIngredient';
+			}
+		}
+
+		// Annotate step lis as HowToStep with recipeInstructions property
+		for (const li of steps) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.typeof = 'HowToStep';
+				li.attributes.property = 'recipeInstructions';
+				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));
+			}
+		}
+
+		const sectionProps = pageSectionProperties(header);
 		const ingredientsList = new Tag('ul', {}, ingredients);
 		const stepsList = new Tag('ol', {}, steps);
 		const tipsDiv = new Tag('div', {}, tips);
@@ -74,7 +99,7 @@ class RecipeModel extends Model {
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...sectionProps,
 				prepTime: prepTimeMeta,
 				cookTime: cookTimeMeta,
 				servings: servingsMeta,
@@ -84,6 +109,13 @@ class RecipeModel extends Model {
 				ingredients: ingredientsList,
 				steps: stepsList,
 				tips: tipsDiv,
+			},
+			schema: {
+				name: sectionProps.headline,
+				description: sectionProps.blurb,
+				prepTime: prepTimeMeta,
+				cookTime: cookTimeMeta,
+				recipeYield: servingsMeta,
 			},
 			children,
 		});

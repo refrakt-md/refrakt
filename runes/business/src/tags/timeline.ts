@@ -28,6 +28,10 @@ class TimelineEntryModel extends Model {
 			refs: {
 				body: body.tag('div'),
 			},
+			schema: {
+				name: labelTag,
+				description: dateTag,
+			},
 			children: [dateTag, labelTag, body.next()],
 		});
 	}
@@ -84,6 +88,14 @@ class TimelineModel extends Model {
 		const directionMeta = new Tag('meta', { content: this.direction });
 
 		const items = itemStream.tag('li').typeof('TimelineEntry');
+
+		// Inject position meta into each entry for schema.org ListItem
+		items.toArray().forEach((entry: any, index: number) => {
+			if (Tag.isTag(entry)) {
+				entry.children.push(new Tag('meta', { property: 'position', content: index + 1 }));
+			}
+		});
+
 		const entriesList = new Tag('ol', {}, items.toArray());
 
 		const children: any[] = [directionMeta];
@@ -101,6 +113,9 @@ class TimelineModel extends Model {
 				entry: items,
 			},
 			refs: { entries: entriesList },
+			schema: {
+				itemListElement: items,
+			},
 			children,
 		});
 	}

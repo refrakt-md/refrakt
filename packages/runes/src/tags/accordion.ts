@@ -7,6 +7,14 @@ import { NodeStream } from '../lib/node.js';
 import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 import { pageSectionProperties } from './common.js';
 
+function tagText(nodes: any[]): string {
+	return nodes.map((n: any) => {
+		if (typeof n === 'string') return n;
+		if (Tag.isTag(n)) return tagText(n.children);
+		return '';
+	}).join('').trim();
+}
+
 class AccordionItemModel extends Model {
 	@attribute({ type: String, required: true })
 	name: string;
@@ -14,6 +22,19 @@ class AccordionItemModel extends Model {
 	transform(): RenderableTreeNodes {
 		const nameTag = new Tag('summary', {}, [this.name]);
 		const body = this.transformChildren().wrap('div');
+		const bodyDivs = body.tag('div');
+
+		// For FAQ schema: body div becomes Answer entity with text property
+		const bodyNode = bodyDivs.nodes[0];
+		const answerText = Tag.isTag(bodyNode) ? tagText(bodyNode.children) : '';
+		const textMeta = new Tag('meta', { content: answerText });
+
+		for (const node of bodyDivs.nodes) {
+			if (Tag.isTag(node)) {
+				node.attributes['typeof'] = 'Answer';
+				node.children.push(textMeta);
+			}
+		}
 
 		return createComponentRenderable(schema.AccordionItem, {
 			tag: 'details',
@@ -21,7 +42,12 @@ class AccordionItemModel extends Model {
 				name: nameTag,
 			},
 			refs: {
-				body: body.tag('div'),
+				body: bodyDivs,
+			},
+			schema: {
+				name: nameTag,
+				acceptedAnswer: bodyDivs,
+				text: textMeta,
 			},
 			children: [nameTag, body.next()],
 		});
@@ -79,6 +105,9 @@ class AccordionModel extends Model {
 				item: items,
 			},
 			refs: { items: itemsContainer },
+			schema: {
+				mainEntity: items,
+			},
 			children,
 		});
 	}

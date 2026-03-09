@@ -8,7 +8,7 @@ export const schema = {
     headline: 'schema:name schema:headline',
     image: 'schema:image',
     track: 'schema:track',
-  }),
+  }, 'MusicPlaylist'),
   MusicRecording: useSchema(MusicRecording).defineType('MusicRecording', {
     schema: 'http://schema.org/',
     MusicRecording: 'schema:MusicRecording',
@@ -16,5 +16,5 @@ export const schema = {
     byArtist: 'schema:byArtist',
     duration: 'schema:duration',
     copyrightYear: 'schema:copyrightYear',
-  }),
+  }, 'MusicRecording'),
 };

@@ -4,6 +4,14 @@ const { Ast, Tag } = Markdoc;
 import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
+function tagText(nodes: any[]): string {
+	return nodes.map((n: any) => {
+		if (typeof n === 'string') return n;
+		if (Markdoc.Tag.isTag(n)) return tagText(n.children);
+		return '';
+	}).join('').trim();
+}
+
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
 class HowToModel extends Model {
@@ -51,6 +59,25 @@ class HowToModel extends Model {
 			}
 		}
 
+		// Annotate tool lis as HowToTool
+		for (const li of tools) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.typeof = 'HowToTool';
+				li.attributes.property = 'tool';
+				li.children.push(new Tag('meta', { property: 'name', content: tagText(li.children) }));
+			}
+		}
+
+		// Annotate step lis as HowToStep
+		for (const li of steps) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.typeof = 'HowToStep';
+				li.attributes.property = 'step';
+				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));
+			}
+		}
+
+		const sectionProps = pageSectionProperties(header);
 		const toolsList = new Tag('ul', {}, tools);
 		const stepsList = new Tag('ol', {}, steps);
 
@@ -69,13 +96,18 @@ class HowToModel extends Model {
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...sectionProps,
 				estimatedTime: estimatedTimeMeta,
 				difficulty: difficultyMeta,
 			},
 			refs: {
 				tools: toolsList,
 				steps: stepsList,
+			},
+			schema: {
+				name: sectionProps.headline,
+				description: sectionProps.blurb,
+				totalTime: estimatedTimeMeta,
 			},
 			children,
 		});

@@ -1,17 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parse } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
-
-const seoTypeMap = buildSeoTypeMap(runes);
-seoTypeMap.set('character', 'Person');
-seoTypeMap.set('realm', 'Place');
-seoTypeMap.set('faction', 'Organization');
-seoTypeMap.set('lore', 'Article');
-seoTypeMap.set('plot', 'CreativeWork');
+import { extractSeo } from '@refrakt-md/runes';
 
 function seo(content: string) {
 	const tree = parse(content);
-	return extractSeo(tree, seoTypeMap, {} as any, '/test');
+	return extractSeo(tree, {} as any, '/test');
 }
 
 describe('SEO: Person from character', () => {

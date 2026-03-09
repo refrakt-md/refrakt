@@ -44,10 +44,14 @@ class BreadcrumbModel extends Model {
 
 		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item
 		const listItems: any[] = [];
+		let position = 0;
 		for (const node of children.toArray()) {
 			if (Tag.isTag(node) && (node.name === 'ul' || node.name === 'ol')) {
 				for (const li of (node as any).children) {
 					if (Tag.isTag(li) && li.name === 'li') {
+						position++;
+						const positionMeta = new Tag('meta', { content: position });
+
 						// Find the link inside the list item
 						const link = (li as any).children.find(
 							(c: any) => Tag.isTag(c) && c.name === 'a'
@@ -64,7 +68,12 @@ class BreadcrumbModel extends Model {
 										name: nameSpan,
 										url: urlLink,
 									},
-									children: [nameSpan, urlLink],
+									schema: {
+										name: nameSpan,
+										item: urlLink,
+										position: positionMeta,
+									},
+									children: [nameSpan, urlLink, positionMeta],
 								}) as any
 							);
 						} else {
@@ -78,7 +87,11 @@ class BreadcrumbModel extends Model {
 									properties: {
 										name: nameSpan,
 									},
-									children: [nameSpan],
+									schema: {
+										name: nameSpan,
+										position: positionMeta,
+									},
+									children: [nameSpan, positionMeta],
 								}) as any
 							);
 						}
@@ -96,6 +109,9 @@ class BreadcrumbModel extends Model {
 			},
 			refs: {
 				items: itemsList,
+			},
+			schema: {
+				itemListElement: listItems,
 			},
 			children: [separatorMeta, itemsList],
 		});

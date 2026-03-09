@@ -124,6 +124,11 @@ export const embed = createContentModelSchema({
 			refs: {
 				fallback: fallback.tag('div'),
 			},
+			schema: {
+				name: titleMeta,
+				contentUrl: urlMeta,
+				embedUrl: embedUrlMeta,
+			},
 			children: [urlMeta, typeMeta, aspectMeta, titleMeta, embedUrlMeta, providerMeta, fallback.next()],
 		});
 	},
