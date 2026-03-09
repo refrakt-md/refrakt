@@ -24,21 +24,21 @@ function createPreview(opts?: {
 
 	if (opts?.hasSource) {
 		const source = document.createElement('div');
-		source.setAttribute('property', 'source');
+		source.setAttribute('data-field', 'source');
 		source.innerHTML = '<pre><code data-language="markdoc">{% hint %}...{% /hint %}</code></pre>';
 		el.appendChild(source);
 	}
 
 	if (opts?.hasHtmlSource) {
 		const htmlSource = document.createElement('div');
-		htmlSource.setAttribute('property', 'htmlSource');
+		htmlSource.setAttribute('data-field', 'html-source');
 		htmlSource.innerHTML = '<pre><code data-language="html">&lt;div typeof="Hint"&gt;...&lt;/div&gt;</code></pre>';
 		el.appendChild(htmlSource);
 	}
 
 	if (opts?.hasThemedSource) {
 		const themedSource = document.createElement('div');
-		themedSource.setAttribute('property', 'themedSource');
+		themedSource.setAttribute('data-field', 'themed-source');
 		themedSource.innerHTML = '<pre><code data-language="html">&lt;div class="rf-hint"&gt;...&lt;/div&gt;</code></pre>';
 		el.appendChild(themedSource);
 	}
@@ -308,7 +308,7 @@ describe('previewBehavior', () => {
 			expect(el.querySelector('.rf-preview__source')).toBeNull();
 
 			// Source and content should be back in el
-			expect(el.querySelector('[property="source"]')).not.toBeNull();
+			expect(el.querySelector('[data-field="source"]')).not.toBeNull();
 			expect(el.querySelector('.preview-content')).not.toBeNull();
 		});
 	});
@@ -401,9 +401,9 @@ describe('previewBehavior', () => {
 
 			cleanup();
 
-			expect(el.querySelector('[property="source"]')).not.toBeNull();
-			expect(el.querySelector('[property="htmlSource"]')).not.toBeNull();
-			expect(el.querySelector('[property="themedSource"]')).not.toBeNull();
+			expect(el.querySelector('[data-field="source"]')).not.toBeNull();
+			expect(el.querySelector('[data-field="html-source"]')).not.toBeNull();
+			expect(el.querySelector('[data-field="themed-source"]')).not.toBeNull();
 		});
 	});
 

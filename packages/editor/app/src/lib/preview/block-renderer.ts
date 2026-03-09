@@ -129,7 +129,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 		const contexts = design?.contexts ?? {};
 		const contextChild = tag.children?.find(
-			c => (c as SerializedTag)?.attributes?.property === 'context',
+			c => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
 		) as SerializedTag | undefined;
 		const scope = (contextChild?.attributes?.content as string) ?? 'default';
 		const tokens = contexts[scope];

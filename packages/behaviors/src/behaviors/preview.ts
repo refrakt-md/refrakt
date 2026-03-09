@@ -65,15 +65,15 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	const hasResponsive = responsivePresets.length > 0;
 
 	// Separate source elements from content children
-	const sourceEl = el.querySelector('[property="source"]') as HTMLElement | null;
-	const htmlSourceEl = el.querySelector('[property="htmlSource"]') as HTMLElement | null;
-	const themedSourceEl = el.querySelector('[property="themedSource"]') as HTMLElement | null;
+	const sourceEl = el.querySelector('[data-field="source"]') as HTMLElement | null;
+	const htmlSourceEl = el.querySelector('[data-field="html-source"]') as HTMLElement | null;
+	const themedSourceEl = el.querySelector('[data-field="themed-source"]') as HTMLElement | null;
 	const contentChildren = Array.from(el.children).filter(
 		(child) =>
 			child !== sourceEl &&
 			child !== htmlSourceEl &&
 			child !== themedSourceEl &&
-			!(child as HTMLElement).matches?.('meta[property]'),
+			!(child as HTMLElement).matches?.('meta[data-field]'),
 	) as HTMLElement[];
 
 	const hasSource = sourceEl !== null || htmlSourceEl !== null;

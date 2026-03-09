@@ -6,7 +6,7 @@ interface RowData {
 }
 
 /**
- * DataTable behavior for `[data-rune="datatable"]`.
+ * DataTable behavior for `[data-rune="data-table"]`.
  *
  * Enhances a rendered `<table>` element with:
  * - Search/filter: input that filters rows by cell text

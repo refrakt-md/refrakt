@@ -16,12 +16,12 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 
 	const tabs = Array.from({ length: count }, (_, i) => `
 		<li data-rune="tab">
-			<span property="name">Tab ${i + 1}</span>
+			<span data-field="name">Tab ${i + 1}</span>
 		</li>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tabpanel">
+		<li data-rune="tab-panel">
 			<div>Content ${i + 1}</div>
 		</li>
 	`).join('');
@@ -42,12 +42,12 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 
 	const tabs = Array.from({ length: count }, (_, i) => `
 		<li data-rune="tab">
-			<span property="name">file${i + 1}.ts</span>
+			<span data-field="name">file${i + 1}.ts</span>
 		</li>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tabpanel">
+		<li data-rune="tab-panel">
 			<pre><code>code ${i + 1}</code></pre>
 		</li>
 	`).join('');
@@ -273,7 +273,7 @@ describe('tabsBehavior', () => {
 			}
 
 			// Panel items should be visible again
-			const panelItems = el.querySelectorAll('[data-rune="tabpanel"]');
+			const panelItems = el.querySelectorAll('[data-rune="tab-panel"]');
 			for (const item of panelItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
 			}
