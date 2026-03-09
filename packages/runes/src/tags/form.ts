@@ -94,8 +94,8 @@ class FormFieldModel extends Model {
 	@attribute({ type: String, required: false })
 	fieldType: string = 'text';
 
-	@attribute({ type: String, required: false })
-	required: string = 'true';
+	@attribute({ type: Boolean, required: false })
+	required: boolean = true;
 
 	@attribute({ type: String, required: false })
 	placeholder: string = '';
@@ -105,7 +105,7 @@ class FormFieldModel extends Model {
 
 	transform(): RenderableTreeNodes {
 		const fieldId = `field-${this.name.toLowerCase().replace(/\s+/g, '-')}`;
-		const isRequired = this.required === 'true';
+		const isRequired = this.required;
 		const optionsList = this.options
 			? this.options.split(',').map(o => o.trim()).filter(Boolean)
 			: [];
@@ -268,7 +268,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: helpText,
 					fieldType: 'help',
-					required: 'false',
+					required: false,
 					placeholder: '',
 					options: '',
 				}, [], 'form-field'));
@@ -285,7 +285,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: headingText,
 					fieldType: 'group',
-					required: 'false',
+					required: false,
 					placeholder: '',
 					options: '',
 				}, [], 'form-field'));
@@ -313,7 +313,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: mods.label,
 					fieldType,
-					required: mods.optional ? 'false' : 'true',
+					required: !mods.optional,
 					placeholder: '',
 					options: optionTexts.join(','),
 				}, [], 'form-field'));
@@ -331,7 +331,7 @@ class FormModel extends Model {
 						converted.push(new Ast.Node('tag', {
 							name: parsed.name,
 							fieldType,
-							required: parsed.optional ? 'false' : 'true',
+							required: !parsed.optional,
 							placeholder: parsed.placeholder,
 							options: '',
 						}, [], 'form-field'));
@@ -346,7 +346,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: buttonText,
 					fieldType: 'submit',
-					required: 'false',
+					required: false,
 					placeholder: '',
 					options: '',
 				}, [], 'form-field'));
@@ -355,7 +355,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: '',
 					fieldType: 'separator',
-					required: 'false',
+					required: false,
 					placeholder: '',
 					options: '',
 				}, [], 'form-field'));
@@ -365,7 +365,7 @@ class FormModel extends Model {
 				converted.push(new Ast.Node('tag', {
 					name: text,
 					fieldType: 'description',
-					required: 'false',
+					required: false,
 					placeholder: '',
 					options: '',
 				}, [], 'form-field'));

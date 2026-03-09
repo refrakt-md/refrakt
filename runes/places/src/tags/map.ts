@@ -152,14 +152,14 @@ class MapModel extends Model {
 	@attribute({ type: String, required: false, matches: providerType.slice() })
 	provider: typeof providerType[number] = 'openstreetmap';
 
-	@attribute({ type: String, required: false })
-	interactive: string = 'true';
+	@attribute({ type: Boolean, required: false })
+	interactive: boolean = true;
 
-	@attribute({ type: String, required: false })
-	route: string = 'false';
+	@attribute({ type: Boolean, required: false })
+	route: boolean = false;
 
-	@attribute({ type: String, required: false })
-	cluster: string = 'false';
+	@attribute({ type: Boolean, required: false })
+	cluster: boolean = false;
 
 	@group({ include: ['tag'] })
 	body: NodeStream;
@@ -202,9 +202,9 @@ class MapModel extends Model {
 		const styleMeta = new Tag('meta', { content: this.style });
 		const heightMeta = new Tag('meta', { content: this.height });
 		const providerMeta = new Tag('meta', { content: this.provider });
-		const interactiveMeta = new Tag('meta', { content: this.interactive });
-		const routeMeta = new Tag('meta', { content: this.route });
-		const clusterMeta = new Tag('meta', { content: this.cluster });
+		const interactiveMeta = new Tag('meta', { content: String(this.interactive) });
+		const routeMeta = new Tag('meta', { content: String(this.route) });
+		const clusterMeta = new Tag('meta', { content: String(this.cluster) });
 
 		const pins = body.tag('li').typeof('MapPin');
 		const pinsList = new Tag('ol', {}, pins.toArray());

@@ -15,7 +15,7 @@ export class Map {
 	style: string = 'street';
 	height: string = 'medium';
 	provider: string = 'openstreetmap';
-	interactive: string = 'true';
-	route: string = 'false';
-	cluster: string = 'false';
+	interactive: boolean = true;
+	route: boolean = false;
+	cluster: boolean = false;
 }

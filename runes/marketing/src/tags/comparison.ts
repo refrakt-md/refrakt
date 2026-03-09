@@ -121,15 +121,15 @@ class ComparisonColumnModel extends Model {
 	@attribute({ type: String, required: false })
 	name: string = '';
 
-	@attribute({ type: String, required: false })
-	highlighted: string = 'false';
+	@attribute({ type: Boolean, required: false })
+	highlighted: boolean = false;
 
 	@group({ include: ['tag'] })
 	rows: NodeStream;
 
 	transform(): RenderableTreeNodes {
 		const nameTag = new Tag('span', {}, [this.name]);
-		const highlightedMeta = new Tag('meta', { content: this.highlighted });
+		const highlightedMeta = new Tag('meta', { content: String(this.highlighted) });
 		const rowStream = this.rows.transform();
 
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
@@ -166,8 +166,8 @@ class ComparisonModel extends Model {
 	@attribute({ type: String, required: false })
 	labels: string = 'left';
 
-	@attribute({ type: String, required: false })
-	collapse: string = 'true';
+	@attribute({ type: Boolean, required: false })
+	collapse: boolean = true;
 
 	@attribute({ type: String, required: false })
 	verdict: string = '';
@@ -308,7 +308,7 @@ class ComparisonModel extends Model {
 
 		const layoutMeta = new Tag('meta', { content: this.layout });
 		const labelsMeta = new Tag('meta', { content: this.labels });
-		const collapseMeta = new Tag('meta', { content: this.collapse });
+		const collapseMeta = new Tag('meta', { content: String(this.collapse) });
 		const verdictMeta = new Tag('meta', { content: this.verdict });
 		const highlightedMeta = new Tag('meta', { content: this.highlighted });
 		const rowLabelsMeta = new Tag('meta', { content: JSON.stringify(this._masterLabels) });

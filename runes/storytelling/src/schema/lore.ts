@@ -1,6 +1,6 @@
 export class Lore {
 	title: string = '';
 	category: string = '';
-	spoiler: string = 'false';
+	spoiler: boolean = false;
 	tags: string = '';
 }

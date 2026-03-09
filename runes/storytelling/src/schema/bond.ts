@@ -3,5 +3,5 @@ export class Bond {
 	to: string = '';
 	bondType: string = '';
 	status: string = 'active';
-	bidirectional: string = 'true';
+	bidirectional: boolean = true;
 }

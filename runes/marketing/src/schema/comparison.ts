@@ -7,14 +7,14 @@ export class ComparisonRow {
 
 export class ComparisonColumn {
 	name: string = '';
-	highlighted: string = 'false';
+	highlighted: boolean = false;
 	row: ComparisonRow[] = [];
 }
 
 export class Comparison extends PageSection {
 	layout: string = 'table';
 	labels: string = 'left';
-	collapse: string = 'true';
+	collapse: boolean = true;
 	verdict: string = '';
 	highlighted: string = '';
 	rowLabels: string = '[]';
