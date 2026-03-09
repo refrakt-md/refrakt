@@ -1435,3 +1435,170 @@ export const recipeCard: RuneDefinition = {
 ```
 
 This is the entire rune definition. No class, no methods, no imperative code. The resolver, editor, and validator all derive their behaviour from this declaration.
+
+---
+
+## Attribute Migration: `typeof`/`property` → `data-rune`/`data-field`
+
+The content model migration is an opportunity to clean up how rune identity and semantic fields are expressed in the rendered output. The current approach uses RDFa attributes (`typeof`, `property`) for internal dispatch purposes, which pollutes the final HTML with invalid RDFa for the majority of runes that have no Schema.org equivalent.
+
+### Current State
+
+The `typeof` and `property` attributes serve multiple purposes across the pipeline:
+
+| Stage | Attribute | Purpose |
+|-------|-----------|---------|
+| Schema transform (`createComponentRenderable`) | `typeof` | Sets internal type name on root tag (e.g., `typeof="Hero"`) |
+| Schema transform (`createComponentRenderable`) | `property` | Sets field name on child property tags (e.g., `property="headline"`) |
+| Identity transform (engine) | `typeof` | Looks up `RuneConfig` for BEM classes, modifiers, structure |
+| Identity transform (engine) | `property` | Identifies consumed meta tags (modifiers, tint, bg) |
+| Identity transform (engine) | `data-rune` | **Already emitted** — lowercase type name (e.g., `data-rune="hero"`) |
+| Renderer (Svelte) | `typeof` | Dispatches to registered Svelte component |
+| SEO extraction | `typeof` | Finds rune tags to extract Schema.org structured data |
+| SEO extraction | `property` | Finds child fields (headline, blurb, price, etc.) |
+| Final HTML | `typeof` + `data-rune` | Both present — redundant |
+
+The identity transform engine already emits `data-rune` alongside `typeof` (`engine.ts:388`). This means `typeof` is redundant for config lookup purposes — the migration is partially underway.
+
+### Problem
+
+Only ~17 rune types map to real Schema.org types. The remaining ~45+ types emit `typeof="Hero"`, `typeof="Feature"`, `typeof="Swatch"`, etc. in the final HTML — these are invented names with no Schema.org meaning, producing invalid RDFa that confuses search engine crawlers and accessibility tools.
+
+### Target State
+
+| Purpose | Current | Target |
+|---------|---------|--------|
+| Engine config lookup | `typeof` | `data-rune` (already emitted) |
+| Renderer component dispatch | `typeof` | `data-rune` |
+| SEO type discovery | `typeof` search via `seoTypeMap` | `data-rune` search via `seoTypeMap` |
+| SEO field extraction | `property` attribute on child tags | `property` (unchanged — works the same) |
+| Meta tag identification | `property` on consumed meta tags | `property` (unchanged — stripped before final HTML) |
+| Root tag semantic field | `property="contentSection"` | `data-field="contentSection"` |
+| Final HTML: Schema.org types | `typeof="Pricing"` (wrong — internal name) | `typeof="Product"` (correct Schema.org type) |
+| Final HTML: non-Schema.org types | `typeof="Hero"` (invalid RDFa) | Removed — `data-rune` only |
+
+After migration, the final HTML for a non-Schema.org rune looks like:
+
+```html
+<!-- Before -->
+<section typeof="Hero" property="contentSection" class="rf-hero" data-rune="hero">
+
+<!-- After -->
+<section class="rf-hero" data-rune="hero" data-field="contentSection">
+```
+
+And for a Schema.org rune:
+
+```html
+<!-- Before -->
+<section typeof="Pricing" property="contentSection" class="rf-pricing" data-rune="pricing">
+
+<!-- After -->
+<section typeof="Product" class="rf-pricing" data-rune="pricing" data-field="contentSection">
+```
+
+### Sub-Component Types
+
+Types like `Command`, `LinkItem`, `AccordionItem`, `Tier`, `BreadcrumbItem`, `TimelineEntry`, and `CastMember` are not author-facing runes. They are synthetic types created inside a parent rune's transform — for example, the hero wraps fence blocks in `createComponentRenderable(schema.Command, {...})`. Nobody writes `{% command %}` in Markdown.
+
+These sub-component types follow the same migration pattern as runes:
+
+- Use `data-rune` for engine config lookup and Renderer component dispatch
+- Only emit `typeof` when they map to a Schema.org type
+
+The engine and Renderer both use a single config/component map with no distinction between top-level runes and sub-components. A separate `data-component` attribute would fragment the lookup mechanism for no practical benefit. `data-rune` is understood as "rune system component" — the identity transform and Renderer treat all tagged nodes identically regardless of whether they correspond to an author-facing Markdoc tag.
+
+### `schemaOrgType` on Type Definitions
+
+To support this, the `Type` interface in `packages/types/src/schema/` gains an optional `schemaOrgType` field:
+
+```typescript
+interface Type {
+  name: string;           // Internal name (e.g., 'Pricing', 'AccordionItem')
+  schemaOrgType?: string; // Schema.org type (e.g., 'Product', 'Question')
+}
+```
+
+`createComponentRenderable()` uses this to decide what to emit:
+
+```typescript
+function createComponentRenderable(type: Type, result: TransformResult) {
+  // Always emit data-rune for internal dispatch
+  const attrs: Record<string, any> = {
+    'data-rune': type.name.toLowerCase(),
+  };
+
+  // Only emit typeof for types with a Schema.org mapping
+  if (type.schemaOrgType) {
+    attrs.typeof = type.schemaOrgType;
+  }
+
+  // ...rest unchanged
+}
+```
+
+### Schema.org Type Mapping
+
+The following types get real Schema.org `typeof` attributes. All other types (~45+) emit only `data-rune`.
+
+**Rune-level:**
+
+| Internal Type | Schema.org `typeof` | Extractor |
+|---------------|---------------------|-----------|
+| `Accordion` | `FAQPage` | `extractFAQPage` |
+| `Pricing` | `Product` | `extractProduct` |
+| `Testimonial` | `Review` | `extractReview` |
+| `Breadcrumb` | `BreadcrumbList` | `extractBreadcrumbList` |
+| `Timeline` | `ItemList` | `extractItemList` |
+| `Video` | `VideoObject` | `extractVideoObject` |
+| `Showcase` | `ImageObject` | `extractImageObject` |
+| `MusicPlaylist` | `MusicPlaylist` | `extractMusicPlaylist` |
+| `Recipe` | `Recipe` | `extractRecipe` |
+| `HowTo` | `HowTo` | `extractHowTo` |
+| `Event` | `Event` | `extractEvent` |
+| `Character` / `Cast` | `Person` | `extractPerson` |
+| `Organization` | `Organization` | `extractOrganization` |
+| `DataTable` | `Dataset` | `extractDataset` |
+| `Realm` / `Map` | `Place` | `extractPlace` |
+| `Changelog` | `Article` | `extractArticle` |
+| `Plot` | `CreativeWork` | `extractCreativeWork` |
+
+**Sub-component-level:**
+
+| Internal Type | Schema.org `typeof` | Used by |
+|---------------|---------------------|---------|
+| `AccordionItem` | `Question` | FAQPage extractor |
+| `Tier` / `FeaturedTier` | `Offer` | Product extractor |
+| `BreadcrumbItem` | `ListItem` | BreadcrumbList extractor |
+| `TimelineEntry` | `ListItem` | ItemList extractor |
+| `CastMember` | `Person` | Person extractor |
+| `MusicRecording` | `MusicRecording` | MusicPlaylist extractor |
+
+### Migration Steps
+
+The migration is coordinated with the content model migration — each rune adopts `data-rune` as part of its conversion to `createContentModelSchema()`. The infrastructure changes (steps A–D) can be done once upfront.
+
+**Step A — Add `schemaOrgType` to Type definitions.** Update `packages/types/src/schema/` to add the optional field. Populate it for the ~23 types listed above.
+
+**Step B — Update `createComponentRenderable()`.** Emit `data-rune` (lowercase type name) on the root tag. Only emit `typeof` when the Type has `schemaOrgType`, using the Schema.org value (e.g., `typeof="Product"` not `typeof="Pricing"`).
+
+**Step C — Switch Renderer component dispatch.** In `packages/svelte/src/Renderer.svelte`, change `node.attributes?.typeof` to `node.attributes?.['data-rune']` for component registry lookup. Update the component registry keys to use lowercase names.
+
+**Step D — Switch engine config lookup.** In `packages/transform/src/engine.ts`, change `tree.attributes?.typeof` to `tree.attributes?.['data-rune']` for `RuneConfig` lookup. Update `runes` config keys to lowercase. Remove the engine's own `data-rune` emission (it's now set earlier by `createComponentRenderable()`).
+
+**Step E — Update SEO extraction.** In `packages/runes/src/seo.ts`, change `buildSeoTypeMap` to map `data-rune` values (lowercase) to `seoType` strings. Update `extractSeo` to search by `data-rune` instead of `typeof`. Internal extractors that search for child sub-components by `typeof` (e.g., `t.attributes.typeof === 'AccordionItem'`) switch to `data-rune`. The `property` attribute on child tags remains unchanged — SEO extractors continue to use `findProperty()` as before.
+
+**Step F — Replace root-level `property`.** In `createComponentRenderable()`, replace `property` on the root tag with `data-field`. The `property` on internal meta tags is consumed and stripped by the engine before final HTML — it remains unchanged as an internal mechanism.
+
+**Step G — Update consumers.** Update tests, behaviors (`packages/behaviors/`), CLI inspector (`packages/cli/`), and any CSS selectors that reference `typeof` or `[typeof="X"]`. The `data-rune` attribute is already emitted in the current system, so CSS and JS that uses `[data-rune]` continues to work.
+
+### OG Meta Extraction
+
+The OG meta extractor in `seo.ts` searches for `typeof === 'Hero'` to extract page title and description fallbacks. This changes to `data-rune === 'hero'`. The `findProperty()` calls for `headline` and `blurb` remain unchanged since `property` on child tags is an internal attribute not affected by this migration.
+
+### Backward Compatibility
+
+- `data-rune` is already emitted by the identity transform, so any CSS or JS that uses it continues to work unchanged
+- CSS selectors using `[typeof="X"]` (if any in custom themes) need to migrate to `[data-rune="x"]` — the `x` is lowercase
+- Theme Svelte components receiving `tag.attributes.typeof` need to switch to `tag.attributes['data-rune']`
+- The migration can be done incrementally per-rune alongside the content model migration, though the infrastructure changes (steps A–D) should be done first as a single coordinated change
