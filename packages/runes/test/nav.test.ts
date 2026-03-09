@@ -32,7 +32,7 @@ describe('nav tag', () => {
     const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
     expect(nav).toBeDefined();
 
-    const groups = findAllTags(nav!, t => t.attributes['data-rune'] === 'navgroup');
+    const groups = findAllTags(nav!, t => t.attributes['data-rune'] === 'nav-group');
     expect(groups.length).toBe(2);
   });
 
@@ -57,7 +57,7 @@ describe('nav tag', () => {
     const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
     expect(nav).toBeDefined();
 
-    const slugSpans = findAllTags(nav!, t => t.name === 'span' && t.attributes.property === 'slug');
+    const slugSpans = findAllTags(nav!, t => t.name === 'span' && t.attributes['data-field'] === 'slug');
     expect(slugSpans.length).toBeGreaterThan(0);
   });
 });

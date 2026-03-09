@@ -22,7 +22,7 @@ describe('breadcrumb tag', () => {
 {% /breadcrumb %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumbitem');
+		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items.length).toBe(3);
 	});
 
@@ -44,7 +44,7 @@ describe('breadcrumb tag', () => {
 {% /breadcrumb %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumbitem');
+		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items.length).toBe(2);
 
 		// Last item should have a span but no anchor link

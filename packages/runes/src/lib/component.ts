@@ -1,7 +1,10 @@
 import { NodeType, Type } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
+import { toKebabCase } from '@refrakt-md/transform';
 import { RenderableNodeCursor } from './renderable.js';
+
+export { toKebabCase };
 
 export interface TransformResult {
   tag: NodeType;
@@ -23,7 +26,7 @@ export function createComponentRenderable(
 
     tags.forEach(n => {
       if (Markdoc.Tag.isTag(n)) {
-        n.attributes.property = k
+        n.attributes['data-field'] = toKebabCase(k)
       }
     });
   }
@@ -41,8 +44,8 @@ export function createComponentRenderable(
 
   const tag = new Markdoc.Tag(result.tag, {
     id: result.id,
-    'data-field': result.property,
-    'data-rune': type.name.toLowerCase(),
+    'data-field': result.property ? toKebabCase(result.property) : result.property,
+    'data-rune': toKebabCase(type.name),
     typeof: type.schemaOrgType,
     class: result.class
   }, Array.isArray(result.children) ? result.children : [result.children]);

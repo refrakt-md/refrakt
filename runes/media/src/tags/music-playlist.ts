@@ -49,10 +49,10 @@ class MusicPlaylistModel extends Model {
     const sideContent = tracks.wrap('ol').wrap('div', { 'data-name': 'showcase' });
 
     const splitMeta = this.split.length > 0
-      ? new Tag('meta', { property: 'split', content: this.split.join(' ') })
+      ? new Tag('meta', { 'data-field': 'split', content: this.split.join(' ') })
       : null;
     const mirrorMeta = this.mirror
-      ? new Tag('meta', { property: 'mirror', content: 'true' })
+      ? new Tag('meta', { 'data-field': 'mirror', content: 'true' })
       : null;
 
     const children = [

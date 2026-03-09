@@ -18,7 +18,7 @@ A hidden valley.
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'realmsection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'realm-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -28,7 +28,7 @@ A dark land.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'name');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Mordor');
 	});
@@ -39,11 +39,11 @@ Content.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'realmType');
+		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'realm-type');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('sanctuary');
 
-		const scaleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'scale');
+		const scaleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'scale');
 		expect(scaleMeta).toBeDefined();
 		expect(scaleMeta!.attributes.content).toBe('settlement');
 	});
@@ -54,7 +54,7 @@ Content.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const parentMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'parent');
+		const parentMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'parent');
 		expect(parentMeta).toBeDefined();
 		expect(parentMeta!.attributes.content).toBe('Eriador');
 	});

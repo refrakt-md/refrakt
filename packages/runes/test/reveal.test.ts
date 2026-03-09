@@ -36,7 +36,7 @@ Second step content.
 {% /reveal %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'reveal');
-    const steps = findAllTags(tag!, t => t.attributes['data-rune'] === 'revealstep');
+    const steps = findAllTags(tag!, t => t.attributes['data-rune'] === 'reveal-step');
     expect(steps.length).toBe(2);
   });
 

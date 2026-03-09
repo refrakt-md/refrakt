@@ -10,7 +10,7 @@ describe('datatable tag', () => {
 | Bob | 25 | LA |
 {% /datatable %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'datatable');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'data-table');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 	});
@@ -22,14 +22,14 @@ describe('datatable tag', () => {
 | Test |
 {% /datatable %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'datatable');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'data-table');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const sortable = metas.find(m => m.attributes.property === 'sortable');
+		const sortable = metas.find(m => m.attributes['data-field'] === 'sortable');
 		expect(sortable).toBeDefined();
 		expect(sortable!.attributes.content).toBe('Name');
 
-		const pageSize = metas.find(m => m.attributes.property === 'pageSize');
+		const pageSize = metas.find(m => m.attributes['data-field'] === 'page-size');
 		expect(pageSize).toBeDefined();
 		expect(pageSize!.attributes.content).toBe('10');
 	});
@@ -41,7 +41,7 @@ describe('datatable tag', () => {
 | A    | B    |
 {% /datatable %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'datatable');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'data-table');
 		const table = findTag(tag!, t => t.name === 'table');
 		expect(table).toBeDefined();
 	});
@@ -53,7 +53,7 @@ describe('datatable tag', () => {
 | Test |
 {% /data-table %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'datatable');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'data-table');
 		expect(tag).toBeDefined();
 	});
 });

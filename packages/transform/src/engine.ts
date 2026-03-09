@@ -1,6 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition } from './types.js';
-import { isTag, makeTag, readMeta } from './helpers.js';
+import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
 const TINT_TOKENS = ['background', 'surface', 'primary', 'secondary', 'accent', 'border'] as const;
@@ -34,7 +34,7 @@ export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
 	// Build lowercase → config-key map for case-insensitive rune lookup
-	const runeKeyMap = new Map(Object.keys(runes).map(k => [k.toLowerCase(), k]));
+	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
 
 	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
@@ -342,12 +342,17 @@ function transformRune(
 	});
 
 	// 7. Remove consumed meta tags (modifiers + tint)
+	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
+	// but config.modifiers keys are camelCase
+	const consumedModifierFields = config.modifiers
+		? new Set(Object.keys(config.modifiers).map(k => toKebabCase(k)))
+		: undefined;
 	const filteredChildren = enhancedChildren.filter(child => {
 		if (!isTag(child as any)) return true;
 		const c = child as SerializedTag;
-		if (c.name !== 'meta' || !c.attributes.property) return true;
-		const prop = c.attributes.property;
-		if (config.modifiers && prop in config.modifiers) return false;
+		if (c.name !== 'meta' || !c.attributes['data-field']) return true;
+		const prop = c.attributes['data-field'];
+		if (consumedModifierFields?.has(prop)) return false;
 		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
 		return true;
@@ -411,7 +416,7 @@ function transformRune(
 function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, string>): RendererNode[] {
 	return children.map(child => {
 		if (!isTag(child)) return child;
-		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.property];
+		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.['data-field']];
 		const labeled = label && !child.attributes['data-name']
 			? { ...child, attributes: { ...child.attributes, 'data-name': label } }
 			: child;

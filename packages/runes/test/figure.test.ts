@@ -38,11 +38,11 @@ A beautiful sunset over the ocean.
 		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
-		const sizeMeta = findTag(fig!, t => t.name === 'meta' && t.attributes.property === 'size');
+		const sizeMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'size');
 		expect(sizeMeta).toBeDefined();
 		expect(sizeMeta!.attributes.content).toBe('large');
 
-		const alignMeta = findTag(fig!, t => t.name === 'meta' && t.attributes.property === 'align');
+		const alignMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('center');
 	});

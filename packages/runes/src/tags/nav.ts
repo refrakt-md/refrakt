@@ -11,7 +11,7 @@ export const NAV_AUTO_SENTINEL = '__nav-auto';
 class NavItemModel extends Model {
   transform(): RenderableTreeNodes {
     const children = this.transformChildren({
-      text: node => new Markdoc.Tag('span', { property: 'slug' }, [node.attributes.content]),
+      text: node => new Markdoc.Tag('span', { 'data-field': 'slug' }, [node.attributes.content]),
     });
 
     const slug = children.tag('span');
@@ -56,7 +56,7 @@ class NavModel extends Model {
     if (this.auto) {
       // Emit a placeholder with an empty nav and a sentinel meta tag.
       // The core post-process hook will replace this with resolved child page items.
-      const sentinelMeta = new Markdoc.Tag('meta', { property: NAV_AUTO_SENTINEL, content: 'true' });
+      const sentinelMeta = new Markdoc.Tag('meta', { 'data-field': NAV_AUTO_SENTINEL, content: 'true' });
 
       return createComponentRenderable(schema.Nav, {
         tag: 'nav',

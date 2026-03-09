@@ -29,8 +29,8 @@ export const designPipelineHooks: PackagePipelineHooks = {
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {
 				if (tag.attributes['typeof'] !== 'DesignContext') return;
-				const tokensMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes.property === 'tokens');
-				const scopeMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes.property === 'scope');
+				const tokensMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'tokens');
+				const scopeMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'scope');
 				if (!tokensMeta || !Markdoc.Tag.isTag(tokensMeta)) return;
 				const scope = (Markdoc.Tag.isTag(scopeMeta) ? scopeMeta.attributes.content as string : '') || 'default';
 				try {
@@ -58,7 +58,7 @@ export const designPipelineHooks: PackagePipelineHooks = {
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
 			if (tag.attributes['typeof'] !== 'Sandbox') return tag;
-			const contextMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes.property === 'context');
+			const contextMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'context');
 			const scope = (Markdoc.Tag.isTag(contextMeta) ? contextMeta.attributes.content as string : '') || 'default';
 			const tokens = designData.contexts[scope];
 			if (!tokens) {
@@ -68,7 +68,7 @@ export const designPipelineHooks: PackagePipelineHooks = {
 				return tag;
 			}
 			modified = true;
-			const injected = new Tag('meta', { property: 'design-tokens', content: JSON.stringify(tokens) });
+			const injected = new Tag('meta', { 'data-field': 'design-tokens', content: JSON.stringify(tokens) });
 			return new Tag(tag.name, tag.attributes, [...tag.children, injected]);
 		});
 

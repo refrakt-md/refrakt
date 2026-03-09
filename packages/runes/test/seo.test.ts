@@ -92,6 +92,18 @@ Watch the video.
 		expect(dataset['@context']).toBe('https://schema.org');
 		expect(dataset['@type']).toBe('Dataset');
 	});
+
+	it('should extract ImageObject from figure', () => {
+		const result = seo(`{% figure caption="A sunset over the ocean" %}
+![Sunset](/images/sunset.jpg)
+{% /figure %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const img = result.jsonLd[0] as any;
+		expect(img['@context']).toBe('https://schema.org');
+		expect(img['@type']).toBe('ImageObject');
+		expect(img.caption).toBe('A sunset over the ocean');
+	});
 });
 
 describe('OG meta extraction', () => {

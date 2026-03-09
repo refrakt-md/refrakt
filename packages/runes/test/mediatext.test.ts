@@ -9,7 +9,7 @@ describe('mediatext tag', () => {
 Some body text here.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 		expect(mt).toBeDefined();
 		expect(mt!.name).toBe('div');
 
@@ -36,7 +36,7 @@ Some body text here.
 Body text.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
 		const images = findAllTags(media!, t => t.name === 'img');
 		expect(images.length).toBe(2);
@@ -47,7 +47,7 @@ Body text.
 Just some text without any images.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 		expect(mt).toBeDefined();
 
 		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
@@ -63,13 +63,13 @@ Just some text without any images.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const alignMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'align');
+		const alignMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('right');
 
-		const ratioMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'ratio');
+		const ratioMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'ratio');
 		expect(ratioMeta).toBeDefined();
 		expect(ratioMeta!.attributes.content).toBe('2:1');
 	});
@@ -81,9 +81,9 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'wrap');
+		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'wrap');
 		expect(wrapMeta).toBeDefined();
 		expect(wrapMeta!.attributes.content).toBe('true');
 	});
@@ -95,9 +95,9 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'mediatext');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'wrap');
+		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'wrap');
 		expect(wrapMeta).toBeUndefined();
 	});
 });

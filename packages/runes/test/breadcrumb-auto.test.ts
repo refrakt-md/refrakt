@@ -12,7 +12,7 @@ describe('breadcrumb auto mode', () => {
 
 		// Should have the sentinel meta tag as a direct child
 		const sentinel = breadcrumb!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeDefined();
 	});
@@ -25,7 +25,7 @@ describe('breadcrumb auto mode', () => {
 		const result = parse(`{% breadcrumb auto=true /%}`);
 		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
 
-		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumbitem');
+		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items).toHaveLength(0);
 	});
 
@@ -40,7 +40,7 @@ describe('breadcrumb auto mode', () => {
 		expect(breadcrumb).toBeDefined();
 
 		const sentinel = breadcrumb!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeUndefined();
 	});
@@ -53,7 +53,7 @@ describe('breadcrumb auto mode', () => {
 {% /breadcrumb %}`);
 
 		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumbitem');
+		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items).toHaveLength(3);
 	});
 });

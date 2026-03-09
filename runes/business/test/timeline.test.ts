@@ -17,7 +17,7 @@ Open-sourced the library.
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const entries = findAllTags(tag!, t => t.attributes['data-rune'] === 'timelineentry');
+		const entries = findAllTags(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entries.length).toBe(2);
 	});
 
@@ -29,7 +29,7 @@ Description here.
 {% /timeline %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
-		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timelineentry');
+		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
 		const dateTag = findTag(entry!, t => t.name === 'time');
@@ -61,7 +61,7 @@ Content.
 {% /timeline %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
-		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timelineentry');
+		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
 		const labelTag = findTag(entry!, t => t.name === 'span');

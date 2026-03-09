@@ -30,7 +30,7 @@ Second panel caption.
 {% /storyboard %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
-    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'storyboardpanel');
+    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'storyboard-panel');
     expect(panels.length).toBe(2);
   });
 

@@ -11,22 +11,22 @@ function asTag(node: any): SerializedTag {
 
 function makeNavTree() {
 	return [
-		makeTag('section', { 'data-rune': 'navgroup' }, [
+		makeTag('section', { 'data-rune': 'nav-group' }, [
 			makeTag('h2', {}, ['Getting Started']),
-			makeTag('div', { 'data-rune': 'navitem' }, [
-				makeTag('span', { property: 'slug' }, ['introduction']),
+			makeTag('div', { 'data-rune': 'nav-item' }, [
+				makeTag('span', { 'data-field': 'slug' }, ['introduction']),
 			]),
-			makeTag('div', { 'data-rune': 'navitem' }, [
-				makeTag('span', { property: 'slug' }, ['installation']),
+			makeTag('div', { 'data-rune': 'nav-item' }, [
+				makeTag('span', { 'data-field': 'slug' }, ['installation']),
 			]),
 		]),
-		makeTag('section', { 'data-rune': 'navgroup' }, [
+		makeTag('section', { 'data-rune': 'nav-group' }, [
 			makeTag('h2', {}, ['Guides']),
-			makeTag('div', { 'data-rune': 'navitem' }, [
-				makeTag('span', { property: 'slug' }, ['quickstart']),
+			makeTag('div', { 'data-rune': 'nav-item' }, [
+				makeTag('span', { 'data-field': 'slug' }, ['quickstart']),
 			]),
-			makeTag('div', { 'data-rune': 'navitem' }, [
-				makeTag('span', { property: 'slug' }, ['advanced']),
+			makeTag('div', { 'data-rune': 'nav-item' }, [
+				makeTag('span', { 'data-field': 'slug' }, ['advanced']),
 			]),
 		]),
 	];

@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import { toKebabCase } from '@refrakt-md/transform';
 import type { Rune } from './rune.js';
 
 // ─── Output types ───
@@ -27,7 +28,7 @@ export function buildSeoTypeMap(runes: Record<string, Rune>): Map<string, string
 	const map = new Map<string, string>();
 	for (const rune of Object.values(runes)) {
 		if (rune.seoType && rune.type) {
-			map.set(rune.type.name.toLowerCase(), rune.seoType);
+			map.set(toKebabCase(rune.type.name), rune.seoType);
 		}
 	}
 	return map;
@@ -89,10 +90,11 @@ function findAll(
 	return results;
 }
 
-/** Find a child tag with a given property attribute */
+/** Find a child tag with a given data-field attribute (auto-kebab-cases the lookup key) */
 function findProperty(tag: Tag, propertyName: string): Tag | undefined {
+	const kebab = toKebabCase(propertyName);
 	for (const child of tag.children) {
-		if (Markdoc.Tag.isTag(child) && child.attributes.property === propertyName) {
+		if (Markdoc.Tag.isTag(child) && child.attributes['data-field'] === kebab) {
 			return child;
 		}
 	}
@@ -100,7 +102,7 @@ function findProperty(tag: Tag, propertyName: string): Tag | undefined {
 	for (const child of tag.children) {
 		if (Markdoc.Tag.isTag(child)) {
 			for (const grandchild of child.children) {
-				if (Markdoc.Tag.isTag(grandchild) && grandchild.attributes.property === propertyName) {
+				if (Markdoc.Tag.isTag(grandchild) && grandchild.attributes['data-field'] === kebab) {
 					return grandchild;
 				}
 			}
@@ -124,7 +126,7 @@ function metaContent(tag: Tag, propertyName: string): string | number | undefine
 type Extractor = (tag: Tag) => object | object[];
 
 function extractFAQPage(tag: Tag): object {
-	const items = findAll(tag, t => t.attributes['data-rune'] === 'accordionitem');
+	const items = findAll(tag, t => t.attributes['data-rune'] === 'accordion-item');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
@@ -150,7 +152,7 @@ function extractProduct(tag: Tag): object {
 	const blurb = findProperty(tag, 'blurb');
 	const tiers = findAll(
 		tag,
-		t => t.attributes['data-rune'] === 'tier' || t.attributes['data-rune'] === 'featuredtier',
+		t => t.attributes['data-rune'] === 'tier' || t.attributes['data-rune'] === 'featured-tier',
 	);
 
 	return {
@@ -221,7 +223,7 @@ function extractReview(tag: Tag): object {
 }
 
 function extractBreadcrumbList(tag: Tag): object {
-	const items = findAll(tag, t => t.attributes['data-rune'] === 'breadcrumbitem');
+	const items = findAll(tag, t => t.attributes['data-rune'] === 'breadcrumb-item');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',
@@ -239,7 +241,7 @@ function extractBreadcrumbList(tag: Tag): object {
 }
 
 function extractItemList(tag: Tag): object {
-	const entries = findAll(tag, t => t.attributes['data-rune'] === 'timelineentry');
+	const entries = findAll(tag, t => t.attributes['data-rune'] === 'timeline-entry');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'ItemList',
@@ -280,7 +282,7 @@ function extractImageObject(tag: Tag): object {
 
 function extractMusicPlaylist(tag: Tag): object {
 	const headline = findProperty(tag, 'headline');
-	const tracks = findAll(tag, t => t.attributes['data-rune'] === 'musicrecording');
+	const tracks = findAll(tag, t => t.attributes['data-rune'] === 'music-recording');
 
 	return {
 		'@context': 'https://schema.org',
@@ -384,7 +386,7 @@ function extractEvent(tag: Tag): object {
 }
 
 function extractPerson(tag: Tag): object | object[] {
-	const members = findAll(tag, t => t.attributes['data-rune'] === 'castmember');
+	const members = findAll(tag, t => t.attributes['data-rune'] === 'cast-member');
 
 	if (members.length > 0) {
 		const people = members.map(member => {
@@ -573,7 +575,7 @@ function extractOgMeta(
 		if (h1) og.title = textContent(h1);
 	}
 	if (!og.description) {
-		const p = findFirst(tree, tag => tag.name === 'p' && !tag.attributes.property);
+		const p = findFirst(tree, tag => tag.name === 'p' && !tag.attributes['data-field']);
 		if (p) og.description = textContent(p).slice(0, 200);
 	}
 	if (!og.image) {

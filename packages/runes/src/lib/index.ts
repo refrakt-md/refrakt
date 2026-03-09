@@ -55,14 +55,14 @@ function injectTintMetas(result: RenderableTreeNodes, model: Model): RenderableT
 
   // Attribute form: only add if inline tint didn't already set the same property
   const hasMetaProp = (prop: string) => metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes.property === prop
+    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === prop
   );
 
   if (tintAttr && !hasMetaProp('tint')) {
-    metas.push(new Markdoc.Tag('meta', { property: 'tint', content: tintAttr }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint', content: tintAttr }));
   }
   if (tintModeAttr && tintModeAttr !== 'auto' && !hasMetaProp('tint-mode')) {
-    metas.push(new Markdoc.Tag('meta', { property: 'tint-mode', content: tintModeAttr }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint-mode', content: tintModeAttr }));
   }
 
   if (metas.length === 0) return result;
@@ -97,10 +97,10 @@ function injectBgMetas(result: RenderableTreeNodes, model: Model): RenderableTre
 
   // Universal bg attribute: emit a bg-preset meta tag if not already set by inline child
   const hasPresetMeta = metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes.property === 'bg-preset'
+    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === 'bg-preset'
   );
   if (bgAttr && !hasPresetMeta) {
-    metas.push(new Markdoc.Tag('meta', { property: 'bg-preset', content: bgAttr }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: bgAttr }));
   }
 
   if (metas.length === 0) return result;
@@ -247,14 +247,14 @@ function injectTintMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): R
   }
 
   const hasMetaProp = (prop: string) => metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes.property === prop
+    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === prop
   );
 
   if (ctx.tint && !hasMetaProp('tint')) {
-    metas.push(new Markdoc.Tag('meta', { property: 'tint', content: ctx.tint }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint', content: ctx.tint }));
   }
   if (ctx['tint-mode'] && ctx['tint-mode'] !== 'auto' && !hasMetaProp('tint-mode')) {
-    metas.push(new Markdoc.Tag('meta', { property: 'tint-mode', content: ctx['tint-mode'] }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint-mode', content: ctx['tint-mode'] }));
   }
 
   if (metas.length === 0) return result;
@@ -279,10 +279,10 @@ function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): Ren
   }
 
   const hasPresetMeta = metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes.property === 'bg-preset'
+    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === 'bg-preset'
   );
   if (ctx.bg && !hasPresetMeta) {
-    metas.push(new Markdoc.Tag('meta', { property: 'bg-preset', content: ctx.bg }));
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
   }
 
   if (metas.length === 0) return result;

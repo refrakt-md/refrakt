@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createTransform } from '../src/engine.js';
-import { makeTag } from '../src/helpers.js';
+import { makeTag, toKebabCase } from '../src/helpers.js';
 import type { ThemeConfig } from '../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
 
@@ -19,7 +19,7 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 		return undefined;
 	}
 	if (node.$$mdtype === 'Tag') {
-		if (node.attributes?.['data-rune'] === typeof_.toLowerCase()) return node;
+		if (node.attributes?.['data-rune'] === toKebabCase(typeof_)) return node;
 		for (const child of node.children ?? []) {
 			const found = findByTypeof(child, typeof_);
 			if (found) return found;
@@ -44,7 +44,7 @@ describe('basic modifiers', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
+			makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -101,8 +101,8 @@ describe('basic modifiers', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('figure', { 'data-rune': 'figure' }, [
-			makeTag('meta', { property: 'size', content: 'large' }, []),
-			makeTag('meta', { property: 'align', content: 'left' }, []),
+			makeTag('meta', { 'data-field': 'size', content: 'large' }, []),
+			makeTag('meta', { 'data-field': 'align', content: 'left' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -160,7 +160,7 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'accordionitem' }, [
+		const tag = makeTag('div', { 'data-rune': 'accordion-item' }, [
 			makeTag('name', {}, ['Title']),
 		]);
 
@@ -171,7 +171,7 @@ describe('autoLabel', () => {
 		expect(child.attributes['data-name']).toBe('header');
 	});
 
-	it('labels child by property attribute', () => {
+	it('labels child by data-field attribute', () => {
 		const config: ThemeConfig = {
 			prefix: 'rf', tokenPrefix: '--rf', icons: {},
 			runes: {
@@ -183,12 +183,12 @@ describe('autoLabel', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('span', { property: 'title' }, ['My Title']),
+			makeTag('span', { 'data-field': 'title' }, ['My Title']),
 		]);
 
 		const result = asTag(transform(tag));
 		const child = result.children.find(
-			(c: any) => c?.attributes?.property === 'title'
+			(c: any) => c?.attributes?.['data-field'] === 'title'
 		) as SerializedTag;
 		expect(child.attributes['data-name']).toBe('heading');
 	});
@@ -441,7 +441,7 @@ describe('structure injection', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'api' }, [
-			makeTag('meta', { property: 'auth', content: 'Bearer' }, []),
+			makeTag('meta', { 'data-field': 'auth', content: 'Bearer' }, []),
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -470,7 +470,7 @@ describe('structure injection', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
-			makeTag('meta', { property: 'prepTime', content: 'PT30M' }, []),
+			makeTag('meta', { 'data-field': 'prep-time', content: 'PT30M' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -573,7 +573,7 @@ describe('structure metaText', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
-			makeTag('meta', { property: 'prepTime', content: 'PT1H30M' }, []),
+			makeTag('meta', { 'data-field': 'prep-time', content: 'PT1H30M' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -598,7 +598,7 @@ describe('structure metaText', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('meta', { property: 'method', content: 'get' }, []),
+			makeTag('meta', { 'data-field': 'method', content: 'get' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -623,7 +623,7 @@ describe('structure metaText', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('meta', { property: 'difficulty', content: 'easy' }, []),
+			makeTag('meta', { 'data-field': 'difficulty', content: 'easy' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -648,7 +648,7 @@ describe('structure metaText', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
-			makeTag('meta', { property: 'servings', content: '4' }, []),
+			makeTag('meta', { 'data-field': 'servings', content: '4' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -700,7 +700,7 @@ describe('structure attrs', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'event' }, [
-			makeTag('meta', { property: 'url', content: 'https://example.com' }, []),
+			makeTag('meta', { 'data-field': 'url', content: 'https://example.com' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -965,13 +965,13 @@ describe('meta tag filtering', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
+			makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }, []),
 			makeTag('p', {}, ['Content']),
 		]);
 
 		const result = asTag(transform(tag));
 		const hasMeta = result.children.some(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === 'hintType'
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'hint-type'
 		);
 		expect(hasMeta).toBe(false);
 		// Paragraph is preserved
@@ -991,18 +991,18 @@ describe('meta tag filtering', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
-			makeTag('meta', { property: 'other', content: 'keep' }, []),
+			makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }, []),
+			makeTag('meta', { 'data-field': 'other', content: 'keep' }, []),
 		]);
 
 		const result = asTag(transform(tag));
 		const hasOtherMeta = result.children.some(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === 'other'
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'other'
 		);
 		expect(hasOtherMeta).toBe(true);
 	});
 
-	it('preserves meta tags without property attribute', () => {
+	it('preserves meta tags without data-field attribute', () => {
 		const config: ThemeConfig = {
 			prefix: 'rf', tokenPrefix: '--rf', icons: {},
 			runes: {

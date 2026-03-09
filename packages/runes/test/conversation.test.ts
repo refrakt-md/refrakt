@@ -24,7 +24,7 @@ describe('conversation tag', () => {
 {% /conversation %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'conversation');
-    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'conversationmessage');
+    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'conversation-message');
     expect(messages.length).toBe(3);
   });
 
@@ -36,7 +36,7 @@ describe('conversation tag', () => {
 {% /conversation %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'conversation');
-    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'conversationmessage');
+    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'conversation-message');
 
     const alignments = messages.map(msg =>
       findTag(msg, t => t.name === 'meta')?.attributes.content

@@ -19,7 +19,7 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const pins = findAllTags(tag!, t => t.attributes['data-rune'] === 'mappin');
+		const pins = findAllTags(tag!, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 		expect(pins[0].name).toBe('li');
 	});
@@ -29,11 +29,11 @@ describe('map tag', () => {
 - 48.8566, 2.3522
 {% /map %}`);
 
-		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'mappin');
+		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pin).toBeDefined();
 
-		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes.property === 'lat');
-		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes.property === 'lng');
+		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
+		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 		expect(latMeta?.attributes.content).toBe('48.8566');
 		expect(lngMeta?.attributes.content).toBe('2.3522');
 	});
@@ -43,8 +43,8 @@ describe('map tag', () => {
 - **Eiffel Tower** - 48.8566, 2.3522
 {% /map %}`);
 
-		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'mappin');
-		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes.property === 'name');
+		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
+		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
 		expect(nameSpan?.children[0]).toBe('Eiffel Tower');
 	});
 
@@ -53,8 +53,8 @@ describe('map tag', () => {
 - **Eiffel Tower** - *Iconic iron tower* - 48.8566, 2.3522
 {% /map %}`);
 
-		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'mappin');
-		const descSpan = findTag(pin!, t => t.name === 'span' && t.attributes.property === 'description');
+		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
+		const descSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'description');
 		expect(descSpan?.children[0]).toBe('Iconic iron tower');
 	});
 
@@ -63,8 +63,8 @@ describe('map tag', () => {
 - **Office** - 123 Main St, City
 {% /map %}`);
 
-		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'mappin');
-		const addressMeta = findTag(pin!, t => t.name === 'meta' && t.attributes.property === 'address');
+		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
+		const addressMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'address');
 		expect(addressMeta?.attributes.content).toContain('123 Main St');
 	});
 
@@ -76,13 +76,13 @@ describe('map tag', () => {
 - **Tate Modern** - 51.5076, -0.0994
 {% /map %}`);
 
-		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'mappin');
+		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 
-		const group1 = findTag(pins[0], t => t.name === 'meta' && t.attributes.property === 'group');
+		const group1 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'group');
 		expect(group1?.attributes.content).toBe('Restaurants');
 
-		const group2 = findTag(pins[1], t => t.name === 'meta' && t.attributes.property === 'group');
+		const group2 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'group');
 		expect(group2?.attributes.content).toBe('Museums');
 	});
 
@@ -92,8 +92,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const zoomMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'zoom');
-		const centerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'center');
+		const zoomMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'zoom');
+		const centerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'center');
 		expect(zoomMeta?.attributes.content).toBe('15');
 		expect(centerMeta?.attributes.content).toBe('48.8566, 2.3522');
 	});
@@ -104,8 +104,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
-		const heightMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'height');
+		const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
+		const heightMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'height');
 		expect(variantMeta?.attributes.content).toBe('dark');
 		expect(heightMeta?.attributes.content).toBe('large');
 	});
@@ -116,8 +116,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const routeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'route');
-		const clusterMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'cluster');
+		const routeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'route');
+		const clusterMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'cluster');
 		expect(routeMeta?.attributes.content).toBe('true');
 		expect(clusterMeta?.attributes.content).toBe('true');
 	});
@@ -131,7 +131,7 @@ describe('map tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
 		const ol = findTag(tag!, t => t.name === 'ol');
 		expect(ol).toBeDefined();
-		const pins = findAllTags(ol!, t => t.attributes['data-rune'] === 'mappin');
+		const pins = findAllTags(ol!, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 	});
 
@@ -141,16 +141,16 @@ describe('map tag', () => {
 - **San Francisco** - 37.7749, -122.4194
 {% /map %}`);
 
-		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'mappin');
+		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 
-		const lat0 = findTag(pins[0], t => t.name === 'meta' && t.attributes.property === 'lat');
-		const lng0 = findTag(pins[0], t => t.name === 'meta' && t.attributes.property === 'lng');
+		const lat0 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
+		const lng0 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 		expect(lat0?.attributes.content).toBe('45.5152');
 		expect(lng0?.attributes.content).toBe('-122.6784');
 
-		const lat1 = findTag(pins[1], t => t.name === 'meta' && t.attributes.property === 'lat');
-		const lng1 = findTag(pins[1], t => t.name === 'meta' && t.attributes.property === 'lng');
+		const lat1 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
+		const lng1 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 		expect(lat1?.attributes.content).toBe('37.7749');
 		expect(lng1?.attributes.content).toBe('-122.4194');
 	});
@@ -160,10 +160,10 @@ describe('map tag', () => {
 - **Louvre Museum** - 48.8606, 2.3376
 {% /map %}`);
 
-		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'mappin');
-		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes.property === 'name');
-		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes.property === 'lat');
-		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes.property === 'lng');
+		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
+		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
+		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 
 		expect(nameSpan?.children[0]).toBe('Louvre Museum');
 		expect(latMeta?.attributes.content).toBe('48.8606');

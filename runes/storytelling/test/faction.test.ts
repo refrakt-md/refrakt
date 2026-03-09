@@ -19,7 +19,7 @@ Their fortress overlooks the capital.
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'factionsection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'faction-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -29,7 +29,7 @@ A secretive guild.
 {% /faction %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'name');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('The Arcane Circle');
 	});
@@ -40,15 +40,15 @@ Content.
 {% /faction %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'factionType');
+		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'faction-type');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('knightly order');
 
-		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'alignment');
+		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'alignment');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('lawful');
 
-		const sizeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'size');
+		const sizeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'size');
 		expect(sizeMeta).toBeDefined();
 		expect(sizeMeta!.attributes.content).toBe('large');
 	});
@@ -61,7 +61,7 @@ Just a description.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
 		expect(tag).toBeDefined();
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'factionsection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'faction-section');
 		expect(sections.length).toBe(0);
 	});
 

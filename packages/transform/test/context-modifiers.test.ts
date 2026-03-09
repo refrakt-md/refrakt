@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createTransform } from '../src/engine.js';
-import { makeTag } from '../src/helpers.js';
+import { makeTag, toKebabCase } from '../src/helpers.js';
 import type { ThemeConfig } from '../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
 
@@ -47,7 +47,7 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 		return undefined;
 	}
 	if (node.$$mdtype === 'Tag') {
-		if (node.attributes?.['data-rune'] === typeof_.toLowerCase()) return node;
+		if (node.attributes?.['data-rune'] === toKebabCase(typeof_)) return node;
 		for (const child of node.children ?? []) {
 			const found = findByTypeof(child, typeof_);
 			if (found) return found;
@@ -59,7 +59,7 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 describe('context-aware BEM modifiers', () => {
 	it('standalone rune gets no context modifier', () => {
 		const hint = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
+			makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }, []),
 			'Some warning text',
 		]);
 
@@ -72,7 +72,7 @@ describe('context-aware BEM modifiers', () => {
 	it('rune nested inside a matching parent gets the modifier class', () => {
 		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('section', { 'data-rune': 'hint' }, [
-				makeTag('meta', { property: 'hintType', content: 'note' }, []),
+				makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 				'A note inside hero',
 			]),
 		]);
@@ -88,7 +88,7 @@ describe('context-aware BEM modifiers', () => {
 
 	it('rune nested inside a non-matching parent gets no context modifier', () => {
 		const grid = makeTag('section', { 'data-rune': 'grid' }, [
-			makeTag('section', { 'data-rune': 'calltoaction' }, [
+			makeTag('section', { 'data-rune': 'call-to-action' }, [
 				'CTA inside grid',
 			]),
 		]);
@@ -106,7 +106,7 @@ describe('context-aware BEM modifiers', () => {
 		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('section', { 'data-rune': 'grid' }, [
 				makeTag('section', { 'data-rune': 'hint' }, [
-					makeTag('meta', { property: 'hintType', content: 'note' }, []),
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 					'Deep hint',
 				]),
 			]),
@@ -125,7 +125,7 @@ describe('context-aware BEM modifiers', () => {
 		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('div', {}, [
 				makeTag('section', { 'data-rune': 'hint' }, [
-					makeTag('meta', { property: 'hintType', content: 'note' }, []),
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 					'Hint inside a wrapper div inside hero',
 				]),
 			]),
@@ -151,7 +151,7 @@ describe('context-aware BEM modifiers', () => {
 	it('top-level rune sets context for its children', () => {
 		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('section', { 'data-rune': 'feature' }, ['Feature inside hero']),
-			makeTag('section', { 'data-rune': 'calltoaction' }, ['CTA inside hero']),
+			makeTag('section', { 'data-rune': 'call-to-action' }, ['CTA inside hero']),
 		]);
 
 		const result = asTag(transform(hero));

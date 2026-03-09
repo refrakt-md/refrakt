@@ -11,7 +11,7 @@ This is hidden content.
 		expect(details).toBeDefined();
 		expect(details!.name).toBe('details');
 
-		const summary = findTag(details!, t => t.name === 'summary' && t.attributes.property === 'summary');
+		const summary = findTag(details!, t => t.name === 'summary' && t.attributes['data-field'] === 'summary');
 		expect(summary).toBeDefined();
 		expect(summary!.children).toContain('Click to expand');
 	});
@@ -24,7 +24,7 @@ Some content.
 		const details = findTag(result as any, t => t.attributes['data-rune'] === 'details');
 		expect(details).toBeDefined();
 
-		const summary = findTag(details!, t => t.name === 'summary' && t.attributes.property === 'summary');
+		const summary = findTag(details!, t => t.name === 'summary' && t.attributes['data-field'] === 'summary');
 		expect(summary).toBeDefined();
 		expect(summary!.children).toContain('Details');
 	});

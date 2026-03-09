@@ -36,7 +36,7 @@ describe('comparison tag', () => {
 {% /comparison %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'comparison');
-    const columns = findAllTags(tag!, t => t.attributes['data-rune'] === 'comparisoncolumn');
+    const columns = findAllTags(tag!, t => t.attributes['data-rune'] === 'comparison-column');
     expect(columns.length).toBe(2);
   });
 
@@ -70,7 +70,7 @@ describe('comparison tag', () => {
 {% /comparison %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'comparison');
-    const row = findTag(tag!, t => t.attributes['data-rune'] === 'comparisonrow');
+    const row = findTag(tag!, t => t.attributes['data-rune'] === 'comparison-row');
     expect(row).toBeDefined();
   });
 });

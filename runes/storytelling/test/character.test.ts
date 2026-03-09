@@ -18,7 +18,7 @@ She grew up in the Ashen Spire.
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'charactersection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'character-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -28,7 +28,7 @@ A ranger from the North.
 {% /character %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'name');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Aragorn');
 	});
@@ -39,11 +39,11 @@ Content.
 {% /character %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
-		const roleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'role');
+		const roleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'role');
 		expect(roleMeta).toBeDefined();
 		expect(roleMeta!.attributes.content).toBe('antagonist');
 
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'status');
+		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
 		expect(statusMeta).toBeDefined();
 		expect(statusMeta!.attributes.content).toBe('alive');
 	});
@@ -56,7 +56,7 @@ Just a brief description.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
 		expect(tag).toBeDefined();
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'charactersection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'character-section');
 		expect(sections.length).toBe(0);
 	});
 
@@ -66,7 +66,7 @@ Content.
 {% /character %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
-		const aliasesMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'aliases');
+		const aliasesMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aliases');
 		expect(aliasesMeta).toBeDefined();
 		expect(aliasesMeta!.attributes.content).toBe('Strider, Elessar');
 	});

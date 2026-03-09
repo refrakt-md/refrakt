@@ -25,7 +25,7 @@ class BreadcrumbModel extends Model {
 		if (this.auto) {
 			// Emit a placeholder with an empty items list and a sentinel meta tag.
 			// The core post-process hook will replace the empty ol with resolved items.
-			const sentinelMeta = new Tag('meta', { property: BREADCRUMB_AUTO_SENTINEL, content: 'true' });
+			const sentinelMeta = new Tag('meta', { 'data-field': BREADCRUMB_AUTO_SENTINEL, content: 'true' });
 			const emptyList = new Tag('ol', {}, []);
 
 			return createComponentRenderable(schema.Breadcrumb, {

@@ -33,23 +33,23 @@ Description.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const kind = metas.find(m => m.attributes.property === 'kind');
+		const kind = metas.find(m => m.attributes['data-field'] === 'kind');
 		expect(kind).toBeDefined();
 		expect(kind!.attributes.content).toBe('function');
 
-		const lang = metas.find(m => m.attributes.property === 'lang');
+		const lang = metas.find(m => m.attributes['data-field'] === 'lang');
 		expect(lang).toBeDefined();
 		expect(lang!.attributes.content).toBe('typescript');
 
-		const since = metas.find(m => m.attributes.property === 'since');
+		const since = metas.find(m => m.attributes['data-field'] === 'since');
 		expect(since).toBeDefined();
 		expect(since!.attributes.content).toBe('1.0.0');
 
-		const deprecated = metas.find(m => m.attributes.property === 'deprecated');
+		const deprecated = metas.find(m => m.attributes['data-field'] === 'deprecated');
 		expect(deprecated).toBeDefined();
 		expect(deprecated!.attributes.content).toBe('2.0.0');
 
-		const source = metas.find(m => m.attributes.property === 'source');
+		const source = metas.find(m => m.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 		expect(source!.attributes.content).toBe('https://github.com/example');
 	});
@@ -64,10 +64,10 @@ Description.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const kind = metas.find(m => m.attributes.property === 'kind');
+		const kind = metas.find(m => m.attributes['data-field'] === 'kind');
 		expect(kind!.attributes.content).toBe('function');
 
-		const lang = metas.find(m => m.attributes.property === 'lang');
+		const lang = metas.find(m => m.attributes['data-field'] === 'lang');
 		expect(lang!.attributes.content).toBe('typescript');
 	});
 
@@ -95,10 +95,10 @@ Transform a parsed AST.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
 
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(1);
 
-		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolmember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-member');
 		expect(members.length).toBe(2);
 	});
 
@@ -124,7 +124,7 @@ Method description.
 {% /symbol %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(3);
 	});
 
@@ -146,7 +146,7 @@ Resolve a rune to a component.
 {% /symbol %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(2);
 	});
 
@@ -168,7 +168,7 @@ enum RuneCategory
 		expect(tag).toBeDefined();
 
 		// Enum shouldn't create groups
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(0);
 	});
 
@@ -185,7 +185,7 @@ type RuneMap = Record<string, RuneDefinition>
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
-		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes.property === 'kind');
+		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes['data-field'] === 'kind');
 		expect(kind!.attributes.content).toBe('type');
 	});
 
@@ -205,10 +205,10 @@ Method description.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
 
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(1);
 
-		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolmember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-member');
 		expect(members.length).toBe(1);
 	});
 
@@ -227,7 +227,7 @@ useRuneContext(): RuneContext | null
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
-		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes.property === 'kind');
+		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes['data-field'] === 'kind');
 		expect(kind!.attributes.content).toBe('hook');
 	});
 
@@ -272,11 +272,11 @@ getStates(params?: Params): Promise<Response>
 		expect(body.length).toBeGreaterThan(0);
 
 		// Both groups should be present
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(2);
 
 		// Methods group should have one member
-		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolmember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-member');
 		expect(members.length).toBe(1);
 	});
 
@@ -293,7 +293,7 @@ Some examples follow.
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		// Function kind should NOT convert ### headings to groups
-		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbolgroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(0);
 	});
 });

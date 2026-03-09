@@ -18,7 +18,7 @@ A footnote reference.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('footnote');
 	});
@@ -29,7 +29,7 @@ Default variant note.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('sidenote');
 	});

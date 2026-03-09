@@ -126,7 +126,7 @@ export const text: Schema = {
     const attr = node.transformAttributes(config);
 
     if (attr.property) {
-      return new Tag('span', { property: attr.property }, [node.attributes.content] );
+      return new Tag('span', { 'data-field': attr.property }, [node.attributes.content] );
     }
     return node.attributes.content;
   },
@@ -182,7 +182,7 @@ export const image: Schema = {
       const tag = jObjToTag('svg', jObj.svg);
 
       if (attr.property) {
-        tag.attributes.property = attr.property;
+        tag.attributes['data-field'] = attr.property;
       }
       tag.attributes.xmlns = undefined;
 

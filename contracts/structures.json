@@ -41,7 +41,7 @@
 		"AccordionItem": {
 			"block": "accordion-item",
 			"root": ".rf-accordion-item",
-			"dataRune": "accordionitem",
+			"dataRune": "accordion-item",
 			"parent": "Accordion",
 			"childOrder": [
 				"{content}"
@@ -129,7 +129,7 @@
 		"CodeGroup": {
 			"block": "codegroup",
 			"root": ".rf-codegroup",
-			"dataRune": "codegroup",
+			"dataRune": "code-group",
 			"childOrder": [
 				"topbar",
 				"{content}"
@@ -171,7 +171,7 @@
 		"PageSection": {
 			"block": "page-section",
 			"root": ".rf-page-section",
-			"dataRune": "pagesection",
+			"dataRune": "page-section",
 			"childOrder": [
 				"{content}"
 			]
@@ -179,7 +179,7 @@
 		"TableOfContents": {
 			"block": "toc",
 			"root": ".rf-toc",
-			"dataRune": "tableofcontents",
+			"dataRune": "table-of-contents",
 			"childOrder": [
 				"{content}"
 			]
@@ -203,7 +203,7 @@
 		"BreadcrumbItem": {
 			"block": "breadcrumb-item",
 			"root": ".rf-breadcrumb-item",
-			"dataRune": "breadcrumbitem",
+			"dataRune": "breadcrumb-item",
 			"parent": "Breadcrumb",
 			"childOrder": [
 				"{content}"
@@ -296,7 +296,7 @@
 		"BudgetCategory": {
 			"block": "budget-category",
 			"root": ".rf-budget-category",
-			"dataRune": "budgetcategory",
+			"dataRune": "budget-category",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -313,7 +313,7 @@
 		"BudgetLineItem": {
 			"block": "budget-line-item",
 			"root": ".rf-budget-line-item",
-			"dataRune": "budgetlineitem",
+			"dataRune": "budget-line-item",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -336,11 +336,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-hint--in-hero"
 				},
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
 				}
@@ -466,7 +466,7 @@
 		"ConversationMessage": {
 			"block": "conversation-message",
 			"root": ".rf-conversation-message",
-			"dataRune": "conversationmessage",
+			"dataRune": "conversation-message",
 			"parent": "Conversation",
 			"childOrder": [
 				"{content}"
@@ -499,7 +499,7 @@
 		"AnnotateNote": {
 			"block": "annotate-note",
 			"root": ".rf-annotate-note",
-			"dataRune": "annotatenote",
+			"dataRune": "annotate-note",
 			"parent": "Annotate",
 			"childOrder": [
 				"{content}"
@@ -516,7 +516,7 @@
 		"NavGroup": {
 			"block": "nav-group",
 			"root": ".rf-nav-group",
-			"dataRune": "navgroup",
+			"dataRune": "nav-group",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -525,7 +525,7 @@
 		"NavItem": {
 			"block": "nav-item",
 			"root": ".rf-nav-item",
-			"dataRune": "navitem",
+			"dataRune": "nav-item",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -558,7 +558,7 @@
 		"PullQuote": {
 			"block": "pullquote",
 			"root": ".rf-pullquote",
-			"dataRune": "pullquote",
+			"dataRune": "pull-quote",
 			"childOrder": [
 				"{content}"
 			],
@@ -580,7 +580,7 @@
 		"TextBlock": {
 			"block": "textblock",
 			"root": ".rf-textblock",
-			"dataRune": "textblock",
+			"dataRune": "text-block",
 			"childOrder": [
 				"{content}"
 			],
@@ -611,7 +611,7 @@
 		"MediaText": {
 			"block": "mediatext",
 			"root": ".rf-mediatext",
-			"dataRune": "mediatext",
+			"dataRune": "media-text",
 			"childOrder": [
 				"{content}"
 			],
@@ -669,7 +669,7 @@
 				}
 			},
 			"contextModifiers": {
-				"BentoCell": {
+				"bento-cell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
@@ -684,7 +684,7 @@
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",
-			"dataRune": "tabgroup",
+			"dataRune": "tab-group",
 			"childOrder": [
 				"{content}"
 			],
@@ -728,7 +728,7 @@
 		"DataTable": {
 			"block": "datatable",
 			"root": ".rf-datatable",
-			"dataRune": "datatable",
+			"dataRune": "data-table",
 			"childOrder": [
 				"{content}"
 			],
@@ -803,7 +803,7 @@
 		"FormField": {
 			"block": "form-field",
 			"root": ".rf-form-field",
-			"dataRune": "formfield",
+			"dataRune": "form-field",
 			"parent": "Form",
 			"childOrder": [
 				"{content}"
@@ -862,7 +862,7 @@
 		"RevealStep": {
 			"block": "reveal-step",
 			"root": ".rf-reveal-step",
-			"dataRune": "revealstep",
+			"dataRune": "reveal-step",
 			"parent": "Reveal",
 			"childOrder": [
 				"{content}"

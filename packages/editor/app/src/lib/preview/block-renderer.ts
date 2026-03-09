@@ -9,7 +9,7 @@ type PostTransformFn = (node: SerializedTag, context: { modifiers: Record<string
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
-	'nav', 'navgroup', 'navitem',   // needs RfContext.pages
+	'nav', 'nav-group', 'nav-item',   // needs RfContext.pages
 ]);
 
 /**
@@ -137,7 +137,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 			const injected: SerializedTag = {
 				$$mdtype: 'Tag',
 				name: 'meta',
-				attributes: { property: 'design-tokens', content: JSON.stringify(tokens) },
+				attributes: { 'data-field': 'design-tokens', content: JSON.stringify(tokens) },
 				children: [],
 			};
 			return { ...tag, children: [...(tag.children ?? []), injected] };

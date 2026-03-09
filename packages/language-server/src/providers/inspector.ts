@@ -160,7 +160,7 @@ function summarizeRenderable(node: RenderableTreeNode): object {
         if (Tag.isTag(child)) {
           const childSummary: Record<string, unknown> = { name: child.name };
           if (child.attributes?.['data-rune']) childSummary['data-rune'] = child.attributes['data-rune'];
-          if (child.attributes?.property) childSummary.property = child.attributes.property;
+          if (child.attributes?.['data-field']) childSummary['data-field'] = child.attributes['data-field'];
           if (child.attributes?.['data-name']) childSummary['data-name'] = child.attributes['data-name'];
           return childSummary;
         }

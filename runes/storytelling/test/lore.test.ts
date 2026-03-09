@@ -18,7 +18,7 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'title');
+		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'title');
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Prophecy');
 	});
@@ -29,7 +29,7 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const catMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'category');
+		const catMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'category');
 		expect(catMeta).toBeDefined();
 		expect(catMeta!.attributes.content).toBe('prophecy');
 	});
@@ -40,7 +40,7 @@ Hidden content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const spoilerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'spoiler');
+		const spoilerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'spoiler');
 		expect(spoilerMeta).toBeDefined();
 		expect(spoilerMeta!.attributes.content).toBe('true');
 	});
@@ -51,7 +51,7 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const tagsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'tags');
+		const tagsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'tags');
 		expect(tagsMeta).toBeDefined();
 		expect(tagsMeta!.attributes.content).toBe('magic,history');
 	});

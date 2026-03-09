@@ -20,8 +20,9 @@ function collectByRune(children: RendererNode[], typeName: string): SerializedTa
 
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
+	const kebab = prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
 	for (const c of node.children) {
-		if (isTag(c) && c.attributes?.property === prop) {
+		if (isTag(c) && c.attributes?.['data-field'] === kebab) {
 			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
 		}
 	}
@@ -30,8 +31,9 @@ function readPropText(node: SerializedTag, prop: string): string {
 
 /** Read meta tag value from within a node (for non-modifier metas not consumed by engine) */
 function readLocalMeta(node: SerializedTag, prop: string): string {
+	const kebab = prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
 	for (const c of node.children) {
-		if (isTag(c) && c.name === 'meta' && c.attributes?.property === prop) {
+		if (isTag(c) && c.name === 'meta' && c.attributes?.['data-field'] === kebab) {
 			return c.attributes.content ?? '';
 		}
 	}
@@ -278,7 +280,7 @@ export const config: Record<string, RuneConfig> = {
 			// Filter out consumed meta tags, wrap remaining children in content div
 			const contentChildren = node.children.filter(child => {
 				if (!isTag(child) || child.name !== 'meta') return true;
-				return child.attributes.property !== 'rating';
+				return child.attributes['data-field'] !== 'rating';
 			});
 
 			const children: (SerializedTag | string)[] = [];
@@ -322,13 +324,13 @@ export const config: Record<string, RuneConfig> = {
 				: '';
 
 			// Find ComparisonColumn children (inside the grid wrapper)
-			const columns = collectByRune(node.children, 'comparisoncolumn');
+			const columns = collectByRune(node.children, 'comparison-column');
 
 			// Extract structured data from each column
 			const columnData: ComparisonColData[] = columns.map(col => ({
 				name: readPropText(col, 'name'),
 				highlighted: readLocalMeta(col, 'highlighted') === 'true',
-				rows: collectByRune(col.children, 'comparisonrow'),
+				rows: collectByRune(col.children, 'comparison-row'),
 			}));
 
 			// Build layout

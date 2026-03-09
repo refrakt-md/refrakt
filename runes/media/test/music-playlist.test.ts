@@ -12,7 +12,7 @@ A collection of great tracks.
 - Track Two — Artist B
 {% /music-playlist %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'musicplaylist');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'music-playlist');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
   });
@@ -26,8 +26,8 @@ A collection of great tracks.
 - Song Three — Band C
 {% /music-playlist %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'musicplaylist');
-    const tracks = findAllTags(tag!, t => t.attributes['data-rune'] === 'musicrecording');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'music-playlist');
+    const tracks = findAllTags(tag!, t => t.attributes['data-rune'] === 'music-recording');
     expect(tracks.length).toBe(3);
   });
 
@@ -40,7 +40,7 @@ The best summer tunes.
 - Track One — Artist
 {% /music-playlist %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'musicplaylist');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'music-playlist');
     expect(tag).toBeDefined();
 
     const heading = findTag(tag!, t => t.name === 'h1');

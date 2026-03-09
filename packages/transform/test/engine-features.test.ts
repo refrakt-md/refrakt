@@ -22,7 +22,7 @@ describe('styles', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'storyboard' }, [
-			makeTag('meta', { property: 'columns', content: '4' }, []),
+			makeTag('meta', { 'data-field': 'columns', content: '4' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -66,7 +66,7 @@ describe('styles', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'bento' }, [
-			makeTag('meta', { property: 'gap', content: '1.5rem' }, []),
+			makeTag('meta', { 'data-field': 'gap', content: '1.5rem' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -105,7 +105,7 @@ describe('styles', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'test', style: 'color: red' }, [
-			makeTag('meta', { property: 'columns', content: '2' }, []),
+			makeTag('meta', { 'data-field': 'columns', content: '2' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -125,7 +125,7 @@ describe('staticModifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('li', { 'data-rune': 'featuredtier' }, ['Content']);
+		const tag = makeTag('li', { 'data-rune': 'featured-tier' }, ['Content']);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toContain('rf-tier');
@@ -145,7 +145,7 @@ describe('staticModifiers', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('div', { 'data-rune': 'card' }, [
-			makeTag('meta', { property: 'variant', content: 'hero' }, []),
+			makeTag('meta', { 'data-field': 'variant', content: 'hero' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -247,7 +247,7 @@ describe('postTransform', () => {
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('meta', { property: 'variant', content: 'primary' }, []),
+			makeTag('meta', { 'data-field': 'variant', content: 'primary' }, []),
 		]);
 
 		transform(tag);

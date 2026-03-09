@@ -27,15 +27,15 @@ describe('chart tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const type = metas.find(m => m.attributes.property === 'type');
+		const type = metas.find(m => m.attributes['data-field'] === 'type');
 		expect(type).toBeDefined();
 		expect(type!.attributes.content).toBe('line');
 
-		const title = metas.find(m => m.attributes.property === 'title');
+		const title = metas.find(m => m.attributes['data-field'] === 'title');
 		expect(title).toBeDefined();
 		expect(title!.attributes.content).toBe('Growth');
 
-		const stacked = metas.find(m => m.attributes.property === 'stacked');
+		const stacked = metas.find(m => m.attributes['data-field'] === 'stacked');
 		expect(stacked).toBeDefined();
 		expect(stacked!.attributes.content).toBe('true');
 	});

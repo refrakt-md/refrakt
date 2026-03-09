@@ -25,7 +25,7 @@ Description.
 {% /organization %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'type');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'type');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('LocalBusiness');
 	});

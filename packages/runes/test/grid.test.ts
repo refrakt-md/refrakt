@@ -48,11 +48,11 @@ Card three.
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
 
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('auto');
 
-    const minMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'min');
+    const minMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'min');
     expect(minMeta).toBeDefined();
     expect(minMeta!.attributes.content).toBe('280px');
   });
@@ -67,7 +67,7 @@ More content.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeUndefined();
   });
 
@@ -81,7 +81,7 @@ Cell two.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
+    const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
     expect(aspectMeta).toBeDefined();
     expect(aspectMeta!.attributes.content).toBe('16/9');
   });
@@ -96,7 +96,7 @@ Sidebar.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'stack');
+    const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'stack');
     expect(stackMeta).toBeDefined();
     expect(stackMeta!.attributes.content).toBe('reverse');
   });
@@ -115,7 +115,7 @@ Medium card.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('masonry');
   });
@@ -130,7 +130,7 @@ Card two.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('auto');
   });

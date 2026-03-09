@@ -17,10 +17,10 @@ Content for second section.
 		expect(acc).toBeDefined();
 		expect(acc!.name).toBe('section');
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordionitem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('First Section');
 	});
@@ -54,7 +54,7 @@ Content two.
 		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordionitem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 	});
 
@@ -84,10 +84,10 @@ Content two.
 		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordionitem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('Item One');
 	});
@@ -107,7 +107,7 @@ Answer three.
 		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordionitem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(3);
 	});
 });

@@ -45,11 +45,11 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 	// Create tab bar
 	const tabBar = document.createElement('div');
 	tabBar.setAttribute('role', 'tablist');
-	tabBar.className = el.getAttribute('data-rune') === 'codegroup'
+	tabBar.className = el.getAttribute('data-rune') === 'code-group'
 		? 'rf-codegroup__tabs'
 		: 'rf-tabs__bar';
 
-	const buttonClass = el.getAttribute('data-rune') === 'codegroup'
+	const buttonClass = el.getAttribute('data-rune') === 'code-group'
 		? 'rf-codegroup__tab'
 		: 'rf-tabs__button';
 

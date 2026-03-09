@@ -80,21 +80,21 @@ export const tint: Schema = {
 		const metas: RenderableTreeNodes[] = [];
 
 		if (preset) {
-			metas.push(new Tag('meta', { property: 'tint', content: preset }));
+			metas.push(new Tag('meta', { 'data-field': 'tint', content: preset }));
 		} else if (Object.keys(light).length > 0 || Object.keys(dark).length > 0) {
-			metas.push(new Tag('meta', { property: 'tint', content: 'custom' }));
+			metas.push(new Tag('meta', { 'data-field': 'tint', content: 'custom' }));
 		}
 
 		if (mode && mode !== 'auto') {
-			metas.push(new Tag('meta', { property: 'tint-mode', content: mode }));
+			metas.push(new Tag('meta', { 'data-field': 'tint-mode', content: mode }));
 		}
 
 		for (const [token, value] of Object.entries(light)) {
-			metas.push(new Tag('meta', { property: `tint-${token}`, content: value }));
+			metas.push(new Tag('meta', { 'data-field': `tint-${token}`, content: value }));
 		}
 
 		for (const [token, value] of Object.entries(dark)) {
-			metas.push(new Tag('meta', { property: `tint-dark-${token}`, content: value }));
+			metas.push(new Tag('meta', { 'data-field': `tint-dark-${token}`, content: value }));
 		}
 
 		// Return a wrapper tag that createSchema() will unwrap

@@ -32,11 +32,11 @@ const x: number = 1;
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const mode = metas.find(m => m.attributes.property === 'mode');
+		const mode = metas.find(m => m.attributes['data-field'] === 'mode');
 		expect(mode).toBeDefined();
 		expect(mode!.attributes.content).toBe('split');
 
-		const language = metas.find(m => m.attributes.property === 'language');
+		const language = metas.find(m => m.attributes['data-field'] === 'language');
 		expect(language).toBeDefined();
 		expect(language!.attributes.content).toBe('typescript');
 	});

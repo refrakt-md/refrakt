@@ -28,15 +28,15 @@ A three-day online event.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'event');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const date = metas.find(m => m.attributes.property === 'date');
+		const date = metas.find(m => m.attributes['data-field'] === 'date');
 		expect(date).toBeDefined();
 		expect(date!.attributes.content).toBe('2025-03-01');
 
-		const endDate = metas.find(m => m.attributes.property === 'endDate');
+		const endDate = metas.find(m => m.attributes['data-field'] === 'end-date');
 		expect(endDate).toBeDefined();
 		expect(endDate!.attributes.content).toBe('2025-03-03');
 
-		const location = metas.find(m => m.attributes.property === 'location');
+		const location = metas.find(m => m.attributes['data-field'] === 'location');
 		expect(location).toBeDefined();
 		expect(location!.attributes.content).toBe('Online');
 	});

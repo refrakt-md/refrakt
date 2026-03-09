@@ -7,10 +7,10 @@ describe('textblock tag', () => {
 Some lead text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
 		expect(tb).toBeDefined();
 
-		const leadMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'lead');
+		const leadMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'lead');
 		expect(leadMeta).toBeDefined();
 		expect(leadMeta!.attributes.content).toBe('lead');
 	});
@@ -20,10 +20,10 @@ Some lead text.
 Some dropcap text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
 		expect(tb).toBeDefined();
 
-		const dropcapMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'dropcap');
+		const dropcapMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'dropcap');
 		expect(dropcapMeta).toBeDefined();
 		expect(dropcapMeta!.attributes.content).toBe('dropcap');
 	});
@@ -33,7 +33,7 @@ Some dropcap text.
 Some text content.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
 		expect(tb).toBeDefined();
 
 		const bodyDivs = findAllTags(tb!, t => t.attributes['data-name'] === 'body');
@@ -45,8 +45,8 @@ Some text content.
 Multi-column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
-		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'columns');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'columns');
 		expect(colMeta).toBeDefined();
 		expect(colMeta!.attributes.content).toBe('3');
 	});
@@ -56,8 +56,8 @@ Multi-column text.
 Single column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
-		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'columns');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'columns');
 		expect(colMeta).toBeUndefined();
 	});
 
@@ -66,8 +66,8 @@ Single column text.
 Justified text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
-		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'align');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('justify');
 	});
@@ -77,8 +77,8 @@ Justified text.
 Left-aligned text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'textblock');
-		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'align');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
 		expect(alignMeta).toBeUndefined();
 	});
 });

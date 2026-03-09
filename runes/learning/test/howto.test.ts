@@ -17,7 +17,7 @@ You will need these tools:
 3. Attach the roof
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'howto');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -29,9 +29,9 @@ You will need these tools:
 1. Do this
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'howto');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const time = metas.find(m => m.attributes.property === 'estimatedTime');
+		const time = metas.find(m => m.attributes['data-field'] === 'estimated-time');
 		expect(time).toBeDefined();
 		expect(time!.attributes.content).toBe('PT30M');
 	});
@@ -43,7 +43,7 @@ You will need these tools:
 1. Step one
 {% /how-to %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'howto');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
 	});
 });

@@ -27,11 +27,11 @@ graph LR
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const language = metas.find(m => m.attributes.property === 'language');
+		const language = metas.find(m => m.attributes['data-field'] === 'language');
 		expect(language).toBeDefined();
 		expect(language!.attributes.content).toBe('mermaid');
 
-		const title = metas.find(m => m.attributes.property === 'title');
+		const title = metas.find(m => m.attributes['data-field'] === 'title');
 		expect(title).toBeDefined();
 		expect(title!.attributes.content).toBe('Architecture');
 	});

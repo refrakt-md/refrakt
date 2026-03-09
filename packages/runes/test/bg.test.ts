@@ -11,7 +11,7 @@ This has a background.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
 		expect(tag).toBeDefined();
 
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-src');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-src');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('/images/bg.jpg');
 	});
@@ -23,7 +23,7 @@ Video background.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-video');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-video');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('/videos/loop.mp4');
 	});
@@ -35,7 +35,7 @@ Dark overlay.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-overlay');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('dark');
 	});
@@ -47,7 +47,7 @@ No overlay.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-overlay');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay');
 		expect(meta).toBeUndefined();
 	});
 
@@ -58,7 +58,7 @@ Blurred bg.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-blur');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('sm');
 	});
@@ -71,11 +71,11 @@ Custom position.
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
 
-		const posMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-position');
+		const posMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position');
 		expect(posMeta).toBeDefined();
 		expect(posMeta!.attributes.content).toBe('top');
 
-		const fitMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-fit');
+		const fitMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-fit');
 		expect(fitMeta).toBeDefined();
 		expect(fitMeta!.attributes.content).toBe('contain');
 	});
@@ -87,7 +87,7 @@ Default position.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-position');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position');
 		expect(meta).toBeUndefined();
 	});
 
@@ -98,7 +98,7 @@ Fixed bg.
 {% /hint %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-fixed');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-fixed');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('true');
 	});
@@ -126,10 +126,10 @@ Combined.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
 		expect(tag).toBeDefined();
 
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-src')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-overlay')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-blur')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-position')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bg-opacity')).toBeDefined();
+		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-src')).toBeDefined();
+		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay')).toBeDefined();
+		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur')).toBeDefined();
+		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position')).toBeDefined();
+		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-opacity')).toBeDefined();
 	});
 });

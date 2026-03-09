@@ -29,15 +29,15 @@ Creates a new user.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const method = metas.find(m => m.attributes.property === 'method');
+		const method = metas.find(m => m.attributes['data-field'] === 'method');
 		expect(method).toBeDefined();
 		expect(method!.attributes.content).toBe('POST');
 
-		const path = metas.find(m => m.attributes.property === 'path');
+		const path = metas.find(m => m.attributes['data-field'] === 'path');
 		expect(path).toBeDefined();
 		expect(path!.attributes.content).toBe('/api/users');
 
-		const auth = metas.find(m => m.attributes.property === 'auth');
+		const auth = metas.find(m => m.attributes['data-field'] === 'auth');
 		expect(auth).toBeDefined();
 		expect(auth!.attributes.content).toBe('Bearer token');
 	});

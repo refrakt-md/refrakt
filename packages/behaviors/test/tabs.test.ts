@@ -12,7 +12,7 @@ beforeEach(() => {
 
 function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElement {
 	const count = opts?.tabCount ?? 3;
-	const rune = opts?.rune ?? 'tabgroup';
+	const rune = opts?.rune ?? 'tab-group';
 
 	const tabs = Array.from({ length: count }, (_, i) => `
 		<li data-rune="tab">
@@ -28,7 +28,7 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', rune);
-	el.className = rune === 'codegroup' ? 'rf-codegroup' : 'rf-tabs';
+	el.className = rune === 'code-group' ? 'rf-codegroup' : 'rf-tabs';
 	el.innerHTML = `
 		<ul data-name="tabs">${tabs}</ul>
 		<ul data-name="panels">${panels}</ul>
@@ -53,7 +53,7 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	`).join('');
 
 	const el = document.createElement('div');
-	el.setAttribute('data-rune', 'codegroup');
+	el.setAttribute('data-rune', 'code-group');
 	el.className = 'rf-codegroup';
 	el.innerHTML = `
 		<div data-name="topbar" class="rf-codegroup__topbar">
@@ -292,7 +292,7 @@ describe('tabsBehavior', () => {
 
 	it('handles element with no ul', () => {
 		const el = document.createElement('section');
-		el.setAttribute('data-rune', 'tabgroup');
+		el.setAttribute('data-rune', 'tab-group');
 		document.body.appendChild(el);
 
 		const cleanup = tabsBehavior(el);
@@ -301,7 +301,7 @@ describe('tabsBehavior', () => {
 
 	it('handles ul with no Tab/TabPanel items', () => {
 		const el = document.createElement('section');
-		el.setAttribute('data-rune', 'tabgroup');
+		el.setAttribute('data-rune', 'tab-group');
 		el.innerHTML = '<ul><li>Regular item</li></ul>';
 		document.body.appendChild(el);
 

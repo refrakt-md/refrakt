@@ -38,11 +38,11 @@ A classic Italian pasta dish.
 		expect(tag).toBeDefined();
 
 		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const prepTime = metas.find(m => m.attributes.property === 'prepTime');
+		const prepTime = metas.find(m => m.attributes['data-field'] === 'prep-time');
 		expect(prepTime).toBeDefined();
 		expect(prepTime!.attributes.content).toBe('PT10M');
 
-		const difficulty = metas.find(m => m.attributes.property === 'difficulty');
+		const difficulty = metas.find(m => m.attributes['data-field'] === 'difficulty');
 		expect(difficulty).toBeDefined();
 		expect(difficulty!.attributes.content).toBe('hard');
 	});

@@ -81,7 +81,7 @@ export const config: Record<string, RuneConfig> = {
 			// Remove consumed meta children
 			const children = node.children.filter(child => {
 				if (!isTag(child) || child.name !== 'meta') return true;
-				const prop = child.attributes.property;
+				const prop = child.attributes['data-field'];
 				return !(metaProps as readonly string[]).includes(prop);
 			});
 

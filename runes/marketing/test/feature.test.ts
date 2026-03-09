@@ -22,7 +22,7 @@ describe('feature tag', () => {
     expect(featureTag).toBeDefined();
     expect(featureTag!.name).toBe('section');
 
-    const definitions = findAllTags(featureTag!, t => t.attributes['data-rune'] === 'featuredefinition');
+    const definitions = findAllTags(featureTag!, t => t.attributes['data-rune'] === 'feature-definition');
     expect(definitions.length).toBe(3);
   });
 
@@ -42,7 +42,7 @@ describe('feature tag', () => {
     const featureTag = findTag(result as any, t => t.attributes['data-rune'] === 'feature');
     expect(featureTag).toBeDefined();
 
-    const definitions = findAllTags(featureTag!, t => t.attributes['data-rune'] === 'featuredefinition');
+    const definitions = findAllTags(featureTag!, t => t.attributes['data-rune'] === 'feature-definition');
     expect(definitions.length).toBe(2);
 
     // Check that the term is in a dt element

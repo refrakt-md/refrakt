@@ -1,4 +1,5 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
+import { toKebabCase } from './helpers.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
@@ -68,7 +69,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	const contract: RuneContract = {
 		block: config.block,
 		root: `.${block}`,
-		dataRune: runeName.toLowerCase(),
+		dataRune: toKebabCase(runeName),
 		...(config.parent ? { parent: config.parent } : {}),
 		childOrder: [],
 	};

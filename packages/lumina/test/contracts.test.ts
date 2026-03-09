@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { generateStructureContract } from '@refrakt-md/transform';
+import { generateStructureContract, toKebabCase } from '@refrakt-md/transform';
 import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
 import marketing from '@refrakt-md/marketing';
@@ -55,7 +55,7 @@ describe('Structure contracts', () => {
 		for (const [name, contract] of Object.entries(generated.runes)) {
 			expect(contract.block, `${name}: missing block`).toBeTruthy();
 			expect(contract.root, `${name}: missing root`).toMatch(/^\.rf-/);
-			expect(contract.dataRune, `${name}: missing dataRune`).toBe(name.toLowerCase());
+			expect(contract.dataRune, `${name}: missing dataRune`).toBe(toKebabCase(name));
 			expect(contract.childOrder, `${name}: missing childOrder`).toBeInstanceOf(Array);
 			expect(contract.childOrder.length, `${name}: empty childOrder`).toBeGreaterThan(0);
 		}

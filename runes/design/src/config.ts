@@ -11,7 +11,7 @@ export const config: Record<string, RuneConfig> = {
 			showA11y: { source: 'meta' },
 			columns: { source: 'meta' },
 		},
-		contextModifiers: { designcontext: 'in-design-context' },
+		contextModifiers: { 'design-context': 'in-design-context' },
 	},
 	Typography: {
 		block: 'typography',
@@ -21,14 +21,14 @@ export const config: Record<string, RuneConfig> = {
 			showWeights: { source: 'meta' },
 			showCharset: { source: 'meta' },
 		},
-		contextModifiers: { designcontext: 'in-design-context' },
+		contextModifiers: { 'design-context': 'in-design-context' },
 	},
 	Spacing: {
 		block: 'spacing',
 		modifiers: {
 			title: { source: 'meta' },
 		},
-		contextModifiers: { designcontext: 'in-design-context' },
+		contextModifiers: { 'design-context': 'in-design-context' },
 	},
 	DesignContext: {
 		block: 'design-context',
@@ -49,15 +49,15 @@ export const config: Record<string, RuneConfig> = {
 			// This must happen in postTransform (not the rune) because it needs
 			// the fully-transformed tree with BEM classes and structural elements.
 			const hasSource = node.children.some(
-				c => isTag(c) && c.name === 'pre' && c.attributes.property === 'source'
+				c => isTag(c) && c.name === 'pre' && c.attributes['data-field'] === 'source'
 			);
 			if (!hasSource) return node;
 
 			// Extract content children (skip meta, source, htmlSource, themedSource)
 			const contentChildren = node.children.filter(c => {
 				if (!isTag(c)) return true;
-				if (c.name === 'meta' && c.attributes.property) return false;
-				if (c.name === 'pre' && c.attributes.property) return false;
+				if (c.name === 'meta' && c.attributes['data-field']) return false;
+				if (c.name === 'pre' && c.attributes['data-field']) return false;
 				return true;
 			});
 
@@ -65,7 +65,7 @@ export const config: Record<string, RuneConfig> = {
 			if (!html) return node;
 
 			const themedPre = makeTag('pre', {
-				property: 'themedSource',
+				'data-field': 'themed-source',
 				'data-language': 'html',
 			}, [
 				makeTag('code', { 'data-language': 'html' }, [html]),
@@ -99,7 +99,7 @@ export const config: Record<string, RuneConfig> = {
 
 			// Extract viewport and filter consumed meta tags
 			let viewport: SerializedTag | null = null;
-			const consumedMetas = ['statusBar', 'url', 'label', 'scale'];
+			const consumedMetas = ['status-bar', 'url', 'label', 'scale'];
 			for (const child of node.children) {
 				if (isTag(child) && child.attributes?.['data-name'] === 'viewport') {
 					viewport = child;
@@ -110,7 +110,7 @@ export const config: Record<string, RuneConfig> = {
 			const filtered = node.children.filter(child => {
 				if (isTag(child) && child.attributes?.['data-name'] === 'viewport') return false;
 				if (!isTag(child) || child.name !== 'meta') return true;
-				return !consumedMetas.includes(child.attributes.property);
+				return !consumedMetas.includes(child.attributes['data-field']);
 			});
 
 			// Fallback viewport

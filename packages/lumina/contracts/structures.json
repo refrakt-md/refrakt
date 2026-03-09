@@ -41,7 +41,7 @@
 		"AccordionItem": {
 			"block": "accordion-item",
 			"root": ".rf-accordion-item",
-			"dataRune": "accordionitem",
+			"dataRune": "accordion-item",
 			"parent": "Accordion",
 			"childOrder": [
 				"{content}"
@@ -129,7 +129,7 @@
 		"CodeGroup": {
 			"block": "codegroup",
 			"root": ".rf-codegroup",
-			"dataRune": "codegroup",
+			"dataRune": "code-group",
 			"childOrder": [
 				"topbar",
 				"{content}"
@@ -171,7 +171,7 @@
 		"PageSection": {
 			"block": "page-section",
 			"root": ".rf-page-section",
-			"dataRune": "pagesection",
+			"dataRune": "page-section",
 			"childOrder": [
 				"{content}"
 			]
@@ -179,7 +179,7 @@
 		"TableOfContents": {
 			"block": "toc",
 			"root": ".rf-toc",
-			"dataRune": "tableofcontents",
+			"dataRune": "table-of-contents",
 			"childOrder": [
 				"{content}"
 			]
@@ -203,7 +203,7 @@
 		"BreadcrumbItem": {
 			"block": "breadcrumb-item",
 			"root": ".rf-breadcrumb-item",
-			"dataRune": "breadcrumbitem",
+			"dataRune": "breadcrumb-item",
 			"parent": "Breadcrumb",
 			"childOrder": [
 				"{content}"
@@ -296,7 +296,7 @@
 		"BudgetCategory": {
 			"block": "budget-category",
 			"root": ".rf-budget-category",
-			"dataRune": "budgetcategory",
+			"dataRune": "budget-category",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -313,7 +313,7 @@
 		"BudgetLineItem": {
 			"block": "budget-line-item",
 			"root": ".rf-budget-line-item",
-			"dataRune": "budgetlineitem",
+			"dataRune": "budget-line-item",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -466,7 +466,7 @@
 		"ConversationMessage": {
 			"block": "conversation-message",
 			"root": ".rf-conversation-message",
-			"dataRune": "conversationmessage",
+			"dataRune": "conversation-message",
 			"parent": "Conversation",
 			"childOrder": [
 				"{content}"
@@ -499,7 +499,7 @@
 		"AnnotateNote": {
 			"block": "annotate-note",
 			"root": ".rf-annotate-note",
-			"dataRune": "annotatenote",
+			"dataRune": "annotate-note",
 			"parent": "Annotate",
 			"childOrder": [
 				"{content}"
@@ -516,7 +516,7 @@
 		"NavGroup": {
 			"block": "nav-group",
 			"root": ".rf-nav-group",
-			"dataRune": "navgroup",
+			"dataRune": "nav-group",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -525,7 +525,7 @@
 		"NavItem": {
 			"block": "nav-item",
 			"root": ".rf-nav-item",
-			"dataRune": "navitem",
+			"dataRune": "nav-item",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -558,7 +558,7 @@
 		"PullQuote": {
 			"block": "pullquote",
 			"root": ".rf-pullquote",
-			"dataRune": "pullquote",
+			"dataRune": "pull-quote",
 			"childOrder": [
 				"{content}"
 			],
@@ -580,7 +580,7 @@
 		"TextBlock": {
 			"block": "textblock",
 			"root": ".rf-textblock",
-			"dataRune": "textblock",
+			"dataRune": "text-block",
 			"childOrder": [
 				"{content}"
 			],
@@ -611,7 +611,7 @@
 		"MediaText": {
 			"block": "mediatext",
 			"root": ".rf-mediatext",
-			"dataRune": "mediatext",
+			"dataRune": "media-text",
 			"childOrder": [
 				"{content}"
 			],
@@ -669,7 +669,7 @@
 				}
 			},
 			"contextModifiers": {
-				"bentocell": {
+				"bento-cell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
@@ -684,7 +684,7 @@
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",
-			"dataRune": "tabgroup",
+			"dataRune": "tab-group",
 			"childOrder": [
 				"{content}"
 			],
@@ -728,7 +728,7 @@
 		"DataTable": {
 			"block": "datatable",
 			"root": ".rf-datatable",
-			"dataRune": "datatable",
+			"dataRune": "data-table",
 			"childOrder": [
 				"{content}"
 			],
@@ -803,7 +803,7 @@
 		"FormField": {
 			"block": "form-field",
 			"root": ".rf-form-field",
-			"dataRune": "formfield",
+			"dataRune": "form-field",
 			"parent": "Form",
 			"childOrder": [
 				"{content}"
@@ -862,7 +862,7 @@
 		"RevealStep": {
 			"block": "reveal-step",
 			"root": ".rf-reveal-step",
-			"dataRune": "revealstep",
+			"dataRune": "reveal-step",
 			"parent": "Reveal",
 			"childOrder": [
 				"{content}"
@@ -977,7 +977,7 @@
 		"CallToAction": {
 			"block": "cta",
 			"root": ".rf-cta",
-			"dataRune": "calltoaction",
+			"dataRune": "call-to-action",
 			"childOrder": [
 				"{content}"
 			],
@@ -1081,7 +1081,7 @@
 		"BentoCell": {
 			"block": "bento-cell",
 			"root": ".rf-bento-cell",
-			"dataRune": "bentocell",
+			"dataRune": "bento-cell",
 			"parent": "Bento",
 			"childOrder": [
 				"{content}"
@@ -1201,7 +1201,7 @@
 		"FeatureDefinition": {
 			"block": "feature-definition",
 			"root": ".rf-feature-definition",
-			"dataRune": "featuredefinition",
+			"dataRune": "feature-definition",
 			"parent": "Feature",
 			"childOrder": [
 				"{content}"
@@ -1336,7 +1336,7 @@
 		"FeaturedTier": {
 			"block": "tier",
 			"root": ".rf-tier",
-			"dataRune": "featuredtier",
+			"dataRune": "featured-tier",
 			"parent": "Pricing",
 			"childOrder": [
 				"{content}"
@@ -1375,7 +1375,7 @@
 		"ComparisonColumn": {
 			"block": "comparison-column",
 			"root": ".rf-comparison-column",
-			"dataRune": "comparisoncolumn",
+			"dataRune": "comparison-column",
 			"parent": "Comparison",
 			"childOrder": [
 				"{content}"
@@ -1384,7 +1384,7 @@
 		"ComparisonRow": {
 			"block": "comparison-row",
 			"root": ".rf-comparison-row",
-			"dataRune": "comparisonrow",
+			"dataRune": "comparison-row",
 			"parent": "Comparison",
 			"childOrder": [
 				"{content}"
@@ -1542,7 +1542,7 @@
 		"SymbolGroup": {
 			"block": "symbol-group",
 			"root": ".rf-symbol-group",
-			"dataRune": "symbolgroup",
+			"dataRune": "symbol-group",
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
@@ -1551,7 +1551,7 @@
 		"SymbolMember": {
 			"block": "symbol-member",
 			"root": ".rf-symbol-member",
-			"dataRune": "symbolmember",
+			"dataRune": "symbol-member",
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
@@ -1568,7 +1568,7 @@
 		"ChangelogRelease": {
 			"block": "changelog-release",
 			"root": ".rf-changelog-release",
-			"dataRune": "changelogrelease",
+			"dataRune": "changelog-release",
 			"parent": "Changelog",
 			"childOrder": [
 				"{content}"
@@ -1635,7 +1635,7 @@
 		"CharacterSection": {
 			"block": "character-section",
 			"root": ".rf-character-section",
-			"dataRune": "charactersection",
+			"dataRune": "character-section",
 			"parent": "Character",
 			"childOrder": [
 				"{content}"
@@ -1708,7 +1708,7 @@
 		"RealmSection": {
 			"block": "realm-section",
 			"root": ".rf-realm-section",
-			"dataRune": "realmsection",
+			"dataRune": "realm-section",
 			"parent": "Realm",
 			"childOrder": [
 				"{content}"
@@ -1842,7 +1842,7 @@
 		"FactionSection": {
 			"block": "faction-section",
 			"root": ".rf-faction-section",
-			"dataRune": "factionsection",
+			"dataRune": "faction-section",
 			"parent": "Faction",
 			"childOrder": [
 				"{content}"
@@ -1969,7 +1969,7 @@
 		"StoryboardPanel": {
 			"block": "storyboard-panel",
 			"root": ".rf-storyboard-panel",
-			"dataRune": "storyboardpanel",
+			"dataRune": "storyboard-panel",
 			"parent": "Storyboard",
 			"childOrder": [
 				"{content}"
@@ -2076,7 +2076,7 @@
 		"ItineraryDay": {
 			"block": "itinerary-day",
 			"root": ".rf-itinerary-day",
-			"dataRune": "itineraryday",
+			"dataRune": "itinerary-day",
 			"parent": "Itinerary",
 			"childOrder": [
 				"{content}"
@@ -2092,7 +2092,7 @@
 		"ItineraryStop": {
 			"block": "itinerary-stop",
 			"root": ".rf-itinerary-stop",
-			"dataRune": "itinerarystop",
+			"dataRune": "itinerary-stop",
 			"parent": "Itinerary",
 			"childOrder": [
 				"{content}"
@@ -2147,7 +2147,7 @@
 		"MapPin": {
 			"block": "map-pin",
 			"root": ".rf-map-pin",
-			"dataRune": "mappin",
+			"dataRune": "map-pin",
 			"parent": "Map",
 			"childOrder": [
 				"{content}"
@@ -2164,7 +2164,7 @@
 		"CastMember": {
 			"block": "cast-member",
 			"root": ".rf-cast-member",
-			"dataRune": "castmember",
+			"dataRune": "cast-member",
 			"parent": "Cast",
 			"childOrder": [
 				"{content}"
@@ -2197,7 +2197,7 @@
 		"TimelineEntry": {
 			"block": "timeline-entry",
 			"root": ".rf-timeline-entry",
-			"dataRune": "timelineentry",
+			"dataRune": "timeline-entry",
 			"parent": "Timeline",
 			"childOrder": [
 				"{content}"
@@ -2241,7 +2241,7 @@
 				}
 			},
 			"contextModifiers": {
-				"designcontext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-palette--in-design-context"
 				}
@@ -2277,7 +2277,7 @@
 				}
 			},
 			"contextModifiers": {
-				"designcontext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-typography--in-design-context"
 				}
@@ -2298,7 +2298,7 @@
 				}
 			},
 			"contextModifiers": {
-				"designcontext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-spacing--in-design-context"
 				}
@@ -2307,7 +2307,7 @@
 		"DesignContext": {
 			"block": "design-context",
 			"root": ".rf-design-context",
-			"dataRune": "designcontext",
+			"dataRune": "design-context",
 			"childOrder": [
 				"{content}"
 			],
@@ -2375,7 +2375,7 @@
 		"HowTo": {
 			"block": "howto",
 			"root": ".rf-howto",
-			"dataRune": "howto",
+			"dataRune": "how-to",
 			"childOrder": [
 				"meta",
 				"{content:content}"
@@ -2484,7 +2484,7 @@
 		"RecipeIngredient": {
 			"block": "recipe-ingredient",
 			"root": ".rf-recipe-ingredient",
-			"dataRune": "recipeingredient",
+			"dataRune": "recipe-ingredient",
 			"parent": "Recipe",
 			"childOrder": [
 				"{content}"
@@ -2493,7 +2493,7 @@
 		"MusicPlaylist": {
 			"block": "music-playlist",
 			"root": ".rf-music-playlist",
-			"dataRune": "musicplaylist",
+			"dataRune": "music-playlist",
 			"childOrder": [
 				"{content}"
 			]
@@ -2501,7 +2501,7 @@
 		"MusicRecording": {
 			"block": "music-recording",
 			"root": ".rf-music-recording",
-			"dataRune": "musicrecording",
+			"dataRune": "music-recording",
 			"parent": "MusicPlaylist",
 			"childOrder": [
 				"{content}"

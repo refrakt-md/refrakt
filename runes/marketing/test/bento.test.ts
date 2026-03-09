@@ -34,7 +34,7 @@ Small content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(3);
 
     // h2 = large, h3 = medium, h4 = small
@@ -78,11 +78,11 @@ Small content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(4);
 
     const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes.property === 'size')
+      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
     );
     expect(sizeMetas[0]!.attributes.content).toBe('full');
     expect(sizeMetas[1]!.attributes.content).toBe('large');
@@ -106,10 +106,10 @@ Content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
 
     const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes.property === 'size')
+      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
     );
     expect(sizeMetas[0]!.attributes.content).toBe('large');
     expect(sizeMetas[1]!.attributes.content).toBe('medium');
@@ -144,12 +144,12 @@ Spans 1 column.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(6);
 
     // All cells should have size='span'
     const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes.property === 'size')
+      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
     );
     for (const meta of sizeMetas) {
       expect(meta!.attributes.content).toBe('span');
@@ -157,7 +157,7 @@ Spans 1 column.
 
     // Span values: h1→6, h2→5, h3→4, h4→3, h5→2, h6→1
     const spanMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes.property === 'span')
+      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
     );
     expect(spanMetas[0]!.attributes.content).toBe('6');
     expect(spanMetas[1]!.attributes.content).toBe('5');
@@ -192,10 +192,10 @@ Spans 7 columns.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
 
     const spanMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes.property === 'span')
+      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
     );
     expect(spanMetas[0]!.attributes.content).toBe('8');
     expect(spanMetas[1]!.attributes.content).toBe('7');
@@ -215,7 +215,7 @@ Security content.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     expect(tag).toBeDefined();
 
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(2);
 
     // Each cell should have an icon wrapper with data-name="icon"
@@ -238,7 +238,7 @@ Content here.
     });
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(1);
 
     const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
@@ -256,7 +256,7 @@ No icon here.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(1);
 
     const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
@@ -271,7 +271,7 @@ Performance content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(1);
 
     // Icon should exist in the icon wrapper
@@ -293,11 +293,11 @@ Content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bentocell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
     expect(cells.length).toBe(1);
 
     // The name property should contain the heading text (without the icon)
-    const nameTag = findTag(cells[0], t => t.attributes?.property === 'name');
+    const nameTag = findTag(cells[0], t => t.attributes?.['data-field'] === 'name');
     expect(nameTag).toBeDefined();
     expect(nameTag!.children.join('').trim()).toBe('Fast Performance');
   });

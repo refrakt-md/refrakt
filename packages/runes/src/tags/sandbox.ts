@@ -85,7 +85,7 @@ class SandboxModel extends Model {
 			const pre = new Tag('pre', { 'data-language': panel.language }, [
 				new Tag('code', { 'data-language': panel.language }, [panel.content])
 			]);
-			return new Tag('meta', { property: 'source-panel', 'data-label': panel.label }, [pre]);
+			return new Tag('meta', { 'data-field': 'source-panel', 'data-label': panel.label }, [pre]);
 		});
 
 		const childNodes = [
