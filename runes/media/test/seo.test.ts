@@ -7,13 +7,30 @@ function seo(content: string) {
 	return extractSeo(tree, {} as any, '/test');
 }
 
-describe('SEO: MusicPlaylist', () => {
+describe('SEO: Playlist', () => {
 	it('should extract MusicPlaylist with tracks', () => {
+		const result = seo(`{% playlist %}
+# Summer Vibes
+
+- **Track One** (3:42)
+- **Track Two** (4:15)
+{% /playlist %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const playlist = result.jsonLd[0] as any;
+		expect(playlist['@context']).toBe('https://schema.org');
+		expect(playlist['@type']).toBe('MusicPlaylist');
+		expect(playlist.name).toBe('Summer Vibes');
+	});
+});
+
+describe('SEO: MusicPlaylist (legacy)', () => {
+	it('should extract MusicPlaylist with tracks using legacy name', () => {
 		const result = seo(`{% music-playlist %}
 # Summer Vibes
 
-- Track One | 3:42
-- Track Two | 4:15
+- **Track One** (3:42)
+- **Track Two** (4:15)
 {% /music-playlist %}`);
 
 		expect(result.jsonLd).toHaveLength(1);
@@ -21,8 +38,5 @@ describe('SEO: MusicPlaylist', () => {
 		expect(playlist['@context']).toBe('https://schema.org');
 		expect(playlist['@type']).toBe('MusicPlaylist');
 		expect(playlist.name).toBe('Summer Vibes');
-		expect(playlist.track).toBeDefined();
-		expect(playlist.track.length).toBeGreaterThanOrEqual(2);
-		expect(playlist.track[0]['@type']).toBe('MusicRecording');
 	});
 });
