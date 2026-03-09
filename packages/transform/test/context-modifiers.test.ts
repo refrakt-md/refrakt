@@ -15,15 +15,15 @@ const testConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
+			contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		},
 		CallToAction: {
 			block: 'cta',
-			contextModifiers: { 'Hero': 'in-hero' },
+			contextModifiers: { 'hero': 'in-hero' },
 		},
 		Feature: {
 			block: 'feature',
-			contextModifiers: { 'Hero': 'in-hero' },
+			contextModifiers: { 'hero': 'in-hero' },
 		},
 		// A rune with no contextModifiers
 		Plain: { block: 'plain' },
@@ -58,7 +58,7 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 
 describe('context-aware BEM modifiers', () => {
 	it('standalone rune gets no context modifier', () => {
-		const hint = makeTag('section', { 'data-rune': 'Hint' }, [
+		const hint = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
 			'Some warning text',
 		]);
@@ -70,8 +70,8 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune nested inside a matching parent gets the modifier class', () => {
-		const hero = makeTag('section', { 'data-rune': 'Hero' }, [
-			makeTag('section', { 'data-rune': 'Hint' }, [
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'hint' }, [
 				makeTag('meta', { property: 'hintType', content: 'note' }, []),
 				'A note inside hero',
 			]),
@@ -87,8 +87,8 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune nested inside a non-matching parent gets no context modifier', () => {
-		const grid = makeTag('section', { 'data-rune': 'Grid' }, [
-			makeTag('section', { 'data-rune': 'CallToAction' }, [
+		const grid = makeTag('section', { 'data-rune': 'grid' }, [
+			makeTag('section', { 'data-rune': 'calltoaction' }, [
 				'CTA inside grid',
 			]),
 		]);
@@ -103,9 +103,9 @@ describe('context-aware BEM modifiers', () => {
 
 	it('deeply nested: only immediate parent rune matters', () => {
 		// Hero > Grid > Hint — Hint's parent is Grid, not Hero
-		const hero = makeTag('section', { 'data-rune': 'Hero' }, [
-			makeTag('section', { 'data-rune': 'Grid' }, [
-				makeTag('section', { 'data-rune': 'Hint' }, [
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'grid' }, [
+				makeTag('section', { 'data-rune': 'hint' }, [
 					makeTag('meta', { property: 'hintType', content: 'note' }, []),
 					'Deep hint',
 				]),
@@ -122,9 +122,9 @@ describe('context-aware BEM modifiers', () => {
 
 	it('context passes through non-rune wrapper elements', () => {
 		// Hero > div (not a rune) > Hint — parent context should pass through the div
-		const hero = makeTag('section', { 'data-rune': 'Hero' }, [
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('div', {}, [
-				makeTag('section', { 'data-rune': 'Hint' }, [
+				makeTag('section', { 'data-rune': 'hint' }, [
 					makeTag('meta', { property: 'hintType', content: 'note' }, []),
 					'Hint inside a wrapper div inside hero',
 				]),
@@ -138,8 +138,8 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune without contextModifiers is unaffected by parent context', () => {
-		const hero = makeTag('section', { 'data-rune': 'Hero' }, [
-			makeTag('section', { 'data-rune': 'Plain' }, ['Plain rune inside hero']),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'plain' }, ['Plain rune inside hero']),
 		]);
 
 		const result = asTag(transform(hero));
@@ -149,9 +149,9 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('top-level rune sets context for its children', () => {
-		const hero = makeTag('section', { 'data-rune': 'Hero' }, [
-			makeTag('section', { 'data-rune': 'Feature' }, ['Feature inside hero']),
-			makeTag('section', { 'data-rune': 'CallToAction' }, ['CTA inside hero']),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'feature' }, ['Feature inside hero']),
+			makeTag('section', { 'data-rune': 'calltoaction' }, ['CTA inside hero']),
 		]);
 
 		const result = asTag(transform(hero));

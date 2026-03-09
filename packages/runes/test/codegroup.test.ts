@@ -13,7 +13,7 @@ x = 1
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
   });
@@ -29,9 +29,9 @@ x = 1
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'Tab');
-    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'TabPanel');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
+    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
+    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'tabpanel');
     expect(tabs.length).toBe(2);
     expect(panels.length).toBe(2);
   });
@@ -47,8 +47,8 @@ x = 1
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'Tab');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
+    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
 
     // Tab names should contain prettified language names
     const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
@@ -68,8 +68,8 @@ const x = 1;
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'Tab');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
+    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
 
     const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
     const secondTabSpan = findTag(tabs[1], t => t.name === 'span');
@@ -84,7 +84,7 @@ const x = 1;
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
     const titleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'title' && t.attributes.content === 'app.js');
     expect(titleMeta).toBeDefined();
   });
@@ -96,9 +96,9 @@ const x = 1;
 \`\`\`
 {% /codegroup %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'CodeGroup');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'codegroup');
     expect(tag).toBeDefined();
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'Tab');
+    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
     expect(tabs.length).toBe(1);
   });
 });

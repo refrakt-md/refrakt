@@ -7,19 +7,19 @@ import { loadContent } from '../src/site.js';
 
 describe('collectRuneTypes', () => {
   it('should collect typeof from a single tag', () => {
-    const tag = new Tag('section', { 'data-rune': 'Accordion' }, []);
-    expect(collectRuneTypes(tag)).toEqual(new Set(['Accordion']));
+    const tag = new Tag('section', { 'data-rune': 'accordion' }, []);
+    expect(collectRuneTypes(tag)).toEqual(new Set(['accordion']));
   });
 
   it('should collect typeof from nested tags', () => {
-    const inner = new Tag('div', { 'data-rune':'AccordionItem' }, ['content']);
-    const outer = new Tag('section', { 'data-rune':'Accordion' }, [inner]);
-    expect(collectRuneTypes(outer)).toEqual(new Set(['Accordion', 'AccordionItem']));
+    const inner = new Tag('div', { 'data-rune':'accordionitem' }, ['content']);
+    const outer = new Tag('section', { 'data-rune':'accordion' }, [inner]);
+    expect(collectRuneTypes(outer)).toEqual(new Set(['accordion', 'accordionitem']));
   });
 
   it('should handle string nodes', () => {
-    const tag = new Tag('section', { 'data-rune':'Hint' }, ['just a string']);
-    expect(collectRuneTypes(tag)).toEqual(new Set(['Hint']));
+    const tag = new Tag('section', { 'data-rune':'hint' }, ['just a string']);
+    expect(collectRuneTypes(tag)).toEqual(new Set(['hint']));
   });
 
   it('should handle null nodes', () => {
@@ -27,9 +27,9 @@ describe('collectRuneTypes', () => {
   });
 
   it('should handle arrays of nodes', () => {
-    const a = new Tag('div', { 'data-rune':'Tabs' }, []);
-    const b = new Tag('div', { 'data-rune':'Steps' }, []);
-    expect(collectRuneTypes([a, b])).toEqual(new Set(['Tabs', 'Steps']));
+    const a = new Tag('div', { 'data-rune':'tabs' }, []);
+    const b = new Tag('div', { 'data-rune':'steps' }, []);
+    expect(collectRuneTypes([a, b])).toEqual(new Set(['tabs', 'steps']));
   });
 
   it('should ignore tags without typeof', () => {
@@ -38,10 +38,10 @@ describe('collectRuneTypes', () => {
   });
 
   it('should handle deeply nested trees', () => {
-    const deep = new Tag('span', { 'data-rune':'Diff' }, []);
+    const deep = new Tag('span', { 'data-rune':'diff' }, []);
     const mid = new Tag('div', {}, [deep]);
-    const top = new Tag('section', { 'data-rune':'Compare' }, [mid]);
-    expect(collectRuneTypes(top)).toEqual(new Set(['Compare', 'Diff']));
+    const top = new Tag('section', { 'data-rune':'compare' }, [mid]);
+    expect(collectRuneTypes(top)).toEqual(new Set(['compare', 'diff']));
   });
 });
 
@@ -54,8 +54,8 @@ describe('analyzeRuneUsage', () => {
 
   it('should analyze page renderables', () => {
     const renderable = new Tag('article', {}, [
-      new Tag('section', { 'data-rune':'Hint' }, ['note']),
-      new Tag('section', { 'data-rune':'Steps' }, []),
+      new Tag('section', { 'data-rune':'hint' }, ['note']),
+      new Tag('section', { 'data-rune':'steps' }, []),
     ]);
 
     const page = {
@@ -65,16 +65,16 @@ describe('analyzeRuneUsage', () => {
     } as any;
 
     const report = analyzeRuneUsage([page]);
-    expect(report.allTypes).toEqual(new Set(['Hint', 'Steps']));
-    expect(report.perPage.get('/test')).toEqual(new Set(['Hint', 'Steps']));
+    expect(report.allTypes).toEqual(new Set(['hint', 'steps']));
+    expect(report.perPage.get('/test')).toEqual(new Set(['hint', 'steps']));
   });
 
   it('should include layout region types', () => {
     const renderable = new Tag('article', {}, [
-      new Tag('section', { 'data-rune':'Hero' }, []),
+      new Tag('section', { 'data-rune':'hero' }, []),
     ]);
 
-    const navTag = new Tag('nav', { 'data-rune':'Nav' }, []);
+    const navTag = new Tag('nav', { 'data-rune':'nav' }, []);
 
     const regions = new Map([
       ['sidebar', { name: 'sidebar', mode: 'replace' as const, content: [navTag] }],
@@ -87,27 +87,27 @@ describe('analyzeRuneUsage', () => {
     } as any;
 
     const report = analyzeRuneUsage([page]);
-    expect(report.allTypes).toEqual(new Set(['Hero', 'Nav']));
-    expect(report.perPage.get('/test')).toEqual(new Set(['Hero', 'Nav']));
+    expect(report.allTypes).toEqual(new Set(['hero', 'nav']));
+    expect(report.perPage.get('/test')).toEqual(new Set(['hero', 'nav']));
   });
 
   it('should aggregate types across multiple pages', () => {
     const page1 = {
       route: { url: '/a' },
-      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'Tabs' }, [])]),
+      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'tabs' }, [])]),
       layout: { chain: [], regions: new Map() },
     } as any;
 
     const page2 = {
       route: { url: '/b' },
-      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'Accordion' }, [])]),
+      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'accordion' }, [])]),
       layout: { chain: [], regions: new Map() },
     } as any;
 
     const report = analyzeRuneUsage([page1, page2]);
-    expect(report.allTypes).toEqual(new Set(['Tabs', 'Accordion']));
-    expect(report.perPage.get('/a')).toEqual(new Set(['Tabs']));
-    expect(report.perPage.get('/b')).toEqual(new Set(['Accordion']));
+    expect(report.allTypes).toEqual(new Set(['tabs', 'accordion']));
+    expect(report.perPage.get('/a')).toEqual(new Set(['tabs']));
+    expect(report.perPage.get('/b')).toEqual(new Set(['accordion']));
   });
 
   const fixtureDir = path.resolve(import.meta.dirname, 'fixtures/site');

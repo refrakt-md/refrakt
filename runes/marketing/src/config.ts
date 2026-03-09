@@ -199,10 +199,10 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'Feature': 'in-feature' },
+		contextModifiers: { 'feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -244,7 +244,7 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
+		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		autoLabel: pageSectionAutoLabel,
 	},
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
@@ -322,13 +322,13 @@ export const config: Record<string, RuneConfig> = {
 				: '';
 
 			// Find ComparisonColumn children (inside the grid wrapper)
-			const columns = collectByRune(node.children, 'ComparisonColumn');
+			const columns = collectByRune(node.children, 'comparisoncolumn');
 
 			// Extract structured data from each column
 			const columnData: ComparisonColData[] = columns.map(col => ({
 				name: readPropText(col, 'name'),
 				highlighted: readLocalMeta(col, 'highlighted') === 'true',
-				rows: collectByRune(col.children, 'ComparisonRow'),
+				rows: collectByRune(col.children, 'comparisonrow'),
 			}));
 
 			// Build layout

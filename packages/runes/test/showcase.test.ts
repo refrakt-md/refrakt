@@ -7,7 +7,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
@@ -20,7 +20,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');
@@ -33,7 +33,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bleed');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('top');
@@ -44,7 +44,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'offset');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('lg');
@@ -55,7 +55,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('16/9');
@@ -66,7 +66,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');
@@ -81,7 +81,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');

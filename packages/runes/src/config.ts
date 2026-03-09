@@ -218,7 +218,7 @@ export const coreConfig: ThemeConfig = {
 				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
 
 				// Find all BudgetCategory children and compute totals
-				const categories = collectByRune(node.children, 'BudgetCategory');
+				const categories = collectByRune(node.children, 'budgetcategory');
 				let grandTotal = 0;
 
 				for (const cat of categories) {
@@ -286,7 +286,7 @@ export const coreConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'Hero': 'in-hero', 'Feature': 'in-feature' },
+			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			structure: {
 				header: {
 					tag: 'div', before: true,
@@ -536,7 +536,7 @@ export const coreConfig: ThemeConfig = {
 				offset: { source: 'meta', noBemClass: true },
 				place: { source: 'meta', noBemClass: true },
 			},
-			contextModifiers: { 'BentoCell': 'in-bento-cell' },
+			contextModifiers: { 'bentocell': 'in-bento-cell' },
 			styles: {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
@@ -766,7 +766,7 @@ function resolveAutoBreadcrumbs(
 	const tag = renderable as any;
 
 	// Check if this is a Breadcrumb auto placeholder
-	if (tag.attributes?.['data-rune'] === 'Breadcrumb') {
+	if (tag.attributes?.['data-rune'] === 'breadcrumb') {
 		const hasSentinel = tag.children?.some(
 			(c: any) => Tag.isTag(c) && c.attributes?.property === BREADCRUMB_AUTO_SENTINEL
 		);
@@ -867,7 +867,7 @@ function resolveAutoNavs(
 	const tag = renderable as any;
 
 	// Check if this is a Nav auto placeholder
-	if (tag.attributes?.['data-rune'] === 'Nav') {
+	if (tag.attributes?.['data-rune'] === 'nav') {
 		const hasSentinel = tag.children?.some(
 			(c: any) => Tag.isTag(c) && c.attributes?.property === NAV_AUTO_SENTINEL
 		);

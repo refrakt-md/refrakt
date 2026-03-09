@@ -27,7 +27,7 @@ export function buildSeoTypeMap(runes: Record<string, Rune>): Map<string, string
 	const map = new Map<string, string>();
 	for (const rune of Object.values(runes)) {
 		if (rune.seoType && rune.type) {
-			map.set(rune.type.name, rune.seoType);
+			map.set(rune.type.name.toLowerCase(), rune.seoType);
 		}
 	}
 	return map;
@@ -124,7 +124,7 @@ function metaContent(tag: Tag, propertyName: string): string | number | undefine
 type Extractor = (tag: Tag) => object | object[];
 
 function extractFAQPage(tag: Tag): object {
-	const items = findAll(tag, t => t.attributes['data-rune'] === 'AccordionItem');
+	const items = findAll(tag, t => t.attributes['data-rune'] === 'accordionitem');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
@@ -150,7 +150,7 @@ function extractProduct(tag: Tag): object {
 	const blurb = findProperty(tag, 'blurb');
 	const tiers = findAll(
 		tag,
-		t => t.attributes['data-rune'] === 'Tier' || t.attributes['data-rune'] === 'FeaturedTier',
+		t => t.attributes['data-rune'] === 'tier' || t.attributes['data-rune'] === 'featuredtier',
 	);
 
 	return {
@@ -221,7 +221,7 @@ function extractReview(tag: Tag): object {
 }
 
 function extractBreadcrumbList(tag: Tag): object {
-	const items = findAll(tag, t => t.attributes['data-rune'] === 'BreadcrumbItem');
+	const items = findAll(tag, t => t.attributes['data-rune'] === 'breadcrumbitem');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',
@@ -239,7 +239,7 @@ function extractBreadcrumbList(tag: Tag): object {
 }
 
 function extractItemList(tag: Tag): object {
-	const entries = findAll(tag, t => t.attributes['data-rune'] === 'TimelineEntry');
+	const entries = findAll(tag, t => t.attributes['data-rune'] === 'timelineentry');
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'ItemList',
@@ -280,7 +280,7 @@ function extractImageObject(tag: Tag): object {
 
 function extractMusicPlaylist(tag: Tag): object {
 	const headline = findProperty(tag, 'headline');
-	const tracks = findAll(tag, t => t.attributes['data-rune'] === 'MusicRecording');
+	const tracks = findAll(tag, t => t.attributes['data-rune'] === 'musicrecording');
 
 	return {
 		'@context': 'https://schema.org',
@@ -384,7 +384,7 @@ function extractEvent(tag: Tag): object {
 }
 
 function extractPerson(tag: Tag): object | object[] {
-	const members = findAll(tag, t => t.attributes['data-rune'] === 'CastMember');
+	const members = findAll(tag, t => t.attributes['data-rune'] === 'castmember');
 
 	if (members.length > 0) {
 		const people = members.map(member => {
@@ -555,7 +555,7 @@ function extractOgMeta(
 	if (frontmatter.image) og.image = frontmatter.image as string;
 
 	// Priority 2: Hero rune
-	const hero = findFirst(tree, tag => tag.attributes?.['data-rune'] === 'Hero');
+	const hero = findFirst(tree, tag => tag.attributes?.['data-rune'] === 'hero');
 	if (hero) {
 		if (!og.title) {
 			const headline = findProperty(hero, 'headline');

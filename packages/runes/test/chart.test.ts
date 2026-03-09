@@ -11,7 +11,7 @@ describe('chart tag', () => {
 | Mar   | 150     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 	});
@@ -24,7 +24,7 @@ describe('chart tag', () => {
 | 2024 | 5000  |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
 		const type = metas.find(m => m.attributes.property === 'type');
@@ -47,7 +47,7 @@ describe('chart tag', () => {
 | Jan   | 100     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		const dataMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-name'] === 'data');
 		expect(dataMeta).toBeDefined();
 

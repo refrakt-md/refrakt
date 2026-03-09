@@ -9,7 +9,7 @@ type PostTransformFn = (node: SerializedTag, context: { modifiers: Record<string
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
-	'Nav', 'NavGroup', 'NavItem',   // needs RfContext.pages
+	'nav', 'navgroup', 'navitem',   // needs RfContext.pages
 ]);
 
 /**
@@ -125,7 +125,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	}
 
 	const tag = node as SerializedTag;
-	if (tag.attributes?.['data-rune'] === 'Sandbox') {
+	if (tag.attributes?.['data-rune'] === 'sandbox') {
 		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 		const contexts = design?.contexts ?? {};
 		const contextChild = tag.children?.find(

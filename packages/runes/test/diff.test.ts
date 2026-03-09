@@ -13,7 +13,7 @@ const x = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 	});
@@ -29,7 +29,7 @@ const x: number = 1;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
 		const mode = metas.find(m => m.attributes.property === 'mode');
@@ -54,7 +54,7 @@ const z = 3;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
 		expect(lines.length).toBeGreaterThan(0);
 
@@ -82,7 +82,7 @@ let y = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const lineContents = findAllTags(tag!, t => t.attributes['data-name'] === 'line-content');
 		expect(lineContents.length).toBeGreaterThan(0);
 
@@ -108,7 +108,7 @@ const x = 1;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
 		expect(lines.length).toBeGreaterThan(0);
 
@@ -127,7 +127,7 @@ let y = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Diff');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
 		expect(splitContainer).toBeDefined();
 

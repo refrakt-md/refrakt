@@ -33,6 +33,9 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
+	// Build lowercase → config-key map for case-insensitive rune lookup
+	const runeKeyMap = new Map(Object.keys(runes).map(k => [k.toLowerCase(), k]));
+
 	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
@@ -40,8 +43,9 @@ export function createTransform(config: ThemeConfig) {
 		if (!isTag(tree)) return tree;
 
 		const dataRune = tree.attributes?.['data-rune'];
-		if (dataRune && dataRune in runes) {
-			return transformRune(tree, runes[dataRune], prefix, icons, tints, backgrounds, identityTransform, parentRune);
+		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
+		if (configKey) {
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
@@ -385,7 +389,7 @@ function transformRune(
 			...tintDataAttrs,
 			...bgDataAttrs,
 			class: bemClass,
-			'data-rune': dataRune ? dataRune.toLowerCase() : undefined,
+			'data-rune': dataRune,
 			...(config.rootAttributes || {}),
 			...(inlineStyle ? { style: inlineStyle } : {}),
 		},

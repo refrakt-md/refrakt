@@ -11,21 +11,21 @@ function asTag(node: any): SerializedTag {
 
 function makeNavTree() {
 	return [
-		makeTag('section', { 'data-rune': 'NavGroup' }, [
+		makeTag('section', { 'data-rune': 'navgroup' }, [
 			makeTag('h2', {}, ['Getting Started']),
-			makeTag('div', { 'data-rune': 'NavItem' }, [
+			makeTag('div', { 'data-rune': 'navitem' }, [
 				makeTag('span', { property: 'slug' }, ['introduction']),
 			]),
-			makeTag('div', { 'data-rune': 'NavItem' }, [
+			makeTag('div', { 'data-rune': 'navitem' }, [
 				makeTag('span', { property: 'slug' }, ['installation']),
 			]),
 		]),
-		makeTag('section', { 'data-rune': 'NavGroup' }, [
+		makeTag('section', { 'data-rune': 'navgroup' }, [
 			makeTag('h2', {}, ['Guides']),
-			makeTag('div', { 'data-rune': 'NavItem' }, [
+			makeTag('div', { 'data-rune': 'navitem' }, [
 				makeTag('span', { property: 'slug' }, ['quickstart']),
 			]),
-			makeTag('div', { 'data-rune': 'NavItem' }, [
+			makeTag('div', { 'data-rune': 'navitem' }, [
 				makeTag('span', { property: 'slug' }, ['advanced']),
 			]),
 		]),

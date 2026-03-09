@@ -336,11 +336,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-hint--in-hero"
 				},
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
 				}
@@ -669,7 +669,7 @@
 				}
 			},
 			"contextModifiers": {
-				"BentoCell": {
+				"bentocell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
@@ -925,7 +925,7 @@
 				}
 			},
 			"contextModifiers": {
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hero--in-feature"
 				}
@@ -982,11 +982,11 @@
 				"{content}"
 			],
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-cta--in-hero"
 				},
-				"Pricing": {
+				"pricing": {
 					"suffix": "in-pricing",
 					"selector": ".rf-cta--in-pricing"
 				}
@@ -1150,11 +1150,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-feature--in-hero"
 				},
-				"Grid": {
+				"grid": {
 					"suffix": "in-grid",
 					"selector": ".rf-feature--in-grid"
 				}
@@ -2241,7 +2241,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"designcontext": {
 					"suffix": "in-design-context",
 					"selector": ".rf-palette--in-design-context"
 				}
@@ -2277,7 +2277,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"designcontext": {
 					"suffix": "in-design-context",
 					"selector": ".rf-typography--in-design-context"
 				}
@@ -2298,7 +2298,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"designcontext": {
 					"suffix": "in-design-context",
 					"selector": ".rf-spacing--in-design-context"
 				}

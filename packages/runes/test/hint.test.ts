@@ -9,10 +9,10 @@ This is a warning message.
 
     expect(result).toBeDefined();
 
-    const hint = findTag(result as any, t => t.attributes['data-rune'] === 'Hint');
+    const hint = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
     expect(hint).toBeDefined();
     expect(hint!.name).toBe('section');
-    expect(hint!.attributes['data-rune']).toBe('Hint');
+    expect(hint!.attributes['data-rune']).toBe('hint');
   });
 
   it('should default hint type to note', () => {
@@ -20,7 +20,7 @@ This is a warning message.
 This is a note.
 {% /hint %}`);
 
-    const hint = findTag(result as any, t => t.attributes['data-rune'] === 'Hint');
+    const hint = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
     expect(hint).toBeDefined();
 
     const meta = findTag(hint!, t => t.name === 'meta');

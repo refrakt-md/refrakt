@@ -13,7 +13,7 @@ const x = 2;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Compare');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 	});
@@ -29,7 +29,7 @@ const b = 2;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Compare');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
 		const layoutMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'stacked');
 		expect(layoutMeta).toBeDefined();
 	});
@@ -45,7 +45,7 @@ const after = true;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Compare');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
 		const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-panel'] === true);
 		expect(panels.length).toBe(2);
 	});
@@ -65,7 +65,7 @@ const after = true;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Compare');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
 		const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-panel'] === true);
 		expect(panels.length).toBe(3);
 	});

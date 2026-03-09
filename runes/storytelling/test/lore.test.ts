@@ -7,7 +7,7 @@ describe('lore tag', () => {
 Ancient beings worshipped before the current pantheon.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -17,7 +17,7 @@ Ancient beings worshipped before the current pantheon.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'title');
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Prophecy');
@@ -28,7 +28,7 @@ Content.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		const catMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'category');
 		expect(catMeta).toBeDefined();
 		expect(catMeta!.attributes.content).toBe('prophecy');
@@ -39,7 +39,7 @@ Content.
 Hidden content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		const spoilerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'spoiler');
 		expect(spoilerMeta).toBeDefined();
 		expect(spoilerMeta!.attributes.content).toBe('true');
@@ -50,7 +50,7 @@ Hidden content.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		const tagsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'tags');
 		expect(tagsMeta).toBeDefined();
 		expect(tagsMeta!.attributes.content).toBe('magic,history');
@@ -61,7 +61,7 @@ Content.
 Long ago...
 {% /legend %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Lore');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
 		expect(tag).toBeDefined();
 	});
 });

@@ -7,7 +7,7 @@ describe('embed tag', () => {
 Watch the video.
 {% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 
@@ -20,7 +20,7 @@ Watch the video.
 	it('should detect youtu.be short URLs', () => {
 		const result = parse(`{% embed url="https://youtu.be/dQw4w9WgXcQ" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		const embedUrlMeta = findTag(tag!, t =>
 			t.name === 'meta' && typeof t.attributes.content === 'string' && t.attributes.content.includes('youtube-nocookie.com/embed/dQw4w9WgXcQ')
 		);
@@ -30,7 +30,7 @@ Watch the video.
 	it('should default aspect ratio to 16:9', () => {
 		const result = parse(`{% embed url="https://example.com/video" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		const aspectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '16:9');
 		expect(aspectMeta).toBeDefined();
 	});
@@ -38,7 +38,7 @@ Watch the video.
 	it('should allow manual type override', () => {
 		const result = parse(`{% embed url="https://example.com/content" type="video" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'video');
 		expect(typeMeta).toBeDefined();
 	});
@@ -48,7 +48,7 @@ Watch the video.
 Watch this video for a demo.
 {% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		const fallback = findTag(tag!, t => t.name === 'div');
 		expect(fallback).toBeDefined();
 	});
@@ -56,7 +56,7 @@ Watch this video for a demo.
 	it('should detect CodePen URLs', () => {
 		const result = parse(`{% embed url="https://codepen.io/user/pen/abc123" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Embed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
 		const providerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'codepen');
 		expect(providerMeta).toBeDefined();
 	});

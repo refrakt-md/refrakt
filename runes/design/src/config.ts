@@ -11,7 +11,7 @@ export const config: Record<string, RuneConfig> = {
 			showA11y: { source: 'meta' },
 			columns: { source: 'meta' },
 		},
-		contextModifiers: { DesignContext: 'in-design-context' },
+		contextModifiers: { designcontext: 'in-design-context' },
 	},
 	Typography: {
 		block: 'typography',
@@ -21,14 +21,14 @@ export const config: Record<string, RuneConfig> = {
 			showWeights: { source: 'meta' },
 			showCharset: { source: 'meta' },
 		},
-		contextModifiers: { DesignContext: 'in-design-context' },
+		contextModifiers: { designcontext: 'in-design-context' },
 	},
 	Spacing: {
 		block: 'spacing',
 		modifiers: {
 			title: { source: 'meta' },
 		},
-		contextModifiers: { DesignContext: 'in-design-context' },
+		contextModifiers: { designcontext: 'in-design-context' },
 	},
 	DesignContext: {
 		block: 'design-context',

@@ -14,7 +14,7 @@ Build something amazing with our platform.
 
     expect(result).toBeDefined();
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'CallToAction');
+    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'calltoaction');
     expect(ctaTag).toBeDefined();
     expect(ctaTag!.name).toBe('section');
   });
@@ -28,7 +28,7 @@ Get started now.
 - [Start](/start)
 {% /call-to-action %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'CallToAction');
+    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'calltoaction');
     expect(ctaTag).toBeDefined();
   });
 
@@ -41,10 +41,10 @@ npm install refrakt-md
 \`\`\`
 {% /cta %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'CallToAction');
+    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'calltoaction');
     expect(ctaTag).toBeDefined();
 
-    const command = findTag(ctaTag!, t => t.attributes['data-rune'] === 'Command');
+    const command = findTag(ctaTag!, t => t.attributes['data-rune'] === 'command');
     expect(command).toBeDefined();
   });
 
@@ -58,10 +58,10 @@ Take the next step.
 - [Learn More](/docs)
 {% /cta %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'CallToAction');
+    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'calltoaction');
     expect(ctaTag).toBeDefined();
 
-    const linkItem = findTag(ctaTag!, t => t.attributes['data-rune'] === 'LinkItem');
+    const linkItem = findTag(ctaTag!, t => t.attributes['data-rune'] === 'linkitem');
     expect(linkItem).toBeDefined();
   });
 });

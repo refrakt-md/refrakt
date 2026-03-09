@@ -12,7 +12,7 @@ A leading technology company.
 - [Twitter](https://twitter.com/acme)
 {% /organization %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Organization');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -24,7 +24,7 @@ A leading technology company.
 Description.
 {% /organization %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Organization');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'type');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('LocalBusiness');
@@ -37,7 +37,7 @@ Description.
 Open Monday to Friday.
 {% /business %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Organization');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
 	});
 });

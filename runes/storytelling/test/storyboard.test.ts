@@ -13,7 +13,7 @@ Caption for panel 1.
 Caption for panel 2.
 {% /storyboard %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Storyboard');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('div');
   });
@@ -29,8 +29,8 @@ First panel caption.
 Second panel caption.
 {% /storyboard %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Storyboard');
-    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'StoryboardPanel');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
+    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'storyboardpanel');
     expect(panels.length).toBe(2);
   });
 
@@ -41,7 +41,7 @@ Second panel caption.
 Caption.
 {% /storyboard %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Storyboard');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
     const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'comic');
     expect(variantMeta).toBeDefined();
   });
@@ -53,7 +53,7 @@ Caption.
 Caption.
 {% /comic %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Storyboard');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
     expect(tag).toBeDefined();
   });
 
@@ -64,7 +64,7 @@ Caption.
 Caption.
 {% /storyboard %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Storyboard');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
     const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '2');
     expect(columnsMeta).toBeDefined();
   });

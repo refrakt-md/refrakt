@@ -43,7 +43,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
 		]);
 
@@ -63,7 +63,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, []);
+		const tag = makeTag('section', { 'data-rune': 'hint' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toContain('rf-hint--note');
@@ -80,7 +80,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, []);
+		const tag = makeTag('section', { 'data-rune': 'hint' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes['data-hint-type']).toBe('warning');
@@ -100,7 +100,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('figure', { 'data-rune': 'Figure' }, [
+		const tag = makeTag('figure', { 'data-rune': 'figure' }, [
 			makeTag('meta', { property: 'size', content: 'large' }, []),
 			makeTag('meta', { property: 'align', content: 'left' }, []),
 		]);
@@ -123,7 +123,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toBe('rf-test');
@@ -138,7 +138,7 @@ describe('basic modifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, []);
+		const tag = makeTag('section', { 'data-rune': 'hint' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes['data-rune']).toBe('hint');
@@ -160,7 +160,7 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'AccordionItem' }, [
+		const tag = makeTag('div', { 'data-rune': 'accordionitem' }, [
 			makeTag('name', {}, ['Title']),
 		]);
 
@@ -182,7 +182,7 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('span', { property: 'title' }, ['My Title']),
 		]);
 
@@ -204,7 +204,7 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('summary', { 'data-name': 'custom' }, ['text']),
 		]);
 
@@ -226,7 +226,7 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('p', {}, ['text']),
 		]);
 
@@ -253,7 +253,7 @@ describe('contentWrapper', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Recipe' }, [
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
 			makeTag('ul', {}, ['item 1']),
 			makeTag('ol', {}, ['item 2']),
 		]);
@@ -282,7 +282,7 @@ describe('contentWrapper', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Api' }, [
+		const tag = makeTag('section', { 'data-rune': 'api' }, [
 			makeTag('p', {}, ['Description']),
 		]);
 
@@ -305,7 +305,7 @@ describe('contentWrapper', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('p', {}, ['Para 1']),
 			makeTag('p', {}, ['Para 2']),
 		]);
@@ -336,7 +336,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -358,7 +358,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -387,7 +387,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -415,7 +415,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Api' }, [
+		const tag = makeTag('section', { 'data-rune': 'api' }, [
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -440,7 +440,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Api' }, [
+		const tag = makeTag('section', { 'data-rune': 'api' }, [
 			makeTag('meta', { property: 'auth', content: 'Bearer' }, []),
 			makeTag('p', {}, ['Content']),
 		]);
@@ -469,7 +469,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Recipe' }, [
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
 			makeTag('meta', { property: 'prepTime', content: 'PT30M' }, []),
 		]);
 
@@ -497,7 +497,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Recipe' }, [
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
 			makeTag('p', {}, ['Content']),
 		]);
 
@@ -521,7 +521,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		const element = result.children.find(
@@ -549,7 +549,7 @@ describe('structure metaText', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Api' }, []);
+		const tag = makeTag('section', { 'data-rune': 'api' }, []);
 
 		const result = asTag(transform(tag));
 		const badge = result.children.find(
@@ -572,7 +572,7 @@ describe('structure metaText', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Recipe' }, [
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
 			makeTag('meta', { property: 'prepTime', content: 'PT1H30M' }, []),
 		]);
 
@@ -597,7 +597,7 @@ describe('structure metaText', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('meta', { property: 'method', content: 'get' }, []),
 		]);
 
@@ -622,7 +622,7 @@ describe('structure metaText', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, [
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
 			makeTag('meta', { property: 'difficulty', content: 'easy' }, []),
 		]);
 
@@ -647,7 +647,7 @@ describe('structure metaText', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Recipe' }, [
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
 			makeTag('meta', { property: 'servings', content: '4' }, []),
 		]);
 
@@ -676,7 +676,7 @@ describe('structure attrs', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		const nav = result.children.find(
@@ -699,7 +699,7 @@ describe('structure attrs', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Event' }, [
+		const tag = makeTag('section', { 'data-rune': 'event' }, [
 			makeTag('meta', { property: 'url', content: 'https://example.com' }, []),
 		]);
 
@@ -724,7 +724,7 @@ describe('structure attrs', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Event' }, []);
+		const tag = makeTag('section', { 'data-rune': 'event' }, []);
 
 		const result = asTag(transform(tag));
 		const link = result.children.find(
@@ -749,7 +749,7 @@ describe('rootAttributes', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.role).toBe('alert');
@@ -767,7 +767,7 @@ describe('rootAttributes', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes['data-custom']).toBe('value');
@@ -788,7 +788,7 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('div', { 'data-name': 'header' }, ['Content']),
 		]);
 
@@ -807,7 +807,7 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('div', { 'data-name': 'header' }, [
 				makeTag('span', { 'data-name': 'icon' }, []),
 			]),
@@ -832,7 +832,7 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('div', { 'data-name': 'header', class: 'custom' }, ['Content']),
 		]);
 
@@ -853,8 +853,8 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Grid' }, [
-			makeTag('section', { 'data-rune': 'Hint' }, ['Nested hint']),
+		const tag = makeTag('section', { 'data-rune': 'grid' }, [
+			makeTag('section', { 'data-rune': 'hint' }, ['Nested hint']),
 		]);
 
 		const result = asTag(transform(tag));
@@ -875,8 +875,8 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Outer' }, [
-			makeTag('div', { 'data-rune': 'Inner' }, ['content']),
+		const tag = makeTag('section', { 'data-rune': 'outer' }, [
+			makeTag('div', { 'data-rune': 'inner' }, ['content']),
 		]);
 
 		const result = asTag(transform(tag));
@@ -899,9 +899,9 @@ describe('BEM class application', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Parent' }, [
+		const tag = makeTag('section', { 'data-rune': 'parent' }, [
 			makeTag('div', { 'data-name': 'items' }, [
-				makeTag('div', { 'data-rune': 'Child' }, ['Nested rune']),
+				makeTag('div', { 'data-rune': 'child' }, ['Nested rune']),
 			]),
 		]);
 
@@ -930,13 +930,13 @@ describe('BEM class application', () => {
 				},
 				Child: {
 					block: 'child',
-					contextModifiers: { 'Parent': 'in-parent' },
+					contextModifiers: { 'parent': 'in-parent' },
 				},
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Parent' }, [
-			makeTag('div', { 'data-rune': 'Child' }, ['Nested child']),
+		const tag = makeTag('section', { 'data-rune': 'parent' }, [
+			makeTag('div', { 'data-rune': 'child' }, ['Nested child']),
 		]);
 
 		const result = asTag(transform(tag));
@@ -964,7 +964,7 @@ describe('meta tag filtering', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
 			makeTag('p', {}, ['Content']),
 		]);
@@ -990,7 +990,7 @@ describe('meta tag filtering', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
 			makeTag('meta', { property: 'other', content: 'keep' }, []),
 		]);
@@ -1013,7 +1013,7 @@ describe('meta tag filtering', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'Hint' }, [
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [
 			makeTag('meta', { charset: 'utf-8' }, []),
 		]);
 

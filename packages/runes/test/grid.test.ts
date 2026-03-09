@@ -13,7 +13,7 @@ Second column content.
 
     expect(result).toBeDefined();
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
     expect(gridTag!.name).toBe('section');
   });
@@ -27,7 +27,7 @@ Left side.
 Right side.
 {% /columns %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
   });
 
@@ -45,7 +45,7 @@ Card two.
 Card three.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
 
     const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
@@ -66,7 +66,7 @@ Content.
 More content.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
     expect(modeMeta).toBeUndefined();
   });
@@ -80,7 +80,7 @@ Cell one.
 Cell two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
     expect(aspectMeta).toBeDefined();
     expect(aspectMeta!.attributes.content).toBe('16/9');
@@ -95,7 +95,7 @@ Main content.
 Sidebar.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'stack');
     expect(stackMeta).toBeDefined();
     expect(stackMeta!.attributes.content).toBe('reverse');
@@ -114,7 +114,7 @@ Tall card.
 Medium card.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('masonry');
@@ -129,7 +129,7 @@ Card one.
 Card two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('auto');
@@ -144,7 +144,7 @@ Wide column.
 Narrow column.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
     // Should produce cells with colspan data (from spans processing)
     const cell = findTag(gridTag!, t => t.attributes['data-colspan'] === 2);

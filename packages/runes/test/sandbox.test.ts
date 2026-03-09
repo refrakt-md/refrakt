@@ -7,7 +7,7 @@ describe('sandbox tag', () => {
 <button class="btn">Click me</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
 		expect(sandbox!.name).toBe('div');
 
@@ -22,7 +22,7 @@ describe('sandbox tag', () => {
 <div class="p-4">Hello</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const fwMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'framework');
 		expect(fwMeta).toBeDefined();
@@ -34,7 +34,7 @@ describe('sandbox tag', () => {
 <div>Test</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const depMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'dependencies');
 		expect(depMeta).toBeDefined();
@@ -47,7 +47,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const heightMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'height');
 		expect(heightMeta).toBeDefined();
@@ -59,7 +59,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const heightMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'height');
 		expect(heightMeta).toBeDefined();
@@ -71,7 +71,7 @@ describe('sandbox tag', () => {
 <div>Hello World</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const pre = findTag(sandbox!, t => t.name === 'pre');
 		expect(pre).toBeDefined();
 		expect(pre!.attributes['data-language']).toBe('html');
@@ -88,7 +88,7 @@ describe('sandbox tag', () => {
 </script>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const contentMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'content');
 		expect(contentMeta).toBeDefined();
@@ -103,7 +103,7 @@ describe('sandbox tag', () => {
 <button>Old</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const labelMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'label');
 		expect(labelMeta).toBeDefined();
@@ -115,7 +115,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const labelMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'label');
 		expect(labelMeta).toBeUndefined();
@@ -126,7 +126,7 @@ describe('sandbox tag', () => {
 		const result = parse(`{% sandbox %}
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const contentMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'content');
 		expect(contentMeta).toBeDefined();
@@ -139,7 +139,7 @@ describe('sandbox tag', () => {
 <p>Test</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 
 		const fwMeta = findTag(sandbox!, t =>
 			t.name === 'meta' && t.attributes.property === 'framework');

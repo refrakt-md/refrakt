@@ -13,7 +13,7 @@ Join us for the biggest tech event of the year.
 - Networking dinner
 {% /event %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Event');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'event');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -25,7 +25,7 @@ Join us for the biggest tech event of the year.
 A three-day online event.
 {% /event %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Event');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'event');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
 		const date = metas.find(m => m.attributes.property === 'date');

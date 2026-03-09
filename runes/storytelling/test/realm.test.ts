@@ -14,11 +14,11 @@ A hidden valley.
 - Libraries
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Realm');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'RealmSection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'realmsection');
 		expect(sections.length).toBe(2);
 	});
 
@@ -27,7 +27,7 @@ A hidden valley.
 A dark land.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Realm');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
 		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Mordor');
@@ -38,7 +38,7 @@ A dark land.
 Content.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Realm');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
 		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'realmType');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('sanctuary');
@@ -53,7 +53,7 @@ Content.
 Content.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Realm');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
 		const parentMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'parent');
 		expect(parentMeta).toBeDefined();
 		expect(parentMeta!.attributes.content).toBe('Eriador');
@@ -64,7 +64,7 @@ Content.
 A peaceful land.
 {% /location %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Realm');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
 		expect(tag).toBeDefined();
 	});
 });

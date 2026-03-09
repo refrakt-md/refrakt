@@ -8,7 +8,7 @@ describe('form tag', () => {
 - Email
 {% /form %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('form');
   });
@@ -18,7 +18,7 @@ describe('form tag', () => {
 - Name
 {% /form %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     expect(tag).toBeDefined();
 
     const actionMeta = findTag(tag!, t =>
@@ -34,8 +34,8 @@ describe('form tag', () => {
 - Message
 {% /form %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
-    const fields = findAllTags(tag!, t => t.attributes['data-rune'] === 'FormField');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
+    const fields = findAllTags(tag!, t => t.attributes['data-rune'] === 'formfield');
     expect(fields.length).toBeGreaterThanOrEqual(3);
   });
 
@@ -44,7 +44,7 @@ describe('form tag', () => {
 - Name
 {% /form %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const variantMeta = findTag(tag!, t =>
       t.name === 'meta' && t.attributes.content === 'inline'
     );
@@ -58,7 +58,7 @@ describe('form field structural output', () => {
 - Name
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     expect(field).toBeDefined();
 
     const label = findTag(field!, t => t.name === 'label');
@@ -76,7 +76,7 @@ describe('form field structural output', () => {
 - Email
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const input = findTag(field!, t => t.name === 'input');
     expect(input).toBeDefined();
     expect(input!.attributes.type).toBe('email');
@@ -87,7 +87,7 @@ describe('form field structural output', () => {
 - Comments
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const textarea = findTag(field!, t => t.name === 'textarea');
     expect(textarea).toBeDefined();
     expect(textarea!.attributes.rows).toBe('4');
@@ -98,7 +98,7 @@ describe('form field structural output', () => {
 - Name
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const requiredSpan = findTag(field!, t =>
       t.name === 'span' && t.attributes['data-name'] === 'required'
     );
@@ -111,7 +111,7 @@ describe('form field structural output', () => {
 - Name (optional)
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const requiredSpan = findTag(field!, t =>
       t.name === 'span' && t.attributes['data-name'] === 'required'
     );
@@ -123,7 +123,7 @@ describe('form field structural output', () => {
 - Email (placeholder: 'you@example.com')
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const input = findTag(field!, t => t.name === 'input');
     expect(input).toBeDefined();
     expect(input!.attributes.placeholder).toBe('you@example.com');
@@ -134,7 +134,7 @@ describe('form field structural output', () => {
 - Email
 {% /form %}`);
 
-    const field = findTag(result as any, t => t.attributes['data-rune'] === 'FormField');
+    const field = findTag(result as any, t => t.attributes['data-rune'] === 'formfield');
     const meta = findTag(field!, t =>
       t.name === 'meta' && t.attributes.property === 'fieldType'
     );
@@ -151,7 +151,7 @@ describe('form special types', () => {
 **Send**
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const button = findTag(form!, t => t.name === 'button');
     expect(button).toBeDefined();
     expect(button!.attributes.type).toBe('submit');
@@ -166,7 +166,7 @@ describe('form special types', () => {
 - Email
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const hr = findTag(form!, t =>
       t.name === 'hr' && t.attributes['data-name'] === 'separator'
     );
@@ -180,7 +180,7 @@ describe('form special types', () => {
 > We will never share your data
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const help = findTag(form!, t =>
       t.name === 'p' && t.attributes['data-name'] === 'help'
     );
@@ -195,7 +195,7 @@ Fill out the form below.
 - Name
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const desc = findTag(form!, t =>
       t.name === 'p' && t.attributes['data-name'] === 'text'
     );
@@ -209,7 +209,7 @@ Fill out the form below.
 - Email
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const fieldset = findTag(form!, t =>
       t.name === 'fieldset' && t.attributes.class === 'rf-form-fieldset'
     );
@@ -229,9 +229,9 @@ describe('form choice groups', () => {
 - Mail
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const fieldset = findTag(form!, t =>
-      t.name === 'fieldset' && t.attributes['data-rune'] === 'FormField'
+      t.name === 'fieldset' && t.attributes['data-rune'] === 'formfield'
     );
     expect(fieldset).toBeDefined();
 
@@ -249,9 +249,9 @@ describe('form choice groups', () => {
 - Art
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     const fieldset = findTag(form!, t =>
-      t.name === 'fieldset' && t.attributes['data-rune'] === 'FormField'
+      t.name === 'fieldset' && t.attributes['data-rune'] === 'formfield'
     );
     expect(fieldset).toBeDefined();
 
@@ -271,8 +271,8 @@ describe('form choice groups', () => {
 - Germany
 {% /form %}`);
 
-    const form = findTag(result as any, t => t.attributes['data-rune'] === 'Form');
-    const field = findTag(form!, t => t.attributes['data-rune'] === 'FormField');
+    const form = findTag(result as any, t => t.attributes['data-rune'] === 'form');
+    const field = findTag(form!, t => t.attributes['data-rune'] === 'formfield');
     const select = findTag(field!, t => t.name === 'select');
     expect(select).toBeDefined();
 
