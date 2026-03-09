@@ -116,7 +116,7 @@ export const config: Record<string, RuneConfig> = {
 	Storyboard: {
 		block: 'storyboard',
 		modifiers: {
-			style: { source: 'meta', default: 'clean' },
+			variant: { source: 'meta', default: 'clean' },
 			columns: { source: 'meta', default: '3' },
 		},
 		styles: { columns: '--sb-columns' },

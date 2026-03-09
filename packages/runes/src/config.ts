@@ -185,7 +185,7 @@ export const coreConfig: ThemeConfig = {
 				duration: { source: 'meta' },
 				showPerPerson: { source: 'meta', default: 'true' },
 				showPerDay: { source: 'meta', default: 'true' },
-				style: { source: 'meta', default: 'detailed' },
+				variant: { source: 'meta', default: 'detailed' },
 			},
 			structure: {
 				header: {
@@ -319,7 +319,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		Sidenote: {
 			block: 'sidenote',
-			modifiers: { style: { source: 'meta', default: 'sidenote' } },
+			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 		},
 		Compare: {
 			block: 'compare',
@@ -333,7 +333,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		Annotate: {
 			block: 'annotate',
-			modifiers: { style: { source: 'meta', default: 'margin' } },
+			modifiers: { variant: { source: 'meta', default: 'margin' } },
 		},
 		AnnotateNote: { block: 'annotate-note', parent: 'Annotate' },
 		Nav: {
@@ -506,7 +506,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'pullquote',
 			modifiers: {
 				align: { source: 'meta', default: 'center' },
-				style: { source: 'meta', default: 'default' },
+				variant: { source: 'meta', default: 'default' },
 			},
 		},
 		TextBlock: {
@@ -569,7 +569,7 @@ export const coreConfig: ThemeConfig = {
 		Form: {
 			block: 'form',
 			modifiers: {
-				style: { source: 'meta', default: 'stacked' },
+				variant: { source: 'meta', default: 'stacked' },
 				action: { source: 'meta' },
 				method: { source: 'meta', default: 'POST' },
 				success: { source: 'meta' },

@@ -39,16 +39,16 @@ describe('form tag', () => {
     expect(fields.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('should pass style attribute as meta', () => {
-    const result = parse(`{% form action="/submit" style="inline" %}
+  it('should pass variant attribute as meta', () => {
+    const result = parse(`{% form action="/submit" variant="inline" %}
 - Name
 {% /form %}`);
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'Form');
-    const styleMeta = findTag(tag!, t =>
+    const variantMeta = findTag(tag!, t =>
       t.name === 'meta' && t.attributes.content === 'inline'
     );
-    expect(styleMeta).toBeDefined();
+    expect(variantMeta).toBeDefined();
   });
 });
 

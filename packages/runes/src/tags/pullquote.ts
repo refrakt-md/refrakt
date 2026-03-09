@@ -5,20 +5,20 @@ import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
-const styleValues = ['default', 'accent', 'editorial'] as const;
+const variantValues = ['default', 'accent', 'editorial'] as const;
 
 class PullQuoteModel extends Model {
 	@attribute({ type: String, required: false, matches: alignValues.slice() })
 	align: typeof alignValues[number] = 'center';
 
-	@attribute({ type: String, required: false, matches: styleValues.slice() })
-	style: typeof styleValues[number] = 'default';
+	@attribute({ type: String, required: false, matches: variantValues.slice() })
+	variant: typeof variantValues[number] = 'default';
 
 	transform(): RenderableTreeNodes {
 		const children = this.transformChildren();
 
 		const alignMeta = new Tag('meta', { content: this.align });
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 
 		// Extract blockquote or use all children as the quote text
 		const blockquote = children.tag('blockquote');
@@ -26,13 +26,13 @@ class PullQuoteModel extends Model {
 			? blockquote.limit(1).toArray()
 			: children.tag('p').toArray();
 
-		const childNodes: any[] = [...quoteChildren, alignMeta, styleMeta];
+		const childNodes: any[] = [...quoteChildren, alignMeta, variantMeta];
 
 		return createComponentRenderable(schema.PullQuote, {
 			tag: 'blockquote',
 			properties: {
 				align: alignMeta,
-				style: styleMeta,
+				variant: variantMeta,
 			},
 			children: childNodes,
 		});

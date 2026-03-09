@@ -31,11 +31,11 @@ The term "rune" refers to a symbol that carries meaning. In refrakt.md, runes ca
 
 ## Inline notes
 
-Use `style="inline"` to show annotations as highlighted blocks within the flow.
+Use `variant="inline"` to show annotations as highlighted blocks within the flow.
 
 {% preview source=true %}
 
-{% annotate style="inline" %}
+{% annotate variant="inline" %}
 Runes use standard Markdoc tag syntax.
 
 {% note %}
@@ -51,7 +51,7 @@ The content inside a rune is regular Markdown.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `style` | `string` | `margin` | Display style: `margin`, `tooltip`, `inline` |
+| `variant` | `string` | `margin` | Display variant: `margin`, `tooltip`, `inline` |
 
 ### Common attributes
 

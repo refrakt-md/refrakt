@@ -17,7 +17,7 @@ Use H2 headings for days and "time — location" headings for individual stops.
 
 {% preview source=true %}
 
-{% itinerary style="day-by-day" %}
+{% itinerary variant="day-by-day" %}
 ## Day 1 — Arrival
 
 ### 9:00 AM — Narita Airport
@@ -71,7 +71,7 @@ Walk through the theater district.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `style` | `string` | `day-by-day` | Display style variant |
+| `variant` | `string` | `day-by-day` | Display variant |
 | `direction` | `string` | `vertical` | Layout direction |
 
 ### Day attributes

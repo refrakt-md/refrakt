@@ -4,7 +4,7 @@ const { Ast, Tag } = Markdoc;
 import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-const styleType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
+const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
 const heightType = ['small', 'medium', 'large', 'full'] as const;
 const providerType = ['openstreetmap', 'mapbox'] as const;
 
@@ -143,8 +143,8 @@ class MapModel extends Model {
 	@attribute({ type: String, required: false })
 	center: string = '';
 
-	@attribute({ type: String, required: false, matches: styleType.slice() })
-	style: typeof styleType[number] = 'street';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'street';
 
 	@attribute({ type: String, required: false, matches: heightType.slice() })
 	height: typeof heightType[number] = 'medium';
@@ -199,7 +199,7 @@ class MapModel extends Model {
 
 		const zoomMeta = new Tag('meta', { content: this.zoom });
 		const centerMeta = new Tag('meta', { content: this.center });
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 		const heightMeta = new Tag('meta', { content: this.height });
 		const providerMeta = new Tag('meta', { content: this.provider });
 		const interactiveMeta = new Tag('meta', { content: String(this.interactive) });
@@ -214,7 +214,7 @@ class MapModel extends Model {
 			properties: {
 				zoom: zoomMeta,
 				center: centerMeta,
-				style: styleMeta,
+				variant: variantMeta,
 				height: heightMeta,
 				provider: providerMeta,
 				interactive: interactiveMeta,
@@ -223,7 +223,7 @@ class MapModel extends Model {
 				pin: pins,
 			},
 			refs: { pins: pinsList },
-			children: [zoomMeta, centerMeta, styleMeta, heightMeta, providerMeta, interactiveMeta, routeMeta, clusterMeta, pinsList],
+			children: [zoomMeta, centerMeta, variantMeta, heightMeta, providerMeta, interactiveMeta, routeMeta, clusterMeta, pinsList],
 		});
 	}
 }

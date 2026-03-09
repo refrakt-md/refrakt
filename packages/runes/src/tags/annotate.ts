@@ -4,7 +4,7 @@ const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
-const styleType = ['margin', 'tooltip', 'inline'] as const;
+const variantType = ['margin', 'tooltip', 'inline'] as const;
 
 class AnnotateNoteModel extends Model {
 	transform(): RenderableTreeNodes {
@@ -22,12 +22,12 @@ class AnnotateNoteModel extends Model {
 }
 
 class AnnotateModel extends Model {
-	@attribute({ type: String, required: false, matches: styleType.slice() })
-	style: typeof styleType[number] = 'margin';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'margin';
 
 	transform(): RenderableTreeNodes {
 		const children = this.transformChildren();
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 
 		const notes = children.tag('aside').typeof('AnnotateNote');
 		const body = children.wrap('div');
@@ -36,10 +36,10 @@ class AnnotateModel extends Model {
 			tag: 'div',
 			properties: {
 				note: notes,
-				style: styleMeta,
+				variant: variantMeta,
 			},
 			refs: { body: body.tag('div') },
-			children: [styleMeta, body.next()],
+			children: [variantMeta, body.next()],
 		});
 	}
 }

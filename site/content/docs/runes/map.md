@@ -31,7 +31,7 @@ Ordered lists with `route="true"` draw a connecting line between pins.
 
 {% preview source=true %}
 
-{% map route="true" style="terrain" %}
+{% map route="true" variant="terrain" %}
 - **Portland** - 45.5152, -122.6784
 - **Crater Lake** - 42.8684, -122.1685
 - **Redwood National Park** - 41.2132, -124.0046
@@ -78,7 +78,7 @@ Control the map height with the `height` attribute.
 |---|---|---|---|
 | `zoom` | number | auto | Initial zoom level (1–20) |
 | `center` | string | auto | Center point — coordinates or address |
-| `style` | string | `street` | Map style: `street`, `satellite`, `terrain`, `dark`, `minimal` |
+| `variant` | string | `street` | Map variant: `street`, `satellite`, `terrain`, `dark`, `minimal` |
 | `height` | string | `medium` | Container height: `small`, `medium`, `large`, `full` |
 | `provider` | string | `openstreetmap` | Tile provider: `openstreetmap`, `mapbox` |
 | `interactive` | string | `true` | Enable pan/zoom interaction |

@@ -216,7 +216,7 @@ without interrupting the main flow of the text.
 - Sushi experience: ¥8000
 {% /budget %}`,
 
-	pullquote: `{% pullquote align="center" style="accent" %}
+	pullquote: `{% pullquote align="center" variant="accent" %}
 > Design is not just what it looks like and feels like. Design is how it works.
 {% /pullquote %}`,
 

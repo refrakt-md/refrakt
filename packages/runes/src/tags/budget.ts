@@ -161,7 +161,7 @@ class BudgetCategoryModel extends Model {
 
 // ─── Budget (parent) ───
 
-const styleType = ['detailed', 'summary'] as const;
+const variantType = ['detailed', 'summary'] as const;
 
 class BudgetModel extends Model {
 	@attribute({ type: String, required: false })
@@ -182,8 +182,8 @@ class BudgetModel extends Model {
 	@attribute({ type: Boolean, required: false })
 	showPerDay: boolean = true;
 
-	@attribute({ type: String, required: false, matches: styleType.slice() })
-	style: typeof styleType[number] = 'detailed';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'detailed';
 
 	@attribute({ type: Number, required: false })
 	headingLevel: number | undefined = undefined;
@@ -227,14 +227,14 @@ class BudgetModel extends Model {
 		const durationMeta = new Tag('meta', { content: this.duration });
 		const showPerPersonMeta = new Tag('meta', { content: String(this.showPerPerson) });
 		const showPerDayMeta = new Tag('meta', { content: String(this.showPerDay) });
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 
 		const categories = body.tag('div').typeof('BudgetCategory');
 		const categoriesDiv = new Tag('div', {}, categories.toArray());
 
 		const children: any[] = [
 			titleMeta, currencyMeta, travelersMeta, durationMeta,
-			showPerPersonMeta, showPerDayMeta, styleMeta,
+			showPerPersonMeta, showPerDayMeta, variantMeta,
 		];
 		if (header.count() > 0) {
 			children.push(header.wrap('div').next());
@@ -250,7 +250,7 @@ class BudgetModel extends Model {
 				duration: durationMeta,
 				showPerPerson: showPerPersonMeta,
 				showPerDay: showPerDayMeta,
-				style: styleMeta,
+				variant: variantMeta,
 				category: categories,
 			},
 			refs: {

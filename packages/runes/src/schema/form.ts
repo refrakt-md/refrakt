@@ -7,7 +7,7 @@ export class Form {
 	method: string = 'POST';
 	success: string = '';
 	error: string = '';
-	style: string = 'stacked';
+	variant: string = 'stacked';
 	honeypot: string = 'true';
 	field: FormField[] = [];
 }

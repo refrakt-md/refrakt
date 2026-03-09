@@ -12,24 +12,24 @@ This is a margin note with additional context.
 		expect(tag!.name).toBe('aside');
 	});
 
-	it('should pass style as meta', () => {
-		const result = parse(`{% sidenote style="footnote" %}
+	it('should pass variant as meta', () => {
+		const result = parse(`{% sidenote variant="footnote" %}
 A footnote reference.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'style');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('footnote');
 	});
 
-	it('should default style to sidenote', () => {
+	it('should default variant to sidenote', () => {
 		const result = parse(`{% sidenote %}
-Default style note.
+Default variant note.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'style');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('sidenote');
 	});

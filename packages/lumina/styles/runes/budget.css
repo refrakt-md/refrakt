@@ -154,10 +154,10 @@
 }
 
 /* Summary style — hide line items, show only category headers */
-[data-style="summary"] .rf-budget-category__line-items {
+[data-variant="summary"] .rf-budget-category__line-items {
 	display: none;
 }
-[data-style="summary"] .rf-budget-category__header {
+[data-variant="summary"] .rf-budget-category__header {
 	margin-bottom: 0;
 	padding-bottom: 0;
 	border-bottom: none;

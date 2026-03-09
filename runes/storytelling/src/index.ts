@@ -137,7 +137,7 @@ a deep mutual respect.
       aliases: ['comic'],
       description: 'Comic/storyboard layout where images become panels and paragraphs become captions',
       reinterprets: { image: 'panel visual', paragraph: 'caption/dialogue' },
-      fixture: `{% storyboard style="clean" columns="3" %}
+      fixture: `{% storyboard variant="clean" columns="3" %}
 ![Panel 1](/images/panel1.jpg)
 The hero surveys the landscape from atop the hill.
 

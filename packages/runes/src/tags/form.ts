@@ -5,7 +5,7 @@ import { schema } from '../registry.js';
 import { NodeStream } from '../lib/node.js';
 import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
 
-const styleType = ['stacked', 'inline', 'compact'] as const;
+const variantType = ['stacked', 'inline', 'compact'] as const;
 const methodType = ['GET', 'POST'] as const;
 
 // Type inference: field name keywords → HTML input type
@@ -237,8 +237,8 @@ class FormModel extends Model {
 	@attribute({ type: String, required: false })
 	error: string = '';
 
-	@attribute({ type: String, required: false, matches: styleType.slice() })
-	style: typeof styleType[number] = 'stacked';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'stacked';
 
 	@attribute({ type: String, required: false })
 	name: string = '';
@@ -386,7 +386,7 @@ class FormModel extends Model {
 		const methodMeta = new Tag('meta', { content: this.method });
 		const successMeta = new Tag('meta', { content: this.success });
 		const errorMeta = new Tag('meta', { content: this.error });
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 		const honeypotMeta = new Tag('meta', { content: String(this.honeypot) });
 
 		const fields = body.tag('div').typeof('FormField');
@@ -399,12 +399,12 @@ class FormModel extends Model {
 				method: methodMeta,
 				success: successMeta,
 				error: errorMeta,
-				style: styleMeta,
+				variant: variantMeta,
 				honeypot: honeypotMeta,
 				field: fields,
 			},
 			refs: { body: bodyContainer },
-			children: [actionMeta, methodMeta, successMeta, errorMeta, styleMeta, honeypotMeta, bodyContainer.next()],
+			children: [actionMeta, methodMeta, successMeta, errorMeta, variantMeta, honeypotMeta, bodyContainer.next()],
 		});
 	}
 }

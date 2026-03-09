@@ -109,7 +109,7 @@ class ItineraryModel extends Model {
 	headingLevel: number | undefined = undefined;
 
 	@attribute({ type: String, required: false })
-	style: string = 'day-by-day';
+	variant: string = 'day-by-day';
 
 	@attribute({ type: String, required: false })
 	direction: string = 'vertical';
@@ -198,13 +198,13 @@ class ItineraryModel extends Model {
 		const header = this.header.transform();
 		const bodyStream = this.body.transform();
 
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 		const directionMeta = new Tag('meta', { content: this.direction });
 
 		const days = bodyStream.tag('article').typeof('ItineraryDay');
 		const daysContainer = new Tag('div', {}, days.toArray());
 
-		const children: any[] = [styleMeta, directionMeta];
+		const children: any[] = [variantMeta, directionMeta];
 		if (header.count() > 0) {
 			children.push(header.wrap('header').next());
 		}
@@ -215,7 +215,7 @@ class ItineraryModel extends Model {
 			property: 'contentSection',
 			properties: {
 				...pageSectionProperties(header),
-				style: styleMeta,
+				variant: variantMeta,
 				direction: directionMeta,
 				day: days,
 			},

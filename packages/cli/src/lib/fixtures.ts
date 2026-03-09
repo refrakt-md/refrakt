@@ -71,7 +71,7 @@ print(greeting)
 > **Alice** — The variant expansion is my favorite part. You can see every modifier value at once.
 {% /conversation %}`,
 
-	sidenote: `{% sidenote style="sidenote" %}
+	sidenote: `{% sidenote variant="sidenote" %}
 This is a margin note that appears alongside the main content, providing additional context without interrupting the reading flow.
 {% /sidenote %}`,
 
@@ -101,7 +101,7 @@ const config = {
 | Carol | Manager | Engineering | On Leave |
 {% /datatable %}`,
 
-	form: `{% form method="POST" style="stacked" %}
+	form: `{% form method="POST" variant="stacked" %}
 - Name
 - Email
 - Message (textarea)

@@ -17,6 +17,6 @@ export class ItineraryDay {
 
 export class Itinerary extends PageSection {
 	day: ItineraryDay[] = [];
-	style: string = 'day-by-day';
+	variant: string = 'day-by-day';
 	direction: string = 'vertical';
 }

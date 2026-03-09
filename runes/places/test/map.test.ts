@@ -98,15 +98,15 @@ describe('map tag', () => {
 		expect(centerMeta?.attributes.content).toBe('48.8566, 2.3522');
 	});
 
-	it('should pass style and height as meta tags', () => {
-		const result = parse(`{% map style="dark" height="large" %}
+	it('should pass variant and height as meta tags', () => {
+		const result = parse(`{% map variant="dark" height="large" %}
 - 48.8566, 2.3522
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes.typeof === 'Map');
-		const styleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'style');
+		const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
 		const heightMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'height');
-		expect(styleMeta?.attributes.content).toBe('dark');
+		expect(variantMeta?.attributes.content).toBe('dark');
 		expect(heightMeta?.attributes.content).toBe('large');
 	});
 

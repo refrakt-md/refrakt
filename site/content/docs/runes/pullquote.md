@@ -33,11 +33,11 @@ Use the `align` attribute to position the pull quote within the content flow.
 
 ## Styles
 
-The `style` attribute controls the visual treatment.
+The `variant` attribute controls the visual treatment.
 
 {% preview source=true %}
 
-{% pullquote style="accent" align="center" %}
+{% pullquote variant="accent" align="center" %}
 > Words can be like X-rays if you use them properly — they'll go through anything.
 {% /pullquote %}
 
@@ -45,7 +45,7 @@ The `style` attribute controls the visual treatment.
 
 {% preview source=true %}
 
-{% pullquote style="editorial" %}
+{% pullquote variant="editorial" %}
 > Simplicity is the ultimate sophistication.
 {% /pullquote %}
 
@@ -56,7 +56,7 @@ The `style` attribute controls the visual treatment.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `align` | `string` | `center` | Horizontal alignment: `left`, `center`, or `right` |
-| `style` | `string` | `default` | Visual style: `default`, `accent`, or `editorial` |
+| `variant` | `string` | `default` | Visual variant: `default`, `accent`, or `editorial` |
 
 ### Common attributes
 

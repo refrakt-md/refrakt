@@ -42,7 +42,7 @@ export const config: Record<string, RuneConfig> = {
 	Itinerary: {
 		block: 'itinerary',
 		modifiers: {
-			style: { source: 'meta', default: 'day-by-day' },
+			variant: { source: 'meta', default: 'day-by-day' },
 			direction: { source: 'meta', default: 'vertical' },
 		},
 	},
@@ -63,7 +63,7 @@ export const config: Record<string, RuneConfig> = {
 	Map: {
 		block: 'map',
 		modifiers: {
-			style: { source: 'meta', default: 'street' },
+			variant: { source: 'meta', default: 'street' },
 			height: { source: 'meta', default: 'medium' },
 		},
 		postTransform(node) {

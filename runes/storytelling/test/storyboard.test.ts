@@ -34,16 +34,16 @@ Second panel caption.
     expect(panels.length).toBe(2);
   });
 
-  it('should pass style attribute as meta', () => {
-    const result = parse(`{% storyboard style="comic" %}
+  it('should pass variant attribute as meta', () => {
+    const result = parse(`{% storyboard variant="comic" %}
 ![Panel](/img/panel.png)
 
 Caption.
 {% /storyboard %}`);
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'Storyboard');
-    const styleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'comic');
-    expect(styleMeta).toBeDefined();
+    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'comic');
+    expect(variantMeta).toBeDefined();
   });
 
   it('should work with the comic alias', () => {

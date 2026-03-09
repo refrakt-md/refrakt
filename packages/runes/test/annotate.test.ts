@@ -12,25 +12,25 @@ This is the main text with an annotation.
     expect(tag!.name).toBe('div');
   });
 
-  it('should pass style attribute as meta', () => {
-    const result = parse(`{% annotate style="tooltip" %}
+  it('should pass variant attribute as meta', () => {
+    const result = parse(`{% annotate variant="tooltip" %}
 Main text content.
 {% /annotate %}`);
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'Annotate');
     expect(tag).toBeDefined();
 
-    const styleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'tooltip');
-    expect(styleMeta).toBeDefined();
+    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'tooltip');
+    expect(variantMeta).toBeDefined();
   });
 
-  it('should default style to margin', () => {
+  it('should default variant to margin', () => {
     const result = parse(`{% annotate %}
 Text.
 {% /annotate %}`);
 
     const tag = findTag(result as any, t => t.attributes.typeof === 'Annotate');
-    const styleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'margin');
-    expect(styleMeta).toBeDefined();
+    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'margin');
+    expect(variantMeta).toBeDefined();
   });
 });

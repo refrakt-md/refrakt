@@ -39,7 +39,7 @@ Thick borders and slightly tilted panels give a comic book feel.
 
 {% preview source=true %}
 
-{% storyboard columns=3 style="comic" %}
+{% storyboard columns=3 variant="comic" %}
 ![Hero](https://picsum.photos/seed/hero/600/400)
 
 Our hero sets out on an adventure.
@@ -61,7 +61,7 @@ White-framed panels with drop shadows, like pinned photos.
 
 {% preview source=true %}
 
-{% storyboard columns=2 style="polaroid" %}
+{% storyboard columns=2 variant="polaroid" %}
 ![Coast](https://picsum.photos/seed/coast/600/400)
 
 Summer by the sea
@@ -86,7 +86,7 @@ Spring blooms again
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `columns` | `number` | `3` | Panels per row |
-| `style` | `string` | `clean` | Visual style: `clean`, `comic`, `polaroid` |
+| `variant` | `string` | `clean` | Visual variant: `clean`, `comic`, `polaroid` |
 
 ### Common attributes
 

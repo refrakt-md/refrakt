@@ -39,7 +39,7 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 
 {% preview source=true %}
 
-{% budget title="Weekend Getaway" currency="USD" style="summary" %}
+{% budget title="Weekend Getaway" currency="USD" variant="summary" %}
 ## Hotel
 
 - Two nights downtown: $250
@@ -63,7 +63,7 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 | `duration` | `string` | — | Trip or project duration |
 | `showPerPerson` | `boolean` | `true` | Display per-person cost breakdowns |
 | `showPerDay` | `boolean` | `true` | Display per-day cost breakdowns |
-| `style` | `string` | `detailed` | Display style: `detailed` or `summary` |
+| `variant` | `string` | `detailed` | Display variant: `detailed` or `summary` |
 
 ### Common attributes
 

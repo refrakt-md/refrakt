@@ -48,7 +48,7 @@ A three-day conference bringing together developers, designers, and product engi
       description: 'Travel itinerary with day groupings and timed stops. Headings become stops with "time — location" parsing; h2 headings create day groups.',
       seoType: 'ItemList',
       reinterprets: { heading: 'stop time and location (h2 = day group, h3 = stop)', paragraph: 'stop description' },
-      fixture: `{% itinerary style="day-by-day" %}
+      fixture: `{% itinerary variant="day-by-day" %}
 ## Day 1 — Arrival
 
 ### 9:00 AM — Narita Airport

@@ -18,5 +18,5 @@ export class Budget {
 	duration: string = '';
 	showPerPerson: string = 'true';
 	showPerDay: string = 'true';
-	style: string = 'detailed';
+	variant: string = 'detailed';
 }

@@ -75,11 +75,11 @@ A blockquote followed by a list creates a selection group. With 4 or fewer optio
 
 ## Style variants
 
-Use the `style` attribute to change the layout.
+Use the `variant` attribute to change the layout.
 
 {% preview source=true %}
 
-{% form action="/api/subscribe" style="inline" %}
+{% form action="/api/subscribe" variant="inline" %}
 - Email (placeholder: "you@example.com")
 
 **Subscribe**
@@ -95,7 +95,7 @@ Use the `style` attribute to change the layout.
 | `method` | `string` | `POST` | HTTP method: `GET` or `POST` |
 | `success` | `string` | — | Message shown on successful submission |
 | `error` | `string` | — | Message shown on failed submission |
-| `style` | `string` | `stacked` | Layout: `stacked`, `inline`, `compact` |
+| `variant` | `string` | `stacked` | Layout: `stacked`, `inline`, `compact` |
 | `name` | `string` | — | Form identifier for multi-form pages |
 | `honeypot` | `boolean` | `true` | Auto-generate honeypot spam field |
 

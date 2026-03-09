@@ -4,7 +4,7 @@ const { Ast, Tag } = Markdoc;
 import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-const styleType = ['comic', 'clean', 'polaroid'] as const;
+const variantType = ['comic', 'clean', 'polaroid'] as const;
 
 class StoryboardPanelModel extends Model {
 	transform(): RenderableTreeNodes {
@@ -32,8 +32,8 @@ class StoryboardModel extends Model {
 	@attribute({ type: Number, required: false })
 	columns: number = 3;
 
-	@attribute({ type: String, required: false, matches: styleType.slice() })
-	style: typeof styleType[number] = 'clean';
+	@attribute({ type: String, required: false, matches: variantType.slice() })
+	variant: typeof variantType[number] = 'clean';
 
 	@group({ include: ['tag'] })
 	body: NodeStream;
@@ -70,7 +70,7 @@ class StoryboardModel extends Model {
 
 	transform(): RenderableTreeNodes {
 		const body = this.body.transform();
-		const styleMeta = new Tag('meta', { content: this.style });
+		const variantMeta = new Tag('meta', { content: this.variant });
 		const columnsMeta = new Tag('meta', { content: String(this.columns) });
 
 		const panels = body.tag('div').typeof('StoryboardPanel');
@@ -80,11 +80,11 @@ class StoryboardModel extends Model {
 			tag: 'div',
 			properties: {
 				panel: panels,
-				style: styleMeta,
+				variant: variantMeta,
 				columns: columnsMeta,
 			},
 			refs: { panels: panelsContainer },
-			children: [styleMeta, columnsMeta, panelsContainer.next()],
+			children: [variantMeta, columnsMeta, panelsContainer.next()],
 		});
 	}
 }

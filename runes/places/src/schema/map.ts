@@ -12,7 +12,7 @@ export class Map {
 	pin: MapPin[] = [];
 	zoom: string = '';
 	center: string = '';
-	style: string = 'street';
+	variant: string = 'street';
 	height: string = 'medium';
 	provider: string = 'openstreetmap';
 	interactive: boolean = true;

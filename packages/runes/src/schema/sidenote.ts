@@ -1,3 +1,3 @@
 export class Sidenote {
-	style: string = 'sidenote';
+	variant: string = 'sidenote';
 }

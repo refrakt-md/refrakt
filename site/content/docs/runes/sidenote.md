@@ -13,7 +13,7 @@ A margin note that sits alongside the main text.
 
 {% preview source=true %}
 
-{% sidenote style="sidenote" %}
+{% sidenote variant="sidenote" %}
 This is a margin note that provides additional context without interrupting the main flow of the text. It can contain **rich formatting** and [links](/docs/getting-started).
 {% /sidenote %}
 
@@ -21,11 +21,11 @@ This is a margin note that provides additional context without interrupting the 
 
 ## Footnote style
 
-Use `style="footnote"` for content that appears at the bottom of the section.
+Use `variant="footnote"` for content that appears at the bottom of the section.
 
 {% preview source=true %}
 
-{% sidenote style="footnote" %}
+{% sidenote variant="footnote" %}
 This appears as a footnote, typically rendered at the bottom of the content section with a separator line.
 {% /sidenote %}
 
@@ -33,11 +33,11 @@ This appears as a footnote, typically rendered at the bottom of the content sect
 
 ## Tooltip style
 
-Use `style="tooltip"` for a subtle inline callout.
+Use `variant="tooltip"` for a subtle inline callout.
 
 {% preview source=true %}
 
-{% sidenote style="tooltip" %}
+{% sidenote variant="tooltip" %}
 This appears as a tooltip-style callout with a subtle border and background.
 {% /sidenote %}
 
@@ -47,7 +47,7 @@ This appears as a tooltip-style callout with a subtle border and background.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `style` | `string` | `sidenote` | Display style: `sidenote`, `footnote`, or `tooltip` |
+| `variant` | `string` | `sidenote` | Display variant: `sidenote`, `footnote`, or `tooltip` |
 
 ### Common attributes
 
