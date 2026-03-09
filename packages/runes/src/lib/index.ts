@@ -304,8 +304,8 @@ export interface ContentModelSchemaOptions {
   /** Explicit attribute definitions (merged with base class attributes). */
   attributes?: Record<string, SchemaAttribute>;
 
-  /** The declarative content model. */
-  contentModel: ContentModel;
+  /** The declarative content model (or a function of resolved attributes). */
+  contentModel: ContentModel | ((attrs: Record<string, any>) => ContentModel);
 
   /**
    * Transform function that receives resolved content, the rune's
@@ -379,9 +379,12 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       const attrs = node.transformAttributes(config);
 
       // Resolve content model
+      const resolvedModel = typeof options.contentModel === 'function'
+        ? options.contentModel(attrs)
+        : options.contentModel;
       const { content, tintNode, bgNode } = resolveContentModel(
         node.children,
-        options.contentModel,
+        resolvedModel,
       );
 
       // Call the user's transform function

@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const NAME_PRICE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;
@@ -18,59 +18,61 @@ function inferCurrency(priceText: string): string {
   return 'USD';
 }
 
-class PricingModel extends Model {
-  @attribute({ type: Number, required: false })
-  headingLevel: number | undefined = undefined;
+function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
+  // Auto-detect heading level from the first heading that matches "Name — Price"
+  const level = headingLevel ?? nodes.find(n => {
+    if (n.type !== 'heading') return false;
+    const text = Array.from(n.walk()).filter(c => c.type === 'text').map(t => t.attributes.content).join(' ');
+    return NAME_PRICE_PATTERN.test(text);
+  })?.attributes.level;
+  if (!level) return nodes;
 
-  @group({ include: ['heading', 'paragraph'] })
-  header: NodeStream;
+  const converted = headingsToList({ level })(nodes);
+  const n = converted.length - 1;
+  if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-  @group({ include: ['tag'] })
-  tiers: NodeStream;
+  // Only convert items whose heading matches "Name — Price"; keep others as-is
+  const result: Node[] = converted.slice(0, n);
+  for (const item of converted[n].children) {
+    const heading = item.children[0];
+    const headingText = Array.from(heading.walk())
+      .filter(n => n.type === 'text')
+      .map(t => t.attributes.content)
+      .join(' ');
 
-  convertHeadings(nodes: Node[]) {
-    // Auto-detect heading level from the first heading that matches "Name — Price"
-    const level = this.headingLevel ?? nodes.find(n => {
-      if (n.type !== 'heading') return false;
-      const text = Array.from(n.walk()).filter(c => c.type === 'text').map(t => t.attributes.content).join(' ');
-      return NAME_PRICE_PATTERN.test(text);
-    })?.attributes.level;
-    if (!level) return nodes;
-
-    const converted = headingsToList({ level })(nodes);
-    const n = converted.length - 1;
-    if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-    // Only convert items whose heading matches "Name — Price"; keep others as-is
-    const result: Node[] = converted.slice(0, n);
-    for (const item of converted[n].children) {
-      const heading = item.children[0];
-      const headingText = Array.from(heading.walk())
-        .filter(n => n.type === 'text')
-        .map(t => t.attributes.content)
-        .join(' ');
-
-      const match = headingText.match(NAME_PRICE_PATTERN);
-      if (match) {
-        result.push(new Ast.Node('tag', { name: match[1].trim(), price: match[2].trim() }, item.children.slice(1), 'tier'));
-      } else {
-        // Non-matching heading: keep as original heading + body nodes
-        result.push(heading, ...item.children.slice(1));
-      }
+    const match = headingText.match(NAME_PRICE_PATTERN);
+    if (match) {
+      result.push(new Ast.Node('tag', { name: match[1].trim(), price: match[2].trim() }, item.children.slice(1), 'tier'));
+    } else {
+      // Non-matching heading: keep as original heading + body nodes
+      result.push(heading, ...item.children.slice(1));
     }
-    return result;
   }
+  return result;
+}
 
-  processChildren(nodes: Node[]) {
-    return super.processChildren(this.convertHeadings(nodes));
-  }
+export const pricing = createContentModelSchema({
+  attributes: {
+    headingLevel: { type: Number, required: false },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'content', match: 'any', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const processed = convertHeadings(asNodes(resolved.content), attrs.headingLevel);
 
-  transform(): RenderableTreeNodes {
-    const header = this.header.transform();
-    const tiers = this.tiers.transform();
+    const allNodes = new RenderableNodeCursor(
+      Markdoc.transform(processed, config) as RenderableTreeNode[],
+    );
+
+    // Separate header (headings, paragraphs) from tiers (li items)
+    const header = allNodes.tags('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p');
+    const tiers = allNodes.tag('li');
 
     const sectionProps = pageSectionProperties(header);
-    const tierItems = tiers.tag('li');
     const tiersList = tiers.wrap('ul', { 'data-layout': 'grid', 'data-columns': tiers.nodes.length });
 
     return createComponentRenderable(schema.Pricing, {
@@ -78,7 +80,7 @@ class PricingModel extends Model {
       property: 'contentSection',
       properties: {
         ...sectionProps,
-        tier: tierItems,
+        tier: tiers,
       },
       refs: {
         tiers: tiersList.tag('ul'),
@@ -86,17 +88,15 @@ class PricingModel extends Model {
       schema: {
         name: sectionProps.headline,
         description: sectionProps.blurb,
-        offers: tierItems,
+        offers: tiers,
       },
       children: [
         header.wrap('header').next(),
         tiersList.next(),
       ]
     });
-  }
-}
-
-export const pricing = createSchema(PricingModel);
+  },
+});
 
 export class TierModel extends Model {
   @attribute({ type: String, required: true })

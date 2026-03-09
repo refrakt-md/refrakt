@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Parse "v2.1.0 - 2024-01-15" or "0.1.0 — January 2024"
@@ -33,61 +33,59 @@ class ChangelogReleaseModel extends Model {
 	}
 }
 
-class ChangelogModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+export const changelogRelease = createSchema(ChangelogReleaseModel);
 
-	@attribute({ type: String, required: false })
-	project: string = '';
+export const changelog = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		project: { type: String, required: false },
+	},
+	contentModel: (attrs) => ({
+		type: 'sections' as const,
+		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		fields: [
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
+		],
+		sectionModel: {
+			type: 'sequence' as const,
+			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+	}),
+	transform(resolved, attrs, config) {
+		const headerNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
+		const projectMeta = new Tag('meta', { content: attrs.project ?? '' });
 
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	itemgroup: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		// Auto-detect heading level from first heading if not specified
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const headingText = Array.from(heading.walk())
-				.filter(n => n.type === 'text')
-				.map(t => t.attributes.content)
-				.join(' ');
-
+		// Convert resolved sections to changelog-release tag nodes
+		const sections = resolved.sections as any[];
+		const releaseTagNodes = sections.map((section: any) => {
+			const headingText = section.$heading as string;
 			const match = headingText.match(VERSION_DATE_PATTERN);
 			const version = match ? match[1].trim() : headingText;
 			const date = match ? match[2].trim() : '';
 
-			return new Ast.Node('tag', { version, date }, item.children.slice(1), 'changelog-release');
+			return new Ast.Node(
+				'tag',
+				{ version, date },
+				asNodes(section.body),
+				'changelog-release',
+			);
 		});
 
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
+		// Combine explicit child tags (preamble items) with heading-derived releases
+		const allReleases = [...asNodes(resolved.items), ...releaseTagNodes];
+		const sectionNodes = new RenderableNodeCursor(
+			Markdoc.transform(allReleases, config) as RenderableTreeNode[],
+		);
 
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const itemStream = this.itemgroup.transform();
-		const projectMeta = new Tag('meta', { content: this.project });
-
-		const releases = itemStream.tag('section').typeof('ChangelogRelease');
+		const releases = sectionNodes.tag('section').typeof('ChangelogRelease');
 		const releasesDiv = new Tag('div', {}, releases.toArray());
 
 		const children: any[] = [projectMeta];
-		if (header.count() > 0) {
-			children.push(header.wrap('header').next());
+		if (headerNodes.count() > 0) {
+			children.push(headerNodes.wrap('header').next());
 		}
 		children.push(releasesDiv);
 
@@ -95,16 +93,12 @@ class ChangelogModel extends Model {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...pageSectionProperties(headerNodes),
 				project: projectMeta,
 				release: releases,
 			},
 			refs: { releases: releasesDiv },
 			children,
 		});
-	}
-}
-
-export const changelogRelease = createSchema(ChangelogReleaseModel);
-
-export const changelog = createSchema(ChangelogModel);
+	},
+});
