@@ -5,12 +5,16 @@
  * content model, producing named fields without per-rune imperative code.
  */
 
+import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
+const { Ast } = Markdoc;
 import type {
 	ContentModel,
 	ContentFieldDefinition,
 	DelimitedModel,
 	SequenceModel,
+	SectionsModel,
+	HeadingExtract,
 	ResolvedContent,
 } from '@refrakt-md/types';
 
@@ -196,6 +200,153 @@ export function resolveDelimited(
 }
 
 // ---------------------------------------------------------------------------
+// Sections resolver
+// ---------------------------------------------------------------------------
+
+/** Extract plain text from a heading AST node by walking its children. */
+function extractHeadingText(headingNode: Node): string {
+	const texts: string[] = [];
+	for (const child of headingNode.walk()) {
+		if (child.type === 'text' && child.attributes?.content) {
+			texts.push(child.attributes.content);
+		}
+	}
+	return texts.join(' ');
+}
+
+/**
+ * Apply heading extract patterns to heading text, producing named fields.
+ * Each field's regex is applied in order; 'remainder' captures what's left.
+ */
+function applyHeadingExtract(
+	text: string,
+	extract: HeadingExtract,
+): Record<string, string> {
+	const result: Record<string, string> = {};
+	let remaining = text;
+
+	for (const field of extract.fields) {
+		if (field.pattern === 'remainder') {
+			result[field.name] = remaining.trim();
+			remaining = '';
+		} else {
+			const match = remaining.match(field.pattern);
+			if (match) {
+				result[field.name] = (match[1] || match[0]).trim();
+				remaining = remaining.slice(match[0].length);
+			} else if (!field.optional) {
+				result[field.name] = remaining.trim();
+			}
+		}
+	}
+
+	return result;
+}
+
+/**
+ * Resolve a sections model: split children at heading boundaries,
+ * optionally extracting heading data and emitting child rune tags.
+ *
+ * - Preamble (content before first section heading) is resolved via `fields`.
+ * - When `emitTag` is set, sections become AST tag nodes for child rune processing.
+ * - When `emitTag` is absent, sections are resolved objects with heading info + body.
+ */
+export function resolveSections(
+	children: Node[],
+	model: SectionsModel,
+): ResolvedContent {
+	// 1. Determine heading level
+	const headingSpec = model.sectionHeading;
+	let level: number | undefined;
+
+	if (headingSpec.includes(':')) {
+		level = parseInt(headingSpec.split(':')[1], 10);
+	} else {
+		// Auto-detect from first heading child
+		level = children.find(n => n.type === 'heading')?.attributes?.level;
+	}
+
+	if (level === undefined) {
+		// No headings found — everything is preamble
+		const preamble = model.fields
+			? resolveSequence(children, model.fields)
+			: {};
+		return { ...preamble, sections: [] };
+	}
+
+	// 2. Split at section-level headings
+	const preambleNodes: Node[] = [];
+	const rawSections: { headingNode: Node; body: Node[] }[] = [];
+	let current: { headingNode: Node; body: Node[] } | null = null;
+
+	for (const child of children) {
+		if (child.type === 'heading' && child.attributes?.level === level) {
+			if (current) rawSections.push(current);
+			current = { headingNode: child, body: [] };
+		} else if (current) {
+			current.body.push(child);
+		} else {
+			preambleNodes.push(child);
+		}
+	}
+	if (current) rawSections.push(current);
+
+	// 3. Resolve preamble fields
+	const preamble = model.fields
+		? resolveSequence(preambleNodes, model.fields)
+		: {};
+
+	// 4. Process each section
+	if (model.emitTag) {
+		// emitTag: convert sections to AST tag nodes
+		const tagNodes = rawSections.map(section => {
+			const headingText = extractHeadingText(section.headingNode);
+			const extracted = model.headingExtract
+				? applyHeadingExtract(headingText, model.headingExtract)
+				: {};
+
+			const attrs: Record<string, any> = {};
+			if (model.emitAttributes) {
+				for (const [key, ref] of Object.entries(model.emitAttributes)) {
+					if (ref === '$heading') {
+						attrs[key] = headingText;
+					} else if (ref.startsWith('$')) {
+						attrs[key] = extracted[ref.slice(1)] ?? '';
+					} else {
+						attrs[key] = ref;
+					}
+				}
+			}
+
+			return new Ast.Node('tag', attrs, section.body, model.emitTag!);
+		});
+
+		return { ...preamble, sections: tagNodes };
+	}
+
+	// No emitTag: return resolved section data
+	const resolvedSections = rawSections.map(section => {
+		const headingText = extractHeadingText(section.headingNode);
+		const extracted = model.headingExtract
+			? applyHeadingExtract(headingText, model.headingExtract)
+			: {};
+
+		const bodyResolved = resolve(section.body, model.sectionModel);
+
+		return {
+			$heading: headingText,
+			$headingNode: section.headingNode,
+			...Object.fromEntries(
+				Object.entries(extracted).map(([k, v]) => [`$${k}`, v]),
+			),
+			...bodyResolved,
+		};
+	});
+
+	return { ...preamble, sections: resolvedSections };
+}
+
+// ---------------------------------------------------------------------------
 // Top-level resolver
 // ---------------------------------------------------------------------------
 
@@ -210,6 +361,8 @@ export function resolve(
 	switch (model.type) {
 		case 'sequence':
 			return resolveSequence(children, (model as SequenceModel).fields);
+		case 'sections':
+			return resolveSections(children, model as SectionsModel);
 		case 'delimited':
 			return resolveDelimited(children, model as DelimitedModel);
 		default:

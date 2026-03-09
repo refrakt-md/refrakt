@@ -12,7 +12,7 @@ export { attribute } from './annotations/attribute.js';
 export { group, groupList } from './annotations/group.js';
 export { id } from './annotations/id.js';
 export { Model } from './model.js';
-export { resolve, resolveSequence, resolveDelimited, resolveContentModel, matchesType } from './resolver.js';
+export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, matchesType } from './resolver.js';
 
 /** Normalize resolver output (single Node, Node[], or undefined) into Node[]. */
 export function asNodes(value: unknown): Node[] {

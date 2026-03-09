@@ -56,6 +56,58 @@ export interface DelimitedZone extends SequenceModel {
 	name: string;
 }
 
+// ---------------------------------------------------------------------------
+// Heading extraction (for sections pattern)
+// ---------------------------------------------------------------------------
+
+/** A field extracted from section heading text. */
+export interface HeadingExtractField {
+	/** Field name — becomes key in extracted output. */
+	name: string;
+	/** Match type — currently only 'text' (matches against heading text). */
+	match: 'text';
+	/** Pattern to extract. RegExp uses capture group 1. 'remainder' takes rest of text. */
+	pattern: RegExp | 'remainder';
+	/** Whether the field can fail to match. Default `false`. */
+	optional?: boolean;
+}
+
+/** Defines how structured data is parsed from section heading text. */
+export interface HeadingExtract {
+	fields: HeadingExtractField[];
+}
+
+/** Pattern 2 — children split into sections by heading elements. */
+export interface SectionsModel {
+	type: 'sections';
+
+	/**
+	 * Heading type to split on.
+	 * `'heading'` auto-detects level from first heading child.
+	 * `'heading:N'` uses an explicit level (e.g. `'heading:2'`).
+	 */
+	sectionHeading: string;
+
+	/** Preamble fields — resolved against content before the first section heading. */
+	fields?: ContentFieldDefinition[];
+
+	/** Content model applied to each section's body. */
+	sectionModel: ContentModel;
+
+	/** When set, sections are emitted as child rune tag nodes with this tag name. */
+	emitTag?: string;
+
+	/**
+	 * Attribute mapping for emitted tags.
+	 * Values starting with `$` are references: `$heading` = heading text,
+	 * `$fieldName` = heading-extracted field. Other values are literals.
+	 */
+	emitAttributes?: Record<string, string>;
+
+	/** Extract structured data from heading text. */
+	headingExtract?: HeadingExtract;
+}
+
 /** Pattern 3 — children split into groups by a delimiter node. */
 export interface DelimitedModel {
 	type: 'delimited';
@@ -80,10 +132,10 @@ export interface DelimitedModel {
 /**
  * A content model declaration.
  *
- * Currently supports `sequence` and `delimited` patterns.
- * `sections` and `custom` patterns will be added in later phases.
+ * Supports `sequence`, `sections`, and `delimited` patterns.
+ * A `custom` pattern will be added in a later phase.
  */
-export type ContentModel = SequenceModel | DelimitedModel;
+export type ContentModel = SequenceModel | SectionsModel | DelimitedModel;
 
 // ---------------------------------------------------------------------------
 // Resolver output

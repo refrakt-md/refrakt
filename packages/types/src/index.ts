@@ -43,6 +43,9 @@ export type { SerializedTag, RendererNode } from './serialized.js';
 export type {
 	ContentFieldDefinition,
 	SequenceModel,
+	HeadingExtractField,
+	HeadingExtract,
+	SectionsModel,
 	DelimitedZone,
 	DelimitedModel,
 	ContentModel,
