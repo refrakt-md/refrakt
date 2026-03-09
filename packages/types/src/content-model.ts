@@ -39,6 +39,9 @@ export interface ContentFieldDefinition {
 
 	/** Human-readable description for editor UI (future). */
 	description?: string;
+
+	/** For list fields: declares how to extract structured data from each list item. */
+	itemModel?: ItemModel;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,16 +129,119 @@ export interface DelimitedModel {
 }
 
 // ---------------------------------------------------------------------------
+// Custom pattern (escape hatch)
+// ---------------------------------------------------------------------------
+
+/**
+ * Pattern 4 — explicit escape hatch for runes whose content parsing is
+ * genuinely stateful and cannot be expressed declaratively.
+ *
+ * The `processChildren` function receives AST children and the rune's
+ * attribute values, returns rewritten nodes.
+ */
+export interface CustomModel {
+	type: 'custom';
+	processChildren: (nodes: unknown[], attributes: Record<string, unknown>) => unknown[];
+	/** Human-readable description of what the custom parser does. */
+	description: string;
+}
+
+// ---------------------------------------------------------------------------
+// Inline item model (list item extraction)
+// ---------------------------------------------------------------------------
+
+/** A field extracted from inline content within a list item. */
+export interface ItemFieldDefinition {
+	/** Field name — becomes key in extracted output. */
+	name: string;
+
+	/**
+	 * Inline node type to match.
+	 *
+	 * Inline: 'strong', 'em', 'link', 'image', 'code', 'text'.
+	 * Block (for nested content): 'list', 'paragraph'.
+	 */
+	match: string;
+
+	/** Whether the field can fail to match. Default `false`. */
+	optional?: boolean;
+
+	/** Consume all consecutive matching nodes into an array. Default `false`. */
+	greedy?: boolean;
+
+	/**
+	 * Which attribute to extract instead of text content.
+	 * E.g., `'href'` on a link match extracts the URL.
+	 */
+	extract?: string;
+
+	/**
+	 * For text-level extraction: regex pattern or `'remainder'` for leftover text.
+	 * When a RegExp, capture group 1 is used. When `'remainder'`, captures
+	 * whatever text is left after all other patterns have matched.
+	 */
+	pattern?: RegExp | 'remainder';
+
+	/** Nested item model for sub-lists. */
+	itemModel?: ItemModel;
+}
+
+/** Declares how to extract structured data from each list item's inline children. */
+export interface ItemModel {
+	fields: ItemFieldDefinition[];
+}
+
+// ---------------------------------------------------------------------------
+// Conditional content models
+// ---------------------------------------------------------------------------
+
+/** Condition: attribute value is in a set. */
+export interface AttributeInCondition {
+	attribute: string;
+	in: string[];
+}
+
+/** Condition: attribute is present (truthy). */
+export interface AttributeExistsCondition {
+	attribute: string;
+	exists: true;
+}
+
+/** Condition: a child matching a node type is present. */
+export interface HasChildCondition {
+	hasChild: string;
+}
+
+/** A content model condition — used in `when` branches. */
+export type ContentModelCondition =
+	| AttributeInCondition
+	| AttributeExistsCondition
+	| HasChildCondition;
+
+/** A conditional content model that branches on attributes or content shape. */
+export interface ConditionalContentModel {
+	when: Array<{ condition: ContentModelCondition; model: ContentModel }>;
+	default: ContentModel;
+}
+
+// ---------------------------------------------------------------------------
 // Content model union
 // ---------------------------------------------------------------------------
+
+/** A structural content model pattern. */
+export type StructuralContentModel = SequenceModel | SectionsModel | DelimitedModel | CustomModel;
 
 /**
  * A content model declaration.
  *
- * Supports `sequence`, `sections`, and `delimited` patterns.
- * A `custom` pattern will be added in a later phase.
+ * Supports `sequence`, `sections`, `delimited`, and `custom` patterns,
+ * plus `when` conditional branching.
  */
-export type ContentModel = SequenceModel | SectionsModel | DelimitedModel;
+export type ContentModel = StructuralContentModel | ConditionalContentModel;
+
+// ---------------------------------------------------------------------------
+// Extended field definition with itemModel
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Resolver output

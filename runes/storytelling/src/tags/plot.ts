@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Parse status marker from list item text: [x]=complete, [>]=active, [ ]=planned, [-]=abandoned
@@ -49,96 +50,110 @@ class BeatModel extends Model {
 const plotType = ['arc', 'quest', 'subplot', 'campaign', 'episode', 'act', 'chapter'] as const;
 const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
 
-class PlotModel extends Model {
-	@attribute({ type: String, required: true })
-	title: string = '';
+// Convert list items into beat tags with status markers and bold label extraction
+function convertPlotChildren(nodes: unknown[]): unknown[] {
+	const converted: Node[] = [];
 
-	@attribute({ type: String, required: false, matches: plotType.slice() })
-	type: typeof plotType[number] = 'arc';
+	for (const node of nodes as Node[]) {
+		if (node.type === 'list') {
+			for (const item of node.children) {
+				// Extract text content to find marker and label
+				const firstParagraph = item.children[0];
+				if (!firstParagraph) continue;
 
-	@attribute({ type: String, required: false, matches: structureType.slice() })
-	structure: typeof structureType[number] = 'linear';
-
-	@attribute({ type: String, required: false })
-	tags: string = '';
-
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	itemgroup: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
-
-		for (const node of nodes) {
-			if (node.type === 'list') {
-				for (const item of node.children) {
-					// Extract text content to find marker and label
-					const firstParagraph = item.children[0];
-					if (!firstParagraph) continue;
-
-					const textParts: string[] = [];
-					for (const child of firstParagraph.walk()) {
-						if (child.type === 'text' && child.attributes.content) {
-							textParts.push(child.attributes.content);
-						}
+				const textParts: string[] = [];
+				for (const child of firstParagraph.walk()) {
+					if (child.type === 'text' && child.attributes.content) {
+						textParts.push(child.attributes.content);
 					}
-					const text = textParts.join('').trim();
-
-					// Parse status marker
-					let status = 'planned';
-					const markerMatch = text.match(MARKER_PATTERN);
-					if (markerMatch) {
-						const marker = markerMatch[1];
-						status = marker === 'x' ? 'complete'
-							: marker === '>' ? 'active'
-							: marker === '-' ? 'abandoned'
-							: 'planned';
-					}
-
-					// Extract label from first strong node, or fall back to text
-					let label = '';
-					for (const child of firstParagraph.walk()) {
-						if (child.type === 'strong') {
-							const strongParts: string[] = [];
-							for (const sc of child.walk()) {
-								if (sc.type === 'text' && sc.attributes.content) {
-									strongParts.push(sc.attributes.content);
-								}
-							}
-							label = strongParts.join('').trim();
-							break;
-						}
-					}
-					if (!label) {
-						// No bold label — use full text minus marker
-						label = markerMatch ? text.slice(markerMatch[0].length).trim() : text;
-						// Strip leading dash separator if present
-						label = label.replace(/^[-–—]\s*/, '');
-					}
-
-					converted.push(new Ast.Node('tag', {
-						label,
-						status,
-					}, item.children.slice(1), 'beat'));
 				}
-			} else {
-				converted.push(node);
+				const text = textParts.join('').trim();
+
+				// Parse status marker
+				let status = 'planned';
+				const markerMatch = text.match(MARKER_PATTERN);
+				if (markerMatch) {
+					const marker = markerMatch[1];
+					status = marker === 'x' ? 'complete'
+						: marker === '>' ? 'active'
+						: marker === '-' ? 'abandoned'
+						: 'planned';
+				}
+
+				// Extract label from first strong node, or fall back to text
+				let label = '';
+				for (const child of firstParagraph.walk()) {
+					if (child.type === 'strong') {
+						const strongParts: string[] = [];
+						for (const sc of child.walk()) {
+							if (sc.type === 'text' && sc.attributes.content) {
+								strongParts.push(sc.attributes.content);
+							}
+						}
+						label = strongParts.join('').trim();
+						break;
+					}
+				}
+				if (!label) {
+					// No bold label — use full text minus marker
+					label = markerMatch ? text.slice(markerMatch[0].length).trim() : text;
+					// Strip leading dash separator if present
+					label = label.replace(/^[-–—]\s*/, '');
+				}
+
+				converted.push(new Ast.Node('tag', {
+					label,
+					status,
+				}, item.children.slice(1), 'beat'));
+			}
+		} else {
+			converted.push(node);
+		}
+	}
+
+	return converted;
+}
+
+export const beat = createSchema(BeatModel);
+
+export const plot = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: true },
+		type: { type: String, required: false, matches: plotType.slice() },
+		structure: { type: String, required: false, matches: structureType.slice() },
+		tags: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertPlotChildren,
+		description: 'Converts list items into beat tags with status markers ([x], [>], [ ], [-]) '
+			+ 'and bold label extraction.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
+
+		// Separate header content from tag nodes
+		const headerAst: Node[] = [];
+		const bodyAst: Node[] = [];
+		for (const child of allChildren) {
+			if (child.type === 'tag') {
+				bodyAst.push(child);
+			} else if (child.type === 'heading' || child.type === 'paragraph') {
+				headerAst.push(child);
 			}
 		}
 
-		return super.processChildren(converted);
-	}
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		);
+		const itemStream = new RenderableNodeCursor(
+			Markdoc.transform(bodyAst, config) as RenderableTreeNode[],
+		);
 
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const itemStream = this.itemgroup.transform();
-
-		const titleTag = new Tag('span', {}, [this.title]);
-		const plotTypeMeta = new Tag('meta', { content: this.type });
-		const structureMeta = new Tag('meta', { content: this.structure });
-		const tagsMeta = new Tag('meta', { content: this.tags });
+		const titleTag = new Tag('span', {}, [attrs.title ?? '']);
+		const plotTypeMeta = new Tag('meta', { content: attrs.type ?? 'arc' });
+		const structureMeta = new Tag('meta', { content: attrs.structure ?? 'linear' });
+		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
 		const beats = itemStream.tag('li').typeof('Beat');
 		const beatsList = new Tag('ol', {}, beats.toArray());
@@ -166,8 +181,5 @@ class PlotModel extends Model {
 			},
 			children,
 		});
-	}
-}
-
-export const beat = createSchema(BeatModel);
-export const plot = createSchema(PlotModel);
+	},
+});

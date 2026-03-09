@@ -3,8 +3,7 @@ import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/mar
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, id, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -46,71 +45,76 @@ class TabModel extends Model {
 
 export const tab = createSchema(TabModel);
 
-class TabsModel extends Model {
-  @id({ generate: true })
-  id: string;
+function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
+  const level = headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
+  if (!level) return nodes;
+  const converted = headingsToList({ level })(nodes);
+  const n = converted.length - 1;
+  const tags = converted[n].children.map((item: Node) => {
+    const heading = item.children[0];
+    const image = Array.from(heading.walk()).find((n: Node) => n.type === 'image');
+    const name = Array.from(heading.walk()).filter((n: Node) => n.type === 'text').map((t: Node) => t.attributes.content);
+    return new Ast.Node('tag', {
+      name,
+      image: image ? image.attributes.src : undefined,
+    }, item.children.slice(1), 'tab');
+  });
 
-  @attribute({ type: Number, required: false })
-  headingLevel: number | undefined = undefined;
+  converted.splice(n, 1, ...tags);
+  return converted;
+}
 
-  @group({ include: ['heading', 'paragraph'] })
-  header: NodeStream;
+export const tabs = createContentModelSchema({
+  attributes: {
+    headingLevel: { type: Number, required: false },
+  },
+  contentModel: (attrs) => ({
+    type: 'custom' as const,
+    processChildren: (nodes) => convertHeadings(nodes as Node[], attrs.headingLevel),
+    description: 'Converts headings at the specified level to tab tags, extracting tab name and optional image from heading content.',
+  }),
+  transform(resolved, attrs, config) {
+    const allChildren = asNodes(resolved.children);
 
-  @group({ include: ['tag'] })
-  tabgroup: NodeStream;
+    // Separate header content (headings/paragraphs before tabs) from tab tag nodes
+    const headerAst: Node[] = [];
+    const tabAst: Node[] = [];
+    for (const child of allChildren) {
+      if (child.type === 'tag' && (child as any).tag === 'tab') {
+        tabAst.push(child);
+      } else if (child.type === 'heading' || child.type === 'paragraph') {
+        headerAst.push(child);
+      }
+    }
 
-  convertHeadings(nodes: Node[]) {
-    const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-    if (!level) return nodes;
-    const converted = headingsToList({ level })(nodes);
-    const n = converted.length - 1;
-    const tags = converted[n].children.map(item => {
-      const heading = item.children[0];
-      const image = Array.from(heading.walk()).find(n => n.type === 'image');
-      const name = Array.from(heading.walk()).filter(n => n.type === 'text').map(t => t.attributes.content);
-      return new Ast.Node('tag', {
-        name,
-        image: image ? image.attributes.src : undefined,
-      }, item.children.slice(1), 'tab');
-    });
+    const headerNodes = new RenderableNodeCursor(
+      Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+    );
+    const tabStream = new RenderableNodeCursor(
+      Markdoc.transform(tabAst, config) as RenderableTreeNode[],
+    );
 
-    converted.splice(n, 1, ...tags);
+    const tabItems = tabStream.tag('li').typeof('Tab');
+    const panels = tabStream.tag('li').typeof('TabPanel');
 
-    return converted;
-  }
-
-  processChildren(nodes: Node[]) {
-    return super.processChildren(this.convertHeadings(nodes));
-  }
-
-  transform(): RenderableTreeNodes {
-    const header = this.header.transform();
-    const tabStream = this.tabgroup.transform();
-
-    const tabs = tabStream.tag('li').typeof('Tab');
-    const panels = tabStream.tag('li').typeof('TabPanel')
-
-    const tabList = tabs.wrap('ul');
+    const tabList = tabItems.wrap('ul');
     const panelList = panels.wrap('ul');
 
-    const children = header.count() > 0
-      ? [header.wrap('header').next(), tabList.next(), panelList.next()]
+    const children = headerNodes.count() > 0
+      ? [headerNodes.wrap('header').next(), tabList.next(), panelList.next()]
       : [tabList.next(), panelList.next()];
 
     return createComponentRenderable(schema.TabGroup, {
       tag: 'section',
-      id: this.id,
-      class: this.node.transformAttributes(this.config).class,
+      class: attrs.class,
       property: 'contentSection',
       properties: {
-        ...pageSectionProperties(header),
-        tab: tabs,
+        ...pageSectionProperties(headerNodes),
+        tab: tabItems,
         panel: panels,
       },
       refs: { tabs: tabList, panels: panelList },
       children,
     });
-  }
-}
-
-export const tabs = createSchema(TabsModel);
+  },
+});

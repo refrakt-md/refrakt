@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Parse "9:00 AM — Narita Airport" or "Morning - Meiji Shrine"
@@ -67,25 +68,21 @@ class ItineraryDayModel extends Model {
 	@attribute({ type: String, required: false })
 	date: string = '';
 
-	@group({ include: ['paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	stops: NodeStream;
-
 	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const stopsStream = this.stops.transform();
+		const allChildren = this.transformChildren();
+
+		// Separate header paragraphs from stop tags
+		const headerNodes = allChildren.tag('p');
+		const stopsStream = allChildren.tag('li').typeof('ItineraryStop');
 
 		const labelTag = new Tag('h3', {}, [this.label]);
 		const dateMeta = new Tag('meta', { content: this.date });
 
-		const stopItems = stopsStream.tag('li').typeof('ItineraryStop');
-		const stopsList = new Tag('ol', {}, stopItems.toArray());
+		const stopsList = new Tag('ol', {}, stopsStream.toArray());
 
 		const children: any[] = [labelTag, dateMeta];
-		if (header.count() > 0) {
-			children.push(header.wrap('div').next());
+		if (headerNodes.count() > 0) {
+			children.push(headerNodes.wrap('div').next());
 		}
 		children.push(stopsList);
 
@@ -94,7 +91,7 @@ class ItineraryDayModel extends Model {
 			properties: {
 				label: labelTag,
 				date: dateMeta,
-				stop: stopItems,
+				stop: stopsStream,
 			},
 			refs: {
 				stops: stopsList,
@@ -104,37 +101,43 @@ class ItineraryDayModel extends Model {
 	}
 }
 
-class ItineraryModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+// Convert headings at a given level into stop tags with time/location parsing
+function convertStops(nodes: Node[], headingLevel?: number): Node[] {
+	const level = headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
+	if (!level) return nodes;
 
-	@attribute({ type: String, required: false })
-	variant: string = 'day-by-day';
+	const grouped = headingsToList({ level })(nodes);
+	const result: Node[] = [];
 
-	@attribute({ type: String, required: false })
-	direction: string = 'vertical';
+	for (const node of grouped) {
+		if (node.type === 'list') {
+			for (const item of node.children) {
+				const heading = item.children[0];
+				const headingText = extractText(heading);
 
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
+				const match = headingText.match(TIME_LOCATION_PATTERN);
+				const time = match ? match[1].trim() : '';
+				const location = match ? match[2].trim() : headingText;
 
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertToItems(nodes));
-	}
-
-	convertToItems(nodes: Node[]): Node[] {
-		const hasH2 = nodes.some(n => n.type === 'heading' && n.attributes.level === 2);
-
-		if (hasH2) {
-			return this.convertWithDays(nodes);
+				result.push(new Ast.Node('tag', { time, location }, item.children.slice(1), 'itinerary-stop'));
+			}
+		} else {
+			result.push(node);
 		}
-		return this.convertFlat(nodes);
 	}
 
-	convertWithDays(nodes: Node[]): Node[] {
-		const grouped = headingsToList({ level: 2 })(nodes);
+	return result;
+}
+
+// Two-mode conversion: day-by-day (h2 present) or flat
+function convertItineraryChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
+	const headingLevel = attributes.headingLevel as number | undefined;
+	const nodeArr = nodes as Node[];
+	const hasH2 = nodeArr.some(n => n.type === 'heading' && n.attributes.level === 2);
+
+	if (hasH2) {
+		// Day-by-day mode: h2 headings become days, nested headings become stops
+		const grouped = headingsToList({ level: 2 })(nodeArr);
 		const result: Node[] = [];
 
 		for (const node of grouped) {
@@ -144,7 +147,7 @@ class ItineraryModel extends Model {
 					const headingText = extractText(heading);
 
 					// Convert h3s within this day to stop tags
-					const dayChildren = this.convertStops(item.children.slice(1));
+					const dayChildren = convertStops(item.children.slice(1), headingLevel);
 
 					result.push(new Ast.Node('tag', { label: headingText }, dayChildren, 'itinerary-day'));
 				}
@@ -156,50 +159,54 @@ class ItineraryModel extends Model {
 		return result;
 	}
 
-	convertFlat(nodes: Node[]): Node[] {
-		// Create a single implicit day wrapping all stops
-		const stops = this.convertStops(nodes);
-		const headingNodes = stops.filter(n => n.type === 'heading' || n.type === 'paragraph');
-		const tagNodes = stops.filter(n => n.type === 'tag');
+	// Flat mode: create a single implicit day wrapping all stops
+	const stops = convertStops(nodeArr, headingLevel);
+	const headingNodes = stops.filter(n => n.type === 'heading' || n.type === 'paragraph');
+	const tagNodes = stops.filter(n => n.type === 'tag');
 
-		if (tagNodes.length === 0) return stops;
+	if (tagNodes.length === 0) return stops;
 
-		return [...headingNodes, new Ast.Node('tag', { label: '' }, tagNodes, 'itinerary-day')];
-	}
+	return [...headingNodes, new Ast.Node('tag', { label: '' }, tagNodes, 'itinerary-day')];
+}
 
-	convertStops(nodes: Node[]): Node[] {
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
+export const itineraryStop = createSchema(ItineraryStopModel);
+export const itineraryDay = createSchema(ItineraryDayModel);
 
-		const grouped = headingsToList({ level })(nodes);
-		const result: Node[] = [];
+export const itinerary = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		variant: { type: String, required: false },
+		direction: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertItineraryChildren,
+		description: 'Two-mode itinerary parser. When h2 headings are present, creates day groups with stops. '
+			+ 'Otherwise creates a flat list of stops from heading-based time/location parsing.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
 
-		for (const node of grouped) {
-			if (node.type === 'list') {
-				for (const item of node.children) {
-					const heading = item.children[0];
-					const headingText = extractText(heading);
-
-					const match = headingText.match(TIME_LOCATION_PATTERN);
-					const time = match ? match[1].trim() : '';
-					const location = match ? match[2].trim() : headingText;
-
-					result.push(new Ast.Node('tag', { time, location }, item.children.slice(1), 'itinerary-stop'));
-				}
-			} else {
-				result.push(node);
+		// Separate header content from day tags
+		const headerAst: Node[] = [];
+		const bodyAst: Node[] = [];
+		for (const child of allChildren) {
+			if (child.type === 'tag') {
+				bodyAst.push(child);
+			} else if (child.type === 'heading' || child.type === 'paragraph') {
+				headerAst.push(child);
 			}
 		}
 
-		return result;
-	}
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		);
+		const bodyStream = new RenderableNodeCursor(
+			Markdoc.transform(bodyAst, config) as RenderableTreeNode[],
+		);
 
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const bodyStream = this.body.transform();
-
-		const variantMeta = new Tag('meta', { content: this.variant });
-		const directionMeta = new Tag('meta', { content: this.direction });
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'day-by-day' });
+		const directionMeta = new Tag('meta', { content: attrs.direction ?? 'vertical' });
 
 		const days = bodyStream.tag('article').typeof('ItineraryDay');
 		const daysContainer = new Tag('div', {}, days.toArray());
@@ -222,11 +229,5 @@ class ItineraryModel extends Model {
 			refs: { days: daysContainer },
 			children,
 		});
-	}
-}
-
-export const itineraryStop = createSchema(ItineraryStopModel);
-
-export const itineraryDay = createSchema(ItineraryDayModel);
-
-export const itinerary = createSchema(ItineraryModel);
+	},
+});

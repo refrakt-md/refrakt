@@ -48,7 +48,7 @@ export { RenderableNodeCursor } from './lib/renderable.js';
 export { schema } from './registry.js';
 export { createSchema, createContentModelSchema, createComponentRenderable, asNodes } from './lib/index.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
-export { resolve, resolveSequence, resolveDelimited, resolveContentModel, matchesType } from './lib/resolver.js';
+export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
 export { attribute } from './lib/annotations/attribute.js';
 export { group, groupList } from './lib/annotations/group.js';
 export { id } from './lib/annotations/id.js';
