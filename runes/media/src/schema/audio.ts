@@ -1,13 +1,29 @@
 import { PageSection } from "@refrakt-md/types";
 
-export class MusicRecording {
+export class Track {
   name: string = '';
-  byArtist: string = '';
+  artist: string = '';
   duration: string = '';
-  copyrightYear: number | undefined;
+  src: string = '';
+  date: string = '';
+  number: number | undefined;
+  trackType: string = 'song';
 }
 
-export class MusicPlaylist extends PageSection {
+export class Playlist extends PageSection {
   image: string | undefined = undefined;
-  track: MusicRecording[] = [];
+  artist: string = '';
+  playlistType: string = 'album';
+  track: Track[] = [];
 }
+
+export class Audio {
+  src: string = '';
+  title: string = '';
+  artist: string = '';
+  waveform: boolean = false;
+}
+
+// Legacy aliases
+export { Track as MusicRecording };
+export { Playlist as MusicPlaylist };

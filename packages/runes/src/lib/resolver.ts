@@ -446,7 +446,17 @@ export function resolveListItems(
 
 	return listItems.map(listItem => {
 		const result: Record<string, unknown> = {};
-		const inlineChildren: Node[] = listItem.children ?? [];
+		// Flatten `inline` wrapper nodes — Markdoc wraps inline content in
+		// an `inline` node (item > inline > [strong, text, em, ...]).
+		// Block-level children (paragraph, list) remain at the item level.
+		const inlineChildren: Node[] = [];
+		for (const child of listItem.children ?? []) {
+			if (child.type === 'inline') {
+				inlineChildren.push(...(child.children ?? []));
+			} else {
+				inlineChildren.push(child);
+			}
+		}
 		const consumed = new Set<number>();
 
 		// Phase 1: Match typed inline nodes
