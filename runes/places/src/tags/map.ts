@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
@@ -34,7 +35,6 @@ function parseLocationItem(node: Node): {
 	let name = '';
 	let description = '';
 	let url = '';
-	const textParts: string[] = [];
 
 	// Walk the item's direct children (paragraph/inline wrapper)
 	const allNodes = Array.from(node.walk());
@@ -136,75 +136,69 @@ class MapPinModel extends Model {
 	}
 }
 
-class MapModel extends Model {
-	@attribute({ type: String, required: false })
-	zoom: string = '';
+// Parse list items into map-pin tags with heading-based grouping
+function convertMapChildren(nodes: unknown[]): unknown[] {
+	const converted: Node[] = [];
+	let currentGroup = '';
 
-	@attribute({ type: String, required: false })
-	center: string = '';
-
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'street';
-
-	@attribute({ type: String, required: false, matches: heightType.slice() })
-	height: typeof heightType[number] = 'medium';
-
-	@attribute({ type: String, required: false, matches: providerType.slice() })
-	provider: typeof providerType[number] = 'openstreetmap';
-
-	@attribute({ type: Boolean, required: false })
-	interactive: boolean = true;
-
-	@attribute({ type: Boolean, required: false })
-	route: boolean = false;
-
-	@attribute({ type: Boolean, required: false })
-	cluster: boolean = false;
-
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
-		let currentGroup = '';
-
-		for (const node of nodes) {
-			if (node.type === 'heading') {
-				currentGroup = extractText(node);
-			} else if (node.type === 'list') {
-				for (const item of node.children) {
-					if (item.type === 'item') {
-						const loc = parseLocationItem(item);
-						converted.push(new Ast.Node('tag', {
-							name: loc.name,
-							description: loc.description,
-							lat: loc.lat,
-							lng: loc.lng,
-							address: loc.address,
-							url: loc.url,
-							group: currentGroup,
-						}, [], 'map-pin'));
-					}
+	for (const node of nodes as Node[]) {
+		if (node.type === 'heading') {
+			currentGroup = extractText(node);
+		} else if (node.type === 'list') {
+			for (const item of node.children) {
+				if (item.type === 'item') {
+					const loc = parseLocationItem(item);
+					converted.push(new Ast.Node('tag', {
+						name: loc.name,
+						description: loc.description,
+						lat: loc.lat,
+						lng: loc.lng,
+						address: loc.address,
+						url: loc.url,
+						group: currentGroup,
+					}, [], 'map-pin'));
 				}
-			} else {
-				converted.push(node);
 			}
+		} else {
+			converted.push(node);
 		}
-
-		return super.processChildren(converted);
 	}
 
-	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
+	return converted;
+}
 
-		const zoomMeta = new Tag('meta', { content: this.zoom });
-		const centerMeta = new Tag('meta', { content: this.center });
-		const variantMeta = new Tag('meta', { content: this.variant });
-		const heightMeta = new Tag('meta', { content: this.height });
-		const providerMeta = new Tag('meta', { content: this.provider });
-		const interactiveMeta = new Tag('meta', { content: String(this.interactive) });
-		const routeMeta = new Tag('meta', { content: String(this.route) });
-		const clusterMeta = new Tag('meta', { content: String(this.cluster) });
+export const mapPin = createSchema(MapPinModel);
+
+export const map = createContentModelSchema({
+	attributes: {
+		zoom: { type: String, required: false },
+		center: { type: String, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+		height: { type: String, required: false, matches: heightType.slice() },
+		provider: { type: String, required: false, matches: providerType.slice() },
+		interactive: { type: Boolean, required: false },
+		route: { type: Boolean, required: false },
+		cluster: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertMapChildren,
+		description: 'Parses list items into map-pin tags with bold names, italic descriptions, '
+			+ 'link URLs, coordinate regex extraction, and heading-based grouping.',
+	},
+	transform(resolved, attrs, config) {
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.children), config) as RenderableTreeNode[],
+		);
+
+		const zoomMeta = new Tag('meta', { content: attrs.zoom ?? '' });
+		const centerMeta = new Tag('meta', { content: attrs.center ?? '' });
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'street' });
+		const heightMeta = new Tag('meta', { content: attrs.height ?? 'medium' });
+		const providerMeta = new Tag('meta', { content: attrs.provider ?? 'openstreetmap' });
+		const interactiveMeta = new Tag('meta', { content: String(attrs.interactive ?? true) });
+		const routeMeta = new Tag('meta', { content: String(attrs.route ?? false) });
+		const clusterMeta = new Tag('meta', { content: String(attrs.cluster ?? false) });
 
 		const pins = body.tag('li').typeof('MapPin');
 		const pinsList = new Tag('ol', {}, pins.toArray());
@@ -225,8 +219,5 @@ class MapModel extends Model {
 			refs: { pins: pinsList },
 			children: [zoomMeta, centerMeta, variantMeta, heightMeta, providerMeta, interactiveMeta, routeMeta, clusterMeta, pinsList],
 		});
-	}
-}
-
-export const mapPin = createSchema(MapPinModel);
-export const map = createSchema(MapModel);
+	},
+});

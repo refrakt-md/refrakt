@@ -14,6 +14,11 @@ import type {
 	DelimitedModel,
 	SequenceModel,
 	SectionsModel,
+	CustomModel,
+	ConditionalContentModel,
+	ContentModelCondition,
+	ItemModel,
+	ItemFieldDefinition,
 	HeadingExtract,
 	ResolvedContent,
 } from '@refrakt-md/types';
@@ -146,6 +151,14 @@ export function resolveSequence(
 			} else {
 				result[field.name] = child;
 				childIndex++;
+			}
+
+			// If this list field has an itemModel, extract structured data
+			if (field.itemModel) {
+				const node = result[field.name];
+				if (node && typeof node === 'object' && 'type' in (node as any)) {
+					result[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
+				}
 			}
 		} else if (!field.optional) {
 			// Required field didn't match — skip the child and move on
@@ -347,6 +360,193 @@ export function resolveSections(
 }
 
 // ---------------------------------------------------------------------------
+// Conditional evaluation
+// ---------------------------------------------------------------------------
+
+/**
+ * Evaluate a content model condition against children and attributes.
+ */
+export function evaluateCondition(
+	condition: ContentModelCondition,
+	children: Node[],
+	attributes: Record<string, unknown>,
+): boolean {
+	if ('hasChild' in condition) {
+		return children.some(c => matchesType(c, condition.hasChild));
+	}
+	if ('in' in condition) {
+		const value = String(attributes[condition.attribute] ?? '');
+		return condition.in.includes(value);
+	}
+	if ('exists' in condition) {
+		return attributes[condition.attribute] != null && attributes[condition.attribute] !== '';
+	}
+	return false;
+}
+
+/**
+ * Check whether a content model is conditional (has `when` branches).
+ */
+function isConditional(model: ContentModel): model is ConditionalContentModel {
+	return 'when' in model && Array.isArray((model as ConditionalContentModel).when);
+}
+
+// ---------------------------------------------------------------------------
+// Inline item model resolver
+// ---------------------------------------------------------------------------
+
+/** Extract plain text from an AST node by walking its children. */
+function extractNodeText(n: Node): string {
+	if (n.type === 'text') return n.attributes?.content ?? '';
+	const texts: string[] = [];
+	for (const child of n.walk()) {
+		if (child.type === 'text' && child.attributes?.content) {
+			texts.push(child.attributes.content);
+		}
+	}
+	return texts.join('');
+}
+
+/**
+ * Find an inline match within a node, handling link-wrapping-strong patterns.
+ * E.g., `[**Name**](/url)` — a link wrapping bold text.
+ */
+function findInlineMatch(n: Node, matchType: string): Node | null {
+	if (n.type === matchType) return n;
+
+	// Check inside links for nested inline types
+	if (n.type === 'link' && matchType !== 'link') {
+		for (const child of n.children ?? []) {
+			if (child.type === matchType) return child;
+		}
+	}
+
+	// Check inside strong/em for nested types
+	if ((n.type === 'strong' || n.type === 'em') && matchType !== n.type) {
+		for (const child of n.children ?? []) {
+			if (child.type === matchType) return child;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Resolve structured data from list item inline content.
+ *
+ * Two-phase extraction:
+ * 1. Match typed inline nodes (strong, em, link, image, code)
+ * 2. Collect remaining text, run regex pattern fields
+ */
+export function resolveListItems(
+	listNode: Node,
+	itemModel: ItemModel,
+): Record<string, unknown>[] {
+	const listItems = listNode.children ?? [];
+
+	return listItems.map(listItem => {
+		const result: Record<string, unknown> = {};
+		const inlineChildren: Node[] = listItem.children ?? [];
+		const consumed = new Set<number>();
+
+		// Phase 1: Match typed inline nodes
+		// Soft-consumed: a child inside a wrapper was matched (e.g., strong
+		// inside a link). The wrapper is still available for a direct match.
+		const softConsumed = new Set<number>();
+
+		for (const field of itemModel.fields) {
+			if (field.match === 'text') continue; // handle in phase 2
+
+			// Nested list (cue points, sub-items)
+			if (field.match === 'list') {
+				const idx = inlineChildren.findIndex((c, i) =>
+					!consumed.has(i) && (c.type === 'list'));
+				if (idx >= 0) {
+					consumed.add(idx);
+					result[field.name] = field.itemModel
+						? resolveListItems(inlineChildren[idx], field.itemModel)
+						: inlineChildren[idx];
+				}
+				continue;
+			}
+
+			// Block-level children (paragraphs under list items)
+			if (field.match === 'paragraph' && field.greedy) {
+				const paragraphs: Node[] = [];
+				inlineChildren.forEach((c, i) => {
+					if (!consumed.has(i) && c.type === 'paragraph') {
+						consumed.add(i);
+						paragraphs.push(c);
+					}
+				});
+				if (paragraphs.length > 0) result[field.name] = paragraphs;
+				continue;
+			}
+
+			// Inline node matching (strong, em, link, image, code)
+			for (let i = 0; i < inlineChildren.length; i++) {
+				// Skip hard-consumed; allow soft-consumed for direct matches
+				if (consumed.has(i)) continue;
+				if (softConsumed.has(i) && field.match !== inlineChildren[i].type) continue;
+				const child = inlineChildren[i];
+
+				const matched = findInlineMatch(child, field.match);
+				if (matched) {
+					if (matched === child) {
+						// Direct match → hard consume
+						consumed.add(i);
+					} else {
+						// Child-inside-wrapper → soft consume
+						softConsumed.add(i);
+					}
+					if (field.extract) {
+						// For extract, get the attribute from the wrapper (e.g., href from link)
+						const source = child.attributes?.[field.extract] != null ? child : matched;
+						result[field.name] = source.attributes?.[field.extract];
+					} else {
+						result[field.name] = extractNodeText(matched);
+					}
+					break;
+				}
+			}
+		}
+
+		// Merge soft-consumed into consumed for text collection
+		for (const idx of softConsumed) consumed.add(idx);
+
+		// Phase 2: Collect remaining text, run pattern fields
+		const textFields = itemModel.fields.filter(f => f.match === 'text');
+		if (textFields.length > 0) {
+			const remainingText = inlineChildren
+				.filter((_, i) => !consumed.has(i))
+				.filter(c => c.type === 'text' || c.type === 'softbreak')
+				.map(c => c.attributes?.content ?? '')
+				.join('')
+				.trim();
+
+			let textToProcess = remainingText;
+
+			for (const field of textFields) {
+				if (field.pattern === 'remainder') {
+					const trimmed = textToProcess.trim();
+					if (trimmed || !field.optional) {
+						result[field.name] = trimmed;
+					}
+				} else if (field.pattern instanceof RegExp) {
+					const match = textToProcess.match(field.pattern);
+					if (match) {
+						result[field.name] = match[1] ?? match[0];
+						textToProcess = textToProcess.replace(field.pattern, '');
+					}
+				}
+			}
+		}
+
+		return result;
+	});
+}
+
+// ---------------------------------------------------------------------------
 // Top-level resolver
 // ---------------------------------------------------------------------------
 
@@ -357,7 +557,18 @@ export function resolveSections(
 export function resolve(
 	children: Node[],
 	model: ContentModel,
+	attributes?: Record<string, unknown>,
 ): ResolvedContent {
+	// Handle conditional models
+	if (isConditional(model)) {
+		for (const branch of model.when) {
+			if (evaluateCondition(branch.condition, children, attributes ?? {})) {
+				return resolve(children, branch.model, attributes);
+			}
+		}
+		return resolve(children, model.default, attributes);
+	}
+
 	switch (model.type) {
 		case 'sequence':
 			return resolveSequence(children, (model as SequenceModel).fields);
@@ -365,6 +576,8 @@ export function resolve(
 			return resolveSections(children, model as SectionsModel);
 		case 'delimited':
 			return resolveDelimited(children, model as DelimitedModel);
+		case 'custom':
+			return { children: (model as CustomModel).processChildren(children, attributes ?? {}) };
 		default:
 			return {};
 	}
@@ -377,8 +590,9 @@ export function resolve(
 export function resolveContentModel(
 	children: Node[],
 	model: ContentModel,
+	attributes?: Record<string, unknown>,
 ): ResolveResult {
 	const { filtered, tintNode, bgNode } = extractSpecialTags(children);
-	const content = resolve(filtered, model);
+	const content = resolve(filtered, model, attributes);
 	return { content, tintNode, bgNode };
 }

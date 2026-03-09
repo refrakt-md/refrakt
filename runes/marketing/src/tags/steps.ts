@@ -1,38 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, createComponentRenderable, createSchema, NodeStream, headingsToList, SplitLayoutModel, nameHelper as name, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, headingsToList, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
-
-class StepsModel extends SplitLayoutModel {
-  @attribute({ type: Number, required: false })
-  headingLevel: number | undefined = undefined;
-
-  processChildren(nodes: Node[]) {
-    return super.processChildren(headingsToList({ level: this.headingLevel })(nodes));
-  }
-
-  transform() {
-    const children = this.transformChildren({
-      list: 'ol',
-      item: (node, config) => {
-        return Markdoc.transform(
-          new Ast.Node('tag', { split: node.attributes.split }, node.children, 'step'), config
-        );
-      }
-    });
-
-    return createComponentRenderable(schema.Steps, {
-      tag: 'section',
-      property: 'contentSection',
-      properties: {
-        ...pageSectionProperties(children),
-        step: children.flatten().tag('li').typeof('Step')
-      },
-      children: children.toArray(),
-    });
-  }
-}
 
 class StepModel extends SplitLayoutModel {
   @group({ section: 0 })
@@ -79,12 +50,49 @@ class StepModel extends SplitLayoutModel {
   }
 }
 
-export const steps = createSchema(StepsModel);
-
 export const step = createSchema(StepModel, {
   split: {
     newName: 'layout',
     transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
   },
   mirror: { newName: '_consumed' },
+});
+
+export const steps = createContentModelSchema({
+  attributes: {
+    headingLevel: { type: Number, required: false },
+  },
+  contentModel: (attrs) => ({
+    type: 'custom' as const,
+    processChildren: (nodes) => headingsToList({ level: attrs.headingLevel })(nodes as Node[]),
+    description: 'Converts headings to a list structure, where each heading becomes a step with optional split layout.',
+  }),
+  transform(resolved, attrs, config) {
+    const children = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(resolved.children), {
+        ...config,
+        nodes: {
+          ...config.nodes,
+          list: { render: 'ol' },
+          item: {
+            transform(node: Node, cfg: any) {
+              return Markdoc.transform(
+                new Ast.Node('tag', { split: node.attributes.split }, node.children, 'step'), cfg
+              );
+            },
+          },
+        },
+      }) as RenderableTreeNode[],
+    );
+
+    return createComponentRenderable(schema.Steps, {
+      tag: 'section',
+      property: 'contentSection',
+      properties: {
+        ...pageSectionProperties(children),
+        step: children.flatten().tag('li').typeof('Step')
+      },
+      children: children.toArray(),
+    });
+  },
 });
