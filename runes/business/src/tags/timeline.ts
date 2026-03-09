@@ -1,11 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
-import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
-
-// Parse "2023 - Company founded" or "2020-2023: Growth phase"
-const DATE_LABEL_PATTERN = /^(.+?)\s*[-–—:]\s*(.+)$/;
 
 class TimelineEntryModel extends Model {
 	@attribute({ type: String, required: false })
@@ -37,57 +34,45 @@ class TimelineEntryModel extends Model {
 	}
 }
 
-class TimelineModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+export const timelineEntry = createSchema(TimelineEntryModel);
 
-	@attribute({ type: String, required: false })
-	direction: string = 'vertical';
+export const timeline = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		direction: { type: String, required: false },
+	},
+	contentModel: (attrs) => ({
+		type: 'sections' as const,
+		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		emitTag: 'timeline-entry',
+		emitAttributes: { date: '$date', label: '$label' },
+		headingExtract: {
+			fields: [
+				{ name: 'date', match: 'text' as const, pattern: /^(.+?)\s*[-–—:]\s*/, optional: true },
+				{ name: 'label', match: 'text' as const, pattern: 'remainder' as const },
+			],
+		},
+		fields: [
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
+		],
+		sectionModel: {
+			type: 'sequence' as const,
+			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+	}),
+	transform(resolved, attrs, config) {
+		const headerNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
+		// Combine explicit child tags (preamble items) with emitted section tags
+		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
+		const sectionNodes = new RenderableNodeCursor(
+			Markdoc.transform(allItems, config) as RenderableTreeNode[],
+		);
+		const directionMeta = new Tag('meta', { content: attrs.direction ?? 'vertical' });
 
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	itemgroup: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		// Auto-detect heading level from first heading if not specified
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const headingText = Array.from(heading.walk())
-				.filter(n => n.type === 'text')
-				.map(t => t.attributes.content)
-				.join(' ');
-
-			// Parse date and label from heading text
-			const match = headingText.match(DATE_LABEL_PATTERN);
-			const date = match ? match[1].trim() : '';
-			const label = match ? match[2].trim() : headingText;
-
-			return new Ast.Node('tag', { date, label }, item.children.slice(1), 'timeline-entry');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const itemStream = this.itemgroup.transform();
-		const directionMeta = new Tag('meta', { content: this.direction });
-
-		const items = itemStream.tag('li').typeof('TimelineEntry');
+		const items = sectionNodes.tag('li').typeof('TimelineEntry');
 
 		// Inject position meta into each entry for schema.org ListItem
 		items.toArray().forEach((entry: any, index: number) => {
@@ -99,8 +84,8 @@ class TimelineModel extends Model {
 		const entriesList = new Tag('ol', {}, items.toArray());
 
 		const children: any[] = [directionMeta];
-		if (header.count() > 0) {
-			children.push(header.wrap('header').next());
+		if (headerNodes.count() > 0) {
+			children.push(headerNodes.wrap('header').next());
 		}
 		children.push(entriesList);
 
@@ -108,7 +93,7 @@ class TimelineModel extends Model {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...pageSectionProperties(headerNodes),
 				direction: directionMeta,
 				entry: items,
 			},
@@ -118,9 +103,5 @@ class TimelineModel extends Model {
 			},
 			children,
 		});
-	}
-}
-
-export const timelineEntry = createSchema(TimelineEntryModel);
-
-export const timeline = createSchema(TimelineModel);
+	},
+});
