@@ -1,34 +1,35 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-class BondModel extends Model {
-	@attribute({ type: String, required: true })
-	from: string = '';
-
-	@attribute({ type: String, required: true })
-	to: string = '';
-
-	@attribute({ type: String, required: false })
-	type: string = '';
-
-	@attribute({ type: String, required: false })
-	status: string = 'active';
-
-	@attribute({ type: Boolean, required: false })
-	bidirectional: boolean = true;
-
-	transform() {
-		const fromTag = new Tag('span', {}, [this.from]);
-		const toTag = new Tag('span', {}, [this.to]);
+export const bond = createContentModelSchema({
+	attributes: {
+		from: { type: String, required: true },
+		to: { type: String, required: true },
+		type: { type: String, required: false },
+		status: { type: String, required: false },
+		bidirectional: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const fromTag = new Tag('span', {}, [attrs.from ?? '']);
+		const toTag = new Tag('span', {}, [attrs.to ?? '']);
 		const connector = new Tag('div', { 'data-name': 'connector' }, [
 			new Tag('span', { 'data-name': 'arrow' }),
 		]);
-		const bondTypeMeta = new Tag('meta', { content: this.type });
-		const statusMeta = new Tag('meta', { content: this.status });
-		const bidirectionalMeta = new Tag('meta', { content: String(this.bidirectional) });
-		const body = this.transformChildren().wrap('div');
+		const bondTypeMeta = new Tag('meta', { content: attrs.type ?? '' });
+		const statusMeta = new Tag('meta', { content: attrs.status ?? 'active' });
+		const bidirectionalMeta = new Tag('meta', { content: String(attrs.bidirectional ?? true) });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
 		return createComponentRenderable(schema.Bond, {
 			tag: 'div',
@@ -45,7 +46,5 @@ class BondModel extends Model {
 			},
 			children: [fromTag, connector, toTag, bondTypeMeta, statusMeta, bidirectionalMeta, body.next()],
 		});
-	}
-}
-
-export const bond = createSchema(BondModel);
+	},
+});

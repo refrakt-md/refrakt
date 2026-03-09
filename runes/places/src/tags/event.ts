@@ -1,36 +1,35 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-class EventModel extends Model {
-	@attribute({ type: String, required: false })
-	date: string = '';
+export const event = createContentModelSchema({
+	attributes: {
+		date: { type: String, required: false },
+		endDate: { type: String, required: false },
+		location: { type: String, required: false },
+		url: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'header', match: 'heading|paragraph|image', greedy: true },
+			{ name: 'body', match: 'list|blockquote|tag', greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false })
-	endDate: string = '';
-
-	@attribute({ type: String, required: false })
-	location: string = '';
-
-	@attribute({ type: String, required: false })
-	url: string = '';
-
-	@group({ include: ['heading', 'paragraph', 'image'] })
-	header: NodeStream;
-
-	@group({ include: ['list', 'blockquote', 'tag'] })
-	body: NodeStream;
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const body = this.body.transform();
-
-		const dateMeta = new Tag('meta', { content: this.date });
-		const endDateMeta = new Tag('meta', { content: this.endDate });
-		const locationMeta = new Tag('meta', { content: this.location });
-		const urlMeta = new Tag('meta', { content: this.url });
+		const dateMeta = new Tag('meta', { content: attrs.date ?? '' });
+		const endDateMeta = new Tag('meta', { content: attrs.endDate ?? '' });
+		const locationMeta = new Tag('meta', { content: attrs.location ?? '' });
+		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
 
 		const bodyDiv = body.wrap('div');
 
@@ -56,7 +55,5 @@ class EventModel extends Model {
 				bodyDiv.next(),
 			],
 		});
-	}
-}
-
-export const event = createSchema(EventModel);
+	},
+});

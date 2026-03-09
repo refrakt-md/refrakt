@@ -1,29 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
-class DataTableModel extends Model {
-	@attribute({ type: String, required: false })
-	sortable: string = '';
+export const datatable = createContentModelSchema({
+	attributes: {
+		sortable: { type: String, required: false },
+		searchable: { type: Boolean, required: false },
+		pageSize: { type: Number, required: false },
+		defaultSort: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: Boolean, required: false })
-	searchable: boolean = false;
-
-	@attribute({ type: Number, required: false })
-	pageSize: number = 0;
-
-	@attribute({ type: String, required: false })
-	defaultSort: string = '';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const sortableMeta = new Tag('meta', { content: this.sortable });
-		const searchableMeta = new Tag('meta', { content: String(this.searchable) });
-		const pageSizeMeta = new Tag('meta', { content: String(this.pageSize) });
-		const defaultSortMeta = new Tag('meta', { content: this.defaultSort });
+		const sortableMeta = new Tag('meta', { content: attrs.sortable ?? '' });
+		const searchableMeta = new Tag('meta', { content: String(attrs.searchable ?? false) });
+		const pageSizeMeta = new Tag('meta', { content: String(attrs.pageSize ?? 0) });
+		const defaultSortMeta = new Tag('meta', { content: attrs.defaultSort ?? '' });
 
 		// Find the table element from children
 		const table = children.tag('table');
@@ -42,7 +45,5 @@ class DataTableModel extends Model {
 			},
 			children: [sortableMeta, searchableMeta, pageSizeMeta, defaultSortMeta, tableTag],
 		});
-	}
-}
-
-export const datatable = createSchema(DataTableModel);
+	},
+});

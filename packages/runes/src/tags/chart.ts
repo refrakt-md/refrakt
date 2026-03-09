@@ -1,8 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { walkTag } from '../util.js';
 
 const chartType = ['bar', 'line', 'pie', 'area'] as const;
@@ -58,25 +58,27 @@ function extractTableData(children: any[]): { headers: string[], rows: string[][
 	return { headers, rows };
 }
 
-class ChartModel extends Model {
-	@attribute({ type: String, required: false, matches: chartType.slice() })
-	type: typeof chartType[number] = 'bar';
+export const chart = createContentModelSchema({
+	attributes: {
+		type: { type: String, required: false, matches: chartType.slice() },
+		title: { type: String, required: false },
+		stacked: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 
-	@attribute({ type: String, required: false })
-	title: string = '';
-
-	@attribute({ type: Boolean, required: false })
-	stacked: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const typeMeta = new Tag('meta', { content: this.type });
-		const titleMeta = new Tag('meta', { content: this.title });
-		const stackedMeta = new Tag('meta', { content: String(this.stacked) });
+		const typeMeta = new Tag('meta', { content: attrs.type ?? 'bar' });
+		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
+		const stackedMeta = new Tag('meta', { content: String(attrs.stacked ?? false) });
 
 		// Extract table data and serialize as JSON
-		const tableData = extractTableData(children.toArray());
+		const tableData = extractTableData(children);
 		const dataMeta = new Tag('meta', { content: JSON.stringify(tableData) });
 
 		return createComponentRenderable(schema.Chart, {
@@ -91,7 +93,5 @@ class ChartModel extends Model {
 			},
 			children: [typeMeta, titleMeta, stackedMeta, dataMeta],
 		});
-	}
-}
-
-export const chart = createSchema(ChartModel);
+	},
+});

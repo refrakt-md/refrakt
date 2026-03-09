@@ -1,28 +1,37 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const alignValues = ['left', 'right'] as const;
 const ratioValues = ['1:2', '1:1', '2:1'] as const;
 
-class MediaTextModel extends Model {
-	@attribute({ type: String, required: false, matches: alignValues.slice() })
-	align: typeof alignValues[number] = 'left';
+export const mediatext = createContentModelSchema({
+	attributes: {
+		align: { type: String, required: false, matches: alignValues.slice() },
+		ratio: { type: String, required: false, matches: ratioValues.slice() },
+		wrap: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false, matches: ratioValues.slice() })
-	ratio: typeof ratioValues[number] = '1:1';
+		const align = attrs.align ?? 'left';
+		const ratio = attrs.ratio ?? '1:1';
+		const wrap = attrs.wrap ?? false;
 
-	@attribute({ type: Boolean, required: false })
-	wrap: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const alignMeta = new Tag('meta', { content: this.align });
-		const ratioMeta = new Tag('meta', { content: this.ratio });
-		const wrapMeta = this.wrap ? new Tag('meta', { content: 'true' }) : undefined;
+		const alignMeta = new Tag('meta', { content: align });
+		const ratioMeta = new Tag('meta', { content: ratio });
+		const wrapMeta = wrap ? new Tag('meta', { content: 'true' }) : undefined;
 
 		// Separate image paragraphs from body content.
 		// Markdown wraps ![img](url) in <p> tags, so we check for paragraphs
@@ -62,7 +71,5 @@ class MediaTextModel extends Model {
 			},
 			children: childNodes,
 		});
-	}
-}
-
-export const mediatext = createSchema(MediaTextModel);
+	},
+});

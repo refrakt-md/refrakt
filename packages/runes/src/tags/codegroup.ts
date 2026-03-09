@@ -2,8 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model } from '../lib/index.js';
-import { createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const languageNames: Record<string, string> = {
@@ -21,71 +20,71 @@ function prettifyLanguage(lang: string): string {
 
 const overflowValues = ['scroll', 'wrap', 'hide'] as const;
 
-class CodeGroupModel extends Model {
-  @attribute({ type: String, required: false })
-  title: string | undefined;
+export const codegroup = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false },
+		labels: { type: String, required: false },
+		overflow: { type: String, required: false, matches: overflowValues.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'panels', match: 'fence', greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const customLabels = (attrs.labels as string | undefined)?.split(',').map(l => l.trim()) ?? [];
+		const tabItems: RenderableTreeNode[] = [];
+		const panelItems: RenderableTreeNode[] = [];
 
-  @attribute({ type: String, required: false })
-  labels: string | undefined;
+		const panels = asNodes(resolved.panels);
+		for (const child of panels) {
+			const lang = child.attributes.language || 'shell';
+			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
 
-  @attribute({ type: String, required: false, matches: overflowValues.slice() })
-  overflow: typeof overflowValues[number] | undefined;
+			const nameSpan = new Tag('span', {}, [label]);
+			tabItems.push(createComponentRenderable(schema.Tab, {
+				tag: 'li',
+				properties: { name: nameSpan },
+				children: [nameSpan],
+			}));
 
-  transform() {
-    const customLabels = this.labels?.split(',').map(l => l.trim()) ?? [];
-    const tabItems: RenderableTreeNode[] = [];
-    const panelItems: RenderableTreeNode[] = [];
+			const code = Markdoc.transform(child, config);
+			panelItems.push(createComponentRenderable(schema.TabPanel, {
+				tag: 'li',
+				properties: {},
+				children: [code],
+			}));
+		}
 
-    for (const child of this.node.children) {
-      if (child.type !== 'fence') continue;
+		const tabs = new RenderableNodeCursor(tabItems);
+		const panelsCursor = new RenderableNodeCursor(panelItems);
+		const tabList = tabs.wrap('ul');
+		const panelList = panelsCursor.wrap('ul');
 
-      const lang = child.attributes.language || 'shell';
-      const label = customLabels[tabItems.length] || prettifyLanguage(lang);
+		const properties: Record<string, any> = { tab: tabs, panel: panelsCursor };
+		const children: any[] = [];
 
-      const nameSpan = new Tag('span', {}, [label]);
-      tabItems.push(createComponentRenderable(schema.Tab, {
-        tag: 'li',
-        properties: { name: nameSpan },
-        children: [nameSpan],
-      }));
+		if (attrs.title) {
+			const titleMeta = new Tag('meta', { content: attrs.title });
+			properties.title = titleMeta;
+			children.push(titleMeta);
+		}
 
-      const code = Markdoc.transform(child, this.config);
-      panelItems.push(createComponentRenderable(schema.TabPanel, {
-        tag: 'li',
-        properties: {},
-        children: [code],
-      }));
-    }
+		const overflow = attrs.overflow as string | undefined;
+		if (overflow && overflow !== 'scroll') {
+			const overflowMeta = new Tag('meta', { content: overflow });
+			properties.overflow = overflowMeta;
+			children.push(overflowMeta);
+		}
 
-    const tabs = new RenderableNodeCursor(tabItems);
-    const panels = new RenderableNodeCursor(panelItems);
-    const tabList = tabs.wrap('ul');
-    const panelList = panels.wrap('ul');
+		children.push(tabList.next(), panelList.next());
 
-    const properties: Record<string, any> = { tab: tabs, panel: panels };
-    const children: any[] = [];
-
-    if (this.title) {
-      const titleMeta = new Tag('meta', { content: this.title });
-      properties.title = titleMeta;
-      children.push(titleMeta);
-    }
-
-    if (this.overflow && this.overflow !== 'scroll') {
-      const overflowMeta = new Tag('meta', { content: this.overflow });
-      properties.overflow = overflowMeta;
-      children.push(overflowMeta);
-    }
-
-    children.push(tabList.next(), panelList.next());
-
-    return createComponentRenderable(schema.CodeGroup, {
-      tag: 'section',
-      properties,
-      refs: { tabs: tabList, panels: panelList },
-      children,
-    });
-  }
-}
-
-export const codegroup = createSchema(CodeGroupModel);
+		return createComponentRenderable(schema.CodeGroup, {
+			tag: 'section',
+			properties,
+			refs: { tabs: tabList, panels: panelList },
+			children,
+		});
+	},
+});

@@ -1,31 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 
 const languageType = ['mermaid', 'plantuml', 'ascii'] as const;
 
-class DiagramModel extends Model {
-	@attribute({ type: String, required: false, matches: languageType.slice() })
-	language: typeof languageType[number] = 'mermaid';
+export const diagram = createContentModelSchema({
+	attributes: {
+		language: { type: String, required: false, matches: languageType.slice() },
+		title: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'source', match: 'fence' },
+		],
+	},
+	transform(resolved, attrs) {
+		const language = attrs.language ?? 'mermaid';
+		const title = attrs.title ?? '';
 
-	@attribute({ type: String, required: false })
-	title: string = '';
+		const languageMeta = new Tag('meta', { content: language });
+		const titleMeta = new Tag('meta', { content: title });
 
-	transform(): RenderableTreeNodes {
-		const languageMeta = new Tag('meta', { content: this.language });
-		const titleMeta = new Tag('meta', { content: this.title });
-
-		// Extract source directly from AST node children (before transformation)
+		// Extract source directly from resolved AST node
 		// to avoid hljs failing on unknown languages like mermaid
-		let source = '';
-		for (const child of this.node.children) {
-			if (child.type === 'fence') {
-				source = child.attributes.content || '';
-				break;
-			}
-		}
+		const sourceNode = asNodes(resolved.source)[0];
+		const source = sourceNode?.attributes?.content || '';
 
 		const sourceMeta = new Tag('meta', { content: source });
 
@@ -40,7 +41,5 @@ class DiagramModel extends Model {
 			},
 			children: [languageMeta, titleMeta, sourceMeta],
 		});
-	}
-}
-
-export const diagram = createSchema(DiagramModel);
+	},
+});

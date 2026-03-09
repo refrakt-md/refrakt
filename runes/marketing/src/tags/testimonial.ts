@@ -1,20 +1,29 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
-class TestimonialModel extends Model {
-	@attribute({ type: Number, required: false })
-	rating: number | undefined = undefined;
-
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'card';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
+export const testimonial = createContentModelSchema({
+	attributes: {
+		rating: { type: Number, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	deprecations: {
+		layout: { newName: 'variant' },
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
 		// Extract blockquote as the testimonial quote
 		let quoteTag: any;
@@ -57,8 +66,11 @@ class TestimonialModel extends Model {
 			}
 		}
 
-		const ratingMeta = this.rating !== undefined ? new Tag('meta', { content: this.rating }) : undefined;
-		const variantMeta = new Tag('meta', { content: this.variant });
+		const rating = attrs.rating;
+		const variant = attrs.variant ?? 'card';
+
+		const ratingMeta = rating !== undefined ? new Tag('meta', { content: rating }) : undefined;
+		const variantMeta = new Tag('meta', { content: variant });
 
 		const resultChildren: any[] = [];
 		if (quoteTag) resultChildren.push(quoteTag);
@@ -79,9 +91,5 @@ class TestimonialModel extends Model {
 			},
 			children: resultChildren,
 		});
-	}
-}
-
-export const testimonial = createSchema(TestimonialModel, {
-	layout: { newName: 'variant' },
+	},
 });
