@@ -106,8 +106,8 @@ function checkIsRuntimeOnly(node: RendererNode): boolean {
 	if (node === null || node === undefined) return false;
 	if (typeof node === 'string' || typeof node === 'number') return false;
 	if (Array.isArray(node)) return node.some(checkIsRuntimeOnly);
-	if ('attributes' in node && node.attributes?.typeof) {
-		return RUNTIME_ONLY_TYPES.has(node.attributes.typeof);
+	if ('attributes' in node && node.attributes?.['data-rune']) {
+		return RUNTIME_ONLY_TYPES.has(node.attributes['data-rune']);
 	}
 	return false;
 }
@@ -125,7 +125,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	}
 
 	const tag = node as SerializedTag;
-	if (tag.attributes?.typeof === 'Sandbox') {
+	if (tag.attributes?.['data-rune'] === 'Sandbox') {
 		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 		const contexts = design?.contexts ?? {};
 		const contextChild = tag.children?.find(

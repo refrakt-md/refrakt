@@ -13,10 +13,10 @@ Do the second thing.
 
     expect(result).toBeDefined();
 
-    const stepsTag = findTag(result as any, t => t.attributes.typeof === 'Steps');
+    const stepsTag = findTag(result as any, t => t.attributes['data-rune'] === 'Steps');
     expect(stepsTag).toBeDefined();
 
-    const stepItems = findAllTags(stepsTag!, t => t.attributes.typeof === 'Step');
+    const stepItems = findAllTags(stepsTag!, t => t.attributes['data-rune'] === 'Step');
     expect(stepItems.length).toBe(2);
   });
 
@@ -29,10 +29,10 @@ Do the first thing.
 Do the second thing.
 {% /steps %}`);
 
-    const stepsTag = findTag(result as any, t => t.attributes.typeof === 'Steps');
+    const stepsTag = findTag(result as any, t => t.attributes['data-rune'] === 'Steps');
     expect(stepsTag).toBeDefined();
 
-    const stepItems = findAllTags(stepsTag!, t => t.attributes.typeof === 'Step');
+    const stepItems = findAllTags(stepsTag!, t => t.attributes['data-rune'] === 'Step');
     expect(stepItems.length).toBe(2);
   });
 
@@ -45,10 +45,10 @@ Content.
 Content.
 {% /steps %}`);
 
-    const stepsTag = findTag(result as any, t => t.attributes.typeof === 'Steps');
+    const stepsTag = findTag(result as any, t => t.attributes['data-rune'] === 'Steps');
     expect(stepsTag).toBeDefined();
 
-    const stepItems = findAllTags(stepsTag!, t => t.attributes.typeof === 'Step');
+    const stepItems = findAllTags(stepsTag!, t => t.attributes['data-rune'] === 'Step');
     expect(stepItems.length).toBe(2);
   });
 
@@ -61,10 +61,10 @@ Do the first thing.
 Do the second thing.
 {% /steps %}`);
 
-    const stepsTag = findTag(result as any, t => t.attributes.typeof === 'Steps');
+    const stepsTag = findTag(result as any, t => t.attributes['data-rune'] === 'Steps');
     expect(stepsTag).toBeDefined();
 
-    const stepItems = findAllTags(stepsTag!, t => t.attributes.typeof === 'Step');
+    const stepItems = findAllTags(stepsTag!, t => t.attributes['data-rune'] === 'Step');
     expect(stepItems.length).toBe(2);
   });
 });

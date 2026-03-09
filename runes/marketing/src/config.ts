@@ -3,15 +3,15 @@ import { isTag, makeTag, readMeta, resolveGap, ratioToFr, resolveValign } from '
 
 // ─── Comparison postTransform helpers ───
 
-/** Recursively find all nodes with a specific typeof attribute */
-function collectByTypeof(children: RendererNode[], typeName: string): SerializedTag[] {
+/** Recursively find all nodes with a specific data-rune attribute */
+function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
 	const results: SerializedTag[] = [];
 	for (const c of children) {
 		if (isTag(c)) {
-			if (c.attributes?.typeof === typeName) {
+			if (c.attributes?.['data-rune'] === typeName) {
 				results.push(c);
 			} else {
-				results.push(...collectByTypeof(c.children, typeName));
+				results.push(...collectByRune(c.children, typeName));
 			}
 		}
 	}
@@ -322,13 +322,13 @@ export const config: Record<string, RuneConfig> = {
 				: '';
 
 			// Find ComparisonColumn children (inside the grid wrapper)
-			const columns = collectByTypeof(node.children, 'ComparisonColumn');
+			const columns = collectByRune(node.children, 'ComparisonColumn');
 
 			// Extract structured data from each column
 			const columnData: ComparisonColData[] = columns.map(col => ({
 				name: readPropText(col, 'name'),
 				highlighted: readLocalMeta(col, 'highlighted') === 'true',
-				rows: collectByTypeof(col.children, 'ComparisonRow'),
+				rows: collectByRune(col.children, 'ComparisonRow'),
 			}));
 
 			// Build layout

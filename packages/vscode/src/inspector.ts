@@ -96,7 +96,7 @@ function getNodeLabel(item: unknown, index: number): string {
   // Serialized tag nodes
   if (obj.$$mdtype === 'Tag' && obj.name) {
     const attrs = obj.attributes as Record<string, unknown> | undefined;
-    if (attrs?.typeof) return `${obj.name} [typeof="${attrs.typeof}"]`;
+    if (attrs?.['data-rune']) return `${obj.name} [data-rune="${attrs['data-rune']}"]`;
     if (attrs?.class) return `${obj.name}.${String(attrs.class).split(' ').join('.')}`;
     if (attrs?.['data-name']) return `${obj.name} [${attrs['data-name']}]`;
     if (attrs?.property) return `${obj.name} [property="${attrs.property}"]`;
@@ -125,7 +125,7 @@ function getNodeDescription(item: unknown): string {
   const obj = item as Record<string, unknown>;
   const attrs = obj.attributes as Record<string, unknown> | undefined;
 
-  if (attrs?.typeof) return String(attrs.typeof);
+  if (attrs?.['data-rune']) return String(attrs['data-rune']);
   if (attrs?.class) return String(attrs.class);
   if (attrs?.['data-name']) return String(attrs['data-name']);
 

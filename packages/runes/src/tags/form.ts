@@ -160,7 +160,7 @@ class FormFieldModel extends Model {
 			const fieldTypeMeta = new Tag('meta', { property: 'fieldType', content: this.fieldType });
 
 			return new Tag('fieldset', {
-				typeof: 'FormField',
+				'data-rune': 'FormField',
 				class: 'rf-form-choice-group',
 			}, [
 				fieldTypeMeta,

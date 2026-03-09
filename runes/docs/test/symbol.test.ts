@@ -18,7 +18,7 @@ renderContent(source: string, options?: RenderOptions): RenderTree
 > Returns \`RenderTree\` — A framework-agnostic tree.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -30,7 +30,7 @@ renderContent(source: string, options?: RenderOptions): RenderTree
 Description.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
 		const kind = metas.find(m => m.attributes.property === 'kind');
@@ -61,7 +61,7 @@ Description.
 Description.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
 		const kind = metas.find(m => m.attributes.property === 'kind');
@@ -92,13 +92,13 @@ Parse a source string.
 Transform a parsed AST.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(1);
 
-		const members = findAllTags(tag!, t => t.attributes.typeof === 'SymbolMember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolMember');
 		expect(members.length).toBe(2);
 	});
 
@@ -123,8 +123,8 @@ Property details.
 Method description.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(3);
 	});
 
@@ -145,8 +145,8 @@ Interface description.
 Resolve a rune to a component.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(2);
 	});
 
@@ -164,11 +164,11 @@ enum RuneCategory
 - **Content** \`"content"\` — Content structure runes
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 
 		// Enum shouldn't create groups
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(0);
 	});
 
@@ -183,7 +183,7 @@ type RuneMap = Record<string, RuneDefinition>
 \`\`\`
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes.property === 'kind');
 		expect(kind!.attributes.content).toBe('type');
@@ -202,13 +202,13 @@ Description.
 Method description.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(1);
 
-		const members = findAllTags(tag!, t => t.attributes.typeof === 'SymbolMember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolMember');
 		expect(members.length).toBe(1);
 	});
 
@@ -225,7 +225,7 @@ useRuneContext(): RuneContext | null
 > Returns \`RuneContext | null\` — The parent rune context.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes.property === 'kind');
 		expect(kind!.attributes.content).toBe('hook');
@@ -264,7 +264,7 @@ getStates(params?: Params): Promise<Response>
 > Returns \`Promise<Response>\` -- Analytics response
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		expect(tag).toBeDefined();
 
 		// Description paragraphs should be in the body, not dropped
@@ -272,11 +272,11 @@ getStates(params?: Params): Promise<Response>
 		expect(body.length).toBeGreaterThan(0);
 
 		// Both groups should be present
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(2);
 
 		// Methods group should have one member
-		const members = findAllTags(tag!, t => t.attributes.typeof === 'SymbolMember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolMember');
 		expect(members.length).toBe(1);
 	});
 
@@ -291,9 +291,9 @@ Description.
 Some examples follow.
 {% /symbol %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Symbol');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Symbol');
 		// Function kind should NOT convert ### headings to groups
-		const groups = findAllTags(tag!, t => t.attributes.typeof === 'SymbolGroup');
+		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'SymbolGroup');
 		expect(groups.length).toBe(0);
 	});
 });

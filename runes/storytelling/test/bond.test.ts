@@ -7,7 +7,7 @@ describe('bond tag', () => {
 A deep fellowship.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
@@ -25,7 +25,7 @@ A deep fellowship.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bondType');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('rivalry');
@@ -44,7 +44,7 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'status');
 		expect(statusMeta).toBeDefined();
 		expect(statusMeta!.attributes.content).toBe('active');
@@ -55,7 +55,7 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bidirectional');
 		expect(bidiMeta).toBeDefined();
 		expect(bidiMeta!.attributes.content).toBe('true');
@@ -66,7 +66,7 @@ Desc.
 Best friends.
 {% /relationship %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		expect(tag).toBeDefined();
 	});
 
@@ -75,7 +75,7 @@ Best friends.
 A fellowship bond.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bond');
 		expect(tag).toBeDefined();
 
 		const connector = findTag(tag!, t => t.attributes['data-name'] === 'connector');

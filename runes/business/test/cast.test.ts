@@ -9,11 +9,11 @@ describe('cast tag', () => {
 - Carol Williams - Designer
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Cast');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Cast');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const members = findAllTags(tag!, t => t.attributes.typeof === 'CastMember');
+		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'CastMember');
 		expect(members.length).toBe(3);
 	});
 
@@ -22,8 +22,8 @@ describe('cast tag', () => {
 - Sarah Chen - Head of Content
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Cast');
-		const member = findTag(tag!, t => t.attributes.typeof === 'CastMember');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Cast');
+		const member = findTag(tag!, t => t.attributes['data-rune'] === 'CastMember');
 		expect(member).toBeDefined();
 
 		const nameTag = findTag(member!, t => t.name === 'span' && t.attributes.property === 'name');
@@ -40,7 +40,7 @@ describe('cast tag', () => {
 - Person One - Role
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Cast');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Cast');
 		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'list');
 		expect(meta).toBeDefined();
 	});
@@ -50,7 +50,7 @@ describe('cast tag', () => {
 - Dev One - Engineer
 {% /team %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Cast');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Cast');
 		expect(tag).toBeDefined();
 	});
 });

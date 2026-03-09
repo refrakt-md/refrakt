@@ -71,7 +71,7 @@ function extractDesignTokensFromTree(node: RendererNode): DesignTokens | null {
 	const tag = node as Record<string, any>;
 
 	// Check if this is a DesignContext node
-	if (tag.attributes?.typeof === 'DesignContext' && Array.isArray(tag.children)) {
+	if (tag.attributes?.['data-rune'] === 'DesignContext' && Array.isArray(tag.children)) {
 		for (const child of tag.children) {
 			if (child?.name === 'meta' && child?.attributes?.property === 'tokens') {
 				try {

@@ -9,7 +9,7 @@ describe('conversation tag', () => {
 > Hi! How can I help?
 {% /conversation %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Conversation');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Conversation');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('div');
   });
@@ -23,8 +23,8 @@ describe('conversation tag', () => {
 > Third message
 {% /conversation %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Conversation');
-    const messages = findAllTags(tag!, t => t.attributes.typeof === 'ConversationMessage');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Conversation');
+    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'ConversationMessage');
     expect(messages.length).toBe(3);
   });
 
@@ -35,8 +35,8 @@ describe('conversation tag', () => {
 > Second message
 {% /conversation %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Conversation');
-    const messages = findAllTags(tag!, t => t.attributes.typeof === 'ConversationMessage');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Conversation');
+    const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'ConversationMessage');
 
     const alignments = messages.map(msg =>
       findTag(msg, t => t.name === 'meta')?.attributes.content

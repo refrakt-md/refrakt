@@ -99,9 +99,9 @@
 					"source": "meta",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"dataAttribute": "data-align"
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -116,8 +116,8 @@
 				"ratio": {
 					"prop": "--grid-ratio"
 				},
-				"align": {
-					"prop": "--grid-align"
+				"valign": {
+					"prop": "--grid-valign"
 				},
 				"gap": {
 					"prop": "--grid-gap"
@@ -252,11 +252,11 @@
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-show-per-day"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "detailed",
 					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			},
 			"elements": {
@@ -387,6 +387,42 @@
 				}
 			}
 		},
+		"Gallery": {
+			"block": "gallery",
+			"root": ".rf-gallery",
+			"dataRune": "gallery",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "grid",
+					"classPattern": ".rf-gallery--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"lightbox": {
+					"source": "meta",
+					"default": "true",
+					"dataAttribute": "data-lightbox"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"columns": {
+					"source": "meta",
+					"dataAttribute": "data-columns"
+				}
+			},
+			"inlineStyles": {
+				"columns": "--gallery-columns",
+				"gap": {
+					"prop": "--gallery-gap"
+				}
+			}
+		},
 		"Sidenote": {
 			"block": "sidenote",
 			"root": ".rf-sidenote",
@@ -395,11 +431,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "sidenote",
 					"classPattern": ".rf-sidenote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -436,11 +472,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"alignment": {
+				"align": {
 					"source": "meta",
 					"default": "left",
 					"classPattern": ".rf-conversation-message--{value}",
-					"dataAttribute": "data-alignment"
+					"dataAttribute": "data-align"
 				}
 			}
 		},
@@ -452,11 +488,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "margin",
 					"classPattern": ".rf-annotate--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -533,11 +569,11 @@
 					"classPattern": ".rf-pullquote--{value}",
 					"dataAttribute": "data-align"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "default",
 					"classPattern": ".rf-pullquote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -627,9 +663,9 @@
 					"source": "meta",
 					"dataAttribute": "data-offset"
 				},
-				"justify": {
+				"place": {
 					"source": "meta",
-					"dataAttribute": "data-justify"
+					"dataAttribute": "data-place"
 				}
 			},
 			"contextModifiers": {
@@ -642,8 +678,7 @@
 				"offset": {
 					"prop": "--showcase-offset"
 				},
-				"aspect": "--showcase-aspect",
-				"justify": "--showcase-justify"
+				"aspect": "--showcase-aspect"
 			}
 		},
 		"TabGroup": {
@@ -730,11 +765,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "stacked",
 					"classPattern": ".rf-form--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"action": {
 					"source": "meta",

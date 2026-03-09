@@ -13,7 +13,7 @@ Content for large cell.
 Content for medium cell.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
   });
@@ -33,8 +33,8 @@ Medium content.
 Small content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(3);
 
     // h2 = large, h3 = medium, h4 = small
@@ -53,7 +53,7 @@ Small content.
 Content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
     const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '3');
     expect(columnsMeta).toBeDefined();
   });
@@ -77,8 +77,8 @@ Medium content.
 Small content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(4);
 
     const sizeMetas = cells.map(cell =>
@@ -105,8 +105,8 @@ Content.
 Content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
 
     const sizeMetas = cells.map(cell =>
       findTag(cell, t => t.name === 'meta' && t.attributes.property === 'size')
@@ -143,8 +143,8 @@ Spans 2 columns.
 Spans 1 column.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(6);
 
     // All cells should have size='span'
@@ -174,7 +174,7 @@ Spans 1 column.
 Content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
     // Default columns=4 should become 6 in span mode
     const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '6');
     expect(columnsMeta).toBeDefined();
@@ -191,8 +191,8 @@ Spans 8 columns.
 Spans 7 columns.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
 
     const spanMetas = cells.map(cell =>
       findTag(cell, t => t.name === 'meta' && t.attributes.property === 'span')
@@ -212,10 +212,10 @@ Performance content.
 Security content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
     expect(tag).toBeDefined();
 
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(2);
 
     // Each cell should have an icon wrapper with data-name="icon"
@@ -237,8 +237,8 @@ Content here.
       __icons: { global: { rocket: '<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>' } },
     });
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(1);
 
     const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
@@ -255,8 +255,8 @@ Content here.
 No icon here.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(1);
 
     const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
@@ -270,8 +270,8 @@ No icon here.
 Performance content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(1);
 
     // Icon should exist in the icon wrapper
@@ -292,8 +292,8 @@ Performance content.
 Content.
 {% /bento %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Bento');
-    const cells = findAllTags(tag!, t => t.attributes.typeof === 'BentoCell');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Bento');
+    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'BentoCell');
     expect(cells.length).toBe(1);
 
     // The name property should contain the heading text (without the icon)

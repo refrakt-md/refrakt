@@ -60,7 +60,7 @@
 {:else if typeof node === 'number'}
 	{String(node)}
 {:else if isTag(node)}
-	{@const Component = node.attributes?.typeof ? getComponent(node.attributes.typeof) : undefined}
+	{@const Component = node.attributes?.['data-rune'] ? getComponent(node.attributes['data-rune']) : undefined}
 	{@const ElementOverride = !Component && merged?.[node.name] ? merged[node.name] : undefined}
 	{#if Component}
 		<Component tag={node}>

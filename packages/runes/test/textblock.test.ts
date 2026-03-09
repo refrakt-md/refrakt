@@ -7,7 +7,7 @@ describe('textblock tag', () => {
 Some lead text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		expect(tb).toBeDefined();
 
 		const leadMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'lead');
@@ -20,7 +20,7 @@ Some lead text.
 Some dropcap text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		expect(tb).toBeDefined();
 
 		const dropcapMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'dropcap');
@@ -33,7 +33,7 @@ Some dropcap text.
 Some text content.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		expect(tb).toBeDefined();
 
 		const bodyDivs = findAllTags(tb!, t => t.attributes['data-name'] === 'body');
@@ -45,7 +45,7 @@ Some text content.
 Multi-column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'columns');
 		expect(colMeta).toBeDefined();
 		expect(colMeta!.attributes.content).toBe('3');
@@ -56,7 +56,7 @@ Multi-column text.
 Single column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		const colMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'columns');
 		expect(colMeta).toBeUndefined();
 	});
@@ -66,7 +66,7 @@ Single column text.
 Justified text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'align');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('justify');
@@ -77,7 +77,7 @@ Justified text.
 Left-aligned text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes.typeof === 'TextBlock');
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'TextBlock');
 		const alignMeta = findTag(tb!, t => t.name === 'meta' && t.attributes.property === 'align');
 		expect(alignMeta).toBeUndefined();
 	});

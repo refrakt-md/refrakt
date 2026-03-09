@@ -17,7 +17,7 @@ More text.
 
 Install steps.`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'TableOfContents');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'TableOfContents');
 		expect(nav).toBeDefined();
 		expect(nav!.name).toBe('nav');
 
@@ -38,7 +38,7 @@ Install steps.`);
 
 #### Level 4`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'TableOfContents');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'TableOfContents');
 		const links = findAllTags(nav!, t => t.name === 'a');
 		// depth=2 means h2 and h3 only (h2..h{2+1})
 		expect(links.length).toBe(2);
@@ -51,7 +51,7 @@ Install steps.`);
 
 ## Second`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'TableOfContents');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'TableOfContents');
 		const orderedMeta = findTag(nav!, t => t.name === 'meta' && t.attributes.property === 'ordered');
 		expect(orderedMeta).toBeDefined();
 		expect(orderedMeta!.attributes.content).toBe(true);
@@ -62,7 +62,7 @@ Install steps.`);
 
 Just a paragraph.`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'TableOfContents');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'TableOfContents');
 		expect(nav).toBeDefined();
 
 		const links = findAllTags(nav!, t => t.name === 'a');

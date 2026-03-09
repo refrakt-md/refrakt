@@ -9,7 +9,7 @@ First content to show.
 Then more content appears.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Reveal');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Reveal');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
   });
@@ -19,7 +19,7 @@ Then more content appears.
 Content here.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Reveal');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Reveal');
     const modeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'scroll');
     expect(modeMeta).toBeDefined();
   });
@@ -35,8 +35,8 @@ First step content.
 Second step content.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Reveal');
-    const steps = findAllTags(tag!, t => t.attributes.typeof === 'RevealStep');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Reveal');
+    const steps = findAllTags(tag!, t => t.attributes['data-rune'] === 'RevealStep');
     expect(steps.length).toBe(2);
   });
 
@@ -45,7 +45,7 @@ Second step content.
 Content.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Reveal');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'Reveal');
     const modeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'click');
     expect(modeMeta).toBeDefined();
   });

@@ -252,11 +252,11 @@
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-show-per-day"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "detailed",
 					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			},
 			"elements": {
@@ -431,11 +431,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "sidenote",
 					"classPattern": ".rf-sidenote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -488,11 +488,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "margin",
 					"classPattern": ".rf-annotate--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -569,11 +569,11 @@
 					"classPattern": ".rf-pullquote--{value}",
 					"dataAttribute": "data-align"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "default",
 					"classPattern": ".rf-pullquote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -765,11 +765,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "stacked",
 					"classPattern": ".rf-form--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"action": {
 					"source": "meta",
@@ -1949,11 +1949,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "clean",
 					"classPattern": ".rf-storyboard--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"columns": {
 					"source": "meta",
@@ -2059,11 +2059,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "day-by-day",
 					"classPattern": ".rf-itinerary--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"direction": {
 					"source": "meta",
@@ -2130,11 +2130,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "street",
 					"classPattern": ".rf-map--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"height": {
 					"source": "meta",

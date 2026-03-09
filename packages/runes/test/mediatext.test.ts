@@ -9,7 +9,7 @@ describe('mediatext tag', () => {
 Some body text here.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 		expect(mt).toBeDefined();
 		expect(mt!.name).toBe('div');
 
@@ -36,7 +36,7 @@ Some body text here.
 Body text.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
 		const images = findAllTags(media!, t => t.name === 'img');
 		expect(images.length).toBe(2);
@@ -47,7 +47,7 @@ Body text.
 Just some text without any images.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 		expect(mt).toBeDefined();
 
 		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
@@ -63,7 +63,7 @@ Just some text without any images.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 
 		const alignMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'align');
 		expect(alignMeta).toBeDefined();
@@ -81,7 +81,7 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 
 		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'wrap');
 		expect(wrapMeta).toBeDefined();
@@ -95,7 +95,7 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes.typeof === 'MediaText');
+		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'MediaText');
 
 		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes.property === 'wrap');
 		expect(wrapMeta).toBeUndefined();

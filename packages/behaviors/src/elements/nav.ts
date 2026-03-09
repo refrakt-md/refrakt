@@ -5,7 +5,7 @@ import { SafeHTMLElement } from './ssr-safe.js';
  * <rf-nav> — resolves page slugs to links with active state.
  *
  * Reads page data from RfContext.pages and current URL from RfContext.currentUrl.
- * Finds NavItem children (via [typeof="NavItem"]) and resolves their
+ * Finds NavItem children (via [data-rune="navitem"]) and resolves their
  * data-slug attributes to page URLs.
  *
  * Progressive enhancement: without JS, shows plain text from identity transform.
@@ -22,7 +22,7 @@ export class RfNav extends SafeHTMLElement {
 		if (!pages || pages.length === 0) return;
 
 		// Find all NavItem elements within this nav
-		const items = this.querySelectorAll<HTMLElement>('[typeof="NavItem"]');
+		const items = this.querySelectorAll<HTMLElement>('[data-rune="navitem"]');
 		for (const item of items) {
 			const slug = item.dataset.slug;
 			if (!slug) continue;

@@ -7,18 +7,18 @@ import { loadContent } from '../src/site.js';
 
 describe('collectRuneTypes', () => {
   it('should collect typeof from a single tag', () => {
-    const tag = new Tag('section', { typeof: 'Accordion' }, []);
+    const tag = new Tag('section', { 'data-rune': 'Accordion' }, []);
     expect(collectRuneTypes(tag)).toEqual(new Set(['Accordion']));
   });
 
   it('should collect typeof from nested tags', () => {
-    const inner = new Tag('div', { typeof: 'AccordionItem' }, ['content']);
-    const outer = new Tag('section', { typeof: 'Accordion' }, [inner]);
+    const inner = new Tag('div', { 'data-rune':'AccordionItem' }, ['content']);
+    const outer = new Tag('section', { 'data-rune':'Accordion' }, [inner]);
     expect(collectRuneTypes(outer)).toEqual(new Set(['Accordion', 'AccordionItem']));
   });
 
   it('should handle string nodes', () => {
-    const tag = new Tag('section', { typeof: 'Hint' }, ['just a string']);
+    const tag = new Tag('section', { 'data-rune':'Hint' }, ['just a string']);
     expect(collectRuneTypes(tag)).toEqual(new Set(['Hint']));
   });
 
@@ -27,8 +27,8 @@ describe('collectRuneTypes', () => {
   });
 
   it('should handle arrays of nodes', () => {
-    const a = new Tag('div', { typeof: 'Tabs' }, []);
-    const b = new Tag('div', { typeof: 'Steps' }, []);
+    const a = new Tag('div', { 'data-rune':'Tabs' }, []);
+    const b = new Tag('div', { 'data-rune':'Steps' }, []);
     expect(collectRuneTypes([a, b])).toEqual(new Set(['Tabs', 'Steps']));
   });
 
@@ -38,9 +38,9 @@ describe('collectRuneTypes', () => {
   });
 
   it('should handle deeply nested trees', () => {
-    const deep = new Tag('span', { typeof: 'Diff' }, []);
+    const deep = new Tag('span', { 'data-rune':'Diff' }, []);
     const mid = new Tag('div', {}, [deep]);
-    const top = new Tag('section', { typeof: 'Compare' }, [mid]);
+    const top = new Tag('section', { 'data-rune':'Compare' }, [mid]);
     expect(collectRuneTypes(top)).toEqual(new Set(['Compare', 'Diff']));
   });
 });
@@ -54,8 +54,8 @@ describe('analyzeRuneUsage', () => {
 
   it('should analyze page renderables', () => {
     const renderable = new Tag('article', {}, [
-      new Tag('section', { typeof: 'Hint' }, ['note']),
-      new Tag('section', { typeof: 'Steps' }, []),
+      new Tag('section', { 'data-rune':'Hint' }, ['note']),
+      new Tag('section', { 'data-rune':'Steps' }, []),
     ]);
 
     const page = {
@@ -71,10 +71,10 @@ describe('analyzeRuneUsage', () => {
 
   it('should include layout region types', () => {
     const renderable = new Tag('article', {}, [
-      new Tag('section', { typeof: 'Hero' }, []),
+      new Tag('section', { 'data-rune':'Hero' }, []),
     ]);
 
-    const navTag = new Tag('nav', { typeof: 'Nav' }, []);
+    const navTag = new Tag('nav', { 'data-rune':'Nav' }, []);
 
     const regions = new Map([
       ['sidebar', { name: 'sidebar', mode: 'replace' as const, content: [navTag] }],
@@ -94,13 +94,13 @@ describe('analyzeRuneUsage', () => {
   it('should aggregate types across multiple pages', () => {
     const page1 = {
       route: { url: '/a' },
-      renderable: new Tag('div', {}, [new Tag('section', { typeof: 'Tabs' }, [])]),
+      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'Tabs' }, [])]),
       layout: { chain: [], regions: new Map() },
     } as any;
 
     const page2 = {
       route: { url: '/b' },
-      renderable: new Tag('div', {}, [new Tag('section', { typeof: 'Accordion' }, [])]),
+      renderable: new Tag('div', {}, [new Tag('section', { 'data-rune':'Accordion' }, [])]),
       layout: { chain: [], regions: new Map() },
     } as any;
 

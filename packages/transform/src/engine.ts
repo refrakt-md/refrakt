@@ -33,19 +33,19 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
-	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
+	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
-		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentTypeof));
+		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentRune));
 		if (!isTag(tree)) return tree;
 
-		const typeof_ = tree.attributes?.typeof;
-		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, tints, backgrounds, identityTransform, parentTypeof);
+		const dataRune = tree.attributes?.['data-rune'];
+		if (dataRune && dataRune in runes) {
+			return transformRune(tree, runes[dataRune], prefix, icons, tints, backgrounds, identityTransform, parentRune);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
-		return { ...tree, children: tree.children.map(n => identityTransform(n, parentTypeof)) };
+		return { ...tree, children: tree.children.map(n => identityTransform(n, parentRune)) };
 	}
 
 	return (tree: RendererNode) => identityTransform(tree);
@@ -59,11 +59,11 @@ function transformRune(
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
 	backgrounds: Record<string, BgPresetDefinition>,
-	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
-	parentTypeof?: string
+	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
+	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
-	const typeof_ = tag.attributes?.typeof;
+	const dataRune = tag.attributes?.['data-rune'];
 
 	// 1. Read modifiers from meta tags, collecting resolved values
 	const modifierClasses: string[] = [];
@@ -83,8 +83,8 @@ function transformRune(
 	}
 
 	// 1b. Context-aware modifiers — add BEM modifier when nested inside a matching parent rune
-	if (config.contextModifiers && parentTypeof && config.contextModifiers[parentTypeof]) {
-		modifierClasses.push(`${block}--${config.contextModifiers[parentTypeof]}`);
+	if (config.contextModifiers && parentRune && config.contextModifiers[parentRune]) {
+		modifierClasses.push(`${block}--${config.contextModifiers[parentRune]}`);
 	}
 
 	// 1c. Static modifiers — always-applied BEM modifier suffixes
@@ -333,8 +333,8 @@ function transformRune(
 
 	// 6. Apply BEM element classes to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
-		if (!isTag(child)) return recurse(child, typeof_);
-		return recurse(applyBemClasses(child, block), typeof_);
+		if (!isTag(child)) return recurse(child, dataRune);
+		return recurse(applyBemClasses(child, block), dataRune);
 	});
 
 	// 7. Remove consumed meta tags (modifiers + tint)
@@ -375,7 +375,7 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, 'data-rune': _dr, ...passAttrs } = tag.attributes;
 
 	const result: SerializedTag = {
 		...tag,
@@ -385,7 +385,7 @@ function transformRune(
 			...tintDataAttrs,
 			...bgDataAttrs,
 			class: bemClass,
-			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
+			'data-rune': dataRune ? dataRune.toLowerCase() : undefined,
 			...(config.rootAttributes || {}),
 			...(inlineStyle ? { style: inlineStyle } : {}),
 		},
@@ -396,7 +396,7 @@ function transformRune(
 	if (config.postTransform) {
 		return config.postTransform(result, {
 			modifiers: modifierValues,
-			parentType: parentTypeof,
+			parentType: parentRune,
 		});
 	}
 

@@ -6,7 +6,7 @@ import { NAV_AUTO_SENTINEL } from '../src/tags/nav.js';
 describe('nav auto mode', () => {
 	it('emits a placeholder with sentinel meta when auto=true', () => {
 		const result = parse(`{% nav auto=true /%}`);
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
 
 		expect(nav).toBeDefined();
 
@@ -23,9 +23,9 @@ describe('nav auto mode', () => {
 
 	it('auto mode emits an empty items list (no NavItems)', () => {
 		const result = parse(`{% nav auto=true /%}`);
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
 
-		const items = findAllTags(nav!, t => t.attributes.typeof === 'NavItem');
+		const items = findAllTags(nav!, t => t.attributes['data-rune'] === 'NavItem');
 		expect(items).toHaveLength(0);
 	});
 
@@ -36,7 +36,7 @@ describe('nav auto mode', () => {
 - Page two
 {% /nav %}`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
 		expect(nav).toBeDefined();
 
 		const sentinel = nav!.children.find(

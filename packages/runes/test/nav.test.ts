@@ -11,7 +11,7 @@ describe('nav tag', () => {
 
     expect(result).toBeDefined();
 
-    const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
     expect(nav).toBeDefined();
     expect(nav!.name).toBe('nav');
   });
@@ -29,10 +29,10 @@ describe('nav tag', () => {
 - config
 {% /nav %}`);
 
-    const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
     expect(nav).toBeDefined();
 
-    const groups = findAllTags(nav!, t => t.attributes.typeof === 'NavGroup');
+    const groups = findAllTags(nav!, t => t.attributes['data-rune'] === 'NavGroup');
     expect(groups.length).toBe(2);
   });
 
@@ -43,7 +43,7 @@ describe('nav tag', () => {
 - deploy
 {% /nav %}`);
 
-    const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
     expect(nav).toBeDefined();
     expect(nav!.attributes.class).toBe('ordered');
   });
@@ -54,7 +54,7 @@ describe('nav tag', () => {
 - installation
 {% /nav %}`);
 
-    const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'Nav');
     expect(nav).toBeDefined();
 
     const slugSpans = findAllTags(nav!, t => t.name === 'span' && t.attributes.property === 'slug');

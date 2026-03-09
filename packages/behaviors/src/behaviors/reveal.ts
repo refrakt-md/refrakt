@@ -10,7 +10,7 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 	// Find steps — look in data-name="steps" container or direct children
 	const stepsContainer = el.querySelector('[data-name="steps"]') || el;
 	const steps = Array.from(
-		stepsContainer.querySelectorAll<HTMLElement>('[data-rune="revealstep"], [typeof="RevealStep"]'),
+		stepsContainer.querySelectorAll<HTMLElement>('[data-rune="revealstep"]'),
 	);
 
 	if (steps.length === 0) return () => {};

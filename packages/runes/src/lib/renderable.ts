@@ -31,7 +31,7 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
   }
 
   typeof(type: string): RenderableNodeCursor<T> {
-    return new RenderableNodeCursor(this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.attributes.typeof === type));
+    return new RenderableNodeCursor(this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.attributes['data-rune'] === type));
   }
 
   concat(...other: (RenderableTreeNode | RenderableNodeCursor)[]) {

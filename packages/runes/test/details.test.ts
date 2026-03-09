@@ -7,7 +7,7 @@ describe('details tag', () => {
 This is hidden content.
 {% /details %}`);
 
-		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
+		const details = findTag(result as any, t => t.attributes['data-rune'] === 'Details');
 		expect(details).toBeDefined();
 		expect(details!.name).toBe('details');
 
@@ -21,7 +21,7 @@ This is hidden content.
 Some content.
 {% /details %}`);
 
-		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
+		const details = findTag(result as any, t => t.attributes['data-rune'] === 'Details');
 		expect(details).toBeDefined();
 
 		const summary = findTag(details!, t => t.name === 'summary' && t.attributes.property === 'summary');
@@ -34,7 +34,7 @@ Some content.
 Content here.
 {% /details %}`);
 
-		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
+		const details = findTag(result as any, t => t.attributes['data-rune'] === 'Details');
 		expect(details!.attributes.open).toBeFalsy();
 	});
 
@@ -43,7 +43,7 @@ Content here.
 Content here.
 {% /details %}`);
 
-		const details = findTag(result as any, t => t.attributes.typeof === 'Details');
+		const details = findTag(result as any, t => t.attributes['data-rune'] === 'Details');
 		expect(details!.attributes.open).toBe(true);
 	});
 });

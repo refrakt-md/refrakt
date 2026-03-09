@@ -90,12 +90,12 @@ function countListItems(node: SerializedTag): number {
 }
 
 function classifyBlock(node: SerializedTag): { type: BlockType; typeName?: string; label: string } {
-	// Rune blocks have a typeof attribute
-	if (node.attributes.typeof) {
+	// Rune blocks have a data-rune attribute
+	if (node.attributes['data-rune']) {
 		return {
 			type: 'rune',
-			typeName: node.attributes.typeof,
-			label: node.attributes.typeof,
+			typeName: node.attributes['data-rune'],
+			label: node.attributes['data-rune'],
 		};
 	}
 
@@ -145,7 +145,7 @@ function classifyBlock(node: SerializedTag): { type: BlockType; typeName?: strin
 const WRAPPER_TAGS = new Set(['article', 'document', 'div', 'section']);
 
 function isWrapperTag(node: SerializedTag): boolean {
-	return WRAPPER_TAGS.has(node.name) && !node.attributes.typeof && !node.attributes['data-name'];
+	return WRAPPER_TAGS.has(node.name) && !node.attributes['data-rune'] && !node.attributes['data-name'];
 }
 
 function getTopLevelChildren(node: RendererNode): RendererNode[] {

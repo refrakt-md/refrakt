@@ -22,12 +22,12 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 
 	const tabItems = Array.from(tabsUl.children).filter(
 		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('typeof') === 'Tab',
+			c.getAttribute('data-rune') === 'tab',
 	);
 
 	const panelItems = Array.from(panelsUl.children).filter(
 		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('typeof') === 'TabPanel',
+			c.getAttribute('data-rune') === 'tabpanel',
 	);
 
 	if (tabItems.length === 0 || panelItems.length === 0) return () => {};

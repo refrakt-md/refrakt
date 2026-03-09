@@ -41,8 +41,9 @@ export function createComponentRenderable(
 
   const tag = new Markdoc.Tag(result.tag, {
     id: result.id,
-    property: result.property,
-    typeof: type.name,
+    'data-field': result.property,
+    'data-rune': type.name,
+    typeof: type.schemaOrgType,
     class: result.class
   }, Array.isArray(result.children) ? result.children : [result.children]);
 

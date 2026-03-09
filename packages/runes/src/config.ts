@@ -45,15 +45,15 @@ function parseBudgetAmount(str: string): number {
 	return isNaN(num) ? 0 : num;
 }
 
-/** Recursively find all nodes with a specific typeof attribute */
-function collectByTypeof(children: RendererNode[], typeName: string): SerializedTag[] {
+/** Recursively find all nodes with a specific data-rune attribute */
+function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
 	const results: SerializedTag[] = [];
 	for (const c of children) {
 		if (isTag(c)) {
-			if (c.attributes?.typeof === typeName) {
+			if (c.attributes?.['data-rune'] === typeName) {
 				results.push(c);
 			} else {
-				results.push(...collectByTypeof(c.children, typeName));
+				results.push(...collectByRune(c.children, typeName));
 			}
 		}
 	}
@@ -218,7 +218,7 @@ export const coreConfig: ThemeConfig = {
 				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
 
 				// Find all BudgetCategory children and compute totals
-				const categories = collectByTypeof(node.children, 'BudgetCategory');
+				const categories = collectByRune(node.children, 'BudgetCategory');
 				let grandTotal = 0;
 
 				for (const cat of categories) {
@@ -766,7 +766,7 @@ function resolveAutoBreadcrumbs(
 	const tag = renderable as any;
 
 	// Check if this is a Breadcrumb auto placeholder
-	if (tag.attributes?.typeof === 'Breadcrumb') {
+	if (tag.attributes?.['data-rune'] === 'Breadcrumb') {
 		const hasSentinel = tag.children?.some(
 			(c: any) => Tag.isTag(c) && c.attributes?.property === BREADCRUMB_AUTO_SENTINEL
 		);
@@ -867,7 +867,7 @@ function resolveAutoNavs(
 	const tag = renderable as any;
 
 	// Check if this is a Nav auto placeholder
-	if (tag.attributes?.typeof === 'Nav') {
+	if (tag.attributes?.['data-rune'] === 'Nav') {
 		const hasSentinel = tag.children?.some(
 			(c: any) => Tag.isTag(c) && c.attributes?.property === NAV_AUTO_SENTINEL
 		);
