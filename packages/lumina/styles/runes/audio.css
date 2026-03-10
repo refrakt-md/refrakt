@@ -1,0 +1,23 @@
+/* Audio */
+.rf-audio {
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+}
+.rf-audio rf-audio {
+	display: block;
+}
+.rf-audio__description {
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+	border-top: 1px solid var(--rf-color-border);
+	line-height: 1.5;
+}
+.rf-audio__description p {
+	margin: 0;
+}
+.rf-audio__description p + p {
+	margin-top: 0.5rem;
+}
