@@ -18,7 +18,7 @@ refrakt.md separates its rune library into focused packages. Core runes (grid, h
 | `@refrakt-md/storytelling` | Fiction, world-building, and narrative | character, realm, faction, lore, plot, bond, storyboard |
 | `@refrakt-md/business` | Organizational and team content | cast, organization, timeline |
 | `@refrakt-md/places` | Events, maps, and travel | event, map, itinerary |
-| `@refrakt-md/media` | Music and audio content | music-playlist, music-recording |
+| `@refrakt-md/media` | Music and audio content | playlist, track, audio |
 
 ## Installing Packages
 

@@ -49,7 +49,7 @@ const RUNE_CATEGORIES: Record<string, string> = {
 	recipe: 'Semantic', howto: 'Semantic', event: 'Semantic', cast: 'Semantic',
 	organization: 'Semantic', timeline: 'Semantic', changelog: 'Semantic',
 	conversation: 'Semantic', storyboard: 'Semantic', map: 'Semantic',
-	'music-playlist': 'Semantic', 'music-recording': 'Semantic', error: 'Semantic',
+	playlist: 'Semantic', track: 'Semantic', audio: 'Semantic', error: 'Semantic',
 
 	swatch: 'Design', palette: 'Design', typography: 'Design',
 	spacing: 'Design', 'design-context': 'Design',

@@ -2490,17 +2490,72 @@
 				"{content}"
 			]
 		},
+		"Playlist": {
+			"block": "playlist",
+			"root": ".rf-playlist",
+			"dataRune": "playlist",
+			"childOrder": [
+				"header",
+				"{content}"
+			],
+			"modifiers": {
+				"type": {
+					"source": "meta",
+					"default": "album",
+					"classPattern": ".rf-playlist--{value}",
+					"dataAttribute": "data-type"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-playlist__header",
+					"source": "structure"
+				},
+				"type-badge": {
+					"tag": "span",
+					"selector": ".rf-playlist__type-badge",
+					"source": "structure",
+					"parent": "header"
+				}
+			}
+		},
+		"Track": {
+			"block": "track",
+			"root": ".rf-track",
+			"dataRune": "track",
+			"parent": "Playlist",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Audio": {
+			"block": "audio",
+			"root": ".rf-audio",
+			"dataRune": "audio",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"waveform": {
+					"source": "meta",
+					"default": "false",
+					"classPattern": ".rf-audio--{value}",
+					"dataAttribute": "data-waveform"
+				}
+			}
+		},
 		"MusicPlaylist": {
-			"block": "music-playlist",
-			"root": ".rf-music-playlist",
+			"block": "playlist",
+			"root": ".rf-playlist",
 			"dataRune": "music-playlist",
 			"childOrder": [
 				"{content}"
 			]
 		},
 		"MusicRecording": {
-			"block": "music-recording",
-			"root": ".rf-music-recording",
+			"block": "track",
+			"root": ".rf-track",
 			"dataRune": "music-recording",
 			"parent": "MusicPlaylist",
 			"childOrder": [

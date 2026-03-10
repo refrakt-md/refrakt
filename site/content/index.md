@@ -144,7 +144,7 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 
 - {% icon name="video" /%} **Media**
 
-  `music-playlist`, `music-recording`
+  `playlist`, `track`, `audio`
 {% /feature %}
 
 {% testimonial variant="quote" spacing="breathe" tint="cool" width="content" %}
