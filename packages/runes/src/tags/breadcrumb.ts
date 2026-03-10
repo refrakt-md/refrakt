@@ -1,28 +1,33 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 /** Sentinel meta property written by breadcrumb auto mode; consumed by corePipelineHooks.postProcess */
 export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
 
-class BreadcrumbModel extends Model {
-	@attribute({ type: String, required: false })
-	separator: string = '/';
+export const breadcrumb = createContentModelSchema({
+	attributes: {
+		separator: { type: String, required: false, default: '/' },
+		auto: { type: Boolean, required: false, default: false },
+	},
+	contentModel: (attrs) => {
+		if (attrs.auto) {
+			return { type: 'sequence' as const, fields: [] };
+		}
+		return {
+			type: 'sequence' as const,
+			fields: [
+				{ name: 'list', match: 'list' as const, optional: true, greedy: true },
+			],
+		};
+	},
+	transform(resolved, attrs, config) {
+		const separatorMeta = new Tag('meta', { content: attrs.separator });
 
-	/**
-	 * When true, emit a placeholder that the cross-page pipeline will resolve
-	 * into a fully populated breadcrumb using the site's page hierarchy.
-	 * The rune content is ignored in auto mode.
-	 */
-	@attribute({ type: Boolean, required: false })
-	auto: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const separatorMeta = new Tag('meta', { content: this.separator });
-
-		if (this.auto) {
+		if (attrs.auto) {
 			// Emit a placeholder with an empty items list and a sentinel meta tag.
 			// The core post-process hook will replace the empty ol with resolved items.
 			const sentinelMeta = new Tag('meta', { 'data-field': BREADCRUMB_AUTO_SENTINEL, content: 'true' });
@@ -40,7 +45,9 @@ class BreadcrumbModel extends Model {
 			});
 		}
 
-		const children = this.transformChildren();
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.list), config) as RenderableTreeNode[],
+		);
 
 		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item
 		const listItems: any[] = [];
@@ -115,7 +122,5 @@ class BreadcrumbModel extends Model {
 			},
 			children: [separatorMeta, itemsList],
 		});
-	}
-}
-
-export const breadcrumb = createSchema(BreadcrumbModel);
+	},
+});

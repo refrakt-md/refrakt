@@ -1,21 +1,24 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model } from '../lib/index.js';
-import { createSchema } from '../lib/index.js';
+import { createContentModelSchema, asNodes } from '../lib/index.js';
 
-class LayoutModel extends Model {
-  @attribute({ type: String, required: false })
-  extends: string = 'parent';
+export const layout = createContentModelSchema({
+	attributes: {
+		extends: { type: String, required: false, default: 'parent' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', greedy: true, optional: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 
-  transform(): RenderableTreeNodes {
-    const children = this.transformChildren();
-
-    return new Tag('div', {
-      'data-layout-def': true,
-      'data-extends': this.extends,
-    }, children.toArray());
-  }
-}
-
-export const layout = createSchema(LayoutModel);
+		return new Tag('div', {
+			'data-layout-def': true,
+			'data-extends': attrs.extends,
+		}, children);
+	},
+});

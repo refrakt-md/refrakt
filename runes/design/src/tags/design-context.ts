@@ -1,30 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 import { extractPaletteTokens } from './palette.js';
 import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';
 import type { DesignTokens } from '@refrakt-md/types';
 
-class DesignContextModel extends Model {
-	@attribute({ type: String, required: false })
-	title: string = '';
+export const designContext = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false, default: '' },
+		scope: { type: String, required: false, default: 'default' },
+	},
+	contentModel: {
+		type: 'custom',
+		description: 'Passes raw children through for design token extraction before transforming',
+		processChildren(nodes) { return nodes; },
+	},
+	transform(resolved, attrs, config) {
+		const children = resolved.children as Node[];
 
-	@attribute({ type: String, required: false })
-	scope: string = 'default';
-
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	transform(): RenderableTreeNodes {
 		// Extract tokens from child AST nodes before transforming
 		const tokens: DesignTokens = {};
 
-		for (const child of this.node.children) {
+		for (const child of children) {
 			if (child.type === 'tag') {
-				const tagName = child.tag;
+				const tagName = (child as any).tag;
 				if (tagName === 'palette') {
 					tokens.colors = extractPaletteTokens(child);
 				} else if (tagName === 'typography') {
@@ -39,20 +41,24 @@ class DesignContextModel extends Model {
 		}
 
 		// Transform child body (palette/typography/spacing render as identity-layer tags)
-		const body = this.body.transform();
+		// Filter to only tag children for the body
+		const tagChildren = children.filter(c => c.type === 'tag');
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(tagChildren, config) as RenderableTreeNode[],
+		);
 
 		// Meta tags
-		const titleMeta = new Tag('meta', { content: this.title });
+		const titleMeta = new Tag('meta', { content: attrs.title });
 		const tokensMeta = new Tag('meta', { content: JSON.stringify(tokens) });
-		const scopeMeta = new Tag('meta', { content: this.scope });
+		const scopeMeta = new Tag('meta', { content: attrs.scope });
 
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
 			titleMeta,
 			tokensMeta,
 		];
 
-		if (this.title) {
-			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [this.title]));
+		if (attrs.title) {
+			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 
 		// Wrap transformed child runes in a sections container
@@ -68,7 +74,5 @@ class DesignContextModel extends Model {
 			},
 			children: topChildren,
 		});
-	}
-}
-
-export const designContext = createSchema(DesignContextModel);
+	},
+});

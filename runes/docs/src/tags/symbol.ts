@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, resolveSequence, RenderableNodeCursor, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Kinds that use group/member heading structure
@@ -9,9 +9,18 @@ const GROUP_KINDS = ['class', 'interface', 'module'];
 
 // ─── SymbolMember ────────────────────────────────────────────────
 
-class SymbolMemberModel extends Model {
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
+export const symbolMember = createContentModelSchema({
+	attributes: {},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', greedy: true, optional: true },
+		],
+	},
+	transform(resolved, _attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 		const nameHeading = children.headings().limit(1);
 		const hasName = nameHeading.count() > 0;
 		const nameTag = new Tag('h4', {}, hasName ? nameHeading.next().children : []);
@@ -27,37 +36,36 @@ class SymbolMemberModel extends Model {
 			},
 			children: [nameTag, body.next()],
 		});
-	}
-}
-
-export const symbolMember = createSchema(SymbolMemberModel);
+	},
+});
 
 // ─── SymbolGroup ─────────────────────────────────────────────────
 
-class SymbolGroupModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number = 4;
+export const symbolGroup = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false, default: 4 },
+	},
+	contentModel: {
+		type: 'custom',
+		description: 'Converts headings at specified level to symbol-member tags',
+		processChildren(nodes, attrs) {
+			const level = attrs.headingLevel as number;
+			const converted = headingsToList({ level })(nodes as Node[]);
+			const n = converted.length - 1;
+			if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	convertMemberHeadings(nodes: Node[]) {
-		const level = this.headingLevel;
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
+			const tags = converted[n].children.map(item => {
+				return new Ast.Node('tag', {}, item.children, 'symbol-member');
+			});
 
-		const tags = converted[n].children.map(item => {
-			return new Ast.Node('tag', {}, item.children, 'symbol-member');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertMemberHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
+			converted.splice(n, 1, ...tags);
+			return converted;
+		},
+	},
+	transform(resolved, _attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(resolved.children as Node[], config) as RenderableTreeNode[],
+		);
 		const labelHeading = children.headings().limit(1);
 		const hasLabel = labelHeading.count() > 0;
 		const labelTag = new Tag('h3', {}, hasLabel ? labelHeading.next().children : []);
@@ -73,69 +81,81 @@ class SymbolGroupModel extends Model {
 			},
 			children: [labelTag, body.next()],
 		});
-	}
-}
-
-export const symbolGroup = createSchema(SymbolGroupModel);
+	},
+});
 
 // ─── Symbol (main) ───────────────────────────────────────────────
 
-class SymbolModel extends Model {
-	@attribute({ type: String, required: false, matches: ['function', 'class', 'interface', 'enum', 'type', 'module', 'hook', 'component'] })
-	kind: string = 'function';
+const headerBodyFields = [
+	{ name: 'header', match: 'heading|paragraph|image' as const, greedy: true, optional: true },
+	{ name: 'body', match: 'heading|paragraph|fence|list|blockquote|tag|hr|table' as const, greedy: true, optional: true },
+];
 
-	@attribute({ type: String, required: false })
-	lang: string = 'typescript';
+export const symbol = createContentModelSchema({
+	attributes: {
+		kind: { type: String, required: false, matches: ['function', 'class', 'interface', 'enum', 'type', 'module', 'hook', 'component'], default: 'function' },
+		lang: { type: String, required: false, default: 'typescript' },
+		since: { type: String, required: false, default: '' },
+		deprecated: { type: String, required: false, default: '' },
+		source: { type: String, required: false, default: '' },
+		headingLevel: { type: Number, required: false, default: 2 },
+	},
+	contentModel: (attrs) => {
+		if (GROUP_KINDS.includes(attrs.kind as string)) {
+			return {
+				type: 'custom' as const,
+				description: 'Converts headings to symbol-group tags for group-kind symbols',
+				processChildren(nodes: unknown[], innerAttrs: Record<string, unknown>) {
+					const headingLvl = innerAttrs.headingLevel as number;
+					const groupLevel = headingLvl + 1;
+					const memberLevel = headingLvl + 2;
 
-	@attribute({ type: String, required: false })
-	since: string = '';
+					const converted = headingsToList({ level: groupLevel })(nodes as Node[]);
+					const n = converted.length - 1;
+					if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	@attribute({ type: String, required: false })
-	deprecated: string = '';
+					const tags = converted[n].children.map(item => {
+						return new Ast.Node('tag', { headingLevel: memberLevel }, item.children, 'symbol-group');
+					});
 
-	@attribute({ type: String, required: false })
-	source: string = '';
+					converted.splice(n, 1, ...tags);
 
-	@attribute({ type: Number, required: false })
-	headingLevel: number = 2;
+					// Resolve the header/body split from the converted children
+					return converted;
+				},
+			};
+		}
+		return {
+			type: 'sequence' as const,
+			fields: headerBodyFields,
+		};
+	},
+	transform(resolved, attrs, config) {
+		// When using custom model, resolved.children has the converted nodes — split manually
+		let headerAstNodes: Node[];
+		let bodyAstNodes: Node[];
 
-	@group({ include: ['heading', 'paragraph', 'image'] })
-	header: NodeStream;
+		if (resolved.children) {
+			const inner = resolveSequence(resolved.children as Node[], headerBodyFields);
+			headerAstNodes = asNodes(inner.header);
+			bodyAstNodes = asNodes(inner.body);
+		} else {
+			headerAstNodes = asNodes(resolved.header);
+			bodyAstNodes = asNodes(resolved.body);
+		}
 
-	@group({ include: ['heading', 'paragraph', 'fence', 'list', 'blockquote', 'tag', 'hr', 'table'] })
-	body: NodeStream;
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
+		);
+		const bodyStream = new RenderableNodeCursor(
+			Markdoc.transform(bodyAstNodes, config) as RenderableTreeNode[],
+		);
 
-	convertGroupHeadings(nodes: Node[]) {
-		if (!GROUP_KINDS.includes(this.kind)) return nodes;
-
-		const groupLevel = this.headingLevel + 1;
-		const memberLevel = this.headingLevel + 2;
-
-		const converted = headingsToList({ level: groupLevel })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			return new Ast.Node('tag', { headingLevel: memberLevel }, item.children, 'symbol-group');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertGroupHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const bodyStream = this.body.transform();
-
-		const kindMeta = new Tag('meta', { content: this.kind });
-		const langMeta = new Tag('meta', { content: this.lang });
-		const sinceMeta = new Tag('meta', { content: this.since });
-		const deprecatedMeta = new Tag('meta', { content: this.deprecated });
-		const sourceMeta = new Tag('meta', { content: this.source });
+		const kindMeta = new Tag('meta', { content: attrs.kind });
+		const langMeta = new Tag('meta', { content: attrs.lang });
+		const sinceMeta = new Tag('meta', { content: attrs.since });
+		const deprecatedMeta = new Tag('meta', { content: attrs.deprecated });
+		const sourceMeta = new Tag('meta', { content: attrs.source });
 
 		const bodyDiv = bodyStream.wrap('div');
 
@@ -161,7 +181,5 @@ class SymbolModel extends Model {
 			},
 			children,
 		});
-	}
-}
-
-export const symbol = createSchema(SymbolModel);
+	},
+});

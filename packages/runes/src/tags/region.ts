@@ -1,26 +1,27 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model } from '../lib/index.js';
-import { createSchema } from '../lib/index.js';
+import { createContentModelSchema, asNodes } from '../lib/index.js';
 
 const regionMode = ['replace', 'prepend', 'append'] as const;
 
-class RegionModel extends Model {
-  @attribute({ type: String, required: true })
-  name: string;
+export const region = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+		mode: { type: String, required: false, matches: regionMode.slice(), errorLevel: 'critical', default: 'replace' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', greedy: true, optional: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 
-  @attribute({ type: String, required: false, matches: regionMode.slice(), errorLevel: 'critical' })
-  mode: typeof regionMode[number] = 'replace';
-
-  transform(): RenderableTreeNodes {
-    const children = this.transformChildren();
-
-    return new Tag('div', {
-      'data-region': this.name,
-      'data-mode': this.mode,
-    }, children.toArray());
-  }
-}
-
-export const region = createSchema(RegionModel);
+		return new Tag('div', {
+			'data-region': attrs.name,
+			'data-mode': attrs.mode,
+		}, children);
+	},
+});

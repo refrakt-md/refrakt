@@ -1,22 +1,23 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 import type { HeadingInfo } from '../util.js';
 
-class TocModel extends Model {
-	@attribute({ type: Number, required: false })
-	depth: number = 3;
-
-	@attribute({ type: Boolean, required: false })
-	ordered: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const headings: HeadingInfo[] = this.config.variables?.headings || [];
+export const toc = createContentModelSchema({
+	attributes: {
+		depth: { type: Number, required: false, default: 3 },
+		ordered: { type: Boolean, required: false, default: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [],
+	},
+	transform(_resolved, attrs, config) {
+		const headings: HeadingInfo[] = config.variables?.headings || [];
 
 		// Filter to h2..h{depth+1}
-		const maxLevel = this.depth + 1;
+		const maxLevel = (attrs.depth as number) + 1;
 		const filtered = headings.filter(h => h.level >= 2 && h.level <= maxLevel);
 
 		const items = filtered.map(h =>
@@ -26,8 +27,8 @@ class TocModel extends Model {
 		);
 
 		const list = new Tag('ul', {}, items);
-		const depthMeta = new Tag('meta', { content: this.depth });
-		const orderedMeta = new Tag('meta', { content: this.ordered });
+		const depthMeta = new Tag('meta', { content: attrs.depth });
+		const orderedMeta = new Tag('meta', { content: attrs.ordered });
 
 		return createComponentRenderable(schema.TableOfContents, {
 			tag: 'nav',
@@ -40,7 +41,5 @@ class TocModel extends Model {
 			},
 			children: [depthMeta, orderedMeta, list],
 		});
-	}
-}
-
-export const toc = createSchema(TocModel);
+	},
+});
