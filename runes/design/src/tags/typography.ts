@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Extract plain text from an AST node
@@ -62,26 +62,25 @@ function buildFontsUrl(specimens: Specimen[]): string {
 	return `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
 }
 
-class TypographyModel extends Model {
-	@attribute({ type: String, required: false })
-	title: string = '';
+export const typography = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false, default: '' },
+		sample: { type: String, required: false, default: 'The quick brown fox jumps over the lazy dog' },
+		showSizes: { type: Boolean, required: false, default: true },
+		showWeights: { type: Boolean, required: false, default: true },
+		showCharset: { type: Boolean, required: false, default: false },
+	},
+	contentModel: {
+		type: 'custom',
+		description: 'Passes raw children through for font specimen parsing',
+		processChildren(nodes) { return nodes; },
+	},
+	transform(resolved, attrs) {
+		const children = resolved.children as Node[];
 
-	@attribute({ type: String, required: false })
-	sample: string = 'The quick brown fox jumps over the lazy dog';
-
-	@attribute({ type: Boolean, required: false })
-	showSizes: boolean = true;
-
-	@attribute({ type: Boolean, required: false })
-	showWeights: boolean = true;
-
-	@attribute({ type: Boolean, required: false })
-	showCharset: boolean = false;
-
-	transform(): RenderableTreeNodes {
 		// Parse list items directly from the original AST
 		const specimens: Specimen[] = [];
-		for (const child of this.node.children) {
+		for (const child of children) {
 			if (child.type === 'list') {
 				for (const item of child.children) {
 					if (item.type === 'item') {
@@ -95,13 +94,13 @@ class TypographyModel extends Model {
 			}
 		}
 
-		const sample = this.sample;
+		const sample = attrs.sample as string;
 
 		// Meta tags for engine modifier consumption
-		const titleMeta = new Tag('meta', { content: this.title });
-		const showSizesMeta = new Tag('meta', { content: String(this.showSizes) });
-		const showWeightsMeta = new Tag('meta', { content: String(this.showWeights) });
-		const showCharsetMeta = new Tag('meta', { content: String(this.showCharset) });
+		const titleMeta = new Tag('meta', { content: attrs.title });
+		const showSizesMeta = new Tag('meta', { content: String(attrs.showSizes) });
+		const showWeightsMeta = new Tag('meta', { content: String(attrs.showWeights) });
+		const showCharsetMeta = new Tag('meta', { content: String(attrs.showCharset) });
 
 		// Build complete presentational Tag tree
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
@@ -116,8 +115,8 @@ class TypographyModel extends Model {
 			topChildren.push(new Tag('link', { href: fontsUrl, rel: 'stylesheet' }, []));
 		}
 
-		if (this.title) {
-			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [this.title]));
+		if (attrs.title) {
+			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 
 		// Specimen cards
@@ -132,7 +131,7 @@ class TypographyModel extends Model {
 			]));
 
 			// Size samples
-			if (this.showSizes) {
+			if (attrs.showSizes) {
 				const sizeSamples = SIZES.map(size => {
 					const text = size <= 18 ? sample : sample.slice(0, Math.floor(60 / (size / 14)));
 					return new Tag('div', {
@@ -147,7 +146,7 @@ class TypographyModel extends Model {
 			}
 
 			// Weight samples
-			if (this.showWeights && specimen.weights.length > 1) {
+			if (attrs.showWeights && specimen.weights.length > 1) {
 				const weightSamples = specimen.weights.map(weight => {
 					const label = WEIGHT_NAMES[weight] || String(weight);
 					return new Tag('div', {
@@ -162,7 +161,7 @@ class TypographyModel extends Model {
 			}
 
 			// Charset
-			if (this.showCharset) {
+			if (attrs.showCharset) {
 				specimenChildren.push(new Tag('div', {
 					'data-name': 'charset',
 					style: `font-family: ${stack}; font-weight: ${specimen.weights[0]}`,
@@ -184,10 +183,8 @@ class TypographyModel extends Model {
 			},
 			children: topChildren,
 		});
-	}
-}
-
-export const typography = createSchema(TypographyModel);
+	},
+});
 
 /** Extract font tokens from a typography AST node (used by design-context). */
 export function extractTypographyTokens(node: Node): { role: string; family: string; weights: number[]; category: string }[] {
