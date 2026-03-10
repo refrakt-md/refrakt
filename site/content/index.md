@@ -130,7 +130,7 @@ A simple Neapolitan-style pizza with fresh ingredients.
 {% /preview %}
 {% /feature %}
 
-{% feature spacing="loose" tint-mode="auto" align="left" %}
+{% feature spacing="tight" tint-mode="auto" align="left" %}
 8 packages, 60+ runes
 ## A rune for every domain
 
