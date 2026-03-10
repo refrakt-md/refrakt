@@ -126,7 +126,7 @@ export const playlist = createContentModelSchema({
 				if (cueListTag) trackChildren.push(cueListTag);
 			}
 
-			const trackAttrs: Record<string, any> = {};
+			const trackAttrs: Record<string, any> = { 'data-rune': 'track' };
 			if (src) trackAttrs['data-src'] = src;
 
 			return new Tag('li', trackAttrs, trackChildren);
@@ -180,9 +180,11 @@ export const playlist = createContentModelSchema({
 		// Meta tags for identity transform modifiers
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
 		const hasPlayerMeta = hasPlayer ? new Tag('meta', { content: 'true' }) : null;
+		const artistMeta = artistValue ? new Tag('meta', { content: artistValue }) : null;
 
 		const children: any[] = [typeMeta];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
+		if (artistMeta) children.push(artistMeta);
 		if (idValue) children.push(new Tag('meta', { 'data-field': 'id', content: idValue }));
 		if (header) children.push(header);
 		if (playerEl) children.push(playerEl);
@@ -201,16 +203,23 @@ export const playlist = createContentModelSchema({
 		const sectionProps = pageSectionProperties(titleNodes);
 		const trackItems = new RenderableNodeCursor(trackChildren);
 
+		// Extract cover image for schema
+		const coverImgCursor = coverNodes.count() > 0 ? coverNodes.tag('img').limit(1) : null;
+		const coverSchemaTag = coverImgCursor && coverImgCursor.count() > 0 ? coverImgCursor.next() : undefined;
+
 		return createComponentRenderable(schema.Playlist, {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
 				...sectionProps,
 				type: typeMeta,
+				...(artistMeta ? { artist: artistMeta } : {}),
 				track: trackItems,
 			},
 			schema: {
 				name: sectionProps.headline,
+				...(coverSchemaTag ? { image: coverSchemaTag } : {}),
+				...(artistMeta ? { artist: artistMeta } : {}),
 				track: trackItems,
 			},
 			children,
