@@ -168,8 +168,15 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				const themeDir = dirname(fileURLToPath(themeEntryUrl));
 				const stylesDir = join(themeDir, 'styles', 'runes');
 
+				// Build kebab → config key map (data-rune uses kebab-case, config keys are PascalCase)
+				const { toKebabCase } = await import('@refrakt-md/transform');
+				const runeKeyMap = new Map(
+					Object.keys(effectiveConfig.runes).map(k => [toKebabCase(k), k])
+				);
+
 				for (const typeName of report.allTypes) {
-					const runeConfig = effectiveConfig.runes[typeName];
+					const configKey = runeKeyMap.get(typeName);
+					const runeConfig = configKey ? effectiveConfig.runes[configKey] : undefined;
 					if (runeConfig && existsSync(join(stylesDir, `${runeConfig.block}.css`))) {
 						usedCssBlocks.add(runeConfig.block);
 					}
