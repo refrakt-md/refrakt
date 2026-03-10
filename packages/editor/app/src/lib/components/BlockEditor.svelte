@@ -8,13 +8,18 @@
 		buildRuneMap,
 		blockLabel,
 		extractRuneInner,
+		rebuildRuneSource,
 		type ParsedBlock,
+		type RuneBlock,
 	} from '../editor/block-parser.js';
+	import { findSectionMapping, applySectionEdit, type SectionMapping } from '../editor/section-mapper.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
+	import type { SectionClickInfo } from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
+	import InlineEditPopover from './InlineEditPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -99,8 +104,9 @@
 			reconcileIds(blocks, newBlocks);
 			blocks = newBlocks;
 			lastParsedSource = body;
-			// Close edit panel when switching files
+			// Close edit panel and inline popover when switching files
 			activeIndex = null;
+			inlineEdit = null;
 		}
 	});
 
@@ -338,6 +344,61 @@
 		syncToSource();
 	}
 
+	// ── Inline section editing ──────────────────────────────────
+
+	let inlineEdit: {
+		blockIndex: number;
+		dataName: string;
+		text: string;
+		rect: DOMRect;
+		mapping: SectionMapping;
+	} | null = $state(null);
+
+	function handleSectionClick(index: number, info: SectionClickInfo) {
+		const block = blocks[index];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
+		if (!mapping) return;
+
+		inlineEdit = {
+			blockIndex: index,
+			dataName: info.dataName,
+			text: mapping.text,
+			rect: info.rect,
+			mapping,
+		};
+	}
+
+	function handleInlineEditChange(newText: string) {
+		if (!inlineEdit) return;
+		const block = blocks[inlineEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applySectionEdit(rb.innerContent, inlineEdit.mapping, newText);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		// Update the mapping to reflect the new source so subsequent edits work
+		inlineEdit = {
+			...inlineEdit,
+			text: newText,
+			mapping: {
+				...inlineEdit.mapping,
+				text: newText,
+				source: inlineEdit.mapping.sourcePrefix + newText,
+			},
+		};
+
+		handleUpdateBlock(inlineEdit.blockIndex, updated);
+	}
+
+	function closeInlineEdit() {
+		inlineEdit = null;
+	}
+
 	// Group runes by category for the insert menu
 	let runesByCategory = $derived.by(() => {
 		const map = new Map<string, RuneInfo[]>();
@@ -414,6 +475,8 @@
 								{communityPostTransforms}
 								{communityStyles}
 								{aggregated}
+								{readOnly}
+								onsectionclick={readOnly ? undefined : (info) => handleSectionClick(i, info)}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
@@ -487,6 +550,16 @@
 			{runesByCategory}
 			oninsert={insertBlock}
 			onclose={closeInsertMenu}
+		/>
+	{/if}
+
+	{#if inlineEdit}
+		<InlineEditPopover
+			anchorRect={inlineEdit.rect}
+			dataName={inlineEdit.dataName}
+			text={inlineEdit.text}
+			onchange={handleInlineEditChange}
+			onclose={closeInlineEdit}
 		/>
 	{/if}
 </div>

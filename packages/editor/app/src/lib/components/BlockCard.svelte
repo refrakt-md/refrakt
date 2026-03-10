@@ -3,6 +3,13 @@
 	import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
+	import { isEditableSection } from '../editor/section-mapper.js';
+
+	export interface SectionClickInfo {
+		dataName: string;
+		text: string;
+		rect: DOMRect;
+	}
 
 	interface Props {
 		block: ParsedBlock;
@@ -15,6 +22,8 @@
 		communityStyles?: Record<string, Record<string, unknown>> | null;
 		aggregated?: Record<string, unknown>;
 		dragHandle?: boolean;
+		readOnly?: boolean;
+		onsectionclick?: (info: SectionClickInfo) => void;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
 		ondrop: (e: DragEvent) => void;
@@ -31,6 +40,8 @@
 		communityStyles = null,
 		aggregated = {},
 		dragHandle = true,
+		readOnly = false,
+		onsectionclick,
 		ondragstart,
 		ondragover,
 		ondrop,
@@ -41,6 +52,53 @@
 	let shadowRoot: ShadowRoot | null = null;
 	let previewDebounce: ReturnType<typeof setTimeout>;
 	let behaviorCleanup: (() => void) | null = null;
+
+	/** Find the nearest ancestor (or self) with a data-name attribute that is editable */
+	function findEditableSection(start: HTMLElement, root: HTMLElement): HTMLElement | null {
+		let el: HTMLElement | null = start;
+		while (el && el !== root) {
+			if (el.hasAttribute('data-name') && isEditableSection(el)) {
+				return el;
+			}
+			el = el.parentElement;
+		}
+		return null;
+	}
+
+	/** Attach click and hover handlers to editable [data-name] elements within the wrapper */
+	function attachSectionHandlers(wrapper: HTMLElement) {
+		let hoveredEl: HTMLElement | null = null;
+
+		wrapper.addEventListener('mouseover', (e) => {
+			const target = findEditableSection(e.target as HTMLElement, wrapper);
+			if (target !== hoveredEl) {
+				hoveredEl?.classList.remove('rf-editable-hover');
+				hoveredEl = target;
+				hoveredEl?.classList.add('rf-editable-hover');
+			}
+		});
+
+		wrapper.addEventListener('mouseout', (e) => {
+			const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
+			if (hoveredEl && (!related || !hoveredEl.contains(related))) {
+				hoveredEl.classList.remove('rf-editable-hover');
+				hoveredEl = null;
+			}
+		});
+
+		wrapper.addEventListener('click', (e) => {
+			const target = findEditableSection(e.target as HTMLElement, wrapper);
+			if (target) {
+				e.stopPropagation();
+				const rect = target.getBoundingClientRect();
+				onsectionclick?.({
+					dataName: target.getAttribute('data-name')!,
+					text: target.textContent?.trim() ?? '',
+					rect,
+				});
+			}
+		});
+	}
 
 	$effect(() => {
 		if (!previewContainer || !themeConfig) return;
@@ -119,6 +177,13 @@ ${hlCss}
 							grid-column: full;
 							padding-inline: max(var(--rf-content-gutter, 1.5rem), calc((100% - var(--rf-content-max)) / 2));
 						}
+						/* Editable section hover affordance */
+						[data-name].rf-editable-hover {
+							outline: 2px dashed rgba(59, 130, 246, 0.5);
+							outline-offset: 4px;
+							border-radius: 4px;
+							cursor: text;
+						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 
@@ -126,6 +191,11 @@ ${hlCss}
 					const wrapper = shadowRoot.querySelector('.rf-preview-wrapper') as HTMLElement | null;
 					if (wrapper) {
 						behaviorCleanup = initRuneBehaviors(wrapper);
+
+						// Attach inline-edit click + hover handlers for rune sections
+						if (!readOnly && onsectionclick && block.type === 'rune') {
+							attachSectionHandlers(wrapper);
+						}
 					}
 				}
 			} catch {
