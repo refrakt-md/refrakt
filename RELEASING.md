@@ -60,6 +60,7 @@ After packages are published to npm:
 |------|---------|
 | `.changeset/config.json` | Changesets config — `fixed` array keeps all packages in sync |
 | `.github/workflows/release.yml` | CI workflow that versions and publishes on merge to `main` |
+| `scripts/sync-rune-versions.mjs` | Syncs `RunePackage.version` in `runes/*/src/index.ts` with `package.json` |
 | `scripts/generate-changelog.mjs` | Aggregates changelogs into `site/content/releases.md` |
 
 ## First-time publishing new packages

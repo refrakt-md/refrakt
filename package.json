@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "changeset": "changeset",
-    "version-packages": "changeset version && node scripts/generate-changelog.mjs",
+    "version-packages": "changeset version && node scripts/sync-rune-versions.mjs && node scripts/generate-changelog.mjs",
     "release": "npm run build && changeset publish"
   },
   "devDependencies": {
