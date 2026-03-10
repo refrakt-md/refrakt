@@ -107,17 +107,19 @@ export const playlist = createContentModelSchema({
 			const date = (track.date as string)?.trim() ?? '';
 			const cuePoints = (track.cuePoints as Record<string, unknown>[] | undefined) ?? [];
 
-			const trackNameTag = new Tag('span', { 'data-name': 'track-name' }, [name]);
+			const trackNameTag = new Tag('span', { 'data-name': 'track-name', property: 'name' }, [name]);
 			const trackChildren: any[] = [trackNameTag];
 
 			if (artist) {
-				trackChildren.push(new Tag('span', { 'data-name': 'track-artist' }, [artist]));
+				trackChildren.push(new Tag('span', { 'data-name': 'track-artist', property: 'byArtist' }, [artist]));
 			}
 			if (duration) {
 				trackChildren.push(new Tag('span', { 'data-name': 'track-duration' }, [duration]));
+				const durationSeconds = parseDuration(duration);
+				trackChildren.push(new Tag('meta', { property: 'duration', content: `PT${durationSeconds}S` }));
 			}
 			if (date) {
-				trackChildren.push(new Tag('span', { 'data-name': 'track-meta' }, [date]));
+				trackChildren.push(new Tag('span', { 'data-name': 'track-meta', property: 'datePublished' }, [date]));
 			}
 
 			// Build cue point elements
@@ -126,7 +128,7 @@ export const playlist = createContentModelSchema({
 				if (cueListTag) trackChildren.push(cueListTag);
 			}
 
-			const trackAttrs: Record<string, any> = { 'data-rune': 'track' };
+			const trackAttrs: Record<string, any> = { 'data-rune': 'track', typeof: 'MusicRecording' };
 			if (src) trackAttrs['data-src'] = src;
 
 			return new Tag('li', trackAttrs, trackChildren);
@@ -219,7 +221,7 @@ export const playlist = createContentModelSchema({
 			schema: {
 				name: sectionProps.headline,
 				...(coverSchemaTag ? { image: coverSchemaTag } : {}),
-				...(artistMeta ? { artist: artistMeta } : {}),
+				...(artistMeta ? { byArtist: artistMeta } : {}),
 				track: trackItems,
 			},
 			children,

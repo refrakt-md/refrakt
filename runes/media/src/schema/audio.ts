@@ -5,6 +5,7 @@ export class Track {
   artist: string = '';
   duration: string = '';
   src: string = '';
+  url: string = '';
   date: string = '';
   number: number | undefined;
   trackType: string = 'song';

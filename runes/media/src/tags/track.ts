@@ -86,6 +86,13 @@ export const track = createContentModelSchema({
 			? new Tag('meta', { content: duration.startsWith('PT') ? duration : `PT${parseDuration(duration)}S` })
 			: undefined;
 		const artistMeta = artist ? new Tag('meta', { content: artist }) : undefined;
+		const urlMeta = url ? new Tag('meta', { content: url }) : undefined;
+		const numberMeta = number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
+		const dateMeta = date ? new Tag('meta', { content: date }) : undefined;
+
+		if (urlMeta) children.push(urlMeta);
+		if (numberMeta) children.push(numberMeta);
+		if (dateMeta) children.push(dateMeta);
 
 		return createComponentRenderable(schema.Track, {
 			tag: 'li',
@@ -93,11 +100,18 @@ export const track = createContentModelSchema({
 				name: nameTag,
 				...(artistMeta ? { artist: artistMeta } : {}),
 				...(durationMeta ? { duration: durationMeta } : {}),
+				...(urlMeta ? { url: urlMeta } : {}),
+				...(numberMeta ? { position: numberMeta } : {}),
+				...(dateMeta ? { datePublished: dateMeta } : {}),
 				type: typeMeta,
 			},
 			schema: {
 				name: nameTag,
+				...(artistMeta ? { byArtist: artistMeta } : {}),
 				...(durationMeta ? { duration: durationMeta } : {}),
+				...(urlMeta ? { url: urlMeta } : {}),
+				...(numberMeta ? { position: numberMeta } : {}),
+				...(dateMeta ? { datePublished: dateMeta } : {}),
 			},
 			children,
 		});
