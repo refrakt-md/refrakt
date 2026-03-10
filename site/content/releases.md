@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.8.0
+## v0.8.0 - March 10, 2026
 
 - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`
 - Cross-page pipeline: EntityRegistry, breadcrumb auto-resolution, aggregated data
