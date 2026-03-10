@@ -52,8 +52,8 @@ Content.
     expect(stepItems.length).toBe(2);
   });
 
-  it('should still respect explicit headingLevel', () => {
-    const result = parse(`{% steps headingLevel=2 %}
+  it('should auto-detect heading level', () => {
+    const result = parse(`{% steps %}
 ## Step One
 Do the first thing.
 

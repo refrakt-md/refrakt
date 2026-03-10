@@ -217,22 +217,6 @@ describe('generateSymbolMarkdown', () => {
 		expect(md).not.toContain('###');
 	});
 
-	it('respects custom heading level', () => {
-		const doc: SymbolDoc = {
-			name: 'foo',
-			kind: 'function',
-			signature: '() => void',
-			description: 'A function.',
-			filePath: '/test/foo.ts',
-			line: 1,
-		};
-
-		const md = generateSymbolMarkdown(doc, { headingLevel: 3 });
-		expect(md).toContain('headingLevel=3');
-		expect(md).toContain('### foo');
-		// Must not contain '## foo' as a level-2 heading (but '### foo' is ok since it contains '##')
-		expect(md).not.toMatch(/^## foo$/m);
-	});
 });
 
 describe('generateMultiSymbolMarkdown', () => {

@@ -9,7 +9,7 @@ function seo(content: string, frontmatter: Record<string, any> = {}, url = '/tes
 
 describe('JSON-LD extraction', () => {
 	it('should extract FAQPage from accordion/faq', () => {
-		const result = seo(`{% faq headingLevel=2 %}
+		const result = seo(`{% faq %}
 ## What is refrakt.md?
 
 A content framework.
@@ -61,7 +61,7 @@ Watch the video.
 	});
 
 	it('should produce multiple JSON-LD blocks for multiple runes', () => {
-		const result = seo(`{% faq headingLevel=2 %}
+		const result = seo(`{% faq %}
 ## Question one?
 
 Answer one.

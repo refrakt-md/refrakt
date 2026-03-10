@@ -38,12 +38,11 @@ export const timelineEntry = createSchema(TimelineEntryModel);
 
 export const timeline = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		direction: { type: String, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'timeline-entry',
 		emitAttributes: { date: '$date', label: '$label' },
 		headingExtract: {

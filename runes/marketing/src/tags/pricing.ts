@@ -18,9 +18,9 @@ function inferCurrency(priceText: string): string {
   return 'USD';
 }
 
-function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
+function convertHeadings(nodes: Node[]): Node[] {
   // Auto-detect heading level from the first heading that matches "Name — Price"
-  const level = headingLevel ?? nodes.find(n => {
+  const level = nodes.find(n => {
     if (n.type !== 'heading') return false;
     const text = Array.from(n.walk()).filter(c => c.type === 'text').map(t => t.attributes.content).join(' ');
     return NAME_PRICE_PATTERN.test(text);
@@ -53,7 +53,6 @@ function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
 
 export const pricing = createContentModelSchema({
   attributes: {
-    headingLevel: { type: Number, required: false },
   },
   contentModel: {
     type: 'sequence',
@@ -62,7 +61,7 @@ export const pricing = createContentModelSchema({
     ],
   },
   transform(resolved, attrs, config) {
-    const processed = convertHeadings(asNodes(resolved.content), attrs.headingLevel);
+    const processed = convertHeadings(asNodes(resolved.content));
 
     const allNodes = new RenderableNodeCursor(
       Markdoc.transform(processed, config) as RenderableTreeNode[],

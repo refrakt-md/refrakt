@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, resolveSequence, RenderableNodeCursor, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 function tagText(nodes: any[]): string {
@@ -23,28 +23,17 @@ export const howto = createContentModelSchema({
 	attributes: {
 		estimatedTime: { type: String, required: false, default: '' },
 		difficulty: { type: String, required: false, matches: difficultyType.slice() },
-		headingLevel: { type: Number, required: false },
 	},
 	contentModel: {
-		type: 'custom',
-		description: 'Optionally converts headings to list items, then resolves header/body sequence',
-		processChildren(nodes, attrs) {
-			let processed = nodes as Node[];
-			if (attrs.headingLevel != null) {
-				processed = headingsToList({ level: attrs.headingLevel as number })(processed);
-			}
-			return processed;
-		},
+		type: 'sequence',
+		fields: bodyFields,
 	},
 	transform(resolved, attrs, config) {
-		// Custom model gives us raw children — resolve the header/body sequence manually
-		const inner = resolveSequence(resolved.children as Node[], bodyFields);
-
 		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(inner.header), config) as RenderableTreeNode[],
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
 		);
 		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(inner.body), config) as RenderableTreeNode[],
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
 		const estimatedTimeMeta = new Tag('meta', { content: attrs.estimatedTime });

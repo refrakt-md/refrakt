@@ -146,17 +146,9 @@ type RuneMap = Record<string, RuneDefinition>
 
 {% /preview %}
 
-## Heading level shifting
+## Heading levels
 
-Use the `headingLevel` attribute to shift all heading interpretations. This lets symbols nest inside other runes like `{% tabs %}` or `{% section %}` without heading conflicts.
-
-```markdoc
-{% symbol kind="class" headingLevel=3 %}
-### MyClass (name is now ###)
-#### Methods (group is now ####)
-##### doSomething (member is now #####)
-{% /symbol %}
-```
+Symbol uses fixed heading levels: the construct name is at h2, groups (Constructor, Properties, Methods) split at h3, and individual members at h4.
 
 ## Deprecated construct
 
@@ -187,7 +179,6 @@ legacyRender(source: string): any
 | `since` | `string` | -- | Version when this construct was introduced |
 | `deprecated` | `string` | -- | Version when deprecated, or `"true"` for general deprecation |
 | `source` | `string` | -- | URL to source code (GitHub permalink, etc.) |
-| `headingLevel` | `number` | `2` | Base heading level for construct name (shifts all heading interpretations) |
 
 ### Common attributes
 

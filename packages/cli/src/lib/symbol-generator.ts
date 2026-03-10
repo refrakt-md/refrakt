@@ -1,8 +1,6 @@
 import type { SymbolDoc, SymbolKind, SymbolParameter, SymbolMemberDoc } from '../extractors/types.js';
 
 export interface GeneratorOptions {
-	/** Base heading level for the symbol name (default: 2 = ##) */
-	headingLevel?: number;
 	/** Whether to include frontmatter (default: true) */
 	frontmatter?: boolean;
 	/** Language for code fences and symbol tag (default: 'typescript') */
@@ -91,7 +89,7 @@ function writeMember(lines: string[], member: SymbolMemberDoc, memberLevel: numb
 
 /** Generate a single {% symbol %} Markdown block for one SymbolDoc */
 export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOptions): string {
-	const level = options?.headingLevel ?? 2;
+	const level = 2;
 	const lines: string[] = [];
 
 	// Frontmatter
@@ -113,7 +111,6 @@ export function generateSymbolMarkdown(doc: SymbolDoc, options?: GeneratorOption
 	if (doc.since) attrs.push(`since="${doc.since}"`);
 	if (doc.deprecated) attrs.push(`deprecated="${doc.deprecated}"`);
 	if (doc.source) attrs.push(`source="${doc.source}"`);
-	if (level !== 2) attrs.push(`headingLevel=${level}`);
 	lines.push(`{% symbol ${attrs.join(' ')} %}`);
 	lines.push('');
 

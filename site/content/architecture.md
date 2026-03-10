@@ -635,7 +635,7 @@ This produces a virtual module that imports the base theme, imports the override
 
 The full content pipeline flows through these stages. Steps marked **(build only)** run at build time across all pages, not on individual page requests in dev mode.
 
-{% steps headingLevel=3 %}
+{% steps %}
 ### Content analysis (build only)
 Scan all pages and layout regions to determine which rune types are used. Maps types to CSS blocks for tree-shaking.
 

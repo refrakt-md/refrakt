@@ -45,11 +45,10 @@ class TabModel extends Model {
 
 export const tab = createSchema(TabModel);
 
-function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
-  const level = headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-  if (!level) return nodes;
-  const converted = headingsToList({ level })(nodes);
+function convertHeadings(nodes: Node[]): Node[] {
+  const converted = headingsToList()(nodes);
   const n = converted.length - 1;
+  if (!converted[n] || converted[n].type !== 'list') return nodes;
   const tags = converted[n].children.map((item: Node) => {
     const heading = item.children[0];
     const image = Array.from(heading.walk()).find((n: Node) => n.type === 'image');
@@ -65,12 +64,10 @@ function convertHeadings(nodes: Node[], headingLevel?: number): Node[] {
 }
 
 export const tabs = createContentModelSchema({
-  attributes: {
-    headingLevel: { type: Number, required: false },
-  },
-  contentModel: (attrs) => ({
+  attributes: {},
+  contentModel: () => ({
     type: 'custom' as const,
-    processChildren: (nodes) => convertHeadings(nodes as Node[], attrs.headingLevel),
+    processChildren: (nodes) => convertHeadings(nodes as Node[]),
     description: 'Converts headings at the specified level to tab tags, extracting tab name and optional image from heading content.',
   }),
   transform(resolved, attrs, config) {

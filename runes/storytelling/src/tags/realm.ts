@@ -25,16 +25,15 @@ export const realmSection = createSchema(RealmSectionModel);
 
 export const realm = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		name: { type: String, required: true },
 		type: { type: String, required: false },
 		scale: { type: String, required: false },
 		tags: { type: String, required: false },
 		parent: { type: String, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'realm-section',
 		emitAttributes: { name: '$heading' },
 		fields: [

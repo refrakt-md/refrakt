@@ -9,11 +9,11 @@ Tabbed content panels. Headings become tab labels, the content below each headin
 
 ## Heading-based tabs
 
-Set `headingLevel` to automatically convert headings into tab labels.
+Headings are automatically converted into tab labels.
 
 {% preview source=true %}
 
-{% tabs headingLevel=2 %}
+{% tabs %}
 ## npm
 
 ```shell
@@ -56,12 +56,6 @@ Content for the TypeScript tab.
 ## Section header
 
 Tabs supports an optional eyebrow, headline, and blurb above the tab bar. Place a short paragraph or heading before your tab headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
-
-### Attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Heading level to convert into tabs |
 
 ### Common attributes
 

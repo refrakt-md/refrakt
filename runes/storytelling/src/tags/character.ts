@@ -28,16 +28,15 @@ export const characterSection = createSchema(StorySectionModel);
 
 export const character = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		name: { type: String, required: true },
 		role: { type: String, required: false, matches: roleType.slice() },
 		status: { type: String, required: false, matches: statusType.slice() },
 		aliases: { type: String, required: false },
 		tags: { type: String, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'character-section',
 		emitAttributes: { name: '$heading' },
 		fields: [

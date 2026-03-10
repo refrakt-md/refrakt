@@ -59,12 +59,10 @@ export const step = createSchema(StepModel, {
 });
 
 export const steps = createContentModelSchema({
-  attributes: {
-    headingLevel: { type: Number, required: false },
-  },
-  contentModel: (attrs) => ({
+  attributes: {},
+  contentModel: () => ({
     type: 'custom' as const,
-    processChildren: (nodes) => headingsToList({ level: attrs.headingLevel })(nodes as Node[]),
+    processChildren: (nodes) => headingsToList()(nodes as Node[]),
     description: 'Converts headings to a list structure, where each heading becomes a step with optional split layout.',
   }),
   transform(resolved, attrs, config) {

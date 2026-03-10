@@ -24,8 +24,8 @@ Content here.
     expect(modeMeta).toBeDefined();
   });
 
-  it('should create RevealStep children when headingLevel is set', () => {
-    const result = parse(`{% reveal headingLevel=2 %}
+  it('should create RevealStep children from headings', () => {
+    const result = parse(`{% reveal %}
 ## Step One
 
 First step content.

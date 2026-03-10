@@ -5,7 +5,7 @@ description: Collapsible accordion sections for FAQ-style content
 
 # Accordion
 
-Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or set `headingLevel` to automatically convert headings into accordion panels.
+Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or write headings directly and they will be automatically converted into accordion panels.
 
 ## Basic usage
 
@@ -31,11 +31,11 @@ No. Runes use standard Markdoc tag syntax, and the content inside is regular Mar
 
 ## Heading conversion
 
-Use `headingLevel` to automatically convert headings into accordion items — no explicit tags needed.
+Headings are automatically converted into accordion items — no explicit tags needed.
 
 {% preview source=true %}
 
-{% accordion headingLevel=2 %}
+{% accordion %}
 ## What is refrakt.md?
 
 A content framework built on Markdoc.
@@ -55,7 +55,6 @@ Accordion supports an optional eyebrow, headline, and blurb above the panels. Pl
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Convert headings at this level into accordion items |
 | `multiple` | `boolean` | `true` | Allow multiple panels to be open simultaneously |
 
 ### Common attributes

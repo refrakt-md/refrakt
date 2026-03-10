@@ -40,7 +40,6 @@ You will need these tools:
 |-----------|------|---------|-------------|
 | `estimatedTime` | `string` | — | Estimated time in ISO 8601 duration (e.g. "PT1H") |
 | `difficulty` | `string` | — | Difficulty level: `easy`, `medium`, or `hard` |
-| `headingLevel` | `number` | — | Heading level to convert into steps (auto-detected if omitted) |
 
 ## Section header
 

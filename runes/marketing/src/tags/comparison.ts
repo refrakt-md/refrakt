@@ -150,10 +150,9 @@ class ComparisonColumnModel extends Model {
 
 // Multi-pass heading+list parser with cross-column row alignment
 function convertComparisonChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
-	const headingLevel = (attributes.headingLevel as number) ?? 2;
 	const highlighted = (attributes.highlighted as string) ?? '';
 
-	const converted = headingsToList({ level: headingLevel })(nodes as Node[]);
+	const converted = headingsToList({ level: 2 })(nodes as Node[]);
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
@@ -275,7 +274,6 @@ export const comparisonColumn = createSchema(ComparisonColumnModel);
 
 export const comparison = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		title: { type: String, required: false },
 		highlighted: { type: String, required: false },
 		layout: { type: String, required: false },

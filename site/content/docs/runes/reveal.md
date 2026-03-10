@@ -9,11 +9,11 @@ Progressive disclosure. Headings become reveal steps, with content shown one ste
 
 ## Basic usage
 
-Set `headingLevel` to split content into reveal steps at that heading level.
+Headings automatically split content into reveal steps.
 
 {% preview source=true %}
 
-{% reveal headingLevel=3 %}
+{% reveal %}
 ### Step 1: Install the package
 
 Run the install command to add refrakt.md to your project.
@@ -37,7 +37,6 @@ Reveal supports an optional eyebrow, headline, and blurb above the steps. Place 
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Heading level to split content into steps |
 | `mode` | `string` | `click` | Trigger mode: `click`, `scroll`, `auto` |
 
 ### Common attributes
