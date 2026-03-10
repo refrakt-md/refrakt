@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
   <style>
-    .top { fill: #67e8f9; }
+    .top { fill: #a5f3fc; }
     .right { fill: #22d3ee; }
-    .left { fill: #06b6d4; }
+    .left { fill: #0891b2; }
     @media (prefers-color-scheme: dark) {
-      .top { fill: #a5f3fc; }
+      .top { fill: #cffafe; }
       .right { fill: #67e8f9; }
-      .left { fill: #22d3ee; }
+      .left { fill: #06b6d4; }
     }
   </style>
 
