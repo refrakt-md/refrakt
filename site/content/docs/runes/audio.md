@@ -17,7 +17,7 @@ A simple audio player with a source file.
 
 {% preview source=true %}
 
-{% audio src="/audio/demo.mp3" title="Demo Track" artist="Artist Name" /%}
+{% audio src="https://archive.org/download/musopen-chopin/Nocturne%20Op.%209%20no.%202%20in%20E%20flat%20major.mp3" title="Nocturne Op. 9 No. 2 in E-flat major" artist="Frederic Chopin" /%}
 
 {% /preview %}
 
@@ -27,7 +27,7 @@ Enable waveform visualisation with the `waveform` attribute.
 
 {% preview source=true %}
 
-{% audio src="/audio/interview.mp3" title="Interview Clip" waveform=true /%}
+{% audio src="https://archive.org/download/musopen-chopin/Mazurka%20Op.%207%20no.%204%20in%20A%20flat%20major.mp3" title="Mazurka Op. 7 No. 4 in A-flat major" artist="Frederic Chopin" waveform=true /%}
 
 {% /preview %}
 
@@ -37,14 +37,16 @@ Add a list inside the rune to define chapter markers. Bold text is the chapter l
 
 {% preview source=true %}
 
-{% audio src="/audio/podcast-ep1.mp3" title="Episode 1: Getting Started" %}
+{% audio src="https://archive.org/download/musopen-chopin/Ballade%20no.%201%20-%20Op.%2023.mp3" title="Ballade No. 1 in G minor, Op. 23" artist="Frederic Chopin" %}
 
-An introduction to the series covering setup, basics, and first steps.
+A sweeping narrative arc from brooding introduction through lyrical themes to a fiery conclusion.
 
-1. **Introduction** (0:00) Welcome and overview
-2. **Setup** (2:30) Installing dependencies
-3. **First steps** (8:45) Writing your first component
-4. **Wrap-up** (22:10) Summary and next episode preview
+1. **Introduction** (0:00) Largo opening over a Neapolitan chord
+2. **First Theme** (0:45) Principal theme in G minor
+3. **Second Theme** (2:50) Lyrical melody in E-flat major
+4. **Development** (4:30) Thematic transformation and modulation
+5. **Recapitulation** (7:00) Themes return in reverse order
+6. **Coda** (8:30) Presto con fuoco to the dramatic finish
 {% /audio %}
 
 {% /preview %}
@@ -55,15 +57,15 @@ Use the `playlist` attribute to connect the player to a named playlist rune via 
 
 {% preview source=true %}
 
-{% playlist type="album" artist="Nils Frahm" id="felt" %}
-# Felt
+{% playlist type="album" artist="Frederic Chopin" id="nocturnes" %}
+# Chopin Nocturnes
 
-- **Keep** (3:45)
-- **Less** (2:18)
-- **Familiar** (5:42)
+- **Nocturne Op. 15 No. 1 in F major** (5:06)
+- **Nocturne Op. 27 No. 1 in C-sharp minor** (5:52)
+- **Nocturne Op. 32 No. 1 in B major** (5:01)
 {% /playlist %}
 
-{% audio playlist="felt" /%}
+{% audio playlist="nocturnes" /%}
 
 {% /preview %}
 
