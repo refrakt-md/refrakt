@@ -60,9 +60,9 @@ Use the `playlist` attribute to connect the player to a named playlist rune via 
 {% playlist type="album" artist="Frederic Chopin" id="nocturnes" %}
 # Chopin Nocturnes
 
-- **Nocturne Op. 15 No. 1 in F major** (5:06)
-- **Nocturne Op. 27 No. 1 in C-sharp minor** (5:52)
-- **Nocturne Op. 32 No. 1 in B major** (5:01)
+- **Nocturne Op. 15 No. 1 in F major** [play](https://archive.org/download/musopen-chopin/Nocturne%20Op.%2015%20no.%201%20In%20F%20major.mp3) (5:06)
+- **Nocturne Op. 27 No. 1 in C-sharp minor** [play](https://archive.org/download/musopen-chopin/Nocturne%20Op.%2027%20no.%201%20in%20C%20sharp%20minor.mp3) (5:52)
+- **Nocturne Op. 32 No. 1 in B major** [play](https://archive.org/download/musopen-chopin/Nocturne%20Op.%2032%20no.%201%20in%20B%20major.mp3) (5:01)
 {% /playlist %}
 
 {% audio playlist="nocturnes" /%}

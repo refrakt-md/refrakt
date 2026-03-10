@@ -45,12 +45,21 @@ export class RfAudio extends SafeHTMLElement {
 	private chapterListEl: HTMLElement | null = null;
 	private waveformContainer: HTMLElement | null = null;
 
+	// Playlist interaction
+	private playlistEl: HTMLElement | null = null;
+	private playlistTrackItems: HTMLElement[] = [];
+	private trackClickHandlers: Array<() => void> = [];
+
+	// Pending autoplay handler (so it can be cancelled)
+	private pendingAutoplay: (() => void) | null = null;
+
 	connectedCallback() {
 		// Defer to ensure sibling elements (e.g. playlist rune) are in the DOM
 		requestAnimationFrame(() => this.init());
 	}
 
 	disconnectedCallback() {
+		this.cancelPendingAutoplay();
 		if (this.animationFrameId !== null) {
 			cancelAnimationFrame(this.animationFrameId);
 			this.animationFrameId = null;
@@ -65,6 +74,16 @@ export class RfAudio extends SafeHTMLElement {
 			try { this.wavesurfer.destroy(); } catch { /* already destroyed */ }
 			this.wavesurfer = null;
 		}
+		// Remove playlist click handlers
+		for (let i = 0; i < this.playlistTrackItems.length; i++) {
+			if (this.trackClickHandlers[i]) {
+				this.playlistTrackItems[i].removeEventListener('click', this.trackClickHandlers[i]);
+			}
+		}
+		this.playlistTrackItems = [];
+		this.trackClickHandlers = [];
+		this.playlistEl = null;
+
 		this.playBtn = null;
 		this.progressContainer = null;
 		this.progressBar = null;
@@ -77,9 +96,13 @@ export class RfAudio extends SafeHTMLElement {
 	}
 
 	private init() {
+		// Idempotency guard — don't rebuild if already initialized
+		if (this.querySelector('.rf-audio-player')) return;
+
 		this.tracks = this.extractTrackData();
 
-		if (this.tracks.length === 0) {
+		const fromPlaylist = this.tracks.length === 0;
+		if (fromPlaylist) {
 			this.tracks = this.resolvePlaylistTracks();
 		}
 
@@ -87,6 +110,10 @@ export class RfAudio extends SafeHTMLElement {
 
 		this.useWaveform = this.getAttribute('waveform') === 'true';
 		this.buildPlayerUI();
+
+		if (fromPlaylist && this.playlistTrackItems.length > 0) {
+			this.bindPlaylistInteraction();
+		}
 
 		const track = this.tracks[this.currentTrackIndex];
 		if (!track?.src) return;
@@ -114,18 +141,23 @@ export class RfAudio extends SafeHTMLElement {
 
 		// Find the playlist section with a matching id meta
 		const playlists = document.querySelectorAll<HTMLElement>('[typeof="MusicPlaylist"]');
-		let playlistEl: HTMLElement | null = null;
+		let foundEl: HTMLElement | null = null;
 		for (const pl of playlists) {
 			const idMeta = pl.querySelector<HTMLMetaElement>('meta[data-field="id"]');
 			if (idMeta?.content === playlistId) {
-				playlistEl = pl;
+				foundEl = pl;
 				break;
 			}
 		}
-		if (!playlistEl) return [];
+		if (!foundEl) return [];
+
+		// Store reference for interaction
+		this.playlistEl = foundEl;
 
 		const tracks: TrackData[] = [];
-		const trackItems = playlistEl.querySelectorAll<HTMLElement>('li[data-rune="track"]');
+		const trackItems = foundEl.querySelectorAll<HTMLElement>('li[data-rune="track"]');
+		this.playlistTrackItems = Array.from(trackItems);
+
 		for (const item of trackItems) {
 			const name = item.querySelector('[data-name="track-name"]')?.textContent || '';
 			const artist = item.querySelector('[data-name="track-artist"]')?.textContent || '';
@@ -133,6 +165,27 @@ export class RfAudio extends SafeHTMLElement {
 			tracks.push({ src, name, artist });
 		}
 		return tracks;
+	}
+
+	private bindPlaylistInteraction() {
+		for (let i = 0; i < this.playlistTrackItems.length; i++) {
+			const item = this.playlistTrackItems[i];
+			item.style.cursor = 'pointer';
+			const handler = () => {
+				this.loadTrack(i, true);
+			};
+			this.trackClickHandlers.push(handler);
+			item.addEventListener('click', handler);
+		}
+		this.updateActivePlaylistTrack();
+	}
+
+	private updateActivePlaylistTrack() {
+		for (let i = 0; i < this.playlistTrackItems.length; i++) {
+			this.playlistTrackItems[i].classList.toggle(
+				'rf-track--active', i === this.currentTrackIndex,
+			);
+		}
 	}
 
 	private buildPlayerUI() {
@@ -293,8 +346,7 @@ export class RfAudio extends SafeHTMLElement {
 			this.isPlaying = false;
 			this.updatePlayButton();
 			if (this.currentTrackIndex < this.tracks.length - 1) {
-				this.loadTrack(this.currentTrackIndex + 1);
-				this.togglePlayPause();
+				this.loadTrack(this.currentTrackIndex + 1, true);
 			}
 		});
 
@@ -367,11 +419,21 @@ export class RfAudio extends SafeHTMLElement {
 		}
 	}
 
+	private cancelPendingAutoplay() {
+		if (this.pendingAutoplay) {
+			if (this.audioEl) {
+				this.audioEl.removeEventListener('canplay', this.pendingAutoplay);
+			}
+			this.pendingAutoplay = null;
+		}
+	}
+
 	private togglePlayPause() {
 		if (this.useWaveform && this.wavesurfer) {
 			this.wavesurfer.playPause();
 		} else if (this.audioEl) {
 			if (this.isPlaying) {
+				this.cancelPendingAutoplay();
 				this.audioEl.pause();
 				this.isPlaying = false;
 			} else {
@@ -473,20 +535,70 @@ export class RfAudio extends SafeHTMLElement {
 		this.playBtn.setAttribute('aria-label', this.isPlaying ? 'Pause' : 'Play');
 	}
 
-	private loadTrack(index: number) {
+	private loadTrack(index: number, autoplay = false) {
 		if (index < 0 || index >= this.tracks.length) return;
+
+		// Cancel any pending autoplay from a previous loadTrack call
+		this.cancelPendingAutoplay();
+
+		// Stop current playback before switching
+		if (this.isPlaying) {
+			if (this.useWaveform && this.wavesurfer) {
+				this.wavesurfer.pause();
+			} else if (this.audioEl) {
+				this.audioEl.pause();
+			}
+			this.isPlaying = false;
+			this.updatePlayButton();
+		}
+
 		this.currentTrackIndex = index;
 		const track = this.tracks[index];
 
 		if (this.trackNameEl) this.trackNameEl.textContent = track.name;
 		if (this.trackArtistEl) this.trackArtistEl.textContent = track.artist;
+		if (this.playBtn) this.playBtn.disabled = !track.src;
 
-		if (this.useWaveform && this.wavesurfer) {
-			this.wavesurfer.load(track.src);
-		} else if (this.audioEl) {
-			this.audioEl.src = track.src;
-			this.audioEl.load();
+		if (track.src) {
+			if (this.useWaveform && this.wavesurfer) {
+				this.wavesurfer.load(track.src);
+				if (autoplay) {
+					this.wavesurfer.once('ready', () => {
+						this.wavesurfer.play();
+					});
+				}
+			} else if (this.audioEl) {
+				this.audioEl.src = track.src;
+				this.audioEl.load();
+				if (autoplay) {
+					this.pendingAutoplay = () => {
+						this.pendingAutoplay = null;
+						this.audioEl!.play().catch(() => { /* autoplay blocked */ });
+						this.isPlaying = true;
+						this.updatePlayButton();
+					};
+					this.audioEl.addEventListener('canplay', this.pendingAutoplay, { once: true });
+				}
+			} else {
+				// First track with a src — create the audio element
+				this.initAudio();
+				if (autoplay) {
+					// audioEl was just created by initAudio()
+					const audio = this.audioEl as HTMLAudioElement | null;
+					if (audio) {
+						this.pendingAutoplay = () => {
+							this.pendingAutoplay = null;
+							audio.play().catch(() => { /* autoplay blocked */ });
+							this.isPlaying = true;
+							this.updatePlayButton();
+						};
+						audio.addEventListener('canplay', this.pendingAutoplay, { once: true });
+					}
+				}
+			}
 		}
+
+		this.updateActivePlaylistTrack();
 	}
 
 	private formatTime(seconds: number): string {
