@@ -42,6 +42,20 @@ export interface ContentFieldDefinition {
 
 	/** For list fields: declares how to extract structured data from each list item. */
 	itemModel?: ItemModel;
+
+	/**
+	 * When set alongside `itemModel` on a list field, each extracted item is
+	 * converted to an AST tag node with this tag name. The field value becomes
+	 * an array of tag nodes instead of the original list node.
+	 */
+	emitTag?: string;
+
+	/**
+	 * Attribute mapping for emitted tags (requires `emitTag`).
+	 * Values starting with `$` reference extracted item fields (e.g. `'$name'`).
+	 * Other values are literals.
+	 */
+	emitAttributes?: Record<string, string>;
 }
 
 // ---------------------------------------------------------------------------
