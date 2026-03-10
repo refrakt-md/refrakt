@@ -11,7 +11,7 @@ describe('chart tag', () => {
 | Mar   | 150     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 	});
@@ -24,18 +24,18 @@ describe('chart tag', () => {
 | 2024 | 5000  |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const type = metas.find(m => m.attributes.property === 'type');
+		const type = metas.find(m => m.attributes['data-field'] === 'type');
 		expect(type).toBeDefined();
 		expect(type!.attributes.content).toBe('line');
 
-		const title = metas.find(m => m.attributes.property === 'title');
+		const title = metas.find(m => m.attributes['data-field'] === 'title');
 		expect(title).toBeDefined();
 		expect(title!.attributes.content).toBe('Growth');
 
-		const stacked = metas.find(m => m.attributes.property === 'stacked');
+		const stacked = metas.find(m => m.attributes['data-field'] === 'stacked');
 		expect(stacked).toBeDefined();
 		expect(stacked!.attributes.content).toBe('true');
 	});
@@ -47,7 +47,7 @@ describe('chart tag', () => {
 | Jan   | 100     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Chart');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		const dataMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-name'] === 'data');
 		expect(dataMeta).toBeDefined();
 

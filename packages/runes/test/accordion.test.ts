@@ -13,14 +13,14 @@ Content for first section.
 Content for second section.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 		expect(acc!.name).toBe('section');
 
-		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('First Section');
 	});
@@ -36,7 +36,7 @@ A content framework.
 Run npm install.
 {% /faq %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 	});
 
@@ -51,10 +51,10 @@ Content two.
 {% /accordion-item %}
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 	});
 
@@ -65,7 +65,7 @@ Content.
 {% /accordion-item %}
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
 		const container = findTag(acc!, t => t.name === 'div' && t.attributes['data-name'] === 'items');
@@ -81,13 +81,13 @@ Content one.
 Content two.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes.property === 'name');
+		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('Item One');
 	});
@@ -104,10 +104,10 @@ Answer two.
 Answer three.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes.typeof === 'Accordion');
+		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(3);
 	});
 });

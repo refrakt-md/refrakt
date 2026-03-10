@@ -41,7 +41,7 @@
 		"AccordionItem": {
 			"block": "accordion-item",
 			"root": ".rf-accordion-item",
-			"dataRune": "accordionitem",
+			"dataRune": "accordion-item",
 			"parent": "Accordion",
 			"childOrder": [
 				"{content}"
@@ -129,7 +129,7 @@
 		"CodeGroup": {
 			"block": "codegroup",
 			"root": ".rf-codegroup",
-			"dataRune": "codegroup",
+			"dataRune": "code-group",
 			"childOrder": [
 				"topbar",
 				"{content}"
@@ -171,7 +171,7 @@
 		"PageSection": {
 			"block": "page-section",
 			"root": ".rf-page-section",
-			"dataRune": "pagesection",
+			"dataRune": "page-section",
 			"childOrder": [
 				"{content}"
 			]
@@ -179,7 +179,7 @@
 		"TableOfContents": {
 			"block": "toc",
 			"root": ".rf-toc",
-			"dataRune": "tableofcontents",
+			"dataRune": "table-of-contents",
 			"childOrder": [
 				"{content}"
 			]
@@ -203,7 +203,7 @@
 		"BreadcrumbItem": {
 			"block": "breadcrumb-item",
 			"root": ".rf-breadcrumb-item",
-			"dataRune": "breadcrumbitem",
+			"dataRune": "breadcrumb-item",
 			"parent": "Breadcrumb",
 			"childOrder": [
 				"{content}"
@@ -252,11 +252,11 @@
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-show-per-day"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "detailed",
 					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			},
 			"elements": {
@@ -296,7 +296,7 @@
 		"BudgetCategory": {
 			"block": "budget-category",
 			"root": ".rf-budget-category",
-			"dataRune": "budgetcategory",
+			"dataRune": "budget-category",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -313,7 +313,7 @@
 		"BudgetLineItem": {
 			"block": "budget-line-item",
 			"root": ".rf-budget-line-item",
-			"dataRune": "budgetlineitem",
+			"dataRune": "budget-line-item",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -336,11 +336,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-hint--in-hero"
 				},
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
 				}
@@ -431,11 +431,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "sidenote",
 					"classPattern": ".rf-sidenote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -466,7 +466,7 @@
 		"ConversationMessage": {
 			"block": "conversation-message",
 			"root": ".rf-conversation-message",
-			"dataRune": "conversationmessage",
+			"dataRune": "conversation-message",
 			"parent": "Conversation",
 			"childOrder": [
 				"{content}"
@@ -488,18 +488,18 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "margin",
 					"classPattern": ".rf-annotate--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
 		"AnnotateNote": {
 			"block": "annotate-note",
 			"root": ".rf-annotate-note",
-			"dataRune": "annotatenote",
+			"dataRune": "annotate-note",
 			"parent": "Annotate",
 			"childOrder": [
 				"{content}"
@@ -516,7 +516,7 @@
 		"NavGroup": {
 			"block": "nav-group",
 			"root": ".rf-nav-group",
-			"dataRune": "navgroup",
+			"dataRune": "nav-group",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -525,7 +525,7 @@
 		"NavItem": {
 			"block": "nav-item",
 			"root": ".rf-nav-item",
-			"dataRune": "navitem",
+			"dataRune": "nav-item",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -558,7 +558,7 @@
 		"PullQuote": {
 			"block": "pullquote",
 			"root": ".rf-pullquote",
-			"dataRune": "pullquote",
+			"dataRune": "pull-quote",
 			"childOrder": [
 				"{content}"
 			],
@@ -569,18 +569,18 @@
 					"classPattern": ".rf-pullquote--{value}",
 					"dataAttribute": "data-align"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "default",
 					"classPattern": ".rf-pullquote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
 		"TextBlock": {
 			"block": "textblock",
 			"root": ".rf-textblock",
-			"dataRune": "textblock",
+			"dataRune": "text-block",
 			"childOrder": [
 				"{content}"
 			],
@@ -611,7 +611,7 @@
 		"MediaText": {
 			"block": "mediatext",
 			"root": ".rf-mediatext",
-			"dataRune": "mediatext",
+			"dataRune": "media-text",
 			"childOrder": [
 				"{content}"
 			],
@@ -669,7 +669,7 @@
 				}
 			},
 			"contextModifiers": {
-				"BentoCell": {
+				"bento-cell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
@@ -684,7 +684,7 @@
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",
-			"dataRune": "tabgroup",
+			"dataRune": "tab-group",
 			"childOrder": [
 				"{content}"
 			],
@@ -728,7 +728,7 @@
 		"DataTable": {
 			"block": "datatable",
 			"root": ".rf-datatable",
-			"dataRune": "datatable",
+			"dataRune": "data-table",
 			"childOrder": [
 				"{content}"
 			],
@@ -765,11 +765,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "stacked",
 					"classPattern": ".rf-form--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"action": {
 					"source": "meta",
@@ -803,7 +803,7 @@
 		"FormField": {
 			"block": "form-field",
 			"root": ".rf-form-field",
-			"dataRune": "formfield",
+			"dataRune": "form-field",
 			"parent": "Form",
 			"childOrder": [
 				"{content}"
@@ -862,7 +862,7 @@
 		"RevealStep": {
 			"block": "reveal-step",
 			"root": ".rf-reveal-step",
-			"dataRune": "revealstep",
+			"dataRune": "reveal-step",
 			"parent": "Reveal",
 			"childOrder": [
 				"{content}"
@@ -925,7 +925,7 @@
 				}
 			},
 			"contextModifiers": {
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hero--in-feature"
 				}
@@ -977,16 +977,16 @@
 		"CallToAction": {
 			"block": "cta",
 			"root": ".rf-cta",
-			"dataRune": "calltoaction",
+			"dataRune": "call-to-action",
 			"childOrder": [
 				"{content}"
 			],
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-cta--in-hero"
 				},
-				"Pricing": {
+				"pricing": {
 					"suffix": "in-pricing",
 					"selector": ".rf-cta--in-pricing"
 				}
@@ -1081,7 +1081,7 @@
 		"BentoCell": {
 			"block": "bento-cell",
 			"root": ".rf-bento-cell",
-			"dataRune": "bentocell",
+			"dataRune": "bento-cell",
 			"parent": "Bento",
 			"childOrder": [
 				"{content}"
@@ -1150,11 +1150,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-feature--in-hero"
 				},
-				"Grid": {
+				"grid": {
 					"suffix": "in-grid",
 					"selector": ".rf-feature--in-grid"
 				}
@@ -1201,7 +1201,7 @@
 		"FeatureDefinition": {
 			"block": "feature-definition",
 			"root": ".rf-feature-definition",
-			"dataRune": "featuredefinition",
+			"dataRune": "feature-definition",
 			"parent": "Feature",
 			"childOrder": [
 				"{content}"
@@ -1336,7 +1336,7 @@
 		"FeaturedTier": {
 			"block": "tier",
 			"root": ".rf-tier",
-			"dataRune": "featuredtier",
+			"dataRune": "featured-tier",
 			"parent": "Pricing",
 			"childOrder": [
 				"{content}"
@@ -1375,7 +1375,7 @@
 		"ComparisonColumn": {
 			"block": "comparison-column",
 			"root": ".rf-comparison-column",
-			"dataRune": "comparisoncolumn",
+			"dataRune": "comparison-column",
 			"parent": "Comparison",
 			"childOrder": [
 				"{content}"
@@ -1384,7 +1384,7 @@
 		"ComparisonRow": {
 			"block": "comparison-row",
 			"root": ".rf-comparison-row",
-			"dataRune": "comparisonrow",
+			"dataRune": "comparison-row",
 			"parent": "Comparison",
 			"childOrder": [
 				"{content}"
@@ -1542,7 +1542,7 @@
 		"SymbolGroup": {
 			"block": "symbol-group",
 			"root": ".rf-symbol-group",
-			"dataRune": "symbolgroup",
+			"dataRune": "symbol-group",
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
@@ -1551,7 +1551,7 @@
 		"SymbolMember": {
 			"block": "symbol-member",
 			"root": ".rf-symbol-member",
-			"dataRune": "symbolmember",
+			"dataRune": "symbol-member",
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
@@ -1568,7 +1568,7 @@
 		"ChangelogRelease": {
 			"block": "changelog-release",
 			"root": ".rf-changelog-release",
-			"dataRune": "changelogrelease",
+			"dataRune": "changelog-release",
 			"parent": "Changelog",
 			"childOrder": [
 				"{content}"
@@ -1635,7 +1635,7 @@
 		"CharacterSection": {
 			"block": "character-section",
 			"root": ".rf-character-section",
-			"dataRune": "charactersection",
+			"dataRune": "character-section",
 			"parent": "Character",
 			"childOrder": [
 				"{content}"
@@ -1708,7 +1708,7 @@
 		"RealmSection": {
 			"block": "realm-section",
 			"root": ".rf-realm-section",
-			"dataRune": "realmsection",
+			"dataRune": "realm-section",
 			"parent": "Realm",
 			"childOrder": [
 				"{content}"
@@ -1842,7 +1842,7 @@
 		"FactionSection": {
 			"block": "faction-section",
 			"root": ".rf-faction-section",
-			"dataRune": "factionsection",
+			"dataRune": "faction-section",
 			"parent": "Faction",
 			"childOrder": [
 				"{content}"
@@ -1949,11 +1949,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "clean",
 					"classPattern": ".rf-storyboard--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"columns": {
 					"source": "meta",
@@ -1969,7 +1969,7 @@
 		"StoryboardPanel": {
 			"block": "storyboard-panel",
 			"root": ".rf-storyboard-panel",
-			"dataRune": "storyboardpanel",
+			"dataRune": "storyboard-panel",
 			"parent": "Storyboard",
 			"childOrder": [
 				"{content}"
@@ -2059,11 +2059,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "day-by-day",
 					"classPattern": ".rf-itinerary--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"direction": {
 					"source": "meta",
@@ -2076,7 +2076,7 @@
 		"ItineraryDay": {
 			"block": "itinerary-day",
 			"root": ".rf-itinerary-day",
-			"dataRune": "itineraryday",
+			"dataRune": "itinerary-day",
 			"parent": "Itinerary",
 			"childOrder": [
 				"{content}"
@@ -2092,7 +2092,7 @@
 		"ItineraryStop": {
 			"block": "itinerary-stop",
 			"root": ".rf-itinerary-stop",
-			"dataRune": "itinerarystop",
+			"dataRune": "itinerary-stop",
 			"parent": "Itinerary",
 			"childOrder": [
 				"{content}"
@@ -2130,11 +2130,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "street",
 					"classPattern": ".rf-map--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"height": {
 					"source": "meta",
@@ -2147,7 +2147,7 @@
 		"MapPin": {
 			"block": "map-pin",
 			"root": ".rf-map-pin",
-			"dataRune": "mappin",
+			"dataRune": "map-pin",
 			"parent": "Map",
 			"childOrder": [
 				"{content}"
@@ -2164,7 +2164,7 @@
 		"CastMember": {
 			"block": "cast-member",
 			"root": ".rf-cast-member",
-			"dataRune": "castmember",
+			"dataRune": "cast-member",
 			"parent": "Cast",
 			"childOrder": [
 				"{content}"
@@ -2197,7 +2197,7 @@
 		"TimelineEntry": {
 			"block": "timeline-entry",
 			"root": ".rf-timeline-entry",
-			"dataRune": "timelineentry",
+			"dataRune": "timeline-entry",
 			"parent": "Timeline",
 			"childOrder": [
 				"{content}"
@@ -2241,7 +2241,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-palette--in-design-context"
 				}
@@ -2277,7 +2277,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-typography--in-design-context"
 				}
@@ -2298,7 +2298,7 @@
 				}
 			},
 			"contextModifiers": {
-				"DesignContext": {
+				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-spacing--in-design-context"
 				}
@@ -2307,7 +2307,7 @@
 		"DesignContext": {
 			"block": "design-context",
 			"root": ".rf-design-context",
-			"dataRune": "designcontext",
+			"dataRune": "design-context",
 			"childOrder": [
 				"{content}"
 			],
@@ -2375,7 +2375,7 @@
 		"HowTo": {
 			"block": "howto",
 			"root": ".rf-howto",
-			"dataRune": "howto",
+			"dataRune": "how-to",
 			"childOrder": [
 				"meta",
 				"{content:content}"
@@ -2484,24 +2484,79 @@
 		"RecipeIngredient": {
 			"block": "recipe-ingredient",
 			"root": ".rf-recipe-ingredient",
-			"dataRune": "recipeingredient",
+			"dataRune": "recipe-ingredient",
 			"parent": "Recipe",
 			"childOrder": [
 				"{content}"
 			]
 		},
+		"Playlist": {
+			"block": "playlist",
+			"root": ".rf-playlist",
+			"dataRune": "playlist",
+			"childOrder": [
+				"header",
+				"{content}"
+			],
+			"modifiers": {
+				"type": {
+					"source": "meta",
+					"default": "album",
+					"classPattern": ".rf-playlist--{value}",
+					"dataAttribute": "data-type"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-playlist__header",
+					"source": "structure"
+				},
+				"type-badge": {
+					"tag": "span",
+					"selector": ".rf-playlist__type-badge",
+					"source": "structure",
+					"parent": "header"
+				}
+			}
+		},
+		"Track": {
+			"block": "track",
+			"root": ".rf-track",
+			"dataRune": "track",
+			"parent": "Playlist",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Audio": {
+			"block": "audio",
+			"root": ".rf-audio",
+			"dataRune": "audio",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"waveform": {
+					"source": "meta",
+					"default": "false",
+					"classPattern": ".rf-audio--{value}",
+					"dataAttribute": "data-waveform"
+				}
+			}
+		},
 		"MusicPlaylist": {
-			"block": "music-playlist",
-			"root": ".rf-music-playlist",
-			"dataRune": "musicplaylist",
+			"block": "playlist",
+			"root": ".rf-playlist",
+			"dataRune": "music-playlist",
 			"childOrder": [
 				"{content}"
 			]
 		},
 		"MusicRecording": {
-			"block": "music-recording",
-			"root": ".rf-music-recording",
-			"dataRune": "musicrecording",
+			"block": "track",
+			"root": ".rf-track",
+			"dataRune": "music-recording",
 			"parent": "MusicPlaylist",
 			"childOrder": [
 				"{content}"

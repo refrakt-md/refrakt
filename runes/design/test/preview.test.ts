@@ -7,14 +7,14 @@ describe('preview tag', () => {
 Some content.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 		expect(preview!.name).toBe('div');
 
-		const titleMeta = findTag(preview!, t => t.name === 'meta' && t.attributes.property === 'title');
+		const titleMeta = findTag(preview!, t => t.name === 'meta' && t.attributes['data-field'] === 'title');
 		expect(titleMeta!.attributes.content).toBe('Demo');
 
-		const themeMeta = findTag(preview!, t => t.name === 'meta' && t.attributes.property === 'theme');
+		const themeMeta = findTag(preview!, t => t.name === 'meta' && t.attributes['data-field'] === 'theme');
 		expect(themeMeta!.attributes.content).toBe('dark');
 	});
 
@@ -23,10 +23,10 @@ Some content.
 Some content.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeUndefined();
 	});
 
@@ -39,10 +39,10 @@ Some content.
 Some content.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 		expect(source!.attributes['data-language']).toBe('jsx');
 
@@ -60,18 +60,18 @@ Some content.
 A paragraph.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
 		// The source pre exists
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 
 		// Only source and htmlSource pre tags should exist (fence was removed from children)
 		const allPres = findAllTags(preview!, t => t.name === 'pre');
 		expect(allPres).toHaveLength(2);
-		expect(allPres[0].attributes.property).toBe('source');
-		expect(allPres[1].attributes.property).toBe('htmlSource');
+		expect(allPres[0].attributes['data-field']).toBe('source');
+		expect(allPres[1].attributes['data-field']).toBe('html-source');
 	});
 
 	it('should auto-infer source from children when source=true', () => {
@@ -82,10 +82,10 @@ A note.
 {% /preview %}`;
 		const result = parse(content);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 		expect(source!.attributes['data-language']).toBe('markdoc');
 
@@ -105,8 +105,8 @@ A note.
 {% /hint %}
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeUndefined();
 	});
 
@@ -122,8 +122,8 @@ A note.
 {% /preview %}`;
 		const result = parse(content);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 		// Fence wins — language is jsx, not markdoc
 		expect(source!.attributes['data-language']).toBe('jsx');
@@ -137,11 +137,11 @@ A note.
 Some content.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
 		const responsiveMeta = findTag(preview!, t =>
-			t.name === 'meta' && t.attributes.property === 'responsive');
+			t.name === 'meta' && t.attributes['data-field'] === 'responsive');
 		expect(responsiveMeta).toBeDefined();
 		expect(responsiveMeta!.attributes.content).toBe('mobile,tablet,desktop');
 	});
@@ -151,9 +151,9 @@ Some content.
 Some content.
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		const responsiveMeta = findTag(preview!, t =>
-			t.name === 'meta' && t.attributes.property === 'responsive');
+			t.name === 'meta' && t.attributes['data-field'] === 'responsive');
 		expect(responsiveMeta).toBeUndefined();
 	});
 
@@ -165,19 +165,19 @@ A note.
 {% /preview %}`;
 		const result = parse(content);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
 		const htmlSource = findTag(preview!, t =>
-			t.name === 'pre' && t.attributes.property === 'htmlSource');
+			t.name === 'pre' && t.attributes['data-field'] === 'html-source');
 		expect(htmlSource).toBeDefined();
 		expect(htmlSource!.attributes['data-language']).toBe('html');
 
 		const code = findTag(htmlSource!, t => t.name === 'code');
 		expect(code).toBeDefined();
 		// Should contain structural attributes
-		expect(code!.children[0]).toContain('typeof="Hint"');
-		expect(code!.children[0]).toContain('property="hintType"');
+		expect(code!.children[0]).toContain('data-rune="hint"');
+		expect(code!.children[0]).toContain('data-field="hint-type"');
 	});
 
 	it('should not generate htmlSource when source is absent', () => {
@@ -187,9 +187,9 @@ A note.
 {% /hint %}
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		const htmlSource = findTag(preview!, t =>
-			t.name === 'pre' && t.attributes.property === 'htmlSource');
+			t.name === 'pre' && t.attributes['data-field'] === 'html-source');
 		expect(htmlSource).toBeUndefined();
 	});
 
@@ -205,11 +205,11 @@ A note.
 {% /preview %}`;
 		const result = parse(content);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		const source = findTag(preview!, t =>
-			t.name === 'pre' && t.attributes.property === 'source');
+			t.name === 'pre' && t.attributes['data-field'] === 'source');
 		const htmlSource = findTag(preview!, t =>
-			t.name === 'pre' && t.attributes.property === 'htmlSource');
+			t.name === 'pre' && t.attributes['data-field'] === 'html-source');
 
 		expect(source).toBeDefined();
 		expect(source!.attributes['data-language']).toBe('jsx');
@@ -225,9 +225,9 @@ A note.
 {% /preview %}`;
 		const result = parse(content);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		const htmlSource = findTag(preview!, t =>
-			t.name === 'pre' && t.attributes.property === 'htmlSource');
+			t.name === 'pre' && t.attributes['data-field'] === 'html-source');
 		const code = findTag(htmlSource!, t => t.name === 'code');
 		// Should have newlines (pretty-printed, not flat)
 		expect(code!.children[0]).toContain('\n');
@@ -250,10 +250,10 @@ npm install
 {% /cta %}
 {% /preview %}`);
 
-		const preview = findTag(result as any, t => t.attributes.typeof === 'Preview');
+		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
-		const source = findTag(preview!, t => t.name === 'pre' && t.attributes.property === 'source');
+		const source = findTag(preview!, t => t.name === 'pre' && t.attributes['data-field'] === 'source');
 		expect(source).toBeDefined();
 		expect(source!.attributes['data-language']).toBe('markdoc');
 

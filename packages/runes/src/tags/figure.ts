@@ -1,35 +1,42 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const sizeValues = ['small', 'medium', 'large', 'full'] as const;
 const alignValues = ['left', 'center', 'right'] as const;
 
-class FigureModel extends Model {
-	@attribute({ type: String, required: false, matches: sizeValues.slice() })
-	size: string = '';
+export const figure = createContentModelSchema({
+	attributes: {
+		size: { type: String, required: false, matches: sizeValues.slice() },
+		align: { type: String, required: false, matches: alignValues.slice() },
+		caption: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false, matches: alignValues.slice() })
-	align: string = '';
-
-	@attribute({ type: String, required: false })
-	caption: string = '';
-
-	transform() {
-		const children = this.transformChildren();
-
-		const captionContent = this.caption || undefined;
+		const captionContent = attrs.caption || undefined;
 		const captionTag = captionContent
 			? new Tag('figcaption', {}, [captionContent])
 			: children.tag('p').count() > 0
 				? new Tag('figcaption', {}, children.tag('p').limit(1).toArray())
 				: undefined;
 
-		const sizeMeta = this.size ? new Tag('meta', { content: this.size }) : undefined;
-		const alignMeta = this.align ? new Tag('meta', { content: this.align }) : undefined;
+		const sizeMeta = attrs.size ? new Tag('meta', { content: attrs.size }) : undefined;
+		const alignMeta = attrs.align ? new Tag('meta', { content: attrs.align }) : undefined;
 
-		const childNodes: any[] = [...children.tag('img').toArray()];
+		const imgs = children.tag('img').toArray();
+		const childNodes: any[] = [...imgs];
 		if (captionTag) childNodes.push(captionTag);
 		if (sizeMeta) childNodes.push(sizeMeta);
 		if (alignMeta) childNodes.push(alignMeta);
@@ -41,9 +48,11 @@ class FigureModel extends Model {
 				...(sizeMeta ? { size: sizeMeta } : {}),
 				...(alignMeta ? { align: alignMeta } : {}),
 			},
+			schema: {
+				...(imgs.length > 0 ? { contentUrl: imgs[0] } : {}),
+				...(captionTag ? { caption: captionTag } : {}),
+			},
 			children: childNodes,
 		});
-	}
-}
-
-export const figure = createSchema(FigureModel);
+	},
+});

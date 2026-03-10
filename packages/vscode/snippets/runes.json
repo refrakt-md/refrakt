@@ -559,26 +559,33 @@
 		],
 		"description": "Embedded content from external services"
 	},
-	"Music Playlist": {
-		"prefix": "rune:music-playlist",
+	"Playlist": {
+		"prefix": "rune:playlist",
 		"body": [
-			"{% music-playlist %}",
-			"# ${1:Playlist Name}",
+			"{% playlist type=\"${1|album,podcast,audiobook,series,mix|}\" artist=\"${2:Artist}\" %}",
+			"# ${3:Playlist Name}",
 			"",
-			"- ${2:Track One}",
-			"- ${3:Track Two}",
-			"{% /music-playlist %}"
+			"- **${4:Track One}** (${5:3:45})",
+			"- **${6:Track Two}** (${7:4:20})",
+			"{% /playlist %}"
 		],
-		"description": "Music playlist with track listing"
+		"description": "Curated playlist with track listing"
 	},
-	"Music Recording": {
-		"prefix": "rune:music-recording",
+	"Track": {
+		"prefix": "rune:track",
 		"body": [
-			"{% music-recording %}",
-			"$0",
-			"{% /music-recording %}"
+			"{% track src=\"${1:audio.mp3}\" artist=\"${2:Artist}\" duration=\"${3:3:45}\" %}",
+			"# ${4:Track Name}",
+			"{% /track %}"
 		],
-		"description": "Individual music track metadata"
+		"description": "Standalone track with metadata"
+	},
+	"Audio": {
+		"prefix": "rune:audio",
+		"body": [
+			"{% audio src=\"${1:audio.mp3}\" title=\"${2:Title}\" /%}"
+		],
+		"description": "Audio player with optional waveform and chapters"
 	},
 	"Preview": {
 		"prefix": ["rune:preview", "rune:showcase"],

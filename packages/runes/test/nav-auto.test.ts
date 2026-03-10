@@ -6,13 +6,13 @@ import { NAV_AUTO_SENTINEL } from '../src/tags/nav.js';
 describe('nav auto mode', () => {
 	it('emits a placeholder with sentinel meta when auto=true', () => {
 		const result = parse(`{% nav auto=true /%}`);
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
 
 		expect(nav).toBeDefined();
 
 		// Should have the sentinel meta tag as a direct child
 		const sentinel = nav!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === NAV_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === NAV_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeDefined();
 	});
@@ -23,9 +23,9 @@ describe('nav auto mode', () => {
 
 	it('auto mode emits an empty items list (no NavItems)', () => {
 		const result = parse(`{% nav auto=true /%}`);
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
 
-		const items = findAllTags(nav!, t => t.attributes.typeof === 'NavItem');
+		const items = findAllTags(nav!, t => t.attributes['data-rune'] === 'nav-item');
 		expect(items).toHaveLength(0);
 	});
 
@@ -36,11 +36,11 @@ describe('nav auto mode', () => {
 - Page two
 {% /nav %}`);
 
-		const nav = findTag(result as any, t => t.attributes.typeof === 'Nav');
+		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
 		expect(nav).toBeDefined();
 
 		const sentinel = nav!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === NAV_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === NAV_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeUndefined();
 	});

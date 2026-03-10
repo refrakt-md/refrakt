@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
-import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, headingsToList } from '@refrakt-md/runes';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class StorySectionModel extends Model {
@@ -24,77 +24,63 @@ class StorySectionModel extends Model {
 const roleType = ['protagonist', 'antagonist', 'supporting', 'minor'] as const;
 const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
 
-class CharacterModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+export const characterSection = createSchema(StorySectionModel);
 
-	@attribute({ type: String, required: true })
-	name: string = '';
+export const character = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		name: { type: String, required: true },
+		role: { type: String, required: false, matches: roleType.slice() },
+		status: { type: String, required: false, matches: statusType.slice() },
+		aliases: { type: String, required: false },
+		tags: { type: String, required: false },
+	},
+	contentModel: (attrs) => ({
+		type: 'sections' as const,
+		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		emitTag: 'character-section',
+		emitAttributes: { name: '$heading' },
+		fields: [
+			{ name: 'portrait', match: 'image', optional: true },
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
+		],
+		sectionModel: {
+			type: 'sequence' as const,
+			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+	}),
+	transform(resolved, attrs, config) {
+		// Combine explicit child tags (preamble items) with emitted section tags
+		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
+		const sectionNodes = new RenderableNodeCursor(
+			Markdoc.transform(allItems, config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false, matches: roleType.slice() })
-	role: typeof roleType[number] = 'supporting';
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const roleMeta = new Tag('meta', { content: attrs.role ?? 'supporting' });
+		const statusMeta = new Tag('meta', { content: attrs.status ?? 'alive' });
+		const aliasesMeta = new Tag('meta', { content: attrs.aliases ?? '' });
+		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
-	@attribute({ type: String, required: false, matches: statusType.slice() })
-	status: typeof statusType[number] = 'alive';
-
-	@attribute({ type: String, required: false })
-	aliases: string = '';
-
-	@attribute({ type: String, required: false })
-	tags: string = '';
-
-	@group({ include: ['heading', 'paragraph', 'image'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	itemgroup: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const name = Array.from(heading.walk())
-				.filter(n => n.type === 'text')
-				.map(t => t.attributes.content)
-				.join(' ');
-
-			return new Ast.Node('tag', { name }, item.children.slice(1), 'character-section');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const itemStream = this.itemgroup.transform();
-
-		const nameTag = new Tag('span', {}, [this.name]);
-		const roleMeta = new Tag('meta', { content: this.role });
-		const statusMeta = new Tag('meta', { content: this.status });
-		const aliasesMeta = new Tag('meta', { content: this.aliases });
-		const tagsMeta = new Tag('meta', { content: this.tags });
-
-		// Extract portrait image from header
-		const portrait = header.tag('img').limit(1);
+		// Extract portrait image from preamble
+		const portraitNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.portrait), config) as RenderableTreeNode[],
+		);
+		const portrait = portraitNodes.tag('img').limit(1);
 		const hasPortrait = portrait.count() > 0;
 		const portraitDiv = hasPortrait ? portrait.wrap('div') : undefined;
 
-		const sections = itemStream.tag('div').typeof('CharacterSection');
+		const sections = sectionNodes.tag('div').typeof('CharacterSection');
 		const hasSections = sections.count() > 0;
 
 		const children: any[] = [nameTag, roleMeta, statusMeta, aliasesMeta, tagsMeta];
 		if (portraitDiv) children.push(portraitDiv.next());
+
+		const schemaMap = {
+			name: nameTag,
+			jobTitle: roleMeta,
+		};
 
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
@@ -115,10 +101,11 @@ class CharacterModel extends Model {
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					sections: sectionsContainer,
 				},
+				schema: schemaMap,
 				children,
 			});
 		} else {
-			const body = itemStream.wrap('div');
+			const body = sectionNodes.wrap('div');
 			children.push(body.next());
 
 			return createComponentRenderable(schema.Character, {
@@ -135,11 +122,9 @@ class CharacterModel extends Model {
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					body,
 				},
+				schema: schemaMap,
 				children,
 			});
 		}
-	}
-}
-
-export const characterSection = createSchema(StorySectionModel);
-export const character = createSchema(CharacterModel);
+	},
+});

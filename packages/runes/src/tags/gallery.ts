@@ -1,29 +1,37 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const layoutValues = ['grid', 'carousel', 'masonry'] as const;
 const gapValues = ['none', 'tight', 'default', 'loose'] as const;
 
-class GalleryModel extends Model {
-	@attribute({ type: String, required: false, matches: layoutValues.slice() })
-	layout: string = 'grid';
+export const gallery = createContentModelSchema({
+	attributes: {
+		layout: { type: String, required: false, matches: layoutValues.slice() },
+		columns: { type: Number, required: false },
+		lightbox: { type: Boolean, required: false },
+		gap: { type: String, required: false, matches: gapValues.slice() },
+		caption: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: Number, required: false })
-	columns: number = 3;
-
-	@attribute({ type: Boolean, required: false })
-	lightbox: boolean = true;
-
-	@attribute({ type: String, required: false, matches: gapValues.slice() })
-	gap: string = 'default';
-
-	@attribute({ type: String, required: false })
-	caption: string = '';
-
-	transform() {
-		const children = this.transformChildren();
+		const layout = attrs.layout ?? 'grid';
+		const columns = attrs.columns ?? 3;
+		const lightbox = attrs.lightbox ?? true;
+		const gap = attrs.gap ?? 'default';
+		const caption = attrs.caption ?? '';
 
 		const images = children.flatten().tag('img').toArray();
 		const items = images.map(img => {
@@ -35,13 +43,13 @@ class GalleryModel extends Model {
 			return new Tag('figure', { 'data-name': 'item' }, itemChildren);
 		});
 
-		const layoutMeta = new Tag('meta', { content: this.layout });
-		const lightboxMeta = new Tag('meta', { content: String(this.lightbox) });
-		const columnsMeta = this.columns !== 3 ? new Tag('meta', { content: String(this.columns) }) : undefined;
-		const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
+		const layoutMeta = new Tag('meta', { content: layout });
+		const lightboxMeta = new Tag('meta', { content: String(lightbox) });
+		const columnsMeta = columns !== 3 ? new Tag('meta', { content: String(columns) }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
 
-		const captionTag = this.caption
-			? new Tag('figcaption', {}, [this.caption])
+		const captionTag = caption
+			? new Tag('figcaption', {}, [caption])
 			: undefined;
 
 		const itemsContainer = new Tag('div', { 'data-name': 'items' }, items);
@@ -61,7 +69,5 @@ class GalleryModel extends Model {
 			},
 			children: childNodes,
 		});
-	}
-}
-
-export const gallery = createSchema(GalleryModel);
+	},
+});

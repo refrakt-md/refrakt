@@ -14,14 +14,14 @@ Content for second tab.
 
     expect(result).toBeDefined();
 
-    const tabGroup = findTag(result as any, t => t.attributes.typeof === 'TabGroup');
+    const tabGroup = findTag(result as any, t => t.attributes['data-rune'] === 'tab-group');
     expect(tabGroup).toBeDefined();
     expect(tabGroup!.name).toBe('section');
 
-    const tabItems = findAllTags(tabGroup!, t => t.attributes.typeof === 'Tab');
+    const tabItems = findAllTags(tabGroup!, t => t.attributes['data-rune'] === 'tab');
     expect(tabItems.length).toBe(2);
 
-    const panels = findAllTags(tabGroup!, t => t.attributes.typeof === 'TabPanel');
+    const panels = findAllTags(tabGroup!, t => t.attributes['data-rune'] === 'tab-panel');
     expect(panels.length).toBe(2);
   });
 });

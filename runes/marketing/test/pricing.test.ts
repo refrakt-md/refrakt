@@ -1,16 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '@refrakt-md/runes';
-
-// Build SEO type map: start with core runes, then add marketing-specific typeof→seoType mappings
-const seoTypeMap = buildSeoTypeMap(runes);
-seoTypeMap.set('Pricing', 'Product');
-seoTypeMap.set('Tier', 'Offer');
-seoTypeMap.set('FeaturedTier', 'Offer');
+import { extractSeo } from '@refrakt-md/runes';
 
 function seo(content: string) {
 	const tree = parse(content);
-	return extractSeo(tree, seoTypeMap, {} as any, '/test');
+	return extractSeo(tree, {} as any, '/test');
 }
 
 describe('pricing tag', () => {
@@ -39,11 +33,11 @@ For professional developers.
 
 		expect(result).toBeDefined();
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 		expect(pricingTag!.name).toBe('section');
 
-		const tiers = findAllTags(pricingTag!, t => t.attributes.typeof === 'Tier');
+		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 	});
 
@@ -60,10 +54,10 @@ All features included.
 {% /tier %}
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 
-		const featured = findTag(pricingTag!, t => t.attributes.typeof === 'FeaturedTier');
+		const featured = findTag(pricingTag!, t => t.attributes['data-rune'] === 'featured-tier');
 		expect(featured).toBeDefined();
 	});
 
@@ -74,10 +68,10 @@ Features.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes.typeof === 'Tier');
+		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
 		expect(tier).toBeDefined();
 
-		const priceTag = findTag(tier!, t => t.attributes.property === 'price');
+		const priceTag = findTag(tier!, t => t.attributes['data-field'] === 'price');
 		expect(priceTag).toBeDefined();
 		expect(priceTag!.children[0]).toBe('$5');
 	});
@@ -93,26 +87,26 @@ Features.
 - Priority support
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 
-		const tiers = findAllTags(pricingTag!, t => t.attributes.typeof === 'Tier');
+		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 
 		// Check first tier
-		const nameTag0 = findTag(tiers[0], t => t.attributes.property === 'name');
+		const nameTag0 = findTag(tiers[0], t => t.attributes['data-field'] === 'name');
 		expect(nameTag0).toBeDefined();
 		expect(nameTag0!.children[0]).toBe('Free');
 
-		const priceTag0 = findTag(tiers[0], t => t.attributes.property === 'price');
+		const priceTag0 = findTag(tiers[0], t => t.attributes['data-field'] === 'price');
 		expect(priceTag0).toBeDefined();
 		expect(priceTag0!.children[0]).toBe('$0');
 
 		// Check second tier
-		const nameTag1 = findTag(tiers[1], t => t.attributes.property === 'name');
+		const nameTag1 = findTag(tiers[1], t => t.attributes['data-field'] === 'name');
 		expect(nameTag1!.children[0]).toBe('Pro');
 
-		const priceTag1 = findTag(tiers[1], t => t.attributes.property === 'price');
+		const priceTag1 = findTag(tiers[1], t => t.attributes['data-field'] === 'price');
 		expect(priceTag1!.children[0]).toBe('$19/mo');
 	});
 
@@ -127,8 +121,8 @@ Features.
 - Unlimited projects
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
-		const tiers = findAllTags(pricingTag!, t => t.attributes.typeof === 'Tier');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
+		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 	});
 
@@ -144,8 +138,8 @@ Standard.
 Premium.
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
-		const tiers = findAllTags(pricingTag!, t => t.attributes.typeof === 'Tier');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
+		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(3);
 	});
 
@@ -158,8 +152,8 @@ For professionals.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes.typeof === 'Tier');
-		const urlTag = findTag(tier!, t => t.attributes.property === 'url');
+		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
+		const urlTag = findTag(tier!, t => t.attributes['data-field'] === 'url');
 		expect(urlTag).toBeDefined();
 	});
 
@@ -172,8 +166,8 @@ For professionals who need more power.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes.typeof === 'Tier');
-		const descTag = findTag(tier!, t => t.attributes.property === 'description');
+		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
+		const descTag = findTag(tier!, t => t.attributes['data-field'] === 'description');
 		expect(descTag).toBeDefined();
 	});
 
@@ -192,7 +186,7 @@ Enterprise.
 {% /tier %}
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes.typeof === 'Pricing');
+		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
 		const tiersList = findTag(pricingTag!, t => t.name === 'ul' && t.attributes['data-columns'] !== undefined);
 		expect(tiersList).toBeDefined();
 		expect(tiersList!.attributes['data-columns']).toBe(3);
@@ -205,8 +199,8 @@ Features.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes.typeof === 'Tier');
-		const currencyMeta = findTag(tier!, t => t.name === 'meta' && t.attributes.property === 'currency');
+		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
+		const currencyMeta = findTag(tier!, t => t.name === 'meta' && t.attributes['data-field'] === 'currency');
 		expect(currencyMeta).toBeDefined();
 		expect(currencyMeta!.attributes.content).toBe('EUR');
 	});
@@ -248,7 +242,7 @@ Features.
 {% /pricing %}`);
 
 		const product = result.jsonLd[0] as any;
-		expect(product.offers[0].priceCurrency).toBe('EUR');
+		expect(product.offers.priceCurrency).toBe('EUR');
 	});
 
 	it('should use explicit currency over inferred in SEO', () => {
@@ -261,6 +255,6 @@ Features.
 {% /pricing %}`);
 
 		const product = result.jsonLd[0] as any;
-		expect(product.offers[0].priceCurrency).toBe('CAD');
+		expect(product.offers.priceCurrency).toBe('CAD');
 	});
 });

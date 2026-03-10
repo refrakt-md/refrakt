@@ -1,29 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-class SwatchModel extends Model {
-	@attribute({ type: String, required: true })
-	color: string = '';
+const _swatch = createContentModelSchema({
+	attributes: {
+		color: { type: String, required: true },
+		label: { type: String, required: true },
+		showValue: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [],
+	},
+	transform(_resolved, attrs) {
+		const color = attrs.color ?? '';
+		const label = attrs.label ?? '';
+		const showValue = attrs.showValue ?? false;
 
-	@attribute({ type: String, required: true })
-	label: string = '';
+		const colorMeta = new Tag('meta', { content: color });
+		const labelTag = new Tag('span', {}, [label]);
+		const showValueMeta = new Tag('meta', { content: String(showValue) });
 
-	@attribute({ type: Boolean, required: false })
-	showValue: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const colorMeta = new Tag('meta', { content: this.color });
-		const labelTag = new Tag('span', {}, [this.label]);
-		const showValueMeta = new Tag('meta', { content: String(this.showValue) });
-
-		const chip = new Tag('span', { style: `background-color: ${this.color}` }, []);
+		const chip = new Tag('span', { style: `background-color: ${color}` }, []);
 		const children: any[] = [colorMeta, showValueMeta, chip, labelTag];
 
-		if (this.showValue) {
-			const valueTag = new Tag('span', {}, [this.color]);
+		if (showValue) {
+			const valueTag = new Tag('span', {}, [color]);
 			children.push(valueTag);
 
 			return createComponentRenderable(schema.Swatch, {
@@ -54,8 +57,7 @@ class SwatchModel extends Model {
 			},
 			children,
 		});
-	}
-}
+	},
+});
 
-const _swatch = createSchema(SwatchModel);
 export const swatch = { ..._swatch, selfClosing: true, inline: true };

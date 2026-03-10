@@ -9,7 +9,7 @@ describe('hero tag', () => {
 Build something amazing with our platform.
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 	});
@@ -21,7 +21,7 @@ Build something amazing with our platform.
 Description text.
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
 		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
@@ -38,10 +38,10 @@ Build faster.
 - [Learn More](/docs)
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.attributes.typeof === 'LinkItem');
+		const linkItem = findTag(tag!, t => t.attributes['data-rune'] === 'link-item');
 		expect(linkItem).toBeDefined();
 
 		const link = findTag(tag!, t => t.name === 'a' && t.attributes.href === '/signup');
@@ -59,10 +59,10 @@ npm create refrakt
 \`\`\`
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.attributes.typeof === 'Command');
+		const command = findTag(tag!, t => t.attributes['data-rune'] === 'command');
 		expect(command).toBeDefined();
 	});
 
@@ -80,13 +80,13 @@ npm create refrakt
 - [GitHub](https://github.com)
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Hero');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.attributes.typeof === 'Command');
+		const command = findTag(tag!, t => t.attributes['data-rune'] === 'command');
 		expect(command).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.attributes.typeof === 'LinkItem');
+		const linkItem = findTag(tag!, t => t.attributes['data-rune'] === 'link-item');
 		expect(linkItem).toBeDefined();
 	});
 });

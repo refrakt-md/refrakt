@@ -1,6 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition } from './types.js';
-import { isTag, makeTag, readMeta } from './helpers.js';
+import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
 const TINT_TOKENS = ['background', 'surface', 'primary', 'secondary', 'accent', 'border'] as const;
@@ -33,19 +33,23 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
-	function identityTransform(tree: RendererNode, parentTypeof?: string): RendererNode {
+	// Build lowercase → config-key map for case-insensitive rune lookup
+	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
+
+	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
-		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentTypeof));
+		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentRune));
 		if (!isTag(tree)) return tree;
 
-		const typeof_ = tree.attributes?.typeof;
-		if (typeof_ && typeof_ in runes) {
-			return transformRune(tree, runes[typeof_], prefix, icons, tints, backgrounds, identityTransform, parentTypeof);
+		const dataRune = tree.attributes?.['data-rune'];
+		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
+		if (configKey) {
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
-		return { ...tree, children: tree.children.map(n => identityTransform(n, parentTypeof)) };
+		return { ...tree, children: tree.children.map(n => identityTransform(n, parentRune)) };
 	}
 
 	return (tree: RendererNode) => identityTransform(tree);
@@ -59,11 +63,11 @@ function transformRune(
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
 	backgrounds: Record<string, BgPresetDefinition>,
-	recurse: (node: RendererNode, parentTypeof?: string) => RendererNode,
-	parentTypeof?: string
+	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
+	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
-	const typeof_ = tag.attributes?.typeof;
+	const dataRune = tag.attributes?.['data-rune'];
 
 	// 1. Read modifiers from meta tags, collecting resolved values
 	const modifierClasses: string[] = [];
@@ -83,8 +87,8 @@ function transformRune(
 	}
 
 	// 1b. Context-aware modifiers — add BEM modifier when nested inside a matching parent rune
-	if (config.contextModifiers && parentTypeof && config.contextModifiers[parentTypeof]) {
-		modifierClasses.push(`${block}--${config.contextModifiers[parentTypeof]}`);
+	if (config.contextModifiers && parentRune && config.contextModifiers[parentRune]) {
+		modifierClasses.push(`${block}--${config.contextModifiers[parentRune]}`);
 	}
 
 	// 1c. Static modifiers — always-applied BEM modifier suffixes
@@ -333,17 +337,22 @@ function transformRune(
 
 	// 6. Apply BEM element classes to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
-		if (!isTag(child)) return recurse(child, typeof_);
-		return recurse(applyBemClasses(child, block), typeof_);
+		if (!isTag(child)) return recurse(child, dataRune);
+		return recurse(applyBemClasses(child, block), dataRune);
 	});
 
 	// 7. Remove consumed meta tags (modifiers + tint)
+	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
+	// but config.modifiers keys are camelCase
+	const consumedModifierFields = config.modifiers
+		? new Set(Object.keys(config.modifiers).map(k => toKebabCase(k)))
+		: undefined;
 	const filteredChildren = enhancedChildren.filter(child => {
 		if (!isTag(child as any)) return true;
 		const c = child as SerializedTag;
-		if (c.name !== 'meta' || !c.attributes.property) return true;
-		const prop = c.attributes.property;
-		if (config.modifiers && prop in config.modifiers) return false;
+		if (c.name !== 'meta' || !c.attributes['data-field']) return true;
+		const prop = c.attributes['data-field'];
+		if (consumedModifierFields?.has(prop)) return false;
 		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
 		return true;
@@ -375,7 +384,7 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, 'data-rune': _dr, ...passAttrs } = tag.attributes;
 
 	const result: SerializedTag = {
 		...tag,
@@ -385,7 +394,7 @@ function transformRune(
 			...tintDataAttrs,
 			...bgDataAttrs,
 			class: bemClass,
-			'data-rune': typeof_ ? typeof_.toLowerCase() : undefined,
+			'data-rune': dataRune,
 			...(config.rootAttributes || {}),
 			...(inlineStyle ? { style: inlineStyle } : {}),
 		},
@@ -396,7 +405,7 @@ function transformRune(
 	if (config.postTransform) {
 		return config.postTransform(result, {
 			modifiers: modifierValues,
-			parentType: parentTypeof,
+			parentType: parentRune,
 		});
 	}
 
@@ -407,7 +416,7 @@ function transformRune(
 function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, string>): RendererNode[] {
 	return children.map(child => {
 		if (!isTag(child)) return child;
-		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.property];
+		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.['data-field']];
 		const labeled = label && !child.attributes['data-name']
 			? { ...child, attributes: { ...child.attributes, 'data-name': label } }
 			: child;

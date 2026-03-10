@@ -57,7 +57,7 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/storytelling` | Official community package -- fiction and world-building runes (character, realm, faction, lore, plot, bond, storyboard) |
 | `@refrakt-md/business` | Official community package -- organizational runes (cast, organization, timeline) |
 | `@refrakt-md/places` | Official community package -- location and travel runes (event, map, itinerary) |
-| `@refrakt-md/media` | Official community package -- media runes (music-playlist, music-recording) |
+| `@refrakt-md/media` | Official community package -- media runes (playlist, track, audio) |
 
 ---
 
@@ -234,8 +234,9 @@ npm install @refrakt-md/media
 
 | Rune | Aliases | Reinterprets | Schema.org |
 |------|---------|-------------|------------|
-| `music-playlist` | -- | Heading as playlist name, list items as tracks (pipe-delimited fields), image as album art | `MusicPlaylist` |
-| `music-recording` | -- | Heading as track name; attributes for artist, duration (ISO 8601), copyright year | `MusicRecording` |
+| `playlist` | `music-playlist` | Heading as playlist name, list items as tracks, image as cover art | `MusicPlaylist` |
+| `track` | `music-recording` | Heading as track name; attributes for artist, duration, type | `MusicRecording` |
+| `audio` | -- | Audio player with waveform, chapters, and playlist connection | -- |
 
 ---
 
@@ -553,8 +554,8 @@ The SEO extractor walks the rendered tag tree, finds tags with `typeof` attribut
 | `BreadcrumbList` | `{% breadcrumb %}` -- extracts ordered path items with URLs |
 | `Organization` | `{% organization %}` -- extracts name, contact details, social profiles |
 | `Person` | `{% cast %}` -- extracts names and roles |
-| `MusicPlaylist` | `{% music-playlist %}` -- extracts playlist name, track count, track listing |
-| `MusicRecording` | `{% music-recording %}` -- extracts track name, artist, duration, copyright year |
+| `MusicPlaylist` | `{% playlist %}` -- extracts playlist name, track count, track listing |
+| `MusicRecording` | `{% track %}` -- extracts track name, artist, duration, type |
 | `ImageObject` | `{% figure %}` -- extracts image URL and caption |
 | `VideoObject` | `{% embed %}` (video providers) -- extracts title, content URL, embed URL |
 | `ItemList` | `{% timeline %}` -- extracts ordered list of dated milestones |

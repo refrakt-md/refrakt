@@ -2,7 +2,7 @@ import type { CleanupFn } from '../types.js';
 import { uniqueId } from '../utils.js';
 
 /**
- * Tabs behavior for `[data-rune="tabgroup"]` and `[data-rune="codegroup"]`.
+ * Tabs behavior for `[data-rune="tab-group"]` and `[data-rune="code-group"]`.
  *
  * Discovers Tab/TabPanel items in the identity-transformed HTML structure,
  * creates a tablist bar with buttons, and toggles panel visibility.
@@ -22,19 +22,19 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 
 	const tabItems = Array.from(tabsUl.children).filter(
 		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('typeof') === 'Tab',
+			c.getAttribute('data-rune') === 'tab',
 	);
 
 	const panelItems = Array.from(panelsUl.children).filter(
 		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('typeof') === 'TabPanel',
+			c.getAttribute('data-rune') === 'tab-panel',
 	);
 
 	if (tabItems.length === 0 || panelItems.length === 0) return () => {};
 
 	// Extract tab names from Tab items
 	const tabNames: string[] = tabItems.map((item) => {
-		const nameEl = item.querySelector('[property="name"]');
+		const nameEl = item.querySelector('[data-field="name"]');
 		return nameEl?.textContent?.trim() || item.textContent?.trim() || '';
 	});
 
@@ -45,11 +45,11 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 	// Create tab bar
 	const tabBar = document.createElement('div');
 	tabBar.setAttribute('role', 'tablist');
-	tabBar.className = el.getAttribute('data-rune') === 'codegroup'
+	tabBar.className = el.getAttribute('data-rune') === 'code-group'
 		? 'rf-codegroup__tabs'
 		: 'rf-tabs__bar';
 
-	const buttonClass = el.getAttribute('data-rune') === 'codegroup'
+	const buttonClass = el.getAttribute('data-rune') === 'code-group'
 		? 'rf-codegroup__tab'
 		: 'rf-tabs__button';
 

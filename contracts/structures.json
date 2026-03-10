@@ -41,7 +41,7 @@
 		"AccordionItem": {
 			"block": "accordion-item",
 			"root": ".rf-accordion-item",
-			"dataRune": "accordionitem",
+			"dataRune": "accordion-item",
 			"parent": "Accordion",
 			"childOrder": [
 				"{content}"
@@ -99,9 +99,9 @@
 					"source": "meta",
 					"dataAttribute": "data-ratio"
 				},
-				"align": {
+				"valign": {
 					"source": "meta",
-					"dataAttribute": "data-align"
+					"dataAttribute": "data-valign"
 				},
 				"gap": {
 					"source": "meta",
@@ -116,8 +116,8 @@
 				"ratio": {
 					"prop": "--grid-ratio"
 				},
-				"align": {
-					"prop": "--grid-align"
+				"valign": {
+					"prop": "--grid-valign"
 				},
 				"gap": {
 					"prop": "--grid-gap"
@@ -129,7 +129,7 @@
 		"CodeGroup": {
 			"block": "codegroup",
 			"root": ".rf-codegroup",
-			"dataRune": "codegroup",
+			"dataRune": "code-group",
 			"childOrder": [
 				"topbar",
 				"{content}"
@@ -171,7 +171,7 @@
 		"PageSection": {
 			"block": "page-section",
 			"root": ".rf-page-section",
-			"dataRune": "pagesection",
+			"dataRune": "page-section",
 			"childOrder": [
 				"{content}"
 			]
@@ -179,7 +179,7 @@
 		"TableOfContents": {
 			"block": "toc",
 			"root": ".rf-toc",
-			"dataRune": "tableofcontents",
+			"dataRune": "table-of-contents",
 			"childOrder": [
 				"{content}"
 			]
@@ -203,7 +203,7 @@
 		"BreadcrumbItem": {
 			"block": "breadcrumb-item",
 			"root": ".rf-breadcrumb-item",
-			"dataRune": "breadcrumbitem",
+			"dataRune": "breadcrumb-item",
 			"parent": "Breadcrumb",
 			"childOrder": [
 				"{content}"
@@ -252,11 +252,11 @@
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-show-per-day"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "detailed",
 					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			},
 			"elements": {
@@ -296,7 +296,7 @@
 		"BudgetCategory": {
 			"block": "budget-category",
 			"root": ".rf-budget-category",
-			"dataRune": "budgetcategory",
+			"dataRune": "budget-category",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -313,7 +313,7 @@
 		"BudgetLineItem": {
 			"block": "budget-line-item",
 			"root": ".rf-budget-line-item",
-			"dataRune": "budgetlineitem",
+			"dataRune": "budget-line-item",
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
@@ -336,11 +336,11 @@
 				}
 			},
 			"contextModifiers": {
-				"Hero": {
+				"hero": {
 					"suffix": "in-hero",
 					"selector": ".rf-hint--in-hero"
 				},
-				"Feature": {
+				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
 				}
@@ -387,6 +387,42 @@
 				}
 			}
 		},
+		"Gallery": {
+			"block": "gallery",
+			"root": ".rf-gallery",
+			"dataRune": "gallery",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "grid",
+					"classPattern": ".rf-gallery--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"lightbox": {
+					"source": "meta",
+					"default": "true",
+					"dataAttribute": "data-lightbox"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"columns": {
+					"source": "meta",
+					"dataAttribute": "data-columns"
+				}
+			},
+			"inlineStyles": {
+				"columns": "--gallery-columns",
+				"gap": {
+					"prop": "--gallery-gap"
+				}
+			}
+		},
 		"Sidenote": {
 			"block": "sidenote",
 			"root": ".rf-sidenote",
@@ -395,11 +431,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "sidenote",
 					"classPattern": ".rf-sidenote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
@@ -430,17 +466,17 @@
 		"ConversationMessage": {
 			"block": "conversation-message",
 			"root": ".rf-conversation-message",
-			"dataRune": "conversationmessage",
+			"dataRune": "conversation-message",
 			"parent": "Conversation",
 			"childOrder": [
 				"{content}"
 			],
 			"modifiers": {
-				"alignment": {
+				"align": {
 					"source": "meta",
 					"default": "left",
 					"classPattern": ".rf-conversation-message--{value}",
-					"dataAttribute": "data-alignment"
+					"dataAttribute": "data-align"
 				}
 			}
 		},
@@ -452,18 +488,18 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "margin",
 					"classPattern": ".rf-annotate--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
 		"AnnotateNote": {
 			"block": "annotate-note",
 			"root": ".rf-annotate-note",
-			"dataRune": "annotatenote",
+			"dataRune": "annotate-note",
 			"parent": "Annotate",
 			"childOrder": [
 				"{content}"
@@ -480,7 +516,7 @@
 		"NavGroup": {
 			"block": "nav-group",
 			"root": ".rf-nav-group",
-			"dataRune": "navgroup",
+			"dataRune": "nav-group",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -489,7 +525,7 @@
 		"NavItem": {
 			"block": "nav-item",
 			"root": ".rf-nav-item",
-			"dataRune": "navitem",
+			"dataRune": "nav-item",
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
@@ -522,7 +558,7 @@
 		"PullQuote": {
 			"block": "pullquote",
 			"root": ".rf-pullquote",
-			"dataRune": "pullquote",
+			"dataRune": "pull-quote",
 			"childOrder": [
 				"{content}"
 			],
@@ -533,18 +569,18 @@
 					"classPattern": ".rf-pullquote--{value}",
 					"dataAttribute": "data-align"
 				},
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "default",
 					"classPattern": ".rf-pullquote--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				}
 			}
 		},
 		"TextBlock": {
 			"block": "textblock",
 			"root": ".rf-textblock",
-			"dataRune": "textblock",
+			"dataRune": "text-block",
 			"childOrder": [
 				"{content}"
 			],
@@ -575,7 +611,7 @@
 		"MediaText": {
 			"block": "mediatext",
 			"root": ".rf-mediatext",
-			"dataRune": "mediatext",
+			"dataRune": "media-text",
 			"childOrder": [
 				"{content}"
 			],
@@ -627,13 +663,13 @@
 					"source": "meta",
 					"dataAttribute": "data-offset"
 				},
-				"justify": {
+				"place": {
 					"source": "meta",
-					"dataAttribute": "data-justify"
+					"dataAttribute": "data-place"
 				}
 			},
 			"contextModifiers": {
-				"BentoCell": {
+				"bento-cell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
@@ -642,14 +678,13 @@
 				"offset": {
 					"prop": "--showcase-offset"
 				},
-				"aspect": "--showcase-aspect",
-				"justify": "--showcase-justify"
+				"aspect": "--showcase-aspect"
 			}
 		},
 		"TabGroup": {
 			"block": "tabs",
 			"root": ".rf-tabs",
-			"dataRune": "tabgroup",
+			"dataRune": "tab-group",
 			"childOrder": [
 				"{content}"
 			],
@@ -693,7 +728,7 @@
 		"DataTable": {
 			"block": "datatable",
 			"root": ".rf-datatable",
-			"dataRune": "datatable",
+			"dataRune": "data-table",
 			"childOrder": [
 				"{content}"
 			],
@@ -730,11 +765,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"style": {
+				"variant": {
 					"source": "meta",
 					"default": "stacked",
 					"classPattern": ".rf-form--{value}",
-					"dataAttribute": "data-style"
+					"dataAttribute": "data-variant"
 				},
 				"action": {
 					"source": "meta",
@@ -768,7 +803,7 @@
 		"FormField": {
 			"block": "form-field",
 			"root": ".rf-form-field",
-			"dataRune": "formfield",
+			"dataRune": "form-field",
 			"parent": "Form",
 			"childOrder": [
 				"{content}"
@@ -827,7 +862,7 @@
 		"RevealStep": {
 			"block": "reveal-step",
 			"root": ".rf-reveal-step",
-			"dataRune": "revealstep",
+			"dataRune": "reveal-step",
 			"parent": "Reveal",
 			"childOrder": [
 				"{content}"

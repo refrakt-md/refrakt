@@ -7,12 +7,12 @@ describe('sandbox tag', () => {
 <button class="btn">Click me</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
 		expect(sandbox!.name).toBe('div');
 
 		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'content');
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
 		expect(contentMeta).toBeDefined();
 		expect(contentMeta!.attributes.content).toContain('<button class="btn">Click me</button>');
 	});
@@ -22,9 +22,9 @@ describe('sandbox tag', () => {
 <div class="p-4">Hello</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const fwMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'framework');
+			t.name === 'meta' && t.attributes['data-field'] === 'framework');
 		expect(fwMeta).toBeDefined();
 		expect(fwMeta!.attributes.content).toBe('tailwind');
 	});
@@ -34,9 +34,9 @@ describe('sandbox tag', () => {
 <div>Test</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const depMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'dependencies');
+			t.name === 'meta' && t.attributes['data-field'] === 'dependencies');
 		expect(depMeta).toBeDefined();
 		expect(depMeta!.attributes.content).toContain('lib.js');
 		expect(depMeta!.attributes.content).toContain('style.css');
@@ -47,9 +47,9 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const heightMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'height');
+			t.name === 'meta' && t.attributes['data-field'] === 'height');
 		expect(heightMeta).toBeDefined();
 		expect(heightMeta!.attributes.content).toBe('auto');
 	});
@@ -59,9 +59,9 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const heightMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'height');
+			t.name === 'meta' && t.attributes['data-field'] === 'height');
 		expect(heightMeta).toBeDefined();
 		expect(heightMeta!.attributes.content).toBe('400');
 	});
@@ -71,7 +71,7 @@ describe('sandbox tag', () => {
 <div>Hello World</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const pre = findTag(sandbox!, t => t.name === 'pre');
 		expect(pre).toBeDefined();
 		expect(pre!.attributes['data-language']).toBe('html');
@@ -88,9 +88,9 @@ describe('sandbox tag', () => {
 </script>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'content');
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
 		expect(contentMeta).toBeDefined();
 		expect(contentMeta!.attributes.content).toContain('<style>');
 		expect(contentMeta!.attributes.content).toContain('.box { color: red; }');
@@ -103,9 +103,9 @@ describe('sandbox tag', () => {
 <button>Old</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const labelMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'label');
+			t.name === 'meta' && t.attributes['data-field'] === 'label');
 		expect(labelMeta).toBeDefined();
 		expect(labelMeta!.attributes.content).toBe('Before');
 	});
@@ -115,9 +115,9 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const labelMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'label');
+			t.name === 'meta' && t.attributes['data-field'] === 'label');
 		expect(labelMeta).toBeUndefined();
 	});
 
@@ -126,9 +126,9 @@ describe('sandbox tag', () => {
 		const result = parse(`{% sandbox %}
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'content');
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
 		expect(contentMeta).toBeDefined();
 		// Empty sandbox — nothing between open/close tags
 		expect(contentMeta!.attributes.content).toBe('');
@@ -139,14 +139,14 @@ describe('sandbox tag', () => {
 <p>Test</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes.typeof === 'Sandbox');
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 
 		const fwMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'framework');
+			t.name === 'meta' && t.attributes['data-field'] === 'framework');
 		expect(fwMeta!.attributes.content).toBe('');
 
 		const depMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes.property === 'dependencies');
+			t.name === 'meta' && t.attributes['data-field'] === 'dependencies');
 		expect(depMeta!.attributes.content).toBe('');
 	});
 });

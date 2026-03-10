@@ -1,3 +1,4 @@
+import { RfAudio } from './audio.js';
 import { RfDiagram } from './diagram.js';
 import { RfNav } from './nav.js';
 import { RfMap } from './map.js';
@@ -12,6 +13,7 @@ export function registerElements(): void {
 	if (typeof customElements === 'undefined') return;
 
 	const elements: Array<[string, CustomElementConstructor]> = [
+		['rf-audio', RfAudio],
 		['rf-diagram', RfDiagram],
 		['rf-nav', RfNav],
 		['rf-map', RfMap],
@@ -27,6 +29,7 @@ export function registerElements(): void {
 
 export { RfContext } from './context.js';
 export type { PageEntry, DesignTokens } from './context.js';
+export { RfAudio } from './audio.js';
 export { RfDiagram } from './diagram.js';
 export { RfNav } from './nav.js';
 export { RfMap } from './map.js';

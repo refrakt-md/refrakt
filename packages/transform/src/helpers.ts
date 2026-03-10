@@ -1,5 +1,13 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
+/** Convert PascalCase or camelCase to kebab-case */
+export function toKebabCase(s: string): string {
+	return s
+		.replace(/([a-z])([A-Z])/g, '$1-$2')
+		.replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+		.toLowerCase();
+}
+
 /** Type guard: is this node a serialized tag? */
 export function isTag(node: RendererNode): node is SerializedTag {
 	return typeof node === 'object' && node !== null && !Array.isArray(node) && (node as any).$$mdtype === 'Tag';
@@ -10,10 +18,11 @@ export function makeTag(name: string, attributes: Record<string, any> = {}, chil
 	return { $$mdtype: 'Tag', name, attributes, children };
 }
 
-/** Find a meta tag child by its property attribute */
+/** Find a meta tag child by its data-field attribute (auto-kebab-cases the lookup key) */
 export function findMeta(tag: SerializedTag, property: string): SerializedTag | undefined {
+	const kebab = toKebabCase(property);
 	return tag.children.find(
-		(c): c is SerializedTag => isTag(c) && c.name === 'meta' && c.attributes.property === property
+		(c): c is SerializedTag => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === kebab
 	);
 }
 

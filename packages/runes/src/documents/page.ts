@@ -16,9 +16,9 @@ export class Page implements Schema {
       let section: RenderableTreeNode[] = [];
 
       for (const c of children) {
-        if (c instanceof Tag && c.attributes.property === 'contentSection') {
+        if (c instanceof Tag && c.attributes['data-field'] === 'contentSection') {
           if (section.length > 0) {
-            yield new Tag('section', { property: 'contentSection', typeof: 'PageSection' }, section);
+            yield new Tag('section', { 'data-field': 'content-section', typeof: 'PageSection' }, section);
             section = [];
           }
           yield c;
@@ -27,7 +27,7 @@ export class Page implements Schema {
         }
       }
       if (section.length > 0) {
-        yield new Tag('section', { property: 'contentSection', typeof: 'PageSection' }, section);
+        yield new Tag('section', { 'data-field': 'content-section', typeof: 'PageSection' }, section);
       }
     }
     return new Tag('main', { 'data-name': 'body' }, Array.from(sections()));

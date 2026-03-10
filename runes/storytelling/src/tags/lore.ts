@@ -1,27 +1,30 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-class LoreModel extends Model {
-	@attribute({ type: String, required: true })
-	title: string = '';
-
-	@attribute({ type: String, required: false })
-	category: string = '';
-
-	@attribute({ type: Boolean, required: false })
-	spoiler: boolean = false;
-
-	@attribute({ type: String, required: false })
-	tags: string = '';
-
-	transform() {
-		const titleTag = new Tag('span', {}, [this.title]);
-		const categoryMeta = new Tag('meta', { content: this.category });
-		const spoilerMeta = new Tag('meta', { content: String(this.spoiler) });
-		const tagsMeta = new Tag('meta', { content: this.tags });
-		const body = this.transformChildren().wrap('div');
+export const lore = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: true },
+		category: { type: String, required: false },
+		spoiler: { type: Boolean, required: false },
+		tags: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const titleTag = new Tag('span', {}, [attrs.title ?? '']);
+		const categoryMeta = new Tag('meta', { content: attrs.category ?? '' });
+		const spoilerMeta = new Tag('meta', { content: String(attrs.spoiler ?? false) });
+		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
 		return createComponentRenderable(schema.Lore, {
 			tag: 'article',
@@ -35,9 +38,11 @@ class LoreModel extends Model {
 			refs: {
 				body: body.tag('div'),
 			},
+			schema: {
+				headline: titleTag,
+				articleSection: categoryMeta,
+			},
 			children: [titleTag, categoryMeta, spoilerMeta, tagsMeta, body.next()],
 		});
-	}
-}
-
-export const lore = createSchema(LoreModel);
+	},
+});

@@ -21,8 +21,8 @@ describe('styles', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Storyboard' }, [
-			makeTag('meta', { property: 'columns', content: '4' }, []),
+		const tag = makeTag('section', { 'data-rune': 'storyboard' }, [
+			makeTag('meta', { 'data-field': 'columns', content: '4' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -41,7 +41,7 @@ describe('styles', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Bento' }, []);
+		const tag = makeTag('section', { 'data-rune': 'bento' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.style).toBe('grid-template-columns: repeat(3, 1fr)');
@@ -65,8 +65,8 @@ describe('styles', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Bento' }, [
-			makeTag('meta', { property: 'gap', content: '1.5rem' }, []),
+		const tag = makeTag('section', { 'data-rune': 'bento' }, [
+			makeTag('meta', { 'data-field': 'gap', content: '1.5rem' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -86,7 +86,7 @@ describe('styles', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Test' }, []);
+		const tag = makeTag('section', { 'data-rune': 'test' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.style).toBeUndefined();
@@ -104,8 +104,8 @@ describe('styles', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Test', style: 'color: red' }, [
-			makeTag('meta', { property: 'columns', content: '2' }, []),
+		const tag = makeTag('section', { 'data-rune': 'test', style: 'color: red' }, [
+			makeTag('meta', { 'data-field': 'columns', content: '2' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -125,7 +125,7 @@ describe('staticModifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('li', { typeof: 'FeaturedTier' }, ['Content']);
+		const tag = makeTag('li', { 'data-rune': 'featured-tier' }, ['Content']);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toContain('rf-tier');
@@ -144,8 +144,8 @@ describe('staticModifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('div', { typeof: 'Card' }, [
-			makeTag('meta', { property: 'variant', content: 'hero' }, []),
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			makeTag('meta', { 'data-field': 'variant', content: 'hero' }, []),
 		]);
 
 		const result = asTag(transform(tag));
@@ -165,7 +165,7 @@ describe('staticModifiers', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('div', { typeof: 'Widget' }, []);
+		const tag = makeTag('div', { 'data-rune': 'widget' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toContain('rf-widget--enhanced');
@@ -194,7 +194,7 @@ describe('postTransform', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Grid' }, []);
+		const tag = makeTag('section', { 'data-rune': 'grid' }, []);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes['data-custom']).toBe('cols-3');
@@ -222,15 +222,15 @@ describe('postTransform', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const hero = makeTag('section', { typeof: 'Hero' }, [
-			makeTag('div', { typeof: 'Child' }, ['Nested']),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('div', { 'data-rune': 'child' }, ['Nested']),
 		]);
 
 		const result = asTag(transform(hero));
 		const child = result.children.find(
-			(c: any) => c?.attributes?.typeof === 'Child'
+			(c: any) => c?.attributes?.['data-rune'] === 'child'
 		) as SerializedTag;
-		expect(child.attributes['data-parent']).toBe('Hero');
+		expect(child.attributes['data-parent']).toBe('hero');
 	});
 
 	it('runs after all declarative processing', () => {
@@ -246,8 +246,8 @@ describe('postTransform', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Test' }, [
-			makeTag('meta', { property: 'variant', content: 'primary' }, []),
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
+			makeTag('meta', { 'data-field': 'variant', content: 'primary' }, []),
 		]);
 
 		transform(tag);
@@ -269,7 +269,7 @@ describe('postTransform', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { typeof: 'Simple' }, ['Content']);
+		const tag = makeTag('section', { 'data-rune': 'simple' }, ['Content']);
 
 		const result = asTag(transform(tag));
 		expect(result.attributes.class).toBe('rf-simple');

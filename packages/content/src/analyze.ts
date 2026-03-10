@@ -5,20 +5,20 @@ import type { SitePage } from './site.js';
 const { Tag } = Markdoc;
 
 export interface RuneUsageReport {
-  /** All unique typeof values found across all pages */
+  /** All unique data-rune values found across all pages */
   allTypes: Set<string>;
-  /** Per-page breakdown: route URL → set of typeof values */
+  /** Per-page breakdown: route URL → set of data-rune values */
   perPage: Map<string, Set<string>>;
 }
 
-/** Walk a renderable tree and collect all typeof attribute values. */
+/** Walk a renderable tree and collect all data-rune attribute values. */
 export function collectRuneTypes(node: RenderableTreeNodes): Set<string> {
   const types = new Set<string>();
 
   function walk(n: RenderableTreeNode) {
     if (n == null) return;
     if (Tag.isTag(n)) {
-      const t = n.attributes?.typeof;
+      const t = n.attributes?.['data-rune'];
       if (typeof t === 'string') types.add(t);
       for (const child of n.children) walk(child);
     } else if (Array.isArray(n)) {

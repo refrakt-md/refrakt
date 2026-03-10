@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, Tag as TagType } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, Tag as TagType, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, group, Model, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, RenderableNodeCursor, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class BentoCellModel extends Model {
@@ -72,111 +72,126 @@ class BentoCellModel extends Model {
 	}
 }
 
-class BentoModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number = 2;
+export const bentoCell = createSchema(BentoCellModel);
 
-	@attribute({ type: String, required: false })
-	gap: string = '1rem';
-
-	@attribute({ type: Number, required: false })
-	columns: number = 4;
-
-	@attribute({ type: String, required: false })
-	sizing: string = 'tiered';
-
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	cellgroup: NodeStream;
-
-	private tieredSize(diff: number): string {
-		if (this.headingLevel === 1) {
-			// 4-tier: full → large → medium → small
-			if (diff === 0) return 'full';
-			if (diff === 1) return 'large';
-			if (diff === 2) return 'medium';
-			return 'small';
-		}
-		// 3-tier (default): large → medium → small
-		if (diff === 0) return 'large';
-		if (diff === 1) return 'medium';
+function tieredSize(headingLevel: number, level: number): string {
+	const diff = level - headingLevel;
+	if (headingLevel === 1) {
+		if (diff === 0) return 'full';
+		if (diff === 1) return 'large';
+		if (diff === 2) return 'medium';
 		return 'small';
 	}
+	if (diff === 0) return 'large';
+	if (diff === 1) return 'medium';
+	return 'small';
+}
 
-	private get effectiveColumns(): number {
-		// In span mode, default to 6 columns (matches 6 heading levels)
-		if (this.sizing === 'span' && this.columns === 4) return 6;
-		return this.columns;
-	}
+function spanForLevel(level: number, columns: number): number {
+	return Math.max(1, Math.min(columns, columns + 1 - level));
+}
 
-	private spanForLevel(level: number): number {
-		const cols = this.effectiveColumns;
-		return Math.max(1, Math.min(cols, cols + 1 - level));
-	}
+function convertHeadings(
+	nodes: Node[],
+	headingLevel: number,
+	sizing: string,
+	columns: number,
+): Node[] {
+	const baseLevel = headingLevel;
+	const isSpanMode = sizing === 'span';
+	// In span mode, default to 6 columns (matches 6 heading levels)
+	const effectiveColumns = isSpanMode && columns === 4 ? 6 : columns;
 
-	convertHeadings(nodes: Node[]) {
-		const baseLevel = this.headingLevel;
-		const isSpanMode = this.sizing === 'span';
-		const preamble: Node[] = [];
-		const cells: Node[] = [];
-		let currentHeading: Node | null = null;
-		let currentChildren: Node[] = [];
-		let seenFirstCellHeading = false;
+	const preamble: Node[] = [];
+	const cells: Node[] = [];
+	let currentHeading: Node | null = null;
+	let currentChildren: Node[] = [];
+	let seenFirstCellHeading = false;
 
-		const flush = () => {
-			if (currentHeading) {
-				const level = currentHeading.attributes?.level ?? baseLevel;
-				const name = Array.from(currentHeading.walk())
-					.filter(n => n.type === 'text')
-					.map(t => t.attributes.content).join(' ');
+	const flush = () => {
+		if (currentHeading) {
+			const level = currentHeading.attributes?.level ?? baseLevel;
+			const name = Array.from(currentHeading.walk())
+				.filter(n => n.type === 'text')
+				.map(t => t.attributes.content).join(' ');
 
-				// Extract icon tag from heading if present, wrap in paragraph for group matching
-				const iconTag = Array.from(currentHeading.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
-				const cellChildren = iconTag
-					? [new Ast.Node('paragraph', {}, [iconTag]), ...currentChildren]
-					: [...currentChildren];
+			const iconTag = Array.from(currentHeading.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
+			const cellChildren = iconTag
+				? [new Ast.Node('paragraph', {}, [iconTag]), ...currentChildren]
+				: [...currentChildren];
 
-				if (isSpanMode) {
-					const spanValue = this.spanForLevel(level);
-					cells.push(new Ast.Node('tag', { name, size: 'span', span: String(spanValue) }, cellChildren, 'bento-cell'));
-				} else {
-					const diff = level - baseLevel;
-					const size = this.tieredSize(diff);
-					cells.push(new Ast.Node('tag', { name, size }, cellChildren, 'bento-cell'));
-				}
-			}
-		};
-
-		for (const node of nodes) {
-			if (node.type === 'heading' && node.attributes.level >= baseLevel) {
-				seenFirstCellHeading = true;
-				flush();
-				currentHeading = node;
-				currentChildren = [];
-			} else if (!seenFirstCellHeading) {
-				preamble.push(node);
+			if (isSpanMode) {
+				const spanValue = spanForLevel(level, effectiveColumns);
+				cells.push(new Ast.Node('tag', { name, size: 'span', span: String(spanValue) }, cellChildren, 'bento-cell'));
 			} else {
-				currentChildren.push(node);
+				const size = tieredSize(baseLevel, level);
+				cells.push(new Ast.Node('tag', { name, size }, cellChildren, 'bento-cell'));
 			}
 		}
-		flush();
+	};
 
-		return [...preamble, ...cells];
+	for (const node of nodes) {
+		if (node.type === 'heading' && node.attributes.level >= baseLevel) {
+			seenFirstCellHeading = true;
+			flush();
+			currentHeading = node;
+			currentChildren = [];
+		} else if (!seenFirstCellHeading) {
+			preamble.push(node);
+		} else {
+			currentChildren.push(node);
+		}
 	}
+	flush();
 
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
+	return [...preamble, ...cells];
+}
 
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const cellStream = this.cellgroup.transform();
-		const cols = this.effectiveColumns;
-		const gapMeta = new Tag('meta', { property: 'gap', content: this.gap });
-		const columnsMeta = new Tag('meta', { property: 'columns', content: String(cols) });
-		const sizingMeta = new Tag('meta', { property: 'sizing', content: this.sizing });
+export const bento = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		gap: { type: String, required: false },
+		columns: { type: Number, required: false },
+		sizing: { type: String, required: false, matches: ['tiered', 'span'] },
+	},
+	contentModel: (attrs) => ({
+		type: 'custom' as const,
+		processChildren: (nodes) => convertHeadings(
+			nodes as Node[],
+			attrs.headingLevel ?? 2,
+			attrs.sizing ?? 'tiered',
+			attrs.columns ?? 4,
+		),
+		description: 'Converts headings to bento grid cells with size based on heading level. Supports tiered sizing (large/medium/small) and span mode (column span based on level).',
+	}),
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
+
+		// Separate header content (pre-heading paragraphs) from cell tag nodes
+		const headerAst: Node[] = [];
+		const cellAst: Node[] = [];
+		for (const child of allChildren) {
+			if (child.type === 'tag' && (child as any).tag === 'bento-cell') {
+				cellAst.push(child);
+			} else {
+				headerAst.push(child);
+			}
+		}
+
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		);
+		const cellStream = new RenderableNodeCursor(
+			Markdoc.transform(cellAst, config) as RenderableTreeNode[],
+		);
+
+		const sizing = (attrs.sizing as string) ?? 'tiered';
+		const columns = (attrs.columns as number) ?? 4;
+		const effectiveColumns = sizing === 'span' && columns === 4 ? 6 : columns;
+
+		const gapMeta = new Tag('meta', { 'data-field': 'gap', content: (attrs.gap as string) ?? '1rem' });
+		const columnsMeta = new Tag('meta', { 'data-field': 'columns', content: String(effectiveColumns) });
+		const sizingMeta = new Tag('meta', { 'data-field': 'sizing', content: sizing });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
@@ -195,9 +210,5 @@ class BentoModel extends Model {
 			refs: { grid },
 			children,
 		});
-	}
-}
-
-export const bentoCell = createSchema(BentoCellModel);
-
-export const bento = createSchema(BentoModel);
+	},
+});

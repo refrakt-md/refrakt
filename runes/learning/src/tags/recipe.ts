@@ -1,38 +1,45 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
+
+function tagText(nodes: any[]): string {
+	return nodes.map((n: any) => {
+		if (typeof n === 'string') return n;
+		if (Markdoc.Tag.isTag(n)) return tagText(n.children);
+		return '';
+	}).join('').trim();
+}
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
-class RecipeModel extends Model {
-	@attribute({ type: String, required: false })
-	prepTime: string = '';
+export const recipe = createContentModelSchema({
+	attributes: {
+		prepTime: { type: String, required: false, default: '' },
+		cookTime: { type: String, required: false, default: '' },
+		servings: { type: Number, required: false },
+		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'header', match: 'heading|paragraph|image', greedy: true, optional: true },
+			{ name: 'body', match: 'list|tag|blockquote', greedy: true, optional: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false })
-	cookTime: string = '';
-
-	@attribute({ type: Number, required: false })
-	servings: number | undefined = undefined;
-
-	@attribute({ type: String, required: false, matches: difficultyType.slice() })
-	difficulty: typeof difficultyType[number] = 'medium';
-
-	@group({ include: ['heading', 'paragraph', 'image'] })
-	header: NodeStream;
-
-	@group({ include: ['list', 'tag', 'blockquote'] })
-	body: NodeStream;
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const body = this.body.transform();
-
-		const prepTimeMeta = new Tag('meta', { content: this.prepTime });
-		const cookTimeMeta = new Tag('meta', { content: this.cookTime });
-		const servingsMeta = new Tag('meta', { content: this.servings != null ? String(this.servings) : '' });
-		const difficultyMeta = new Tag('meta', { content: this.difficulty });
+		const prepTimeMeta = new Tag('meta', { content: attrs.prepTime });
+		const cookTimeMeta = new Tag('meta', { content: attrs.cookTime });
+		const servingsMeta = new Tag('meta', { content: attrs.servings != null ? String(attrs.servings) : '' });
+		const difficultyMeta = new Tag('meta', { content: attrs.difficulty });
 
 		// Separate unordered lists (ingredients), ordered lists (steps), and blockquotes (tips)
 		const allNodes = body.toArray();
@@ -52,6 +59,23 @@ class RecipeModel extends Model {
 			}
 		}
 
+		// Annotate ingredient lis with recipeIngredient property
+		for (const li of ingredients) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.property = 'recipeIngredient';
+			}
+		}
+
+		// Annotate step lis as HowToStep with recipeInstructions property
+		for (const li of steps) {
+			if (Markdoc.Tag.isTag(li)) {
+				li.attributes.typeof = 'HowToStep';
+				li.attributes.property = 'recipeInstructions';
+				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));
+			}
+		}
+
+		const sectionProps = pageSectionProperties(header);
 		const ingredientsList = new Tag('ul', {}, ingredients);
 		const stepsList = new Tag('ol', {}, steps);
 		const tipsDiv = new Tag('div', {}, tips);
@@ -74,7 +98,7 @@ class RecipeModel extends Model {
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...sectionProps,
 				prepTime: prepTimeMeta,
 				cookTime: cookTimeMeta,
 				servings: servingsMeta,
@@ -85,9 +109,14 @@ class RecipeModel extends Model {
 				steps: stepsList,
 				tips: tipsDiv,
 			},
+			schema: {
+				name: sectionProps.headline,
+				description: sectionProps.blurb,
+				prepTime: prepTimeMeta,
+				cookTime: cookTimeMeta,
+				recipeYield: servingsMeta,
+			},
 			children,
 		});
-	}
-}
-
-export const recipe = createSchema(RecipeModel);
+	},
+});

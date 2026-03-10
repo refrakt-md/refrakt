@@ -14,7 +14,7 @@ Returns a list of all users.
 | limit | number | Items per page |
 {% /api %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Api');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -26,18 +26,18 @@ Returns a list of all users.
 Creates a new user.
 {% /api %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Api');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const method = metas.find(m => m.attributes.property === 'method');
+		const method = metas.find(m => m.attributes['data-field'] === 'method');
 		expect(method).toBeDefined();
 		expect(method!.attributes.content).toBe('POST');
 
-		const path = metas.find(m => m.attributes.property === 'path');
+		const path = metas.find(m => m.attributes['data-field'] === 'path');
 		expect(path).toBeDefined();
 		expect(path!.attributes.content).toBe('/api/users');
 
-		const auth = metas.find(m => m.attributes.property === 'auth');
+		const auth = metas.find(m => m.attributes['data-field'] === 'auth');
 		expect(auth).toBeDefined();
 		expect(auth!.attributes.content).toBe('Bearer token');
 	});
@@ -49,7 +49,7 @@ Creates a new user.
 Deletes a user by ID.
 {% /endpoint %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Api');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
 		expect(tag).toBeDefined();
 	});
 });

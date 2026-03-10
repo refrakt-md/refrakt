@@ -7,7 +7,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
@@ -20,10 +20,10 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('elevated');
 	});
@@ -33,8 +33,8 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bleed');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('top');
 	});
@@ -44,8 +44,8 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'offset');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'offset');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('lg');
 	});
@@ -55,8 +55,8 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('16/9');
 	});
@@ -66,13 +66,13 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');
+		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
 		expect(shadowMeta).toBeUndefined();
 
-		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bleed');
+		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
 		expect(bleedMeta).toBeUndefined();
 	});
 
@@ -81,19 +81,19 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Showcase');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'shadow');
+		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
 		expect(shadowMeta!.attributes.content).toBe('soft');
 
-		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bleed');
+		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
 		expect(bleedMeta!.attributes.content).toBe('both');
 
-		const offsetMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'offset');
+		const offsetMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'offset');
 		expect(offsetMeta!.attributes.content).toBe('md');
 
-		const aspectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
+		const aspectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
 		expect(aspectMeta!.attributes.content).toBe('4/3');
 	});
 });

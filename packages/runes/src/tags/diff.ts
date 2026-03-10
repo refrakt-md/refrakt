@@ -1,8 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 
 const modeType = ['unified', 'split', 'inline'] as const;
 
@@ -146,37 +145,35 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 	])];
 }
 
-class DiffModel extends Model {
-	@attribute({ type: String, required: false, matches: modeType.slice() })
-	mode: typeof modeType[number] = 'unified';
+export const diff = createContentModelSchema({
+	attributes: {
+		mode: { type: String, required: false, matches: modeType.slice() },
+		language: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'fences', match: 'fence', greedy: true },
+		],
+	},
+	transform(resolved, attrs) {
+		const mode = attrs.mode ?? 'unified';
+		const language = attrs.language ?? '';
 
-	@attribute({ type: String, required: false })
-	language: string = '';
+		const modeMeta = new Tag('meta', { content: mode });
+		const languageMeta = new Tag('meta', { content: language });
 
-	transform(): RenderableTreeNodes {
-		const modeMeta = new Tag('meta', { content: this.mode });
-		const languageMeta = new Tag('meta', { content: this.language });
-
-		// Extract raw source directly from AST
-		const fences: { content: string; language: string }[] = [];
-		for (const child of this.node.children) {
-			if (child.type === 'fence') {
-				fences.push({
-					content: child.attributes.content || '',
-					language: child.attributes.language || '',
-				});
-			}
-		}
-
-		const beforeSource = fences.length > 0 ? fences[0].content.replace(/\n$/, '') : '';
-		const afterSource = fences.length > 1 ? fences[1].content.replace(/\n$/, '') : '';
-		const lang = this.language || (fences.length > 0 ? fences[0].language : '');
+		// Extract raw source directly from resolved AST nodes
+		const fences = asNodes(resolved.fences);
+		const beforeSource = fences.length > 0 ? (fences[0].attributes.content || '').replace(/\n$/, '') : '';
+		const afterSource = fences.length > 1 ? (fences[1].attributes.content || '').replace(/\n$/, '') : '';
+		const lang = language || (fences.length > 0 ? fences[0].attributes.language || '' : '');
 
 		// Compute line-level diff (highlighting deferred to highlight transform)
 		const hunks = computeLineDiff(beforeSource, afterSource);
 
 		// Build expanded renderable AST
-		const expanded = this.mode === 'split'
+		const expanded = mode === 'split'
 			? buildSplitRenderable(hunks, lang)
 			: buildUnifiedRenderable(hunks, lang);
 
@@ -188,7 +185,5 @@ class DiffModel extends Model {
 			},
 			children: [modeMeta, languageMeta, ...expanded],
 		});
-	}
-}
-
-export const diff = createSchema(DiffModel);
+	},
+});

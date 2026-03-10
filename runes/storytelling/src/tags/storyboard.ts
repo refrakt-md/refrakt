@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
@@ -28,50 +29,57 @@ class StoryboardPanelModel extends Model {
 	}
 }
 
-class StoryboardModel extends Model {
-	@attribute({ type: Number, required: false })
-	columns: number = 3;
+// Group nodes into panels: each image starts a new panel
+function convertStoryboardChildren(nodes: unknown[]): unknown[] {
+	const converted: Node[] = [];
+	let currentPanelChildren: Node[] = [];
 
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'clean';
-
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		// Group nodes into panels: each image starts a new panel
-		const converted: Node[] = [];
-		let currentPanelChildren: Node[] = [];
-
-		const flushPanel = () => {
-			if (currentPanelChildren.length > 0) {
-				converted.push(new Ast.Node('tag', {}, currentPanelChildren, 'storyboard-panel'));
-				currentPanelChildren = [];
-			}
-		};
-
-		for (const node of nodes) {
-			if (node.type === 'image' || (node.type === 'paragraph' && Array.from(node.walk()).some(n => n.type === 'image'))) {
-				// Image starts a new panel
-				flushPanel();
-				currentPanelChildren.push(node);
-			} else if (currentPanelChildren.length > 0) {
-				// Non-image after an image: add to current panel as caption
-				currentPanelChildren.push(node);
-			} else {
-				// Content before first image: start a panel anyway
-				currentPanelChildren.push(node);
-			}
+	const flushPanel = () => {
+		if (currentPanelChildren.length > 0) {
+			converted.push(new Ast.Node('tag', {}, currentPanelChildren, 'storyboard-panel'));
+			currentPanelChildren = [];
 		}
-		flushPanel();
+	};
 
-		return super.processChildren(converted);
+	for (const node of nodes as Node[]) {
+		if (node.type === 'image' || (node.type === 'paragraph' && Array.from(node.walk()).some(n => n.type === 'image'))) {
+			// Image starts a new panel
+			flushPanel();
+			currentPanelChildren.push(node);
+		} else if (currentPanelChildren.length > 0) {
+			// Non-image after an image: add to current panel as caption
+			currentPanelChildren.push(node);
+		} else {
+			// Content before first image: start a panel anyway
+			currentPanelChildren.push(node);
+		}
 	}
+	flushPanel();
 
-	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
-		const variantMeta = new Tag('meta', { content: this.variant });
-		const columnsMeta = new Tag('meta', { content: String(this.columns) });
+	return converted;
+}
+
+export const storyboardPanel = createSchema(StoryboardPanelModel);
+
+export const storyboard = createContentModelSchema({
+	attributes: {
+		columns: { type: Number, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertStoryboardChildren,
+		description: 'Image-triggered panel accumulator. Each image starts a new panel; '
+			+ 'subsequent non-image content becomes the panel caption.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(allChildren, config) as RenderableTreeNode[],
+		);
+
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'clean' });
+		const columnsMeta = new Tag('meta', { content: String(attrs.columns ?? 3) });
 
 		const panels = body.tag('div').typeof('StoryboardPanel');
 		const panelsContainer = panels.wrap('div');
@@ -86,8 +94,5 @@ class StoryboardModel extends Model {
 			refs: { panels: panelsContainer },
 			children: [variantMeta, columnsMeta, panelsContainer.next()],
 		});
-	}
-}
-
-export const storyboardPanel = createSchema(StoryboardPanelModel);
-export const storyboard = createSchema(StoryboardModel);
+	},
+});

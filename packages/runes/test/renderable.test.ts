@@ -6,7 +6,7 @@ import { RenderableNodeCursor } from '../src/lib/renderable.js';
 function makeTags() {
   const span1 = new Tag('span', {}, ['hello']);
   const span2 = new Tag('span', {}, ['world']);
-  const p = new Tag('p', { typeof: 'Paragraph' }, [span1, ' ', span2]);
+  const p = new Tag('p', { 'data-rune': 'paragraph' }, [span1, ' ', span2]);
   const h1 = new Tag('h1', {}, ['Title']);
   const h2 = new Tag('h2', {}, ['Subtitle']);
   const div = new Tag('div', {}, [h1, p, h2]);

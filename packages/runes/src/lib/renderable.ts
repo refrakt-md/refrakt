@@ -1,6 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode } from '@markdoc/markdoc';
 import { NodeType } from '@refrakt-md/types';
+import { toKebabCase } from '@refrakt-md/transform';
 import { walkTag } from '../util.js';
 
 export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeNode> {
@@ -31,7 +32,7 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
   }
 
   typeof(type: string): RenderableNodeCursor<T> {
-    return new RenderableNodeCursor(this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.attributes.typeof === type));
+    return new RenderableNodeCursor(this.nodes.filter(n => Markdoc.Tag.isTag(n) && n.attributes['data-rune'] === toKebabCase(type)));
   }
 
   concat(...other: (RenderableTreeNode | RenderableNodeCursor)[]) {

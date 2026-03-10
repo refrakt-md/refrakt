@@ -1,25 +1,36 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const layoutType = ['side-by-side', 'stacked'] as const;
 
-class CompareModel extends Model {
-	@attribute({ type: String, required: false, matches: layoutType.slice() })
-	layout: typeof layoutType[number] = 'side-by-side';
+export const compare = createContentModelSchema({
+	attributes: {
+		layout: { type: String, required: false, matches: layoutType.slice() },
+		labels: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false })
-	labels: string = '';
+		const layout = attrs.layout ?? 'side-by-side';
+		const labels = attrs.labels ?? '';
 
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-		const layoutMeta = new Tag('meta', { content: this.layout });
+		const layoutMeta = new Tag('meta', { content: layout });
 
 		// Collect all <pre> code blocks from children
 		const panels: any[] = [];
-		const customLabels = this.labels ? this.labels.split(',').map(l => l.trim()) : [];
+		const customLabels = labels ? labels.split(',').map((l: string) => l.trim()) : [];
 
 		let panelIndex = 0;
 		for (const node of children.toArray()) {
@@ -47,7 +58,5 @@ class CompareModel extends Model {
 			},
 			children: [layoutMeta, panelsDiv],
 		});
-	}
-}
-
-export const compare = createSchema(CompareModel);
+	},
+});

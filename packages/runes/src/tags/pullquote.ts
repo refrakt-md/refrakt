@@ -1,24 +1,31 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
 
-class PullQuoteModel extends Model {
-	@attribute({ type: String, required: false, matches: alignValues.slice() })
-	align: typeof alignValues[number] = 'center';
+export const pullquote = createContentModelSchema({
+	attributes: {
+		align: { type: String, required: false, matches: alignValues.slice() },
+		variant: { type: String, required: false, matches: variantValues.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false, matches: variantValues.slice() })
-	variant: typeof variantValues[number] = 'default';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const alignMeta = new Tag('meta', { content: this.align });
-		const variantMeta = new Tag('meta', { content: this.variant });
+		const alignMeta = new Tag('meta', { content: attrs.align ?? 'center' });
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'default' });
 
 		// Extract blockquote or use all children as the quote text
 		const blockquote = children.tag('blockquote');
@@ -36,7 +43,5 @@ class PullQuoteModel extends Model {
 			},
 			children: childNodes,
 		});
-	}
-}
-
-export const pullquote = createSchema(PullQuoteModel);
+	},
+});

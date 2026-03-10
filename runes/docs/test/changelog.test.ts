@@ -13,10 +13,10 @@ describe('changelog tag', () => {
 - **Fixed** Bug fix
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Changelog');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
 		expect(tag).toBeDefined();
 
-		const releases = findAllTags(tag!, t => t.attributes.typeof === 'ChangelogRelease');
+		const releases = findAllTags(tag!, t => t.attributes['data-rune'] === 'changelog-release');
 		expect(releases.length).toBe(2);
 	});
 
@@ -27,8 +27,8 @@ describe('changelog tag', () => {
 - Feature added
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Changelog');
-		const release = findTag(tag!, t => t.attributes.typeof === 'ChangelogRelease');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
+		const release = findTag(tag!, t => t.attributes['data-rune'] === 'changelog-release');
 		expect(release).toBeDefined();
 
 		const versionTag = findTag(release!, t => t.name === 'h3');
@@ -47,7 +47,7 @@ describe('changelog tag', () => {
 - Initial release
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Changelog');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
 		const projectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'refrakt.md');
 		expect(projectMeta).toBeDefined();
 	});
@@ -59,8 +59,8 @@ describe('changelog tag', () => {
 - Release
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Changelog');
-		const release = findTag(tag!, t => t.attributes.typeof === 'ChangelogRelease');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
+		const release = findTag(tag!, t => t.attributes['data-rune'] === 'changelog-release');
 
 		const versionTag = findTag(release!, t => t.name === 'h3');
 		expect(versionTag!.children[0]).toBe('1.0.0');

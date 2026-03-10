@@ -26,32 +26,32 @@ export const bg: Schema = {
 		const metas: any[] = [];
 
 		if (attrs.preset) {
-			metas.push(new Tag('meta', { property: 'bg-preset', content: attrs.preset }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-preset', content: attrs.preset }));
 		}
 
 		if (attrs.src) {
-			metas.push(new Tag('meta', { property: 'bg-src', content: attrs.src }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-src', content: attrs.src }));
 		}
 		if (attrs.video) {
-			metas.push(new Tag('meta', { property: 'bg-video', content: attrs.video }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-video', content: attrs.video }));
 		}
 		if (attrs.overlay && attrs.overlay !== 'none') {
-			metas.push(new Tag('meta', { property: 'bg-overlay', content: attrs.overlay }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-overlay', content: attrs.overlay }));
 		}
 		if (attrs.blur && attrs.blur !== 'none') {
-			metas.push(new Tag('meta', { property: 'bg-blur', content: attrs.blur }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-blur', content: attrs.blur }));
 		}
 		if (attrs.position && attrs.position !== 'center') {
-			metas.push(new Tag('meta', { property: 'bg-position', content: attrs.position }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-position', content: attrs.position }));
 		}
 		if (attrs.fit && attrs.fit !== 'cover') {
-			metas.push(new Tag('meta', { property: 'bg-fit', content: attrs.fit }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-fit', content: attrs.fit }));
 		}
 		if (attrs.opacity && attrs.opacity !== '1') {
-			metas.push(new Tag('meta', { property: 'bg-opacity', content: attrs.opacity }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-opacity', content: attrs.opacity }));
 		}
 		if (attrs.fixed) {
-			metas.push(new Tag('meta', { property: 'bg-fixed', content: 'true' }));
+			metas.push(new Tag('meta', { 'data-field': 'bg-fixed', content: 'true' }));
 		}
 
 		// Return a wrapper tag that createSchema() will unwrap

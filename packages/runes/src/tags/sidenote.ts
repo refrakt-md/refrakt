@@ -1,20 +1,28 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const variantType = ['sidenote', 'footnote', 'tooltip'] as const;
 
-class SidenoteModel extends Model {
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'sidenote';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const variantMeta = new Tag('meta', { content: this.variant });
-		const bodyDiv = children.wrap('div');
+export const sidenote = createContentModelSchema({
+	attributes: {
+		variant: { type: String, required: false, matches: variantType.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'sidenote' });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
+		const bodyDiv = body.wrap('div');
 
 		return createComponentRenderable(schema.Sidenote, {
 			tag: 'aside',
@@ -26,7 +34,5 @@ class SidenoteModel extends Model {
 			},
 			children: [variantMeta, bodyDiv.next()],
 		});
-	}
-}
-
-export const sidenote = createSchema(SidenoteModel);
+	},
+});

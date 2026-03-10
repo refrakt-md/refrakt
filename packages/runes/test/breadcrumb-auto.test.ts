@@ -6,13 +6,13 @@ import { BREADCRUMB_AUTO_SENTINEL } from '../src/tags/breadcrumb.js';
 describe('breadcrumb auto mode', () => {
 	it('emits a placeholder with sentinel meta when auto=true', () => {
 		const result = parse(`{% breadcrumb auto=true /%}`);
-		const breadcrumb = findTag(result as any, t => t.attributes.typeof === 'Breadcrumb');
+		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
 
 		expect(breadcrumb).toBeDefined();
 
 		// Should have the sentinel meta tag as a direct child
 		const sentinel = breadcrumb!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeDefined();
 	});
@@ -23,9 +23,9 @@ describe('breadcrumb auto mode', () => {
 
 	it('auto mode emits an empty items list (no BreadcrumbItems)', () => {
 		const result = parse(`{% breadcrumb auto=true /%}`);
-		const breadcrumb = findTag(result as any, t => t.attributes.typeof === 'Breadcrumb');
+		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
 
-		const items = findAllTags(breadcrumb!, t => t.attributes.typeof === 'BreadcrumbItem');
+		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items).toHaveLength(0);
 	});
 
@@ -36,11 +36,11 @@ describe('breadcrumb auto mode', () => {
 - Current
 {% /breadcrumb %}`);
 
-		const breadcrumb = findTag(result as any, t => t.attributes.typeof === 'Breadcrumb');
+		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
 		expect(breadcrumb).toBeDefined();
 
 		const sentinel = breadcrumb!.children.find(
-			(c: any) => c?.name === 'meta' && c?.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
 		);
 		expect(sentinel).toBeUndefined();
 	});
@@ -52,8 +52,8 @@ describe('breadcrumb auto mode', () => {
 - Current
 {% /breadcrumb %}`);
 
-		const breadcrumb = findTag(result as any, t => t.attributes.typeof === 'Breadcrumb');
-		const items = findAllTags(breadcrumb!, t => t.attributes.typeof === 'BreadcrumbItem');
+		const breadcrumb = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
+		const items = findAllTags(breadcrumb!, t => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items).toHaveLength(3);
 	});
 });

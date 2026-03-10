@@ -7,15 +7,15 @@ describe('bond tag', () => {
 A deep fellowship.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
-		const fromTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'from');
+		const fromTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'from');
 		expect(fromTag).toBeDefined();
 		expect(fromTag!.children[0]).toBe('Aragorn');
 
-		const toTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'to');
+		const toTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'to');
 		expect(toTag).toBeDefined();
 		expect(toTag!.children[0]).toBe('Legolas');
 	});
@@ -25,16 +25,16 @@ A deep fellowship.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bondType');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bond-type');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('rivalry');
 
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'status');
+		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
 		expect(statusMeta).toBeDefined();
 		expect(statusMeta!.attributes.content).toBe('active');
 
-		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bidirectional');
+		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bidirectional');
 		expect(bidiMeta).toBeDefined();
 		expect(bidiMeta!.attributes.content).toBe('false');
 	});
@@ -44,8 +44,8 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'status');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
 		expect(statusMeta).toBeDefined();
 		expect(statusMeta!.attributes.content).toBe('active');
 	});
@@ -55,8 +55,8 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
-		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'bidirectional');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bidirectional');
 		expect(bidiMeta).toBeDefined();
 		expect(bidiMeta!.attributes.content).toBe('true');
 	});
@@ -66,7 +66,7 @@ Desc.
 Best friends.
 {% /relationship %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 	});
 
@@ -75,7 +75,7 @@ Best friends.
 A fellowship bond.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Bond');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 
 		const connector = findTag(tag!, t => t.attributes['data-name'] === 'connector');
@@ -88,9 +88,9 @@ A fellowship bond.
 
 		// Verify order: from, connector, to
 		const children = tag!.children.filter((c: any) => c && typeof c === 'object' && c.name);
-		const fromIdx = children.findIndex((c: any) => c.attributes?.property === 'from');
+		const fromIdx = children.findIndex((c: any) => c.attributes?.['data-field'] === 'from');
 		const connIdx = children.findIndex((c: any) => c.attributes?.['data-name'] === 'connector');
-		const toIdx = children.findIndex((c: any) => c.attributes?.property === 'to');
+		const toIdx = children.findIndex((c: any) => c.attributes?.['data-field'] === 'to');
 		expect(fromIdx).toBeLessThan(connIdx);
 		expect(connIdx).toBeLessThan(toIdx);
 	});

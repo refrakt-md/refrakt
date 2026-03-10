@@ -78,30 +78,30 @@ function summarizeAstNode(node: Node): object {
 }
 
 /**
- * Walk a renderable tree (Tag instances) to find a node whose typeof
+ * Walk a renderable tree (Tag instances) to find a node whose data-rune
  * attribute matches a given rune type.
  */
-function findRenderableByTypeof(tree: RenderableTreeNode, runeName: string): RenderableTreeNode | null {
+function findRenderableByRune(tree: RenderableTreeNode, runeName: string): RenderableTreeNode | null {
   if (tree === null || tree === undefined) return null;
   if (typeof tree === 'string' || typeof tree === 'number') return null;
 
   if (Tag.isTag(tree)) {
-    // Rune schemas set typeof on the outermost rendered tag
-    if (tree.attributes?.typeof) {
-      // Check if this node's typeof relates to our rune
-      // The typeof is typically the PascalCase schema type name
+    // Rune schemas set data-rune on the outermost rendered tag
+    if (tree.attributes?.['data-rune']) {
+      // Check if this node's data-rune relates to our rune
+      // The data-rune is typically the PascalCase schema type name
       return tree;
     }
     // Search children
     for (const child of tree.children) {
-      const found = findRenderableByTypeof(child, runeName);
+      const found = findRenderableByRune(child, runeName);
       if (found) return found;
     }
   }
 
   if (Array.isArray(tree)) {
     for (const child of tree) {
-      const found = findRenderableByTypeof(child, runeName);
+      const found = findRenderableByRune(child, runeName);
       if (found) return found;
     }
   }
@@ -110,10 +110,10 @@ function findRenderableByTypeof(tree: RenderableTreeNode, runeName: string): Ren
 }
 
 /**
- * Walk the full transformed tree to collect all nodes with typeof,
+ * Walk the full transformed tree to collect all nodes with data-rune,
  * in document order.
  */
-function collectRenderablesByTypeof(tree: RenderableTreeNode): RenderableTreeNode[] {
+function collectRenderablesByRune(tree: RenderableTreeNode): RenderableTreeNode[] {
   const results: RenderableTreeNode[] = [];
 
   function walk(node: RenderableTreeNode) {
@@ -121,7 +121,7 @@ function collectRenderablesByTypeof(tree: RenderableTreeNode): RenderableTreeNod
     if (typeof node === 'string' || typeof node === 'number') return;
 
     if (Tag.isTag(node)) {
-      if (node.attributes?.typeof) {
+      if (node.attributes?.['data-rune']) {
         results.push(node);
       }
       for (const child of node.children) {
@@ -159,8 +159,8 @@ function summarizeRenderable(node: RenderableTreeNode): object {
       summary.children = node.children.map(child => {
         if (Tag.isTag(child)) {
           const childSummary: Record<string, unknown> = { name: child.name };
-          if (child.attributes?.typeof) childSummary.typeof = child.attributes.typeof;
-          if (child.attributes?.property) childSummary.property = child.attributes.property;
+          if (child.attributes?.['data-rune']) childSummary['data-rune'] = child.attributes['data-rune'];
+          if (child.attributes?.['data-field']) childSummary['data-field'] = child.attributes['data-field'];
           if (child.attributes?.['data-name']) childSummary['data-name'] = child.attributes['data-name'];
           return childSummary;
         }
@@ -249,10 +249,10 @@ export function inspectRuneAtPosition(
   }
   const runeIndex = allTagNodes.indexOf(runeNode);
 
-  const allRenderables = collectRenderablesByTypeof(transformed);
+  const allRenderables = collectRenderablesByRune(transformed);
   const matchedRenderable = runeIndex >= 0 && runeIndex < allRenderables.length
     ? allRenderables[runeIndex]
-    : findRenderableByTypeof(transformed, runeName);
+    : findRenderableByRune(transformed, runeName);
 
   const transformStage = matchedRenderable
     ? summarizeRenderable(matchedRenderable)

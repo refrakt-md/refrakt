@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Extract plain text from an AST node
@@ -72,26 +72,27 @@ function autoColumns(count: number, columns?: number): number {
 interface ColorEntry { name: string; values: string[]; group: string; }
 interface ColorGroup { title: string; entries: ColorEntry[]; }
 
-class PaletteModel extends Model {
-	@attribute({ type: String, required: false })
-	title: string = '';
+export const palette = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false, default: '' },
+		showContrast: { type: Boolean, required: false, default: false },
+		showA11y: { type: Boolean, required: false, default: false },
+		columns: { type: Number, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		description: 'Passes raw children through for color palette parsing',
+		processChildren(nodes) { return nodes; },
+	},
+	transform(resolved, attrs) {
+		const children = resolved.children as Node[];
 
-	@attribute({ type: Boolean, required: false })
-	showContrast: boolean = false;
-
-	@attribute({ type: Boolean, required: false })
-	showA11y: boolean = false;
-
-	@attribute({ type: Number, required: false })
-	columns: number | undefined = undefined;
-
-	transform(): RenderableTreeNodes {
 		// Parse headings and list items from the original AST
 		const groups: ColorGroup[] = [];
 		let currentGroup: ColorGroup = { title: '', entries: [] };
 		groups.push(currentGroup);
 
-		for (const child of this.node.children) {
+		for (const child of children) {
 			if (child.type === 'heading') {
 				currentGroup = { title: extractText(child), entries: [] };
 				groups.push(currentGroup);
@@ -115,10 +116,10 @@ class PaletteModel extends Model {
 		const activeGroups = groups.filter(g => g.entries.length > 0);
 
 		// Build complete presentational Tag tree
-		const titleMeta = new Tag('meta', { content: this.title });
-		const showContrastMeta = new Tag('meta', { content: String(this.showContrast) });
-		const showA11yMeta = new Tag('meta', { content: String(this.showA11y) });
-		const columnsMeta = new Tag('meta', { content: this.columns != null ? String(this.columns) : '' });
+		const titleMeta = new Tag('meta', { content: attrs.title });
+		const showContrastMeta = new Tag('meta', { content: String(attrs.showContrast) });
+		const showA11yMeta = new Tag('meta', { content: String(attrs.showA11y) });
+		const columnsMeta = new Tag('meta', { content: attrs.columns != null ? String(attrs.columns) : '' });
 
 		const groupTags: InstanceType<typeof Tag>[] = [];
 
@@ -134,36 +135,36 @@ class PaletteModel extends Model {
 			const scales = group.entries.filter(e => e.values.length > 1);
 
 			if (singles.length > 0) {
-				const cols = autoColumns(singles.length, this.columns);
+				const cols = autoColumns(singles.length, attrs.columns as number | undefined);
 				const swatchTags = singles.map(entry => {
 					const color = entry.values[0] || '';
-					const children: (string | InstanceType<typeof Tag>)[] = [
+					const swatchChildren: (string | InstanceType<typeof Tag>)[] = [
 						new Tag('div', { 'data-name': 'swatch-color', style: `background-color: ${color}` }, []),
 						new Tag('span', { 'data-name': 'swatch-name' }, [entry.name]),
 						new Tag('span', { 'data-name': 'swatch-value' }, [color]),
 					];
 
-					if (this.showContrast || this.showA11y) {
+					if (attrs.showContrast || attrs.showA11y) {
 						const onWhite = contrastRatio(color, '#FFFFFF');
 						const onBlack = contrastRatio(color, '#000000');
 
-						if (this.showContrast) {
-							children.push(new Tag('span', { 'data-name': 'swatch-contrast' }, [
+						if (attrs.showContrast) {
+							swatchChildren.push(new Tag('span', { 'data-name': 'swatch-contrast' }, [
 								`W: ${onWhite.toFixed(1)} \u00b7 B: ${onBlack.toFixed(1)}`,
 							]));
 						}
 
-						if (this.showA11y) {
+						if (attrs.showA11y) {
 							const aaPass = onWhite >= 4.5;
 							const aaaPass = onWhite >= 7;
-							children.push(new Tag('span', { 'data-name': 'swatch-a11y' }, [
+							swatchChildren.push(new Tag('span', { 'data-name': 'swatch-a11y' }, [
 								new Tag('span', { 'data-name': aaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' }, [`AA ${aaPass ? '\u2713' : '\u2717'}`]),
 								new Tag('span', { 'data-name': aaaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' }, [`AAA ${aaaPass ? '\u2713' : '\u2717'}`]),
 							]));
 						}
 					}
 
-					return new Tag('div', { 'data-name': 'swatch' }, children);
+					return new Tag('div', { 'data-name': 'swatch' }, swatchChildren);
 				});
 
 				groupChildren.push(new Tag('div', { 'data-name': 'grid', style: `--rf-palette-cols: ${cols}` }, swatchTags));
@@ -184,8 +185,8 @@ class PaletteModel extends Model {
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
 			titleMeta, showContrastMeta, showA11yMeta, columnsMeta,
 		];
-		if (this.title) {
-			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [this.title]));
+		if (attrs.title) {
+			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 		topChildren.push(...groupTags);
 
@@ -199,10 +200,8 @@ class PaletteModel extends Model {
 			},
 			children: topChildren,
 		});
-	}
-}
-
-export const palette = createSchema(PaletteModel);
+	},
+});
 
 /** Extract color tokens from a palette AST node (used by design-context). */
 export function extractPaletteTokens(node: Node): { name: string; value: string; group?: string }[] {

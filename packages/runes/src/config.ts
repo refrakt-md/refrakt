@@ -45,15 +45,15 @@ function parseBudgetAmount(str: string): number {
 	return isNaN(num) ? 0 : num;
 }
 
-/** Recursively find all nodes with a specific typeof attribute */
-function collectByTypeof(children: RendererNode[], typeName: string): SerializedTag[] {
+/** Recursively find all nodes with a specific data-rune attribute */
+function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
 	const results: SerializedTag[] = [];
 	for (const c of children) {
 		if (isTag(c)) {
-			if (c.attributes?.typeof === typeName) {
+			if (c.attributes?.['data-rune'] === typeName) {
 				results.push(c);
 			} else {
-				results.push(...collectByTypeof(c.children, typeName));
+				results.push(...collectByRune(c.children, typeName));
 			}
 		}
 	}
@@ -63,7 +63,7 @@ function collectByTypeof(children: RendererNode[], typeName: string): Serialized
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
 	for (const c of node.children) {
-		if (isTag(c) && c.attributes?.property === prop) {
+		if (isTag(c) && c.attributes?.['data-field'] === prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase()) {
 			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
 		}
 	}
@@ -143,7 +143,7 @@ export const coreConfig: ThemeConfig = {
 				// Filter out consumed meta tags
 				const contentChildren = node.children.filter(child => {
 					if (!isTag(child) || child.name !== 'meta') return true;
-					const prop = child.attributes.property;
+					const prop = child.attributes['data-field'];
 					return !['embedUrl', 'url', 'title', 'aspect', 'provider', 'type'].includes(prop);
 				});
 
@@ -218,7 +218,7 @@ export const coreConfig: ThemeConfig = {
 				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
 
 				// Find all BudgetCategory children and compute totals
-				const categories = collectByTypeof(node.children, 'BudgetCategory');
+				const categories = collectByRune(node.children, 'budget-category');
 				let grandTotal = 0;
 
 				for (const cat of categories) {
@@ -286,7 +286,7 @@ export const coreConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'Hero': 'in-hero', 'Feature': 'in-feature' },
+			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			structure: {
 				header: {
 					tag: 'div', before: true,
@@ -351,7 +351,7 @@ export const coreConfig: ThemeConfig = {
 				// Keep slug text as visible fallback for SSR; web component replaces with <a> links
 				let slug = '';
 				const children = node.children.filter(child => {
-					if (isTag(child) && child.name === 'span' && child.attributes.property === 'slug') {
+					if (isTag(child) && child.name === 'span' && child.attributes['data-field'] === 'slug') {
 						slug = child.children.filter((c): c is string => typeof c === 'string').join('');
 						return false; // remove slug span from DOM
 					}
@@ -536,7 +536,7 @@ export const coreConfig: ThemeConfig = {
 				offset: { source: 'meta', noBemClass: true },
 				place: { source: 'meta', noBemClass: true },
 			},
-			contextModifiers: { 'BentoCell': 'in-bento-cell' },
+			contextModifiers: { 'bento-cell': 'in-bento-cell' },
 			styles: {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
@@ -766,9 +766,9 @@ function resolveAutoBreadcrumbs(
 	const tag = renderable as any;
 
 	// Check if this is a Breadcrumb auto placeholder
-	if (tag.attributes?.typeof === 'Breadcrumb') {
+	if (tag.attributes?.['data-rune'] === 'breadcrumb') {
 		const hasSentinel = tag.children?.some(
-			(c: any) => Tag.isTag(c) && c.attributes?.property === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
 		);
 
 		if (hasSentinel) {
@@ -800,7 +800,7 @@ function buildAutoBreadcrumb(
 
 	// Find separator from existing meta child
 	const separatorMeta = originalTag.children?.find(
-		(c: any) => Tag.isTag(c) && c.name === 'meta' && !c.attributes?.property
+		(c: any) => Tag.isTag(c) && c.name === 'meta' && !c.attributes?.['data-field']
 	);
 	const separator = separatorMeta?.attributes?.content ?? '/';
 
@@ -867,9 +867,9 @@ function resolveAutoNavs(
 	const tag = renderable as any;
 
 	// Check if this is a Nav auto placeholder
-	if (tag.attributes?.typeof === 'Nav') {
+	if (tag.attributes?.['data-rune'] === 'nav') {
 		const hasSentinel = tag.children?.some(
-			(c: any) => Tag.isTag(c) && c.attributes?.property === NAV_AUTO_SENTINEL
+			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === NAV_AUTO_SENTINEL
 		);
 
 		if (hasSentinel) {
@@ -901,7 +901,7 @@ function buildAutoNav(
 	}
 
 	const listItems: any[] = children.map(child => {
-		const titleSpan = new Tag('span', { property: 'slug' }, [child.title]);
+		const titleSpan = new Tag('span', { 'data-field': 'slug' }, [child.title]);
 		const link = new Tag('a', { href: child.url }, [titleSpan]);
 
 		return createComponentRenderable(schema.NavItem, {

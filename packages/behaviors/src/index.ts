@@ -16,11 +16,11 @@ import { galleryBehavior } from './behaviors/gallery.js';
 /** Map of rune type → behavior function (mutable — packages can register additional behaviors) */
 const behaviors: Record<string, BehaviorFn> = {
 	accordion: accordionBehavior,
-	accordionitem: accordionBehavior,
-	tabgroup: tabsBehavior,
-	codegroup: tabsBehavior,
+	'accordion-item': accordionBehavior,
+	'tab-group': tabsBehavior,
+	'code-group': tabsBehavior,
 	reveal: revealBehavior,
-	datatable: datatableBehavior,
+	'data-table': datatableBehavior,
 	form: formBehavior,
 	preview: previewBehavior,
 	gallery: galleryBehavior,

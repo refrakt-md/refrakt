@@ -204,7 +204,7 @@ npm install @refrakt-md/design
 
 ### @refrakt-md/media
 
-Audio and music runes for playlists and recordings. Documentation coming soon.
+Audio and music runes for playlists, tracks, and audio players.
 
 ```bash
 npm install @refrakt-md/media
@@ -216,5 +216,6 @@ npm install @refrakt-md/media
 
 | Rune | Description |
 |------|-------------|
-| music-playlist | Curated playlist with track listings |
-| music-recording | Individual recording with metadata |
+| [playlist](/docs/runes/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
+| [track](/docs/runes/track) | Standalone track or recording with metadata |
+| [audio](/docs/runes/audio) | Audio player with optional waveform and chapter markers |

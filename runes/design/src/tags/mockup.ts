@@ -1,8 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import {useSchema} from '@refrakt-md/types';
-import {attribute, Model, createComponentRenderable, createSchema} from '@refrakt-md/runes';
+import { useSchema } from '@refrakt-md/types';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 
 class Mockup {
 	device: string = 'browser';
@@ -20,38 +20,42 @@ const deviceType = ['iphone-15', 'iphone-se', 'pixel', 'phone', 'ipad', 'tablet'
 const colorType = ['dark', 'light', 'auto'] as const;
 const fitType = ['auto', 'none'] as const;
 
-class MockupModel extends Model {
-	@attribute({ type: String, required: false, matches: deviceType.slice() })
-	device: typeof deviceType[number] = 'browser';
+export const mockup = createContentModelSchema({
+	attributes: {
+		device: { type: String, required: false, matches: deviceType.slice() },
+		label: { type: String, required: false },
+		color: { type: String, required: false, matches: colorType.slice() },
+		statusBar: { type: Boolean, required: false },
+		url: { type: String, required: false },
+		scale: { type: Number, required: false },
+		fit: { type: String, required: false, matches: fitType.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false })
-	label: string = '';
+		const device = attrs.device ?? 'browser';
+		const color = attrs.color ?? 'dark';
+		const statusBar = attrs.statusBar ?? true;
+		const label = attrs.label ?? '';
+		const url = attrs.url ?? '';
+		const scale = attrs.scale ?? 1;
+		const fit = attrs.fit ?? 'auto';
 
-	@attribute({ type: String, required: false, matches: colorType.slice() })
-	color: typeof colorType[number] = 'dark';
-
-	@attribute({ type: Boolean, required: false })
-	statusBar: boolean = true;
-
-	@attribute({ type: String, required: false })
-	url: string = '';
-
-	@attribute({ type: Number, required: false })
-	scale: number = 1;
-
-	@attribute({ type: String, required: false, matches: fitType.slice() })
-	fit: typeof fitType[number] = 'auto';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-
-		const deviceMeta = new Tag('meta', { content: this.device });
-		const colorMeta = new Tag('meta', { content: this.color });
-		const statusBarMeta = new Tag('meta', { content: String(this.statusBar) });
-		const labelMeta = this.label ? new Tag('meta', { content: this.label }) : undefined;
-		const urlMeta = this.url ? new Tag('meta', { content: this.url }) : undefined;
-		const scaleMeta = this.scale !== 1 ? new Tag('meta', { content: String(this.scale) }) : undefined;
-		const fitMeta = this.fit !== 'auto' ? new Tag('meta', { content: this.fit }) : undefined;
+		const deviceMeta = new Tag('meta', { content: device });
+		const colorMeta = new Tag('meta', { content: color });
+		const statusBarMeta = new Tag('meta', { content: String(statusBar) });
+		const labelMeta = label ? new Tag('meta', { content: label }) : undefined;
+		const urlMeta = url ? new Tag('meta', { content: url }) : undefined;
+		const scaleMeta = scale !== 1 ? new Tag('meta', { content: String(scale) }) : undefined;
+		const fitMeta = fit !== 'auto' ? new Tag('meta', { content: fit }) : undefined;
 
 		const viewport = children.wrap('div');
 
@@ -82,7 +86,5 @@ class MockupModel extends Model {
 			},
 			children: childNodes,
 		});
-	}
-}
-
-export const mockup = createSchema(MockupModel);
+	},
+});

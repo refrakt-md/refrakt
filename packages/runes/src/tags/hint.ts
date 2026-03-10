@@ -1,30 +1,39 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const hintType = ['caution', 'check', 'note', 'warning'] as const;
 
-class HintModel extends Model {
-  @attribute({ type: String, matches: hintType.slice(), errorLevel: 'critical' })
-  type: typeof hintType[number] = 'note';
+export const hint = createContentModelSchema({
+	attributes: {
+		type: { type: String, matches: hintType.slice(), errorLevel: 'critical' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
+		const bodyDiv = body.wrap('div');
 
-  transform() {
-    const hintType = new Tag('meta', { content: this.type });
-    const children = this.transformChildren().wrap('div');
-
-    return createComponentRenderable(schema.Hint, {
-      tag: 'section',
-      property: 'contentSection',
-      properties: {
-        hintType,
-      },
-      refs: {
-        body: children.tag('div')
-      },
-      children: [hintType, children.next()],
-    })
-  }
-}
-
-export const hint = createSchema(HintModel);
+		return createComponentRenderable(schema.Hint, {
+			tag: 'section',
+			property: 'contentSection',
+			properties: {
+				hintType,
+			},
+			refs: {
+				body: bodyDiv.tag('div'),
+			},
+			children: [hintType, bodyDiv.next()],
+		});
+	},
+});

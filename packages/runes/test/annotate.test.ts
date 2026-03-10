@@ -7,7 +7,7 @@ describe('annotate tag', () => {
 This is the main text with an annotation.
 {% /annotate %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Annotate');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'annotate');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('div');
   });
@@ -17,7 +17,7 @@ This is the main text with an annotation.
 Main text content.
 {% /annotate %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Annotate');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'annotate');
     expect(tag).toBeDefined();
 
     const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'tooltip');
@@ -29,7 +29,7 @@ Main text content.
 Text.
 {% /annotate %}`);
 
-    const tag = findTag(result as any, t => t.attributes.typeof === 'Annotate');
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'annotate');
     const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'margin');
     expect(variantMeta).toBeDefined();
   });

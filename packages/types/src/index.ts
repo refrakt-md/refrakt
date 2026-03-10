@@ -39,6 +39,29 @@ export type {
 // Serialized tree types
 export type { SerializedTag, RendererNode } from './serialized.js';
 
+// Declarative content model types
+export type {
+	ContentFieldDefinition,
+	SequenceModel,
+	HeadingExtractField,
+	HeadingExtract,
+	SectionsModel,
+	DelimitedZone,
+	DelimitedModel,
+	CustomModel,
+	ItemFieldDefinition,
+	ItemModel,
+	AttributeInCondition,
+	AttributeExistsCondition,
+	HasChildCondition,
+	ContentModelCondition,
+	ConditionalContentModel,
+	StructuralContentModel,
+	ContentModel,
+	ResolvedField,
+	ResolvedContent,
+} from './content-model.js';
+
 // Cross-page pipeline types
 export type {
 	TransformedPage,

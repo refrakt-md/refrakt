@@ -20,7 +20,7 @@ A classic Italian pasta dish.
 > Use freshly ground black pepper for best results.
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Recipe');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -34,15 +34,15 @@ A classic Italian pasta dish.
 1. step one
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Recipe');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const prepTime = metas.find(m => m.attributes.property === 'prepTime');
+		const prepTime = metas.find(m => m.attributes['data-field'] === 'prep-time');
 		expect(prepTime).toBeDefined();
 		expect(prepTime!.attributes.content).toBe('PT10M');
 
-		const difficulty = metas.find(m => m.attributes.property === 'difficulty');
+		const difficulty = metas.find(m => m.attributes['data-field'] === 'difficulty');
 		expect(difficulty).toBeDefined();
 		expect(difficulty!.attributes.content).toBe('hard');
 	});
@@ -58,7 +58,7 @@ A classic Italian pasta dish.
 2. Bake
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Recipe');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');

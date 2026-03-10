@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag } from './helpers.js';
-import { runes, extractSeo, buildSeoTypeMap } from '../src/index.js';
-
-const seoTypeMap = buildSeoTypeMap(runes);
+import { extractSeo } from '../src/index.js';
 
 function seo(content: string, frontmatter: Record<string, any> = {}, url = '/test') {
 	const tree = parse(content);
-	return extractSeo(tree, seoTypeMap, frontmatter as any, url);
+	return extractSeo(tree, frontmatter as any, url);
 }
 
 describe('JSON-LD extraction', () => {
@@ -91,6 +89,18 @@ Watch the video.
 		const dataset = result.jsonLd[0] as any;
 		expect(dataset['@context']).toBe('https://schema.org');
 		expect(dataset['@type']).toBe('Dataset');
+	});
+
+	it('should extract ImageObject from figure', () => {
+		const result = seo(`{% figure caption="A sunset over the ocean" %}
+![Sunset](/images/sunset.jpg)
+{% /figure %}`);
+
+		expect(result.jsonLd).toHaveLength(1);
+		const img = result.jsonLd[0] as any;
+		expect(img['@context']).toBe('https://schema.org');
+		expect(img['@type']).toBe('ImageObject');
+		expect(img.caption).toBe('A sunset over the ocean');
 	});
 });
 

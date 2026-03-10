@@ -13,7 +13,7 @@ Second column content.
 
     expect(result).toBeDefined();
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
     expect(gridTag!.name).toBe('section');
   });
@@ -27,7 +27,7 @@ Left side.
 Right side.
 {% /columns %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
   });
 
@@ -45,14 +45,14 @@ Card two.
 Card three.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
 
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('auto');
 
-    const minMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'min');
+    const minMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'min');
     expect(minMeta).toBeDefined();
     expect(minMeta!.attributes.content).toBe('280px');
   });
@@ -66,8 +66,8 @@ Content.
 More content.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeUndefined();
   });
 
@@ -80,8 +80,8 @@ Cell one.
 Cell two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
-    const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'aspect');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
+    const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
     expect(aspectMeta).toBeDefined();
     expect(aspectMeta!.attributes.content).toBe('16/9');
   });
@@ -95,8 +95,8 @@ Main content.
 Sidebar.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
-    const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'stack');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
+    const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'stack');
     expect(stackMeta).toBeDefined();
     expect(stackMeta!.attributes.content).toBe('reverse');
   });
@@ -114,8 +114,8 @@ Tall card.
 Medium card.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('masonry');
   });
@@ -129,8 +129,8 @@ Card one.
 Card two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes.property === 'mode');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
+    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
     expect(modeMeta).toBeDefined();
     expect(modeMeta!.attributes.content).toBe('auto');
   });
@@ -144,7 +144,7 @@ Wide column.
 Narrow column.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes.typeof === 'Grid');
+    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
     // Should produce cells with colspan data (from spans processing)
     const cell = findTag(gridTag!, t => t.attributes['data-colspan'] === 2);

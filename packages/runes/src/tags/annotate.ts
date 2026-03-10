@@ -1,14 +1,21 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
-const variantType = ['margin', 'tooltip', 'inline'] as const;
-
-class AnnotateNoteModel extends Model {
-	transform(): RenderableTreeNodes {
-		const body = this.transformChildren().wrap('div');
+export const annotateNote = createContentModelSchema({
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
 		return createComponentRenderable(schema.AnnotateNote, {
 			tag: 'aside',
@@ -18,16 +25,26 @@ class AnnotateNoteModel extends Model {
 			},
 			children: [body.next()],
 		});
-	}
-}
+	},
+});
 
-class AnnotateModel extends Model {
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'margin';
+const variantType = ['margin', 'tooltip', 'inline'] as const;
 
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
-		const variantMeta = new Tag('meta', { content: this.variant });
+export const annotate = createContentModelSchema({
+	attributes: {
+		variant: { type: String, required: false, matches: variantType.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'margin' });
 
 		const notes = children.tag('aside').typeof('AnnotateNote');
 		const body = children.wrap('div');
@@ -41,8 +58,5 @@ class AnnotateModel extends Model {
 			refs: { body: body.tag('div') },
 			children: [variantMeta, body.next()],
 		});
-	}
-}
-
-export const annotateNote = createSchema(AnnotateNoteModel);
-export const annotate = createSchema(AnnotateModel);
+	},
+});

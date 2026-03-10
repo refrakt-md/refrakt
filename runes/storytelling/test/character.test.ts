@@ -14,11 +14,11 @@ She grew up in the Ashen Spire.
 - Spirit binding
 {% /character %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes.typeof === 'CharacterSection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'character-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -27,8 +27,8 @@ She grew up in the Ashen Spire.
 A ranger from the North.
 {% /character %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'name');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Aragorn');
 	});
@@ -38,12 +38,12 @@ A ranger from the North.
 Content.
 {% /character %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
-		const roleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'role');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
+		const roleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'role');
 		expect(roleMeta).toBeDefined();
 		expect(roleMeta!.attributes.content).toBe('antagonist');
 
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'status');
+		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
 		expect(statusMeta).toBeDefined();
 		expect(statusMeta!.attributes.content).toBe('alive');
 	});
@@ -53,10 +53,10 @@ Content.
 Just a brief description.
 {% /character %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
 		expect(tag).toBeDefined();
 
-		const sections = findAllTags(tag!, t => t.attributes.typeof === 'CharacterSection');
+		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'character-section');
 		expect(sections.length).toBe(0);
 	});
 
@@ -65,8 +65,8 @@ Just a brief description.
 Content.
 {% /character %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
-		const aliasesMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'aliases');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
+		const aliasesMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aliases');
 		expect(aliasesMeta).toBeDefined();
 		expect(aliasesMeta!.attributes.content).toBe('Strider, Elessar');
 	});
@@ -76,7 +76,7 @@ Content.
 Sells potions.
 {% /npc %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Character');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
 		expect(tag).toBeDefined();
 	});
 });

@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, runes, extractSeo, buildSeoTypeMap, corePipelineHooks } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
@@ -10,8 +10,6 @@ import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
-
-const seoTypeMap = buildSeoTypeMap(runes);
 
 export interface Site {
   /** The content tree */
@@ -77,7 +75,7 @@ export async function loadContent(
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
     const { renderable, headings } = transformContent(content, route.url, icons, additionalTags);
-    const seo = extractSeo(renderable, seoTypeMap, frontmatter, route.url);
+    const seo = extractSeo(renderable, frontmatter, route.url);
 
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
   }

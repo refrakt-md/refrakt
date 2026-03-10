@@ -7,7 +7,7 @@ describe('sidenote tag', () => {
 This is a margin note with additional context.
 {% /sidenote %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('aside');
 	});
@@ -17,8 +17,8 @@ This is a margin note with additional context.
 A footnote reference.
 {% /sidenote %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('footnote');
 	});
@@ -28,8 +28,8 @@ A footnote reference.
 Default variant note.
 {% /sidenote %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'variant');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
+		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('sidenote');
 	});
@@ -39,7 +39,7 @@ Default variant note.
 A footnote.
 {% /footnote %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
 		expect(tag).toBeDefined();
 	});
 
@@ -48,7 +48,7 @@ A footnote.
 A margin note.
 {% /marginnote %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Sidenote');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
 		expect(tag).toBeDefined();
 	});
 });

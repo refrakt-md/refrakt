@@ -1,52 +1,67 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
-import { group, Model, createComponentRenderable, createSchema, NodeStream, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-class CallToActionModel extends Model {
-  @group({ include: ['heading', 'paragraph'] })
-  header: NodeStream;
+export const cta = createContentModelSchema({
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'actions', match: 'list|fence', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
 
-  @group({ include: ['list', 'fence'] })
-  actions: NodeStream;
+		// Transform actions with custom node overrides (same pattern as hero)
+		const baseConfig = config;
+		const actionConfig = {
+			...config,
+			nodes: {
+				...config.nodes,
+				item: linkItem,
+				fence: {
+					transform(node: Node) {
+						const output = new RenderableNodeCursor(
+							[Markdoc.transform(node, baseConfig)] as RenderableTreeNode[],
+						);
+						return createComponentRenderable(schema.Command, {
+							tag: 'div',
+							properties: {
+								code: output.flatten().tag('code'),
+							},
+							children: output.next(),
+						});
+					},
+				},
+			},
+		};
+		const actions = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.actions), actionConfig) as RenderableTreeNode[],
+		);
 
-  transform(): RenderableTreeNodes {
-    const header = this.header.transform();
-    const actions = this.actions
-      .useNode('item', linkItem)
-      .useNode('fence', node => {
-        const output = new RenderableNodeCursor([Markdoc.transform(node, this.config)]);
+		const actionsDiv = actions.wrap('div');
 
-        return createComponentRenderable(schema.Command, {
-          tag: 'div',
-          properties: {
-            code: output.flatten().tag('code'),
-          },
-          children: output.next(),
-        })
-      })
-      .transform();
-
-    const actionsDiv = actions.wrap('div');
-
-    return createComponentRenderable(schema.CallToAction, {
-      tag: 'section',
-      property: 'contentSection',
-      class: this.node.transformAttributes(this.config).class,
-      properties: {
-        ...pageSectionProperties(header),
-        action: actions.flatten().tags('li', 'div'),
-      },
-      refs: {
-        actions: actionsDiv,
-        body: header.wrap('div'),
-      },
-      children: [
-        header.wrap('header').next(),
-        actionsDiv.next(),
-      ],
-    })
-  }
-}
-
-export const cta = createSchema(CallToActionModel);
+		return createComponentRenderable(schema.CallToAction, {
+			tag: 'section',
+			property: 'contentSection',
+			class: attrs.class,
+			properties: {
+				...pageSectionProperties(header),
+				action: actions.flatten().tags('li', 'div'),
+			},
+			refs: {
+				actions: actionsDiv,
+				body: header.wrap('div'),
+			},
+			children: [
+				header.wrap('header').next(),
+				actionsDiv.next(),
+			],
+		});
+	},
+});

@@ -1,10 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 // ─── Amount parsing ───
 
@@ -83,6 +83,8 @@ class BudgetLineItemModel extends Model {
 }
 
 // ─── BudgetCategory ───
+// BudgetCategory still uses createSchema because it has its own processChildren
+// with subtotal computation that needs access to `this._subtotal` during transform.
 
 class BudgetCategoryModel extends Model {
 	@attribute({ type: String, required: true })
@@ -90,9 +92,6 @@ class BudgetCategoryModel extends Model {
 
 	@attribute({ type: Boolean, required: false })
 	estimate: boolean = false;
-
-	@group({ include: ['list', 'tag'] })
-	body: NodeStream;
 
 	private _subtotal: number = 0;
 
@@ -135,7 +134,7 @@ class BudgetCategoryModel extends Model {
 	}
 
 	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
+		const body = this.transformChildren();
 		const labelTag = new Tag('span', {}, [this.label]);
 		const estimateMeta = new Tag('meta', { content: String(this.estimate) });
 		const subtotalTag = new Tag('span', {}, [String(this._subtotal)]);
@@ -163,71 +162,75 @@ class BudgetCategoryModel extends Model {
 
 const variantType = ['detailed', 'summary'] as const;
 
-class BudgetModel extends Model {
-	@attribute({ type: String, required: false })
-	title: string = '';
+// Convert headings into budget-category tags
+function convertBudgetChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
+	const headingLevel = attributes.headingLevel as number | undefined;
+	const level = headingLevel ?? (nodes as Node[]).find(n => (n as Node).type === 'heading')?.attributes.level;
+	if (!level) return nodes;
 
-	@attribute({ type: String, required: false })
-	currency: string = 'USD';
+	const converted = headingsToList({ level })(nodes as Node[]);
+	const n = converted.length - 1;
+	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	@attribute({ type: Number, required: false })
-	travelers: number = 1;
+	const tags = converted[n].children.map(item => {
+		const heading = item.children[0];
+		const { label, estimate } = parseEstimate(heading);
 
-	@attribute({ type: String, required: false })
-	duration: string = '';
+		return new Ast.Node('tag', { label, estimate }, item.children.slice(1), 'budget-category');
+	});
 
-	@attribute({ type: Boolean, required: false })
-	showPerPerson: boolean = true;
+	converted.splice(n, 1, ...tags);
+	return converted;
+}
 
-	@attribute({ type: Boolean, required: false })
-	showPerDay: boolean = true;
+export const budgetLineItem = createSchema(BudgetLineItemModel);
+export const budgetCategory = createSchema(BudgetCategoryModel);
 
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'detailed';
+export const budget = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false },
+		currency: { type: String, required: false },
+		travelers: { type: Number, required: false },
+		duration: { type: String, required: false },
+		showPerPerson: { type: Boolean, required: false },
+		showPerDay: { type: Boolean, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+		headingLevel: { type: Number, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertBudgetChildren,
+		description: 'Converts headings into budget-category tags with estimate parsing, '
+			+ 'where list items become budget-line-items with "Description: $Amount" pattern.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
 
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+		// Separate header content from tag nodes
+		const headerAst: Node[] = [];
+		const bodyAst: Node[] = [];
+		for (const child of allChildren) {
+			if (child.type === 'tag') {
+				bodyAst.push(child);
+			} else if (child.type === 'paragraph') {
+				headerAst.push(child);
+			}
+		}
 
-	@group({ include: ['paragraph'] })
-	header: NodeStream;
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(bodyAst, config) as RenderableTreeNode[],
+		);
 
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const { label, estimate } = parseEstimate(heading);
-
-			return new Ast.Node('tag', { label, estimate }, item.children.slice(1), 'budget-category');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const body = this.body.transform();
-
-		const titleMeta = new Tag('meta', { content: this.title });
-		const currencyMeta = new Tag('meta', { content: this.currency });
-		const travelersMeta = new Tag('meta', { content: String(this.travelers) });
-		const durationMeta = new Tag('meta', { content: this.duration });
-		const showPerPersonMeta = new Tag('meta', { content: String(this.showPerPerson) });
-		const showPerDayMeta = new Tag('meta', { content: String(this.showPerDay) });
-		const variantMeta = new Tag('meta', { content: this.variant });
+		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
+		const currencyMeta = new Tag('meta', { content: attrs.currency ?? 'USD' });
+		const travelersMeta = new Tag('meta', { content: String(attrs.travelers ?? 1) });
+		const durationMeta = new Tag('meta', { content: attrs.duration ?? '' });
+		const showPerPersonMeta = new Tag('meta', { content: String(attrs.showPerPerson ?? true) });
+		const showPerDayMeta = new Tag('meta', { content: String(attrs.showPerDay ?? true) });
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'detailed' });
 
 		const categories = body.tag('div').typeof('BudgetCategory');
 		const categoriesDiv = new Tag('div', {}, categories.toArray());
@@ -258,9 +261,5 @@ class BudgetModel extends Model {
 			},
 			children,
 		});
-	}
-}
-
-export const budgetLineItem = createSchema(BudgetLineItemModel);
-export const budgetCategory = createSchema(BudgetCategoryModel);
-export const budget = createSchema(BudgetModel);
+	},
+});

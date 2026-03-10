@@ -9,11 +9,11 @@ describe('plot tag', () => {
 - Third beat
 {% /plot %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const beats = findAllTags(tag!, t => t.attributes.typeof === 'Beat');
+		const beats = findAllTags(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beats.length).toBe(3);
 	});
 
@@ -22,8 +22,8 @@ describe('plot tag', () => {
 - A beat
 {% /plot %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
-		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes.property === 'title');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
+		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'title');
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Awakening');
 	});
@@ -33,12 +33,12 @@ describe('plot tag', () => {
 - Beat one
 {% /plot %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'plotType');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
+		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'plot-type');
 		expect(typeMeta).toBeDefined();
 		expect(typeMeta!.attributes.content).toBe('quest');
 
-		const structMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.property === 'structure');
+		const structMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'structure');
 		expect(structMeta).toBeDefined();
 		expect(structMeta!.attributes.content).toBe('linear');
 	});
@@ -51,13 +51,13 @@ describe('plot tag', () => {
 - [-] Abandoned step
 {% /plot %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
-		const beats = findAllTags(tag!, t => t.attributes.typeof === 'Beat');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
+		const beats = findAllTags(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beats.length).toBe(4);
 
 		// Check that status meta tags are present
 		const statuses = beats.map(beat => {
-			const meta = findTag(beat, t => t.name === 'meta' && t.attributes.property === 'status');
+			const meta = findTag(beat, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
 			return meta?.attributes.content;
 		});
 		expect(statuses).toEqual(['complete', 'active', 'planned', 'abandoned']);
@@ -68,11 +68,11 @@ describe('plot tag', () => {
 - [x] **Discovery** — Find the map
 {% /plot %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
-		const beat = findTag(tag!, t => t.attributes.typeof === 'Beat');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
+		const beat = findTag(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beat).toBeDefined();
 
-		const labelTag = findTag(beat!, t => t.name === 'span' && t.attributes.property === 'label');
+		const labelTag = findTag(beat!, t => t.name === 'span' && t.attributes['data-field'] === 'label');
 		expect(labelTag).toBeDefined();
 		expect(labelTag!.children[0]).toBe('Discovery');
 	});
@@ -82,7 +82,7 @@ describe('plot tag', () => {
 - First event
 {% /storyline %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Plot');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
 		expect(tag).toBeDefined();
 	});
 });

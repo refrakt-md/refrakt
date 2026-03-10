@@ -2,7 +2,26 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero align="left" tint-mode="auto" spacing="breathe" %}
+{% hero align="left" spacing="loose" tint="subtle" layout="split" collapse="lg" %}
+Version 0.7.2 released [Check out what's new](/releases)
+
+# Write Markdown. Get structure.
+
+A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+
+```shell
+npm create refrakt
+```
+
+- [Get Started](/docs/getting-started)
+
+---
+
+
+{% showcase width="content" shadow="hard" bleed="bottom" offset="10rem" %}
+{% codegroup overflow="wrap" %}
+````markdoc
+{% hero align="left" spacing="loose" tint="subtle" layout="split" collapse="lg" %}
 Version 0.7.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
@@ -15,8 +34,12 @@ npm create refrakt
 
 - [Get Started](/docs/getting-started)
 {% /hero %}
+````
+{% /codegroup %}
+{% /showcase %}
+{% /hero %}
 
-{% feature align="left" spacing="default" %}
+{% feature align="left" spacing="loose" %}
 The framework
 ## Why refrakt.md?
 
@@ -47,7 +70,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
 {% /feature %}
 
-{% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" tint="subtle" spacing="tight" %}
+{% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" tint="subtle" spacing="flush" %}
 Composable by design
 ## Runes that work together
 
@@ -55,8 +78,8 @@ Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each
 
 ---
 
-{% showcase bleed="both" offset="7rem" shadow="elevated" %}
-{% mockup device="iphone-15" tint="base" scale="1" tint-mode="auto" %}
+{% showcase bleed="both" offset="7rem" shadow="elevated" place="center" %}
+{% mockup device="iphone-15" tint="base" scale=0.9 tint-mode="auto" %}
 {% map zoom="12" center="40.7580, -73.9855" %}
 - **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
 - **Central Park** - *Urban green oasis* - 40.7829, -73.9654
@@ -107,7 +130,7 @@ A simple Neapolitan-style pizza with fresh ingredients.
 {% /preview %}
 {% /feature %}
 
-{% feature spacing="loose" tint-mode="auto" align="left" %}
+{% feature spacing="tight" tint-mode="auto" align="left" %}
 8 packages, 60+ runes
 ## A rune for every domain
 
@@ -144,10 +167,11 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 
 - {% icon name="video" /%} **Media**
 
-  `music-playlist`, `music-recording`
+  `playlist`, `track`, `audio`
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" tint="cool" width="content" %}
+
+{% testimonial variant="quote" spacing="breathe" width="content" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic

@@ -12,23 +12,23 @@ beforeEach(() => {
 
 function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElement {
 	const count = opts?.tabCount ?? 3;
-	const rune = opts?.rune ?? 'tabgroup';
+	const rune = opts?.rune ?? 'tab-group';
 
 	const tabs = Array.from({ length: count }, (_, i) => `
-		<li typeof="Tab" data-rune="tab">
-			<span property="name">Tab ${i + 1}</span>
+		<li data-rune="tab">
+			<span data-field="name">Tab ${i + 1}</span>
 		</li>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li typeof="TabPanel">
+		<li data-rune="tab-panel">
 			<div>Content ${i + 1}</div>
 		</li>
 	`).join('');
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', rune);
-	el.className = rune === 'codegroup' ? 'rf-codegroup' : 'rf-tabs';
+	el.className = rune === 'code-group' ? 'rf-codegroup' : 'rf-tabs';
 	el.innerHTML = `
 		<ul data-name="tabs">${tabs}</ul>
 		<ul data-name="panels">${panels}</ul>
@@ -41,19 +41,19 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	const count = opts?.tabCount ?? 2;
 
 	const tabs = Array.from({ length: count }, (_, i) => `
-		<li typeof="Tab" data-rune="tab">
-			<span property="name">file${i + 1}.ts</span>
+		<li data-rune="tab">
+			<span data-field="name">file${i + 1}.ts</span>
 		</li>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li typeof="TabPanel">
+		<li data-rune="tab-panel">
 			<pre><code>code ${i + 1}</code></pre>
 		</li>
 	`).join('');
 
 	const el = document.createElement('div');
-	el.setAttribute('data-rune', 'codegroup');
+	el.setAttribute('data-rune', 'code-group');
 	el.className = 'rf-codegroup';
 	el.innerHTML = `
 		<div data-name="topbar" class="rf-codegroup__topbar">
@@ -151,7 +151,7 @@ describe('tabsBehavior', () => {
 			const el = createTabGroup();
 			tabsBehavior(el);
 
-			const tabItems = el.querySelectorAll('[typeof="Tab"]');
+			const tabItems = el.querySelectorAll('[data-rune="tab"]');
 			for (const item of tabItems) {
 				expect((item as HTMLElement).hidden).toBe(true);
 			}
@@ -267,13 +267,13 @@ describe('tabsBehavior', () => {
 			expect(el.querySelector('[role="tablist"]')).toBeNull();
 
 			// Tab items should be visible again
-			const tabItems = el.querySelectorAll('[typeof="Tab"]');
+			const tabItems = el.querySelectorAll('[data-rune="tab"]');
 			for (const item of tabItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
 			}
 
 			// Panel items should be visible again
-			const panelItems = el.querySelectorAll('[typeof="TabPanel"]');
+			const panelItems = el.querySelectorAll('[data-rune="tab-panel"]');
 			for (const item of panelItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
 			}
@@ -292,7 +292,7 @@ describe('tabsBehavior', () => {
 
 	it('handles element with no ul', () => {
 		const el = document.createElement('section');
-		el.setAttribute('data-rune', 'tabgroup');
+		el.setAttribute('data-rune', 'tab-group');
 		document.body.appendChild(el);
 
 		const cleanup = tabsBehavior(el);
@@ -301,7 +301,7 @@ describe('tabsBehavior', () => {
 
 	it('handles ul with no Tab/TabPanel items', () => {
 		const el = document.createElement('section');
-		el.setAttribute('data-rune', 'tabgroup');
+		el.setAttribute('data-rune', 'tab-group');
 		el.innerHTML = '<ul><li>Regular item</li></ul>';
 		document.body.appendChild(el);
 

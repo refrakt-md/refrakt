@@ -3,15 +3,15 @@ import { isTag, makeTag, readMeta, resolveGap, ratioToFr, resolveValign } from '
 
 // ─── Comparison postTransform helpers ───
 
-/** Recursively find all nodes with a specific typeof attribute */
-function collectByTypeof(children: RendererNode[], typeName: string): SerializedTag[] {
+/** Recursively find all nodes with a specific data-rune attribute */
+function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
 	const results: SerializedTag[] = [];
 	for (const c of children) {
 		if (isTag(c)) {
-			if (c.attributes?.typeof === typeName) {
+			if (c.attributes?.['data-rune'] === typeName) {
 				results.push(c);
 			} else {
-				results.push(...collectByTypeof(c.children, typeName));
+				results.push(...collectByRune(c.children, typeName));
 			}
 		}
 	}
@@ -20,8 +20,9 @@ function collectByTypeof(children: RendererNode[], typeName: string): Serialized
 
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
+	const kebab = prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
 	for (const c of node.children) {
-		if (isTag(c) && c.attributes?.property === prop) {
+		if (isTag(c) && c.attributes?.['data-field'] === kebab) {
 			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
 		}
 	}
@@ -30,8 +31,9 @@ function readPropText(node: SerializedTag, prop: string): string {
 
 /** Read meta tag value from within a node (for non-modifier metas not consumed by engine) */
 function readLocalMeta(node: SerializedTag, prop: string): string {
+	const kebab = prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
 	for (const c of node.children) {
-		if (isTag(c) && c.name === 'meta' && c.attributes?.property === prop) {
+		if (isTag(c) && c.name === 'meta' && c.attributes?.['data-field'] === kebab) {
 			return c.attributes.content ?? '';
 		}
 	}
@@ -199,10 +201,10 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'Feature': 'in-feature' },
+		contextModifiers: { 'feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'Hero': 'in-hero', 'Pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -244,7 +246,7 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
+		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		autoLabel: pageSectionAutoLabel,
 	},
 	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
@@ -278,7 +280,7 @@ export const config: Record<string, RuneConfig> = {
 			// Filter out consumed meta tags, wrap remaining children in content div
 			const contentChildren = node.children.filter(child => {
 				if (!isTag(child) || child.name !== 'meta') return true;
-				return child.attributes.property !== 'rating';
+				return child.attributes['data-field'] !== 'rating';
 			});
 
 			const children: (SerializedTag | string)[] = [];
@@ -322,13 +324,13 @@ export const config: Record<string, RuneConfig> = {
 				: '';
 
 			// Find ComparisonColumn children (inside the grid wrapper)
-			const columns = collectByTypeof(node.children, 'ComparisonColumn');
+			const columns = collectByRune(node.children, 'comparison-column');
 
 			// Extract structured data from each column
 			const columnData: ComparisonColData[] = columns.map(col => ({
 				name: readPropText(col, 'name'),
 				highlighted: readLocalMeta(col, 'highlighted') === 'true',
-				rows: collectByTypeof(col.children, 'ComparisonRow'),
+				rows: collectByRune(col.children, 'comparison-row'),
 			}));
 
 			// Build layout

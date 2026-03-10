@@ -13,11 +13,11 @@ We began building.
 Open-sourced the library.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Timeline');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const entries = findAllTags(tag!, t => t.attributes.typeof === 'TimelineEntry');
+		const entries = findAllTags(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entries.length).toBe(2);
 	});
 
@@ -28,8 +28,8 @@ Open-sourced the library.
 Description here.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Timeline');
-		const entry = findTag(tag!, t => t.attributes.typeof === 'TimelineEntry');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
+		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
 		const dateTag = findTag(entry!, t => t.name === 'time');
@@ -48,7 +48,7 @@ Description here.
 Content.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Timeline');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
 		const dirMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'horizontal');
 		expect(dirMeta).toBeDefined();
 	});
@@ -60,8 +60,8 @@ Content.
 Content.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Timeline');
-		const entry = findTag(tag!, t => t.attributes.typeof === 'TimelineEntry');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
+		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
 		const labelTag = findTag(entry!, t => t.name === 'span');

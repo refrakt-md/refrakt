@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createTransform } from '../src/engine.js';
-import { makeTag } from '../src/helpers.js';
+import { makeTag, toKebabCase } from '../src/helpers.js';
 import type { ThemeConfig } from '../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
 
@@ -15,15 +15,15 @@ const testConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'Hero': 'in-hero', 'Grid': 'in-grid' },
+			contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		},
 		CallToAction: {
 			block: 'cta',
-			contextModifiers: { 'Hero': 'in-hero' },
+			contextModifiers: { 'hero': 'in-hero' },
 		},
 		Feature: {
 			block: 'feature',
-			contextModifiers: { 'Hero': 'in-hero' },
+			contextModifiers: { 'hero': 'in-hero' },
 		},
 		// A rune with no contextModifiers
 		Plain: { block: 'plain' },
@@ -36,7 +36,7 @@ function asTag(node: any): SerializedTag {
 	return node as SerializedTag;
 }
 
-/** Find a tag recursively by typeof */
+/** Find a tag recursively by data-rune */
 function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 	if (!node || typeof node !== 'object') return undefined;
 	if (Array.isArray(node)) {
@@ -47,7 +47,7 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 		return undefined;
 	}
 	if (node.$$mdtype === 'Tag') {
-		if (node.attributes?.typeof === typeof_) return node;
+		if (node.attributes?.['data-rune'] === toKebabCase(typeof_)) return node;
 		for (const child of node.children ?? []) {
 			const found = findByTypeof(child, typeof_);
 			if (found) return found;
@@ -58,8 +58,8 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 
 describe('context-aware BEM modifiers', () => {
 	it('standalone rune gets no context modifier', () => {
-		const hint = makeTag('section', { typeof: 'Hint' }, [
-			makeTag('meta', { property: 'hintType', content: 'warning' }, []),
+		const hint = makeTag('section', { 'data-rune': 'hint' }, [
+			makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }, []),
 			'Some warning text',
 		]);
 
@@ -70,9 +70,9 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune nested inside a matching parent gets the modifier class', () => {
-		const hero = makeTag('section', { typeof: 'Hero' }, [
-			makeTag('section', { typeof: 'Hint' }, [
-				makeTag('meta', { property: 'hintType', content: 'note' }, []),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'hint' }, [
+				makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 				'A note inside hero',
 			]),
 		]);
@@ -87,8 +87,8 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune nested inside a non-matching parent gets no context modifier', () => {
-		const grid = makeTag('section', { typeof: 'Grid' }, [
-			makeTag('section', { typeof: 'CallToAction' }, [
+		const grid = makeTag('section', { 'data-rune': 'grid' }, [
+			makeTag('section', { 'data-rune': 'call-to-action' }, [
 				'CTA inside grid',
 			]),
 		]);
@@ -103,10 +103,10 @@ describe('context-aware BEM modifiers', () => {
 
 	it('deeply nested: only immediate parent rune matters', () => {
 		// Hero > Grid > Hint — Hint's parent is Grid, not Hero
-		const hero = makeTag('section', { typeof: 'Hero' }, [
-			makeTag('section', { typeof: 'Grid' }, [
-				makeTag('section', { typeof: 'Hint' }, [
-					makeTag('meta', { property: 'hintType', content: 'note' }, []),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'grid' }, [
+				makeTag('section', { 'data-rune': 'hint' }, [
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 					'Deep hint',
 				]),
 			]),
@@ -122,10 +122,10 @@ describe('context-aware BEM modifiers', () => {
 
 	it('context passes through non-rune wrapper elements', () => {
 		// Hero > div (not a rune) > Hint — parent context should pass through the div
-		const hero = makeTag('section', { typeof: 'Hero' }, [
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
 			makeTag('div', {}, [
-				makeTag('section', { typeof: 'Hint' }, [
-					makeTag('meta', { property: 'hintType', content: 'note' }, []),
+				makeTag('section', { 'data-rune': 'hint' }, [
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
 					'Hint inside a wrapper div inside hero',
 				]),
 			]),
@@ -138,8 +138,8 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('rune without contextModifiers is unaffected by parent context', () => {
-		const hero = makeTag('section', { typeof: 'Hero' }, [
-			makeTag('section', { typeof: 'Plain' }, ['Plain rune inside hero']),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'plain' }, ['Plain rune inside hero']),
 		]);
 
 		const result = asTag(transform(hero));
@@ -149,9 +149,9 @@ describe('context-aware BEM modifiers', () => {
 	});
 
 	it('top-level rune sets context for its children', () => {
-		const hero = makeTag('section', { typeof: 'Hero' }, [
-			makeTag('section', { typeof: 'Feature' }, ['Feature inside hero']),
-			makeTag('section', { typeof: 'CallToAction' }, ['CTA inside hero']),
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'feature' }, ['Feature inside hero']),
+			makeTag('section', { 'data-rune': 'call-to-action' }, ['CTA inside hero']),
 		]);
 
 		const result = asTag(transform(hero));

@@ -12,7 +12,7 @@ function createReveal(opts?: { stepCount?: number }): HTMLElement {
 	const count = opts?.stepCount ?? 3;
 
 	const steps = Array.from({ length: count }, (_, i) => `
-		<div class="rf-reveal-step" typeof="RevealStep" data-rune="revealstep">
+		<div class="rf-reveal-step" typeof="RevealStep" data-rune="reveal-step">
 			<div class="rf-reveal-step__content">Step ${i + 1} content</div>
 		</div>
 	`).join('');
@@ -31,7 +31,7 @@ describe('revealBehavior', () => {
 			const el = createReveal();
 			revealBehavior(el);
 
-			const steps = el.querySelectorAll('[data-rune="revealstep"]');
+			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
 			expect(steps[1].classList.contains('rf-reveal-step--hidden')).toBe(true);
 			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
@@ -54,7 +54,7 @@ describe('revealBehavior', () => {
 			const nextBtn = el.querySelector<HTMLElement>('.rf-reveal__next')!;
 			nextBtn.click();
 
-			const steps = el.querySelectorAll('[data-rune="revealstep"]');
+			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
 			expect(steps[1].classList.contains('rf-reveal-step--visible')).toBe(true);
 			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
@@ -87,7 +87,7 @@ describe('revealBehavior', () => {
 			const resetBtn = el.querySelector<HTMLElement>('.rf-reveal__reset')!;
 			resetBtn.click();
 
-			const steps = el.querySelectorAll('[data-rune="revealstep"]');
+			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
 			expect(steps[1].classList.contains('rf-reveal-step--hidden')).toBe(true);
 			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
@@ -111,7 +111,7 @@ describe('revealBehavior', () => {
 			const el = createReveal({ stepCount: 1 });
 			revealBehavior(el);
 
-			const steps = el.querySelectorAll('[data-rune="revealstep"]');
+			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
 		});
 	});
@@ -126,7 +126,7 @@ describe('revealBehavior', () => {
 			expect(el.querySelector('.rf-reveal__next')).toBeNull();
 			expect(el.querySelector('.rf-reveal__reset')).toBeNull();
 
-			const steps = el.querySelectorAll('[data-rune="revealstep"]');
+			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			for (const step of steps) {
 				expect(step.classList.contains('rf-reveal-step--visible')).toBe(false);
 				expect(step.classList.contains('rf-reveal-step--hidden')).toBe(false);

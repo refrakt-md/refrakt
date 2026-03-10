@@ -1,20 +1,29 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
-class TestimonialModel extends Model {
-	@attribute({ type: Number, required: false })
-	rating: number | undefined = undefined;
-
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'card';
-
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
+export const testimonial = createContentModelSchema({
+	attributes: {
+		rating: { type: Number, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	deprecations: {
+		layout: { newName: 'variant' },
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
 		// Extract blockquote as the testimonial quote
 		let quoteTag: any;
@@ -32,7 +41,7 @@ class TestimonialModel extends Model {
 				for (const child of node.children) {
 					if (Tag.isTag(child) && child.name === 'strong' && !authorNameTag) {
 						const nameText = child.children.filter((c: any) => typeof c === 'string').join('');
-						authorNameTag = new Tag('span', { property: 'authorName' }, [nameText]);
+						authorNameTag = new Tag('span', { 'data-field': 'author-name' }, [nameText]);
 
 						// Get the role text after the strong tag
 						const idx = node.children.indexOf(child);
@@ -43,7 +52,7 @@ class TestimonialModel extends Model {
 							.trim();
 
 						if (rest) {
-							authorRoleTag = new Tag('span', { property: 'authorRole' }, [rest]);
+							authorRoleTag = new Tag('span', { 'data-field': 'author-role' }, [rest]);
 						}
 					}
 				}
@@ -57,8 +66,11 @@ class TestimonialModel extends Model {
 			}
 		}
 
-		const ratingMeta = this.rating !== undefined ? new Tag('meta', { content: this.rating }) : undefined;
-		const variantMeta = new Tag('meta', { content: this.variant });
+		const rating = attrs.rating;
+		const variant = attrs.variant ?? 'card';
+
+		const ratingMeta = rating !== undefined ? new Tag('meta', { content: rating }) : undefined;
+		const variantMeta = new Tag('meta', { content: variant });
 
 		const resultChildren: any[] = [];
 		if (quoteTag) resultChildren.push(quoteTag);
@@ -67,6 +79,22 @@ class TestimonialModel extends Model {
 		if (ratingMeta) resultChildren.push(ratingMeta);
 		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
+
+		// Schema.org nested entities for Person author and Rating
+		if (authorNameTag) {
+			const authorMetas: any[] = [
+				new Tag('meta', { property: 'name', content: authorNameTag.children.filter((c: any) => typeof c === 'string').join('') }),
+			];
+			if (authorRoleTag) {
+				authorMetas.push(new Tag('meta', { property: 'jobTitle', content: authorRoleTag.children.filter((c: any) => typeof c === 'string').join('') }));
+			}
+			resultChildren.push(new Tag('span', { typeof: 'Person', property: 'author' }, authorMetas));
+		}
+		if (rating !== undefined) {
+			resultChildren.push(new Tag('span', { typeof: 'Rating', property: 'reviewRating' }, [
+				new Tag('meta', { property: 'ratingValue', content: rating }),
+			]));
+		}
 
 		return createComponentRenderable(schema.Testimonial, {
 			tag: 'article',
@@ -77,11 +105,10 @@ class TestimonialModel extends Model {
 				rating: ratingMeta,
 				avatar: avatarTag,
 			},
+			schema: {
+				reviewBody: quoteTag,
+			},
 			children: resultChildren,
 		});
-	}
-}
-
-export const testimonial = createSchema(TestimonialModel, {
-	layout: { newName: 'variant' },
+	},
 });

@@ -11,7 +11,7 @@ graph TD
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Diagram');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 	});
@@ -24,14 +24,14 @@ graph LR
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Diagram');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
 		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const language = metas.find(m => m.attributes.property === 'language');
+		const language = metas.find(m => m.attributes['data-field'] === 'language');
 		expect(language).toBeDefined();
 		expect(language!.attributes.content).toBe('mermaid');
 
-		const title = metas.find(m => m.attributes.property === 'title');
+		const title = metas.find(m => m.attributes['data-field'] === 'title');
 		expect(title).toBeDefined();
 		expect(title!.attributes.content).toBe('Architecture');
 	});
@@ -44,7 +44,7 @@ graph TD
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes.typeof === 'Diagram');
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
 		const source = findTag(tag!, t => t.name === 'meta' && t.attributes['data-name'] === 'source');
 		expect(source).toBeDefined();
 		expect(source!.attributes.content).toContain('graph TD');

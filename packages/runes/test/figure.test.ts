@@ -7,7 +7,7 @@ describe('figure tag', () => {
 ![Sunset](/images/sunset.jpg)
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes.typeof === 'Figure');
+		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 		expect(fig!.name).toBe('figure');
 
@@ -23,7 +23,7 @@ describe('figure tag', () => {
 A beautiful sunset over the ocean.
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes.typeof === 'Figure');
+		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
 		const caption = findTag(fig!, t => t.name === 'figcaption');
@@ -35,14 +35,14 @@ A beautiful sunset over the ocean.
 ![Photo](/images/photo.jpg)
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes.typeof === 'Figure');
+		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
-		const sizeMeta = findTag(fig!, t => t.name === 'meta' && t.attributes.property === 'size');
+		const sizeMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'size');
 		expect(sizeMeta).toBeDefined();
 		expect(sizeMeta!.attributes.content).toBe('large');
 
-		const alignMeta = findTag(fig!, t => t.name === 'meta' && t.attributes.property === 'align');
+		const alignMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
 		expect(alignMeta).toBeDefined();
 		expect(alignMeta!.attributes.content).toBe('center');
 	});

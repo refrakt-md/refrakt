@@ -23,15 +23,15 @@ function buildNavMap(content: RendererNode[]): Map<string, string> {
 	function walk(nodes: RendererNode[], groupTitle: string) {
 		for (const node of nodes) {
 			if (!isTag(node)) continue;
-			if (node.attributes.typeof === 'NavGroup') {
+			if (node.attributes['data-rune'] === 'nav-group') {
 				const heading = node.children.find(
 					(c): c is SerializedTag => isTag(c) && /^h[1-6]$/.test(c.name)
 				);
 				walk(node.children, heading ? getTextContent(heading) : '');
-			} else if (node.attributes.typeof === 'NavItem') {
+			} else if (node.attributes['data-rune'] === 'nav-item') {
 				const slugSpan = node.children.find(
 					(c): c is SerializedTag =>
-						isTag(c) && c.name === 'span' && c.attributes.property === 'slug'
+						isTag(c) && c.name === 'span' && c.attributes['data-field'] === 'slug'
 				);
 				if (slugSpan && groupTitle) {
 					map.set(getTextContent(slugSpan), groupTitle);
@@ -56,10 +56,10 @@ function collectNavOrder(content: RendererNode[]): string[] {
 	function walk(nodes: RendererNode[]) {
 		for (const node of nodes) {
 			if (!isTag(node)) continue;
-			if (node.attributes.typeof === 'NavItem') {
+			if (node.attributes['data-rune'] === 'nav-item') {
 				const slugSpan = node.children.find(
 					(c): c is SerializedTag =>
-						isTag(c) && c.name === 'span' && c.attributes.property === 'slug'
+						isTag(c) && c.name === 'span' && c.attributes['data-field'] === 'slug'
 				);
 				if (slugSpan) {
 					slugs.push(getTextContent(slugSpan));

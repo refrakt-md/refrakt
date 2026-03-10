@@ -1,8 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const aspectType = ['16:9', '4:3', '1:1', 'auto'] as const;
 
@@ -81,31 +82,34 @@ function detectProvider(url: string): ProviderInfo {
 	};
 }
 
-class EmbedModel extends Model {
-	@attribute({ type: String, required: true })
-	url: string;
+export const embed = createContentModelSchema({
+	attributes: {
+		url: { type: String, required: true },
+		type: { type: String, required: false },
+		aspect: { type: String, required: false, matches: aspectType.slice() },
+		title: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'fallback', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const url = attrs.url ?? '';
+		const detected = detectProvider(url);
+		const resolvedType = attrs.type || detected.type;
 
-	@attribute({ type: String, required: false })
-	type: string = '';
-
-	@attribute({ type: String, required: false, matches: aspectType.slice() })
-	aspect: typeof aspectType[number] = '16:9';
-
-	@attribute({ type: String, required: false })
-	title: string = '';
-
-	transform(): RenderableTreeNodes {
-		const detected = detectProvider(this.url);
-		const resolvedType = this.type || detected.type;
-
-		const urlMeta = new Tag('meta', { content: this.url });
+		const urlMeta = new Tag('meta', { content: url });
 		const typeMeta = new Tag('meta', { content: resolvedType });
-		const aspectMeta = new Tag('meta', { content: this.aspect });
-		const titleMeta = new Tag('meta', { content: this.title });
+		const aspectMeta = new Tag('meta', { content: attrs.aspect ?? '16:9' });
+		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
 		const embedUrlMeta = new Tag('meta', { content: detected.embedUrl });
 		const providerMeta = new Tag('meta', { content: detected.provider });
 
-		const fallback = this.transformChildren().wrap('div');
+		const fallback = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.fallback), config) as RenderableTreeNode[],
+		).wrap('div');
 
 		return createComponentRenderable(schema.Embed, {
 			tag: 'figure',
@@ -120,9 +124,12 @@ class EmbedModel extends Model {
 			refs: {
 				fallback: fallback.tag('div'),
 			},
+			schema: {
+				name: titleMeta,
+				contentUrl: urlMeta,
+				embedUrl: embedUrlMeta,
+			},
 			children: [urlMeta, typeMeta, aspectMeta, titleMeta, embedUrlMeta, providerMeta, fallback.next()],
 		});
-	}
-}
-
-export const embed = createSchema(EmbedModel);
+	},
+});

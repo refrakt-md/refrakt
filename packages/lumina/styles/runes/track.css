@@ -1,0 +1,118 @@
+/* Track */
+.rf-track {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.625rem 1.5rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--rf-color-border) 50%, transparent);
+	transition: background 0.15s ease;
+	counter-increment: track;
+}
+.rf-track:last-child {
+	border-bottom: none;
+}
+.rf-track:hover {
+	background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
+}
+.rf-track::before {
+	content: counter(track);
+	min-width: 1.5rem;
+	font-size: 0.8rem;
+	color: var(--rf-color-muted);
+	text-align: right;
+	flex-shrink: 0;
+}
+
+/* Track name — primary text, takes remaining space */
+.rf-track__track-name {
+	flex: 1;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: var(--rf-color-text);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Artist — secondary text */
+.rf-track__track-artist {
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	flex-shrink: 0;
+}
+
+/* Duration — right-aligned, tabular nums */
+.rf-track__track-duration {
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	font-variant-numeric: tabular-nums;
+	flex-shrink: 0;
+	min-width: 3rem;
+	text-align: right;
+}
+
+/* Meta (date etc.) */
+.rf-track__track-meta {
+	font-size: 0.75rem;
+	color: var(--rf-color-muted);
+	flex-shrink: 0;
+}
+
+/* Description — full width below the row */
+.rf-track__track-description {
+	flex-basis: 100%;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	line-height: 1.5;
+	padding-top: 0.5rem;
+}
+.rf-track__track-description p {
+	margin: 0;
+}
+
+/* Wrap when description is present */
+.rf-track:has(.rf-track__track-description) {
+	flex-wrap: wrap;
+}
+
+/* Cue points (lyrics / chapters) */
+.rf-track [data-name="lyrics"],
+.rf-track [data-name="chapters"] {
+	flex-basis: 100%;
+	list-style: none;
+	padding: 0.5rem 0 0;
+	margin: 0;
+	font-size: 0.8125rem;
+}
+.rf-track [data-name="lyrics"] li {
+	padding: 0.125rem 0;
+	color: var(--rf-color-muted);
+}
+.rf-track [data-name="lyric"] {
+	margin: 0;
+}
+.rf-track [data-name="chapters"] li {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.25rem 0;
+}
+.rf-track [data-name="chapter-name"] {
+	color: var(--rf-color-text);
+	font-weight: 500;
+}
+.rf-track [data-name="chapter-time"] {
+	color: var(--rf-color-muted);
+	font-variant-numeric: tabular-nums;
+	margin-left: auto;
+}
+
+/* Hide secondary columns on narrow screens */
+@media (max-width: 480px) {
+	.rf-track__track-artist {
+		display: none;
+	}
+	.rf-track__track-meta {
+		display: none;
+	}
+}

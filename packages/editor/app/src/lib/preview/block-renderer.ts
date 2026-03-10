@@ -9,7 +9,7 @@ type PostTransformFn = (node: SerializedTag, context: { modifiers: Record<string
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
-	'Nav', 'NavGroup', 'NavItem',   // needs RfContext.pages
+	'nav', 'nav-group', 'nav-item',   // needs RfContext.pages
 ]);
 
 /**
@@ -106,8 +106,8 @@ function checkIsRuntimeOnly(node: RendererNode): boolean {
 	if (node === null || node === undefined) return false;
 	if (typeof node === 'string' || typeof node === 'number') return false;
 	if (Array.isArray(node)) return node.some(checkIsRuntimeOnly);
-	if ('attributes' in node && node.attributes?.typeof) {
-		return RUNTIME_ONLY_TYPES.has(node.attributes.typeof);
+	if ('attributes' in node && node.attributes?.['data-rune']) {
+		return RUNTIME_ONLY_TYPES.has(node.attributes['data-rune']);
 	}
 	return false;
 }
@@ -125,11 +125,11 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	}
 
 	const tag = node as SerializedTag;
-	if (tag.attributes?.typeof === 'Sandbox') {
+	if (tag.attributes?.['data-rune'] === 'sandbox') {
 		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 		const contexts = design?.contexts ?? {};
 		const contextChild = tag.children?.find(
-			c => (c as SerializedTag)?.attributes?.property === 'context',
+			c => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
 		) as SerializedTag | undefined;
 		const scope = (contextChild?.attributes?.content as string) ?? 'default';
 		const tokens = contexts[scope];
@@ -137,7 +137,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 			const injected: SerializedTag = {
 				$$mdtype: 'Tag',
 				name: 'meta',
-				attributes: { property: 'design-tokens', content: JSON.stringify(tokens) },
+				attributes: { 'data-field': 'design-tokens', content: JSON.stringify(tokens) },
 				children: [],
 			};
 			return { ...tag, children: [...(tag.children ?? []), injected] };

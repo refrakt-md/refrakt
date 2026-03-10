@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createSchema, NodeStream, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Extract plain text from an AST node by walking all text children
@@ -124,13 +125,10 @@ class ComparisonColumnModel extends Model {
 	@attribute({ type: Boolean, required: false })
 	highlighted: boolean = false;
 
-	@group({ include: ['tag'] })
-	rows: NodeStream;
-
 	transform(): RenderableTreeNodes {
 		const nameTag = new Tag('span', {}, [this.name]);
 		const highlightedMeta = new Tag('meta', { content: String(this.highlighted) });
-		const rowStream = this.rows.transform();
+		const rowStream = this.transformChildren();
 
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
 		const body = rowItems.wrap('div');
@@ -150,173 +148,191 @@ class ComparisonColumnModel extends Model {
 	}
 }
 
-class ComparisonModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number = 2;
+// Multi-pass heading+list parser with cross-column row alignment
+function convertComparisonChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
+	const headingLevel = (attributes.headingLevel as number) ?? 2;
+	const highlighted = (attributes.highlighted as string) ?? '';
 
-	@attribute({ type: String, required: false })
-	title: string = '';
+	const converted = headingsToList({ level: headingLevel })(nodes as Node[]);
+	const n = converted.length - 1;
+	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	@attribute({ type: String, required: false })
-	highlighted: string = '';
+	// --- First pass: parse all columns ---
+	const parsedColumns: ParsedColumn[] = [];
 
-	@attribute({ type: String, required: false })
-	layout: string = 'table';
+	for (const item of converted[n].children) {
+		const heading = item.children[0];
+		const name = extractText(heading);
+		const isHighlighted = name === highlighted;
 
-	@attribute({ type: String, required: false })
-	labels: string = 'left';
+		const column: ParsedColumn = {
+			name,
+			highlighted: isHighlighted,
+			labeledRows: new Map(),
+			secondaryRows: [],
+			callouts: [],
+		};
 
-	@attribute({ type: Boolean, required: false })
-	collapse: boolean = true;
+		for (let i = 1; i < item.children.length; i++) {
+			const child = item.children[i];
 
-	@attribute({ type: String, required: false })
-	verdict: string = '';
+			if (child.type === 'list') {
+				for (const listItem of child.children) {
+					if (listItem.type !== 'item') continue;
 
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
+					const label = extractBoldLabel(listItem);
+					const rowType = detectRowType(listItem);
+					const children = getDescriptionChildren(listItem);
 
-	@group({ include: ['tag'] })
-	columns: NodeStream;
+					const row: ParsedRow = { label, rowType, children };
 
-	convertHeadings(nodes: Node[]) {
-		const converted = headingsToList({ level: this.headingLevel })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		// --- First pass: parse all columns ---
-		const parsedColumns: ParsedColumn[] = [];
-
-		for (const item of converted[n].children) {
-			const heading = item.children[0];
-			const name = extractText(heading);
-			const isHighlighted = name === this.highlighted;
-
-			const column: ParsedColumn = {
-				name,
-				highlighted: isHighlighted,
-				labeledRows: new Map(),
-				secondaryRows: [],
-				callouts: [],
-			};
-
-			for (let i = 1; i < item.children.length; i++) {
-				const child = item.children[i];
-
-				if (child.type === 'list') {
-					// Process list items as comparison rows
-					for (const listItem of child.children) {
-						if (listItem.type !== 'item') continue;
-
-						const label = extractBoldLabel(listItem);
-						const rowType = detectRowType(listItem);
-						const children = getDescriptionChildren(listItem);
-
-						const row: ParsedRow = { label, rowType, children };
-
-						if (label) {
-							column.labeledRows.set(label, row);
-						} else {
-							column.secondaryRows.push(row);
-						}
+					if (label) {
+						column.labeledRows.set(label, row);
+					} else {
+						column.secondaryRows.push(row);
 					}
-				} else if (child.type === 'blockquote') {
-					const text = extractText(child);
-					column.callouts.push({
-						label: null,
-						rowType: 'callout',
-						children: child.children,
-					});
 				}
-			}
-
-			parsedColumns.push(column);
-		}
-
-		// --- Build master label list (preserving first-seen order) ---
-		const masterLabels: string[] = [];
-		const seenLabels = new Set<string>();
-
-		for (const col of parsedColumns) {
-			for (const label of col.labeledRows.keys()) {
-				if (!seenLabels.has(label)) {
-					seenLabels.add(label);
-					masterLabels.push(label);
-				}
+			} else if (child.type === 'blockquote') {
+				column.callouts.push({
+					label: null,
+					rowType: 'callout',
+					children: child.children,
+				});
 			}
 		}
 
-		// --- Second pass: create aligned tag nodes ---
-		const result: Node[] = converted.slice(0, n);
+		parsedColumns.push(column);
+	}
 
-		for (const col of parsedColumns) {
-			const rowNodes: Node[] = [];
+	// --- Build master label list (preserving first-seen order) ---
+	const masterLabels: string[] = [];
+	const seenLabels = new Set<string>();
 
-			// Aligned rows (in master label order)
-			for (const label of masterLabels) {
-				const row = col.labeledRows.get(label);
-				if (row) {
-					rowNodes.push(new Ast.Node('tag', {
-						label,
-						rowType: row.rowType,
-					}, row.children, 'comparison-row'));
-				} else {
-					// Empty placeholder for missing label
-					rowNodes.push(new Ast.Node('tag', {
-						label,
-						rowType: 'empty',
-					}, [], 'comparison-row'));
-				}
+	for (const col of parsedColumns) {
+		for (const label of col.labeledRows.keys()) {
+			if (!seenLabels.has(label)) {
+				seenLabels.add(label);
+				masterLabels.push(label);
 			}
+		}
+	}
 
-			// Secondary (unlabeled) rows
-			for (const row of col.secondaryRows) {
+	// --- Second pass: create aligned tag nodes ---
+	const result: Node[] = converted.slice(0, n);
+
+	// Embed master labels as a synthetic node so the transform can retrieve them
+	result.push(new Ast.Node('tag', {
+		_masterLabels: JSON.stringify(masterLabels),
+	}, [], '__comparison-meta'));
+
+	for (const col of parsedColumns) {
+		const rowNodes: Node[] = [];
+
+		// Aligned rows (in master label order)
+		for (const label of masterLabels) {
+			const row = col.labeledRows.get(label);
+			if (row) {
 				rowNodes.push(new Ast.Node('tag', {
-					label: '',
+					label,
 					rowType: row.rowType,
 				}, row.children, 'comparison-row'));
-			}
-
-			// Callout rows
-			for (const row of col.callouts) {
+			} else {
+				// Empty placeholder for missing label
 				rowNodes.push(new Ast.Node('tag', {
-					label: '',
-					rowType: 'callout',
-				}, row.children, 'comparison-row'));
+					label,
+					rowType: 'empty',
+				}, [], 'comparison-row'));
 			}
-
-			result.push(new Ast.Node('tag', {
-				name: col.name,
-				highlighted: col.highlighted ? 'true' : 'false',
-			}, rowNodes, 'comparison-column'));
 		}
 
-		// Store master labels for the transform phase
-		this._masterLabels = masterLabels;
+		// Secondary (unlabeled) rows
+		for (const row of col.secondaryRows) {
+			rowNodes.push(new Ast.Node('tag', {
+				label: '',
+				rowType: row.rowType,
+			}, row.children, 'comparison-row'));
+		}
 
-		return result;
+		// Callout rows
+		for (const row of col.callouts) {
+			rowNodes.push(new Ast.Node('tag', {
+				label: '',
+				rowType: 'callout',
+			}, row.children, 'comparison-row'));
+		}
+
+		result.push(new Ast.Node('tag', {
+			name: col.name,
+			highlighted: col.highlighted ? 'true' : 'false',
+		}, rowNodes, 'comparison-column'));
 	}
 
-	private _masterLabels: string[] = [];
+	return result;
+}
 
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
+export const comparisonRow = createSchema(ComparisonRowModel);
+export const comparisonColumn = createSchema(ComparisonColumnModel);
 
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const columnStream = this.columns.transform();
+export const comparison = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		title: { type: String, required: false },
+		highlighted: { type: String, required: false },
+		layout: { type: String, required: false },
+		labels: { type: String, required: false },
+		collapse: { type: Boolean, required: false },
+		verdict: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertComparisonChildren,
+		description: 'Multi-pass heading+list parser with cross-column row alignment. '
+			+ 'Converts headings to columns, list items to rows with bold labels for alignment, '
+			+ 'blockquotes to callouts, and builds a master label list for cross-column row matching.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
 
-		const layoutMeta = new Tag('meta', { content: this.layout });
-		const labelsMeta = new Tag('meta', { content: this.labels });
-		const collapseMeta = new Tag('meta', { content: String(this.collapse) });
-		const verdictMeta = new Tag('meta', { content: this.verdict });
-		const highlightedMeta = new Tag('meta', { content: this.highlighted });
-		const rowLabelsMeta = new Tag('meta', { content: JSON.stringify(this._masterLabels) });
+		// Extract the synthetic meta node carrying master labels
+		let masterLabels: string[] = [];
+		const contentChildren: Node[] = [];
+		for (const child of allChildren) {
+			if (child.type === 'tag' && (child as any).tag === '__comparison-meta') {
+				masterLabels = JSON.parse(child.attributes._masterLabels || '[]');
+			} else {
+				contentChildren.push(child);
+			}
+		}
+
+		// Separate header content from column tag nodes
+		const headerAst: Node[] = [];
+		const columnAst: Node[] = [];
+		for (const child of contentChildren) {
+			if (child.type === 'tag' && (child as any).tag === 'comparison-column') {
+				columnAst.push(child);
+			} else if (child.type === 'heading' || child.type === 'paragraph') {
+				headerAst.push(child);
+			}
+		}
+
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		);
+		const columnStream = new RenderableNodeCursor(
+			Markdoc.transform(columnAst, config) as RenderableTreeNode[],
+		);
+
+		const layoutMeta = new Tag('meta', { content: attrs.layout ?? 'table' });
+		const labelsMeta = new Tag('meta', { content: attrs.labels ?? 'left' });
+		const collapseMeta = new Tag('meta', { content: String(attrs.collapse ?? true) });
+		const verdictMeta = new Tag('meta', { content: attrs.verdict ?? '' });
+		const highlightedMeta = new Tag('meta', { content: attrs.highlighted ?? '' });
+		const rowLabelsMeta = new Tag('meta', { content: JSON.stringify(masterLabels) });
 
 		const columnItems = columnStream.tag('div').typeof('ComparisonColumn');
 		const grid = columnItems.wrap('div');
 
-		const titleTag = this.title ? new Tag('h2', {}, [this.title]) : undefined;
+		const titleTag = attrs.title ? new Tag('h2', {}, [attrs.title]) : undefined;
 
 		return createComponentRenderable(schema.Comparison, {
 			tag: 'section',
@@ -340,9 +356,5 @@ class ComparisonModel extends Model {
 				grid.next(),
 			],
 		});
-	}
-}
-
-export const comparisonRow = createSchema(ComparisonRowModel);
-export const comparisonColumn = createSchema(ComparisonColumnModel);
-export const comparison = createSchema(ComparisonModel);
+	},
+});

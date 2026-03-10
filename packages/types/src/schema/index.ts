@@ -5,6 +5,7 @@ export class Type<TSchema extends object = object> {
     public readonly name: string,
     private schemaCtr: Newable<TSchema>,
     public context: Record<string, string> = {},
+    public readonly schemaOrgType?: string,
   ) {}
 
   create() {
@@ -15,8 +16,8 @@ export class Type<TSchema extends object = object> {
 export class TypeFactory<TSchema extends object> {
   constructor(private schema: Newable<TSchema>) {}
 
-  defineType(name: string, context: Record<string, string> = {}) {
-    return new Type<TSchema>(name, this.schema, context);
+  defineType(name: string, context: Record<string, string> = {}, schemaOrgType?: string) {
+    return new Type<TSchema>(name, this.schema, context, schemaOrgType);
   }
 }
 

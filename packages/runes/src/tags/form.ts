@@ -2,8 +2,8 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const variantType = ['stacked', 'inline', 'compact'] as const;
 const methodType = ['GET', 'POST'] as const;
@@ -157,10 +157,10 @@ class FormFieldModel extends Model {
 				]),
 			);
 
-			const fieldTypeMeta = new Tag('meta', { property: 'fieldType', content: this.fieldType });
+			const fieldTypeMeta = new Tag('meta', { 'data-field': 'field-type', content: this.fieldType });
 
 			return new Tag('fieldset', {
-				typeof: 'FormField',
+				'data-rune': 'form-field',
 				class: 'rf-form-choice-group',
 			}, [
 				fieldTypeMeta,
@@ -224,170 +224,166 @@ class FormFieldModel extends Model {
 	}
 }
 
-class FormModel extends Model {
-	@attribute({ type: String, required: true })
-	action: string = '';
+function convertFormChildren(nodes: Node[]): Node[] {
+	const converted: Node[] = [];
+	let pendingBlockquote: Node | null = null;
 
-	@attribute({ type: String, required: false, matches: methodType.slice() })
-	method: typeof methodType[number] = 'POST';
-
-	@attribute({ type: String, required: false })
-	success: string = '';
-
-	@attribute({ type: String, required: false })
-	error: string = '';
-
-	@attribute({ type: String, required: false, matches: variantType.slice() })
-	variant: typeof variantType[number] = 'stacked';
-
-	@attribute({ type: String, required: false })
-	name: string = '';
-
-	@attribute({ type: Boolean, required: false })
-	honeypot: boolean = true;
-
-	@group({ include: ['tag'] })
-	body: NodeStream;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
-		let pendingBlockquote: Node | null = null;
-
-		// Find the last bold-only paragraph (submit button)
-		let lastBoldParaIndex = -1;
-		for (let i = nodes.length - 1; i >= 0; i--) {
-			if (isBoldOnlyParagraph(nodes[i])) {
-				lastBoldParaIndex = i;
-				break;
-			}
+	// Find the last bold-only paragraph (submit button)
+	let lastBoldParaIndex = -1;
+	for (let i = nodes.length - 1; i >= 0; i--) {
+		if (isBoldOnlyParagraph(nodes[i])) {
+			lastBoldParaIndex = i;
+			break;
 		}
-
-		const flushBlockquote = () => {
-			if (pendingBlockquote) {
-				const helpText = extractText(pendingBlockquote);
-				converted.push(new Ast.Node('tag', {
-					name: helpText,
-					fieldType: 'help',
-					required: false,
-					placeholder: '',
-					options: '',
-				}, [], 'form-field'));
-				pendingBlockquote = null;
-			}
-		};
-
-		for (let i = 0; i < nodes.length; i++) {
-			const node = nodes[i];
-
-			if (node.type === 'heading') {
-				flushBlockquote();
-				const headingText = extractText(node);
-				converted.push(new Ast.Node('tag', {
-					name: headingText,
-					fieldType: 'group',
-					required: false,
-					placeholder: '',
-					options: '',
-				}, [], 'form-field'));
-			} else if (node.type === 'list' && pendingBlockquote) {
-				// Blockquote + list = selection field
-				const blockquoteText = extractText(pendingBlockquote);
-				const mods = parseBlockquoteModifiers(blockquoteText);
-
-				const optionTexts: string[] = [];
-				for (const item of node.children) {
-					if (item.type === 'item') {
-						optionTexts.push(extractText(item));
-					}
-				}
-
-				let fieldType: string;
-				if (mods.multiple) {
-					fieldType = 'checkbox';
-				} else if (mods.radio || optionTexts.length <= 4) {
-					fieldType = 'radio';
-				} else {
-					fieldType = 'select';
-				}
-
-				converted.push(new Ast.Node('tag', {
-					name: mods.label,
-					fieldType,
-					required: !mods.optional,
-					placeholder: '',
-					options: optionTexts.join(','),
-				}, [], 'form-field'));
-
-				pendingBlockquote = null;
-			} else if (node.type === 'list') {
-				flushBlockquote();
-				// Standalone list = text input fields
-				for (const item of node.children) {
-					if (item.type === 'item') {
-						const itemText = extractText(item);
-						const parsed = parseFieldText(itemText);
-						const fieldType = inferFieldType(parsed.name);
-
-						converted.push(new Ast.Node('tag', {
-							name: parsed.name,
-							fieldType,
-							required: !parsed.optional,
-							placeholder: parsed.placeholder,
-							options: '',
-						}, [], 'form-field'));
-					}
-				}
-			} else if (node.type === 'blockquote') {
-				flushBlockquote();
-				pendingBlockquote = node;
-			} else if (i === lastBoldParaIndex) {
-				flushBlockquote();
-				const buttonText = extractText(node);
-				converted.push(new Ast.Node('tag', {
-					name: buttonText,
-					fieldType: 'submit',
-					required: false,
-					placeholder: '',
-					options: '',
-				}, [], 'form-field'));
-			} else if (node.type === 'hr') {
-				flushBlockquote();
-				converted.push(new Ast.Node('tag', {
-					name: '',
-					fieldType: 'separator',
-					required: false,
-					placeholder: '',
-					options: '',
-				}, [], 'form-field'));
-			} else if (node.type === 'paragraph') {
-				flushBlockquote();
-				const text = extractText(node);
-				converted.push(new Ast.Node('tag', {
-					name: text,
-					fieldType: 'description',
-					required: false,
-					placeholder: '',
-					options: '',
-				}, [], 'form-field'));
-			} else {
-				flushBlockquote();
-				converted.push(node);
-			}
-		}
-
-		flushBlockquote();
-		return super.processChildren(converted);
 	}
 
-	transform(): RenderableTreeNodes {
-		const body = this.body.transform();
+	const flushBlockquote = () => {
+		if (pendingBlockquote) {
+			const helpText = extractText(pendingBlockquote);
+			converted.push(new Ast.Node('tag', {
+				name: helpText,
+				fieldType: 'help',
+				required: false,
+				placeholder: '',
+				options: '',
+			}, [], 'form-field'));
+			pendingBlockquote = null;
+		}
+	};
 
-		const actionMeta = new Tag('meta', { content: this.action });
-		const methodMeta = new Tag('meta', { content: this.method });
-		const successMeta = new Tag('meta', { content: this.success });
-		const errorMeta = new Tag('meta', { content: this.error });
-		const variantMeta = new Tag('meta', { content: this.variant });
-		const honeypotMeta = new Tag('meta', { content: String(this.honeypot) });
+	for (let i = 0; i < nodes.length; i++) {
+		const node = nodes[i];
+
+		if (node.type === 'heading') {
+			flushBlockquote();
+			const headingText = extractText(node);
+			converted.push(new Ast.Node('tag', {
+				name: headingText,
+				fieldType: 'group',
+				required: false,
+				placeholder: '',
+				options: '',
+			}, [], 'form-field'));
+		} else if (node.type === 'list' && pendingBlockquote) {
+			// Blockquote + list = selection field
+			const blockquoteText = extractText(pendingBlockquote);
+			const mods = parseBlockquoteModifiers(blockquoteText);
+
+			const optionTexts: string[] = [];
+			for (const item of node.children) {
+				if (item.type === 'item') {
+					optionTexts.push(extractText(item));
+				}
+			}
+
+			let fieldType: string;
+			if (mods.multiple) {
+				fieldType = 'checkbox';
+			} else if (mods.radio || optionTexts.length <= 4) {
+				fieldType = 'radio';
+			} else {
+				fieldType = 'select';
+			}
+
+			converted.push(new Ast.Node('tag', {
+				name: mods.label,
+				fieldType,
+				required: !mods.optional,
+				placeholder: '',
+				options: optionTexts.join(','),
+			}, [], 'form-field'));
+
+			pendingBlockquote = null;
+		} else if (node.type === 'list') {
+			flushBlockquote();
+			// Standalone list = text input fields
+			for (const item of node.children) {
+				if (item.type === 'item') {
+					const itemText = extractText(item);
+					const parsed = parseFieldText(itemText);
+					const fieldType = inferFieldType(parsed.name);
+
+					converted.push(new Ast.Node('tag', {
+						name: parsed.name,
+						fieldType,
+						required: !parsed.optional,
+						placeholder: parsed.placeholder,
+						options: '',
+					}, [], 'form-field'));
+				}
+			}
+		} else if (node.type === 'blockquote') {
+			flushBlockquote();
+			pendingBlockquote = node;
+		} else if (i === lastBoldParaIndex) {
+			flushBlockquote();
+			const buttonText = extractText(node);
+			converted.push(new Ast.Node('tag', {
+				name: buttonText,
+				fieldType: 'submit',
+				required: false,
+				placeholder: '',
+				options: '',
+			}, [], 'form-field'));
+		} else if (node.type === 'hr') {
+			flushBlockquote();
+			converted.push(new Ast.Node('tag', {
+				name: '',
+				fieldType: 'separator',
+				required: false,
+				placeholder: '',
+				options: '',
+			}, [], 'form-field'));
+		} else if (node.type === 'paragraph') {
+			flushBlockquote();
+			const text = extractText(node);
+			converted.push(new Ast.Node('tag', {
+				name: text,
+				fieldType: 'description',
+				required: false,
+				placeholder: '',
+				options: '',
+			}, [], 'form-field'));
+		} else {
+			flushBlockquote();
+			converted.push(node);
+		}
+	}
+
+	flushBlockquote();
+	return converted;
+}
+
+export const formField = createSchema(FormFieldModel);
+
+export const form = createContentModelSchema({
+	attributes: {
+		action: { type: String, required: true },
+		method: { type: String, required: false, matches: methodType.slice() },
+		success: { type: String, required: false },
+		error: { type: String, required: false },
+		variant: { type: String, required: false, matches: variantType.slice() },
+		name: { type: String, required: false },
+		honeypot: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: (nodes) => convertFormChildren(nodes as Node[]),
+		description: 'Multi-pass form field parser with type inference and selection detection. '
+			+ 'Converts lists to text inputs, blockquote + list to selection fields, '
+			+ 'headings to fieldsets, bold paragraphs to submit buttons, and blockquotes to help text.',
+	},
+	transform(resolved, attrs, config) {
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.children), config) as import('@markdoc/markdoc').RenderableTreeNode[],
+		);
+
+		const actionMeta = new Tag('meta', { content: attrs.action ?? '' });
+		const methodMeta = new Tag('meta', { content: attrs.method ?? 'POST' });
+		const successMeta = new Tag('meta', { content: attrs.success ?? '' });
+		const errorMeta = new Tag('meta', { content: attrs.error ?? '' });
+		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'stacked' });
+		const honeypotMeta = new Tag('meta', { content: String(attrs.honeypot ?? true) });
 
 		const fields = body.tag('div').typeof('FormField');
 		const bodyContainer = body.wrap('div');
@@ -406,8 +402,5 @@ class FormModel extends Model {
 			refs: { body: bodyContainer },
 			children: [actionMeta, methodMeta, successMeta, errorMeta, variantMeta, honeypotMeta, bodyContainer.next()],
 		});
-	}
-}
-
-export const formField = createSchema(FormFieldModel);
-export const form = createSchema(FormModel);
+	},
+});

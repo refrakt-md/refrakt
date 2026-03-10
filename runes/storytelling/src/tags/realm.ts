@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
-import { NodeStream, attribute, group, Model, createComponentRenderable, createSchema, headingsToList } from '@refrakt-md/runes';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class RealmSectionModel extends Model {
@@ -21,77 +21,63 @@ class RealmSectionModel extends Model {
 	}
 }
 
-class RealmModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+export const realmSection = createSchema(RealmSectionModel);
 
-	@attribute({ type: String, required: true })
-	name: string = '';
+export const realm = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		name: { type: String, required: true },
+		type: { type: String, required: false },
+		scale: { type: String, required: false },
+		tags: { type: String, required: false },
+		parent: { type: String, required: false },
+	},
+	contentModel: (attrs) => ({
+		type: 'sections' as const,
+		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		emitTag: 'realm-section',
+		emitAttributes: { name: '$heading' },
+		fields: [
+			{ name: 'scene', match: 'image', optional: true },
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
+		],
+		sectionModel: {
+			type: 'sequence' as const,
+			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+	}),
+	transform(resolved, attrs, config) {
+		// Combine explicit child tags (preamble items) with emitted section tags
+		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
+		const sectionNodes = new RenderableNodeCursor(
+			Markdoc.transform(allItems, config) as RenderableTreeNode[],
+		);
 
-	@attribute({ type: String, required: false })
-	type: string = 'place';
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const realmTypeMeta = new Tag('meta', { content: attrs.type ?? 'place' });
+		const scaleMeta = new Tag('meta', { content: attrs.scale ?? '' });
+		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
+		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
-	@attribute({ type: String, required: false })
-	scale: string = '';
-
-	@attribute({ type: String, required: false })
-	tags: string = '';
-
-	@attribute({ type: String, required: false })
-	parent: string = '';
-
-	@group({ include: ['heading', 'paragraph', 'image'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	itemgroup: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		if (!converted[n] || converted[n].type !== 'list') return nodes;
-
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const name = Array.from(heading.walk())
-				.filter(n => n.type === 'text')
-				.map(t => t.attributes.content)
-				.join(' ');
-
-			return new Ast.Node('tag', { name }, item.children.slice(1), 'realm-section');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const itemStream = this.itemgroup.transform();
-
-		const nameTag = new Tag('span', {}, [this.name]);
-		const realmTypeMeta = new Tag('meta', { content: this.type });
-		const scaleMeta = new Tag('meta', { content: this.scale });
-		const tagsMeta = new Tag('meta', { content: this.tags });
-		const parentMeta = new Tag('meta', { content: this.parent });
-
-		// Extract scene image from header
-		const scene = header.tag('img').limit(1);
+		// Extract scene image from preamble
+		const sceneNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.scene), config) as RenderableTreeNode[],
+		);
+		const scene = sceneNodes.tag('img').limit(1);
 		const hasScene = scene.count() > 0;
 		const sceneDiv = hasScene ? scene.wrap('div') : undefined;
 
-		const sections = itemStream.tag('div').typeof('RealmSection');
+		const sections = sectionNodes.tag('div').typeof('RealmSection');
 		const hasSections = sections.count() > 0;
 
 		const children: any[] = [nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta];
 		if (sceneDiv) children.push(sceneDiv.next());
+
+		const schemaMap = {
+			name: nameTag,
+			additionalType: realmTypeMeta,
+		};
 
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
@@ -112,10 +98,11 @@ class RealmModel extends Model {
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					sections: sectionsContainer,
 				},
+				schema: schemaMap,
 				children,
 			});
 		} else {
-			const body = itemStream.wrap('div');
+			const body = sectionNodes.wrap('div');
 			children.push(body.next());
 
 			return createComponentRenderable(schema.Realm, {
@@ -132,11 +119,9 @@ class RealmModel extends Model {
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					body,
 				},
+				schema: schemaMap,
 				children,
 			});
 		}
-	}
-}
-
-export const realmSection = createSchema(RealmSectionModel);
-export const realm = createSchema(RealmModel);
+	},
+});

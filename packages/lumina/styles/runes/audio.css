@@ -1,0 +1,199 @@
+/* Audio */
+.rf-audio {
+	margin: 1.5rem 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+}
+.rf-audio rf-audio {
+	display: block;
+}
+.rf-audio__description {
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+	border-top: 1px solid var(--rf-color-border);
+	line-height: 1.5;
+}
+.rf-audio__description p {
+	margin: 0;
+}
+.rf-audio__description p + p {
+	margin-top: 0.5rem;
+}
+
+/* ── Audio Player (web component internals) ── */
+
+.rf-audio-player {
+	padding: 1rem 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+}
+
+/* Track info */
+.rf-audio-player__info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+}
+.rf-audio-player__name {
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--rf-color-text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.rf-audio-player__artist {
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+}
+
+/* Controls row */
+.rf-audio-player__controls {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+}
+
+/* Play / pause button */
+.rf-audio-player__play {
+	flex-shrink: 0;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: var(--rf-radius-full, 9999px);
+	border: none;
+	background: var(--rf-color-primary);
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.15s ease;
+	padding: 0;
+}
+.rf-audio-player__play:hover {
+	opacity: 0.85;
+}
+.rf-audio-player__play:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+.rf-audio-player__play:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+.rf-audio-player__play svg {
+	width: 1rem;
+	height: 1rem;
+	fill: currentColor;
+}
+
+/* Time displays */
+.rf-audio-player__time {
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--rf-color-muted);
+	min-width: 2.5rem;
+	user-select: none;
+}
+.rf-audio-player__time--current {
+	text-align: right;
+}
+.rf-audio-player__time--duration {
+	text-align: left;
+}
+
+/* Progress bar */
+.rf-audio-player__progress {
+	flex: 1;
+	height: 6px;
+	background: var(--rf-color-surface-active, #e5e7eb);
+	border-radius: var(--rf-radius-full, 9999px);
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+}
+.rf-audio-player__progress:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+.rf-audio-player__progress-bar {
+	height: 100%;
+	background: var(--rf-color-primary);
+	border-radius: var(--rf-radius-full, 9999px);
+	width: 0%;
+	transition: width 0.1s linear;
+	pointer-events: none;
+}
+
+/* Waveform container */
+.rf-audio-player__waveform {
+	width: 100%;
+	min-height: 48px;
+	border-radius: var(--rf-radius-sm, 4px);
+	overflow: hidden;
+}
+
+/* Hide standard progress bar when waveform is active */
+.rf-audio[data-waveform="true"] .rf-audio-player__controls .rf-audio-player__progress {
+	display: none;
+}
+
+/* Chapter list */
+.rf-audio-player__chapters {
+	list-style: none;
+	padding: 0;
+	margin: 0.5rem 0 0;
+	border-top: 1px solid var(--rf-color-border);
+	padding-top: 0.5rem;
+}
+.rf-audio-player__chapter {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.375rem 0.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+	border-radius: var(--rf-radius-sm, 4px);
+	transition: background 0.15s ease;
+	text-align: left;
+	font-family: inherit;
+}
+.rf-audio-player__chapter:hover {
+	background: var(--rf-color-surface-hover, rgba(0, 0, 0, 0.04));
+}
+.rf-audio-player__chapter:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: -2px;
+}
+.rf-audio-player__chapter--active {
+	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+}
+.rf-audio-player__chapter--active .rf-audio-player__chapter-name {
+	color: var(--rf-color-primary);
+}
+.rf-audio-player__chapter-name {
+	flex: 1;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--rf-color-text);
+}
+.rf-audio-player__chapter-time {
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--rf-color-muted);
+	flex-shrink: 0;
+}
+
+/* Active track highlight when connected to audio player */
+.rf-track--active {
+	background: color-mix(in srgb, var(--rf-color-primary) 6%, transparent);
+	border-radius: var(--rf-radius-sm, 4px);
+}
+.rf-track--active .rf-track__track-name {
+	color: var(--rf-color-primary);
+}

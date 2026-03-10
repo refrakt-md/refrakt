@@ -7,7 +7,7 @@ export const schema = {
   Api: useSchema(Api).defineType('Api'),
   Changelog: useSchema(Changelog).defineType('Changelog'),
   ChangelogRelease: useSchema(ChangelogRelease).defineType('ChangelogRelease'),
-  Symbol: useSchema(Symbol).defineType('Symbol'),
+  Symbol: useSchema(Symbol).defineType('Symbol', {}, 'TechArticle'),
   SymbolGroup: useSchema(SymbolGroup).defineType('SymbolGroup'),
   SymbolMember: useSchema(SymbolMember).defineType('SymbolMember'),
 };

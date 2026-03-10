@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Extract plain text from an AST node
@@ -49,18 +49,25 @@ interface ParsedSections {
 	shadows: SpacingItem[];
 }
 
-class SpacingModel extends Model {
-	@attribute({ type: String, required: false })
-	title: string = '';
+export const spacing = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false, default: '' },
+	},
+	contentModel: {
+		type: 'custom',
+		description: 'Passes raw children through for spacing token parsing',
+		processChildren(nodes) { return nodes; },
+	},
+	transform(resolved, attrs) {
+		const children = resolved.children as Node[];
 
-	transform(): RenderableTreeNodes {
 		// Parse headings and list items from the original AST into structured data
 		const result: ParsedSections = { spacing: null, radii: [], shadows: [] };
 		let currentSection: SectionType | '' = '';
 		let unit = '';
 		let scaleValues: string[] = [];
 
-		for (const child of this.node.children) {
+		for (const child of children) {
 			if (child.type === 'heading') {
 				const heading = extractText(child).toLowerCase();
 				if (heading.includes('spacing')) currentSection = 'spacing';
@@ -95,11 +102,11 @@ class SpacingModel extends Model {
 		}
 
 		// Build complete presentational Tag tree
-		const titleMeta = new Tag('meta', { content: this.title });
+		const titleMeta = new Tag('meta', { content: attrs.title });
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [titleMeta];
 
-		if (this.title) {
-			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [this.title]));
+		if (attrs.title) {
+			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 
 		// Spacing scale section
@@ -166,10 +173,8 @@ class SpacingModel extends Model {
 			},
 			children: topChildren,
 		});
-	}
-}
-
-export const spacing = createSchema(SpacingModel);
+	},
+});
 
 /** Extract spacing tokens from a spacing AST node (used by design-context). */
 export function extractSpacingTokens(node: Node): {

@@ -1,10 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
-const { Ast, Tag } = Markdoc;
-import { headingsToList } from '../util.js';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { NodeStream } from '../lib/node.js';
-import { attribute, group, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
 const modeType = ['click', 'scroll', 'auto'] as const;
@@ -30,63 +29,54 @@ class RevealStepModel extends Model {
 	}
 }
 
-class RevealModel extends Model {
-	@attribute({ type: Number, required: false })
-	headingLevel: number | undefined = undefined;
+export const revealStep = createSchema(RevealStepModel);
 
-	@attribute({ type: String, required: false, matches: modeType.slice() })
-	mode: typeof modeType[number] = 'click';
+export const reveal = createContentModelSchema({
+	attributes: {
+		headingLevel: { type: Number, required: false },
+		mode: { type: String, required: false, matches: modeType.slice() },
+	},
+	contentModel: (attrs) => ({
+		type: 'sections' as const,
+		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		emitTag: 'reveal-step',
+		emitAttributes: { name: '$heading' },
+		fields: [
+			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
+		],
+		sectionModel: {
+			type: 'sequence' as const,
+			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+	}),
+	transform(resolved, attrs, config) {
+		const headerNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		);
+		// Combine explicit child tags (preamble items) with emitted section tags
+		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
+		const sectionNodes = new RenderableNodeCursor(
+			Markdoc.transform(allItems, config) as RenderableTreeNode[],
+		);
+		const modeMeta = new Tag('meta', { content: attrs.mode ?? 'click' });
 
-	@group({ include: ['heading', 'paragraph'] })
-	header: NodeStream;
-
-	@group({ include: ['tag'] })
-	stepgroup: NodeStream;
-
-	convertHeadings(nodes: Node[]) {
-		const level = this.headingLevel ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-		if (!level) return nodes;
-		const converted = headingsToList({ level })(nodes);
-		const n = converted.length - 1;
-		const tags = converted[n].children.map(item => {
-			const heading = item.children[0];
-			const name = Array.from(heading.walk()).filter(n => n.type === 'text').map(t => t.attributes.content).join(' ');
-			return new Ast.Node('tag', { name }, item.children.slice(1), 'reveal-step');
-		});
-
-		converted.splice(n, 1, ...tags);
-		return converted;
-	}
-
-	processChildren(nodes: Node[]) {
-		return super.processChildren(this.convertHeadings(nodes));
-	}
-
-	transform(): RenderableTreeNodes {
-		const header = this.header.transform();
-		const stepStream = this.stepgroup.transform();
-		const modeMeta = new Tag('meta', { content: this.mode });
-
-		const steps = stepStream.tag('div').typeof('RevealStep');
+		const steps = sectionNodes.tag('div').typeof('RevealStep');
 		const stepsContainer = steps.wrap('div');
 
-		const children = header.count() > 0
-			? [header.wrap('header').next(), modeMeta, stepsContainer.next()]
+		const children = headerNodes.count() > 0
+			? [headerNodes.wrap('header').next(), modeMeta, stepsContainer.next()]
 			: [modeMeta, stepsContainer.next()];
 
 		return createComponentRenderable(schema.Reveal, {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
+				...pageSectionProperties(headerNodes),
 				step: steps,
 			},
 			refs: { steps: stepsContainer },
 			children,
 		});
-	}
-}
-
-export const revealStep = createSchema(RevealStepModel);
-
-export const reveal = createSchema(RevealModel);
+	},
+});

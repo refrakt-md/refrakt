@@ -51,7 +51,7 @@ async function geocode(address: string): Promise<[number, number] | null> {
  *
  * Reads configuration from data attributes (data-zoom, data-center, data-style,
  * data-height, data-provider, data-interactive, data-route, data-cluster, data-api-key).
- * Extracts pin data from child <ol> → <li> elements with data-typeof="MapPin".
+ * Extracts pin data from child <ol> → <li> elements with data-rune="map-pin".
  *
  * Progressive enhancement: shows a structured list of locations until Leaflet loads.
  */
@@ -80,11 +80,11 @@ export class RfMap extends SafeHTMLElement {
 		const pinsContainer = this.querySelector('ol');
 		if (!pinsContainer) return result;
 
-		for (const li of pinsContainer.querySelectorAll<HTMLElement>('li[data-rune="mappin"], li[data-typeof="MapPin"], li[typeof="MapPin"]')) {
+		for (const li of pinsContainer.querySelectorAll<HTMLElement>('li[data-rune="map-pin"]')) {
 			const readMeta = (prop: string) =>
-				li.querySelector<HTMLMetaElement>(`meta[property="${prop}"]`)?.content || '';
+				li.querySelector<HTMLMetaElement>(`meta[data-field="${prop}"]`)?.content || '';
 			const readSpan = (prop: string) =>
-				li.querySelector<HTMLElement>(`span[property="${prop}"]`)?.textContent || '';
+				li.querySelector<HTMLElement>(`span[data-field="${prop}"]`)?.textContent || '';
 
 			result.push({
 				name: readSpan('name'),
