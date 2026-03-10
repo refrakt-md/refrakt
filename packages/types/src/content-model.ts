@@ -109,6 +109,13 @@ export interface SectionsModel {
 
 	/** Extract structured data from heading text. */
 	headingExtract?: HeadingExtract;
+
+	/**
+	 * When set, if no section-level headings are found, all children are
+	 * wrapped in a single emitted tag (requires `emitTag`) with the given
+	 * attributes instead of being treated as preamble.
+	 */
+	implicitSection?: { attributes?: Record<string, string> };
 }
 
 /** Pattern 3 — children split into groups by a delimiter node. */

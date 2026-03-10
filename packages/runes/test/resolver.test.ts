@@ -679,6 +679,93 @@ describe('resolveSections', () => {
 		expect(sections[1].$heading).toBe('Also Empty');
 		expect(sections[1].body).toBeUndefined();
 	});
+
+	it('wraps all children in a single emitted tag when implicitSection is set and no headings found', () => {
+		const children = [paragraph('intro'), paragraph('detail')];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading',
+			sectionModel: {
+				type: 'sequence',
+				fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+			},
+			emitTag: 'my-wrapper',
+			implicitSection: { attributes: { label: 'default' } },
+		};
+
+		const result = resolveSections(children, model);
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(1);
+		expect(sections[0].type).toBe('tag');
+		expect(sections[0].tag).toBe('my-wrapper');
+		expect(sections[0].attributes.label).toBe('default');
+		expect(sections[0].children).toHaveLength(2);
+	});
+
+	it('does not use implicitSection when headings are present', () => {
+		const children = [heading(2, 'Section A'), paragraph('body')];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			sectionModel: {
+				type: 'sequence',
+				fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+			},
+			emitTag: 'my-wrapper',
+			implicitSection: { attributes: { label: 'default' } },
+		};
+
+		const result = resolveSections(children, model);
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(1);
+		expect(sections[0].attributes.label).toBeUndefined();
+	});
+
+	it('wraps children when explicit heading level has no matches', () => {
+		// Flat itinerary case: heading:2 specified but only h3s present
+		const children = [heading(3, 'Stop A'), paragraph('desc'), heading(3, 'Stop B')];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			sectionModel: {
+				type: 'sequence',
+				fields: [],
+			},
+			emitTag: 'itinerary-day',
+			implicitSection: { attributes: { label: '' } },
+		};
+
+		const result = resolveSections(children, model);
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(1);
+		expect(sections[0].tag).toBe('itinerary-day');
+		expect(sections[0].attributes.label).toBe('');
+		expect(sections[0].children).toHaveLength(3);
+	});
+
+	it('implicitSection with empty attributes', () => {
+		const children = [paragraph('content')];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading',
+			sectionModel: {
+				type: 'sequence',
+				fields: [],
+			},
+			emitTag: 'wrapper',
+			implicitSection: {},
+		};
+
+		const result = resolveSections(children, model);
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(1);
+		expect(sections[0].tag).toBe('wrapper');
+		expect(sections[0].children).toHaveLength(1);
+	});
 });
 
 // ---------------------------------------------------------------------------

@@ -280,7 +280,21 @@ export function resolveSections(
 	}
 
 	if (level === undefined) {
-		// No headings found — everything is preamble
+		// No headings found
+		if (model.implicitSection && model.emitTag) {
+			// Wrap all children in a single emitted tag
+			const preamble = model.fields
+				? resolveSequence([], model.fields)
+				: {};
+			const tagNode = new Ast.Node(
+				'tag',
+				{ ...(model.implicitSection.attributes ?? {}) },
+				children,
+				model.emitTag,
+			);
+			return { ...preamble, sections: [tagNode] };
+		}
+
 		const preamble = model.fields
 			? resolveSequence(children, model.fields)
 			: {};
@@ -303,6 +317,20 @@ export function resolveSections(
 		}
 	}
 	if (current) rawSections.push(current);
+
+	// implicitSection: if no sections found, wrap all children in a single emitted tag
+	if (rawSections.length === 0 && model.implicitSection && model.emitTag) {
+		const preamble = model.fields
+			? resolveSequence([], model.fields)
+			: {};
+		const tagNode = new Ast.Node(
+			'tag',
+			{ ...(model.implicitSection.attributes ?? {}) },
+			children,
+			model.emitTag,
+		);
+		return { ...preamble, sections: [tagNode] };
+	}
 
 	// 3. Resolve preamble fields
 	const preamble = model.fields
