@@ -1,5 +1,31 @@
 # @refrakt-md/types
 
+## 0.8.0
+
+### Minor Changes
+
+- ### Features
+
+  - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`
+  - Cross-page pipeline: EntityRegistry, breadcrumb auto-resolution, aggregated data
+  - New media runes: `playlist`, `track`, `audio` with full schema.org RDFa annotations
+  - Section header BEM classes with pill-badge eyebrow styling
+  - Automatic RunePackage version sync on release
+
+  ### Fixes
+
+  - Production CSS tree-shaking: kebab→PascalCase key mismatch
+  - Audio player: idempotency guard, playlist interaction, autoplay race condition
+  - Editor serializing numerical attributes as strings
+  - Metadata hiding in rune CSS breaking nested runes
+  - Showcase centering and place attribute in split layout
+  - Type safety: replace string booleans with proper boolean types
+
+  ### Breaking
+
+  - `style` attribute renamed to `variant` across all runes
+  - `typeof`/`property` renamed to `data-rune`/`data-field` across the pipeline
+
 ## 0.7.2
 
 ### Patch Changes

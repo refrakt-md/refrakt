@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const places: RunePackage = {
   name: 'places',
   displayName: 'Places',
-  version: '0.7.2',
+  version: '0.8.0',
   runes: {
     'event': {
       transform: event,

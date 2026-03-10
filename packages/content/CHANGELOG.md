@@ -1,5 +1,13 @@
 # @refrakt-md/content
 
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/types@0.8.0
+  - @refrakt-md/runes@0.8.0
+
 ## 0.7.2
 
 ### Patch Changes
