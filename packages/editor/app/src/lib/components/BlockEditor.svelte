@@ -12,7 +12,7 @@
 		type ParsedBlock,
 		type RuneBlock,
 	} from '../editor/block-parser.js';
-	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, type SectionMapping, type ActionMapping } from '../editor/section-mapper.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, type SectionMapping, type ActionMapping, type CommandMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
@@ -22,6 +22,7 @@
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
 	import InlineEditPopover from './InlineEditPopover.svelte';
 	import ActionEditPopover from './ActionEditPopover.svelte';
+	import CodeEditPopover from './CodeEditPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -373,6 +374,18 @@
 			return;
 		}
 
+		if (info.editType === 'code') {
+			const mapping = findCommandMapping(rb.innerContent, info.text);
+			if (!mapping) return;
+
+			commandEdit = {
+				blockIndex: index,
+				rect: info.rect,
+				mapping,
+			};
+			return;
+		}
+
 		// Default: inline text editing
 		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
 		if (!mapping) return;
@@ -454,6 +467,47 @@
 
 	function closeActionEdit() {
 		actionEdit = null;
+	}
+
+	// ── Command (code block) editing ──────────────────────────
+
+	let commandEdit: {
+		blockIndex: number;
+		rect: DOMRect;
+		mapping: CommandMapping;
+	} | null = $state(null);
+
+	function handleCommandEditChange(newCode: string) {
+		if (!commandEdit) return;
+		const block = blocks[commandEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyCommandEdit(rb.innerContent, commandEdit.mapping, newCode);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(commandEdit.blockIndex, updated);
+	}
+
+	function handleCommandRemove() {
+		if (!commandEdit) return;
+		const blockIndex = commandEdit.blockIndex;
+		const block = blocks[blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		// Remove the entire fenced code block from the inner content
+		const newInner = rb.innerContent.replace(commandEdit.mapping.source + '\n', '').replace(commandEdit.mapping.source, '');
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		commandEdit = null;
+		handleUpdateBlock(blockIndex, updated);
+	}
+
+	function closeCommandEdit() {
+		commandEdit = null;
 	}
 
 	// Group runes by category for the insert menu
@@ -628,6 +682,17 @@
 			onchange={handleActionEditChange}
 			onremove={handleActionRemove}
 			onclose={closeActionEdit}
+		/>
+	{/if}
+
+	{#if commandEdit}
+		<CodeEditPopover
+			anchorRect={commandEdit.rect}
+			code={commandEdit.mapping.code}
+			language={commandEdit.mapping.language}
+			onchange={handleCommandEditChange}
+			onremove={handleCommandRemove}
+			onclose={closeCommandEdit}
 		/>
 	{/if}
 </div>

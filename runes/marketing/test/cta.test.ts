@@ -44,7 +44,7 @@ npm install refrakt-md
     const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
     expect(ctaTag).toBeDefined();
 
-    const command = findTag(ctaTag!, t => t.attributes['data-rune'] === 'command');
+    const command = findTag(ctaTag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
     expect(command).toBeDefined();
   });
 
@@ -61,7 +61,7 @@ Take the next step.
     const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
     expect(ctaTag).toBeDefined();
 
-    const linkItem = findTag(ctaTag!, t => t.attributes['data-rune'] === 'link-item');
+    const linkItem = findTag(ctaTag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
     expect(linkItem).toBeDefined();
   });
 });

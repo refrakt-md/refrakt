@@ -5,7 +5,7 @@
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 	import { isEditableSection } from '../editor/section-mapper.js';
 
-	export type EditType = 'inline' | 'link';
+	export type EditType = 'inline' | 'link' | 'code';
 
 	export interface SectionClickInfo {
 		dataName: string;
@@ -111,7 +111,7 @@
 
 		if (hint === 'none') return null;
 
-		if (hint === 'link' || hint === 'inline') {
+		if (hint === 'link' || hint === 'inline' || hint === 'code') {
 			return { el: dataNameEl, dataName, editType: hint };
 		}
 

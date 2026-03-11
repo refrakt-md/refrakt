@@ -29,13 +29,7 @@ export const cta = createContentModelSchema({
 						const output = new RenderableNodeCursor(
 							[Markdoc.transform(node, baseConfig)] as RenderableTreeNode[],
 						);
-						return createComponentRenderable(schema.Command, {
-							tag: 'div',
-							properties: {
-								code: output.flatten().tag('code'),
-							},
-							children: output.next(),
-						});
+						return new Tag('div', {}, [output.next()]);
 					},
 				},
 			},
@@ -52,11 +46,12 @@ export const cta = createContentModelSchema({
 			class: attrs.class,
 			properties: {
 				...pageSectionProperties(header),
-				action: actions.flatten().tags('li', 'div'),
 			},
 			refs: {
 				actions: actionsDiv,
 				body: header.wrap('div'),
+				action: actions.flatten().tags('li'),
+				command: actions.flatten().tags('div'),
 			},
 			children: [
 				header.wrap('header').next(),

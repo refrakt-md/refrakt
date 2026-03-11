@@ -182,7 +182,6 @@ const pageSectionAutoLabel = {
 	headline: 'headline',
 	blurb: 'blurb',
 	image: 'image',
-	action: 'action',
 };
 
 export const config: Record<string, RuneConfig> = {
@@ -204,9 +203,9 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contextModifiers: { 'feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: { action: 'link', media: 'none' },
+		editHints: { action: 'link', command: 'code', media: 'none' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { action: 'link' } },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		modifiers: {

@@ -41,7 +41,7 @@ Build faster.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.attributes['data-rune'] === 'link-item');
+		const linkItem = findTag(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
 		expect(linkItem).toBeDefined();
 
 		const link = findTag(tag!, t => t.name === 'a' && t.attributes.href === '/signup');
@@ -62,7 +62,7 @@ npm create refrakt
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.attributes['data-rune'] === 'command');
+		const command = findTag(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
 		expect(command).toBeDefined();
 	});
 
@@ -83,10 +83,10 @@ npm create refrakt
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.attributes['data-rune'] === 'command');
+		const command = findTag(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
 		expect(command).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.attributes['data-rune'] === 'link-item');
+		const linkItem = findTag(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
 		expect(linkItem).toBeDefined();
 	});
 });

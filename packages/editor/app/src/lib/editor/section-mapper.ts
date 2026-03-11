@@ -188,3 +188,50 @@ export function applyActionEdit(
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
 }
+
+// ── Command (fenced code block) mapping ──────────────────────────────
+
+export interface CommandMapping {
+	/** Full fenced code block source (including backtick delimiters) */
+	source: string;
+	/** Just the code content between the fences */
+	code: string;
+	/** Language tag (e.g., 'bash', 'sh') */
+	language: string;
+}
+
+/**
+ * Find a fenced code block in the rune's inner content,
+ * matching by comparing the code content to the rendered text.
+ */
+export function findCommandMapping(
+	innerContent: string,
+	renderedText: string,
+): CommandMapping | null {
+	const normalizedRendered = normalizeText(renderedText);
+	const fenceRegex = /^(```(\w*)\n)([\s\S]*?)\n```\s*$/gm;
+	let match;
+
+	while ((match = fenceRegex.exec(innerContent)) !== null) {
+		const [fullMatch, , language, code] = match;
+		if (normalizeText(code) === normalizedRendered) {
+			return { source: fullMatch, code, language: language || '' };
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Apply a command edit: replace the code content within the fenced code block.
+ */
+export function applyCommandEdit(
+	innerContent: string,
+	mapping: CommandMapping,
+	newCode: string,
+): string {
+	const newSource = '```' + mapping.language + '\n' + newCode + '\n```';
+	const idx = innerContent.indexOf(mapping.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
+}
