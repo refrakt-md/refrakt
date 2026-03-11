@@ -12,7 +12,7 @@
 		type ParsedBlock,
 		type RuneBlock,
 	} from '../editor/block-parser.js';
-	import { findSectionMapping, applySectionEdit, type SectionMapping } from '../editor/section-mapper.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, type SectionMapping, type ActionMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
@@ -21,6 +21,7 @@
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
 	import InlineEditPopover from './InlineEditPopover.svelte';
+	import ActionEditPopover from './ActionEditPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -360,6 +361,19 @@
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
 
+		if (info.editType === 'link') {
+			const mapping = findActionMapping(rb.innerContent, info.text, info.href ?? '');
+			if (!mapping) return;
+
+			actionEdit = {
+				blockIndex: index,
+				rect: info.rect,
+				mapping,
+			};
+			return;
+		}
+
+		// Default: inline text editing
 		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
 		if (!mapping) return;
 
@@ -399,6 +413,47 @@
 
 	function closeInlineEdit() {
 		inlineEdit = null;
+	}
+
+	// ── Action item editing ────────────────────────────────────
+
+	let actionEdit: {
+		blockIndex: number;
+		rect: DOMRect;
+		mapping: ActionMapping;
+	} | null = $state(null);
+
+	function handleActionEditChange(newText: string, newHref: string) {
+		if (!actionEdit) return;
+		const block = blocks[actionEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyActionEdit(rb.innerContent, actionEdit.mapping, newText, newHref);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(actionEdit.blockIndex, updated);
+	}
+
+	function handleActionRemove() {
+		if (!actionEdit) return;
+		const blockIndex = actionEdit.blockIndex;
+		const block = blocks[blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		// Remove the entire list item line from the inner content
+		const newInner = rb.innerContent.replace(actionEdit.mapping.source + '\n', '').replace(actionEdit.mapping.source, '');
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		actionEdit = null;
+		handleUpdateBlock(blockIndex, updated);
+	}
+
+	function closeActionEdit() {
+		actionEdit = null;
 	}
 
 	// Group runes by category for the insert menu
@@ -562,6 +617,17 @@
 			inlineSource={inlineEdit.inlineSource}
 			onchange={handleInlineEditChange}
 			onclose={closeInlineEdit}
+		/>
+	{/if}
+
+	{#if actionEdit}
+		<ActionEditPopover
+			anchorRect={actionEdit.rect}
+			text={actionEdit.mapping.text}
+			href={actionEdit.mapping.href}
+			onchange={handleActionEditChange}
+			onremove={handleActionRemove}
+			onclose={closeActionEdit}
 		/>
 	{/if}
 </div>

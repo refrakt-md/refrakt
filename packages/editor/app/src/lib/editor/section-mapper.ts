@@ -132,3 +132,59 @@ export function applySectionEdit(
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
 }
+
+// ── Action item mapping ──────────────────────────────────────────────
+
+export interface ActionMapping {
+	/** The full source line (e.g., "- [Get started](/docs/getting-started)") */
+	source: string;
+	/** The list item prefix (e.g., "- ") */
+	listPrefix: string;
+	/** Link display text */
+	text: string;
+	/** Link URL */
+	href: string;
+}
+
+/**
+ * Find a markdown link within a list item in the rune's inner content,
+ * matching by rendered text and href.
+ */
+export function findActionMapping(
+	innerContent: string,
+	renderedText: string,
+	href: string,
+): ActionMapping | null {
+	const normalizedRendered = normalizeText(renderedText);
+	const lines = innerContent.split('\n');
+
+	for (const line of lines) {
+		const match = line.match(/^(\s*[-*+]\s+)\[([^\]]*)\]\(([^)]*)\)\s*$/);
+		if (!match) continue;
+
+		const [, listPrefix, linkText, linkUrl] = match;
+		if (
+			normalizeText(linkText) === normalizedRendered ||
+			linkUrl === href
+		) {
+			return { source: line, listPrefix, text: linkText, href: linkUrl };
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Apply an action edit: replace the markdown link in the inner content.
+ */
+export function applyActionEdit(
+	innerContent: string,
+	mapping: ActionMapping,
+	newText: string,
+	newHref: string,
+): string {
+	const newSource = `${mapping.listPrefix}[${newText}](${newHref})`;
+	const idx = innerContent.indexOf(mapping.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
+}

@@ -26,6 +26,12 @@ const UNSTYLED_BLOCKS = new Set([
 const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-event__end-date',   // end-date span styled via parent date detail
 	'.rf-hero--in-feature',  // context modifier not yet styled
+	'.rf-hero__action',      // editor-only label (editHints), not a styled element
+	'.rf-cta__action',       // editor-only label (editHints), not a styled element
+	'.rf-bento__action',     // editor-only label (editHints), not a styled element
+	'.rf-feature__action',   // editor-only label (editHints), not a styled element
+	'.rf-steps__action',     // editor-only label (editHints), not a styled element
+	'.rf-pricing__action',   // editor-only label (editHints), not a styled element
 ]);
 
 // ─── Helpers ───

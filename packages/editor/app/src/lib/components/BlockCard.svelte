@@ -5,10 +5,15 @@
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
 	import { isEditableSection } from '../editor/section-mapper.js';
 
+	export type EditType = 'inline' | 'link';
+
 	export interface SectionClickInfo {
 		dataName: string;
 		text: string;
 		rect: DOMRect;
+		editType: EditType;
+		/** For link-type edits: the href from the <a> child */
+		href?: string;
 	}
 
 	interface Props {
@@ -53,24 +58,75 @@
 	let previewDebounce: ReturnType<typeof setTimeout>;
 	let behaviorCleanup: (() => void) | null = null;
 
-	/** Find the nearest ancestor (or self) with a data-name attribute that is editable */
-	function findEditableSection(start: HTMLElement, root: HTMLElement): HTMLElement | null {
+	/** Convert PascalCase to kebab-case: "CallToAction" → "call-to-action" */
+	function toKebab(s: string): string {
+		return s.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
+	}
+
+	/** Build a lookup map from kebab-case data-rune values to RuneConfig */
+	function buildRuneConfigMap(config: ThemeConfig): Map<string, import('@refrakt-md/transform').RuneConfig> {
+		const map = new Map<string, import('@refrakt-md/transform').RuneConfig>();
+		for (const [key, cfg] of Object.entries(config.runes)) {
+			map.set(toKebab(key), cfg);
+		}
+		return map;
+	}
+
+	/** Find the nearest ancestor (or self) with a data-name attribute that is editable.
+	 *  Also captures the containing rune's data-rune value for editHints lookup. */
+	function findEditableSection(
+		start: HTMLElement,
+		root: HTMLElement,
+		runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>,
+	): { el: HTMLElement; dataName: string; editType: EditType } | null {
 		let el: HTMLElement | null = start;
+		let dataNameEl: HTMLElement | null = null;
+
+		// Walk up to find the nearest data-name element
 		while (el && el !== root) {
-			if (el.hasAttribute('data-name') && isEditableSection(el)) {
-				return el;
+			if (el.hasAttribute('data-name') && !dataNameEl) {
+				dataNameEl = el;
 			}
 			el = el.parentElement;
 		}
-		return null;
+
+		if (!dataNameEl) return null;
+
+		const dataName = dataNameEl.getAttribute('data-name')!;
+
+		// Find containing rune's data-rune value
+		let runeEl: HTMLElement | null = dataNameEl.parentElement;
+		let runeConfig: import('@refrakt-md/transform').RuneConfig | undefined;
+		while (runeEl && runeEl !== root) {
+			const runeType = runeEl.getAttribute('data-rune');
+			if (runeType) {
+				runeConfig = runeConfigMap.get(runeType);
+				break;
+			}
+			runeEl = runeEl.parentElement;
+		}
+
+		// Resolve edit type from editHints
+		const hint = runeConfig?.editHints?.[dataName];
+
+		if (hint === 'none') return null;
+
+		if (hint === 'link' || hint === 'inline') {
+			return { el: dataNameEl, dataName, editType: hint };
+		}
+
+		// No hint — fall back to isEditableSection heuristic
+		if (!isEditableSection(dataNameEl)) return null;
+		return { el: dataNameEl, dataName, editType: 'inline' };
 	}
 
 	/** Attach click and hover handlers to editable [data-name] elements within the wrapper */
-	function attachSectionHandlers(wrapper: HTMLElement) {
+	function attachSectionHandlers(wrapper: HTMLElement, runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>) {
 		let hoveredEl: HTMLElement | null = null;
 
 		wrapper.addEventListener('mouseover', (e) => {
-			const target = findEditableSection(e.target as HTMLElement, wrapper);
+			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
+			const target = result?.el ?? null;
 			if (target !== hoveredEl) {
 				hoveredEl?.classList.remove('rf-editable-hover');
 				hoveredEl = target;
@@ -87,15 +143,20 @@
 		});
 
 		wrapper.addEventListener('click', (e) => {
-			const target = findEditableSection(e.target as HTMLElement, wrapper);
-			if (target) {
+			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
+			if (result) {
 				e.preventDefault();
 				e.stopPropagation();
-				const rect = target.getBoundingClientRect();
+				const { el, dataName, editType } = result;
+				const rect = el.getBoundingClientRect();
+				// For link edits, extract the href from the <a> child
+				const anchor = editType === 'link' ? el.querySelector('a') as HTMLAnchorElement | null : null;
 				onsectionclick?.({
-					dataName: target.getAttribute('data-name')!,
-					text: target.textContent?.trim() ?? '',
+					dataName,
+					text: el.textContent?.trim() ?? '',
 					rect,
+					editType,
+					href: anchor?.getAttribute('href') ?? undefined,
 				});
 			}
 		});
@@ -205,7 +266,7 @@ ${hlCss}
 
 						// Attach inline-edit click + hover handlers for rune sections
 						if (!readOnly && onsectionclick && block.type === 'rune') {
-							attachSectionHandlers(wrapper);
+							attachSectionHandlers(wrapper, buildRuneConfigMap(config));
 						}
 					}
 				}
