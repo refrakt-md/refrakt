@@ -1,14 +1,17 @@
 import { parseContentTree, type ContentNode } from './block-parser.js';
+import { stripInlineMarkdown } from './inline-markdown.js';
 
 export interface SectionMapping {
 	/** The data-name value from the rendered HTML */
 	dataName: string;
-	/** Plain text content (without markdown syntax) */
+	/** Plain text content (without markdown syntax) — used for matching */
 	text: string;
 	/** Original markdown source line(s) */
 	source: string;
 	/** Prefix to preserve when editing (e.g., "## " for headings, "> " for blockquotes) */
 	sourcePrefix: string;
+	/** Inline markdown content after prefix stripping, preserving formatting (links, bold, etc.) */
+	inlineSource: string;
 }
 
 /**
@@ -72,24 +75,28 @@ export function findSectionMapping(
 	// Try to match each node's text against the rendered text
 	for (const node of nodes) {
 		const { text, prefix } = stripMarkdownPrefix(node.source);
-		if (normalizeText(text) === normalizedRendered) {
+		const plainText = stripInlineMarkdown(text);
+		if (normalizeText(plainText) === normalizedRendered) {
 			return {
 				dataName,
-				text,
+				text: plainText,
 				source: node.source,
 				sourcePrefix: prefix,
+				inlineSource: text,
 			};
 		}
 
 		// For multi-line paragraphs, check if the joined text matches
 		if (node.type === 'paragraph') {
 			const joined = node.source.split('\n').map(l => l.trim()).join(' ');
-			if (normalizeText(joined) === normalizedRendered) {
+			const joinedPlain = stripInlineMarkdown(joined);
+			if (normalizeText(joinedPlain) === normalizedRendered) {
 				return {
 					dataName,
-					text: joined,
+					text: joinedPlain,
 					source: node.source,
 					sourcePrefix: '',
+					inlineSource: joined,
 				};
 			}
 		}
@@ -111,16 +118,16 @@ export function findSectionMapping(
 }
 
 /**
- * Apply a text edit to a section within the rune's inner content.
- * Finds the original source and replaces it with the new text,
- * preserving markdown syntax prefixes.
+ * Apply an inline edit to a section within the rune's inner content.
+ * Finds the original source and replaces it with the new inline markdown,
+ * preserving markdown syntax prefixes (e.g., "## " for headings).
  */
 export function applySectionEdit(
 	innerContent: string,
 	mapping: SectionMapping,
-	newText: string,
+	newInlineSource: string,
 ): string {
-	const newSource = mapping.sourcePrefix + newText;
+	const newSource = mapping.sourcePrefix + newInlineSource;
 	const idx = innerContent.indexOf(mapping.source);
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);

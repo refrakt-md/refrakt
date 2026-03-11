@@ -13,6 +13,7 @@
 		type RuneBlock,
 	} from '../editor/block-parser.js';
 	import { findSectionMapping, applySectionEdit, type SectionMapping } from '../editor/section-mapper.js';
+	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
 	import type { SectionClickInfo } from './BlockCard.svelte';
@@ -349,7 +350,7 @@
 	let inlineEdit: {
 		blockIndex: number;
 		dataName: string;
-		text: string;
+		inlineSource: string;
 		rect: DOMRect;
 		mapping: SectionMapping;
 	} | null = $state(null);
@@ -365,30 +366,31 @@
 		inlineEdit = {
 			blockIndex: index,
 			dataName: info.dataName,
-			text: mapping.text,
+			inlineSource: mapping.inlineSource,
 			rect: info.rect,
 			mapping,
 		};
 	}
 
-	function handleInlineEditChange(newText: string) {
+	function handleInlineEditChange(newInlineSource: string) {
 		if (!inlineEdit) return;
 		const block = blocks[inlineEdit.blockIndex];
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
 
-		const newInner = applySectionEdit(rb.innerContent, inlineEdit.mapping, newText);
+		const newInner = applySectionEdit(rb.innerContent, inlineEdit.mapping, newInlineSource);
 		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
 		updated.source = rebuildRuneSource(updated);
 
 		// Update the mapping to reflect the new source so subsequent edits work
 		inlineEdit = {
 			...inlineEdit,
-			text: newText,
+			inlineSource: newInlineSource,
 			mapping: {
 				...inlineEdit.mapping,
-				text: newText,
-				source: inlineEdit.mapping.sourcePrefix + newText,
+				text: stripInlineMarkdown(newInlineSource),
+				source: inlineEdit.mapping.sourcePrefix + newInlineSource,
+				inlineSource: newInlineSource,
 			},
 		};
 
@@ -557,7 +559,7 @@
 		<InlineEditPopover
 			anchorRect={inlineEdit.rect}
 			dataName={inlineEdit.dataName}
-			text={inlineEdit.text}
+			inlineSource={inlineEdit.inlineSource}
 			onchange={handleInlineEditChange}
 			onclose={closeInlineEdit}
 		/>
