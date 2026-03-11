@@ -89,6 +89,7 @@
 		wrapper.addEventListener('click', (e) => {
 			const target = findEditableSection(e.target as HTMLElement, wrapper);
 			if (target) {
+				e.preventDefault();
 				e.stopPropagation();
 				const rect = target.getBoundingClientRect();
 				onsectionclick?.({
@@ -184,6 +185,10 @@ ${hlCss}
 							border-radius: 4px;
 							cursor: text;
 						}
+						[data-name].rf-editable-hover,
+						[data-name].rf-editable-hover * {
+							cursor: text !important;
+						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 
@@ -191,6 +196,12 @@ ${hlCss}
 					const wrapper = shadowRoot.querySelector('.rf-preview-wrapper') as HTMLElement | null;
 					if (wrapper) {
 						behaviorCleanup = initRuneBehaviors(wrapper);
+
+						// Prevent link navigation in preview (editor is for editing, not browsing)
+						wrapper.addEventListener('click', (e) => {
+							const anchor = (e.target as HTMLElement).closest('a');
+							if (anchor) e.preventDefault();
+						}, true);
 
 						// Attach inline-edit click + hover handlers for rune sections
 						if (!readOnly && onsectionclick && block.type === 'rune') {
