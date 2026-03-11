@@ -956,6 +956,11 @@
 					"selector": ".rf-hero__image",
 					"source": "autoLabel"
 				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-hero__action",
+					"source": "autoLabel"
+				},
 				"media": {
 					"tag": "media",
 					"selector": ".rf-hero__media",
@@ -1016,6 +1021,11 @@
 					"tag": "image",
 					"selector": ".rf-cta__image",
 					"source": "autoLabel"
+				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-cta__action",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -1070,6 +1080,11 @@
 				"image": {
 					"tag": "image",
 					"selector": ".rf-bento__image",
+					"source": "autoLabel"
+				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-bento__action",
 					"source": "autoLabel"
 				}
 			},
@@ -1184,6 +1199,11 @@
 					"tag": "image",
 					"selector": ".rf-feature__image",
 					"source": "autoLabel"
+				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-feature__action",
+					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
@@ -1238,6 +1258,11 @@
 				"image": {
 					"tag": "image",
 					"selector": ".rf-steps__image",
+					"source": "autoLabel"
+				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-steps__action",
 					"source": "autoLabel"
 				}
 			}
@@ -1320,6 +1345,11 @@
 				"image": {
 					"tag": "image",
 					"selector": ".rf-pricing__image",
+					"source": "autoLabel"
+				},
+				"action": {
+					"tag": "action",
+					"selector": ".rf-pricing__action",
 					"source": "autoLabel"
 				}
 			}

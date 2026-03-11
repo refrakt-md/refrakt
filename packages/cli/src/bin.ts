@@ -79,6 +79,7 @@ Provider auto-detection:
 Contracts Options:
   --output, -o <path>      Write contracts to a file (default: stdout)
   --check                  Validate existing file is up to date (exit 1 if stale)
+  --config <dir>           Directory containing refrakt.config.json (default: cwd)
 
 Scaffold-CSS Options:
   --output-dir, -d <dir>   Output directory (default: ./styles/runes)
@@ -138,6 +139,71 @@ Edit Options:
   --dev-server <url>       URL of running dev server for live preview
   --no-open                Don't auto-open browser
 `);
+}
+
+/** Load community packages from refrakt.config.json and assemble a merged ThemeConfig.
+ *  Falls back to baseConfig if no config file or packages are found. */
+async function loadMergedConfig(
+	runesModule: typeof import('@refrakt-md/runes'),
+	assembleThemeConfig: typeof import('@refrakt-md/transform').assembleThemeConfig,
+	configDir?: string,
+): Promise<{
+	config: import('@refrakt-md/transform').ThemeConfig;
+	runes: Record<string, any>;
+	tags: Record<string, any>;
+	fixtures: Record<string, string>;
+}> {
+	const { runes, tags, loadRunePackage, mergePackages, applyAliases, loadLocalRunes, baseConfig } = runesModule;
+
+	let mergedRunes = runes;
+	let mergedTags: Record<string, any> = tags;
+	let mergedConfig = baseConfig;
+	let packageFixtures: Record<string, string> = {};
+
+	try {
+		const { loadRefraktConfigFile } = await import('./config-file.js');
+		const { config } = loadRefraktConfigFile(configDir);
+		const coreRuneNames = new Set(Object.keys(runes));
+		let merged;
+
+		if (config.packages && config.packages.length > 0) {
+			const loaded = await Promise.all(
+				config.packages.map((name: string) => loadRunePackage(name))
+			);
+			merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+			mergedRunes = { ...runes, ...merged.runes };
+			mergedTags = { ...tags, ...merged.tags };
+			packageFixtures = merged.fixtures;
+		}
+
+		if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
+			const local = await loadLocalRunes(config.runes.local, process.cwd());
+			mergedRunes = { ...mergedRunes, ...local.runes };
+			const localTags = runesModule.runeTagMap(local.runes);
+			mergedTags = { ...mergedTags, ...localTags };
+		}
+
+		if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
+			const provenance = merged?.provenance ?? {};
+			const aliased = applyAliases(mergedRunes, mergedTags, config.runes.aliases, provenance);
+			mergedTags = aliased.tags;
+		}
+
+		if (merged) {
+			const assembled = assembleThemeConfig({
+				coreConfig: baseConfig,
+				packageRunes: merged.themeRunes,
+				packageIcons: merged.themeIcons,
+				packageBackgrounds: merged.themeBackgrounds,
+				provenance: merged.provenance,
+			});
+			mergedConfig = assembled.config;
+		}
+	} catch {
+		// No config file or community packages — use core runes only
+	}
+
+	return { config: mergedConfig, runes: mergedRunes, tags: mergedTags, fixtures: packageFixtures };
 }
 
 function runInspect(inspectArgs: string[]): void {
@@ -220,64 +286,14 @@ function runInspect(inspectArgs: string[]): void {
 		{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
 		markdocModule,
 	]) => {
-		const { runes, tags, nodes, serializeTree, extractHeadings, loadRunePackage, mergePackages, applyAliases, loadLocalRunes, baseConfig } = runesModule;
+		const { nodes, serializeTree, extractHeadings } = runesModule;
 		const Markdoc = markdocModule.default ?? markdocModule;
 
-		let mergedRunes = runes;
-		let mergedTags: Record<string, any> = tags;
-		let mergedConfig = baseConfig;
-		let packageFixtures: Record<string, string> = {};
-
-		// Try loading community packages from refrakt.config.json
-		try {
-			const { loadRefraktConfigFile } = await import('./config-file.js');
-			const { config } = loadRefraktConfigFile();
-			const coreRuneNames = new Set(Object.keys(runes));
-			let merged;
-
-			if (config.packages && config.packages.length > 0) {
-				const loaded = await Promise.all(
-					config.packages.map((name: string) => loadRunePackage(name))
-				);
-				merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
-				mergedRunes = { ...runes, ...merged.runes };
-				mergedTags = { ...tags, ...merged.tags };
-				packageFixtures = merged.fixtures;
-			}
-
-			// Load local runes if configured
-			if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
-				const local = await loadLocalRunes(config.runes.local, process.cwd());
-				mergedRunes = { ...mergedRunes, ...local.runes };
-				const localTags = runesModule.runeTagMap(local.runes);
-				mergedTags = { ...mergedTags, ...localTags };
-			}
-
-			// Apply config-level aliases
-			if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
-				const provenance = merged?.provenance ?? {};
-				const aliased = applyAliases(mergedRunes, mergedTags, config.runes.aliases, provenance);
-				mergedTags = aliased.tags;
-			}
-
-			// Assemble theme config using the centralized function
-			if (merged) {
-				const assembled = assembleThemeConfig({
-					coreConfig: baseConfig,
-					packageRunes: merged.themeRunes,
-					packageIcons: merged.themeIcons,
-					packageBackgrounds: merged.themeBackgrounds,
-					provenance: merged.provenance,
-				});
-				mergedConfig = assembled.config;
-			}
-		} catch {
-			// No config file or community packages — use core runes only
-		}
+		const merged = await loadMergedConfig(runesModule, assembleThemeConfig);
 
 		return inspectCommand(
 			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
-			{ Markdoc, runes: mergedRunes, tags: mergedTags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: mergedConfig, packageFixtures },
+			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
 		);
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
@@ -389,6 +405,7 @@ function runWrite(writeArgs: string[]): void {
 function runContracts(contractsArgs: string[]): void {
 	let output: string | undefined;
 	let check = false;
+	let configDir: string | undefined;
 
 	for (let i = 0; i < contractsArgs.length; i++) {
 		const arg = contractsArgs[i];
@@ -401,6 +418,12 @@ function runContracts(contractsArgs: string[]): void {
 			}
 		} else if (arg === '--check') {
 			check = true;
+		} else if (arg === '--config') {
+			configDir = contractsArgs[++i];
+			if (!configDir) {
+				console.error('Error: --config requires a directory path');
+				process.exit(1);
+			}
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -415,8 +438,17 @@ function runContracts(contractsArgs: string[]): void {
 		}
 	}
 
-	import('./commands/contracts.js').then(({ contractsCommand }) => {
-		contractsCommand({ output, check });
+	Promise.all([
+		import('./commands/contracts.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+	]).then(async ([
+		{ contractsCommand },
+		runesModule,
+		{ assembleThemeConfig },
+	]) => {
+		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir);
+		contractsCommand({ output, check, config });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
