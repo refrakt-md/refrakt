@@ -93,6 +93,13 @@ describe('renderToHtml', () => {
 		expect(renderToHtml(root)).toBe('<p>Hello</p><p>World</p>');
 	});
 
+	it('renders data-raw-html children unescaped (flat mode)', () => {
+		const tag = makeTag('div', { 'data-raw-html': true }, ['<em>raw content</em>']);
+		const html = renderToHtml(tag);
+		expect(html).toContain('<em>raw content</em>');
+		expect(html).not.toContain('&lt;em&gt;');
+	});
+
 	it('renders null-named tags with nested rune content correctly', () => {
 		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
 			makeTag('div', { class: 'rf-preview', 'data-rune': 'preview' }, [
@@ -159,6 +166,12 @@ describe('renderToHtml pretty printing', () => {
 		]);
 		const expected = '<div>\n\t<p>text</p>\n</div>';
 		expect(renderToHtml(tag, { pretty: true, indent: '\t' })).toBe(expected);
+	});
+
+	it('renders data-raw-html children unescaped', () => {
+		const tag = makeTag('div', { 'data-raw-html': true }, ['<strong>raw</strong>']);
+		expect(renderToHtml(tag, { pretty: true })).toContain('<strong>raw</strong>');
+		expect(renderToHtml(tag, { pretty: true })).not.toContain('&lt;strong&gt;');
 	});
 
 	it('pretty-prints null-named tags without a wrapper element', () => {

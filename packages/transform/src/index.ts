@@ -45,3 +45,6 @@ export type { RuneProvenance } from './provenance.js';
 // Config assembly
 export { assembleThemeConfig } from './assemble.js';
 export type { AssembleInput, AssembleResult } from './assemble.js';
+
+// Route rules
+export { matchRouteRule } from './route-rules.js';
