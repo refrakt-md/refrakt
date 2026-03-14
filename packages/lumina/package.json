@@ -28,6 +28,10 @@
       "svelte": "./svelte/index.ts",
       "default": "./svelte/index.ts"
     },
+    "./html": {
+      "types": "./html/index.ts",
+      "default": "./html/index.ts"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./svelte/tokens.css": "./svelte/tokens.css",
     "./svelte/manifest": "./svelte/manifest.json"
@@ -40,7 +44,8 @@
     "styles",
     "contracts",
     "manifest.json",
-    "svelte"
+    "svelte",
+    "html"
   ],
   "scripts": {
     "build": "tsc"
@@ -53,7 +58,8 @@
   },
   "peerDependencies": {
     "svelte": "^5.0.0",
-    "@sveltejs/kit": "^2.0.0"
+    "@sveltejs/kit": "^2.0.0",
+    "@refrakt-md/html": "0.8.0"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
@@ -63,6 +69,9 @@
       "optional": true
     },
     "@sveltejs/kit": {
+      "optional": true
+    },
+    "@refrakt-md/html": {
       "optional": true
     }
   }

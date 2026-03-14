@@ -64,8 +64,8 @@ function renderFlat(node: RendererNode): string {
 		return `<${tag}${attrs} />`;
 	}
 
-	// data-codeblock children are raw HTML from Shiki — don't escape
-	const raw = node.attributes?.['data-codeblock'];
+	// data-codeblock and data-raw-html children are raw HTML — don't escape
+	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	const children = raw
 		? node.children.map(c => typeof c === 'string' ? c : renderFlat(c)).join('')
 		: node.children.map(renderFlat).join('');
@@ -102,6 +102,13 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 		return `${pad}<${tag}${attrs}>${children}</${tag}>`;
 	}
 
+	// data-raw-html elements — render children flat without escaping
+	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
+	if (raw) {
+		const children = node.children.map(c => typeof c === 'string' ? c : renderFlatChild(c)).join('');
+		return `${pad}<${tag}${attrs}>${children}</${tag}>`;
+	}
+
 	// Inline elements with only text children
 	const allText = node.children.every(c => typeof c === 'string' || typeof c === 'number');
 	if (allText && node.children.length <= 1) {
@@ -135,8 +142,8 @@ function renderFlatChild(node: RendererNode): string {
 
 	if (VOID_ELEMENTS.has(tag)) return `<${tag}${attrs} />`;
 
-	// data-codeblock children are raw HTML from Shiki — don't escape
-	const raw = node.attributes?.['data-codeblock'];
+	// data-codeblock and data-raw-html children are raw HTML — don't escape
+	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	const children = raw
 		? node.children.map(c => typeof c === 'string' ? c : renderFlatChild(c)).join('')
 		: node.children.map(renderFlatChild).join('');
