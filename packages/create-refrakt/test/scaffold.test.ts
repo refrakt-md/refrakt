@@ -156,4 +156,111 @@ describe('scaffold', () => {
 		const page = readFileSync(join(targetDir, 'src', 'routes', '[...slug]', '+page.svelte'), 'utf-8');
 		expect(page).toContain('virtual:refrakt/theme');
 	});
+
+	it('defaults to sveltekit target when target is not specified', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+
+		// Should produce SvelteKit files
+		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(true);
+		expect(existsSync(join(targetDir, 'src', 'routes', '+layout.svelte'))).toBe(true);
+
+		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
+		expect(config.target).toBe('svelte');
+	});
+});
+
+describe('scaffold (html target)', () => {
+	it('creates target directory with HTML template files', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+
+		expect(existsSync(join(targetDir, 'build.ts'))).toBe(true);
+		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
+		expect(existsSync(join(targetDir, '.gitignore'))).toBe(true);
+		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
+		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
+		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+
+		// Starter content
+		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'content', 'index.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'content', 'docs', 'getting-started.md'))).toBe(true);
+
+		// Should NOT have SvelteKit files
+		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(false);
+		expect(existsSync(join(targetDir, 'vite.config.ts'))).toBe(false);
+		expect(existsSync(join(targetDir, 'src', 'routes'))).toBe(false);
+
+		// Dotfile original should be renamed
+		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
+	});
+
+	it('generates package.json with HTML adapter dependencies', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+
+		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
+		expect(pkg.name).toBe('my-site');
+		expect(pkg.type).toBe('module');
+		expect(pkg.scripts.build).toBe('tsx build.ts');
+		expect(pkg.scripts.serve).toBe('npx serve build');
+
+		// HTML adapter deps
+		expect(pkg.dependencies['@refrakt-md/html']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/content']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/transform']).toBeDefined();
+		expect(pkg.dependencies['@refrakt-md/lumina']).toBeDefined();
+
+		// Should NOT have SvelteKit deps
+		expect(pkg.dependencies['@refrakt-md/svelte']).toBeUndefined();
+		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeUndefined();
+		expect(pkg.devDependencies?.svelte).toBeUndefined();
+		expect(pkg.devDependencies?.['@sveltejs/kit']).toBeUndefined();
+	});
+
+	it('generates refrakt.config.json with html target', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+
+		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
+		expect(config.target).toBe('html');
+		expect(config.theme).toBe('@refrakt-md/lumina');
+		expect(config.contentDir).toBe('./content');
+	});
+
+	it('generates dependency versions matching the package version', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+
+		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
+		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+		const expected = `~${ownPkg.version}`;
+		expect(pkg.dependencies['@refrakt-md/content']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/html']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/runes']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/transform']).toBe(expected);
+		expect(pkg.dependencies['@refrakt-md/lumina']).toBe(expected);
+	});
+
+	it('throws when target directory already exists', () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+
+		expect(() =>
+			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' })
+		).toThrow('already exists');
+	});
 });

@@ -67,7 +67,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 
 - {% icon name="package" /%} **Portable content**
 
-  Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — currently rendering with Svelte, with more frameworks planned.
+  Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — render with SvelteKit or as static HTML, with more adapters planned.
 {% /feature %}
 
 {% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" tint="subtle" spacing="flush" %}

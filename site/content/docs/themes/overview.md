@@ -97,11 +97,12 @@ In addition to the engine, also provides:
 - **Layout configs** — `defaultLayout`, `docsLayout`, `blogArticleLayout` — declarative layout configurations for common site patterns.
 - **`mergeThemeConfig()`** — Utility to extend the base config with theme-specific overrides (icons, modified rune behavior, custom prefix).
 
-### `@refrakt-md/svelte`
+### Adapter packages
 
-In addition to the Renderer, also provides:
+The adapter handles element-level concerns and rendering:
 
-- **Element overrides** — Svelte wrappers for standard HTML elements (e.g., `<table>`, `<pre>`) that need additional structure, shared across all themes.
+- **SvelteKit** (`@refrakt-md/svelte`) — Renderer component, element overrides (table/pre wrappers), component registry, behaviors action. See the [SvelteKit adapter](/docs/adapters/sveltekit) page.
+- **HTML** (`@refrakt-md/html`) — Pure HTML rendering with automatic tree transforms (table wrapping). See the [HTML adapter](/docs/adapters/html) page.
 
 ### Your theme package (e.g., `@refrakt-md/lumina`)
 

@@ -12,16 +12,27 @@ export interface ScaffoldOptions {
 	projectName: string;
 	targetDir: string;
 	theme: string;
+	target?: 'sveltekit' | 'html';
 }
 
 export function scaffold(options: ScaffoldOptions): void {
-	const { projectName, targetDir, theme } = options;
+	const { projectName, targetDir, theme, target = 'sveltekit' } = options;
 
 	if (existsSync(targetDir)) {
 		throw new Error(`Directory "${targetDir}" already exists`);
 	}
 
 	mkdirSync(targetDir, { recursive: true });
+
+	if (target === 'html') {
+		scaffoldHtmlSite(options);
+	} else {
+		scaffoldSvelteKitSite(options);
+	}
+}
+
+function scaffoldSvelteKitSite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
 
 	// Copy template directory recursively
 	const templateDir = path.resolve(
@@ -60,6 +71,53 @@ export function scaffold(options: ScaffoldOptions): void {
 	writeFileSync(
 		path.join(targetDir, 'refrakt.config.json'),
 		generateRefraktConfig(theme),
+	);
+
+	writeFileSync(
+		path.join(targetDir, 'README.md'),
+		generateReadme(projectName),
+	);
+}
+
+function scaffoldHtmlSite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
+
+	// Copy HTML template directory
+	const templateDir = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'template-html'
+	);
+
+	if (!existsSync(templateDir)) {
+		throw new Error(
+			`Template directory not found at ${templateDir}. ` +
+			`This is a bug in create-refrakt — please report it.`
+		);
+	}
+
+	cpSync(templateDir, targetDir, { recursive: true });
+
+	// Rename dotfiles
+	const dotfileRenames: Record<string, string> = {
+		'_gitignore': '.gitignore',
+	};
+	for (const [from, to] of Object.entries(dotfileRenames)) {
+		const srcPath = path.join(targetDir, from);
+		if (existsSync(srcPath)) {
+			renameSync(srcPath, path.join(targetDir, to));
+		}
+	}
+
+	// Generate interpolated files
+	writeFileSync(
+		path.join(targetDir, 'package.json'),
+		generateHtmlPackageJson(projectName, theme),
+	);
+
+	writeFileSync(
+		path.join(targetDir, 'refrakt.config.json'),
+		generateRefraktConfig(theme, 'html'),
 	);
 
 	writeFileSync(
@@ -107,16 +165,45 @@ function generatePackageJson(projectName: string, theme: string): string {
 	return JSON.stringify(pkg, null, '\t') + '\n';
 }
 
-function generateRefraktConfig(theme: string): string {
+function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
 	const config = {
 		contentDir: './content',
 		theme,
-		target: 'svelte',
+		target,
 		routeRules: [
 			{ pattern: '**', layout: 'default' },
 		],
 	};
 	return JSON.stringify(config, null, '\t') + '\n';
+}
+
+function generateHtmlPackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			build: 'tsx build.ts',
+			serve: 'npx serve build',
+		},
+		dependencies: {
+			'@refrakt-md/content': v,
+			'@refrakt-md/highlight': v,
+			'@refrakt-md/html': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/transform': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'tsx': '^4.0.0',
+			'typescript': '^5.4.0',
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
 }
 
 function generateReadme(projectName: string): string {

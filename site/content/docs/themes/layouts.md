@@ -386,7 +386,11 @@ For sites where a single route needs different layouts for different page types 
 
 ## Using layouts in a theme
 
-Layouts are part of the `SvelteTheme` configuration passed to `ThemeShell`:
+Layouts are part of the theme configuration passed to the adapter. Both adapters accept `LayoutConfig` objects:
+
+{% tabs %}
+
+{% tab name="SvelteKit" %}
 
 ```typescript
 import type { SvelteTheme } from '@refrakt-md/svelte';
@@ -404,4 +408,26 @@ export const theme: SvelteTheme = {
 };
 ```
 
-The `layouts` map accepts either `LayoutConfig` objects (rendered via `layoutTransform()`) or Svelte components (rendered directly). This allows mixing declarative and component-based layouts in the same theme.
+In SvelteKit, the `layouts` map also accepts Svelte components (rendered directly), allowing you to mix declarative and component-based layouts.
+
+{% /tab %}
+
+{% tab name="HTML" %}
+
+```typescript
+import type { HtmlTheme } from '@refrakt-md/html';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+export const theme: HtmlTheme = {
+  manifest: { /* ... */ },
+  layouts: {
+    'default': defaultLayout,
+    'docs': docsLayout,
+    'blog-article': blogArticleLayout,
+  },
+};
+```
+
+{% /tab %}
+
+{% /tabs %}

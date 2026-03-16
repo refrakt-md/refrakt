@@ -52,19 +52,7 @@ Each behavior function receives a DOM element and returns a cleanup function:
 type BehaviorFn = (el: HTMLElement) => (() => void) | void;
 ```
 
-In SvelteKit, behaviors are typically applied via a Svelte action:
-
-```svelte
-<script>
-  import { behaviors } from '@refrakt-md/svelte';
-</script>
-
-<div use:behaviors>
-  <!-- Content with behavior-enhanced runes -->
-</div>
-```
-
-The action handles initialization on mount, re-initialization on updates, and cleanup on destroy.
+How behaviors are initialized depends on the adapter. In SvelteKit, behaviors are applied via a Svelte action (`use:behaviors`). In the HTML adapter, `initPage()` handles initialization. See the [SvelteKit adapter](/docs/adapters/sveltekit) and [HTML adapter](/docs/adapters/html) pages for adapter-specific details.
 
 #### Layout behaviors
 
@@ -119,52 +107,14 @@ Runes using this pattern include Chart, Map, Diagram, Comparison, Embed, Testimo
 
 ## Element overrides
 
-Element overrides enhance standard HTML elements without requiring a `typeof` marker. They're useful for wrapping elements like `<table>` or `<pre>` with additional structure:
+Standard HTML elements like `<table>` and `<pre>` sometimes need additional structure (e.g., a scrollable wrapper for wide tables, or a copy-to-clipboard button on code blocks). How this is handled depends on the adapter:
 
-```typescript
-// packages/theme-base/svelte/elements.ts
-export const elements: ElementOverrides = {
-  'table': Table,
-  'pre': Pre,
-};
-```
-
-Element overrides receive `tag` and `children` props. Example — wrapping tables with a scrollable container:
-
-```svelte
-<div class="table-wrapper">
-  <table {...tag.attributes}>
-    {@render children()}
-  </table>
-</div>
-
-<style>
-  .table-wrapper {
-    overflow-x: auto;
-    margin: 1.5rem 0;
-    border: 1px solid var(--rf-color-border);
-    border-radius: var(--rf-radius-md);
-  }
-</style>
-```
-
-These are the only Svelte-specific pieces in the base theme — lightweight wrappers for standard HTML elements, not rune components.
+- The **SvelteKit adapter** uses Svelte component overrides that wrap the element. See [SvelteKit adapter — Element overrides](/docs/adapters/sveltekit).
+- The **HTML adapter** applies tree transforms during rendering (e.g., wrapping `<table>` in a `.rf-table-wrapper` div). See [HTML adapter](/docs/adapters/html).
 
 ## The component registry
 
-The component registry still exists in `@refrakt-md/svelte` but is empty by default. It's preserved as an extension point — if your site needs a custom Svelte component for a specific rune, you can register it:
-
-```typescript
-import { registry as baseRegistry } from '@refrakt-md/svelte';
-import MyCustomChart from './components/MyChart.svelte';
-
-export const registry = {
-  ...baseRegistry,
-  'Chart': MyCustomChart,
-};
-```
-
-When the Renderer encounters a node with a `typeof` attribute, it checks the registry. If a match is found, the component handles rendering. Otherwise, the node is rendered as generic HTML — which is the default path for all runes.
+The component registry is a SvelteKit-specific extension point for runes that need custom rendering beyond what the identity transform provides. It's empty by default — all runes render through the identity transform. See the [SvelteKit adapter — Component registry](/docs/adapters/sveltekit) for details.
 
 ## Deciding which approach to use
 

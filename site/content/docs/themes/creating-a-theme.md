@@ -118,7 +118,7 @@ The key exports:
 - `.` — Your CSS entry point (tokens + rune styles)
 - `./transform` — Your theme config, compiled to JS
 - `./manifest` — Theme metadata
-- `./svelte` — Svelte adapter (element overrides, behaviors)
+- `./svelte` — SvelteKit adapter (element overrides, behaviors, component registry). Optional if you only target the HTML adapter.
 
 ### Write your config
 
@@ -380,7 +380,11 @@ Create `index.css` that imports everything:
 /* Add imports as you create more rune CSS files */
 ```
 
-### SvelteKit integration
+### Adapter integration
+
+Your theme needs adapter-specific exports so it can be used with a particular adapter. The most common is the SvelteKit adapter.
+
+#### SvelteKit
 
 Create `svelte/index.ts` to re-export element overrides and behaviors from theme-base:
 
@@ -392,9 +396,17 @@ export { registry } from '@refrakt-md/svelte';
 
 The element overrides provide enhanced rendering for standard HTML elements like `<table>` and `<pre>`. The behaviors action wires up progressive enhancement. The registry is empty by default but available as an extension point if you need custom Svelte components for specific runes.
 
+#### HTML
+
+The HTML adapter doesn't require a separate export. It uses the theme's `./transform` export (config) and `.` export (CSS) directly. See the [HTML adapter](/docs/adapters/html) page for usage.
+
 ### Define layouts
 
 Your theme needs layout configs that describe page structure. The simplest approach is to use the built-in layouts from `@refrakt-md/transform`:
+
+{% tabs %}
+
+{% tab name="SvelteKit" %}
 
 ```typescript
 // svelte/index.ts
@@ -415,6 +427,28 @@ export const theme: SvelteTheme = {
   },
 };
 ```
+
+{% /tab %}
+
+{% tab name="HTML" %}
+
+```typescript
+import type { HtmlTheme } from '@refrakt-md/html';
+import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+export const theme: HtmlTheme = {
+  manifest: { /* from manifest.json */ },
+  layouts: {
+    'default': defaultLayout,
+    'docs': docsLayout,
+    'blog-article': blogArticleLayout,
+  },
+};
+```
+
+{% /tab %}
+
+{% /tabs %}
 
 To customize a layout, create your own `LayoutConfig` object:
 
@@ -482,19 +516,15 @@ See Lumina's `packages/lumina/test/css-coverage.test.ts` for the full pattern.
 
 ## Using your theme in a site
 
-In your SvelteKit site's layout, import the theme CSS and configure the transform:
+Import the theme config and CSS in your project. The exact integration depends on your adapter — see the [SvelteKit adapter](/docs/adapters/sveltekit) and [HTML adapter](/docs/adapters/html) pages for setup details.
+
+Both adapters use the same theme config:
 
 ```typescript
-// In your Vite/SvelteKit config
 import { myThemeConfig } from '@my-org/my-theme/transform';
 import { createTransform } from '@refrakt-md/transform';
 
 const transform = createTransform(myThemeConfig);
-```
-
-```html
-<!-- In your root layout -->
-<link rel="stylesheet" href="@my-org/my-theme" />
 ```
 
 ## Final directory structure

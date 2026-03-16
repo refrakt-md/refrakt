@@ -8,6 +8,7 @@ const args = process.argv.slice(2);
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
 let type: 'site' | 'theme' = 'site';
+let target: 'sveltekit' | 'html' = 'sveltekit';
 let scope: string | undefined;
 
 for (let i = 0; i < args.length; i++) {
@@ -25,6 +26,13 @@ for (let i = 0; i < args.length; i++) {
 			process.exit(1);
 		}
 		type = val;
+	} else if (arg === '--target') {
+		const val = args[++i];
+		if (val !== 'sveltekit' && val !== 'html') {
+			console.error('Error: --target must be "sveltekit" or "html"');
+			process.exit(1);
+		}
+		target = val;
 	} else if (arg === '--scope' || arg === '-s') {
 		scope = args[++i];
 		if (!scope) {
@@ -61,13 +69,15 @@ function printUsage(): void {
 Usage: create-refrakt <name> [options]
 
 Options:
-  --type <site|theme>    What to create (default: site)
-  --theme, -t <package>  Theme package to use (sites only, default: @refrakt-md/lumina)
-  --scope, -s <scope>    npm scope for the package (themes only, e.g., @my-org)
-  --help, -h             Show this help message
+  --type <site|theme>          What to create (default: site)
+  --target <sveltekit|html>    Adapter target (sites only, default: sveltekit)
+  --theme, -t <package>        Theme package to use (sites only, default: @refrakt-md/lumina)
+  --scope, -s <scope>          npm scope for the package (themes only, e.g., @my-org)
+  --help, -h                   Show this help message
 
 Examples:
   npx create-refrakt my-site
+  npx create-refrakt my-site --target html
   npx create-refrakt my-site --theme @refrakt-md/aurora
   npx create-refrakt my-theme --type theme
   npx create-refrakt my-theme --type theme --scope @my-org
@@ -80,7 +90,7 @@ try {
 	if (type === 'theme') {
 		scaffoldTheme({ themeName: projectName, targetDir, scope });
 	} else {
-		scaffold({ projectName, targetDir, theme });
+		scaffold({ projectName, targetDir, theme, target });
 	}
 } catch (err) {
 	console.error(`\nError: ${(err as Error).message}`);
@@ -105,6 +115,17 @@ Then use it in a site:
   }
 
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
+`);
+} else if (target === 'html') {
+	console.log(`
+Done! Your refrakt.md site is ready.
+
+Next steps:
+
+  cd ${projectName}
+  npm install
+  npm run build
+  npm run serve
 `);
 } else {
 	console.log(`

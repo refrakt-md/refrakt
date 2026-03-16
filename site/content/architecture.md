@@ -42,12 +42,13 @@ The architecture is organized into several focused packages:
 | `@refrakt-md/types` | Shared TypeScript interfaces for components, themes, and configuration |
 | `@refrakt-md/transform` | Identity transform engine -- BEM classes, structural injection, meta consumption |
 | `@refrakt-md/content` | Content tree, filesystem routing, layout resolution, sitemap generation |
-| `@refrakt-md/svelte` | Svelte adapter -- Renderer, ThemeShell, serialization, component registry |
-| `@refrakt-md/sveltekit` | Vite plugin, virtual modules, content HMR |
+| `@refrakt-md/svelte` | SvelteKit adapter -- Renderer, ThemeShell, serialization, component registry |
+| `@refrakt-md/sveltekit` | SvelteKit Vite plugin, virtual modules, content HMR |
+| `@refrakt-md/html` | HTML adapter -- pure HTML rendering, no framework dependency |
 | `@refrakt-md/highlight` | Syntax highlighting -- Shiki-based tree walker with configurable themes (any built-in Shiki theme or light/dark pair), pluggable highlighter |
 | `@refrakt-md/behaviors` | Vanilla JS behavior library -- interactive behaviors for tabs, accordion, datatable, form, reveal, preview, and copy-to-clipboard. Framework-agnostic. |
-| `@refrakt-md/theme-base` | Shared theme infrastructure -- per-rune CSS files. BEM config for all runes lives in `@refrakt-md/runes`, layout configs and `mergeThemeConfig` live in `@refrakt-md/transform`, and the component registry and element overrides live in `@refrakt-md/svelte` |
-| `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports (`/svelte`) |
+| `@refrakt-md/theme-base` | Shared theme infrastructure -- per-rune CSS files. BEM config for all runes lives in `@refrakt-md/runes`, layout configs and `mergeThemeConfig` live in `@refrakt-md/transform` |
+| `@refrakt-md/lumina` | Lumina theme -- merges base config with Lumina-specific icons, design tokens, plus framework adapters via subpath exports |
 | `@refrakt-md/ai` | AI content generation -- system prompt builder, Anthropic, Gemini, and Ollama providers |
 | `@refrakt-md/cli` | CLI tool (`refrakt write`, `refrakt inspect`, `refrakt contracts`) |
 | `@refrakt-md/marketing` | Official community package -- landing page runes (hero, cta, bento, feature, steps, pricing, testimonial, comparison, storyboard) |
@@ -309,20 +310,23 @@ The `ThemeShell` component initializes behaviors after each render via `initRune
 The behavior layer is entirely framework-agnostic. It operates on standard DOM elements with `data-rune` attributes and BEM classes -- no React, Svelte, or any framework dependency. This makes it directly reusable across future framework adapters (Astro, Next.js, static HTML).
 {% /hint %}
 
-### Implementation Layer (Framework-Specific)
+### Implementation Layer (Adapter-Specific)
 
-The implementation layer lives inside the theme package as a **subpath export**. For Lumina, the Svelte adapter is at `@refrakt-md/lumina/svelte`. The Vite plugin auto-resolves this from the `theme` and `target` fields in `refrakt.config.json`, so adding a future React or Astro adapter means adding a new subpath export to the same package — no new packages needed.
+The implementation layer connects the framework-agnostic tag tree to a specific rendering target via an **adapter**. Two adapters are available:
 
-The implementation layer is only needed for runes that require external libraries (Mermaid, Chart.js, Leaflet) or complex Svelte-specific rendering logic.
+- **SvelteKit** (`@refrakt-md/svelte` + `@refrakt-md/sveltekit`) -- a Svelte 5 Renderer component with a component registry, element overrides, and a Vite plugin for virtual modules and HMR. Themes export the SvelteKit adapter as a subpath export (e.g., `@refrakt-md/lumina/svelte`).
+- **HTML** (`@refrakt-md/html`) -- pure HTML string rendering with no framework dependency. Uses `renderPage()` / `renderFullPage()` to produce static HTML.
+
+The implementation layer is only needed for runes that require external libraries (Mermaid, Chart.js, Leaflet) or complex rendering logic beyond what the identity transform provides.
 
 {% hint type="check" %}
-Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript. Runes like tabs, accordion, and datatable get their interactivity from the behavior layer (vanilla JS), not from Svelte components.
+Most runes -- hero, hint, feature, cta, breadcrumb, timeline, changelog, recipe, and many more -- are fully rendered by the identity transform + CSS alone. They need zero JavaScript. Runes like tabs, accordion, and datatable get their interactivity from the behavior layer (vanilla JS), not from framework components.
 {% /hint %}
 
-Runes that need Svelte components register them in the theme's component registry:
+In the SvelteKit adapter, runes that need custom rendering register Svelte components in the theme's component registry:
 
 ```typescript
-// Only runes needing external libraries or complex Svelte rendering.
+// Only runes needing external libraries or complex rendering.
 // Behavior-driven runes (tabs, accordion, datatable, form, reveal,
 // preview, details) are NOT here -- they use @refrakt-md/behaviors.
 export const registry: ComponentRegistry = {
@@ -351,7 +355,7 @@ export const registry: ComponentRegistry = {
 };
 ```
 
-The current implementation targets **SvelteKit** with Svelte 5 components using runes (Svelte's `$props()`, `$derived()`, `$state()`).
+In the HTML adapter, all runes render through the identity transform + CSS + behaviors. See the [Adapters](/docs/adapters/adapters-overview) documentation for details on each adapter.
 
 ### Theme Manifest
 
@@ -391,15 +395,7 @@ The manifest is the universal contract between content and rendering. It tells t
 
 ### Element Overrides
 
-Beyond rune components, themes can override rendering of standard HTML elements. Lumina overrides `<table>`, `<blockquote>`, and `<pre>` with Svelte components that add responsive wrappers, enhanced styling, and interactive features like copy-to-clipboard on code blocks. This is done through the `elements` map:
-
-```typescript
-export const elements: ElementOverrides = {
-  'table': Table,
-  'blockquote': Blockquote,
-  'pre': Pre,
-};
-```
+Beyond rune components, adapters can override rendering of standard HTML elements. In the SvelteKit adapter, themes can register Svelte component overrides for elements like `<table>` and `<pre>` to add responsive wrappers and interactive features. In the HTML adapter, tree transforms handle the same concerns (e.g., wrapping tables in scrollable containers). See the [Adapters](/docs/adapters/adapters-overview) documentation for details.
 
 ---
 
@@ -466,7 +462,7 @@ The layout resolver walks up the directory tree from the page's location to the 
 
 ### Layout-to-Component Mapping
 
-The theme manifest maps layout names to Svelte components. Lumina ships three layouts:
+The theme maps layout names to `LayoutConfig` objects (or, in SvelteKit, Svelte components). Lumina ships three layouts:
 
 - **`DefaultLayout`** -- supports `header` and `footer` regions. Used for landing pages, marketing content, standalone pages.
 - **`DocsLayout`** -- supports `header`, `nav`, `sidebar`, and `footer` regions. The `nav` region is required. Used for documentation with sidebar navigation.
@@ -574,19 +570,7 @@ OG metadata is derived automatically with a priority cascade:
 
 ### Injection
 
-The `ThemeShell` Svelte component automatically injects both JSON-LD scripts and OG meta tags into the page `<head>`:
-
-```html
-<svelte:head>
-  {#if page.seo?.og.title}
-    <title>{page.seo.og.title}</title>
-    <meta property="og:title" content={page.seo.og.title} />
-  {/if}
-  {#each page.seo.jsonLd as schema}
-    {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
-  {/each}
-</svelte:head>
-```
+SEO metadata is injected into the page `<head>` by the adapter. In SvelteKit, the `ThemeShell` component uses `<svelte:head>` to inject tags dynamically. In the HTML adapter, `renderFullPage()` embeds them directly in the generated HTML document.
 
 {% hint type="note" %}
 No configuration or annotation is required from the content author. Write a recipe, get Recipe structured data. Write an FAQ, get FAQPage structured data.
@@ -596,9 +580,9 @@ No configuration or annotation is required from the content author. Write a reci
 
 ## 7. Build Pipeline
 
-### Dev Mode
+### Dev Mode (SvelteKit)
 
-In development, the system uses SvelteKit's catch-all `[...slug]` route for on-demand rendering:
+In development with the SvelteKit adapter, the system uses a catch-all `[...slug]` route for on-demand rendering:
 
 1. **Content directory watching** -- The Vite plugin watches the content directory for `.md` file changes (adds, edits, deletes) and triggers full page reloads via WebSocket.
 
@@ -606,7 +590,9 @@ In development, the system uses SvelteKit's catch-all `[...slug]` route for on-d
 
 3. **Vite HMR** -- Theme component changes (Svelte files, CSS) use standard Vite hot module replacement for instant updates.
 
-### Virtual Modules
+For the HTML adapter, development is typically a rebuild-on-change workflow (run `npm run build` after edits).
+
+### Virtual Modules (SvelteKit)
 
 The Vite plugin (`@refrakt-md/sveltekit`) provides three virtual modules that decouple the application from hardcoded theme references:
 
@@ -673,10 +659,10 @@ Apply BEM classes, structural injection, and meta consumption.
 Walk the tree, find elements with `data-language` and text children, apply Shiki highlighting, and set `data-codeblock` for raw HTML injection. Supports configurable themes via the `theme` option -- a single built-in Shiki theme name or a `{ light, dark }` pair for dual-theme switching. Defaults to a CSS variables theme integrated with Lumina's design tokens. Unknown languages fall back to plain text.
 
 ### Renderer
-Svelte recursive component with `typeof`-based component dispatch.
+The adapter renders the identity-transformed tree. In SvelteKit, the Renderer walks the tree and dispatches on `typeof` to registered components. In the HTML adapter, `renderToHtml()` produces an HTML string directly.
 
 ### Behavior initialization
-After DOM render, `ThemeShell`'s `$effect` calls `initRuneBehaviors()` from `@refrakt-md/behaviors`. This scans for `data-rune` attributes and attaches vanilla JS behaviors (tabs, accordion, datatable, form, reveal, preview, copy-to-clipboard). Re-runs on navigation via `{#key page.url}` full DOM recreation.
+After DOM render, `initRuneBehaviors()` from `@refrakt-md/behaviors` scans for `data-rune` attributes and attaches vanilla JS behaviors (tabs, accordion, datatable, form, reveal, preview, copy-to-clipboard). In SvelteKit, the `ThemeShell` handles this via `$effect`. In the HTML adapter, the client-side `initPage()` function handles initialization.
 
 ### HTML output
 Static HTML ready for the browser.
@@ -684,7 +670,7 @@ Static HTML ready for the browser.
 
 ### Static Output
 
-For production, SvelteKit's prerender adapter generates static HTML for every page. The sitemap generator produces a `sitemap.xml` with:
+For production, the adapter generates static HTML for every page. SvelteKit uses its prerender adapter; the HTML adapter writes files directly. The sitemap generator produces a `sitemap.xml` with:
 - Draft pages excluded
 - Priority assigned by URL depth (root = 1.0, top-level = 0.8, deeper = 0.6)
 
@@ -745,15 +731,15 @@ Because the prompt is generated from the actual rune metadata, it stays perfectl
 
 ---
 
-## 9. Component Registry
+## 9. Component Registry (SvelteKit)
 
-The component registry is the dispatch mechanism that connects the framework-agnostic renderable tree to framework-specific interactive components.
+The component registry is the dispatch mechanism in the SvelteKit adapter that connects the framework-agnostic renderable tree to Svelte components. In the HTML adapter, all runes render through the identity transform — there is no component registry.
 
 ### How Dispatch Works
 
 Every rune's Markdoc transform outputs a tag with a `typeof` attribute. This attribute carries the rune's type name (`Hero`, `TabGroup`, `Accordion`, `DataTable`, etc.) through serialization and into the renderer.
 
-The Svelte `Renderer` component checks each tag:
+In SvelteKit, the `Renderer` component checks each tag:
 
 ```html
 {@const Component = node.attributes?.typeof
@@ -812,9 +798,9 @@ Projects can override any theme component via `refrakt.config.json` without fork
 
 The Vite plugin merges these overrides into the theme's component registry at build time, so the override component receives the same `tag` prop (the serialized renderable tree node) as the original.
 
-### Context System
+### Context System (SvelteKit)
 
-The component registry and element overrides are distributed through Svelte's context API. The `ThemeShell` component sets them up during initialization:
+In the SvelteKit adapter, the component registry and element overrides are distributed through Svelte's context API. The `ThemeShell` component sets them up during initialization:
 
 ```typescript
 setRegistry(theme.components);       // Rune typeof -> Svelte component
@@ -823,3 +809,5 @@ setContext('pages', page.pages);     // Page list for navigation
 ```
 
 Any component in the tree can then call `getComponent('TabGroup')` to resolve the registered component for a given type name, enabling nested runes to dispatch correctly regardless of their depth in the component tree.
+
+In the HTML adapter, page context is embedded as a `<script id="rf-context">` JSON block for client-side access.

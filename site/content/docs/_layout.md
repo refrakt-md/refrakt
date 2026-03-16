@@ -22,6 +22,12 @@
 - components
 - layouts
 
+## Adapters
+
+- adapters-overview
+- sveltekit
+- html
+
 ## Authoring
 
 - authoring-overview

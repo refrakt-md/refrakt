@@ -7,6 +7,22 @@ description: Set up refrakt.md and create your first content
 
 refrakt.md is a content framework built on [Markdoc](https://markdoc.dev). It extends Markdown with semantic runes — tags that transform standard Markdown primitives into structured, typed content.
 
+## Quick Start
+
+The fastest way to get started is to scaffold a project:
+
+```shell
+npx create-refrakt my-site
+```
+
+This creates a SvelteKit site with Lumina theme. For a pure HTML site with no framework, use `--target html`:
+
+```shell
+npx create-refrakt my-site --target html
+```
+
+See the [Adapters](/docs/adapters/adapters-overview) section for details on each option.
+
 ## Installation
 
 Install the core packages in your project:

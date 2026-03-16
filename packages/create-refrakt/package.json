@@ -18,7 +18,8 @@
   "types": "dist/scaffold.d.ts",
   "files": [
     "dist",
-    "template"
+    "template",
+    "template-html"
   ],
   "scripts": {
     "build": "tsc"
