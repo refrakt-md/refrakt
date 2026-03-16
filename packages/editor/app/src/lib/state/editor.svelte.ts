@@ -79,9 +79,6 @@ class EditorState {
 	/** Whether the left sidenav is open */
 	sidenavOpen = $state(true);
 
-	/** Whether the block edit panel is open (set by BlockEditor) */
-	editPanelOpen = $state(false);
-
 	dirty = $derived(this.editorContent !== this.savedContent);
 
 	/** Whether the current file is a layout or a regular page */

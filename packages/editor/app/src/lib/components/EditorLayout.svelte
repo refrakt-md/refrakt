@@ -41,7 +41,7 @@
 					{@render center()}
 				</div>
 			</div>
-			<div class="layout__panel layout__panel--right" class:panel-editing={editorState.editPanelOpen}>
+			<div class="layout__panel layout__panel--right">
 				{@render right()}
 			</div>
 		</div>
@@ -113,10 +113,5 @@
 	.layout__panel--right {
 		background: var(--ed-surface-1);
 		align-items: center;
-		transition: padding-right var(--ed-transition-slow);
-	}
-
-	.layout__panel--right.panel-editing {
-		padding-right: 480px;
 	}
 </style>

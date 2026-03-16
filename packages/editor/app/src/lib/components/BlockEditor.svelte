@@ -10,7 +10,6 @@
 		extractRuneInner,
 		type ParsedBlock,
 	} from '../editor/block-parser.js';
-	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
@@ -101,13 +100,9 @@
 			lastParsedSource = body;
 			// Close edit panel when switching files
 			activeIndex = null;
+			editingFrontmatter = false;
+			anchorEl = null;
 		}
-	});
-
-	// Sync edit panel open state to global state (for layout adjustments)
-	$effect(() => {
-		editorState.editPanelOpen = !readOnly && (activeIndex !== null || editingFrontmatter);
-		return () => { editorState.editPanelOpen = false; };
 	});
 
 	/** Sync blocks back to source text */
@@ -130,15 +125,60 @@
 
 	let activeIndex: number | null = $state(null);
 	let hoveredIndex: number | null = $state(null);
+	let anchorEl: HTMLElement | null = $state(null);
+	let fmHeaderEl: HTMLElement;
 
-	function toggleBlock(index: number) {
+	// ── Popover positioning ─────────────────────────────────────
+
+	const POPOVER_WIDTH = 420;
+	const POPOVER_GAP = 12;
+
+	let popoverStyle = $derived.by(() => {
+		if (!anchorEl) return '';
+
+		const rect = anchorEl.getBoundingClientRect();
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+
+		// Prefer placing to the right of the anchor
+		let left = rect.right + POPOVER_GAP;
+		if (left + POPOVER_WIDTH > vw - 16) {
+			left = rect.left - POPOVER_WIDTH - POPOVER_GAP;
+		}
+		if (left < 16) {
+			left = vw - POPOVER_WIDTH - 16;
+		}
+
+		// Vertical: align top of popover with top of anchor, clamped
+		let top = rect.top;
+		const maxH = vh - 120;
+		const maxTop = vh - Math.min(600, maxH) - 16;
+		if (top > maxTop) top = maxTop;
+		if (top < 60) top = 60;
+
+		return `left: ${left}px; top: ${top}px; max-height: min(600px, ${maxH}px);`;
+	});
+
+	function toggleBlock(index: number, rowEl?: HTMLElement) {
 		editingFrontmatter = false;
-		activeIndex = activeIndex === index ? null : index;
+		if (activeIndex === index) {
+			activeIndex = null;
+			anchorEl = null;
+		} else {
+			activeIndex = index;
+			anchorEl = rowEl ?? null;
+		}
 	}
 
 	function toggleFrontmatter() {
 		activeIndex = null;
-		editingFrontmatter = !editingFrontmatter;
+		if (editingFrontmatter) {
+			editingFrontmatter = false;
+			anchorEl = null;
+		} else {
+			editingFrontmatter = true;
+			anchorEl = fmHeaderEl ?? null;
+		}
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -147,8 +187,22 @@
 			if (activeIndex !== null || editingFrontmatter) {
 				activeIndex = null;
 				editingFrontmatter = false;
+				anchorEl = null;
 			}
 		}
+	}
+
+	function handleListScroll() {
+		if (activeIndex !== null || editingFrontmatter) {
+			activeIndex = null;
+			editingFrontmatter = false;
+			anchorEl = null;
+		}
+	}
+
+	function handleResize() {
+		// Force re-derive popoverStyle by reassigning anchorEl
+		if (anchorEl) anchorEl = anchorEl;
 	}
 
 	// ── Block operations ─────────────────────────────────────────
@@ -178,6 +232,9 @@
 
 	function handleDragStart(e: DragEvent, index: number) {
 		dragIndex = index;
+		activeIndex = null;
+		editingFrontmatter = false;
+		anchorEl = null;
 		if (e.dataTransfer) {
 			e.dataTransfer.effectAllowed = 'move';
 			e.dataTransfer.setData('text/plain', String(index));
@@ -350,7 +407,7 @@
 	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} onresize={handleResize} />
 
 <div class="block-editor">
 	{#if blocks.length === 0 && !readOnly}
@@ -366,13 +423,13 @@
 		</div>
 	{/if}
 
-	<div class="block-editor__stage" class:editing={!readOnly && (activeIndex !== null || editingFrontmatter)}>
+	<div class="block-editor__stage">
 		<!-- Scrollable block list -->
 		<div class="block-editor__scroll">
-			<div class="block-editor__list-wrap">
+			<div class="block-editor__list-wrap" onscroll={handleListScroll}>
 				<!-- Frontmatter summary header (blocks mode only) -->
 				{#if !readOnly}
-					<div class="block-editor__fm-header">
+					<div class="block-editor__fm-header" bind:this={fmHeaderEl}>
 						<div class="block-editor__fm-info">
 							<span class="block-editor__fm-title">{fmTitle || 'Untitled'}</span>
 							{#if fmDesc()}
@@ -446,7 +503,7 @@
 							<!-- Block label — slides in from right on hover, pinned when active -->
 							<button
 								class="block-editor__hover-label"
-								onclick={() => toggleBlock(i)}
+								onclick={(e) => toggleBlock(i, (e.currentTarget as HTMLElement).closest('.block-editor__row') as HTMLElement)}
 								aria-pressed={activeIndex === i}
 							>
 								{blockLabel(block)}
@@ -457,29 +514,35 @@
 			</div>
 		</div>
 
-		<!-- Edit panel — slides in from the right (blocks mode only) -->
-		{#if !readOnly}
-			<div class="block-editor__edit-panel">
-				{#if editingFrontmatter}
-					<FrontmatterEditPanel
-						onclose={() => { editingFrontmatter = false; }}
-					/>
-				{:else if activeIndex !== null && blocks[activeIndex]}
-					{#key activeIndex}
-						<BlockEditPanel
-							block={blocks[activeIndex]}
-							{runeMap}
-							runes={() => runes}
-							{aggregated}
-							onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
-							onremove={() => { const idx = activeIndex!; activeIndex = null; handleRemoveBlock(idx); }}
-							onclose={() => { activeIndex = null; }}
-						/>
-					{/key}
-				{/if}
-			</div>
-		{/if}
 	</div>
+
+	<!-- Popover edit panel — anchored to block card -->
+	{#if !readOnly && (activeIndex !== null || editingFrontmatter)}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="block-editor__popover-backdrop"
+			onmousedown={() => { activeIndex = null; editingFrontmatter = false; anchorEl = null; }}
+		></div>
+		<div class="block-editor__popover" style={popoverStyle}>
+			{#if editingFrontmatter}
+				<FrontmatterEditPanel
+					onclose={() => { editingFrontmatter = false; anchorEl = null; }}
+				/>
+			{:else if activeIndex !== null && blocks[activeIndex]}
+				{#key activeIndex}
+					<BlockEditPanel
+						block={blocks[activeIndex]}
+						{runeMap}
+						runes={() => runes}
+						{aggregated}
+						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
+						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorEl = null; handleRemoveBlock(idx); }}
+						onclose={() => { activeIndex = null; anchorEl = null; }}
+					/>
+				{/key}
+			{/if}
+		</div>
+	{/if}
 
 	{#if showInsertMenu}
 		<InsertBlockDialog
@@ -515,7 +578,6 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		transition: margin-right var(--ed-transition-slow);
 	}
 
 	.block-editor__list-wrap {
@@ -697,24 +759,36 @@
 		color: white;
 	}
 
-	/* Edit panel — fixed to right edge of viewport, outside the card */
-	.block-editor__edit-panel {
+	/* Popover backdrop — transparent click target */
+	.block-editor__popover-backdrop {
 		position: fixed;
-		top: calc(60px + var(--ed-space-4));
-		right: 0;
-		bottom: 0;
-		width: 480px;
-		overflow-y: auto;
-		background: var(--ed-surface-0);
-		border-radius: var(--ed-radius-lg) 0 0 0;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-		transform: translateX(100%);
-		transition: transform var(--ed-transition-slow);
-		z-index: 10;
+		inset: 0;
+		z-index: 9;
 	}
 
-	.block-editor__stage.editing .block-editor__edit-panel {
-		transform: translateX(0);
+	/* Popover container — anchored to block card */
+	.block-editor__popover {
+		position: fixed;
+		width: 420px;
+		overflow-y: auto;
+		background: var(--ed-surface-0);
+		border-radius: var(--ed-radius-lg);
+		border: 1px solid var(--ed-border-default);
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+					0 8px 10px -6px rgba(0, 0, 0, 0.1);
+		z-index: 10;
+		animation: popover-enter 0.15s ease-out;
+	}
+
+	@keyframes popover-enter {
+		from {
+			opacity: 0;
+			transform: translateY(4px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
 	}
 
 	/* Empty state */
