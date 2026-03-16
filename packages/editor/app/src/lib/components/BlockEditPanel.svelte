@@ -15,9 +15,13 @@
 		parseContentTree,
 		serializeAttributes,
 		replaceNodeSource,
+		insertFieldContent,
+		removeFieldContent,
 	} from '../editor/block-parser.js';
+	import { resolveContentStructure } from '../editor/content-model-resolver.js';
 	import RuneAttributes from './RuneAttributes.svelte';
 	import ContentTree from './ContentTree.svelte';
+	import ContentModelTree from './ContentModelTree.svelte';
 	import InlineEditor from './InlineEditor.svelte';
 
 	interface Props {
@@ -59,6 +63,18 @@
 	let hasNestedRunes = $derived(
 		contentTree.some(n => n.type === 'rune')
 	);
+
+	/** Whether this rune has a declarative content model */
+	let hasContentModel = $derived(runeInfo?.contentModel != null);
+
+	/** Resolved structure: content tree matched against content model */
+	let resolvedStructure = $derived.by(() => {
+		if (!runeInfo?.contentModel) return null;
+		return resolveContentStructure(contentTree, runeInfo.contentModel);
+	});
+
+	/** Currently selected field in the content model tree */
+	let selectedField: string | null = $state(null);
 
 	/** Find the path to the Nth rune node in DFS order */
 	function findRunePathByDfsIndex(nodes: ContentNode[], target: number): number[] | null {
@@ -118,7 +134,7 @@
 		if (block.type !== 'rune') return [] as TabId[];
 		const rb = block as RuneBlock;
 		const tabs: TabId[] = ['settings'];
-		if (hasNestedRunes) tabs.push('structure');
+		if (hasContentModel || hasNestedRunes) tabs.push('structure');
 		if (!rb.selfClosing) tabs.push('content');
 		return tabs;
 	});
@@ -134,6 +150,34 @@
 
 	function navigateToRoot() {
 		activePath = [];
+	}
+
+	// ── Content model field handlers ─────────────────────────────
+
+	function handleFieldSelect(fieldName: string, zoneName?: string) {
+		selectedField = zoneName ? `${zoneName}.${fieldName}` : fieldName;
+	}
+
+	function handleAddField(fieldName: string, zoneName?: string) {
+		if (!resolvedStructure) return;
+		const rb = block as RuneBlock;
+		const newInner = insertFieldContent(rb.innerContent, resolvedStructure, fieldName, zoneName);
+		if (newInner !== rb.innerContent) {
+			const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+			updated.source = rebuildRuneSource(updated);
+			onupdate(updated);
+		}
+	}
+
+	function handleRemoveField(fieldName: string, zoneName?: string) {
+		if (!resolvedStructure) return;
+		const rb = block as RuneBlock;
+		const newInner = removeFieldContent(rb.innerContent, resolvedStructure, fieldName, zoneName);
+		if (newInner !== rb.innerContent) {
+			const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+			updated.source = rebuildRuneSource(updated);
+			onupdate(updated);
+		}
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -414,16 +458,27 @@
 		{/if}
 
 		<!-- Structure tab -->
-		{#if activeTab === 'structure' && hasNestedRunes}
+		{#if activeTab === 'structure'}
 			<div class="edit-panel__tab-panel">
-				<ContentTree
-					nodes={contentTree}
-					{activePath}
-					onselect={handleTreeSelect}
-					rootLabel={rb.runeName}
-					onrootclick={navigateToRoot}
-					isRootActive={activePath.length === 0}
-				/>
+				{#if hasContentModel && resolvedStructure}
+					<ContentModelTree
+						structure={resolvedStructure}
+						rootLabel={rb.runeName}
+						onaddfield={handleAddField}
+						onremovefield={handleRemoveField}
+						onfieldselect={handleFieldSelect}
+						{selectedField}
+					/>
+				{:else if hasNestedRunes}
+					<ContentTree
+						nodes={contentTree}
+						{activePath}
+						onselect={handleTreeSelect}
+						rootLabel={rb.runeName}
+						onrootclick={navigateToRoot}
+						isRootActive={activePath.length === 0}
+					/>
+				{/if}
 			</div>
 		{/if}
 

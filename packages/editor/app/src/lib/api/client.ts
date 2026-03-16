@@ -200,6 +200,54 @@ export interface RuneAttributeInfo {
 	values?: string[];
 }
 
+// ── Serialized content model types (from server) ────────────────────────
+
+export interface SerializedFieldDef {
+	name: string;
+	match: string;
+	optional?: boolean;
+	greedy?: boolean;
+	template?: string;
+	description?: string;
+	emitTag?: string;
+}
+
+export interface SerializedSequenceModel {
+	type: 'sequence';
+	fields: SerializedFieldDef[];
+}
+
+export interface SerializedDelimitedZone extends SerializedSequenceModel {
+	name: string;
+}
+
+export interface SerializedDelimitedModel {
+	type: 'delimited';
+	delimiter: string;
+	zones?: SerializedDelimitedZone[];
+	dynamicZones?: boolean;
+	zoneModel?: SerializedSequenceModel;
+}
+
+export interface SerializedSectionsModel {
+	type: 'sections';
+	sectionHeading: string;
+	fields?: SerializedFieldDef[];
+	sectionModel?: SerializedContentModel;
+	emitTag?: string;
+}
+
+export interface SerializedCustomModel {
+	type: 'custom';
+	description: string;
+}
+
+export type SerializedContentModel =
+	| SerializedSequenceModel
+	| SerializedDelimitedModel
+	| SerializedSectionsModel
+	| SerializedCustomModel;
+
 export interface RuneInfo {
 	name: string;
 	aliases: string[];
@@ -208,6 +256,7 @@ export interface RuneInfo {
 	category: string;
 	attributes: Record<string, RuneAttributeInfo>;
 	example?: string;
+	contentModel?: SerializedContentModel;
 }
 
 export async function fetchRunes(): Promise<RuneInfo[]> {

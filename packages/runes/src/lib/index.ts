@@ -14,6 +14,13 @@ export { id } from './annotations/id.js';
 export { Model } from './model.js';
 export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './resolver.js';
 
+/**
+ * Maps a Markdoc Schema to its content model declaration.
+ * Populated by `createContentModelSchema()` so consumers (editor, language server)
+ * can introspect a rune's expected content structure without re-parsing.
+ */
+export const schemaContentModels = new WeakMap<Schema, ContentModel | ((attrs: Record<string, any>) => ContentModel)>();
+
 /** Normalize resolver output (single Node, Node[], or undefined) into Node[]. */
 export function asNodes(value: unknown): Node[] {
   if (Array.isArray(value)) return value as Node[];
@@ -429,6 +436,9 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       return errors;
     };
   }
+
+  // Register content model for introspection by editor / language server
+  schemaContentModels.set(schema, options.contentModel);
 
   return schema;
 }

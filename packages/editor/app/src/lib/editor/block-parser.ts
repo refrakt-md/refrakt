@@ -1,4 +1,5 @@
 import type { RuneInfo } from '../api/client.js';
+import type { ResolvedStructure, ResolvedField } from './content-model-resolver.js';
 
 /**
  * Block types recognized by the visual editor.
@@ -536,6 +537,202 @@ export function replaceNodeSource(parentContent: string, oldSource: string, newS
 	const idx = parentContent.indexOf(oldSource);
 	if (idx === -1) return parentContent;
 	return parentContent.slice(0, idx) + newSource + parentContent.slice(idx + oldSource.length);
+}
+
+// ── Content model field insertion / removal ──────────────────────────
+
+/** Default markdown template for a field's match type */
+function defaultTemplate(match: string): string {
+	const primary = match.includes('|') ? match.split('|')[0] : match;
+	switch (primary) {
+		case 'heading': return '## Heading';
+		case 'heading:1': return '# Heading';
+		case 'heading:2': return '## Heading';
+		case 'heading:3': return '### Heading';
+		case 'heading:4': return '#### Heading';
+		case 'heading:5': return '##### Heading';
+		case 'heading:6': return '###### Heading';
+		case 'paragraph': return 'Text content';
+		case 'list': case 'list:unordered': return '- Item 1\n- Item 2';
+		case 'list:ordered': return '1. Item 1\n2. Item 2';
+		case 'fence': return '```\ncode\n```';
+		case 'image': return '![alt](url)';
+		case 'blockquote': case 'quote': return '> Quote';
+		case 'any': return 'Content';
+		default: return 'Content';
+	}
+}
+
+/**
+ * Insert content for an empty field in a resolved structure.
+ * Returns the updated innerContent string.
+ */
+export function insertFieldContent(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	zoneName?: string,
+): string {
+	const { field, fields } = findField(structure, fieldName, zoneName);
+	if (!field || field.filled) return innerContent;
+
+	const template = field.template || defaultTemplate(field.match);
+
+	if (structure.type === 'delimited' && zoneName) {
+		return insertInDelimited(innerContent, structure, zoneName, fieldName, fields!, template);
+	}
+
+	if (structure.type === 'sequence') {
+		return insertInSequence(innerContent, structure.fields, fieldName, template);
+	}
+
+	return innerContent;
+}
+
+/**
+ * Remove content for a filled field in a resolved structure.
+ * Returns the updated innerContent string.
+ */
+export function removeFieldContent(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	zoneName?: string,
+): string {
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+
+	let result = innerContent;
+	// Remove all matched nodes' source text (reverse order to preserve indices)
+	for (let i = field.nodes.length - 1; i >= 0; i--) {
+		const nodeSource = field.nodes[i].source;
+		result = removeNodeSource(result, nodeSource);
+	}
+
+	// Clean up double blank lines left by removal
+	result = result.replace(/\n{3,}/g, '\n\n');
+
+	return result;
+}
+
+function findField(
+	structure: ResolvedStructure,
+	fieldName: string,
+	zoneName?: string,
+): { field: ResolvedField | null; fields: ResolvedField[] | null } {
+	if (structure.type === 'sequence') {
+		const field = structure.fields.find(f => f.name === fieldName) ?? null;
+		return { field, fields: structure.fields };
+	}
+	if (structure.type === 'delimited' && zoneName) {
+		const zone = structure.zones.find(z => z.name === zoneName);
+		if (!zone) return { field: null, fields: null };
+		const field = zone.fields.find(f => f.name === fieldName) ?? null;
+		return { field, fields: zone.fields };
+	}
+	return { field: null, fields: null };
+}
+
+/** Remove a node's source from content, handling surrounding whitespace */
+function removeNodeSource(content: string, nodeSource: string): string {
+	const idx = content.indexOf(nodeSource);
+	if (idx === -1) return content;
+
+	let start = idx;
+	let end = idx + nodeSource.length;
+
+	// Extend to consume surrounding blank lines
+	while (start > 0 && content[start - 1] === '\n') start--;
+	if (start > 0) start++; // Keep one newline
+	while (end < content.length && content[end] === '\n') end++;
+
+	return content.slice(0, start) + content.slice(end);
+}
+
+function insertInSequence(
+	innerContent: string,
+	fields: ResolvedField[],
+	fieldName: string,
+	template: string,
+): string {
+	const fieldIndex = fields.findIndex(f => f.name === fieldName);
+	if (fieldIndex === -1) return innerContent;
+
+	// Find the last filled field before this one to insert after
+	let insertAfterNode: ContentNode | null = null;
+	for (let i = fieldIndex - 1; i >= 0; i--) {
+		if (fields[i].filled && fields[i].nodes.length > 0) {
+			const nodes = fields[i].nodes;
+			insertAfterNode = nodes[nodes.length - 1];
+			break;
+		}
+	}
+
+	if (insertAfterNode) {
+		const idx = innerContent.indexOf(insertAfterNode.source);
+		if (idx !== -1) {
+			const afterEnd = idx + insertAfterNode.source.length;
+			return innerContent.slice(0, afterEnd) + '\n\n' + template + innerContent.slice(afterEnd);
+		}
+	}
+
+	// Find the first filled field after this one to insert before
+	for (let i = fieldIndex + 1; i < fields.length; i++) {
+		if (fields[i].filled && fields[i].nodes.length > 0) {
+			const beforeNode = fields[i].nodes[0];
+			const idx = innerContent.indexOf(beforeNode.source);
+			if (idx !== -1) {
+				return innerContent.slice(0, idx) + template + '\n\n' + innerContent.slice(idx);
+			}
+		}
+	}
+
+	// No adjacent filled fields — append to content
+	const trimmed = innerContent.trimEnd();
+	return trimmed + (trimmed ? '\n\n' : '') + template;
+}
+
+function insertInDelimited(
+	innerContent: string,
+	structure: ResolvedStructure & { type: 'delimited' },
+	zoneName: string,
+	fieldName: string,
+	fields: ResolvedField[],
+	template: string,
+): string {
+	const zoneIndex = structure.zones.findIndex(z => z.name === zoneName);
+	if (zoneIndex === -1) return innerContent;
+
+	// Split content at delimiters (---) to find zone boundaries
+	const lines = innerContent.split('\n');
+	const delimiterIndices: number[] = [];
+	for (let i = 0; i < lines.length; i++) {
+		if (lines[i].trim() === '---') delimiterIndices.push(i);
+	}
+
+	// If the target zone doesn't exist yet (no delimiter), add one
+	if (zoneIndex > 0 && delimiterIndices.length < zoneIndex) {
+		const trimmed = innerContent.trimEnd();
+		const missingDelimiters = zoneIndex - delimiterIndices.length;
+		let insert = '';
+		for (let i = 0; i < missingDelimiters; i++) {
+			insert += '\n\n---';
+		}
+		return trimmed + insert + '\n\n' + template;
+	}
+
+	// Zone exists — insert within it using sequence logic
+	// Determine the zone's content range in lines
+	const zoneStart = zoneIndex === 0 ? 0 : delimiterIndices[zoneIndex - 1] + 1;
+	const zoneEnd = zoneIndex < delimiterIndices.length ? delimiterIndices[zoneIndex] : lines.length;
+	const zoneContent = lines.slice(zoneStart, zoneEnd).join('\n');
+
+	const updatedZone = insertInSequence(zoneContent, fields, fieldName, template);
+
+	const before = lines.slice(0, zoneStart).join('\n');
+	const after = lines.slice(zoneEnd).join('\n');
+
+	return [before, updatedZone, after].filter(Boolean).join('\n');
 }
 
 // ── Serialization ────────────────────────────────────────────────────
