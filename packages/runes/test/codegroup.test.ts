@@ -30,8 +30,8 @@ x = 1
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabItems = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tab');
-    const panels = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'panel');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
+    const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'panel');
     expect(tabItems.length).toBe(2);
     expect(panels.length).toBe(2);
   });
@@ -48,7 +48,7 @@ x = 1
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabItems = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tab');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
 
     // Tab names should contain prettified language names
     const firstSpan = findTag(tabItems[0], t => t.name === 'span');
@@ -69,7 +69,7 @@ const x = 1;
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabItems = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tab');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
 
     const firstSpan = findTag(tabItems[0], t => t.name === 'span');
     const secondSpan = findTag(tabItems[1], t => t.name === 'span');
@@ -98,7 +98,7 @@ const x = 1;
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
     expect(tag).toBeDefined();
-    const tabItems = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tab');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
     expect(tabItems.length).toBe(1);
   });
 });

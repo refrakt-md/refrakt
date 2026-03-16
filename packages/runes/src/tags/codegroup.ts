@@ -43,16 +43,16 @@ export const codegroup = createContentModelSchema({
 			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
 
 			const nameSpan = new Tag('span', {}, [label]);
-			tabItems.push(new Tag('li', { 'data-name': 'tab' }, [nameSpan]));
+			tabItems.push(new Tag('button', { 'data-name': 'tab', role: 'tab' }, [nameSpan]));
 
 			const code = Markdoc.transform(child, config);
-			panelItems.push(new Tag('li', {}, [code]));
+			panelItems.push(new Tag('div', { role: 'tabpanel' }, [code]));
 		}
 
 		const tabs = new RenderableNodeCursor(tabItems);
 		const panelsCursor = new RenderableNodeCursor(panelItems);
-		const tabList = tabs.wrap('ul');
-		const panelList = panelsCursor.wrap('ul');
+		const tabList = tabs.wrap('div', { role: 'tablist' });
+		const panelList = panelsCursor.wrap('div');
 
 		const properties: Record<string, any> = {};
 		const children: any[] = [];

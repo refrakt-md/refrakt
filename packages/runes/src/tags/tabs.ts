@@ -30,13 +30,13 @@ class TabModel extends Model {
 
     return [
       createComponentRenderable(schema.Tab, {
-        tag: 'li',
+        tag: 'button',
         properties: { image },
         refs: { name },
         children: tab.toArray(),
       }),
       createComponentRenderable(schema.TabPanel, {
-        tag: 'li',
+        tag: 'div',
         properties: {},
         children: panel.toArray(),
       })
@@ -92,11 +92,11 @@ export const tabs = createContentModelSchema({
       Markdoc.transform(tabAst, config) as RenderableTreeNode[],
     );
 
-    const tabItems = tabStream.tag('li').typeof('Tab');
-    const panels = tabStream.tag('li').typeof('TabPanel');
+    const tabItems = tabStream.tag('button').typeof('Tab');
+    const panels = tabStream.tag('div').typeof('TabPanel');
 
-    const tabList = tabItems.wrap('ul');
-    const panelList = panels.wrap('ul');
+    const tabList = tabItems.wrap('div', { role: 'tablist' });
+    const panelList = panels.wrap('div');
 
     const children = headerNodes.count() > 0
       ? [headerNodes.wrap('header').next(), tabList.next(), panelList.next()]

@@ -15,23 +15,23 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 	const rune = opts?.rune ?? 'tab-group';
 
 	const tabs = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tab">
+		<button data-rune="tab" role="tab" class="rf-tab">
 			<span data-name="name">Tab ${i + 1}</span>
-		</li>
+		</button>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tab-panel">
+		<div data-rune="tab-panel" role="tabpanel">
 			<div>Content ${i + 1}</div>
-		</li>
+		</div>
 	`).join('');
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', rune);
 	el.className = rune === 'code-group' ? 'rf-codegroup' : 'rf-tabs';
 	el.innerHTML = `
-		<ul data-name="tabs">${tabs}</ul>
-		<ul data-name="panels">${panels}</ul>
+		<div data-name="tabs" role="tablist" class="${rune === 'code-group' ? 'rf-codegroup__tabs' : 'rf-tabs__tabs'}">${tabs}</div>
+		<div data-name="panels" class="${rune === 'code-group' ? 'rf-codegroup__panels' : 'rf-tabs__panels'}">${panels}</div>
 	`;
 	document.body.appendChild(el);
 	return el;
@@ -41,15 +41,15 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	const count = opts?.tabCount ?? 2;
 
 	const tabs = Array.from({ length: count }, (_, i) => `
-		<li data-name="tab">
+		<button data-name="tab" role="tab" class="rf-codegroup__tab">
 			<span>file${i + 1}.ts</span>
-		</li>
+		</button>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li data-name="panel">
+		<div data-name="panel" role="tabpanel" class="rf-codegroup__panel">
 			<pre><code>code ${i + 1}</code></pre>
-		</li>
+		</div>
 	`).join('');
 
 	const el = document.createElement('div');
@@ -61,65 +61,15 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 			<span class="rf-codegroup__dot"></span>
 			<span class="rf-codegroup__dot"></span>
 		</div>
-		<ul data-name="tabs">${tabs}</ul>
-		<ul data-name="panels">${panels}</ul>
+		<div data-name="tabs" role="tablist" class="rf-codegroup__tabs">${tabs}</div>
+		<div data-name="panels" class="rf-codegroup__panels">${panels}</div>
 	`;
 	document.body.appendChild(el);
 	return el;
 }
 
 describe('tabsBehavior', () => {
-	describe('tablist creation', () => {
-		it('creates a tablist with buttons', () => {
-			const el = createTabGroup();
-			tabsBehavior(el);
-
-			const tablist = el.querySelector('[role="tablist"]');
-			expect(tablist).not.toBeNull();
-
-			const buttons = tablist!.querySelectorAll('[role="tab"]');
-			expect(buttons.length).toBe(3);
-			expect(buttons[0].textContent).toBe('Tab 1');
-			expect(buttons[1].textContent).toBe('Tab 2');
-			expect(buttons[2].textContent).toBe('Tab 3');
-		});
-
-		it('uses rf-tabs__bar class for tabgroup', () => {
-			const el = createTabGroup();
-			tabsBehavior(el);
-
-			const tablist = el.querySelector('[role="tablist"]');
-			expect(tablist!.className).toBe('rf-tabs__bar');
-		});
-
-		it('uses rf-codegroup__tabs class for codegroup', () => {
-			const el = createCodeGroup();
-			tabsBehavior(el);
-
-			const tablist = el.querySelector('[role="tablist"]');
-			expect(tablist!.className).toBe('rf-codegroup__tabs');
-		});
-
-		it('inserts tab bar after topbar for codegroup', () => {
-			const el = createCodeGroup();
-			tabsBehavior(el);
-
-			const topbar = el.querySelector('[data-name="topbar"]');
-			const tablist = el.querySelector('[role="tablist"]');
-			expect(topbar!.nextElementSibling).toBe(tablist);
-		});
-	});
-
-	describe('ARIA attributes', () => {
-		it('sets aria-selected on first tab button', () => {
-			const el = createTabGroup();
-			tabsBehavior(el);
-
-			const buttons = el.querySelectorAll('[role="tab"]');
-			expect(buttons[0].getAttribute('aria-selected')).toBe('true');
-			expect(buttons[1].getAttribute('aria-selected')).toBe('false');
-		});
-
+	describe('ARIA wiring', () => {
 		it('wires aria-controls and aria-labelledby', () => {
 			const el = createTabGroup();
 			tabsBehavior(el);
@@ -134,6 +84,24 @@ describe('tabsBehavior', () => {
 				expect(panels[i].getAttribute('aria-labelledby')).toBe(buttons[i].id);
 			}
 		});
+
+		it('sets aria-selected on first tab button', () => {
+			const el = createTabGroup();
+			tabsBehavior(el);
+
+			const buttons = el.querySelectorAll('[role="tab"]');
+			expect(buttons[0].getAttribute('aria-selected')).toBe('true');
+			expect(buttons[1].getAttribute('aria-selected')).toBe('false');
+		});
+
+		it('adds --active class to first tab button', () => {
+			const el = createCodeGroup();
+			tabsBehavior(el);
+
+			const buttons = el.querySelectorAll('[role="tab"]');
+			expect(buttons[0].classList.contains('rf-codegroup__tab--active')).toBe(true);
+			expect(buttons[1].classList.contains('rf-codegroup__tab--active')).toBe(false);
+		});
 	});
 
 	describe('panel switching', () => {
@@ -145,16 +113,6 @@ describe('tabsBehavior', () => {
 			expect(panels[0].hidden).toBe(false);
 			expect(panels[1].hidden).toBe(true);
 			expect(panels[2].hidden).toBe(true);
-		});
-
-		it('hides Tab label items', () => {
-			const el = createTabGroup();
-			tabsBehavior(el);
-
-			const tabItems = el.querySelectorAll('ul[data-name="tabs"] > li');
-			for (const item of tabItems) {
-				expect((item as HTMLElement).hidden).toBe(true);
-			}
 		});
 
 		it('switches panel on tab button click', () => {
@@ -256,41 +214,43 @@ describe('tabsBehavior', () => {
 	});
 
 	describe('cleanup', () => {
-		it('removes tab bar and restores DOM on cleanup', () => {
+		it('removes ARIA attributes and restores panels on cleanup', () => {
 			const el = createTabGroup();
 			const cleanup = tabsBehavior(el);
 
-			expect(el.querySelector('[role="tablist"]')).not.toBeNull();
-
 			cleanup();
 
-			expect(el.querySelector('[role="tablist"]')).toBeNull();
-
-			// Tab items should be visible again
-			const tabItems = el.querySelectorAll('ul[data-name="tabs"] > li');
-			for (const item of tabItems) {
-				expect((item as HTMLElement).hidden).toBe(false);
+			// ARIA IDs should be removed from buttons
+			const buttons = el.querySelectorAll('[role="tab"]');
+			for (const btn of buttons) {
+				expect(btn.id).toBe('');
+				expect(btn.hasAttribute('aria-controls')).toBe(false);
+				expect(btn.hasAttribute('aria-selected')).toBe(false);
 			}
 
-			// Panel items should be visible again
-			const panelItems = el.querySelectorAll('ul[data-name="panels"] > li');
+			// Panel items should be visible and ARIA removed
+			const panelItems = el.querySelectorAll('[role="tabpanel"]');
 			for (const item of panelItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
+				expect(item.id).toBe('');
+				expect(item.hasAttribute('aria-labelledby')).toBe(false);
 			}
 		});
 
-		it('removes event listeners on cleanup', () => {
-			const el = createTabGroup();
+		it('removes active class on cleanup', () => {
+			const el = createCodeGroup();
 			const cleanup = tabsBehavior(el);
 
 			cleanup();
 
-			// Tab bar is removed so no more buttons to click
-			expect(el.querySelector('[role="tablist"]')).toBeNull();
+			const buttons = el.querySelectorAll('[role="tab"]');
+			for (const btn of buttons) {
+				expect(btn.classList.contains('rf-codegroup__tab--active')).toBe(false);
+			}
 		});
 	});
 
-	it('handles element with no ul', () => {
+	it('handles element with no tabs container', () => {
 		const el = document.createElement('section');
 		el.setAttribute('data-rune', 'tab-group');
 		document.body.appendChild(el);
@@ -299,10 +259,10 @@ describe('tabsBehavior', () => {
 		cleanup();
 	});
 
-	it('handles ul with no Tab/TabPanel items', () => {
+	it('handles tabs container with no button children', () => {
 		const el = document.createElement('section');
 		el.setAttribute('data-rune', 'tab-group');
-		el.innerHTML = '<ul><li>Regular item</li></ul>';
+		el.innerHTML = '<div data-name="tabs" role="tablist"></div><div data-name="panels"></div>';
 		document.body.appendChild(el);
 
 		const cleanup = tabsBehavior(el);
