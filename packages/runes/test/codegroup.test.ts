@@ -18,7 +18,7 @@ x = 1
     expect(tag!.name).toBe('section');
   });
 
-  it('should create Tab and TabPanel children from fences', () => {
+  it('should create tab and panel children from fences', () => {
     const result = parse(`{% codegroup %}
 \`\`\`js
 const x = 1;
@@ -30,9 +30,9 @@ x = 1
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
-    const panels = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab-panel');
-    expect(tabs.length).toBe(2);
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
+    const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'panel');
+    expect(tabItems.length).toBe(2);
     expect(panels.length).toBe(2);
   });
 
@@ -48,13 +48,13 @@ x = 1
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
 
     // Tab names should contain prettified language names
-    const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
-    const secondTabSpan = findTag(tabs[1], t => t.name === 'span');
-    expect(firstTabSpan?.children).toContain('JavaScript');
-    expect(secondTabSpan?.children).toContain('Python');
+    const firstSpan = findTag(tabItems[0], t => t.name === 'span');
+    const secondSpan = findTag(tabItems[1], t => t.name === 'span');
+    expect(firstSpan?.children).toContain('JavaScript');
+    expect(secondSpan?.children).toContain('Python');
   });
 
   it('should use custom labels when provided', () => {
@@ -69,12 +69,12 @@ const x = 1;
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
 
-    const firstTabSpan = findTag(tabs[0], t => t.name === 'span');
-    const secondTabSpan = findTag(tabs[1], t => t.name === 'span');
-    expect(firstTabSpan?.children).toContain('React');
-    expect(secondTabSpan?.children).toContain('Vue');
+    const firstSpan = findTag(tabItems[0], t => t.name === 'span');
+    const secondSpan = findTag(tabItems[1], t => t.name === 'span');
+    expect(firstSpan?.children).toContain('React');
+    expect(secondSpan?.children).toContain('Vue');
   });
 
   it('should include title meta when title is provided', () => {
@@ -98,7 +98,7 @@ const x = 1;
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
     expect(tag).toBeDefined();
-    const tabs = findAllTags(tag!, t => t.attributes['data-rune'] === 'tab');
-    expect(tabs.length).toBe(1);
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
+    expect(tabItems.length).toBe(1);
   });
 });

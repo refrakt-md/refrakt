@@ -20,7 +20,6 @@ import media from '@refrakt-md/media';
 
 const UNSTYLED_BLOCKS = new Set([
 	'recipe-ingredient', // styled inline within recipe.css (no own block selector)
-	'tab',               // interactive-only, styled by Svelte component
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([

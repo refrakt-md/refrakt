@@ -33,12 +33,11 @@ export const revealStep = createSchema(RevealStepModel);
 
 export const reveal = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		mode: { type: String, required: false, matches: modeType.slice() },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'reveal-step',
 		emitAttributes: { name: '$heading' },
 		fields: [

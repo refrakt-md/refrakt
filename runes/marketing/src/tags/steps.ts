@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, headingsToList, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { attribute, group, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
@@ -59,40 +59,51 @@ export const step = createSchema(StepModel, {
 });
 
 export const steps = createContentModelSchema({
-  attributes: {
-    headingLevel: { type: Number, required: false },
-  },
-  contentModel: (attrs) => ({
-    type: 'custom' as const,
-    processChildren: (nodes) => headingsToList({ level: attrs.headingLevel })(nodes as Node[]),
-    description: 'Converts headings to a list structure, where each heading becomes a step with optional split layout.',
+  attributes: {},
+  contentModel: () => ({
+    type: 'sections' as const,
+    sectionHeading: 'heading',
+    fields: [
+      { name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+    ],
+    sectionModel: {
+      type: 'sequence' as const,
+      fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+    },
   }),
   transform(resolved, attrs, config) {
-    const children = new RenderableNodeCursor(
-      Markdoc.transform(asNodes(resolved.children), {
-        ...config,
-        nodes: {
-          ...config.nodes,
-          list: { render: 'ol' },
-          item: {
-            transform(node: Node, cfg: any) {
-              return Markdoc.transform(
-                new Ast.Node('tag', { split: node.attributes.split }, node.children, 'step'), cfg
-              );
-            },
-          },
-        },
-      }) as RenderableTreeNode[],
+    const headerNodes = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
     );
+
+    // Build step tag nodes from resolved sections, re-including the heading node
+    const sections = (resolved.sections ?? []) as Array<{
+      $headingNode: Node;
+      body: unknown;
+    }>;
+    const stepTagNodes = sections.map(section =>
+      new Ast.Node('tag', {}, [section.$headingNode, ...asNodes(section.body)], 'step'),
+    );
+
+    const stepStream = new RenderableNodeCursor(
+      Markdoc.transform(stepTagNodes, config) as RenderableTreeNode[],
+    );
+
+    const stepItems = stepStream.tag('li').typeof('Step');
+    const stepList = new Tag('ol', {}, stepItems.toArray());
+
+    const children = headerNodes.count() > 0
+      ? [...headerNodes.toArray(), stepList]
+      : [stepList];
 
     return createComponentRenderable(schema.Steps, {
       tag: 'section',
       property: 'contentSection',
       properties: {
-        ...pageSectionProperties(children),
-        step: children.flatten().tag('li').typeof('Step')
+        ...pageSectionProperties(headerNodes),
+        step: stepItems,
       },
-      children: children.toArray(),
+      children,
     });
   },
 });

@@ -25,16 +25,15 @@ export const factionSection = createSchema(FactionSectionModel);
 
 export const faction = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		name: { type: String, required: true },
 		type: { type: String, required: false },
 		alignment: { type: String, required: false },
 		size: { type: String, required: false },
 		tags: { type: String, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'faction-section',
 		emitAttributes: { name: '$heading' },
 		fields: [

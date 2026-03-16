@@ -4,86 +4,48 @@ import { uniqueId } from '../utils.js';
 /**
  * Tabs behavior for `[data-rune="tab-group"]` and `[data-rune="code-group"]`.
  *
- * Discovers Tab/TabPanel items in the identity-transformed HTML structure,
- * creates a tablist bar with buttons, and toggles panel visibility.
+ * The rune schemas produce the correct accessible structure:
+ * `<div role="tablist">` with `<button role="tab">` children, and
+ * `<div data-name="panels">` with `<div role="tabpanel">` children.
+ *
+ * This behavior adds ARIA wiring, click/keyboard handlers, and panel switching.
  *
  * - ArrowLeft/ArrowRight keyboard navigation (with wrapping)
  * - Home/End jump to first/last tab
- * - ARIA: role="tablist", role="tab", role="tabpanel", aria-selected, aria-controls
+ * - ARIA: aria-selected, aria-controls, aria-labelledby
  */
 export function tabsBehavior(el: HTMLElement): CleanupFn {
-	// The rune schema produces two <ul> elements:
-	// <ul data-name="tabs"> for Tab items, <ul data-name="panels"> for TabPanel items.
-	// Fall back to positional lookup for compatibility with single-<ul> structures.
-	const allUls = el.querySelectorAll('ul');
-	const tabsUl = el.querySelector<HTMLElement>('ul[data-name="tabs"]') || allUls[0];
-	const panelsUl = el.querySelector<HTMLElement>('ul[data-name="panels"]') || allUls[1] || tabsUl;
-	if (!tabsUl) return () => {};
+	const tabBar = el.querySelector<HTMLElement>('[data-name="tabs"]');
+	const panelsContainer = el.querySelector<HTMLElement>('[data-name="panels"]');
+	if (!tabBar || !panelsContainer) return () => {};
 
-	const tabItems = Array.from(tabsUl.children).filter(
-		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('data-rune') === 'tab',
+	const buttons = Array.from(tabBar.children).filter(
+		(c): c is HTMLButtonElement => c instanceof HTMLElement && c.tagName === 'BUTTON',
 	);
 
-	const panelItems = Array.from(panelsUl.children).filter(
-		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('data-rune') === 'tab-panel',
+	const panelItems = Array.from(panelsContainer.children).filter(
+		(c): c is HTMLElement => c instanceof HTMLElement,
 	);
 
-	if (tabItems.length === 0 || panelItems.length === 0) return () => {};
-
-	// Extract tab names from Tab items
-	const tabNames: string[] = tabItems.map((item) => {
-		const nameEl = item.querySelector('[data-field="name"]');
-		return nameEl?.textContent?.trim() || item.textContent?.trim() || '';
-	});
+	if (buttons.length === 0 || panelItems.length === 0) return () => {};
 
 	// Generate IDs for ARIA wiring
-	const tabIds = tabNames.map(() => uniqueId('rf-tab'));
+	const tabIds = buttons.map(() => uniqueId('rf-tab'));
 	const panelIds = panelItems.map(() => uniqueId('rf-tabpanel'));
 
-	// Create tab bar
-	const tabBar = document.createElement('div');
-	tabBar.setAttribute('role', 'tablist');
-	tabBar.className = el.getAttribute('data-rune') === 'code-group'
-		? 'rf-codegroup__tabs'
-		: 'rf-tabs__bar';
-
-	const buttonClass = el.getAttribute('data-rune') === 'code-group'
-		? 'rf-codegroup__tab'
-		: 'rf-tabs__button';
-
-	const buttons: HTMLButtonElement[] = tabNames.map((name, i) => {
-		const btn = document.createElement('button');
-		btn.className = buttonClass;
-		btn.setAttribute('role', 'tab');
-		btn.setAttribute('aria-selected', String(i === 0));
-		btn.id = tabIds[i];
-		if (panelIds[i]) btn.setAttribute('aria-controls', panelIds[i]);
-		btn.textContent = name;
-		tabBar.appendChild(btn);
-		return btn;
-	});
-
-	// Insert tab bar — for codegroup, after topbar; for tabs, before the tabs ul
-	const topbar = el.querySelector('[data-name="topbar"]');
-	if (topbar) {
-		topbar.after(tabBar);
-	} else {
-		tabsUl.before(tabBar);
+	// Wire up ARIA attributes
+	for (let i = 0; i < buttons.length; i++) {
+		buttons[i].id = tabIds[i];
+		if (panelIds[i]) buttons[i].setAttribute('aria-controls', panelIds[i]);
 	}
 
-	// Set up panels with ARIA attributes
 	for (let i = 0; i < panelItems.length; i++) {
-		panelItems[i].setAttribute('role', 'tabpanel');
 		if (panelIds[i]) panelItems[i].id = panelIds[i];
 		if (tabIds[i]) panelItems[i].setAttribute('aria-labelledby', tabIds[i]);
 	}
 
-	// Hide Tab label items (replaced by tablist buttons)
-	for (const item of tabItems) {
-		item.hidden = true;
-	}
+	// Derive the active modifier class from the first button's BEM class
+	const buttonClass = buttons[0].className.split(' ')[0] || '';
 
 	let activeIndex = 0;
 
@@ -91,7 +53,7 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 		activeIndex = index;
 		for (let i = 0; i < buttons.length; i++) {
 			buttons[i].setAttribute('aria-selected', String(i === activeIndex));
-			buttons[i].classList.toggle(`${buttonClass}--active`, i === activeIndex);
+			if (buttonClass) buttons[i].classList.toggle(`${buttonClass}--active`, i === activeIndex);
 		}
 		for (let i = 0; i < panelItems.length; i++) {
 			panelItems[i].hidden = i !== activeIndex;
@@ -148,16 +110,17 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 	return () => {
 		cleanups.forEach((fn) => fn());
 
-		// Restore DOM: remove tab bar, unhide items
-		tabBar.remove();
-		for (const item of tabItems) {
-			item.hidden = false;
+		// Restore ARIA state
+		for (const btn of buttons) {
+			btn.removeAttribute('id');
+			btn.removeAttribute('aria-controls');
+			btn.removeAttribute('aria-selected');
+			if (buttonClass) btn.classList.remove(`${buttonClass}--active`);
 		}
-		for (const item of panelItems) {
-			item.hidden = false;
-			item.removeAttribute('role');
-			item.removeAttribute('id');
-			item.removeAttribute('aria-labelledby');
+		for (const panel of panelItems) {
+			panel.hidden = false;
+			panel.removeAttribute('id');
+			panel.removeAttribute('aria-labelledby');
 		}
 	};
 }

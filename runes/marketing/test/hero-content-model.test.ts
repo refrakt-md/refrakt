@@ -81,7 +81,7 @@ Some blurb.
 	// Actions — link lists and code fences
 	// -----------------------------------------------------------------
 
-	it('transforms list items into LinkItem components', () => {
+	it('transforms list items into link items', () => {
 		const result = parse(`{% hero %}
 # Title
 
@@ -90,7 +90,7 @@ Some blurb.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const linkItems = findAllTags(hero!, t => t.attributes['data-rune'] === 'link-item');
+		const linkItems = findAllTags(hero!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
 		expect(linkItems.length).toBe(2);
 
 		// Check the link URL
@@ -98,7 +98,7 @@ Some blurb.
 		expect(link).toBeDefined();
 	});
 
-	it('transforms code fences into Command components', () => {
+	it('transforms code fences into command elements', () => {
 		const result = parse(`{% hero %}
 # Install Now
 
@@ -108,7 +108,7 @@ npm create refrakt
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const command = findTag(hero!, t => t.attributes['data-rune'] === 'command');
+		const command = findTag(hero!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
 		expect(command).toBeDefined();
 	});
 
@@ -125,8 +125,8 @@ npm create refrakt
 {% /hero %}`);
 
 		const hero1 = findTag(result1 as any, t => t.attributes['data-rune'] === 'hero');
-		expect(findTag(hero1!, t => t.attributes['data-rune'] === 'command')).toBeDefined();
-		expect(findTag(hero1!, t => t.attributes['data-rune'] === 'link-item')).toBeDefined();
+		expect(findTag(hero1!, t => t.name === 'div' && t.attributes['data-name'] === 'command')).toBeDefined();
+		expect(findTag(hero1!, t => t.name === 'li' && t.attributes['data-name'] === 'action')).toBeDefined();
 
 		// List before fence
 		const result2 = parse(`{% hero %}
@@ -140,8 +140,8 @@ npm create refrakt
 {% /hero %}`);
 
 		const hero2 = findTag(result2 as any, t => t.attributes['data-rune'] === 'hero');
-		expect(findTag(hero2!, t => t.attributes['data-rune'] === 'command')).toBeDefined();
-		expect(findTag(hero2!, t => t.attributes['data-rune'] === 'link-item')).toBeDefined();
+		expect(findTag(hero2!, t => t.name === 'div' && t.attributes['data-name'] === 'command')).toBeDefined();
+		expect(findTag(hero2!, t => t.name === 'li' && t.attributes['data-name'] === 'action')).toBeDefined();
 	});
 
 	// -----------------------------------------------------------------
@@ -326,7 +326,7 @@ The modern way to create documentation sites.
 		expect(findProperty(hero!, 'blurb')).toBeDefined();
 
 		// Actions
-		const linkItems = findAllTags(hero!, t => t.attributes['data-rune'] === 'link-item');
+		const linkItems = findAllTags(hero!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
 		expect(linkItems.length).toBe(2);
 
 		// Media

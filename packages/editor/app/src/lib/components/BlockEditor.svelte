@@ -8,12 +8,21 @@
 		buildRuneMap,
 		blockLabel,
 		extractRuneInner,
+		rebuildRuneSource,
 		type ParsedBlock,
+		type RuneBlock,
 	} from '../editor/block-parser.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, type SectionMapping, type ActionMapping, type CommandMapping } from '../editor/section-mapper.js';
+	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
+	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
+	import type { SectionClickInfo } from './BlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
+	import InlineEditPopover from './InlineEditPopover.svelte';
+	import ActionEditPopover from './ActionEditPopover.svelte';
+	import CodeEditPopover from './CodeEditPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -98,10 +107,11 @@
 			reconcileIds(blocks, newBlocks);
 			blocks = newBlocks;
 			lastParsedSource = body;
-			// Close edit panel when switching files
+			// Close edit panel and inline popover when switching files
 			activeIndex = null;
 			editingFrontmatter = false;
 			anchorEl = null;
+			inlineEdit = null;
 		}
 	});
 
@@ -395,6 +405,169 @@
 		syncToSource();
 	}
 
+	// ── Inline section editing ──────────────────────────────────
+
+	let inlineEdit: {
+		blockIndex: number;
+		dataName: string;
+		inlineSource: string;
+		rect: DOMRect;
+		mapping: SectionMapping;
+	} | null = $state(null);
+
+	function handleSectionClick(index: number, info: SectionClickInfo) {
+		const block = blocks[index];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		if (info.editType === 'link') {
+			const mapping = findActionMapping(rb.innerContent, info.text, info.href ?? '');
+			if (!mapping) return;
+
+			actionEdit = {
+				blockIndex: index,
+				rect: info.rect,
+				mapping,
+			};
+			return;
+		}
+
+		if (info.editType === 'code') {
+			const mapping = findCommandMapping(rb.innerContent, info.text);
+			if (!mapping) return;
+
+			commandEdit = {
+				blockIndex: index,
+				rect: info.rect,
+				mapping,
+			};
+			return;
+		}
+
+		// Default: inline text editing
+		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
+		if (!mapping) return;
+
+		inlineEdit = {
+			blockIndex: index,
+			dataName: info.dataName,
+			inlineSource: mapping.inlineSource,
+			rect: info.rect,
+			mapping,
+		};
+	}
+
+	function handleInlineEditChange(newInlineSource: string) {
+		if (!inlineEdit) return;
+		const block = blocks[inlineEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applySectionEdit(rb.innerContent, inlineEdit.mapping, newInlineSource);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		// Update the mapping to reflect the new source so subsequent edits work
+		inlineEdit = {
+			...inlineEdit,
+			inlineSource: newInlineSource,
+			mapping: {
+				...inlineEdit.mapping,
+				text: stripInlineMarkdown(newInlineSource),
+				source: inlineEdit.mapping.sourcePrefix + newInlineSource,
+				inlineSource: newInlineSource,
+			},
+		};
+
+		handleUpdateBlock(inlineEdit.blockIndex, updated);
+	}
+
+	function closeInlineEdit() {
+		inlineEdit = null;
+	}
+
+	// ── Action item editing ────────────────────────────────────
+
+	let actionEdit: {
+		blockIndex: number;
+		rect: DOMRect;
+		mapping: ActionMapping;
+	} | null = $state(null);
+
+	function handleActionEditChange(newText: string, newHref: string) {
+		if (!actionEdit) return;
+		const block = blocks[actionEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyActionEdit(rb.innerContent, actionEdit.mapping, newText, newHref);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(actionEdit.blockIndex, updated);
+	}
+
+	function handleActionRemove() {
+		if (!actionEdit) return;
+		const blockIndex = actionEdit.blockIndex;
+		const block = blocks[blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		// Remove the entire list item line from the inner content
+		const newInner = rb.innerContent.replace(actionEdit.mapping.source + '\n', '').replace(actionEdit.mapping.source, '');
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		actionEdit = null;
+		handleUpdateBlock(blockIndex, updated);
+	}
+
+	function closeActionEdit() {
+		actionEdit = null;
+	}
+
+	// ── Command (code block) editing ──────────────────────────
+
+	let commandEdit: {
+		blockIndex: number;
+		rect: DOMRect;
+		mapping: CommandMapping;
+	} | null = $state(null);
+
+	function handleCommandEditChange(newCode: string) {
+		if (!commandEdit) return;
+		const block = blocks[commandEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyCommandEdit(rb.innerContent, commandEdit.mapping, newCode);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(commandEdit.blockIndex, updated);
+	}
+
+	function handleCommandRemove() {
+		if (!commandEdit) return;
+		const blockIndex = commandEdit.blockIndex;
+		const block = blocks[blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		// Remove the entire fenced code block from the inner content
+		const newInner = rb.innerContent.replace(commandEdit.mapping.source + '\n', '').replace(commandEdit.mapping.source, '');
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		commandEdit = null;
+		handleUpdateBlock(blockIndex, updated);
+	}
+
+	function closeCommandEdit() {
+		commandEdit = null;
+	}
+
 	// Group runes by category for the insert menu
 	let runesByCategory = $derived.by(() => {
 		const map = new Map<string, RuneInfo[]>();
@@ -471,6 +644,8 @@
 								{communityPostTransforms}
 								{communityStyles}
 								{aggregated}
+								{readOnly}
+								onsectionclick={readOnly ? undefined : (info) => handleSectionClick(i, info)}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
@@ -550,6 +725,38 @@
 			{runesByCategory}
 			oninsert={insertBlock}
 			onclose={closeInsertMenu}
+		/>
+	{/if}
+
+	{#if inlineEdit}
+		<InlineEditPopover
+			anchorRect={inlineEdit.rect}
+			dataName={inlineEdit.dataName}
+			inlineSource={inlineEdit.inlineSource}
+			onchange={handleInlineEditChange}
+			onclose={closeInlineEdit}
+		/>
+	{/if}
+
+	{#if actionEdit}
+		<ActionEditPopover
+			anchorRect={actionEdit.rect}
+			text={actionEdit.mapping.text}
+			href={actionEdit.mapping.href}
+			onchange={handleActionEditChange}
+			onremove={handleActionRemove}
+			onclose={closeActionEdit}
+		/>
+	{/if}
+
+	{#if commandEdit}
+		<CodeEditPopover
+			anchorRect={commandEdit.rect}
+			code={commandEdit.mapping.code}
+			language={commandEdit.mapping.language}
+			onchange={handleCommandEditChange}
+			onremove={handleCommandRemove}
+			onclose={closeCommandEdit}
 		/>
 	{/if}
 </div>

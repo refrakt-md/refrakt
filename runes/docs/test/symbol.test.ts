@@ -189,15 +189,15 @@ type RuneMap = Record<string, RuneDefinition>
 		expect(kind!.attributes.content).toBe('type');
 	});
 
-	it('should handle headingLevel shifting', () => {
-		const result = parse(`{% symbol kind="class" headingLevel=3 %}
-### MyClass
+	it('should split groups at h3 and members at h4', () => {
+		const result = parse(`{% symbol kind="class" %}
+## MyClass
 
 Description.
 
-#### Methods
+### Methods
 
-##### doSomething
+#### doSomething
 
 Method description.
 {% /symbol %}`);

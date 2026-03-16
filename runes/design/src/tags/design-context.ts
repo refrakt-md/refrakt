@@ -14,12 +14,11 @@ export const designContext = createContentModelSchema({
 		scope: { type: String, required: false, default: 'default' },
 	},
 	contentModel: {
-		type: 'custom',
-		description: 'Passes raw children through for design token extraction before transforming',
-		processChildren(nodes) { return nodes; },
+		type: 'sequence' as const,
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
-		const children = resolved.children as Node[];
+		const children = asNodes(resolved.body) as Node[];
 
 		// Extract tokens from child AST nodes before transforming
 		const tokens: DesignTokens = {};

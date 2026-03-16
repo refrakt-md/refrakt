@@ -25,7 +25,7 @@ Many runes support an optional **section header** — a short combination of eye
 A single heading becomes the headline.
 
 ```markdown
-{% accordion headingLevel=2 %}
+{% accordion %}
 ## Frequently asked questions
 
 ## What is refrakt.md?
@@ -38,7 +38,7 @@ A content framework built on Markdoc.
 A paragraph placed **before** the first heading becomes the eyebrow. This is the recommended pattern for badge links and short category labels.
 
 ```markdown
-{% accordion headingLevel=2 %}
+{% accordion %}
 [What's new →](#changelog)
 
 ## Frequently asked questions
@@ -77,7 +77,7 @@ A content framework for semantic Markdown.
 A paragraph placed **after** the headline becomes the blurb.
 
 ```markdown
-{% accordion headingLevel=2 %}
+{% accordion %}
 ## Frequently asked questions
 
 Browse our most common questions below.
@@ -91,7 +91,7 @@ A content framework built on Markdoc.
 
 {% preview source=true %}
 
-{% accordion headingLevel=2 %}
+{% accordion %}
 [What's new →](#)
 
 ## Frequently asked questions

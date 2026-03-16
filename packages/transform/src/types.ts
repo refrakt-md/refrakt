@@ -52,6 +52,11 @@ export interface RuneConfig {
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
 
+	/** Declares how named sections should be edited in the block editor.
+	 *  Keys are data-name values. Resolved at click time by the editor —
+	 *  no extra attributes in rendered HTML. */
+	editHints?: Record<string, 'inline' | 'link' | 'code' | 'none'>;
+
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */

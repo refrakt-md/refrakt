@@ -1,5 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode, Tag as TagType } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
@@ -34,8 +34,8 @@ export const codegroup = createContentModelSchema({
 	},
 	transform(resolved, attrs, config) {
 		const customLabels = (attrs.labels as string | undefined)?.split(',').map(l => l.trim()) ?? [];
-		const tabItems: RenderableTreeNode[] = [];
-		const panelItems: RenderableTreeNode[] = [];
+		const tabItems: TagType[] = [];
+		const panelItems: TagType[] = [];
 
 		const panels = asNodes(resolved.panels);
 		for (const child of panels) {
@@ -43,26 +43,18 @@ export const codegroup = createContentModelSchema({
 			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
 
 			const nameSpan = new Tag('span', {}, [label]);
-			tabItems.push(createComponentRenderable(schema.Tab, {
-				tag: 'li',
-				properties: { name: nameSpan },
-				children: [nameSpan],
-			}));
+			tabItems.push(new Tag('button', { 'data-name': 'tab', role: 'tab' }, [nameSpan]));
 
 			const code = Markdoc.transform(child, config);
-			panelItems.push(createComponentRenderable(schema.TabPanel, {
-				tag: 'li',
-				properties: {},
-				children: [code],
-			}));
+			panelItems.push(new Tag('div', { role: 'tabpanel' }, [code]));
 		}
 
 		const tabs = new RenderableNodeCursor(tabItems);
 		const panelsCursor = new RenderableNodeCursor(panelItems);
-		const tabList = tabs.wrap('ul');
-		const panelList = panelsCursor.wrap('ul');
+		const tabList = tabs.wrap('div', { role: 'tablist' });
+		const panelList = panelsCursor.wrap('div');
 
-		const properties: Record<string, any> = { tab: tabs, panel: panelsCursor };
+		const properties: Record<string, any> = {};
 		const children: any[] = [];
 
 		if (attrs.title) {
@@ -83,7 +75,7 @@ export const codegroup = createContentModelSchema({
 		return createComponentRenderable(schema.CodeGroup, {
 			tag: 'section',
 			properties,
-			refs: { tabs: tabList, panels: panelList },
+			refs: { tabs: tabList, panels: panelList, panel: panelsCursor },
 			children,
 		});
 	},

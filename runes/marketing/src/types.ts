@@ -1,4 +1,4 @@
-import {useSchema, Command, LinkItem} from '@refrakt-md/types';
+import {useSchema} from '@refrakt-md/types';
 import {Hero} from './schema/hero.js';
 import {CallToAction} from './schema/cta.js';
 import {Feature, FeatureDefinition} from './schema/feature.js';
@@ -11,8 +11,6 @@ import {Testimonial} from './schema/testimonial.js';
 export const schema = {
   Hero: useSchema(Hero).defineType('Hero'),
   CallToAction: useSchema(CallToAction).defineType('CallToAction'),
-  Command: useSchema(Command).defineType('Command'),
-  LinkItem: useSchema(LinkItem).defineType('LinkItem'),
   Feature: useSchema(Feature).defineType('Feature'),
   FeatureDefinition: useSchema(FeatureDefinition).defineType('FeatureDefinition'),
   Pricing: useSchema(Pricing).defineType('Pricing', {}, 'Product'),

@@ -70,7 +70,11 @@
 	// Keep RfContext in sync for web components BEFORE DOM updates.
 	// $effect.pre runs before {#key page.url} recreates the DOM, so
 	// RfNav.connectedCallback sees the new URL when it fires.
+	// Also save sidebar scroll position before the DOM is destroyed.
+	let savedSidebarScroll = 0;
 	$effect.pre(() => {
+		const sidebar = document.querySelector('.rf-docs-sidebar');
+		if (sidebar) savedSidebarScroll = sidebar.scrollTop;
 		RfContext.pages = page.pages;
 		RfContext.currentUrl = page.url;
 	});
@@ -88,6 +92,8 @@
 			if (active) {
 				cleanupRunes = initRuneBehaviors();
 				cleanupLayout = initLayoutBehaviors();
+				const sidebar = document.querySelector('.rf-docs-sidebar');
+				if (sidebar) sidebar.scrollTop = savedSidebarScroll;
 			}
 		});
 		return () => {

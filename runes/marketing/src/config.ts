@@ -203,8 +203,9 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contextModifiers: { 'feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
+		editHints: { action: 'link', command: 'code', media: 'none' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		modifiers: {

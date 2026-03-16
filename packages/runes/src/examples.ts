@@ -79,7 +79,7 @@ from your account settings.
 ![Dashboard](/images/dashboard.png)
 {% /figure %}`,
 
-	accordion: `{% accordion headingLevel=2 %}
+	accordion: `{% accordion %}
 ## What is refrakt.md?
 
 A content framework that extends Markdown with semantic runes.

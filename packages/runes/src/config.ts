@@ -125,6 +125,7 @@ export const coreConfig: ThemeConfig = {
 					],
 				},
 			},
+			editHints: { panel: 'code' },
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },

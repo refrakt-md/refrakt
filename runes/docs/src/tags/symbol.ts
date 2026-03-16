@@ -42,14 +42,12 @@ export const symbolMember = createContentModelSchema({
 // ─── SymbolGroup ─────────────────────────────────────────────────
 
 export const symbolGroup = createContentModelSchema({
-	attributes: {
-		headingLevel: { type: Number, required: false, default: 4 },
-	},
+	attributes: {},
 	contentModel: {
 		type: 'custom',
-		description: 'Converts headings at specified level to symbol-member tags',
-		processChildren(nodes, attrs) {
-			const level = attrs.headingLevel as number;
+		description: 'Converts headings at h4 level to symbol-member tags',
+		processChildren(nodes) {
+			const level = 4;
 			const converted = headingsToList({ level })(nodes as Node[]);
 			const n = converted.length - 1;
 			if (!converted[n] || converted[n].type !== 'list') return nodes;
@@ -98,24 +96,19 @@ export const symbol = createContentModelSchema({
 		since: { type: String, required: false, default: '' },
 		deprecated: { type: String, required: false, default: '' },
 		source: { type: String, required: false, default: '' },
-		headingLevel: { type: Number, required: false, default: 2 },
 	},
 	contentModel: (attrs) => {
 		if (GROUP_KINDS.includes(attrs.kind as string)) {
 			return {
 				type: 'custom' as const,
 				description: 'Converts headings to symbol-group tags for group-kind symbols',
-				processChildren(nodes: unknown[], innerAttrs: Record<string, unknown>) {
-					const headingLvl = innerAttrs.headingLevel as number;
-					const groupLevel = headingLvl + 1;
-					const memberLevel = headingLvl + 2;
-
-					const converted = headingsToList({ level: groupLevel })(nodes as Node[]);
+				processChildren(nodes: unknown[]) {
+					const converted = headingsToList({ level: 3 })(nodes as Node[]);
 					const n = converted.length - 1;
 					if (!converted[n] || converted[n].type !== 'list') return nodes;
 
 					const tags = converted[n].children.map(item => {
-						return new Ast.Node('tag', { headingLevel: memberLevel }, item.children, 'symbol-group');
+						return new Ast.Node('tag', {}, item.children, 'symbol-group');
 					});
 
 					converted.splice(n, 1, ...tags);

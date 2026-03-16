@@ -3,7 +3,7 @@ import { parse, findTag, findAllTags } from './helpers.js';
 
 describe('accordion tag', () => {
 	it('should convert headings to accordion items', () => {
-		const result = parse(`{% accordion headingLevel=2 %}
+		const result = parse(`{% accordion %}
 ## First Section
 
 Content for first section.
@@ -26,7 +26,7 @@ Content for second section.
 	});
 
 	it('should work with faq alias', () => {
-		const result = parse(`{% faq headingLevel=2 %}
+		const result = parse(`{% faq %}
 ## What is refrakt.md?
 
 A content framework.
@@ -72,7 +72,7 @@ Content.
 		expect(container).toBeDefined();
 	});
 
-	it('should auto-detect heading level without explicit headingLevel', () => {
+	it('should auto-detect heading level', () => {
 		const result = parse(`{% accordion %}
 ## Item One
 Content one.

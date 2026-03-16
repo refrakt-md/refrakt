@@ -37,12 +37,11 @@ export const changelogRelease = createSchema(ChangelogReleaseModel);
 
 export const changelog = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		project: { type: String, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		fields: [
 			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
 			{ name: 'items', match: 'tag', optional: true, greedy: true },

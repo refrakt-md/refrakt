@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 // Extract plain text from an AST node
@@ -80,12 +80,11 @@ export const palette = createContentModelSchema({
 		columns: { type: Number, required: false },
 	},
 	contentModel: {
-		type: 'custom',
-		description: 'Passes raw children through for color palette parsing',
-		processChildren(nodes) { return nodes; },
+		type: 'sequence' as const,
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs) {
-		const children = resolved.children as Node[];
+		const children = asNodes(resolved.body) as Node[];
 
 		// Parse headings and list items from the original AST
 		const groups: ColorGroup[] = [];

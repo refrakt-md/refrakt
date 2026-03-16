@@ -155,9 +155,43 @@ export function resolveSequence(
 
 			// If this list field has an itemModel, extract structured data
 			if (field.itemModel) {
-				const node = result[field.name];
-				if (node && typeof node === 'object' && 'type' in (node as any)) {
-					result[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
+				if ((field as any).emitTag) {
+					// listToTags: convert list items to emitted tag nodes
+					const listNodes = field.greedy
+						? result[field.name] as Node[]
+						: [result[field.name] as Node];
+					const tagNodes: Node[] = [];
+					for (const listNode of listNodes) {
+						if (!listNode || (listNode as any).type !== 'list') continue;
+						const items = resolveListItems(listNode, field.itemModel);
+						const listItems = (listNode as Node).children ?? [];
+						for (let i = 0; i < items.length; i++) {
+							const attrs: Record<string, any> = {};
+							const emitAttrs = (field as any).emitAttributes as Record<string, string> | undefined;
+							if (emitAttrs) {
+								for (const [key, ref] of Object.entries(emitAttrs)) {
+									if (ref.startsWith('$')) {
+										// Support fallback: '$a|$b' tries a, then b
+										const parts = ref.slice(1).split('|');
+										attrs[key] = parts
+											.map(p => items[i][p.trim()])
+											.find(v => v != null && v !== '') ?? '';
+									} else {
+										attrs[key] = ref;
+									}
+								}
+							}
+							// Forward list item children after the first (inline) child as tag body
+							const itemChildren = listItems[i]?.children?.slice(1) ?? [];
+							tagNodes.push(new Ast.Node('tag', attrs, itemChildren, (field as any).emitTag));
+						}
+					}
+					result[field.name] = tagNodes;
+				} else {
+					const node = result[field.name];
+					if (node && typeof node === 'object' && 'type' in (node as any)) {
+						result[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
+					}
 				}
 			}
 		} else if (!field.optional) {

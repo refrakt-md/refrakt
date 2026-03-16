@@ -1,15 +1,17 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { generateStructureContract } from '@refrakt-md/transform';
+import type { ThemeConfig } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
 
 export interface ContractsOptions {
 	output?: string;
 	check?: boolean;
+	config?: ThemeConfig;
 }
 
 export function contractsCommand(opts: ContractsOptions): void {
-	const contract = generateStructureContract(baseConfig);
+	const contract = generateStructureContract(opts.config ?? baseConfig);
 	const json = JSON.stringify(contract, null, '\t') + '\n';
 
 	if (opts.check) {

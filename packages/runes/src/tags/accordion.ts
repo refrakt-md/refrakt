@@ -57,12 +57,11 @@ export const accordionItem = createSchema(AccordionItemModel);
 
 export const accordion = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		multiple: { type: Boolean, required: false },
 	},
-	contentModel: (attrs) => ({
+	contentModel: () => ({
 		type: 'sections' as const,
-		sectionHeading: attrs.headingLevel ? `heading:${attrs.headingLevel}` : 'heading',
+		sectionHeading: 'heading',
 		emitTag: 'accordion-item',
 		emitAttributes: { name: '$heading' },
 		fields: [
