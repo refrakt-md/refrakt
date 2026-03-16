@@ -141,6 +141,24 @@
 	function attachSectionHandlers(wrapper: HTMLElement, runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>) {
 		let hoveredEl: HTMLElement | null = null;
 
+		// Tooltip element — lives inside the shadow DOM wrapper
+		const tooltip = document.createElement('div');
+		tooltip.className = 'rf-edit-tooltip';
+		wrapper.appendChild(tooltip);
+
+		function showTooltip(label: string, me: MouseEvent) {
+			tooltip.textContent = label;
+			tooltip.style.left = `${me.clientX + 12}px`;
+			tooltip.style.top = `${me.clientY + 12}px`;
+			tooltip.hidden = false;
+		}
+
+		function hideTooltip() {
+			tooltip.hidden = true;
+		}
+
+		hideTooltip();
+
 		wrapper.addEventListener('mouseover', (e) => {
 			const result = findInteractiveTarget(e.target as HTMLElement, wrapper, runeConfigMap);
 			const target = result?.el ?? null;
@@ -149,6 +167,21 @@
 				hoveredEl = target;
 				hoveredEl?.classList.add('rf-editable-hover');
 			}
+			if (result) {
+				const label = result.type === 'section'
+					? result.dataName
+					: result.el.getAttribute('data-rune') ?? '';
+				showTooltip(label, e as MouseEvent);
+			} else {
+				hideTooltip();
+			}
+		});
+
+		wrapper.addEventListener('mousemove', (e) => {
+			if (!tooltip.hidden) {
+				tooltip.style.left = `${e.clientX + 12}px`;
+				tooltip.style.top = `${e.clientY + 12}px`;
+			}
 		});
 
 		wrapper.addEventListener('mouseout', (e) => {
@@ -156,10 +189,12 @@
 			if (hoveredEl && (!related || !hoveredEl.contains(related))) {
 				hoveredEl.classList.remove('rf-editable-hover');
 				hoveredEl = null;
+				hideTooltip();
 			}
 		});
 
 		wrapper.addEventListener('click', (e) => {
+			hideTooltip();
 			const result = findInteractiveTarget(e.target as HTMLElement, wrapper, runeConfigMap);
 			if (!result) return;
 
@@ -292,6 +327,21 @@ ${hlCss}
 						[data-rune].rf-editable-hover,
 						[data-rune].rf-editable-hover * {
 							cursor: pointer !important;
+						}
+						/* Hover tooltip */
+						.rf-edit-tooltip {
+							position: fixed;
+							padding: 2px 8px;
+							font-family: system-ui, -apple-system, sans-serif;
+							font-size: 11px;
+							font-weight: 600;
+							line-height: 1.4;
+							color: #fff;
+							background: rgba(30, 41, 59, 0.9);
+							border-radius: 4px;
+							pointer-events: none;
+							z-index: 10000;
+							white-space: nowrap;
 						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
