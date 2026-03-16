@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.8.1
+## v0.8.1 - March 16, 2026
 
 - Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
 
