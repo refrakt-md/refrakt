@@ -2419,9 +2419,15 @@
 			"dataRune": "recipe",
 			"childOrder": [
 				"meta",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-layout"
+				},
 				"prepTime": {
 					"source": "meta",
 					"classPattern": ".rf-recipe--{value}",
@@ -2442,6 +2448,25 @@
 					"default": "medium",
 					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-difficulty"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"default": "top",
+					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"elements": {
@@ -2470,10 +2495,46 @@
 					"parent": "meta",
 					"condition": "difficulty"
 				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-recipe__content",
-					"source": "contentWrapper"
+				"header": {
+					"tag": "header",
+					"selector": ".rf-recipe__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-recipe__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-recipe__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-recipe__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-recipe__image",
+					"source": "autoLabel"
+				},
+				"media": {
+					"tag": "media",
+					"selector": ".rf-recipe__media",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"valign": {
+					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},

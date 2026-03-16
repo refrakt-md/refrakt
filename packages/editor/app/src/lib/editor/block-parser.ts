@@ -505,13 +505,26 @@ export function parseContentTree(content: string): ContentNode[] {
 		// List
 		if (/^(\d+\.|[-*+])\s/.test(trimmed)) {
 			const start = i;
+			const ordered = /^\d+\./.test(trimmed);
 			while (i < lines.length) {
 				const lt = lines[i].trimStart();
-				if (/^(\d+\.|[-*+])\s/.test(lt) || (lt === '' && i + 1 < lines.length && /^(\s+|\d+\.|[-*+]\s)/.test(lines[i + 1])) || (lt !== '' && lines[i].startsWith('  '))) {
+				if (/^(\d+\.|[-*+])\s/.test(lt)) {
+					// Stop if the list marker type switches (e.g. unordered → ordered)
+					const nextOrdered = /^\d+\./.test(lt);
+					if (nextOrdered !== ordered && i > start) break;
+					i++;
+				} else if (lt === '' && i + 1 < lines.length && /^(\s+|\d+\.|[-*+]\s)/.test(lines[i + 1])) {
+					// Blank line followed by continuation — but stop if the next item switches type
+					const nextNonBlank = lines[i + 1].trimStart();
+					if (/^(\d+\.|[-*+])\s/.test(nextNonBlank)) {
+						const nextOrdered = /^\d+\./.test(nextNonBlank);
+						if (nextOrdered !== ordered) break;
+					}
+					i++;
+				} else if (lt !== '' && lines[i].startsWith('  ')) {
 					i++;
 				} else { break; }
 			}
-			const ordered = /^\d+\./.test(trimmed);
 			nodes.push({ type: 'list', label: ordered ? 'Ordered list' : 'List', source: lines.slice(start, i).join('\n'), listOrdered: ordered });
 			continue;
 		}
@@ -633,8 +646,16 @@ export function appendListItem(
 	const idx = innerContent.indexOf(lastNode.source);
 	if (idx === -1) return innerContent;
 
+	// For ordered lists, adjust the number to follow the last item
+	let finalTemplate = template;
+	if (field.match === 'list:ordered') {
+		const numMatch = lastNode.source.match(/^(\d+)\./);
+		const nextNum = numMatch ? parseInt(numMatch[1], 10) + 1 : field.nodes.length + 1;
+		finalTemplate = template.replace(/^\d+\./, `${nextNum}.`);
+	}
+
 	const afterEnd = idx + lastNode.source.length;
-	return innerContent.slice(0, afterEnd) + '\n' + template + innerContent.slice(afterEnd);
+	return innerContent.slice(0, afterEnd) + '\n' + finalTemplate + innerContent.slice(afterEnd);
 }
 
 /**

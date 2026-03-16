@@ -59,7 +59,7 @@ export const config: Record<string, RuneConfig> = {
 			},
 		},
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', media: 'none' },
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'none' },
 	},
 	RecipeIngredient: { block: 'recipe-ingredient', parent: 'Recipe' },
 };

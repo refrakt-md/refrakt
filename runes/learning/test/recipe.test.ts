@@ -122,6 +122,73 @@ A recipe with a photo.
 		expect(layoutMeta!.attributes.content).toBe('stacked');
 	});
 
+	it('should handle recipe with only ingredients', () => {
+		const result = parse(`{% recipe %}
+# Salad
+
+- lettuce
+- tomatoes
+- cucumbers
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');
+		expect(ingredients).toBeDefined();
+		expect(ingredients!.children.length).toBe(3);
+
+		// Steps list should still exist but be empty
+		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
+		expect(steps).toBeDefined();
+		expect(steps!.children.length).toBe(0);
+	});
+
+	it('should handle recipe with only steps', () => {
+		const result = parse(`{% recipe %}
+# Quick Guide
+
+1. Preheat oven
+2. Place food inside
+3. Wait 20 minutes
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
+		expect(steps).toBeDefined();
+		expect(steps!.children.length).toBe(3);
+
+		// Ingredients list should still exist but be empty
+		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');
+		expect(ingredients).toBeDefined();
+		expect(ingredients!.children.length).toBe(0);
+	});
+
+	it('should capture multiple tips', () => {
+		const result = parse(`{% recipe %}
+# Recipe With Tips
+
+- flour
+
+1. Mix
+
+> Tip one about mixing
+
+> Tip two about baking
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		const tips = findTag(tag!, t => t.attributes['data-name'] === 'tips');
+		expect(tips).toBeDefined();
+		// Should contain both blockquotes
+		const blockquotes = findAllTags(tips!, t => t.name === 'blockquote');
+		expect(blockquotes.length).toBe(2);
+	});
+
 	it('should extract page section header fields', () => {
 		const result = parse(`{% recipe %}
 Quick and easy

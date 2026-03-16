@@ -162,6 +162,22 @@ function findListItemMapping(
 		const lines = itemSrc.split('\n');
 		const firstLine = lines[0];
 
+		// Match simple list item: "- text" or "1. text"
+		const simpleMatch = firstLine.match(/^([-*+]\s+|(\d+)\.\s+)(.*)/);
+		if (simpleMatch) {
+			const [, prefix, , itemText] = simpleMatch;
+			const plainText = stripInlineMarkdown(itemText);
+			if (normalizeText(plainText) === normalizedRendered) {
+				return {
+					dataName,
+					text: plainText,
+					source: firstLine,
+					sourcePrefix: prefix,
+					inlineSource: itemText,
+				};
+			}
+		}
+
 		// Match bold text on first line: "- **Title**", "- **Title** extra",
 		// or with content before bold: "- {% icon ... /%} **Title**"
 		const boldMatch = firstLine.match(/^([-*+]\s+.*?)\*\*(.+?)\*\*(.*)/);

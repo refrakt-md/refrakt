@@ -34,7 +34,9 @@ export const recipe = createContentModelSchema({
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: true },
 					{ name: 'blurb', match: 'paragraph', optional: true },
-					{ name: 'body', match: 'list|tag|blockquote', greedy: true, optional: true },
+						{ name: 'ingredients', match: 'list:unordered', optional: true, template: '- Ingredient' },
+					{ name: 'steps', match: 'list:ordered', optional: true, template: '1. Step' },
+					{ name: 'tips', match: 'blockquote', greedy: true, optional: true },
 				],
 			},
 			{
@@ -60,9 +62,32 @@ export const recipe = createContentModelSchema({
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Transform body nodes (lists, tags, blockquotes)
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
+		// Transform ingredients (single unordered list node)
+		const ingredientsRendered = Markdoc.transform(
+			contentZone.ingredients ? [contentZone.ingredients as Node] : [], config,
+		) as RenderableTreeNode[];
+		const ingredients: any[] = [];
+		for (const node of ingredientsRendered) {
+			if (Markdoc.Tag.isTag(node) && node.name === 'ul') {
+				ingredients.push(...(node.children || []));
+			}
+		}
+
+		// Transform steps (single ordered list node)
+		const stepsRendered = Markdoc.transform(
+			contentZone.steps ? [contentZone.steps as Node] : [], config,
+		) as RenderableTreeNode[];
+		const steps: any[] = [];
+		for (const node of stepsRendered) {
+			if (Markdoc.Tag.isTag(node) && node.name === 'ol') {
+				steps.push(...(node.children || []));
+			}
+		}
+
+		// Transform tips (greedy blockquotes)
+		const tipsRendered = Markdoc.transform(asNodes(contentZone.tips), config) as RenderableTreeNode[];
+		const tips = tipsRendered.filter(
+			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'blockquote',
 		);
 
 		// Transform media AST nodes
@@ -79,34 +104,18 @@ export const recipe = createContentModelSchema({
 		const servingsMeta = new Tag('meta', { content: attrs.servings != null ? String(attrs.servings) : '' });
 		const difficultyMeta = new Tag('meta', { content: attrs.difficulty });
 
-		// Separate unordered lists (ingredients), ordered lists (steps), and blockquotes (tips)
-		const allNodes = body.toArray();
-		const ingredients: any[] = [];
-		const steps: any[] = [];
-		const tips: any[] = [];
-
-		for (const node of allNodes) {
-			if (Markdoc.Tag.isTag(node)) {
-				if (node.name === 'ul' && ingredients.length === 0) {
-					ingredients.push(...(node.children || []));
-				} else if (node.name === 'ol' && steps.length === 0) {
-					steps.push(...(node.children || []));
-				} else if (node.name === 'blockquote') {
-					tips.push(node);
-				}
-			}
-		}
-
-		// Annotate ingredient lis with recipeIngredient property
+		// Annotate ingredient lis with data-name and recipeIngredient property
 		for (const li of ingredients) {
 			if (Markdoc.Tag.isTag(li)) {
+				li.attributes['data-name'] = 'ingredient';
 				li.attributes.property = 'recipeIngredient';
 			}
 		}
 
-		// Annotate step lis as HowToStep with recipeInstructions property
+		// Annotate step lis with data-name and HowToStep schema
 		for (const li of steps) {
 			if (Markdoc.Tag.isTag(li)) {
+				li.attributes['data-name'] = 'step';
 				li.attributes.typeof = 'HowToStep';
 				li.attributes.property = 'recipeInstructions';
 				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));
