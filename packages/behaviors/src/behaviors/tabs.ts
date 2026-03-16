@@ -14,27 +14,23 @@ import { uniqueId } from '../utils.js';
 export function tabsBehavior(el: HTMLElement): CleanupFn {
 	// The rune schema produces two <ul> elements:
 	// <ul data-name="tabs"> for Tab items, <ul data-name="panels"> for TabPanel items.
-	// Fall back to positional lookup for compatibility with single-<ul> structures.
-	const allUls = el.querySelectorAll('ul');
-	const tabsUl = el.querySelector<HTMLElement>('ul[data-name="tabs"]') || allUls[0];
-	const panelsUl = el.querySelector<HTMLElement>('ul[data-name="panels"]') || allUls[1] || tabsUl;
-	if (!tabsUl) return () => {};
+	const tabsUl = el.querySelector<HTMLElement>('ul[data-name="tabs"]');
+	const panelsUl = el.querySelector<HTMLElement>('ul[data-name="panels"]');
+	if (!tabsUl || !panelsUl) return () => {};
 
 	const tabItems = Array.from(tabsUl.children).filter(
-		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('data-rune') === 'tab',
+		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI',
 	);
 
 	const panelItems = Array.from(panelsUl.children).filter(
-		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI' &&
-			c.getAttribute('data-rune') === 'tab-panel',
+		(c): c is HTMLElement => c instanceof HTMLElement && c.tagName === 'LI',
 	);
 
 	if (tabItems.length === 0 || panelItems.length === 0) return () => {};
 
 	// Extract tab names from Tab items
 	const tabNames: string[] = tabItems.map((item) => {
-		const nameEl = item.querySelector('[data-field="name"]');
+		const nameEl = item.querySelector('[data-name="name"]');
 		return nameEl?.textContent?.trim() || item.textContent?.trim() || '';
 	});
 

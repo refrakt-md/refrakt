@@ -56,7 +56,6 @@ Use `{% changelog-release %}` tags for more control over version and date values
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Heading level to convert into releases (auto-detected if omitted) |
 | `project` | `string` | — | Project name |
 
 ### Release attributes

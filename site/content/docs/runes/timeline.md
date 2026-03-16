@@ -55,7 +55,6 @@ Public beta with full documentation.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Heading level to convert into entries (auto-detected if omitted) |
 | `direction` | `string` | `vertical` | Timeline orientation |
 
 ### Entry attributes

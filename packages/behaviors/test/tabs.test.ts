@@ -16,7 +16,7 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 
 	const tabs = Array.from({ length: count }, (_, i) => `
 		<li data-rune="tab">
-			<span data-field="name">Tab ${i + 1}</span>
+			<span data-name="name">Tab ${i + 1}</span>
 		</li>
 	`).join('');
 
@@ -41,13 +41,13 @@ function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	const count = opts?.tabCount ?? 2;
 
 	const tabs = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tab">
-			<span data-field="name">file${i + 1}.ts</span>
+		<li data-name="tab">
+			<span>file${i + 1}.ts</span>
 		</li>
 	`).join('');
 
 	const panels = Array.from({ length: count }, (_, i) => `
-		<li data-rune="tab-panel">
+		<li data-name="panel">
 			<pre><code>code ${i + 1}</code></pre>
 		</li>
 	`).join('');
@@ -151,7 +151,7 @@ describe('tabsBehavior', () => {
 			const el = createTabGroup();
 			tabsBehavior(el);
 
-			const tabItems = el.querySelectorAll('[data-rune="tab"]');
+			const tabItems = el.querySelectorAll('ul[data-name="tabs"] > li');
 			for (const item of tabItems) {
 				expect((item as HTMLElement).hidden).toBe(true);
 			}
@@ -267,13 +267,13 @@ describe('tabsBehavior', () => {
 			expect(el.querySelector('[role="tablist"]')).toBeNull();
 
 			// Tab items should be visible again
-			const tabItems = el.querySelectorAll('[data-rune="tab"]');
+			const tabItems = el.querySelectorAll('ul[data-name="tabs"] > li');
 			for (const item of tabItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
 			}
 
 			// Panel items should be visible again
-			const panelItems = el.querySelectorAll('[data-rune="tab-panel"]');
+			const panelItems = el.querySelectorAll('ul[data-name="panels"] > li');
 			for (const item of panelItems) {
 				expect((item as HTMLElement).hidden).toBe(false);
 			}

@@ -13,11 +13,11 @@ Magazine-style bento grid. Heading levels determine cell size — larger heading
 
 ## Basic usage
 
-Headings split content into grid cells. h2 = large (2x2), h3 = medium (2x1), h4+ = small (1x1).
+Headings split content into grid cells. The base level is always h2: h2 = large (2x2), h3 = medium (2x1), h4+ = small (1x1).
 
 {% preview source=true %}
 
-{% bento headingLevel=2 columns=4 %}
+{% bento columns=4 %}
 ## Featured Article
 
 This cell spans 2 columns and 2 rows, making it the hero of the grid.
@@ -41,43 +41,19 @@ Another small cell sits neatly in the grid.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `headingLevel` | `number` | `2` | Base heading level for cells |
 | `columns` | `number` | `4` | Number of grid columns |
 | `gap` | `string` | `1rem` | Grid gap |
 | `sizing` | `string` | `tiered` | Size mode: `tiered` (named sizes) or `span` (heading level = column span) |
 
-## Full-width cells with h1
+## Cell sizes
 
-Set `headingLevel=1` to use all six heading levels. In tiered mode, h1 creates a **full-width** cell that stretches across the entire grid.
+In tiered mode, heading levels map to cell sizes:
 
 | Heading | Size | Span |
 |---------|------|------|
-| h1 | `full` | all columns |
 | h2 | `large` | 2 columns + 2 rows |
 | h3 | `medium` | 2 columns |
 | h4+ | `small` | 1 column |
-
-{% preview source=true %}
-
-{% bento headingLevel=1 columns=4 %}
-# Announcement Banner
-
-This full-width cell stretches across the entire grid — great for hero content.
-
-## Featured Article
-
-A large cell with more visual weight.
-
-### Quick Update
-
-A medium cell spanning 2 columns.
-
-#### Detail
-
-A small 1-column cell.
-{% /bento %}
-
-{% /preview %}
 
 ## Span mode
 
@@ -96,7 +72,7 @@ The formula is `columns + 1 - level`, clamped to `[1, columns]`. Custom column c
 
 {% preview source=true %}
 
-{% bento sizing="span" headingLevel=1 %}
+{% bento sizing="span" %}
 # Hero Feature
 
 Stretches across all 6 columns.

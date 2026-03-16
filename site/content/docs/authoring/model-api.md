@@ -33,7 +33,7 @@ Always call `super.processChildren()` to run `@group` decorators:
 
 ```typescript
 processChildren(nodes: Node[]) {
-  const restructured = headingsToList({ level: this.headingLevel })(nodes);
+  const restructured = headingsToList()(nodes);
   return super.processChildren(restructured);
 }
 ```
@@ -101,7 +101,7 @@ name: string;
 
 // Optional number with undefined default
 @attribute({ type: Number, required: false })
-headingLevel: number | undefined = undefined;
+columns: number | undefined = undefined;
 
 // Boolean with default
 @attribute({ type: Boolean, required: false })
@@ -289,13 +289,13 @@ Restructures AST nodes by splitting on headings at a specific level. Each headin
 ```typescript
 import { headingsToList } from '../util.js';
 
-// With explicit level
-const items = headingsToList({ level: 2 })(nodes);
+// Auto-detect from first heading (most common)
+const items = headingsToList()(nodes);
+// Finds the first heading and uses its level.
+// If no headings exist, returns nodes unchanged.
 
-// Auto-detect from first heading
-const items = headingsToList({ level: this.headingLevel })(nodes);
-// When this.headingLevel is undefined, finds the first heading
-// and uses its level. If no headings exist, returns nodes unchanged.
+// With explicit level (for runes with a fixed heading contract)
+const items = headingsToList({ level: 2 })(nodes);
 ```
 
 **Options:**

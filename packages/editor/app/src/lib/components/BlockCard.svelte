@@ -3,6 +3,18 @@
 	import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
+	import { isEditableSection } from '../editor/section-mapper.js';
+
+	export type EditType = 'inline' | 'link' | 'code';
+
+	export interface SectionClickInfo {
+		dataName: string;
+		text: string;
+		rect: DOMRect;
+		editType: EditType;
+		/** For link-type edits: the href from the <a> child */
+		href?: string;
+	}
 
 	interface Props {
 		block: ParsedBlock;
@@ -15,6 +27,8 @@
 		communityStyles?: Record<string, Record<string, unknown>> | null;
 		aggregated?: Record<string, unknown>;
 		dragHandle?: boolean;
+		readOnly?: boolean;
+		onsectionclick?: (info: SectionClickInfo) => void;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
 		ondrop: (e: DragEvent) => void;
@@ -31,6 +45,8 @@
 		communityStyles = null,
 		aggregated = {},
 		dragHandle = true,
+		readOnly = false,
+		onsectionclick,
 		ondragstart,
 		ondragover,
 		ondrop,
@@ -41,6 +57,113 @@
 	let shadowRoot: ShadowRoot | null = null;
 	let previewDebounce: ReturnType<typeof setTimeout>;
 	let behaviorCleanup: (() => void) | null = null;
+
+	/** Convert PascalCase to kebab-case: "CallToAction" → "call-to-action" */
+	function toKebab(s: string): string {
+		return s.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
+	}
+
+	/** Build a lookup map from kebab-case data-rune values to RuneConfig */
+	function buildRuneConfigMap(config: ThemeConfig): Map<string, import('@refrakt-md/transform').RuneConfig> {
+		const map = new Map<string, import('@refrakt-md/transform').RuneConfig>();
+		for (const [key, cfg] of Object.entries(config.runes)) {
+			map.set(toKebab(key), cfg);
+		}
+		return map;
+	}
+
+	/** Find the nearest ancestor (or self) with a data-name attribute that is editable.
+	 *  Also captures the containing rune's data-rune value for editHints lookup. */
+	function findEditableSection(
+		start: HTMLElement,
+		root: HTMLElement,
+		runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>,
+	): { el: HTMLElement; dataName: string; editType: EditType } | null {
+		let el: HTMLElement | null = start;
+		let dataNameEl: HTMLElement | null = null;
+
+		// Walk up to find the nearest data-name element
+		while (el && el !== root) {
+			if (el.hasAttribute('data-name') && !dataNameEl) {
+				dataNameEl = el;
+			}
+			el = el.parentElement;
+		}
+
+		if (!dataNameEl) return null;
+
+		const dataName = dataNameEl.getAttribute('data-name')!;
+
+		// Find containing rune's data-rune value
+		let runeEl: HTMLElement | null = dataNameEl.parentElement;
+		let runeConfig: import('@refrakt-md/transform').RuneConfig | undefined;
+		while (runeEl && runeEl !== root) {
+			const runeType = runeEl.getAttribute('data-rune');
+			if (runeType) {
+				runeConfig = runeConfigMap.get(runeType);
+				break;
+			}
+			runeEl = runeEl.parentElement;
+		}
+
+		// Resolve edit type from editHints
+		const hint = runeConfig?.editHints?.[dataName];
+
+		if (hint === 'none') return null;
+
+		if (hint === 'link' || hint === 'inline' || hint === 'code') {
+			return { el: dataNameEl, dataName, editType: hint };
+		}
+
+		// No hint — fall back to isEditableSection heuristic
+		if (!isEditableSection(dataNameEl)) return null;
+		return { el: dataNameEl, dataName, editType: 'inline' };
+	}
+
+	/** Attach click and hover handlers to editable [data-name] elements within the wrapper */
+	function attachSectionHandlers(wrapper: HTMLElement, runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>) {
+		let hoveredEl: HTMLElement | null = null;
+
+		wrapper.addEventListener('mouseover', (e) => {
+			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
+			const target = result?.el ?? null;
+			if (target !== hoveredEl) {
+				hoveredEl?.classList.remove('rf-editable-hover');
+				hoveredEl = target;
+				hoveredEl?.classList.add('rf-editable-hover');
+			}
+		});
+
+		wrapper.addEventListener('mouseout', (e) => {
+			const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
+			if (hoveredEl && (!related || !hoveredEl.contains(related))) {
+				hoveredEl.classList.remove('rf-editable-hover');
+				hoveredEl = null;
+			}
+		});
+
+		wrapper.addEventListener('click', (e) => {
+			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
+			if (result) {
+				e.preventDefault();
+				e.stopPropagation();
+				const { el, dataName, editType } = result;
+				const rect = el.getBoundingClientRect();
+				// For link edits, extract the href from the <a> child
+				const anchor = editType === 'link' ? el.querySelector('a') as HTMLAnchorElement | null : null;
+				// For code edits, extract text from the <code> element to avoid
+				// picking up structural text (language labels, copy buttons, etc.)
+				const codeEl = editType === 'code' ? el.querySelector('code') : null;
+				onsectionclick?.({
+					dataName,
+					text: (codeEl ?? el).textContent?.trim() ?? '',
+					rect,
+					editType,
+					href: anchor?.getAttribute('href') ?? undefined,
+				});
+			}
+		});
+	}
 
 	$effect(() => {
 		if (!previewContainer || !themeConfig) return;
@@ -119,6 +242,17 @@ ${hlCss}
 							grid-column: full;
 							padding-inline: max(var(--rf-content-gutter, 1.5rem), calc((100% - var(--rf-content-max)) / 2));
 						}
+						/* Editable section hover affordance */
+						[data-name].rf-editable-hover {
+							outline: 2px dashed rgba(59, 130, 246, 0.5);
+							outline-offset: 4px;
+							border-radius: 4px;
+							cursor: text;
+						}
+						[data-name].rf-editable-hover,
+						[data-name].rf-editable-hover * {
+							cursor: text !important;
+						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 
@@ -126,6 +260,17 @@ ${hlCss}
 					const wrapper = shadowRoot.querySelector('.rf-preview-wrapper') as HTMLElement | null;
 					if (wrapper) {
 						behaviorCleanup = initRuneBehaviors(wrapper);
+
+						// Prevent link navigation in preview (editor is for editing, not browsing)
+						wrapper.addEventListener('click', (e) => {
+							const anchor = (e.target as HTMLElement).closest('a');
+							if (anchor) e.preventDefault();
+						}, true);
+
+						// Attach inline-edit click + hover handlers for rune sections
+						if (!readOnly && onsectionclick && block.type === 'rune') {
+							attachSectionHandlers(wrapper, buildRuneConfigMap(config));
+						}
 					}
 				}
 			} catch {

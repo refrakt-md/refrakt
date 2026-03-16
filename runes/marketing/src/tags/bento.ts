@@ -149,7 +149,6 @@ function convertHeadings(
 
 export const bento = createContentModelSchema({
 	attributes: {
-		headingLevel: { type: Number, required: false },
 		gap: { type: String, required: false },
 		columns: { type: Number, required: false },
 		sizing: { type: String, required: false, matches: ['tiered', 'span'] },
@@ -158,7 +157,7 @@ export const bento = createContentModelSchema({
 		type: 'custom' as const,
 		processChildren: (nodes) => convertHeadings(
 			nodes as Node[],
-			attrs.headingLevel ?? 2,
+			2,
 			attrs.sizing ?? 'tiered',
 			attrs.columns ?? 4,
 		),

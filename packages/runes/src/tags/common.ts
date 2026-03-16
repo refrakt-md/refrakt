@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
-import { schema } from '../registry.js';
-import { attribute, createComponentRenderable, createSchema, Model } from '../lib/index.js';
+import { attribute, createSchema, Model } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 /** @deprecated Use SplitLayoutModel instead */
@@ -37,14 +36,7 @@ class LinkItemModel extends Model {
       text: node => new Markdoc.Tag('span', {}, [node.attributes.content])
     });
 
-    return createComponentRenderable(schema.LinkItem, {
-      tag: 'li',
-      properties: {
-        name: output.flatten().tag('span'),
-        url: output.tag('a'),
-      },
-      children: output.toArray(),
-    })
+    return new Markdoc.Tag('li', {}, output.toArray());
   }
 }
 

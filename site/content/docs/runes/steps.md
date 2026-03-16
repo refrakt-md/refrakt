@@ -35,11 +35,11 @@ Each ordered list item becomes a numbered step.
 
 ## Heading-based steps
 
-Use `headingLevel` to convert headings into steps instead of list items.
+Headings are automatically converted into steps instead of list items.
 
 {% preview source=true %}
 
-{% steps headingLevel=3 %}
+{% steps %}
 ### Clone the repository
 
 Fork and clone the repo to your local machine.
@@ -54,12 +54,6 @@ Verify everything works with `npm test`.
 {% /steps %}
 
 {% /preview %}
-
-### Attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `headingLevel` | `number` | — | Convert headings at this level into steps |
 
 ### Step attributes
 

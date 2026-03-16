@@ -163,12 +163,8 @@ class BudgetCategoryModel extends Model {
 const variantType = ['detailed', 'summary'] as const;
 
 // Convert headings into budget-category tags
-function convertBudgetChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
-	const headingLevel = attributes.headingLevel as number | undefined;
-	const level = headingLevel ?? (nodes as Node[]).find(n => (n as Node).type === 'heading')?.attributes.level;
-	if (!level) return nodes;
-
-	const converted = headingsToList({ level })(nodes as Node[]);
+function convertBudgetChildren(nodes: unknown[]): unknown[] {
+	const converted = headingsToList()(nodes as Node[]);
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
@@ -195,7 +191,6 @@ export const budget = createContentModelSchema({
 		showPerPerson: { type: Boolean, required: false },
 		showPerDay: { type: Boolean, required: false },
 		variant: { type: String, required: false, matches: variantType.slice() },
-		headingLevel: { type: Number, required: false },
 	},
 	contentModel: {
 		type: 'custom',

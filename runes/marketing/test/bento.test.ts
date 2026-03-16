@@ -58,39 +58,7 @@ Content.
     expect(columnsMeta).toBeDefined();
   });
 
-  it('should map h1 to full size when headingLevel=1', () => {
-    const result = parse(`{% bento headingLevel=1 %}
-# Hero Cell
-
-Full-width hero content.
-
-## Secondary
-
-Large content.
-
-### Tertiary
-
-Medium content.
-
-#### Small
-
-Small content.
-{% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(4);
-
-    const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
-    );
-    expect(sizeMetas[0]!.attributes.content).toBe('full');
-    expect(sizeMetas[1]!.attributes.content).toBe('large');
-    expect(sizeMetas[2]!.attributes.content).toBe('medium');
-    expect(sizeMetas[3]!.attributes.content).toBe('small');
-  });
-
-  it('should keep backward-compatible sizes for headingLevel=2', () => {
+  it('should map h2 to large, h3 to medium, h4 to small', () => {
     const result = parse(`{% bento %}
 ## Large
 
@@ -117,35 +85,31 @@ Content.
   });
 
   it('should produce span values in span mode with default columns=6', () => {
-    const result = parse(`{% bento sizing="span" headingLevel=1 %}
-# Full Width
+    const result = parse(`{% bento sizing="span" %}
+## Full Width
 
 Spans 6 columns.
 
-## Wide
+### Wide
 
 Spans 5 columns.
 
-### Medium
+#### Medium
 
 Spans 4 columns.
 
-#### Narrow
+##### Narrow
 
 Spans 3 columns.
 
-##### Small
+###### Small
 
 Spans 2 columns.
-
-###### Tiny
-
-Spans 1 column.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(6);
+    expect(cells.length).toBe(5);
 
     // All cells should have size='span'
     const sizeMetas = cells.map(cell =>
@@ -155,21 +119,20 @@ Spans 1 column.
       expect(meta!.attributes.content).toBe('span');
     }
 
-    // Span values: h1→6, h2→5, h3→4, h4→3, h5→2, h6→1
+    // Span values: h2→5, h3→4, h4→3, h5→2, h6→1
     const spanMetas = cells.map(cell =>
       findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
     );
-    expect(spanMetas[0]!.attributes.content).toBe('6');
-    expect(spanMetas[1]!.attributes.content).toBe('5');
-    expect(spanMetas[2]!.attributes.content).toBe('4');
-    expect(spanMetas[3]!.attributes.content).toBe('3');
-    expect(spanMetas[4]!.attributes.content).toBe('2');
-    expect(spanMetas[5]!.attributes.content).toBe('1');
+    expect(spanMetas[0]!.attributes.content).toBe('5');
+    expect(spanMetas[1]!.attributes.content).toBe('4');
+    expect(spanMetas[2]!.attributes.content).toBe('3');
+    expect(spanMetas[3]!.attributes.content).toBe('2');
+    expect(spanMetas[4]!.attributes.content).toBe('1');
   });
 
   it('should use effective columns=6 in span mode when columns not set', () => {
-    const result = parse(`{% bento sizing="span" headingLevel=1 %}
-# Wide
+    const result = parse(`{% bento sizing="span" %}
+## Wide
 
 Content.
 {% /bento %}`);
@@ -181,12 +144,12 @@ Content.
   });
 
   it('should respect explicit columns in span mode', () => {
-    const result = parse(`{% bento sizing="span" columns=8 headingLevel=1 %}
-# Wide
+    const result = parse(`{% bento sizing="span" columns=8 %}
+## Wide
 
 Spans 8 columns.
 
-## Medium
+### Medium
 
 Spans 7 columns.
 {% /bento %}`);
@@ -197,8 +160,8 @@ Spans 7 columns.
     const spanMetas = cells.map(cell =>
       findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
     );
-    expect(spanMetas[0]!.attributes.content).toBe('8');
-    expect(spanMetas[1]!.attributes.content).toBe('7');
+    expect(spanMetas[0]!.attributes.content).toBe('7');
+    expect(spanMetas[1]!.attributes.content).toBe('6');
   });
 
   it('should extract icon from heading into a separate icon element', () => {

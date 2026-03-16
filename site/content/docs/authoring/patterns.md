@@ -7,50 +7,28 @@ description: Canonical patterns for writing consistent, maintainable runes
 
 This page documents the canonical patterns used across the rune library. Follow these when writing new runes or reviewing existing ones.
 
-## headingLevel pattern
+## Heading-based splitting
 
-Many runes use headings as structural boundaries — each heading starts a new step, tab, accordion item, etc. The `headingLevel` attribute controls which heading level to split on.
+Many runes use headings as structural boundaries — each heading starts a new step, tab, accordion item, etc. Heading level is determined automatically, not by the content author.
 
-### Auto-detect is the default
+### Auto-detect
 
-When `headingLevel` is omitted, auto-detect from the first heading in the content:
-
-```typescript
-const level = this.headingLevel
-  ?? nodes.find(n => n.type === 'heading')?.attributes.level;
-```
-
-This works for most runes because content authors typically use a consistent heading level within a rune. It also handles AI-generated content that omits the attribute.
-
-### Three categories
-
-| Category | Behavior | Runes |
-|----------|----------|-------|
-| **Auto-detect** | Finds first heading, uses its level | Steps, Accordion, Tabs, Reveal, Timeline, Changelog, Pricing |
-| **Guarded** | Only splits when `headingLevel` is explicitly set | HowTo (headings are titles, not boundaries) |
-| **Always-on** | Has a fixed numeric default | Bento (2), Comparison (2), Symbol (2) |
-
-### When to guard
-
-Guard the `headingLevel` check (keep the `if` statement) when headings serve a **different purpose** in your rune — typically as titles in the `header` group rather than as boundary markers:
+Runes that split on headings auto-detect the level from the first heading in the content. Use `headingsToList()` with no arguments:
 
 ```typescript
-// HowTo: headings are titles, not step boundaries
 processChildren(nodes: Node[]) {
-  if (this.headingLevel !== undefined) {
-    return super.processChildren(headingsToList({ level: this.headingLevel })(nodes));
-  }
-  return super.processChildren(nodes);
+  return headingsToList()(nodes);
 }
 ```
 
-### When to use a fixed default
+This works because content authors typically use a consistent heading level within a rune. It also handles AI-generated content seamlessly.
 
-Use a fixed default when the heading level is part of the rune's design contract — for example, Bento always uses h2 because its grid cells are top-level sections:
+### Fixed level
+
+Some runes hardcode a specific heading level as part of their design contract — for example, Bento always splits at h2, and Symbol uses h3 for groups and h4 for members:
 
 ```typescript
-@attribute({ type: Number, required: false })
-headingLevel: number = 2;  // concrete default, never undefined
+const converted = headingsToList({ level: 2 })(nodes);
 ```
 
 ---
@@ -286,7 +264,7 @@ Be careful.
 });
 ```
 
-**Auto-detection behavior** (for runes with `headingLevel`):
+**Auto-detection behavior** (headings are automatically detected):
 
 ```typescript
 it('should auto-detect h2 heading level', () => {
@@ -299,22 +277,6 @@ Content.
 {% /steps %}`);
 
   const steps = findTag(result as any, t => t.attributes.typeof === 'Steps');
-  const items = findAllTags(steps!, t => t.attributes.typeof === 'Step');
-  expect(items.length).toBe(2);
-});
-```
-
-**Explicit attribute override:**
-
-```typescript
-it('should respect explicit headingLevel', () => {
-  const result = parse(`{% steps headingLevel=3 %}
-### Step One
-...
-### Step Two
-...
-{% /steps %}`);
-
   const items = findAllTags(steps!, t => t.attributes.typeof === 'Step');
   expect(items.length).toBe(2);
 });

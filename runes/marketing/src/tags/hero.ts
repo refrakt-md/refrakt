@@ -65,13 +65,7 @@ export const hero = createContentModelSchema({
 						const output = new RenderableNodeCursor(
 							[Markdoc.transform(node, baseConfig)] as RenderableTreeNode[],
 						);
-						return createComponentRenderable(schema.Command, {
-							tag: 'div',
-							properties: {
-								code: output.flatten().tag('code'),
-							},
-							children: output.next(),
-						});
+						return new Tag('div', {}, [output.next()]);
 					},
 				},
 			},
@@ -124,12 +118,13 @@ export const hero = createContentModelSchema({
 				valign: valignMeta,
 				gap: gapMeta,
 				collapse: collapseMeta,
-				action: actions.flatten().tags('li', 'div'),
 			},
 			refs: {
 				actions: actionsDiv,
 				content: mainContent,
 				media: mediaDiv,
+				action: actions.flatten().tags('li'),
+				command: actions.flatten().tags('div'),
 			},
 			children: [
 				alignMeta,
