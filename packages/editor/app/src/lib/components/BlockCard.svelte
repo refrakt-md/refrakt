@@ -16,6 +16,10 @@
 		href?: string;
 	}
 
+	type InteractiveTarget =
+		| { type: 'section'; el: HTMLElement; dataName: string; editType: EditType }
+		| { type: 'rune'; el: HTMLElement };
+
 	interface Props {
 		block: ParsedBlock;
 		themeConfig: ThemeConfig | null;
@@ -29,6 +33,7 @@
 		dragHandle?: boolean;
 		readOnly?: boolean;
 		onsectionclick?: (info: SectionClickInfo) => void;
+		onruneclick?: () => void;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
 		ondrop: (e: DragEvent) => void;
@@ -47,6 +52,7 @@
 		dragHandle = true,
 		readOnly = false,
 		onsectionclick,
+		onruneclick,
 		ondragstart,
 		ondragover,
 		ondrop,
@@ -72,60 +78,71 @@
 		return map;
 	}
 
-	/** Find the nearest ancestor (or self) with a data-name attribute that is editable.
-	 *  Also captures the containing rune's data-rune value for editHints lookup. */
-	function findEditableSection(
+	/** Find the nearest interactive target: an editable data-name section, or a data-rune root.
+	 *  Editable data-name sections take priority; data-rune is the fallback for dead-space clicks. */
+	function findInteractiveTarget(
 		start: HTMLElement,
 		root: HTMLElement,
 		runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>,
-	): { el: HTMLElement; dataName: string; editType: EditType } | null {
+	): InteractiveTarget | null {
 		let el: HTMLElement | null = start;
 		let dataNameEl: HTMLElement | null = null;
+		let dataRuneEl: HTMLElement | null = null;
 
-		// Walk up to find the nearest data-name element
+		// Walk up to find the nearest data-name and data-rune elements
 		while (el && el !== root) {
 			if (el.hasAttribute('data-name') && !dataNameEl) {
 				dataNameEl = el;
 			}
+			if (el.hasAttribute('data-rune') && !dataRuneEl) {
+				dataRuneEl = el;
+			}
 			el = el.parentElement;
 		}
 
-		if (!dataNameEl) return null;
+		// Try editable data-name section first (takes priority)
+		if (dataNameEl) {
+			const dataName = dataNameEl.getAttribute('data-name')!;
 
-		const dataName = dataNameEl.getAttribute('data-name')!;
-
-		// Find containing rune's data-rune value
-		let runeEl: HTMLElement | null = dataNameEl.parentElement;
-		let runeConfig: import('@refrakt-md/transform').RuneConfig | undefined;
-		while (runeEl && runeEl !== root) {
-			const runeType = runeEl.getAttribute('data-rune');
-			if (runeType) {
-				runeConfig = runeConfigMap.get(runeType);
-				break;
+			// Find containing rune's config for editHints lookup
+			let configEl: HTMLElement | null = dataNameEl.parentElement;
+			let runeConfig: import('@refrakt-md/transform').RuneConfig | undefined;
+			while (configEl && configEl !== root) {
+				const runeType = configEl.getAttribute('data-rune');
+				if (runeType) {
+					runeConfig = runeConfigMap.get(runeType);
+					break;
+				}
+				configEl = configEl.parentElement;
 			}
-			runeEl = runeEl.parentElement;
+
+			const hint = runeConfig?.editHints?.[dataName];
+
+			if (hint !== 'none') {
+				if (hint === 'link' || hint === 'inline' || hint === 'code') {
+					return { type: 'section', el: dataNameEl, dataName, editType: hint };
+				}
+				if (isEditableSection(dataNameEl)) {
+					return { type: 'section', el: dataNameEl, dataName, editType: 'inline' };
+				}
+			}
+			// data-name found but not editable — fall through to rune
 		}
 
-		// Resolve edit type from editHints
-		const hint = runeConfig?.editHints?.[dataName];
-
-		if (hint === 'none') return null;
-
-		if (hint === 'link' || hint === 'inline' || hint === 'code') {
-			return { el: dataNameEl, dataName, editType: hint };
+		// Fall back to data-rune element
+		if (dataRuneEl) {
+			return { type: 'rune', el: dataRuneEl };
 		}
 
-		// No hint — fall back to isEditableSection heuristic
-		if (!isEditableSection(dataNameEl)) return null;
-		return { el: dataNameEl, dataName, editType: 'inline' };
+		return null;
 	}
 
-	/** Attach click and hover handlers to editable [data-name] elements within the wrapper */
+	/** Attach click and hover handlers to interactive elements within the wrapper */
 	function attachSectionHandlers(wrapper: HTMLElement, runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>) {
 		let hoveredEl: HTMLElement | null = null;
 
 		wrapper.addEventListener('mouseover', (e) => {
-			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
+			const result = findInteractiveTarget(e.target as HTMLElement, wrapper, runeConfigMap);
 			const target = result?.el ?? null;
 			if (target !== hoveredEl) {
 				hoveredEl?.classList.remove('rf-editable-hover');
@@ -143,10 +160,13 @@
 		});
 
 		wrapper.addEventListener('click', (e) => {
-			const result = findEditableSection(e.target as HTMLElement, wrapper, runeConfigMap);
-			if (result) {
-				e.preventDefault();
-				e.stopPropagation();
+			const result = findInteractiveTarget(e.target as HTMLElement, wrapper, runeConfigMap);
+			if (!result) return;
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			if (result.type === 'section') {
 				const { el, dataName, editType } = result;
 				const rect = el.getBoundingClientRect();
 				// For link edits, extract the href from the <a> child
@@ -161,6 +181,9 @@
 					editType,
 					href: anchor?.getAttribute('href') ?? undefined,
 				});
+			} else {
+				// type === 'rune' → open block edit panel
+				onruneclick?.();
 			}
 		});
 	}
@@ -253,6 +276,16 @@ ${hlCss}
 						[data-name].rf-editable-hover * {
 							cursor: text !important;
 						}
+						/* Rune root hover affordance — opens block edit panel */
+						[data-rune].rf-editable-hover {
+							outline: 2px dashed rgba(59, 130, 246, 0.3);
+							outline-offset: 4px;
+							border-radius: 4px;
+						}
+						[data-rune].rf-editable-hover,
+						[data-rune].rf-editable-hover * {
+							cursor: pointer !important;
+						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
 
@@ -268,7 +301,7 @@ ${hlCss}
 						}, true);
 
 						// Attach inline-edit click + hover handlers for rune sections
-						if (!readOnly && onsectionclick && block.type === 'rune') {
+						if (!readOnly && (onsectionclick || onruneclick) && block.type === 'rune') {
 							attachSectionHandlers(wrapper, buildRuneConfigMap(config));
 						}
 					}

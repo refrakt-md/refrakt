@@ -59,6 +59,7 @@
 	}: Props = $props();
 
 	let blocks: ParsedBlock[] = $state([]);
+	let rowEls: HTMLElement[] = $state([]);
 	let runeMap = $derived(buildRuneMap(runes));
 
 	// Track the source we last parsed from, to avoid re-parsing our own updates
@@ -626,6 +627,7 @@
 				{#each blocks as block, i (block.id)}
 					<div
 						class="block-editor__row"
+						bind:this={rowEls[i]}
 						class:hovered={!readOnly && hoveredIndex === i}
 						class:active={!readOnly && activeIndex === i}
 						class:drag-source={!readOnly && dragIndex === i}
@@ -646,6 +648,7 @@
 								{aggregated}
 								{readOnly}
 								onsectionclick={readOnly ? undefined : (info) => handleSectionClick(i, info)}
+								onruneclick={readOnly ? undefined : () => toggleBlock(i, rowEls[i])}
 								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
