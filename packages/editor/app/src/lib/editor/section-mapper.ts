@@ -198,24 +198,39 @@ export interface CommandMapping {
 	code: string;
 	/** Language tag (e.g., 'bash', 'sh') */
 	language: string;
+	/** Full opening line before the newline (e.g., "```js" or "````markdoc") */
+	opener: string;
+	/** Backtick delimiter sequence (e.g., "```" or "````") */
+	delimiter: string;
 }
 
 /**
  * Find a fenced code block in the rune's inner content,
  * matching by comparing the code content to the rendered text.
+ *
+ * Handles 3+ backtick delimiters and info strings after the language tag
+ * (e.g., `` ```yaml title="config.ts" `` or `` ````markdoc ``).
  */
 export function findCommandMapping(
 	innerContent: string,
 	renderedText: string,
 ): CommandMapping | null {
 	const normalizedRendered = normalizeText(renderedText);
-	const fenceRegex = /^(```(\w*)\n)([\s\S]*?)\n```\s*$/gm;
+	// Match 3+ backticks, optional language, optional info string, then
+	// use a backreference (\2) to match the same-length closing delimiter.
+	const fenceRegex = /^((`{3,})(\w*)[^\n]*\n)([\s\S]*?)\n\2\s*$/gm;
 	let match;
 
 	while ((match = fenceRegex.exec(innerContent)) !== null) {
-		const [fullMatch, , language, code] = match;
+		const [fullMatch, opener, delimiter, language, code] = match;
 		if (normalizeText(code) === normalizedRendered) {
-			return { source: fullMatch, code, language: language || '' };
+			return {
+				source: fullMatch,
+				code,
+				language: language || '',
+				opener: opener.trimEnd(),
+				delimiter,
+			};
 		}
 	}
 
@@ -224,13 +239,15 @@ export function findCommandMapping(
 
 /**
  * Apply a command edit: replace the code content within the fenced code block.
+ * Preserves the original opening line (including delimiter length and info string)
+ * and uses the same backtick delimiter for the closing fence.
  */
 export function applyCommandEdit(
 	innerContent: string,
 	mapping: CommandMapping,
 	newCode: string,
 ): string {
-	const newSource = '```' + mapping.language + '\n' + newCode + '\n```';
+	const newSource = mapping.opener + '\n' + newCode + '\n' + mapping.delimiter;
 	const idx = innerContent.indexOf(mapping.source);
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);

@@ -151,9 +151,12 @@
 				const rect = el.getBoundingClientRect();
 				// For link edits, extract the href from the <a> child
 				const anchor = editType === 'link' ? el.querySelector('a') as HTMLAnchorElement | null : null;
+				// For code edits, extract text from the <code> element to avoid
+				// picking up structural text (language labels, copy buttons, etc.)
+				const codeEl = editType === 'code' ? el.querySelector('code') : null;
 				onsectionclick?.({
 					dataName,
-					text: el.textContent?.trim() ?? '',
+					text: (codeEl ?? el).textContent?.trim() ?? '',
 					rect,
 					editType,
 					href: anchor?.getAttribute('href') ?? undefined,

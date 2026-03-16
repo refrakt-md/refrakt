@@ -31,7 +31,8 @@ class TabModel extends Model {
     return [
       createComponentRenderable(schema.Tab, {
         tag: 'li',
-        properties: { name, image },
+        properties: { image },
+        refs: { name },
         children: tab.toArray(),
       }),
       createComponentRenderable(schema.TabPanel, {
@@ -107,8 +108,6 @@ export const tabs = createContentModelSchema({
       property: 'contentSection',
       properties: {
         ...pageSectionProperties(headerNodes),
-        tab: tabItems,
-        panel: panels,
       },
       refs: { tabs: tabList, panels: panelList },
       children,
