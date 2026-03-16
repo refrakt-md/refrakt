@@ -250,7 +250,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'none' },
 	},
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {

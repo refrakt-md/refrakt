@@ -615,6 +615,28 @@ export function removeFieldContent(
 	return result;
 }
 
+/**
+ * Append a new item to a filled list field.
+ * Returns the updated innerContent string.
+ */
+export function appendListItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	zoneName?: string,
+): string {
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+
+	const template = field.template || '- New item';
+	const lastNode = field.nodes[field.nodes.length - 1];
+	const idx = innerContent.indexOf(lastNode.source);
+	if (idx === -1) return innerContent;
+
+	const afterEnd = idx + lastNode.source.length;
+	return innerContent.slice(0, afterEnd) + '\n' + template + innerContent.slice(afterEnd);
+}
+
 function findField(
 	structure: ResolvedStructure,
 	fieldName: string,

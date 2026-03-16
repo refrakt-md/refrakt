@@ -7,6 +7,7 @@
 		rootLabel: string;
 		onaddfield: (fieldName: string, zoneName?: string) => void;
 		onremovefield: (fieldName: string, zoneName?: string) => void;
+		onappenditem: (fieldName: string, zoneName?: string) => void;
 		onfieldselect: (fieldName: string, zoneName?: string) => void;
 		selectedField?: string | null;
 	}
@@ -16,9 +17,14 @@
 		rootLabel,
 		onaddfield,
 		onremovefield,
+		onappenditem,
 		onfieldselect,
 		selectedField = null,
 	}: Props = $props();
+
+	function isListField(match: string): boolean {
+		return match === 'list' || match.startsWith('list:');
+	}
 
 	/** Icon SVG path for a match type */
 	function matchIcon(match: string): string {
@@ -110,6 +116,19 @@
 					{/if}
 					<span class="cm-tree__field-spacer"></span>
 					{#if field.filled}
+						{#if isListField(field.match)}
+							<button
+								type="button"
+								class="cm-tree__action cm-tree__action--add"
+								title="Add item to {field.name}"
+								onclick={(e) => { e.stopPropagation(); onappenditem(field.name); }}
+							>
+								<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+									<line x1="8" y1="3" x2="8" y2="13" />
+									<line x1="3" y1="8" x2="13" y2="8" />
+								</svg>
+							</button>
+						{/if}
 						<button
 							type="button"
 							class="cm-tree__action cm-tree__action--remove"
@@ -177,6 +196,19 @@
 							{/if}
 							<span class="cm-tree__field-spacer"></span>
 							{#if field.filled}
+								{#if isListField(field.match)}
+									<button
+										type="button"
+										class="cm-tree__action cm-tree__action--add"
+										title="Add item to {field.name}"
+										onclick={(e) => { e.stopPropagation(); onappenditem(field.name, zone.name); }}
+									>
+										<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+											<line x1="8" y1="3" x2="8" y2="13" />
+											<line x1="3" y1="8" x2="13" y2="8" />
+										</svg>
+									</button>
+								{/if}
 								<button
 									type="button"
 									class="cm-tree__action cm-tree__action--remove"

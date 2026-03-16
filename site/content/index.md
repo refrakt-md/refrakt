@@ -170,7 +170,6 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
   `playlist`, `track`, `audio`
 {% /feature %}
 
-
 {% testimonial variant="quote" spacing="breathe" width="content" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 

@@ -17,6 +17,7 @@
 		replaceNodeSource,
 		insertFieldContent,
 		removeFieldContent,
+		appendListItem,
 	} from '../editor/block-parser.js';
 	import { resolveContentStructure } from '../editor/content-model-resolver.js';
 	import RuneAttributes from './RuneAttributes.svelte';
@@ -213,6 +214,11 @@
 	function handleRemoveField(fieldName: string, zoneName?: string) {
 		if (!resolvedStructure) return;
 		applyFieldChange(content => removeFieldContent(content, resolvedStructure!, fieldName, zoneName));
+	}
+
+	function handleAppendItem(fieldName: string, zoneName?: string) {
+		if (!resolvedStructure) return;
+		applyFieldChange(content => appendListItem(content, resolvedStructure!, fieldName, zoneName));
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -501,6 +507,7 @@
 						rootLabel={activeNode?.runeName ?? rb.runeName}
 						onaddfield={handleAddField}
 						onremovefield={handleRemoveField}
+						onappenditem={handleAppendItem}
 						onfieldselect={handleFieldSelect}
 						{selectedField}
 					/>

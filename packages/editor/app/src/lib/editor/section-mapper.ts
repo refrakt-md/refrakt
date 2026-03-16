@@ -102,6 +102,13 @@ export function findSectionMapping(
 		}
 	}
 
+	// For list nodes, try matching within individual list items
+	for (const node of nodes) {
+		if (node.type !== 'list') continue;
+		const result = findListItemMapping(node.source, dataName, normalizedRendered);
+		if (result) return result;
+	}
+
 	// Fallback: try matching against child nodes of rune nodes
 	for (const node of nodes) {
 		if (node.children) {
@@ -111,6 +118,92 @@ export function findSectionMapping(
 				renderedText,
 			);
 			if (result) return result;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Split a list source into individual item sources.
+ * Each item starts with a list marker (-, *, +, or 1.) and may have
+ * indented continuation lines.
+ */
+function splitListItems(listSource: string): string[] {
+	const lines = listSource.split('\n');
+	const items: string[] = [];
+	let current: string[] = [];
+
+	for (const line of lines) {
+		if (/^[-*+]\s|^\d+\.\s/.test(line) && current.length > 0) {
+			items.push(current.join('\n'));
+			current = [line];
+		} else {
+			current.push(line);
+		}
+	}
+	if (current.length > 0) items.push(current.join('\n'));
+	return items;
+}
+
+/**
+ * Try to find a section mapping within a list item's content.
+ * Handles bold text on the first line (definition title) and
+ * continuation lines (definition description).
+ */
+function findListItemMapping(
+	listSource: string,
+	dataName: string,
+	normalizedRendered: string,
+): SectionMapping | null {
+	const items = splitListItems(listSource);
+
+	for (const itemSrc of items) {
+		const lines = itemSrc.split('\n');
+		const firstLine = lines[0];
+
+		// Match bold text on first line: "- **Title**", "- **Title** extra",
+		// or with content before bold: "- {% icon ... /%} **Title**"
+		const boldMatch = firstLine.match(/^([-*+]\s+.*?)\*\*(.+?)\*\*(.*)/);
+		if (boldMatch) {
+			const [, prefix, boldText] = boldMatch;
+			if (normalizeText(boldText) === normalizedRendered) {
+				return {
+					dataName,
+					text: boldText,
+					source: firstLine,
+					sourcePrefix: prefix,
+					inlineSource: `**${boldText}**${boldMatch[3]}`,
+				};
+			}
+		}
+
+		// Match continuation lines (description text)
+		if (lines.length > 1) {
+			const contLines = lines.slice(1)
+				.map(l => l.replace(/^\s+/, ''))
+				.filter(Boolean);
+			const contText = contLines.join(' ');
+			const contPlain = stripInlineMarkdown(contText);
+			if (contLines.length > 0 && normalizeText(contPlain) === normalizedRendered) {
+				const contSource = lines.slice(1).join('\n');
+				// Find indentation from first non-empty continuation line
+				// (lines[1] may be a blank separator line)
+				const firstContentLine = lines.slice(1).find(l => l.trim().length > 0);
+				const indentMatch = firstContentLine?.match(/^(\s+)/);
+				const indent = indentMatch ? indentMatch[1] : '';
+				// Include leading blank lines in the prefix so the replacement
+				// preserves the blank-line separator between title and description
+				const firstContentIdx = firstContentLine ? contSource.indexOf(firstContentLine) : 0;
+				const prefix = contSource.slice(0, firstContentIdx) + indent;
+				return {
+					dataName,
+					text: contPlain,
+					source: contSource,
+					sourcePrefix: prefix,
+					inlineSource: contText,
+				};
+			}
 		}
 	}
 

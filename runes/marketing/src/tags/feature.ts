@@ -13,33 +13,35 @@ export class DefinitionModel extends Model {
   description: NodeStream;
 
   transform() {
+    const labelIcon = (node: any) => { if (Tag.isTag(node)) node.attributes['data-name'] = 'icon'; return node; };
+
     const dt = this.term
       .useNode('paragraph', node => {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
-        if (img) return Markdoc.transform(img, this.config);
+        if (img) return labelIcon(Markdoc.transform(img, this.config));
         const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
         if (iconTag) {
           const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-          const iconResult = Markdoc.transform(iconTag, this.config);
-          if (strong) return [iconResult, new Tag('span', {}, strong.transformChildren(this.config))];
+          const iconResult = labelIcon(Markdoc.transform(iconTag, this.config));
+          if (strong) return [iconResult, new Tag('span', { 'data-name': 'title' }, strong.transformChildren(this.config))];
           return iconResult;
         }
         const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-        if (strong) return new Tag('span', {}, strong.transformChildren(this.config));
+        if (strong) return new Tag('span', { 'data-name': 'title' }, strong.transformChildren(this.config));
         return Markdoc.transform(node, this.config);
       })
       .useNode('heading', node => {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
         const text = Array.from(node.walk()).filter(n => n.type === 'text');
-        const span = new Tag('span', {}, Markdoc.transform(text, this.config));
-
-        return img ? [ Markdoc.transform(img, this.config), span ] : span;
+        const span = new Tag('span', { 'data-name': 'title' }, Markdoc.transform(text, this.config));
+        if (img) return [labelIcon(Markdoc.transform(img, this.config)), span];
+        return span;
       })
       .transform()
       .wrap('dt');
 
     const dd = this.description
-      .useNode('paragraph', 'dd')
+      .useNode('paragraph', node => new Tag('dd', { 'data-name': 'description' }, node.transformChildren(this.config)))
       .transform();
 
     return new Tag('div', {}, dt.concat(dd).toArray());
@@ -66,7 +68,7 @@ export const feature = createContentModelSchema({
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: true },
 					{ name: 'blurb', match: 'paragraph', optional: true },
-					{ name: 'definitions', match: 'list', optional: true, greedy: true },
+					{ name: 'definitions', match: 'list', optional: true, greedy: true, template: '- **Title**\n\n  Description' },
 				],
 			},
 			{
