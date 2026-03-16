@@ -64,13 +64,25 @@
 		contentTree.some(n => n.type === 'rune')
 	);
 
-	/** Whether this rune has a declarative content model */
-	let hasContentModel = $derived(runeInfo?.contentModel != null);
+	/** The effective rune info for the structure tab — nested rune if selected, root otherwise */
+	let effectiveRuneInfo = $derived.by(() => {
+		if (activeNode?.type === 'rune' && activeRuneInfo) return activeRuneInfo;
+		return runeInfo;
+	});
 
-	/** Resolved structure: content tree matched against content model */
+	/** Content tree for the effective rune (nested rune's children or root's) */
+	let effectiveContentTree = $derived.by(() => {
+		if (activeNode?.type === 'rune' && activeNode.children) return activeNode.children;
+		return contentTree;
+	});
+
+	/** Whether the effective rune has a declarative content model */
+	let hasContentModel = $derived(effectiveRuneInfo?.contentModel != null);
+
+	/** Resolved structure: effective content tree matched against effective content model */
 	let resolvedStructure = $derived.by(() => {
-		if (!runeInfo?.contentModel) return null;
-		return resolveContentStructure(contentTree, runeInfo.contentModel);
+		if (!effectiveRuneInfo?.contentModel) return null;
+		return resolveContentStructure(effectiveContentTree, effectiveRuneInfo.contentModel);
 	});
 
 	/** Currently selected field in the content model tree */
@@ -134,9 +146,18 @@
 		if (block.type !== 'rune') return [] as TabId[];
 		const rb = block as RuneBlock;
 		const tabs: TabId[] = ['settings'];
-		if (hasContentModel || hasNestedRunes) tabs.push('structure');
+		// Show structure tab when the effective rune has a content model,
+		// or when no nested rune is selected and root has nested runes (legacy tree)
+		if (hasContentModel || (!activeNode && hasNestedRunes)) tabs.push('structure');
 		if (!rb.selfClosing) tabs.push('content');
 		return tabs;
+	});
+
+	// Auto-switch away from structure tab if it becomes unavailable
+	$effect(() => {
+		if (activeTab === 'structure' && !availableTabs.includes('structure')) {
+			activeTab = 'settings';
+		}
 	});
 
 	function handleTreeSelect(path: number[]) {
@@ -158,26 +179,40 @@
 		selectedField = zoneName ? `${zoneName}.${fieldName}` : fieldName;
 	}
 
-	function handleAddField(fieldName: string, zoneName?: string) {
-		if (!resolvedStructure) return;
+	/** Apply a field content change — works for both root and nested runes */
+	function applyFieldChange(updater: (content: string) => string) {
 		const rb = block as RuneBlock;
-		const newInner = insertFieldContent(rb.innerContent, resolvedStructure, fieldName, zoneName);
-		if (newInner !== rb.innerContent) {
+		if (activeNode?.type === 'rune' && activeNode.innerContent !== undefined) {
+			// Nested rune: update its inner content, then replace in root
+			const newNestedInner = updater(activeNode.innerContent);
+			if (newNestedInner === activeNode.innerContent) return;
+			const attrStr = serializeAttributes(activeNode.attributes ?? {});
+			const inner = newNestedInner.trim();
+			const newSource = inner
+				? `{% ${activeNode.runeName}${attrStr} %}\n${inner}\n{% /${activeNode.runeName} %}`
+				: `{% ${activeNode.runeName}${attrStr} %}\n\n{% /${activeNode.runeName} %}`;
+			const newRootInner = replaceNodeSource(rb.innerContent, activeNode.source, newSource);
+			const updated: RuneBlock = { ...rb, innerContent: newRootInner, source: '' };
+			updated.source = rebuildRuneSource(updated);
+			onupdate(updated);
+		} else {
+			// Root rune
+			const newInner = updater(rb.innerContent);
+			if (newInner === rb.innerContent) return;
 			const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
 			updated.source = rebuildRuneSource(updated);
 			onupdate(updated);
 		}
 	}
 
+	function handleAddField(fieldName: string, zoneName?: string) {
+		if (!resolvedStructure) return;
+		applyFieldChange(content => insertFieldContent(content, resolvedStructure!, fieldName, zoneName));
+	}
+
 	function handleRemoveField(fieldName: string, zoneName?: string) {
 		if (!resolvedStructure) return;
-		const rb = block as RuneBlock;
-		const newInner = removeFieldContent(rb.innerContent, resolvedStructure, fieldName, zoneName);
-		if (newInner !== rb.innerContent) {
-			const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
-			updated.source = rebuildRuneSource(updated);
-			onupdate(updated);
-		}
+		applyFieldChange(content => removeFieldContent(content, resolvedStructure!, fieldName, zoneName));
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -463,13 +498,13 @@
 				{#if hasContentModel && resolvedStructure}
 					<ContentModelTree
 						structure={resolvedStructure}
-						rootLabel={rb.runeName}
+						rootLabel={activeNode?.runeName ?? rb.runeName}
 						onaddfield={handleAddField}
 						onremovefield={handleRemoveField}
 						onfieldselect={handleFieldSelect}
 						{selectedField}
 					/>
-				{:else if hasNestedRunes}
+				{:else if !activeNode && hasNestedRunes}
 					<ContentTree
 						nodes={contentTree}
 						{activePath}
