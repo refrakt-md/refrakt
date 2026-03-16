@@ -637,6 +637,60 @@ export function appendListItem(
 	return innerContent.slice(0, afterEnd) + '\n' + template + innerContent.slice(afterEnd);
 }
 
+/**
+ * Remove a single item from a list field by index.
+ * If the last item is removed, removes the entire list node.
+ */
+export function removeListItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	itemIndex: number,
+	zoneName?: string,
+): string {
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+
+	// Get the list source from the first list node
+	const listNode = field.nodes[0];
+	const items = splitListItems(listNode.source);
+	if (itemIndex < 0 || itemIndex >= items.length) return innerContent;
+
+	if (items.length === 1) {
+		// Removing the last item — remove the entire list node
+		return removeNodeSource(innerContent, listNode.source);
+	}
+
+	// Remove the item and rejoin
+	const remaining = items.filter((_, i) => i !== itemIndex);
+	const newListSource = remaining.join('\n\n');
+	const idx = innerContent.indexOf(listNode.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length);
+}
+
+/**
+ * Split a list source into individual item sources.
+ * Each item starts with a list marker (-, *, +, or 1.) and may have
+ * indented continuation lines or blank-line separated paragraphs.
+ */
+export function splitListItems(listSource: string): string[] {
+	const lines = listSource.split('\n');
+	const items: string[] = [];
+	let current: string[] = [];
+
+	for (const line of lines) {
+		if (/^[-*+]\s|^\d+\.\s/.test(line) && current.length > 0) {
+			items.push(current.join('\n'));
+			current = [line];
+		} else {
+			current.push(line);
+		}
+	}
+	if (current.length > 0) items.push(current.join('\n'));
+	return items;
+}
+
 function findField(
 	structure: ResolvedStructure,
 	fieldName: string,

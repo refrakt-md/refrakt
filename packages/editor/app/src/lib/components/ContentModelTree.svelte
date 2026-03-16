@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ResolvedStructure, ResolvedField, ResolvedZone } from '../editor/content-model-resolver.js';
 	import type { ContentNode } from '../editor/block-parser.js';
+	import { splitListItems } from '../editor/block-parser.js';
 
 	interface Props {
 		structure: ResolvedStructure;
@@ -8,6 +9,8 @@
 		onaddfield: (fieldName: string, zoneName?: string) => void;
 		onremovefield: (fieldName: string, zoneName?: string) => void;
 		onappenditem: (fieldName: string, zoneName?: string) => void;
+		onremovelistitem: (fieldName: string, itemIndex: number, zoneName?: string) => void;
+		oneditfield: (fieldName: string, rect: DOMRect, zoneName?: string) => void;
 		onfieldselect: (fieldName: string, zoneName?: string) => void;
 		selectedField?: string | null;
 	}
@@ -18,6 +21,8 @@
 		onaddfield,
 		onremovefield,
 		onappenditem,
+		onremovelistitem,
+		oneditfield,
 		onfieldselect,
 		selectedField = null,
 	}: Props = $props();
@@ -50,6 +55,23 @@
 			default:
 				return 'M2 4h12M2 8h12M2 12h8';
 		}
+	}
+
+	/** Extract individual list items with their indices for per-item rendering */
+	function listItemPreviews(nodes: ContentNode[]): { text: string; index: number }[] {
+		const result: { text: string; index: number }[] = [];
+		for (const node of nodes) {
+			if (node.type !== 'list') continue;
+			const items = splitListItems(node.source);
+			for (let i = 0; i < items.length; i++) {
+				const firstLine = items[i].split('\n')[0];
+				const text = firstLine.replace(/^[-*+]\s+|^\d+\.\s+/, '').trim();
+				if (text) {
+					result.push({ text: text.length > 50 ? text.slice(0, 47) + '...' : text, index: i });
+				}
+			}
+		}
+		return result;
 	}
 
 	/** Generate a preview string for matched content */
@@ -98,6 +120,7 @@
 		<div class="cm-tree__fields">
 			{#each structure.fields as field}
 				{@const previews = contentPreview(field.nodes)}
+				{@const listItems = isListField(field.match) ? listItemPreviews(field.nodes) : []}
 				<button
 					type="button"
 					class="cm-tree__field"
@@ -105,7 +128,13 @@
 					class:cm-tree__field--empty={!field.filled}
 					class:cm-tree__field--required={!field.optional && !field.filled}
 					class:cm-tree__field--selected={selectedField === field.name}
-					onclick={() => onfieldselect(field.name)}
+					onclick={(e) => {
+						if (field.filled && !isListField(field.match)) {
+							oneditfield(field.name, (e.currentTarget as HTMLElement).getBoundingClientRect());
+						} else {
+							onfieldselect(field.name);
+						}
+					}}
 				>
 					<svg class="cm-tree__field-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 						<path d={matchIcon(field.match)} />
@@ -156,7 +185,26 @@
 						</button>
 					{/if}
 				</button>
-				{#if field.filled && previews.length > 0}
+				{#if field.filled && isListField(field.match) && listItems.length > 0}
+					<div class="cm-tree__previews">
+						{#each listItems as item}
+							<div class="cm-tree__preview-item">
+								<span class="cm-tree__preview-text">{item.text}</span>
+								<button
+									type="button"
+									class="cm-tree__preview-remove"
+									title="Remove item"
+									onclick={() => onremovelistitem(field.name, item.index)}
+								>
+									<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+										<line x1="4" y1="4" x2="12" y2="12" />
+										<line x1="12" y1="4" x2="4" y2="12" />
+									</svg>
+								</button>
+							</div>
+						{/each}
+					</div>
+				{:else if field.filled && previews.length > 0}
 					<div class="cm-tree__previews">
 						{#each previews as preview}
 							<div class="cm-tree__preview-line">{preview}</div>
@@ -178,6 +226,7 @@
 				<div class="cm-tree__fields">
 					{#each zone.fields as field}
 						{@const previews = contentPreview(field.nodes)}
+						{@const listItems = isListField(field.match) ? listItemPreviews(field.nodes) : []}
 						<button
 							type="button"
 							class="cm-tree__field"
@@ -185,7 +234,13 @@
 							class:cm-tree__field--empty={!field.filled}
 							class:cm-tree__field--required={!field.optional && !field.filled}
 							class:cm-tree__field--selected={selectedField === `${zone.name}.${field.name}`}
-							onclick={() => onfieldselect(field.name, zone.name)}
+							onclick={(e) => {
+								if (field.filled && !isListField(field.match)) {
+									oneditfield(field.name, (e.currentTarget as HTMLElement).getBoundingClientRect(), zone.name);
+								} else {
+									onfieldselect(field.name, zone.name);
+								}
+							}}
 						>
 							<svg class="cm-tree__field-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 								<path d={matchIcon(field.match)} />
@@ -236,7 +291,26 @@
 								</button>
 							{/if}
 						</button>
-						{#if field.filled && previews.length > 0}
+						{#if field.filled && isListField(field.match) && listItems.length > 0}
+							<div class="cm-tree__previews">
+								{#each listItems as item}
+									<div class="cm-tree__preview-item">
+										<span class="cm-tree__preview-text">{item.text}</span>
+										<button
+											type="button"
+											class="cm-tree__preview-remove"
+											title="Remove item"
+											onclick={() => onremovelistitem(field.name, item.index, zone.name)}
+										>
+											<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+												<line x1="4" y1="4" x2="12" y2="12" />
+												<line x1="12" y1="4" x2="4" y2="12" />
+											</svg>
+										</button>
+									</div>
+								{/each}
+							</div>
+						{:else if field.filled && previews.length > 0}
 							<div class="cm-tree__previews">
 								{#each previews as preview}
 									<div class="cm-tree__preview-line">{preview}</div>
@@ -433,6 +507,49 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		line-height: 1.4;
+	}
+
+	.cm-tree__preview-item {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		line-height: 1.4;
+	}
+
+	.cm-tree__preview-text {
+		font-size: var(--ed-text-xs);
+		color: var(--ed-text-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.cm-tree__preview-remove {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		padding: 0;
+		border: none;
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
+		color: var(--ed-text-muted);
+		cursor: pointer;
+		flex-shrink: 0;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast), color var(--ed-transition-fast), background var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-item:hover .cm-tree__preview-remove {
+		opacity: 1;
+	}
+
+	.cm-tree__preview-remove:hover {
+		color: var(--ed-danger);
+		background: var(--ed-danger-subtle);
 	}
 
 	/* Description fallback for sections/custom */

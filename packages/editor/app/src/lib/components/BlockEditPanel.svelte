@@ -18,8 +18,11 @@
 		insertFieldContent,
 		removeFieldContent,
 		appendListItem,
+		removeListItem,
 	} from '../editor/block-parser.js';
 	import { resolveContentStructure } from '../editor/content-model-resolver.js';
+	import type { SectionMapping } from '../editor/section-mapper.js';
+	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import RuneAttributes from './RuneAttributes.svelte';
 	import ContentTree from './ContentTree.svelte';
 	import ContentModelTree from './ContentModelTree.svelte';
@@ -35,9 +38,10 @@
 		onupdate: (block: ParsedBlock) => void;
 		onremove: () => void;
 		onclose: () => void;
+		oneditfield?: (dataName: string, inlineSource: string, rect: DOMRect, mapping: SectionMapping) => void;
 	}
 
-	let { block, runeMap, runes, aggregated = {}, initialRuneIndex = null, onupdate, onremove, onclose }: Props = $props();
+	let { block, runeMap, runes, aggregated = {}, initialRuneIndex = null, onupdate, onremove, onclose, oneditfield }: Props = $props();
 
 	let label = $derived(blockLabel(block));
 
@@ -219,6 +223,51 @@
 	function handleAppendItem(fieldName: string, zoneName?: string) {
 		if (!resolvedStructure) return;
 		applyFieldChange(content => appendListItem(content, resolvedStructure!, fieldName, zoneName));
+	}
+
+	function handleRemoveListItem(fieldName: string, itemIndex: number, zoneName?: string) {
+		if (!resolvedStructure) return;
+		applyFieldChange(content => removeListItem(content, resolvedStructure!, fieldName, itemIndex, zoneName));
+	}
+
+	function handleEditField(fieldName: string, rect: DOMRect, zoneName?: string) {
+		if (!resolvedStructure || !oneditfield) return;
+		// Find the field in the resolved structure
+		let field;
+		if (resolvedStructure.type === 'sequence') {
+			field = resolvedStructure.fields.find(f => f.name === fieldName);
+		} else if (resolvedStructure.type === 'delimited' && zoneName) {
+			const zone = resolvedStructure.zones.find(z => z.name === zoneName);
+			field = zone?.fields.find(f => f.name === fieldName);
+		}
+		if (!field || !field.filled || field.nodes.length !== 1) return;
+
+		const source = field.nodes[0].source;
+		const trimmed = source.trim();
+
+		// Strip markdown prefix (heading markers, blockquote markers)
+		let prefix = '';
+		let inlineContent = trimmed;
+		const headingMatch = trimmed.match(/^(#{1,6}\s+)(.*)/);
+		if (headingMatch) {
+			prefix = headingMatch[1];
+			inlineContent = headingMatch[2];
+		} else {
+			const quoteMatch = trimmed.match(/^(>\s*)(.*)/);
+			if (quoteMatch) {
+				prefix = quoteMatch[1];
+				inlineContent = quoteMatch[2];
+			}
+		}
+
+		const mapping: SectionMapping = {
+			dataName: fieldName,
+			text: stripInlineMarkdown(inlineContent),
+			source,
+			sourcePrefix: prefix,
+			inlineSource: inlineContent,
+		};
+		oneditfield(fieldName, inlineContent, rect, mapping);
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -508,6 +557,8 @@
 						onaddfield={handleAddField}
 						onremovefield={handleRemoveField}
 						onappenditem={handleAppendItem}
+						onremovelistitem={handleRemoveListItem}
+						oneditfield={handleEditField}
 						onfieldselect={handleFieldSelect}
 						{selectedField}
 					/>

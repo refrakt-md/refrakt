@@ -580,6 +580,19 @@
 		commandEdit = null;
 	}
 
+	// ── Field edit from Structure tab ──────────────────────────────
+
+	function handleFieldEdit(dataName: string, inlineSource: string, rect: DOMRect, mapping: SectionMapping) {
+		if (activeIndex === null) return;
+		inlineEdit = {
+			blockIndex: activeIndex,
+			dataName,
+			inlineSource,
+			rect,
+			mapping,
+		};
+	}
+
 	// Group runes by category for the insert menu
 	let runesByCategory = $derived.by(() => {
 		const map = new Map<string, RuneInfo[]>();
@@ -727,6 +740,7 @@
 						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
 						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorPoint = null; pendingRuneIndex = null; handleRemoveBlock(idx); }}
 						onclose={() => { activeIndex = null; anchorPoint = null; pendingRuneIndex = null; }}
+						oneditfield={handleFieldEdit}
 					/>
 				{/key}
 			{/if}
