@@ -6,6 +6,10 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.8.1
+
+- Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
+
 ## v0.8.0 - March 10, 2026
 
 - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`

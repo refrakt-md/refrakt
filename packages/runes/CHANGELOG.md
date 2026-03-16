@@ -1,5 +1,13 @@
 # @refrakt-md/runes
 
+## 0.8.1
+
+### Patch Changes
+
+- Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
+  - @refrakt-md/transform@0.8.1
+  - @refrakt-md/types@0.8.1
+
 ## 0.8.0
 
 ### Patch Changes

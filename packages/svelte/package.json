@@ -1,7 +1,7 @@
 {
 	"name": "@refrakt-md/svelte",
 	"description": "Svelte renderer for refrakt.md content",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"type": "module",
 	"license": "MIT",
 	"repository": {
@@ -27,9 +27,9 @@
 	],
 	"dependencies": {
 		"@markdoc/markdoc": "0.4.0",
-		"@refrakt-md/behaviors": "0.8.0",
-		"@refrakt-md/transform": "0.8.0",
-		"@refrakt-md/types": "0.8.0"
+		"@refrakt-md/behaviors": "0.8.1",
+		"@refrakt-md/transform": "0.8.1",
+		"@refrakt-md/types": "0.8.1"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0"
