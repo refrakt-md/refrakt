@@ -248,9 +248,8 @@ export const config: Record<string, RuneConfig> = {
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
-		autoLabel: pageSectionAutoLabel,
+		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
 	},
-	FeatureDefinition: { block: 'feature-definition', parent: 'Feature' },
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
 	Step: {
 		block: 'step',

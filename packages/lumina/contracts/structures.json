@@ -1184,6 +1184,11 @@
 					"tag": "image",
 					"selector": ".rf-feature__image",
 					"source": "autoLabel"
+				},
+				"definitions": {
+					"tag": "dl",
+					"selector": ".rf-feature__definitions",
+					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
@@ -1197,15 +1202,6 @@
 					"prop": "--split-gap"
 				}
 			}
-		},
-		"FeatureDefinition": {
-			"block": "feature-definition",
-			"root": ".rf-feature-definition",
-			"dataRune": "feature-definition",
-			"parent": "Feature",
-			"childOrder": [
-				"{content}"
-			]
 		},
 		"Steps": {
 			"block": "steps",

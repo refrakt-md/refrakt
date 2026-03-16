@@ -42,15 +42,7 @@ export class DefinitionModel extends Model {
       .useNode('paragraph', 'dd')
       .transform();
 
-    return createComponentRenderable(schema.FeatureDefinition, {
-      tag: 'div',
-      properties: {
-        image: dt.flatten().tag('svg'),
-        name: dt.flatten().tag('span'),
-        description: dd.tag('dd'),
-      },
-      children: dt.concat(dd).toArray(),
-    });
+    return new Tag('div', {}, dt.concat(dd).toArray());
   }
 }
 
@@ -71,7 +63,9 @@ export const feature = createContentModelSchema({
 				name: 'content',
 				type: 'sequence',
 				fields: [
-					{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+					{ name: 'eyebrow', match: 'paragraph', optional: true },
+					{ name: 'headline', match: 'heading', optional: true },
+					{ name: 'blurb', match: 'paragraph', optional: true },
 					{ name: 'definitions', match: 'list', optional: true, greedy: true },
 				],
 			},
@@ -88,8 +82,13 @@ export const feature = createContentModelSchema({
 		const contentZone = (resolved.content ?? {}) as ResolvedContent;
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
+		const headerAstNodes = [
+			contentZone.eyebrow,
+			contentZone.headline,
+			contentZone.blurb,
+		].filter(Boolean) as Node[];
 		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.header), config) as RenderableTreeNode[],
+			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
 		// Transform definitions with custom node overrides
@@ -151,8 +150,6 @@ export const feature = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
-				featureItem: definitions.flatten().tag('div'),
 				layout: layoutMeta,
 				align: alignMeta,
 				ratio: ratioMeta,
@@ -161,6 +158,8 @@ export const feature = createContentModelSchema({
 				collapse: collapseMeta,
 			},
 			refs: {
+				...pageSectionProperties(header),
+				'feature-item': definitions.flatten().tag('div'),
 				content: mainContent,
 				media: mediaContent,
 			},
