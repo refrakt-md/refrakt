@@ -5,6 +5,28 @@
 	padding: 2rem;
 	margin: 1.5rem 0;
 }
+.rf-recipe__header {
+	margin-bottom: 1.5rem;
+}
+.rf-recipe .rf-recipe__eyebrow {
+	font-size: 0.875rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-recipe__headline {
+	margin-top: 0;
+}
+.rf-recipe .rf-recipe__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+	max-width: 40rem;
+}
+.rf-recipe__image {
+	margin-bottom: 1rem;
+}
 .rf-recipe__meta {
 	display: flex;
 	flex-wrap: wrap;
@@ -44,4 +66,19 @@
 }
 .rf-recipe__content ol li {
 	padding: 0.25rem 0;
+}
+/* Media zone */
+.rf-recipe__media {
+	border-radius: var(--rf-radius-lg);
+}
+.rf-recipe__media img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: var(--rf-radius-lg);
+}
+/* Split layout: meta bar spans full width above the grid */
+.rf-recipe[data-layout="split"] > .rf-recipe__meta,
+.rf-recipe[data-layout="split-reverse"] > .rf-recipe__meta {
+	grid-column: 1 / -1;
 }

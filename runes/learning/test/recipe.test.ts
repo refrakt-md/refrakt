@@ -67,4 +67,89 @@ A classic Italian pasta dish.
 		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
 		expect(steps).toBeDefined();
 	});
+
+	it('should support split layout with media zone', () => {
+		const result = parse(`{% recipe prepTime="PT15M" layout="split" %}
+# Split Recipe
+
+A recipe with a photo.
+
+- ingredient one
+
+1. step one
+
+---
+
+![Photo](./photo.jpg)
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		// Layout meta
+		const metas = findAllTags(tag!, t => t.name === 'meta');
+		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
+		expect(layoutMeta).toBeDefined();
+		expect(layoutMeta!.attributes.content).toBe('split');
+
+		// Media zone should have an image
+		const media = findTag(tag!, t => t.attributes['data-name'] === 'media');
+		expect(media).toBeDefined();
+		const img = findTag(media!, t => t.name === 'img');
+		expect(img).toBeDefined();
+	});
+
+	it('should work without media zone (stacked default)', () => {
+		const result = parse(`{% recipe %}
+# No Media Recipe
+
+- flour
+
+1. Mix
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		// Should still have content zone
+		const content = findTag(tag!, t => t.attributes['data-name'] === 'content');
+		expect(content).toBeDefined();
+
+		// Layout defaults to stacked
+		const metas = findAllTags(tag!, t => t.name === 'meta');
+		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
+		expect(layoutMeta).toBeDefined();
+		expect(layoutMeta!.attributes.content).toBe('stacked');
+	});
+
+	it('should extract page section header fields', () => {
+		const result = parse(`{% recipe %}
+Quick and easy
+
+# Amazing Pasta
+
+A delightful pasta recipe.
+
+- pasta
+
+1. Cook
+{% /recipe %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		expect(tag).toBeDefined();
+
+		// Header wrapper should exist
+		const header = findTag(tag!, t => t.name === 'header');
+		expect(header).toBeDefined();
+
+		// Should contain the eyebrow paragraph, heading, and blurb paragraph
+		const eyebrow = findTag(header!, t => t.name === 'p' && t.attributes['data-field'] === 'eyebrow');
+		expect(eyebrow).toBeDefined();
+
+		const headline = findTag(header!, t => /^h[1-6]$/.test(t.name));
+		expect(headline).toBeDefined();
+
+		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-field'] === 'blurb');
+		expect(blurb).toBeDefined();
+	});
 });

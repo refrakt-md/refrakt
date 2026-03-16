@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 function tagText(nodes: any[]): string {
@@ -15,6 +16,7 @@ function tagText(nodes: any[]): string {
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
 export const recipe = createContentModelSchema({
+	base: SplitLayoutModel,
 	attributes: {
 		prepTime: { type: String, required: false, default: '' },
 		cookTime: { type: String, required: false, default: '' },
@@ -22,20 +24,56 @@ export const recipe = createContentModelSchema({
 		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium' },
 	},
 	contentModel: {
-		type: 'sequence',
-		fields: [
-			{ name: 'header', match: 'heading|paragraph|image', greedy: true, optional: true },
-			{ name: 'body', match: 'list|tag|blockquote', greedy: true, optional: true },
+		type: 'delimited',
+		delimiter: 'hr',
+		zones: [
+			{
+				name: 'content',
+				type: 'sequence',
+				fields: [
+					{ name: 'eyebrow', match: 'paragraph', optional: true },
+					{ name: 'headline', match: 'heading', optional: true },
+					{ name: 'blurb', match: 'paragraph', optional: true },
+					{ name: 'body', match: 'list|tag|blockquote', greedy: true, optional: true },
+				],
+			},
+			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
 		],
 	},
 	transform(resolved, attrs, config) {
+		const contentZone = (resolved.content ?? {}) as ResolvedContent;
+		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
+
+		// Collect header AST nodes (eyebrow, headline, blurb) and transform
+		const headerAstNodes = [
+			contentZone.eyebrow,
+			contentZone.headline,
+			contentZone.blurb,
+		].filter(Boolean) as Node[];
 		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
+		// Transform body nodes (lists, tags, blockquotes)
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
+		);
+
+		// Transform media AST nodes
+		const mediaAstNodes = (
+			Array.isArray(mediaZone.media) ? mediaZone.media : []
+		) as Node[];
+		const side = new RenderableNodeCursor(
+			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
+		);
+
+		// Recipe attribute meta tags
 		const prepTimeMeta = new Tag('meta', { content: attrs.prepTime });
 		const cookTimeMeta = new Tag('meta', { content: attrs.cookTime });
 		const servingsMeta = new Tag('meta', { content: attrs.servings != null ? String(attrs.servings) : '' });
@@ -75,24 +113,51 @@ export const recipe = createContentModelSchema({
 			}
 		}
 
+		// Layout meta tags (following hero pattern)
+		const layout = (attrs.layout as string) || 'stacked';
+		const ratio = (attrs.ratio as string) || '1 1';
+		const valign = (attrs.valign as string) || 'top';
+		const gap = (attrs.gap as string) || 'default';
+		const collapse = attrs.collapse as string | undefined;
+
+		const layoutMeta = new Tag('meta', { content: layout });
+		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+
+		// Structural wrapping
 		const sectionProps = pageSectionProperties(header);
 		const ingredientsList = new Tag('ul', {}, ingredients);
 		const stepsList = new Tag('ol', {}, steps);
 		const tipsDiv = new Tag('div', {}, tips);
+
+		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
+		const bodyChildren: any[] = [ingredientsList, stepsList];
+		if (tips.length > 0) {
+			bodyChildren.push(tipsDiv);
+		}
+
+		const mainContent = new RenderableNodeCursor([
+			...headerContent,
+			...bodyChildren,
+		]).wrap('div');
+
+		const mediaDiv = side.wrap('div');
 
 		const children: any[] = [
 			prepTimeMeta,
 			cookTimeMeta,
 			servingsMeta,
 			difficultyMeta,
-			header.wrap('header').next(),
-			ingredientsList,
-			stepsList,
+			layoutMeta,
+			...(ratioMeta ? [ratioMeta] : []),
+			...(valignMeta ? [valignMeta] : []),
+			...(gapMeta ? [gapMeta] : []),
+			...(collapseMeta ? [collapseMeta] : []),
+			mainContent.next(),
+			...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 		];
-
-		if (tips.length > 0) {
-			children.push(tipsDiv);
-		}
 
 		return createComponentRenderable(schema.Recipe, {
 			tag: 'article',
@@ -103,11 +168,18 @@ export const recipe = createContentModelSchema({
 				cookTime: cookTimeMeta,
 				servings: servingsMeta,
 				difficulty: difficultyMeta,
+				layout: layoutMeta,
+				ratio: ratioMeta,
+				valign: valignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
 			},
 			refs: {
 				ingredients: ingredientsList,
 				steps: stepsList,
 				tips: tipsDiv,
+				content: mainContent,
+				media: mediaDiv,
 			},
 			schema: {
 				name: sectionProps.headline,
