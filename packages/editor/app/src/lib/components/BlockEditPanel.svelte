@@ -111,34 +111,29 @@
 		return activeNode.type;
 	});
 
-	let showTreeDropdown: boolean = $state(false);
-	let treeDropdownEl: HTMLDivElement;
+	type TabId = 'settings' | 'structure' | 'content';
+	let activeTab: TabId = $state('settings');
+
+	let availableTabs = $derived.by(() => {
+		if (block.type !== 'rune') return [] as TabId[];
+		const rb = block as RuneBlock;
+		const tabs: TabId[] = ['settings'];
+		if (hasNestedRunes) tabs.push('structure');
+		if (!rb.selfClosing) tabs.push('content');
+		return tabs;
+	});
 
 	function handleTreeSelect(path: number[]) {
 		activePath = path;
-		showTreeDropdown = false;
+		// Auto-switch to Content tab when selecting a content node
+		const node = resolveNode(contentTree, path);
+		if (node && node.type !== 'rune') {
+			activeTab = 'content';
+		}
 	}
 
 	function navigateToRoot() {
 		activePath = [];
-		showTreeDropdown = false;
-	}
-
-	function toggleTreeDropdown() {
-		showTreeDropdown = !showTreeDropdown;
-	}
-
-	function handleTreeClickOutside(e: MouseEvent) {
-		if (showTreeDropdown && treeDropdownEl && !treeDropdownEl.contains(e.target as Node)) {
-			showTreeDropdown = false;
-		}
-	}
-
-	function handleTreeKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && showTreeDropdown) {
-			showTreeDropdown = false;
-			e.stopPropagation();
-		}
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -268,26 +263,12 @@
 
 </script>
 
-<svelte:window onmousedown={handleTreeClickOutside} onkeydown={handleTreeKeydown} />
-
 <div class="edit-panel">
-	<div class="edit-panel__header-wrap" bind:this={treeDropdownEl}>
+	<div class="edit-panel__top">
 		<div class="edit-panel__header">
 			<span class="edit-panel__type">{headerLabel}</span>
 			{#if !activeIsContent && category}
 				<span class="edit-panel__category">{category}</span>
-			{/if}
-			{#if hasNestedRunes}
-				<button
-					class="edit-panel__btn"
-					class:active={showTreeDropdown}
-					onclick={toggleTreeDropdown}
-					title="Content tree"
-				>
-					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M2 3h4M2 7h4M6 11h4M6 15h4M4 3v8M8 11v4" />
-					</svg>
-				</button>
 			{/if}
 			<div class="edit-panel__spacer"></div>
 			<button
@@ -310,9 +291,131 @@
 			>&times;</button>
 		</div>
 
-		{#if showTreeDropdown && hasNestedRunes && block.type === 'rune'}
-			{@const rb = block as RuneBlock}
-			<div class="edit-panel__tree-dropdown">
+		{#if block.type === 'rune' && availableTabs.length > 1}
+			<div class="edit-panel__tabs">
+				{#each availableTabs as tab}
+					<button
+						type="button"
+						class="edit-panel__tab"
+						class:active={activeTab === tab}
+						onclick={() => activeTab = tab}
+					>
+						{#if tab === 'settings'}
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="8" cy="8" r="2" />
+								<path d="M6.7 1.6h2.6l.4 1.8.8.4 1.7-.7 1.8 1.8-.7 1.7.4.8 1.8.4v2.6l-1.8.4-.4.8.7 1.7-1.8 1.8-1.7-.7-.8.4-.4 1.8H6.7l-.4-1.8-.8-.4-1.7.7-1.8-1.8.7-1.7-.4-.8-1.8-.4V6.7l1.8-.4.4-.8-.7-1.7 1.8-1.8 1.7.7.8-.4z" />
+							</svg>
+							Settings
+						{:else if tab === 'structure'}
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M2 3h4M2 7h4M6 11h4M6 15h4M4 3v8M8 11v4" />
+							</svg>
+							Structure
+						{:else if tab === 'content'}
+							<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M2 4h12M2 8h12M2 12h8" />
+							</svg>
+							Content
+						{/if}
+					</button>
+				{/each}
+			</div>
+		{/if}
+	</div>
+
+	{#if block.type === 'rune'}
+		{@const rb = block as RuneBlock}
+
+		<!-- Settings tab -->
+		{#if activeTab === 'settings'}
+			<div class="edit-panel__tab-panel">
+				{#if activeIsContent && activeNode}
+					{#if activeNode.type === 'heading'}
+						<div class="edit-panel__field-group">
+							<label class="edit-panel__field">
+								<span class="edit-panel__field-label">Level</span>
+								<select
+									class="edit-panel__select"
+									value={String(activeNode.headingLevel ?? 1)}
+									onchange={(e) => handleNestedHeadingLevelChange(Number((e.target as HTMLSelectElement).value))}
+								>
+									<option value="1">H1</option>
+									<option value="2">H2</option>
+									<option value="3">H3</option>
+									<option value="4">H4</option>
+									<option value="5">H5</option>
+									<option value="6">H6</option>
+								</select>
+							</label>
+							<label class="edit-panel__field">
+								<span class="edit-panel__field-label">Text</span>
+								<input
+									class="edit-panel__input"
+									type="text"
+									value={activeNode.headingText ?? ''}
+									oninput={(e) => handleNestedHeadingTextChange((e.target as HTMLInputElement).value)}
+								/>
+							</label>
+						</div>
+					{:else if activeNode.type === 'fence'}
+						<div class="edit-panel__field-group">
+							<label class="edit-panel__field">
+								<span class="edit-panel__field-label">Language</span>
+								<input
+									class="edit-panel__input"
+									type="text"
+									value={activeNode.fenceLanguage ?? ''}
+									oninput={(e) => handleNestedFenceLangChange((e.target as HTMLInputElement).value)}
+									placeholder="e.g. js, python, html"
+								/>
+							</label>
+						</div>
+					{:else}
+						<div class="edit-panel__empty-tab">
+							<span class="edit-panel__empty-tab-text">No settings for this element</span>
+						</div>
+					{/if}
+
+				{:else if activeNode && activeRuneInfo}
+					<RuneAttributes
+						runeInfo={activeRuneInfo}
+						attributes={activeNode.attributes ?? {}}
+						onchange={handleNestedAttrsChange}
+					/>
+
+				{:else if !activeNode}
+					{#if runeInfo}
+						<RuneAttributes
+							{runeInfo}
+							attributes={rb.attributes}
+							onchange={handleRuneAttrsChange}
+						/>
+					{:else}
+						<div class="edit-panel__unknown">
+							<span class="edit-panel__unknown-label">Unknown rune: {rb.runeName}</span>
+							{#each Object.entries(rb.attributes) as [key, val]}
+								<label class="edit-panel__field">
+									<span class="edit-panel__field-label">{key}</span>
+									<input
+										class="edit-panel__input"
+										type="text"
+										value={val}
+										oninput={(e) => {
+											const next = { ...rb.attributes, [key]: (e.target as HTMLInputElement).value };
+											handleRuneAttrsChange(next);
+										}}
+									/>
+								</label>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Structure tab -->
+		{#if activeTab === 'structure' && hasNestedRunes}
+			<div class="edit-panel__tab-panel">
 				<ContentTree
 					nodes={contentTree}
 					{activePath}
@@ -323,163 +426,65 @@
 				/>
 			</div>
 		{/if}
-	</div>
 
-	<div class="edit-panel__body">
-		{#if block.type === 'heading'}
-			{@const hb = block as HeadingBlock}
-			<div class="edit-panel__field-group">
-				<label class="edit-panel__field">
-					<span class="edit-panel__field-label">Level</span>
-					<select
-						class="edit-panel__select"
-						value={String(hb.level)}
-						onchange={(e) => handleHeadingLevelChange(Number((e.target as HTMLSelectElement).value))}
-					>
-						<option value="1">H1</option>
-						<option value="2">H2</option>
-						<option value="3">H3</option>
-						<option value="4">H4</option>
-						<option value="5">H5</option>
-						<option value="6">H6</option>
-					</select>
-				</label>
-				<label class="edit-panel__field">
-					<span class="edit-panel__field-label">Text</span>
-					<input
-						class="edit-panel__input"
-						type="text"
-						value={hb.text}
-						oninput={(e) => handleHeadingTextChange((e.target as HTMLInputElement).value)}
-					/>
-				</label>
-			</div>
-
-		{:else if block.type === 'rune'}
-			{@const rb = block as RuneBlock}
-
-			<!-- Editor for the active node -->
-			{#if activeIsContent && activeNode}
-				<!-- Type-specific editors for content nodes -->
-				{#if activeNode.type === 'heading'}
-					<div class="edit-panel__field-group">
-						<label class="edit-panel__field">
-							<span class="edit-panel__field-label">Level</span>
-							<select
-								class="edit-panel__select"
-								value={String(activeNode.headingLevel ?? 1)}
-								onchange={(e) => handleNestedHeadingLevelChange(Number((e.target as HTMLSelectElement).value))}
-							>
-								<option value="1">H1</option>
-								<option value="2">H2</option>
-								<option value="3">H3</option>
-								<option value="4">H4</option>
-								<option value="5">H5</option>
-								<option value="6">H6</option>
-							</select>
-						</label>
-						<label class="edit-panel__field">
-							<span class="edit-panel__field-label">Text</span>
-							<input
-								class="edit-panel__input"
-								type="text"
-								value={activeNode.headingText ?? ''}
-								oninput={(e) => handleNestedHeadingTextChange((e.target as HTMLInputElement).value)}
+		<!-- Content tab -->
+		{#if activeTab === 'content' && !rb.selfClosing}
+			<div class="edit-panel__tab-panel">
+				{#if activeIsContent && activeNode}
+					{#if activeNode.type === 'fence'}
+						<div class="edit-panel__content-editor">
+							<InlineEditor
+								content={activeNode.fenceCode ?? ''}
+								onchange={handleNestedFenceCodeChange}
+								language={activeNode.fenceLanguage}
+								{runes}
+								aggregated={() => aggregated}
 							/>
-						</label>
-					</div>
-				{:else if activeNode.type === 'fence'}
-					<div class="edit-panel__field-group">
-						<label class="edit-panel__field">
-							<span class="edit-panel__field-label">Language</span>
-							<input
-								class="edit-panel__input"
-								type="text"
-								value={activeNode.fenceLanguage ?? ''}
-								oninput={(e) => handleNestedFenceLangChange((e.target as HTMLInputElement).value)}
-								placeholder="e.g. js, python, html"
+						</div>
+					{:else if activeNode.type === 'paragraph'}
+						<div class="edit-panel__content-editor">
+							<InlineEditor
+								content={activeNode.source}
+								onchange={handleNestedSourceChange}
+								{runes}
+								aggregated={() => aggregated}
 							/>
-						</label>
-					</div>
-					<div class="edit-panel__content-editor">
-						<InlineEditor
-							content={activeNode.fenceCode ?? ''}
-							onchange={handleNestedFenceCodeChange}
-							language={activeNode.fenceLanguage}
-							{runes}
-							aggregated={() => aggregated}
-						/>
-					</div>
-				{:else if activeNode.type === 'paragraph'}
-					<div class="edit-panel__content-editor">
-						<InlineEditor
-							content={activeNode.source}
-							onchange={handleNestedSourceChange}
-							{runes}
-							aggregated={() => aggregated}
-						/>
-					</div>
-				{:else}
-					<!-- List, quote, image, hr — raw source editing -->
-					<div class="edit-panel__field-group">
-						<label class="edit-panel__field">
-							<span class="edit-panel__field-label">Source</span>
-							<textarea
-								class="edit-panel__textarea"
-								value={activeNode.source}
-								oninput={(e) => handleNestedSourceChange((e.target as HTMLTextAreaElement).value)}
-								rows={Math.max(4, activeNode.source.split('\n').length)}
-							></textarea>
-						</label>
-					</div>
-				{/if}
-
-			{:else if activeNode && activeRuneInfo}
-				<!-- Nested rune: attributes + content -->
-				<RuneAttributes
-					runeInfo={activeRuneInfo}
-					attributes={activeNode.attributes ?? {}}
-					onchange={handleNestedAttrsChange}
-				/>
-				{#if !activeNode.selfClosing && activeNode.innerContent !== undefined}
-					<div class="edit-panel__content-editor">
-						<InlineEditor
-							content={activeNode.innerContent}
-							onchange={handleNestedContentChange}
-							{runes}
-							aggregated={() => aggregated}
-						/>
-					</div>
-				{/if}
-
-			{:else if !activeNode}
-				<!-- Root rune: attributes + content -->
-				{#if runeInfo}
-					<RuneAttributes
-						{runeInfo}
-						attributes={rb.attributes}
-						onchange={handleRuneAttrsChange}
-					/>
-				{:else}
-					<div class="edit-panel__unknown">
-						<span class="edit-panel__unknown-label">Unknown rune: {rb.runeName}</span>
-						{#each Object.entries(rb.attributes) as [key, val]}
+						</div>
+					{:else if activeNode.type === 'heading'}
+						<div class="edit-panel__empty-tab">
+							<span class="edit-panel__empty-tab-text">Edit heading text in Settings</span>
+						</div>
+					{:else}
+						<div class="edit-panel__field-group">
 							<label class="edit-panel__field">
-								<span class="edit-panel__field-label">{key}</span>
-								<input
-									class="edit-panel__input"
-									type="text"
-									value={val}
-									oninput={(e) => {
-										const next = { ...rb.attributes, [key]: (e.target as HTMLInputElement).value };
-										handleRuneAttrsChange(next);
-									}}
-								/>
+								<span class="edit-panel__field-label">Source</span>
+								<textarea
+									class="edit-panel__textarea"
+									value={activeNode.source}
+									oninput={(e) => handleNestedSourceChange((e.target as HTMLTextAreaElement).value)}
+									rows={Math.max(4, activeNode.source.split('\n').length)}
+								></textarea>
 							</label>
-						{/each}
-					</div>
-				{/if}
-				{#if !rb.selfClosing}
+						</div>
+					{/if}
+
+				{:else if activeNode && activeRuneInfo}
+					{#if !activeNode.selfClosing && activeNode.innerContent !== undefined}
+						<div class="edit-panel__content-editor">
+							<InlineEditor
+								content={activeNode.innerContent}
+								onchange={handleNestedContentChange}
+								{runes}
+								aggregated={() => aggregated}
+							/>
+						</div>
+					{:else}
+						<div class="edit-panel__empty-tab">
+							<span class="edit-panel__empty-tab-text">This rune has no inner content</span>
+						</div>
+					{/if}
+
+				{:else if !activeNode}
 					<div class="edit-panel__content-editor">
 						<InlineEditor
 							content={rb.innerContent}
@@ -489,57 +494,90 @@
 						/>
 					</div>
 				{/if}
-			{/if}
-
-		{:else if block.type === 'fence'}
-			{@const fb = block as FenceBlock}
-			<div class="edit-panel__field-group">
-				<label class="edit-panel__field">
-					<span class="edit-panel__field-label">Language</span>
-					<input
-						class="edit-panel__input"
-						type="text"
-						value={fb.language}
-						oninput={(e) => handleFenceLangChange((e.target as HTMLInputElement).value)}
-						placeholder="e.g. js, python, html"
-					/>
-				</label>
-			</div>
-			<div class="edit-panel__content-editor">
-				<InlineEditor
-					content={fb.code}
-					onchange={handleFenceCodeChange}
-					language={fb.language}
-					{runes}
-				/>
-					aggregated={() => aggregated}
-			</div>
-
-		{:else if block.type === 'paragraph'}
-			<div class="edit-panel__content-editor">
-				<InlineEditor
-					content={block.source}
-					onchange={handleSourceChange}
-					{runes}
-				/>
-					aggregated={() => aggregated}
-			</div>
-
-		{:else}
-			<!-- List, quote, image, etc. — raw source editing -->
-			<div class="edit-panel__field-group">
-				<label class="edit-panel__field">
-					<span class="edit-panel__field-label">Source</span>
-					<textarea
-						class="edit-panel__textarea"
-						value={block.source}
-						oninput={(e) => handleSourceChange((e.target as HTMLTextAreaElement).value)}
-						rows={Math.max(4, block.source.split('\n').length)}
-					></textarea>
-				</label>
 			</div>
 		{/if}
-	</div>
+
+	{:else}
+		<div class="edit-panel__body">
+			{#if block.type === 'heading'}
+				{@const hb = block as HeadingBlock}
+				<div class="edit-panel__field-group">
+					<label class="edit-panel__field">
+						<span class="edit-panel__field-label">Level</span>
+						<select
+							class="edit-panel__select"
+							value={String(hb.level)}
+							onchange={(e) => handleHeadingLevelChange(Number((e.target as HTMLSelectElement).value))}
+						>
+							<option value="1">H1</option>
+							<option value="2">H2</option>
+							<option value="3">H3</option>
+							<option value="4">H4</option>
+							<option value="5">H5</option>
+							<option value="6">H6</option>
+						</select>
+					</label>
+					<label class="edit-panel__field">
+						<span class="edit-panel__field-label">Text</span>
+						<input
+							class="edit-panel__input"
+							type="text"
+							value={hb.text}
+							oninput={(e) => handleHeadingTextChange((e.target as HTMLInputElement).value)}
+						/>
+					</label>
+				</div>
+
+			{:else if block.type === 'fence'}
+				{@const fb = block as FenceBlock}
+				<div class="edit-panel__field-group">
+					<label class="edit-panel__field">
+						<span class="edit-panel__field-label">Language</span>
+						<input
+							class="edit-panel__input"
+							type="text"
+							value={fb.language}
+							oninput={(e) => handleFenceLangChange((e.target as HTMLInputElement).value)}
+							placeholder="e.g. js, python, html"
+						/>
+					</label>
+				</div>
+				<div class="edit-panel__content-editor">
+					<InlineEditor
+						content={fb.code}
+						onchange={handleFenceCodeChange}
+						language={fb.language}
+						{runes}
+						aggregated={() => aggregated}
+					/>
+				</div>
+
+			{:else if block.type === 'paragraph'}
+				<div class="edit-panel__content-editor">
+					<InlineEditor
+						content={block.source}
+						onchange={handleSourceChange}
+						{runes}
+						aggregated={() => aggregated}
+					/>
+				</div>
+
+			{:else}
+				<!-- List, quote, image, etc. — raw source editing -->
+				<div class="edit-panel__field-group">
+					<label class="edit-panel__field">
+						<span class="edit-panel__field-label">Source</span>
+						<textarea
+							class="edit-panel__textarea"
+							value={block.source}
+							oninput={(e) => handleSourceChange((e.target as HTMLTextAreaElement).value)}
+							rows={Math.max(4, block.source.split('\n').length)}
+						></textarea>
+					</label>
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -548,16 +586,17 @@
 		flex-direction: column;
 	}
 
+	.edit-panel__top {
+		flex-shrink: 0;
+		background: var(--ed-surface-0);
+		border-bottom: 1px solid var(--ed-border-default);
+	}
+
 	.edit-panel__header {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
 		padding: var(--ed-space-4) var(--ed-space-5);
-		border-bottom: 1px solid var(--ed-border-default);
-		background: transparent;
-		position: sticky;
-		top: 0;
-		z-index: 1;
 	}
 
 	.edit-panel__type {
@@ -699,8 +738,8 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		margin-left: calc(-1 * var(--ed-space-4));
-		margin-right: calc(-1 * var(--ed-space-4));
+		margin-left: calc(-1 * var(--ed-space-5));
+		margin-right: calc(-1 * var(--ed-space-5));
 		border-top: 1px solid var(--ed-border-subtle);
 	}
 
@@ -716,30 +755,64 @@
 		font-style: italic;
 	}
 
-	/* Header wrap (contains header + tree dropdown) */
-	.edit-panel__header-wrap {
-		position: relative;
-		flex-shrink: 0;
+	/* Tab strip */
+	.edit-panel__tabs {
+		display: flex;
+		gap: 2px;
+		background: var(--ed-surface-2);
+		border-radius: var(--ed-radius-sm);
+		padding: 2px;
+		margin: 0 var(--ed-space-4) var(--ed-space-3);
 	}
 
-	/* Tree button active state */
-	.edit-panel__btn.active {
-		color: var(--ed-accent);
-		background: var(--ed-accent-muted);
+	.edit-panel__tab {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem;
+		padding: 0.35rem 0.5rem;
+		border: none;
+		background: transparent;
+		color: var(--ed-text-muted);
+		font-size: var(--ed-text-sm);
+		font-weight: 500;
+		cursor: pointer;
+		border-radius: calc(var(--ed-radius-sm) - 1px);
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
 	}
 
-	/* Content tree dropdown */
-	.edit-panel__tree-dropdown {
-		padding: 0.5rem;
-		border-bottom: 1px solid var(--ed-border-default);
+	.edit-panel__tab:hover {
+		color: var(--ed-text-secondary);
+	}
+
+	.edit-panel__tab.active {
 		background: var(--ed-surface-0);
-		max-height: 300px;
-		overflow-y: auto;
-		animation: tree-dropdown-enter 0.1s ease-out;
+		color: var(--ed-text-primary);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 	}
 
-	@keyframes tree-dropdown-enter {
-		from { opacity: 0; transform: translateY(-4px); }
-		to { opacity: 1; transform: translateY(0); }
+	/* Tab panels */
+	.edit-panel__tab-panel {
+		flex: 1;
+		overflow-y: auto;
+		padding: var(--ed-space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--ed-space-5);
+	}
+
+	/* Empty tab state */
+	.edit-panel__empty-tab {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--ed-space-8) var(--ed-space-4);
+	}
+
+	.edit-panel__empty-tab-text {
+		font-size: var(--ed-text-sm);
+		color: var(--ed-text-muted);
+		font-style: italic;
 	}
 </style>
