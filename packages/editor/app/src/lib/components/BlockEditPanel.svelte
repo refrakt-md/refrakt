@@ -25,12 +25,14 @@
 		runeMap: Map<string, RuneInfo>;
 		runes: () => RuneInfo[];
 		aggregated?: Record<string, unknown>;
+		/** When set, auto-navigate to the Nth nested rune (DFS order) on mount */
+		initialRuneIndex?: number | null;
 		onupdate: (block: ParsedBlock) => void;
 		onremove: () => void;
 		onclose: () => void;
 	}
 
-	let { block, runeMap, runes, aggregated = {}, onupdate, onremove, onclose }: Props = $props();
+	let { block, runeMap, runes, aggregated = {}, initialRuneIndex = null, onupdate, onremove, onclose }: Props = $props();
 
 	let label = $derived(blockLabel(block));
 
@@ -57,6 +59,31 @@
 	let hasNestedRunes = $derived(
 		contentTree.some(n => n.type === 'rune')
 	);
+
+	/** Find the path to the Nth rune node in DFS order */
+	function findRunePathByDfsIndex(nodes: ContentNode[], target: number): number[] | null {
+		let count = 0;
+		function walk(ns: ContentNode[], path: number[]): number[] | null {
+			for (let i = 0; i < ns.length; i++) {
+				if (ns[i].type === 'rune') {
+					if (count === target) return [...path, i];
+					count++;
+					const found = walk(ns[i].children ?? [], [...path, i]);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+		return walk(nodes, []);
+	}
+
+	// Auto-navigate to a nested rune when initialRuneIndex is provided
+	$effect(() => {
+		if (initialRuneIndex != null && contentTree.length > 0) {
+			const path = findRunePathByDfsIndex(contentTree, initialRuneIndex);
+			if (path) activePath = path;
+		}
+	});
 
 	/** Resolve the active nested node from the path */
 	function resolveNode(nodes: ContentNode[], path: number[]): ContentNode | null {

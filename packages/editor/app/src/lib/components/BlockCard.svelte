@@ -33,7 +33,7 @@
 		dragHandle?: boolean;
 		readOnly?: boolean;
 		onsectionclick?: (info: SectionClickInfo) => void;
-		onruneclick?: () => void;
+		onruneclick?: (info: { x: number; y: number; nestedRuneIndex?: number }) => void;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
 		ondrop: (e: DragEvent) => void;
@@ -183,7 +183,14 @@
 				});
 			} else {
 				// type === 'rune' → open block edit panel
-				onruneclick?.();
+				const me = e as MouseEvent;
+				const allRuneEls = Array.from(wrapper.querySelectorAll('[data-rune]'));
+				// First data-rune is the root; any others are nested
+				let nestedRuneIndex: number | undefined;
+				if (allRuneEls.length > 1 && result.el !== allRuneEls[0]) {
+					nestedRuneIndex = allRuneEls.indexOf(result.el) - 1;
+				}
+				onruneclick?.({ x: me.clientX, y: me.clientY, nestedRuneIndex });
 			}
 		});
 	}
