@@ -203,9 +203,9 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contextModifiers: { 'feature': 'in-feature' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: { action: 'link', command: 'code', media: 'none' },
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'none' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		modifiers: {
@@ -218,6 +218,7 @@ export const config: Record<string, RuneConfig> = {
 			gap: '--bento-gap',
 		},
 		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 	},
 	BentoCell: {
 		block: 'bento-cell',
@@ -249,8 +250,9 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 	},
-	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel },
+	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps',
@@ -267,7 +269,7 @@ export const config: Record<string, RuneConfig> = {
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 	},
-	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel },
+	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Tier: { block: 'tier', parent: 'Pricing' },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
 	Testimonial: {

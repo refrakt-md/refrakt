@@ -3,8 +3,6 @@
 	import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
-	import { isEditableSection } from '../editor/section-mapper.js';
-
 	export type EditType = 'inline' | 'link' | 'code';
 
 	export interface SectionClickInfo {
@@ -118,13 +116,8 @@
 
 			const hint = runeConfig?.editHints?.[dataName];
 
-			if (hint !== 'none') {
-				if (hint === 'link' || hint === 'inline' || hint === 'code') {
-					return { type: 'section', el: dataNameEl, dataName, editType: hint };
-				}
-				if (isEditableSection(dataNameEl)) {
-					return { type: 'section', el: dataNameEl, dataName, editType: 'inline' };
-				}
+			if (hint && hint !== 'none') {
+				return { type: 'section', el: dataNameEl, dataName, editType: hint };
 			}
 			// data-name found but not editable — fall through to rune
 		}
