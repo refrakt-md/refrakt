@@ -135,6 +135,8 @@
 	/** Attach click and hover handlers to interactive elements within the wrapper */
 	function attachSectionHandlers(wrapper: HTMLElement, runeConfigMap: Map<string, import('@refrakt-md/transform').RuneConfig>) {
 		let hoveredEl: HTMLElement | null = null;
+		let removeTimer: ReturnType<typeof setTimeout> | null = null;
+		const HOVER_DEBOUNCE = 75; // ms — bridges list-item gaps
 
 		// Tooltip element — lives inside the shadow DOM wrapper
 		const tooltip = document.createElement('div');
@@ -145,23 +147,49 @@
 			tooltip.textContent = label;
 			tooltip.style.left = `${me.clientX + 12}px`;
 			tooltip.style.top = `${me.clientY + 12}px`;
-			tooltip.hidden = false;
+			tooltip.classList.add('rf-tooltip-visible');
 		}
 
 		function hideTooltip() {
-			tooltip.hidden = true;
+			tooltip.classList.remove('rf-tooltip-visible');
 		}
-
-		hideTooltip();
 
 		wrapper.addEventListener('mouseover', (e) => {
 			const result = findInteractiveTarget(e.target as HTMLElement, wrapper, runeConfigMap);
 			const target = result?.el ?? null;
-			if (target !== hoveredEl) {
+
+			// Cancel any pending deferred removal/switch
+			if (removeTimer !== null) {
+				clearTimeout(removeTimer);
+				removeTimer = null;
+			}
+
+			if (target === hoveredEl) {
+				// Re-entered the same target — already highlighted
+			} else if (target && hoveredEl && hoveredEl.contains(target)) {
+				// Moving to a child of current target — switch immediately
+				hoveredEl.classList.remove('rf-editable-hover');
+				hoveredEl = target;
+				hoveredEl.classList.add('rf-editable-hover');
+			} else if (hoveredEl && target && target.contains(hoveredEl)) {
+				// Moving to an ancestor (gap-crossing case) — defer the switch
+				const oldHovered = hoveredEl;
+				removeTimer = setTimeout(() => {
+					if (hoveredEl === oldHovered) {
+						oldHovered.classList.remove('rf-editable-hover');
+						hoveredEl = target;
+						hoveredEl.classList.add('rf-editable-hover');
+					}
+					removeTimer = null;
+				}, HOVER_DEBOUNCE);
+				return; // Keep current tooltip during deferred switch
+			} else {
+				// Completely different target — switch immediately
 				hoveredEl?.classList.remove('rf-editable-hover');
 				hoveredEl = target;
 				hoveredEl?.classList.add('rf-editable-hover');
 			}
+
 			if (result) {
 				const label = result.type === 'section'
 					? result.dataName
@@ -173,7 +201,7 @@
 		});
 
 		wrapper.addEventListener('mousemove', (e) => {
-			if (!tooltip.hidden) {
+			if (tooltip.classList.contains('rf-tooltip-visible')) {
 				tooltip.style.left = `${e.clientX + 12}px`;
 				tooltip.style.top = `${e.clientY + 12}px`;
 			}
@@ -182,8 +210,15 @@
 		wrapper.addEventListener('mouseout', (e) => {
 			const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
 			if (hoveredEl && (!related || !hoveredEl.contains(related))) {
-				hoveredEl.classList.remove('rf-editable-hover');
-				hoveredEl = null;
+				if (removeTimer !== null) {
+					clearTimeout(removeTimer);
+				}
+				const el = hoveredEl;
+				removeTimer = setTimeout(() => {
+					el.classList.remove('rf-editable-hover');
+					if (hoveredEl === el) hoveredEl = null;
+					removeTimer = null;
+				}, HOVER_DEBOUNCE);
 				hideTooltip();
 			}
 		});
@@ -309,12 +344,22 @@ ${hlCss}
 							grid-column: full;
 							padding-inline: max(var(--rf-content-gutter, 1.5rem), calc((100% - var(--rf-content-max)) / 2));
 						}
-						/* Editable section hover affordance */
-						[data-name].rf-editable-hover {
-							outline: 2px dashed rgba(59, 130, 246, 0.5);
+						/* Base: invisible outline + transition (persists on remove for fade-out) */
+						[data-name] {
+							outline: 2px dashed transparent;
 							outline-offset: 4px;
 							border-radius: 4px;
-							cursor: text;
+							transition: outline-color 150ms ease;
+						}
+						[data-rune] {
+							outline: 2px dashed transparent;
+							outline-offset: 4px;
+							border-radius: 4px;
+							transition: outline-color 150ms ease;
+						}
+						/* Editable section hover affordance */
+						[data-name].rf-editable-hover {
+							outline-color: rgba(59, 130, 246, 0.5);
 						}
 						[data-name].rf-editable-hover,
 						[data-name].rf-editable-hover * {
@@ -322,9 +367,7 @@ ${hlCss}
 						}
 						/* Rune root hover affordance — opens block edit panel */
 						[data-rune].rf-editable-hover {
-							outline: 2px dashed rgba(59, 130, 246, 0.3);
-							outline-offset: 4px;
-							border-radius: 4px;
+							outline-color: rgba(59, 130, 246, 0.3);
 						}
 						[data-rune].rf-editable-hover,
 						[data-rune].rf-editable-hover * {
@@ -344,6 +387,11 @@ ${hlCss}
 							pointer-events: none;
 							z-index: 10000;
 							white-space: nowrap;
+							opacity: 0;
+							transition: opacity 120ms ease;
+						}
+						.rf-edit-tooltip.rf-tooltip-visible {
+							opacity: 1;
 						}
 					</style>
 					<div class="rf-preview-wrapper">${html}</div>`;
