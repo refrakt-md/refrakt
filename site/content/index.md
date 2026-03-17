@@ -112,20 +112,25 @@ Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdo
 ---
 
 {% preview source="true" width="content" %}
-{% recipe prepTime="10 min" cookTime="10 min" servings=2 difficulty="easy" %}
-## Classic Margherita Pizza
+{% recipe prepTime="PT5M" servings=1 difficulty="easy" layout="split-reverse" collapse="md" %}
+A cocktail classic
 
-A simple Neapolitan-style pizza with fresh ingredients.
+## The Gimlet
 
-- 250g pizza dough
-- 80ml San Marzano tomato sauce
-- 125g fresh mozzarella
-- Fresh basil leaves
-- Extra virgin olive oil
+A crisp, citrus-forward cocktail that balances gin botanicals with the sweetness of lime cordial. Shaken, strained, and served ice-cold.
 
-1. Set your oven to 250°C with a pizza stone inside.
-1. Stretch the dough into a 30cm round. Spread the tomato sauce evenly, leaving a 2cm border.
-1. Tear the mozzarella over the sauce. Bake for 8–10 minutes until the crust is charred. Finish with fresh basil and a drizzle of olive oil.
+- 60ml London dry gin
+- 20ml fresh lime juice
+- 15ml simple syrup
+- Lime wheel for garnish
+
+1. Combine gin, lime juice, and simple syrup in a cocktail shaker with ice.
+2. Shake vigorously for 15 seconds until well-chilled.
+3. Strain into a chilled coupe glass and garnish with a lime wheel.
+
+---
+
+![A gimlet cocktail](/gimlet.png)
 {% /recipe %}
 {% /preview %}
 {% /feature %}
