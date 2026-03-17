@@ -150,8 +150,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 
 		// ── Fenced code blocks ───────────────────────────────────
 		if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-			const fence = trimmed.slice(0, 3);
-			const lang = trimmed.slice(3).trim();
+			const fenceChar = trimmed[0];
+			let fenceLen = 3;
+			while (fenceLen < trimmed.length && trimmed[fenceLen] === fenceChar) fenceLen++;
+			const fence = trimmed.slice(0, fenceLen);
+			const lang = trimmed.slice(fenceLen).trim();
 			const start = i;
 			i++;
 			const codeLines: string[] = [];
@@ -396,8 +399,11 @@ export function parseContentTree(content: string): ContentNode[] {
 
 		// Fenced code
 		if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-			const fence = trimmed.slice(0, 3);
-			const lang = trimmed.slice(3).trim();
+			const fenceChar = trimmed[0];
+			let fenceLen = 3;
+			while (fenceLen < trimmed.length && trimmed[fenceLen] === fenceChar) fenceLen++;
+			const fence = trimmed.slice(0, fenceLen);
+			const lang = trimmed.slice(fenceLen).trim();
 			const start = i;
 			i++;
 			const codeStart = i;

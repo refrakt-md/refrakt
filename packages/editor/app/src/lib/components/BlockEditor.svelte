@@ -702,10 +702,21 @@
 
 	function handleFieldEdit(dataName: string, inlineSource: string, rect: DOMRect, mapping: SectionMapping) {
 		if (activeIndex === null) return;
+		commandEdit = null;
 		inlineEdit = {
 			blockIndex: activeIndex,
 			dataName,
 			inlineSource,
+			rect,
+			mapping,
+		};
+	}
+
+	function handleFieldCodeEdit(code: string, language: string, rect: DOMRect, mapping: CommandMapping) {
+		if (activeIndex === null) return;
+		inlineEdit = null;
+		commandEdit = {
+			blockIndex: activeIndex,
 			rect,
 			mapping,
 		};
@@ -859,6 +870,7 @@
 						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorPoint = null; pendingRuneIndex = null; handleRemoveBlock(idx); }}
 						onclose={() => { activeIndex = null; anchorPoint = null; pendingRuneIndex = null; }}
 						oneditfield={handleFieldEdit}
+						oneditcode={handleFieldCodeEdit}
 					/>
 				{/key}
 			{/if}
@@ -1143,7 +1155,9 @@
 	.block-editor__popover {
 		position: fixed;
 		width: 420px;
-		overflow-y: auto;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
 		background: var(--ed-surface-0);
 		border-radius: var(--ed-radius-lg);
 		border: 1px solid var(--ed-border-default);

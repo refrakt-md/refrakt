@@ -3,6 +3,13 @@
 	import type { ContentNode } from '../editor/block-parser.js';
 	import { splitListItems } from '../editor/block-parser.js';
 
+	interface PreviewItem {
+		text: string;
+		type: 'text' | 'rune';
+		/** Index within field.nodes — used for rune navigation and greedy field editing */
+		nodeIndex?: number;
+	}
+
 	interface Props {
 		structure: ResolvedStructure;
 		rootLabel: string;
@@ -11,7 +18,9 @@
 		onappenditem: (fieldName: string, zoneName?: string) => void;
 		onremovelistitem: (fieldName: string, itemIndex: number, zoneName?: string) => void;
 		onreorderlistitem: (fieldName: string, fromIndex: number, toIndex: number, zoneName?: string) => void;
-		oneditfield: (fieldName: string, rect: DOMRect, zoneName?: string) => void;
+		oneditfield: (fieldName: string, rect: DOMRect, zoneName?: string, nodeIndex?: number) => void;
+		oneditlistitem: (fieldName: string, itemIndex: number, rect: DOMRect, zoneName?: string) => void;
+		onnavigaterune: (fieldName: string, nodeIndex: number, zoneName?: string) => void;
 		onfieldselect: (fieldName: string, zoneName?: string) => void;
 		selectedField?: string | null;
 	}
@@ -25,6 +34,8 @@
 		onremovelistitem,
 		onreorderlistitem,
 		oneditfield,
+		oneditlistitem,
+		onnavigaterune,
 		onfieldselect,
 		selectedField = null,
 	}: Props = $props();
@@ -118,20 +129,21 @@
 		return result;
 	}
 
-	/** Generate a preview string for matched content */
-	function contentPreview(nodes: ContentNode[]): string[] {
-		const previews: string[] = [];
-		for (const node of nodes) {
+	/** Generate preview items for matched content */
+	function contentPreview(nodes: ContentNode[]): PreviewItem[] {
+		const previews: PreviewItem[] = [];
+		for (let idx = 0; idx < nodes.length; idx++) {
+			const node = nodes[idx];
 			if (node.type === 'heading' && node.headingText) {
-				previews.push(node.headingText);
+				previews.push({ text: node.headingText, type: 'text', nodeIndex: idx });
 			} else if (node.type === 'paragraph') {
 				const text = node.source.replace(/\n/g, ' ').trim();
-				previews.push(text.length > 60 ? text.slice(0, 57) + '...' : text);
+				previews.push({ text: text.length > 60 ? text.slice(0, 57) + '...' : text, type: 'text', nodeIndex: idx });
 			} else if (node.type === 'rune' && node.runeName) {
-				previews.push(node.runeName);
+				previews.push({ text: node.runeName, type: 'rune', nodeIndex: idx });
 			} else if (node.type === 'fence') {
 				const lang = node.fenceLanguage ? `[${node.fenceLanguage}]` : '[code]';
-				previews.push(lang);
+				previews.push({ text: lang, type: 'text', nodeIndex: idx });
 			} else if (node.type === 'list') {
 				// Show abbreviated list items from source
 				const items = node.source.split('\n')
@@ -139,19 +151,42 @@
 					.map(l => l.replace(/^[-*\d.]+\s+/, '').trim())
 					.filter(Boolean);
 				for (const item of items.slice(0, 3)) {
-					previews.push(item.length > 50 ? item.slice(0, 47) + '...' : item);
+					previews.push({ text: item.length > 50 ? item.slice(0, 47) + '...' : item, type: 'text' });
 				}
-				if (items.length > 3) previews.push(`... +${items.length - 3} more`);
+				if (items.length > 3) previews.push({ text: `... +${items.length - 3} more`, type: 'text' });
 			} else if (node.type === 'image') {
-				previews.push('[image]');
+				previews.push({ text: '[image]', type: 'text', nodeIndex: idx });
 			} else {
 				const text = node.source.replace(/\n/g, ' ').trim();
-				if (text) previews.push(text.length > 50 ? text.slice(0, 47) + '...' : text);
+				if (text) previews.push({ text: text.length > 50 ? text.slice(0, 47) + '...' : text, type: 'text', nodeIndex: idx });
 			}
 		}
 		return previews;
 	}
 </script>
+
+{#snippet previewItems(previews: PreviewItem[], fieldName: string, zoneName?: string)}
+	{#each previews as preview}
+		{#if preview.type === 'rune' && preview.nodeIndex !== undefined}
+			<button
+				type="button"
+				class="cm-tree__preview-line cm-tree__preview-line--rune"
+				onclick={() => onnavigaterune(fieldName, preview.nodeIndex!, zoneName)}
+			>
+				<span class="cm-tree__rune-dot"></span>
+				{preview.text}
+			</button>
+		{:else}
+			<button
+				type="button"
+				class="cm-tree__preview-line cm-tree__preview-line--clickable"
+				onclick={(e) => oneditfield(fieldName, (e.currentTarget as HTMLElement).getBoundingClientRect(), zoneName, preview.nodeIndex)}
+			>
+				{preview.text}
+			</button>
+		{/if}
+	{/each}
+{/snippet}
 
 {#snippet listItemRows(listItems: { text: string; index: number }[], fieldName: string, zoneName?: string)}
 	{#each listItems as item}
@@ -179,7 +214,16 @@
 					<circle cx="4.5" cy="8.5" r="1" fill="currentColor"/>
 				</svg>
 			</span>
-			<span class="cm-tree__preview-text">{item.text}</span>
+			<button
+				type="button"
+				class="cm-tree__preview-text cm-tree__preview-text--clickable"
+				onclick={(e) => {
+					e.stopPropagation();
+					oneditlistitem(fieldName, item.index, (e.currentTarget as HTMLElement).getBoundingClientRect(), zoneName);
+				}}
+			>
+				{item.text}
+			</button>
 			<button
 				type="button"
 				class="cm-tree__preview-remove"
@@ -214,13 +258,7 @@
 					class:cm-tree__field--empty={!field.filled}
 					class:cm-tree__field--required={!field.optional && !field.filled}
 					class:cm-tree__field--selected={selectedField === field.name}
-					onclick={(e) => {
-						if (field.filled && !isListField(field.match)) {
-							oneditfield(field.name, (e.currentTarget as HTMLElement).getBoundingClientRect());
-						} else {
-							onfieldselect(field.name);
-						}
-					}}
+					onclick={() => onfieldselect(field.name)}
 				>
 					<svg class="cm-tree__field-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 						<path d={matchIcon(field.match)} />
@@ -277,9 +315,7 @@
 					</div>
 				{:else if field.filled && previews.length > 0}
 					<div class="cm-tree__previews">
-						{#each previews as preview}
-							<div class="cm-tree__preview-line">{preview}</div>
-						{/each}
+						{@render previewItems(previews, field.name)}
 					</div>
 				{/if}
 			{/each}
@@ -305,13 +341,7 @@
 							class:cm-tree__field--empty={!field.filled}
 							class:cm-tree__field--required={!field.optional && !field.filled}
 							class:cm-tree__field--selected={selectedField === `${zone.name}.${field.name}`}
-							onclick={(e) => {
-								if (field.filled && !isListField(field.match)) {
-									oneditfield(field.name, (e.currentTarget as HTMLElement).getBoundingClientRect(), zone.name);
-								} else {
-									onfieldselect(field.name, zone.name);
-								}
-							}}
+							onclick={() => onfieldselect(field.name, zone.name)}
 						>
 							<svg class="cm-tree__field-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
 								<path d={matchIcon(field.match)} />
@@ -368,9 +398,7 @@
 							</div>
 						{:else if field.filled && previews.length > 0}
 							<div class="cm-tree__previews">
-								{#each previews as preview}
-									<div class="cm-tree__preview-line">{preview}</div>
-								{/each}
+								{@render previewItems(previews, field.name, zone.name)}
 							</div>
 						{/if}
 					{/each}
@@ -565,6 +593,53 @@
 		line-height: 1.4;
 	}
 
+	.cm-tree__preview-line--clickable {
+		display: block;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0.05rem 0.25rem;
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		font-size: var(--ed-text-xs);
+		color: var(--ed-text-muted);
+		border-radius: 2px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		line-height: 1.4;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-line--clickable:hover {
+		background: var(--ed-surface-2);
+		color: var(--ed-text-secondary);
+	}
+
+	.cm-tree__preview-line--rune {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0.05rem 0.25rem;
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		font-size: var(--ed-text-xs);
+		color: var(--ed-warning-text);
+		font-weight: 500;
+		border-radius: 2px;
+		line-height: 1.4;
+		transition: background var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-line--rune:hover {
+		background: var(--ed-warning-subtle);
+	}
+
 	.cm-tree__preview-item {
 		display: flex;
 		align-items: center;
@@ -590,6 +665,29 @@
 		white-space: nowrap;
 		flex: 1;
 		min-width: 0;
+	}
+
+	.cm-tree__preview-text--clickable {
+		background: none;
+		border: none;
+		padding: 0.05rem 0.15rem;
+		cursor: pointer;
+		font: inherit;
+		font-size: var(--ed-text-xs);
+		color: var(--ed-text-muted);
+		text-align: left;
+		border-radius: 2px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex: 1;
+		min-width: 0;
+		transition: color var(--ed-transition-fast), background var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-text--clickable:hover {
+		color: var(--ed-text-secondary);
+		background: var(--ed-surface-2);
 	}
 
 	/* Drag grip handle */

@@ -20,9 +20,10 @@
 		appendListItem,
 		removeListItem,
 		reorderListItem,
+		splitListItems,
 	} from '../editor/block-parser.js';
 	import { resolveContentStructure } from '../editor/content-model-resolver.js';
-	import type { SectionMapping } from '../editor/section-mapper.js';
+	import type { SectionMapping, CommandMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import RuneAttributes from './RuneAttributes.svelte';
 	import ContentTree from './ContentTree.svelte';
@@ -40,9 +41,10 @@
 		onremove: () => void;
 		onclose: () => void;
 		oneditfield?: (dataName: string, inlineSource: string, rect: DOMRect, mapping: SectionMapping) => void;
+		oneditcode?: (code: string, language: string, rect: DOMRect, mapping: CommandMapping) => void;
 	}
 
-	let { block, runeMap, runes, aggregated = {}, initialRuneIndex = null, onupdate, onremove, onclose, oneditfield }: Props = $props();
+	let { block, runeMap, runes, aggregated = {}, initialRuneIndex = null, onupdate, onremove, onclose, oneditfield, oneditcode }: Props = $props();
 
 	let label = $derived(blockLabel(block));
 
@@ -236,8 +238,8 @@
 		applyFieldChange(content => reorderListItem(content, resolvedStructure!, fieldName, fromIndex, toIndex, zoneName));
 	}
 
-	function handleEditField(fieldName: string, rect: DOMRect, zoneName?: string) {
-		if (!resolvedStructure || !oneditfield) return;
+	function handleEditField(fieldName: string, rect: DOMRect, zoneName?: string, nodeIndex?: number) {
+		if (!resolvedStructure) return;
 		// Find the field in the resolved structure
 		let field;
 		if (resolvedStructure.type === 'sequence') {
@@ -246,9 +248,30 @@
 			const zone = resolvedStructure.zones.find(z => z.name === zoneName);
 			field = zone?.fields.find(f => f.name === fieldName);
 		}
-		if (!field || !field.filled || field.nodes.length !== 1) return;
+		if (!field || !field.filled) return;
 
-		const source = field.nodes[0].source;
+		// Pick the target node — use nodeIndex for greedy fields, default to single-node fields
+		const targetIndex = nodeIndex ?? 0;
+		if (targetIndex >= field.nodes.length) return;
+		if (nodeIndex === undefined && field.nodes.length !== 1) return;
+
+		const targetNode = field.nodes[targetIndex];
+		const source = targetNode.source;
+
+		// Fence nodes → open code editor instead of inline text editor
+		if (targetNode.type === 'fence' && oneditcode) {
+			const code = targetNode.fenceCode ?? '';
+			const language = targetNode.fenceLanguage ?? '';
+			const opener = source.split('\n')[0];
+			const delimMatch = opener.match(/^(`{3,}|~{3,})/);
+			const delimiter = delimMatch ? delimMatch[1] : '```';
+			const mapping: CommandMapping = { source, code, language, opener, delimiter };
+			oneditcode(code, language, rect, mapping);
+			return;
+		}
+
+		if (!oneditfield) return;
+
 		const trimmed = source.trim();
 
 		// Strip markdown prefix (heading markers, blockquote markers)
@@ -274,6 +297,70 @@
 			inlineSource: inlineContent,
 		};
 		oneditfield(fieldName, inlineContent, rect, mapping);
+	}
+
+	function handleEditListItem(fieldName: string, itemIndex: number, rect: DOMRect, zoneName?: string) {
+		if (!resolvedStructure || !oneditfield) return;
+		// Find the field in the resolved structure
+		let field;
+		if (resolvedStructure.type === 'sequence') {
+			field = resolvedStructure.fields.find(f => f.name === fieldName);
+		} else if (resolvedStructure.type === 'delimited' && zoneName) {
+			const zone = resolvedStructure.zones.find(z => z.name === zoneName);
+			field = zone?.fields.find(f => f.name === fieldName);
+		}
+		if (!field || !field.filled || field.nodes.length === 0) return;
+
+		const listNode = field.nodes[0];
+		const items = splitListItems(listNode.source);
+		if (itemIndex < 0 || itemIndex >= items.length) return;
+
+		const itemSource = items[itemIndex];
+		// Strip the list marker to get inline content
+		const markerMatch = itemSource.match(/^([-*+]\s+|\d+\.\s+)/);
+		const prefix = markerMatch ? markerMatch[1] : '';
+		const inlineContent = markerMatch ? itemSource.slice(prefix.length) : itemSource;
+
+		const mapping: SectionMapping = {
+			dataName: `${fieldName}[${itemIndex}]`,
+			text: stripInlineMarkdown(inlineContent),
+			source: itemSource,
+			sourcePrefix: prefix,
+			inlineSource: inlineContent,
+		};
+		oneditfield(`${fieldName}[${itemIndex}]`, inlineContent, rect, mapping);
+	}
+
+	function handleNavigateRune(fieldName: string, nodeIndex: number, zoneName?: string) {
+		if (!resolvedStructure) return;
+
+		// Find the field
+		let field;
+		if (resolvedStructure.type === 'sequence') {
+			field = resolvedStructure.fields.find(f => f.name === fieldName);
+		} else if (resolvedStructure.type === 'delimited' && zoneName) {
+			const zone = resolvedStructure.zones.find(z => z.name === zoneName);
+			field = zone?.fields.find(f => f.name === fieldName);
+		}
+		if (!field || nodeIndex < 0 || nodeIndex >= field.nodes.length) return;
+
+		const targetNode = field.nodes[nodeIndex];
+		if (targetNode.type !== 'rune') return;
+
+		// Find this node's index in the effectiveContentTree
+		const tree = effectiveContentTree;
+		const treeIndex = tree.findIndex(n => n.source === targetNode.source);
+		if (treeIndex === -1) return;
+
+		// Navigate to the nested rune
+		if (activeNode?.type === 'rune') {
+			activePath = [...activePath, treeIndex];
+		} else {
+			activePath = [treeIndex];
+		}
+
+		// Switch to settings tab to show the nested rune's settings
+		activeTab = 'settings';
 	}
 
 	// ── Edit handlers ────────────────────────────────────────────
@@ -566,6 +653,8 @@
 						onremovelistitem={handleRemoveListItem}
 						onreorderlistitem={handleReorderListItem}
 						oneditfield={handleEditField}
+						oneditlistitem={handleEditListItem}
+						onnavigaterune={handleNavigateRune}
 						onfieldselect={handleFieldSelect}
 						{selectedField}
 					/>
@@ -739,6 +828,8 @@
 	.edit-panel {
 		display: flex;
 		flex-direction: column;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.edit-panel__top {
@@ -892,6 +983,7 @@
 	.edit-panel__content-editor {
 		display: flex;
 		flex-direction: column;
+		flex-shrink: 0;
 		overflow: hidden;
 		margin-left: calc(-1 * var(--ed-space-5));
 		margin-right: calc(-1 * var(--ed-space-5));
