@@ -3,7 +3,7 @@
 	import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 	import { renderBlockPreview } from '../preview/block-renderer.js';
 	import { initRuneBehaviors } from '@refrakt-md/behaviors';
-	export type EditType = 'inline' | 'link' | 'code';
+	export type EditType = 'inline' | 'link' | 'code' | 'image';
 
 	export interface SectionClickInfo {
 		dataName: string;
@@ -199,6 +199,8 @@
 				const rect = el.getBoundingClientRect();
 				// For link edits, extract the href from the <a> child
 				const anchor = editType === 'link' ? el.querySelector('a') as HTMLAnchorElement | null : null;
+				// For image edits, extract the src from the <img> child
+				const imgEl = editType === 'image' ? el.querySelector('img') as HTMLImageElement | null : null;
 				// For code edits, extract text from the <code> element to avoid
 				// picking up structural text (language labels, copy buttons, etc.)
 				const codeEl = editType === 'code' ? el.querySelector('code') : null;
@@ -207,7 +209,7 @@
 					text: (codeEl ?? el).textContent?.trim() ?? '',
 					rect,
 					editType,
-					href: anchor?.getAttribute('href') ?? undefined,
+					href: anchor?.getAttribute('href') ?? imgEl?.getAttribute('src') ?? undefined,
 				});
 			} else {
 				// type === 'rune' → open block edit panel

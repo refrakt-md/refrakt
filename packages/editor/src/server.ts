@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSync, statSync, renameSync, watch } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSync, statSync, renameSync, readdirSync, watch } from 'node:fs';
 import { basename, dirname } from 'node:path';
 import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
@@ -71,6 +71,8 @@ const MIME_TYPES: Record<string, string> = {
 	'.woff': 'font/woff',
 	'.woff2': 'font/woff2',
 };
+
+const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.svg']);
 
 /**
  * Resolve the path to the built frontend (app/dist).
@@ -306,6 +308,20 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				sseClients.add(res);
 				req.on('close', () => { sseClients.delete(res); });
 				return;
+			} else if (method === 'GET' && url.pathname === '/api/assets') {
+				if (!staticDir) {
+					serveJson(res, { images: [] });
+				} else {
+					const images = listImageAssets(staticDir);
+					serveJson(res, { images });
+				}
+			} else if (method === 'POST' && url.pathname === '/api/assets/upload') {
+				if (!staticDir) {
+					res.writeHead(400, { 'Content-Type': 'application/json' });
+					res.end(JSON.stringify({ error: 'No static directory configured' }));
+				} else {
+					await handleAssetUpload(req, res, staticDir);
+				}
 			} else if (previewRuntimeDir && method === 'GET' && url.pathname === '/preview/theme.css') {
 				res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
 				res.end(themeCss);
@@ -1069,4 +1085,124 @@ function stripFunctions(config: ThemeConfig): ThemeConfig {
 		runes[name] = rest;
 	}
 	return { ...config, runes };
+}
+
+// ── Asset management ────────────────────────────────────────────────────
+
+function listImageAssets(staticDir: string): Array<{ path: string; name: string; size: number; modified: number }> {
+	const results: Array<{ path: string; name: string; size: number; modified: number }> = [];
+
+	function walk(dir: string, prefix: string) {
+		let entries;
+		try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+		for (const entry of entries) {
+			if (entry.name.startsWith('.')) continue;
+			const fullPath = join(dir, entry.name);
+			const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+			if (entry.isDirectory()) {
+				walk(fullPath, relPath);
+			} else if (IMAGE_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
+				const stat = statSync(fullPath);
+				results.push({
+					path: '/' + relPath,
+					name: entry.name,
+					size: stat.size,
+					modified: stat.mtimeMs,
+				});
+			}
+		}
+	}
+
+	walk(staticDir, '');
+	results.sort((a, b) => b.modified - a.modified);
+	return results;
+}
+
+async function handleAssetUpload(
+	req: import('node:http').IncomingMessage,
+	res: import('node:http').ServerResponse,
+	staticDir: string,
+): Promise<void> {
+	const contentType = req.headers['content-type'] ?? '';
+	if (!contentType.startsWith('multipart/form-data')) {
+		res.writeHead(400, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ error: 'Expected multipart/form-data' }));
+		return;
+	}
+
+	const boundaryMatch = contentType.match(/boundary=(.+?)(?:;|$)/);
+	if (!boundaryMatch) {
+		res.writeHead(400, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ error: 'Missing boundary' }));
+		return;
+	}
+	const boundary = boundaryMatch[1];
+
+	// Read full request body as Buffer
+	const chunks: Buffer[] = [];
+	for await (const chunk of req) {
+		chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+	}
+	const body = Buffer.concat(chunks);
+
+	// Parse multipart: find the file part
+	const boundaryBuf = Buffer.from(`--${boundary}`);
+	const parts: Buffer[] = [];
+	let start = 0;
+	while (true) {
+		const idx = body.indexOf(boundaryBuf, start);
+		if (idx === -1) break;
+		if (start > 0) {
+			// Strip leading \r\n and trailing \r\n from previous part
+			parts.push(body.subarray(start, idx - 2));
+		}
+		start = idx + boundaryBuf.length + 2; // skip boundary + \r\n
+	}
+
+	let filename: string | null = null;
+	let fileData: Buffer | null = null;
+
+	for (const part of parts) {
+		// Headers end at \r\n\r\n
+		const headerEnd = part.indexOf('\r\n\r\n');
+		if (headerEnd === -1) continue;
+		const headers = part.subarray(0, headerEnd).toString('utf-8');
+		const data = part.subarray(headerEnd + 4);
+
+		const filenameMatch = headers.match(/filename="([^"]+)"/);
+		if (filenameMatch) {
+			filename = filenameMatch[1];
+			fileData = data;
+			break;
+		}
+	}
+
+	if (!filename || !fileData || fileData.length === 0) {
+		res.writeHead(400, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ error: 'No file provided' }));
+		return;
+	}
+
+	const ext = extname(filename).toLowerCase();
+	if (!IMAGE_EXTENSIONS.has(ext)) {
+		res.writeHead(400, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ error: 'Unsupported image format' }));
+		return;
+	}
+
+	// Sanitize filename: keep alphanumeric, dots, hyphens
+	const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '-');
+
+	// Avoid overwriting existing files
+	let finalName = safeName;
+	let counter = 1;
+	while (existsSync(join(staticDir, finalName))) {
+		const base = safeName.slice(0, -ext.length);
+		finalName = `${base}-${counter}${ext}`;
+		counter++;
+	}
+
+	writeFileSync(join(staticDir, finalName), fileData);
+
+	serveJson(res, { ok: true, path: `/${finalName}`, name: finalName });
 }

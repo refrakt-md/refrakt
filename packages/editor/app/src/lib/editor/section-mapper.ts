@@ -361,3 +361,49 @@ export function applyCommandEdit(
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
 }
+
+// ── Image mapping ────────────────────────────────────────────────────
+
+export interface ImageMapping {
+	/** Full source line (e.g., "![alt text](/path/to/image.png)") */
+	source: string;
+	/** Alt text */
+	alt: string;
+	/** Image path */
+	src: string;
+}
+
+/**
+ * Find a markdown image in the rune's inner content,
+ * matching by rendered src (from the <img> element's src attribute).
+ */
+export function findImageMapping(
+	innerContent: string,
+	renderedSrc: string,
+): ImageMapping | null {
+	const lines = innerContent.split('\n');
+	for (const line of lines) {
+		const match = line.trim().match(/^!\[([^\]]*)\]\(([^)]*)\)\s*$/);
+		if (!match) continue;
+		const [, alt, src] = match;
+		if (src === renderedSrc) {
+			return { source: line.trim(), alt, src };
+		}
+	}
+	return null;
+}
+
+/**
+ * Apply an image edit: replace the markdown image syntax in the inner content.
+ */
+export function applyImageEdit(
+	innerContent: string,
+	mapping: ImageMapping,
+	newAlt: string,
+	newSrc: string,
+): string {
+	const newSource = `![${newAlt}](${newSrc})`;
+	const idx = innerContent.indexOf(mapping.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
+}

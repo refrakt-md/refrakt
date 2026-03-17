@@ -12,7 +12,7 @@
 		type ParsedBlock,
 		type RuneBlock,
 	} from '../editor/block-parser.js';
-	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, type SectionMapping, type ActionMapping, type CommandMapping } from '../editor/section-mapper.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, findImageMapping, applyImageEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
@@ -23,6 +23,7 @@
 	import InlineEditPopover from './InlineEditPopover.svelte';
 	import ActionEditPopover from './ActionEditPopover.svelte';
 	import CodeEditPopover from './CodeEditPopover.svelte';
+	import ImageEditPopover from './ImageEditPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -456,6 +457,18 @@
 			return;
 		}
 
+		if (info.editType === 'image') {
+			const imgSrc = info.href ?? '';
+			const mapping = findImageMapping(rb.innerContent, imgSrc);
+			if (!mapping) return;
+
+			imageEdit = {
+				blockIndex: index,
+				mapping,
+			};
+			return;
+		}
+
 		// Default: inline text editing
 		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
 		if (!mapping) return;
@@ -578,6 +591,45 @@
 
 	function closeCommandEdit() {
 		commandEdit = null;
+	}
+
+	// ── Image editing ────────────────────────────────────────────
+
+	let imageEdit: {
+		blockIndex: number;
+		mapping: ImageMapping;
+	} | null = $state(null);
+
+	function handleImageEditChange(newSrc: string, newAlt: string) {
+		if (!imageEdit) return;
+		const block = blocks[imageEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyImageEdit(rb.innerContent, imageEdit.mapping, newAlt, newSrc);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(imageEdit.blockIndex, updated);
+	}
+
+	function handleImageRemove() {
+		if (!imageEdit) return;
+		const blockIndex = imageEdit.blockIndex;
+		const block = blocks[blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = rb.innerContent.replace(imageEdit.mapping.source + '\n', '').replace(imageEdit.mapping.source, '');
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		imageEdit = null;
+		handleUpdateBlock(blockIndex, updated);
+	}
+
+	function closeImageEdit() {
+		imageEdit = null;
 	}
 
 	// ── Field edit from Structure tab ──────────────────────────────
@@ -785,6 +837,16 @@
 			onchange={handleCommandEditChange}
 			onremove={handleCommandRemove}
 			onclose={closeCommandEdit}
+		/>
+	{/if}
+
+	{#if imageEdit}
+		<ImageEditPopover
+			currentSrc={imageEdit.mapping.src}
+			currentAlt={imageEdit.mapping.alt}
+			onchange={(src, alt) => { handleImageEditChange(src, alt); closeImageEdit(); }}
+			onremove={handleImageRemove}
+			onclose={closeImageEdit}
 		/>
 	{/if}
 </div>

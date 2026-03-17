@@ -192,6 +192,37 @@ export async function fetchPagesList(): Promise<PageListItem[]> {
 	return data.pages;
 }
 
+// ── Asset management ────────────────────────────────────────────────────
+
+export interface ImageAsset {
+	path: string;
+	name: string;
+	size: number;
+	modified: number;
+}
+
+export async function fetchAssets(): Promise<ImageAsset[]> {
+	const res = await fetch(`${BASE}/api/assets`);
+	if (!res.ok) throw new Error(`Failed to load assets: ${res.status}`);
+	const data = await res.json();
+	return data.images;
+}
+
+export async function uploadAsset(file: File): Promise<{ path: string; name: string }> {
+	const formData = new FormData();
+	formData.append('file', file);
+
+	const res = await fetch(`${BASE}/api/assets/upload`, {
+		method: 'POST',
+		body: formData,
+	});
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error((data as { error?: string }).error ?? `Upload failed: ${res.status}`);
+	}
+	return res.json();
+}
+
 // ── Rune metadata ───────────────────────────────────────────────────────
 
 export interface RuneAttributeInfo {
