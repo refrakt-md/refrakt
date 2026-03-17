@@ -19,6 +19,7 @@
 		removeFieldContent,
 		appendListItem,
 		removeListItem,
+		reorderListItem,
 	} from '../editor/block-parser.js';
 	import { resolveContentStructure } from '../editor/content-model-resolver.js';
 	import type { SectionMapping } from '../editor/section-mapper.js';
@@ -228,6 +229,11 @@
 	function handleRemoveListItem(fieldName: string, itemIndex: number, zoneName?: string) {
 		if (!resolvedStructure) return;
 		applyFieldChange(content => removeListItem(content, resolvedStructure!, fieldName, itemIndex, zoneName));
+	}
+
+	function handleReorderListItem(fieldName: string, fromIndex: number, toIndex: number, zoneName?: string) {
+		if (!resolvedStructure) return;
+		applyFieldChange(content => reorderListItem(content, resolvedStructure!, fieldName, fromIndex, toIndex, zoneName));
 	}
 
 	function handleEditField(fieldName: string, rect: DOMRect, zoneName?: string) {
@@ -558,6 +564,7 @@
 						onremovefield={handleRemoveField}
 						onappenditem={handleAppendItem}
 						onremovelistitem={handleRemoveListItem}
+						onreorderlistitem={handleReorderListItem}
 						oneditfield={handleEditField}
 						onfieldselect={handleFieldSelect}
 						{selectedField}

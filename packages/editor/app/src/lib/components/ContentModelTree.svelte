@@ -10,6 +10,7 @@
 		onremovefield: (fieldName: string, zoneName?: string) => void;
 		onappenditem: (fieldName: string, zoneName?: string) => void;
 		onremovelistitem: (fieldName: string, itemIndex: number, zoneName?: string) => void;
+		onreorderlistitem: (fieldName: string, fromIndex: number, toIndex: number, zoneName?: string) => void;
 		oneditfield: (fieldName: string, rect: DOMRect, zoneName?: string) => void;
 		onfieldselect: (fieldName: string, zoneName?: string) => void;
 		selectedField?: string | null;
@@ -22,10 +23,53 @@
 		onremovefield,
 		onappenditem,
 		onremovelistitem,
+		onreorderlistitem,
 		oneditfield,
 		onfieldselect,
 		selectedField = null,
 	}: Props = $props();
+
+	// ── Drag and drop state ──────────────────────────────────────
+	let dragFieldName: string | null = $state(null);
+	let dragZoneName: string | undefined = $state(undefined);
+	let dragFromIndex: number | null = $state(null);
+	let dragOverIndex: number | null = $state(null);
+
+	function handleItemDragStart(e: DragEvent, fieldName: string, index: number, zoneName?: string) {
+		dragFieldName = fieldName;
+		dragZoneName = zoneName;
+		dragFromIndex = index;
+		dragOverIndex = index;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', String(index));
+		}
+	}
+
+	function handleItemDragOver(e: DragEvent, index: number) {
+		if (dragFromIndex === null) return;
+		e.preventDefault();
+		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+		dragOverIndex = index;
+	}
+
+	function handleItemDrop(e: DragEvent, index: number) {
+		e.preventDefault();
+		if (dragFromIndex !== null && dragFromIndex !== index && dragFieldName !== null) {
+			onreorderlistitem(dragFieldName, dragFromIndex, index, dragZoneName);
+		}
+		dragFieldName = null;
+		dragZoneName = undefined;
+		dragFromIndex = null;
+		dragOverIndex = null;
+	}
+
+	function handleItemDragEnd() {
+		dragFieldName = null;
+		dragZoneName = undefined;
+		dragFromIndex = null;
+		dragOverIndex = null;
+	}
 
 	function isListField(match: string): boolean {
 		return match === 'list' || match.startsWith('list:');
@@ -109,6 +153,48 @@
 	}
 </script>
 
+{#snippet listItemRows(listItems: { text: string; index: number }[], fieldName: string, zoneName?: string)}
+	{#each listItems as item}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="cm-tree__preview-item"
+			class:cm-tree__preview-item--drag-over={dragFieldName === fieldName && dragZoneName === zoneName && dragOverIndex === item.index && dragFromIndex !== item.index}
+			class:cm-tree__preview-item--dragging={dragFieldName === fieldName && dragZoneName === zoneName && dragFromIndex === item.index}
+			draggable="true"
+			ondragstart={(e) => handleItemDragStart(e, fieldName, item.index, zoneName)}
+			ondragover={(e) => handleItemDragOver(e, item.index)}
+			ondrop={(e) => handleItemDrop(e, item.index)}
+			ondragend={handleItemDragEnd}
+		>
+			<span
+				class="cm-tree__preview-grip"
+				title="Drag to reorder"
+			>
+				<svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+					<circle cx="1.5" cy="1.5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="1.5" r="1" fill="currentColor"/>
+					<circle cx="1.5" cy="5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="5" r="1" fill="currentColor"/>
+					<circle cx="1.5" cy="8.5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="8.5" r="1" fill="currentColor"/>
+				</svg>
+			</span>
+			<span class="cm-tree__preview-text">{item.text}</span>
+			<button
+				type="button"
+				class="cm-tree__preview-remove"
+				title="Remove item"
+				onclick={() => onremovelistitem(fieldName, item.index, zoneName)}
+			>
+				<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+					<line x1="4" y1="4" x2="12" y2="12" />
+					<line x1="12" y1="4" x2="4" y2="12" />
+				</svg>
+			</button>
+		</div>
+	{/each}
+{/snippet}
+
 <div class="cm-tree">
 	<!-- Root node -->
 	<div class="cm-tree__root">
@@ -187,22 +273,7 @@
 				</button>
 				{#if field.filled && isListField(field.match) && listItems.length > 0}
 					<div class="cm-tree__previews">
-						{#each listItems as item}
-							<div class="cm-tree__preview-item">
-								<span class="cm-tree__preview-text">{item.text}</span>
-								<button
-									type="button"
-									class="cm-tree__preview-remove"
-									title="Remove item"
-									onclick={() => onremovelistitem(field.name, item.index)}
-								>
-									<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-										<line x1="4" y1="4" x2="12" y2="12" />
-										<line x1="12" y1="4" x2="4" y2="12" />
-									</svg>
-								</button>
-							</div>
-						{/each}
+						{@render listItemRows(listItems, field.name)}
 					</div>
 				{:else if field.filled && previews.length > 0}
 					<div class="cm-tree__previews">
@@ -293,22 +364,7 @@
 						</button>
 						{#if field.filled && isListField(field.match) && listItems.length > 0}
 							<div class="cm-tree__previews">
-								{#each listItems as item}
-									<div class="cm-tree__preview-item">
-										<span class="cm-tree__preview-text">{item.text}</span>
-										<button
-											type="button"
-											class="cm-tree__preview-remove"
-											title="Remove item"
-											onclick={() => onremovelistitem(field.name, item.index, zone.name)}
-										>
-											<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-												<line x1="4" y1="4" x2="12" y2="12" />
-												<line x1="12" y1="4" x2="4" y2="12" />
-											</svg>
-										</button>
-									</div>
-								{/each}
+								{@render listItemRows(listItems, field.name, zone.name)}
 							</div>
 						{:else if field.filled && previews.length > 0}
 							<div class="cm-tree__previews">
@@ -514,6 +570,16 @@
 		align-items: center;
 		gap: 0.25rem;
 		line-height: 1.4;
+		border-top: 2px solid transparent;
+		transition: border-color var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-item--drag-over {
+		border-top-color: var(--ed-accent);
+	}
+
+	.cm-tree__preview-item--dragging {
+		opacity: 0.4;
 	}
 
 	.cm-tree__preview-text {
@@ -524,6 +590,30 @@
 		white-space: nowrap;
 		flex: 1;
 		min-width: 0;
+	}
+
+	/* Drag grip handle */
+	.cm-tree__preview-grip {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 12px;
+		height: 16px;
+		padding: 0;
+		color: var(--ed-text-muted);
+		cursor: grab;
+		flex-shrink: 0;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast), color var(--ed-transition-fast);
+	}
+
+	.cm-tree__preview-item:hover .cm-tree__preview-grip {
+		opacity: 0.6;
+	}
+
+	.cm-tree__preview-grip:hover {
+		opacity: 1 !important;
+		color: var(--ed-text-secondary);
 	}
 
 	.cm-tree__preview-remove {

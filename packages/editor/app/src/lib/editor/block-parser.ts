@@ -691,6 +691,46 @@ export function removeListItem(
 }
 
 /**
+ * Reorder a list item within a list field by moving it from one index to another.
+ * For ordered lists, renumbers the items after reordering.
+ */
+export function reorderListItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	fromIndex: number,
+	toIndex: number,
+	zoneName?: string,
+): string {
+	if (fromIndex === toIndex) return innerContent;
+
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+
+	const listNode = field.nodes[0];
+	const items = splitListItems(listNode.source);
+	if (fromIndex < 0 || fromIndex >= items.length || toIndex < 0 || toIndex >= items.length) return innerContent;
+
+	// Move item from fromIndex to toIndex
+	const reordered = [...items];
+	const [moved] = reordered.splice(fromIndex, 1);
+	reordered.splice(toIndex, 0, moved);
+
+	// For ordered lists, renumber items
+	const isOrdered = field.match === 'list:ordered' || /^\d+\.\s/.test(items[0]);
+	if (isOrdered) {
+		for (let i = 0; i < reordered.length; i++) {
+			reordered[i] = reordered[i].replace(/^\d+\./, `${i + 1}.`);
+		}
+	}
+
+	const newListSource = reordered.join('\n');
+	const idx = innerContent.indexOf(listNode.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length);
+}
+
+/**
  * Split a list source into individual item sources.
  * Each item starts with a list marker (-, *, +, or 1.) and may have
  * indented continuation lines or blank-line separated paragraphs.
