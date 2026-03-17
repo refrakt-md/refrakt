@@ -20,9 +20,12 @@
 		appendListItem,
 		removeListItem,
 		reorderListItem,
+		appendGreedyItem,
+		removeGreedyItem,
+		reorderGreedyItem,
 		splitListItems,
 	} from '../editor/block-parser.js';
-	import { resolveContentStructure } from '../editor/content-model-resolver.js';
+	import { resolveContentStructure, type ResolvedField } from '../editor/content-model-resolver.js';
 	import type { SectionMapping, CommandMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import RuneAttributes from './RuneAttributes.svelte';
@@ -223,19 +226,50 @@
 		applyFieldChange(content => removeFieldContent(content, resolvedStructure!, fieldName, zoneName));
 	}
 
+	function findResolvedField(fieldName: string, zoneName?: string): ResolvedField | null {
+		if (!resolvedStructure) return null;
+		if (resolvedStructure.type === 'sequence') {
+			return resolvedStructure.fields.find(f => f.name === fieldName) ?? null;
+		}
+		if (resolvedStructure.type === 'delimited' && zoneName) {
+			const zone = resolvedStructure.zones.find(z => z.name === zoneName);
+			return zone?.fields.find(f => f.name === fieldName) ?? null;
+		}
+		return null;
+	}
+
+	function isGreedyItemField(field: ResolvedField): boolean {
+		return field.greedy && field.match !== 'any';
+	}
+
 	function handleAppendItem(fieldName: string, zoneName?: string) {
 		if (!resolvedStructure) return;
-		applyFieldChange(content => appendListItem(content, resolvedStructure!, fieldName, zoneName));
+		const field = findResolvedField(fieldName, zoneName);
+		if (field && isGreedyItemField(field)) {
+			applyFieldChange(content => appendGreedyItem(content, resolvedStructure!, fieldName, zoneName));
+		} else {
+			applyFieldChange(content => appendListItem(content, resolvedStructure!, fieldName, zoneName));
+		}
 	}
 
 	function handleRemoveListItem(fieldName: string, itemIndex: number, zoneName?: string) {
 		if (!resolvedStructure) return;
-		applyFieldChange(content => removeListItem(content, resolvedStructure!, fieldName, itemIndex, zoneName));
+		const field = findResolvedField(fieldName, zoneName);
+		if (field && isGreedyItemField(field)) {
+			applyFieldChange(content => removeGreedyItem(content, resolvedStructure!, fieldName, itemIndex, zoneName));
+		} else {
+			applyFieldChange(content => removeListItem(content, resolvedStructure!, fieldName, itemIndex, zoneName));
+		}
 	}
 
 	function handleReorderListItem(fieldName: string, fromIndex: number, toIndex: number, zoneName?: string) {
 		if (!resolvedStructure) return;
-		applyFieldChange(content => reorderListItem(content, resolvedStructure!, fieldName, fromIndex, toIndex, zoneName));
+		const field = findResolvedField(fieldName, zoneName);
+		if (field && isGreedyItemField(field)) {
+			applyFieldChange(content => reorderGreedyItem(content, resolvedStructure!, fieldName, fromIndex, toIndex, zoneName));
+		} else {
+			applyFieldChange(content => reorderListItem(content, resolvedStructure!, fieldName, fromIndex, toIndex, zoneName));
+		}
 	}
 
 	function handleEditField(fieldName: string, rect: DOMRect, zoneName?: string, nodeIndex?: number) {

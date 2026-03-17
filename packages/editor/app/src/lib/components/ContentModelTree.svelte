@@ -86,6 +86,30 @@
 		return match === 'list' || match.startsWith('list:');
 	}
 
+	function isGreedyItemField(field: ResolvedField): boolean {
+		return field.greedy && field.filled && field.match !== 'any';
+	}
+
+	/** Extract individual items from a greedy field for per-item rendering */
+	function greedyItemPreviews(field: ResolvedField): { text: string; index: number }[] {
+		return field.nodes.map((node, i) => {
+			let text: string;
+			if (node.type === 'fence') {
+				text = node.fenceLanguage ? `[${node.fenceLanguage}]` : '[code]';
+			} else if (node.type === 'heading' && node.headingText) {
+				text = node.headingText;
+			} else if (node.type === 'rune' && node.runeName) {
+				text = node.runeName;
+			} else if (node.type === 'image') {
+				text = '[image]';
+			} else {
+				const raw = node.source.replace(/\n/g, ' ').trim();
+				text = raw.length > 50 ? raw.slice(0, 47) + '...' : raw;
+			}
+			return { text: text.length > 50 ? text.slice(0, 47) + '...' : text, index: i };
+		});
+	}
+
 	/** Icon SVG path for a match type */
 	function matchIcon(match: string): string {
 		// Take first alternative for pipe-separated matches
@@ -239,6 +263,57 @@
 	{/each}
 {/snippet}
 
+{#snippet greedyItemRows(items: { text: string; index: number }[], fieldName: string, zoneName?: string)}
+	{#each items as item}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="cm-tree__preview-item"
+			class:cm-tree__preview-item--drag-over={dragFieldName === fieldName && dragZoneName === zoneName && dragOverIndex === item.index && dragFromIndex !== item.index}
+			class:cm-tree__preview-item--dragging={dragFieldName === fieldName && dragZoneName === zoneName && dragFromIndex === item.index}
+			draggable="true"
+			ondragstart={(e) => handleItemDragStart(e, fieldName, item.index, zoneName)}
+			ondragover={(e) => handleItemDragOver(e, item.index)}
+			ondrop={(e) => handleItemDrop(e, item.index)}
+			ondragend={handleItemDragEnd}
+		>
+			<span
+				class="cm-tree__preview-grip"
+				title="Drag to reorder"
+			>
+				<svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+					<circle cx="1.5" cy="1.5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="1.5" r="1" fill="currentColor"/>
+					<circle cx="1.5" cy="5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="5" r="1" fill="currentColor"/>
+					<circle cx="1.5" cy="8.5" r="1" fill="currentColor"/>
+					<circle cx="4.5" cy="8.5" r="1" fill="currentColor"/>
+				</svg>
+			</span>
+			<button
+				type="button"
+				class="cm-tree__preview-text cm-tree__preview-text--clickable"
+				onclick={(e) => {
+					e.stopPropagation();
+					oneditfield(fieldName, (e.currentTarget as HTMLElement).getBoundingClientRect(), zoneName, item.index);
+				}}
+			>
+				{item.text}
+			</button>
+			<button
+				type="button"
+				class="cm-tree__preview-remove"
+				title="Remove item"
+				onclick={() => onremovelistitem(fieldName, item.index, zoneName)}
+			>
+				<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+					<line x1="4" y1="4" x2="12" y2="12" />
+					<line x1="12" y1="4" x2="4" y2="12" />
+				</svg>
+			</button>
+		</div>
+	{/each}
+{/snippet}
+
 <div class="cm-tree">
 	<!-- Root node -->
 	<div class="cm-tree__root">
@@ -251,6 +326,7 @@
 			{#each structure.fields as field}
 				{@const previews = contentPreview(field.nodes)}
 				{@const listItems = isListField(field.match) ? listItemPreviews(field.nodes) : []}
+				{@const greedyItems = isGreedyItemField(field) ? greedyItemPreviews(field) : []}
 				<button
 					type="button"
 					class="cm-tree__field"
@@ -269,7 +345,7 @@
 					{/if}
 					<span class="cm-tree__field-spacer"></span>
 					{#if field.filled}
-						{#if isListField(field.match)}
+						{#if isListField(field.match) || isGreedyItemField(field)}
 							<button
 								type="button"
 								class="cm-tree__action cm-tree__action--add"
@@ -313,6 +389,10 @@
 					<div class="cm-tree__previews">
 						{@render listItemRows(listItems, field.name)}
 					</div>
+				{:else if field.filled && greedyItems.length > 0}
+					<div class="cm-tree__previews">
+						{@render greedyItemRows(greedyItems, field.name)}
+					</div>
 				{:else if field.filled && previews.length > 0}
 					<div class="cm-tree__previews">
 						{@render previewItems(previews, field.name)}
@@ -334,6 +414,7 @@
 					{#each zone.fields as field}
 						{@const previews = contentPreview(field.nodes)}
 						{@const listItems = isListField(field.match) ? listItemPreviews(field.nodes) : []}
+						{@const greedyItems = isGreedyItemField(field) ? greedyItemPreviews(field) : []}
 						<button
 							type="button"
 							class="cm-tree__field"
@@ -352,7 +433,7 @@
 							{/if}
 							<span class="cm-tree__field-spacer"></span>
 							{#if field.filled}
-								{#if isListField(field.match)}
+								{#if isListField(field.match) || isGreedyItemField(field)}
 									<button
 										type="button"
 										class="cm-tree__action cm-tree__action--add"
@@ -395,6 +476,10 @@
 						{#if field.filled && isListField(field.match) && listItems.length > 0}
 							<div class="cm-tree__previews">
 								{@render listItemRows(listItems, field.name, zone.name)}
+							</div>
+						{:else if field.filled && greedyItems.length > 0}
+							<div class="cm-tree__previews">
+								{@render greedyItemRows(greedyItems, field.name, zone.name)}
 							</div>
 						{:else if field.filled && previews.length > 0}
 							<div class="cm-tree__previews">

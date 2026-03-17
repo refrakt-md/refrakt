@@ -737,6 +737,84 @@ export function reorderListItem(
 }
 
 /**
+ * Append a new item to a filled greedy field.
+ * Inserts a default template after the last node in field.nodes[].
+ */
+export function appendGreedyItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	zoneName?: string,
+): string {
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+
+	const template = field.template || defaultTemplate(field.match);
+	const lastNode = field.nodes[field.nodes.length - 1];
+	const idx = innerContent.indexOf(lastNode.source);
+	if (idx === -1) return innerContent;
+
+	const afterEnd = idx + lastNode.source.length;
+	return innerContent.slice(0, afterEnd) + '\n\n' + template + innerContent.slice(afterEnd);
+}
+
+/**
+ * Remove a single node from a greedy field by index.
+ */
+export function removeGreedyItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	itemIndex: number,
+	zoneName?: string,
+): string {
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+	if (itemIndex < 0 || itemIndex >= field.nodes.length) return innerContent;
+
+	const nodeSource = field.nodes[itemIndex].source;
+	let result = removeNodeSource(innerContent, nodeSource);
+	result = result.replace(/\n{3,}/g, '\n\n');
+	return result;
+}
+
+/**
+ * Reorder a node within a greedy field by moving it from one index to another.
+ */
+export function reorderGreedyItem(
+	innerContent: string,
+	structure: ResolvedStructure,
+	fieldName: string,
+	fromIndex: number,
+	toIndex: number,
+	zoneName?: string,
+): string {
+	if (fromIndex === toIndex) return innerContent;
+
+	const { field } = findField(structure, fieldName, zoneName);
+	if (!field || !field.filled || field.nodes.length === 0) return innerContent;
+	if (fromIndex < 0 || fromIndex >= field.nodes.length) return innerContent;
+	if (toIndex < 0 || toIndex >= field.nodes.length) return innerContent;
+
+	const nodesSources = field.nodes.map(n => n.source);
+
+	const reordered = [...nodesSources];
+	const [moved] = reordered.splice(fromIndex, 1);
+	reordered.splice(toIndex, 0, moved);
+
+	// Find the span from the first node to the last node in innerContent
+	const firstSource = field.nodes[0].source;
+	const lastSource = field.nodes[field.nodes.length - 1].source;
+	const spanStart = innerContent.indexOf(firstSource);
+	const lastIdx = innerContent.indexOf(lastSource);
+	if (spanStart === -1 || lastIdx === -1) return innerContent;
+	const spanEnd = lastIdx + lastSource.length;
+
+	const newSpan = reordered.join('\n\n');
+	return innerContent.slice(0, spanStart) + newSpan + innerContent.slice(spanEnd);
+}
+
+/**
  * Split a list source into individual item sources.
  * Each item starts with a list marker (-, *, +, or 1.) and may have
  * indented continuation lines or blank-line separated paragraphs.
