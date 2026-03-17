@@ -106,10 +106,8 @@ export const tabs = createContentModelSchema({
       tag: 'section',
       class: attrs.class,
       property: 'contentSection',
-      properties: {
-        ...pageSectionProperties(headerNodes),
-      },
-      refs: { tabs: tabList, panels: panelList },
+      properties: {},
+      refs: { ...pageSectionProperties(headerNodes), tabs: tabList, panels: panelList },
       children,
     });
   },

@@ -94,10 +94,9 @@ export const accordion = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(headerNodes),
 				item: items,
 			},
-			refs: { items: itemsContainer },
+			refs: { ...pageSectionProperties(headerNodes), items: itemsContainer },
 			schema: {
 				mainEntity: items,
 			},

@@ -210,13 +210,13 @@ A delightful pasta recipe.
 		expect(header).toBeDefined();
 
 		// Should contain the eyebrow paragraph, heading, and blurb paragraph
-		const eyebrow = findTag(header!, t => t.name === 'p' && t.attributes['data-field'] === 'eyebrow');
+		const eyebrow = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
 		expect(eyebrow).toBeDefined();
 
 		const headline = findTag(header!, t => /^h[1-6]$/.test(t.name));
 		expect(headline).toBeDefined();
 
-		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-field'] === 'blurb');
+		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
 		expect(blurb).toBeDefined();
 	});
 });

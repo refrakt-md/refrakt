@@ -34,10 +34,10 @@ export const organization = createContentModelSchema({
 			property: 'contentSection',
 			typeof: attrs.type || undefined,
 			properties: {
-				...sectionProps,
 				type: typeMeta,
 			},
 			refs: {
+				...sectionProps,
 				body: bodyDiv,
 			},
 			schema: {

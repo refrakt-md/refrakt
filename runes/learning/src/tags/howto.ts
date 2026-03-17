@@ -91,11 +91,11 @@ export const howto = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...sectionProps,
 				estimatedTime: estimatedTimeMeta,
 				difficulty: difficultyMeta,
 			},
 			refs: {
+				...sectionProps,
 				tools: toolsList,
 				steps: stepsList,
 			},

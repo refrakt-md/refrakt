@@ -71,10 +71,9 @@ export const reveal = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(headerNodes),
 				step: steps,
 			},
-			refs: { steps: stepsContainer },
+			refs: { ...pageSectionProperties(headerNodes), steps: stepsContainer },
 			children,
 		});
 	},

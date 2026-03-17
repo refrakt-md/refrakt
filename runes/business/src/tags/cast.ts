@@ -83,11 +83,10 @@ export const cast = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
 				member: members,
 				layout: layoutMeta,
 			},
-			refs: { members: membersList },
+			refs: { ...pageSectionProperties(header), members: membersList },
 			children,
 		});
 	},

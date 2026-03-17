@@ -14,6 +14,11 @@ describe('hero content model', () => {
 		return findTag(root, t => t.attributes['data-field'] === prop);
 	}
 
+	// Helper: find a child tag with a specific `data-name` attribute
+	function findRef(root: Tag, name: string): Tag | undefined {
+		return findTag(root, t => t.attributes['data-name'] === name);
+	}
+
 	// -----------------------------------------------------------------
 	// Basic structure
 	// -----------------------------------------------------------------
@@ -45,10 +50,10 @@ Supporting blurb text.
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 
-		// eyebrow, headline, blurb are child tags with property attributes
-		expect(findProperty(hero!, 'eyebrow')).toBeDefined();
-		expect(findProperty(hero!, 'headline')).toBeDefined();
-		expect(findProperty(hero!, 'blurb')).toBeDefined();
+		// eyebrow, headline, blurb are child tags with data-name attributes (refs)
+		expect(findRef(hero!, 'eyebrow')).toBeDefined();
+		expect(findRef(hero!, 'headline')).toBeDefined();
+		expect(findRef(hero!, 'blurb')).toBeDefined();
 	});
 
 	it('skips optional eyebrow when heading comes first', () => {
@@ -60,9 +65,9 @@ Some blurb.
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
-		expect(findProperty(hero!, 'eyebrow')).toBeUndefined();
-		expect(findProperty(hero!, 'headline')).toBeDefined();
-		expect(findProperty(hero!, 'blurb')).toBeDefined();
+		expect(findRef(hero!, 'eyebrow')).toBeUndefined();
+		expect(findRef(hero!, 'headline')).toBeDefined();
+		expect(findRef(hero!, 'blurb')).toBeDefined();
 	});
 
 	it('handles headline with no blurb or eyebrow', () => {
@@ -72,9 +77,9 @@ Some blurb.
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
-		expect(findProperty(hero!, 'headline')).toBeDefined();
-		expect(findProperty(hero!, 'eyebrow')).toBeUndefined();
-		expect(findProperty(hero!, 'blurb')).toBeUndefined();
+		expect(findRef(hero!, 'headline')).toBeDefined();
+		expect(findRef(hero!, 'eyebrow')).toBeUndefined();
+		expect(findRef(hero!, 'blurb')).toBeUndefined();
 	});
 
 	// -----------------------------------------------------------------
@@ -177,7 +182,7 @@ Just text content.
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
-		expect(findProperty(hero!, 'headline')).toBeDefined();
+		expect(findRef(hero!, 'headline')).toBeDefined();
 	});
 
 	// -----------------------------------------------------------------
@@ -320,10 +325,10 @@ The modern way to create documentation sites.
 		expect(hero).toBeDefined();
 		expect(hero!.name).toBe('section');
 
-		// Properties (child tags with property attributes)
-		expect(findProperty(hero!, 'eyebrow')).toBeDefined();
-		expect(findProperty(hero!, 'headline')).toBeDefined();
-		expect(findProperty(hero!, 'blurb')).toBeDefined();
+		// Refs (child tags with data-name attributes)
+		expect(findRef(hero!, 'eyebrow')).toBeDefined();
+		expect(findRef(hero!, 'headline')).toBeDefined();
+		expect(findRef(hero!, 'blurb')).toBeDefined();
 
 		// Actions
 		const linkItems = findAllTags(hero!, t => t.name === 'li' && t.attributes['data-name'] === 'action');

@@ -172,7 +172,6 @@ export const recipe = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...sectionProps,
 				prepTime: prepTimeMeta,
 				cookTime: cookTimeMeta,
 				servings: servingsMeta,
@@ -184,6 +183,7 @@ export const recipe = createContentModelSchema({
 				collapse: collapseMeta,
 			},
 			refs: {
+				...sectionProps,
 				ingredients: ingredientsList,
 				steps: stepsList,
 				tips: tipsDiv,

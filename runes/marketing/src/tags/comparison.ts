@@ -336,7 +336,6 @@ export const comparison = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
 				layout: layoutMeta,
 				labels: labelsMeta,
 				collapse: collapseMeta,
@@ -346,6 +345,7 @@ export const comparison = createContentModelSchema({
 				column: columnItems,
 			},
 			refs: {
+				...pageSectionProperties(header),
 				grid: grid.tag('div'),
 			},
 			children: [

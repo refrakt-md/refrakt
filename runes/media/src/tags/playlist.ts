@@ -213,10 +213,12 @@ export const playlist = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...sectionProps,
 				type: typeMeta,
 				...(artistMeta ? { artist: artistMeta } : {}),
 				track: trackItems,
+			},
+			refs: {
+				...sectionProps,
 			},
 			schema: {
 				name: sectionProps.headline,

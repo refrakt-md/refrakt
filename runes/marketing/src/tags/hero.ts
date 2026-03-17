@@ -111,7 +111,6 @@ export const hero = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
 				align: alignMeta,
 				layout: layoutMeta,
 				ratio: ratioMeta,
@@ -120,6 +119,7 @@ export const hero = createContentModelSchema({
 				collapse: collapseMeta,
 			},
 			refs: {
+				...pageSectionProperties(header),
 				actions: actionsDiv,
 				content: mainContent,
 				media: mediaDiv,

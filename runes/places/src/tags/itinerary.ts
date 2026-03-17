@@ -172,12 +172,11 @@ export const itinerary = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(headerNodes),
 				variant: variantMeta,
 				direction: directionMeta,
 				day: days,
 			},
-			refs: { days: daysContainer },
+			refs: { ...pageSectionProperties(headerNodes), days: daysContainer },
 			children,
 		});
 	},

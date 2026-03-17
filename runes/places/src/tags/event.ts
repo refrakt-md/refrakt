@@ -53,13 +53,13 @@ export const event = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...sectionProps,
 				date: dateMeta,
 				endDate: endDateMeta,
 				location: locationMeta,
 				url: urlMeta,
 			},
 			refs: {
+				...sectionProps,
 				body: bodyDiv,
 			},
 			schema: {

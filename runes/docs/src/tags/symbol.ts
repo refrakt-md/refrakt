@@ -162,7 +162,6 @@ export const symbol = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
 				kind: kindMeta,
 				lang: langMeta,
 				since: sinceMeta,
@@ -170,6 +169,7 @@ export const symbol = createContentModelSchema({
 				source: sourceMeta,
 			},
 			refs: {
+				...pageSectionProperties(header),
 				body: bodyDiv,
 			},
 			children,

@@ -92,11 +92,10 @@ export const changelog = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(headerNodes),
 				project: projectMeta,
 				release: releases,
 			},
-			refs: { releases: releasesDiv },
+			refs: { ...pageSectionProperties(headerNodes), releases: releasesDiv },
 			children,
 		});
 	},

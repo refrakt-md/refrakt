@@ -100,8 +100,10 @@ export const steps = createContentModelSchema({
       tag: 'section',
       property: 'contentSection',
       properties: {
-        ...pageSectionProperties(headerNodes),
         step: stepItems,
+      },
+      refs: {
+        ...pageSectionProperties(headerNodes),
       },
       children,
     });

@@ -203,10 +203,9 @@ export const bento = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(header),
 				cell: cells,
 			},
-			refs: { grid },
+			refs: { ...pageSectionProperties(header), grid },
 			children,
 		});
 	},

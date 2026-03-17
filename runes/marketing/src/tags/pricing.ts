@@ -78,10 +78,10 @@ export const pricing = createContentModelSchema({
       tag: 'section',
       property: 'contentSection',
       properties: {
-        ...sectionProps,
         tier: tiers,
       },
       refs: {
+        ...sectionProps,
         tiers: tiersList.tag('ul'),
       },
       schema: {

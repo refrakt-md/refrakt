@@ -92,11 +92,10 @@ export const timeline = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				...pageSectionProperties(headerNodes),
 				direction: directionMeta,
 				entry: items,
 			},
-			refs: { entries: entriesList },
+			refs: { ...pageSectionProperties(headerNodes), entries: entriesList },
 			schema: {
 				itemListElement: items,
 			},

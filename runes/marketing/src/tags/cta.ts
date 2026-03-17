@@ -44,10 +44,9 @@ export const cta = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			class: attrs.class,
-			properties: {
-				...pageSectionProperties(header),
-			},
+			properties: {},
 			refs: {
+				...pageSectionProperties(header),
 				actions: actionsDiv,
 				body: header.wrap('div'),
 				action: actions.flatten().tags('li'),
