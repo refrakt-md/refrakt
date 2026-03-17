@@ -165,7 +165,7 @@ Non-interactive runes are configured declaratively in `packages/runes/src/config
 - `autoLabel`: maps child tag names to `data-name` values
 - `styles`: maps modifier values to CSS custom properties or inline style declarations
 - `postTransform`: programmatic escape hatch (prefer declarative config)
-- `editHints`: `{ dataName: 'inline' | 'link' | 'code' | 'image' | 'none' }` — declares how named sections are edited in the block editor
+- `editHints`: `{ dataName: 'inline' | 'link' | 'code' | 'image' | 'icon' | 'none' }` — declares how named sections are edited in the block editor
 
 Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `RuneConfig`, `StructureEntry`).
 

@@ -295,7 +295,8 @@ Recipe: {
 | `link` | URL + display text fields | action buttons, CTA links |
 | `code` | Code editor popover | terminal commands, code snippets |
 | `image` | File picker + alt text editor | media, cover images |
-| `none` | Not directly editable — click falls through to rune edit panel | structural icons, decorative elements |
+| `icon` | Icon picker gallery with search | feature icons, decorative icons |
+| `none` | Not directly editable — click falls through to rune edit panel | decorative elements |
 
 Only elements with a `data-name` attribute can be editable. The `data-name` comes from either `refs` in `createComponentRenderable` or `autoLabel` in the engine config.
 

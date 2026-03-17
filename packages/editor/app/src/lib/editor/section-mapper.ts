@@ -407,3 +407,51 @@ export function applyImageEdit(
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
 }
+
+// ── Icon (self-closing tag) mapping ──────────────────────────────────
+
+export interface IconMapping {
+	/** Full source text of the icon tag (e.g., '{% icon name="rocket" /%}') */
+	source: string;
+	/** Current icon name (e.g., "rocket" or "hint/warning") */
+	name: string;
+}
+
+/**
+ * Find a {% icon name="..." /%} tag in the rune's inner content,
+ * matching by the rendered icon name (from the data-icon attribute).
+ */
+export function findIconMapping(
+	innerContent: string,
+	renderedIconName: string,
+): IconMapping | null {
+	const iconRegex = /\{%\s*icon\s+[^%]*name=["']([^"']+)["'][^%]*\/%\}/g;
+	let match;
+
+	while ((match = iconRegex.exec(innerContent)) !== null) {
+		const [fullMatch, name] = match;
+		if (name === renderedIconName) {
+			return { source: fullMatch, name };
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Apply an icon edit: replace the icon name in the {% icon %} tag.
+ * Preserves all other attributes (size, etc.) and the tag structure.
+ */
+export function applyIconEdit(
+	innerContent: string,
+	mapping: IconMapping,
+	newIconName: string,
+): string {
+	const newSource = mapping.source.replace(
+		/name=["'][^"']+["']/,
+		`name="${newIconName}"`,
+	);
+	const idx = innerContent.indexOf(mapping.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
+}

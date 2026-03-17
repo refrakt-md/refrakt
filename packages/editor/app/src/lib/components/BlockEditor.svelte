@@ -12,7 +12,7 @@
 		type ParsedBlock,
 		type RuneBlock,
 	} from '../editor/block-parser.js';
-	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, findImageMapping, applyImageEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping } from '../editor/section-mapper.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, findImageMapping, applyImageEdit, findIconMapping, applyIconEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping, type IconMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
@@ -24,6 +24,7 @@
 	import ActionEditPopover from './ActionEditPopover.svelte';
 	import CodeEditPopover from './CodeEditPopover.svelte';
 	import ImageEditPopover from './ImageEditPopover.svelte';
+	import IconPickerPopover from './IconPickerPopover.svelte';
 
 	interface Props {
 		bodyContent: string;
@@ -469,6 +470,18 @@
 			return;
 		}
 
+		if (info.editType === 'icon') {
+			const iconName = info.iconName ?? '';
+			const mapping = findIconMapping(rb.innerContent, iconName);
+			if (!mapping) return;
+
+			iconEdit = {
+				blockIndex: index,
+				mapping,
+			};
+			return;
+		}
+
 		// Default: inline text editing
 		const mapping = findSectionMapping(rb.innerContent, info.dataName, info.text);
 		if (!mapping) return;
@@ -630,6 +643,30 @@
 
 	function closeImageEdit() {
 		imageEdit = null;
+	}
+
+	// ── Icon editing ────────────────────────────────────────────
+
+	let iconEdit: {
+		blockIndex: number;
+		mapping: IconMapping;
+	} | null = $state(null);
+
+	function handleIconEditChange(newIconName: string) {
+		if (!iconEdit) return;
+		const block = blocks[iconEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyIconEdit(rb.innerContent, iconEdit.mapping, newIconName);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		handleUpdateBlock(iconEdit.blockIndex, updated);
+	}
+
+	function closeIconEdit() {
+		iconEdit = null;
 	}
 
 	// ── Field edit from Structure tab ──────────────────────────────
@@ -847,6 +884,15 @@
 			onchange={(src, alt) => { handleImageEditChange(src, alt); closeImageEdit(); }}
 			onremove={handleImageRemove}
 			onclose={closeImageEdit}
+		/>
+	{/if}
+
+	{#if iconEdit}
+		<IconPickerPopover
+			icons={themeConfig?.icons ?? {}}
+			currentIcon={iconEdit.mapping.name}
+			onchange={(name) => { handleIconEditChange(name); closeIconEdit(); }}
+			onclose={closeIconEdit}
 		/>
 	{/if}
 </div>
