@@ -7,6 +7,10 @@ description: API reference for the Model base class, decorators, and helper util
 
 Every rune is a class that extends `Model`. This page covers the base class lifecycle, the decorators that configure it, and the helper utilities for processing and querying content.
 
+{% hint type="note" %}
+For new runes, consider using [declarative content models](/docs/authoring/content-models) instead. Content models replace `processChildren()` and `@group` with a data-driven `contentModel` object. The Model class approach documented here still works for runes with complex imperative logic.
+{% /hint %}
+
 ## Model lifecycle
 
 {% steps %}

@@ -141,6 +141,7 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 ### Rune Schema Patterns
 
+- `createContentModelSchema({ contentModel, transform })` — declarative alternative to Model class for new runes; define a `contentModel` (sequence/delimited/sections/custom), receive resolved fields in `transform(resolved, attrs, config)`
 - `createComponentRenderable(schema.TypeName, { tag, properties, children })` — wraps output with `typeof` marker
 - `properties` values are meta Tags — `createComponentRenderable` sets `property` attribute on them
 - `refs` values are Tags that get `data-name` attribute set on them
@@ -148,7 +149,7 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 ### Rune Authoring Guide
 
-Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (4 pages: overview, model-api, output-contract, patterns). Refer to these when writing or modifying runes — they cover the Model lifecycle, decorators (`@attribute`, `@group`, `@id`), the output contract (`createComponentRenderable`, properties vs refs, meta tags), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming).
+Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (6 pages: overview, model-api, content-models, output-contract, patterns, page-sections). Refer to these when writing or modifying runes — they cover the Model lifecycle, decorators (`@attribute`, `@group`, `@id`), declarative content models (`createContentModelSchema`, sequence/delimited/sections/custom patterns), the output contract (`createComponentRenderable`, properties vs refs, meta tags, editHints), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming, content boundaries).
 
 New runes almost always belong in a community package under `runes/`, not in `packages/runes/src/tags/`. Community package authoring docs: `site/content/docs/packages/authoring.md`.
 
@@ -164,6 +165,7 @@ Non-interactive runes are configured declaratively in `packages/runes/src/config
 - `autoLabel`: maps child tag names to `data-name` values
 - `styles`: maps modifier values to CSS custom properties or inline style declarations
 - `postTransform`: programmatic escape hatch (prefer declarative config)
+- `editHints`: `{ dataName: 'inline' | 'link' | 'code' | 'image' | 'none' }` — declares how named sections are edited in the block editor
 
 Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `RuneConfig`, `StructureEntry`).
 

@@ -267,6 +267,42 @@ postTransform: (node, { modifiers, parentType }) => {
 
 Use sparingly. If you need this, consider whether the logic belongs in the rune schema instead.
 
+### `editHints`
+
+Declares how named sections (`data-name` elements) should behave when clicked in the block editor. Keys are `data-name` values; values are edit modes.
+
+```typescript
+Recipe: {
+  block: 'recipe',
+  modifiers: { ... },
+  structure: { ... },
+  editHints: {
+    headline: 'inline',
+    eyebrow: 'inline',
+    blurb: 'inline',
+    ingredient: 'inline',
+    step: 'inline',
+    media: 'image',
+  },
+},
+```
+
+**Edit modes:**
+
+| Mode | Behavior | Typical usage |
+|------|----------|---------------|
+| `inline` | Contenteditable with formatting toolbar (bold, italic, code, link) | headline, eyebrow, blurb, list items |
+| `link` | URL + display text fields | action buttons, CTA links |
+| `code` | Code editor popover | terminal commands, code snippets |
+| `image` | File picker + alt text editor | media, cover images |
+| `none` | Not directly editable — click falls through to rune edit panel | structural icons, decorative elements |
+
+Only elements with a `data-name` attribute can be editable. The `data-name` comes from either `refs` in `createComponentRenderable` or `autoLabel` in the engine config.
+
+The editor resolves hints at click time from the engine config — no extra attributes appear in the rendered HTML.
+
+**Structure tab:** When a rune has a [declarative content model](/docs/authoring/content-models), the editor's structure tab shows the model's fields as a tree. Filled fields show content previews, empty optional fields show an add button, and empty required fields are highlighted. The content model's `template` and `description` field values are surfaced in this UI.
+
 ---
 
 ## Putting it together
