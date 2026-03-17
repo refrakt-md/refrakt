@@ -2,8 +2,8 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
-{% hero align="left" spacing="loose" tint="subtle" layout="split" collapse="lg" %}
-Version 0.8.1 released [Check out what's new](/releases)
+{% hero align="left" spacing="loose" layout="split" collapse="lg" %}
+Version 0.8.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
 
@@ -22,7 +22,7 @@ npm create refrakt
 {% codegroup overflow="wrap" %}
 ````markdoc
 {% hero align="left" spacing="loose" tint="subtle" layout="split" collapse="lg" %}
-Version 0.8.1 released [Check out what's new](/releases)
+Version 0.8.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
 
@@ -70,7 +70,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — render with SvelteKit or as static HTML, with more adapters planned.
 {% /feature %}
 
-{% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" tint="subtle" spacing="flush" %}
+{% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" spacing="flush" %}
 Composable by design
 ## Runes that work together
 
