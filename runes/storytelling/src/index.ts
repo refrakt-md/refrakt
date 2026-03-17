@@ -11,7 +11,7 @@ import { config } from './config.js';
 export const storytelling: RunePackage = {
   name: 'storytelling',
   displayName: 'Storytelling',
-  version: '0.8.1',
+  version: '0.8.2',
   runes: {
     'character': {
       transform: character,

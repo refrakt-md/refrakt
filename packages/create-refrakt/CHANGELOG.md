@@ -1,5 +1,11 @@
 # create-refrakt
 
+## 0.8.2
+
+### Patch Changes
+
+- Bug fixes and editor improvements including CodeMirror code editing, mobile search fix, structure tab enhancements, and block editor UI refinements.
+
 ## 0.8.1
 
 ## 0.8.0

@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/lumina",
   "description": "Lumina theme for refrakt.md — design tokens, CSS, identity transform, and framework adapters",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -51,15 +51,15 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/runes": "0.8.1",
-    "@refrakt-md/transform": "0.8.1",
-    "@refrakt-md/types": "0.8.1",
-    "@refrakt-md/svelte": "0.8.1"
+    "@refrakt-md/runes": "0.8.2",
+    "@refrakt-md/transform": "0.8.2",
+    "@refrakt-md/types": "0.8.2",
+    "@refrakt-md/svelte": "0.8.2"
   },
   "peerDependencies": {
     "svelte": "^5.0.0",
     "@sveltejs/kit": "^2.0.0",
-    "@refrakt-md/html": "0.8.1"
+    "@refrakt-md/html": "0.8.2"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
