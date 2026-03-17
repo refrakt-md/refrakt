@@ -22,7 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
   const clientOptions: LanguageClientOptions = {
     documentSelector: [{ scheme: 'file', language: 'markdown' }],
     synchronize: {
-      fileEvents: vscode.workspace.createFileSystemWatcher('**/*.md'),
+      fileEvents: [
+        vscode.workspace.createFileSystemWatcher('**/*.md'),
+        vscode.workspace.createFileSystemWatcher('**/refrakt.config.json'),
+      ],
     },
   };
 
