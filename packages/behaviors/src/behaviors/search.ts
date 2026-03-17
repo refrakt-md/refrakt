@@ -98,13 +98,9 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		d.addEventListener('keydown', onKeydown);
 		cleanups.push(() => d.removeEventListener('keydown', onKeydown));
 
-		// Close on backdrop click
+		// Close on backdrop click (target is the dialog itself, not a child)
 		const onClick = (e: MouseEvent) => {
-			const rect = d.getBoundingClientRect();
-			if (
-				e.clientX < rect.left || e.clientX > rect.right ||
-				e.clientY < rect.top || e.clientY > rect.bottom
-			) {
+			if (e.target === d) {
 				d.close();
 			}
 		};
@@ -130,8 +126,9 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			// Dynamic path prevents TypeScript from resolving the module at compile time.
 			// Pagefind generates this file at build time in the site's output directory.
 			const path = '/pagefind/pagefind.js';
-			pagefind = await (Function('p', 'return import(p)')(path));
-			await pagefind.init();
+			const pf = await (Function('p', 'return import(p)')(path));
+			await pf.init();
+			pagefind = pf;
 			return pagefind;
 		} catch {
 			pagefindFailed = true;
@@ -161,36 +158,44 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			return;
 		}
 
-		const search = await pf.debouncedSearch(query);
-		if (!search || !search.results) return;
+		try {
+			const search = await pf.search(query);
+			if (!search || !search.results) return;
 
-		// Load first 8 results
-		const results = await Promise.all(
-			search.results.slice(0, 8).map((r: any) => r.data()),
-		);
+			// Load first 8 results
+			const results = await Promise.all(
+				search.results.slice(0, 8).map((r: any) => r.data()),
+			);
 
-		if (results.length === 0) {
+			if (results.length === 0) {
+				resultsContainer.innerHTML = '';
+				if (emptyEl) {
+					emptyEl.textContent = 'No results found.';
+					emptyEl.hidden = false;
+				}
+				activeIndex = -1;
+				return;
+			}
+
+			if (emptyEl) emptyEl.hidden = true;
+			activeIndex = -1;
+
+			resultsContainer.innerHTML = results
+				.map((r: any) => {
+					const url = r.url.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+					return `<a class="rf-search-result" href="${escapeAttr(url)}">
+					<span class="rf-search-result__title">${escapeHtml(r.meta?.title ?? url)}</span>
+					<span class="rf-search-result__excerpt">${r.excerpt ?? ''}</span>
+				</a>`;
+				})
+				.join('');
+		} catch {
 			resultsContainer.innerHTML = '';
 			if (emptyEl) {
-				emptyEl.textContent = 'No results found.';
+				emptyEl.textContent = 'Search is not available.';
 				emptyEl.hidden = false;
 			}
-			activeIndex = -1;
-			return;
 		}
-
-		if (emptyEl) emptyEl.hidden = true;
-		activeIndex = -1;
-
-		resultsContainer.innerHTML = results
-			.map((r: any) => {
-				const url = r.url.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-				return `<a class="rf-search-result" href="${escapeAttr(url)}">
-				<span class="rf-search-result__title">${escapeHtml(r.meta?.title ?? url)}</span>
-				<span class="rf-search-result__excerpt">${r.excerpt ?? ''}</span>
-			</a>`;
-			})
-			.join('');
 	}
 
 	function navigateResults(direction: number) {
