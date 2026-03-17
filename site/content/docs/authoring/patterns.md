@@ -233,6 +233,59 @@ showcase: NodeStream;
 
 ---
 
+## Content boundaries
+
+A rune's content model should include exactly what it **reinterprets** — content that gains new semantic meaning by being inside the rune. Content that would render identically whether inside or outside the rune belongs on the page, not in the rune.
+
+### Three tests
+
+1. **Does the rune give this content new meaning?** A list inside `{% recipe %}` becomes ingredients — with `data-name="ingredient"`, schema.org markup, and dedicated styling. That's reinterpretation. A paragraph that's just a paragraph is pass-through.
+2. **Does it map to a structured data field?** If schema.org/Recipe has no `story` field, a narrative paragraph doesn't belong inside the recipe rune.
+3. **Is the rune still portable without it?** A recipe card should work on an index page, a blog post, or a sidebar. Narrative content couples it to a single page context.
+
+### What goes where
+
+| Rune | Inside (reinterpreted) | Outside (page content) |
+|------|----------------------|----------------------|
+| Recipe | Ingredients, steps, tips, metadata, headline, blurb, media | Story, editorial, famous quotes |
+| Playlist | Tracks, cover art, name, description | Album review, discovery story |
+| Character | Stats, abilities, portrait, name | Chapter featuring the character |
+| Event | Date, venue, schedule, location | Blog post about why to attend |
+
+### Page composition
+
+A recipe blog post demonstrates the pattern — the rune is a **semantic island** within surrounding page content:
+
+```markdown
+# My Summer in Tuscany
+
+That long story about grandma's kitchen
+goes here, as regular page content...
+
+{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
+# Classic Pasta Carbonara
+
+A rich and creamy Italian pasta dish.
+
+- 400g spaghetti
+- 200g pancetta
+- 4 egg yolks
+
+1. Cook pasta in salted boiling water
+2. Fry pancetta until crispy
+3. Whisk egg yolks with grated cheese
+
+> Never add eggs directly to a hot pan.
+{% /recipe %}
+
+More thoughts on the trip, or a second
+recipe rune, or any other page content.
+```
+
+Everything inside the `{% recipe %}` tags is reinterpreted: the heading becomes the recipe name, the list becomes ingredients, the ordered list becomes steps, the blockquote becomes a chef's tip. Everything outside is regular Markdown rendered as-is.
+
+---
+
 ## Testing
 
 Every rune should have a test file at `packages/runes/test/{name}.test.ts`.
