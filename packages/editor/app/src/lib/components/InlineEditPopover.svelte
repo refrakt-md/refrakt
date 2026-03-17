@@ -289,39 +289,42 @@
 	bind:this={popoverEl}
 	style="left: {left}px; top: {top}px"
 >
-	<!-- Toolbar row -->
-	<div class="inline-edit-popover__toolbar">
+	<!-- Titlebar -->
+	<div class="inline-edit-popover__header">
 		<span class="inline-edit-popover__label">{dataName}</span>
-		<div class="inline-edit-popover__toolbar-buttons">
-			<button
-				class="inline-edit-popover__tool-btn"
-				class:active={isBold}
-				onclick={() => toggleFormat('bold')}
-				title="Bold (Ctrl+B)"
-			><strong>B</strong></button>
-			<button
-				class="inline-edit-popover__tool-btn"
-				class:active={isItalic}
-				onclick={() => toggleFormat('italic')}
-				title="Italic (Ctrl+I)"
-			><em>I</em></button>
-			<button
-				class="inline-edit-popover__tool-btn inline-edit-popover__tool-btn--code"
-				class:active={isCode}
-				onclick={() => toggleFormat('code')}
-				title="Inline code"
-			>&lt;/&gt;</button>
-			<button
-				class="inline-edit-popover__tool-btn"
-				onclick={openLinkEditor}
-				title="Link (Ctrl+K)"
-			>
-				<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M6.5 9.5a3 3 0 0 0 4.2.3l2-2a3 3 0 0 0-4.2-4.3l-1.1 1.1" />
-					<path d="M9.5 6.5a3 3 0 0 0-4.2-.3l-2 2a3 3 0 0 0 4.2 4.3l1.1-1.1" />
-				</svg>
-			</button>
-		</div>
+		<button class="inline-edit-popover__close" onclick={onclose} aria-label="Close">&times;</button>
+	</div>
+
+	<!-- Toolbar -->
+	<div class="inline-edit-popover__toolbar">
+		<button
+			class="inline-edit-popover__tool-btn"
+			class:active={isBold}
+			onclick={() => toggleFormat('bold')}
+			title="Bold (Ctrl+B)"
+		><strong>B</strong></button>
+		<button
+			class="inline-edit-popover__tool-btn"
+			class:active={isItalic}
+			onclick={() => toggleFormat('italic')}
+			title="Italic (Ctrl+I)"
+		><em>I</em></button>
+		<button
+			class="inline-edit-popover__tool-btn inline-edit-popover__tool-btn--code"
+			class:active={isCode}
+			onclick={() => toggleFormat('code')}
+			title="Inline code"
+		>&lt;/&gt;</button>
+		<button
+			class="inline-edit-popover__tool-btn"
+			onclick={openLinkEditor}
+			title="Link (Ctrl+K)"
+		>
+			<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M6.5 9.5a3 3 0 0 0 4.2.3l2-2a3 3 0 0 0-4.2-4.3l-1.1 1.1" />
+				<path d="M9.5 6.5a3 3 0 0 0-4.2-.3l-2 2a3 3 0 0 0 4.2 4.3l1.1-1.1" />
+			</svg>
+		</button>
 	</div>
 
 	<!-- Editable content area -->
@@ -399,12 +402,12 @@
 		to { opacity: 1; transform: scale(1) translateY(0); }
 	}
 
-	/* ── Toolbar ──────────────────────────────────────────── */
+	/* ── Header ──────────────────────────────────────────── */
 
-	.inline-edit-popover__toolbar {
+	.inline-edit-popover__header {
 		display: flex;
 		align-items: center;
-		gap: var(--ed-space-2, 0.5rem);
+		justify-content: space-between;
 		padding: 0 var(--ed-space-1, 0.25rem);
 	}
 
@@ -418,11 +421,27 @@
 		flex-shrink: 0;
 	}
 
-	.inline-edit-popover__toolbar-buttons {
+	.inline-edit-popover__close {
+		background: none;
+		border: none;
+		font-size: 18px;
+		line-height: 1;
+		color: var(--ed-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0 4px;
+	}
+
+	.inline-edit-popover__close:hover {
+		color: var(--ed-text-primary, #1a1a2e);
+	}
+
+	/* ── Toolbar ──────────────────────────────────────────── */
+
+	.inline-edit-popover__toolbar {
 		display: flex;
 		align-items: center;
 		gap: 2px;
-		margin-left: auto;
+		padding: 0 var(--ed-space-1, 0.25rem);
 	}
 
 	.inline-edit-popover__tool-btn {
@@ -562,32 +581,36 @@
 	}
 
 	.inline-edit-popover__link-btn {
-		padding: var(--ed-space-1, 0.25rem) var(--ed-space-2, 0.5rem);
-		border: 1px solid var(--ed-border-default, #e2e8f0);
-		border-radius: var(--ed-radius-sm, 4px);
-		font-size: 11px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--ed-space-2);
+		height: 28px;
+		padding: 0 var(--ed-space-3);
+		border: 1px solid var(--ed-text-secondary);
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
+		color: var(--ed-text-secondary);
+		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 100ms, color 100ms;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), border-color var(--ed-transition-fast);
+		white-space: nowrap;
+	}
+
+	.inline-edit-popover__link-btn:hover:not(.inline-edit-popover__link-btn--apply):not(:disabled) {
+		border-color: var(--ed-text-primary);
+		color: var(--ed-text-primary);
 	}
 
 	.inline-edit-popover__link-btn--apply {
-		background: var(--ed-accent, #3b82f6);
-		border-color: var(--ed-accent, #3b82f6);
-		color: white;
+		background: var(--ed-text-primary);
+		color: #ffffff;
+		border-color: var(--ed-text-primary);
 	}
 
-	.inline-edit-popover__link-btn--apply:hover {
-		opacity: 0.9;
-	}
-
-	.inline-edit-popover__link-btn--remove {
-		background: transparent;
-		color: var(--ed-text-muted, #94a3b8);
-	}
-
-	.inline-edit-popover__link-btn--remove:hover {
-		color: var(--ed-text-secondary, #475569);
-		background: var(--ed-surface-2, #f1f5f9);
+	.inline-edit-popover__link-btn--apply:hover:not(:disabled) {
+		background: var(--ed-text-secondary);
+		border-color: var(--ed-text-secondary);
 	}
 </style>

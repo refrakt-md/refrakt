@@ -12,7 +12,7 @@
 		type ParsedBlock,
 		type RuneBlock,
 	} from '../editor/block-parser.js';
-	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, findImageMapping, applyImageEdit, findIconMapping, applyIconEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping, type IconMapping } from '../editor/section-mapper.js';
+	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, applyLanguageEdit, findImageMapping, applyImageEdit, findIconMapping, applyIconEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping, type IconMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
@@ -606,6 +606,35 @@
 		commandEdit = null;
 	}
 
+	function handleLanguageChange(newLanguage: string) {
+		if (!commandEdit) return;
+		const block = blocks[commandEdit.blockIndex];
+		if (block.type !== 'rune') return;
+		const rb = block as RuneBlock;
+
+		const newInner = applyLanguageEdit(rb.innerContent, commandEdit.mapping, newLanguage);
+		const updated: RuneBlock = { ...rb, innerContent: newInner, source: '' };
+		updated.source = rebuildRuneSource(updated);
+
+		// Update the mapping to reflect the new language and opener
+		const afterDelimiter = commandEdit.mapping.opener.slice(commandEdit.mapping.delimiter.length);
+		const infoString = afterDelimiter.replace(/^\w*/, '').trim();
+		const newOpener = commandEdit.mapping.delimiter + newLanguage + (infoString ? ' ' + infoString : '');
+		const newSource = newOpener + '\n' + commandEdit.mapping.code + '\n' + commandEdit.mapping.delimiter;
+
+		commandEdit = {
+			...commandEdit,
+			mapping: {
+				...commandEdit.mapping,
+				language: newLanguage,
+				opener: newOpener,
+				source: newSource,
+			},
+		};
+
+		handleUpdateBlock(commandEdit.blockIndex, updated);
+	}
+
 	// ── Image editing ────────────────────────────────────────────
 
 	let imageEdit: {
@@ -872,6 +901,7 @@
 			code={commandEdit.mapping.code}
 			language={commandEdit.mapping.language}
 			onchange={handleCommandEditChange}
+			onlanguagechange={handleLanguageChange}
 			onremove={handleCommandRemove}
 			onclose={closeCommandEdit}
 		/>

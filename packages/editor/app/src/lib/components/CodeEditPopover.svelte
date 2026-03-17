@@ -1,16 +1,25 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	const LANGUAGES = [
+		'bash', 'sh', 'shell', 'javascript', 'typescript',
+		'python', 'html', 'css', 'json', 'yaml', 'markdown', 'markdoc',
+		'go', 'rust', 'java', 'c', 'cpp', 'ruby', 'php', 'sql', 'swift',
+		'kotlin', 'dart', 'lua', 'r', 'perl', 'scala', 'haskell', 'elixir',
+		'toml', 'xml', 'graphql', 'dockerfile', 'diff', 'plaintext',
+	];
+
 	interface Props {
 		anchorRect: DOMRect;
 		code: string;
 		language: string;
 		onchange: (newCode: string) => void;
+		onlanguagechange: (newLanguage: string) => void;
 		onremove: () => void;
 		onclose: () => void;
 	}
 
-	let { anchorRect, code, language, onchange, onremove, onclose }: Props = $props();
+	let { anchorRect, code, language, onchange, onlanguagechange, onremove, onclose }: Props = $props();
 
 	let popoverEl: HTMLDivElement;
 	let textareaEl: HTMLTextAreaElement;
@@ -19,6 +28,11 @@
 	let showAbove = $state(true);
 
 	let editCode = $state(code);
+	let editLanguage = $state(language);
+
+	const languages = $derived(
+		LANGUAGES.includes(editLanguage) || !editLanguage ? LANGUAGES : [editLanguage, ...LANGUAGES]
+	);
 
 	onMount(() => {
 		const popoverRect = popoverEl.getBoundingClientRect();
@@ -82,6 +96,12 @@
 			applyAndClose();
 		}
 	}
+
+	function handleLanguageChange(e: Event) {
+		const select = e.target as HTMLSelectElement;
+		editLanguage = select.value;
+		onlanguagechange(editLanguage);
+	}
 </script>
 
 <div
@@ -91,11 +111,24 @@
 	bind:this={popoverEl}
 	style="left: {left}px; top: {top}px"
 >
+	<!-- Titlebar -->
 	<div class="code-edit-popover__header">
-		<span class="code-edit-popover__label">command</span>
-		{#if language}
-			<span class="code-edit-popover__lang">{language}</span>
-		{/if}
+		<span class="code-edit-popover__label">code</span>
+		<button class="code-edit-popover__close" onclick={onclose} aria-label="Close">&times;</button>
+	</div>
+
+	<!-- Toolbar -->
+	<div class="code-edit-popover__toolbar">
+		<select
+			class="code-edit-popover__lang-select"
+			value={editLanguage}
+			onchange={handleLanguageChange}
+		>
+			<option value="">No language</option>
+			{#each languages as lang}
+				<option value={lang}>{lang}</option>
+			{/each}
+		</select>
 	</div>
 
 	<textarea
@@ -143,10 +176,12 @@
 		to { opacity: 1; transform: scale(1) translateY(0); }
 	}
 
+	/* ── Header ──────────────────────────────────────────── */
+
 	.code-edit-popover__header {
 		display: flex;
 		align-items: center;
-		gap: var(--ed-space-2, 0.5rem);
+		justify-content: space-between;
 		padding: 0 var(--ed-space-1, 0.25rem);
 	}
 
@@ -158,12 +193,44 @@
 		letter-spacing: 0.04em;
 	}
 
-	.code-edit-popover__lang {
-		font-size: 10px;
-		font-weight: 500;
-		color: var(--ed-text-tertiary, #cbd5e1);
-		font-family: var(--ed-font-mono, 'SF Mono', 'Fira Code', monospace);
+	.code-edit-popover__close {
+		background: none;
+		border: none;
+		font-size: 18px;
+		line-height: 1;
+		color: var(--ed-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0 4px;
 	}
+
+	.code-edit-popover__close:hover {
+		color: var(--ed-text-primary, #1a1a2e);
+	}
+
+	/* ── Toolbar ─────────────────────────────────────────── */
+
+	.code-edit-popover__toolbar {
+		padding: 0 var(--ed-space-1, 0.25rem);
+	}
+
+	.code-edit-popover__lang-select {
+		padding: var(--ed-space-1, 0.25rem) var(--ed-space-2, 0.5rem);
+		border: 1px solid var(--ed-border-default, #e2e8f0);
+		border-radius: var(--ed-radius-sm, 4px);
+		font-size: var(--ed-text-sm, 13px);
+		font-family: var(--ed-font-mono, 'SF Mono', 'Fira Code', monospace);
+		color: var(--ed-text-secondary, #475569);
+		background: var(--ed-surface-0, #fff);
+		outline: none;
+		cursor: pointer;
+	}
+
+	.code-edit-popover__lang-select:focus {
+		border-color: var(--ed-accent, #3b82f6);
+		box-shadow: 0 0 0 2px var(--ed-accent-ring, rgba(59, 130, 246, 0.2));
+	}
+
+	/* ── Textarea ────────────────────────────────────────── */
 
 	.code-edit-popover__textarea {
 		width: 100%;
@@ -188,6 +255,8 @@
 		box-shadow: 0 0 0 2px var(--ed-accent-ring, rgba(59, 130, 246, 0.2));
 	}
 
+	/* ── Actions ─────────────────────────────────────────── */
+
 	.code-edit-popover__actions {
 		display: flex;
 		gap: var(--ed-space-2, 0.5rem);
@@ -195,32 +264,36 @@
 	}
 
 	.code-edit-popover__btn {
-		padding: var(--ed-space-1, 0.25rem) var(--ed-space-2, 0.5rem);
-		border: 1px solid var(--ed-border-default, #e2e8f0);
-		border-radius: var(--ed-radius-sm, 4px);
-		font-size: 11px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--ed-space-2);
+		height: 28px;
+		padding: 0 var(--ed-space-3);
+		border: 1px solid var(--ed-text-secondary);
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
+		color: var(--ed-text-secondary);
+		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 100ms, color 100ms;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), border-color var(--ed-transition-fast);
+		white-space: nowrap;
+	}
+
+	.code-edit-popover__btn:hover:not(.code-edit-popover__btn--apply):not(:disabled) {
+		border-color: var(--ed-text-primary);
+		color: var(--ed-text-primary);
 	}
 
 	.code-edit-popover__btn--apply {
-		background: var(--ed-accent, #3b82f6);
-		border-color: var(--ed-accent, #3b82f6);
-		color: white;
+		background: var(--ed-text-primary);
+		color: #ffffff;
+		border-color: var(--ed-text-primary);
 	}
 
-	.code-edit-popover__btn--apply:hover {
-		opacity: 0.9;
-	}
-
-	.code-edit-popover__btn--remove {
-		background: transparent;
-		color: var(--ed-text-muted, #94a3b8);
-	}
-
-	.code-edit-popover__btn--remove:hover {
-		color: var(--ed-text-secondary, #475569);
-		background: var(--ed-surface-2, #f1f5f9);
+	.code-edit-popover__btn--apply:hover:not(:disabled) {
+		background: var(--ed-text-secondary);
+		border-color: var(--ed-text-secondary);
 	}
 </style>

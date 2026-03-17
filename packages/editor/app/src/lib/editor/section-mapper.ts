@@ -362,6 +362,25 @@ export function applyCommandEdit(
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
 }
 
+/**
+ * Apply a language change to a fenced code block.
+ * Reconstructs the opener line with the new language, preserving
+ * the backtick delimiter length and any info string after the language tag.
+ */
+export function applyLanguageEdit(
+	innerContent: string,
+	mapping: CommandMapping,
+	newLanguage: string,
+): string {
+	const afterDelimiter = mapping.opener.slice(mapping.delimiter.length);
+	const infoString = afterDelimiter.replace(/^\w*/, '').trim();
+	const newOpener = mapping.delimiter + newLanguage + (infoString ? ' ' + infoString : '');
+	const newSource = newOpener + '\n' + mapping.code + '\n' + mapping.delimiter;
+	const idx = innerContent.indexOf(mapping.source);
+	if (idx === -1) return innerContent;
+	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);
+}
+
 // ── Image mapping ────────────────────────────────────────────────────
 
 export interface ImageMapping {

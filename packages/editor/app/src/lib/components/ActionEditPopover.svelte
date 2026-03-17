@@ -96,6 +96,7 @@
 >
 	<div class="action-edit-popover__header">
 		<span class="action-edit-popover__label">action</span>
+		<button class="action-edit-popover__close" onclick={onclose} aria-label="Close">&times;</button>
 	</div>
 
 	<div class="action-edit-popover__row">
@@ -157,6 +158,9 @@
 	/* ── Header ──────────────────────────────────────────── */
 
 	.action-edit-popover__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		padding: 0 var(--ed-space-1, 0.25rem);
 	}
 
@@ -166,6 +170,20 @@
 		color: var(--ed-text-muted, #94a3b8);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
+	}
+
+	.action-edit-popover__close {
+		background: none;
+		border: none;
+		font-size: 18px;
+		line-height: 1;
+		color: var(--ed-text-muted, #94a3b8);
+		cursor: pointer;
+		padding: 0 4px;
+	}
+
+	.action-edit-popover__close:hover {
+		color: var(--ed-text-primary, #1a1a2e);
 	}
 
 	/* ── Rows ────────────────────────────────────────────── */
@@ -214,32 +232,36 @@
 	}
 
 	.action-edit-popover__btn {
-		padding: var(--ed-space-1, 0.25rem) var(--ed-space-2, 0.5rem);
-		border: 1px solid var(--ed-border-default, #e2e8f0);
-		border-radius: var(--ed-radius-sm, 4px);
-		font-size: 11px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--ed-space-2);
+		height: 28px;
+		padding: 0 var(--ed-space-3);
+		border: 1px solid var(--ed-text-secondary);
+		border-radius: var(--ed-radius-sm);
+		background: transparent;
+		color: var(--ed-text-secondary);
+		font-size: var(--ed-text-sm);
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 100ms, color 100ms;
+		transition: background var(--ed-transition-fast), color var(--ed-transition-fast), border-color var(--ed-transition-fast);
+		white-space: nowrap;
+	}
+
+	.action-edit-popover__btn:hover:not(.action-edit-popover__btn--apply):not(:disabled) {
+		border-color: var(--ed-text-primary);
+		color: var(--ed-text-primary);
 	}
 
 	.action-edit-popover__btn--apply {
-		background: var(--ed-accent, #3b82f6);
-		border-color: var(--ed-accent, #3b82f6);
-		color: white;
+		background: var(--ed-text-primary);
+		color: #ffffff;
+		border-color: var(--ed-text-primary);
 	}
 
-	.action-edit-popover__btn--apply:hover {
-		opacity: 0.9;
-	}
-
-	.action-edit-popover__btn--remove {
-		background: transparent;
-		color: var(--ed-text-muted, #94a3b8);
-	}
-
-	.action-edit-popover__btn--remove:hover {
-		color: var(--ed-text-secondary, #475569);
-		background: var(--ed-surface-2, #f1f5f9);
+	.action-edit-popover__btn--apply:hover:not(:disabled) {
+		background: var(--ed-text-secondary);
+		border-color: var(--ed-text-secondary);
 	}
 </style>
