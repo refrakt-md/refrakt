@@ -5,9 +5,9 @@ import { schema } from '../types.js';
 
 const _swatch = createContentModelSchema({
 	attributes: {
-		color: { type: String, required: true },
-		label: { type: String, required: true },
-		showValue: { type: Boolean, required: false },
+		color: { type: String, required: true, description: 'CSS color value displayed in the swatch chip (e.g. #ff5733, rgb(…)).' },
+		label: { type: String, required: true, description: 'Display name shown beneath the color chip.' },
+		showValue: { type: Boolean, required: false, description: 'Enable/disable showing the raw color value next to the label.' },
 	},
 	contentModel: {
 		type: 'sequence',

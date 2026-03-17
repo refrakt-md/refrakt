@@ -6,8 +6,8 @@ import type { HeadingInfo } from '../util.js';
 
 export const toc = createContentModelSchema({
 	attributes: {
-		depth: { type: Number, required: false, default: 3 },
-		ordered: { type: Boolean, required: false, default: false },
+		depth: { type: Number, required: false, default: 3, description: 'Maximum heading depth to include' },
+		ordered: { type: Boolean, required: false, default: false, description: 'Use numbered list instead of bullets' },
 	},
 	contentModel: {
 		type: 'sequence',

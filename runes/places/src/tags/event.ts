@@ -6,10 +6,10 @@ import { schema } from '../types.js';
 
 export const event = createContentModelSchema({
 	attributes: {
-		date: { type: String, required: false },
-		endDate: { type: String, required: false },
-		location: { type: String, required: false },
-		url: { type: String, required: false },
+		date: { type: String, required: false, description: 'Start date of the event (e.g. 2025-06-15).' },
+		endDate: { type: String, required: false, description: 'End date for multi-day events.' },
+		location: { type: String, required: false, description: 'Venue or place name where the event is held.' },
+		url: { type: String, required: false, description: 'Link to the event page or ticket source.' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -274,12 +274,12 @@ export const comparisonColumn = createSchema(ComparisonColumnModel);
 
 export const comparison = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false },
-		highlighted: { type: String, required: false },
-		layout: { type: String, required: false },
-		labels: { type: String, required: false },
-		collapse: { type: Boolean, required: false },
-		verdict: { type: String, required: false },
+		title: { type: String, required: false, description: 'Heading displayed above the comparison table' },
+		highlighted: { type: String, required: false, description: 'Column name to visually emphasize as the recommended choice' },
+		layout: { type: String, required: false, description: 'Display format for the comparison (e.g. table)' },
+		labels: { type: String, required: false, description: 'Position of row labels: left column or hidden' },
+		collapse: { type: Boolean, required: false, description: 'Whether rows collapse into an accordion on small screens' },
+		verdict: { type: String, required: false, description: 'Summary text shown below the table as a final recommendation' },
 	},
 	contentModel: {
 		type: 'custom',

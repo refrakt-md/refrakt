@@ -171,14 +171,14 @@ export const mapPin = createSchema(MapPinModel);
 
 export const map = createContentModelSchema({
 	attributes: {
-		zoom: { type: String, required: false },
-		center: { type: String, required: false },
-		variant: { type: String, required: false, matches: variantType.slice() },
-		height: { type: String, required: false, matches: heightType.slice() },
-		provider: { type: String, required: false, matches: providerType.slice() },
-		interactive: { type: Boolean, required: false },
-		route: { type: Boolean, required: false },
-		cluster: { type: Boolean, required: false },
+		zoom: { type: String, required: false, description: 'Initial zoom level of the map (higher values zoom in closer).' },
+		center: { type: String, required: false, description: 'Coordinates to center the map on (e.g. "48.8566, 2.3522").' },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style of the map tiles: street, satellite, terrain, dark, or minimal.' },
+		height: { type: String, required: false, matches: heightType.slice(), description: 'Vertical size of the map container: small, medium, large, or full.' },
+		provider: { type: String, required: false, matches: providerType.slice(), description: 'Tile provider used for rendering: openstreetmap or mapbox.' },
+		interactive: { type: Boolean, required: false, description: 'Enable or disable pan and zoom interaction on the map.' },
+		route: { type: Boolean, required: false, description: 'Enable or disable drawing a route line between pins.' },
+		cluster: { type: Boolean, required: false, description: 'Enable or disable grouping nearby pins into clusters at low zoom.' },
 	},
 	contentModel: {
 		type: 'custom',

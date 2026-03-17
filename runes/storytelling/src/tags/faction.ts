@@ -25,11 +25,11 @@ export const factionSection = createSchema(FactionSectionModel);
 
 export const faction = createContentModelSchema({
 	attributes: {
-		name: { type: String, required: true },
-		type: { type: String, required: false },
-		alignment: { type: String, required: false },
-		size: { type: String, required: false },
-		tags: { type: String, required: false },
+		name: { type: String, required: true, description: 'Display name shown in the faction header.' },
+		type: { type: String, required: false, description: 'Classification of the group (e.g. guild, kingdom, cult, order).' },
+		alignment: { type: String, required: false, description: 'Moral or political stance of the faction (e.g. lawful, chaotic, neutral).' },
+		size: { type: String, required: false, description: 'Approximate scale of the faction (e.g. small, medium, large, massive).' },
+		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

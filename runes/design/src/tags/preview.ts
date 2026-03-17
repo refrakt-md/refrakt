@@ -72,16 +72,16 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 }
 
 class PreviewModel extends Model {
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Label shown in the preview card header.' })
 	title: string = '';
 
-	@attribute({ type: String, required: false, matches: ['auto', 'light', 'dark'] })
+	@attribute({ type: String, required: false, matches: ['auto', 'light', 'dark'], description: 'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.' })
 	theme: string = 'auto';
 
-	@attribute({ type: Boolean, required: false })
+	@attribute({ type: Boolean, required: false, description: 'Enable/disable showing the source code panel alongside the rendered preview.' })
 	source: boolean = false;
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Comma-separated viewport widths (e.g. "375,768,1024") for responsive preview frames.' })
 	responsive: string = '';
 
 	transform() {

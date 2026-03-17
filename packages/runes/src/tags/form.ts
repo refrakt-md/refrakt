@@ -358,13 +358,13 @@ export const formField = createSchema(FormFieldModel);
 
 export const form = createContentModelSchema({
 	attributes: {
-		action: { type: String, required: true },
-		method: { type: String, required: false, matches: methodType.slice() },
-		success: { type: String, required: false },
-		error: { type: String, required: false },
-		variant: { type: String, required: false, matches: variantType.slice() },
-		name: { type: String, required: false },
-		honeypot: { type: Boolean, required: false },
+		action: { type: String, required: true, description: 'URL the form submits to' },
+		method: { type: String, required: false, matches: methodType.slice(), description: 'HTTP method for form submission' },
+		success: { type: String, required: false, description: 'Message shown after successful submission' },
+		error: { type: String, required: false, description: 'Message shown when submission fails' },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Form layout style' },
+		name: { type: String, required: false, description: 'Form name for identification' },
+		honeypot: { type: Boolean, required: false, description: 'Include a hidden field to prevent spam' },
 	},
 	contentModel: {
 		type: 'custom',

@@ -14,19 +14,19 @@ export class SplitablePageSectionModel extends Model {
 
 /** Base model for section runes with split layout support */
 export class SplitLayoutModel extends Model {
-  @attribute({ type: String, required: false, matches: ['stacked', 'split', 'split-reverse'] })
+  @attribute({ type: String, required: false, matches: ['stacked', 'split', 'split-reverse'], description: 'Display mode: stacked vertically, or split side-by-side' })
   layout: 'stacked' | 'split' | 'split-reverse' = 'stacked';
 
-  @attribute({ type: String, required: false })
+  @attribute({ type: String, required: false, description: 'Column width ratio in split layout (e.g. "2 1")' })
   ratio: string = '1 1';
 
-  @attribute({ type: String, required: false, matches: ['top', 'center', 'bottom'] })
+  @attribute({ type: String, required: false, matches: ['top', 'center', 'bottom'], description: 'Vertical alignment of columns in split layout' })
   valign: 'top' | 'center' | 'bottom' = 'top';
 
-  @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'] })
+  @attribute({ type: String, required: false, matches: ['none', 'tight', 'default', 'loose'], description: 'Space between columns in split layout' })
   gap: string = 'default';
 
-  @attribute({ type: String, required: false, matches: ['sm', 'md', 'lg', 'never'] })
+  @attribute({ type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which split layout collapses to stacked' })
   collapse: string | undefined = undefined;
 }
 

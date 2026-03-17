@@ -5,10 +5,10 @@ import { attribute, Model, createComponentRenderable, createContentModelSchema, 
 import { schema } from '../types.js';
 
 class TimelineEntryModel extends Model {
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Date or time shown on this entry (e.g. "2024-03", "Q1 2025").' })
 	date: string = '';
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Short title or milestone name for the entry.' })
 	label: string = '';
 
 	transform(): RenderableTreeNodes {
@@ -38,7 +38,7 @@ export const timelineEntry = createSchema(TimelineEntryModel);
 
 export const timeline = createContentModelSchema({
 	attributes: {
-		direction: { type: String, required: false },
+		direction: { type: String, required: false, description: 'Axis along which entries are laid out (vertical or horizontal).' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

@@ -8,9 +8,9 @@ const methodType = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] 
 
 export const api = createContentModelSchema({
 	attributes: {
-		method: { type: String, required: false, matches: methodType.slice() },
-		path: { type: String, required: true },
-		auth: { type: String, required: false },
+		method: { type: String, required: false, matches: methodType.slice(), description: 'HTTP method for the endpoint (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS).' },
+		path: { type: String, required: true, description: 'URL path for the API endpoint (e.g. "/users/:id").' },
+		auth: { type: String, required: false, description: 'Authentication scheme required for this endpoint (e.g. "Bearer", "API Key").' },
 	},
 	contentModel: {
 		type: 'sequence',

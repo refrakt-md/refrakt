@@ -64,11 +64,11 @@ function buildFontsUrl(specimens: Specimen[]): string {
 
 export const typography = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, default: '' },
-		sample: { type: String, required: false, default: 'The quick brown fox jumps over the lazy dog' },
-		showSizes: { type: Boolean, required: false, default: true },
-		showWeights: { type: Boolean, required: false, default: true },
-		showCharset: { type: Boolean, required: false, default: false },
+		title: { type: String, required: false, default: '', description: 'Heading displayed above the typography specimens.' },
+		sample: { type: String, required: false, default: 'The quick brown fox jumps over the lazy dog', description: 'Preview sentence rendered at each size in the specimen cards.' },
+		showSizes: { type: Boolean, required: false, default: true, description: 'Enable/disable the type-size scale samples for each specimen.' },
+		showWeights: { type: Boolean, required: false, default: true, description: 'Enable/disable the weight comparison row for multi-weight fonts.' },
+		showCharset: { type: Boolean, required: false, default: false, description: 'Enable/disable the full character set display for each specimen.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

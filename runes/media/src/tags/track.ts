@@ -9,13 +9,13 @@ const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
 
 export const track = createContentModelSchema({
 	attributes: {
-		src: { type: String, required: false },
-		artist: { type: String, required: false },
-		duration: { type: String, required: false },
-		number: { type: Number, required: false },
-		date: { type: String, required: false },
-		url: { type: String, required: false },
-		type: { type: String, required: false, matches: trackType.slice() },
+		src: { type: String, required: false, description: 'URL of the audio or video file for this track.' },
+		artist: { type: String, required: false, description: 'Performer or creator name for this track.' },
+		duration: { type: String, required: false, description: 'Track length in m:ss, h:mm:ss, or ISO 8601 duration format.' },
+		number: { type: Number, required: false, description: 'Position number of the track in its parent listing.' },
+		date: { type: String, required: false, description: 'Publication or release date for the track.' },
+		url: { type: String, required: false, description: 'External link to the track on a streaming platform or website.' },
+		type: { type: String, required: false, matches: trackType.slice(), description: 'Media category: song, episode, chapter, talk, or video.' },
 	},
 	contentModel: {
 		type: 'sequence',

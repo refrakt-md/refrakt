@@ -147,8 +147,8 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 
 export const diff = createContentModelSchema({
 	attributes: {
-		mode: { type: String, required: false, matches: modeType.slice() },
-		language: { type: String, required: false },
+		mode: { type: String, required: false, matches: modeType.slice(), description: 'Diff display style: unified, split, or inline' },
+		language: { type: String, required: false, description: 'Programming language for syntax highlighting' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -9,7 +9,7 @@ const variantType = ['sidenote', 'footnote', 'tooltip'] as const;
 
 export const sidenote = createContentModelSchema({
 	attributes: {
-		variant: { type: String, required: false, matches: variantType.slice() },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: sidenote, footnote, or tooltip' },
 	},
 	contentModel: {
 		type: 'sequence',

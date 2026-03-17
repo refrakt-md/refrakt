@@ -60,9 +60,9 @@ function extractTableData(children: any[]): { headers: string[], rows: string[][
 
 export const chart = createContentModelSchema({
 	attributes: {
-		type: { type: String, required: false, matches: chartType.slice() },
-		title: { type: String, required: false },
-		stacked: { type: Boolean, required: false },
+		type: { type: String, required: false, matches: chartType.slice(), description: 'Chart visualization type' },
+		title: { type: String, required: false, description: 'Title displayed above the chart' },
+		stacked: { type: Boolean, required: false, description: 'Stack data series instead of grouping' },
 	},
 	contentModel: {
 		type: 'sequence',

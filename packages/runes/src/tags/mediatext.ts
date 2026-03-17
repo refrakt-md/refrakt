@@ -10,9 +10,9 @@ const ratioValues = ['1:2', '1:1', '2:1'] as const;
 
 export const mediatext = createContentModelSchema({
 	attributes: {
-		align: { type: String, required: false, matches: alignValues.slice() },
-		ratio: { type: String, required: false, matches: ratioValues.slice() },
-		wrap: { type: Boolean, required: false },
+		align: { type: String, required: false, matches: alignValues.slice(), description: 'Side the media appears on' },
+		ratio: { type: String, required: false, matches: ratioValues.slice(), description: 'Width ratio between media and text' },
+		wrap: { type: Boolean, required: false, description: 'Wrap text around the media' },
 	},
 	contentModel: {
 		type: 'sequence',

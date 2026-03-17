@@ -6,11 +6,11 @@ import { schema } from '../types.js';
 
 export const bond = createContentModelSchema({
 	attributes: {
-		from: { type: String, required: true },
-		to: { type: String, required: true },
-		type: { type: String, required: false },
-		status: { type: String, required: false },
-		bidirectional: { type: Boolean, required: false },
+		from: { type: String, required: true, description: 'Name of the first character or entity in this bond.' },
+		to: { type: String, required: true, description: 'Name of the second character or entity in this bond.' },
+		type: { type: String, required: false, description: 'Kind of relationship (e.g. ally, rival, mentor, sibling).' },
+		status: { type: String, required: false, description: 'Current state of the bond (e.g. active, broken, strained).' },
+		bidirectional: { type: Boolean, required: false, description: 'Enable/disable mutual connection between both entities.' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -11,15 +11,15 @@ const { Tag } = Markdoc;
  */
 export const bg: Schema = {
 	attributes: {
-		preset: { type: String, required: false },
-		src: { type: String, required: false },
-		video: { type: String, required: false },
-		overlay: { type: String, required: false },
-		blur: { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'] },
-		position: { type: String, required: false },
-		fit: { type: String, required: false, matches: ['cover', 'contain'] },
-		opacity: { type: String, required: false },
-		fixed: { type: Boolean, required: false },
+		preset: { type: String, required: false, description: 'Named background preset from the theme' },
+		src: { type: String, required: false, description: 'URL of the background image' },
+		video: { type: String, required: false, description: 'URL of a background video' },
+		overlay: { type: String, required: false, description: 'Color overlay applied on top of the background' },
+		blur: { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Blur intensity applied to the background' },
+		position: { type: String, required: false, description: 'CSS background-position value' },
+		fit: { type: String, required: false, matches: ['cover', 'contain'], description: 'How the background image fills its container' },
+		opacity: { type: String, required: false, description: 'Opacity of the background layer (0 to 1)' },
+		fixed: { type: Boolean, required: false, description: 'Fix the background so it stays in place while scrolling' },
 	},
 	transform(node: Node, config): RenderableTreeNodes {
 		const attrs = node.transformAttributes(config);

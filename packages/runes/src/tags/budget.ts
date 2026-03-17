@@ -184,13 +184,13 @@ export const budgetCategory = createSchema(BudgetCategoryModel);
 
 export const budget = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false },
-		currency: { type: String, required: false },
-		travelers: { type: Number, required: false },
-		duration: { type: String, required: false },
-		showPerPerson: { type: Boolean, required: false },
-		showPerDay: { type: Boolean, required: false },
-		variant: { type: String, required: false, matches: variantType.slice() },
+		title: { type: String, required: false, description: 'Title for the budget breakdown' },
+		currency: { type: String, required: false, description: 'Currency symbol or code (e.g. USD, EUR)' },
+		travelers: { type: Number, required: false, description: 'Number of travelers for per-person calculations' },
+		duration: { type: String, required: false, description: 'Trip duration for per-day calculations' },
+		showPerPerson: { type: Boolean, required: false, description: 'Show per-person cost breakdown' },
+		showPerDay: { type: Boolean, required: false, description: 'Show per-day cost breakdown' },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: detailed line items or summary' },
 	},
 	contentModel: {
 		type: 'custom',

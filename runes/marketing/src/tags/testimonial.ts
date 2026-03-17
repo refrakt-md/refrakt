@@ -8,8 +8,8 @@ const variantType = ['card', 'inline', 'quote'] as const;
 
 export const testimonial = createContentModelSchema({
 	attributes: {
-		rating: { type: Number, required: false },
-		variant: { type: String, required: false, matches: variantType.slice() },
+		rating: { type: Number, required: false, description: 'Star rating value (1-5) shown alongside the testimonial' },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style: card with border, inline with text flow, or quote with large quotation marks' },
 	},
 	contentModel: {
 		type: 'sequence',

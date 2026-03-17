@@ -10,11 +10,11 @@ const contentType = ['auto', 'lyrics', 'chapters'] as const;
 
 export const playlist = createContentModelSchema({
 	attributes: {
-		type: { type: String, required: false, matches: playlistType.slice() },
-		artist: { type: String, required: false },
-		player: { type: Boolean, required: false },
-		content: { type: String, required: false, matches: contentType.slice() },
-		id: { type: String, required: false },
+		type: { type: String, required: false, matches: playlistType.slice(), description: 'Collection format: album, podcast, audiobook, series, or mix.' },
+		artist: { type: String, required: false, description: 'Default artist applied to tracks that omit their own.' },
+		player: { type: Boolean, required: false, description: 'Enable/disable an embedded audio player for the playlist.' },
+		content: { type: String, required: false, matches: contentType.slice(), description: 'How nested lists are interpreted: auto-detect, lyrics, or chapters.' },
+		id: { type: String, required: false, description: 'Unique identifier used to link an audio rune to this playlist.' },
 	},
 	contentModel: {
 		type: 'sequence',

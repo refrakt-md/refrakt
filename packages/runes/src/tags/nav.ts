@@ -72,8 +72,8 @@ function buildGroups(allNodes: RenderableTreeNode[]): Tag<'section'>[] {
 
 export const nav = createContentModelSchema({
   attributes: {
-    ordered: { type: Boolean, required: false },
-    auto: { type: Boolean, required: false },
+    ordered: { type: Boolean, required: false, description: 'Use numbered list for navigation items' },
+    auto: { type: Boolean, required: false, description: 'Automatically generate from child pages' },
   },
   contentModel: {
     type: 'custom',

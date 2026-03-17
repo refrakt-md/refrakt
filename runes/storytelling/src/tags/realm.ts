@@ -25,11 +25,11 @@ export const realmSection = createSchema(RealmSectionModel);
 
 export const realm = createContentModelSchema({
 	attributes: {
-		name: { type: String, required: true },
-		type: { type: String, required: false },
-		scale: { type: String, required: false },
-		tags: { type: String, required: false },
-		parent: { type: String, required: false },
+		name: { type: String, required: true, description: 'Display name shown in the realm header.' },
+		type: { type: String, required: false, description: 'Kind of location (e.g. city, forest, dungeon, plane, continent).' },
+		scale: { type: String, required: false, description: 'Geographic scope of the realm (e.g. room, district, region, world).' },
+		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
+		parent: { type: String, required: false, description: 'Name of the containing realm for hierarchical nesting.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

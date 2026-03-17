@@ -229,6 +229,7 @@ export interface RuneAttributeInfo {
 	type: string;
 	required: boolean;
 	values?: string[];
+	description?: string;
 }
 
 // ── Serialized content model types (from server) ────────────────────────

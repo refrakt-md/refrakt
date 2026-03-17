@@ -8,7 +8,7 @@ const orgType = ['Organization', 'LocalBusiness', 'Corporation', 'EducationalOrg
 
 export const organization = createContentModelSchema({
 	attributes: {
-		type: { type: String, required: false, matches: orgType.slice() },
+		type: { type: String, required: false, matches: orgType.slice(), description: 'Schema.org organization category used for structured data.' },
 	},
 	contentModel: {
 		type: 'sequence',

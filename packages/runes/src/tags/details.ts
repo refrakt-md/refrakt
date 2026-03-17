@@ -7,8 +7,8 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export const details = createContentModelSchema({
 	attributes: {
-		summary: { type: String, required: false },
-		open: { type: Boolean, required: false },
+		summary: { type: String, required: false, description: 'Clickable summary text shown when collapsed' },
+		open: { type: Boolean, required: false, description: 'Expand the details section by default' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -22,9 +22,9 @@ const overflowValues = ['scroll', 'wrap', 'hide'] as const;
 
 export const codegroup = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false },
-		labels: { type: String, required: false },
-		overflow: { type: String, required: false, matches: overflowValues.slice() },
+		title: { type: String, required: false, description: 'Title displayed above the code group' },
+		labels: { type: String, required: false, description: 'Comma-separated custom tab labels' },
+		overflow: { type: String, required: false, matches: overflowValues.slice(), description: 'How overflowing code is handled' },
 	},
 	contentModel: {
 		type: 'sequence',

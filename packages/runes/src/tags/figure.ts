@@ -10,9 +10,9 @@ const alignValues = ['left', 'center', 'right'] as const;
 
 export const figure = createContentModelSchema({
 	attributes: {
-		size: { type: String, required: false, matches: sizeValues.slice() },
-		align: { type: String, required: false, matches: alignValues.slice() },
-		caption: { type: String, required: false },
+		size: { type: String, required: false, matches: sizeValues.slice(), description: 'Display width of the figure' },
+		align: { type: String, required: false, matches: alignValues.slice(), description: 'Horizontal alignment of the figure' },
+		caption: { type: String, required: false, description: 'Caption text displayed below the figure' },
 	},
 	contentModel: {
 		type: 'sequence',

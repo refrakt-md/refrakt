@@ -9,8 +9,8 @@ const layoutType = ['side-by-side', 'stacked'] as const;
 
 export const compare = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutType.slice() },
-		labels: { type: String, required: false },
+		layout: { type: String, required: false, matches: layoutType.slice(), description: 'Display panels side-by-side or stacked' },
+		labels: { type: String, required: false, description: 'Comma-separated custom labels for each panel' },
 	},
 	contentModel: {
 		type: 'sequence',

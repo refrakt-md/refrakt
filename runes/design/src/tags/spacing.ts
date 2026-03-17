@@ -51,7 +51,7 @@ interface ParsedSections {
 
 export const spacing = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, default: '' },
+		title: { type: String, required: false, default: '', description: 'Heading displayed above the spacing, radii, and shadow sections.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

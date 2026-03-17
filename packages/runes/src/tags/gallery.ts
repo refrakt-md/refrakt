@@ -10,11 +10,11 @@ const gapValues = ['none', 'tight', 'default', 'loose'] as const;
 
 export const gallery = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutValues.slice() },
-		columns: { type: Number, required: false },
-		lightbox: { type: Boolean, required: false },
-		gap: { type: String, required: false, matches: gapValues.slice() },
-		caption: { type: String, required: false },
+		layout: { type: String, required: false, matches: layoutValues.slice(), description: 'Arrangement of images in the gallery' },
+		columns: { type: Number, required: false, description: 'Number of columns in grid layout' },
+		lightbox: { type: Boolean, required: false, description: 'Allow clicking images to view full-size' },
+		gap: { type: String, required: false, matches: gapValues.slice(), description: 'Space between gallery items' },
+		caption: { type: String, required: false, description: 'Caption text displayed below the gallery' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -6,10 +6,10 @@ import { schema } from '../types.js';
 
 export const lore = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: true },
-		category: { type: String, required: false },
-		spoiler: { type: Boolean, required: false },
-		tags: { type: String, required: false },
+		title: { type: String, required: true, description: 'Heading displayed for this lore entry.' },
+		category: { type: String, required: false, description: 'Grouping label used to organize lore entries (e.g. history, magic, culture).' },
+		spoiler: { type: Boolean, required: false, description: 'Enable/disable spoiler protection that hides content until revealed.' },
+		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: {
 		type: 'sequence',

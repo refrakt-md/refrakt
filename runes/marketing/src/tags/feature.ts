@@ -55,7 +55,7 @@ const alignType = ['left', 'center', 'right'] as const;
 export const feature = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
-		align: { type: String, required: false, matches: alignType.slice() },
+		align: { type: String, required: false, matches: alignType.slice(), description: 'Horizontal alignment of headline and body text' },
 	},
 	contentModel: {
 		type: 'delimited',

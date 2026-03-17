@@ -74,10 +74,10 @@ interface ColorGroup { title: string; entries: ColorEntry[]; }
 
 export const palette = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, default: '' },
-		showContrast: { type: Boolean, required: false, default: false },
-		showA11y: { type: Boolean, required: false, default: false },
-		columns: { type: Number, required: false },
+		title: { type: String, required: false, default: '', description: 'Heading displayed above the palette section.' },
+		showContrast: { type: Boolean, required: false, default: false, description: 'Enable/disable WCAG contrast ratio values against white and black.' },
+		showA11y: { type: Boolean, required: false, default: false, description: 'Enable/disable AA/AAA accessibility compliance badges per swatch.' },
+		columns: { type: Number, required: false, description: 'Number of swatch columns in the grid; auto-calculated from count when omitted.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

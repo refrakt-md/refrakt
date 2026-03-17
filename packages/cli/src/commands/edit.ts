@@ -126,6 +126,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 							type: typeName,
 							required: attr.required ?? false,
 							...(Array.isArray(attr.matches) ? { values: attr.matches.map(String) } : {}),
+							...(attr.description ? { description: attr.description } : {}),
 						};
 					}
 				}

@@ -84,10 +84,10 @@ function detectProvider(url: string): ProviderInfo {
 
 export const embed = createContentModelSchema({
 	attributes: {
-		url: { type: String, required: true },
-		type: { type: String, required: false },
-		aspect: { type: String, required: false, matches: aspectType.slice() },
-		title: { type: String, required: false },
+		url: { type: String, required: true, description: 'URL of the content to embed' },
+		type: { type: String, required: false, description: 'Override auto-detected embed type' },
+		aspect: { type: String, required: false, matches: aspectType.slice(), description: 'Aspect ratio of the embed frame' },
+		title: { type: String, required: false, description: 'Accessible title for the embed iframe' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -63,8 +63,8 @@ export const storyboardPanel = createSchema(StoryboardPanelModel);
 
 export const storyboard = createContentModelSchema({
 	attributes: {
-		columns: { type: Number, required: false },
-		variant: { type: String, required: false, matches: variantType.slice() },
+		columns: { type: Number, required: false, description: 'Number of panel columns in the grid layout.' },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style: comic (speech bubbles), clean (minimal), or polaroid (photo frame).' },
 	},
 	contentModel: {
 		type: 'custom',

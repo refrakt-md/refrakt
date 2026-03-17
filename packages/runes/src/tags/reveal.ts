@@ -33,7 +33,7 @@ export const revealStep = createSchema(RevealStepModel);
 
 export const reveal = createContentModelSchema({
 	attributes: {
-		mode: { type: String, required: false, matches: modeType.slice() },
+		mode: { type: String, required: false, matches: modeType.slice(), description: 'Step progression: click, scroll, or auto' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

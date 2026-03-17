@@ -7,12 +7,12 @@ import { schema } from '../types.js';
 
 export const itineraryStop = createContentModelSchema({
 	attributes: {
-		time: { type: String, required: false },
-		location: { type: String, required: false },
-		duration: { type: String, required: false },
-		activity: { type: String, required: false },
-		lat: { type: String, required: false },
-		lng: { type: String, required: false },
+		time: { type: String, required: false, description: 'Scheduled time for this stop (e.g. "9:00 AM").' },
+		location: { type: String, required: false, description: 'Name of the place or venue for this stop.' },
+		duration: { type: String, required: false, description: 'How long to spend at this stop (e.g. "2 hours").' },
+		activity: { type: String, required: false, description: 'Type of activity at this stop (e.g. "sightseeing", "dining").' },
+		lat: { type: String, required: false, description: 'Latitude coordinate for placing this stop on a map.' },
+		lng: { type: String, required: false, description: 'Longitude coordinate for placing this stop on a map.' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -49,8 +49,8 @@ export const itineraryStop = createContentModelSchema({
 
 export const itineraryDay = createContentModelSchema({
 	attributes: {
-		label: { type: String, required: false },
-		date: { type: String, required: false },
+		label: { type: String, required: false, description: 'Display label for this day (e.g. "Day 1 — Arrival").' },
+		date: { type: String, required: false, description: 'Calendar date for this day of the itinerary.' },
 	},
 	contentModel: {
 		type: 'sections',
@@ -112,8 +112,8 @@ export const itineraryDay = createContentModelSchema({
 
 export const itinerary = createContentModelSchema({
 	attributes: {
-		variant: { type: String, required: false },
-		direction: { type: String, required: false },
+		variant: { type: String, required: false, description: 'Layout style for the itinerary (e.g. "day-by-day").' },
+		direction: { type: String, required: false, description: 'Flow direction of the timeline: vertical or horizontal.' },
 	},
 	contentModel: {
 		when: [

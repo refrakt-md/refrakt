@@ -8,7 +8,7 @@ import { schema } from '../types.js';
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
-		align: { type: String, required: false, matches: ['left', 'center', 'right'] },
+		align: { type: String, required: false, matches: ['left', 'center', 'right'], description: 'Horizontal alignment of headline and body text' },
 	},
 	contentModel: {
 		type: 'delimited',

@@ -8,10 +8,10 @@ import { schema } from '../types.js';
 const layoutType = ['grid', 'list'] as const;
 
 class CastMemberModel extends Model {
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Display name of the cast member.' })
 	name: string = '';
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Job title or role held by this member.' })
 	role: string = '';
 
 	transform(): RenderableTreeNodes {
@@ -41,7 +41,7 @@ export const castMember = createSchema(CastMemberModel);
 
 export const cast = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutType.slice() },
+		layout: { type: String, required: false, matches: layoutType.slice(), description: 'Visual arrangement of members: grid for cards, list for a compact roster.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

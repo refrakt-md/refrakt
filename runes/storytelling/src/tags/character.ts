@@ -28,11 +28,11 @@ export const characterSection = createSchema(StorySectionModel);
 
 export const character = createContentModelSchema({
 	attributes: {
-		name: { type: String, required: true },
-		role: { type: String, required: false, matches: roleType.slice() },
-		status: { type: String, required: false, matches: statusType.slice() },
-		aliases: { type: String, required: false },
-		tags: { type: String, required: false },
+		name: { type: String, required: true, description: 'Display name shown in the character header.' },
+		role: { type: String, required: false, matches: roleType.slice(), description: 'Narrative importance: protagonist, antagonist, supporting, or minor.' },
+		status: { type: String, required: false, matches: statusType.slice(), description: 'Whether the character is alive, dead, unknown, or missing.' },
+		aliases: { type: String, required: false, description: 'Comma-separated alternate names or titles for this character.' },
+		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

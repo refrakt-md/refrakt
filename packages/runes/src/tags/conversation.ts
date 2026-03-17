@@ -83,7 +83,7 @@ function convertConversationChildren(nodes: Node[], attrs: Record<string, unknow
 
 export const conversation = createContentModelSchema({
 	attributes: {
-		speakers: { type: String, required: false },
+		speakers: { type: String, required: false, description: 'Comma-separated speaker names for alternating messages' },
 	},
 	contentModel: {
 		type: 'custom',

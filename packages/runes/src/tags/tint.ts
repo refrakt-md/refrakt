@@ -66,8 +66,8 @@ function parseTintBody(children: Node[]): {
  */
 export const tint: Schema = {
 	attributes: {
-		preset: { type: String, required: false },
-		mode: { type: String, required: false, matches: ['auto', 'dark', 'light'] },
+		preset: { type: String, required: false, description: 'Named tint preset from the theme' },
+		mode: { type: String, required: false, matches: ['auto', 'dark', 'light'], description: 'Whether the tint adapts to auto, dark, or light mode' },
 	},
 	transform(node: Node, config): RenderableTreeNodes {
 		const preset = node.transformAttributes(config).preset as string | undefined;

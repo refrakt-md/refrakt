@@ -10,8 +10,8 @@ import type { DesignTokens } from '@refrakt-md/types';
 
 export const designContext = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, default: '' },
-		scope: { type: String, required: false, default: 'default' },
+		title: { type: String, required: false, default: '', description: 'Heading displayed above the grouped design token sections.' },
+		scope: { type: String, required: false, default: 'default', description: 'Named scope that identifies this token set for cross-page references.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

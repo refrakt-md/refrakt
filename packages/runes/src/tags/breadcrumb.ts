@@ -10,8 +10,8 @@ export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
 
 export const breadcrumb = createContentModelSchema({
 	attributes: {
-		separator: { type: String, required: false, default: '/' },
-		auto: { type: Boolean, required: false, default: false },
+		separator: { type: String, required: false, default: '/', description: 'Character between breadcrumb items' },
+		auto: { type: Boolean, required: false, default: false, description: 'Automatically generate from page hierarchy' },
 	},
 	contentModel: (attrs) => {
 		if (attrs.auto) {

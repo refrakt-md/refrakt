@@ -10,15 +10,15 @@ const bleedValues = ['none', 'top', 'bottom', 'both', 'end', 'bottom-end', 'top-
 
 export const showcase = createContentModelSchema({
 	attributes: {
-		shadow: { type: String, required: false, matches: shadowValues.slice() },
-		bleed: { type: String, required: false, matches: bleedValues.slice() },
-		offset: { type: String, required: false },
-		aspect: { type: String, required: false },
+		shadow: { type: String, required: false, matches: shadowValues.slice(), description: 'Shadow style around the showcase content' },
+		bleed: { type: String, required: false, matches: bleedValues.slice(), description: 'Direction content extends beyond its container' },
+		offset: { type: String, required: false, description: 'CSS offset from the container edge' },
+		aspect: { type: String, required: false, description: 'Aspect ratio of the showcase area' },
 		place: { type: String, required: false, matches: [
 			'left', 'center', 'right', 'top', 'bottom',
 			'top left', 'top center', 'top right',
 			'bottom left', 'bottom center', 'bottom right',
-		] },
+		], description: 'Position of content within the showcase area' },
 	},
 	contentModel: {
 		type: 'sequence',

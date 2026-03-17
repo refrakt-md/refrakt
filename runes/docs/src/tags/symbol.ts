@@ -91,11 +91,11 @@ const headerBodyFields = [
 
 export const symbol = createContentModelSchema({
 	attributes: {
-		kind: { type: String, required: false, matches: ['function', 'class', 'interface', 'enum', 'type', 'module', 'hook', 'component'], default: 'function' },
-		lang: { type: String, required: false, default: 'typescript' },
-		since: { type: String, required: false, default: '' },
-		deprecated: { type: String, required: false, default: '' },
-		source: { type: String, required: false, default: '' },
+		kind: { type: String, required: false, matches: ['function', 'class', 'interface', 'enum', 'type', 'module', 'hook', 'component'], default: 'function', description: 'Symbol category that controls grouping behavior and icon display.' },
+		lang: { type: String, required: false, default: 'typescript', description: 'Programming language used for syntax highlighting in code examples.' },
+		since: { type: String, required: false, default: '', description: 'Version when this symbol was introduced (e.g. "1.2.0").' },
+		deprecated: { type: String, required: false, default: '', description: 'Deprecation notice with version or reason; leave empty if not deprecated.' },
+		source: { type: String, required: false, default: '', description: 'URL to the source file or repository for this symbol.' },
 	},
 	contentModel: (attrs) => {
 		if (GROUP_KINDS.includes(attrs.kind as string)) {

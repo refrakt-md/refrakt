@@ -7,8 +7,8 @@ const languageType = ['mermaid', 'plantuml', 'ascii'] as const;
 
 export const diagram = createContentModelSchema({
 	attributes: {
-		language: { type: String, required: false, matches: languageType.slice() },
-		title: { type: String, required: false },
+		language: { type: String, required: false, matches: languageType.slice(), description: 'Diagram language: mermaid, plantuml, or ascii' },
+		title: { type: String, required: false, description: 'Title displayed above the diagram' },
 	},
 	contentModel: {
 		type: 'sequence',

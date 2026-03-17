@@ -32,7 +32,7 @@ const variantType = ['margin', 'tooltip', 'inline'] as const;
 
 export const annotate = createContentModelSchema({
 	attributes: {
-		variant: { type: String, required: false, matches: variantType.slice() },
+		variant: { type: String, required: false, matches: variantType.slice(), description: 'Annotation display style: margin, tooltip, or inline' },
 	},
 	contentModel: {
 		type: 'sequence',

@@ -9,10 +9,10 @@ const alignValues = ['left', 'center', 'right', 'justify'] as const;
 
 export const textblock = createContentModelSchema({
 	attributes: {
-		dropcap: { type: Boolean, required: false },
-		columns: { type: Number, required: false },
-		lead: { type: Boolean, required: false },
-		align: { type: String, required: false, matches: alignValues.slice() },
+		dropcap: { type: Boolean, required: false, description: 'Style the first letter as a large drop cap' },
+		columns: { type: Number, required: false, description: 'Number of text columns' },
+		lead: { type: Boolean, required: false, description: 'Style the first paragraph as a lead' },
+		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment' },
 	},
 	contentModel: {
 		type: 'sequence',

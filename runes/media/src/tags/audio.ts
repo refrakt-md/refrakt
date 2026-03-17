@@ -7,12 +7,12 @@ import { parseDuration } from '../duration.js';
 
 export const audio = createContentModelSchema({
 	attributes: {
-		src: { type: String, required: false },
-		playlist: { type: String, required: false },
-		title: { type: String, required: false },
-		artist: { type: String, required: false },
-		waveform: { type: Boolean, required: false },
-		chapters: { type: String, required: false },
+		src: { type: String, required: false, description: 'URL of the audio file to play.' },
+		playlist: { type: String, required: false, description: 'ID of a playlist rune to load tracks from.' },
+		title: { type: String, required: false, description: 'Track title shown in the player interface.' },
+		artist: { type: String, required: false, description: 'Artist name displayed alongside the track title.' },
+		waveform: { type: Boolean, required: false, description: 'Enable/disable waveform visualization in the player.' },
+		chapters: { type: String, required: false, description: 'URL of an external chapters file (WebVTT or JSON).' },
 	},
 	contentModel: {
 		type: 'sequence',

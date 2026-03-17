@@ -10,8 +10,8 @@ const variantValues = ['default', 'accent', 'editorial'] as const;
 
 export const pullquote = createContentModelSchema({
 	attributes: {
-		align: { type: String, required: false, matches: alignValues.slice() },
-		variant: { type: String, required: false, matches: variantValues.slice() },
+		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment of the quote' },
+		variant: { type: String, required: false, matches: variantValues.slice(), description: 'Visual style of the quote block' },
 	},
 	contentModel: {
 		type: 'sequence',

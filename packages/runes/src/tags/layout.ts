@@ -5,7 +5,7 @@ import { createContentModelSchema, asNodes } from '../lib/index.js';
 
 export const layout = createContentModelSchema({
 	attributes: {
-		extends: { type: String, required: false, default: 'parent' },
+		extends: { type: String, required: false, default: 'parent', description: 'Layout inheritance: parent or none' },
 	},
 	contentModel: {
 		type: 'sequence',

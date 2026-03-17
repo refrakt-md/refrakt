@@ -61,10 +61,10 @@ export const beat = createSchema(BeatModel);
 
 export const plot = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: true },
-		type: { type: String, required: false, matches: plotType.slice() },
-		structure: { type: String, required: false, matches: structureType.slice() },
-		tags: { type: String, required: false },
+		title: { type: String, required: true, description: 'Heading displayed for this plot line.' },
+		type: { type: String, required: false, matches: plotType.slice(), description: 'Narrative scope: arc, quest, subplot, campaign, episode, act, or chapter.' },
+		structure: { type: String, required: false, matches: structureType.slice(), description: 'How beats connect: linear (sequential), parallel, branching, or web.' },
+		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

@@ -216,12 +216,12 @@ export function createSchema<TInput extends Model>(
 // ---------------------------------------------------------------------------
 
 const universalAttributes: Record<string, SchemaAttribute> = {
-  'tint': { type: String, required: false },
-  'tint-mode': { type: String, required: false, matches: ['auto', 'dark', 'light'] },
-  'bg': { type: String, required: false },
-  'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'] },
-  'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] },
-  'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'] },
+  'tint': { type: String, required: false, description: 'Color tint preset applied to this block' },
+  'tint-mode': { type: String, required: false, matches: ['auto', 'dark', 'light'], description: 'Whether the tint adapts to auto, dark, or light mode' },
+  'bg': { type: String, required: false, description: 'Background preset applied to this block' },
+  'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
+  'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
+  'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
 };
 
 // ---------------------------------------------------------------------------

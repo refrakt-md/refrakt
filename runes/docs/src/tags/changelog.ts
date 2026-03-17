@@ -37,7 +37,7 @@ export const changelogRelease = createSchema(ChangelogReleaseModel);
 
 export const changelog = createContentModelSchema({
 	attributes: {
-		project: { type: String, required: false },
+		project: { type: String, required: false, description: 'Project name displayed in the changelog header.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

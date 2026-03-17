@@ -9,7 +9,7 @@ const hintType = ['caution', 'check', 'note', 'warning'] as const;
 
 export const hint = createContentModelSchema({
 	attributes: {
-		type: { type: String, matches: hintType.slice(), errorLevel: 'critical' },
+		type: { type: String, matches: hintType.slice(), errorLevel: 'critical', description: 'Visual style: caution, check, note, or warning' },
 	},
 	contentModel: {
 		type: 'sequence',

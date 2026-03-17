@@ -18,10 +18,10 @@ const difficultyType = ['easy', 'medium', 'hard'] as const;
 export const recipe = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
-		prepTime: { type: String, required: false, default: '' },
-		cookTime: { type: String, required: false, default: '' },
-		servings: { type: Number, required: false },
-		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium' },
+		prepTime: { type: String, required: false, default: '', description: 'Time needed for preparation before cooking (e.g. "15 min")' },
+		cookTime: { type: String, required: false, default: '', description: 'Active cooking or baking time (e.g. "45 min")' },
+		servings: { type: Number, required: false, description: 'Number of portions the recipe yields' },
+		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium', description: 'Skill level: easy, medium, or hard' },
 	},
 	contentModel: {
 		type: 'delimited',

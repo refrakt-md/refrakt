@@ -149,9 +149,9 @@ function convertHeadings(
 
 export const bento = createContentModelSchema({
 	attributes: {
-		gap: { type: String, required: false },
-		columns: { type: Number, required: false },
-		sizing: { type: String, required: false, matches: ['tiered', 'span'] },
+		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
+		columns: { type: Number, required: false, description: 'Number of columns in the bento grid' },
+		sizing: { type: String, required: false, matches: ['tiered', 'span'], description: 'Cell sizing mode: tiered assigns sizes by heading depth, span sets column span' },
 	},
 	contentModel: (attrs) => ({
 		type: 'custom' as const,

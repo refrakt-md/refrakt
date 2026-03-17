@@ -21,8 +21,8 @@ const bodyFields = [
 
 export const howto = createContentModelSchema({
 	attributes: {
-		estimatedTime: { type: String, required: false, default: '' },
-		difficulty: { type: String, required: false, matches: difficultyType.slice() },
+		estimatedTime: { type: String, required: false, default: '', description: 'Estimated total time to complete all steps (e.g. "30 min")' },
+		difficulty: { type: String, required: false, matches: difficultyType.slice(), description: 'Skill level: easy, medium, or hard' },
 	},
 	contentModel: {
 		type: 'sequence',

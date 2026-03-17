@@ -57,7 +57,7 @@ export const accordionItem = createSchema(AccordionItemModel);
 
 export const accordion = createContentModelSchema({
 	attributes: {
-		multiple: { type: Boolean, required: false },
+		multiple: { type: Boolean, required: false, description: 'Allow multiple panels to be open at once' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,

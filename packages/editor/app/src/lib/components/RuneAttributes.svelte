@@ -103,6 +103,15 @@
 				{#if info.required}
 					<span class="rune-attrs__required">*</span>
 				{/if}
+				{#if info.description}
+					<span class="rune-attrs__info" data-tooltip={info.description}>
+						<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="8" cy="8" r="7" />
+							<line x1="8" y1="7" x2="8" y2="11" />
+							<circle cx="8" cy="4.5" r="0.5" fill="currentColor" stroke="none" />
+						</svg>
+					</span>
+				{/if}
 			</span>
 
 			{#if info.type === 'Boolean'}
@@ -218,6 +227,48 @@
 
 	.rune-attrs__required {
 		color: var(--ed-danger);
+	}
+
+	.rune-attrs__info {
+		display: inline-flex;
+		align-items: center;
+		color: var(--ed-text-muted);
+		cursor: help;
+		position: relative;
+		margin-left: 0.2rem;
+		vertical-align: middle;
+		transition: color var(--ed-transition-fast);
+	}
+
+	.rune-attrs__info:hover {
+		color: var(--ed-accent);
+	}
+
+	.rune-attrs__info::after {
+		content: attr(data-tooltip);
+		position: absolute;
+		left: 0;
+		top: calc(100% + 6px);
+		background: var(--ed-surface-invert, #1a1a1a);
+		color: var(--ed-text-invert, #f0f0f0);
+		font-size: var(--ed-text-sm);
+		font-style: normal;
+		font-weight: 400;
+		padding: 0.35rem 0.5rem;
+		border-radius: var(--ed-radius-sm);
+		box-shadow: var(--ed-shadow-lg);
+		white-space: normal;
+		width: max-content;
+		max-width: 220px;
+		line-height: 1.4;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity var(--ed-transition-fast);
+		z-index: 20;
+	}
+
+	.rune-attrs__info:hover::after {
+		opacity: 1;
 	}
 
 	/* Clickable value button */

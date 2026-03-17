@@ -7,10 +7,10 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export const datatable = createContentModelSchema({
 	attributes: {
-		sortable: { type: String, required: false },
-		searchable: { type: Boolean, required: false },
-		pageSize: { type: Number, required: false },
-		defaultSort: { type: String, required: false },
+		sortable: { type: String, required: false, description: 'Column names to enable sorting, or "all"' },
+		searchable: { type: Boolean, required: false, description: 'Show a search input to filter rows' },
+		pageSize: { type: Number, required: false, description: 'Rows per page; 0 disables pagination' },
+		defaultSort: { type: String, required: false, description: 'Column to sort by initially' },
 	},
 	contentModel: {
 		type: 'sequence',

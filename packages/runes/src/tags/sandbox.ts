@@ -39,19 +39,19 @@ function extractDataSourcePanels(html: string): SourcePanel[] {
 }
 
 class SandboxModel extends Model {
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'JavaScript framework for the sandbox' })
 	framework: string = '';
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Comma-separated npm packages to include' })
 	dependencies: string = '';
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Label displayed above the sandbox' })
 	label: string = '';
 
-	@attribute({ type: Number, required: false })
+	@attribute({ type: Number, required: false, description: 'Height of the sandbox iframe in pixels' })
 	height: number | undefined;
 
-	@attribute({ type: String, required: false })
+	@attribute({ type: String, required: false, description: 'Shared context scope for multiple sandboxes' })
 	context: string = 'default';
 
 	transform(): RenderableTreeNodes {

@@ -7,8 +7,8 @@ const regionMode = ['replace', 'prepend', 'append'] as const;
 
 export const region = createContentModelSchema({
 	attributes: {
-		name: { type: String, required: true },
-		mode: { type: String, required: false, matches: regionMode.slice(), errorLevel: 'critical', default: 'replace' },
+		name: { type: String, required: true, description: 'Name of the layout region to fill' },
+		mode: { type: String, required: false, matches: regionMode.slice(), errorLevel: 'critical', default: 'replace', description: 'How content is placed: replace, prepend, or append' },
 	},
 	contentModel: {
 		type: 'sequence',
