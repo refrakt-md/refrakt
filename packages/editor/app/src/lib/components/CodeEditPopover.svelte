@@ -1,5 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { untrack } from 'svelte';
+	import { EditorState, Compartment } from '@codemirror/state';
+	import { EditorView, keymap } from '@codemirror/view';
+	import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+	import { HighlightStyle, syntaxHighlighting, LanguageDescription, defaultHighlightStyle } from '@codemirror/language';
+	import { languages as languageData } from '@codemirror/language-data';
+	import { markdown } from '@codemirror/lang-markdown';
+	import { tags } from '@lezer/highlight';
+	import { markdocHighlight } from '../editor/markdoc-highlight.js';
 
 	const LANGUAGES = [
 		'bash', 'sh', 'shell', 'javascript', 'typescript',
@@ -22,7 +31,8 @@
 	let { anchorRect, code, language, onchange, onlanguagechange, onremove, onclose }: Props = $props();
 
 	let popoverEl: HTMLDivElement;
-	let textareaEl: HTMLTextAreaElement;
+	let editorContainer: HTMLDivElement;
+	let view = $state<EditorView | undefined>(undefined);
 	let left = $state(0);
 	let top = $state(0);
 	let showAbove = $state(true);
@@ -30,23 +40,102 @@
 	let editCode = $state(code);
 	let editLanguage = $state(language);
 
-	const languages = $derived(
+	const langCompartment = new Compartment();
+	const markdocCompartment = new Compartment();
+
+	const codeHighlightStyle = HighlightStyle.define([
+		{ tag: tags.keyword, color: '#8839ef' },
+		{ tag: [tags.atom, tags.bool], color: '#fe640b' },
+		{ tag: tags.number, color: '#fe640b' },
+		{ tag: [tags.string, tags.special(tags.string)], color: '#40a02b' },
+		{ tag: [tags.regexp, tags.escape], color: '#ea76cb' },
+		{ tag: tags.definition(tags.variableName), color: '#1e66f5' },
+		{ tag: tags.local(tags.variableName), color: '#1e66f5' },
+		{ tag: tags.variableName, color: '#4c4f69' },
+		{ tag: tags.definition(tags.propertyName), color: '#1e66f5' },
+		{ tag: tags.propertyName, color: '#1e66f5' },
+		{ tag: [tags.typeName, tags.className, tags.namespace], color: '#df8e1d' },
+		{ tag: [tags.macroName, tags.labelName], color: '#d20f39' },
+		{ tag: tags.function(tags.variableName), color: '#1e66f5' },
+		{ tag: tags.operator, color: '#04a5e5' },
+		{ tag: tags.punctuation, color: '#7c7f93' },
+		{ tag: tags.comment, color: '#9ca0b0', fontStyle: 'italic' },
+		{ tag: tags.lineComment, color: '#9ca0b0', fontStyle: 'italic' },
+		{ tag: tags.blockComment, color: '#9ca0b0', fontStyle: 'italic' },
+		{ tag: tags.meta, color: '#7c7f93' },
+		{ tag: tags.link, color: '#1e66f5', textDecoration: 'underline' },
+		{ tag: tags.url, color: '#1e66f5' },
+		{ tag: tags.invalid, color: '#d20f39' },
+	]);
+
+	const popoverEditorTheme = EditorView.theme(
+		{
+			'&': {
+				fontSize: '13px',
+				height: 'auto',
+				backgroundColor: 'var(--ed-surface-1, #f8fafc)',
+				border: '1px solid var(--ed-border-default, #e2e8f0)',
+				borderRadius: 'var(--ed-radius-sm, 4px)',
+			},
+			'&.cm-focused': {
+				outline: 'none',
+				borderColor: 'var(--ed-accent, #3b82f6)',
+				boxShadow: '0 0 0 2px var(--ed-accent-ring, rgba(59, 130, 246, 0.2))',
+			},
+			'.cm-scroller': {
+				overflow: 'auto',
+				maxHeight: '12rem',
+				fontFamily: "var(--ed-font-mono, 'SF Mono', 'Fira Code', monospace)",
+				lineHeight: '1.5',
+			},
+			'.cm-content': {
+				padding: 'var(--ed-space-2, 0.5rem)',
+				caretColor: '#1e293b',
+				minHeight: '3rem',
+			},
+			'.cm-cursor': {
+				borderLeftColor: '#1e293b',
+			},
+			'&.cm-focused .cm-selectionBackground, ::selection': {
+				backgroundColor: 'rgba(14, 165, 233, 0.2)',
+			},
+			'.cm-selectionBackground': {
+				backgroundColor: 'rgba(14, 165, 233, 0.12)',
+			},
+			'.cm-activeLine': {
+				backgroundColor: 'transparent',
+			},
+			'.cm-markdoc-tag': {
+				backgroundColor: 'rgba(217, 119, 6, 0.06)',
+				borderRadius: '2px',
+			},
+			'.cm-markdoc-bracket': {
+				color: '#94a3b8',
+			},
+			'.cm-markdoc-name': {
+				color: '#d97706',
+				fontWeight: '600',
+			},
+		},
+		{ dark: false },
+	);
+
+	const languageOptions = $derived(
 		LANGUAGES.includes(editLanguage) || !editLanguage ? LANGUAGES : [editLanguage, ...LANGUAGES]
 	);
 
-	onMount(() => {
+	function recalculatePosition() {
+		if (!popoverEl) return;
 		const popoverRect = popoverEl.getBoundingClientRect();
 		const popoverWidth = popoverRect.width;
 		const popoverHeight = popoverRect.height;
 		const gap = 8;
 
-		// Horizontal: center on anchor
 		let x = anchorRect.left + anchorRect.width / 2 - popoverWidth / 2;
 		if (x < gap) x = gap;
 		if (x + popoverWidth > window.innerWidth - gap) x = window.innerWidth - popoverWidth - gap;
 		left = x;
 
-		// Vertical: above anchor if room, else below
 		const aboveY = anchorRect.top - popoverHeight - gap;
 		if (aboveY >= gap) {
 			top = aboveY;
@@ -55,9 +144,10 @@
 			top = anchorRect.bottom + gap;
 			showAbove = false;
 		}
+	}
 
-		textareaEl?.focus();
-		textareaEl?.select();
+	onMount(() => {
+		recalculatePosition();
 
 		function handleClickOutside(e: MouseEvent) {
 			if (popoverEl && !popoverEl.contains(e.target as Node)) {
@@ -82,6 +172,90 @@
 		};
 	});
 
+	// Create CodeMirror instance
+	$effect(() => {
+		if (!editorContainer) return;
+
+		const state = EditorState.create({
+			doc: untrack(() => editCode),
+			extensions: [
+				langCompartment.of(markdown()),
+				markdocCompartment.of(untrack(() => editLanguage) === 'markdoc' ? markdocHighlight() : []),
+				history(),
+				popoverEditorTheme,
+				syntaxHighlighting(codeHighlightStyle),
+				syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+				keymap.of([
+					...defaultKeymap,
+					...historyKeymap,
+					indentWithTab,
+					{
+						key: 'Mod-Enter',
+						run: () => {
+							applyAndClose();
+							return true;
+						},
+					},
+					{
+						key: 'Escape',
+						run: () => {
+							onclose();
+							return true;
+						},
+					},
+				]),
+				EditorView.updateListener.of((update) => {
+					if (update.docChanged) {
+						editCode = update.state.doc.toString();
+					}
+				}),
+				EditorView.lineWrapping,
+			],
+		});
+
+		const editor = new EditorView({ state, parent: editorContainer });
+		view = editor;
+
+		editor.focus();
+		loadLanguage(editor, untrack(() => editLanguage));
+
+		// Recalculate position after CodeMirror renders
+		requestAnimationFrame(() => recalculatePosition());
+
+		return () => {
+			view = undefined;
+			editor.destroy();
+		};
+	});
+
+	function loadLanguage(editor: EditorView, lang: string | undefined) {
+		const name = lang?.trim();
+		if (!name) return;
+
+		if (name === 'markdoc') {
+			// Markdoc = markdown parser + markdoc tag decorations
+			editor.dispatch({
+				effects: [
+					langCompartment.reconfigure(markdown()),
+					markdocCompartment.reconfigure(markdocHighlight()),
+				],
+			});
+			return;
+		}
+
+		// Disable markdoc decorations for other languages
+		editor.dispatch({
+			effects: markdocCompartment.reconfigure([]),
+		});
+
+		const desc = LanguageDescription.matchLanguageName(languageData, name, true);
+		if (desc) {
+			desc.load().then((langSupport) => {
+				editor.dispatch({ effects: langCompartment.reconfigure(langSupport) });
+			}).catch(console.error);
+		}
+	}
+
 	function applyAndClose() {
 		if (editCode !== code) {
 			onchange(editCode);
@@ -89,18 +263,11 @@
 		onclose();
 	}
 
-	function handleKeydown(e: KeyboardEvent) {
-		// Cmd/Ctrl+Enter to apply (Enter inserts newlines in textarea)
-		if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-			e.preventDefault();
-			applyAndClose();
-		}
-	}
-
 	function handleLanguageChange(e: Event) {
 		const select = e.target as HTMLSelectElement;
 		editLanguage = select.value;
 		onlanguagechange(editLanguage);
+		if (view) loadLanguage(view, editLanguage);
 	}
 </script>
 
@@ -125,20 +292,13 @@
 			onchange={handleLanguageChange}
 		>
 			<option value="">No language</option>
-			{#each languages as lang}
+			{#each languageOptions as lang}
 				<option value={lang}>{lang}</option>
 			{/each}
 		</select>
 	</div>
 
-	<textarea
-		class="code-edit-popover__textarea"
-		bind:value={editCode}
-		bind:this={textareaEl}
-		onkeydown={handleKeydown}
-		rows={Math.max(2, editCode.split('\n').length)}
-		spellcheck="false"
-	></textarea>
+	<div class="code-edit-popover__editor" bind:this={editorContainer}></div>
 
 	<div class="code-edit-popover__actions">
 		<button class="code-edit-popover__btn code-edit-popover__btn--apply" onclick={applyAndClose}>Apply</button>
@@ -230,29 +390,14 @@
 		box-shadow: 0 0 0 2px var(--ed-accent-ring, rgba(59, 130, 246, 0.2));
 	}
 
-	/* ── Textarea ────────────────────────────────────────── */
+	/* ── Editor ──────────────────────────────────────────── */
 
-	.code-edit-popover__textarea {
-		width: 100%;
+	.code-edit-popover__editor {
 		min-height: 3rem;
-		max-height: 12rem;
-		padding: var(--ed-space-2, 0.5rem);
-		border: 1px solid var(--ed-border-default, #e2e8f0);
-		border-radius: var(--ed-radius-sm, 4px);
-		font-size: var(--ed-text-sm, 13px);
-		font-family: var(--ed-font-mono, 'SF Mono', 'Fira Code', monospace);
-		color: var(--ed-text-primary, #1a1a2e);
-		background: var(--ed-surface-1, #f8fafc);
-		outline: none;
-		line-height: 1.5;
-		resize: vertical;
-		tab-size: 2;
-		box-sizing: border-box;
 	}
 
-	.code-edit-popover__textarea:focus {
-		border-color: var(--ed-accent, #3b82f6);
-		box-shadow: 0 0 0 2px var(--ed-accent-ring, rgba(59, 130, 246, 0.2));
+	.code-edit-popover__editor :global(.cm-gutters) {
+		display: none;
 	}
 
 	/* ── Actions ─────────────────────────────────────────── */
