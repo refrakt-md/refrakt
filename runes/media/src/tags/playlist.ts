@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 import { parseDuration, formatDuration } from '../duration.js';
 
@@ -9,6 +10,7 @@ const playlistType = ['album', 'podcast', 'audiobook', 'series', 'mix'] as const
 const contentType = ['auto', 'lyrics', 'chapters'] as const;
 
 export const playlist = createContentModelSchema({
+	base: SplitLayoutModel,
 	attributes: {
 		type: { type: String, required: false, matches: playlistType.slice(), description: 'Collection format: album, podcast, audiobook, series, or mix.' },
 		artist: { type: String, required: false, description: 'Default artist applied to tracks that omit their own.' },
@@ -17,51 +19,66 @@ export const playlist = createContentModelSchema({
 		id: { type: String, required: false, description: 'Unique identifier used to link an audio rune to this playlist.' },
 	},
 	contentModel: {
-		type: 'sequence',
-		fields: [
-			{ name: 'title', match: 'heading', optional: false,
-				template: '# Playlist Name', description: 'Playlist title' },
-			{ name: 'cover', match: 'image', optional: true,
-				template: '![Cover art](/images/cover.jpg)', description: 'Cover artwork' },
-			{ name: 'description', match: 'paragraph', optional: true,
-				template: 'A description of this playlist.', description: 'Playlist description' },
+		type: 'delimited',
+		delimiter: 'hr',
+		zones: [
 			{
-				name: 'tracks',
-				match: 'list',
-				optional: false,
-				description: 'Track listing',
-				template: '- **Track Name** (3:45)\n- **Another Track** (4:20)',
-				itemModel: {
-					fields: [
-						{ name: 'name', match: 'strong', optional: false },
-						{ name: 'src', match: 'link', optional: true, extract: 'href' },
-						{ name: 'artist', match: 'em', optional: true },
-						{ name: 'duration', match: 'text', optional: true,
-							pattern: /\((\d+:\d+(?::\d+)?)\)/ },
-						{ name: 'date', match: 'text', optional: true,
-							pattern: /—\s*(.+)$/ },
-						{ name: 'description', match: 'paragraph', optional: true, greedy: true },
-						{
-							name: 'cuePoints',
-							match: 'list',
-							optional: true,
-							itemModel: {
-								fields: [
-									{ name: 'time', match: 'text', optional: true,
-										pattern: /\(?(\d+:\d+(?::\d+)?)\)?/ },
-									{ name: 'label', match: 'strong', optional: true },
-									{ name: 'text', match: 'text', pattern: 'remainder', optional: false },
-									{ name: 'description', match: 'paragraph', optional: true, greedy: true },
-								],
-							},
+				name: 'content',
+				type: 'sequence',
+				fields: [
+					{ name: 'title', match: 'heading', optional: false,
+						template: '# Playlist Name', description: 'Playlist title' },
+					{ name: 'description', match: 'paragraph', optional: true,
+						template: 'A description of this playlist.', description: 'Playlist description' },
+					{
+						name: 'tracks',
+						match: 'list',
+						optional: false,
+						description: 'Track listing',
+						template: '- **Track Name** (3:45)\n- **Another Track** (4:20)',
+						itemModel: {
+							fields: [
+								{ name: 'name', match: 'strong', optional: false },
+								{ name: 'src', match: 'link', optional: true, extract: 'href' },
+								{ name: 'artist', match: 'em', optional: true },
+								{ name: 'duration', match: 'text', optional: true,
+									pattern: /\((\d+:\d+(?::\d+)?)\)/ },
+								{ name: 'date', match: 'text', optional: true,
+									pattern: /—\s*(.+)$/ },
+								{ name: 'description', match: 'paragraph', optional: true, greedy: true },
+								{
+									name: 'cuePoints',
+									match: 'list',
+									optional: true,
+									itemModel: {
+										fields: [
+											{ name: 'time', match: 'text', optional: true,
+												pattern: /\(?(\d+:\d+(?::\d+)?)\)?/ },
+											{ name: 'label', match: 'strong', optional: true },
+											{ name: 'text', match: 'text', pattern: 'remainder', optional: false },
+											{ name: 'description', match: 'paragraph', optional: true, greedy: true },
+										],
+									},
+								},
+							],
 						},
-					],
-				},
+					},
+					{ name: 'body', match: 'any', optional: true, greedy: true },
+				],
 			},
-			{ name: 'body', match: 'any', optional: true, greedy: true },
+			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
 		],
 	},
 	transform(resolved, attrs, config) {
+		const contentZone = (resolved.content ?? {}) as ResolvedContent;
+		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
+
 		const playlistTypeValue = (attrs.type as string) ?? 'album';
 		const artistValue = (attrs.artist as string) ?? '';
 		const hasPlayer = (attrs.player as boolean) ?? false;
@@ -70,34 +87,24 @@ export const playlist = createContentModelSchema({
 
 		// Transform title
 		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
-
-		// Transform cover image
-		const coverNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.cover), {
-				...config,
-				nodes: {
-					...config.nodes,
-					paragraph: {
-						render: 'p' as const,
-						transform(node: Node, cfg: any) {
-							const img = Array.from(node.walk()).find((n: Node) => n.type === 'image');
-							if (img) return Markdoc.transform(img, cfg);
-							return new Tag('p', {}, node.transformChildren(cfg) as any);
-						},
-					},
-				},
-			}) as RenderableTreeNode[],
+			Markdoc.transform(asNodes(contentZone.title), config) as RenderableTreeNode[],
 		);
 
 		// Transform description
 		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
+			Markdoc.transform(asNodes(contentZone.description), config) as RenderableTreeNode[],
+		);
+
+		// Transform media zone
+		const mediaAstNodes = (
+			Array.isArray(mediaZone.media) ? mediaZone.media : []
+		) as Node[];
+		const side = new RenderableNodeCursor(
+			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
 		);
 
 		// Build track items from itemModel extracted data
-		const tracksData = (resolved.tracksData as Record<string, unknown>[] | undefined) ?? [];
+		const tracksData = (contentZone.tracksData as Record<string, unknown>[] | undefined) ?? [];
 
 		const trackChildren = tracksData.map((track, index) => {
 			const name = (track.name as string) ?? '';
@@ -108,30 +115,30 @@ export const playlist = createContentModelSchema({
 			const cuePoints = (track.cuePoints as Record<string, unknown>[] | undefined) ?? [];
 
 			const trackNameTag = new Tag('span', { 'data-name': 'track-name', property: 'name' }, [name]);
-			const trackChildren: any[] = [trackNameTag];
+			const trackChildrenArr: any[] = [trackNameTag];
 
 			if (artist) {
-				trackChildren.push(new Tag('span', { 'data-name': 'track-artist', property: 'byArtist' }, [artist]));
+				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-artist', property: 'byArtist' }, [artist]));
 			}
 			if (duration) {
-				trackChildren.push(new Tag('span', { 'data-name': 'track-duration' }, [duration]));
+				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-duration' }, [duration]));
 				const durationSeconds = parseDuration(duration);
-				trackChildren.push(new Tag('meta', { property: 'duration', content: `PT${durationSeconds}S` }));
+				trackChildrenArr.push(new Tag('meta', { property: 'duration', content: `PT${durationSeconds}S` }));
 			}
 			if (date) {
-				trackChildren.push(new Tag('span', { 'data-name': 'track-meta', property: 'datePublished' }, [date]));
+				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-meta', property: 'datePublished' }, [date]));
 			}
 
 			// Build cue point elements
 			if (cuePoints.length > 0) {
 				const cueListTag = buildCuePoints(cuePoints, contentMode);
-				if (cueListTag) trackChildren.push(cueListTag);
+				if (cueListTag) trackChildrenArr.push(cueListTag);
 			}
 
 			const trackAttrs: Record<string, any> = { 'data-rune': 'track', typeof: 'MusicRecording' };
 			if (src) trackAttrs['data-src'] = src;
 
-			return new Tag('li', trackAttrs, trackChildren);
+			return new Tag('li', trackAttrs, trackChildrenArr);
 		});
 
 		const tracksOl = new Tag('ol', { 'data-name': 'tracks' }, trackChildren);
@@ -145,9 +152,6 @@ export const playlist = createContentModelSchema({
 				titleTag.attributes['data-name'] = 'title';
 				headerChildren.push(titleTag);
 			}
-		}
-		if (coverNodes.count() > 0) {
-			headerChildren.push(...coverNodes.toArray());
 		}
 		if (descNodes.count() > 0) {
 			headerChildren.push(...descNodes.toArray());
@@ -179,50 +183,89 @@ export const playlist = createContentModelSchema({
 			]);
 		}
 
+		// Layout meta tags (following recipe pattern)
+		const layout = (attrs.layout as string) || 'stacked';
+		const ratio = (attrs.ratio as string) || '1 1';
+		const valign = (attrs.valign as string) || 'top';
+		const gap = (attrs.gap as string) || 'default';
+		const collapse = attrs.collapse as string | undefined;
+
+		const layoutMeta = new Tag('meta', { content: layout });
+		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+
 		// Meta tags for identity transform modifiers
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
 		const hasPlayerMeta = hasPlayer ? new Tag('meta', { content: 'true' }) : null;
 		const artistMeta = artistValue ? new Tag('meta', { content: artistValue }) : null;
 
-		const children: any[] = [typeMeta];
-		if (hasPlayerMeta) children.push(hasPlayerMeta);
-		if (artistMeta) children.push(artistMeta);
-		if (idValue) children.push(new Tag('meta', { 'data-field': 'id', content: idValue }));
-		if (header) children.push(header);
-		if (playerEl) children.push(playerEl);
-		children.push(tracksOl);
+		// Wrap content and media zones
+		const contentChildren: any[] = [];
+		if (header) contentChildren.push(header);
+		if (playerEl) contentChildren.push(playerEl);
+		contentChildren.push(tracksOl);
 
 		// Transform any remaining body content
-		if (resolved.body) {
+		if (contentZone.body) {
 			const bodyNodes = new RenderableNodeCursor(
-				Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+				Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
 			);
 			if (bodyNodes.count() > 0) {
-				children.push(...bodyNodes.toArray());
+				contentChildren.push(...bodyNodes.toArray());
 			}
 		}
 
+		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
+		const mediaDiv = side.wrap('div');
+		const hasMedia = side.toArray().length > 0;
+
+		// Find first image in media zone for SEO
+		const seoImage = side.toArray().find(
+			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'img'
+		) as Markdoc.Tag | undefined;
+
+		const children: any[] = [
+			typeMeta,
+			layoutMeta,
+			...(ratioMeta ? [ratioMeta] : []),
+			...(valignMeta ? [valignMeta] : []),
+			...(gapMeta ? [gapMeta] : []),
+			...(collapseMeta ? [collapseMeta] : []),
+		];
+		if (hasPlayerMeta) children.push(hasPlayerMeta);
+		if (artistMeta) children.push(artistMeta);
+		if (idValue) children.push(new Tag('meta', { 'data-field': 'id', content: idValue }));
+
+		// Media before content so cover image appears at the top in stacked layout
+		if (hasMedia) children.push(mediaDiv.next());
+		children.push(mainContent.next());
+
 		const sectionProps = pageSectionProperties(titleNodes);
 		const trackItems = new RenderableNodeCursor(trackChildren);
-
-		// Extract cover image for schema
-		const coverImgCursor = coverNodes.count() > 0 ? coverNodes.tag('img').limit(1) : null;
-		const coverSchemaTag = coverImgCursor && coverImgCursor.count() > 0 ? coverImgCursor.next() : undefined;
 
 		return createComponentRenderable(schema.Playlist, {
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
 				type: typeMeta,
+				layout: layoutMeta,
+				ratio: ratioMeta,
+				valign: valignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
 				...(artistMeta ? { artist: artistMeta } : {}),
 				track: trackItems,
 			},
 			refs: {
 				...sectionProps,
+				content: mainContent,
+				media: mediaDiv,
 			},
 			schema: {
 				name: sectionProps.headline,
-				...(coverSchemaTag ? { image: coverSchemaTag } : {}),
+				...(seoImage ? { image: seoImage } : {}),
 				...(artistMeta ? { byArtist: artistMeta } : {}),
 				track: trackItems,
 			},
