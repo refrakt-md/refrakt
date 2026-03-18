@@ -41,7 +41,9 @@ Use the `type` attribute to categorize your locations.
 
 {% preview source=true %}
 
-{% realm name="The Undercroft" type="dungeon" scale="complex" %}
+{% realm name="The Undercroft" type="dungeon" scale="complex" layout="split" %}
+![The Undercroft](https://assets.refrakt.md/realm-the-undercroft.png)
+
 ## Overview
 
 A sprawling network of tunnels beneath the old city, home to smugglers and worse.
