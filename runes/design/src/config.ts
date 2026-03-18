@@ -2,7 +2,10 @@ import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transf
 import { isTag, makeTag, renderToHtml, readMeta } from '@refrakt-md/transform';
 
 export const config: Record<string, RuneConfig> = {
-	Swatch: { block: 'swatch' },
+	Swatch: {
+		block: 'swatch',
+		editHints: { chip: 'none', value: 'none' },
+	},
 	Palette: {
 		block: 'palette',
 		modifiers: {
@@ -12,6 +15,7 @@ export const config: Record<string, RuneConfig> = {
 			columns: { source: 'meta' },
 		},
 		contextModifiers: { 'design-context': 'in-design-context' },
+		editHints: { 'group-title': 'none', 'swatch-color': 'none', 'swatch-name': 'none', 'swatch-value': 'none', grid: 'none', scale: 'none' },
 	},
 	Typography: {
 		block: 'typography',
@@ -22,6 +26,7 @@ export const config: Record<string, RuneConfig> = {
 			showCharset: { source: 'meta' },
 		},
 		contextModifiers: { 'design-context': 'in-design-context' },
+		editHints: { title: 'none', specimen: 'none', specimens: 'none', sizes: 'none', weights: 'none', charset: 'none' },
 	},
 	Spacing: {
 		block: 'spacing',
@@ -29,12 +34,14 @@ export const config: Record<string, RuneConfig> = {
 			title: { source: 'meta' },
 		},
 		contextModifiers: { 'design-context': 'in-design-context' },
+		editHints: { title: 'none', section: 'none', scale: 'none', radii: 'none', shadows: 'none' },
 	},
 	DesignContext: {
 		block: 'design-context',
 		modifiers: {
 			title: { source: 'meta' },
 		},
+		editHints: { title: 'none', sections: 'none' },
 	},
 	Preview: {
 		block: 'preview',
@@ -44,12 +51,13 @@ export const config: Record<string, RuneConfig> = {
 			responsive: { source: 'meta' },
 			title: { source: 'meta' },
 		},
+		editHints: { source: 'code' },
 		postTransform(node) {
 			// Generate themed HTML when source mode is active.
 			// This must happen in postTransform (not the rune) because it needs
 			// the fully-transformed tree with BEM classes and structural elements.
 			const hasSource = node.children.some(
-				c => isTag(c) && c.name === 'pre' && c.attributes['data-field'] === 'source'
+				c => isTag(c) && c.name === 'pre' && c.attributes['data-name'] === 'source'
 			);
 			if (!hasSource) return node;
 
@@ -57,7 +65,7 @@ export const config: Record<string, RuneConfig> = {
 			const contentChildren = node.children.filter(c => {
 				if (!isTag(c)) return true;
 				if (c.name === 'meta' && c.attributes['data-field']) return false;
-				if (c.name === 'pre' && c.attributes['data-field']) return false;
+				if (c.name === 'pre' && c.attributes['data-name']) return false;
 				return true;
 			});
 
@@ -65,7 +73,7 @@ export const config: Record<string, RuneConfig> = {
 			if (!html) return node;
 
 			const themedPre = makeTag('pre', {
-				'data-field': 'themed-source',
+				'data-name': 'themed-source',
 				'data-language': 'html',
 			}, [
 				makeTag('code', { 'data-language': 'html' }, [html]),
@@ -81,6 +89,7 @@ export const config: Record<string, RuneConfig> = {
 			color: { source: 'meta', default: 'dark' },
 			fit: { source: 'meta', default: 'auto', noBemClass: true },
 		},
+		editHints: { viewport: 'none' },
 		postTransform(node) {
 			const block = node.attributes.class?.split(' ')[0] || 'rf-mockup';
 			const device = readMeta(node, 'device') || node.attributes['data-device'] || 'browser';

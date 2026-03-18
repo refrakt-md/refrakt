@@ -249,8 +249,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Inline rune (attributes only). Refs include `chip`, `value`. Properties include `color`, `label`, `showValue`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ chip: 'none', value: 'none' }` — attribute-driven, not content-editable
-- [ ] This is an inline rune with minimal editor surface
+- [x] Add editHints: `{ chip: 'none', value: 'none' }` — attribute-driven, not content-editable
+- [x] This is an inline rune with minimal editor surface
+
+**Status: DONE** ✓
 
 ---
 
@@ -259,8 +261,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name` extensively on generated elements for groups, swatches, scales. Properties include `title`, `showContrast`, `showA11y`, `columns`.
 
 **Changes needed:**
-- [ ] Add editHints for generated `data-name` elements: `{ 'group-title': 'none', 'swatch-color': 'none', 'swatch-name': 'none', 'swatch-value': 'none', grid: 'none', scale: 'none' }`
-- [ ] Most content is generated from list parsing — editor should mark these as `'none'`
+- [x] Add editHints for generated `data-name` elements: `{ 'group-title': 'none', 'swatch-color': 'none', 'swatch-name': 'none', 'swatch-value': 'none', grid: 'none', scale: 'none' }`
+- [x] Most content is generated from list parsing — editor should mark these as `'none'`
+
+**Status: DONE** ✓
 
 ---
 
@@ -269,8 +273,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name` extensively on generated specimens, sizes, weights. Properties include `title`, `showSizes`, `showWeights`, `showCharset`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ title: 'none', specimen: 'none', specimens: 'none', sizes: 'none', weights: 'none', charset: 'none' }`
-- [ ] All content is generated from definition list parsing — entirely non-editable inline
+- [x] Add editHints: `{ title: 'none', specimen: 'none', specimens: 'none', sizes: 'none', weights: 'none', charset: 'none' }`
+- [x] All content is generated from definition list parsing — entirely non-editable inline
+
+**Status: DONE** ✓
 
 ---
 
@@ -279,8 +285,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name` extensively on generated scale items, radii, shadows. Properties include `title`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ title: 'none', section: 'none', scale: 'none', radii: 'none', shadows: 'none' }`
-- [ ] All content is generated from list parsing — entirely non-editable inline
+- [x] Add editHints: `{ title: 'none', section: 'none', scale: 'none', radii: 'none', shadows: 'none' }`
+- [x] All content is generated from list parsing — entirely non-editable inline
+
+**Status: DONE** ✓
 
 ---
 
@@ -289,9 +297,12 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. **Legacy issue:** postTransform in config reads `data-field` attributes (`data-field="source"`, `data-field="themed-source"`) on lines 52, 59, 68 of `runes/design/src/config.ts`.
 
 **Changes needed:**
-- [ ] Migrate `data-field` usage in postTransform to `data-name` pattern
-- [ ] Add editHints: `{ source: 'code' }` — the preview source should be code-editable
-- [ ] Update test expectations that check for `data-field` on `pre` elements
+- [x] Migrate `data-field` usage in postTransform to `data-name` pattern
+- [x] Add editHints: `{ source: 'code' }` — the preview source should be code-editable
+- [x] Update test expectations that check for `data-field` on `pre` elements
+- [x] Move `source` and `htmlSource` from properties to refs in schema
+
+**Status: DONE** ✓
 
 ---
 
@@ -300,8 +311,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Refs include `viewport`. Properties include `device`, `color`, `statusBar`, `label`, `url`, `scale`, `fit`. PostTransform generates device chrome.
 
 **Changes needed:**
-- [ ] Add editHints: `{ viewport: 'none' }` — content is the child markup
-- [ ] Device chrome is postTransform-generated, not directly editable
+- [x] Add editHints: `{ viewport: 'none' }` — content is the child markup
+- [x] Device chrome is postTransform-generated, not directly editable
+
+**Status: DONE** ✓
 
 ---
 
@@ -310,8 +323,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name="title"` and `data-name="sections"` manually. Properties include `title`, `tokens`, `scope`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ title: 'none', sections: 'none' }` — container for child design runes
-- [ ] Move manual `data-name` assignments to refs in `createComponentRenderable`
+- [x] Add editHints: `{ title: 'none', sections: 'none' }` — container for child design runes
+- [x] Move manual `data-name` assignments to refs in `createComponentRenderable`
+
+**Status: DONE** ✓
 
 ---
 
