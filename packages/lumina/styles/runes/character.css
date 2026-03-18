@@ -1,38 +1,28 @@
 /* Character */
 .rf-character {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
 }
+
+/* Badge bar — surface strip */
 .rf-character__badge {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: 0.75rem 1.25rem;
+	align-items: center;
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: 0.625rem 1rem;
 	margin-bottom: 1rem;
 }
-.rf-character__role-badge {
-	display: inline-block;
-	padding: 0.25rem 0.75rem;
-	border-radius: var(--rf-radius-full);
-	font-size: 0.75rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	background: var(--rf-color-muted-bg);
-	color: var(--rf-color-muted);
-}
+.rf-character__role-badge,
 .rf-character__status-badge {
-	display: inline-block;
-	padding: 0.25rem 0.75rem;
-	border-radius: var(--rf-radius-full);
-	font-size: 0.75rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	background: var(--rf-color-muted-bg);
+	font-size: 0.8125rem;
+	font-weight: 400;
+	text-transform: capitalize;
 	color: var(--rf-color-muted);
 }
+
+/* Portrait */
 .rf-character__portrait {
 	float: right;
 	margin-left: 1.5rem;
@@ -47,6 +37,8 @@
 	height: 100%;
 	object-fit: cover;
 }
+
+/* Content */
 .rf-character__sections {
 	display: flex;
 	flex-direction: column;
@@ -67,23 +59,19 @@
 	color: var(--rf-color-heading);
 }
 
-/* Role variant colors */
+/* Role variant colors — text color only */
 .rf-character[data-role="protagonist"] .rf-character__role-badge {
-	background: var(--rf-color-success-bg);
 	color: var(--rf-color-success);
 }
 .rf-character[data-role="antagonist"] .rf-character__role-badge {
-	background: var(--rf-color-danger-bg);
 	color: var(--rf-color-danger);
 }
 
-/* Status indicators */
+/* Status indicators — text color only */
 .rf-character[data-status="dead"] .rf-character__status-badge {
-	background: var(--rf-color-danger-bg);
 	color: var(--rf-color-danger);
 }
 .rf-character[data-status="missing"] .rf-character__status-badge {
-	background: var(--rf-color-warning-bg);
 	color: var(--rf-color-warning);
 }
 

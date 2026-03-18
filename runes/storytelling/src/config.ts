@@ -1,4 +1,5 @@
 import type { RuneConfig } from '@refrakt-md/transform';
+import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
 
 export const config: Record<string, RuneConfig> = {
 	Character: {
@@ -25,12 +26,21 @@ export const config: Record<string, RuneConfig> = {
 
 	Realm: {
 		block: 'realm',
-		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
 			tags: { source: 'meta' },
 			parent: { source: 'meta' },
+			layout: { source: 'meta', default: 'stacked' },
+			ratio: { source: 'meta', default: '1 1', noBemClass: true },
+			valign: { source: 'meta', default: 'top', noBemClass: true },
+			gap: { source: 'meta', default: 'default', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			ratio: { prop: '--split-ratio', transform: ratioToFr },
+			valign: { prop: '--split-valign', transform: resolveValign },
+			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		structure: {
 			badge: {
@@ -41,6 +51,7 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

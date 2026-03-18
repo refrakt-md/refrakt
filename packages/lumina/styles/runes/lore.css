@@ -1,28 +1,28 @@
 /* Lore */
 .rf-lore {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
 	position: relative;
 }
+
+/* Badge bar — surface strip */
 .rf-lore__badge {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: 0.75rem 1.25rem;
+	align-items: center;
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: 0.625rem 1rem;
 	margin-bottom: 1rem;
 }
 .rf-lore__category-badge {
-	display: inline-block;
-	padding: 0.25rem 0.75rem;
-	border-radius: var(--rf-radius-full);
-	font-size: 0.75rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	background: var(--rf-color-muted-bg);
+	font-size: 0.8125rem;
+	font-weight: 400;
+	text-transform: capitalize;
 	color: var(--rf-color-muted);
 }
+
+/* Content */
 .rf-lore__content {
 	transition: filter 0.3s ease;
 }
@@ -31,11 +31,17 @@
 	padding-left: 1.5rem;
 }
 .rf-lore__content blockquote {
-	border-left: 3px solid var(--rf-color-primary);
-	padding-left: 1rem;
+	border-left: 2px solid var(--rf-color-primary);
+	background: var(--rf-color-surface);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	padding: 0.75rem 1.25rem;
 	margin: 1rem 0;
 	font-style: italic;
 	color: var(--rf-color-muted);
+	line-height: 1.6;
+}
+.rf-lore__content blockquote p {
+	margin: 0;
 }
 .rf-lore > span[property="title"] {
 	display: block;
@@ -58,7 +64,6 @@
 	transform: translate(-50%, -50%);
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-bg);
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	font-size: 0.875rem;
 	font-weight: 500;

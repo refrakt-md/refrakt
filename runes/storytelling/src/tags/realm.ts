@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class RealmSectionModel extends Model {
@@ -23,6 +23,7 @@ class RealmSectionModel extends Model {
 export const realmSection = createSchema(RealmSectionModel);
 
 export const realm = createContentModelSchema({
+	base: SplitLayoutModel,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the realm header.' },
 		type: { type: String, required: false, description: 'Kind of location (e.g. city, forest, dungeon, plane, continent).' },
@@ -36,8 +37,8 @@ export const realm = createContentModelSchema({
 		emitTag: 'realm-section',
 		emitAttributes: { name: '$heading' },
 		fields: [
-			{ name: 'scene', match: 'image', optional: true },
-			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'scene', match: 'paragraph', optional: true },
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'items', match: 'tag', optional: true, greedy: true },
 		],
 		sectionModel: {
@@ -58,68 +59,126 @@ export const realm = createContentModelSchema({
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
-		// Extract scene image from preamble
-		const sceneNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.scene), config) as RenderableTreeNode[],
+		// Layout meta tags (following recipe pattern)
+		const layout = (attrs.layout as string) || 'stacked';
+		const ratio = (attrs.ratio as string) || '1 1';
+		const valign = (attrs.valign as string) || 'top';
+		const gap = (attrs.gap as string) || 'default';
+		const collapse = attrs.collapse as string | undefined;
+
+		const layoutMeta = new Tag('meta', { content: layout });
+		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+
+		// Extract scene image from the first preamble paragraph (if it contains an image)
+		const sceneAstNodes = asNodes(resolved.scene);
+		const sceneRendered = new RenderableNodeCursor(
+			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
 		);
-		const scene = sceneNodes.tag('img').limit(1);
-		const hasScene = scene.count() > 0;
-		const sceneDiv = hasScene ? scene.wrap('div') : undefined;
+
+		// The image is wrapped in a <p> by Markdoc — look inside paragraph children for <img>
+		let sceneImgTag: Markdoc.Tag | undefined;
+		for (const node of sceneRendered.toArray()) {
+			if (Markdoc.Tag.isTag(node) && node.name === 'img') {
+				sceneImgTag = node;
+				break;
+			}
+			if (Markdoc.Tag.isTag(node) && node.name === 'p') {
+				const img = node.children.find(
+					(c: any) => Markdoc.Tag.isTag(c) && c.name === 'img'
+				) as Markdoc.Tag | undefined;
+				if (img) {
+					sceneImgTag = img;
+					break;
+				}
+			}
+		}
+
+		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
+		let extraDescription: RenderableTreeNode[] = [];
+
+		if (sceneImgTag) {
+			sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
+		} else if (sceneRendered.count() > 0) {
+			// First paragraph was text, not an image — include as description
+			extraDescription = sceneRendered.toArray();
+		}
+
+		// Transform description paragraphs
+		const descAstNodes = asNodes(resolved.description);
+		const descRendered = new RenderableNodeCursor(
+			Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
+		);
 
 		const sections = sectionNodes.tag('div').typeof('RealmSection');
 		const hasSections = sections.count() > 0;
 
-		const children: any[] = [nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta];
-		if (sceneDiv) children.push(sceneDiv.next());
-
-		const schemaMap = {
-			name: nameTag,
-			additionalType: realmTypeMeta,
-		};
+		// Build content children (everything except scene)
+		const contentChildren: any[] = [];
+		const allDescNodes = [...extraDescription, ...descRendered.toArray()];
+		if (allDescNodes.length > 0) {
+			contentChildren.push(...allDescNodes);
+		}
 
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
-			children.push(sectionsContainer.next());
-
-			return createComponentRenderable(schema.Realm, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					realmType: realmTypeMeta,
-					scale: scaleMeta,
-					tags: tagsMeta,
-					parent: parentMeta,
-					section: sections,
-				},
-				refs: {
-					name: nameTag,
-					...(sceneDiv ? { scene: sceneDiv } : {}),
-					sections: sectionsContainer,
-				},
-				schema: schemaMap,
-				children,
-			});
+			contentChildren.push(sectionsContainer.next());
 		} else {
 			const body = sectionNodes.wrap('div');
-			children.push(body.next());
-
-			return createComponentRenderable(schema.Realm, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					realmType: realmTypeMeta,
-					scale: scaleMeta,
-					tags: tagsMeta,
-					parent: parentMeta,
-				},
-				refs: {
-					name: nameTag,
-					...(sceneDiv ? { scene: sceneDiv } : {}),
-					body,
-				},
-				schema: schemaMap,
-				children,
-			});
+			if (sectionNodes.count() > 0) {
+				contentChildren.push(body.next());
+			}
 		}
+
+		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
+
+		// Build children array: meta tags, then scene before content (image at top in stacked)
+		const children: any[] = [
+			nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
+			layoutMeta,
+			...(ratioMeta ? [ratioMeta] : []),
+			...(valignMeta ? [valignMeta] : []),
+			...(gapMeta ? [gapMeta] : []),
+			...(collapseMeta ? [collapseMeta] : []),
+		];
+		if (sceneDiv) children.push(sceneDiv.next());
+		children.push(mainContent.next());
+
+		// SEO schema
+		const schemaMap: Record<string, any> = {
+			name: nameTag,
+			additionalType: realmTypeMeta,
+		};
+		if (sceneImgTag) {
+			schemaMap.image = sceneImgTag;
+		}
+
+		return createComponentRenderable(schema.Realm, {
+			tag: 'article',
+			property: 'contentSection',
+			properties: {
+				name: nameTag,
+				realmType: realmTypeMeta,
+				scale: scaleMeta,
+				tags: tagsMeta,
+				parent: parentMeta,
+				layout: layoutMeta,
+				ratio: ratioMeta,
+				valign: valignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
+				...(hasSections ? { section: sections } : {}),
+			},
+			refs: {
+				name: nameTag,
+				...(sceneDiv ? { scene: sceneDiv } : {}),
+				content: mainContent,
+				...(hasSections ? { sections: sections.wrap('div') } : {}),
+			},
+			schema: schemaMap,
+			children,
+		});
 	},
 });

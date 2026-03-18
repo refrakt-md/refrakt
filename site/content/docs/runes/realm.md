@@ -17,7 +17,9 @@ Describe a location with sections for geography, features, or history.
 
 {% preview source=true %}
 
-{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
+{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" layout="split" %}
+![Rivendell](https://assets.refrakt.md/realm-rivendell.png)
+
 The Last Homely House East of the Sea.
 
 ## Geography

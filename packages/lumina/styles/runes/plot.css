@@ -1,8 +1,5 @@
 /* Plot */
 .rf-plot {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
 }
 .rf-plot > span[property="title"] {
