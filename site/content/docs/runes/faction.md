@@ -17,7 +17,9 @@ Describe a faction with sections that break down its structure.
 
 {% preview source=true %}
 
-{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
+{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" layout="split" %}
+![The Silver Order](https://assets.refrakt.md/faction-the-silver-order.png)
+
 A prestigious order of knights sworn to protect the realm.
 
 ## Ranks

@@ -3,9 +3,6 @@
 	display: flex;
 	align-items: center;
 	gap: 1rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 1rem 1.5rem;
 	margin: 1rem 0;
 }
 .rf-bond > span[property="from"],

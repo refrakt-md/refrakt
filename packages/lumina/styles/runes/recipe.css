@@ -1,23 +1,25 @@
-/* Recipe */
+/* Recipe — editorial cookbook aesthetic */
+
+/* Root: no border box, just flow spacing */
 .rf-recipe {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
 }
+
+/* Header */
 .rf-recipe__header {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1.25rem;
 }
 .rf-recipe .rf-recipe__eyebrow {
-	font-size: 0.875rem;
+	font-size: 0.8rem;
 	font-weight: 600;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
+	margin: 0 0 0.375rem;
 }
 .rf-recipe__headline {
 	margin-top: 0;
+	margin-bottom: 0.25rem;
 }
 .rf-recipe .rf-recipe__blurb {
 	color: var(--rf-color-muted);
@@ -27,49 +29,109 @@
 .rf-recipe__image {
 	margin-bottom: 1rem;
 }
+
+/* Meta bar — soft surface strip instead of bordered divider */
 .rf-recipe__meta {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1rem;
+	gap: 0.75rem 1.25rem;
 	align-items: center;
-	padding-bottom: 1rem;
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: 0.625rem 1rem;
 	margin-bottom: 1.5rem;
-	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-recipe__meta-item {
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
-	font-weight: 500;
+	font-weight: 400;
 }
+
+/* Difficulty — plain text, same style as other meta items */
 .rf-recipe__badge {
-	font-size: 0.75rem;
-	font-weight: 600;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-full);
+	font-size: 0.8125rem;
+	font-weight: 400;
 	text-transform: capitalize;
+	color: var(--rf-color-muted);
 }
-/* Difficulty colors driven by data-difficulty attribute from engine */
-[data-difficulty="easy"] .rf-recipe__badge { color: var(--rf-color-success); background: var(--rf-color-success-bg); }
-[data-difficulty="medium"] .rf-recipe__badge { color: var(--rf-color-warning); background: var(--rf-color-warning-bg); }
-[data-difficulty="hard"] .rf-recipe__badge { color: var(--rf-color-danger); background: var(--rf-color-danger-bg); }
+
+/* Content wrapper */
 .rf-recipe__content {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: 1.75rem;
 }
+
+/* Ingredients — surfaced zone with custom markers */
 .rf-recipe__content ul {
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: 1.25rem 1.25rem 1.25rem 2.5rem;
 	list-style: disc;
-	padding-left: 1.5rem;
+	margin: 0;
 }
+.rf-recipe__content ul li {
+	padding: 0.2rem 0;
+	line-height: 1.6;
+}
+.rf-recipe__content ul li::marker {
+	color: var(--rf-color-primary);
+}
+
+/* Steps — numbered with styled counters */
 .rf-recipe__content ol {
-	padding-left: 1.5rem;
+	padding-left: 0;
+	margin: 0;
+	list-style: none;
+	counter-reset: recipe-step;
 }
-.rf-recipe__content ol li {
-	padding: 0.25rem 0;
+.rf-recipe__content ol > li {
+	counter-increment: recipe-step;
+	padding: 0.625rem 0;
+	padding-left: 2.25rem;
+	position: relative;
+	line-height: 1.65;
 }
+.rf-recipe__content ol > li + li {
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-recipe__content ol > li::before {
+	content: counter(recipe-step);
+	position: absolute;
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--rf-color-primary);
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-full);
+}
+
+/* Tips — callout accent like hint */
+.rf-recipe__content blockquote {
+	border-left: 2px solid var(--rf-color-primary);
+	background: var(--rf-color-surface);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	padding: 0.75rem 1.25rem;
+	margin: 0;
+	font-size: 0.9125rem;
+	font-style: italic;
+	color: var(--rf-color-muted);
+	line-height: 1.6;
+}
+.rf-recipe__content blockquote p {
+	margin: 0;
+}
+
 /* Media zone */
 .rf-recipe__media {
 	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
 }
 .rf-recipe__media img {
 	display: block;
@@ -77,8 +139,50 @@
 	height: auto;
 	border-radius: var(--rf-radius-lg);
 }
-/* Split layout: meta bar spans full width above the grid */
+
+/* Split layout — shared */
+.rf-recipe[data-layout="split"],
+.rf-recipe[data-layout="split-reverse"] {
+	display: grid;
+	gap: var(--split-gap, 2rem);
+	align-items: var(--split-valign, start);
+}
+/* Both use the same column template */
+.rf-recipe[data-layout="split"],
+.rf-recipe[data-layout="split-reverse"] {
+	grid-template-columns: var(--split-ratio, 1fr 1fr);
+}
+/* Split: content left (col 1), media right (col 2) — DOM order is media first,
+   so explicit placement is needed */
+.rf-recipe[data-layout="split"] > .rf-recipe__content {
+	grid-column: 1;
+	grid-row: 2;
+}
+.rf-recipe[data-layout="split"] > .rf-recipe__media {
+	grid-column: 2;
+	grid-row: 2;
+}
+/* Split-reverse: media left (col 1), content right (col 2) — matches DOM order */
+/* Meta bar spans full width in split layouts */
 .rf-recipe[data-layout="split"] > .rf-recipe__meta,
 .rf-recipe[data-layout="split-reverse"] > .rf-recipe__meta {
 	grid-column: 1 / -1;
+}
+/* Collapse to single column on small screens */
+@media (max-width: 640px) {
+	.rf-recipe[data-layout="split"],
+	.rf-recipe[data-layout="split-reverse"] {
+		grid-template-columns: 1fr;
+	}
+	.rf-recipe[data-layout="split"] > .rf-recipe__content,
+	.rf-recipe[data-layout="split"] > .rf-recipe__media {
+		grid-column: auto;
+		grid-row: auto;
+	}
+}
+
+/* Split layout media gets subtle depth */
+.rf-recipe[data-layout="split"] .rf-recipe__media img,
+.rf-recipe[data-layout="split-reverse"] .rf-recipe__media img {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

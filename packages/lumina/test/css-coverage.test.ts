@@ -31,6 +31,12 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
 	'.rf-changelog__header', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
 	'.rf-howto__header', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
+	'.rf-itinerary__header', '.rf-itinerary__eyebrow', '.rf-itinerary__headline', '.rf-itinerary__blurb', '.rf-itinerary__image',
+	'.rf-cast__header', '.rf-cast__eyebrow', '.rf-cast__headline', '.rf-cast__blurb', '.rf-cast__image',
+	'.rf-organization__header', '.rf-organization__eyebrow', '.rf-organization__headline', '.rf-organization__blurb', '.rf-organization__image',
+	'.rf-timeline__header', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
+	'.rf-event__header', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
+	'.rf-preview__header', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
 ]);
 
 // ─── Helpers ───

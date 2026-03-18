@@ -47,35 +47,32 @@
 .rf-step__content {
 	display: contents;
 }
+
+/* Individual step — borderless, matching recipe */
 .rf-step {
 	counter-increment: step;
 	position: relative;
-	padding-left: 3.25rem;
-	padding-bottom: 1.75rem;
-	border-left: 2px solid var(--rf-color-border);
-	margin-left: 0.875rem;
+	padding: 0.625rem 0 0.625rem 2.25rem;
 }
-.rf-step:last-child {
-	border-left-color: transparent;
-	padding-bottom: 0;
+.rf-step + .rf-step {
+	border-top: 1px solid var(--rf-color-border);
 }
 .rf-step::before {
 	content: counter(step);
 	position: absolute;
-	left: -0.9375rem;
-	top: 0;
-	width: 1.875rem;
-	height: 1.875rem;
-	background: var(--rf-color-border);
-	color: var(--rf-color-muted);
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	background: var(--rf-color-surface);
+	color: var(--rf-color-primary);
 	border-radius: var(--rf-radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-weight: 650;
-	font-size: 0.8rem;
+	font-weight: 700;
+	font-size: 0.75rem;
 	font-variant-numeric: tabular-nums;
-	box-shadow: 0 0 0 4px var(--rf-color-bg);
 }
 .rf-step h1,
 .rf-step h2,
@@ -95,7 +92,6 @@
 	margin-top: 0;
 }
 .rf-step p {
-	color: var(--rf-color-muted);
 	font-size: 0.925rem;
 	line-height: 1.65;
 }

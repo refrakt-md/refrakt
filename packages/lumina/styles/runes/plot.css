@@ -1,43 +1,70 @@
 /* Plot */
 .rf-plot {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
+	display: flex;
+	flex-direction: column;
 }
-.rf-plot > span[property="title"] {
+.rf-plot > span[property="name"] {
 	display: block;
 	font-size: 1.5rem;
 	font-weight: 700;
-	margin-bottom: 1rem;
+	margin-bottom: 0.5rem;
 	color: var(--rf-color-heading);
+	order: -1;
 }
+
+/* Meta bar — surface strip */
+.rf-plot__badge {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.25rem;
+	align-items: center;
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: 0.625rem 1rem;
+	margin-bottom: 1rem;
+}
+.rf-plot__type-badge,
+.rf-plot__structure-badge {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	text-transform: capitalize;
+	color: var(--rf-color-muted);
+}
+.rf-plot__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
+.rf-plot__structure-badge::before { content: 'Structure: '; font-weight: 400; opacity: 0.65; }
+
+/* Description */
+.rf-plot > p {
+	color: var(--rf-color-muted);
+	margin-bottom: 1rem;
+	margin-top: 0;
+}
+
+/* Beats list */
 .rf-plot ol {
 	list-style: none;
 	padding-left: 0;
 	margin: 0;
-	position: relative;
-}
-.rf-plot--linear ol {
-	border-left: 2px solid var(--rf-color-border);
-	padding-left: 1.5rem;
 }
 
-/* Beat */
+/* Beat — all variants use left padding with dot at left: 0 */
 .rf-beat {
 	position: relative;
-	padding: 0.75rem 0;
+	padding: 0.625rem 0 0.625rem 2.25rem;
+}
+.rf-beat + .rf-beat {
+	border-top: 1px solid var(--rf-color-border);
 }
 .rf-beat::before {
 	content: '';
 	position: absolute;
-	left: -1.75rem;
-	top: 1rem;
+	left: 0.375rem;
+	top: 0.875rem;
 	width: 0.75rem;
 	height: 0.75rem;
 	border-radius: var(--rf-radius-full);
-	background: var(--rf-color-border);
-	border: 2px solid var(--rf-color-bg);
+	background: var(--rf-color-surface-active);
 }
 .rf-beat > span[property="label"] {
 	font-weight: 600;
@@ -47,7 +74,26 @@
 .rf-beat__body {
 	margin-top: 0.25rem;
 	font-size: 0.9375rem;
-	color: var(--rf-color-text);
+	color: var(--rf-color-muted);
+	line-height: 1.6;
+}
+.rf-beat__body p {
+	margin: 0;
+}
+
+/* Linear variant — connector line through dot centers */
+.rf-plot--linear ol {
+	/* Dot center = left: 0.375rem + width/2 = 0.375 + 0.375 = 0.75rem */
+	border-left: 2px solid var(--rf-color-border);
+	margin-left: calc(0.75rem - 1px);
+	padding-left: 0;
+}
+.rf-plot--linear .rf-beat {
+	padding-left: 2.25rem;
+	margin-left: calc(-0.75rem + 1px);
+}
+.rf-plot--linear .rf-beat + .rf-beat {
+	border-top: none;
 }
 
 /* Beat status variants */
@@ -60,15 +106,14 @@
 
 .rf-beat--active::before {
 	background: var(--rf-color-primary);
-	box-shadow: 0 0 0 3px var(--rf-color-primary-bg);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rf-color-primary) 20%, transparent);
 }
 .rf-beat--active > span[property="label"] {
 	color: var(--rf-color-primary);
 }
 
 .rf-beat--planned::before {
-	background: var(--rf-color-muted-bg);
-	border-color: var(--rf-color-border);
+	background: var(--rf-color-surface-active);
 }
 
 .rf-beat--abandoned > span[property="label"] {

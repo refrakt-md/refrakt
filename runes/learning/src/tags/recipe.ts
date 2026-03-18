@@ -153,6 +153,12 @@ export const recipe = createContentModelSchema({
 		]).wrap('div');
 
 		const mediaDiv = side.wrap('div');
+		const hasMedia = side.toArray().length > 0;
+
+		// Find first image in media zone for SEO structured data
+		const seoImage = side.toArray().find(
+			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'img'
+		) as Markdoc.Tag | undefined;
 
 		const children: any[] = [
 			prepTimeMeta,
@@ -164,8 +170,10 @@ export const recipe = createContentModelSchema({
 			...(valignMeta ? [valignMeta] : []),
 			...(gapMeta ? [gapMeta] : []),
 			...(collapseMeta ? [collapseMeta] : []),
+			// Media before content so the image appears at the top in stacked layout.
+			// In split layouts, CSS grid explicit placement controls the visual order.
+			...(hasMedia ? [mediaDiv.next()] : []),
 			mainContent.next(),
-			...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 		];
 
 		return createComponentRenderable(schema.Recipe, {
@@ -196,6 +204,7 @@ export const recipe = createContentModelSchema({
 				prepTime: prepTimeMeta,
 				cookTime: cookTimeMeta,
 				recipeYield: servingsMeta,
+				...(seoImage ? { image: seoImage } : {}),
 			},
 			children,
 		});

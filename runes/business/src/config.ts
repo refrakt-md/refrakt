@@ -11,6 +11,9 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Cast: {
 		block: 'cast',
+		modifiers: {
+			layout: { source: 'meta', default: 'grid' },
+		},
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', members: 'none' },
 	},

@@ -14,10 +14,24 @@ class CastMemberModel extends Model {
 	@attribute({ type: String, required: false, description: 'Job title or role held by this member.' })
 	role: string = '';
 
+	@attribute({ type: String, required: false, description: 'Portrait image URL.' })
+	image: string = '';
+
 	transform(): RenderableTreeNodes {
 		const nameTag = new Tag('span', {}, [this.name]);
 		const roleTag = new Tag('span', {}, [this.role]);
 		const body = this.transformChildren().wrap('div');
+
+		const children: any[] = [];
+
+		// Create portrait image from attribute (extracted by item model or set explicitly)
+		let portraitTag: Markdoc.Tag | undefined;
+		if (this.image) {
+			portraitTag = new Tag('img', { src: this.image, alt: this.name });
+			children.push(portraitTag);
+		}
+
+		children.push(nameTag, roleTag, body.next());
 
 		return createComponentRenderable(schema.CastMember, {
 			tag: 'li',
@@ -29,8 +43,9 @@ class CastMemberModel extends Model {
 			schema: {
 				name: nameTag,
 				jobTitle: roleTag,
+				...(portraitTag ? { image: portraitTag } : {}),
 			},
-			children: [nameTag, roleTag, body.next()],
+			children,
 		});
 	}
 }
@@ -49,12 +64,13 @@ export const cast = createContentModelSchema({
 				name: 'members', match: 'list', optional: true, greedy: true,
 				itemModel: {
 					fields: [
+						{ name: 'image', match: 'image' as const, optional: true, extract: 'src' },
 						{ name: 'role', match: 'text' as const, pattern: /\s*[-–—]\s*(.+)$/, optional: true },
 						{ name: 'name', match: 'text' as const, pattern: 'remainder' as const },
 					],
 				},
 				emitTag: 'cast-member',
-				emitAttributes: { name: '$name', role: '$role' },
+				emitAttributes: { name: '$name', role: '$role', image: '$image' },
 			} as any,
 		],
 	},

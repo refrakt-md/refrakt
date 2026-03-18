@@ -21,6 +21,9 @@ class BeatModel extends Model {
 	status: string = 'planned';
 
 	@attribute({ type: String, required: false })
+	description: string = '';
+
+	@attribute({ type: String, required: false })
 	id: string = '';
 
 	@attribute({ type: String, required: false })
@@ -37,7 +40,18 @@ class BeatModel extends Model {
 		const idMeta = new Tag('meta', { content: this.id });
 		const trackMeta = new Tag('meta', { content: this.track });
 		const followsMeta = new Tag('meta', { content: this.follows });
-		const body = this.transformChildren().wrap('div');
+
+		// Build body from description attribute + any block-level children
+		const childContent = this.transformChildren();
+		const descText = this.description.replace(/^[\s—–-]+/, '').trim();
+		const bodyChildren: any[] = [];
+		if (descText) {
+			bodyChildren.push(new Tag('p', {}, [descText]));
+		}
+		if (childContent.count() > 0) {
+			bodyChildren.push(...childContent.toArray());
+		}
+		const body = new RenderableNodeCursor(bodyChildren).wrap('div');
 
 		return createComponentRenderable(schema.Beat, {
 			tag: 'li',
@@ -68,24 +82,24 @@ export const plot = createContentModelSchema({
 	contentModel: {
 		type: 'sequence' as const,
 		fields: [
-			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{
 				name: 'beats', match: 'list', optional: true, greedy: true,
 				itemModel: {
 					fields: [
 						{ name: 'marker', match: 'text' as const, pattern: /^\[(x|>|\s|-)\]\s*/, optional: true },
 						{ name: 'label', match: 'strong' as const, optional: true },
-						{ name: 'labelText', match: 'text' as const, pattern: 'remainder' as const, optional: true },
+						{ name: 'description', match: 'text' as const, pattern: 'remainder' as const, optional: true },
 					],
 				},
 				emitTag: 'beat',
-				emitAttributes: { label: '$label|$labelText', status: '$marker' },
+				emitAttributes: { label: '$label', status: '$marker', description: '$description' },
 			} as any,
 		],
 	},
 	transform(resolved, attrs, config) {
-		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+		const descRendered = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
 		);
 		const itemStream = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.beats), config) as RenderableTreeNode[],
@@ -100,8 +114,8 @@ export const plot = createContentModelSchema({
 		const beatsList = new Tag('ol', {}, beats.toArray());
 
 		const children: any[] = [titleTag, plotTypeMeta, structureMeta, tagsMeta];
-		if (header.count() > 0) {
-			children.push(header.wrap('header').next());
+		if (descRendered.count() > 0) {
+			children.push(...descRendered.toArray());
 		}
 		children.push(beatsList);
 

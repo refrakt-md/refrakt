@@ -1,10 +1,6 @@
 /* Tabs */
 .rf-tabs {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	overflow: hidden;
 	margin: 1.5rem 0;
-	background: var(--rf-color-bg);
 }
 .rf-tabs__header {
 	margin-bottom: 1.5rem;
@@ -42,9 +38,10 @@
 .rf-tabs__image {
 	margin-bottom: 1rem;
 }
+
+/* Tab bar — clean bottom line, no background */
 .rf-tabs__tabs {
 	display: flex;
-	background: var(--rf-color-surface);
 	border-bottom: 1px solid var(--rf-color-border);
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -54,37 +51,41 @@
 	padding: 0;
 	margin: 0;
 }
+
+/* Tab buttons */
 .rf-tab {
 	flex: 0 0 auto;
 	padding: 0.625rem 1.25rem;
-	font-size: 0.85rem;
+	font-size: 0.875rem;
 	font-weight: 500;
 	color: var(--rf-color-muted);
 	background: none;
 	border: none;
 	border-bottom: 2px solid transparent;
 	cursor: pointer;
-	transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
+	transition: color 200ms ease, border-color 200ms ease;
 	white-space: nowrap;
-	margin-bottom: -1px;
 	font-family: inherit;
 }
 .rf-tab:hover {
 	color: var(--rf-color-text);
-	background: var(--rf-color-surface-hover);
 }
 .rf-tab--active {
 	color: var(--rf-color-primary);
 	border-bottom-color: var(--rf-color-primary);
 	font-weight: 600;
-	background: var(--rf-color-bg);
 }
-.rf-tabs__panel {
-	padding: 1.25rem 1.5rem;
+
+/* Panel content — breathing room */
+.rf-tab-panel {
+	padding: 1.5rem 0;
 }
-.rf-tabs__panel pre {
-	margin: 0;
+.rf-tab-panel > *:first-child {
+	margin-top: 0;
 }
-.rf-tabs__panel p:last-child {
+.rf-tab-panel > *:last-child {
 	margin-bottom: 0;
+}
+.rf-tab-panel pre {
+	margin: 0;
 }
