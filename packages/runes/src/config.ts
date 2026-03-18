@@ -575,6 +575,7 @@ export const coreConfig: ThemeConfig = {
 
 		TabGroup: { block: 'tabs', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		Tab: { block: 'tab', parent: 'TabGroup', editHints: { name: 'inline' } },
+		TabPanel: { block: 'tab-panel', parent: 'TabGroup' },
 		DataTable: {
 			block: 'datatable',
 			modifiers: {

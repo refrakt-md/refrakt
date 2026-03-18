@@ -77,15 +77,15 @@
 }
 
 /* Panel content — breathing room */
-.rf-tabs__panels [data-rune="tab-panel"] {
+.rf-tab-panel {
 	padding: 1.5rem 0;
 }
-.rf-tabs__panels [data-rune="tab-panel"] > *:first-child {
+.rf-tab-panel > *:first-child {
 	margin-top: 0;
 }
-.rf-tabs__panels [data-rune="tab-panel"] > *:last-child {
+.rf-tab-panel > *:last-child {
 	margin-bottom: 0;
 }
-.rf-tabs__panels [data-rune="tab-panel"] pre {
+.rf-tab-panel pre {
 	margin: 0;
 }
