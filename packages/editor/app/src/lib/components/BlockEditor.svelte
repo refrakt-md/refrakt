@@ -9,14 +9,18 @@
 		blockLabel,
 		extractRuneInner,
 		rebuildRuneSource,
+		groupIntoEditorBlocks,
 		type ParsedBlock,
 		type RuneBlock,
+		type EditorBlock,
+		type ProseBlock,
 	} from '../editor/block-parser.js';
 	import { findSectionMapping, applySectionEdit, findActionMapping, applyActionEdit, findCommandMapping, applyCommandEdit, applyLanguageEdit, findImageMapping, applyImageEdit, findIconMapping, applyIconEdit, type SectionMapping, type ActionMapping, type CommandMapping, type ImageMapping, type IconMapping } from '../editor/section-mapper.js';
 	import { stripInlineMarkdown } from '../editor/inline-markdown.js';
 	import { editorState } from '../state/editor.svelte.js';
 	import BlockCard from './BlockCard.svelte';
 	import type { SectionClickInfo } from './BlockCard.svelte';
+	import ProseBlockCard from './ProseBlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
@@ -124,6 +128,77 @@
 		onchange(newSource);
 	}
 
+	// ── Prose block grouping ─────────────────────────────────────
+
+	let editorBlocks: EditorBlock[] = $derived(groupIntoEditorBlocks(blocks));
+
+	/** Map an editor block index to the range of flat block indices it covers */
+	function editorBlockToFlatRange(editorIndex: number): [number, number] {
+		const eb = editorBlocks[editorIndex];
+		if (!eb) return [0, 0];
+		if (eb.type === 'prose') {
+			const firstChild = eb.children[0];
+			const lastChild = eb.children[eb.children.length - 1];
+			const start = blocks.indexOf(firstChild);
+			const end = blocks.indexOf(lastChild);
+			return [start, end];
+		}
+		// Rune block — find its position in the flat array
+		const idx = blocks.indexOf(eb as ParsedBlock);
+		return [idx, idx];
+	}
+
+	/** Map a flat block index to the corresponding editor block index */
+	function flatToEditorIndex(flatIndex: number): number {
+		let offset = 0;
+		for (let i = 0; i < editorBlocks.length; i++) {
+			const eb = editorBlocks[i];
+			const count = eb.type === 'prose' ? eb.children.length : 1;
+			if (flatIndex < offset + count) return i;
+			offset += count;
+		}
+		return editorBlocks.length - 1;
+	}
+
+	// ── Prose editing state ──────────────────────────────────────
+
+	let editingProseIndex: number | null = $state(null);
+
+	function startProseEdit(editorIndex: number) {
+		editingProseIndex = editorIndex;
+		// Close any open popover/edit panel
+		activeIndex = null;
+		anchorPoint = null;
+		editingFrontmatter = false;
+	}
+
+	function handleProseSourceChange(editorIndex: number, newSource: string) {
+		const eb = editorBlocks[editorIndex];
+		if (!eb || eb.type !== 'prose') return;
+
+		editingProseIndex = null;
+
+		// If source is empty, remove all children
+		if (!newSource.trim()) {
+			const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
+			blocks = [...blocks.slice(0, startFlat), ...blocks.slice(endFlat + 1)];
+			syncToSource();
+			return;
+		}
+
+		// Re-parse the edited source
+		const newChildren = parseBlocks(newSource);
+		const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
+
+		// Replace the old children in the flat array
+		blocks = [
+			...blocks.slice(0, startFlat),
+			...newChildren,
+			...blocks.slice(endFlat + 1),
+		];
+		syncToSource();
+	}
+
 	// ── Frontmatter summary for visual mode header ──────────────
 
 	let editingFrontmatter = $state(false);
@@ -171,24 +246,39 @@
 		return `left: ${left}px; top: ${top}px; max-height: min(600px, ${maxH}px);`;
 	});
 
-	function toggleBlock(index: number, x: number, y: number) {
+	function toggleBlock(editorIndex: number, x: number, y: number) {
 		editingFrontmatter = false;
-		if (activeIndex === index) {
+		editingProseIndex = null;
+		const eb = editorBlocks[editorIndex];
+		if (!eb) return;
+
+		// For prose blocks, toggle edit mode instead of opening a popover
+		if (eb.type === 'prose') {
+			if (editingProseIndex === editorIndex) {
+				editingProseIndex = null;
+			} else {
+				startProseEdit(editorIndex);
+			}
+			return;
+		}
+
+		if (activeIndex === editorIndex) {
 			activeIndex = null;
 			anchorPoint = null;
 			pendingRuneIndex = null;
 		} else {
 			editSessionId++;
-			activeIndex = index;
+			activeIndex = editorIndex;
 			anchorPoint = { x, y };
 			pendingRuneIndex = null;
 		}
 	}
 
-	function handleRuneClick(index: number, x: number, y: number, nestedRuneIndex?: number) {
+	function handleRuneClick(editorIndex: number, x: number, y: number, nestedRuneIndex?: number) {
 		editingFrontmatter = false;
+		editingProseIndex = null;
 		editSessionId++;
-		activeIndex = index;
+		activeIndex = editorIndex;
 		anchorPoint = { x, y };
 		pendingRuneIndex = nestedRuneIndex ?? null;
 	}
@@ -207,6 +297,10 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (readOnly) return;
 		if (e.key === 'Escape') {
+			if (editingProseIndex !== null) {
+				// Prose textarea handles its own Escape via onkeydown
+				return;
+			}
 			if (activeIndex !== null || editingFrontmatter) {
 				activeIndex = null;
 				editingFrontmatter = false;
@@ -223,6 +317,7 @@
 			anchorPoint = null;
 			pendingRuneIndex = null;
 		}
+		// Don't close prose editing on scroll — user needs to keep editing
 	}
 
 	function handleResize() {
@@ -231,21 +326,24 @@
 
 	// ── Block operations ─────────────────────────────────────────
 
-	function handleUpdateBlock(index: number, updated: ParsedBlock) {
-		blocks = blocks.map((b, i) => (i === index ? updated : b));
+	/** Update a block by its flat index in the blocks array */
+	function handleUpdateBlock(flatIndex: number, updated: ParsedBlock) {
+		blocks = blocks.map((b, i) => (i === flatIndex ? updated : b));
 		syncToSource();
 	}
 
-	function handleRemoveBlock(index: number) {
+	/** Remove a block by its editor block index */
+	function handleRemoveEditorBlock(editorIndex: number) {
+		const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
 		// Adjust activeIndex
 		if (activeIndex !== null) {
-			if (activeIndex === index) {
+			if (activeIndex === editorIndex) {
 				activeIndex = null;
-			} else if (activeIndex > index) {
+			} else if (activeIndex > editorIndex) {
 				activeIndex--;
 			}
 		}
-		blocks = blocks.filter((_, i) => i !== index);
+		blocks = [...blocks.slice(0, startFlat), ...blocks.slice(endFlat + 1)];
 		syncToSource();
 	}
 
@@ -276,17 +374,32 @@
 	function handleDrop(e: DragEvent, index: number) {
 		e.preventDefault();
 		if (dragIndex !== null && dragIndex !== index) {
-			const moved = blocks[dragIndex];
-			const next = blocks.filter((_, i) => i !== dragIndex);
-			next.splice(index, 0, moved);
-			blocks = next;
+			// Get the flat block ranges for source and destination
+			const [srcStart, srcEnd] = editorBlockToFlatRange(dragIndex);
+			const movedBlocks = blocks.slice(srcStart, srcEnd + 1);
+
+			// Remove the source blocks
+			const without = [...blocks.slice(0, srcStart), ...blocks.slice(srcEnd + 1)];
+
+			// Find the insertion point in the filtered array
+			let insertAt: number;
+			if (index >= editorBlocks.length) {
+				insertAt = without.length;
+			} else {
+				// Recalculate target position in the reduced array
+				const [tgtStart] = editorBlockToFlatRange(index);
+				// Adjust for removed blocks if source was before target
+				insertAt = tgtStart > srcEnd ? tgtStart - movedBlocks.length : tgtStart;
+			}
+
+			without.splice(insertAt, 0, ...movedBlocks);
+			blocks = without;
 
 			// Update activeIndex to follow the active block
 			if (activeIndex !== null) {
 				if (activeIndex === dragIndex) {
 					activeIndex = index > dragIndex ? index - 1 : index;
 				} else {
-					// Adjust if the move shifts the active block's position
 					let newActive = activeIndex;
 					if (dragIndex < activeIndex && index >= activeIndex) {
 						newActive--;
@@ -410,12 +523,30 @@
 			}
 		}
 
-		const pos = insertAtIndex ?? blocks.length;
-		blocks = [...blocks.slice(0, pos), newBlock, ...blocks.slice(pos)];
+		// Convert editor block index to flat block insertion position
+		const editorPos = insertAtIndex ?? editorBlocks.length;
+		let flatPos: number;
+		if (editorPos >= editorBlocks.length) {
+			flatPos = blocks.length;
+		} else {
+			const [start] = editorBlockToFlatRange(editorPos);
+			flatPos = start;
+		}
+
+		blocks = [...blocks.slice(0, flatPos), newBlock, ...blocks.slice(flatPos)];
 		insertAtIndex = null;
 		showInsertMenu = false;
 		editingFrontmatter = false;
-		activeIndex = pos;
+		editingProseIndex = null;
+		// Set activeIndex for rune blocks; for prose blocks the new element merges into a prose block
+		if (type === 'rune') {
+			// Find the new block's editor index after re-grouping
+			const newEditorBlocks = groupIntoEditorBlocks(blocks);
+			activeIndex = newEditorBlocks.findIndex(eb => eb.type === 'rune' && eb === blocks[flatPos]);
+			if (activeIndex === -1) activeIndex = null;
+		} else {
+			activeIndex = null;
+		}
 		syncToSource();
 	}
 
@@ -429,10 +560,15 @@
 		mapping: SectionMapping;
 	} | null = $state(null);
 
-	function handleSectionClick(index: number, info: SectionClickInfo) {
-		const block = blocks[index];
+	function handleSectionClick(editorIndex: number, info: SectionClickInfo) {
+		const eb = editorBlocks[editorIndex];
+		if (!eb || eb.type !== 'rune') return;
+		const [flatIndex] = editorBlockToFlatRange(editorIndex);
+		const block = blocks[flatIndex];
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
+		// Use flatIndex for all block operations below
+		const index = flatIndex;
 
 		if (info.editType === 'link') {
 			const mapping = findActionMapping(rb.innerContent, info.text, info.href ?? '');
@@ -702,9 +838,10 @@
 
 	function handleFieldEdit(dataName: string, inlineSource: string, rect: DOMRect, mapping: SectionMapping) {
 		if (activeIndex === null) return;
+		const [flatIndex] = editorBlockToFlatRange(activeIndex);
 		commandEdit = null;
 		inlineEdit = {
-			blockIndex: activeIndex,
+			blockIndex: flatIndex,
 			dataName,
 			inlineSource,
 			rect,
@@ -714,9 +851,10 @@
 
 	function handleFieldCodeEdit(code: string, language: string, rect: DOMRect, mapping: CommandMapping) {
 		if (activeIndex === null) return;
+		const [flatIndex] = editorBlockToFlatRange(activeIndex);
 		inlineEdit = null;
 		commandEdit = {
-			blockIndex: activeIndex,
+			blockIndex: flatIndex,
 			rect,
 			mapping,
 		};
@@ -777,34 +915,56 @@
 					</div>
 				{/if}
 
-				{#each blocks as block, i (block.id)}
+				{#each editorBlocks as eb, i (eb.id)}
 					<div
 						class="block-editor__row"
 						class:hovered={!readOnly && hoveredIndex === i}
 						class:active={!readOnly && activeIndex === i}
 						class:drag-source={!readOnly && dragIndex === i}
 						class:drag-over={!readOnly && dropIndex === i && dragIndex !== i}
+						class:prose-editing={!readOnly && editingProseIndex === i}
 						onmouseenter={() => { if (!readOnly) hoveredIndex = i; }}
 						onmouseleave={() => { if (!readOnly && hoveredIndex === i) hoveredIndex = null; }}
 					>
 						<div class="block-editor__block-cell">
-							<BlockCard
-								{block}
-								{themeConfig}
-								{themeCss}
-								{highlightCss}
-								{highlightTransform}
-								{communityTags}
-								{communityPostTransforms}
-								{communityStyles}
-								{aggregated}
-								{readOnly}
-								onsectionclick={readOnly ? undefined : (info) => handleSectionClick(i, info)}
-								onruneclick={readOnly ? undefined : (info) => handleRuneClick(i, info.x, info.y, info.nestedRuneIndex)}
-								ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
-								ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
-								ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
-							/>
+							{#if eb.type === 'prose'}
+								<ProseBlockCard
+									block={eb}
+									{themeConfig}
+									{themeCss}
+									{highlightCss}
+									{highlightTransform}
+									{communityTags}
+									{communityPostTransforms}
+									{communityStyles}
+									{aggregated}
+									{readOnly}
+									editing={editingProseIndex === i}
+									onclickpreview={() => startProseEdit(i)}
+									onsourcechange={(newSource) => handleProseSourceChange(i, newSource)}
+									ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
+									ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
+									ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
+								/>
+							{:else}
+								<BlockCard
+									block={eb}
+									{themeConfig}
+									{themeCss}
+									{highlightCss}
+									{highlightTransform}
+									{communityTags}
+									{communityPostTransforms}
+									{communityStyles}
+									{aggregated}
+									{readOnly}
+									onsectionclick={readOnly ? undefined : (info) => handleSectionClick(i, info)}
+									onruneclick={readOnly ? undefined : (info) => handleRuneClick(i, info.x, info.y, info.nestedRuneIndex)}
+									ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
+									ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
+									ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
+								/>
+							{/if}
 						</div>
 						{#if !readOnly && showInsertMenuProp}
 							<!-- Insert markers — top and bottom edges -->
@@ -836,7 +996,7 @@
 								onclick={(e) => toggleBlock(i, e.clientX, e.clientY)}
 								aria-pressed={activeIndex === i}
 							>
-								{blockLabel(block)}
+								{blockLabel(eb)}
 							</button>
 						{/if}
 					</div>
@@ -858,16 +1018,17 @@
 				<FrontmatterEditPanel
 					onclose={() => { editingFrontmatter = false; anchorPoint = null; }}
 				/>
-			{:else if activeIndex !== null && blocks[activeIndex]}
+			{:else if activeIndex !== null && editorBlocks[activeIndex]?.type === 'rune'}
+				{@const activeBlock = blocks[editorBlockToFlatRange(activeIndex)[0]]}
 				{#key editSessionId}
 					<BlockEditPanel
-						block={blocks[activeIndex]}
+						block={activeBlock}
 						{runeMap}
 						runes={() => runes}
 						{aggregated}
 						initialRuneIndex={pendingRuneIndex}
-						onupdate={(updated) => handleUpdateBlock(activeIndex!, updated)}
-						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorPoint = null; pendingRuneIndex = null; handleRemoveBlock(idx); }}
+						onupdate={(updated) => handleUpdateBlock(editorBlockToFlatRange(activeIndex!)[0], updated)}
+						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorPoint = null; pendingRuneIndex = null; handleRemoveEditorBlock(idx); }}
 						onclose={() => { activeIndex = null; anchorPoint = null; pendingRuneIndex = null; }}
 						oneditfield={handleFieldEdit}
 						oneditcode={handleFieldCodeEdit}
@@ -1054,6 +1215,10 @@
 		box-shadow: 0 -3px 10px var(--ed-accent-ring);
 		border-top: 2px solid var(--ed-accent);
 		padding-top: 2px;
+	}
+
+	.block-editor__row.prose-editing {
+		z-index: 1;
 	}
 
 	/* ── Hover controls (insert markers + label) ─────────────── */

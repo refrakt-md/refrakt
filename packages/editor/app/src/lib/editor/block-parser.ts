@@ -68,6 +68,25 @@ export type ParsedBlock =
 	| ListBlock
 	| (Block & { type: 'paragraph' | 'quote' | 'hr' | 'image' });
 
+/**
+ * A prose block groups consecutive non-rune blocks into a single
+ * editing region. This is a view-layer concept — the underlying
+ * `ParsedBlock[]` array remains the source of truth.
+ */
+export interface ProseBlock {
+	id: string;
+	type: 'prose';
+	/** The child blocks that make up this prose group */
+	children: ParsedBlock[];
+	/** Combined source of all children, joined by blank lines */
+	source: string;
+	startLine: number;
+	endLine: number;
+}
+
+/** An editor block is either a rune block (unchanged) or a prose block (grouped non-rune blocks) */
+export type EditorBlock = RuneBlock | ProseBlock;
+
 /** Deterministic hash (djb2) for stable block IDs across re-parses */
 function hashSource(s: string): string {
 	let h = 5381;
@@ -1019,8 +1038,10 @@ export function extractRuneInner(example: string, name: string): string {
 }
 
 /** Human-readable label for a block, used in rail labels and edit panel header */
-export function blockLabel(block: ParsedBlock): string {
+export function blockLabel(block: ParsedBlock | EditorBlock): string {
 	switch (block.type) {
+		case 'prose':
+			return 'Prose';
 		case 'heading':
 			return `H${(block as HeadingBlock).level}`;
 		case 'rune':
@@ -1040,6 +1061,42 @@ export function blockLabel(block: ParsedBlock): string {
 		case 'paragraph':
 			return 'Paragraph';
 		default:
-			return block.type;
+			return (block as ParsedBlock).type;
 	}
+}
+
+/**
+ * Group consecutive non-rune blocks into prose blocks.
+ * Rune blocks pass through unchanged. Every non-rune block
+ * (heading, paragraph, list, fence, quote, hr, image) becomes
+ * part of the nearest prose group.
+ */
+export function groupIntoEditorBlocks(blocks: ParsedBlock[]): EditorBlock[] {
+	const result: EditorBlock[] = [];
+	let proseChildren: ParsedBlock[] = [];
+
+	function flushProse() {
+		if (proseChildren.length === 0) return;
+		const source = proseChildren.map(b => b.source).join('\n\n');
+		result.push({
+			id: `prose_${proseChildren[0].id}`,
+			type: 'prose',
+			children: [...proseChildren],
+			source,
+			startLine: proseChildren[0].startLine,
+			endLine: proseChildren[proseChildren.length - 1].endLine,
+		});
+		proseChildren = [];
+	}
+
+	for (const block of blocks) {
+		if (block.type === 'rune') {
+			flushProse();
+			result.push(block);
+		} else {
+			proseChildren.push(block);
+		}
+	}
+	flushProse();
+	return result;
 }
