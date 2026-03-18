@@ -212,12 +212,13 @@ export const coreConfig: ThemeConfig = {
 				const block = 'rf-budget';
 				const catBlock = 'rf-budget-category';
 
-				const currency = readMeta(node, 'currency') || 'USD';
-				const travelersStr = readMeta(node, 'travelers') || '1';
+				// Read from data-* attributes (set by engine after consuming meta tags)
+				const currency = node.attributes['data-currency'] || 'USD';
+				const travelersStr = node.attributes['data-travelers'] || '1';
 				const travelers = parseInt(travelersStr) || 1;
-				const duration = readMeta(node, 'duration') || '';
-				const showPerPerson = readMeta(node, 'showPerPerson') !== 'false';
-				const showPerDay = readMeta(node, 'showPerDay') !== 'false';
+				const duration = node.attributes['data-duration'] || '';
+				const showPerPerson = node.attributes['data-show-per-person'] !== 'false';
+				const showPerDay = node.attributes['data-show-per-day'] !== 'false';
 
 				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
 
@@ -226,8 +227,9 @@ export const coreConfig: ThemeConfig = {
 				let grandTotal = 0;
 
 				for (const cat of categories) {
-					const label = readPropText(cat, 'label');
-					const subtotalStr = readPropText(cat, 'subtotal');
+					// Read from data attributes set by engine from label/subtotal modifiers
+					const label = cat.attributes['data-label'] || '';
+					const subtotalStr = cat.attributes['data-subtotal'] || '0';
 					const subtotal = parseFloat(subtotalStr) || 0;
 					grandTotal += subtotal;
 
@@ -281,7 +283,11 @@ export const coreConfig: ThemeConfig = {
 		BudgetCategory: {
 			block: 'budget-category',
 			parent: 'Budget',
-			modifiers: { estimate: { source: 'meta', default: 'false' } },
+			modifiers: {
+				estimate: { source: 'meta', default: 'false' },
+				label: { source: 'meta', noBemClass: true },
+				subtotal: { source: 'meta', noBemClass: true },
+			},
 			editHints: { label: 'none', subtotal: 'none' },
 		},
 		BudgetLineItem: { block: 'budget-line-item', parent: 'Budget' },

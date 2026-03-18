@@ -135,9 +135,9 @@ class BudgetCategoryModel extends Model {
 
 	transform(): RenderableTreeNodes {
 		const body = this.transformChildren();
-		const labelTag = new Tag('span', {}, [this.label]);
+		const labelTag = new Tag('meta', { content: this.label });
 		const estimateMeta = new Tag('meta', { content: String(this.estimate) });
-		const subtotalTag = new Tag('span', {}, [String(this._subtotal)]);
+		const subtotalTag = new Tag('meta', { content: String(this._subtotal) });
 
 		const items = body.tag('li').typeof('BudgetLineItem');
 		const itemsList = new Tag('ul', {}, items.toArray());
