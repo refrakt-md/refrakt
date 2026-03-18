@@ -133,14 +133,14 @@ export class TierModel extends Model {
     return createComponentRenderable(type, {
       tag: 'li',
       properties: {
-        name: nameTag,
         description: description(children),
-        price: priceTag,
         ...(currencyMeta ? { currency: currencyMeta } : {}),
         url: children.flatten().tag('a'),
       },
       refs: {
         body: body.tag('div'),
+        name: nameTag,
+        price: priceTag,
       },
       schema: {
         name: nameTag,

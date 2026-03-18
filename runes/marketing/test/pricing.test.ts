@@ -71,7 +71,7 @@ Features.
 		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
 		expect(tier).toBeDefined();
 
-		const priceTag = findTag(tier!, t => t.attributes['data-field'] === 'price');
+		const priceTag = findTag(tier!, t => t.attributes['data-name'] === 'price');
 		expect(priceTag).toBeDefined();
 		expect(priceTag!.children[0]).toBe('$5');
 	});
@@ -94,19 +94,19 @@ Features.
 		expect(tiers.length).toBe(2);
 
 		// Check first tier
-		const nameTag0 = findTag(tiers[0], t => t.attributes['data-field'] === 'name');
+		const nameTag0 = findTag(tiers[0], t => t.attributes['data-name'] === 'name');
 		expect(nameTag0).toBeDefined();
 		expect(nameTag0!.children[0]).toBe('Free');
 
-		const priceTag0 = findTag(tiers[0], t => t.attributes['data-field'] === 'price');
+		const priceTag0 = findTag(tiers[0], t => t.attributes['data-name'] === 'price');
 		expect(priceTag0).toBeDefined();
 		expect(priceTag0!.children[0]).toBe('$0');
 
 		// Check second tier
-		const nameTag1 = findTag(tiers[1], t => t.attributes['data-field'] === 'name');
+		const nameTag1 = findTag(tiers[1], t => t.attributes['data-name'] === 'name');
 		expect(nameTag1!.children[0]).toBe('Pro');
 
-		const priceTag1 = findTag(tiers[1], t => t.attributes['data-field'] === 'price');
+		const priceTag1 = findTag(tiers[1], t => t.attributes['data-name'] === 'price');
 		expect(priceTag1!.children[0]).toBe('$19/mo');
 	});
 

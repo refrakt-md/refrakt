@@ -22,7 +22,7 @@ function collectByRune(children: RendererNode[], typeName: string): SerializedTa
 function readPropText(node: SerializedTag, prop: string): string {
 	const kebab = prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase();
 	for (const c of node.children) {
-		if (isTag(c) && c.attributes?.['data-field'] === kebab) {
+		if (isTag(c) && (c.attributes?.['data-field'] === kebab || c.attributes?.['data-name'] === kebab)) {
 			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
 		}
 	}
@@ -231,6 +231,7 @@ export const config: Record<string, RuneConfig> = {
 			span: '--cell-span',
 		},
 		autoLabel: { name: 'title' },
+		editHints: { title: 'inline', icon: 'icon' },
 	},
 	Feature: {
 		block: 'feature',
@@ -268,13 +269,16 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
+		editHints: { content: 'none', media: 'image' },
 	},
 	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-	Tier: { block: 'tier', parent: 'Pricing' },
-	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'] },
+	Tier: { block: 'tier', parent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
+	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {
 		block: 'testimonial',
 		modifiers: { variant: { source: 'meta', default: 'card' } },
+		autoLabel: { blockquote: 'quote' },
+		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
 		postTransform(node) {
 			const block = node.attributes.class?.split(' ')[0] || 'rf-testimonial';
 			const ratingStr = readMeta(node, 'rating');
@@ -310,6 +314,8 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Comparison: {
 		block: 'comparison',
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 		postTransform(node) {
 			const block = 'rf-comparison';
 			const layout = readMeta(node, 'layout') || 'table';
@@ -359,10 +365,11 @@ export const config: Record<string, RuneConfig> = {
 			};
 		},
 	},
-	ComparisonColumn: { block: 'comparison-column', parent: 'Comparison' },
+	ComparisonColumn: { block: 'comparison-column', parent: 'Comparison', editHints: { name: 'inline' } },
 	ComparisonRow: {
 		block: 'comparison-row',
 		parent: 'Comparison',
 		modifiers: { rowType: { source: 'meta', default: 'text' } },
+		editHints: { label: 'inline', body: 'inline' },
 	},
 };

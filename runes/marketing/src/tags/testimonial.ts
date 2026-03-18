@@ -41,7 +41,7 @@ export const testimonial = createContentModelSchema({
 				for (const child of node.children) {
 					if (Tag.isTag(child) && child.name === 'strong' && !authorNameTag) {
 						const nameText = child.children.filter((c: any) => typeof c === 'string').join('');
-						authorNameTag = new Tag('span', { 'data-field': 'author-name' }, [nameText]);
+						authorNameTag = new Tag('span', {}, [nameText]);
 
 						// Get the role text after the strong tag
 						const idx = node.children.indexOf(child);
@@ -52,7 +52,7 @@ export const testimonial = createContentModelSchema({
 							.trim();
 
 						if (rest) {
-							authorRoleTag = new Tag('span', { 'data-field': 'author-role' }, [rest]);
+							authorRoleTag = new Tag('span', {}, [rest]);
 						}
 					}
 				}
@@ -99,10 +99,12 @@ export const testimonial = createContentModelSchema({
 		return createComponentRenderable(schema.Testimonial, {
 			tag: 'article',
 			properties: {
-				quote: quoteTag,
-				authorName: authorNameTag,
-				authorRole: authorRoleTag,
 				rating: ratingMeta,
+			},
+			refs: {
+				quote: quoteTag,
+				'author-name': authorNameTag,
+				'author-role': authorRoleTag,
 				avatar: avatarTag,
 			},
 			schema: {
