@@ -111,7 +111,7 @@ Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdo
 
 ---
 
-{% preview source="true" width="content" %}
+{% preview source=true width="content" %}
 {% recipe prepTime="PT5M" servings=1 difficulty="easy" layout="split-reverse" collapse="md" %}
 A cocktail classic
 
@@ -130,7 +130,7 @@ A crisp, citrus-forward cocktail that balances gin botanicals with the sweetness
 
 ---
 
-![A gimlet cocktail](/gimlet.png)
+![A gimlet cocktail](https://assets.refrakt.md/gimlet.png)
 {% /recipe %}
 {% /preview %}
 {% /feature %}
@@ -181,7 +181,7 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 **Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
-{% cta spacing="breath" %}
+{% cta spacing="breathe" %}
 
 ## Ready to get started?
 
