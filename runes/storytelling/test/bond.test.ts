@@ -11,11 +11,11 @@ A deep fellowship.
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
-		const fromTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'from');
+		const fromTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'from');
 		expect(fromTag).toBeDefined();
 		expect(fromTag!.children[0]).toBe('Aragorn');
 
-		const toTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'to');
+		const toTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'to');
 		expect(toTag).toBeDefined();
 		expect(toTag!.children[0]).toBe('Legolas');
 	});
@@ -88,9 +88,9 @@ A fellowship bond.
 
 		// Verify order: from, connector, to
 		const children = tag!.children.filter((c: any) => c && typeof c === 'object' && c.name);
-		const fromIdx = children.findIndex((c: any) => c.attributes?.['data-field'] === 'from');
+		const fromIdx = children.findIndex((c: any) => c.attributes?.['data-name'] === 'from');
 		const connIdx = children.findIndex((c: any) => c.attributes?.['data-name'] === 'connector');
-		const toIdx = children.findIndex((c: any) => c.attributes?.['data-field'] === 'to');
+		const toIdx = children.findIndex((c: any) => c.attributes?.['data-name'] === 'to');
 		expect(fromIdx).toBeLessThan(connIdx);
 		expect(connIdx).toBeLessThan(toIdx);
 	});

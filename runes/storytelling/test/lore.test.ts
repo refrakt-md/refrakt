@@ -18,7 +18,7 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'title');
+		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'title');
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Prophecy');
 	});

@@ -29,7 +29,7 @@ A secretive guild.
 {% /faction %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('The Arcane Circle');
 	});

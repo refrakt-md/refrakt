@@ -17,11 +17,9 @@ class StoryboardPanelModel extends Model {
 
 		return createComponentRenderable(schema.StoryboardPanel, {
 			tag: 'div',
-			properties: {
+			refs: {
 				image,
 				caption,
-			},
-			refs: {
 				body: body.tag('div'),
 			},
 			children: [body.next()],

@@ -28,7 +28,7 @@ A dark land.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Mordor');
 	});

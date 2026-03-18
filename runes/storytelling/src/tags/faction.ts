@@ -14,8 +14,7 @@ class FactionSectionModel extends Model {
 
 		return createComponentRenderable(schema.FactionSection, {
 			tag: 'div',
-			properties: { name: nameTag },
-			refs: { body: body.tag('div') },
+			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
 	}
@@ -75,14 +74,13 @@ export const faction = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					factionType: factionTypeMeta,
 					alignment: alignmentMeta,
 					size: sizeMeta,
 					tags: tagsMeta,
 					section: sections,
 				},
-				refs: { sections: sectionsContainer },
+				refs: { name: nameTag, sections: sectionsContainer },
 				schema: schemaMap,
 				children,
 			});
@@ -94,13 +92,12 @@ export const faction = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					factionType: factionTypeMeta,
 					alignment: alignmentMeta,
 					size: sizeMeta,
 					tags: tagsMeta,
 				},
-				refs: { body },
+				refs: { name: nameTag, body },
 				schema: schemaMap,
 				children,
 			});

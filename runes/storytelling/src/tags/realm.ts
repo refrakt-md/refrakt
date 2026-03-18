@@ -14,8 +14,7 @@ class RealmSectionModel extends Model {
 
 		return createComponentRenderable(schema.RealmSection, {
 			tag: 'div',
-			properties: { name: nameTag },
-			refs: { body: body.tag('div') },
+			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
 	}
@@ -86,7 +85,6 @@ export const realm = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					realmType: realmTypeMeta,
 					scale: scaleMeta,
 					tags: tagsMeta,
@@ -94,6 +92,7 @@ export const realm = createContentModelSchema({
 					section: sections,
 				},
 				refs: {
+					name: nameTag,
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					sections: sectionsContainer,
 				},
@@ -108,13 +107,13 @@ export const realm = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					realmType: realmTypeMeta,
 					scale: scaleMeta,
 					tags: tagsMeta,
 					parent: parentMeta,
 				},
 				refs: {
+					name: nameTag,
 					...(sceneDiv ? { scene: sceneDiv } : {}),
 					body,
 				},
