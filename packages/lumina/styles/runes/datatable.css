@@ -1,9 +1,6 @@
 /* DataTable */
 .rf-datatable {
 	margin: 1.5rem 0;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
 }
 .rf-datatable__toolbar {
 	display: flex;
@@ -58,8 +55,7 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-hover);
-	border-bottom: 1px solid var(--rf-color-border);
+	background: var(--rf-color-surface);
 }
 .rf-datatable__content th[style*="cursor"]:hover {
 	color: var(--rf-color-text);
@@ -85,7 +81,7 @@
 	justify-content: flex-end;
 	gap: 0.75rem;
 	padding: 0.5rem 0.75rem;
-	border-top: 1px solid var(--rf-color-border);
+	background: var(--rf-color-surface);
 }
 .rf-datatable__page-btn {
 	padding: 0.25rem 0.5rem;
