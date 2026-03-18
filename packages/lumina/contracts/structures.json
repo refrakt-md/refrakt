@@ -1358,6 +1358,13 @@
 					"classPattern": ".rf-testimonial--{value}",
 					"dataAttribute": "data-variant"
 				}
+			},
+			"elements": {
+				"quote": {
+					"tag": "blockquote",
+					"selector": ".rf-testimonial__quote",
+					"source": "autoLabel"
+				}
 			}
 		},
 		"Comparison": {
@@ -1366,7 +1373,34 @@
 			"dataRune": "comparison",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-comparison__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-comparison__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-comparison__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-comparison__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-comparison__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"ComparisonColumn": {
 			"block": "comparison-column",
@@ -1491,9 +1525,9 @@
 			},
 			"elements": {
 				"header": {
-					"tag": "div",
+					"tag": "header",
 					"selector": ".rf-symbol__header",
-					"source": "structure"
+					"source": "autoLabel"
 				},
 				"kind-badge": {
 					"tag": "span",
@@ -1532,6 +1566,26 @@
 					"tag": "div",
 					"selector": ".rf-symbol__body",
 					"source": "contentWrapper"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-symbol__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-symbol__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-symbol__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-symbol__image",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -1559,7 +1613,34 @@
 			"dataRune": "changelog",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-changelog__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-changelog__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-changelog__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-changelog__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-changelog__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"ChangelogRelease": {
 			"block": "changelog-release",
@@ -2410,6 +2491,31 @@
 					"tag": "div",
 					"selector": ".rf-howto__content",
 					"source": "contentWrapper"
+				},
+				"header": {
+					"tag": "header",
+					"selector": ".rf-howto__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-howto__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-howto__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-howto__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-howto__image",
+					"source": "autoLabel"
 				}
 			}
 		},

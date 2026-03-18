@@ -27,6 +27,8 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},
 	Recipe: {
 		block: 'recipe',

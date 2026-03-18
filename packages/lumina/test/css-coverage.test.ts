@@ -25,6 +25,12 @@ const UNSTYLED_BLOCKS = new Set([
 const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-event__end-date',   // end-date span styled via parent date detail
 	'.rf-hero--in-feature',  // context modifier not yet styled
+	// pageSectionAutoLabel selectors — page section header elements inherited from section system
+	'.rf-testimonial__quote',
+	'.rf-comparison__header', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
+	'.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
+	'.rf-changelog__header', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
+	'.rf-howto__header', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
 ]);
 
 // ─── Helpers ───
