@@ -44,9 +44,11 @@ export const figure = createContentModelSchema({
 		return createComponentRenderable(schema.Figure, {
 			tag: 'figure',
 			properties: {
-				...(captionTag ? { caption: captionTag } : {}),
 				...(sizeMeta ? { size: sizeMeta } : {}),
 				...(alignMeta ? { align: alignMeta } : {}),
+			},
+			refs: {
+				...(captionTag ? { caption: captionTag } : {}),
 			},
 			schema: {
 				...(imgs.length > 0 ? { contentUrl: imgs[0] } : {}),

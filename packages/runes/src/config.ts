@@ -88,9 +88,9 @@ export const coreConfig: ThemeConfig = {
 	runes: {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
-		Accordion: { block: 'accordion', autoLabel: pageSectionAutoLabel },
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' } },
-		Details: { block: 'details', autoLabel: { summary: 'summary' } },
+		Accordion: { block: 'accordion', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
+		Details: { block: 'details', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
 			modifiers: {
@@ -110,6 +110,7 @@ export const coreConfig: ThemeConfig = {
 				min: '--grid-min',
 				aspect: '--grid-aspect',
 			},
+			editHints: { cell: 'none' },
 		},
 		CodeGroup: {
 			block: 'codegroup',
@@ -125,12 +126,13 @@ export const coreConfig: ThemeConfig = {
 					],
 				},
 			},
-			editHints: { panel: 'code' },
+			editHints: { panel: 'code', title: 'none' },
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
 		Embed: {
 			block: 'embed',
+			editHints: { fallback: 'none' },
 			postTransform(node) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-embed';
 				const embedUrl = readMeta(node, 'embedUrl') || readMeta(node, 'url') || '';
@@ -175,10 +177,11 @@ export const coreConfig: ThemeConfig = {
 				};
 			},
 		},
-		Breadcrumb: { block: 'breadcrumb' },
+		Breadcrumb: { block: 'breadcrumb', editHints: { items: 'none' } },
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
 		Budget: {
 			block: 'budget',
+			editHints: { title: 'none', meta: 'none', 'meta-item': 'none' },
 			modifiers: {
 				title: { source: 'meta' },
 				currency: { source: 'meta', default: 'USD' },
@@ -279,6 +282,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'budget-category',
 			parent: 'Budget',
 			modifiers: { estimate: { source: 'meta', default: 'false' } },
+			editHints: { label: 'none', subtotal: 'none' },
 		},
 		BudgetLineItem: { block: 'budget-line-item', parent: 'Budget' },
 
@@ -288,6 +292,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
+			editHints: { icon: 'none', title: 'none' },
 			structure: {
 				header: {
 					tag: 'div', before: true,
@@ -304,6 +309,7 @@ export const coreConfig: ThemeConfig = {
 				size: { source: 'meta', default: 'default' },
 				align: { source: 'meta', default: 'center' },
 			},
+			editHints: { caption: 'inline' },
 		},
 		Gallery: {
 			block: 'gallery',
@@ -317,26 +323,31 @@ export const coreConfig: ThemeConfig = {
 				columns: '--gallery-columns',
 				gap: { prop: '--gallery-gap', transform: resolveGap },
 			},
+			editHints: { items: 'none' },
 		},
 		Sidenote: {
 			block: 'sidenote',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
+			editHints: { body: 'inline' },
 		},
 		Compare: {
 			block: 'compare',
 			modifiers: { layout: { source: 'meta', default: 'side-by-side' } },
+			editHints: { panels: 'none' },
 		},
-		Conversation: { block: 'conversation' },
+		Conversation: { block: 'conversation', editHints: { messages: 'none' } },
 		ConversationMessage: {
 			block: 'conversation-message',
 			parent: 'Conversation',
 			modifiers: { align: { source: 'meta', default: 'left' } },
+			editHints: { body: 'inline' },
 		},
 		Annotate: {
 			block: 'annotate',
 			modifiers: { variant: { source: 'meta', default: 'margin' } },
+			editHints: { body: 'none', notes: 'none' },
 		},
-		AnnotateNote: { block: 'annotate-note', parent: 'Annotate' },
+		AnnotateNote: { block: 'annotate-note', parent: 'Annotate', editHints: { body: 'inline' } },
 		Nav: {
 			block: 'nav',
 			postTransform(node) {
@@ -377,9 +388,11 @@ export const coreConfig: ThemeConfig = {
 		Diff: {
 			block: 'diff',
 			modifiers: { mode: { source: 'meta', default: 'unified' } },
+			editHints: { line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' },
 		},
 		Chart: {
 			block: 'chart',
+			editHints: { data: 'none' },
 			postTransform(node) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-chart';
 				const chartType = readMeta(node, 'type') || 'bar';
@@ -509,6 +522,7 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'center' },
 				variant: { source: 'meta', default: 'default' },
 			},
+			editHints: { body: 'inline' },
 		},
 		TextBlock: {
 			block: 'textblock',
@@ -518,6 +532,7 @@ export const coreConfig: ThemeConfig = {
 				lead: { source: 'meta' },
 				align: { source: 'meta', default: 'left' },
 			},
+			editHints: { body: 'none' },
 		},
 		MediaText: {
 			block: 'mediatext',
@@ -526,6 +541,7 @@ export const coreConfig: ThemeConfig = {
 				ratio: { source: 'meta', default: '1:1' },
 				wrap: { source: 'meta' },
 			},
+			editHints: { media: 'image', body: 'none' },
 		},
 
 		Showcase: {
@@ -542,6 +558,7 @@ export const coreConfig: ThemeConfig = {
 				offset: { prop: '--showcase-offset', transform: resolveOffset },
 				aspect: '--showcase-aspect',
 			},
+			editHints: { viewport: 'none' },
 			postTransform(node, context) {
 				const placeValue = context.modifiers['place'];
 				if (placeValue) {
@@ -556,8 +573,8 @@ export const coreConfig: ThemeConfig = {
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs', autoLabel: pageSectionAutoLabel },
-		Tab: { block: 'tab', parent: 'TabGroup' },
+		TabGroup: { block: 'tabs', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		Tab: { block: 'tab', parent: 'TabGroup', editHints: { name: 'inline' } },
 		DataTable: {
 			block: 'datatable',
 			modifiers: {
@@ -566,6 +583,7 @@ export const coreConfig: ThemeConfig = {
 				pageSize: { source: 'meta', default: '0' },
 				defaultSort: { source: 'meta' },
 			},
+			editHints: { table: 'none' },
 		},
 		Form: {
 			block: 'form',
@@ -577,6 +595,7 @@ export const coreConfig: ThemeConfig = {
 				error: { source: 'meta' },
 				honeypot: { source: 'meta', default: 'true' },
 			},
+			editHints: { body: 'none' },
 		},
 		FormField: {
 			block: 'form-field',
@@ -591,10 +610,12 @@ export const coreConfig: ThemeConfig = {
 				mode: { source: 'meta', default: 'click' },
 			},
 			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
-		RevealStep: { block: 'reveal-step', parent: 'Reveal' },
+		RevealStep: { block: 'reveal-step', parent: 'Reveal', editHints: { body: 'none' } },
 		Diagram: {
 			block: 'diagram',
+			editHints: { source: 'code' },
 			postTransform(node) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-diagram';
 				const language = readMeta(node, 'language') || 'mermaid';
@@ -627,6 +648,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		Sandbox: {
 			block: 'sandbox',
+			editHints: { source: 'code' },
 			postTransform(node) {
 				// Read meta values
 				const content = readMeta(node, 'content') || '';
