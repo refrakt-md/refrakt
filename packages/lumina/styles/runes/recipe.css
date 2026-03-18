@@ -152,14 +152,17 @@
 .rf-recipe[data-layout="split-reverse"] {
 	grid-template-columns: var(--split-ratio, 1fr 1fr);
 }
-/* Split-reverse: swap content and media columns via explicit placement */
-.rf-recipe[data-layout="split-reverse"] > .rf-recipe__content {
-	grid-column: 2;
-}
-.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
+/* Split: content left (col 1), media right (col 2) — DOM order is media first,
+   so explicit placement is needed */
+.rf-recipe[data-layout="split"] > .rf-recipe__content {
 	grid-column: 1;
 	grid-row: 2;
 }
+.rf-recipe[data-layout="split"] > .rf-recipe__media {
+	grid-column: 2;
+	grid-row: 2;
+}
+/* Split-reverse: media left (col 1), content right (col 2) — matches DOM order */
 /* Meta bar spans full width in split layouts */
 .rf-recipe[data-layout="split"] > .rf-recipe__meta,
 .rf-recipe[data-layout="split-reverse"] > .rf-recipe__meta {
@@ -171,8 +174,8 @@
 	.rf-recipe[data-layout="split-reverse"] {
 		grid-template-columns: 1fr;
 	}
-	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media,
-	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__content {
+	.rf-recipe[data-layout="split"] > .rf-recipe__content,
+	.rf-recipe[data-layout="split"] > .rf-recipe__media {
 		grid-column: auto;
 		grid-row: auto;
 	}
