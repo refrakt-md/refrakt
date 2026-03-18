@@ -135,7 +135,7 @@ export const playlist = createContentModelSchema({
 				if (cueListTag) trackChildrenArr.push(cueListTag);
 			}
 
-			const trackAttrs: Record<string, any> = { 'data-rune': 'track', typeof: 'MusicRecording' };
+			const trackAttrs: Record<string, any> = { typeof: 'MusicRecording' };
 			if (src) trackAttrs['data-src'] = src;
 
 			return new Tag('li', trackAttrs, trackChildrenArr);
@@ -236,7 +236,7 @@ export const playlist = createContentModelSchema({
 		];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
 		if (artistMeta) children.push(artistMeta);
-		if (idValue) children.push(new Tag('meta', { 'data-field': 'id', content: idValue }));
+		if (idValue) children.push(new Tag('meta', { 'data-name': 'id', content: idValue }));
 
 		// Media before content so cover image appears at the top in stacked layout
 		if (hasMedia) children.push(mediaDiv.next());

@@ -26,13 +26,15 @@ export const config: Record<string, RuneConfig> = {
 			},
 		},
 		autoLabel: { media: 'media' },
+		editHints: { title: 'inline', header: 'none', tracks: 'none', player: 'none' },
 	},
-	Track: { block: 'track', parent: 'Playlist' },
+	Track: { block: 'track', parent: 'Playlist', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
 	Audio: {
 		block: 'audio',
 		modifiers: {
 			waveform: { source: 'meta', default: 'false' },
 		},
+		editHints: { description: 'inline' },
 	},
 
 	// Legacy aliases

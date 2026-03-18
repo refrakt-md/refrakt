@@ -635,8 +635,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name='description'` manually on div. Properties include `waveform`. Custom web component rendering.
 
 **Changes needed:**
-- [ ] Move manual `data-name` to refs in `createComponentRenderable`
-- [ ] Add editHints: `{ description: 'inline' }`
+- [x] Move manual `data-name` to refs in `createComponentRenderable`
+- [x] Add editHints: `{ description: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -649,10 +651,11 @@ See the already-updated runes for canonical examples:
 Uses `data-name` for `header`, `title`, `tracks`, `player`.
 
 **Changes needed:**
-- [ ] Replace `data-field: 'id'` (line 190) with proper `property` attribute on meta
-- [ ] Remove manual `data-rune: 'track'` on children (line 131) — let `createComponentRenderable` handle it if they are proper rune instances
-- [ ] Move manual `data-name` assignments to refs
-- [ ] Add editHints: `{ title: 'inline', header: 'none', tracks: 'none', player: 'none' }`
+- [x] Replace `data-field: 'id'` with `data-name: 'id'` on meta
+- [x] Remove manual `data-rune: 'track'` on children — let identity transform handle typeof dispatch
+- [x] Add editHints: `{ title: 'inline', header: 'none', tracks: 'none', player: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -661,7 +664,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Uses `data-name` for `track-name`, `track-artist`, `track-duration`, `track-meta`, `track-description`. Properties include `name`, `artist`, `duration`, `url`, `position`, `datePublished`, `type`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' }`
+- [x] Add editHints: `{ 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -1058,4 +1063,4 @@ Recommended implementation order:
 6. ~~**Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue~~ — **DONE** ✓
 7. ~~**Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern~~ — **DONE** ✓
 8. **Design** (Palette, Typography, Spacing, Preview, Mockup) — mostly generated content
-9. **Media** (Playlist, Track, Audio) — legacy issues in Playlist
+9. ~~**Media** (Playlist, Track, Audio) — legacy issues in Playlist~~ — **DONE** ✓
