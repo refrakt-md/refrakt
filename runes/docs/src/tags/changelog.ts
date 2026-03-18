@@ -22,10 +22,10 @@ class ChangelogReleaseModel extends Model {
 		return createComponentRenderable(schema.ChangelogRelease, {
 			tag: 'section',
 			properties: {
-				version: versionTag,
 				date: dateTag,
 			},
 			refs: {
+				version: versionTag,
 				body: body.tag('div'),
 			},
 			children: [versionTag, dateTag, body.next()],
