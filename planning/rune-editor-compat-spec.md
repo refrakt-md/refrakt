@@ -1,0 +1,906 @@
+# Rune Editor Compatibility Spec
+
+This spec covers all remaining runes that need updates for editor compatibility. Three runes have already been updated: **recipe**, **hero**, and **feature**. This document covers everything else.
+
+## Background
+
+The block editor needs three things from each rune to support visual editing:
+
+1. **`data-name` on structural elements** — set via `refs` in `createComponentRenderable` (not `data-field`, which is for modifier properties consumed by the engine)
+2. **`editHints` in engine config** — maps each `data-name` value to an edit mode (`inline`, `link`, `code`, `image`, `icon`, `none`)
+3. **No incorrect attribute usage** — no manual `data-field` where `data-name` should be used; no manual `data-rune` on children (root gets it automatically via `createComponentRenderable`)
+
+### Reference: Edit Modes
+
+| Mode | Behavior | Typical Use |
+|------|----------|-------------|
+| `inline` | Contenteditable with formatting toolbar | Headlines, blurbs, body text, list items |
+| `link` | URL + display text fields | Action buttons, CTA links |
+| `code` | Code editor popover | Terminal commands, code snippets |
+| `image` | File picker + alt text | Media, cover images, avatars |
+| `icon` | Icon picker gallery | Feature icons, decorative icons |
+| `none` | Not directly editable | Generated content, decorative elements |
+
+### Reference: Updated Rune Patterns
+
+See the already-updated runes for canonical examples:
+- **Recipe** (`runes/learning/src/tags/recipe.ts` + `runes/learning/src/config.ts`) — editHints for inline content, images, structure badges
+- **Hero** (`runes/marketing/src/tags/hero.ts` + `runes/marketing/src/config.ts`) — editHints for actions (link), commands (code), media (image)
+- **Feature** (`runes/marketing/src/tags/feature.ts` + `runes/marketing/src/config.ts`) — editHints for definition items (icon, title, description)
+
+---
+
+## Package: `@refrakt-md/marketing`
+
+### CTA (`runes/marketing/src/tags/cta.ts`)
+
+**Current state:** Has editHints and autoLabel in config already. Well-structured.
+
+**Changes needed:**
+- None — already has `editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' }` and `autoLabel` with pageSectionAutoLabel
+
+**Status: DONE** ✓
+
+---
+
+### Bento (`runes/marketing/src/tags/bento.ts`)
+
+**Current state:** Has editHints and autoLabel for section-level fields. But manually creates meta tags with `data-field` for gap, columns, sizing (lines 191-193).
+
+**Changes needed:**
+- [ ] Replace manual `data-field` on meta tags (lines 191-193) with proper `properties` in `createComponentRenderable` so they flow through the standard modifier pipeline
+- [ ] Verify editHints coverage is complete
+
+**Config editHints (already present):** `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+
+---
+
+### BentoCell (nested in `runes/marketing/src/tags/bento.ts`)
+
+**Current state:** No editHints, no autoLabel (only `autoLabel: { name: 'title' }` in config). Properties include `name`, `size`, `span`, `icon`. Refs include `body`, `icon`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ title: 'inline', icon: 'icon' }`
+- [ ] Verify `body` ref has appropriate data-name
+
+---
+
+### Steps (`runes/marketing/src/tags/steps.ts`)
+
+**Current state:** Has editHints and autoLabel for section-level fields.
+
+**Changes needed:**
+- None at section level — already has pageSectionAutoLabel and editHints for headline, eyebrow, blurb
+
+**Status: DONE** ✓
+
+---
+
+### Step (nested in `runes/marketing/src/tags/steps.ts`)
+
+**Current state:** No editHints. Manually sets `data-name='content'` and `data-name='media'` on wrapper divs. Uses `SplitLayoutModel`.
+
+**Changes needed:**
+- [ ] Move manual `data-name` assignments to `refs` in `createComponentRenderable`
+- [ ] Add editHints: `{ content: 'none', media: 'image' }` (or appropriate modes)
+- [ ] Consider adding `name` to editHints if the step title should be inline-editable
+
+---
+
+### Pricing (`runes/marketing/src/tags/pricing.ts`)
+
+**Current state:** Has editHints and autoLabel for section-level fields. Manually sets `data-layout` and `data-columns` on ul element.
+
+**Changes needed:**
+- [ ] Review whether `data-layout` and `data-columns` on the tiersList ul should be standard modifiers/properties
+- [ ] Verify section-level editHints coverage
+
+---
+
+### Tier / FeaturedTier (nested in `runes/marketing/src/tags/pricing.ts`)
+
+**Current state:** No editHints. Properties include `name` (h1), `description`, `price` (p), `currency` (meta), `url` (anchor). Refs include `body`.
+
+**Changes needed:**
+- [ ] Move visible elements (`name`, `price`) from `properties` to `refs` so they get `data-name` instead of `data-field`
+- [ ] Add editHints: `{ name: 'inline', price: 'inline', body: 'none' }`
+- [ ] Add autoLabel for tier content elements
+
+---
+
+### Testimonial (`runes/marketing/src/tags/testimonial.ts`)
+
+**Current state:** No editHints, no autoLabel. **Critical issues:**
+- Manually sets `data-field='author-name'` and `data-field='author-role'` on created spans (lines 44, 55) — should use `refs` / `data-name`
+- No refs defined at all — everything is in properties
+
+**Changes needed:**
+- [ ] Move `authorName`, `authorRole`, `avatar` from properties to refs
+- [ ] Remove manual `data-field` assignments (lines 44, 55) — let `createComponentRenderable` handle via refs
+- [ ] Keep `quote`, `rating`, `variant` as properties (modifier/meta values)
+- [ ] Add editHints: `{ 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' }`
+- [ ] Add autoLabel for blockquote → quote mapping
+
+---
+
+### Comparison (`runes/marketing/src/tags/comparison.ts`)
+
+**Current state:** No editHints. Has pageSectionProperties for header. Complex postTransform.
+
+**Changes needed:**
+- [ ] Add editHints for section-level fields: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+- [ ] Add autoLabel with pageSectionAutoLabel
+
+---
+
+### ComparisonColumn (nested in `runes/marketing/src/tags/comparison.ts`)
+
+**Current state:** No editHints. Properties include `name` (span), `highlighted` (meta), `row` items. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs so it gets `data-name`
+- [ ] Add editHints: `{ name: 'inline' }`
+
+---
+
+### ComparisonRow (nested in `runes/marketing/src/tags/comparison.ts`)
+
+**Current state:** No editHints. Properties include `label` (span), `rowType` (meta). Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `label` from properties to refs
+- [ ] Add editHints: `{ label: 'inline', body: 'inline' }`
+
+---
+
+## Package: `@refrakt-md/docs`
+
+### Api (`runes/docs/src/tags/api.ts`)
+
+**Current state:** No editHints. Properties include `method`, `path`, `auth`. Refs include `body`. Config has structure with `method` (span), `path` (code), `auth` (span) structure entries.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'none', method: 'none', path: 'none', auth: 'none' }` — structure elements are attribute-driven, not directly editable
+- [ ] Or if method/path/auth should be editable inline, use `'inline'` mode
+
+---
+
+### Symbol (`runes/docs/src/tags/symbol.ts`)
+
+**Current state:** No editHints. Properties include `kind`, `lang`, `since`, `deprecated`, `source`. Refs include `body`, `headline` (via pageSectionProperties). Config has rich structure with `kind-badge`, `lang-badge`, `since-badge`, `deprecated-badge`, `source-link`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ headline: 'inline', body: 'none', 'kind-badge': 'none', 'lang-badge': 'none', 'since-badge': 'none', 'deprecated-badge': 'none', 'source-link': 'link' }`
+- [ ] Add autoLabel with pageSectionAutoLabel
+
+---
+
+### SymbolGroup (nested in `runes/docs/src/tags/symbol.ts`)
+
+**Current state:** No editHints. Properties include `label`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `label` from properties to refs
+- [ ] Add editHints: `{ label: 'inline', body: 'none' }`
+
+---
+
+### SymbolMember (nested in `runes/docs/src/tags/symbol.ts`)
+
+**Current state:** No editHints. Properties include `name`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ name: 'inline', body: 'none' }`
+
+---
+
+### Changelog (`runes/docs/src/tags/changelog.ts`)
+
+**Current state:** No editHints. Properties include `project`, `release` items. Refs include `releases`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ releases: 'none' }` — container for release items
+- [ ] Add autoLabel with pageSectionAutoLabel if applicable
+
+---
+
+### ChangelogRelease (nested in `runes/docs/src/tags/changelog.ts`)
+
+**Current state:** No editHints. Properties include `version`, `date`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `version` from properties to refs if it should be inline-editable
+- [ ] Add editHints: `{ version: 'inline', body: 'none' }`
+
+---
+
+## Package: `@refrakt-md/design`
+
+### Swatch (`runes/design/src/tags/swatch.ts`)
+
+**Current state:** No editHints. Inline rune (attributes only). Refs include `chip`, `value`. Properties include `color`, `label`, `showValue`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ chip: 'none', value: 'none' }` — attribute-driven, not content-editable
+- [ ] This is an inline rune with minimal editor surface
+
+---
+
+### Palette (`runes/design/src/tags/palette.ts`)
+
+**Current state:** No editHints. Uses `data-name` extensively on generated elements for groups, swatches, scales. Properties include `title`, `showContrast`, `showA11y`, `columns`.
+
+**Changes needed:**
+- [ ] Add editHints for generated `data-name` elements: `{ 'group-title': 'none', 'swatch-color': 'none', 'swatch-name': 'none', 'swatch-value': 'none', grid: 'none', scale: 'none' }`
+- [ ] Most content is generated from list parsing — editor should mark these as `'none'`
+
+---
+
+### Typography (`runes/design/src/tags/typography.ts`)
+
+**Current state:** No editHints. Uses `data-name` extensively on generated specimens, sizes, weights. Properties include `title`, `showSizes`, `showWeights`, `showCharset`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ title: 'none', specimen: 'none', specimens: 'none', sizes: 'none', weights: 'none', charset: 'none' }`
+- [ ] All content is generated from definition list parsing — entirely non-editable inline
+
+---
+
+### Spacing (`runes/design/src/tags/spacing.ts`)
+
+**Current state:** No editHints. Uses `data-name` extensively on generated scale items, radii, shadows. Properties include `title`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ title: 'none', section: 'none', scale: 'none', radii: 'none', shadows: 'none' }`
+- [ ] All content is generated from list parsing — entirely non-editable inline
+
+---
+
+### Preview (`runes/design/src/tags/preview.ts`)
+
+**Current state:** No editHints. **Legacy issue:** postTransform in config reads `data-field` attributes (`data-field="source"`, `data-field="themed-source"`) on lines 52, 59, 68 of `runes/design/src/config.ts`.
+
+**Changes needed:**
+- [ ] Migrate `data-field` usage in postTransform to `data-name` pattern
+- [ ] Add editHints: `{ source: 'code' }` — the preview source should be code-editable
+- [ ] Update test expectations that check for `data-field` on `pre` elements
+
+---
+
+### Mockup (`runes/design/src/tags/mockup.ts`)
+
+**Current state:** No editHints. Refs include `viewport`. Properties include `device`, `color`, `statusBar`, `label`, `url`, `scale`, `fit`. PostTransform generates device chrome.
+
+**Changes needed:**
+- [ ] Add editHints: `{ viewport: 'none' }` — content is the child markup
+- [ ] Device chrome is postTransform-generated, not directly editable
+
+---
+
+### DesignContext (`runes/design/src/tags/design-context.ts`)
+
+**Current state:** No editHints. Uses `data-name="title"` and `data-name="sections"` manually. Properties include `title`, `tokens`, `scope`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ title: 'none', sections: 'none' }` — container for child design runes
+- [ ] Move manual `data-name` assignments to refs in `createComponentRenderable`
+
+---
+
+## Package: `@refrakt-md/storytelling`
+
+### Character (`runes/storytelling/src/tags/character.ts`)
+
+**Current state:** No editHints. Properties include `name`, `role`, `status`, `aliases`, `tags`. Refs include `portrait` (optional), `sections`/`body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs (visible span should use `data-name`)
+- [ ] Add editHints: `{ name: 'inline', portrait: 'image', body: 'none', sections: 'none' }`
+- [ ] Add autoLabel for section headers
+
+---
+
+### CharacterSection (nested)
+
+**Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+---
+
+### Realm (`runes/storytelling/src/tags/realm.ts`)
+
+**Current state:** No editHints. Properties include `name`, `realmType`, `scale`, `tags`, `parent`. Refs include `scene` (optional), `sections`/`body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ name: 'inline', scene: 'image', body: 'none', sections: 'none' }`
+
+---
+
+### RealmSection (nested)
+
+**Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+---
+
+### Faction (`runes/storytelling/src/tags/faction.ts`)
+
+**Current state:** No editHints. Properties include `name`, `factionType`, `alignment`, `size`, `tags`. Refs include `sections`/`body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ name: 'inline', body: 'none', sections: 'none' }`
+
+---
+
+### FactionSection (nested)
+
+**Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+---
+
+### Lore (`runes/storytelling/src/tags/lore.ts`)
+
+**Current state:** No editHints. Properties include `title`, `category`, `spoiler`, `tags`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `title` from properties to refs (visible span should use `data-name`)
+- [ ] Add editHints: `{ title: 'inline', body: 'none' }`
+
+---
+
+### Plot (`runes/storytelling/src/tags/plot.ts`)
+
+**Current state:** No editHints. Properties include `title`, `plotType`, `structure`, `tags`, `beat` items. Refs include `beats`.
+
+**Changes needed:**
+- [ ] Move `title` from properties to refs
+- [ ] Add editHints: `{ title: 'inline', beats: 'none' }`
+
+---
+
+### Beat (nested in `runes/storytelling/src/tags/plot.ts`)
+
+**Current state:** No editHints. Properties include `label`, `status`, `id`, `track`, `follows`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `label` from properties to refs
+- [ ] Add editHints: `{ label: 'inline', body: 'none' }`
+
+---
+
+### Bond (`runes/storytelling/src/tags/bond.ts`)
+
+**Current state:** No editHints. Uses `data-name="connector"` and `data-name="arrow"` manually. Properties include `from`, `to`, `bondType`, `status`, `bidirectional`. Refs include `connector`, `body`.
+
+**Changes needed:**
+- [ ] Move `from`, `to` from properties to refs (visible spans)
+- [ ] Add editHints: `{ from: 'inline', to: 'inline', connector: 'none', arrow: 'none', body: 'none' }`
+
+---
+
+### Storyboard (`runes/storytelling/src/tags/storyboard.ts`)
+
+**Current state:** No editHints. Properties include `panel` items, `variant`, `columns`. Refs include `panels`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ panels: 'none' }`
+
+---
+
+### StoryboardPanel (nested)
+
+**Current state:** No editHints. Properties include `image`, `caption`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `image` from properties to refs
+- [ ] Move `caption` from properties to refs
+- [ ] Add editHints: `{ image: 'image', caption: 'inline', body: 'none' }`
+
+---
+
+## Package: `@refrakt-md/learning`
+
+### HowTo (`runes/learning/src/tags/howto.ts`)
+
+**Current state:** No editHints. Properties include `estimatedTime`, `difficulty`. Refs include header elements (via pageSectionProperties), `tools`, `steps`. Config has structure with `meta-item` entries.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' }`
+- [ ] Set `data-name` on tool and step list items in schema (following recipe pattern)
+
+---
+
+## Package: `@refrakt-md/business`
+
+### Cast (`runes/business/src/tags/cast.ts`)
+
+**Current state:** No editHints. Uses pageSectionProperties for header. Properties include `member` items, `layout`. Refs include `header`, `members`.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', members: 'none' }`
+
+---
+
+### CastMember (nested)
+
+**Current state:** No editHints. Properties include `name` (span), `role` (span). Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `name`, `role` from properties to refs
+- [ ] Add editHints: `{ name: 'inline', role: 'inline', body: 'none' }`
+
+---
+
+### Organization (`runes/business/src/tags/organization.ts`)
+
+**Current state:** No editHints. Uses pageSectionProperties. Properties include `type`. Refs include `headline`, `blurb`, `body`.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none' }`
+
+---
+
+### Timeline (`runes/business/src/tags/timeline.ts`)
+
+**Current state:** No editHints. Uses pageSectionProperties. Properties include `direction`, `entry` items. Refs include `headline`, `blurb`, `entries`.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', entries: 'none' }`
+
+---
+
+### TimelineEntry (nested)
+
+**Current state:** No editHints. Properties include `date` (time tag), `label` (span). Refs include `body`.
+
+**Changes needed:**
+- [ ] Move `date`, `label` from properties to refs (visible elements)
+- [ ] Add editHints: `{ date: 'inline', label: 'inline', body: 'none' }`
+
+---
+
+## Package: `@refrakt-md/places`
+
+### Event (`runes/places/src/tags/event.ts`)
+
+**Current state:** No editHints. Uses pageSectionProperties. Properties include `date`, `endDate`, `location`, `url`. Config has rich structure with `detail`, `label`, `value`, `end-date`, `register` refs.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' }`
+
+---
+
+### Itinerary (`runes/places/src/tags/itinerary.ts`)
+
+**Current state:** No editHints. Uses pageSectionProperties. Properties include `variant`, `direction`, `day` items. Refs include `headline`, `blurb`, `days`.
+
+**Changes needed:**
+- [ ] Add autoLabel with pageSectionAutoLabel
+- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', days: 'none' }`
+
+---
+
+### ItineraryDay (nested)
+
+**Current state:** No editHints. AutoLabel `{ label: 'header' }`. Properties include `label`, `date`, `stop` items. Refs include `stops`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ header: 'inline', stops: 'none' }`
+
+---
+
+### ItineraryStop (nested)
+
+**Current state:** No editHints. AutoLabel `{ time: 'time', location: 'location' }`. Properties include `time`, `location`, `duration`, `activity`, `lat`, `lng`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ time: 'none', location: 'none', body: 'none' }`
+
+---
+
+### Map (`runes/places/src/tags/map.ts`)
+
+**Current state:** No editHints. **Legacy issue:** Config postTransform reads `data-field` attribute on children (line 84 of `runes/places/src/config.ts`). Properties include `zoom`, `center`, `variant`, `height`, `provider`, `interactive`, `route`, `cluster`, `pin` items. Refs include `pins`.
+
+**Changes needed:**
+- [ ] Replace `data-field` reads in config postTransform with `data-name` (or `property` attribute) pattern
+- [ ] Add editHints: `{ pins: 'none' }` — map is web component–rendered
+- [ ] Update tests that check for `data-field` on meta children
+
+---
+
+### MapPin (nested)
+
+**Current state:** No editHints. Purely attribute-driven via `parseLocationItem()`. Properties include `name`, `description`, `lat`, `lng`, `address`, `url`, `group`. No refs.
+
+**Changes needed:**
+- [ ] Move `name`, `description` from properties to refs (visible spans)
+- [ ] Add editHints: `{ name: 'inline', description: 'inline' }`
+- [ ] Update tests that check for `data-field` on name/description spans
+
+---
+
+## Package: `@refrakt-md/media`
+
+### Audio (`runes/media/src/tags/audio.ts`)
+
+**Current state:** No editHints. Uses `data-name='description'` manually on div. Properties include `waveform`. Custom web component rendering.
+
+**Changes needed:**
+- [ ] Move manual `data-name` to refs in `createComponentRenderable`
+- [ ] Add editHints: `{ description: 'inline' }`
+
+---
+
+### Playlist (`runes/media/src/tags/playlist.ts`)
+
+**Current state:** No editHints. **Legacy issues:**
+- Uses `data-field: 'id'` on meta tag (line 190) — should use `property` attribute
+- Sets `data-rune: 'track'` on child track elements (line 131) — children should not have manual `data-rune`
+
+Uses `data-name` for `header`, `title`, `tracks`, `player`.
+
+**Changes needed:**
+- [ ] Replace `data-field: 'id'` (line 190) with proper `property` attribute on meta
+- [ ] Remove manual `data-rune: 'track'` on children (line 131) — let `createComponentRenderable` handle it if they are proper rune instances
+- [ ] Move manual `data-name` assignments to refs
+- [ ] Add editHints: `{ title: 'inline', header: 'none', tracks: 'none', player: 'none' }`
+
+---
+
+### Track (`runes/media/src/tags/track.ts`)
+
+**Current state:** No editHints. Uses `data-name` for `track-name`, `track-artist`, `track-duration`, `track-meta`, `track-description`. Properties include `name`, `artist`, `duration`, `url`, `position`, `datePublished`, `type`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' }`
+
+---
+
+## Package: `@refrakt-md/runes` (Core)
+
+### Hint (`packages/runes/src/tags/hint.ts`)
+
+**Current state:** No editHints. Config has structure with `icon` (ref) and `title` (ref, metaText) in header. Modifier: `hintType`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ icon: 'none', title: 'none' }` — structure-injected, attribute-driven
+
+---
+
+### Details (`packages/runes/src/tags/details.ts`)
+
+**Current state:** No editHints. AutoLabel `{ summary: 'summary' }`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ summary: 'inline', body: 'none' }`
+
+---
+
+### Accordion (`packages/runes/src/tags/accordion.ts`)
+
+**Current state:** No editHints. AutoLabel includes pageSectionAutoLabel. Sections contentModel converts headings to accordion-item tags.
+
+**Changes needed:**
+- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+
+---
+
+### AccordionItem (nested)
+
+**Current state:** No editHints. AutoLabel `{ name: 'header' }`. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ header: 'inline', body: 'none' }`
+
+---
+
+### TabGroup (`packages/runes/src/tags/tabs.ts`)
+
+**Current state:** AutoLabel includes pageSectionAutoLabel. No explicit editHints.
+
+**Changes needed:**
+- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+
+---
+
+### Tab (nested)
+
+**Current state:** No editHints. Properties include `name`, `image`. No refs.
+
+**Changes needed:**
+- [ ] Move `name` from properties to refs
+- [ ] Add editHints: `{ name: 'inline' }`
+
+---
+
+### CodeGroup (`packages/runes/src/tags/snippet.ts`)
+
+**Current state:** Has `editHints: { panel: 'code' }`. Structure includes topbar with `title` ref.
+
+**Changes needed:**
+- [ ] Add `title: 'none'` to editHints (structure-injected from attribute)
+
+---
+
+### Grid (`packages/runes/src/tags/grid.ts`)
+
+**Current state:** No editHints, no autoLabel. Modifiers: mode, collapse, aspect, gap, columns, padding, maxWidth, valign. Refs include `cell`.
+
+**Changes needed:**
+- [ ] Add autoLabel for grid cells
+- [ ] Add editHints: `{ cell: 'none' }` — cells contain other runes
+
+---
+
+### Figure (`packages/runes/src/tags/figure.ts`)
+
+**Current state:** No editHints. Properties include `caption`, `size`, `align`. No refs.
+
+**Changes needed:**
+- [ ] Move `caption` from properties to refs
+- [ ] Add editHints: `{ caption: 'inline' }`
+
+---
+
+### Gallery (in config)
+
+**Current state:** No editHints. Modifiers: layout, lightbox, gap, columns. Refs include `items`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ items: 'none' }` — items are figure elements
+
+---
+
+### Showcase (`packages/runes/src/tags/showcase.ts`)
+
+**Current state:** No editHints. Properties include `shadow`, `bleed`, `aspect`, `offset`, `place`. Refs include `viewport`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ viewport: 'none' }` — viewport wraps child content
+
+---
+
+### Embed (`packages/runes/src/tags/embed.ts`)
+
+**Current state:** No editHints. PostTransform handles URL detection and iframe generation. Refs include `fallback`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ fallback: 'none' }` — postTransform-generated
+
+---
+
+### PullQuote (in config)
+
+**Current state:** No editHints. Modifiers: align, variant. Properties set in schema.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'inline' }` if body ref exists, or examine schema
+
+---
+
+### TextBlock (in config)
+
+**Current state:** No editHints. Modifiers: dropcap, columns, lead, align. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'none' }` — content is the child text
+
+---
+
+### MediaText (in config)
+
+**Current state:** No editHints. Modifiers: align, ratio, wrap. Refs include `media`, `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ media: 'image', body: 'none' }`
+
+---
+
+### Sidenote (in config)
+
+**Current state:** No editHints. Modifier: variant. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'inline' }`
+
+---
+
+### Compare (in config)
+
+**Current state:** No editHints. Modifier: layout. Refs include `panels`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ panels: 'none' }` — panels contain child runes
+
+---
+
+### Conversation (in config)
+
+**Current state:** No editHints. Custom contentModel converts blockquotes to messages. Refs include `messages`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ messages: 'none' }`
+
+---
+
+### ConversationMessage (nested)
+
+**Current state:** No editHints. Modifier: align. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'inline' }`
+
+---
+
+### Annotate (in config)
+
+**Current state:** No editHints. Modifier: variant. Refs include `body`, `notes`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'none', notes: 'none' }`
+
+---
+
+### AnnotateNote (nested)
+
+**Current state:** No editHints. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'inline' }`
+
+---
+
+### DataTable (`packages/runes/src/tags/datatable.ts`)
+
+**Current state:** No editHints. Modifiers: searchable, sortable, pageSize, defaultSort. Refs include `table`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ table: 'none' }` — table is standard markdown table
+
+---
+
+### Form (`packages/runes/src/tags/form.ts`)
+
+**Current state:** No editHints. Complex custom contentModel with type inference. Modifiers: variant, action, method, success, error, honeypot. Refs include `body`. PostTransform generates footer.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'none' }` — form fields are complex custom contentModel
+
+---
+
+### Reveal (in config)
+
+**Current state:** No editHints. AutoLabel includes pageSectionAutoLabel. Sections contentModel. Refs include `steps`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' }`
+
+---
+
+### RevealStep (nested)
+
+**Current state:** No editHints. Refs include `body`.
+
+**Changes needed:**
+- [ ] Add editHints: `{ body: 'none' }`
+
+---
+
+### Diff (in config)
+
+**Current state:** No editHints. Entirely postTransform-generated with `data-name` elements (line, gutter-num, gutter-prefix, line-content).
+
+**Changes needed:**
+- [ ] Add editHints: `{ line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' }` — all generated
+
+---
+
+### Chart (in config)
+
+**Current state:** No editHints. Entirely postTransform-generated SVG.
+
+**Changes needed:**
+- [ ] Add editHints: `{ data: 'none' }` — chart is generated from table data
+
+---
+
+### Diagram (in config)
+
+**Current state:** No editHints. PostTransform-generated.
+
+**Changes needed:**
+- [ ] Add editHints: `{ source: 'code' }` — diagram source should be code-editable
+
+---
+
+### Sandbox (in config)
+
+**Current state:** No editHints. PostTransform-generated source panels.
+
+**Changes needed:**
+- [ ] Add editHints as appropriate for source panels
+
+---
+
+### Budget (in config)
+
+**Current state:** No editHints. Structure includes `header` with `title`, `meta`, `meta-item` refs. PostTransform generates footer.
+
+**Changes needed:**
+- [ ] Add editHints: `{ title: 'none', meta: 'none', 'meta-item': 'none' }` — all structure/attribute-driven
+
+---
+
+### BudgetCategory / BudgetLineItem (nested)
+
+**Current state:** No editHints. Processed entirely in postTransform.
+
+**Changes needed:**
+- [ ] Add editHints as appropriate — these are heavily postTransform-dependent
+
+---
+
+### Nav / NavGroup / NavItem
+
+**Current state:** No editHints. Complex custom processing with headingsToList. NavItem uses `data-field: 'slug'` in schema.
+
+**Changes needed:**
+- [ ] Replace `data-field: 'slug'` usage in NavItem with proper `data-name` or `property`
+- [ ] Add editHints for nav items if editor should support nav editing
+
+---
+
+### Breadcrumb / BreadcrumbItem
+
+**Current state:** No editHints. Auto mode uses sentinel. Primarily generated content.
+
+**Changes needed:**
+- [ ] Add editHints: `{ item: 'none' }` — breadcrumbs are typically auto-generated
+
+---
+
+## Cross-Cutting Issues
+
+### 1. `data-field` in `createComponentRenderable`
+
+The `createComponentRenderable` function itself (at `packages/runes/src/lib/component.ts:34`) sets `data-field` on properties. This is the standard behavior — properties are modifier/meta values consumed by the engine. The issue is when runes put **visible, structural elements** in `properties` instead of `refs`. The fix for each rune is to move visible elements to `refs`.
+
+### 2. `data-field` in `packages/runes/src/config.ts`
+
+The core config uses `data-field` reads in several postTransform helpers (lines 66, 147, 355, 772, 804, 873, 905). These are internal engine patterns for reading property metadata and may need separate assessment for whether they should migrate to a different attribute.
+
+### 3. Test Updates
+
+Many tests across all packages assert on `data-field` values. When runes are updated to use `refs`/`data-name`, corresponding tests must be updated. This is a significant portion of the work.
+
+### 4. Priority Order
+
+Recommended implementation order:
+1. **Marketing** (Testimonial, Bento, Tier, Comparison*) — most user-facing, most legacy issues
+2. **Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.) — broad impact
+3. **Docs** (Api, Symbol, Changelog) — important for documentation sites
+4. **Learning** (HowTo) — follows recipe pattern closely
+5. **Business** (Cast, Organization, Timeline) — straightforward
+6. **Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue
+7. **Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern
+8. **Design** (Palette, Typography, Spacing, Preview, Mockup) — mostly generated content
+9. **Media** (Playlist, Track, Audio) — legacy issues in Playlist
