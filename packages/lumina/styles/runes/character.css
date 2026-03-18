@@ -17,10 +17,12 @@
 .rf-character__role-badge,
 .rf-character__status-badge {
 	font-size: 0.8125rem;
-	font-weight: 400;
+	font-weight: 500;
 	text-transform: capitalize;
 	color: var(--rf-color-muted);
 }
+.rf-character__role-badge::before { content: 'Role: '; font-weight: 400; opacity: 0.65; }
+.rf-character__status-badge::before { content: 'Status: '; font-weight: 400; opacity: 0.65; }
 
 /* Portrait */
 .rf-character__portrait {
