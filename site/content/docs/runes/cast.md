@@ -19,7 +19,9 @@ List items are parsed into name and role parts automatically.
 
 {% cast layout="grid" %}
 - Alice Johnson - CEO
+  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
 - Bob Smith - CTO
+  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
 - Carol Williams - Head of Design
 - David Chen - Lead Engineer
 {% /cast %}
