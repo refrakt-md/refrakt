@@ -45,7 +45,7 @@
 .rf-plot ol {
 	list-style: none;
 	padding-left: 0;
-	margin: 0;
+	margin: 1rem 0 0;
 }
 
 /* Beat — all variants use left padding with dot at left: 0 */
@@ -60,13 +60,15 @@
 	content: '';
 	position: absolute;
 	left: 0.375rem;
-	top: 0.875rem;
+	top: 1rem;
 	width: 0.75rem;
 	height: 0.75rem;
-	border-radius: var(--rf-radius-full);
+	border-radius: 50%;
 	background: var(--rf-color-surface-active);
+	border: 2px solid var(--rf-color-bg);
+	box-shadow: 0 0 0 2px var(--rf-color-surface-active);
 }
-.rf-beat > span[property="label"] {
+.rf-beat > span[data-field="label"] {
 	font-weight: 600;
 	font-size: 1rem;
 	color: var(--rf-color-heading);
@@ -81,34 +83,46 @@
 	margin: 0;
 }
 
-/* Linear variant — connector line through dot centers */
 .rf-plot--linear ol {
-	/* Dot center = left: 0.375rem + width/2 = 0.375 + 0.375 = 0.75rem */
-	border-left: 2px solid var(--rf-color-border);
-	margin-left: calc(0.75rem - 1px);
-	padding-left: 0;
+	margin-top: 1.5rem;
 }
+/* Linear variant — connector line matching timeline pattern */
 .rf-plot--linear .rf-beat {
-	padding-left: 2.25rem;
-	margin-left: calc(-0.75rem + 1px);
+	padding: 0 0 2rem 2rem;
+	border-left: 2px solid var(--rf-color-border);
+	margin-left: 0.375rem;
+}
+.rf-plot--linear .rf-beat::before {
+	left: -0.4375rem;
+	top: 0.125rem;
+}
+.rf-plot--linear .rf-beat > span[data-field="label"] {
+	line-height: 1;
+	display: block;
+	margin-top: -0.5rem;
 }
 .rf-plot--linear .rf-beat + .rf-beat {
 	border-top: none;
+}
+.rf-plot--linear .rf-beat:last-child {
+	border-left-color: transparent;
+	padding-bottom: 0;
 }
 
 /* Beat status variants */
 .rf-beat--complete::before {
 	background: var(--rf-color-success);
+	box-shadow: 0 0 0 2px var(--rf-color-success);
 }
-.rf-beat--complete > span[property="label"] {
+.rf-beat--complete > span[data-field="label"] {
 	color: var(--rf-color-muted);
 }
 
 .rf-beat--active::before {
 	background: var(--rf-color-primary);
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--rf-color-primary) 20%, transparent);
+	box-shadow: 0 0 0 2px var(--rf-color-primary), 0 0 0 5px color-mix(in srgb, var(--rf-color-primary) 20%, transparent);
 }
-.rf-beat--active > span[property="label"] {
+.rf-beat--active > span[data-field="label"] {
 	color: var(--rf-color-primary);
 }
 
@@ -116,10 +130,11 @@
 	background: var(--rf-color-surface-active);
 }
 
-.rf-beat--abandoned > span[property="label"] {
+.rf-beat--abandoned > span[data-field="label"] {
 	text-decoration: line-through;
 	color: var(--rf-color-muted);
 }
 .rf-beat--abandoned::before {
 	background: var(--rf-color-muted);
+	box-shadow: 0 0 0 2px var(--rf-color-muted);
 }
