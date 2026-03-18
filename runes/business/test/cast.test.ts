@@ -26,11 +26,11 @@ describe('cast tag', () => {
 		const member = findTag(tag!, t => t.attributes['data-rune'] === 'cast-member');
 		expect(member).toBeDefined();
 
-		const nameTag = findTag(member!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const nameTag = findTag(member!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Sarah Chen');
 
-		const roleTag = findTag(member!, t => t.name === 'span' && t.attributes['data-field'] === 'role');
+		const roleTag = findTag(member!, t => t.name === 'span' && t.attributes['data-name'] === 'role');
 		expect(roleTag).toBeDefined();
 		expect(roleTag!.children[0]).toBe('Head of Content');
 	});

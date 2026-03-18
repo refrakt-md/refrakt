@@ -21,11 +21,9 @@ class CastMemberModel extends Model {
 
 		return createComponentRenderable(schema.CastMember, {
 			tag: 'li',
-			properties: {
+			refs: {
 				name: nameTag,
 				role: roleTag,
-			},
-			refs: {
 				body: body.tag('div'),
 			},
 			schema: {

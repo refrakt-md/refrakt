@@ -18,11 +18,9 @@ class TimelineEntryModel extends Model {
 
 		return createComponentRenderable(schema.TimelineEntry, {
 			tag: 'li',
-			properties: {
+			refs: {
 				date: dateTag,
 				label: labelTag,
-			},
-			refs: {
 				body: body.tag('div'),
 			},
 			schema: {
