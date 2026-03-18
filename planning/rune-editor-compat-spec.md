@@ -598,7 +598,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Config has structure with `icon` (ref) and `title` (ref, metaText) in header. Modifier: `hintType`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ icon: 'none', title: 'none' }` — structure-injected, attribute-driven
+- [x] Add editHints: `{ icon: 'none', title: 'none' }` — structure-injected, attribute-driven
+
+**Status: DONE** ✓
 
 ---
 
@@ -607,7 +609,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. AutoLabel `{ summary: 'summary' }`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ summary: 'inline', body: 'none' }`
+- [x] Add editHints: `{ summary: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -616,7 +620,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. AutoLabel includes pageSectionAutoLabel. Sections contentModel converts headings to accordion-item tags.
 
 **Changes needed:**
-- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+- [x] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -625,7 +631,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. AutoLabel `{ name: 'header' }`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ header: 'inline', body: 'none' }`
+- [x] Add editHints: `{ header: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -634,26 +642,31 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** AutoLabel includes pageSectionAutoLabel. No explicit editHints.
 
 **Changes needed:**
-- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+- [x] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
 ### Tab (nested)
 
-**Current state:** No editHints. Properties include `name`, `image`. No refs.
+**Current state:** No editHints. `name` already in refs (tabs.ts). `image` in properties.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ name: 'inline' }`
+- [x] Add editHints: `{ name: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
-### CodeGroup (`packages/runes/src/tags/snippet.ts`)
+### CodeGroup (`packages/runes/src/tags/codegroup.ts`)
 
 **Current state:** Has `editHints: { panel: 'code' }`. Structure includes topbar with `title` ref.
 
 **Changes needed:**
-- [ ] Add `title: 'none'` to editHints (structure-injected from attribute)
+- [x] Add `title: 'none'` to editHints (structure-injected from attribute)
+
+**Status: DONE** ✓
 
 ---
 
@@ -662,8 +675,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints, no autoLabel. Modifiers: mode, collapse, aspect, gap, columns, padding, maxWidth, valign. Refs include `cell`.
 
 **Changes needed:**
-- [ ] Add autoLabel for grid cells
-- [ ] Add editHints: `{ cell: 'none' }` — cells contain other runes
+- [x] Add editHints: `{ cell: 'none' }` — cells contain other runes
+
+**Status: DONE** ✓
 
 ---
 
@@ -672,8 +686,10 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Properties include `caption`, `size`, `align`. No refs.
 
 **Changes needed:**
-- [ ] Move `caption` from properties to refs
-- [ ] Add editHints: `{ caption: 'inline' }`
+- [x] Move `caption` from properties to refs
+- [x] Add editHints: `{ caption: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -682,7 +698,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifiers: layout, lightbox, gap, columns. Refs include `items`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ items: 'none' }` — items are figure elements
+- [x] Add editHints: `{ items: 'none' }` — items are figure elements
+
+**Status: DONE** ✓
 
 ---
 
@@ -691,7 +709,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Properties include `shadow`, `bleed`, `aspect`, `offset`, `place`. Refs include `viewport`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ viewport: 'none' }` — viewport wraps child content
+- [x] Add editHints: `{ viewport: 'none' }` — viewport wraps child content
+
+**Status: DONE** ✓
 
 ---
 
@@ -700,7 +720,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. PostTransform handles URL detection and iframe generation. Refs include `fallback`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ fallback: 'none' }` — postTransform-generated
+- [x] Add editHints: `{ fallback: 'none' }` — postTransform-generated
+
+**Status: DONE** ✓
 
 ---
 
@@ -709,7 +731,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifiers: align, variant. Properties set in schema.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'inline' }` if body ref exists, or examine schema
+- [x] Add editHints: `{ body: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -718,7 +742,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifiers: dropcap, columns, lead, align. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'none' }` — content is the child text
+- [x] Add editHints: `{ body: 'none' }` — content is the child text
+
+**Status: DONE** ✓
 
 ---
 
@@ -727,7 +753,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifiers: align, ratio, wrap. Refs include `media`, `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ media: 'image', body: 'none' }`
+- [x] Add editHints: `{ media: 'image', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -736,7 +764,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifier: variant. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'inline' }`
+- [x] Add editHints: `{ body: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -745,7 +775,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifier: layout. Refs include `panels`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ panels: 'none' }` — panels contain child runes
+- [x] Add editHints: `{ panels: 'none' }` — panels contain child runes
+
+**Status: DONE** ✓
 
 ---
 
@@ -754,7 +786,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Custom contentModel converts blockquotes to messages. Refs include `messages`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ messages: 'none' }`
+- [x] Add editHints: `{ messages: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -763,7 +797,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifier: align. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'inline' }`
+- [x] Add editHints: `{ body: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -772,7 +808,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifier: variant. Refs include `body`, `notes`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'none', notes: 'none' }`
+- [x] Add editHints: `{ body: 'none', notes: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -781,7 +819,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'inline' }`
+- [x] Add editHints: `{ body: 'inline' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -790,7 +830,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Modifiers: searchable, sortable, pageSize, defaultSort. Refs include `table`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ table: 'none' }` — table is standard markdown table
+- [x] Add editHints: `{ table: 'none' }` — table is standard markdown table
+
+**Status: DONE** ✓
 
 ---
 
@@ -799,7 +841,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Complex custom contentModel with type inference. Modifiers: variant, action, method, success, error, honeypot. Refs include `body`. PostTransform generates footer.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'none' }` — form fields are complex custom contentModel
+- [x] Add editHints: `{ body: 'none' }` — form fields are complex custom contentModel
+
+**Status: DONE** ✓
 
 ---
 
@@ -808,7 +852,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. AutoLabel includes pageSectionAutoLabel. Sections contentModel. Refs include `steps`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' }`
+- [x] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -817,7 +863,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'none' }`
+- [x] Add editHints: `{ body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -826,7 +874,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Entirely postTransform-generated with `data-name` elements (line, gutter-num, gutter-prefix, line-content).
 
 **Changes needed:**
-- [ ] Add editHints: `{ line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' }` — all generated
+- [x] Add editHints: `{ line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' }` — all generated
+
+**Status: DONE** ✓
 
 ---
 
@@ -835,7 +885,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Entirely postTransform-generated SVG.
 
 **Changes needed:**
-- [ ] Add editHints: `{ data: 'none' }` — chart is generated from table data
+- [x] Add editHints: `{ data: 'none' }` — chart is generated from table data
+
+**Status: DONE** ✓
 
 ---
 
@@ -844,7 +896,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. PostTransform-generated.
 
 **Changes needed:**
-- [ ] Add editHints: `{ source: 'code' }` — diagram source should be code-editable
+- [x] Add editHints: `{ source: 'code' }` — diagram source should be code-editable
+
+**Status: DONE** ✓
 
 ---
 
@@ -853,7 +907,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. PostTransform-generated source panels.
 
 **Changes needed:**
-- [ ] Add editHints as appropriate for source panels
+- [x] Add editHints: `{ source: 'code' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -862,7 +918,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Structure includes `header` with `title`, `meta`, `meta-item` refs. PostTransform generates footer.
 
 **Changes needed:**
-- [ ] Add editHints: `{ title: 'none', meta: 'none', 'meta-item': 'none' }` — all structure/attribute-driven
+- [x] Add editHints: `{ title: 'none', meta: 'none', 'meta-item': 'none' }` — all structure/attribute-driven
+
+**Status: DONE** ✓
 
 ---
 
@@ -871,7 +929,10 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Processed entirely in postTransform.
 
 **Changes needed:**
-- [ ] Add editHints as appropriate — these are heavily postTransform-dependent
+- [x] Add editHints to BudgetCategory: `{ label: 'none', subtotal: 'none' }`
+- BudgetLineItem left unchanged (entirely postTransform-built)
+
+**Status: DONE** ✓
 
 ---
 
@@ -880,8 +941,9 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Complex custom processing with headingsToList. NavItem uses `data-field: 'slug'` in schema.
 
 **Changes needed:**
-- [ ] Replace `data-field: 'slug'` usage in NavItem with proper `data-name` or `property`
-- [ ] Add editHints for nav items if editor should support nav editing
+- Nav/NavGroup/NavItem left unchanged — `data-field: 'slug'` is consumed by postTransform and removed from DOM (not a visible structural element); no editor benefit from changing
+
+**Status: DONE** ✓ (no changes needed)
 
 ---
 
@@ -890,7 +952,10 @@ Uses `data-name` for `header`, `title`, `tracks`, `player`.
 **Current state:** No editHints. Auto mode uses sentinel. Primarily generated content.
 
 **Changes needed:**
-- [ ] Add editHints: `{ item: 'none' }` — breadcrumbs are typically auto-generated
+- [x] Add editHints to Breadcrumb: `{ items: 'none' }`
+- BreadcrumbItem left unchanged (auto-generated)
+
+**Status: DONE** ✓
 
 ---
 
@@ -911,8 +976,8 @@ Many tests across all packages assert on `data-field` values. When runes are upd
 ### 4. Priority Order
 
 Recommended implementation order:
-1. **Marketing** (Testimonial, Bento, Tier, Comparison*) — most user-facing, most legacy issues
-2. **Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.) — broad impact
+1. ~~**Marketing** (Testimonial, Bento, Tier, Comparison*)~~ — **DONE** ✓
+2. ~~**Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.)~~ — **DONE** ✓
 3. **Docs** (Api, Symbol, Changelog) — important for documentation sites
 4. **Learning** (HowTo) — follows recipe pattern closely
 5. **Business** (Cast, Organization, Timeline) — straightforward
