@@ -1,5 +1,13 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+const pageSectionAutoLabel = {
+	header: 'header',
+	eyebrow: 'eyebrow',
+	headline: 'headline',
+	blurb: 'blurb',
+	image: 'image',
+};
+
 export const config: Record<string, RuneConfig> = {
 	Api: {
 		block: 'api',
@@ -19,6 +27,7 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		editHints: { body: 'none', method: 'none', path: 'none', auth: 'none' },
 	},
 	Symbol: {
 		block: 'symbol',
@@ -42,9 +51,11 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', body: 'none', 'kind-badge': 'none', 'lang-badge': 'none', 'since-badge': 'none', 'deprecated-badge': 'none', 'source-link': 'link' },
 	},
-	SymbolGroup: { block: 'symbol-group', parent: 'Symbol' },
-	SymbolMember: { block: 'symbol-member', parent: 'Symbol' },
-	Changelog: { block: 'changelog' },
-	ChangelogRelease: { block: 'changelog-release', parent: 'Changelog' },
+	SymbolGroup: { block: 'symbol-group', parent: 'Symbol', editHints: { label: 'inline', body: 'none' } },
+	SymbolMember: { block: 'symbol-member', parent: 'Symbol', editHints: { name: 'inline', body: 'none' } },
+	Changelog: { block: 'changelog', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
+	ChangelogRelease: { block: 'changelog-release', parent: 'Changelog', editHints: { version: 'inline', body: 'none' } },
 };

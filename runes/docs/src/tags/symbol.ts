@@ -28,10 +28,8 @@ export const symbolMember = createContentModelSchema({
 
 		return createComponentRenderable(schema.SymbolMember, {
 			tag: 'section',
-			properties: {
-				name: nameTag,
-			},
 			refs: {
+				name: nameTag,
 				body: body.tag('div'),
 			},
 			children: [nameTag, body.next()],
@@ -71,10 +69,8 @@ export const symbolGroup = createContentModelSchema({
 
 		return createComponentRenderable(schema.SymbolGroup, {
 			tag: 'section',
-			properties: {
-				label: labelTag,
-			},
 			refs: {
+				label: labelTag,
 				body: body.tag('div'),
 			},
 			children: [labelTag, body.next()],

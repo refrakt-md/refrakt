@@ -173,61 +173,72 @@ See the already-updated runes for canonical examples:
 
 ### Api (`runes/docs/src/tags/api.ts`)
 
-**Current state:** No editHints. Properties include `method`, `path`, `auth`. Refs include `body`. Config has structure with `method` (span), `path` (code), `auth` (span) structure entries.
+**Current state:** Has editHints. Properties include `method`, `path`, `auth` (meta tags). Refs include `body`. Config has structure with `method` (span), `path` (code), `auth` (span) structure entries.
 
 **Changes needed:**
-- [ ] Add editHints: `{ body: 'none', method: 'none', path: 'none', auth: 'none' }` — structure elements are attribute-driven, not directly editable
-- [ ] Or if method/path/auth should be editable inline, use `'inline'` mode
+- [x] Add editHints: `{ body: 'none', method: 'none', path: 'none', auth: 'none' }` — structure elements are attribute-driven, not directly editable
+
+**Status: DONE** ✓
 
 ---
 
 ### Symbol (`runes/docs/src/tags/symbol.ts`)
 
-**Current state:** No editHints. Properties include `kind`, `lang`, `since`, `deprecated`, `source`. Refs include `body`, `headline` (via pageSectionProperties). Config has rich structure with `kind-badge`, `lang-badge`, `since-badge`, `deprecated-badge`, `source-link`.
+**Current state:** Has editHints and autoLabel. Properties include `kind`, `lang`, `since`, `deprecated`, `source`. Refs include `body`, `headline` (via pageSectionProperties). Config has rich structure with `kind-badge`, `lang-badge`, `since-badge`, `deprecated-badge`, `source-link`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ headline: 'inline', body: 'none', 'kind-badge': 'none', 'lang-badge': 'none', 'since-badge': 'none', 'deprecated-badge': 'none', 'source-link': 'link' }`
-- [ ] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', body: 'none', 'kind-badge': 'none', 'lang-badge': 'none', 'since-badge': 'none', 'deprecated-badge': 'none', 'source-link': 'link' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+
+**Status: DONE** ✓
 
 ---
 
 ### SymbolGroup (nested in `runes/docs/src/tags/symbol.ts`)
 
-**Current state:** No editHints. Properties include `label`. Refs include `body`.
+**Current state:** Has editHints. `label` in refs. Refs include `label`, `body`.
 
 **Changes needed:**
-- [ ] Move `label` from properties to refs
-- [ ] Add editHints: `{ label: 'inline', body: 'none' }`
+- [x] Move `label` from properties to refs
+- [x] Add editHints: `{ label: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
 ### SymbolMember (nested in `runes/docs/src/tags/symbol.ts`)
 
-**Current state:** No editHints. Properties include `name`. Refs include `body`.
+**Current state:** Has editHints. `name` in refs. Refs include `name`, `body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ name: 'inline', body: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ name: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
 ### Changelog (`runes/docs/src/tags/changelog.ts`)
 
-**Current state:** No editHints. Properties include `project`, `release` items. Refs include `releases`.
+**Current state:** Has editHints and autoLabel. Properties include `project`, `release` items. Refs include `releases`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ releases: 'none' }` — container for release items
-- [ ] Add autoLabel with pageSectionAutoLabel if applicable
+- [x] Add editHints: `{ headline: 'inline', releases: 'none' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+
+**Status: DONE** ✓
 
 ---
 
 ### ChangelogRelease (nested in `runes/docs/src/tags/changelog.ts`)
 
-**Current state:** No editHints. Properties include `version`, `date`. Refs include `body`.
+**Current state:** Has editHints. `version` moved to refs. Properties include `date`. Refs include `version`, `body`.
 
 **Changes needed:**
-- [ ] Move `version` from properties to refs if it should be inline-editable
-- [ ] Add editHints: `{ version: 'inline', body: 'none' }`
+- [x] Move `version` from properties to refs
+- [x] Add editHints: `{ version: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -978,7 +989,7 @@ Many tests across all packages assert on `data-field` values. When runes are upd
 Recommended implementation order:
 1. ~~**Marketing** (Testimonial, Bento, Tier, Comparison*)~~ — **DONE** ✓
 2. ~~**Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.)~~ — **DONE** ✓
-3. **Docs** (Api, Symbol, Changelog) — important for documentation sites
+3. ~~**Docs** (Api, Symbol, Changelog)~~ — **DONE** ✓
 4. **Learning** (HowTo) — follows recipe pattern closely
 5. **Business** (Cast, Organization, Timeline) — straightforward
 6. **Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue
