@@ -322,9 +322,11 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `name`, `role`, `status`, `aliases`, `tags`. Refs include `portrait` (optional), `sections`/`body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs (visible span should use `data-name`)
-- [ ] Add editHints: `{ name: 'inline', portrait: 'image', body: 'none', sections: 'none' }`
-- [ ] Add autoLabel for section headers
+- [x] Move `name` from properties to refs (visible span should use `data-name`)
+- [x] Add editHints: `{ name: 'inline', portrait: 'image', body: 'none', sections: 'none' }`
+- [x] Add autoLabel for section headers
+
+**Status: DONE** ✓
 
 ---
 
@@ -333,8 +335,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -343,8 +347,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `name`, `realmType`, `scale`, `tags`, `parent`. Refs include `scene` (optional), `sections`/`body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ name: 'inline', scene: 'image', body: 'none', sections: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ name: 'inline', scene: 'image', body: 'none', sections: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -353,8 +359,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -363,8 +371,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `name`, `factionType`, `alignment`, `size`, `tags`. Refs include `sections`/`body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ name: 'inline', body: 'none', sections: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ name: 'inline', body: 'none', sections: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -373,8 +383,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. AutoLabel `{ span: 'header' }`. Properties include `name`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `name` from properties to refs
-- [ ] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+- [x] Move `name` from properties to refs
+- [x] Add editHints: `{ header: 'inline', name: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -383,8 +395,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `title`, `category`, `spoiler`, `tags`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `title` from properties to refs (visible span should use `data-name`)
-- [ ] Add editHints: `{ title: 'inline', body: 'none' }`
+- [x] Move `title` from properties to refs (visible span should use `data-name`)
+- [x] Add editHints: `{ title: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -393,8 +407,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `title`, `plotType`, `structure`, `tags`, `beat` items. Refs include `beats`.
 
 **Changes needed:**
-- [ ] Move `title` from properties to refs
-- [ ] Add editHints: `{ title: 'inline', beats: 'none' }`
+- [x] Move `title` from properties to refs
+- [x] Add editHints: `{ title: 'inline', beats: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -403,8 +419,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `label`, `status`, `id`, `track`, `follows`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `label` from properties to refs
-- [ ] Add editHints: `{ label: 'inline', body: 'none' }`
+- [x] Move `label` from properties to refs
+- [x] Add editHints: `{ label: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -413,8 +431,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses `data-name="connector"` and `data-name="arrow"` manually. Properties include `from`, `to`, `bondType`, `status`, `bidirectional`. Refs include `connector`, `body`.
 
 **Changes needed:**
-- [ ] Move `from`, `to` from properties to refs (visible spans)
-- [ ] Add editHints: `{ from: 'inline', to: 'inline', connector: 'none', arrow: 'none', body: 'none' }`
+- [x] Move `from`, `to` from properties to refs (visible spans)
+- [x] Add editHints: `{ from: 'inline', to: 'inline', connector: 'none', arrow: 'none', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -423,7 +443,9 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `panel` items, `variant`, `columns`. Refs include `panels`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ panels: 'none' }`
+- [x] Add editHints: `{ panels: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -432,9 +454,11 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `image`, `caption`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `image` from properties to refs
-- [ ] Move `caption` from properties to refs
-- [ ] Add editHints: `{ image: 'image', caption: 'inline', body: 'none' }`
+- [x] Move `image` from properties to refs
+- [x] Move `caption` from properties to refs
+- [x] Add editHints: `{ image: 'image', caption: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -1017,6 +1041,6 @@ Recommended implementation order:
 4. ~~**Learning** (HowTo) — follows recipe pattern closely~~ — **DONE** ✓
 5. ~~**Business** (Cast, Organization, Timeline) — straightforward~~ — **DONE** ✓
 6. ~~**Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue~~ — **DONE** ✓
-7. **Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern
+7. ~~**Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern~~ — **DONE** ✓
 8. **Design** (Palette, Typography, Spacing, Preview, Mockup) — mostly generated content
 9. **Media** (Playlist, Track, Audio) — legacy issues in Playlist

@@ -14,8 +14,7 @@ class StorySectionModel extends Model {
 
 		return createComponentRenderable(schema.CharacterSection, {
 			tag: 'div',
-			properties: { name: nameTag },
-			refs: { body: body.tag('div') },
+			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
 	}
@@ -89,7 +88,6 @@ export const character = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					role: roleMeta,
 					status: statusMeta,
 					aliases: aliasesMeta,
@@ -97,6 +95,7 @@ export const character = createContentModelSchema({
 					section: sections,
 				},
 				refs: {
+					name: nameTag,
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					sections: sectionsContainer,
 				},
@@ -111,13 +110,13 @@ export const character = createContentModelSchema({
 				tag: 'article',
 				property: 'contentSection',
 				properties: {
-					name: nameTag,
 					role: roleMeta,
 					status: statusMeta,
 					aliases: aliasesMeta,
 					tags: tagsMeta,
 				},
 				refs: {
+					name: nameTag,
 					...(portraitDiv ? { portrait: portraitDiv } : {}),
 					body,
 				},

@@ -23,7 +23,7 @@ describe('plot tag', () => {
 {% /plot %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
-		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'title');
+		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'title');
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Awakening');
 	});
@@ -72,7 +72,7 @@ describe('plot tag', () => {
 		const beat = findTag(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beat).toBeDefined();
 
-		const labelTag = findTag(beat!, t => t.name === 'span' && t.attributes['data-field'] === 'label');
+		const labelTag = findTag(beat!, t => t.name === 'span' && t.attributes['data-name'] === 'label');
 		expect(labelTag).toBeDefined();
 		expect(labelTag!.children[0]).toBe('Discovery');
 	});

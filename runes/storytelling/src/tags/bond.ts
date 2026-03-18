@@ -34,13 +34,13 @@ export const bond = createContentModelSchema({
 		return createComponentRenderable(schema.Bond, {
 			tag: 'div',
 			properties: {
-				from: fromTag,
-				to: toTag,
 				bondType: bondTypeMeta,
 				status: statusMeta,
 				bidirectional: bidirectionalMeta,
 			},
 			refs: {
+				from: fromTag,
+				to: toTag,
 				connector,
 				body: body.tag('div'),
 			},

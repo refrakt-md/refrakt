@@ -42,13 +42,12 @@ class BeatModel extends Model {
 		return createComponentRenderable(schema.Beat, {
 			tag: 'li',
 			properties: {
-				label: labelTag,
 				status: statusMeta,
 				id: idMeta,
 				track: trackMeta,
 				follows: followsMeta,
 			},
-			refs: { body: body.tag('div') },
+			refs: { label: labelTag, body: body.tag('div') },
 			children: [labelTag, statusMeta, idMeta, trackMeta, followsMeta, body.next()],
 		});
 	}
@@ -110,13 +109,12 @@ export const plot = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				title: titleTag,
 				plotType: plotTypeMeta,
 				structure: structureMeta,
 				tags: tagsMeta,
 				beat: beats,
 			},
-			refs: { beats: beatsList },
+			refs: { title: titleTag, beats: beatsList },
 			schema: {
 				name: titleTag,
 				genre: plotTypeMeta,

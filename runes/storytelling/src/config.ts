@@ -19,8 +19,9 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
-	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' } },
+	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Realm: {
 		block: 'realm',
@@ -40,8 +41,9 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
-	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' } },
+	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Lore: {
 		block: 'lore',
@@ -60,6 +62,7 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		editHints: { title: 'inline', body: 'none' },
 	},
 
 	Faction: {
@@ -82,8 +85,9 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
-	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' } },
+	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Plot: {
 		block: 'plot',
@@ -92,6 +96,7 @@ export const config: Record<string, RuneConfig> = {
 			structure: { source: 'meta', default: 'linear' },
 			tags: { source: 'meta' },
 		},
+		editHints: { title: 'inline', beats: 'none' },
 	},
 	Beat: {
 		block: 'beat',
@@ -102,6 +107,7 @@ export const config: Record<string, RuneConfig> = {
 			track: { source: 'meta' },
 			follows: { source: 'meta' },
 		},
+		editHints: { label: 'inline', body: 'none' },
 	},
 
 	Bond: {
@@ -111,6 +117,7 @@ export const config: Record<string, RuneConfig> = {
 			status: { source: 'meta', default: 'active' },
 			bidirectional: { source: 'meta', default: 'true' },
 		},
+		editHints: { from: 'inline', to: 'inline', connector: 'none', arrow: 'none', body: 'none' },
 	},
 
 	Storyboard: {
@@ -120,6 +127,7 @@ export const config: Record<string, RuneConfig> = {
 			columns: { source: 'meta', default: '3' },
 		},
 		styles: { columns: '--sb-columns' },
+		editHints: { panels: 'none' },
 	},
-	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard' },
+	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', editHints: { image: 'image', caption: 'inline', body: 'none' } },
 };

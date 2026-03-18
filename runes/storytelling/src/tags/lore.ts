@@ -30,12 +30,12 @@ export const lore = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				title: titleTag,
 				category: categoryMeta,
 				spoiler: spoilerMeta,
 				tags: tagsMeta,
 			},
 			refs: {
+				title: titleTag,
 				body: body.tag('div'),
 			},
 			schema: {
