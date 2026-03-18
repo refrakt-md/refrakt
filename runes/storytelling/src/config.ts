@@ -117,6 +117,16 @@ export const config: Record<string, RuneConfig> = {
 			structure: { source: 'meta', default: 'linear' },
 			tags: { source: 'meta' },
 		},
+		structure: {
+			badge: {
+				tag: 'div', before: true,
+				conditionAny: ['plotType', 'structure'],
+				children: [
+					{ tag: 'span', ref: 'type-badge', metaText: 'plotType', condition: 'plotType' },
+					{ tag: 'span', ref: 'structure-badge', metaText: 'structure', condition: 'structure' },
+				],
+			},
+		},
 		editHints: { title: 'inline', beats: 'none' },
 	},
 	Beat: {
