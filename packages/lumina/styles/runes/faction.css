@@ -23,6 +23,20 @@
 	color: var(--rf-color-muted);
 }
 
+/* Scene image */
+.rf-faction__scene {
+	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
+}
+.rf-faction__scene img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: var(--rf-radius-lg);
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+}
+
 /* Content */
 .rf-faction__sections {
 	display: flex;
@@ -55,4 +69,52 @@
 .rf-faction-section__body ul,
 .rf-faction-section__body ol {
 	padding-left: 1.5rem;
+}
+
+/* Split layout — shared */
+.rf-faction[data-layout="split"],
+.rf-faction[data-layout="split-reverse"] {
+	display: grid;
+	grid-template-columns: var(--split-ratio, 1fr 1fr);
+	gap: var(--split-gap, 2rem);
+	align-items: var(--split-valign, start);
+}
+/* Name and badge span full width at the top */
+.rf-faction[data-layout="split"] > span[property="name"],
+.rf-faction[data-layout="split-reverse"] > span[property="name"] {
+	grid-column: 1 / -1;
+	grid-row: 1;
+}
+.rf-faction[data-layout="split"] > .rf-faction__badge,
+.rf-faction[data-layout="split-reverse"] > .rf-faction__badge {
+	grid-column: 1 / -1;
+	grid-row: 2;
+}
+/* Split: content left (col 1), scene right (col 2) */
+.rf-faction[data-layout="split"] > .rf-faction__content {
+	grid-column: 1;
+	grid-row: 3;
+}
+.rf-faction[data-layout="split"] > .rf-faction__scene {
+	grid-column: 2;
+	grid-row: 3;
+}
+/* Split-reverse: scene left (col 1), content right (col 2) — matches DOM order */
+/* Collapse to single column on small screens */
+@media (max-width: 640px) {
+	.rf-faction[data-layout="split"],
+	.rf-faction[data-layout="split-reverse"] {
+		grid-template-columns: 1fr;
+	}
+	.rf-faction[data-layout="split"] > .rf-faction__content,
+	.rf-faction[data-layout="split"] > .rf-faction__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+}
+
+/* Split layout scene gets subtle depth */
+.rf-faction[data-layout="split"] .rf-faction__scene img,
+.rf-faction[data-layout="split-reverse"] .rf-faction__scene img {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

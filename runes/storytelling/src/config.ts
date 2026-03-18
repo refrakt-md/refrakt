@@ -78,12 +78,21 @@ export const config: Record<string, RuneConfig> = {
 
 	Faction: {
 		block: 'faction',
-		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
 			size: { source: 'meta' },
 			tags: { source: 'meta' },
+			layout: { source: 'meta', default: 'stacked' },
+			ratio: { source: 'meta', default: '1 1', noBemClass: true },
+			valign: { source: 'meta', default: 'top', noBemClass: true },
+			gap: { source: 'meta', default: 'default', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
+		},
+		styles: {
+			ratio: { prop: '--split-ratio', transform: ratioToFr },
+			valign: { prop: '--split-valign', transform: resolveValign },
+			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		structure: {
 			badge: {
@@ -96,6 +105,7 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
 	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

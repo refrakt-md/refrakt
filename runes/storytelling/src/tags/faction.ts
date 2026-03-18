@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class FactionSectionModel extends Model {
@@ -23,6 +23,7 @@ class FactionSectionModel extends Model {
 export const factionSection = createSchema(FactionSectionModel);
 
 export const faction = createContentModelSchema({
+	base: SplitLayoutModel,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the faction header.' },
 		type: { type: String, required: false, description: 'Classification of the group (e.g. guild, kingdom, cult, order).' },
@@ -36,7 +37,8 @@ export const faction = createContentModelSchema({
 		emitTag: 'faction-section',
 		emitAttributes: { name: '$heading' },
 		fields: [
-			{ name: 'header', match: 'heading|paragraph|image', optional: true, greedy: true },
+			{ name: 'scene', match: 'paragraph', optional: true },
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'items', match: 'tag', optional: true, greedy: true },
 		],
 		sectionModel: {
@@ -57,50 +59,123 @@ export const faction = createContentModelSchema({
 		const sizeMeta = new Tag('meta', { content: attrs.size ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
+		// Layout meta tags
+		const layout = (attrs.layout as string) || 'stacked';
+		const ratio = (attrs.ratio as string) || '1 1';
+		const valign = (attrs.valign as string) || 'top';
+		const gap = (attrs.gap as string) || 'default';
+		const collapse = attrs.collapse as string | undefined;
+
+		const layoutMeta = new Tag('meta', { content: layout });
+		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+
+		// Extract scene image from the first preamble paragraph
+		const sceneAstNodes = asNodes(resolved.scene);
+		const sceneRendered = new RenderableNodeCursor(
+			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
+		);
+
+		let sceneImgTag: Markdoc.Tag | undefined;
+		for (const node of sceneRendered.toArray()) {
+			if (Markdoc.Tag.isTag(node) && node.name === 'img') {
+				sceneImgTag = node;
+				break;
+			}
+			if (Markdoc.Tag.isTag(node) && node.name === 'p') {
+				const img = node.children.find(
+					(c: any) => Markdoc.Tag.isTag(c) && c.name === 'img'
+				) as Markdoc.Tag | undefined;
+				if (img) {
+					sceneImgTag = img;
+					break;
+				}
+			}
+		}
+
+		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
+		let extraDescription: RenderableTreeNode[] = [];
+
+		if (sceneImgTag) {
+			sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
+		} else if (sceneRendered.count() > 0) {
+			extraDescription = sceneRendered.toArray();
+		}
+
+		// Transform description paragraphs
+		const descAstNodes = asNodes(resolved.description);
+		const descRendered = new RenderableNodeCursor(
+			Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
+		);
+
 		const sections = sectionNodes.tag('div').typeof('FactionSection');
 		const hasSections = sections.count() > 0;
 
-		const children: any[] = [nameTag, factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta];
-
-		const schemaMap = {
-			name: nameTag,
-		};
+		// Build content children (everything except scene)
+		const contentChildren: any[] = [];
+		const allDescNodes = [...extraDescription, ...descRendered.toArray()];
+		if (allDescNodes.length > 0) {
+			contentChildren.push(...allDescNodes);
+		}
 
 		if (hasSections) {
 			const sectionsContainer = sections.wrap('div');
-			children.push(sectionsContainer.next());
-
-			return createComponentRenderable(schema.Faction, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					factionType: factionTypeMeta,
-					alignment: alignmentMeta,
-					size: sizeMeta,
-					tags: tagsMeta,
-					section: sections,
-				},
-				refs: { name: nameTag, sections: sectionsContainer },
-				schema: schemaMap,
-				children,
-			});
+			contentChildren.push(sectionsContainer.next());
 		} else {
 			const body = sectionNodes.wrap('div');
-			children.push(body.next());
-
-			return createComponentRenderable(schema.Faction, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					factionType: factionTypeMeta,
-					alignment: alignmentMeta,
-					size: sizeMeta,
-					tags: tagsMeta,
-				},
-				refs: { name: nameTag, body },
-				schema: schemaMap,
-				children,
-			});
+			if (sectionNodes.count() > 0) {
+				contentChildren.push(body.next());
+			}
 		}
+
+		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
+
+		// Build children array
+		const children: any[] = [
+			nameTag, factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta,
+			layoutMeta,
+			...(ratioMeta ? [ratioMeta] : []),
+			...(valignMeta ? [valignMeta] : []),
+			...(gapMeta ? [gapMeta] : []),
+			...(collapseMeta ? [collapseMeta] : []),
+		];
+		if (sceneDiv) children.push(sceneDiv.next());
+		children.push(mainContent.next());
+
+		// SEO schema
+		const schemaMap: Record<string, any> = {
+			name: nameTag,
+		};
+		if (sceneImgTag) {
+			schemaMap.image = sceneImgTag;
+		}
+
+		return createComponentRenderable(schema.Faction, {
+			tag: 'article',
+			property: 'contentSection',
+			properties: {
+				name: nameTag,
+				factionType: factionTypeMeta,
+				alignment: alignmentMeta,
+				size: sizeMeta,
+				tags: tagsMeta,
+				layout: layoutMeta,
+				ratio: ratioMeta,
+				valign: valignMeta,
+				gap: gapMeta,
+				collapse: collapseMeta,
+				...(hasSections ? { section: sections } : {}),
+			},
+			refs: {
+				name: nameTag,
+				...(sceneDiv ? { scene: sceneDiv } : {}),
+				content: mainContent,
+				...(hasSections ? { sections: sections.wrap('div') } : {}),
+			},
+			schema: schemaMap,
+			children,
+		});
 	},
 });
