@@ -17,7 +17,7 @@ An album with an artist and track listing.
 
 {% preview source=true %}
 
-{% playlist type="album" artist="Pink Floyd" %}
+{% playlist type="album" artist="Pink Floyd" layout="split" %}
 # The Dark Side of the Moon
 
 A landmark progressive rock album exploring themes of time, death, and madness.
@@ -27,6 +27,10 @@ A landmark progressive rock album exploring themes of time, death, and madness.
 - **On the Run** (3:36)
 - **Time** (7:05)
 - **The Great Gig in the Sky** (4:44)
+
+---
+
+![The Dark Side of the Moon](https://assets.refrakt.md/playlist-dark-side-of-the-moon.png)
 {% /playlist %}
 
 {% /preview %}
