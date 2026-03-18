@@ -460,8 +460,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses pageSectionProperties for header. Properties include `member` items, `layout`. Refs include `header`, `members`.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', members: 'none' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', members: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -470,8 +472,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `name` (span), `role` (span). Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `name`, `role` from properties to refs
-- [ ] Add editHints: `{ name: 'inline', role: 'inline', body: 'none' }`
+- [x] Move `name`, `role` from properties to refs
+- [x] Add editHints: `{ name: 'inline', role: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -480,8 +484,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses pageSectionProperties. Properties include `type`. Refs include `headline`, `blurb`, `body`.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -490,8 +496,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses pageSectionProperties. Properties include `direction`, `entry` items. Refs include `headline`, `blurb`, `entries`.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', entries: 'none' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', blurb: 'inline', entries: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -500,8 +508,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `date` (time tag), `label` (span). Refs include `body`.
 
 **Changes needed:**
-- [ ] Move `date`, `label` from properties to refs (visible elements)
-- [ ] Add editHints: `{ date: 'inline', label: 'inline', body: 'none' }`
+- [x] Move `date`, `label` from properties to refs (visible elements)
+- [x] Add editHints: `{ date: 'inline', label: 'inline', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -993,7 +1003,7 @@ Recommended implementation order:
 2. ~~**Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.)~~ — **DONE** ✓
 3. ~~**Docs** (Api, Symbol, Changelog)~~ — **DONE** ✓
 4. ~~**Learning** (HowTo) — follows recipe pattern closely~~ — **DONE** ✓
-5. **Business** (Cast, Organization, Timeline) — straightforward
+5. ~~**Business** (Cast, Organization, Timeline) — straightforward~~ — **DONE** ✓
 6. **Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue
 7. **Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern
 8. **Design** (Palette, Typography, Spacing, Preview, Mockup) — mostly generated content
