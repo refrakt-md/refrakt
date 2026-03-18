@@ -57,6 +57,7 @@ export const howto = createContentModelSchema({
 		// Annotate tool lis as HowToTool
 		for (const li of tools) {
 			if (Markdoc.Tag.isTag(li)) {
+				li.attributes['data-name'] = 'tool';
 				li.attributes.typeof = 'HowToTool';
 				li.attributes.property = 'tool';
 				li.children.push(new Tag('meta', { property: 'name', content: tagText(li.children) }));
@@ -66,6 +67,7 @@ export const howto = createContentModelSchema({
 		// Annotate step lis as HowToStep
 		for (const li of steps) {
 			if (Markdoc.Tag.isTag(li)) {
+				li.attributes['data-name'] = 'step';
 				li.attributes.typeof = 'HowToStep';
 				li.attributes.property = 'step';
 				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));

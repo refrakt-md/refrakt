@@ -36,6 +36,27 @@ You will need these tools:
 		expect(time!.attributes.content).toBe('PT30M');
 	});
 
+	it('should set data-name on tool and step list items', () => {
+		const result = parse(`{% howto %}
+# Build a Shelf
+
+- Hammer
+- Screwdriver
+
+1. Measure the boards
+2. Cut to size
+{% /howto %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		const tools = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tool');
+		expect(tools.length).toBe(2);
+		expect(tools[0].attributes.typeof).toBe('HowToTool');
+
+		const steps = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'step');
+		expect(steps.length).toBe(2);
+		expect(steps[0].attributes.typeof).toBe('HowToStep');
+	});
+
 	it('should work with how-to alias', () => {
 		const result = parse(`{% how-to %}
 # Test

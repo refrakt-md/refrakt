@@ -445,9 +445,11 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Properties include `estimatedTime`, `difficulty`. Refs include header elements (via pageSectionProperties), `tools`, `steps`. Config has structure with `meta-item` entries.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' }`
-- [ ] Set `data-name` on tool and step list items in schema (following recipe pattern)
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' }`
+- [x] Set `data-name` on tool and step list items in schema (following recipe pattern)
+
+**Status: DONE** ✓
 
 ---
 
@@ -990,7 +992,7 @@ Recommended implementation order:
 1. ~~**Marketing** (Testimonial, Bento, Tier, Comparison*)~~ — **DONE** ✓
 2. ~~**Core** (Hint, Details, Accordion, Tabs, Figure, Grid, etc.)~~ — **DONE** ✓
 3. ~~**Docs** (Api, Symbol, Changelog)~~ — **DONE** ✓
-4. **Learning** (HowTo) — follows recipe pattern closely
+4. ~~**Learning** (HowTo) — follows recipe pattern closely~~ — **DONE** ✓
 5. **Business** (Cast, Organization, Timeline) — straightforward
 6. **Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue
 7. **Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern
