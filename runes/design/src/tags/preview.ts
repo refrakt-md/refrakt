@@ -144,8 +144,10 @@ class PreviewModel extends Model {
 				...(titleMeta ? { title: titleMeta } : {}),
 				theme: themeMeta,
 				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
+			},
+			refs: {
 				...(sourcePre ? { source: sourcePre } : {}),
-				...(htmlSourcePre ? { htmlSource: htmlSourcePre } : {}),
+				...(htmlSourcePre ? { 'html-source': htmlSourcePre } : {}),
 			},
 			children: childNodes,
 		});

@@ -51,18 +51,20 @@ export const designContext = createContentModelSchema({
 		const tokensMeta = new Tag('meta', { content: JSON.stringify(tokens) });
 		const scopeMeta = new Tag('meta', { content: attrs.scope });
 
+		const titleTag = attrs.title
+			? new Tag('h3', {}, [attrs.title as string])
+			: undefined;
+
+		// Wrap transformed child runes in a sections container
+		const childTags = body.toArray();
+		const sectionsTag = new Tag('div', {}, childTags);
+
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
 			titleMeta,
 			tokensMeta,
 		];
-
-		if (attrs.title) {
-			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
-		}
-
-		// Wrap transformed child runes in a sections container
-		const childTags = body.toArray();
-		topChildren.push(new Tag('div', { 'data-name': 'sections' }, childTags));
+		if (titleTag) topChildren.push(titleTag);
+		topChildren.push(sectionsTag);
 
 		return createComponentRenderable(schema.DesignContext, {
 			tag: 'section',
@@ -70,6 +72,10 @@ export const designContext = createContentModelSchema({
 				title: titleMeta,
 				tokens: tokensMeta,
 				scope: scopeMeta,
+			},
+			refs: {
+				...(titleTag ? { title: titleTag } : {}),
+				sections: sectionsTag,
 			},
 			children: topChildren,
 		});
