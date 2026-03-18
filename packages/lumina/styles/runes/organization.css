@@ -1,17 +1,15 @@
 /* Organization */
 .rf-organization {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	padding: 2rem;
 	margin: 1.5rem 0;
 }
 .rf-organization__type {
 	font-size: 0.75rem;
-	font-weight: 600;
+	font-weight: 400;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--rf-color-muted);
-	margin-bottom: 1rem;
+	opacity: 0.6;
+	margin-bottom: 0.5rem;
 }
 .rf-organization__body img {
 	max-height: 80px;
