@@ -188,9 +188,9 @@ export const bento = createContentModelSchema({
 		const columns = (attrs.columns as number) ?? 4;
 		const effectiveColumns = sizing === 'span' && columns === 4 ? 6 : columns;
 
-		const gapMeta = new Tag('meta', { 'data-field': 'gap', content: (attrs.gap as string) ?? '1rem' });
-		const columnsMeta = new Tag('meta', { 'data-field': 'columns', content: String(effectiveColumns) });
-		const sizingMeta = new Tag('meta', { 'data-field': 'sizing', content: sizing });
+		const gapMeta = new Tag('meta', { content: (attrs.gap as string) ?? '1rem' });
+		const columnsMeta = new Tag('meta', { content: String(effectiveColumns) });
+		const sizingMeta = new Tag('meta', { content: sizing });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
@@ -203,6 +203,9 @@ export const bento = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
+				gap: gapMeta,
+				columns: columnsMeta,
+				sizing: sizingMeta,
 				cell: cells,
 			},
 			refs: { ...pageSectionProperties(header), grid },

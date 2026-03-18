@@ -25,7 +25,7 @@ describe('testimonial tag', () => {
 {% /testimonial %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
-		const authorName = findTag(tag!, t => t.name === 'span' && t.attributes['data-field'] === 'author-name');
+		const authorName = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'author-name');
 		expect(authorName).toBeDefined();
 	});
 

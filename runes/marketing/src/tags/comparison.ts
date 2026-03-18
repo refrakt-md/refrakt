@@ -107,11 +107,11 @@ class ComparisonRowModel extends Model {
 		return createComponentRenderable(schema.ComparisonRow, {
 			tag: 'div',
 			properties: {
-				label: labelTag,
 				rowType: rowTypeMeta,
 			},
 			refs: {
 				body: body.tag('div'),
+				label: labelTag,
 			},
 			children: [labelTag, rowTypeMeta, body.next()],
 		});
@@ -136,12 +136,12 @@ class ComparisonColumnModel extends Model {
 		return createComponentRenderable(schema.ComparisonColumn, {
 			tag: 'div',
 			properties: {
-				name: nameTag,
 				highlighted: highlightedMeta,
 				row: rowItems,
 			},
 			refs: {
 				body: body.tag('div'),
+				name: nameTag,
 			},
 			children: [nameTag, highlightedMeta, body.next()],
 		});

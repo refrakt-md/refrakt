@@ -16,8 +16,8 @@ class StepModel extends SplitLayoutModel {
     const main = this.main.transform();
     const side = this.side.transform();
 
-    const mainContent = main.wrap('div', { 'data-name': 'content' });
-    const sideContent = side.wrap('div', { 'data-name': 'media' });
+    const mainContent = main.wrap('div');
+    const sideContent = side.wrap('div');
 
     const layoutMeta = new Tag('meta', { content: this.layout });
     const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
@@ -44,6 +44,10 @@ class StepModel extends SplitLayoutModel {
         valign: valignMeta,
         gap: gapMeta,
         collapse: collapseMeta,
+      },
+      refs: {
+        content: mainContent.tag('div'),
+        media: sideContent.tag('div'),
       },
       children,
     });
