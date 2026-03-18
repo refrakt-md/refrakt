@@ -1,9 +1,6 @@
 /* Preview — Component showcase with theme toggle and width control */
 .rf-preview {
 	margin: 2rem 0;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
 }
 
 /* Width variants */
@@ -19,15 +16,13 @@
 	margin-left: calc(-50vw + 50%);
 }
 
-/* Toolbar */
+/* Toolbar — transparent, controls float above the canvas */
 .rf-preview__toolbar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0.5rem 1rem;
-	background: var(--rf-color-surface);
-	border-bottom: 1px solid var(--rf-color-border);
-	min-height: 2.5rem;
+	padding: 0.25rem 0.25rem 0.5rem;
+	min-height: 2rem;
 }
 .rf-preview__title {
 	font-size: 0.75rem;
@@ -84,11 +79,14 @@
 	box-shadow: var(--rf-shadow-xs);
 }
 
-/* Canvas */
+/* Canvas — bordered frame for the preview content */
 .rf-preview__canvas {
 	padding: 2rem 2.5rem;
 	background: var(--rf-color-bg);
 	color: var(--rf-color-text);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
+	overflow: hidden;
 }
 .rf-preview__canvas:has(.rf-mockup) {
 	text-align: center;
@@ -131,9 +129,11 @@
 	z-index: 1;
 }
 
-/* Source code view */
+/* Source code view — bordered frame matching the canvas */
 .rf-preview__source {
-	overflow: auto;
+	overflow: hidden;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-lg);
 }
 .rf-preview__source pre {
 	margin: 0;
@@ -149,7 +149,6 @@
 	display: flex;
 	gap: 0;
 	background: var(--rf-color-surface);
-	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-preview__source-tab {
 	padding: 0.5rem 1rem;
@@ -172,17 +171,18 @@
 
 /* Small containers: edge-to-edge bleed */
 @container (max-width: 1008px) {
-	.rf-preview {
-		margin-left: calc(-1 * var(--rf-content-padding, 1.5rem));
-		margin-right: calc(-1 * var(--rf-content-padding, 1.5rem));
+	.rf-preview__toolbar {
+		padding: 0.25rem var(--rf-content-padding, 1.5rem) 0.5rem;
+	}
+	.rf-preview__canvas {
 		border-radius: 0;
 		border-left: none;
 		border-right: none;
-	}
-	.rf-preview__toolbar {
-		padding: 0.5rem calc(var(--rf-content-padding, 1.5rem) + 1rem) 0.5rem var(--rf-content-padding, 1.5rem);
-	}
-	.rf-preview__canvas {
 		padding: 1.5rem var(--rf-content-padding, 1.5rem);
+	}
+	.rf-preview__source {
+		border-radius: 0;
+		border-left: none;
+		border-right: none;
 	}
 }
