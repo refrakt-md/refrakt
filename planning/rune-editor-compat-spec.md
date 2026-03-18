@@ -522,8 +522,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses pageSectionProperties. Properties include `date`, `endDate`, `location`, `url`. Config has rich structure with `detail`, `label`, `value`, `end-date`, `register` refs.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -532,8 +534,10 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Uses pageSectionProperties. Properties include `variant`, `direction`, `day` items. Refs include `headline`, `blurb`, `days`.
 
 **Changes needed:**
-- [ ] Add autoLabel with pageSectionAutoLabel
-- [ ] Add editHints: `{ headline: 'inline', blurb: 'inline', days: 'none' }`
+- [x] Add autoLabel with pageSectionAutoLabel
+- [x] Add editHints: `{ headline: 'inline', blurb: 'inline', days: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -542,7 +546,9 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. AutoLabel `{ label: 'header' }`. Properties include `label`, `date`, `stop` items. Refs include `stops`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ header: 'inline', stops: 'none' }`
+- [x] Add editHints: `{ header: 'inline', stops: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -551,7 +557,9 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. AutoLabel `{ time: 'time', location: 'location' }`. Properties include `time`, `location`, `duration`, `activity`, `lat`, `lng`. Refs include `body`.
 
 **Changes needed:**
-- [ ] Add editHints: `{ time: 'none', location: 'none', body: 'none' }`
+- [x] Add editHints: `{ time: 'none', location: 'none', body: 'none' }`
+
+**Status: DONE** ✓
 
 ---
 
@@ -560,9 +568,11 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. **Legacy issue:** Config postTransform reads `data-field` attribute on children (line 84 of `runes/places/src/config.ts`). Properties include `zoom`, `center`, `variant`, `height`, `provider`, `interactive`, `route`, `cluster`, `pin` items. Refs include `pins`.
 
 **Changes needed:**
-- [ ] Replace `data-field` reads in config postTransform with `data-name` (or `property` attribute) pattern
-- [ ] Add editHints: `{ pins: 'none' }` — map is web component–rendered
-- [ ] Update tests that check for `data-field` on meta children
+- [x] Replace `data-field` reads in config postTransform with `findMeta` helper pattern
+- [x] Add editHints: `{ pins: 'none' }` — map is web component–rendered
+- [x] Update tests that check for `data-field` on meta children
+
+**Status: DONE** ✓
 
 ---
 
@@ -571,9 +581,11 @@ See the already-updated runes for canonical examples:
 **Current state:** No editHints. Purely attribute-driven via `parseLocationItem()`. Properties include `name`, `description`, `lat`, `lng`, `address`, `url`, `group`. No refs.
 
 **Changes needed:**
-- [ ] Move `name`, `description` from properties to refs (visible spans)
-- [ ] Add editHints: `{ name: 'inline', description: 'inline' }`
-- [ ] Update tests that check for `data-field` on name/description spans
+- [x] Move `name`, `description` from properties to refs (visible spans)
+- [x] Add editHints: `{ name: 'inline', description: 'inline' }`
+- [x] Update tests that check for `data-field` on name/description spans
+
+**Status: DONE** ✓
 
 ---
 
@@ -1004,7 +1016,7 @@ Recommended implementation order:
 3. ~~**Docs** (Api, Symbol, Changelog)~~ — **DONE** ✓
 4. ~~**Learning** (HowTo) — follows recipe pattern closely~~ — **DONE** ✓
 5. ~~**Business** (Cast, Organization, Timeline) — straightforward~~ — **DONE** ✓
-6. **Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue
+6. ~~**Places** (Event, Itinerary, Map) — Map has legacy `data-field` issue~~ — **DONE** ✓
 7. **Storytelling** (Character, Realm, Faction, Lore, Plot, Bond, Storyboard) — many runes, consistent pattern
 8. **Design** (Palette, Typography, Spacing, Preview, Mockup) — mostly generated content
 9. **Media** (Playlist, Track, Audio) — legacy issues in Playlist

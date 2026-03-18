@@ -44,7 +44,7 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
-		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameSpan?.children[0]).toBe('Eiffel Tower');
 	});
 
@@ -54,7 +54,7 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
-		const descSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'description');
+		const descSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-name'] === 'description');
 		expect(descSpan?.children[0]).toBe('Iconic iron tower');
 	});
 
@@ -161,7 +161,7 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
-		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-field'] === 'name');
+		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
 		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
 		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 

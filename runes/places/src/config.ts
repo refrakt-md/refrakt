@@ -1,10 +1,20 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { isTag, readMeta } from '@refrakt-md/transform';
+import { isTag, findMeta } from '@refrakt-md/transform';
+
+const pageSectionAutoLabel = {
+	header: 'header',
+	eyebrow: 'eyebrow',
+	headline: 'headline',
+	blurb: 'blurb',
+	image: 'image',
+};
 
 export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
 		contentWrapper: { tag: 'div', ref: 'content' },
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' },
 		modifiers: {
 			date: { source: 'meta' },
 			endDate: { source: 'meta' },
@@ -41,6 +51,8 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Itinerary: {
 		block: 'itinerary',
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
 		modifiers: {
 			variant: { source: 'meta', default: 'day-by-day' },
 			direction: { source: 'meta', default: 'vertical' },
@@ -50,6 +62,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'itinerary-day',
 		parent: 'Itinerary',
 		autoLabel: { label: 'header' },
+		editHints: { header: 'inline', stops: 'none' },
 	},
 	ItineraryStop: {
 		block: 'itinerary-stop',
@@ -59,9 +72,11 @@ export const config: Record<string, RuneConfig> = {
 			duration: { source: 'meta' },
 		},
 		autoLabel: { time: 'time', location: 'location' },
+		editHints: { time: 'none', location: 'none', body: 'none' },
 	},
 	Map: {
 		block: 'map',
+		editHints: { pins: 'none' },
 		modifiers: {
 			variant: { source: 'meta', default: 'street' },
 			height: { source: 'meta', default: 'medium' },
@@ -71,19 +86,18 @@ export const config: Record<string, RuneConfig> = {
 			const metaProps = ['zoom', 'center', 'provider', 'interactive', 'route', 'cluster', 'apiKey'] as const;
 			const dataAttrs: Record<string, string> = {};
 			for (const prop of metaProps) {
-				const val = readMeta(node, prop);
-				if (val) {
+				const meta = findMeta(node, prop);
+				if (meta) {
 					const kebab = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
-					dataAttrs[`data-${kebab}`] = val;
+					dataAttrs[`data-${kebab}`] = meta.attributes.content;
 				}
 			}
 
-			// Remove consumed meta children
-			const children = node.children.filter(child => {
-				if (!isTag(child) || child.name !== 'meta') return true;
-				const prop = child.attributes['data-field'];
-				return !(metaProps as readonly string[]).includes(prop);
-			});
+			// Remove consumed meta children — identify by matching against findMeta results
+			const consumedMetas = new Set(
+				metaProps.map(prop => findMeta(node, prop)).filter(Boolean),
+			);
+			const children = node.children.filter(child => !consumedMetas.has(child as any));
 
 			return {
 				...node,
@@ -93,5 +107,5 @@ export const config: Record<string, RuneConfig> = {
 			};
 		},
 	},
-	MapPin: { block: 'map-pin', parent: 'Map' },
+	MapPin: { block: 'map-pin', parent: 'Map', editHints: { name: 'inline', description: 'inline' } },
 };
