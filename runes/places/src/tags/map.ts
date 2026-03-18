@@ -123,13 +123,15 @@ class MapPinModel extends Model {
 		return createComponentRenderable(schema.MapPin, {
 			tag: 'li',
 			properties: {
-				name: nameTag,
-				description: descriptionTag,
 				lat: latMeta,
 				lng: lngMeta,
 				address: addressMeta,
 				url: urlMeta,
 				group: groupMeta,
+			},
+			refs: {
+				name: nameTag,
+				description: descriptionTag,
 			},
 			children: [nameTag, descriptionTag, latMeta, lngMeta, addressMeta, urlMeta, groupMeta],
 		});
