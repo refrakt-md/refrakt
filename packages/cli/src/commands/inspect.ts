@@ -319,6 +319,8 @@ function runPipeline(
 			path: '/inspect.md',
 			headings,
 			__source: source,
+			frontmatter: {},
+			page: { url: '/inspect.md', filePath: 'inspect.md', draft: false },
 		},
 	});
 

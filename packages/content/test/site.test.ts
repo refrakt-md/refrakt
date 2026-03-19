@@ -84,6 +84,17 @@ describe('loadContent', () => {
     expect(Tag.isTag(home!.renderable)).toBe(true);
   });
 
+  it('should interpolate frontmatter and page variables in content', async () => {
+    const site = await loadContent(fixtureDir);
+
+    const page = site.pages.find(p => p.route.filePath.includes('variables'));
+    expect(page).toBeDefined();
+
+    const html = JSON.stringify(page!.renderable);
+    expect(html).toContain('Jane Doe');
+    expect(html).toContain(page!.route.url);
+  });
+
   it('should produce Tag trees with correct content', async () => {
     const site = await loadContent(fixtureDir);
 
