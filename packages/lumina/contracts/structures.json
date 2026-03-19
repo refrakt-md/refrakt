@@ -307,6 +307,14 @@
 					"default": "false",
 					"classPattern": ".rf-budget-category--{value}",
 					"dataAttribute": "data-estimate"
+				},
+				"label": {
+					"source": "meta",
+					"dataAttribute": "data-label"
+				},
+				"subtotal": {
+					"source": "meta",
+					"dataAttribute": "data-subtotal"
 				}
 			}
 		},
@@ -720,6 +728,15 @@
 			"block": "tab",
 			"root": ".rf-tab",
 			"dataRune": "tab",
+			"parent": "TabGroup",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"TabPanel": {
+			"block": "tab-panel",
+			"root": ".rf-tab-panel",
+			"dataRune": "tab-panel",
 			"parent": "TabGroup",
 			"childOrder": [
 				"{content}"
@@ -1731,7 +1748,7 @@
 			"dataRune": "realm",
 			"childOrder": [
 				"badge",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"realmType": {
@@ -1754,6 +1771,31 @@
 					"source": "meta",
 					"classPattern": ".rf-realm--{value}",
 					"dataAttribute": "data-parent"
+				},
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"default": "top",
+					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"elements": {
@@ -1775,10 +1817,21 @@
 					"parent": "badge",
 					"condition": "scale"
 				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-realm__content",
-					"source": "contentWrapper"
+				"scene": {
+					"tag": "scene",
+					"selector": ".rf-realm__scene",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"valign": {
+					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1853,7 +1906,7 @@
 			"dataRune": "faction",
 			"childOrder": [
 				"badge",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"factionType": {
@@ -1875,6 +1928,31 @@
 					"source": "meta",
 					"classPattern": ".rf-faction--{value}",
 					"dataAttribute": "data-tags"
+				},
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"default": "top",
+					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"elements": {
@@ -1909,10 +1987,21 @@
 					"parent": "badge",
 					"condition": "size"
 				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-faction__content",
-					"source": "contentWrapper"
+				"scene": {
+					"tag": "scene",
+					"selector": ".rf-faction__scene",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"valign": {
+					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1937,6 +2026,7 @@
 			"root": ".rf-plot",
 			"dataRune": "plot",
 			"childOrder": [
+				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -1956,6 +2046,31 @@
 					"source": "meta",
 					"classPattern": ".rf-plot--{value}",
 					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"badge": {
+					"tag": "div",
+					"selector": ".rf-plot__badge",
+					"source": "structure",
+					"conditionAny": [
+						"plotType",
+						"structure"
+					]
+				},
+				"type-badge": {
+					"tag": "span",
+					"selector": ".rf-plot__type-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "plotType"
+				},
+				"structure-badge": {
+					"tag": "span",
+					"selector": ".rf-plot__structure-badge",
+					"source": "structure",
+					"parent": "badge",
+					"condition": "structure"
 				}
 			}
 		},
@@ -2125,6 +2240,31 @@
 					"tag": "div",
 					"selector": ".rf-event__content",
 					"source": "contentWrapper"
+				},
+				"header": {
+					"tag": "header",
+					"selector": ".rf-event__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-event__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-event__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-event__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-event__image",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -2147,6 +2287,33 @@
 					"default": "vertical",
 					"classPattern": ".rf-itinerary--{value}",
 					"dataAttribute": "data-direction"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-itinerary__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-itinerary__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-itinerary__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-itinerary__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-itinerary__image",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -2236,7 +2403,42 @@
 			"dataRune": "cast",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "grid",
+					"classPattern": ".rf-cast--{value}",
+					"dataAttribute": "data-layout"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-cast__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-cast__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-cast__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-cast__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-cast__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"CastMember": {
 			"block": "cast-member",
@@ -2253,7 +2455,34 @@
 			"dataRune": "organization",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-organization__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-organization__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-organization__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-organization__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-organization__image",
+					"source": "autoLabel"
+				}
+			}
 		},
 		"Timeline": {
 			"block": "timeline",
@@ -2268,6 +2497,33 @@
 					"default": "vertical",
 					"classPattern": ".rf-timeline--{value}",
 					"dataAttribute": "data-direction"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-timeline__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-timeline__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-timeline__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-timeline__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-timeline__image",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -2667,6 +2923,31 @@
 					"default": "album",
 					"classPattern": ".rf-playlist--{value}",
 					"dataAttribute": "data-type"
+				},
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-playlist--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"ratio": {
+					"source": "meta",
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"default": "top",
+					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"elements": {
@@ -2680,6 +2961,22 @@
 					"selector": ".rf-playlist__type-badge",
 					"source": "structure",
 					"parent": "header"
+				},
+				"media": {
+					"tag": "media",
+					"selector": ".rf-playlist__media",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
+				"valign": {
+					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
