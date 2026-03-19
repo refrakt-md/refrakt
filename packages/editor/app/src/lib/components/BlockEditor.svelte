@@ -1057,6 +1057,7 @@
 									{aggregated}
 									{readOnly}
 									onsectionclick={readOnly ? undefined : (info) => handleProseSectionClick(i, info)}
+									onblockclick={readOnly ? undefined : (info) => toggleBlock(i, info.x, info.y)}
 									ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 									ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 									ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}

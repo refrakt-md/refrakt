@@ -35,6 +35,7 @@
 		dragHandle?: boolean;
 		readOnly?: boolean;
 		onsectionclick?: (info: ProseElementClickInfo) => void;
+		onblockclick?: (info: { x: number; y: number }) => void;
 		ondragstart: (e: DragEvent) => void;
 		ondragover: (e: DragEvent) => void;
 		ondrop: (e: DragEvent) => void;
@@ -53,6 +54,7 @@
 		dragHandle = true,
 		readOnly = false,
 		onsectionclick,
+		onblockclick,
 		ondragstart,
 		ondragover,
 		ondrop,
@@ -170,7 +172,11 @@
 			}
 
 			if (target) {
+				wrapper.classList.remove('rf-block-hover');
 				showTooltip(tagLabel(target.tagName), e as MouseEvent);
+			} else if (onblockclick) {
+				wrapper.classList.add('rf-block-hover');
+				showTooltip('prose', e as MouseEvent);
 			} else {
 				hideTooltip();
 			}
@@ -185,6 +191,7 @@
 
 		wrapper.addEventListener('mouseout', (e) => {
 			const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
+			wrapper.classList.remove('rf-block-hover');
 			if (hoveredEl && (!related || !hoveredEl.contains(related))) {
 				if (removeTimer !== null) clearTimeout(removeTimer);
 				const el = hoveredEl;
@@ -200,7 +207,11 @@
 		wrapper.addEventListener('click', (e) => {
 			hideTooltip();
 			const target = findProseTarget(e.target as HTMLElement, wrapper);
-			if (!target) return;
+			if (!target) {
+				// Dead space — open prose edit panel
+				onblockclick?.({ x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+				return;
+			}
 
 			e.preventDefault();
 			e.stopPropagation();
@@ -232,6 +243,15 @@
 
 	// ── Hover CSS injected into shadow DOM ───────────────────────
 	const hoverCss = `
+		/* Wrapper: inset border on dead-space hover */
+		.rf-preview-wrapper {
+			transition: box-shadow 150ms ease;
+			cursor: pointer;
+		}
+		.rf-preview-wrapper.rf-block-hover {
+			box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.5);
+			border-radius: 4px;
+		}
 		/* Block-level elements: invisible outline + transition */
 		h1, h2, h3, h4, h5, h6, p, pre, ul, ol, blockquote, hr, table {
 			outline: 2px dashed transparent;
