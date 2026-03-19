@@ -65,14 +65,28 @@ export const step = createSchema(StepModel, {
 export const steps = createContentModelSchema({
   attributes: {},
   contentModel: () => ({
-    type: 'sections' as const,
-    sectionHeading: 'heading',
-    fields: [
-      { name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+    when: [
+      {
+        condition: { hasChild: 'heading' },
+        model: {
+          type: 'sections' as const,
+          sectionHeading: 'heading',
+          fields: [
+            { name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+          ],
+          sectionModel: {
+            type: 'sequence' as const,
+            fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+          },
+        },
+      },
     ],
-    sectionModel: {
+    default: {
       type: 'sequence' as const,
-      fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+      fields: [
+        { name: 'header', match: 'paragraph', optional: true, greedy: true },
+        { name: 'list', match: 'list:ordered', optional: true },
+      ],
     },
   }),
   transform(resolved, attrs, config) {
@@ -80,20 +94,34 @@ export const steps = createContentModelSchema({
       Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
     );
 
-    // Build step tag nodes from resolved sections, re-including the heading node
-    const sections = (resolved.sections ?? []) as Array<{
-      $headingNode: Node;
-      body: unknown;
-    }>;
-    const stepTagNodes = sections.map(section =>
-      new Ast.Node('tag', {}, [section.$headingNode, ...asNodes(section.body)], 'step'),
-    );
+    let stepItems: RenderableNodeCursor<any>;
 
-    const stepStream = new RenderableNodeCursor(
-      Markdoc.transform(stepTagNodes, config) as RenderableTreeNode[],
-    );
+    if (resolved.sections) {
+      // Heading-based steps: build step tags from resolved sections
+      const sections = resolved.sections as Array<{
+        $headingNode: Node;
+        body: unknown;
+      }>;
+      const stepTagNodes = sections.map(section =>
+        new Ast.Node('tag', {}, [section.$headingNode, ...asNodes(section.body)], 'step'),
+      );
+      const stepStream = new RenderableNodeCursor(
+        Markdoc.transform(stepTagNodes, config) as RenderableTreeNode[],
+      );
+      stepItems = stepStream.tag('li').typeof('Step');
+    } else {
+      // List-based steps: convert ordered list items to step tags
+      const listNode = asNodes(resolved.list)[0] as Node | undefined;
+      const itemNodes = listNode?.children ?? [];
+      const stepTagNodes = itemNodes.map(item =>
+        new Ast.Node('tag', {}, item.children, 'step'),
+      );
+      const stepStream = new RenderableNodeCursor(
+        Markdoc.transform(stepTagNodes, config) as RenderableTreeNode[],
+      );
+      stepItems = stepStream.tag('li').typeof('Step');
+    }
 
-    const stepItems = stepStream.tag('li').typeof('Step');
     const stepList = new Tag('ol', {}, stepItems.toArray());
 
     const children = headerNodes.count() > 0
