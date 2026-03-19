@@ -93,6 +93,7 @@ These runes are available in every refrakt.md project without any additional ins
 | `conversation` | `dialogue`, `chat` | Blockquote as speaker message, strong as speaker name | -- |
 | `form` | `contact-form` | List items as form fields (type inferred from name), blockquote as help text or selection group, heading as fieldset group, strong as submit button label | -- |
 | `icon` | -- | Self-closing. Resolves `name` attribute to inline SVG from theme icon registry | -- |
+| `xref` | -- | Self-closing. Resolves entity ID or name to a cross-reference link via the entity registry | -- |
 | `pullquote` | -- | Blockquote or paragraph as pull quote text, alignment and style variants | -- |
 | `textblock` | -- | All content as styled text body with drop caps, columns, and lead paragraph options | -- |
 | `mediatext` | -- | First image as media column, remaining text as body column, configurable ratio and wrapping | -- |

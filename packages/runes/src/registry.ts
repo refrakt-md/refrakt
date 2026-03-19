@@ -33,6 +33,7 @@ import {MediaText} from './schema/mediatext.js';
 import {Tint} from './schema/tint.js';
 import {Showcase} from './schema/showcase.js';
 import {Bg} from './schema/bg.js';
+import {Xref} from './schema/xref.js';
 
 export const schema = {
   Page: useSchema(Page).defineType('Page'),
@@ -86,4 +87,5 @@ export const schema = {
   Tint: useSchema(Tint).defineType('Tint'),
   Showcase: useSchema(Showcase).defineType('Showcase'),
   Bg: useSchema(Bg).defineType('Bg'),
+  Xref: useSchema(Xref).defineType('Xref'),
 }

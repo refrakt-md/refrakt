@@ -7,6 +7,7 @@ import { createComponentRenderable } from './lib/index.js';
 import { schema } from './registry.js';
 import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 import { NAV_AUTO_SENTINEL } from './tags/nav.js';
+import { XREF_RUNE_MARKER } from './tags/xref.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -953,6 +954,162 @@ function buildAutoNav(
 	});
 }
 
+// ─── Xref resolution helpers ───
+
+/**
+ * Find an entity by exact ID across all types in the registry.
+ * If typeHint is provided, only search that type.
+ */
+function findEntityById(
+	registry: Readonly<EntityRegistry>,
+	id: string,
+	typeHint?: string,
+): { entity: import('@refrakt-md/types').EntityRegistration; ambiguous: false } | undefined {
+	const types = typeHint ? [typeHint] : registry.getTypes();
+	for (const type of types) {
+		const entity = registry.getById(type, id);
+		if (entity) return { entity, ambiguous: false };
+	}
+	return undefined;
+}
+
+/**
+ * Find entities by name/title match (case-insensitive) across all types.
+ * If typeHint is provided, only search that type.
+ */
+function findEntitiesByName(
+	registry: Readonly<EntityRegistry>,
+	name: string,
+	typeHint?: string,
+): import('@refrakt-md/types').EntityRegistration[] {
+	const nameLower = name.toLowerCase();
+	const types = typeHint ? [typeHint] : registry.getTypes();
+	const matches: import('@refrakt-md/types').EntityRegistration[] = [];
+
+	for (const type of types) {
+		for (const entity of registry.getAll(type)) {
+			const entityName = (entity.data.name as string) ?? '';
+			const entityTitle = (entity.data.title as string) ?? '';
+			if (entityName.toLowerCase() === nameLower || entityTitle.toLowerCase() === nameLower) {
+				matches.push(entity);
+			}
+		}
+	}
+
+	return matches;
+}
+
+/** Resolve an entity's URL for use as an href */
+function resolveEntityHref(entity: import('@refrakt-md/types').EntityRegistration): string {
+	const baseUrl = (entity.data.url as string) || entity.sourceUrl;
+	const headingId = entity.data.headingId as string | undefined;
+	if (headingId) return `${baseUrl}#${headingId}`;
+	return baseUrl;
+}
+
+/** Walk a Markdoc renderable tree, resolving any xref placeholders */
+function resolveXrefs(
+	renderable: unknown,
+	pageUrl: string,
+	registry: Readonly<EntityRegistry>,
+	ctx: PipelineContext,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveXrefs(c, pageUrl, registry, ctx)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	// Check if this is an xref placeholder
+	if (tag.attributes?.['data-rune'] === XREF_RUNE_MARKER) {
+		const id = tag.attributes['data-xref-id'] as string;
+		const label = tag.attributes['data-xref-label'] as string | undefined;
+		const typeHint = tag.attributes['data-xref-type'] as string | undefined;
+
+		// Try exact ID match first
+		const idMatch = findEntityById(registry, id, typeHint);
+		if (idMatch) {
+			const entity = idMatch.entity;
+			const href = resolveEntityHref(entity);
+			const text = label || (entity.data.title as string) || (entity.data.name as string) || (entity.data.text as string) || id;
+
+			if (entity.sourceUrl === pageUrl) {
+				ctx.info(`xref "${id}" on ${pageUrl} — references itself`, pageUrl);
+			}
+
+			return new Tag('a', {
+				class: `rf-xref rf-xref--${entity.type}`,
+				href,
+				'data-entity-type': entity.type,
+				'data-entity-id': entity.id,
+			}, [text]);
+		}
+
+		// Try name/title match
+		const nameMatches = findEntitiesByName(registry, id, typeHint);
+
+		if (nameMatches.length === 1) {
+			const entity = nameMatches[0];
+			const href = resolveEntityHref(entity);
+			const text = label || (entity.data.title as string) || (entity.data.name as string) || (entity.data.text as string) || id;
+
+			if (entity.sourceUrl === pageUrl) {
+				ctx.info(`xref "${id}" on ${pageUrl} — references itself`, pageUrl);
+			}
+
+			return new Tag('a', {
+				class: `rf-xref rf-xref--${entity.type}`,
+				href,
+				'data-entity-type': entity.type,
+				'data-entity-id': entity.id,
+			}, [text]);
+		}
+
+		if (nameMatches.length > 1) {
+			const matchList = nameMatches
+				.map(e => `${e.type} "${(e.data.title as string) || (e.data.name as string) || e.id}" on ${e.sourceUrl}`)
+				.join(', ');
+			ctx.warn(
+				`xref "${id}" on ${pageUrl} — matches ${nameMatches.length} entities (${matchList}). Add type hint to disambiguate.`,
+				pageUrl,
+			);
+
+			// Use first match
+			const entity = nameMatches[0];
+			const href = resolveEntityHref(entity);
+			const text = label || (entity.data.title as string) || (entity.data.name as string) || (entity.data.text as string) || id;
+
+			return new Tag('a', {
+				class: `rf-xref rf-xref--${entity.type}`,
+				href,
+				'data-entity-type': entity.type,
+				'data-entity-id': entity.id,
+			}, [text]);
+		}
+
+		// No match — unresolved
+		ctx.warn(`xref "${id}" on ${pageUrl} — entity not found`, pageUrl);
+		return new Tag('span', {
+			class: 'rf-xref rf-xref--unresolved',
+			'data-entity-id': id,
+		}, [label || id]);
+	}
+
+	// Recurse into children
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveXrefs(c, pageUrl, registry, ctx)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
 /**
  * Core cross-page pipeline hooks.
  * Run for every site, before any community package hooks.
@@ -1029,13 +1186,14 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			headingIndex.set(h.id, h.data);
 		}
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex };
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, registry };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
 		const coreData = aggregated['__core__'] as {
 			breadcrumbPaths: Map<string, string[]>;
 			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
+			registry: Readonly<EntityRegistry>;
 		} | undefined;
 
 		if (!coreData) return page;
@@ -1052,6 +1210,13 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			renderable,
 			page.url,
 			coreData.pagesByUrl,
+			ctx,
+		);
+
+		renderable = resolveXrefs(
+			renderable,
+			page.url,
+			coreData.registry,
 			ctx,
 		);
 

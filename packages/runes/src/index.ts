@@ -37,6 +37,7 @@ import { mediatext } from './tags/mediatext.js';
 import { tint } from './tags/tint.js';
 import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
+import { xref } from './tags/xref.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -68,6 +69,7 @@ export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 export { TINT_TOKENS } from './tags/tint.js';
 export type { TintToken } from './tags/tint.js';
+export { XREF_RUNE_MARKER } from './tags/xref.js';
 
 export const documents = {
   doc: new DocPage(),
@@ -369,6 +371,12 @@ export const runes = {
     schema: bg,
     description: 'Background image/video directive — modifies parent section backdrop',
     type: schema.Bg,
+  }),
+  xref: defineRune({
+    name: 'xref',
+    schema: xref,
+    description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
+    reinterprets: {},
   }),
 };
 
