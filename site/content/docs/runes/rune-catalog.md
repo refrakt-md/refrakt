@@ -219,3 +219,23 @@ npm install @refrakt-md/media
 | [playlist](/docs/runes/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
 | [track](/docs/runes/track) | Standalone track or recording with metadata |
 | [audio](/docs/runes/audio) | Audio player with optional waveform and chapter markers |
+
+### @refrakt-md/project
+
+Project management runes for spec-driven development with AI-native workflows.
+
+```bash
+npm install @refrakt-md/project
+```
+
+```json
+{ "packages": ["@refrakt-md/project"] }
+```
+
+| Rune | Description |
+|------|-------------|
+| [spec](/docs/runes/spec) | Specification document with status tracking and versioning |
+| [work](/docs/runes/work) | Work item with acceptance criteria, priority, and complexity tracking |
+| [bug](/docs/runes/bug) | Bug report with structured reproduction steps and severity |
+| [decision](/docs/runes/decision) | Architecture decision record with context, options, and rationale |
+| [milestone](/docs/runes/milestone) | Named release target with goals and status |

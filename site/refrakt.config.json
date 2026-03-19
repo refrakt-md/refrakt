@@ -10,7 +10,8 @@
 		"@refrakt-md/business",
 		"@refrakt-md/design",
 		"@refrakt-md/learning",
-		"@refrakt-md/media"
+		"@refrakt-md/media",
+		"@refrakt-md/project"
 	],
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },
