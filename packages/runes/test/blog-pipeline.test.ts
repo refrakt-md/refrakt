@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
-import { blogPipelineHooks } from '../src/pipeline.js';
+import { corePipelineHooks } from '../src/config.js';
 import type { EntityRegistry, EntityRegistration, TransformedPage, PipelineContext } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
@@ -49,7 +49,7 @@ function createBlogTag(folder: string, sort = 'date-desc', filter = '', limit = 
 	]);
 }
 
-describe('blog pipeline hooks', () => {
+describe('blog pipeline hooks (core)', () => {
 	describe('aggregate', () => {
 		it('should collect all pages as blog posts', () => {
 			const registry = createMockRegistry([
@@ -57,7 +57,7 @@ describe('blog pipeline hooks', () => {
 				{ url: '/blog/post-2/', title: 'Post 2', date: '2024-02-20' },
 			]);
 
-			const result = blogPipelineHooks.aggregate!(registry, createMockCtx()) as any;
+			const result = corePipelineHooks.aggregate!(registry, createMockCtx()) as any;
 			expect(result.allPosts).toHaveLength(2);
 			expect(result.allPosts[0].title).toBe('Post 1');
 		});
@@ -75,7 +75,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Post A', url: '/blog/post-a/', date: '2024-03-01', description: 'Desc A', draft: false, frontmatter: {} },
 						{ title: 'Post B', url: '/blog/post-b/', date: '2024-01-15', description: 'Desc B', draft: false, frontmatter: {} },
@@ -84,7 +87,7 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
@@ -104,7 +107,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Older', url: '/blog/older/', date: '2024-01-01', description: '', draft: false, frontmatter: {} },
 						{ title: 'Newer', url: '/blog/newer/', date: '2024-06-01', description: '', draft: false, frontmatter: {} },
@@ -112,13 +118,12 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
 			) as InstanceType<typeof Tag>;
 
-			// First post should be the newer one
 			const firstArticle = posts.children[0] as InstanceType<typeof Tag>;
 			const firstTitle = (firstArticle.children[0] as InstanceType<typeof Tag>).children[0] as InstanceType<typeof Tag>;
 			expect(firstTitle.children[0]).toBe('Newer');
@@ -135,7 +140,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Published', url: '/blog/published/', date: '2024-01-01', description: '', draft: false, frontmatter: {} },
 						{ title: 'Draft', url: '/blog/draft/', date: '2024-02-01', description: '', draft: true, frontmatter: {} },
@@ -143,7 +151,7 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
@@ -163,7 +171,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Post 1', url: '/blog/p1/', date: '2024-01-01', description: '', draft: false, frontmatter: {} },
 						{ title: 'Post 2', url: '/blog/p2/', date: '2024-02-01', description: '', draft: false, frontmatter: {} },
@@ -172,7 +183,7 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
@@ -192,7 +203,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Zebra', url: '/blog/zebra/', date: '', description: '', draft: false, frontmatter: {} },
 						{ title: 'Apple', url: '/blog/apple/', date: '', description: '', draft: false, frontmatter: {} },
@@ -200,7 +214,7 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
@@ -222,7 +236,10 @@ describe('blog pipeline hooks', () => {
 			};
 
 			const aggregated = {
-				blog: {
+				__core__: {
+					breadcrumbPaths: new Map(),
+					pagesByUrl: new Map(),
+					headingIndex: new Map(),
 					allPosts: [
 						{ title: 'Tech Post', url: '/blog/tech/', date: '2024-01-01', description: '', draft: false, frontmatter: { category: 'tech' } },
 						{ title: 'Life Post', url: '/blog/life/', date: '2024-02-01', description: '', draft: false, frontmatter: { category: 'life' } },
@@ -230,7 +247,7 @@ describe('blog pipeline hooks', () => {
 				},
 			};
 
-			const result = blogPipelineHooks.postProcess!(page, aggregated, createMockCtx());
+			const result = corePipelineHooks.postProcess!(page, aggregated, createMockCtx());
 			const renderable = result.renderable as InstanceType<typeof Tag>;
 			const posts = renderable.children.find(
 				(c: any) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',

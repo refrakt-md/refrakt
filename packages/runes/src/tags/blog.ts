@@ -1,8 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
-import type { ResolvedContent } from '@refrakt-md/types';
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
+import { pageSectionProperties } from './common.js';
+import { schema } from '../registry.js';
 
 const { Tag } = Markdoc;
 

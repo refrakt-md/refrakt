@@ -179,6 +179,19 @@ export const coreConfig: ThemeConfig = {
 		},
 		Breadcrumb: { block: 'breadcrumb', editHints: { items: 'none' } },
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
+		Blog: {
+			block: 'blog',
+			contentWrapper: { tag: 'div', ref: 'content' },
+			modifiers: {
+				layout: { source: 'meta', default: 'list' },
+				sort: { source: 'meta', default: 'date-desc', noBemClass: true },
+				filter: { source: 'meta', noBemClass: true },
+				limit: { source: 'meta', noBemClass: true },
+				folder: { source: 'meta', noBemClass: true },
+			},
+			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', blurb: 'inline' },
+		},
 		Budget: {
 			block: 'budget',
 			editHints: { title: 'none', meta: 'none', 'meta-item': 'none' },
@@ -953,10 +966,197 @@ function buildAutoNav(
 	});
 }
 
+// ─── Blog pipeline helpers ───
+
+interface BlogPostData {
+	title: string;
+	url: string;
+	date: string;
+	description: string;
+	draft: boolean;
+	frontmatter: Record<string, unknown>;
+}
+
+function walkBlogTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): void {
+	if (Tag.isTag(node)) {
+		fn(node);
+		for (const child of node.children) walkBlogTags(child, fn);
+	} else if (Array.isArray(node)) {
+		node.forEach(n => walkBlogTags(n, fn));
+	}
+}
+
+function mapBlogTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown): unknown {
+	if (Tag.isTag(node)) {
+		const mapped = fn(node);
+		if (mapped !== node) return mapped;
+		const newChildren = node.children.map(c => mapBlogTags(c, fn));
+		const changed = newChildren.some((c, i) => c !== node.children[i]);
+		return changed ? new Tag(node.name, node.attributes, newChildren as any[]) : node;
+	}
+	if (Array.isArray(node)) return node.map(n => mapBlogTags(n, fn));
+	return node;
+}
+
+/** Normalise folder path for prefix matching: ensure leading slash and trailing slash */
+function normaliseFolderPath(folder: string): string {
+	let f = folder.trim();
+	if (!f.startsWith('/')) f = '/' + f;
+	if (!f.endsWith('/')) f += '/';
+	return f;
+}
+
+/** Check if a page URL is a direct child of the given folder */
+function isInFolder(pageUrl: string, folder: string): boolean {
+	if (!pageUrl.startsWith(folder)) return false;
+	const rest = pageUrl.slice(folder.length);
+	const segments = rest.replace(/\/$/, '').split('/').filter(Boolean);
+	return segments.length === 1;
+}
+
+/** Parse a simple filter expression like "tag:javascript" into field/value pairs */
+function parseBlogFilter(filter: string): Array<{ field: string; value: string }> {
+	if (!filter || !filter.trim()) return [];
+	return filter.split(',').map(part => {
+		const colonIdx = part.indexOf(':');
+		if (colonIdx === -1) return { field: part.trim(), value: '' };
+		return {
+			field: part.slice(0, colonIdx).trim(),
+			value: part.slice(colonIdx + 1).trim(),
+		};
+	});
+}
+
+/** Check if a post's frontmatter matches all filter conditions */
+function matchesBlogFilter(post: BlogPostData, filters: Array<{ field: string; value: string }>): boolean {
+	for (const { field, value } of filters) {
+		const fmValue = post.frontmatter[field];
+		if (value === '') {
+			if (fmValue === undefined || fmValue === null) return false;
+		} else if (Array.isArray(fmValue)) {
+			if (!fmValue.some(v => String(v).toLowerCase() === value.toLowerCase())) return false;
+		} else {
+			if (String(fmValue ?? '').toLowerCase() !== value.toLowerCase()) return false;
+		}
+	}
+	return true;
+}
+
+/** Sort blog posts by the specified order */
+function sortBlogPosts(posts: BlogPostData[], sort: string): BlogPostData[] {
+	const sorted = [...posts];
+	switch (sort) {
+		case 'date-asc':
+			sorted.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+			break;
+		case 'title-asc':
+			sorted.sort((a, b) => a.title.localeCompare(b.title));
+			break;
+		case 'title-desc':
+			sorted.sort((a, b) => b.title.localeCompare(a.title));
+			break;
+		case 'date-desc':
+		default:
+			sorted.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+			break;
+	}
+	return sorted;
+}
+
+/** Build an <article> Tag for a single blog post entry */
+function createBlogPostTag(post: BlogPostData): InstanceType<typeof Tag> {
+	const titleTag = new Tag('h3', {}, [
+		new Tag('a', { href: post.url }, [post.title]),
+	]);
+
+	const children: any[] = [titleTag];
+
+	if (post.date) {
+		children.push(new Tag('time', { datetime: post.date }, [post.date]));
+	}
+
+	if (post.description) {
+		children.push(new Tag('p', {}, [post.description]));
+	}
+
+	return new Tag('article', { 'data-name': 'post' }, children);
+}
+
+/** Resolve blog runes in a renderable tree by injecting matching posts */
+function resolveBlogPosts(
+	renderable: unknown,
+	allPosts: BlogPostData[],
+	ctx: PipelineContext,
+	pageUrl: string,
+): unknown {
+	let modified = false;
+	const result = mapBlogTags(renderable, (tag) => {
+		if (tag.attributes['data-rune'] !== 'blog') return tag;
+
+		const folderMeta = tag.children.find(
+			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'folder',
+		);
+		const sortMeta = tag.children.find(
+			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'sort',
+		);
+		const filterMeta = tag.children.find(
+			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'filter',
+		);
+		const limitMeta = tag.children.find(
+			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'limit',
+		);
+
+		const folder = Tag.isTag(folderMeta) ? (folderMeta.attributes.content as string) : '';
+		const sort = Tag.isTag(sortMeta) ? (sortMeta.attributes.content as string) : 'date-desc';
+		const filterStr = Tag.isTag(filterMeta) ? (filterMeta.attributes.content as string) : '';
+		const limitStr = Tag.isTag(limitMeta) ? (limitMeta.attributes.content as string) : '';
+		const limit = limitStr ? parseInt(limitStr, 10) : undefined;
+
+		if (!folder) {
+			ctx.warn('Blog rune missing folder attribute', pageUrl);
+			return tag;
+		}
+
+		const normalised = normaliseFolderPath(folder);
+		const filters = parseBlogFilter(filterStr);
+
+		let posts = allPosts.filter(post => {
+			if (post.draft) return false;
+			if (!isInFolder(post.url, normalised)) return false;
+			if (filters.length > 0 && !matchesBlogFilter(post, filters)) return false;
+			return true;
+		});
+
+		posts = sortBlogPosts(posts, sort);
+
+		if (limit && limit > 0) {
+			posts = posts.slice(0, limit);
+		}
+
+		const postsContainer = tag.children.find(
+			(c: unknown) => Tag.isTag(c) && c.attributes['data-name'] === 'posts',
+		);
+
+		if (!Tag.isTag(postsContainer)) return tag;
+
+		const postTags = posts.map(createBlogPostTag);
+
+		modified = true;
+		const newPostsContainer = new Tag(postsContainer.name, postsContainer.attributes, postTags);
+		const newChildren = tag.children.map((c: unknown) =>
+			c === postsContainer ? newPostsContainer : c,
+		);
+		return new Tag(tag.name, tag.attributes, newChildren as any[]);
+	});
+
+	return modified ? result : renderable;
+}
+
 /**
  * Core cross-page pipeline hooks.
  * Run for every site, before any community package hooks.
- * Registers page and heading entities, aggregates the page tree and breadcrumb paths.
+ * Registers page and heading entities, aggregates the page tree and breadcrumb paths,
+ * and resolves blog post listings.
  */
 export const corePipelineHooks: PackagePipelineHooks = {
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
@@ -1029,13 +1229,24 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			headingIndex.set(h.id, h.data);
 		}
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex };
+		// Blog: collect all pages as potential blog posts
+		const allPosts: BlogPostData[] = pageEntities.map(e => ({
+			title: (e.data as any).title as string || '',
+			url: (e.data as any).url as string || e.id,
+			date: (e.data as any).date as string || '',
+			description: (e.data as any).description as string || '',
+			draft: (e.data as any).draft as boolean || false,
+			frontmatter: e.data as Record<string, unknown>,
+		}));
+
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
 		const coreData = aggregated['__core__'] as {
 			breadcrumbPaths: Map<string, string[]>;
 			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
+			allPosts: BlogPostData[];
 		} | undefined;
 
 		if (!coreData) return page;
@@ -1053,6 +1264,13 @@ export const corePipelineHooks: PackagePipelineHooks = {
 			page.url,
 			coreData.pagesByUrl,
 			ctx,
+		);
+
+		renderable = resolveBlogPosts(
+			renderable,
+			coreData.allPosts,
+			ctx,
+			page.url,
 		);
 
 		if (renderable === page.renderable) return page;

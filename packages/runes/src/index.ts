@@ -37,6 +37,7 @@ import { mediatext } from './tags/mediatext.js';
 import { tint } from './tags/tint.js';
 import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
+import { blog } from './tags/blog.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -369,6 +370,14 @@ export const runes = {
     schema: bg,
     description: 'Background image/video directive — modifies parent section backdrop',
     type: schema.Bg,
+  }),
+  blog: defineRune({
+    name: 'blog',
+    schema: blog,
+    description: 'Blog post listing with filtering, sorting, and multiple layouts. Displays pages from a content folder as a navigable blog index.',
+    seoType: 'Blog',
+    reinterprets: { heading: 'section title', paragraph: 'section description' },
+    type: schema.Blog,
   }),
 };
 
