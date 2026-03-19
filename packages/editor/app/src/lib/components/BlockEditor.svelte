@@ -9,9 +9,13 @@
 		blockLabel,
 		extractRuneInner,
 		rebuildRuneSource,
+		rebuildHeadingSource,
+		rebuildFenceSource,
 		groupIntoEditorBlocks,
 		type ParsedBlock,
 		type RuneBlock,
+		type HeadingBlock,
+		type FenceBlock,
 		type EditorBlock,
 		type ProseBlock,
 	} from '../editor/block-parser.js';
@@ -21,7 +25,9 @@
 	import BlockCard from './BlockCard.svelte';
 	import type { SectionClickInfo } from './BlockCard.svelte';
 	import ProseBlockCard from './ProseBlockCard.svelte';
+	import type { ProseElementClickInfo } from './ProseBlockCard.svelte';
 	import BlockEditPanel from './BlockEditPanel.svelte';
+	import ProseEditPanel from './ProseEditPanel.svelte';
 	import FrontmatterEditPanel from './FrontmatterEditPanel.svelte';
 	import InsertBlockDialog from './InsertBlockDialog.svelte';
 	import InlineEditPopover from './InlineEditPopover.svelte';
@@ -118,6 +124,7 @@
 			editingFrontmatter = false;
 			anchorPoint = null;
 			inlineEdit = null;
+			proseInlineEdit = null;
 		}
 	});
 
@@ -160,43 +167,126 @@
 		return editorBlocks.length - 1;
 	}
 
-	// ── Prose editing state ──────────────────────────────────────
+	// ── Prose block operations ───────────────────────────────────
 
-	let editingProseIndex: number | null = $state(null);
-
-	function startProseEdit(editorIndex: number) {
-		editingProseIndex = editorIndex;
-		// Close any open popover/edit panel
-		activeIndex = null;
-		anchorPoint = null;
-		editingFrontmatter = false;
-	}
-
-	function handleProseSourceChange(editorIndex: number, newSource: string) {
-		const eb = editorBlocks[editorIndex];
-		if (!eb || eb.type !== 'prose') return;
-
-		editingProseIndex = null;
-
-		// If source is empty, remove all children
-		if (!newSource.trim()) {
-			const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
-			blocks = [...blocks.slice(0, startFlat), ...blocks.slice(endFlat + 1)];
-			syncToSource();
-			return;
-		}
-
-		// Re-parse the edited source
-		const newChildren = parseBlocks(newSource);
+	/** Update a prose block from the ProseEditPanel (structure reorder, content edit) */
+	function handleUpdateProseBlock(editorIndex: number, updated: ProseBlock) {
 		const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
-
-		// Replace the old children in the flat array
 		blocks = [
 			...blocks.slice(0, startFlat),
-			...newChildren,
+			...updated.children,
 			...blocks.slice(endFlat + 1),
 		];
 		syncToSource();
+	}
+
+	/** Handle click on a prose element (heading, paragraph, etc.) for inline editing */
+	function handleProseSectionClick(editorIndex: number, info: ProseElementClickInfo) {
+		const eb = editorBlocks[editorIndex];
+		if (!eb || eb.type !== 'prose') return;
+
+		const child = eb.children[info.childIndex];
+		if (!child) return;
+
+		const [startFlat] = editorBlockToFlatRange(editorIndex);
+		const flatIndex = startFlat + info.childIndex;
+
+		if (child.type === 'fence') {
+			const fb = child as FenceBlock;
+			const code = fb.code;
+			const language = fb.language;
+			const opener = child.source.split('\n')[0];
+			const delimMatch = opener.match(/^(`{3,}|~{3,})/);
+			const delimiter = delimMatch ? delimMatch[1] : '```';
+			commandEdit = {
+				blockIndex: flatIndex,
+				rect: info.rect,
+				mapping: { source: child.source, code, language, opener, delimiter },
+			};
+			return;
+		}
+
+		// For headings and paragraphs: inline text editing
+		const source = child.source.trim();
+		let prefix = '';
+		let inlineContent = source;
+
+		if (child.type === 'heading') {
+			const match = source.match(/^(#{1,6}\s+)(.*)/);
+			if (match) {
+				prefix = match[1];
+				inlineContent = match[2];
+			}
+		} else if (child.type === 'quote') {
+			const match = source.match(/^(>\s*)(.*)/);
+			if (match) {
+				prefix = match[1];
+				inlineContent = match[2];
+			}
+		}
+
+		const mapping: SectionMapping = {
+			dataName: child.type,
+			text: stripInlineMarkdown(inlineContent),
+			source,
+			sourcePrefix: prefix,
+			inlineSource: inlineContent,
+		};
+
+		proseInlineEdit = {
+			editorIndex,
+			childIndex: info.childIndex,
+			flatIndex,
+			inlineSource: inlineContent,
+			rect: info.rect,
+			mapping,
+		};
+	}
+
+	// ── Prose inline edit state ──────────────────────────────────
+
+	let proseInlineEdit: {
+		editorIndex: number;
+		childIndex: number;
+		flatIndex: number;
+		inlineSource: string;
+		rect: DOMRect;
+		mapping: SectionMapping;
+	} | null = $state(null);
+
+	function handleProseInlineEditChange(newInlineSource: string) {
+		if (!proseInlineEdit) return;
+		const child = blocks[proseInlineEdit.flatIndex];
+		if (!child) return;
+
+		const newSource = proseInlineEdit.mapping.sourcePrefix + newInlineSource;
+		let updated: ParsedBlock;
+
+		if (child.type === 'heading') {
+			const hb = child as HeadingBlock;
+			updated = { ...hb, text: newInlineSource, source: '' } as HeadingBlock;
+			(updated as HeadingBlock).source = rebuildHeadingSource(updated as HeadingBlock);
+		} else {
+			updated = { ...child, source: newSource };
+		}
+
+		// Update the mapping for subsequent edits
+		proseInlineEdit = {
+			...proseInlineEdit,
+			inlineSource: newInlineSource,
+			mapping: {
+				...proseInlineEdit.mapping,
+				text: stripInlineMarkdown(newInlineSource),
+				source: newSource,
+				inlineSource: newInlineSource,
+			},
+		};
+
+		handleUpdateBlock(proseInlineEdit.flatIndex, updated);
+	}
+
+	function closeProseInlineEdit() {
+		proseInlineEdit = null;
 	}
 
 	// ── Frontmatter summary for visual mode header ──────────────
@@ -248,19 +338,8 @@
 
 	function toggleBlock(editorIndex: number, x: number, y: number) {
 		editingFrontmatter = false;
-		editingProseIndex = null;
 		const eb = editorBlocks[editorIndex];
 		if (!eb) return;
-
-		// For prose blocks, toggle edit mode instead of opening a popover
-		if (eb.type === 'prose') {
-			if (editingProseIndex === editorIndex) {
-				editingProseIndex = null;
-			} else {
-				startProseEdit(editorIndex);
-			}
-			return;
-		}
 
 		if (activeIndex === editorIndex) {
 			activeIndex = null;
@@ -276,7 +355,6 @@
 
 	function handleRuneClick(editorIndex: number, x: number, y: number, nestedRuneIndex?: number) {
 		editingFrontmatter = false;
-		editingProseIndex = null;
 		editSessionId++;
 		activeIndex = editorIndex;
 		anchorPoint = { x, y };
@@ -297,8 +375,8 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (readOnly) return;
 		if (e.key === 'Escape') {
-			if (editingProseIndex !== null) {
-				// Prose textarea handles its own Escape via onkeydown
+			if (proseInlineEdit) {
+				closeProseInlineEdit();
 				return;
 			}
 			if (activeIndex !== null || editingFrontmatter) {
@@ -317,7 +395,6 @@
 			anchorPoint = null;
 			pendingRuneIndex = null;
 		}
-		// Don't close prose editing on scroll — user needs to keep editing
 	}
 
 	function handleResize() {
@@ -537,7 +614,6 @@
 		insertAtIndex = null;
 		showInsertMenu = false;
 		editingFrontmatter = false;
-		editingProseIndex = null;
 		// Set activeIndex for rune blocks; for prose blocks the new element merges into a prose block
 		if (type === 'rune') {
 			// Find the new block's editor index after re-grouping
@@ -712,6 +788,16 @@
 	function handleCommandEditChange(newCode: string) {
 		if (!commandEdit) return;
 		const block = blocks[commandEdit.blockIndex];
+
+		if (block.type === 'fence') {
+			// Direct fence block (from prose section)
+			const fb = block as FenceBlock;
+			const updated: FenceBlock = { ...fb, code: newCode, source: '' };
+			updated.source = rebuildFenceSource(updated);
+			handleUpdateBlock(commandEdit.blockIndex, updated);
+			return;
+		}
+
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
 
@@ -726,6 +812,15 @@
 		if (!commandEdit) return;
 		const blockIndex = commandEdit.blockIndex;
 		const block = blocks[blockIndex];
+
+		if (block.type === 'fence') {
+			// Direct fence block — remove entirely
+			commandEdit = null;
+			blocks = blocks.filter((_, i) => i !== blockIndex);
+			syncToSource();
+			return;
+		}
+
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
 
@@ -745,6 +840,27 @@
 	function handleLanguageChange(newLanguage: string) {
 		if (!commandEdit) return;
 		const block = blocks[commandEdit.blockIndex];
+
+		if (block.type === 'fence') {
+			// Direct fence block (from prose section)
+			const fb = block as FenceBlock;
+			const updated: FenceBlock = { ...fb, language: newLanguage, source: '' };
+			updated.source = rebuildFenceSource(updated);
+
+			// Update the mapping
+			const afterDelimiter = commandEdit.mapping.opener.slice(commandEdit.mapping.delimiter.length);
+			const infoString = afterDelimiter.replace(/^\w*/, '').trim();
+			const newOpener = commandEdit.mapping.delimiter + newLanguage + (infoString ? ' ' + infoString : '');
+			const newSource = newOpener + '\n' + commandEdit.mapping.code + '\n' + commandEdit.mapping.delimiter;
+			commandEdit = {
+				...commandEdit,
+				mapping: { ...commandEdit.mapping, language: newLanguage, opener: newOpener, source: newSource },
+			};
+
+			handleUpdateBlock(commandEdit.blockIndex, updated);
+			return;
+		}
+
 		if (block.type !== 'rune') return;
 		const rb = block as RuneBlock;
 
@@ -922,7 +1038,6 @@
 						class:active={!readOnly && activeIndex === i}
 						class:drag-source={!readOnly && dragIndex === i}
 						class:drag-over={!readOnly && dropIndex === i && dragIndex !== i}
-						class:prose-editing={!readOnly && editingProseIndex === i}
 						onmouseenter={() => { if (!readOnly) hoveredIndex = i; }}
 						onmouseleave={() => { if (!readOnly && hoveredIndex === i) hoveredIndex = null; }}
 					>
@@ -939,9 +1054,7 @@
 									{communityStyles}
 									{aggregated}
 									{readOnly}
-									editing={editingProseIndex === i}
-									onclickpreview={() => startProseEdit(i)}
-									onsourcechange={(newSource) => handleProseSourceChange(i, newSource)}
+									onsectionclick={readOnly ? undefined : (info) => handleProseSectionClick(i, info)}
 									ondragstart={readOnly ? undefined : (e) => handleDragStart(e, i)}
 									ondragover={readOnly ? undefined : (e) => handleDragOver(e, i)}
 									ondrop={readOnly ? undefined : (e) => handleDrop(e, i)}
@@ -1034,6 +1147,18 @@
 						oneditcode={handleFieldCodeEdit}
 					/>
 				{/key}
+			{:else if activeIndex !== null && editorBlocks[activeIndex]?.type === 'prose'}
+				{@const proseBlock = editorBlocks[activeIndex] as ProseBlock}
+				{#key editSessionId}
+					<ProseEditPanel
+						block={proseBlock}
+						runes={() => runes}
+						{aggregated}
+						onupdate={(updated) => handleUpdateProseBlock(activeIndex!, updated)}
+						onremove={() => { const idx = activeIndex!; activeIndex = null; anchorPoint = null; handleRemoveEditorBlock(idx); }}
+						onclose={() => { activeIndex = null; anchorPoint = null; }}
+					/>
+				{/key}
 			{/if}
 		</div>
 	{/if}
@@ -1096,6 +1221,16 @@
 			currentIcon={iconEdit.mapping.name}
 			onchange={(name) => { handleIconEditChange(name); closeIconEdit(); }}
 			onclose={closeIconEdit}
+		/>
+	{/if}
+
+	{#if proseInlineEdit}
+		<InlineEditPopover
+			anchorRect={proseInlineEdit.rect}
+			dataName={proseInlineEdit.mapping.dataName}
+			inlineSource={proseInlineEdit.inlineSource}
+			onchange={handleProseInlineEditChange}
+			onclose={closeProseInlineEdit}
 		/>
 	{/if}
 </div>
@@ -1215,10 +1350,6 @@
 		box-shadow: 0 -3px 10px var(--ed-accent-ring);
 		border-top: 2px solid var(--ed-accent);
 		padding-top: 2px;
-	}
-
-	.block-editor__row.prose-editing {
-		z-index: 1;
 	}
 
 	/* ── Hover controls (insert markers + label) ─────────────── */
