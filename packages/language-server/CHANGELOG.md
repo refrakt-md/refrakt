@@ -1,5 +1,13 @@
 # @refrakt-md/language-server
 
+## 0.8.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.8.3
+  - @refrakt-md/transform@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes

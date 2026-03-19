@@ -1,5 +1,16 @@
 # @refrakt-md/editor
 
+## 0.8.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.8.3
+  - @refrakt-md/content@0.8.3
+  - @refrakt-md/highlight@0.8.3
+  - @refrakt-md/transform@0.8.3
+  - @refrakt-md/types@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes

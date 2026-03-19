@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const business: RunePackage = {
   name: 'business',
   displayName: 'Business',
-  version: '0.8.2',
+  version: '0.8.3',
   runes: {
     'cast': {
       transform: cast,

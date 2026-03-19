@@ -1,5 +1,13 @@
 # @refrakt-md/html
 
+## 0.8.3
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.8.3
+- @refrakt-md/transform@0.8.3
+- @refrakt-md/types@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes

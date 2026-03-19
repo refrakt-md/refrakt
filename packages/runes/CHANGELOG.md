@@ -1,5 +1,36 @@
 # @refrakt-md/runes
 
+## 0.8.3
+
+### Patch Changes
+
+- ### Block Editor
+
+  - Add draggable popover and clickable prose blocks
+  - Redesign prose editor with popover tabs and hover inline editing
+  - Group consecutive prose elements into editable prose blocks
+  - Fix Content tab cursor reset on Enter/Backspace in prose editor
+  - Fix prose sections not rendering in block editor
+
+  ### Editor Compatibility
+
+  - Add editor compatibility to all rune packages: core, marketing, docs, learning, business, places, storytelling, design, and media runes
+
+  ### Lumina Theme Polish
+
+  - Redesign recipe, steps, howto, tabs, preview, pullquote, event, organization, and plot runes
+  - Polish playlist, track, audio, and storytelling runes
+  - Add scene images and split layouts to storytelling runes (realm, faction)
+  - Fix cast rune layout, budget rune currency, dark mode text in preview
+  - Add TabPanel engine config entry with BEM class
+
+  ### Other
+
+  - Sync language server and VS Code extension with current runes
+  - Polish datatable rune and unify table wrapper class
+  - @refrakt-md/transform@0.8.3
+  - @refrakt-md/types@0.8.3
+
 ## 0.8.2
 
 ### Patch Changes
