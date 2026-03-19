@@ -41,7 +41,7 @@ refrakt extract ./src -o ./content/api
 refrakt inspect --all --audit
 
 # Generate structure contracts for CI
-refrakt contracts -o contracts/structures.json
+refrakt contracts -o contracts/structures.json --config .
 ```
 
 Run `refrakt --help` to see all available commands and options.

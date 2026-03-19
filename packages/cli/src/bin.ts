@@ -111,8 +111,8 @@ Examples:
   refrakt inspect hint --audit --css path/to/styles
   refrakt write -d content/ "Set up a docs site with index, guides, and blog"
   refrakt write -p ollama -m llama3.2 "Write a FAQ page"
-  refrakt contracts -o packages/lumina/contracts/structures.json
-  refrakt contracts --check -o packages/lumina/contracts/structures.json
+  refrakt contracts -o packages/lumina/contracts/structures.json --config site
+  refrakt contracts --check -o packages/lumina/contracts/structures.json --config site
   refrakt theme install ./my-theme
   refrakt theme install @my-org/my-theme
   refrakt theme info

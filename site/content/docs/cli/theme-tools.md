@@ -14,11 +14,14 @@ Generates a JSON document describing all BEM selectors, data attributes, and HTM
 ### Generate contracts
 
 ```shell
-# Print to stdout
+# Print to stdout (core runes only)
 refrakt contracts
 
-# Write to file
+# Write to file (core runes only)
 refrakt contracts -o contracts/structures.json
+
+# Include community packages from refrakt.config.json
+refrakt contracts -o contracts/structures.json --config .
 ```
 
 The output includes, for every rune:
@@ -34,7 +37,7 @@ The output includes, for every rune:
 Use `--check` to verify an existing contracts file is up to date:
 
 ```shell
-refrakt contracts --check -o contracts/structures.json
+refrakt contracts --check -o contracts/structures.json --config .
 ```
 
 This exits with code 1 if the file is stale (config has changed since last generation). Add this to your CI pipeline to catch config-contract drift.
@@ -51,6 +54,7 @@ This exits with code 1 if the file is stale (config has changed since last gener
 |------|-------|-------------|
 | `--output <path>` | `-o` | Write contracts to a file (default: stdout) |
 | `--check` | | Validate existing file is up to date (exit 1 if stale) |
+| `--config <dir>` | | Directory containing `refrakt.config.json` (loads community packages) |
 
 ## refrakt scaffold-css
 

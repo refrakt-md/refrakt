@@ -69,10 +69,12 @@ Use `refrakt inspect` to see exactly what HTML the identity transform produces f
 
 ```bash
 # Generate structure contracts (all BEM selectors, data attrs, element structure)
-refrakt contracts -o contracts/structures.json
+# Use --config to point at the directory containing refrakt.config.json
+# so community packages are included (without it, only core runes are generated)
+refrakt contracts -o contracts/structures.json --config site
 
 # Validate existing contracts file is up to date (for CI)
-refrakt contracts --check -o contracts/structures.json
+refrakt contracts --check -o contracts/structures.json --config site
 ```
 
 Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config. Use `--check` in CI to catch config-contract drift.
