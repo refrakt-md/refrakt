@@ -40,8 +40,10 @@
     "dist",
     "app/dist",
     "app/src/lib/components",
-    "app/src/lib/editor/block-parser.ts",
-    "app/src/lib/preview/block-renderer.ts",
+    "app/src/lib/editor",
+    "app/src/lib/preview",
+    "app/src/lib/state",
+    "app/src/lib/utils",
     "app/src/lib/api/client.ts",
     "preview-runtime"
   ],
