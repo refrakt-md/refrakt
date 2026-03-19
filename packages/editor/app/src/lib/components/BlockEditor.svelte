@@ -172,6 +172,8 @@
 	/** Update a prose block from the ProseEditPanel (structure reorder, content edit) */
 	function handleUpdateProseBlock(editorIndex: number, updated: ProseBlock) {
 		const [startFlat, endFlat] = editorBlockToFlatRange(editorIndex);
+		const oldChildren = blocks.slice(startFlat, endFlat + 1);
+		reconcileIds(oldChildren, updated.children);
 		blocks = [
 			...blocks.slice(0, startFlat),
 			...updated.children,

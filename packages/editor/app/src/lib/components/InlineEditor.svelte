@@ -26,6 +26,7 @@
 
 	let container: HTMLElement;
 	let view = $state<EditorView | undefined>(undefined);
+	let lastEmitted = '';
 
 	const langCompartment = new Compartment();
 	const markdocCompartment = new Compartment();
@@ -145,7 +146,8 @@
 				]),
 				EditorView.updateListener.of((update) => {
 					if (update.docChanged) {
-						onchange(update.state.doc.toString());
+						lastEmitted = update.state.doc.toString();
+						onchange(lastEmitted);
 					}
 				}),
 				EditorView.lineWrapping,
@@ -214,11 +216,19 @@
 		if (!editor) return;
 
 		const cmContent = editor.state.doc.toString();
-		if (current !== cmContent) {
-			editor.dispatch({
-				changes: { from: 0, to: editor.state.doc.length, insert: current },
-			});
+		if (current === cmContent) return;
+
+		// If CM still has what we last emitted, the incoming content
+		// is our own edit coming back (possibly normalized) — skip sync
+		if (lastEmitted && cmContent === lastEmitted) {
+			lastEmitted = '';
+			return;
 		}
+
+		lastEmitted = '';
+		editor.dispatch({
+			changes: { from: 0, to: editor.state.doc.length, insert: current },
+		});
 	});
 </script>
 
