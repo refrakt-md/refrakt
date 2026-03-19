@@ -313,6 +313,33 @@
 	const POPOVER_WIDTH = 420;
 	const POPOVER_GAP = 12;
 
+	/** Drag the popover by its header */
+	function handlePopoverDragStart(e: MouseEvent) {
+		const header = (e.target as HTMLElement).closest('.edit-panel__header');
+		if (!header || (e.target as HTMLElement).closest('button')) return;
+
+		e.preventDefault();
+		const popoverEl = e.currentTarget as HTMLElement;
+		const rect = popoverEl.getBoundingClientRect();
+		const startX = e.clientX;
+		const startY = e.clientY;
+		const origLeft = rect.left;
+		const origTop = rect.top;
+
+		function onMove(ev: MouseEvent) {
+			popoverEl.style.left = `${origLeft + (ev.clientX - startX)}px`;
+			popoverEl.style.top = `${origTop + (ev.clientY - startY)}px`;
+		}
+
+		function onUp() {
+			window.removeEventListener('mousemove', onMove);
+			window.removeEventListener('mouseup', onUp);
+		}
+
+		window.addEventListener('mousemove', onMove);
+		window.addEventListener('mouseup', onUp);
+	}
+
 	let popoverStyle = $derived.by(() => {
 		if (!anchorPoint) return '';
 
@@ -1129,7 +1156,7 @@
 			class="block-editor__popover-backdrop"
 			onmousedown={() => { activeIndex = null; editingFrontmatter = false; anchorPoint = null; pendingRuneIndex = null; }}
 		></div>
-		<div class="block-editor__popover" style={popoverStyle}>
+		<div class="block-editor__popover" style={popoverStyle} onmousedown={handlePopoverDragStart}>
 			{#if editingFrontmatter}
 				<FrontmatterEditPanel
 					onclose={() => { editingFrontmatter = false; anchorPoint = null; }}
@@ -1464,6 +1491,14 @@
 					0 8px 10px -6px rgba(0, 0, 0, 0.1);
 		z-index: 10;
 		animation: popover-enter 0.15s ease-out;
+	}
+
+	.block-editor__popover :global(.edit-panel__header) {
+		cursor: grab;
+	}
+
+	.block-editor__popover :global(.edit-panel__header):active {
+		cursor: grabbing;
 	}
 
 	@keyframes popover-enter {
