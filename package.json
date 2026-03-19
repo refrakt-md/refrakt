@@ -28,7 +28,6 @@
   "workspaces": [
     "packages/*",
     "runes/*",
-    "apps/*",
     "site"
   ]
 }
