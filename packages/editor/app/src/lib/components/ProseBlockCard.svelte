@@ -272,7 +272,7 @@
 	$effect(() => {
 		if (!previewContainer || !themeConfig) return;
 
-		if (!shadowRoot) {
+		if (!shadowRoot || shadowRoot.host !== previewContainer) {
 			shadowRoot = previewContainer.attachShadow({ mode: 'open' });
 		}
 
@@ -356,11 +356,6 @@ ${hlCss}
 		};
 	});
 
-	// Reset shadow root when preview container element changes (fixes stale reference)
-	$effect(() => {
-		previewContainer; // track
-		shadowRoot = null;
-	});
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
