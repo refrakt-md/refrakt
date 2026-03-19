@@ -1,5 +1,12 @@
 # @refrakt-md/highlight
 
+## 0.8.4
+
+### Patch Changes
+
+- @refrakt-md/transform@0.8.4
+- @refrakt-md/types@0.8.4
+
 ## 0.8.3
 
 ### Patch Changes

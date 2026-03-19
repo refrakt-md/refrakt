@@ -1,5 +1,13 @@
 # @refrakt-md/runes
 
+## 0.8.4
+
+### Patch Changes
+
+- Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.
+  - @refrakt-md/transform@0.8.4
+  - @refrakt-md/types@0.8.4
+
 ## 0.8.3
 
 ### Patch Changes

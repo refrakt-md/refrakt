@@ -12,7 +12,7 @@ import { config } from './config.js';
 export const marketing: RunePackage = {
   name: 'marketing',
   displayName: 'Marketing',
-  version: '0.8.3',
+  version: '0.8.4',
   runes: {
     'hero': {
       transform: hero,

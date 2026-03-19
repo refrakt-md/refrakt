@@ -1,5 +1,16 @@
 # @refrakt-md/lumina
 
+## 0.8.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.8.4
+  - @refrakt-md/html@0.8.4
+  - @refrakt-md/svelte@0.8.4
+  - @refrakt-md/transform@0.8.4
+  - @refrakt-md/types@0.8.4
+
 ## 0.8.3
 
 ### Patch Changes

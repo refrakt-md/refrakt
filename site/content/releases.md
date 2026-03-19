@@ -6,6 +6,10 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.8.4
+
+- Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.
+
 ## v0.8.3
 
 - Add draggable popover and clickable prose blocks
