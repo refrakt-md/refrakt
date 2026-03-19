@@ -146,6 +146,7 @@ function generatePackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/runes': v,
 			'@refrakt-md/svelte': v,
 			'@refrakt-md/sveltekit': v,
+			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
 			'@markdoc/markdoc': '^0.4.0',

@@ -1,9 +1,11 @@
 import { loadContent } from '@refrakt-md/content';
 import { renderFullPage } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
-import { createTransform, defaultLayout } from '@refrakt-md/transform';
+import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
+import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
 import type { RendererNode } from '@refrakt-md/types';
+import type { Schema } from '@markdoc/markdoc';
 import { readFileSync, mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
 import * as path from 'node:path';
 
@@ -38,8 +40,46 @@ async function build() {
 	const themeModule = await import(config.theme + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
+	const icons = {
+		...themeConfig.icons,
+		global: { ...(themeConfig.icons?.global ?? {}), ...(config.icons ?? {}) },
+	};
+
+	// Load community packages
+	const packageNames = config.packages ?? [];
+	let communityTags: Record<string, Schema> | undefined;
+	let finalConfig = themeConfig;
+
+	if (packageNames.length > 0) {
+		const loaded = await Promise.all(
+			packageNames.map((name: string) => loadRunePackage(name))
+		);
+		const coreRuneNames = new Set(Object.keys(coreRunes));
+		const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+
+		communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+
+		const { config: assembledConfig } = assembleThemeConfig({
+			coreConfig: themeConfig,
+			packageRunes: merged.themeRunes,
+			packageIcons: merged.themeIcons,
+			packageBackgrounds: merged.themeBackgrounds,
+			extensions: merged.extensions as any,
+			provenance: merged.provenance,
+		});
+
+		if (config.tints) {
+			assembledConfig.tints = { ...assembledConfig.tints, ...config.tints };
+		}
+		if (config.backgrounds) {
+			assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...config.backgrounds };
+		}
+
+		finalConfig = assembledConfig;
+	}
+
 	// Create identity transform from theme config
-	const transform = createTransform(themeConfig);
+	const transform = createTransform(finalConfig);
 
 	// Create highlight transform
 	const hl = await createHighlightTransform(config.highlight);
@@ -59,7 +99,7 @@ async function build() {
 	};
 
 	// Load content
-	const site = await loadContent(contentDir);
+	const site = await loadContent(contentDir, '/', icons, communityTags);
 
 	mkdirSync(outDir, { recursive: true });
 

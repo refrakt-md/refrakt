@@ -2,6 +2,9 @@ import { loadContent } from '@refrakt-md/content';
 import { serialize, serializeTree } from '@refrakt-md/svelte';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import type { HighlightTransform } from '@refrakt-md/highlight';
+import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import type { Schema } from '@markdoc/markdoc';
 import { error } from '@sveltejs/kit';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
@@ -10,6 +13,14 @@ import type { RefraktConfig } from '@refrakt-md/types';
 
 const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
 const contentDir = path.resolve(config.contentDir);
+
+let _themeConfig: any = null;
+let _icons: Record<string, Record<string, string>> = {};
+
+async function getThemeModule() {
+	const themeModule = await import(config.theme + '/transform');
+	return themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+}
 
 let _hl: HighlightTransform | null = null;
 
@@ -21,11 +32,67 @@ async function getHighlightTransform(): Promise<HighlightTransform> {
 	return hl;
 }
 
+let _communityTags: Record<string, Schema> | undefined;
+let _transform: ((tree: any) => any) | null = null;
+
+async function getTransform(): Promise<(tree: any) => any> {
+	if (_transform) return _transform;
+
+	const themeConfig = await getThemeModule();
+	_icons = {
+		...themeConfig.icons,
+		global: { ...(themeConfig.icons?.global ?? {}), ...(config.icons ?? {}) },
+	};
+
+	const packageNames = config.packages ?? [];
+	if (packageNames.length === 0) {
+		_transform = createTransform(themeConfig);
+		return _transform;
+	}
+
+	const loaded = await Promise.all(
+		packageNames.map((name: string) => loadRunePackage(name))
+	);
+	const coreRuneNames = new Set(Object.keys(coreRunes));
+	const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+
+	_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+
+	const { config: assembledConfig } = assembleThemeConfig({
+		coreConfig: themeConfig,
+		packageRunes: merged.themeRunes,
+		packageIcons: merged.themeIcons,
+		packageBackgrounds: merged.themeBackgrounds,
+		extensions: merged.extensions as any,
+		provenance: merged.provenance,
+	});
+
+	if (config.tints) {
+		assembledConfig.tints = { ...assembledConfig.tints, ...config.tints } as any;
+	}
+	if (config.backgrounds) {
+		assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...config.backgrounds } as any;
+	}
+
+	_transform = createTransform(assembledConfig);
+	return _transform;
+}
+
+async function getCommunityTags(): Promise<Record<string, Schema> | undefined> {
+	await getTransform();
+	return _communityTags;
+}
+
 export const prerender = true;
 
 export const load: PageServerLoad = async ({ params }) => {
-	const site = await loadContent(contentDir);
-	const hl = await getHighlightTransform();
+	const [transform, communityTags, hl] = await Promise.all([
+		getTransform(),
+		getCommunityTags(),
+		getHighlightTransform(),
+	]);
+
+	const site = await loadContent(contentDir, '/', _icons, communityTags);
 	const slug = params.slug || '';
 	const url = '/' + slug;
 
@@ -35,25 +102,30 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Page not found');
 	}
 
-	const renderable = hl(serializeTree(page.renderable));
+	const serialized = serializeTree(page.renderable);
+	const renderable = hl(transform(serialized));
 
 	return {
 		title: page.frontmatter.title ?? '',
 		description: page.frontmatter.description ?? '',
+		frontmatter: page.frontmatter,
 		renderable,
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(serialize(c))) }
+				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(transform(serialize(c)))) }
 			])
 		),
+		seo: page.seo,
 		url,
+		headings: page.headings,
 		highlightCss: hl.css,
 	};
 };
 
 export async function entries() {
-	const site = await loadContent(contentDir);
+	const communityTags = await getCommunityTags();
+	const site = await loadContent(contentDir, '/', _icons, communityTags);
 	return site.pages
 		.filter(p => !p.route.draft)
 		.map(p => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));
