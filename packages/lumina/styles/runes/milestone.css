@@ -1,0 +1,65 @@
+/* Milestone */
+.rf-milestone {
+	margin: 1.5rem 0;
+	border-left: 3px solid var(--rf-color-success);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	background: var(--rf-color-surface);
+	padding: 1rem 1.25rem;
+}
+.rf-milestone__header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.75rem;
+}
+.rf-milestone__name-badge {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--rf-color-heading);
+}
+.rf-milestone__status-badge {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+.rf-milestone__target-badge {
+	font-size: 0.6875rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	margin-left: auto;
+}
+.rf-milestone__body {
+	font-size: 0.925rem;
+	line-height: 1.65;
+}
+.rf-milestone__body > header {
+	margin-bottom: 0.75rem;
+}
+.rf-milestone__body > header h1,
+.rf-milestone__body > header h2,
+.rf-milestone__body > header h3 {
+	margin-top: 0;
+}
+.rf-milestone__body ul {
+	padding-left: 1.5rem;
+}
+
+/* Status colors */
+[data-status="planning"] > .rf-milestone__header > .rf-milestone__status-badge {
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+[data-status="active"] > .rf-milestone__header > .rf-milestone__status-badge {
+	color: var(--rf-color-warning);
+	background: var(--rf-color-warning-bg);
+}
+[data-status="complete"] > .rf-milestone__header > .rf-milestone__status-badge {
+	color: var(--rf-color-success);
+	background: var(--rf-color-success-bg);
+}

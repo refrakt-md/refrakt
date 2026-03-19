@@ -154,6 +154,14 @@
 - track
 - audio
 
+## @refrakt-md/project
+
+- spec
+- work
+- bug
+- decision
+- milestone
+
 {% /nav %}
 {% /region %}
 {% /layout %}
