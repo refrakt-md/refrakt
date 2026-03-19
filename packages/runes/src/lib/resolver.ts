@@ -309,8 +309,25 @@ export function resolveSections(
 	if (headingSpec.includes(':')) {
 		level = parseInt(headingSpec.split(':')[1], 10);
 	} else {
-		// Auto-detect from first heading child
-		level = children.find(n => n.type === 'heading')?.attributes?.level;
+		// Auto-detect heading level with preamble-aware heuristic:
+		// If the first heading is shallower than the second, and there are 2+
+		// headings at the deeper level, use the deeper level as the section
+		// boundary. The shallower first heading becomes preamble content.
+		const headings = children.filter(n => n.type === 'heading');
+		if (headings.length >= 2) {
+			const firstLevel = headings[0].attributes?.level;
+			const secondLevel = headings[1].attributes?.level;
+			if (firstLevel !== undefined && secondLevel !== undefined && secondLevel > firstLevel) {
+				const countAtSecondLevel = headings.filter(
+					h => h.attributes?.level === secondLevel,
+				).length;
+				level = countAtSecondLevel >= 2 ? secondLevel : firstLevel;
+			} else {
+				level = firstLevel;
+			}
+		} else {
+			level = headings[0]?.attributes?.level;
+		}
 	}
 
 	if (level === undefined) {

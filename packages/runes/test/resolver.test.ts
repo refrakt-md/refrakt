@@ -434,6 +434,92 @@ describe('resolveSections', () => {
 		expect(result.sections).toEqual([]);
 	});
 
+	it('promotes deeper heading level when first heading is shallower', () => {
+		const title = heading(2, 'How it works');
+		const blurb = paragraph('Some intro text');
+		const s1 = heading(3, 'Step 1');
+		const p1 = paragraph('body 1');
+		const s2 = heading(3, 'Step 2');
+		const p2 = paragraph('body 2');
+		const s3 = heading(3, 'Step 3');
+		const p3 = paragraph('body 3');
+		const children = [title, blurb, s1, p1, s2, p2, s3, p3];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading',
+			fields: [
+				{ name: 'header', match: 'heading|paragraph', greedy: true, optional: true },
+			],
+			sectionModel: {
+				type: 'sequence',
+				fields: [
+					{ name: 'body', match: 'any', greedy: true, optional: true },
+				],
+			},
+		};
+
+		const result = resolveSections(children, model);
+		// h2 title and blurb paragraph go to preamble
+		expect(result.header).toEqual([title, blurb]);
+		// h3 headings become sections
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(3);
+		expect(sections[0].$heading).toBe('Step 1');
+		expect(sections[1].$heading).toBe('Step 2');
+		expect(sections[2].$heading).toBe('Step 3');
+	});
+
+	it('does not promote when only one deeper heading exists', () => {
+		const title = heading(2, 'Title');
+		const sub = heading(3, 'Only sub');
+		const p = paragraph('body');
+		const children = [title, sub, p];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading',
+			sectionModel: {
+				type: 'sequence',
+				fields: [
+					{ name: 'body', match: 'any', greedy: true, optional: true },
+				],
+			},
+		};
+
+		const result = resolveSections(children, model);
+		// Falls back to first heading level (h2)
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(1);
+		expect(sections[0].$heading).toBe('Title');
+		expect(sections[0].body).toEqual([sub, p]);
+	});
+
+	it('keeps same-level headings as sections (no promotion)', () => {
+		const h1 = heading(2, 'Step A');
+		const p1 = paragraph('body a');
+		const h2 = heading(2, 'Step B');
+		const p2 = paragraph('body b');
+		const children = [h1, p1, h2, p2];
+
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading',
+			sectionModel: {
+				type: 'sequence',
+				fields: [
+					{ name: 'body', match: 'any', greedy: true, optional: true },
+				],
+			},
+		};
+
+		const result = resolveSections(children, model);
+		const sections = result.sections as any[];
+		expect(sections).toHaveLength(2);
+		expect(sections[0].$heading).toBe('Step A');
+		expect(sections[1].$heading).toBe('Step B');
+	});
+
 	it('handles no preamble (first child is a heading)', () => {
 		const h = heading(2, 'First');
 		const p = paragraph('body');
