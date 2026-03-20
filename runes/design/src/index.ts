@@ -12,7 +12,7 @@ import { designPipelineHooks } from './pipeline.js';
 export const design: RunePackage = {
   name: 'design',
   displayName: 'Design',
-  version: '0.8.4',
+  version: '0.8.5',
   runes: {
     'swatch': {
       transform: swatch,

@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/sveltekit",
   "description": "SvelteKit integration plugin for refrakt.md",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -33,7 +33,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.8.4"
+    "@refrakt-md/types": "0.8.5"
   },
   "peerDependencies": {
     "vite": ">=5.0.0"

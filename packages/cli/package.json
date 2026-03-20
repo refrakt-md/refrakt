@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/cli",
   "description": "CLI tools for refrakt.md",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
-    "@refrakt-md/ai": "0.8.4",
-    "@refrakt-md/editor": "0.8.4",
-    "@refrakt-md/runes": "0.8.4",
-    "@refrakt-md/transform": "0.8.4",
+    "@refrakt-md/ai": "0.8.5",
+    "@refrakt-md/editor": "0.8.5",
+    "@refrakt-md/runes": "0.8.5",
+    "@refrakt-md/transform": "0.8.5",
     "postcss": "^8.4.0",
     "tree-sitter-wasms": "^0.1.13",
     "typescript": "^5.4.0",

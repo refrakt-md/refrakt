@@ -6,6 +6,15 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.8.5 - March 20, 2026
+
+- Add blog rune for listing posts with filtering and sorting
+- Expose frontmatter and page data as content-level Markdoc variables
+- Redesign juxtapose rune with `---` delimiter and overlay labels
+- Auto-discover runes in VS Code extension and editor
+- Fix map rune collapsed border and add spacing support
+- Fix juxtapose tint mode
+
 ## v0.8.4 - March 19, 2026
 
 - Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.

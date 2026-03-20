@@ -1,5 +1,14 @@
 # @refrakt-md/language-server
 
+## 0.8.5
+
+### Patch Changes
+
+- Add blog rune for listing posts with filtering and sorting. Expose frontmatter and page data as content-level Markdoc variables. Redesign juxtapose rune with --- delimiter and overlay labels. Auto-discover runes in VS Code extension and editor. Fix map rune collapsed border and add spacing support. Fix juxtapose tint mode.
+- Updated dependencies
+  - @refrakt-md/runes@0.8.5
+  - @refrakt-md/transform@0.8.5
+
 ## 0.8.4
 
 ### Patch Changes
