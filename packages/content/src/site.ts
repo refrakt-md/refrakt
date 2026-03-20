@@ -41,6 +41,7 @@ function transformContent(
   path: string,
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
+  contentVariables?: Record<string, unknown>,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
@@ -48,6 +49,7 @@ function transformContent(
   const config = { tags: mergedTags, nodes, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content,
     ...(icons ? { __icons: icons } : {}),
+    ...contentVariables,
   } };
   return { renderable: Markdoc.transform(ast, config), headings };
 }
@@ -74,7 +76,11 @@ export async function loadContent(
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
-    const { renderable, headings } = transformContent(content, route.url, icons, additionalTags);
+    const contentVariables = {
+      frontmatter,
+      page: { url: route.url, filePath: route.filePath, draft: route.draft },
+    };
+    const { renderable, headings } = transformContent(content, route.url, icons, additionalTags, contentVariables);
     const seo = extractSeo(renderable, frontmatter, route.url);
 
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
