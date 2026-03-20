@@ -68,6 +68,7 @@
 - gallery
 - tabs
 - accordion
+- juxtapose
 - details
 - sandbox
 - showcase
