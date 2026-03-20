@@ -91,6 +91,7 @@
 - nav
 - toc
 - breadcrumb
+- blog
 
 ## @refrakt-md/marketing
 
