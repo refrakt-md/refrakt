@@ -14,6 +14,8 @@ export const places: RunePackage = {
       description: 'Event information with date, location, and agenda',
       seoType: 'Event',
       reinterprets: { heading: 'event name', list: 'speakers/agenda', blockquote: 'venue description', link: 'registration URL' },
+      category: 'Semantic',
+      snippet: ['{% event date="${1:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}" location="${2:Location}" %}', '# ${3:Event Name}', '', '${4:Event description}', '{% /event %}'],
       fixture: `{% event date="2026-03-15" endDate="2026-03-17" location="Stockholm, Sweden" url="https://example.com/register" %}
 # Nordic Developer Summit
 
@@ -29,6 +31,8 @@ A three-day conference bringing together developers, designers, and product engi
       description: 'Interactive map visualization from Markdown lists of locations with pins, routes, and grouped layers',
       seoType: 'Place',
       reinterprets: { list: 'location pins or route waypoints', heading: 'pin group label', strong: 'pin name', em: 'pin description', link: 'pin click URL' },
+      category: 'Semantic',
+      snippet: ['{% map zoom=${1:13} %}', '## ${2:Landmarks}', '', '- **${3:Place Name}** \\u2014 *${4:Description}* \\u2014 ${5:48.8566}, ${6:2.3522}', '{% /map %}'],
       fixture: `{% map zoom="13" height="large" %}
 ## Landmarks
 - **Eiffel Tower** - *Iconic iron lattice tower* - 48.8566, 2.3522
@@ -48,6 +52,8 @@ A three-day conference bringing together developers, designers, and product engi
       description: 'Travel itinerary with day groupings and timed stops. Headings become stops with "time — location" parsing; h2 headings create day groups.',
       seoType: 'ItemList',
       reinterprets: { heading: 'stop time and location (h2 = day group, h3 = stop)', paragraph: 'stop description' },
+      category: 'Semantic',
+      snippet: ['{% itinerary %}', '## Day 1 \\u2014 ${1:Arrival}', '', '### ${2:9:00 AM} \\u2014 ${3:Location}', '', '${4:Activity description.}', '{% /itinerary %}'],
       fixture: `{% itinerary variant="day-by-day" %}
 ## Day 1 — Arrival
 

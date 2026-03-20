@@ -84,7 +84,8 @@
 		}
 	},
 	"scripts": {
-		"build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node && esbuild ../language-server/dist/server.js --bundle --outfile=dist/server.js --format=cjs --platform=node",
+		"generate-snippets": "tsx src/generate-snippets.ts",
+		"build": "npm run generate-snippets && esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node && esbuild ../language-server/dist/server.js --bundle --outfile=dist/server.js --format=cjs --platform=node",
 		"watch": "npm run build -- --watch",
 		"package": "vsce package --no-dependencies"
 	},

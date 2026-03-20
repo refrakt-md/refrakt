@@ -645,10 +645,9 @@ export const coreConfig: ThemeConfig = {
 				position: '--jx-position',
 				duration: '--jx-duration',
 			},
-			autoLabel: pageSectionAutoLabel,
-			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', panels: 'none', label: 'inline' },
+			editHints: { panels: 'none' },
 		},
-		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', editHints: { body: 'none', label: 'inline' } },
+		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', editHints: { body: 'none' } },
 		Diagram: {
 			block: 'diagram',
 			editHints: { source: 'code' },
@@ -682,6 +681,9 @@ export const coreConfig: ThemeConfig = {
 				};
 			},
 		},
+		Tint: { block: 'tint', parent: '*' },
+		Bg: { block: 'bg', parent: '*' },
+		Region: { block: 'region', parent: 'Layout' },
 		Sandbox: {
 			block: 'sandbox',
 			editHints: { source: 'code' },

@@ -20,6 +20,8 @@ export interface RuneInfo {
   seoType: string | undefined;
   /** Attribute definitions from the schema */
   attributes: Record<string, SchemaAttribute>;
+  /** Editor UI category (e.g., 'Content', 'Layout') */
+  category: string | undefined;
 }
 
 /** Map of every name (primary + alias) → RuneInfo */
@@ -50,6 +52,7 @@ function indexRunes(runeList: Rune[]) {
       reinterprets: rune.reinterprets,
       seoType: rune.seoType,
       attributes: (rune.schema.attributes ?? {}) as Record<string, SchemaAttribute>,
+      category: rune.category,
     };
     allRunes.push(info);
     for (const name of rune.names) {
@@ -72,6 +75,8 @@ interface RunePackageLike {
     seoType?: string;
     reinterprets?: Record<string, string>;
     fixture?: string;
+    category?: string;
+    snippet?: string[];
   }>;
   theme?: Record<string, unknown>;
 }
@@ -116,6 +121,7 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPack
       aliases: entry.aliases,
       seoType: entry.seoType,
       reinterprets: entry.reinterprets,
+      category: entry.category,
     });
     if (entry.fixture) {
       fixtures[runeName] = entry.fixture;

@@ -27,6 +27,11 @@ export interface RunePackageEntry {
 	seoType?: string;
 	/** Describes how Markdown primitives are reinterpreted inside this rune */
 	reinterprets?: Record<string, string>;
+	/** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
+	category?: string;
+	/** VSCode snippet body lines (array of strings with VSCode placeholder syntax).
+	 *  Also used by the block editor for rich rune insertion. */
+	snippet?: string[];
 }
 
 /** Additive extension to a core rune's schema */
