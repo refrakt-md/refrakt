@@ -1,0 +1,177 @@
+/* Juxtapose — interactive comparison between two panels */
+
+.rf-juxtapose {
+	margin: 1.5rem 0;
+}
+
+/* ─── PageSection header ─── */
+.rf-juxtapose__header {
+	margin-bottom: 1.5rem;
+}
+.rf-juxtapose__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.5rem;
+}
+.rf-juxtapose__headline {
+	margin-top: 0;
+}
+.rf-juxtapose__blurb {
+	color: var(--rf-color-muted);
+	margin-bottom: 0;
+}
+.rf-juxtapose__image {
+	margin-bottom: 1rem;
+}
+
+/* ─── Variant modifiers (for static/no-JS layout) ─── */
+.rf-juxtapose--slider,
+.rf-juxtapose--auto,
+.rf-juxtapose--fade,
+.rf-juxtapose--toggle {
+	/* shared base — no additional styling needed */
+}
+
+/* ─── Panels container ─── */
+.rf-juxtapose__panels {
+	border-radius: var(--rf-radius-md);
+	overflow: hidden;
+	border: 1px solid var(--rf-color-border);
+	background: var(--rf-color-surface);
+}
+
+/* ─── Panel ─── */
+.rf-juxtapose-panel {
+	overflow: hidden;
+}
+.rf-juxtapose-panel__name {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	background: var(--rf-color-surface);
+	color: var(--rf-color-muted);
+	border-radius: var(--rf-radius-sm);
+	pointer-events: none;
+}
+.rf-juxtapose-panel__body {
+	/* Content fills the panel */
+}
+.rf-juxtapose-panel__body img {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+/* Hide meta/property tags inside panels */
+.rf-juxtapose-panel > span[property],
+.rf-juxtapose-panel > meta { display: none; }
+
+/* ─── Slider divider (injected by behavior) ─── */
+.rf-juxtapose__divider {
+	position: absolute;
+	z-index: 10;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+/* Vertical orientation (left/right split) — default */
+.rf-juxtapose:not([data-orientation="horizontal"]) .rf-juxtapose__divider {
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	transform: translateX(-50%);
+	background: var(--rf-color-bg, #fff);
+	box-shadow: var(--rf-shadow-sm);
+}
+
+/* Horizontal orientation (top/bottom split) */
+.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider {
+	left: 0;
+	right: 0;
+	height: 3px;
+	transform: translateY(-50%);
+	background: var(--rf-color-bg, #fff);
+	box-shadow: var(--rf-shadow-sm);
+	cursor: row-resize;
+}
+
+.rf-juxtapose__divider-handle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: var(--rf-radius-full);
+	background: var(--rf-color-bg, #fff);
+	border: 2px solid var(--rf-color-border);
+	box-shadow: var(--rf-shadow-md);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rf-juxtapose__divider-handle::before {
+	content: '\2194';  /* ↔ */
+	font-size: 1rem;
+	color: var(--rf-color-muted);
+	line-height: 1;
+}
+
+.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider-handle::before {
+	content: '\2195';  /* ↕ */
+}
+
+.rf-juxtapose__divider:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+
+/* ─── Toggle bar (injected by behavior) ─── */
+.rf-juxtapose__toggle-bar {
+	display: flex;
+	gap: 0.25rem;
+	padding: 0.25rem;
+	margin-bottom: 0.75rem;
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	width: fit-content;
+}
+
+.rf-juxtapose__toggle-btn {
+	padding: 0.375rem 1rem;
+	border: none;
+	border-radius: var(--rf-radius-sm);
+	background: transparent;
+	color: var(--rf-color-muted);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s;
+}
+
+.rf-juxtapose__toggle-btn:hover {
+	color: var(--rf-color-text);
+}
+
+.rf-juxtapose__toggle-btn--active {
+	background: var(--rf-color-bg, #fff);
+	color: var(--rf-color-text);
+	box-shadow: var(--rf-shadow-sm);
+}
+
+/* ─── Fade variant cursor hint ─── */
+.rf-juxtapose--fade .rf-juxtapose__panels {
+	cursor: pointer;
+}
+
+/* ─── No-JS fallback: panels stack vertically ─── */
+.rf-juxtapose__panels > .rf-juxtapose-panel + .rf-juxtapose-panel {
+	border-top: 1px solid var(--rf-color-border);
+}

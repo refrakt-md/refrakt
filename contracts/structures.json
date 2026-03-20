@@ -885,6 +885,77 @@
 				"{content}"
 			]
 		},
+		"Juxtapose": {
+			"block": "juxtapose",
+			"root": ".rf-juxtapose",
+			"dataRune": "juxtapose",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"variant": {
+					"source": "meta",
+					"default": "slider",
+					"classPattern": ".rf-juxtapose--{value}",
+					"dataAttribute": "data-variant"
+				},
+				"orientation": {
+					"source": "meta",
+					"default": "vertical",
+					"dataAttribute": "data-orientation"
+				},
+				"position": {
+					"source": "meta",
+					"default": "50",
+					"dataAttribute": "data-position"
+				},
+				"duration": {
+					"source": "meta",
+					"default": "1000",
+					"dataAttribute": "data-duration"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "header",
+					"selector": ".rf-juxtapose__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-juxtapose__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-juxtapose__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-juxtapose__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-juxtapose__image",
+					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"position": "--jx-position",
+				"duration": "--jx-duration"
+			}
+		},
+		"JuxtaposePanel": {
+			"block": "juxtapose-panel",
+			"root": ".rf-juxtapose-panel",
+			"dataRune": "juxtapose-panel",
+			"parent": "Juxtapose",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Diagram": {
 			"block": "diagram",
 			"root": ".rf-diagram",

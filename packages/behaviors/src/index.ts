@@ -12,6 +12,7 @@ import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 import { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 import { searchBehavior } from './behaviors/search.js';
 import { galleryBehavior } from './behaviors/gallery.js';
+import { juxtaposeBehavior } from './behaviors/juxtapose.js';
 
 /** Map of rune type → behavior function (mutable — packages can register additional behaviors) */
 const behaviors: Record<string, BehaviorFn> = {
@@ -24,6 +25,7 @@ const behaviors: Record<string, BehaviorFn> = {
 	form: formBehavior,
 	preview: previewBehavior,
 	gallery: galleryBehavior,
+	juxtapose: juxtaposeBehavior,
 };
 
 /**
@@ -140,6 +142,7 @@ export { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 export { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 export { searchBehavior } from './behaviors/search.js';
 export { galleryBehavior } from './behaviors/gallery.js';
+export { juxtaposeBehavior } from './behaviors/juxtapose.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
 
 // Web component elements — framework-neutral custom elements for interactive runes

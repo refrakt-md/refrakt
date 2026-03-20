@@ -620,6 +620,22 @@ export const coreConfig: ThemeConfig = {
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
 		RevealStep: { block: 'reveal-step', parent: 'Reveal', editHints: { body: 'none' } },
+		Juxtapose: {
+			block: 'juxtapose',
+			modifiers: {
+				variant: { source: 'meta', default: 'slider' },
+				orientation: { source: 'meta', default: 'vertical', noBemClass: true },
+				position: { source: 'meta', default: '50', noBemClass: true },
+				duration: { source: 'meta', default: '1000', noBemClass: true },
+			},
+			styles: {
+				position: '--jx-position',
+				duration: '--jx-duration',
+			},
+			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', panels: 'none', label: 'inline' },
+		},
+		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', editHints: { body: 'none', label: 'inline' } },
 		Diagram: {
 			block: 'diagram',
 			editHints: { source: 'code' },
