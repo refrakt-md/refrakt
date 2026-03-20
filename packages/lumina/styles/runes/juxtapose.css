@@ -4,29 +4,6 @@
 	margin: 1.5rem 0;
 }
 
-/* ─── PageSection header ─── */
-.rf-juxtapose__header {
-	margin-bottom: 1.5rem;
-}
-.rf-juxtapose__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
-}
-.rf-juxtapose__headline {
-	margin-top: 0;
-}
-.rf-juxtapose__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-}
-.rf-juxtapose__image {
-	margin-bottom: 1rem;
-}
-
 /* ─── Variant modifiers (for static/no-JS layout) ─── */
 .rf-juxtapose--slider,
 .rf-juxtapose--auto,
@@ -45,17 +22,27 @@
 
 /* ─── Panel ─── */
 .rf-juxtapose-panel {
+	position: relative;
 	overflow: hidden;
 }
 .rf-juxtapose-panel__name {
-	display: inline-block;
+	position: absolute;
+	bottom: 0.5rem;
 	padding: 0.25rem 0.75rem;
-	font-size: 0.8125rem;
+	background: rgba(0, 0, 0, 0.6);
+	color: white;
+	font-size: 0.75rem;
 	font-weight: 600;
-	background: var(--rf-color-surface);
-	color: var(--rf-color-muted);
 	border-radius: var(--rf-radius-sm);
 	pointer-events: none;
+}
+/* First panel: label bottom-left */
+.rf-juxtapose-panel:first-child .rf-juxtapose-panel__name {
+	left: 0.5rem;
+}
+/* Second panel: label bottom-right */
+.rf-juxtapose-panel:last-child .rf-juxtapose-panel__name {
+	right: 0.5rem;
 }
 .rf-juxtapose-panel__body {
 	/* Content fills the panel */
@@ -67,9 +54,13 @@
 	object-fit: cover;
 }
 
-/* Hide meta/property tags inside panels */
-.rf-juxtapose-panel > span[property],
+/* Hide meta tags inside panels */
 .rf-juxtapose-panel > meta { display: none; }
+
+/* ─── Toggle variant: labels only on buttons, not in panels ─── */
+.rf-juxtapose--toggle .rf-juxtapose-panel__name {
+	display: none;
+}
 
 /* ─── Slider divider (injected by behavior) ─── */
 .rf-juxtapose__divider {
@@ -171,7 +162,3 @@
 	cursor: pointer;
 }
 
-/* ─── No-JS fallback: panels stack vertically ─── */
-.rf-juxtapose__panels > .rf-juxtapose-panel + .rf-juxtapose-panel {
-	border-top: 1px solid var(--rf-color-border);
-}

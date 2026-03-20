@@ -1,36 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
-import { pageSectionProperties } from './common.js';
 
 const variantType = ['slider', 'toggle', 'fade', 'auto'] as const;
 const orientationType = ['horizontal', 'vertical'] as const;
-
-class JuxtaposePanelModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string;
-
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.JuxtaposePanel, {
-			tag: 'div',
-			properties: {
-				name: nameTag,
-			},
-			refs: {
-				body: body.tag('div'),
-			},
-			children: [nameTag, body.next()],
-		});
-	}
-}
-
-export const juxtaposePanel = createSchema(JuxtaposePanelModel);
 
 export const juxtapose = createContentModelSchema({
 	attributes: {
@@ -40,50 +16,42 @@ export const juxtapose = createContentModelSchema({
 		duration: { type: Number, required: false, description: 'Animation duration in milliseconds (fade/auto variants)' },
 		labels: { type: String, required: false, description: 'Comma-separated custom labels for the two panels' },
 	},
-	contentModel: () => ({
-		type: 'sections' as const,
-		sectionHeading: 'heading',
-		emitTag: 'juxtapose-panel',
-		emitAttributes: { name: '$heading' },
-		fields: [
-			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
-			{ name: 'items', match: 'tag', optional: true, greedy: true },
-		],
-		sectionModel: {
+	contentModel: {
+		type: 'delimited' as const,
+		delimiter: 'hr',
+		dynamicZones: true,
+		zoneModel: {
 			type: 'sequence' as const,
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 		},
-	}),
+	},
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const zones = (resolved.zones ?? []) as Array<Record<string, unknown>>;
+		const labelParts = attrs.labels
+			? (attrs.labels as string).split(',').map((s: string) => s.trim())
+			: [];
 
-		// Combine explicit child tags (preamble items) with emitted section tags
-		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
-		const sectionNodes = new RenderableNodeCursor(
-			Markdoc.transform(allItems, config) as RenderableTreeNode[],
-		);
+		const panelNodes: RenderableTreeNode[] = zones.map((zone, i) => {
+			const body = new RenderableNodeCursor(
+				Markdoc.transform(asNodes(zone.body), config) as RenderableTreeNode[],
+			);
+			const bodyRef = body.wrap('div');
 
-		const panels = sectionNodes.tag('div').typeof('JuxtaposePanel');
+			const label = labelParts[i];
+			const nameTag = label ? new Tag('span', {}, [label]) : undefined;
+
+			return createComponentRenderable(schema.JuxtaposePanel, {
+				tag: 'div',
+				properties: nameTag ? { name: nameTag } : {},
+				refs: {
+					body: bodyRef.tag('div'),
+				},
+				children: [...(nameTag ? [nameTag] : []), bodyRef.next()],
+			});
+		});
+
+		const panels = new RenderableNodeCursor(panelNodes).tag('div').typeof('JuxtaposePanel');
 		const panelsContainer = panels.wrap('div');
-
-		// Override panel labels if labels attribute is provided
-		if (attrs.labels) {
-			const labelParts = attrs.labels.split(',').map((s: string) => s.trim());
-			let idx = 0;
-			for (const node of panels.nodes) {
-				if (Tag.isTag(node) && idx < labelParts.length) {
-					// Find the span[property="name"] child and replace its text
-					for (const child of node.children) {
-						if (Tag.isTag(child) && child.attributes?.property === 'name') {
-							child.children = [labelParts[idx]];
-						}
-					}
-					idx++;
-				}
-			}
-		}
 
 		// Meta tags for variant configuration
 		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'slider' });
@@ -91,23 +59,23 @@ export const juxtapose = createContentModelSchema({
 		const positionMeta = new Tag('meta', { content: String(attrs.position ?? 50) });
 		const durationMeta = new Tag('meta', { content: String(attrs.duration ?? 1000) });
 
-		const children = [
-			...(headerNodes.count() > 0 ? [headerNodes.wrap('header').next()] : []),
-			variantMeta,
-			orientationMeta,
-			positionMeta,
-			durationMeta,
-			panelsContainer.next(),
-		];
-
 		return createComponentRenderable(schema.Juxtapose, {
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				panel: panels,
+				variant: variantMeta,
+				orientation: orientationMeta,
+				position: positionMeta,
+				duration: durationMeta,
 			},
-			refs: { ...pageSectionProperties(headerNodes), panels: panelsContainer },
-			children,
+			refs: { panels: panelsContainer },
+			children: [
+				variantMeta,
+				orientationMeta,
+				positionMeta,
+				durationMeta,
+				panelsContainer.next(),
+			],
 		});
 	},
 });
