@@ -15,6 +15,8 @@ export const business: RunePackage = {
       description: 'People directory for team pages, cast lists, or speaker lineups. List items with "Name - Role" pattern become entries.',
       seoType: 'Person',
       reinterprets: { list: 'people entries (Name - Role)', image: 'avatar/headshot', link: 'profile URL' },
+      category: 'Semantic',
+      snippet: ['{% cast %}', '- ${1:Name} - ${2:Role}', '- ${3:Name} - ${4:Role}', '{% /cast %}'],
       fixture: `{% cast %}
 - **Alice Chen** — Lead Engineer
 - **Bob Martinez** — Product Designer
@@ -31,6 +33,8 @@ export const business: RunePackage = {
       description: 'Structured business/organization information with contact details, hours, and location',
       seoType: 'Organization',
       reinterprets: { heading: 'organization name', image: 'logo', link: 'website/social profiles' },
+      category: 'Semantic',
+      snippet: ['{% organization %}', '# ${1:Organization Name}', '', '${2:Description}', '{% /organization %}'],
       fixture: `{% organization type="LocalBusiness" %}
 # Acme Coffee Shop
 
@@ -48,6 +52,8 @@ Your neighborhood coffee shop since 2015.
       description: 'Chronological event display where headings become dated milestones',
       seoType: 'ItemList',
       reinterprets: { heading: 'date and milestone label', paragraph: 'event description' },
+      category: 'Semantic',
+      snippet: ['{% timeline %}', '## ${1:2024} \\u2014 ${2:Milestone One}', '', '${3:Description of this milestone.}', '', '## ${4:2025} \\u2014 ${5:Milestone Two}', '', '${6:Description of this milestone.}', '{% /timeline %}'],
       fixture: `{% timeline %}
 ## 2024 — Project Inception
 Initial prototype exploring Markdoc extensions for component-rich content.

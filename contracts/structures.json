@@ -209,6 +209,71 @@
 				"{content}"
 			]
 		},
+		"Blog": {
+			"block": "blog",
+			"root": ".rf-blog",
+			"dataRune": "blog",
+			"childOrder": [
+				"{content:content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "list",
+					"classPattern": ".rf-blog--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"sort": {
+					"source": "meta",
+					"default": "date-desc",
+					"dataAttribute": "data-sort"
+				},
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"limit": {
+					"source": "meta",
+					"dataAttribute": "data-limit"
+				},
+				"folder": {
+					"source": "meta",
+					"dataAttribute": "data-folder"
+				}
+			},
+			"elements": {
+				"content": {
+					"tag": "div",
+					"selector": ".rf-blog__content",
+					"source": "contentWrapper"
+				},
+				"header": {
+					"tag": "header",
+					"selector": ".rf-blog__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-blog__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-blog__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-blog__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-blog__image",
+					"source": "autoLabel"
+				}
+			}
+		},
 		"Budget": {
 			"block": "budget",
 			"root": ".rf-budget",
@@ -915,33 +980,6 @@
 					"dataAttribute": "data-duration"
 				}
 			},
-			"elements": {
-				"header": {
-					"tag": "header",
-					"selector": ".rf-juxtapose__header",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-juxtapose__eyebrow",
-					"source": "autoLabel"
-				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-juxtapose__headline",
-					"source": "autoLabel"
-				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-juxtapose__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-juxtapose__image",
-					"source": "autoLabel"
-				}
-			},
 			"inlineStyles": {
 				"position": "--jx-position",
 				"duration": "--jx-duration"
@@ -960,6 +998,33 @@
 			"block": "diagram",
 			"root": ".rf-diagram",
 			"dataRune": "diagram",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Tint": {
+			"block": "tint",
+			"root": ".rf-tint",
+			"dataRune": "tint",
+			"parent": "*",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Bg": {
+			"block": "bg",
+			"root": ".rf-bg",
+			"dataRune": "bg",
+			"parent": "*",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Region": {
+			"block": "region",
+			"root": ".rf-region",
+			"dataRune": "region",
+			"parent": "Layout",
 			"childOrder": [
 				"{content}"
 			]
@@ -1290,6 +1355,15 @@
 					"prop": "--split-gap"
 				}
 			}
+		},
+		"Definition": {
+			"block": "definition",
+			"root": ".rf-definition",
+			"dataRune": "definition",
+			"parent": "Feature",
+			"childOrder": [
+				"{content}"
+			]
 		},
 		"Steps": {
 			"block": "steps",

@@ -253,6 +253,7 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
+	Definition: { block: 'definition', parent: 'Feature' },
 	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',

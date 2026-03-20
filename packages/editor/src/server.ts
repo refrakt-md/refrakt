@@ -831,43 +831,15 @@ async function handlePagesList(
 
 // ── Rune metadata ────────────────────────────────────────────────────────
 
-const CHILD_RUNES = new Set([
-	'tab', 'step', 'tier', 'accordion-item', 'timeline-entry', 'changelog-release',
-	'cast-member', 'conversation-message', 'reveal-step', 'bento-cell',
-	'storyboard-panel', 'note', 'form-field', 'comparison-column', 'comparison-row',
-	'symbol-group', 'symbol-member', 'map-pin', 'definition', 'region',
-	'beat', 'character-section', 'realm-section', 'faction-section',
-	'itinerary-day', 'itinerary-stop',
-	'tint', 'bg', 'budget-category', 'budget-line-item',
-]);
-
-const RUNE_CATEGORIES: Record<string, string> = {
-	hero: 'Section', cta: 'Section', feature: 'Section', pricing: 'Section',
-	comparison: 'Section', testimonial: 'Section',
-
-	hint: 'Content', steps: 'Content', sidenote: 'Content', figure: 'Content',
-	gallery: 'Content', details: 'Content', embed: 'Content', icon: 'Content',
-	form: 'Content', pullquote: 'Content', textblock: 'Content',
-
-	grid: 'Layout', tabs: 'Layout', accordion: 'Layout', bento: 'Layout',
-	reveal: 'Layout', annotate: 'Layout', mediatext: 'Layout', showcase: 'Layout',
-
-	codegroup: 'Code & Data', compare: 'Code & Data', diff: 'Code & Data',
-	api: 'Code & Data', symbol: 'Code & Data', datatable: 'Code & Data',
-	chart: 'Code & Data', diagram: 'Code & Data', preview: 'Code & Data',
-	sandbox: 'Code & Data',
-
-	budget: 'Semantic',
-	recipe: 'Semantic', howto: 'Semantic', event: 'Semantic', cast: 'Semantic',
-	organization: 'Semantic', timeline: 'Semantic', changelog: 'Semantic',
-	conversation: 'Semantic', storyboard: 'Semantic', map: 'Semantic',
-	playlist: 'Semantic', track: 'Semantic', audio: 'Semantic', error: 'Semantic',
-
-	swatch: 'Design', palette: 'Design', typography: 'Design',
-	spacing: 'Design', 'design-context': 'Design',
-
-	nav: 'Site', layout: 'Site', toc: 'Site', breadcrumb: 'Site',
-};
+/** Derive child rune names from the theme config's parent field */
+function deriveChildRunes(config?: ThemeConfig): Set<string> {
+	const children = new Set<string>();
+	if (!config?.runes) return children;
+	for (const runeConfig of Object.values(config.runes)) {
+		if (runeConfig.parent) children.add(runeConfig.block);
+	}
+	return children;
+}
 
 /**
  * Serialize a content model for JSON transport.
@@ -938,8 +910,9 @@ function handleGetRunes(
 ): void {
 	if (!cachedRuneData) {
 		cachedRuneData = [];
+		const childRunes = deriveChildRunes(themeConfig);
 		for (const rune of Object.values(allRunes)) {
-			if (CHILD_RUNES.has(rune.name)) continue;
+			if (childRunes.has(rune.name)) continue;
 
 			const attrs: Record<string, { type: string; required: boolean; values?: string[] }> = {};
 			if (rune.schema.attributes) {
@@ -978,9 +951,10 @@ function handleGetRunes(
 				aliases: rune.aliases,
 				description: rune.description,
 				selfClosing: rune.schema.selfClosing ?? false,
-				category: RUNE_CATEGORIES[rune.name] ?? 'Other',
+				category: rune.category ?? 'Other',
 				attributes: attrs,
 				example: RUNE_EXAMPLES[rune.name],
+				snippet: rune.snippet,
 				contentModel,
 			});
 		}

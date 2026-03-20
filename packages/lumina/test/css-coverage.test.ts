@@ -20,6 +20,10 @@ import media from '@refrakt-md/media';
 
 const UNSTYLED_BLOCKS = new Set([
 	'recipe-ingredient', // styled inline within recipe.css (no own block selector)
+	'tint',              // directive rune — applies CSS custom props to parent, no own visual
+	'bg',                // directive rune — sets parent backdrop, no own visual
+	'region',            // structural rune — layout region container, no own visual
+	'definition',        // child of feature — styled inline within feature.css
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([

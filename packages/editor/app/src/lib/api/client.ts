@@ -288,6 +288,7 @@ export interface RuneInfo {
 	category: string;
 	attributes: Record<string, RuneAttributeInfo>;
 	example?: string;
+	snippet?: string[];
 	contentModel?: SerializedContentModel;
 }
 

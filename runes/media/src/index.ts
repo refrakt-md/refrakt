@@ -14,6 +14,8 @@ export const media: RunePackage = {
       description: 'Playlist with track listing — albums, podcasts, audiobooks, mixes',
       reinterprets: { heading: 'playlist name', list: 'track listing', image: 'cover art' },
       seoType: 'MusicPlaylist',
+      category: 'Semantic',
+      snippet: ['{% playlist type="${1|album,podcast,audiobook,series,mix|}" artist="${2:Artist}" %}', '# ${3:Playlist Name}', '', '- **${4:Track One}** (${5:3:45})', '- **${6:Track Two}** (${7:4:20})', '{% /playlist %}'],
       fixture: `{% playlist type="album" artist="Pink Floyd" %}
 # The Dark Side of the Moon
 
@@ -28,6 +30,8 @@ export const media: RunePackage = {
       transform: track,
       description: 'Individual track with metadata — for use inside playlist or standalone',
       seoType: 'MusicRecording',
+      category: 'Semantic',
+      snippet: ['{% track src="${1:audio.mp3}" artist="${2:Artist}" duration="${3:3:45}" %}', '# ${4:Track Name}', '{% /track %}'],
       fixture: `{% track src="/audio/breathe.mp3" artist="Pink Floyd" duration="PT2M43S" %}
 Breathe
 {% /track %}`,
@@ -35,6 +39,8 @@ Breathe
     'audio': {
       transform: audio,
       description: 'Audio player — standalone or connected to a playlist',
+      category: 'Semantic',
+      snippet: ['{% audio src="${1:audio.mp3}" title="${2:Title}" /%}'],
       fixture: `{% audio src="/audio/interview.mp3" title="Interview" waveform %}
 Recorded on January 15, 2025.
 

@@ -7,11 +7,29 @@ import {
 import type { RuneInfo } from '../api/client.js';
 
 /**
+ * Strip VSCode snippet placeholder syntax for plain-text insertion:
+ *   ${N:text} → text
+ *   ${N|a,b,c|} → a (first choice)
+ *   $0 / $N → empty string
+ */
+function stripSnippetPlaceholders(line: string): string {
+	return line
+		.replace(/\$\{\d+\|([^,}]+)[^}]*\}/g, '$1')  // ${N|first,...|} → first
+		.replace(/\$\{\d+:([^}]*)}/g, '$1')             // ${N:text} → text
+		.replace(/\$\d+/g, '');                          // $0, $1 → empty
+}
+
+/**
  * Build a snippet string for inserting a rune.
- * Self-closing runes: `{% name /%}`
- * Block runes: `{% name %}\n\n{% /name %}`
+ * Prefers the rune's hand-crafted snippet (with VSCode placeholders stripped).
+ * Falls back to a basic template from schema attributes.
  */
 function buildSnippet(rune: RuneInfo): string {
+	// Use hand-crafted snippet if available
+	if (rune.snippet && rune.snippet.length > 0) {
+		return rune.snippet.map(stripSnippetPlaceholders).join('\n');
+	}
+
 	// Build required attribute defaults
 	const attrParts: string[] = [];
 	for (const [name, attr] of Object.entries(rune.attributes)) {

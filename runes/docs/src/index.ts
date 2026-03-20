@@ -14,6 +14,8 @@ export const docs: RunePackage = {
       aliases: ['endpoint'],
       description: 'API endpoint documentation with method, path, parameters, and request/response examples',
       reinterprets: { heading: 'endpoint title', fence: 'request/response examples', table: 'parameter list', blockquote: 'notes/warnings' },
+      category: 'Code & Data',
+      snippet: ['{% api method="${1|GET,POST,PUT,DELETE,PATCH|}" path="${2:/api/resource}" %}', '## ${3:Description}', '', '| Parameter | Type | Description |', '|-----------|------|-------------|', '| ${4:id} | ${5:string} | ${6:Resource ID} |', '', '```json', '{', '  $0', '}', '```', '{% /api %}'],
       fixture: `{% api method="GET" path="/api/users/:id" auth="Bearer" %}
 Retrieve a single user by their unique identifier.
 
@@ -35,6 +37,8 @@ Retrieve a single user by their unique identifier.
       description: 'Code construct documentation for functions, classes, interfaces, enums, and type aliases',
       seoType: 'TechArticle',
       reinterprets: { heading: 'construct name or member group', fence: 'type signature', list: 'parameter definitions', blockquote: 'returns/throws/deprecation' },
+      category: 'Code & Data',
+      snippet: ['{% symbol kind="${1|function,hook,class,interface,enum,type,module,component|}" lang="${2|typescript,javascript,python,rust,go|}" %}', '', '## ${3:name}', '', '${4:Description.}', '', '```${2}', '${5:signature}', '```', '', '$0', '', '{% /symbol %}'],
       fixture: `{% symbol kind="function" lang="typescript" since="1.2.0" %}
 # createTransform
 
@@ -60,6 +64,8 @@ function createTransform(config: ThemeConfig): (tree: RendererNode) => RendererN
       transform: changelog,
       description: 'Version history where headings become releases with categorized changes',
       reinterprets: { heading: 'version number and date', list: 'categorized changes', strong: 'change category' },
+      category: 'Semantic',
+      snippet: ['{% changelog %}', '## ${1:1.0.0} \\u2014 ${2:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}', '', '- **Added**: ${3:New feature}', '- **Fixed**: ${4:Bug fix}', '{% /changelog %}'],
       fixture: `{% changelog %}
 ## 1.2.0 — 2026-02-15
 - **Added** Inspect command for theme developers

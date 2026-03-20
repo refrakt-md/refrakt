@@ -18,6 +18,8 @@ export const marketing: RunePackage = {
       transform: hero,
       description: 'Full-width introductory section for landing pages with title, subtitle, and call-to-action',
       reinterprets: { heading: 'hero title', paragraph: 'subtitle/tagline', list: 'action buttons', image: 'hero image' },
+      category: 'Section',
+      snippet: ['{% hero align="${1|center,left,right|}" %}', '# ${2:Headline}', '', '${3:Subtitle or tagline}', '', '- [${4:Get Started}](${5:/docs/getting-started})', '{% /hero %}'],
       fixture: `{% hero align="center" %}
 # Build Beautiful Documentation
 From Markdown to pixel-perfect pages in minutes.
@@ -31,6 +33,8 @@ From Markdown to pixel-perfect pages in minutes.
       aliases: ['call-to-action'],
       description: 'Call-to-action section with headline, actions, and optional showcase',
       reinterprets: { heading: 'section headline', paragraph: 'blurb', list: 'action items', fence: 'command' },
+      category: 'Section',
+      snippet: ['{% cta %}', '## ${1:Ready to get started?}', '', '${2:Description text}', '', '- [${3:Start Now}](${4:/signup})', '{% /cta %}'],
       fixture: `{% cta %}
 # Your Headline
 
@@ -44,6 +48,8 @@ A compelling description of what you're offering.
       transform: bento,
       description: 'Magazine-style bento grid where heading levels determine cell size',
       reinterprets: { heading: 'cell title (level determines size)', paragraph: 'cell content', image: 'cell background' },
+      category: 'Layout',
+      snippet: ['{% bento columns=${1:3} %}', '# ${2:Large Cell}', '', '${3:Content}', '', '## ${4:Medium Cell}', '', '${5:Content}', '', '## ${6:Another Cell}', '', '${7:Content}', '{% /bento %}'],
       fixture: `{% bento %}
 # Main Feature
 The primary showcase area with plenty of room for a detailed description.
@@ -69,6 +75,8 @@ Another compact cell.
       transform: feature,
       description: 'Feature showcase with definition list of items',
       reinterprets: { heading: 'section headline', paragraph: 'description', list: 'feature definitions', image: 'feature icon' },
+      category: 'Section',
+      snippet: ['{% feature %}', '## ${1:Features}', '', '${2:Feature Name}', ': ${3:Feature description}', '', '${4:Another Feature}', ': ${5:Another description}', '{% /feature %}'],
       fixture: `{% feature %}
 # Why Refrakt
 
@@ -88,6 +96,8 @@ Runes reinterpret standard Markdown — same syntax, richer meaning.
       transform: steps,
       description: 'Sequential step-by-step instructions',
       reinterprets: { heading: 'step name', paragraph: 'step content' },
+      category: 'Content',
+      snippet: ['{% steps %}', '## ${1:First Step}', '', '${2:Instructions for step one.}', '', '## ${3:Second Step}', '', '${4:Instructions for step two.}', '{% /steps %}'],
       fixture: `{% steps %}
 # Install dependencies
 Run \`npm install @refrakt-md/cli\` to add the CLI to your project.
@@ -108,6 +118,8 @@ Run \`npm run dev\` to start the development server and see your content rendere
       description: 'Pricing table with tier comparison',
       seoType: 'Product',
       reinterprets: { heading: 'section headline', paragraph: 'section description' },
+      category: 'Section',
+      snippet: ['{% pricing %}', '## ${1:Free} \\u2014 \\$${2:0}', '', '- ${3:Feature one}', '- ${4:Feature two}', '', '## ${5:Pro} \\u2014 \\$${6:19}/mo', '', '- ${7:Everything in Free}', '- ${8:Pro feature}', '{% /pricing %}'],
       fixture: `{% pricing %}
 # Choose Your Plan
 Select the plan that best fits your needs.
@@ -144,6 +156,8 @@ Select the plan that best fits your needs.
       description: 'Customer testimonial or review with quote, author attribution, and optional rating',
       seoType: 'Review',
       reinterprets: { blockquote: 'testimonial quote', strong: 'author name', paragraph: 'author role', image: 'avatar' },
+      category: 'Section',
+      snippet: ['{% testimonial %}', '> ${1:Quote text goes here.}', '', '**${2:Author Name}**', '', '${3:Role or company}', '{% /testimonial %}'],
       fixture: `{% testimonial %}
 > Refrakt transformed how we write documentation. The rune system means our content authors write Markdown while our designers have full control over the output.
 
@@ -157,6 +171,8 @@ Select the plan that best fits your needs.
       aliases: ['versus', 'vs'],
       description: 'Product/feature comparison matrix where headings become columns and bold labels align rows across columns',
       reinterprets: { heading: 'column header', list: 'feature rows', strong: 'row alignment label', s: 'negative indicator', blockquote: 'callout badge' },
+      category: 'Section',
+      snippet: ['{% comparison layout="${1:table}" %}', '## ${2:Option A}', '', '- **${4:Feature}**: ${5:Value}', '', '## ${3:Option B}', '', '- **${4:Feature}**: ${6:Value}', '{% /comparison %}'],
       fixture: `{% comparison %}
 # React
 - **Learning Curve** — Moderate

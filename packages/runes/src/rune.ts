@@ -25,6 +25,13 @@ export interface RuneDescriptor {
 
   /** AI prompt extension — additional context appended to the rune description in AI prompts */
   prompt?: string;
+
+  /** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
+  category?: string;
+
+  /** VSCode snippet body lines (array of strings with VSCode placeholder syntax).
+   *  Also used by the block editor for rich rune insertion. */
+  snippet?: string[];
 }
 
 export class Rune {
@@ -36,6 +43,8 @@ export class Rune {
   readonly seoType: string | undefined;
   readonly type: Type | undefined;
   readonly prompt: string | undefined;
+  readonly category: string | undefined;
+  readonly snippet: string[] | undefined;
 
   constructor(descriptor: RuneDescriptor) {
     this.name = descriptor.name;
@@ -46,6 +55,8 @@ export class Rune {
     this.seoType = descriptor.seoType;
     this.type = descriptor.type;
     this.prompt = descriptor.prompt;
+    this.category = descriptor.category;
+    this.snippet = descriptor.snippet;
   }
 
   /** All names this rune can be referenced by (primary + aliases) */

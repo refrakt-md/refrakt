@@ -33,7 +33,508 @@
 		],
 		"description": "YAML frontmatter for blog posts"
 	},
-
+	"Nav": {
+		"prefix": "rune:nav",
+		"body": [
+			"{% nav %}",
+			"## ${1:Section}",
+			"",
+			"- ${2:page-slug}",
+			"- ${3:another-page}",
+			"{% /nav %}"
+		],
+		"description": "Navigation structure with page slug references and optional grouping"
+	},
+	"Region": {
+		"prefix": "rune:region",
+		"body": [
+			"{% region name=\"${1:header}\" %}",
+			"$0",
+			"{% /region %}"
+		],
+		"description": "Named content block within a layout definition"
+	},
+	"Layout": {
+		"prefix": "rune:layout",
+		"body": [
+			"{% layout %}",
+			"{% region name=\"${1:header}\" %}",
+			"$0",
+			"{% /region %}",
+			"{% /layout %}"
+		],
+		"description": "Layout definition containing named regions"
+	},
+	"Codegroup": {
+		"prefix": "rune:codegroup",
+		"body": [
+			"{% codegroup %}",
+			"```${1:js}",
+			"$0",
+			"```",
+			"",
+			"```${2:ts}",
+			"",
+			"```",
+			"{% /codegroup %}"
+		],
+		"description": "Tabbed code block with language tabs"
+	},
+	"Error": {
+		"prefix": "rune:error",
+		"body": [
+			"{% error %}",
+			"$0",
+			"{% /error %}"
+		],
+		"description": "Error reporting table"
+	},
+	"Grid": {
+		"prefix": [
+			"rune:grid",
+			"rune:columns"
+		],
+		"body": [
+			"{% grid columns=${1:2} %}",
+			"${2:First column content}",
+			"",
+			"---",
+			"",
+			"${3:Second column content}",
+			"{% /grid %}"
+		],
+		"description": "Grid layout container with configurable columns and rows"
+	},
+	"Hint": {
+		"prefix": [
+			"rune:hint",
+			"rune:callout",
+			"rune:alert"
+		],
+		"body": [
+			"{% hint type=\"${1|note,warning,caution,check|}\" %}",
+			"$0",
+			"{% /hint %}"
+		],
+		"description": "Callout/admonition block with type variants (note, warning, caution, check)"
+	},
+	"Tab": {
+		"prefix": "rune:tab",
+		"body": [
+			"{% tab name=\"${1:}\" %}",
+			"$0",
+			"{% /tab %}"
+		],
+		"description": "Individual tab within a tab group"
+	},
+	"Tabs": {
+		"prefix": "rune:tabs",
+		"body": [
+			"{% tabs %}",
+			"## ${1:Tab One}",
+			"",
+			"${2:Content for tab one.}",
+			"",
+			"## ${3:Tab Two}",
+			"",
+			"${4:Content for tab two.}",
+			"{% /tabs %}"
+		],
+		"description": "Tabbed interface with tab panels"
+	},
+	"Details": {
+		"prefix": "rune:details",
+		"body": [
+			"{% details summary=\"${1:Click to expand}\" %}",
+			"$0",
+			"{% /details %}"
+		],
+		"description": "Collapsible disclosure block for supplementary content"
+	},
+	"Figure": {
+		"prefix": "rune:figure",
+		"body": [
+			"{% figure size=\"${1|medium,small,large,full|}\" %}",
+			"![${2:Alt text}](${3:/path/to/image.png})",
+			"",
+			"${4:Caption text}",
+			"{% /figure %}"
+		],
+		"description": "Enhanced image with caption, attribution, and sizing"
+	},
+	"Gallery": {
+		"prefix": "rune:gallery",
+		"body": [
+			"{% gallery layout=\"${1|grid,carousel,masonry|}\" %}",
+			"![${2:Alt text}](${3:/path/to/image1.png})",
+			"",
+			"![${4:Alt text}](${5:/path/to/image2.png})",
+			"{% /gallery %}"
+		],
+		"description": "Multi-image container with grid, carousel, or masonry layout and optional lightbox"
+	},
+	"Accordion": {
+		"prefix": [
+			"rune:accordion",
+			"rune:faq"
+		],
+		"body": [
+			"{% accordion %}",
+			"## ${1:First Question}",
+			"",
+			"${2:Answer to the first question.}",
+			"",
+			"## ${3:Second Question}",
+			"",
+			"${4:Answer to the second question.}",
+			"{% /accordion %}"
+		],
+		"description": "Collapsible accordion sections where headings become toggleable headers"
+	},
+	"Accordion Item": {
+		"prefix": "rune:accordion-item",
+		"body": [
+			"{% accordion-item name=\"${1:}\" %}",
+			"$0",
+			"{% /accordion-item %}"
+		],
+		"description": "Individual accordion section"
+	},
+	"Toc": {
+		"prefix": [
+			"rune:toc",
+			"rune:table-of-contents"
+		],
+		"body": [
+			"{% toc /%}"
+		],
+		"description": "Auto-generated table of contents from document headings"
+	},
+	"Embed": {
+		"prefix": "rune:embed",
+		"body": [
+			"{% embed url=\"${1:https://}\" /%}"
+		],
+		"description": "Embedded content from external services (YouTube, Twitter, CodePen, Spotify)"
+	},
+	"Breadcrumb": {
+		"prefix": "rune:breadcrumb",
+		"body": [
+			"{% breadcrumb /%}"
+		],
+		"description": "Navigation breadcrumb trail showing page hierarchy"
+	},
+	"Budget": {
+		"prefix": "rune:budget",
+		"body": [
+			"{% budget %}",
+			"## ${1:Category}",
+			"",
+			"- ${2:Item description}: \\$${3:100}",
+			"- ${4:Another item}: \\$${5:200}",
+			"{% /budget %}"
+		],
+		"description": "Structured cost breakdown with categories, line items, and auto-calculated totals"
+	},
+	"Budget Category": {
+		"prefix": "rune:budget-category",
+		"body": [
+			"{% budget-category label=\"${1:}\" %}",
+			"$0",
+			"{% /budget-category %}"
+		],
+		"description": "Cost category within a budget containing line items"
+	},
+	"Budget Line Item": {
+		"prefix": "rune:budget-line-item",
+		"body": [
+			"{% budget-line-item %}",
+			"$0",
+			"{% /budget-line-item %}"
+		],
+		"description": "Individual budget line item with description and amount"
+	},
+	"Compare": {
+		"prefix": "rune:compare",
+		"body": [
+			"{% compare %}",
+			"```${1:js}",
+			"${2:// Before}",
+			"```",
+			"",
+			"```${3:js}",
+			"${4:// After}",
+			"```",
+			"{% /compare %}"
+		],
+		"description": "Side-by-side code comparison with labeled panels"
+	},
+	"Datatable": {
+		"prefix": [
+			"rune:datatable",
+			"rune:data-table"
+		],
+		"body": [
+			"{% datatable %}",
+			"| ${1:Column A} | ${2:Column B} | ${3:Column C} |",
+			"|---|---|---|",
+			"| ${4:Data} | ${5:Data} | ${6:Data} |",
+			"{% /datatable %}"
+		],
+		"description": "Interactive data table with sorting, filtering, and pagination from a Markdown table"
+	},
+	"Diff": {
+		"prefix": "rune:diff",
+		"body": [
+			"{% diff %}",
+			"```${1:js}",
+			"${2:// Before}",
+			"```",
+			"",
+			"```${3:js}",
+			"${4:// After}",
+			"```",
+			"{% /diff %}"
+		],
+		"description": "Side-by-side or unified diff view between two code blocks"
+	},
+	"Chart": {
+		"prefix": "rune:chart",
+		"body": [
+			"{% chart type=\"${1|bar,line,pie,area|}\" %}",
+			"| ${2:Label} | ${3:Series A} | ${4:Series B} |",
+			"|---|---|---|",
+			"| ${5:Item 1} | ${6:10} | ${7:20} |",
+			"| ${8:Item 2} | ${9:30} | ${10:15} |",
+			"{% /chart %}"
+		],
+		"description": "Chart visualization from a Markdown table. First column becomes axis labels, header row becomes series names."
+	},
+	"Diagram": {
+		"prefix": "rune:diagram",
+		"body": [
+			"{% diagram language=\"${1|mermaid,plantuml,ascii|}\" %}",
+			"```${1:mermaid}",
+			"$0",
+			"```",
+			"{% /diagram %}"
+		],
+		"description": "Diagram rendering from Mermaid, PlantUML, or ASCII art code blocks"
+	},
+	"Sidenote": {
+		"prefix": [
+			"rune:sidenote",
+			"rune:footnote",
+			"rune:marginnote"
+		],
+		"body": [
+			"{% sidenote %}",
+			"$0",
+			"{% /sidenote %}"
+		],
+		"description": "Margin note or footnote displayed alongside the main content"
+	},
+	"Conversation": {
+		"prefix": [
+			"rune:conversation",
+			"rune:dialogue",
+			"rune:chat"
+		],
+		"body": [
+			"{% conversation %}",
+			"> **${1:Alice}**: ${2:Hello!}",
+			"",
+			"> **${3:Bob}**: ${4:Hi there!}",
+			"{% /conversation %}"
+		],
+		"description": "Chat/dialogue display where blockquotes become alternating speaker messages"
+	},
+	"Conversation Message": {
+		"prefix": "rune:conversation-message",
+		"body": [
+			"{% conversation-message %}",
+			"$0",
+			"{% /conversation-message %}"
+		],
+		"description": "Individual message within a conversation"
+	},
+	"Reveal": {
+		"prefix": "rune:reveal",
+		"body": [
+			"{% reveal %}",
+			"## ${1:Step One}",
+			"",
+			"${2:Content revealed first.}",
+			"",
+			"## ${3:Step Two}",
+			"",
+			"${4:Content revealed next.}",
+			"{% /reveal %}"
+		],
+		"description": "Progressive disclosure where headings become reveal steps shown one at a time"
+	},
+	"Reveal Step": {
+		"prefix": "rune:reveal-step",
+		"body": [
+			"{% reveal-step name=\"${1:}\" %}",
+			"$0",
+			"{% /reveal-step %}"
+		],
+		"description": "Individual step within a reveal sequence"
+	},
+	"Juxtapose": {
+		"prefix": "rune:juxtapose",
+		"body": [
+			"{% juxtapose labels=\"${1:Before, After}\" %}",
+			"$2",
+			"",
+			"---",
+			"",
+			"$0",
+			"{% /juxtapose %}"
+		],
+		"description": "Side-by-side comparison with interactive reveal (slider, toggle, fade, or auto)"
+	},
+	"Annotate": {
+		"prefix": "rune:annotate",
+		"body": [
+			"{% annotate %}",
+			"${1:Main content here.}",
+			"",
+			"{% note %}",
+			"${2:Margin note content.}",
+			"{% /note %}",
+			"",
+			"${3:More main content.}",
+			"{% /annotate %}"
+		],
+		"description": "Content with margin annotations. Nested note tags appear as margin notes alongside the main text."
+	},
+	"Note": {
+		"prefix": "rune:note",
+		"body": [
+			"{% note %}",
+			"$0",
+			"{% /note %}"
+		],
+		"description": "Annotation note within an annotate block"
+	},
+	"Form": {
+		"prefix": [
+			"rune:form",
+			"rune:contact-form"
+		],
+		"body": [
+			"{% form action=\"${1:/api/contact}\" %}",
+			"- Name",
+			"- Email",
+			"- Message",
+			"",
+			"**${2:Submit}**",
+			"{% /form %}"
+		],
+		"description": "Accessible HTML form from Markdown. Lists become input fields with smart type inference, blockquotes followed by lists become select/radio/checkbox groups."
+	},
+	"Form Field": {
+		"prefix": "rune:form-field",
+		"body": [
+			"{% form-field %}",
+			"$0",
+			"{% /form-field %}"
+		],
+		"description": "Individual form field with inferred type"
+	},
+	"Sandbox": {
+		"prefix": "rune:sandbox",
+		"body": [
+			"{% sandbox framework=\"${1|,tailwind,bootstrap,bulma,pico|}\" %}",
+			"$0",
+			"{% /sandbox %}"
+		],
+		"description": "Isolated HTML/CSS/JS rendering in an iframe with optional framework loading"
+	},
+	"Pullquote": {
+		"prefix": [
+			"rune:pullquote",
+			"rune:pull-quote"
+		],
+		"body": [
+			"{% pullquote variant=\"${1|default,accent,editorial|}\" %}",
+			"> ${2:Quote text to emphasize.}",
+			"{% /pullquote %}"
+		],
+		"description": "Decorative pull quote for magazine-style emphasis with float and block modes"
+	},
+	"Textblock": {
+		"prefix": [
+			"rune:textblock",
+			"rune:text-block",
+			"rune:prose"
+		],
+		"body": [
+			"{% textblock dropcap %}",
+			"${1:Formatted text content with drop cap styling.}",
+			"{% /textblock %}"
+		],
+		"description": "Text formatting block with drop caps, multi-column layout, lead paragraphs, and alignment control"
+	},
+	"Mediatext": {
+		"prefix": [
+			"rune:mediatext",
+			"rune:media-text"
+		],
+		"body": [
+			"{% mediatext align=\"${1|left,right|}\" ratio=\"${2|1:1,1:2,2:1|}\" %}",
+			"![${3:Alt text}](${4:/path/to/image.png})",
+			"",
+			"${5:Text content displayed alongside the image.}",
+			"{% /mediatext %}"
+		],
+		"description": "Image and text side by side with configurable ratio and optional text wrapping"
+	},
+	"Icon": {
+		"prefix": "rune:icon",
+		"body": [
+			"{% icon name=\"${1:icon-name}\" /%}"
+		],
+		"description": "Inline icon resolved by name from the theme icon registry. Self-closing."
+	},
+	"Tint": {
+		"prefix": "rune:tint",
+		"body": [
+			"{% tint %}",
+			"- background: ${1:#1a1a2e}",
+			"- primary: ${2:#e94560}",
+			"- accent: ${3:#0f3460}",
+			"{% /tint %}"
+		],
+		"description": "Section-level colour override via CSS custom properties. Declared as first child of a block rune."
+	},
+	"Showcase": {
+		"prefix": "rune:showcase",
+		"body": [
+			"{% showcase shadow=\"${1|none,soft,hard,elevated|}\" %}",
+			"$0",
+			"{% /showcase %}"
+		],
+		"description": "Media presentation wrapper with shadow, bleed displacement, and aspect ratio enforcement"
+	},
+	"Bg": {
+		"prefix": "rune:bg",
+		"body": [
+			"{% bg src=\"${1:/path/to/image.jpg}\" overlay=\"${2:rgba(0,0,0,0.5)}\" /%}"
+		],
+		"description": "Background image/video directive — modifies parent section backdrop"
+	},
+	"Blog": {
+		"prefix": "rune:blog",
+		"body": [
+			"{% blog folder=\"${1:}\" %}",
+			"$0",
+			"{% /blog %}"
+		],
+		"description": "Blog post listing with filtering, sorting, and multiple layouts. Displays pages from a content folder as a navigable blog index."
+	},
 	"Hero": {
 		"prefix": "rune:hero",
 		"body": [
@@ -45,10 +546,13 @@
 			"- [${4:Get Started}](${5:/docs/getting-started})",
 			"{% /hero %}"
 		],
-		"description": "Full-width hero section with headline, subtitle, and CTA links"
+		"description": "Full-width introductory section for landing pages with title, subtitle, and call-to-action"
 	},
-	"Call to Action": {
-		"prefix": ["rune:cta", "rune:call-to-action"],
+	"Cta": {
+		"prefix": [
+			"rune:cta",
+			"rune:call-to-action"
+		],
 		"body": [
 			"{% cta %}",
 			"## ${1:Ready to get started?}",
@@ -58,7 +562,35 @@
 			"- [${3:Start Now}](${4:/signup})",
 			"{% /cta %}"
 		],
-		"description": "Call-to-action section with headline and action links"
+		"description": "Call-to-action section with headline, actions, and optional showcase"
+	},
+	"Bento": {
+		"prefix": "rune:bento",
+		"body": [
+			"{% bento columns=${1:3} %}",
+			"# ${2:Large Cell}",
+			"",
+			"${3:Content}",
+			"",
+			"## ${4:Medium Cell}",
+			"",
+			"${5:Content}",
+			"",
+			"## ${6:Another Cell}",
+			"",
+			"${7:Content}",
+			"{% /bento %}"
+		],
+		"description": "Magazine-style bento grid where heading levels determine cell size"
+	},
+	"Bento Cell": {
+		"prefix": "rune:bento-cell",
+		"body": [
+			"{% bento-cell %}",
+			"$0",
+			"{% /bento-cell %}"
+		],
+		"description": "Individual cell within a bento grid"
 	},
 	"Feature": {
 		"prefix": "rune:feature",
@@ -73,7 +605,40 @@
 			": ${5:Another description}",
 			"{% /feature %}"
 		],
-		"description": "Feature showcase with definition list items"
+		"description": "Feature showcase with definition list of items"
+	},
+	"Definition": {
+		"prefix": "rune:definition",
+		"body": [
+			"{% definition %}",
+			"$0",
+			"{% /definition %}"
+		],
+		"description": "Individual feature definition with icon, name, and description"
+	},
+	"Steps": {
+		"prefix": "rune:steps",
+		"body": [
+			"{% steps %}",
+			"## ${1:First Step}",
+			"",
+			"${2:Instructions for step one.}",
+			"",
+			"## ${3:Second Step}",
+			"",
+			"${4:Instructions for step two.}",
+			"{% /steps %}"
+		],
+		"description": "Sequential step-by-step instructions"
+	},
+	"Step": {
+		"prefix": "rune:step",
+		"body": [
+			"{% step %}",
+			"$0",
+			"{% /step %}"
+		],
+		"description": "Individual step within a steps sequence"
 	},
 	"Pricing": {
 		"prefix": "rune:pricing",
@@ -95,15 +660,34 @@
 	"Tier": {
 		"prefix": "rune:tier",
 		"body": [
-			"{% tier name=\"${1:Pro}\" price=\"${2:\\$19/mo}\" %}",
-			"- ${3:Feature one}",
-			"- ${4:Feature two}",
+			"{% tier %}",
+			"$0",
 			"{% /tier %}"
 		],
-		"description": "Individual pricing tier (inside pricing rune)"
+		"description": "Individual pricing tier with name, price, and features"
+	},
+	"Testimonial": {
+		"prefix": [
+			"rune:testimonial",
+			"rune:review"
+		],
+		"body": [
+			"{% testimonial %}",
+			"> ${1:Quote text goes here.}",
+			"",
+			"**${2:Author Name}**",
+			"",
+			"${3:Role or company}",
+			"{% /testimonial %}"
+		],
+		"description": "Customer testimonial or review with quote, author attribution, and optional rating"
 	},
 	"Comparison": {
-		"prefix": ["rune:comparison", "rune:versus", "rune:vs"],
+		"prefix": [
+			"rune:comparison",
+			"rune:versus",
+			"rune:vs"
+		],
 		"body": [
 			"{% comparison layout=\"${1:table}\" %}",
 			"## ${2:Option A}",
@@ -115,200 +699,31 @@
 			"- **${4:Feature}**: ${6:Value}",
 			"{% /comparison %}"
 		],
-		"description": "Product/feature comparison matrix"
+		"description": "Product/feature comparison matrix where headings become columns and bold labels align rows across columns"
 	},
-	"Testimonial": {
-		"prefix": ["rune:testimonial", "rune:review"],
+	"Comparison Column": {
+		"prefix": "rune:comparison-column",
 		"body": [
-			"{% testimonial %}",
-			"> ${1:Quote text goes here.}",
-			"",
-			"**${2:Author Name}**",
-			"",
-			"${3:Role or company}",
-			"{% /testimonial %}"
-		],
-		"description": "Customer testimonial with quote and attribution"
-	},
-
-	"Hint": {
-		"prefix": ["rune:hint", "rune:callout", "rune:alert"],
-		"body": [
-			"{% hint type=\"${1|note,warning,caution,check|}\" %}",
+			"{% comparison-column %}",
 			"$0",
-			"{% /hint %}"
+			"{% /comparison-column %}"
 		],
-		"description": "Callout/admonition block (note, warning, caution, check)"
+		"description": "Individual column within a comparison matrix"
 	},
-	"Steps": {
-		"prefix": "rune:steps",
+	"Comparison Row": {
+		"prefix": "rune:comparison-row",
 		"body": [
-			"{% steps %}",
-			"## ${1:First Step}",
-			"",
-			"${2:Instructions for step one.}",
-			"",
-			"## ${3:Second Step}",
-			"",
-			"${4:Instructions for step two.}",
-			"{% /steps %}"
-		],
-		"description": "Sequential step-by-step instructions"
-	},
-	"Figure": {
-		"prefix": "rune:figure",
-		"body": [
-			"{% figure size=\"${1|medium,small,large,full|}\" %}",
-			"![${2:Alt text}](${3:/path/to/image.png})",
-			"",
-			"${4:Caption text}",
-			"{% /figure %}"
-		],
-		"description": "Enhanced image with caption and sizing"
-	},
-	"Sidenote": {
-		"prefix": ["rune:sidenote", "rune:footnote", "rune:marginnote"],
-		"body": [
-			"{% sidenote %}",
+			"{% comparison-row %}",
 			"$0",
-			"{% /sidenote %}"
+			"{% /comparison-row %}"
 		],
-		"description": "Margin note displayed alongside main content"
+		"description": "Individual row/cell within a comparison column"
 	},
-	"Form": {
-		"prefix": ["rune:form", "rune:contact-form"],
-		"body": [
-			"{% form action=\"${1:/api/contact}\" %}",
-			"- Name",
-			"- Email",
-			"- Message",
-			"",
-			"**${2:Submit}**",
-			"{% /form %}"
+	"Api": {
+		"prefix": [
+			"rune:api",
+			"rune:endpoint"
 		],
-		"description": "Accessible HTML form from Markdown"
-	},
-	"Details": {
-		"prefix": "rune:details",
-		"body": [
-			"{% details summary=\"${1:Click to expand}\" %}",
-			"$0",
-			"{% /details %}"
-		],
-		"description": "Collapsible disclosure block"
-	},
-
-	"Grid": {
-		"prefix": ["rune:grid", "rune:columns"],
-		"body": [
-			"{% grid columns=${1:2} %}",
-			"${2:First column content}",
-			"",
-			"---",
-			"",
-			"${3:Second column content}",
-			"{% /grid %}"
-		],
-		"description": "Grid layout with configurable columns"
-	},
-	"Tabs": {
-		"prefix": "rune:tabs",
-		"body": [
-			"{% tabs %}",
-			"## ${1:Tab One}",
-			"",
-			"${2:Content for tab one.}",
-			"",
-			"## ${3:Tab Two}",
-			"",
-			"${4:Content for tab two.}",
-			"{% /tabs %}"
-		],
-		"description": "Tabbed interface with heading-based tabs"
-	},
-	"Accordion": {
-		"prefix": ["rune:accordion", "rune:faq"],
-		"body": [
-			"{% accordion %}",
-			"## ${1:First Question}",
-			"",
-			"${2:Answer to the first question.}",
-			"",
-			"## ${3:Second Question}",
-			"",
-			"${4:Answer to the second question.}",
-			"{% /accordion %}"
-		],
-		"description": "Collapsible accordion sections"
-	},
-	"Layout": {
-		"prefix": "rune:layout",
-		"body": [
-			"{% layout %}",
-			"{% region name=\"${1:header}\" %}",
-			"$0",
-			"{% /region %}",
-			"{% /layout %}"
-		],
-		"description": "Layout definition with named regions"
-	},
-	"Region": {
-		"prefix": "rune:region",
-		"body": [
-			"{% region name=\"${1:header}\" %}",
-			"$0",
-			"{% /region %}"
-		],
-		"description": "Named content region within a layout"
-	},
-
-	"Code Group": {
-		"prefix": "rune:codegroup",
-		"body": [
-			"{% codegroup %}",
-			"```${1:js}",
-			"$0",
-			"```",
-			"",
-			"```${2:ts}",
-			"",
-			"```",
-			"{% /codegroup %}"
-		],
-		"description": "Tabbed code blocks with language tabs"
-	},
-	"Compare": {
-		"prefix": "rune:compare",
-		"body": [
-			"{% compare %}",
-			"```${1:js}",
-			"${2:// Before}",
-			"```",
-			"",
-			"```${3:js}",
-			"${4:// After}",
-			"```",
-			"{% /compare %}"
-		],
-		"description": "Side-by-side code comparison"
-	},
-	"Diff": {
-		"prefix": "rune:diff",
-		"body": [
-			"{% diff %}",
-			"```${1:js}",
-			"${2:// Before}",
-			"```",
-			"",
-			"```${3:js}",
-			"${4:// After}",
-			"```",
-			"{% /diff %}"
-		],
-		"description": "Side-by-side or unified diff view"
-	},
-	"API Endpoint": {
-		"prefix": ["rune:api", "rune:endpoint"],
 		"body": [
 			"{% api method=\"${1|GET,POST,PUT,DELETE,PATCH|}\" path=\"${2:/api/resource}\" %}",
 			"## ${3:Description}",
@@ -324,295 +739,7 @@
 			"```",
 			"{% /api %}"
 		],
-		"description": "API endpoint documentation with parameters and examples"
-	},
-	"Data Table": {
-		"prefix": ["rune:datatable", "rune:data-table"],
-		"body": [
-			"{% datatable %}",
-			"| ${1:Column A} | ${2:Column B} | ${3:Column C} |",
-			"|---|---|---|",
-			"| ${4:Data} | ${5:Data} | ${6:Data} |",
-			"{% /datatable %}"
-		],
-		"description": "Interactive data table with sorting and filtering"
-	},
-	"Chart": {
-		"prefix": "rune:chart",
-		"body": [
-			"{% chart type=\"${1|bar,line,pie,area|}\" %}",
-			"| ${2:Label} | ${3:Series A} | ${4:Series B} |",
-			"|---|---|---|",
-			"| ${5:Item 1} | ${6:10} | ${7:20} |",
-			"| ${8:Item 2} | ${9:30} | ${10:15} |",
-			"{% /chart %}"
-		],
-		"description": "Chart visualization from Markdown table data"
-	},
-	"Diagram": {
-		"prefix": "rune:diagram",
-		"body": [
-			"{% diagram language=\"${1|mermaid,plantuml,ascii|}\" %}",
-			"```${1:mermaid}",
-			"$0",
-			"```",
-			"{% /diagram %}"
-		],
-		"description": "Diagram from Mermaid, PlantUML, or ASCII art"
-	},
-
-	"Recipe": {
-		"prefix": "rune:recipe",
-		"body": [
-			"{% recipe prepTime=\"${1:15m}\" cookTime=\"${2:30m}\" servings=${3:4} difficulty=\"${4|easy,medium,hard|}\" %}",
-			"# ${5:Recipe Name}",
-			"",
-			"- ${6:Ingredient one}",
-			"- ${7:Ingredient two}",
-			"",
-			"1. ${8:Step one}",
-			"2. ${9:Step two}",
-			"{% /recipe %}"
-		],
-		"description": "Recipe with ingredients, steps, and metadata"
-	},
-	"How-To": {
-		"prefix": ["rune:howto", "rune:how-to"],
-		"body": [
-			"{% howto difficulty=\"${1|easy,medium,hard|}\" %}",
-			"# ${2:How to Do Something}",
-			"",
-			"- ${3:Tool or material needed}",
-			"",
-			"1. ${4:First step}",
-			"2. ${5:Second step}",
-			"{% /howto %}"
-		],
-		"description": "Step-by-step how-to guide with tools and instructions"
-	},
-	"Event": {
-		"prefix": "rune:event",
-		"body": [
-			"{% event date=\"${1:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}\" location=\"${2:Location}\" %}",
-			"# ${3:Event Name}",
-			"",
-			"${4:Event description}",
-			"{% /event %}"
-		],
-		"description": "Event information with date and location"
-	},
-	"Cast": {
-		"prefix": ["rune:cast", "rune:team"],
-		"body": [
-			"{% cast %}",
-			"- ${1:Name} - ${2:Role}",
-			"- ${3:Name} - ${4:Role}",
-			"{% /cast %}"
-		],
-		"description": "People directory for teams, cast lists, or speakers"
-	},
-	"Organization": {
-		"prefix": ["rune:organization", "rune:business"],
-		"body": [
-			"{% organization %}",
-			"# ${1:Organization Name}",
-			"",
-			"${2:Description}",
-			"{% /organization %}"
-		],
-		"description": "Structured business/organization information"
-	},
-	"Timeline": {
-		"prefix": "rune:timeline",
-		"body": [
-			"{% timeline %}",
-			"## ${1:2024} \\u2014 ${2:Milestone One}",
-			"",
-			"${3:Description of this milestone.}",
-			"",
-			"## ${4:2025} \\u2014 ${5:Milestone Two}",
-			"",
-			"${6:Description of this milestone.}",
-			"{% /timeline %}"
-		],
-		"description": "Chronological timeline with dated milestones"
-	},
-	"Changelog": {
-		"prefix": "rune:changelog",
-		"body": [
-			"{% changelog %}",
-			"## ${1:1.0.0} \\u2014 ${2:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}",
-			"",
-			"- **Added**: ${3:New feature}",
-			"- **Fixed**: ${4:Bug fix}",
-			"{% /changelog %}"
-		],
-		"description": "Version history with categorized changes"
-	},
-
-	"Conversation": {
-		"prefix": ["rune:conversation", "rune:dialogue", "rune:chat"],
-		"body": [
-			"{% conversation %}",
-			"> **${1:Alice}**: ${2:Hello!}",
-			"",
-			"> **${3:Bob}**: ${4:Hi there!}",
-			"{% /conversation %}"
-		],
-		"description": "Chat/dialogue display with alternating speakers"
-	},
-	"Reveal": {
-		"prefix": "rune:reveal",
-		"body": [
-			"{% reveal %}",
-			"## ${1:Step One}",
-			"",
-			"${2:Content revealed first.}",
-			"",
-			"## ${3:Step Two}",
-			"",
-			"${4:Content revealed next.}",
-			"{% /reveal %}"
-		],
-		"description": "Progressive disclosure shown one step at a time"
-	},
-	"Bento": {
-		"prefix": "rune:bento",
-		"body": [
-			"{% bento columns=${1:3} %}",
-			"# ${2:Large Cell}",
-			"",
-			"${3:Content}",
-			"",
-			"## ${4:Medium Cell}",
-			"",
-			"${5:Content}",
-			"",
-			"## ${6:Another Cell}",
-			"",
-			"${7:Content}",
-			"{% /bento %}"
-		],
-		"description": "Magazine-style bento grid layout"
-	},
-	"Storyboard": {
-		"prefix": ["rune:storyboard", "rune:comic"],
-		"body": [
-			"{% storyboard %}",
-			"![${1:Panel 1}](${2:/path/to/image1.png})",
-			"",
-			"${3:Caption for panel 1}",
-			"",
-			"![${4:Panel 2}](${5:/path/to/image2.png})",
-			"",
-			"${6:Caption for panel 2}",
-			"{% /storyboard %}"
-		],
-		"description": "Comic/storyboard layout with image panels and captions"
-	},
-	"Annotate": {
-		"prefix": "rune:annotate",
-		"body": [
-			"{% annotate %}",
-			"${1:Main content here.}",
-			"",
-			"{% note %}",
-			"${2:Margin note content.}",
-			"{% /note %}",
-			"",
-			"${3:More main content.}",
-			"{% /annotate %}"
-		],
-		"description": "Content with margin annotations"
-	},
-
-	"Nav": {
-		"prefix": "rune:nav",
-		"body": [
-			"{% nav %}",
-			"## ${1:Section}",
-			"",
-			"- ${2:page-slug}",
-			"- ${3:another-page}",
-			"{% /nav %}"
-		],
-		"description": "Navigation structure with page slug references"
-	},
-	"Table of Contents": {
-		"prefix": ["rune:toc", "rune:table-of-contents"],
-		"body": [
-			"{% toc /%}"
-		],
-		"description": "Auto-generated table of contents from document headings"
-	},
-	"Breadcrumb": {
-		"prefix": "rune:breadcrumb",
-		"body": [
-			"{% breadcrumb /%}"
-		],
-		"description": "Navigation breadcrumb trail"
-	},
-	"Embed": {
-		"prefix": "rune:embed",
-		"body": [
-			"{% embed url=\"${1:https://}\" /%}"
-		],
-		"description": "Embedded content from external services"
-	},
-	"Playlist": {
-		"prefix": "rune:playlist",
-		"body": [
-			"{% playlist type=\"${1|album,podcast,audiobook,series,mix|}\" artist=\"${2:Artist}\" %}",
-			"# ${3:Playlist Name}",
-			"",
-			"- **${4:Track One}** (${5:3:45})",
-			"- **${6:Track Two}** (${7:4:20})",
-			"{% /playlist %}"
-		],
-		"description": "Curated playlist with track listing"
-	},
-	"Track": {
-		"prefix": "rune:track",
-		"body": [
-			"{% track src=\"${1:audio.mp3}\" artist=\"${2:Artist}\" duration=\"${3:3:45}\" %}",
-			"# ${4:Track Name}",
-			"{% /track %}"
-		],
-		"description": "Standalone track with metadata"
-	},
-	"Audio": {
-		"prefix": "rune:audio",
-		"body": [
-			"{% audio src=\"${1:audio.mp3}\" title=\"${2:Title}\" /%}"
-		],
-		"description": "Audio player with optional waveform and chapters"
-	},
-	"Preview": {
-		"prefix": "rune:preview",
-		"body": [
-			"{% preview source=true %}",
-			"$0",
-			"{% /preview %}"
-		],
-		"description": "Component showcase with theme toggle, responsive viewports, and source view"
-	},
-	"Preview Responsive": {
-		"prefix": "rune:preview:responsive",
-		"body": [
-			"{% preview source=true responsive=\"mobile,tablet,desktop\" %}",
-			"$0",
-			"{% /preview %}"
-		],
-		"description": "Component showcase with responsive viewport presets"
-	},
-	"Sandbox": {
-		"prefix": "rune:sandbox",
-		"body": [
-			"{% sandbox framework=\"${1|,tailwind,bootstrap,bulma,pico|}\" %}",
-			"$0",
-			"{% /sandbox %}"
-		],
-		"description": "Isolated HTML/CSS/JS sandbox with iframe rendering and optional framework loading"
+		"description": "API endpoint documentation with method, path, parameters, and request/response examples"
 	},
 	"Symbol": {
 		"prefix": "rune:symbol",
@@ -631,43 +758,328 @@
 			"",
 			"{% /symbol %}"
 		],
-		"description": "Code construct documentation (function, class, interface, enum, type)"
+		"description": "Code construct documentation for functions, classes, interfaces, enums, and type aliases"
 	},
-	"Symbol Class": {
-		"prefix": "rune:symbol:class",
+	"Symbol Group": {
+		"prefix": "rune:symbol-group",
 		"body": [
-			"{% symbol kind=\"${1|class,interface,module|}\" lang=\"${2|typescript,javascript,python,rust,go|}\" %}",
-			"",
-			"## ${3:ClassName}",
-			"",
-			"${4:Description.}",
-			"",
-			"```${2}",
-			"${5:declaration}",
-			"```",
-			"",
-			"### ${6:Methods}",
-			"",
+			"{% symbol-group %}",
 			"$0",
-			"",
-			"{% /symbol %}"
+			"{% /symbol-group %}"
 		],
-		"description": "Class/interface documentation with member groups"
+		"description": "Member group within a class/interface symbol"
 	},
-
+	"Symbol Member": {
+		"prefix": "rune:symbol-member",
+		"body": [
+			"{% symbol-member %}",
+			"$0",
+			"{% /symbol-member %}"
+		],
+		"description": "Individual member within a symbol group"
+	},
+	"Changelog": {
+		"prefix": "rune:changelog",
+		"body": [
+			"{% changelog %}",
+			"## ${1:1.0.0} \\u2014 ${2:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}",
+			"",
+			"- **Added**: ${3:New feature}",
+			"- **Fixed**: ${4:Bug fix}",
+			"{% /changelog %}"
+		],
+		"description": "Version history where headings become releases with categorized changes"
+	},
+	"Changelog Release": {
+		"prefix": "rune:changelog-release",
+		"body": [
+			"{% changelog-release %}",
+			"$0",
+			"{% /changelog-release %}"
+		],
+		"description": "Individual changelog release with version and date"
+	},
+	"Character": {
+		"prefix": [
+			"rune:character",
+			"rune:npc",
+			"rune:pc"
+		],
+		"body": [
+			"{% character name=\"${1:Name}\" role=\"${2|protagonist,antagonist,supporting,minor|}\" status=\"${3|alive,dead,unknown,missing|}\" %}",
+			"## Backstory",
+			"",
+			"${4:Character background.}",
+			"",
+			"## Abilities",
+			"",
+			"- ${5:Ability one}",
+			"{% /character %}"
+		],
+		"description": "Character profile with portrait, role, status, and sectioned details. Headings become sections."
+	},
+	"Character Section": {
+		"prefix": "rune:character-section",
+		"body": [
+			"{% character-section %}",
+			"$0",
+			"{% /character-section %}"
+		],
+		"description": "Individual section within a character profile"
+	},
+	"Realm": {
+		"prefix": [
+			"rune:realm",
+			"rune:location",
+			"rune:place"
+		],
+		"body": [
+			"{% realm name=\"${1:Name}\" type=\"${2:sanctuary}\" %}",
+			"${3:Description of the location.}",
+			"{% /realm %}"
+		],
+		"description": "Location or realm description with scene image, scale, and sectioned details. Headings become sections."
+	},
+	"Realm Section": {
+		"prefix": "rune:realm-section",
+		"body": [
+			"{% realm-section %}",
+			"$0",
+			"{% /realm-section %}"
+		],
+		"description": "Individual section within a realm description"
+	},
+	"Faction": {
+		"prefix": [
+			"rune:faction",
+			"rune:guild",
+			"rune:order"
+		],
+		"body": [
+			"{% faction name=\"${1:Name}\" type=\"${2:guild}\" %}",
+			"${3:Faction description.}",
+			"{% /faction %}"
+		],
+		"description": "Faction or organization within a story world with alignment, size, and sectioned details."
+	},
+	"Faction Section": {
+		"prefix": "rune:faction-section",
+		"body": [
+			"{% faction-section %}",
+			"$0",
+			"{% /faction-section %}"
+		],
+		"description": "Individual section within a faction description"
+	},
+	"Lore": {
+		"prefix": [
+			"rune:lore",
+			"rune:legend",
+			"rune:myth"
+		],
+		"body": [
+			"{% lore title=\"${1:Title}\" category=\"${2:history}\" %}",
+			"${3:Lore content.}",
+			"{% /lore %}"
+		],
+		"description": "Lore entry for world-building details, legends, or historical records. Supports spoiler mode."
+	},
+	"Plot": {
+		"prefix": [
+			"rune:plot",
+			"rune:storyline",
+			"rune:arc"
+		],
+		"body": [
+			"{% plot title=\"${1:Arc Title}\" %}",
+			"${2:Plot summary.}",
+			"",
+			"- [ ] **${3:Beat One}** \\u2014 ${4:Description}",
+			"- [ ] **${5:Beat Two}** \\u2014 ${6:Description}",
+			"{% /plot %}"
+		],
+		"description": "Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints."
+	},
+	"Beat": {
+		"prefix": "rune:beat",
+		"body": [
+			"{% beat %}",
+			"$0",
+			"{% /beat %}"
+		],
+		"description": "Individual plot beat within a plot arc"
+	},
+	"Bond": {
+		"prefix": [
+			"rune:bond",
+			"rune:relationship"
+		],
+		"body": [
+			"{% bond from=\"${1:Entity A}\" to=\"${2:Entity B}\" type=\"${3:alliance}\" %}",
+			"${4:Relationship description.}",
+			"{% /bond %}"
+		],
+		"description": "Relationship between two named entities with type, status, and directional indicator."
+	},
+	"Storyboard": {
+		"prefix": [
+			"rune:storyboard",
+			"rune:comic"
+		],
+		"body": [
+			"{% storyboard %}",
+			"![${1:Panel 1}](${2:/path/to/image1.png})",
+			"",
+			"${3:Caption for panel 1}",
+			"",
+			"![${4:Panel 2}](${5:/path/to/image2.png})",
+			"",
+			"${6:Caption for panel 2}",
+			"{% /storyboard %}"
+		],
+		"description": "Comic/storyboard layout where images become panels and paragraphs become captions"
+	},
+	"Storyboard Panel": {
+		"prefix": "rune:storyboard-panel",
+		"body": [
+			"{% storyboard-panel %}",
+			"$0",
+			"{% /storyboard-panel %}"
+		],
+		"description": "Individual panel within a storyboard"
+	},
+	"Event": {
+		"prefix": "rune:event",
+		"body": [
+			"{% event date=\"${1:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}\" location=\"${2:Location}\" %}",
+			"# ${3:Event Name}",
+			"",
+			"${4:Event description}",
+			"{% /event %}"
+		],
+		"description": "Event information with date, location, and agenda"
+	},
+	"Map": {
+		"prefix": "rune:map",
+		"body": [
+			"{% map zoom=${1:13} %}",
+			"## ${2:Landmarks}",
+			"",
+			"- **${3:Place Name}** \\u2014 *${4:Description}* \\u2014 ${5:48.8566}, ${6:2.3522}",
+			"{% /map %}"
+		],
+		"description": "Interactive map visualization from Markdown lists of locations with pins, routes, and grouped layers"
+	},
+	"Map Pin": {
+		"prefix": "rune:map-pin",
+		"body": [
+			"{% map-pin %}",
+			"$0",
+			"{% /map-pin %}"
+		],
+		"description": "Individual map pin with location data"
+	},
+	"Itinerary": {
+		"prefix": [
+			"rune:itinerary",
+			"rune:trip",
+			"rune:travel-plan"
+		],
+		"body": [
+			"{% itinerary %}",
+			"## Day 1 \\u2014 ${1:Arrival}",
+			"",
+			"### ${2:9:00 AM} \\u2014 ${3:Location}",
+			"",
+			"${4:Activity description.}",
+			"{% /itinerary %}"
+		],
+		"description": "Travel itinerary with day groupings and timed stops. Headings become stops with \"time — location\" parsing; h2 headings create day groups."
+	},
+	"Itinerary Day": {
+		"prefix": "rune:itinerary-day",
+		"body": [
+			"{% itinerary-day %}",
+			"$0",
+			"{% /itinerary-day %}"
+		],
+		"description": "Day grouping within an itinerary"
+	},
+	"Itinerary Stop": {
+		"prefix": "rune:itinerary-stop",
+		"body": [
+			"{% itinerary-stop %}",
+			"$0",
+			"{% /itinerary-stop %}"
+		],
+		"description": "Individual stop within an itinerary with time, location, and optional duration/activity"
+	},
+	"Cast": {
+		"prefix": [
+			"rune:cast",
+			"rune:team"
+		],
+		"body": [
+			"{% cast %}",
+			"- ${1:Name} - ${2:Role}",
+			"- ${3:Name} - ${4:Role}",
+			"{% /cast %}"
+		],
+		"description": "People directory for team pages, cast lists, or speaker lineups. List items with \"Name - Role\" pattern become entries."
+	},
+	"Cast Member": {
+		"prefix": "rune:cast-member",
+		"body": [
+			"{% cast-member %}",
+			"$0",
+			"{% /cast-member %}"
+		],
+		"description": "Individual cast/team member with name and role"
+	},
+	"Organization": {
+		"prefix": [
+			"rune:organization",
+			"rune:business"
+		],
+		"body": [
+			"{% organization %}",
+			"# ${1:Organization Name}",
+			"",
+			"${2:Description}",
+			"{% /organization %}"
+		],
+		"description": "Structured business/organization information with contact details, hours, and location"
+	},
+	"Timeline": {
+		"prefix": "rune:timeline",
+		"body": [
+			"{% timeline %}",
+			"## ${1:2024} \\u2014 ${2:Milestone One}",
+			"",
+			"${3:Description of this milestone.}",
+			"",
+			"## ${4:2025} \\u2014 ${5:Milestone Two}",
+			"",
+			"${6:Description of this milestone.}",
+			"{% /timeline %}"
+		],
+		"description": "Chronological event display where headings become dated milestones"
+	},
+	"Timeline Entry": {
+		"prefix": "rune:timeline-entry",
+		"body": [
+			"{% timeline-entry %}",
+			"$0",
+			"{% /timeline-entry %}"
+		],
+		"description": "Individual timeline entry with date and label"
+	},
 	"Swatch": {
 		"prefix": "rune:swatch",
 		"body": [
 			"{% swatch color=\"${1:#2563EB}\" label=\"${2:Blue}\" /%}"
 		],
-		"description": "Inline color chip with label"
-	},
-	"Swatch with Value": {
-		"prefix": "rune:swatch:value",
-		"body": [
-			"{% swatch color=\"${1:#2563EB}\" label=\"${2:Blue}\" showValue=true /%}"
-		],
-		"description": "Inline color chip with label and hex value"
+		"description": "Inline color chip with colored dot and label for referencing colors in prose"
 	},
 	"Palette": {
 		"prefix": "rune:palette",
@@ -678,21 +1090,7 @@
 			"- ${6:Purple}: ${7:#7C3AED}",
 			"{% /palette %}"
 		],
-		"description": "Color swatch grid"
-	},
-	"Palette Grouped": {
-		"prefix": "rune:palette:grouped",
-		"body": [
-			"{% palette title=\"${1:Design System}\" showContrast=\"true\" showA11y=\"true\" %}",
-			"## ${2:Primary}",
-			"- ${3:Blue}: ${4:#2563EB}",
-			"- ${5:Indigo}: ${6:#4F46E5}",
-			"",
-			"## ${7:Neutral}",
-			"- Gray: #F9FAFB, #F3F4F6, #E5E7EB, #D1D5DB, #9CA3AF, #6B7280, #4B5563, #374151, #1F2937, #111827",
-			"{% /palette %}"
-		],
-		"description": "Grouped color palette with contrast info and neutral scale"
+		"description": "Visual color palette displaying swatches with names, values, and optional WCAG contrast/accessibility info"
 	},
 	"Typography": {
 		"prefix": "rune:typography",
@@ -703,7 +1101,7 @@
 			"- mono: ${6:JetBrains Mono} (${7:400, 500})",
 			"{% /typography %}"
 		],
-		"description": "Font specimen display with Google Fonts loading"
+		"description": "Font specimen display showing typefaces at multiple sizes and weights with sample text"
 	},
 	"Spacing": {
 		"prefix": "rune:spacing",
@@ -725,95 +1123,17 @@
 			"- lg: 0 10px 15px rgba(0,0,0,0.1)",
 			"{% /spacing %}"
 		],
-		"description": "Spacing scale, border radius, and shadow token display"
+		"description": "Visual display of spacing scale, border radii, and shadow tokens as proportional shapes"
 	},
-	"Gallery": {
-		"prefix": "rune:gallery",
+	"Preview": {
+		"prefix": "rune:preview",
 		"body": [
-			"{% gallery layout=\"${1|grid,carousel,masonry|}\" %}",
-			"![${2:Alt text}](${3:/path/to/image1.png})",
-			"",
-			"![${4:Alt text}](${5:/path/to/image2.png})",
-			"{% /gallery %}"
-		],
-		"description": "Multi-image container with grid, carousel, or masonry layout"
-	},
-	"Pull Quote": {
-		"prefix": ["rune:pullquote", "rune:pull-quote"],
-		"body": [
-			"{% pullquote variant=\"${1|default,accent,editorial|}\" %}",
-			"> ${2:Quote text to emphasize.}",
-			"{% /pullquote %}"
-		],
-		"description": "Decorative pull quote for magazine-style emphasis"
-	},
-	"Text Block": {
-		"prefix": ["rune:textblock", "rune:text-block", "rune:prose"],
-		"body": [
-			"{% textblock dropcap %}",
-			"${1:Formatted text content with drop cap styling.}",
-			"{% /textblock %}"
-		],
-		"description": "Text formatting block with drop caps, columns, and alignment"
-	},
-	"Media Text": {
-		"prefix": ["rune:mediatext", "rune:media-text"],
-		"body": [
-			"{% mediatext align=\"${1|left,right|}\" ratio=\"${2|1:1,1:2,2:1|}\" %}",
-			"![${3:Alt text}](${4:/path/to/image.png})",
-			"",
-			"${5:Text content displayed alongside the image.}",
-			"{% /mediatext %}"
-		],
-		"description": "Image and text side by side with configurable ratio"
-	},
-	"Icon": {
-		"prefix": "rune:icon",
-		"body": [
-			"{% icon name=\"${1:icon-name}\" /%}"
-		],
-		"description": "Inline icon resolved from the theme icon registry"
-	},
-	"Tint": {
-		"prefix": "rune:tint",
-		"body": [
-			"{% tint %}",
-			"- background: ${1:#1a1a2e}",
-			"- primary: ${2:#e94560}",
-			"- accent: ${3:#0f3460}",
-			"{% /tint %}"
-		],
-		"description": "Section-level colour override via CSS custom properties"
-	},
-	"Background": {
-		"prefix": "rune:bg",
-		"body": [
-			"{% bg src=\"${1:/path/to/image.jpg}\" overlay=\"${2:rgba(0,0,0,0.5)}\" /%}"
-		],
-		"description": "Background image/video directive for parent section"
-	},
-	"Budget": {
-		"prefix": "rune:budget",
-		"body": [
-			"{% budget %}",
-			"## ${1:Category}",
-			"",
-			"- ${2:Item description}: \\$${3:100}",
-			"- ${4:Another item}: \\$${5:200}",
-			"{% /budget %}"
-		],
-		"description": "Structured cost breakdown with categories and auto-calculated totals"
-	},
-	"Showcase": {
-		"prefix": "rune:showcase",
-		"body": [
-			"{% showcase shadow=\"${1|none,soft,hard,elevated|}\" %}",
+			"{% preview source=true %}",
 			"$0",
-			"{% /showcase %}"
+			"{% /preview %}"
 		],
-		"description": "Media presentation wrapper with shadow, bleed, and aspect ratio"
+		"description": "Component preview with theme toggle and adjustable width for documentation and design systems"
 	},
-
 	"Mockup": {
 		"prefix": "rune:mockup",
 		"body": [
@@ -821,96 +1141,8 @@
 			"$0",
 			"{% /mockup %}"
 		],
-		"description": "Device frame chrome wrapping content for realistic device context"
+		"description": "Device frame chrome (phone, tablet, browser, laptop) wrapping content for realistic device context"
 	},
-	"Character": {
-		"prefix": ["rune:character", "rune:npc", "rune:pc"],
-		"body": [
-			"{% character name=\"${1:Name}\" role=\"${2|protagonist,antagonist,supporting,minor|}\" status=\"${3|alive,dead,unknown,missing|}\" %}",
-			"## Backstory",
-			"",
-			"${4:Character background.}",
-			"",
-			"## Abilities",
-			"",
-			"- ${5:Ability one}",
-			"{% /character %}"
-		],
-		"description": "Character profile with portrait, role, status, and sectioned details"
-	},
-	"Realm": {
-		"prefix": ["rune:realm", "rune:location", "rune:place"],
-		"body": [
-			"{% realm name=\"${1:Name}\" type=\"${2:sanctuary}\" %}",
-			"${3:Description of the location.}",
-			"{% /realm %}"
-		],
-		"description": "Location or realm description with scene image and sectioned details"
-	},
-	"Faction": {
-		"prefix": ["rune:faction", "rune:guild", "rune:order"],
-		"body": [
-			"{% faction name=\"${1:Name}\" type=\"${2:guild}\" %}",
-			"${3:Faction description.}",
-			"{% /faction %}"
-		],
-		"description": "Faction or organization within a story world"
-	},
-	"Lore": {
-		"prefix": ["rune:lore", "rune:legend", "rune:myth"],
-		"body": [
-			"{% lore title=\"${1:Title}\" category=\"${2:history}\" %}",
-			"${3:Lore content.}",
-			"{% /lore %}"
-		],
-		"description": "Lore entry for world-building details, legends, or history"
-	},
-	"Plot": {
-		"prefix": ["rune:plot", "rune:storyline", "rune:arc"],
-		"body": [
-			"{% plot title=\"${1:Arc Title}\" %}",
-			"${2:Plot summary.}",
-			"",
-			"- [ ] **${3:Beat One}** \\u2014 ${4:Description}",
-			"- [ ] **${5:Beat Two}** \\u2014 ${6:Description}",
-			"{% /plot %}"
-		],
-		"description": "Plot arc with sequential beats and status markers"
-	},
-	"Bond": {
-		"prefix": ["rune:bond", "rune:relationship"],
-		"body": [
-			"{% bond from=\"${1:Entity A}\" to=\"${2:Entity B}\" type=\"${3:alliance}\" %}",
-			"${4:Relationship description.}",
-			"{% /bond %}"
-		],
-		"description": "Relationship between two named entities"
-	},
-	"Map": {
-		"prefix": "rune:map",
-		"body": [
-			"{% map zoom=${1:13} %}",
-			"## ${2:Landmarks}",
-			"",
-			"- **${3:Place Name}** \\u2014 *${4:Description}* \\u2014 ${5:48.8566}, ${6:2.3522}",
-			"{% /map %}"
-		],
-		"description": "Interactive map with location pins and grouped layers"
-	},
-	"Itinerary": {
-		"prefix": ["rune:itinerary", "rune:trip", "rune:travel-plan"],
-		"body": [
-			"{% itinerary %}",
-			"## Day 1 \\u2014 ${1:Arrival}",
-			"",
-			"### ${2:9:00 AM} \\u2014 ${3:Location}",
-			"",
-			"${4:Activity description.}",
-			"{% /itinerary %}"
-		],
-		"description": "Travel itinerary with day groupings and timed stops"
-	},
-
 	"Design Context": {
 		"prefix": "rune:design-context",
 		"body": [
@@ -937,6 +1169,90 @@
 			"",
 			"{% /design-context %}"
 		],
-		"description": "Unified design token card with typography, palette, and spacing"
+		"description": "Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection"
+	},
+	"Howto": {
+		"prefix": [
+			"rune:howto",
+			"rune:how-to"
+		],
+		"body": [
+			"{% howto difficulty=\"${1|easy,medium,hard|}\" %}",
+			"# ${2:How to Do Something}",
+			"",
+			"- ${3:Tool or material needed}",
+			"",
+			"1. ${4:First step}",
+			"2. ${5:Second step}",
+			"{% /howto %}"
+		],
+		"description": "Step-by-step how-to guide with tools/materials list and instructions"
+	},
+	"Recipe": {
+		"prefix": "rune:recipe",
+		"body": [
+			"{% recipe prepTime=\"${1:15m}\" cookTime=\"${2:30m}\" servings=${3:4} difficulty=\"${4|easy,medium,hard|}\" %}",
+			"# ${5:Recipe Name}",
+			"",
+			"- ${6:Ingredient one}",
+			"- ${7:Ingredient two}",
+			"",
+			"1. ${8:Step one}",
+			"2. ${9:Step two}",
+			"{% /recipe %}"
+		],
+		"description": "Recipe with ingredients, steps, and chef tips. Supports split layout with media zone. Lists become ingredients, ordered lists become steps, blockquotes become tips."
+	},
+	"Playlist": {
+		"prefix": "rune:playlist",
+		"body": [
+			"{% playlist type=\"${1|album,podcast,audiobook,series,mix|}\" artist=\"${2:Artist}\" %}",
+			"# ${3:Playlist Name}",
+			"",
+			"- **${4:Track One}** (${5:3:45})",
+			"- **${6:Track Two}** (${7:4:20})",
+			"{% /playlist %}"
+		],
+		"description": "Playlist with track listing — albums, podcasts, audiobooks, mixes"
+	},
+	"Track": {
+		"prefix": "rune:track",
+		"body": [
+			"{% track src=\"${1:audio.mp3}\" artist=\"${2:Artist}\" duration=\"${3:3:45}\" %}",
+			"# ${4:Track Name}",
+			"{% /track %}"
+		],
+		"description": "Individual track with metadata — for use inside playlist or standalone"
+	},
+	"Audio": {
+		"prefix": "rune:audio",
+		"body": [
+			"{% audio src=\"${1:audio.mp3}\" title=\"${2:Title}\" /%}"
+		],
+		"description": "Audio player — standalone or connected to a playlist"
+	},
+	"Music Playlist": {
+		"prefix": [
+			"rune:music-playlist",
+			"rune:music-playlist"
+		],
+		"body": [
+			"{% music-playlist %}",
+			"$0",
+			"{% /music-playlist %}"
+		],
+		"description": "Music playlist with track listing (legacy name — use playlist)"
+	},
+	"Music Recording": {
+		"prefix": [
+			"rune:music-recording",
+			"rune:music-recording"
+		],
+		"body": [
+			"{% music-recording %}",
+			"$0",
+			"{% /music-recording %}"
+		],
+		"description": "Individual music track metadata (legacy name — use track)"
 	}
 }
