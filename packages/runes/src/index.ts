@@ -27,6 +27,7 @@ import { diagram } from './tags/diagram.js';
 import { sidenote } from './tags/sidenote.js';
 import { conversation, conversationMessage } from './tags/conversation.js';
 import { reveal, revealStep } from './tags/reveal.js';
+import { juxtapose, juxtaposePanel } from './tags/juxtapose.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
 import { sandbox } from './tags/sandbox.js';
@@ -287,6 +288,19 @@ export const runes = {
     schema: revealStep,
     description: 'Individual step within a reveal sequence',
     type: schema.RevealStep,
+  }),
+  juxtapose: defineRune({
+    name: 'juxtapose',
+    schema: juxtapose,
+    description: 'Side-by-side comparison with interactive reveal (slider, toggle, fade, or auto)',
+    reinterprets: { heading: 'panel label', image: 'panel content' },
+    type: schema.Juxtapose,
+  }),
+  'juxtapose-panel': defineRune({
+    name: 'juxtapose-panel',
+    schema: juxtaposePanel,
+    description: 'Individual panel within a juxtapose comparison',
+    type: schema.JuxtaposePanel,
   }),
   annotate: defineRune({
     name: 'annotate',

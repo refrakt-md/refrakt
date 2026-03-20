@@ -24,6 +24,7 @@ import {Diagram} from './schema/diagram.js';
 import {Sidenote} from './schema/sidenote.js';
 import {Conversation, ConversationMessage} from './schema/conversation.js';
 import {Reveal, RevealStep} from './schema/reveal.js';
+import {Juxtapose, JuxtaposePanel} from './schema/juxtapose.js';
 import {Annotate, AnnotateNote} from './schema/annotate.js';
 import {Form, FormField} from './schema/form.js';
 import {Sandbox} from './schema/sandbox.js';
@@ -76,6 +77,8 @@ export const schema = {
   ConversationMessage: useSchema(ConversationMessage).defineType('ConversationMessage'),
   Reveal: useSchema(Reveal).defineType('Reveal'),
   RevealStep: useSchema(RevealStep).defineType('RevealStep'),
+  Juxtapose: useSchema(Juxtapose).defineType('Juxtapose'),
+  JuxtaposePanel: useSchema(JuxtaposePanel).defineType('JuxtaposePanel'),
   Annotate: useSchema(Annotate).defineType('Annotate'),
   AnnotateNote: useSchema(AnnotateNote).defineType('AnnotateNote'),
   Form: useSchema(Form).defineType('Form'),

@@ -36,6 +36,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [grid](/docs/runes/grid) | Generic grid layout for arranging content in columns |
 | [tabs](/docs/runes/tabs) | Tabbed content panels with heading-based tab labels |
 | [accordion](/docs/runes/accordion) | Collapsible accordion sections for FAQ-style content |
+| [juxtapose](/docs/runes/juxtapose) | Interactive side-by-side comparison with slider, toggle, fade, and auto modes |
 | [details](/docs/runes/details) | Collapsible disclosure blocks for supplementary content |
 | [sandbox](/docs/runes/sandbox) | Isolated HTML/CSS/JS rendering in an iframe |
 
