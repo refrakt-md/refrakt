@@ -33,7 +33,7 @@ Panels are not restricted to images. Put two sandboxes with light and dark modes
 
 {% juxtapose %}
 
-{% sandbox framework="tailwind" %}
+{% sandbox framework="tailwind" tint-mode="light" %}
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full overflow-hidden transition-colors">
     <!-- Cover Image -->
@@ -105,9 +105,9 @@ Panels are not restricted to images. Put two sandboxes with light and dark modes
 
 ---
 
-{% sandbox framework="tailwind" %}
-<div class="min-h-screen bg-gray-900 flex items-center justify-center p-6">
-  <div class="bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full overflow-hidden">
+{% sandbox framework="tailwind" tint-mode="dark" %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full overflow-hidden transition-colors">
     <!-- Cover Image -->
     <div class="h-32 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500"></div>
     
@@ -118,55 +118,55 @@ Panels are not restricted to images. Put two sandboxes with light and dark modes
         <img 
           src="https://i.pravatar.cc/120?img=32" 
           alt="Profile" 
-          class="w-32 h-32 rounded-full border-4 border-gray-800 shadow-lg"
+          class="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
         />
       </div>
       
       <!-- User Info -->
       <div class="text-center mb-6">
-        <h2 class="text-2xl font-bold text-white mb-1">Sarah Johnson</h2>
-        <p class="text-gray-400 text-sm mb-3">@sarahjohnson</p>
-        <p class="text-gray-300 leading-relaxed">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Sarah Johnson</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">@sarahjohnson</p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
           Product designer passionate about crafting delightful user experiences. 
           Coffee enthusiast ☕️
         </p>
       </div>
       
       <!-- Stats -->
-      <div class="flex justify-around py-4 border-y border-gray-700 mb-6">
+      <div class="flex justify-around py-4 border-y border-gray-200 dark:border-gray-700 mb-6">
         <div class="text-center">
-          <div class="text-2xl font-bold text-white">1.2k</div>
-          <div class="text-xs text-gray-400 uppercase tracking-wide">Followers</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">1.2k</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Followers</div>
         </div>
         <div class="text-center">
-          <div class="text-2xl font-bold text-white">842</div>
-          <div class="text-xs text-gray-400 uppercase tracking-wide">Following</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">842</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Following</div>
         </div>
         <div class="text-center">
-          <div class="text-2xl font-bold text-white">94</div>
-          <div class="text-xs text-gray-400 uppercase tracking-wide">Posts</div>
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">94</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Posts</div>
         </div>
       </div>
       
       <!-- Action Buttons -->
       <div class="flex gap-3">
-        <button class="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold py-3 rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20">
+        <button class="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold py-3 rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30 dark:shadow-purple-500/20">
           Follow
         </button>
-        <button class="flex-1 border-2 border-gray-600 text-gray-200 font-semibold py-3 rounded-xl hover:bg-gray-700 transition-all">
+        <button class="flex-1 border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
           Message
         </button>
       </div>
       
       <!-- Social Links -->
       <div class="flex justify-center gap-4 mt-6">
-        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-violet-900/30 hover:text-violet-400 transition-all">
+        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
         </a>
-        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-violet-900/30 hover:text-violet-400 transition-all">
+        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
         </a>
-        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 text-gray-300 hover:bg-violet-900/30 hover:text-violet-400 transition-all">
+        <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
         </a>
       </div>
