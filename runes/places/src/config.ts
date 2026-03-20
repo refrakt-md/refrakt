@@ -1,5 +1,5 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { isTag, findMeta } from '@refrakt-md/transform';
+import { isTag, findMeta, makeTag } from '@refrakt-md/transform';
 
 const pageSectionAutoLabel = {
 	header: 'header',
@@ -99,11 +99,16 @@ export const config: Record<string, RuneConfig> = {
 			);
 			const children = node.children.filter(child => !consumedMetas.has(child as any));
 
+			// Wrap remaining children in a container div so the map has
+			// visible height before Leaflet JS initialises (prevents the
+			// border from rendering as a collapsed strip).
+			const containerDiv = makeTag('div', { class: 'rf-map__container' }, children);
+
 			return {
 				...node,
 				name: 'rf-map',
 				attributes: { ...node.attributes, ...dataAttrs },
-				children,
+				children: [containerDiv],
 			};
 		},
 	},

@@ -80,7 +80,7 @@ Nest a `map` and `itinerary` inside a `mockup`, wrap it in a `showcase` — each
 
 {% showcase bleed="both" offset="7rem" shadow="elevated" place="center" %}
 {% mockup device="iphone-15" tint="base" scale=0.9 tint-mode="auto" %}
-{% map zoom="12" center="40.7580, -73.9855" %}
+{% map zoom="12" center="40.7580, -73.9855" spacing="flush" %}
 - **Museum of Modern Art** - *Modern and contemporary art* - 40.7614, -73.9776
 - **Central Park** - *Urban green oasis* - 40.7829, -73.9654
 - **Times Square** - *The Crossroads of the World* - 40.7580, -73.9855

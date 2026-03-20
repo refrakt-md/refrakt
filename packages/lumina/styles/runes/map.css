@@ -4,8 +4,13 @@
 	margin: 2rem 0;
 	border-radius: var(--rf-radius-lg, 0.75rem);
 	overflow: hidden;
-	border: 1px solid var(--rf-color-border);
 }
+
+/* Spacing variants */
+.rf-map--spacing-flush { margin: 0; }
+.rf-map--spacing-tight { margin: 0.5rem 0; }
+.rf-map--spacing-loose { margin: 3rem 0; }
+.rf-map--spacing-breathe { margin: 4rem 0; }
 
 /* Height variants */
 .rf-map--small .rf-map__container { height: 200px; }
