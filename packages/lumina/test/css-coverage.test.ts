@@ -30,6 +30,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-comparison__header', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
 	'.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
 	'.rf-changelog__header', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
+	'.rf-blog__content', '.rf-blog__eyebrow', '.rf-blog__image',
 	'.rf-howto__header', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
 	'.rf-itinerary__header', '.rf-itinerary__eyebrow', '.rf-itinerary__headline', '.rf-itinerary__blurb', '.rf-itinerary__image',
 	'.rf-cast__header', '.rf-cast__eyebrow', '.rf-cast__headline', '.rf-cast__blurb', '.rf-cast__image',

@@ -209,6 +209,71 @@
 				"{content}"
 			]
 		},
+		"Blog": {
+			"block": "blog",
+			"root": ".rf-blog",
+			"dataRune": "blog",
+			"childOrder": [
+				"{content:content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "list",
+					"classPattern": ".rf-blog--{value}",
+					"dataAttribute": "data-layout"
+				},
+				"sort": {
+					"source": "meta",
+					"default": "date-desc",
+					"dataAttribute": "data-sort"
+				},
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"limit": {
+					"source": "meta",
+					"dataAttribute": "data-limit"
+				},
+				"folder": {
+					"source": "meta",
+					"dataAttribute": "data-folder"
+				}
+			},
+			"elements": {
+				"content": {
+					"tag": "div",
+					"selector": ".rf-blog__content",
+					"source": "contentWrapper"
+				},
+				"header": {
+					"tag": "header",
+					"selector": ".rf-blog__header",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-blog__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-blog__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-blog__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-blog__image",
+					"source": "autoLabel"
+				}
+			}
+		},
 		"Budget": {
 			"block": "budget",
 			"root": ".rf-budget",
