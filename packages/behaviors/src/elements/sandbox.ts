@@ -46,9 +46,14 @@ export class RfSandbox extends SafeHTMLElement {
 		const label = this.dataset.label || 'Sandbox';
 		const heightAttr = this.dataset.height || 'auto';
 
+		// data-color-scheme is set by tint-mode and locks the sandbox to a
+		// specific colour scheme, overriding the global RfContext.theme.
+		const localScheme = this.getAttribute('data-color-scheme') as 'light' | 'dark' | null;
+		const effectiveTheme = localScheme || RfContext.theme;
+
 		const tokensAttr = this.dataset.designTokens;
 		const tokens: DesignTokens | null = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
-		const srcdoc = this.buildSrcdoc(content, framework, dependencies, tokens);
+		const srcdoc = this.buildSrcdoc(content, framework, dependencies, tokens, effectiveTheme);
 
 		// Create iframe
 		this.iframe = document.createElement('iframe');
@@ -69,16 +74,20 @@ export class RfSandbox extends SafeHTMLElement {
 			window.addEventListener('message', this.messageHandler);
 		}
 
-		// Theme sync — send initial theme on load, subscribe to changes
+		// Theme sync — send initial theme on load, subscribe to changes.
+		// When a local colour scheme is set (tint-mode), the sandbox is
+		// locked to that scheme and ignores global theme changes.
 		const sendTheme = (theme: string) => {
 			this.iframe?.contentWindow?.postMessage({ type: 'rf-sandbox-theme', theme }, '*');
 		};
 
-		this.iframe.addEventListener('load', () => sendTheme(RfContext.theme));
+		this.iframe.addEventListener('load', () => sendTheme(effectiveTheme));
 
-		this.themeCleanup = RfContext.onThemeChange((theme) => {
-			sendTheme(theme);
-		});
+		if (!localScheme) {
+			this.themeCleanup = RfContext.onThemeChange((theme) => {
+				sendTheme(theme);
+			});
+		}
 
 		// Clear fallback content and insert iframe
 		this.replaceChildren(this.iframe);
@@ -96,9 +105,9 @@ export class RfSandbox extends SafeHTMLElement {
 		this.iframe = null;
 	}
 
-	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null): string {
+	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
-		const theme = RfContext.theme;
+		theme = theme || RfContext.theme;
 		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark"'
 			: theme === 'light' ? ' data-theme="light"'
 			: '';
