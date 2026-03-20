@@ -181,6 +181,12 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 						usedCssBlocks.add(runeConfig.block);
 					}
 				}
+
+				// Tint is a universal attribute (not a rune), so it never appears
+				// in data-rune analysis. Always include its CSS when present.
+				if (existsSync(join(stylesDir, 'tint.css'))) {
+					usedCssBlocks.add('tint');
+				}
 			} catch (err) {
 				// Graceful fallback — if analysis fails, all CSS is included
 				usedCssBlocks = undefined;
