@@ -27,7 +27,12 @@ export class RfNav extends SafeHTMLElement {
 			const slug = item.dataset.slug;
 			if (!slug) continue;
 
-			const page = pages.find(p => p.url.endsWith('/' + slug) || p.url === '/' + slug);
+			const candidates = pages.filter(p => p.url.endsWith('/' + slug) || p.url === '/' + slug);
+			const page = candidates.length <= 1
+				? candidates[0]
+				: candidates.sort((a, b) =>
+					sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl)
+				)[0];
 			if (!page) continue;
 
 			// Replace content with a link
@@ -43,4 +48,10 @@ export class RfNav extends SafeHTMLElement {
 			item.replaceChildren(link);
 		}
 	}
+}
+
+function sharedPrefixLength(a: string, b: string): number {
+	let i = 0;
+	while (i < a.length && i < b.length && a[i] === b[i]) i++;
+	return i;
 }
