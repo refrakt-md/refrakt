@@ -149,7 +149,7 @@ describe('previewBehavior', () => {
 	});
 
 	describe('theme toggle', () => {
-		it('sets data-theme on canvas when selecting light', () => {
+		it('sets data-color-scheme on canvas when selecting light', () => {
 			const el = createPreview();
 			previewBehavior(el);
 
@@ -158,10 +158,10 @@ describe('previewBehavior', () => {
 			lightBtn.click();
 
 			const canvas = el.querySelector('.rf-preview__canvas')!;
-			expect(canvas.getAttribute('data-theme')).toBe('light');
+			expect(canvas.getAttribute('data-color-scheme')).toBe('light');
 		});
 
-		it('sets data-theme on canvas when selecting dark', () => {
+		it('sets data-color-scheme on canvas when selecting dark', () => {
 			const el = createPreview();
 			previewBehavior(el);
 
@@ -170,10 +170,10 @@ describe('previewBehavior', () => {
 			darkBtn.click();
 
 			const canvas = el.querySelector('.rf-preview__canvas')!;
-			expect(canvas.getAttribute('data-theme')).toBe('dark');
+			expect(canvas.getAttribute('data-color-scheme')).toBe('dark');
 		});
 
-		it('removes data-theme when selecting auto', () => {
+		it('removes data-color-scheme when selecting auto', () => {
 			const el = createPreview({ theme: 'dark' });
 			previewBehavior(el);
 
@@ -182,7 +182,7 @@ describe('previewBehavior', () => {
 			autoBtn.click();
 
 			const canvas = el.querySelector('.rf-preview__canvas')!;
-			expect(canvas.getAttribute('data-theme')).toBeNull();
+			expect(canvas.getAttribute('data-color-scheme')).toBeNull();
 		});
 
 		it('marks active theme button', () => {

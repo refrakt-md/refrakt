@@ -324,9 +324,9 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		}
 		const resolvedTheme = themeMode === 'auto' ? undefined : themeMode;
 		if (resolvedTheme) {
-			canvas.setAttribute('data-theme', resolvedTheme);
+			canvas.setAttribute('data-color-scheme', resolvedTheme);
 		} else {
-			canvas.removeAttribute('data-theme');
+			canvas.removeAttribute('data-color-scheme');
 		}
 	}
 
