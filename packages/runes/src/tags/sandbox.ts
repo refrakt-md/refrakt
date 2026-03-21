@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -82,7 +81,7 @@ class SandboxModel extends Model {
 
 		if (this.src && readFile && listDir && examplesDir) {
 			// Directory source mode
-			const dirPath = resolve(examplesDir, this.src);
+			const dirPath = examplesDir.endsWith('/') ? examplesDir + this.src : examplesDir + '/' + this.src;
 			const result = assembleFromDirectory(dirPath, this.src, readFile, listDir, dirExists);
 
 			// If there are fatal errors, render an error message instead

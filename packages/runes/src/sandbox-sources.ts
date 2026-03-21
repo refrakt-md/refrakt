@@ -1,5 +1,3 @@
-import { resolve, basename, extname } from 'node:path';
-
 /** A source panel with language, content, and origin tracking */
 export interface SandboxSourcePanel {
 	label: string;
@@ -38,6 +36,11 @@ interface DiscoveredFile {
 	content: string;
 }
 
+/** Join a directory path and filename with a forward slash. */
+function joinPath(dir: string, name: string): string {
+	return dir.endsWith('/') ? dir + name : dir + '/' + name;
+}
+
 /**
  * Get the role extension for a file. Handles compound extensions like .glsl-vert.
  */
@@ -45,7 +48,9 @@ function getFileRole(filename: string): FileRole | null {
 	// Check compound extensions first
 	if (filename.endsWith('.glsl-vert')) return 'glsl-vert';
 	if (filename.endsWith('.glsl-frag')) return 'glsl-frag';
-	const ext = extname(filename);
+	const dotIdx = filename.lastIndexOf('.');
+	if (dotIdx === -1) return null;
+	const ext = filename.slice(dotIdx);
 	return (FILE_ROLES as Record<string, FileRole>)[ext] ?? null;
 }
 
@@ -94,7 +99,7 @@ export function assembleFromDirectory(
 	for (const name of entries.sort()) {
 		const role = getFileRole(name);
 		if (!role) continue;
-		const content = readFile(resolve(dirPath, name));
+		const content = readFile(joinPath(dirPath, name));
 		if (content != null) {
 			files.push({ name, role, content });
 		}

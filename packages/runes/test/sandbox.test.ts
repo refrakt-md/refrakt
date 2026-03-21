@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
 
