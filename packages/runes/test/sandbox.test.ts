@@ -150,3 +150,107 @@ describe('sandbox tag', () => {
 		expect(depMeta!.attributes.content).toBe('');
 	});
 });
+
+describe('sandbox with src attribute', () => {
+	/** Create mock file system variables for sandbox external sources */
+	function mockSandboxFs(files: Record<string, string>) {
+		const dirs = new Map<string, string[]>();
+		for (const path of Object.keys(files)) {
+			const parts = path.split('/');
+			const dir = parts.slice(0, -1).join('/');
+			const name = parts[parts.length - 1];
+			if (!dirs.has(dir)) dirs.set(dir, []);
+			dirs.get(dir)!.push(name);
+		}
+
+		return {
+			__sandboxReadFile: (p: string): string | null => files[p] ?? null,
+			__sandboxListDir: (p: string): string[] => dirs.get(p) ?? [],
+			__sandboxDirExists: (p: string): boolean => dirs.has(p),
+			__sandboxExamplesDir: '/examples',
+		};
+	}
+
+	it('should load content from a directory', () => {
+		const vars = mockSandboxFs({
+			'/examples/login/index.html': '<form>Login</form>',
+			'/examples/login/style.css': '.form { padding: 1rem; }',
+			'/examples/login/script.js': 'console.log("hello");',
+		});
+
+		const result = parse(`{% sandbox src="login" %}
+{% /sandbox %}`, vars);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox).toBeDefined();
+
+		const contentMeta = findTag(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
+		expect(contentMeta).toBeDefined();
+		expect(contentMeta!.attributes.content).toContain('<form>Login</form>');
+		expect(contentMeta!.attributes.content).toContain('.form { padding: 1rem; }');
+		expect(contentMeta!.attributes.content).toContain('console.log("hello")');
+	});
+
+	it('should generate source panels with origin data', () => {
+		const vars = mockSandboxFs({
+			'/examples/card/index.html': '<div>Card</div>',
+			'/examples/card/style.css': '.card { border: 1px solid; }',
+		});
+
+		const result = parse(`{% sandbox src="card" %}
+{% /sandbox %}`, vars);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const panels = findAllTags(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'source-panel');
+
+		expect(panels.length).toBe(2);
+		expect(panels[0].attributes['data-label']).toBe('HTML');
+		expect(panels[0].attributes['data-origin']).toBe('card/index.html');
+		expect(panels[1].attributes['data-label']).toBe('CSS');
+		expect(panels[1].attributes['data-origin']).toBe('card/style.css');
+	});
+
+	it('should work with framework and other attributes', () => {
+		const vars = mockSandboxFs({
+			'/examples/demo/index.html': '<button>Click</button>',
+		});
+
+		const result = parse(`{% sandbox src="demo" framework="tailwind" %}
+{% /sandbox %}`, vars);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const fwMeta = findTag(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'framework');
+		expect(fwMeta!.attributes.content).toBe('tailwind');
+
+		const contentMeta = findTag(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
+		expect(contentMeta!.attributes.content).toContain('<button>Click</button>');
+	});
+
+	it('should show error when src directory does not exist', () => {
+		const vars = mockSandboxFs({});
+
+		const result = parse(`{% sandbox src="missing" %}
+{% /sandbox %}`, vars);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const contentMeta = findTag(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
+		expect(contentMeta!.attributes.content).toContain('not found');
+	});
+
+	it('should fall back to inline when sandbox variables are not available', () => {
+		// Without sandbox fs variables, src attribute is ignored and inline extraction is used
+		const result = parse(`{% sandbox src="login" %}
+<p>Inline content</p>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const contentMeta = findTag(sandbox!, t =>
+			t.name === 'meta' && t.attributes['data-field'] === 'content');
+		expect(contentMeta!.attributes.content).toContain('<p>Inline content</p>');
+	});
+});

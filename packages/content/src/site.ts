@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks } from '@refrakt-md/runes';
@@ -38,6 +40,24 @@ export interface SitePage {
   seo: PageSeo;
 }
 
+/** Synchronous file reader that returns null on failure. */
+function sandboxReadFile(p: string): string | null {
+  try { return readFileSync(p, 'utf-8'); }
+  catch { return null; }
+}
+
+/** Synchronous directory listing that returns empty array on failure. */
+function sandboxListDir(p: string): string[] {
+  try { return readdirSync(p); }
+  catch { return []; }
+}
+
+/** Check if a path is an existing directory. */
+function sandboxDirExists(p: string): boolean {
+  try { return statSync(p).isDirectory(); }
+  catch { return false; }
+}
+
 function transformContent(
   content: string,
   path: string,
@@ -66,6 +86,9 @@ function transformContent(
  * When `packages` are provided, the cross-page pipeline runs after loading:
  * core hooks + package hooks register entities, aggregate cross-page data,
  * and post-process pages before returning.
+ *
+ * When `sandboxExamplesDir` is provided, sandbox runes with `src` attributes
+ * can load code from external files in that directory.
  */
 export async function loadContent(
   dirPath: string,
@@ -73,11 +96,17 @@ export async function loadContent(
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
   packages?: RunePackage[],
+  sandboxExamplesDir?: string,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
   const pages: SitePage[] = [];
 
+  // Resolve examples directory for sandbox src support
+  const resolvedExamplesDir = sandboxExamplesDir
+    ? resolve(sandboxExamplesDir)
+    : resolve(dirPath, '..', 'examples');
+  
   // Pre-parse partials into Markdoc ASTs for the transform config
   const partialFiles = tree.partials();
   let parsedPartials: Record<string, Node> | undefined;
@@ -92,9 +121,13 @@ export async function loadContent(
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
-    const contentVariables = {
+    const contentVariables: Record<string, unknown> = {
       frontmatter,
       page: { url: route.url, filePath: route.filePath, draft: route.draft },
+      __sandboxReadFile: sandboxReadFile,
+      __sandboxListDir: sandboxListDir,
+      __sandboxDirExists: sandboxDirExists,
+      __sandboxExamplesDir: resolvedExamplesDir,
     };
     const { renderable, headings } = transformContent(content, route.url, icons, additionalTags, contentVariables, parsedPartials);
     const seo = extractSeo(renderable, frontmatter, route.url);

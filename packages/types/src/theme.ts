@@ -23,6 +23,11 @@ export interface RefraktConfig {
 	tints?: Record<string, Record<string, unknown>>;
 	/** Project-level background presets — merged after theme backgrounds (last wins) */
 	backgrounds?: Record<string, Record<string, unknown>>;
+	/** Sandbox configuration */
+	sandbox?: {
+		/** Directory for external sandbox examples, relative to project root. Default: './examples' */
+		examplesDir?: string;
+	};
 	/** Rune resolution configuration */
 	runes?: {
 		/** Resolve name collisions between community packages: rune name → preferred package name.
