@@ -33,6 +33,12 @@ const allRunes: RuneInfo[] = [];
 /** Merged Markdoc tags (core + community) */
 let mergedTags: Record<string, Schema> = { ...tags, ...Markdoc.tags };
 
+/** Registered partial file names (relative to _partials/) */
+const partialNames: string[] = [];
+
+/** Absolute path to _partials/ directory (if found) */
+let partialsDir: string | null = null;
+
 /** Markdoc nodes config */
 const markdocNodes = nodes;
 
@@ -173,12 +179,18 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
     const configText = readFileSync(configPath, 'utf8');
     const config = JSON.parse(configText);
 
+    const configDir = dirname(configPath);
+
+    // Scan _partials/ directory
+    const contentDir = config.contentDir ?? 'content';
+    const resolvedPartialsDir = join(configDir, contentDir, '_partials');
+    scanPartialsDir(resolvedPartialsDir);
+
     const packageNames: string[] = config.packages ?? [];
     if (packageNames.length === 0) return;
 
     // Use createRequire rooted at the config's directory so packages resolve
     // from the project's node_modules, not the bundled server's location
-    const configDir = dirname(configPath);
     const req = createRequire(join(configDir, 'package.json'));
 
     const loaded: LoadedPackage[] = [];
@@ -203,6 +215,36 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
   } catch (err: any) {
     console.warn('[refrakt] Community package loading failed:', err?.message ?? err);
   }
+}
+
+/** Recursively scan _partials/ directory and populate partialNames */
+function scanPartialsDir(dir: string): void {
+  partialNames.length = 0;
+  partialsDir = null;
+
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return;
+
+  partialsDir = dir;
+
+  function walk(currentDir: string): void {
+    for (const entry of readdirSync(currentDir)) {
+      if (entry.startsWith('.')) continue;
+      const fullPath = join(currentDir, entry);
+      try {
+        const stat = statSync(fullPath);
+        if (stat.isDirectory()) {
+          walk(fullPath);
+        } else if (stat.isFile() && entry.endsWith('.md')) {
+          // Store relative path from _partials/ root
+          const relativePath = fullPath.slice(partialsDir!.length + 1);
+          partialNames.push(relativePath);
+        }
+      } catch { /* skip unreadable entries */ }
+    }
+  }
+
+  walk(dir);
+  partialNames.sort();
 }
 
 /**
@@ -264,6 +306,21 @@ function levenshtein(a: string, b: string): number {
     }
   }
   return dp[m][n];
+}
+
+/** Get all registered partial file names */
+export function getPartialNames(): readonly string[] {
+  return partialNames;
+}
+
+/** Check whether a partial file exists */
+export function hasPartial(name: string): boolean {
+  return partialNames.includes(name);
+}
+
+/** Get the absolute path to the _partials/ directory (null if not found) */
+export function getPartialsDir(): string | null {
+  return partialsDir;
 }
 
 /** Find rune names similar to the given name, sorted by distance */

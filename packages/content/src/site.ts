@@ -1,10 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes, Schema } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
-import { ContentTree } from './content-tree.js';
+import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
@@ -24,6 +24,8 @@ export interface Site {
   pipelineStats: PipelineStats;
   /** Cross-page data produced by all aggregate hooks, keyed by package name */
   aggregated: AggregatedData;
+  /** Partial files from _partials/ directory, keyed by relative name */
+  partials: Map<string, PartialFile>;
 }
 
 export interface SitePage {
@@ -42,16 +44,20 @@ function transformContent(
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
   contentVariables?: Record<string, unknown>,
+  partials?: Record<string, Node>,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const ast = Markdoc.parse(content);
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
-  const config = { tags: mergedTags, nodes, variables: {
+  const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content,
     ...(icons ? { __icons: icons } : {}),
     ...contentVariables,
   } };
-  return { renderable: Markdoc.transform(ast, config), headings };
+  if (partials) {
+    config.partials = partials;
+  }
+  return { renderable: Markdoc.transform(ast, config as any), headings };
 }
 
 /**
@@ -72,6 +78,16 @@ export async function loadContent(
   const router = new Router(basePath);
   const pages: SitePage[] = [];
 
+  // Pre-parse partials into Markdoc ASTs for the transform config
+  const partialFiles = tree.partials();
+  let parsedPartials: Record<string, Node> | undefined;
+  if (partialFiles.size > 0) {
+    parsedPartials = {};
+    for (const [name, partial] of partialFiles) {
+      parsedPartials[name] = Markdoc.parse(partial.raw);
+    }
+  }
+
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
@@ -80,7 +96,7 @@ export async function loadContent(
       frontmatter,
       page: { url: route.url, filePath: route.filePath, draft: route.draft },
     };
-    const { renderable, headings } = transformContent(content, route.url, icons, additionalTags, contentVariables);
+    const { renderable, headings } = transformContent(content, route.url, icons, additionalTags, contentVariables, parsedPartials);
     const seo = extractSeo(renderable, frontmatter, route.url);
 
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
@@ -103,5 +119,6 @@ export async function loadContent(
     pipelineWarnings: warnings,
     pipelineStats: stats,
     aggregated,
+    partials: partialFiles,
   };
 }
