@@ -130,12 +130,16 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			try {
 				const contentPkg = '@refrakt-md/content';
 				const { loadContent, analyzeRuneUsage } = await import(contentPkg);
+				const sandboxExamplesDir = refraktConfig.sandbox?.examplesDir
+					? resolve(resolvedRoot, refraktConfig.sandbox.examplesDir)
+					: undefined;
 				const site = await loadContent(
 					resolve(resolvedRoot, refraktConfig.contentDir),
 					'/',
 					undefined,
 					communityTags,
 					mergedPackages,
+					sandboxExamplesDir,
 				);
 
 				const { pipelineStats: stats } = site;
@@ -204,7 +208,10 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		},
 
 		configureServer(server) {
-			setupContentHmr(server, refraktConfig.contentDir);
+			const examplesDir = refraktConfig.sandbox?.examplesDir
+				? resolve(resolvedRoot, refraktConfig.sandbox.examplesDir)
+				: undefined;
+			setupContentHmr(server, refraktConfig.contentDir, examplesDir);
 		},
 	};
 }

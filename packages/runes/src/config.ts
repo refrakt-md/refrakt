@@ -696,12 +696,20 @@ export const coreConfig: ThemeConfig = {
 				const height = readMeta(node, 'height') || 'auto';
 				const designTokens = readMeta(node, 'design-tokens') || '';
 
-				// Keep non-meta children (fallback pre, source panels)
-				const fallbackChildren = node.children.filter(child => {
-					if (!isTag(child)) return true;
-					if (child.name === 'meta') return false;
-					return true;
-				});
+				// Keep non-meta children (fallback pre) and extract source panels
+				const fallbackChildren: typeof node.children = [];
+				const sourcePanelOrigins: string[] = [];
+				for (const child of node.children) {
+					if (!isTag(child)) { fallbackChildren.push(child); continue; }
+					if (child.name === 'meta') {
+						// Collect origin data from source panels
+						if (child.attributes?.['data-field'] === 'source-panel' && child.attributes?.['data-origin']) {
+							sourcePanelOrigins.push(`${child.attributes['data-label'] || ''}\t${child.attributes['data-origin']}`);
+						}
+						continue;
+					}
+					fallbackChildren.push(child);
+				}
 
 				// Add hidden content div for web component
 				const children = [
@@ -720,6 +728,7 @@ export const coreConfig: ThemeConfig = {
 						...(label ? { 'data-label': label } : {}),
 						'data-height': height,
 						...(designTokens ? { 'data-design-tokens': designTokens } : {}),
+						...(sourcePanelOrigins.length > 0 ? { 'data-source-origins': sourcePanelOrigins.join('\n') } : {}),
 					},
 					children,
 				};

@@ -45,6 +45,8 @@ export interface EditorOptions {
 	packages?: RunePackage[];
 	/** Extra Markdoc tags from community packages (merged into preview pipeline) */
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>;
+	/** Absolute path to sandbox examples directory */
+	sandboxExamplesDir?: string;
 	/** Community rune metadata for the editor palette */
 	communityRunes?: Array<{
 		name: string; aliases: string[]; description: string;
@@ -192,7 +194,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 	async function refreshPipelineCache(): Promise<void> {
 		try {
-			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.packages);
+			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.packages, options.sandboxExamplesDir);
 			cachedAggregated = site.aggregated;
 			layoutResolver.setAggregated(site.aggregated, buildHookSets());
 		} catch {

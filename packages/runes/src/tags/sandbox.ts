@@ -1,8 +1,10 @@
+import { resolve } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { assembleFromDirectory, mergeContent, type SandboxSourcePanel } from '../sandbox-sources.js';
 
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
@@ -12,7 +14,7 @@ function dedent(text: string): string {
 	return min > 0 ? lines.map(l => l.slice(min)).join('\n') : text;
 }
 
-interface SourcePanel { label: string; language: string; content: string; }
+interface SourcePanel { label: string; language: string; content: string; origin?: string; }
 
 function extractDataSourcePanels(html: string): SourcePanel[] {
 	const panels: SourcePanel[] = [];
@@ -39,6 +41,9 @@ function extractDataSourcePanels(html: string): SourcePanel[] {
 }
 
 class SandboxModel extends Model {
+	@attribute({ type: String, required: false, description: 'Directory containing external source files' })
+	src: string = '';
+
 	@attribute({ type: String, required: false, description: 'JavaScript framework for the sandbox' })
 	framework: string = '';
 
@@ -54,17 +59,59 @@ class SandboxModel extends Model {
 	@attribute({ type: String, required: false, description: 'Shared context scope for multiple sandboxes' })
 	context: string = 'default';
 
-	transform(): RenderableTreeNodes {
-		// Extract raw content via __source + node.lines
-		// This bypasses Markdoc HTML parsing entirely — Markdoc cannot
-		// reliably parse <style>, <script>, or block-level HTML elements
-		let rawContent = '';
+	/** Extract raw inline content from the markdown source using line ranges. */
+	private extractInlineContent(): string {
 		const raw = this.config.variables?.__source;
 		if (typeof raw === 'string' && this.node.lines?.length >= 2) {
 			const allLines = raw.split('\n');
 			const start = this.node.lines[0] + 1;
 			const end = this.node.lines[this.node.lines.length - 1] - 1;
-			rawContent = allLines.slice(start, end).join('\n').trim();
+			return allLines.slice(start, end).join('\n').trim();
+		}
+		return '';
+	}
+
+	transform(): RenderableTreeNodes {
+		let rawContent = '';
+		let sourcePanels: SourcePanel[] = [];
+
+		const readFile = this.config.variables?.__sandboxReadFile as ((p: string) => string | null) | undefined;
+		const listDir = this.config.variables?.__sandboxListDir as ((p: string) => string[]) | undefined;
+		const dirExists = this.config.variables?.__sandboxDirExists as ((p: string) => boolean) | undefined;
+		const examplesDir = this.config.variables?.__sandboxExamplesDir as string | undefined;
+
+		if (this.src && readFile && listDir && examplesDir) {
+			// Directory source mode
+			const dirPath = resolve(examplesDir, this.src);
+			const result = assembleFromDirectory(dirPath, this.src, readFile, listDir, dirExists);
+
+			// If there are fatal errors, render an error message instead
+			if (result.errors.length > 0) {
+				rawContent = `<div data-source="HTML"><pre style="color:red;padding:1rem">${result.errors.join('\n')}</pre></div>`;
+				sourcePanels = [];
+			} else {
+				rawContent = result.content;
+
+				// Convert SandboxSourcePanels to local SourcePanels
+				sourcePanels = result.panels.map(p => ({
+					label: p.label,
+					language: p.language,
+					content: p.content,
+					origin: p.origin,
+				}));
+			}
+
+			// Append inline content if any exists between the sandbox tags
+			const inlineContent = this.extractInlineContent();
+			if (inlineContent) {
+				rawContent = mergeContent(rawContent, inlineContent);
+				// Re-extract panels from merged content
+				sourcePanels = extractDataSourcePanels(rawContent);
+			}
+		} else {
+			// Existing inline extraction
+			rawContent = this.extractInlineContent();
+			sourcePanels = extractDataSourcePanels(rawContent);
 		}
 
 		const contentMeta = new Tag('meta', { content: rawContent });
@@ -79,13 +126,16 @@ class SandboxModel extends Model {
 			new Tag('code', { 'data-language': 'html' }, [rawContent])
 		]) : undefined;
 
-		// Extract data-source panels for server-side syntax highlighting
-		const sourcePanels = extractDataSourcePanels(rawContent);
+		// Source panels for server-side syntax highlighting
 		const panelNodes = sourcePanels.map(panel => {
 			const pre = new Tag('pre', { 'data-language': panel.language }, [
 				new Tag('code', { 'data-language': panel.language }, [panel.content])
 			]);
-			return new Tag('meta', { 'data-field': 'source-panel', 'data-label': panel.label }, [pre]);
+			return new Tag('meta', {
+				'data-field': 'source-panel',
+				'data-label': panel.label,
+				...(panel.origin ? { 'data-origin': panel.origin } : {}),
+			}, [pre]);
 		});
 
 		const childNodes = [
