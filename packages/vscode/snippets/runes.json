@@ -1254,5 +1254,12 @@
 			"{% /music-recording %}"
 		],
 		"description": "Individual music track metadata (legacy name — use track)"
+	},
+	"Partial": {
+		"prefix": "partial",
+		"body": [
+			"{% partial file=\"${1}\" /%}"
+		],
+		"description": "Include a reusable content partial from _partials/"
 	}
 }
