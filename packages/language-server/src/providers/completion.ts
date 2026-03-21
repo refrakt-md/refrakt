@@ -6,7 +6,7 @@ import {
   type TextDocuments,
 } from 'vscode-languageserver';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
-import { getAllRunes, getRune, getAllNames } from '../registry/loader.js';
+import { getAllRunes, getRune, getAllNames, getPartialNames } from '../registry/loader.js';
 import { getTagContext, findUnclosedTags } from '../parser/document.js';
 
 export function provideCompletion(
@@ -159,6 +159,18 @@ function completeAttributeValues(
   attrName: string,
   prefix: string,
 ): CompletionItem[] {
+  // Special case: partial file="" attribute — complete from _partials/ directory
+  if (tagName === 'partial' && attrName === 'file') {
+    return getPartialNames()
+      .filter(name => name.startsWith(prefix))
+      .map((name, i) => ({
+        label: name,
+        kind: CompletionItemKind.File,
+        detail: 'Partial file',
+        sortText: String(i).padStart(3, '0'),
+      }));
+  }
+
   const rune = getRune(tagName);
   if (!rune) return [];
 
