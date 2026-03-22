@@ -2,7 +2,7 @@
 
 # Plan CLI
 
-> Plan management subcommands for the refrakt CLI. Package: `@refrakt/plan`.
+> Plan management subcommands for the refrakt CLI. Package: `@refrakt-md/plan`.
 
 ## Problem
 
@@ -16,7 +16,7 @@ Existing tools (Spec Kit, CCPM, planning-with-files) provide no visual interface
 
 **Part of the refrakt CLI.** The plan commands live under `refrakt plan` alongside the existing `refrakt dev`, `refrakt build`, and `refrakt inspect` commands. One CLI, one ecosystem.
 
-**Plugin architecture.** The `@refrakt/plan` package registers its subcommands when installed. Without it, `refrakt plan` prompts to install the package. This follows the same pattern as rune packages — `@refrakt/storytelling` adds runes, `@refrakt/plan` adds runes and CLI commands.
+**Plugin architecture.** The `@refrakt-md/plan` package registers its subcommands when installed. Without it, `refrakt plan` prompts to install the package. This follows the same pattern as rune packages — `@refrakt-md/storytelling` adds runes, `@refrakt-md/plan` adds runes and CLI commands.
 
 **Zero friction.** `refrakt plan serve` works immediately. No config file, no signup, no hosting. Point it at a directory and get a dashboard.
 
@@ -28,7 +28,7 @@ Existing tools (Spec Kit, CCPM, planning-with-files) provide no visual interface
 
 ## Plugin Registration
 
-When `@refrakt/plan` is installed, it registers its subcommands under `refrakt plan`:
+When `@refrakt-md/plan` is installed, it registers its subcommands under `refrakt plan`:
 
 ```bash
 refrakt plan serve      # Browse the plan dashboard
@@ -37,6 +37,8 @@ refrakt plan create     # Scaffold new items
 refrakt plan validate   # Check structure and references
 refrakt plan build      # Generate static HTML site
 refrakt plan init       # Scaffold plan structure
+refrakt plan update     # Update plan item attributes
+refrakt plan next       # Find next work item to pick up
 ```
 
 When the package is not installed:
@@ -44,14 +46,14 @@ When the package is not installed:
 ```
 $ refrakt plan serve
 
-  The plan commands require @refrakt/plan.
-  Install it: npm install @refrakt/plan
+  The plan commands require @refrakt-md/plan.
+  Install it: npm install @refrakt-md/plan
 ```
 
 The package exports a CLI plugin that the refrakt CLI discovers:
 
 ```typescript
-// @refrakt/plan/cli-plugin.ts
+// @refrakt-md/plan/cli-plugin.ts
 export const commands = {
   namespace: 'plan',
   commands: [
@@ -61,11 +63,13 @@ export const commands = {
     { name: 'validate', handler: validateHandler, description: 'Validate plan structure' },
     { name: 'build', handler: buildHandler, description: 'Build static plan site' },
     { name: 'init', handler: initHandler, description: 'Scaffold plan structure' },
+    { name: 'update', handler: updateHandler, description: 'Update plan item attributes' },
+    { name: 'next', handler: nextHandler, description: 'Find next work item' },
   ],
 };
 ```
 
-The refrakt CLI discovers installed packages that export a `cli-plugin` entry and registers their commands under the declared namespace. This same pattern could be used by other packages in the future — `@refrakt/docs` could register `refrakt docs` commands, `@refrakt/storytelling` could register `refrakt story` commands.
+The refrakt CLI discovers installed packages that export a `cli-plugin` entry and registers their commands under the declared namespace. This same pattern could be used by other packages in the future — `@refrakt-md/docs` could register `refrakt docs` commands, `@refrakt-md/storytelling` could register `refrakt story` commands.
 
 For users without the refrakt CLI installed globally, `npx` works:
 
@@ -89,14 +93,14 @@ refrakt plan serve [directory]
 
 |Argument   |Default     |Description                         |
 |-----------|------------|------------------------------------|
-|`directory`|`./planning`|Root directory containing plan files|
+|`directory`|`./plan`|Root directory containing plan files|
 
 **Options:**
 
 |Option   |Default  |Description                                                  |
 |---------|---------|-------------------------------------------------------------|
 |`--port` |`3000`   |Dev server port                                              |
-|`--specs`|`./specs`|Directory containing spec files                              |
+|`--specs`|`./plan/spec`|Directory containing spec files                              |
 |`--theme`|`default`|Dashboard theme (`default`, `minimal`, or path to custom CSS)|
 |`--open` |`false`  |Open the dashboard in the default browser                    |
 
@@ -136,7 +140,7 @@ If the directory does contain an `index.md`, it’s used as-is. This lets the de
 refrakt plan serve
 
 # Serve from custom directories
-refrakt plan serve ./project/plan --specs ./project/specs --port 4000
+refrakt plan serve ./project/plan --specs ./project/plan/spec --port 4000
 
 # Open in browser automatically
 refrakt plan serve --open
@@ -183,13 +187,13 @@ refrakt plan status [directory]
 
 |Argument   |Default     |Description                         |
 |-----------|------------|------------------------------------|
-|`directory`|`./planning`|Root directory containing plan files|
+|`directory`|`./plan`|Root directory containing plan files|
 
 **Options:**
 
 |Option       |Default  |Description                         |
 |-------------|---------|------------------------------------|
-|`--specs`    |`./specs`|Directory containing spec files     |
+|`--specs`    |`./plan/spec`|Directory containing spec files     |
 |`--milestone`|(active) |Show status for a specific milestone|
 |`--format`   |`text`   |Output format: `text`, `json`       |
 
@@ -353,13 +357,13 @@ refrakt plan validate [directory]
 
 |Argument   |Default     |Description                         |
 |-----------|------------|------------------------------------|
-|`directory`|`./planning`|Root directory containing plan files|
+|`directory`|`./plan`|Root directory containing plan files|
 
 **Options:**
 
 |Option    |Default  |Description                             |
 |----------|---------|----------------------------------------|
-|`--specs` |`./specs`|Directory containing spec files         |
+|`--specs` |`./plan/spec`|Directory containing spec files         |
 |`--strict`|`false`  |Treat warnings as errors (useful for CI)|
 |`--format`|`text`   |Output format: `text`, `json`           |
 
@@ -433,13 +437,13 @@ refrakt plan build [directory]
 
 |Argument   |Default     |Description                         |
 |-----------|------------|------------------------------------|
-|`directory`|`./planning`|Root directory containing plan files|
+|`directory`|`./plan`|Root directory containing plan files|
 
 **Options:**
 
 |Option      |Default      |Description                                                              |
 |------------|-------------|-------------------------------------------------------------------------|
-|`--specs`   |`./specs`    |Directory containing spec files                                          |
+|`--specs`   |`./plan/spec`|Directory containing spec files                                          |
 |`--out`     |`./plan-site`|Output directory for generated HTML                                      |
 |`--theme`   |`default`    |Dashboard theme                                                          |
 |`--base-url`|`/`          |Base URL for deployment (e.g., `/project/` for GitHub Pages subdirectory)|
@@ -511,15 +515,13 @@ refrakt plan init [directory]
    ```
    plan/
    ├── work/
-   ├── bugs/
-   ├── decisions/
-   ├── milestones/
+   ├── spec/
+   ├── decision/
    └── index.md
-   specs/
    ```
 1. Generates a starter `plan/index.md` dashboard
 1. Creates a sample milestone, work item, and decision as examples
-1. If a `claude.md` or `CLAUDE.md` exists, appends the plan workflow section. If not, creates one with the full template
+1. If a `claude.md` or `CLAUDE.md` exists, appends the plan workflow section. If not, creates one with the full template. The workflow section documents the `next` / `update` / `status` command loop for AI agents and human developers
 1. Prints a getting-started guide
 
 **Example:**
@@ -529,21 +531,203 @@ $ refrakt plan init
 
   Created plan/
   Created plan/work/
-  Created plan/bugs/
-  Created plan/decisions/
-  Created plan/milestones/
-  Created specs/
+  Created plan/spec/
+  Created plan/decision/
   Created plan/index.md (dashboard)
-  Created plan/milestones/v0.1.0.md (example milestone)
   Created plan/work/PROJ-001-example.md (example work item)
-  Created plan/decisions/ADR-001-example.md (example decision)
-  Updated CLAUDE.md with plan workflow section
+  Created plan/decision/ADR-001-example.md (example decision)
+  Created plan/spec/SPEC-001-example.md (example spec)
+  Updated CLAUDE.md with plan workflow section (includes next/update/status commands)
 
   Get started:
     1. Edit the example files to match your project
     2. Run: refrakt plan serve
     3. Open: http://localhost:3000
+    4. Or find your next task: refrakt plan next
 ```
+
+-----
+
+### `update`
+
+Modifies a plan file's attributes or acceptance criteria in place.
+
+```bash
+refrakt plan update <id> [options]
+```
+
+**Arguments:**
+
+|Argument|Required|Description                                                       |
+|--------|--------|------------------------------------------------------------------|
+|`id`    |Yes     |Entity identifier to update (e.g., `WORK-026`, `BUG-001`, `SPEC-012`)|
+
+**Options:**
+
+|Option                |Description                                                  |
+|----------------------|-------------------------------------------------------------|
+|`--status <status>`   |Change the entity's status attribute                         |
+|`--check "text"`      |Check off a matching acceptance criterion (`- [ ]` to `- [x]`)|
+|`--uncheck "text"`    |Uncheck a matching acceptance criterion (`- [x]` to `- [ ]`)|
+|`--priority <priority>`|Change priority (work items only)                           |
+|`--milestone <name>`  |Assign or change milestone                                   |
+|`--assignee <name>`   |Assign person or agent                                       |
+|`--severity <severity>`|Change severity (bugs only)                                 |
+|`--dir <directory>`   |Directory to scan (default: `./plan`)                        |
+|`--format <format>`   |Output format: `text`, `json` (default: `text`)              |
+
+**Behaviour:**
+
+1. Scans `--dir` recursively for `.md` files containing a rune tag whose `id` attribute matches `<id>`
+1. If no match is found, exits with error code 2 and prints the ID and directories scanned
+1. If found, reads the file and modifies the Markdoc rune tag's attributes in place — editing only the opening tag line, preserving all other content
+1. For `--check` / `--uncheck`, performs a substring match against acceptance criteria lines (`- [ ] ...` / `- [x] ...`) and toggles the checkbox. If the text matches multiple lines, reports an error and requires a more specific match string
+1. Validates attribute values against the rune schema (e.g., rejects `--status working` for a work item since that is not a valid status)
+1. Writes the modified file back to disk
+1. Prints the change summary (file path, attribute changed, old value, new value)
+
+**Multiple updates in a single call:** Options can be combined to make several changes at once:
+
+```bash
+refrakt plan update WORK-026 --status in-progress --assignee claude --milestone v0.5.0
+```
+
+**Examples:**
+
+```bash
+# Move a work item to in-progress
+refrakt plan update WORK-026 --status in-progress
+
+# Check off an acceptance criterion
+refrakt plan update WORK-026 --check "Schema validates all attributes"
+
+# Assign a milestone and priority
+refrakt plan update WORK-026 --milestone v0.5.0 --priority high
+
+# Change a bug's severity
+refrakt plan update BUG-001 --severity critical
+
+# Assign to an agent
+refrakt plan update WORK-026 --assignee claude
+
+# JSON output for scripting
+refrakt plan update WORK-026 --status done --format json
+```
+
+**JSON output:**
+
+```json
+{
+  "id": "WORK-026",
+  "file": "plan/work/build-video-rune.md",
+  "changes": [
+    { "field": "status", "from": "ready", "to": "in-progress" }
+  ]
+}
+```
+
+**Exit codes:**
+
+|Code|Meaning                                                               |
+|----|----------------------------------------------------------------------|
+|`0` |Update applied successfully                                           |
+|`1` |Validation error (invalid status, ambiguous criterion match, etc.)    |
+|`2` |Entity not found or invalid arguments                                 |
+
+-----
+
+### `next`
+
+Finds the highest-priority work item that is ready to be picked up. Considers dependencies, status, and priority to recommend the next item.
+
+```bash
+refrakt plan next [options]
+```
+
+**Options:**
+
+|Option                |Description                                                        |
+|----------------------|-------------------------------------------------------------------|
+|`--milestone <name>`  |Scope to a specific milestone                                      |
+|`--tag <tag>`         |Filter by tag                                                      |
+|`--assignee <name>`   |Filter by assignee (or `unassigned` for items with no assignee)    |
+|`--type <type>`       |Entity type filter: `work`, `bug`, or `all` (default: `all`)      |
+|`--count <n>`         |Number of items to return (default: `1`)                           |
+|`--dir <directory>`   |Directory to scan (default: `./plan`)                              |
+|`--format <format>`   |Output format: `text`, `json` (default: `text`)                    |
+
+**Behaviour:**
+
+1. Scans `--dir` recursively for work items and bugs
+1. Filters to items with `status="ready"` (or `status="confirmed"` for bugs)
+1. Excludes items whose dependencies (referenced work item IDs in a "References" or "Dependencies" section) are not yet `done` or `fixed`
+1. Sorts remaining items by priority (critical > high > medium > low), then by complexity (simpler items first as tiebreaker)
+1. Returns the top `--count` items
+
+**Text output:**
+
+```
+Next item:
+
+  WORK-020  Build gallery rune          high    moderate
+  plan/work/build-gallery-rune.md
+
+  Specs:    SPEC-008
+  Depends:  (none)
+
+  Acceptance Criteria:
+  - [ ] Schema accepts all gallery attributes
+  - [ ] Identity transform produces correct BEM structure
+  - [ ] CSS coverage test passes
+```
+
+**JSON output:**
+
+```bash
+refrakt plan next --format json
+```
+
+```json
+{
+  "items": [
+    {
+      "id": "WORK-020",
+      "type": "work",
+      "title": "Build gallery rune",
+      "status": "ready",
+      "priority": "high",
+      "complexity": "moderate",
+      "file": "plan/work/build-gallery-rune.md",
+      "milestone": "v0.5.0",
+      "specs": ["SPEC-008"],
+      "dependencies": [],
+      "criteria": [
+        { "text": "Schema accepts all gallery attributes", "checked": false },
+        { "text": "Identity transform produces correct BEM structure", "checked": false },
+        { "text": "CSS coverage test passes", "checked": false }
+      ]
+    }
+  ]
+}
+```
+
+**Multiple items:**
+
+```bash
+# Get the top 5 ready items
+refrakt plan next --count 5
+
+# Get unassigned items in a milestone
+refrakt plan next --milestone v0.5.0 --assignee unassigned --count 10
+```
+
+**Exit codes:**
+
+|Code|Meaning                                  |
+|----|-----------------------------------------|
+|`0` |At least one item found                  |
+|`1` |No items match the criteria              |
+|`2` |Invalid arguments or directory not found |
 
 -----
 
@@ -555,18 +739,52 @@ The default directory structure follows the convention from the plan runes spec:
 
 ```
 plan/
-├── work/          ← work items
-├── bugs/          ← bug reports
-├── decisions/     ← architecture decisions
-├── milestones/    ← milestone definitions
+├── work/          ← work items and bug reports
+├── spec/          ← specification documents
+├── decision/      ← architecture decisions
 └── index.md       ← dashboard
-
-specs/             ← specification documents
 ```
 
 But the CLI doesn’t require this structure. Files can be in any directory — the CLI finds plan runes by scanning content, not by path convention. A flat directory with all files in one folder works. A deeply nested structure with files organised by feature works. The entity registry doesn’t care where files live.
 
-The `--specs` option tells the CLI where to find spec files separately. This is useful when specs live outside the planning directory (which is common — specs are documentation, planning is plan management).
+The `--specs` option tells the CLI where to find spec files separately. This is useful when specs live in a different location from the default `plan/spec/` directory.
+
+-----
+
+## AI Agent Integration
+
+The `plan` CLI commands are designed for consumption by AI coding agents (Claude Code, Copilot, Cursor, etc.) as well as human developers. The `--format json` option on `status`, `next`, and `update` enables structured output that agents can parse reliably.
+
+**Typical agent workflow:**
+
+```bash
+# 1. Agent checks what's available
+refrakt plan next --format json
+
+# 2. Agent picks up the item
+refrakt plan update WORK-020 --status in-progress --assignee claude
+
+# 3. Agent reads the file for full context
+cat plan/work/build-gallery-rune.md
+
+# 4. Agent implements the changes (reads referenced specs, writes code)
+
+# 5. Agent checks off criteria as it goes
+refrakt plan update WORK-020 --check "Schema accepts all gallery attributes"
+refrakt plan update WORK-020 --check "Identity transform produces correct BEM structure"
+
+# 6. Agent marks the item done
+refrakt plan update WORK-020 --status done
+```
+
+**CLAUDE.md integration:** The `init` command appends a workflow section to the project's `CLAUDE.md` that teaches agents this workflow. The section includes the available commands, the status lifecycle, and instructions for picking up work items. Any agent that reads `CLAUDE.md` (which Claude Code does automatically) learns how to interact with the plan system without additional prompting.
+
+**Key design decisions for agent ergonomics:**
+
+- **ID-based addressing.** All commands use the entity ID, not file paths. Agents don't need to know the file system layout.
+- **Substring matching for criteria.** The `--check` flag matches by substring so agents don't need to reproduce the exact checkbox text — a unique fragment is sufficient.
+- **Dependency awareness in `next`.** Agents don't need to manually check whether prerequisites are complete. The `next` command handles this automatically.
+- **Atomic updates.** Multiple `--status`, `--assignee`, `--milestone` flags in a single `update` call avoid race conditions and reduce tool calls.
 
 -----
 
@@ -597,7 +815,7 @@ Custom themes are supported via the `--theme` option pointing to a CSS file. The
 ## Package Structure
 
 ```
-@refrakt/plan
+@refrakt-md/plan
 ├── cli-plugin.ts             ← CLI plugin entry (discovered by refrakt CLI)
 ├── commands/
 │   ├── serve.ts              ← dev server with hot reload
@@ -605,7 +823,9 @@ Custom themes are supported via the `--theme` option pointing to a CSS file. The
 │   ├── status.ts             ← terminal status display
 │   ├── validate.ts           ← structure and reference validation
 │   ├── build.ts              ← static site generation
-│   └── init.ts               ← plan structure scaffolding
+│   ├── init.ts               ← plan structure scaffolding
+│   ├── update.ts             ← in-place attribute and checkbox editing
+│   └── next.ts               ← next-item selection with dependency awareness
 ├── runes/
 │   ├── spec.ts               ← spec rune definition + content model
 │   ├── work.ts               ← work item rune definition + content model
@@ -630,6 +850,6 @@ Custom themes are supported via the `--theme` option pointing to a CSS file. The
     └── dashboard.md          ← plan dashboard template
 ```
 
-The package serves double duty: it provides runes (registered in the transform pipeline like any rune package) and CLI commands (registered as a CLI plugin). Installing `@refrakt/plan` gives you both — plan runes in your content and `refrakt plan` commands in your terminal.
+The package serves double duty: it provides runes (registered in the transform pipeline like any rune package) and CLI commands (registered as a CLI plugin). Installing `@refrakt-md/plan` gives you both — plan runes in your content and `refrakt plan` commands in your terminal.
 
 {% /spec %}
