@@ -61,6 +61,7 @@
 - reveal
 - embed
 - icon
+- xref
 
 ## Layout
 

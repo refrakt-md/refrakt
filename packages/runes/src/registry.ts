@@ -35,6 +35,7 @@ import {Tint} from './schema/tint.js';
 import {Showcase} from './schema/showcase.js';
 import {Bg} from './schema/bg.js';
 import {Blog, BlogPost} from './schema/blog.js';
+import {Xref} from './schema/xref.js';
 
 export const schema = {
   Page: useSchema(Page).defineType('Page'),
@@ -92,4 +93,5 @@ export const schema = {
   Bg: useSchema(Bg).defineType('Bg'),
   Blog: useSchema(Blog).defineType('Blog', {}, 'Blog'),
   BlogPost: useSchema(BlogPost).defineType('BlogPost'),
+  Xref: useSchema(Xref).defineType('Xref'),
 }

@@ -1,0 +1,12 @@
+/* Xref — inline cross-reference link */
+
+.rf-xref {
+	/* Inherits normal link styling from the theme */
+}
+
+/* Unresolved reference */
+.rf-xref--unresolved {
+	text-decoration: underline dashed;
+	color: var(--rf-color-text-muted);
+	cursor: help;
+}
