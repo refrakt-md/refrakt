@@ -1,0 +1,228 @@
+# Plan — Claude Code Guide
+
+This directory contains project planning content using the `@refrakt-md/plan` runes package. All files are Markdoc (`.md` with `{% %}` tags).
+
+## Directory Layout
+
+```
+plan/
+  spec/      — Specifications (what to build)
+  work/      — Work items (how to build it)
+  decision/  — Architecture decision records (why it's built this way)
+```
+
+## ID Conventions
+
+Each rune type uses a unique prefix. To assign a new ID, scan existing files for the highest number and increment by 1.
+
+| Type | Prefix | Example | Current highest |
+|------|--------|---------|-----------------|
+| Spec | `SPEC-` | `SPEC-014` | SPEC-013 |
+| Work | `WORK-` | `WORK-027` | WORK-026 |
+| Decision | `ADR-` | `ADR-008` | ADR-007 |
+| Bug | `BUG-` | `BUG-001` | (none yet) |
+
+IDs are zero-padded to 3 digits. Always verify the next ID by scanning:
+```bash
+grep -rh 'id="SPEC-' plan/spec/ | sort
+grep -rh 'id="WORK-' plan/work/ | sort
+grep -rh 'id="ADR-' plan/decision/ | sort
+```
+
+## Valid Statuses
+
+### spec
+`draft` → `review` → `accepted` → `superseded` | `deprecated`
+
+### work
+`draft` → `ready` → `in-progress` → `review` → `done`
+Also: `blocked` (waiting on a dependency) and `pending` (acknowledged but not yet ready)
+
+### bug
+`reported` → `confirmed` → `in-progress` → `fixed`
+Also: `wontfix`, `duplicate`
+
+### decision
+`proposed` → `accepted` → `superseded` | `deprecated`
+
+### milestone
+`planning` → `active` → `complete`
+
+## When to Create Each Type
+
+- **Spec**: A new feature idea, design proposal, or system description. Specs are the source of truth for *what* to build. They can be any length — from a short proposal to a full design document.
+- **Work item**: A discrete, implementable piece of work. Created by breaking a spec into concrete tasks. Every work item should have acceptance criteria.
+- **Bug**: A defect report. Use instead of a work item when something is broken rather than missing.
+- **Decision**: An architectural choice that needs to be recorded. Create one *before* implementing when you face a non-obvious design choice, so future sessions understand *why* something was built a certain way.
+
+## Required Content Structure
+
+### spec
+
+```markdoc
+{% spec id="SPEC-XXX" status="draft" tags="area1, area2" %}
+
+# Title
+
+> Brief summary of scope and purpose.
+
+## Section headings as needed
+Body content — prose, tables, code, diagrams. Freeform.
+
+{% /spec %}
+```
+
+Optional attributes: `version`, `supersedes` (ID of replaced spec).
+
+### work
+
+```markdoc
+{% work id="WORK-XXX" status="ready" priority="high" complexity="moderate" tags="area" %}
+
+# What needs to be done
+
+Description of the change and why it's needed.
+
+## Acceptance Criteria
+- [ ] First criterion
+- [ ] Second criterion
+- [ ] Third criterion
+
+## Approach
+Technical notes on how to implement.
+
+## References
+- SPEC-XXX (relevant spec)
+- WORK-YYY (dependency)
+
+{% /work %}
+```
+
+**Acceptance Criteria is the most important section.** Every work item must have it. Use checkboxes (`- [ ]`) so progress is trackable. Check them off (`- [x]`) as you complete each one.
+
+Other useful sections: Edge Cases, Verification, Dependencies.
+
+Optional attributes: `assignee`, `milestone`, `complexity` (`trivial`/`simple`/`moderate`/`complex`/`unknown`).
+
+### bug
+
+```markdoc
+{% bug id="BUG-XXX" status="reported" severity="major" tags="area" %}
+
+# Short description of the bug
+
+## Steps to Reproduce
+1. First step
+2. Second step
+3. Observe the problem
+
+## Expected
+What should happen.
+
+## Actual
+What actually happens.
+
+## Environment
+- Browser/runtime version
+- OS
+- Package versions
+
+{% /bug %}
+```
+
+Optional attributes: `assignee`, `milestone`.
+
+### decision
+
+```markdoc
+{% decision id="ADR-XXX" status="proposed" date="2026-03-22" tags="area" %}
+
+# Decision title
+
+## Context
+Why this decision is needed. What problem or question prompted it.
+
+## Options Considered
+1. **Option A** — description, pros, cons
+2. **Option B** — description, pros, cons
+3. **Option C** — description, pros, cons
+
+## Decision
+Which option was chosen.
+
+## Rationale
+Why this option was chosen over the alternatives.
+
+## Consequences
+What follows from this decision — trade-offs, follow-up work, constraints imposed.
+
+{% /decision %}
+```
+
+Optional attributes: `supersedes` (ID of replaced decision).
+
+### milestone
+
+```markdoc
+{% milestone name="v1.0.0" status="active" target="2026-04-15" %}
+
+# v1.0.0 — Milestone Title
+
+- Goal one
+- Goal two
+- Goal three
+
+Optional notes or context.
+
+{% /milestone %}
+```
+
+## Working with Plan Content
+
+### Implementing a work item
+
+1. Pick a work item with `status="ready"` — prefer higher priority
+2. Read referenced specs and decisions (check tags and ID references in the file)
+3. Check dependency work items are `done`
+4. Change status to `"in-progress"` in the file
+5. Implement the changes in the codebase
+6. Check off acceptance criteria (`- [ ]` → `- [x]`) as you complete each one
+7. When all criteria pass, change status to `"done"`
+
+### Creating a work item from a spec
+
+1. Read the spec thoroughly
+2. Identify discrete, independently implementable pieces
+3. Create one work item per piece in `plan/work/`
+4. Reference the spec ID in the work item's References section
+5. Set `priority` based on dependencies and importance
+6. Set `complexity` based on scope (see table below)
+
+### Recording a decision during implementation
+
+If you encounter a non-obvious design choice:
+1. Create a decision file in `plan/decision/` with `status="proposed"`
+2. Document the context, options, and your recommendation
+3. Proceed with implementation using the chosen approach
+4. The decision record preserves the reasoning for future sessions
+
+### Complexity guide
+
+| Value | Signal |
+|-------|--------|
+| `trivial` | Single file change, obvious implementation |
+| `simple` | One package, clear approach, few edge cases |
+| `moderate` | Multiple files/packages, some design decisions needed |
+| `complex` | Cross-cutting change, architectural implications, many edge cases |
+| `unknown` | Needs investigation before complexity can be assessed |
+
+## Tags
+
+Use lowercase, hyphenated tags. Common tags in this project:
+
+- Package areas: `runes`, `transform`, `lumina`, `content`, `svelte`, `sveltekit`, `editor`, `cli`
+- Feature areas: `css`, `layout`, `pipeline`, `content-model`, `themes`
+- Rune names: `tint`, `nav`, `tabs`, etc.
+- Cross-cutting: `architecture`, `tooling`, `docs`
+
+Multiple tags are comma-separated in the attribute: `tags="runes, css, lumina"`.
