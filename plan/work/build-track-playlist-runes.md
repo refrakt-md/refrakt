@@ -1,4 +1,4 @@
-{% work id="WORK-015" status="pending" priority="medium" tags="runes, media" %}
+{% work id="WORK-015" status="done" priority="medium" tags="runes, media" %}
 
 # Build `track` and `playlist` Runes
 
@@ -68,20 +68,17 @@ When `artist` is set on the playlist, parsed list-item tracks inherit it as thei
 - Properties: `eyebrow`, `headline`, `image`, `blurb`, `type`, `artist` (span)
 - Refs: `tracks` (ol of track items)
 
-## Implementation Tasks
+## Status
 
-1. Create schema in `runes/media/src/tags/track.ts`
-2. Create schema in `runes/media/src/tags/playlist.ts` — including compact format parser
-3. Add RuneConfig entries in `runes/media/src/config.ts`
-4. Write CSS in `packages/lumina/styles/runes/track.css` and `playlist.css`
-5. Import CSS in `packages/lumina/index.css`
-6. Set up `music-recording` → `track` and `music-playlist` → `playlist` aliases for backward compatibility
-7. Add SEO extractors (varies by type: `MusicRecording`, `PodcastEpisode`, `MusicPlaylist`, `PodcastSeries`, etc.)
-8. Write tests in `runes/media/test/tags/track.test.ts` and `playlist.test.ts`
-9. Create inspector fixtures
+Already implemented. Both runes have full schemas, configs, CSS, tests, and legacy aliases:
 
-## Dependencies
-
-- Replaces existing `music-recording` and `music-playlist` — need deprecation aliases
+- Track schema: `runes/media/src/tags/track.ts` (129 lines)
+- Playlist schema: `runes/media/src/tags/playlist.ts` (323 lines)
+- Config: `runes/media/src/config.ts` (`Track`, `Playlist`, `MusicRecording`, `MusicPlaylist`)
+- CSS: `packages/lumina/styles/runes/track.css` + `playlist.css`
+- Tests: `runes/media/test/track.test.ts`, `playlist.test.ts`, `music-playlist.test.ts`
+- Legacy aliases: `music-recording` → `Track`, `music-playlist` → `Playlist` (with deprecation notices)
+- Duration utilities: `runes/media/src/duration.ts`
+- SEO tests: `runes/media/test/seo.test.ts`
 
 {% /work %}

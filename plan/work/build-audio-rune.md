@@ -1,4 +1,4 @@
-{% work id="WORK-019" status="pending" priority="medium" tags="runes, media" %}
+{% work id="WORK-019" status="done" priority="medium" tags="runes, media" %}
 
 # Build `audio` Rune
 
@@ -32,20 +32,15 @@ Self-hosted audio player with waveform visualization, chapters, and transcript. 
 - Properties: `src`, `title`, `artist` (span), `duration` (span, formatted), `waveform`, `chapters`
 - Refs: `player` (audio element), `chapterList` (ol), `transcript` (div), `caption` (figcaption)
 
-## Implementation Tasks
+## Status
 
-1. Create schema in `runes/media/src/tags/audio.ts`
-2. Add RuneConfig entry in `runes/media/src/config.ts`
-3. Write CSS in `packages/lumina/styles/runes/audio.css`
-4. Import CSS in `packages/lumina/index.css`
-5. Implement web component (`rf-audio`) for playback controls, chapter sync, and waveform visualization
-6. Waveform: either pre-computed waveform data file or client-side Web Audio API analysis
-7. Add SEO extractor for `AudioObject`
-8. Write tests in `runes/media/test/tags/audio.test.ts`
-9. Create inspector fixture
+Already implemented. Full schema, config, CSS, and tests exist:
 
-## Dependencies
-
-None — standalone web component, though waveform visualization adds complexity.
+- Schema: `runes/media/src/tags/audio.ts` (98 lines)
+- Config: `runes/media/src/config.ts` (`Audio`)
+- CSS: `packages/lumina/styles/runes/audio.css` (195 lines)
+- Type: `runes/media/src/schema/audio.ts` (`Audio` class)
+- Tests: `runes/media/test/audio.test.ts`
+- Supports: src, playlist linking, title, artist, waveform, inline chapters, `rf-audio` web component
 
 {% /work %}
