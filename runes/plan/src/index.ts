@@ -6,9 +6,9 @@ import { decision } from './tags/decision.js';
 import { milestone } from './tags/milestone.js';
 import { config } from './config.js';
 
-export const project: RunePackage = {
-	name: 'project',
-	displayName: 'Project',
+export const plan: RunePackage = {
+	name: 'plan',
+	displayName: 'Plan',
 	version: '0.8.4',
 	runes: {
 		'spec': {
@@ -107,4 +107,4 @@ Custom properties cascade naturally without JavaScript.
 	},
 };
 
-export default project;
+export default plan;

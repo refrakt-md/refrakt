@@ -1,13 +1,13 @@
 {
-  "name": "@refrakt-md/project",
-  "description": "Project management runes for refrakt.md — specs, work items, bugs, decisions, and milestones",
+  "name": "@refrakt-md/plan",
+  "description": "Planning runes for refrakt.md — specs, work items, bugs, decisions, and milestones",
   "version": "0.8.4",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/refrakt-md/refrakt.git",
-    "directory": "runes/project"
+    "directory": "runes/plan"
   },
   "publishConfig": {
     "access": "public"

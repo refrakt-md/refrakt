@@ -220,16 +220,16 @@ npm install @refrakt-md/media
 | [track](/docs/runes/track) | Standalone track or recording with metadata |
 | [audio](/docs/runes/audio) | Audio player with optional waveform and chapter markers |
 
-### @refrakt-md/project
+### @refrakt-md/plan
 
-Project management runes for spec-driven development with AI-native workflows.
+Planning runes for spec-driven development with AI-native workflows.
 
 ```bash
-npm install @refrakt-md/project
+npm install @refrakt-md/plan
 ```
 
 ```json
-{ "packages": ["@refrakt-md/project"] }
+{ "packages": ["@refrakt-md/plan"] }
 ```
 
 | Rune | Description |
