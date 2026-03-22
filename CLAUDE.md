@@ -211,6 +211,46 @@ Theme developer documentation lives at `site/content/docs/themes/` (6 pages: ove
 
 Site content lives in `site/content/` as `.md` files with YAML frontmatter. Layouts use `_layout.md` files with `{% layout %}` + `{% region %}` tags that cascade down directory trees.
 
+## Plan
+
+Project planning content lives in `plan/` as Markdoc files using the `@refrakt-md/plan` runes package.
+
+### Structure
+
+```
+plan/
+  spec/      — Specifications (source of truth for what to build)
+  work/      — Work items (what to implement)
+  decision/  — Architecture decision records (why it's built this way)
+```
+
+### Rune syntax
+
+- `{% spec id="SPEC-001" status="accepted" %}` — specification document
+- `{% work id="WORK-001" status="ready" priority="high" %}` — work item
+- `{% bug id="BUG-001" status="confirmed" severity="major" %}` — bug report
+- `{% decision id="ADR-001" status="accepted" %}` — architecture decision record
+- `{% milestone name="v0.5.0" status="active" %}` — release target
+
+### Workflow
+
+1. Find a work item in `plan/work/` with `status="ready"` — prefer higher priority
+2. Before implementing, read:
+   - The work item's referenced specs in `plan/spec/` (follow ID references)
+   - Related decision records in `plan/decision/` (check tags)
+   - Any dependency work items (ensure they're done)
+3. Change the work item's `status` to `"in-progress"`
+4. Implement, checking off acceptance criteria as you go
+5. When all criteria are met, change status to `"done"`
+
+### Creating plan content
+
+- New specs go in `plan/spec/` wrapped in `{% spec %}`
+- New work items go in `plan/work/` wrapped in `{% work %}`
+- New decisions go in `plan/decision/` wrapped in `{% decision %}`
+- Always include a unique `id` attribute
+- Use H2 sections for structure (Acceptance Criteria, Approach, Context, etc.)
+
 ## Release Process
 
 See [RELEASING.md](RELEASING.md) for the full process. Key commands:
@@ -245,5 +285,7 @@ runes/storytelling/   — @refrakt-md/storytelling (character, realm, faction, l
 runes/business/       — @refrakt-md/business (cast, organization, timeline)
 runes/places/         — @refrakt-md/places (event, map, itinerary)
 runes/media/          — @refrakt-md/media (music-playlist, music-recording)
+runes/plan/           — @refrakt-md/plan (spec, work, bug, decision, milestone)
+plan/                 — Project planning content (specs, work items, decisions)
 site/                 — Documentation site (SvelteKit)
 ```
