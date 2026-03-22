@@ -4,7 +4,7 @@ description: Work item with acceptance criteria, references, and implementation 
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt-md/project**. Install with `npm install @refrakt-md/project` and add `"@refrakt-md/project"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `packages` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Work

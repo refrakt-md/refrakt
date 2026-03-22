@@ -11,7 +11,7 @@
 		"@refrakt-md/design",
 		"@refrakt-md/learning",
 		"@refrakt-md/media",
-		"@refrakt-md/project"
+		"@refrakt-md/plan"
 	],
 	"routeRules": [
 		{ "pattern": "docs/**", "layout": "docs" },

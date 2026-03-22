@@ -154,7 +154,7 @@
 - track
 - audio
 
-## @refrakt-md/project
+## @refrakt-md/plan
 
 - spec
 - work

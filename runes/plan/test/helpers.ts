@@ -2,11 +2,11 @@ import 'reflect-metadata';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune } from '@refrakt-md/runes';
-import { project } from '../src/index.js';
+import { plan } from '../src/index.js';
 
 // Create Rune instances from the package
 const packageRunes: Record<string, any> = {};
-for (const [name, entry] of Object.entries(project.runes)) {
+for (const [name, entry] of Object.entries(plan.runes)) {
 	packageRunes[name] = defineRune({ name, schema: entry.transform as any, aliases: entry.aliases });
 }
 const tags = { ...coreTags, ...runeTagMap(packageRunes), ...Markdoc.tags };
