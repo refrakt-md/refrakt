@@ -232,6 +232,8 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string)
 				attributes: {
 					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
 					href: item.url,
+					'data-id': item.id,
+					'data-status': item.status,
 				},
 				children: [item.label],
 			} as unknown as RendererNode);

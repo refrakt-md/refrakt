@@ -1,4 +1,4 @@
-{% work id="WORK-037" status="ready" priority="high" complexity="simple" tags="transform, plan, layout" %}
+{% work id="WORK-037" status="done" priority="high" complexity="simple" tags="transform, plan, layout" %}
 
 # Define `planLayout` in `@refrakt-md/transform`
 

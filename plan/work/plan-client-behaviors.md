@@ -1,4 +1,4 @@
-{% work id="WORK-041" status="ready" priority="medium" complexity="simple" tags="plan, behaviors" %}
+{% work id="WORK-041" status="done" priority="medium" complexity="simple" tags="plan, behaviors" %}
 
 # Add client behaviors to plan site
 

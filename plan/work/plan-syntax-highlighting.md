@@ -1,4 +1,4 @@
-{% work id="WORK-040" status="ready" priority="medium" complexity="moderate" tags="plan, highlight" %}
+{% work id="WORK-040" status="done" priority="medium" complexity="moderate" tags="plan, highlight" %}
 
 # Add syntax highlighting to plan site
 

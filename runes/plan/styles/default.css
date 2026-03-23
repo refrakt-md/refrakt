@@ -470,3 +470,44 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* --------------------------------------------------------------------------
+   Copy-to-clipboard button on code blocks
+   -------------------------------------------------------------------------- */
+
+.rf-code-wrapper {
+	position: relative;
+}
+
+.rf-copy-button {
+	position: absolute;
+	top: var(--plan-space-xs);
+	right: var(--plan-space-xs);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid var(--plan-color-border);
+	border-radius: var(--plan-radius-sm);
+	background: var(--plan-color-surface);
+	color: var(--plan-color-text-muted);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.rf-code-wrapper:hover .rf-copy-button {
+	opacity: 1;
+}
+
+.rf-copy-button:hover {
+	color: var(--plan-color-text);
+	border-color: var(--plan-color-text-muted);
+}
+
+.rf-copy-button--copied {
+	color: var(--plan-status-done);
+	border-color: var(--plan-status-done);
+}

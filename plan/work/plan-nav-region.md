@@ -1,4 +1,4 @@
-{% work id="WORK-038" status="ready" priority="high" complexity="moderate" tags="plan, html, pipeline" %}
+{% work id="WORK-038" status="done" priority="high" complexity="moderate" tags="plan, html, pipeline" %}
 
 # Build nav region builder for plan site
 

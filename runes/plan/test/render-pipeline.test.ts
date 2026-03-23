@@ -200,6 +200,23 @@ Desc.
 		expect(result.navRegion.length).toBeGreaterThan(0);
 	});
 
+	it('nav region items include data-id and data-status attributes', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
+		expect(html).toContain('data-id="WORK-001"');
+		expect(html).toContain('data-status="ready"');
+	});
+
 	it('renders full HTML documents via renderPage', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
