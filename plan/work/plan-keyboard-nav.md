@@ -1,4 +1,4 @@
-{% work id="WORK-048" status="draft" priority="low" complexity="simple" tags="plan, ux, behaviors" %}
+{% work id="WORK-048" status="done" priority="low" complexity="simple" tags="plan, ux, behaviors" %}
 
 # Keyboard navigation for plan site
 
@@ -6,14 +6,14 @@ Add keyboard shortcuts for fast navigation: `/` to focus search, `j`/`k` to move
 
 ## Acceptance Criteria
 
-- [ ] `/` focuses the search/filter bar
-- [ ] `Escape` clears filter and unfocuses search bar
-- [ ] `j`/`k` moves to next/previous item in sidebar
-- [ ] `Enter` navigates to the focused item
-- [ ] `[`/`]` jumps to previous/next entity type group
-- [ ] `o` toggles collapse of the focused group
-- [ ] Visual focus indicator matches the active link style
-- [ ] Shortcuts don't fire when typing in the search input (except Escape)
+- [x] `/` focuses the search/filter bar
+- [x] `Escape` clears filter and unfocuses search bar
+- [x] `j`/`k` moves to next/previous item in sidebar
+- [x] `Enter` navigates to the focused item
+- [x] `[`/`]` jumps to previous/next entity type group
+- [x] `o` toggles collapse of the focused group
+- [x] Visual focus indicator matches the active link style
+- [x] Shortcuts don't fire when typing in the search input (except Escape)
 
 ## Approach
 

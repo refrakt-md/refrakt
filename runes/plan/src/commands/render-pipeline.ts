@@ -882,6 +882,107 @@ const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
     }
     return true;
   }
+
+  // --- Keyboard navigation ---
+  var focusIndex = -1;
+
+  function getVisibleLinks() {
+    return Array.from(document.querySelectorAll('.rf-plan-sidebar__link')).filter(function(el) {
+      return el.offsetParent !== null && el.style.display !== 'none' && !el.closest('[hidden]');
+    });
+  }
+
+  function getGroupHeaders() {
+    return Array.from(document.querySelectorAll('.rf-plan-sidebar__status-header')).filter(function(el) {
+      return el.offsetParent !== null;
+    });
+  }
+
+  function setFocus(links, idx) {
+    // Clear previous
+    var prev = document.querySelector('.rf-plan-sidebar__link--focused');
+    if (prev) prev.classList.remove('rf-plan-sidebar__link--focused');
+    focusIndex = idx;
+    if (idx >= 0 && idx < links.length) {
+      links[idx].classList.add('rf-plan-sidebar__link--focused');
+      links[idx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    // Don't intercept when typing in inputs (except Escape handled above)
+    var tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    var links = getVisibleLinks();
+
+    if (e.key === 'j') {
+      e.preventDefault();
+      var next = focusIndex + 1;
+      if (next >= links.length) next = 0;
+      setFocus(links, next);
+    } else if (e.key === 'k') {
+      e.preventDefault();
+      var prev = focusIndex - 1;
+      if (prev < 0) prev = links.length - 1;
+      setFocus(links, prev);
+    } else if (e.key === 'Enter' && focusIndex >= 0 && focusIndex < links.length) {
+      e.preventDefault();
+      links[focusIndex].click();
+    } else if (e.key === ']') {
+      e.preventDefault();
+      var headers = getGroupHeaders();
+      if (headers.length === 0) return;
+      // Find current group
+      var currentLink = focusIndex >= 0 && focusIndex < links.length ? links[focusIndex] : null;
+      var currentGroup = currentLink ? currentLink.closest('.rf-plan-sidebar__status-group') : null;
+      var currentHeader = currentGroup ? currentGroup.querySelector('.rf-plan-sidebar__status-header') : null;
+      var hi = currentHeader ? headers.indexOf(currentHeader) : -1;
+      var nextHi = hi + 1 < headers.length ? hi + 1 : 0;
+      // Find first visible link in that group
+      var targetGroup = headers[nextHi].closest('.rf-plan-sidebar__status-group');
+      var targetItems = targetGroup ? targetGroup.querySelector('.rf-plan-sidebar__status-items') : null;
+      if (targetItems && targetItems.hasAttribute('hidden')) {
+        // Expand the group first
+        targetItems.removeAttribute('hidden');
+        headers[nextHi].setAttribute('aria-expanded', 'true');
+      }
+      var firstLink = targetGroup ? targetGroup.querySelector('.rf-plan-sidebar__link') : null;
+      if (firstLink) {
+        var li = links.indexOf(firstLink);
+        if (li === -1) { links = getVisibleLinks(); li = links.indexOf(firstLink); }
+        setFocus(links, li >= 0 ? li : 0);
+      }
+    } else if (e.key === '[') {
+      e.preventDefault();
+      var headers2 = getGroupHeaders();
+      if (headers2.length === 0) return;
+      var currentLink2 = focusIndex >= 0 && focusIndex < links.length ? links[focusIndex] : null;
+      var currentGroup2 = currentLink2 ? currentLink2.closest('.rf-plan-sidebar__status-group') : null;
+      var currentHeader2 = currentGroup2 ? currentGroup2.querySelector('.rf-plan-sidebar__status-header') : null;
+      var hi2 = currentHeader2 ? headers2.indexOf(currentHeader2) : headers2.length;
+      var prevHi = hi2 - 1 >= 0 ? hi2 - 1 : headers2.length - 1;
+      var targetGroup2 = headers2[prevHi].closest('.rf-plan-sidebar__status-group');
+      var targetItems2 = targetGroup2 ? targetGroup2.querySelector('.rf-plan-sidebar__status-items') : null;
+      if (targetItems2 && targetItems2.hasAttribute('hidden')) {
+        targetItems2.removeAttribute('hidden');
+        headers2[prevHi].setAttribute('aria-expanded', 'true');
+      }
+      var firstLink2 = targetGroup2 ? targetGroup2.querySelector('.rf-plan-sidebar__link') : null;
+      if (firstLink2) {
+        var li2 = links.indexOf(firstLink2);
+        if (li2 === -1) { links = getVisibleLinks(); li2 = links.indexOf(firstLink2); }
+        setFocus(links, li2 >= 0 ? li2 : 0);
+      }
+    } else if (e.key === 'o') {
+      e.preventDefault();
+      var currentLink3 = focusIndex >= 0 && focusIndex < links.length ? links[focusIndex] : null;
+      var sg = currentLink3 ? currentLink3.closest('.rf-plan-sidebar__status-group') : null;
+      if (!sg) return;
+      var btn = sg.querySelector('.rf-plan-sidebar__status-header');
+      if (btn) btn.click();
+    }
+  });
 })();
 </script>`;
 

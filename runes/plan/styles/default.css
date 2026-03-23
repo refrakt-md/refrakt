@@ -501,6 +501,12 @@
 	font-weight: 600;
 }
 
+.rf-plan-sidebar__link--focused {
+	outline: 2px solid var(--plan-color-ready);
+	outline-offset: -2px;
+	background: var(--plan-color-surface-alt);
+}
+
 /* Views section in sidebar */
 .rf-plan-sidebar__view-header {
 	font-size: 0.6875rem;
