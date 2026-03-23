@@ -1,4 +1,4 @@
-{% work id="WORK-026" status="ready" priority="medium" complexity="trivial" tags="runes, core" %}
+{% work id="WORK-026" status="done" priority="medium" complexity="trivial" tags="runes, core" %}
 
 # Add `ref` as Alias for `xref`
 
@@ -10,10 +10,10 @@ SPEC-021 uses `{% ref "SPEC-008" /%}` syntax for cross-references. The codebase 
 
 ## Acceptance Criteria
 
-- [ ] `{% ref "SPEC-008" /%}` produces identical output to `{% xref "SPEC-008" /%}`
-- [ ] `ref` registered as alias in the xref tag schema (`packages/runes/src/tags/xref.ts`)
-- [ ] All xref attributes work with the `ref` alias (label, type)
-- [ ] Test verifying alias produces same output
+- [x] `{% ref "SPEC-008" /%}` produces identical output to `{% xref "SPEC-008" /%}`
+- [x] `ref` registered as alias in the xref tag schema (`packages/runes/src/tags/xref.ts`)
+- [x] All xref attributes work with the `ref` alias (label, type)
+- [x] Test verifying alias produces same output
 
 ## Approach
 

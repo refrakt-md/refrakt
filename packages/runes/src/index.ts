@@ -457,6 +457,7 @@ export const runes = {
   }),
   xref: defineRune({
     name: 'xref',
+    aliases: ['ref'],
     schema: xref,
     description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
     reinterprets: {},

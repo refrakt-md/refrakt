@@ -47,3 +47,26 @@ describe('xref rune (Phase 1 — placeholder)', () => {
 		expect(span!.children).not.toContain('RF-138');
 	});
 });
+
+describe('ref alias', () => {
+	it('should produce identical output to xref', () => {
+		const refResult = parse('{% ref "SPEC-022" /%}');
+		const xrefResult = parse('{% xref "SPEC-022" /%}');
+		const refSpan = findTag(refResult as any, t => t.attributes['data-rune'] === 'xref');
+		const xrefSpan = findTag(xrefResult as any, t => t.attributes['data-rune'] === 'xref');
+		expect(refSpan).toBeDefined();
+		expect(refSpan!.name).toBe(xrefSpan!.name);
+		expect(refSpan!.attributes).toEqual(xrefSpan!.attributes);
+		expect(refSpan!.children).toEqual(xrefSpan!.children);
+	});
+
+	it('should support all xref attributes via ref', () => {
+		const result = parse('{% ref "Veshra" label="the exile" type="character" /%}');
+		const span = findTag(result as any, t => t.attributes['data-rune'] === 'xref');
+		expect(span).toBeDefined();
+		expect(span!.attributes['data-xref-id']).toBe('Veshra');
+		expect(span!.attributes['data-xref-label']).toBe('the exile');
+		expect(span!.attributes['data-xref-type']).toBe('character');
+		expect(span!.children).toContain('the exile');
+	});
+});
