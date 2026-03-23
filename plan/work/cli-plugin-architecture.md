@@ -1,4 +1,4 @@
-{% work id="WORK-027" status="ready" priority="high" complexity="moderate" tags="cli, architecture, plan" %}
+{% work id="WORK-027" status="done" priority="high" complexity="moderate" tags="cli, architecture, plan" %}
 
 # CLI Plugin Discovery Architecture
 
@@ -12,12 +12,12 @@ When a plugin package is not installed, the CLI prints install instructions and 
 
 ## Acceptance Criteria
 
-- [ ] CLI discovers installed packages that export a `cli-plugin` entry point
-- [ ] Plugin commands are registered under their declared namespace (`refrakt plan <cmd>`)
-- [ ] When a plugin package is not installed, CLI prints install instructions and exits
-- [ ] `@refrakt-md/plan` exports `cli-plugin.ts` with command registrations for all 8 commands
-- [ ] Existing commands (inspect, contracts, validate, etc.) are unaffected
-- [ ] Tests for plugin discovery, registration, and missing-package fallback
+- [x] CLI discovers installed packages that export a `cli-plugin` entry point
+- [x] Plugin commands are registered under their declared namespace (`refrakt plan <cmd>`)
+- [x] When a plugin package is not installed, CLI prints install instructions and exits
+- [x] `@refrakt-md/plan` exports `cli-plugin.ts` with command registrations for all 8 commands
+- [x] Existing commands (inspect, contracts, validate, etc.) are unaffected
+- [x] Tests for plugin discovery, registration, and missing-package fallback
 
 ## Approach
 

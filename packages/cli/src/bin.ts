@@ -32,9 +32,8 @@ if (command === 'write') {
 	printUsage();
 	process.exit(1);
 } else {
-	console.error(`Error: Unknown command "${command}"\n`);
-	printUsage();
-	process.exit(1);
+	// Try plugin discovery for unknown commands
+	runPlugin(command, args.slice(1));
 }
 
 function printUsage(): void {
@@ -139,6 +138,64 @@ Edit Options:
   --dev-server <url>       URL of running dev server for live preview
   --no-open                Don't auto-open browser
 `);
+}
+
+// --- Plugin system ---
+
+interface CliPluginCommand {
+	name: string;
+	description: string;
+	handler: (args: string[]) => void | Promise<void>;
+}
+
+interface CliPlugin {
+	namespace: string;
+	commands: CliPluginCommand[];
+}
+
+async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void> {
+	const subcommand = pluginArgs[0];
+	const packageName = `@refrakt-md/${namespace}`;
+	const pluginEntry = `${packageName}/cli-plugin`;
+
+	let plugin: CliPlugin;
+	try {
+		const mod = await import(pluginEntry);
+		plugin = mod.default ?? mod;
+	} catch {
+		console.error(`\n  The "${namespace}" commands require ${packageName}.`);
+		console.error(`  Install it: npm install ${packageName}\n`);
+		process.exit(1);
+	}
+
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`\nUsage: refrakt ${namespace} <command> [options]\n`);
+		console.log('Commands:');
+		const maxLen = Math.max(...plugin.commands.map(c => c.name.length));
+		for (const cmd of plugin.commands) {
+			console.log(`  ${cmd.name.padEnd(maxLen + 2)} ${cmd.description}`);
+		}
+		console.log();
+		process.exit(0);
+	}
+
+	const cmd = plugin.commands.find(c => c.name === subcommand);
+	if (!cmd) {
+		console.error(`Error: Unknown ${namespace} command "${subcommand}"\n`);
+		console.log('Available commands:');
+		for (const c of plugin.commands) {
+			console.log(`  refrakt ${namespace} ${c.name}  — ${c.description}`);
+		}
+		console.log();
+		process.exit(1);
+	}
+
+	try {
+		await cmd.handler(pluginArgs.slice(1));
+	} catch (err: any) {
+		console.error(`Error: ${err.message}`);
+		process.exit(1);
+	}
 }
 
 /** Load community packages from refrakt.config.json and assemble a merged ThemeConfig.
