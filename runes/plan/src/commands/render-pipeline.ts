@@ -494,26 +494,57 @@ function slugify(text: string): string {
 // --- Dashboard generation ---
 
 function generateDashboardContent(entities: PlanEntity[]): string {
-	const milestones = entities.filter(e => e.type === 'milestone' && e.attributes.status === 'active');
-	const activeMilestone = milestones[0];
+	const milestones = entities.filter(e => e.type === 'milestone');
+	const activeMilestones = milestones.filter(m => m.attributes.status === 'active');
+	const allMilestones = milestones.filter(m => m.attributes.status !== 'complete');
+	const hasMultipleMilestones = allMilestones.length > 1;
 
 	let md = '# Plan Dashboard\n\n';
 
-	if (activeMilestone) {
+	// Progress summary
+	md += `{% plan-progress /%}\n\n`;
+
+	// Active milestone(s)
+	for (const ms of activeMilestones) {
 		md += `## Active Milestone\n\n`;
-		md += `{% milestone name="${activeMilestone.attributes.name}" status="${activeMilestone.attributes.status}" target="${activeMilestone.attributes.target || ''}" %}\n`;
-		md += `# ${activeMilestone.title || activeMilestone.attributes.name}\n`;
+		md += `{% milestone name="${ms.attributes.name}" status="${ms.attributes.status}" target="${ms.attributes.target || ''}" %}\n`;
+		md += `# ${ms.title || ms.attributes.name}\n`;
 		md += `{% /milestone %}\n\n`;
 	}
 
-	md += `## Ready for Work\n\n`;
-	md += `{% backlog filter="status:ready" sort="priority" /%}\n\n`;
+	// Blocked items callout
+	const hasBlocked = entities.some(e =>
+		(e.type === 'work' || e.type === 'bug') && e.attributes.status === 'blocked',
+	);
+	if (hasBlocked) {
+		md += `## Blocked\n\n`;
+		md += `{% backlog filter="status:blocked" sort="priority" /%}\n\n`;
+	}
 
-	md += `## In Progress\n\n`;
-	md += `{% backlog filter="status:in-progress" sort="priority" /%}\n\n`;
+	// Per-milestone grouping or flat layout
+	if (hasMultipleMilestones) {
+		// Group work items by milestone
+		for (const ms of allMilestones) {
+			const name = ms.attributes.name;
+			md += `## ${ms.title || name}\n\n`;
+			md += `{% backlog filter="milestone:${name}" sort="priority" group="status" /%}\n\n`;
+		}
+		// Unassigned items (no milestone)
+		md += `## Unassigned\n\n`;
+		md += `{% backlog filter="milestone:" sort="priority" group="status" /%}\n\n`;
+	} else {
+		md += `## In Progress\n\n`;
+		md += `{% backlog filter="status:in-progress" sort="priority" /%}\n\n`;
+
+		md += `## Ready for Work\n\n`;
+		md += `{% backlog filter="status:ready" sort="priority" /%}\n\n`;
+	}
 
 	md += `## Recent Decisions\n\n`;
-	md += `{% decision-log sort="date" /%}\n`;
+	md += `{% decision-log sort="date" /%}\n\n`;
+
+	md += `## Recent Activity\n\n`;
+	md += `{% plan-activity limit="10" /%}\n`;
 
 	return md;
 }
@@ -772,7 +803,26 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	planPipelineHooks.register!(transformedPages, registry, ctx);
 
 	const aggregated: Record<string, unknown> = {};
-	aggregated['plan'] = planPipelineHooks.aggregate!(registry, ctx);
+	const planAggregated = planPipelineHooks.aggregate!(registry, ctx) as Record<string, unknown>;
+
+	// Inject mtime into entity data for activity tracking
+	const mtimeMap = new Map<string, number>();
+	for (const entity of allEntities) {
+		const entityId = entity.attributes.id || entity.attributes.name;
+		if (entityId && entity.mtime) {
+			mtimeMap.set(entityId, entity.mtime);
+		}
+	}
+	for (const key of ['workEntities', 'bugEntities', 'decisionEntities', 'specEntities'] as const) {
+		const entities = planAggregated[key] as Array<{ id: string; data: Record<string, unknown> }> | undefined;
+		if (!entities) continue;
+		for (const e of entities) {
+			const mtime = mtimeMap.get(e.id);
+			if (mtime) e.data.mtime = mtime;
+		}
+	}
+
+	aggregated['plan'] = planAggregated;
 
 	const processedPages = transformedPages.map(p =>
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,

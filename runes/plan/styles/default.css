@@ -681,3 +681,143 @@
 	color: var(--plan-status-done);
 	border-color: var(--plan-status-done);
 }
+
+/* --------------------------------------------------------------------------
+   Progress summary
+   -------------------------------------------------------------------------- */
+
+.rf-plan-progress {
+	background: var(--plan-color-bg);
+	border: 1px solid var(--plan-color-border);
+	border-radius: var(--plan-radius-lg);
+	padding: var(--plan-space-md) var(--plan-space-lg);
+	margin-block-end: var(--plan-space-lg);
+}
+
+.rf-plan-progress__row {
+	display: flex;
+	align-items: baseline;
+	gap: var(--plan-space-sm);
+	padding-block: var(--plan-space-xs);
+}
+
+.rf-plan-progress__row + .rf-plan-progress__row {
+	border-block-start: 1px solid var(--plan-color-border-light);
+}
+
+.rf-plan-progress__label {
+	font-family: var(--plan-font-sans);
+	font-weight: 600;
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text);
+	min-width: 8rem;
+}
+
+.rf-plan-progress__counts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--plan-space-xs) var(--plan-space-sm);
+}
+
+.rf-plan-progress__count {
+	font-family: var(--plan-font-sans);
+	font-size: var(--plan-font-size-xs);
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--plan-radius-sm);
+	white-space: nowrap;
+}
+
+/* Color-coded status counts */
+.rf-plan-progress__count[data-status="done"] { color: var(--plan-color-done); background: var(--plan-color-done-bg); }
+.rf-plan-progress__count[data-status="fixed"] { color: var(--plan-color-fixed); background: var(--plan-color-fixed-bg); }
+.rf-plan-progress__count[data-status="in-progress"] { color: var(--plan-color-in-progress); background: var(--plan-color-in-progress-bg); }
+.rf-plan-progress__count[data-status="review"] { color: var(--plan-color-review); background: var(--plan-color-review-bg); }
+.rf-plan-progress__count[data-status="ready"] { color: var(--plan-color-ready); background: var(--plan-color-ready-bg); }
+.rf-plan-progress__count[data-status="blocked"] { color: var(--plan-color-blocked); background: var(--plan-color-blocked-bg); }
+.rf-plan-progress__count[data-status="draft"] { color: var(--plan-color-draft); background: var(--plan-color-draft-bg); }
+.rf-plan-progress__count[data-status="pending"] { color: var(--plan-color-pending); background: var(--plan-color-pending-bg); }
+.rf-plan-progress__count[data-status="accepted"] { color: var(--plan-color-accepted); background: var(--plan-color-accepted-bg); }
+.rf-plan-progress__count[data-status="proposed"] { color: var(--plan-color-proposed); background: var(--plan-color-proposed-bg); }
+.rf-plan-progress__count[data-status="confirmed"] { color: var(--plan-color-confirmed); background: var(--plan-color-confirmed-bg); }
+.rf-plan-progress__count[data-status="reported"] { color: var(--plan-color-reported); background: var(--plan-color-reported-bg); }
+.rf-plan-progress__count[data-status="superseded"] { color: var(--plan-color-superseded); background: var(--plan-color-superseded-bg); }
+.rf-plan-progress__count[data-status="deprecated"] { color: var(--plan-color-text-muted); background: var(--plan-color-surface-alt); }
+.rf-plan-progress__count[data-status="wontfix"] { color: var(--plan-color-text-muted); background: var(--plan-color-surface-alt); }
+.rf-plan-progress__count[data-status="duplicate"] { color: var(--plan-color-text-muted); background: var(--plan-color-surface-alt); }
+
+/* --------------------------------------------------------------------------
+   Recent activity
+   -------------------------------------------------------------------------- */
+
+.rf-plan-activity {
+	margin-block-end: var(--plan-space-lg);
+}
+
+.rf-plan-activity__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.rf-plan-activity__entry {
+	display: flex;
+	align-items: baseline;
+	gap: var(--plan-space-sm);
+	padding: var(--plan-space-xs) var(--plan-space-sm);
+	border-radius: var(--plan-radius-sm);
+	font-family: var(--plan-font-sans);
+	font-size: var(--plan-font-size-sm);
+}
+
+.rf-plan-activity__entry:nth-child(odd) {
+	background: var(--plan-color-surface);
+}
+
+.rf-plan-activity__date {
+	font-family: var(--plan-font-mono);
+	font-size: var(--plan-font-size-xs);
+	color: var(--plan-color-text-muted);
+	white-space: nowrap;
+}
+
+.rf-plan-activity__type {
+	font-size: var(--plan-font-size-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--plan-color-text-muted);
+	min-width: 4rem;
+}
+
+.rf-plan-activity__id {
+	font-family: var(--plan-font-mono);
+	font-size: var(--plan-font-size-xs);
+	color: var(--plan-color-primary);
+	white-space: nowrap;
+}
+
+.rf-plan-activity__status {
+	font-size: var(--plan-font-size-xs);
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--plan-radius-sm);
+	white-space: nowrap;
+}
+
+/* Reuse status palette for activity status badges */
+.rf-plan-activity__status[data-status="done"] { color: var(--plan-color-done); background: var(--plan-color-done-bg); }
+.rf-plan-activity__status[data-status="fixed"] { color: var(--plan-color-fixed); background: var(--plan-color-fixed-bg); }
+.rf-plan-activity__status[data-status="in-progress"] { color: var(--plan-color-in-progress); background: var(--plan-color-in-progress-bg); }
+.rf-plan-activity__status[data-status="review"] { color: var(--plan-color-review); background: var(--plan-color-review-bg); }
+.rf-plan-activity__status[data-status="ready"] { color: var(--plan-color-ready); background: var(--plan-color-ready-bg); }
+.rf-plan-activity__status[data-status="blocked"] { color: var(--plan-color-blocked); background: var(--plan-color-blocked-bg); }
+.rf-plan-activity__status[data-status="draft"] { color: var(--plan-color-draft); background: var(--plan-color-draft-bg); }
+.rf-plan-activity__status[data-status="accepted"] { color: var(--plan-color-accepted); background: var(--plan-color-accepted-bg); }
+.rf-plan-activity__status[data-status="proposed"] { color: var(--plan-color-proposed); background: var(--plan-color-proposed-bg); }
+.rf-plan-activity__status[data-status="confirmed"] { color: var(--plan-color-confirmed); background: var(--plan-color-confirmed-bg); }
+.rf-plan-activity__status[data-status="reported"] { color: var(--plan-color-reported); background: var(--plan-color-reported-bg); }
+
+.rf-plan-activity__title {
+	color: var(--plan-color-text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

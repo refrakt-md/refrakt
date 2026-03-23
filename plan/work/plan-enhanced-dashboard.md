@@ -1,4 +1,4 @@
-{% work id="WORK-046" status="draft" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
+{% work id="WORK-046" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
 
 # Enhanced plan dashboard with progress and milestone scoping
 
@@ -6,13 +6,13 @@ Improve the auto-generated dashboard to show project health at a glance: status 
 
 ## Acceptance Criteria
 
-- [ ] Dashboard shows a progress summary line per entity type (e.g., "35 work items: 12 done, 3 in progress, 7 ready, 2 blocked, 11 draft")
-- [ ] Status counts are color-coded using the existing status palette
-- [ ] Blocked items section with warning styling surfaces all `status: blocked` entities
-- [ ] When multiple milestones exist, work items and bugs are grouped by milestone with per-milestone progress
-- [ ] When one or zero milestones exist, flat layout is used (current behavior)
-- [ ] Recent activity section shows last 10 items by file modification time
-- [ ] Existing dashboard sections (active milestone, ready, in-progress, recent decisions) are preserved
+- [x] Dashboard shows a progress summary line per entity type (e.g., "35 work items: 12 done, 3 in progress, 7 ready, 2 blocked, 11 draft")
+- [x] Status counts are color-coded using the existing status palette
+- [x] Blocked items section with warning styling surfaces all `status: blocked` entities
+- [x] When multiple milestones exist, work items and bugs are grouped by milestone with per-milestone progress
+- [x] When one or zero milestones exist, flat layout is used (current behavior)
+- [x] Recent activity section shows last 10 items by file modification time
+- [x] Existing dashboard sections (active milestone, ready, in-progress, recent decisions) are preserved
 
 ## Approach
 

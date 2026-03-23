@@ -2,6 +2,8 @@ import Markdoc from '@markdoc/markdoc';
 import type { PackagePipelineHooks, EntityRegistration } from '@refrakt-md/types';
 import { BACKLOG_SENTINEL } from './tags/backlog.js';
 import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
+import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
+import { PLAN_ACTIVITY_SENTINEL } from './tags/plan-activity.js';
 import { parseFilter, matchesFilter, sortEntities, groupEntities } from './filter.js';
 
 const { Tag } = Markdoc;
@@ -127,6 +129,8 @@ export interface PlanAggregatedData {
 	workEntities: EntityRegistration[];
 	bugEntities: EntityRegistration[];
 	decisionEntities: EntityRegistration[];
+	specEntities: EntityRegistration[];
+	milestoneEntities: EntityRegistration[];
 }
 
 export const planPipelineHooks: PackagePipelineHooks = {
@@ -171,6 +175,8 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			workEntities: registry.getAll('work'),
 			bugEntities: registry.getAll('bug'),
 			decisionEntities: registry.getAll('decision'),
+			specEntities: registry.getAll('spec'),
+			milestoneEntities: registry.getAll('milestone'),
 		} satisfies PlanAggregatedData;
 	},
 
@@ -189,6 +195,16 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			if (tag.attributes['data-rune'] === 'decision-log' && hasSentinel(tag, DECISION_LOG_SENTINEL)) {
 				modified = true;
 				return resolveDecisionLog(tag, planData);
+			}
+			// Handle plan-progress sentinel
+			if (tag.attributes['data-rune'] === 'plan-progress' && hasSentinel(tag, PLAN_PROGRESS_SENTINEL)) {
+				modified = true;
+				return resolvePlanProgress(tag, planData);
+			}
+			// Handle plan-activity sentinel
+			if (tag.attributes['data-rune'] === 'plan-activity' && hasSentinel(tag, PLAN_ACTIVITY_SENTINEL)) {
+				modified = true;
+				return resolvePlanActivity(tag, planData);
 			}
 			return tag;
 		});
@@ -265,6 +281,139 @@ function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 	const newChildren = tag.children.filter(
 		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
 			c.attributes['data-field'] === DECISION_LOG_SENTINEL ||
+			c.attributes['data-name'] === 'items'
+		)),
+	);
+	newChildren.push(list);
+
+	return new Tag(tag.name, tag.attributes, newChildren as any[]);
+}
+
+// --- Status labels for display ---
+const STATUS_LABELS: Record<string, string[]> = {
+	work: ['done', 'in-progress', 'review', 'ready', 'blocked', 'draft', 'pending'],
+	bug: ['fixed', 'in-progress', 'confirmed', 'reported', 'wontfix', 'duplicate'],
+	spec: ['accepted', 'review', 'draft', 'superseded', 'deprecated'],
+	decision: ['accepted', 'proposed', 'superseded', 'deprecated'],
+};
+
+const TYPE_LABELS: Record<string, string> = {
+	work: 'work items',
+	bug: 'bugs',
+	spec: 'specs',
+	decision: 'decisions',
+};
+
+function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+	const show = readField(tag, 'show') || 'all';
+
+	const typeMap: Record<string, EntityRegistration[]> = {
+		work: data.workEntities,
+		bug: data.bugEntities,
+		spec: data.specEntities,
+		decision: data.decisionEntities,
+	};
+
+	const types = show === 'all' ? Object.keys(typeMap) : show.split(',').map(s => s.trim());
+	const rows: any[] = [];
+
+	for (const type of types) {
+		const entities = typeMap[type];
+		if (!entities || entities.length === 0) continue;
+
+		const statusCounts = new Map<string, number>();
+		for (const e of entities) {
+			const status = String(e.data.status ?? 'unknown');
+			statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
+		}
+
+		// Build status count spans in canonical order
+		const statusOrder = STATUS_LABELS[type] ?? [];
+		const countSpans: any[] = [];
+		for (const status of statusOrder) {
+			const count = statusCounts.get(status);
+			if (!count) continue;
+			countSpans.push(new Tag('span', {
+				class: 'rf-plan-progress__count',
+				'data-status': status,
+			}, [`${count} ${status}`]));
+		}
+		// Include any statuses not in the canonical list
+		for (const [status, count] of statusCounts) {
+			if (statusOrder.includes(status)) continue;
+			countSpans.push(new Tag('span', {
+				class: 'rf-plan-progress__count',
+				'data-status': status,
+			}, [`${count} ${status}`]));
+		}
+
+		const label = TYPE_LABELS[type] ?? type;
+		const row = new Tag('div', {
+			class: 'rf-plan-progress__row',
+			'data-type': type,
+		}, [
+			new Tag('span', { class: 'rf-plan-progress__label' }, [`${entities.length} ${label}`]),
+			new Tag('span', { class: 'rf-plan-progress__counts' }, countSpans),
+		]);
+		rows.push(row);
+	}
+
+	const itemsDiv = new Tag('div', { 'data-name': 'items' }, rows);
+
+	const newChildren = tag.children.filter(
+		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
+			c.attributes['data-field'] === PLAN_PROGRESS_SENTINEL ||
+			c.attributes['data-name'] === 'items'
+		)),
+	);
+	newChildren.push(itemsDiv);
+
+	return new Tag(tag.name, tag.attributes, newChildren as any[]);
+}
+
+function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+	const limit = parseInt(readField(tag, 'limit') || '10', 10);
+
+	// Collect all entities with mtime from their source URL registration data
+	const allEntities = [
+		...data.workEntities,
+		...data.bugEntities,
+		...data.decisionEntities,
+		...data.specEntities,
+	];
+
+	// Sort by mtime descending (entities with mtime data)
+	const withMtime = allEntities
+		.filter(e => e.data.mtime != null && Number(e.data.mtime) > 0)
+		.sort((a, b) => Number(b.data.mtime) - Number(a.data.mtime))
+		.slice(0, limit);
+
+	const entries = withMtime.map(e => {
+		const id = String(e.data.id ?? e.id);
+		const title = String(e.data.title ?? '');
+		const status = String(e.data.status ?? '');
+		const type = e.type;
+		const mtime = Number(e.data.mtime);
+		const dateStr = new Date(mtime).toISOString().slice(0, 10);
+
+		return new Tag('li', {
+			class: 'rf-plan-activity__entry',
+			'data-type': type,
+			'data-status': status,
+		}, [
+			new Tag('time', { class: 'rf-plan-activity__date' }, [dateStr]),
+			new Tag('span', { class: 'rf-plan-activity__type' }, [type]),
+			new Tag('span', { class: 'rf-plan-activity__id' }, [id]),
+			new Tag('span', { class: 'rf-plan-activity__status', 'data-status': status }, [status]),
+			new Tag('span', { class: 'rf-plan-activity__title' }, [title]),
+		]);
+	});
+
+	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-plan-activity__list' }, entries);
+
+	const newChildren = tag.children.filter(
+		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
+			c.attributes['data-field'] === PLAN_ACTIVITY_SENTINEL ||
 			c.attributes['data-name'] === 'items'
 		)),
 	);

@@ -140,6 +140,7 @@ export function scanPlanFiles(dir: string, options: ScanOptions = {}): PlanEntit
 
 		// Check cache validity
 		if (useCache && cached && cached.mtime === stat.mtimeMs && cached.size === stat.size) {
+			cached.entity.mtime = stat.mtimeMs;
 			entities.push(cached.entity);
 			newCache[relPath] = cached;
 			continue;
@@ -147,6 +148,7 @@ export function scanPlanFiles(dir: string, options: ScanOptions = {}): PlanEntit
 
 		const entity = parseFile(filePath, relPath);
 		if (entity) {
+			entity.mtime = stat.mtimeMs;
 			entities.push(entity);
 			if (useCache) {
 				newCache[relPath] = { mtime: stat.mtimeMs, size: stat.size, entity };

@@ -6,6 +6,8 @@ import { Decision } from './schema/decision.js';
 import { Milestone } from './schema/milestone.js';
 import { Backlog } from './schema/backlog.js';
 import { DecisionLog } from './schema/decision-log.js';
+import { PlanProgress } from './schema/plan-progress.js';
+import { PlanActivity } from './schema/plan-activity.js';
 
 export const schema = {
 	Spec: useSchema(Spec).defineType('Spec'),
@@ -15,6 +17,8 @@ export const schema = {
 	Milestone: useSchema(Milestone).defineType('Milestone'),
 	Backlog: useSchema(Backlog).defineType('Backlog'),
 	DecisionLog: useSchema(DecisionLog).defineType('DecisionLog'),
+	PlanProgress: useSchema(PlanProgress).defineType('PlanProgress'),
+	PlanActivity: useSchema(PlanActivity).defineType('PlanActivity'),
 };
 
 // --- Scanner types ---
@@ -39,6 +43,8 @@ export interface PlanEntity {
 	criteria: Criterion[];
 	/** Referenced entity IDs extracted from {% ref %} / {% xref %} tags */
 	refs: string[];
+	/** File modification time (ms since epoch) */
+	mtime?: number;
 }
 
 export interface ScanCacheEntry {

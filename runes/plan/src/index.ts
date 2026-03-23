@@ -6,6 +6,8 @@ import { decision } from './tags/decision.js';
 import { milestone } from './tags/milestone.js';
 import { backlog } from './tags/backlog.js';
 import { decisionLog } from './tags/decision-log.js';
+import { planProgress } from './tags/plan-progress.js';
+import { planActivity } from './tags/plan-activity.js';
 import { config } from './config.js';
 import { planPipelineHooks } from './pipeline.js';
 
@@ -115,6 +117,18 @@ Custom properties cascade naturally without JavaScript.
 			description: 'Chronological view of architecture decision records',
 			reinterprets: {},
 			fixture: `{% decision-log sort="date" /%}`,
+		},
+		'plan-progress': {
+			transform: planProgress,
+			description: 'Progress summary showing status counts per entity type',
+			reinterprets: {},
+			fixture: `{% plan-progress /%}`,
+		},
+		'plan-activity': {
+			transform: planActivity,
+			description: 'Recent activity feed sorted by file modification time',
+			reinterprets: {},
+			fixture: `{% plan-activity limit="10" /%}`,
 		},
 	},
 	theme: {

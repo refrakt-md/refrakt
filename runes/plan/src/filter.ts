@@ -17,8 +17,8 @@ export function parseFilter(expr: string): ParsedFilter {
 		const colon = part.indexOf(':');
 		if (colon === -1) continue;
 		const field = part.slice(0, colon);
+		if (!field) continue;
 		const value = part.slice(colon + 1);
-		if (!field || !value) continue;
 		if (!filter[field]) filter[field] = [];
 		filter[field].push(value);
 	}
