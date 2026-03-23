@@ -355,7 +355,7 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
  * Convert NavGroup[] to a serialized tag tree for the layout's nav region.
  * Produces BEM-classed elements matching the existing .rf-plan-sidebar__* selectors.
  */
-function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string): RendererNode[] {
+function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string, viewDefs?: ViewPageDef[]): RendererNode[] {
 	const children: RendererNode[] = [];
 
 	// Title
@@ -484,6 +484,80 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string)
 		} as unknown as RendererNode);
 	}
 
+	// Views section
+	if (viewDefs && viewDefs.length > 0) {
+		const viewChildren: RendererNode[] = [];
+		viewChildren.push({
+			$$mdtype: 'Tag',
+			name: 'div',
+			attributes: { class: 'rf-plan-sidebar__group-title' },
+			children: ['Views'],
+		} as unknown as RendererNode);
+
+		// Group view defs by field type
+		const VIEW_FIELD_LABELS: Record<string, string> = { tag: 'By Tag', assignee: 'By Assignee', milestone: 'By Milestone' };
+		const byField = new Map<string, ViewPageDef[]>();
+		for (const v of viewDefs) {
+			if (!byField.has(v.field)) byField.set(v.field, []);
+			byField.get(v.field)!.push(v);
+		}
+
+		for (const [field, defs] of byField) {
+			const subChildren: RendererNode[] = [];
+
+			subChildren.push({
+				$$mdtype: 'Tag',
+				name: 'div',
+				attributes: { class: 'rf-plan-sidebar__view-header' },
+				children: [VIEW_FIELD_LABELS[field] || field],
+			} as unknown as RendererNode);
+
+			const linkNodes: RendererNode[] = defs.map(v => ({
+				$$mdtype: 'Tag',
+				name: 'a',
+				attributes: {
+					class: `rf-plan-sidebar__link${v.url === activeUrl ? ' rf-plan-sidebar__link--active' : ''}`,
+					href: v.url,
+				},
+				children: [
+					{
+						$$mdtype: 'Tag',
+						name: 'span',
+						attributes: { class: 'rf-plan-sidebar__view-label' },
+						children: [v.value],
+					} as unknown as RendererNode,
+					{
+						$$mdtype: 'Tag',
+						name: 'span',
+						attributes: { class: 'rf-plan-sidebar__view-count' },
+						children: [String(v.count)],
+					} as unknown as RendererNode,
+				],
+			} as unknown as RendererNode));
+
+			subChildren.push({
+				$$mdtype: 'Tag',
+				name: 'div',
+				attributes: { class: 'rf-plan-sidebar__view-items' },
+				children: linkNodes,
+			} as unknown as RendererNode);
+
+			viewChildren.push({
+				$$mdtype: 'Tag',
+				name: 'div',
+				attributes: { class: 'rf-plan-sidebar__view-group', 'data-field': field },
+				children: subChildren,
+			} as unknown as RendererNode);
+		}
+
+		children.push({
+			$$mdtype: 'Tag',
+			name: 'div',
+			attributes: { class: 'rf-plan-sidebar__group', 'data-type': 'views' },
+			children: viewChildren,
+		} as unknown as RendererNode);
+	}
+
 	return children;
 }
 
@@ -547,6 +621,95 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	md += `{% plan-activity limit="10" /%}\n`;
 
 	return md;
+}
+
+// --- View page generation ---
+
+interface ViewPageDef {
+	url: string;
+	title: string;
+	content: string;
+	field: string;
+	value: string;
+	count: number;
+}
+
+function generateViewPages(entities: PlanEntity[], baseUrl: string): ViewPageDef[] {
+	const views: ViewPageDef[] = [];
+
+	// Collect distinct values for tags, assignees, milestones
+	const tagCounts = new Map<string, number>();
+	const assigneeCounts = new Map<string, number>();
+	const milestoneCounts = new Map<string, number>();
+
+	for (const entity of entities) {
+		// Tags (comma-separated)
+		const tags = entity.attributes.tags;
+		if (tags) {
+			for (const tag of tags.split(',').map(t => t.trim()).filter(Boolean)) {
+				tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+			}
+		}
+		// Assignee
+		const assignee = entity.attributes.assignee;
+		if (assignee) {
+			assigneeCounts.set(assignee, (assigneeCounts.get(assignee) ?? 0) + 1);
+		}
+		// Milestone
+		if (entity.type === 'work' || entity.type === 'bug') {
+			const milestone = entity.attributes.milestone;
+			if (milestone) {
+				milestoneCounts.set(milestone, (milestoneCounts.get(milestone) ?? 0) + 1);
+			}
+		}
+	}
+
+	// Generate tag view pages (threshold: 3+ distinct tags)
+	if (tagCounts.size >= 3) {
+		for (const [tag, count] of [...tagCounts.entries()].sort((a, b) => b[1] - a[1])) {
+			const slug = slugify(tag);
+			views.push({
+				url: `${baseUrl}view/tag/${slug}.html`,
+				title: `Tag: ${tag}`,
+				field: 'tag',
+				value: tag,
+				count,
+				content: `# Tag: ${tag}\n\nAll items tagged **${tag}** (${count}).\n\n{% backlog filter="tags:${tag}" sort="priority" group="status" /%}\n`,
+			});
+		}
+	}
+
+	// Generate assignee view pages (threshold: 2+ distinct assignees)
+	if (assigneeCounts.size >= 2) {
+		for (const [assignee, count] of [...assigneeCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+			const slug = slugify(assignee);
+			views.push({
+				url: `${baseUrl}view/assignee/${slug}.html`,
+				title: `Assignee: ${assignee}`,
+				field: 'assignee',
+				value: assignee,
+				count,
+				content: `# Assignee: ${assignee}\n\nAll items assigned to **${assignee}** (${count}).\n\n{% backlog filter="assignee:${assignee}" sort="priority" group="status" /%}\n`,
+			});
+		}
+	}
+
+	// Generate milestone view pages (threshold: 2+ milestones)
+	if (milestoneCounts.size >= 2) {
+		for (const [milestone, count] of [...milestoneCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+			const slug = slugify(milestone);
+			views.push({
+				url: `${baseUrl}view/milestone/${slug}.html`,
+				title: `Milestone: ${milestone}`,
+				field: 'milestone',
+				value: milestone,
+				count,
+				content: `# Milestone: ${milestone}\n\nAll items in milestone **${milestone}** (${count}).\n\n{% backlog filter="milestone:${milestone}" sort="priority" group="status" /%}\n`,
+			});
+		}
+	}
+
+	return views;
 }
 
 // --- Copy-to-clipboard behavior (inline script) ---
@@ -798,6 +961,21 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	};
 	transformedPages.push(dashboardPage);
 
+	// 3b. Generate view pages (by tag, assignee, milestone)
+	const viewDefs = generateViewPages(allEntities, baseUrl);
+	const viewDefMap = new Map(viewDefs.map(v => [v.url, v]));
+	for (const viewDef of viewDefs) {
+		const { renderable: viewRenderable, title: viewTitle, headings: viewHeadings } = parseAndTransform(viewDef.content, `view/${viewDef.field}/${slugify(viewDef.value)}.md`);
+		const viewPage: TransformedPage = {
+			url: viewDef.url,
+			title: viewTitle || viewDef.title,
+			headings: viewHeadings,
+			frontmatter: {},
+			renderable: viewRenderable,
+		};
+		transformedPages.push(viewPage);
+	}
+
 	// 4. Run pipeline hooks: register → aggregate → postProcess
 	const { registry } = createRegistry();
 	planPipelineHooks.register!(transformedPages, registry, ctx);
@@ -857,15 +1035,16 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		}
 
 		const mapEntry = pageMap.get(page.url);
+		const viewDef = viewDefMap.get(page.url);
 
 		const processed: ProcessedPage = {
 			url: page.url,
 			title: page.title,
-			type: mapEntry?.entity.type ?? 'dashboard',
+			type: mapEntry?.entity.type ?? (viewDef ? 'view' : 'dashboard'),
 			entityId: mapEntry?.entity.attributes.id || mapEntry?.entity.attributes.name || '',
 			status: mapEntry?.entity.attributes.status || '',
 			renderable: transformed as RendererNode,
-			filePath: mapEntry?.entity.file ?? 'index.md',
+			filePath: mapEntry?.entity.file ?? (viewDef ? `view/${viewDef.field}/${slugify(viewDef.value)}.md` : 'index.md'),
 			headings: page.headings ?? [],
 		};
 
@@ -880,7 +1059,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		pages,
 		dashboard: dashboardProcessed!,
 		nav,
-		navRegion: buildNavRegion(nav, baseUrl),
+		navRegion: buildNavRegion(nav, baseUrl, undefined, viewDefs),
 		themeCss,
 		highlightCss,
 	};

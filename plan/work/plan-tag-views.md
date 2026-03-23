@@ -1,4 +1,4 @@
-{% work id="WORK-047" status="draft" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
+{% work id="WORK-047" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
 
 # Tag-based cross-cutting view pages for plan site
 
@@ -6,13 +6,13 @@ Auto-generate pages that group entities by tag, assignee, or milestone. These ap
 
 ## Acceptance Criteria
 
-- [ ] "By tag" view pages are generated when 3+ distinct tags exist
-- [ ] "By assignee" view pages are generated when 2+ distinct assignees exist
-- [ ] "By milestone" view pages are generated when 2+ milestones exist
-- [ ] Each view page uses `{% backlog %}` with the appropriate filter
-- [ ] A "Views" section appears in the sidebar with links to generated pages
-- [ ] View pages are generated during the aggregate pipeline phase (no manual authoring)
-- [ ] Count badges show how many entities match each grouping value
+- [x] "By tag" view pages are generated when 3+ distinct tags exist
+- [x] "By assignee" view pages are generated when 2+ distinct assignees exist
+- [x] "By milestone" view pages are generated when 2+ milestones exist
+- [x] Each view page uses `{% backlog %}` with the appropriate filter
+- [x] A "Views" section appears in the sidebar with links to generated pages
+- [x] View pages are generated during the aggregate pipeline phase (no manual authoring)
+- [x] Count badges show how many entities match each grouping value
 
 ## Approach
 
