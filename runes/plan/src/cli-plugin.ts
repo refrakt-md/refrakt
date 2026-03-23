@@ -2,6 +2,7 @@ import { runUpdate, EXIT_NOT_FOUND, EXIT_VALIDATION_ERROR } from './commands/upd
 import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js';
 import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/create.js';
 import { runInit } from './commands/init.js';
+import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -255,10 +256,89 @@ function handleInit(args: string[]): void {
 	}
 }
 
+function handleStatus(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let formatJson = false;
+	let milestone: string | undefined;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else if (arg === '--milestone' && args[i + 1]) {
+			milestone = args[++i];
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan status [--milestone <name>] [--format json]');
+			process.exit(STATUS_INVALID_ARGS);
+		}
+	}
+
+	const result = runStatus({ dir, milestone, formatJson });
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+		return;
+	}
+
+	// Text output
+	if (result.milestone) {
+		const m = result.milestone;
+		const pct = m.total > 0 ? Math.round((m.done / m.total) * 100) : 0;
+		const filled = Math.round(pct / 10);
+		const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
+		const targetStr = m.target ? `, target: ${m.target}` : '';
+		console.log(`${m.name} (${m.status}${targetStr})`);
+		console.log(`  ${bar}  ${m.done}/${m.total} items (${pct}%)`);
+		console.log();
+	}
+
+	// Counts
+	for (const [label, data] of Object.entries(result.counts)) {
+		if (data.total === 0) continue;
+		const statuses = Object.entries(data.byStatus)
+			.map(([s, n]) => `${n} ${s}`)
+			.join('  ');
+		console.log(`  ${label.padEnd(12)} ${String(data.total).padStart(3)} total    ${statuses}`);
+	}
+	console.log();
+
+	// Blocked
+	if (result.blocked.length > 0) {
+		console.log('  Blocked:');
+		for (const b of result.blocked) {
+			const blockers = b.blockedBy.length > 0 ? ` → blocked by ${b.blockedBy.join(', ')}` : '';
+			console.log(`    ${b.id}  ${b.title ?? '(untitled)'}${blockers}`);
+		}
+		console.log();
+	}
+
+	// Ready
+	if (result.ready.length > 0) {
+		console.log('  Ready (highest priority):');
+		for (const r of result.ready) {
+			console.log(`    ${r.id}  ${(r.title ?? '(untitled)').padEnd(35)}  ${r.priority.padEnd(9)} ${r.complexity}`);
+		}
+		console.log();
+	}
+
+	// Warnings
+	if (result.warnings.length > 0) {
+		console.log('  Warnings:');
+		for (const w of result.warnings) {
+			console.log(`    ${w.message}`);
+		}
+		console.log();
+	}
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
-		{ name: 'status', description: 'Terminal status summary', handler: notYetImplemented('status') },
+		{ name: 'status', description: 'Terminal status summary', handler: handleStatus },
 		{ name: 'next', description: 'Find next work item', handler: handleNext },
 		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
 		{ name: 'validate', description: 'Validate plan structure', handler: notYetImplemented('validate') },
