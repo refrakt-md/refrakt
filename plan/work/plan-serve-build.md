@@ -1,4 +1,4 @@
-{% work id="WORK-035" status="ready" priority="medium" complexity="complex" tags="cli, plan, dashboard" %}
+{% work id="WORK-035" status="done" priority="medium" complexity="complex" tags="cli, plan, dashboard" %}
 
 # `plan serve` and `plan build` Commands
 
@@ -12,16 +12,16 @@ These commands share 90% of their pipeline — `serve` wraps it in a dev server 
 
 ## Acceptance Criteria
 
-- [ ] `plan serve` starts a dev server rendering plan files as themed HTML pages
-- [ ] Hot reload on file changes — re-scan and browser refresh
-- [ ] Auto-generated dashboard if no `index.md` exists (uses `backlog` and `decision-log` runes)
-- [ ] Sidebar navigation derived from file system and entity types
-- [ ] Entity pages show full rendered content with status badges, xref links, checklist progress
-- [ ] `plan build` generates a self-contained static HTML site to `--out` directory
-- [ ] `--theme` option selects default, minimal, or path to custom CSS
-- [ ] `--base-url` for GitHub Pages deployment (prefix all URLs)
-- [ ] Dashboard uses `backlog` and `decision-log` runes for aggregate views
-- [ ] Tests for HTML generation, navigation structure, and theme application
+- [x] `plan serve` starts a dev server rendering plan files as themed HTML pages
+- [x] Hot reload on file changes — re-scan and browser refresh
+- [x] Auto-generated dashboard if no `index.md` exists (uses `backlog` and `decision-log` runes)
+- [x] Sidebar navigation derived from file system and entity types
+- [x] Entity pages show full rendered content with status badges, xref links, checklist progress
+- [x] `plan build` generates a self-contained static HTML site to `--out` directory
+- [x] `--theme` option selects default, minimal, or path to custom CSS
+- [x] `--base-url` for GitHub Pages deployment (prefix all URLs)
+- [x] Dashboard uses `backlog` and `decision-log` runes for aggregate views
+- [x] Tests for HTML generation, navigation structure, and theme application
 
 ## Approach
 

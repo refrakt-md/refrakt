@@ -4,6 +4,8 @@ import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/
 import { runInit } from './commands/init.js';
 import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
+import { runServe } from './commands/serve.js';
+import { runBuild } from './commands/build.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -17,11 +19,85 @@ interface CliPlugin {
 	commands: CliPluginCommand[];
 }
 
-function notYetImplemented(name: string) {
-	return () => {
-		console.error(`Error: "plan ${name}" is not yet implemented.`);
+function handleServe(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let specsDir: string | undefined;
+	let port = 3000;
+	let theme = 'default';
+	let open = false;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--specs' && args[i + 1]) {
+			specsDir = args[++i];
+		} else if (arg === '--port' && args[i + 1]) {
+			port = parseInt(args[++i], 10);
+			if (isNaN(port)) {
+				console.error('Error: --port must be a number');
+				process.exit(1);
+			}
+		} else if (arg === '--theme' && args[i + 1]) {
+			theme = args[++i];
+		} else if (arg === '--open') {
+			open = true;
+		} else if (!arg.startsWith('-')) {
+			dir = arg;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan serve [directory] [--port N] [--specs dir] [--theme name] [--open]');
+			process.exit(1);
+		}
+	}
+
+	try {
+		runServe({ dir, specsDir, port, theme, open });
+	} catch (err: any) {
+		console.error(`Error: ${err.message}`);
 		process.exit(1);
-	};
+	}
+}
+
+function handleBuild(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let specsDir: string | undefined;
+	let out = './plan-site';
+	let theme = 'default';
+	let baseUrl = '/';
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--specs' && args[i + 1]) {
+			specsDir = args[++i];
+		} else if (arg === '--out' && args[i + 1]) {
+			out = args[++i];
+		} else if (arg === '--theme' && args[i + 1]) {
+			theme = args[++i];
+		} else if (arg === '--base-url' && args[i + 1]) {
+			baseUrl = args[++i];
+			if (!baseUrl.endsWith('/')) baseUrl += '/';
+		} else if (!arg.startsWith('-')) {
+			dir = arg;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url]');
+			process.exit(1);
+		}
+	}
+
+	try {
+		const result = runBuild({ dir, specsDir, out, theme, baseUrl });
+		console.log(`Built ${result.pages} pages to ${result.outputDir}/`);
+		for (const f of result.files) {
+			console.log(`  + ${f}`);
+		}
+	} catch (err: any) {
+		console.error(`Error: ${err.message}`);
+		process.exit(1);
+	}
 }
 
 function handleUpdate(args: string[]): void {
@@ -391,8 +467,8 @@ const plugin: CliPlugin = {
 		{ name: 'validate', description: 'Validate plan structure', handler: handleValidate },
 		{ name: 'create', description: 'Scaffold new plan items', handler: handleCreate },
 		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
-		{ name: 'serve', description: 'Browse the plan dashboard', handler: notYetImplemented('serve') },
-		{ name: 'build', description: 'Build static plan site', handler: notYetImplemented('build') },
+		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
+		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
 	],
 };
 
