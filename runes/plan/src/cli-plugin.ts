@@ -1,4 +1,5 @@
 import { runUpdate, EXIT_NOT_FOUND, EXIT_VALIDATION_ERROR } from './commands/update.js';
+import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js';
 
 interface CliPluginCommand {
 	name: string;
@@ -85,11 +86,85 @@ function handleUpdate(args: string[]): void {
 	}
 }
 
+function handleNext(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let formatJson = false;
+	let milestone: string | undefined;
+	let tag: string | undefined;
+	let assignee: string | undefined;
+	let type: 'work' | 'bug' | 'all' = 'all';
+	let count = 1;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else if (arg === '--milestone' && args[i + 1]) {
+			milestone = args[++i];
+		} else if (arg === '--tag' && args[i + 1]) {
+			tag = args[++i];
+		} else if (arg === '--assignee' && args[i + 1]) {
+			assignee = args[++i];
+		} else if (arg === '--type' && args[i + 1]) {
+			const val = args[++i];
+			if (val !== 'work' && val !== 'bug' && val !== 'all') {
+				console.error(`Error: Invalid type "${val}". Use: work, bug, all`);
+				process.exit(EXIT_INVALID_ARGS);
+			}
+			type = val;
+		} else if (arg === '--count' && args[i + 1]) {
+			count = parseInt(args[++i], 10);
+			if (isNaN(count) || count < 1) {
+				console.error('Error: --count must be a positive integer');
+				process.exit(EXIT_INVALID_ARGS);
+			}
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan next [--milestone <name>] [--tag <tag>] [--assignee <name>] [--type work|bug|all] [--count N] [--format json]');
+			process.exit(EXIT_INVALID_ARGS);
+		}
+	}
+
+	const result = runNext({ dir, milestone, tag, assignee, type, count, formatJson });
+
+	if (result.items.length === 0) {
+		if (formatJson) {
+			console.log(JSON.stringify({ items: [] }, null, 2));
+		} else {
+			console.log('No actionable items found.');
+		}
+		process.exit(EXIT_NO_MATCHES);
+	}
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+	} else {
+		for (const item of result.items) {
+			console.log(`${item.id}  ${item.title ?? '(untitled)'}`);
+			console.log(`  type: ${item.type}  priority: ${item.priority}  complexity: ${item.complexity}`);
+			console.log(`  file: ${item.file}`);
+			if (item.criteria.length > 0) {
+				console.log('  criteria:');
+				for (const c of item.criteria) {
+					console.log(`    ${c.checked ? '[x]' : '[ ]'} ${c.text}`);
+				}
+			}
+			if (item.refs.length > 0) {
+				console.log(`  refs: ${item.refs.join(', ')}`);
+			}
+			console.log();
+		}
+	}
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
 		{ name: 'status', description: 'Terminal status summary', handler: notYetImplemented('status') },
-		{ name: 'next', description: 'Find next work item', handler: notYetImplemented('next') },
+		{ name: 'next', description: 'Find next work item', handler: handleNext },
 		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
 		{ name: 'validate', description: 'Validate plan structure', handler: notYetImplemented('validate') },
 		{ name: 'create', description: 'Scaffold new plan items', handler: notYetImplemented('create') },

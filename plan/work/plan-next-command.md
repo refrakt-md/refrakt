@@ -1,4 +1,4 @@
-{% work id="WORK-031" status="ready" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" %}
+{% work id="WORK-031" status="done" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" %}
 
 # `plan next` Command
 
@@ -10,16 +10,16 @@ Dependency-aware work item selection. Finds the highest-priority ready item, ski
 
 ## Acceptance Criteria
 
-- [ ] Scans for work items with `status="ready"` and bugs with `status="confirmed"`
-- [ ] Excludes items whose dependency IDs (from References/Dependencies section) are not yet `done` or `fixed`
-- [ ] Sorts by priority (critical > high > medium > low), then complexity (simpler items first as tiebreaker)
-- [ ] `--milestone <name>` scopes results to a specific milestone
-- [ ] `--tag <tag>`, `--assignee <name>`, `--type work|bug|all` filters work correctly
-- [ ] `--count N` returns top N items (default: 1)
-- [ ] `--format json` outputs structured data including criteria list, referenced specs, dependencies, and file path
-- [ ] Text output shows ID, title, priority, complexity, file path, and acceptance criteria
-- [ ] Exit codes: 0 = items found, 1 = no matches, 2 = invalid arguments
-- [ ] Tests for filtering, sorting, dependency exclusion, and edge cases
+- [x] Scans for work items with `status="ready"` and bugs with `status="confirmed"`
+- [x] Excludes items whose dependency IDs (from References/Dependencies section) are not yet `done` or `fixed`
+- [x] Sorts by priority (critical > high > medium > low), then complexity (simpler items first as tiebreaker)
+- [x] `--milestone <name>` scopes results to a specific milestone
+- [x] `--tag <tag>`, `--assignee <name>`, `--type work|bug|all` filters work correctly
+- [x] `--count N` returns top N items (default: 1)
+- [x] `--format json` outputs structured data including criteria list, referenced specs, dependencies, and file path
+- [x] Text output shows ID, title, priority, complexity, file path, and acceptance criteria
+- [x] Exit codes: 0 = items found, 1 = no matches, 2 = invalid arguments
+- [x] Tests for filtering, sorting, dependency exclusion, and edge cases
 
 ## Approach
 
