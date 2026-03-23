@@ -1,4 +1,4 @@
-{% work id="WORK-034" status="ready" priority="medium" complexity="moderate" tags="css, plan, themes" %}
+{% work id="WORK-034" status="done" priority="medium" complexity="moderate" tags="css, plan, themes" %}
 
 # Plan Dashboard Theme
 
@@ -10,15 +10,15 @@ Default and minimal CSS themes for the plan dashboard rendered by `serve` and `b
 
 ## Acceptance Criteria
 
-- [ ] Default theme with status badge colors (grey/blue/yellow/green/red) and priority colors (critical=red, high=orange, medium=yellow, low=grey)
-- [ ] Complexity dot indicators
-- [ ] Checklist progress bars with fraction labels (e.g., `████░░░░░░ 2/5`)
-- [ ] Entity card layout (bordered cards with header, title, meta line)
-- [ ] Dashboard grid (responsive column layout for backlog sections)
-- [ ] Sidebar navigation with entity type grouping
-- [ ] Cross-reference links styled with entity type icon prefix
-- [ ] Minimal theme (clean typography, no color/badges, print-friendly)
-- [ ] Both themes target standard BEM classes from plan rune configs
+- [x] Default theme with status badge colors (grey/blue/yellow/green/red) and priority colors (critical=red, high=orange, medium=yellow, low=grey)
+- [x] Complexity dot indicators
+- [x] Checklist progress bars with fraction labels (e.g., `████░░░░░░ 2/5`)
+- [x] Entity card layout (bordered cards with header, title, meta line)
+- [x] Dashboard grid (responsive column layout for backlog sections)
+- [x] Sidebar navigation with entity type grouping
+- [x] Cross-reference links styled with entity type icon prefix
+- [x] Minimal theme (clean typography, no color/badges, print-friendly)
+- [x] Both themes target standard BEM classes from plan rune configs
 
 ## Approach
 

@@ -1,0 +1,108 @@
+/* Plan theme design tokens */
+:root {
+	/* Typography */
+	--plan-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--plan-font-mono: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+	--plan-font-size-sm: 0.8125rem;
+	--plan-font-size-base: 0.9375rem;
+	--plan-font-size-lg: 1.125rem;
+	--plan-font-size-xl: 1.5rem;
+	--plan-line-height: 1.6;
+
+	/* Spacing */
+	--plan-space-xs: 0.25rem;
+	--plan-space-sm: 0.5rem;
+	--plan-space-md: 1rem;
+	--plan-space-lg: 1.5rem;
+	--plan-space-xl: 2rem;
+	--plan-space-2xl: 3rem;
+
+	/* Radii */
+	--plan-radius-sm: 0.25rem;
+	--plan-radius-md: 0.5rem;
+	--plan-radius-lg: 0.75rem;
+	--plan-radius-full: 9999px;
+
+	/* Surfaces */
+	--plan-color-bg: #ffffff;
+	--plan-color-surface: #f8f9fa;
+	--plan-color-surface-alt: #f1f3f5;
+	--plan-color-border: #dee2e6;
+	--plan-color-border-light: #e9ecef;
+	--plan-color-text: #212529;
+	--plan-color-text-muted: #6c757d;
+	--plan-color-text-subtle: #adb5bd;
+
+	/* Status colors */
+	--plan-color-draft: #adb5bd;
+	--plan-color-draft-bg: #f8f9fa;
+	--plan-color-ready: #339af0;
+	--plan-color-ready-bg: #e7f5ff;
+	--plan-color-in-progress: #f59f00;
+	--plan-color-in-progress-bg: #fff9db;
+	--plan-color-review: #845ef7;
+	--plan-color-review-bg: #f3f0ff;
+	--plan-color-done: #51cf66;
+	--plan-color-done-bg: #ebfbee;
+	--plan-color-blocked: #ff6b6b;
+	--plan-color-blocked-bg: #fff5f5;
+	--plan-color-accepted: #51cf66;
+	--plan-color-accepted-bg: #ebfbee;
+	--plan-color-proposed: #339af0;
+	--plan-color-proposed-bg: #e7f5ff;
+	--plan-color-superseded: #adb5bd;
+	--plan-color-superseded-bg: #f8f9fa;
+	--plan-color-deprecated: #adb5bd;
+	--plan-color-deprecated-bg: #f8f9fa;
+	--plan-color-confirmed: #f59f00;
+	--plan-color-confirmed-bg: #fff9db;
+	--plan-color-reported: #339af0;
+	--plan-color-reported-bg: #e7f5ff;
+	--plan-color-fixed: #51cf66;
+	--plan-color-fixed-bg: #ebfbee;
+	--plan-color-wontfix: #adb5bd;
+	--plan-color-wontfix-bg: #f8f9fa;
+	--plan-color-active: #51cf66;
+	--plan-color-active-bg: #ebfbee;
+	--plan-color-planning: #339af0;
+	--plan-color-planning-bg: #e7f5ff;
+	--plan-color-complete: #51cf66;
+	--plan-color-complete-bg: #ebfbee;
+	--plan-color-pending: #868e96;
+	--plan-color-pending-bg: #f1f3f5;
+
+	/* Priority colors */
+	--plan-color-critical: #e03131;
+	--plan-color-critical-bg: #fff5f5;
+	--plan-color-high: #e8590c;
+	--plan-color-high-bg: #fff4e6;
+	--plan-color-medium: #f59f00;
+	--plan-color-medium-bg: #fff9db;
+	--plan-color-low: #adb5bd;
+	--plan-color-low-bg: #f8f9fa;
+
+	/* Severity colors */
+	--plan-color-severity-critical: #e03131;
+	--plan-color-severity-major: #e8590c;
+	--plan-color-severity-minor: #f59f00;
+	--plan-color-severity-trivial: #adb5bd;
+
+	/* Complexity dot colors */
+	--plan-color-trivial: #51cf66;
+	--plan-color-simple: #339af0;
+	--plan-color-moderate: #f59f00;
+	--plan-color-complex: #e03131;
+	--plan-color-unknown: #adb5bd;
+
+	/* Progress bar */
+	--plan-progress-bg: #e9ecef;
+	--plan-progress-fill: #51cf66;
+	--plan-progress-height: 0.5rem;
+
+	/* Card */
+	--plan-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+	/* Sidebar */
+	--plan-sidebar-width: 16rem;
+	--plan-sidebar-bg: #f8f9fa;
+}
