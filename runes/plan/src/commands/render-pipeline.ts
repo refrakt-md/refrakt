@@ -64,17 +64,28 @@ function resolveThemeCss(theme: string): string {
 	const __dirname = path.dirname(__filename);
 	const stylesDir = path.resolve(__dirname, '../../styles');
 
+	let cssPath: string;
 	if (theme === 'default') {
-		return fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8');
+		cssPath = path.join(stylesDir, 'default.css');
+	} else if (theme === 'minimal') {
+		cssPath = path.join(stylesDir, 'minimal.css');
+	} else if (fs.existsSync(theme)) {
+		cssPath = theme;
+	} else {
+		throw new Error(`Theme not found: "${theme}". Use "default", "minimal", or a path to a CSS file.`);
 	}
-	if (theme === 'minimal') {
-		return fs.readFileSync(path.join(stylesDir, 'minimal.css'), 'utf-8');
-	}
-	// Custom CSS path
-	if (fs.existsSync(theme)) {
-		return fs.readFileSync(theme, 'utf-8');
-	}
-	throw new Error(`Theme not found: "${theme}". Use "default", "minimal", or a path to a CSS file.`);
+
+	let css = fs.readFileSync(cssPath, 'utf-8');
+	const cssDir = path.dirname(cssPath);
+	// Inline relative @import directives so CSS works inside <style> tags
+	css = css.replace(/@import\s+['"]\.\/([^'"]+)['"]\s*;/g, (_match, file) => {
+		const importPath = path.join(cssDir, file);
+		if (fs.existsSync(importPath)) {
+			return fs.readFileSync(importPath, 'utf-8');
+		}
+		return _match;
+	});
+	return css;
 }
 
 function buildThemeConfig(): ThemeConfig {
@@ -253,8 +264,7 @@ function escapeHtml(str: string): string {
 const HOT_RELOAD_SCRIPT = `<script>
 (function() {
   var es = new EventSource('/__plan-reload');
-  es.onmessage = function() { location.reload(); };
-  es.onerror = function() { setTimeout(function() { location.reload(); }, 2000); };
+  es.onmessage = function(e) { if (e.data === 'reload') location.reload(); };
 })();
 </script>`;
 
