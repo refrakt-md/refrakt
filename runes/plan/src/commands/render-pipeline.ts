@@ -4,9 +4,13 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
 import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig } from '@refrakt-md/runes';
-import { createTransform, renderToHtml, mergeThemeConfig } from '@refrakt-md/transform';
-import type { ThemeConfig } from '@refrakt-md/transform';
-import type { TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import { createTransform, renderToHtml, mergeThemeConfig, planLayout } from '@refrakt-md/transform';
+import type { ThemeConfig, LayoutPageData } from '@refrakt-md/transform';
+import type { RendererNode, SerializedTag, TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import { renderFullPage as htmlRenderFullPage } from '@refrakt-md/html';
+import type { HtmlTheme, PageShellOptions } from '@refrakt-md/html';
+import { createHighlightTransform } from '@refrakt-md/highlight';
+import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
 import { planPipelineHooks, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
@@ -22,13 +26,13 @@ const tags = { ...coreTags, ...runeTagMap(packageRunes), ...Markdoc.tags };
 
 // --- Types ---
 
-export interface RenderedPage {
+export interface ProcessedPage {
 	url: string;
 	title: string;
 	type: string;
 	entityId: string;
 	status: string;
-	html: string;
+	renderable: RendererNode;
 	filePath: string;
 }
 
@@ -45,9 +49,12 @@ export interface NavItem {
 }
 
 export interface PipelineResult {
-	pages: RenderedPage[];
-	dashboard: RenderedPage;
+	pages: ProcessedPage[];
+	dashboard: ProcessedPage;
 	nav: NavGroup[];
+	navRegion: RendererNode[];
+	themeCss: string;
+	highlightCss: string;
 }
 
 export interface PipelineOptions {
@@ -58,28 +65,6 @@ export interface PipelineOptions {
 }
 
 // --- Theme resolution ---
-
-function getLuminaBaseCss(): string {
-	const luminaFiles = [
-		'tokens/base.css',
-		'styles/global.css',
-		'styles/elements/blockquote.css',
-		'styles/elements/table.css',
-		'styles/base/attributes.css',
-	];
-	try {
-		const luminaDir = path.dirname(fileURLToPath(import.meta.resolve('@refrakt-md/lumina/base.css')));
-		return luminaFiles
-			.map(f => {
-				const filePath = path.join(luminaDir, f);
-				return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
-			})
-			.join('\n');
-	} catch {
-		// @refrakt-md/lumina not available — skip base styles
-		return '';
-	}
-}
 
 function inlineCssImports(css: string, cssDir: string): string {
 	return css.replace(/@import\s+['"]\.\/([^'"]+)['"]\s*;/g, (_match, file) => {
@@ -107,9 +92,7 @@ function resolveThemeCss(theme: string): string {
 		throw new Error(`Theme not found: "${theme}". Use "default", "minimal", or a path to a CSS file.`);
 	}
 
-	const baseCss = getLuminaBaseCss();
-	const themeCss = inlineCssImports(fs.readFileSync(cssPath, 'utf-8'), path.dirname(cssPath));
-	return baseCss + '\n' + themeCss;
+	return inlineCssImports(fs.readFileSync(cssPath, 'utf-8'), path.dirname(cssPath));
 }
 
 function buildThemeConfig(): ThemeConfig {
@@ -203,6 +186,68 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 		}));
 }
 
+/**
+ * Convert NavGroup[] to a serialized tag tree for the layout's nav region.
+ * Produces BEM-classed elements matching the existing .rf-plan-sidebar__* selectors.
+ */
+function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string): RendererNode[] {
+	const children: RendererNode[] = [];
+
+	// Title
+	children.push({
+		$$mdtype: 'Tag',
+		name: 'div',
+		attributes: { class: 'rf-plan-sidebar__title' },
+		children: ['Plan'],
+	} as unknown as RendererNode);
+
+	// Dashboard link
+	const dashActive = activeUrl === baseUrl || activeUrl === `${baseUrl}index.html`;
+	children.push({
+		$$mdtype: 'Tag',
+		name: 'a',
+		attributes: {
+			class: `rf-plan-sidebar__link${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
+			href: baseUrl,
+		},
+		children: ['Dashboard'],
+	} as unknown as RendererNode);
+
+	// Entity groups
+	for (const group of groups) {
+		const groupChildren: RendererNode[] = [];
+
+		groupChildren.push({
+			$$mdtype: 'Tag',
+			name: 'div',
+			attributes: { class: 'rf-plan-sidebar__group-title' },
+			children: [group.title],
+		} as unknown as RendererNode);
+
+		for (const item of group.items) {
+			const isActive = item.url === activeUrl;
+			groupChildren.push({
+				$$mdtype: 'Tag',
+				name: 'a',
+				attributes: {
+					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
+					href: item.url,
+				},
+				children: [item.label],
+			} as unknown as RendererNode);
+		}
+
+		children.push({
+			$$mdtype: 'Tag',
+			name: 'div',
+			attributes: { class: 'rf-plan-sidebar__group' },
+			children: groupChildren,
+		} as unknown as RendererNode);
+	}
+
+	return children;
+}
+
 function slugify(text: string): string {
 	return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -234,67 +279,56 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	return md;
 }
 
-// --- HTML shell template ---
+// --- Copy-to-clipboard behavior (inline script) ---
 
-function htmlShell(opts: {
-	title: string;
-	content: string;
-	css: string;
-	nav: NavGroup[];
-	baseUrl: string;
-	activeUrl?: string;
-}): string {
-	const navHtml = renderNav(opts.nav, opts.activeUrl);
-	return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(opts.title)}</title>
-<style>${opts.css}</style>
-</head>
-<body>
-<nav class="rf-plan-sidebar">
-<div class="rf-plan-sidebar__title">Plan</div>
-<a class="rf-plan-sidebar__link${opts.activeUrl === opts.baseUrl ? ' rf-plan-sidebar__link--active' : ''}" href="${opts.baseUrl}">Dashboard</a>
-${navHtml}
-</nav>
-<main class="rf-plan-main">
-${opts.content}
-</main>
-</body>
-</html>`;
-}
-
-function renderNav(groups: NavGroup[], activeUrl?: string): string {
-	return groups.map(g => {
-		const items = g.items.map(item => {
-			const active = item.url === activeUrl ? ' rf-plan-sidebar__link--active' : '';
-			return `<a class="rf-plan-sidebar__link${active}" href="${escapeHtml(item.url)}">${escapeHtml(item.label)}</a>`;
-		}).join('\n');
-		return `<div class="rf-plan-sidebar__group">
-<div class="rf-plan-sidebar__group-title">${escapeHtml(g.title)}</div>
-${items}
-</div>`;
-	}).join('\n');
-}
-
-function escapeHtml(str: string): string {
-	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// --- Hot reload script ---
-
-const HOT_RELOAD_SCRIPT = `<script>
+const COPY_BUTTON_SCRIPT = `<script>
 (function() {
-  var es = new EventSource('/__plan-reload');
-  es.onmessage = function(e) { if (e.data === 'reload') location.reload(); };
+  document.querySelectorAll('pre').forEach(function(pre) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'rf-code-wrapper';
+    pre.parentNode.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+    var btn = document.createElement('button');
+    btn.className = 'rf-copy-button';
+    btn.setAttribute('aria-label', 'Copy code');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+    btn.onclick = function() {
+      var sel = pre.getAttribute('data-copy-selector');
+      var text = sel ? (pre.querySelector(sel) || pre).textContent : pre.textContent;
+      navigator.clipboard.writeText(text || '').then(function() {
+        btn.classList.add('rf-copy-button--copied');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(function() {
+          btn.classList.remove('rf-copy-button--copied');
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+        }, 2000);
+      });
+    };
+    wrapper.appendChild(btn);
+  });
 })();
 </script>`;
 
+// --- HtmlTheme for the plan site ---
+
+const planTheme: HtmlTheme = {
+	manifest: {
+		name: 'plan',
+		version: '0.0.0',
+		target: 'html',
+		designTokens: '',
+		layouts: {},
+		components: {},
+		routeRules: [{ pattern: '**', layout: 'plan' }],
+	},
+	layouts: {
+		plan: planLayout,
+	},
+};
+
 // --- Main pipeline ---
 
-export function runPipeline(options: PipelineOptions): PipelineResult {
+export async function runPipeline(options: PipelineOptions): Promise<PipelineResult> {
 	const { dir, specsDir, theme, baseUrl } = options;
 	const ctx: PipelineContext = {
 		info: () => {},
@@ -362,65 +396,104 @@ export function runPipeline(options: PipelineOptions): PipelineResult {
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,
 	);
 
-	// 5. Identity transform + HTML render
+	// 5. Identity transform + syntax highlighting
 	const themeConfig = buildThemeConfig();
 	const identityTransform = createTransform(themeConfig);
 	const themeCss = resolveThemeCss(theme);
 	const nav = buildNavigation(allEntities, baseUrl);
 
-	const renderedPages: RenderedPage[] = [];
-	let dashboardRendered: RenderedPage | undefined;
+	// Initialize syntax highlighting
+	let highlightTransform: HighlightTransform | null = null;
+	let highlightCss = '';
+	try {
+		highlightTransform = await createHighlightTransform();
+		highlightCss = highlightTransform.css;
+	} catch {
+		// Highlight not available — render without syntax highlighting
+	}
+
+	const pages: ProcessedPage[] = [];
+	let dashboardProcessed: ProcessedPage | undefined;
 
 	for (const page of processedPages) {
 		const serialized = serializeTree(page.renderable as any);
-		const transformed = identityTransform(serialized as any);
-		const contentHtml = renderToHtml(transformed);
+		let transformed = identityTransform(serialized as any);
+
+		// Apply syntax highlighting
+		if (highlightTransform) {
+			transformed = highlightTransform(transformed) as typeof transformed;
+		}
 
 		const mapEntry = pageMap.get(page.url);
 
-		const rendered: RenderedPage = {
+		const processed: ProcessedPage = {
 			url: page.url,
 			title: page.title,
 			type: mapEntry?.entity.type ?? 'dashboard',
 			entityId: mapEntry?.entity.attributes.id || mapEntry?.entity.attributes.name || '',
 			status: mapEntry?.entity.attributes.status || '',
-			html: contentHtml,
+			renderable: transformed as RendererNode,
 			filePath: mapEntry?.entity.file ?? 'index.md',
 		};
 
 		if (page.url === dashboardUrl) {
-			dashboardRendered = rendered;
+			dashboardProcessed = processed;
 		} else {
-			renderedPages.push(rendered);
+			pages.push(processed);
 		}
 	}
 
 	return {
-		pages: renderedPages,
-		dashboard: dashboardRendered!,
+		pages,
+		dashboard: dashboardProcessed!,
 		nav,
+		navRegion: buildNavRegion(nav, baseUrl),
+		themeCss,
+		highlightCss,
 	};
 }
 
-export function renderFullPage(
-	page: RenderedPage,
-	css: string,
-	nav: NavGroup[],
-	baseUrl: string,
-	opts?: { hotReload?: boolean },
+/**
+ * Render a processed page to a full HTML document using the HTML adapter.
+ */
+export function renderPage(
+	page: ProcessedPage,
+	navRegion: RendererNode[],
+	allPageUrls: Array<{ url: string; title: string; draft: boolean }>,
+	opts?: { hotReload?: boolean; stylesheets?: string[]; activeUrl?: string },
 ): string {
-	let content = page.html;
+	const layoutPageData: LayoutPageData = {
+		renderable: page.renderable,
+		regions: {
+			nav: {
+				name: 'nav',
+				mode: 'replace',
+				content: navRegion,
+			},
+		},
+		title: page.title,
+		url: page.url,
+		pages: allPageUrls,
+		frontmatter: {},
+		headings: [],
+	};
+
+	const shellOptions: PageShellOptions = {
+		stylesheets: opts?.stylesheets ?? [],
+	};
+
+	// Hot reload SSE script
 	if (opts?.hotReload) {
-		content += HOT_RELOAD_SCRIPT;
+		const hotReloadScript = `<script>(function(){var es=new EventSource('/__plan-reload');es.onmessage=function(e){if(e.data==='reload')location.reload();};})()</script>`;
+		shellOptions.headExtra = hotReloadScript;
 	}
-	return htmlShell({
-		title: page.title || 'Plan',
-		content,
-		css,
-		nav,
-		baseUrl,
-		activeUrl: page.url,
-	});
+
+	let html = htmlRenderFullPage({ theme: planTheme, page: layoutPageData }, shellOptions);
+
+	// Inject copy-to-clipboard behavior before </body>
+	html = html.replace('</body>', COPY_BUTTON_SCRIPT + '\n</body>');
+
+	return html;
 }
 
 export function getThemeCss(theme: string): string {

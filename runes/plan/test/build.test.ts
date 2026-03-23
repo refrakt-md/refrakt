@@ -23,20 +23,20 @@ afterEach(() => {
 });
 
 describe('runBuild', () => {
-	it('generates static HTML files', () => {
+	it('generates static HTML files', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Build Task
 Description.
 {% /work %}`);
 
-		const result = runBuild({
+		const result = await runBuild({
 			dir: path.join(tmpDir, 'plan'),
 			out: outDir,
 			theme: 'default',
 			baseUrl: '/',
 		});
 
-		expect(result.pages).toBeGreaterThanOrEqual(2); // dashboard + entity
+		expect(result.pages).toBeGreaterThanOrEqual(2); // dashboard + entity + theme.css
 		expect(result.files).toContain('index.html');
 
 		// Check files exist on disk
@@ -48,13 +48,13 @@ Description.
 		expect(fs.existsSync(path.join(outDir, workFile!))).toBe(true);
 	});
 
-	it('generates valid HTML with theme CSS', () => {
+	it('generates valid HTML with stylesheet link', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Test
 Desc.
 {% /work %}`);
 
-		runBuild({
+		await runBuild({
 			dir: path.join(tmpDir, 'plan'),
 			out: outDir,
 			theme: 'default',
@@ -63,18 +63,40 @@ Desc.
 
 		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
 		expect(indexHtml).toContain('<!DOCTYPE html>');
-		expect(indexHtml).toContain('<style>');
-		expect(indexHtml).toContain('--plan-color');
-		expect(indexHtml).toContain('rf-plan-sidebar');
+		// CSS is now a separate file, referenced via stylesheet link
+		expect(indexHtml).toContain('<link rel="stylesheet"');
+		expect(indexHtml).toContain('theme.css');
+
+		// Theme CSS file is written separately
+		expect(fs.existsSync(path.join(outDir, 'theme.css'))).toBe(true);
+		const themeCss = fs.readFileSync(path.join(outDir, 'theme.css'), 'utf-8');
+		expect(themeCss).toContain('--plan-color');
 	});
 
-	it('applies base-url prefix', () => {
+	it('generates layout structure in HTML', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Test
 Desc.
 {% /work %}`);
 
-		runBuild({
+		await runBuild({
+			dir: path.join(tmpDir, 'plan'),
+			out: outDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
+		expect(indexHtml).toContain('rf-plan-sidebar');
+	});
+
+	it('applies base-url prefix', async () => {
+		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Test
+Desc.
+{% /work %}`);
+
+		await runBuild({
 			dir: path.join(tmpDir, 'plan'),
 			out: outDir,
 			theme: 'default',
@@ -85,7 +107,7 @@ Desc.
 		expect(indexHtml).toContain('/refrakt/plan/');
 	});
 
-	it('creates subdirectories for entity types', () => {
+	it('creates subdirectories for entity types', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Test
 Desc.
@@ -99,7 +121,7 @@ C.
 D.
 {% /decision %}`);
 
-		const result = runBuild({
+		await runBuild({
 			dir: path.join(tmpDir, 'plan'),
 			out: outDir,
 			theme: 'default',
@@ -110,13 +132,13 @@ D.
 		expect(fs.existsSync(path.join(outDir, 'decision'))).toBe(true);
 	});
 
-	it('works with minimal theme', () => {
+	it('works with minimal theme', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Test
 Desc.
 {% /work %}`);
 
-		const result = runBuild({
+		await runBuild({
 			dir: path.join(tmpDir, 'plan'),
 			out: outDir,
 			theme: 'minimal',
@@ -125,7 +147,25 @@ Desc.
 
 		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
 		expect(indexHtml).toContain('<!DOCTYPE html>');
-		// Minimal theme inlines its own tokens
-		expect(indexHtml).toContain('--plan-font-sans');
+		// Minimal theme tokens are in the separate CSS file
+		const themeCss = fs.readFileSync(path.join(outDir, 'theme.css'), 'utf-8');
+		expect(themeCss).toContain('--plan-font-sans');
+	});
+
+	it('includes copy-to-clipboard script', async () => {
+		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Test
+Desc.
+{% /work %}`);
+
+		await runBuild({
+			dir: path.join(tmpDir, 'plan'),
+			out: outDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
+		expect(indexHtml).toContain('rf-copy-button');
 	});
 });

@@ -19,7 +19,7 @@ interface CliPlugin {
 	commands: CliPluginCommand[];
 }
 
-function handleServe(args: string[]): void {
+async function handleServe(args: string[]): Promise<void> {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let specsDir: string | undefined;
 	let port = 3000;
@@ -52,14 +52,14 @@ function handleServe(args: string[]): void {
 	}
 
 	try {
-		runServe({ dir, specsDir, port, theme, open });
+		await runServe({ dir, specsDir, port, theme, open });
 	} catch (err: any) {
 		console.error(`Error: ${err.message}`);
 		process.exit(1);
 	}
 }
 
-function handleBuild(args: string[]): void {
+async function handleBuild(args: string[]): Promise<void> {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let specsDir: string | undefined;
 	let out = './plan-site';
@@ -89,7 +89,7 @@ function handleBuild(args: string[]): void {
 	}
 
 	try {
-		const result = runBuild({ dir, specsDir, out, theme, baseUrl });
+		const result = await runBuild({ dir, specsDir, out, theme, baseUrl });
 		console.log(`Built ${result.pages} pages to ${result.outputDir}/`);
 		for (const f of result.files) {
 			console.log(`  + ${f}`);

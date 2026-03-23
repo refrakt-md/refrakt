@@ -1,8 +1,7 @@
 import * as http from 'http';
 import * as fs from 'fs';
-import * as path from 'path';
-import { runPipeline, renderFullPage, getThemeCss } from './render-pipeline.js';
-import type { PipelineResult, RenderedPage, NavGroup } from './render-pipeline.js';
+import { runPipeline, renderPage } from './render-pipeline.js';
+import type { PipelineResult } from './render-pipeline.js';
 
 export interface ServeOptions {
 	dir: string;
@@ -17,29 +16,45 @@ export interface ServeResult {
 	url: string;
 }
 
-export function runServe(options: ServeOptions): ServeResult {
+export async function runServe(options: ServeOptions): Promise<ServeResult> {
 	const { dir, specsDir, port, theme, open } = options;
 	const baseUrl = '/';
 
 	let pipeline: PipelineResult;
-	let css: string;
+	let combinedCss: string;
 	let pageIndex: Map<string, string>;
 
-	function rebuild() {
-		pipeline = runPipeline({ dir, specsDir, theme, baseUrl });
-		css = getThemeCss(theme);
+	async function rebuild() {
+		pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
+		combinedCss = pipeline.themeCss + (pipeline.highlightCss ? '\n' + pipeline.highlightCss : '');
+
+		const allPageUrls = [
+			{ url: baseUrl, title: pipeline.dashboard.title, draft: false },
+			...pipeline.pages.map(p => ({ url: p.url, title: p.title, draft: false })),
+		];
+
+		const stylesheets = ['/__plan-theme.css'];
 		pageIndex = new Map();
 
 		// Index all pages
 		for (const page of pipeline.pages) {
-			pageIndex.set(page.url, renderFullPage(page, css, pipeline.nav, baseUrl, { hotReload: true }));
+			pageIndex.set(page.url, renderPage(page, pipeline.navRegion, allPageUrls, {
+				hotReload: true,
+				stylesheets,
+				activeUrl: page.url,
+			}));
 		}
 		// Dashboard
-		pageIndex.set(baseUrl, renderFullPage(pipeline.dashboard, css, pipeline.nav, baseUrl, { hotReload: true }));
-		pageIndex.set(`${baseUrl}index.html`, renderFullPage(pipeline.dashboard, css, pipeline.nav, baseUrl, { hotReload: true }));
+		const dashHtml = renderPage(pipeline.dashboard, pipeline.navRegion, allPageUrls, {
+			hotReload: true,
+			stylesheets,
+			activeUrl: baseUrl,
+		});
+		pageIndex.set(baseUrl, dashHtml);
+		pageIndex.set(`${baseUrl}index.html`, dashHtml);
 	}
 
-	rebuild();
+	await rebuild();
 
 	// SSE clients for hot reload
 	const sseClients: http.ServerResponse[] = [];
@@ -62,12 +77,11 @@ export function runServe(options: ServeOptions): ServeResult {
 			fs.watch(watchDir, { recursive: true }, (event, filename) => {
 				if (!filename || !filename.endsWith('.md')) return;
 				console.log(`[plan] File changed: ${filename}, rebuilding...`);
-				try {
-					rebuild();
+				rebuild().then(() => {
 					notifyReload();
-				} catch (err: any) {
+				}).catch((err: any) => {
 					console.error(`[plan] Rebuild error: ${err.message}`);
-				}
+				});
 			});
 		} catch {
 			// fs.watch not supported on all platforms with recursive
@@ -92,6 +106,13 @@ export function runServe(options: ServeOptions): ServeResult {
 				const idx = sseClients.indexOf(res);
 				if (idx !== -1) sseClients.splice(idx, 1);
 			});
+			return;
+		}
+
+		// Serve theme CSS
+		if (url === '/__plan-theme.css') {
+			res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
+			res.end(combinedCss);
 			return;
 		}
 

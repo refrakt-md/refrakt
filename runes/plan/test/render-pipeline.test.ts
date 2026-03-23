@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { runPipeline } from '../src/commands/render-pipeline.js';
+import { runPipeline, renderPage } from '../src/commands/render-pipeline.js';
 
 let tmpDir: string;
 
@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('runPipeline', () => {
-	it('renders entity pages from plan files', () => {
+	it('renders entity pages from plan files', async () => {
 		writeFile('work/task-001.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # First Task
 Description of the task.
@@ -35,7 +35,7 @@ Description of the task.
 Body content.
 {% /spec %}`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
@@ -47,22 +47,27 @@ Body content.
 		// Check work page
 		const workPage = result.pages.find(p => p.entityId === 'WORK-001');
 		expect(workPage).toBeDefined();
-		expect(workPage!.html).toContain('First Task');
 		expect(workPage!.type).toBe('work');
 
 		// Check spec page
 		const specPage = result.pages.find(p => p.entityId === 'SPEC-001');
 		expect(specPage).toBeDefined();
-		expect(specPage!.html).toContain('My Spec');
+
+		// Render to HTML and check content
+		const workHtml = renderPage(workPage!, result.navRegion, [], { stylesheets: [] });
+		expect(workHtml).toContain('First Task');
+
+		const specHtml = renderPage(specPage!, result.navRegion, [], { stylesheets: [] });
+		expect(specHtml).toContain('My Spec');
 	});
 
-	it('generates auto-dashboard when no index.md exists', () => {
+	it('generates auto-dashboard when no index.md exists', async () => {
 		writeFile('work/task-001.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Description.
 {% /work %}`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
@@ -70,11 +75,11 @@ Description.
 
 		expect(result.dashboard).toBeDefined();
 		expect(result.dashboard.title).toBe('Plan Dashboard');
-		// Dashboard should contain backlog rune output (rendered by pipeline)
-		expect(result.dashboard.html).toBeTruthy();
+		// Dashboard should have a renderable tree
+		expect(result.dashboard.renderable).toBeTruthy();
 	});
 
-	it('uses user index.md when it exists', () => {
+	it('uses user index.md when it exists', async () => {
 		writeFile('work/task-001.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Description.
@@ -84,16 +89,17 @@ Description.
 
 My custom plan overview.`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
 		});
 
-		expect(result.dashboard.html).toContain('Custom Dashboard');
+		const dashHtml = renderPage(result.dashboard, result.navRegion, [], { stylesheets: [] });
+		expect(dashHtml).toContain('Custom Dashboard');
 	});
 
-	it('builds navigation groups from entity types', () => {
+	it('builds navigation groups from entity types', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task One
 Desc.
@@ -107,7 +113,7 @@ C.
 D.
 {% /decision %}`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
@@ -123,13 +129,13 @@ D.
 		expect(decisionGroup).toBeDefined();
 	});
 
-	it('applies base-url prefix to page URLs', () => {
+	it('applies base-url prefix to page URLs', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Desc.
 {% /work %}`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/project/plan/',
@@ -138,14 +144,14 @@ Desc.
 		expect(result.pages[0].url).toContain('/project/plan/');
 	});
 
-	it('works with minimal theme', () => {
+	it('works with minimal theme', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Desc.
 {% /work %}`);
 
 		// Should not throw
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'minimal',
 			baseUrl: '/',
@@ -154,7 +160,7 @@ Desc.
 		expect(result.pages).toHaveLength(1);
 	});
 
-	it('populates backlog rune in dashboard via pipeline', () => {
+	it('populates backlog rune in dashboard via pipeline', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Ready Task
 Description.
@@ -165,7 +171,7 @@ Description.
 Description.
 {% /work %}`);
 
-		const result = runPipeline({
+		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
@@ -173,6 +179,63 @@ Description.
 
 		// The auto-generated dashboard has a backlog with filter="status:ready"
 		// After pipeline postProcess, it should contain the ready task
-		expect(result.dashboard.html).toContain('WORK-001');
+		const dashHtml = renderPage(result.dashboard, result.navRegion, [], { stylesheets: [] });
+		expect(dashHtml).toContain('WORK-001');
+	});
+
+	it('produces nav region as renderable tree', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		expect(result.navRegion).toBeDefined();
+		expect(Array.isArray(result.navRegion)).toBe(true);
+		expect(result.navRegion.length).toBeGreaterThan(0);
+	});
+
+	it('renders full HTML documents via renderPage', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], {
+			stylesheets: ['/theme.css'],
+		});
+
+		expect(html).toContain('<!DOCTYPE html>');
+		expect(html).toContain('<link rel="stylesheet" href="/theme.css">');
+		expect(html).toContain('rf-plan-sidebar');
+		expect(html).toContain('rf-plan-main');
+	});
+
+	it('includes highlight CSS in pipeline result', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		// highlightCss may be empty string (CSS variables theme produces no extra CSS)
+		// but it should be defined
+		expect(typeof result.highlightCss).toBe('string');
 	});
 });

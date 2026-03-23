@@ -266,6 +266,27 @@ export const docsLayout: LayoutConfig = {
 	},
 };
 
+// ─── Plan Layout ─────────────────────────────────────────────────────
+// Simple sidebar + main layout for the plan site.
+// The sidebar nav region is built by @refrakt-md/plan and passed in.
+
+export const planLayout: LayoutConfig = {
+	block: 'plan',
+	slots: {
+		sidebar: {
+			tag: 'nav',
+			class: 'rf-plan-sidebar',
+			source: 'region:nav',
+			conditional: true,
+		},
+		main: {
+			tag: 'main',
+			class: 'rf-plan-main',
+			source: 'content',
+		},
+	},
+};
+
 // ─── Blog Article Layout ──────────────────────────────────────────────
 // Matches BlogLayout.svelte article mode (individual post with frontmatter chrome).
 // Blog index mode is handled by a {% blog-index %} rune, not by the layout.
