@@ -2,7 +2,7 @@
 
 # `plan validate` Command
 
-> Ref: SPEC-022 (Plan CLI — `validate` section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — `validate` section)
 
 ## Summary
 
@@ -23,11 +23,11 @@ Structural validation for plan files with CI-friendly exit codes. Checks for bro
 
 ## Dependencies
 
-- WORK-027 (plugin architecture)
-- WORK-028 (plan file scanner)
+- {% ref "WORK-027" /%} (plugin architecture)
+- {% ref "WORK-028" /%} (plan file scanner)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 
 {% /work %}

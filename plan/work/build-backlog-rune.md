@@ -2,13 +2,13 @@
 
 # Build `backlog` Rune
 
-> Ref: SPEC-021 (Plan Runes) — Package: `@refrakt-md/plan`
+> Ref: {% ref "SPEC-021" /%} (Plan Runes) — Package: `@refrakt-md/plan`
 
 ## Summary
 
-Aggregation rune that queries the entity registry and renders a filtered, sorted, grouped view of work items and bugs. This is the first Phase 2 rune in the plan package — it requires the cross-page pipeline and entity registration (WORK-020) to function.
+Aggregation rune that queries the entity registry and renders a filtered, sorted, grouped view of work items and bugs. This is the first Phase 2 rune in the plan package — it requires the cross-page pipeline and entity registration ({% ref "WORK-020" /%}) to function.
 
-The backlog rune is also the rendering primitive used by the milestone auto-backlog feature (WORK-025).
+The backlog rune is also the rendering primitive used by the milestone auto-backlog feature ({% ref "WORK-025" /%}).
 
 ## Attributes
 
@@ -50,7 +50,7 @@ Each entity renders as a compact summary card showing id, status badge, priority
 
 ## Dependencies
 
-- WORK-020 (entity registration) must be complete first
+- {% ref "WORK-020" /%} (entity registration) must be complete first
 - Uses `PackagePipelineHooks.aggregate()` from `@refrakt-md/types`
 
 {% /work %}

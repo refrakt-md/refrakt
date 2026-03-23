@@ -2,7 +2,7 @@
 
 # Plan File Scanner Library
 
-> Ref: SPEC-022 (Plan CLI — Directory Discovery section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — Directory Discovery section)
 
 ## Summary
 
@@ -33,10 +33,10 @@ The scan function accepts an optional `cache` parameter. When enabled, it reads 
 
 ## Dependencies
 
-- WORK-021 (xref migration — so plan files use `{% xref %}`/`{% ref %}` tags that the scanner can extract from the AST)
+- {% ref "WORK-021" /%} (xref migration — so plan files use `{% xref %}`/`{% ref %}` tags that the scanner can extract from the AST)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 
 {% /work %}

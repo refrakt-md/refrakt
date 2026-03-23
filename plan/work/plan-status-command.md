@@ -2,7 +2,7 @@
 
 # `plan status` Command
 
-> Ref: SPEC-022 (Plan CLI — `status` section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — `status` section)
 
 ## Summary
 
@@ -21,11 +21,11 @@ Terminal status summary showing entity counts by type and status, active milesto
 
 ## Dependencies
 
-- WORK-027 (plugin architecture)
-- WORK-028 (plan file scanner)
+- {% ref "WORK-027" /%} (plugin architecture)
+- {% ref "WORK-028" /%} (plan file scanner)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 
 {% /work %}

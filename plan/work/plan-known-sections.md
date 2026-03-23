@@ -2,11 +2,11 @@
 
 # Add `knownSections` to Plan Rune Content Models
 
-> Ref: SPEC-021 (Plan Runes), SPEC-003 (Declarative Content Model)
+> Ref: {% ref "SPEC-021" /%} (Plan Runes), {% ref "SPEC-003" /%} (Declarative Content Model)
 
 ## Summary
 
-SPEC-021 defines named sections with aliases for work, bug, and decision runes. The current implementation uses a generic `sections` content model — any H2 heading creates a section, but headings aren't validated or aliased.
+{% ref "SPEC-021" /%} defines named sections with aliases for work, bug, and decision runes. The current implementation uses a generic `sections` content model — any H2 heading creates a section, but headings aren't validated or aliased.
 
 The `knownSections` feature would let content models declare expected section names and aliases, enabling:
 - Validation: warn if a required section is missing (e.g., work item without "Acceptance Criteria")
@@ -48,6 +48,6 @@ The `knownSections` feature would let content models declare expected section na
 
 ## Status
 
-**Blocked** — the `knownSections` feature does not exist in the content model framework yet. It appears in SPEC-003 (Declarative Content Model) as a planned extension but has not been implemented. This work item is blocked until the framework support ships.
+**Blocked** — the `knownSections` feature does not exist in the content model framework yet. It appears in {% ref "SPEC-003" /%} (Declarative Content Model) as a planned extension but has not been implemented. This work item is blocked until the framework support ships.
 
 {% /work %}

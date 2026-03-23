@@ -2,7 +2,7 @@
 
 # Add Entity Registration to `@refrakt-md/plan`
 
-> Ref: SPEC-002 (Cross-Page Pipeline)
+> Ref: {% ref "SPEC-002" /%} (Cross-Page Pipeline)
 
 ## Summary
 

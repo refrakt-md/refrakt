@@ -636,7 +636,7 @@ reasoning before implementing.
 
 AI agents don’t just consume plan runes — they author them:
 
-**Breaking down specs.** “Read SPEC-008 and create work items for each unimplemented section.” The AI reads the spec, identifies discrete pieces of work, and creates `.md` files with the work item template filled in.
+**Breaking down specs.** “Read {% ref "SPEC-008" /%} and create work items for each unimplemented section.” The AI reads the spec, identifies discrete pieces of work, and creates `.md` files with the work item template filled in.
 
 **Triaging bugs.** The AI reads a bug report, searches existing bugs in the registry for duplicates, suggests severity, and links to relevant specs or work items.
 

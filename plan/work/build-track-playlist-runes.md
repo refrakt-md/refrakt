@@ -2,7 +2,7 @@
 
 # Build `track` and `playlist` Runes
 
-> Ref: SPEC-008 (Unbuilt Runes), SPEC-006 (Media Runes) — Package: `@refrakt-md/media`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes), {% ref "SPEC-006" /%} (Media Runes) — Package: `@refrakt-md/media`
 
 ## Summary
 
@@ -43,7 +43,7 @@ Existing runes continue as aliases during transition.
 
 ## Compact Track Format (Markdown-native)
 
-Per SPEC-006, track metadata uses Markdown formatting constructs instead of pipe-delimited strings:
+Per {% ref "SPEC-006" /%}, track metadata uses Markdown formatting constructs instead of pipe-delimited strings:
 
 | Markdown construct | Track field | Example |
 |---|---|---|

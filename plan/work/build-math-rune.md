@@ -2,7 +2,7 @@
 
 # Build `math` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes)
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes)
 
 ## Summary
 

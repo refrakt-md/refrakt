@@ -2,7 +2,7 @@
 
 # CLI Plugin Discovery Architecture
 
-> Ref: SPEC-022 (Plan CLI — Plugin Registration section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — Plugin Registration section)
 
 ## Summary
 
@@ -27,7 +27,7 @@ The `@refrakt-md/plan` package adds a `cli-plugin.ts` entry point alongside its 
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 - `packages/cli/src/bin.ts` (current CLI entry point)
 
 {% /work %}

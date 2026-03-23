@@ -2,7 +2,7 @@
 
 # Build `concept` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/learning`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/learning`
 
 ## Summary
 
@@ -41,6 +41,6 @@ Term definition with explanation, examples, and related concepts. The building b
 
 ## Dependencies
 
-- The `glossary` rune (WORK-010) collects concept definitions and auto-links terms across the site
+- The `glossary` rune ({% ref "WORK-010" /%}) collects concept definitions and auto-links terms across the site
 
 {% /work %}

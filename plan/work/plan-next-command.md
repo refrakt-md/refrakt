@@ -2,7 +2,7 @@
 
 # `plan next` Command
 
-> Ref: SPEC-022 (Plan CLI — `next` section, AI Agent Integration section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — `next` section, AI Agent Integration section)
 
 ## Summary
 
@@ -23,15 +23,15 @@ Dependency-aware work item selection. Finds the highest-priority ready item, ski
 
 ## Approach
 
-Use the scanner (WORK-028) to get all entities. Build a status lookup map (ID → status). Filter work/bug items by ready status, then exclude those with unfinished dependencies. Sort and slice. For JSON output, include the full criteria list and spec references.
+Use the scanner ({% ref "WORK-028" /%}) to get all entities. Build a status lookup map (ID → status). Filter work/bug items by ready status, then exclude those with unfinished dependencies. Sort and slice. For JSON output, include the full criteria list and spec references.
 
 ## Dependencies
 
-- WORK-027 (plugin architecture)
-- WORK-028 (plan file scanner)
+- {% ref "WORK-027" /%} (plugin architecture)
+- {% ref "WORK-028" /%} (plan file scanner)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 
 {% /work %}

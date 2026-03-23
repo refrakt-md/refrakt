@@ -2,7 +2,7 @@
 
 # Build `glossary` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/learning`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/learning`
 
 ## Summary
 
@@ -45,6 +45,6 @@ The auto-linking feature requires build pipeline integration beyond standard run
 
 ## Dependencies
 
-- Requires the `concept` rune (WORK-007) to exist first — glossary collects concept definitions
+- Requires the `concept` rune ({% ref "WORK-007" /%}) to exist first — glossary collects concept definitions
 
 {% /work %}

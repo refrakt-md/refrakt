@@ -1,12 +1,12 @@
-{% work id="WORK-021" status="ready" priority="high" tags="plan, xref, content" %}
+{% work id="WORK-021" status="done" priority="high" tags="plan, xref, content" %}
 
 # Update Plan Documents to Use Xref Syntax
 
-> Ref: WORK-020 (Plan Entity Registration)
+> Ref: {% ref "WORK-020" /%} (Plan Entity Registration)
 
 ## Summary
 
-Plan documents currently use plain-text references like `Ref: SPEC-008 (Unbuilt Runes)` and `Dependencies: WORK-015`. Replace these with `{% xref %}` tags so cross-references are machine-readable and will resolve to links once WORK-020 (entity registration) is complete.
+Plan documents currently use plain-text references like `Ref: SPEC-008 (Unbuilt Runes)` and `Dependencies: WORK-015`. Replace these with `{% ref %}` tags so cross-references are machine-readable and will resolve to links once {% ref "WORK-020" /%} (entity registration) is complete.
 
 ## Scope
 
@@ -36,13 +36,13 @@ After:
 
 ## Acceptance Criteria
 
-- [ ] All `SPEC-###`, `WORK-###`, `ADR-###` references in plan documents use `{% xref %}` syntax
-- [ ] Blockquote `Ref:` lines use xref for each referenced ID
-- [ ] Dependency mentions in prose and lists use xref
-- [ ] No plain-text ID references remain (except inside attribute values like `id="WORK-004"`)
+- [x] All `SPEC-###`, `WORK-###`, `ADR-###` references in plan documents use `{% xref %}` syntax
+- [x] Blockquote `Ref:` lines use xref for each referenced ID
+- [x] Dependency mentions in prose and lists use xref
+- [x] No plain-text ID references remain (except inside attribute values like `id="WORK-004"`)
 
 ## Dependencies
 
-- WORK-026 (ref alias — so migrated files can use the shorter `{% ref %}` syntax)
+- {% ref "WORK-026" /%} (ref alias — so migrated files can use the shorter `{% ref %}` syntax)
 
 {% /work %}

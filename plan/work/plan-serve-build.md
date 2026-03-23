@@ -2,7 +2,7 @@
 
 # `plan serve` and `plan build` Commands
 
-> Ref: SPEC-022 (Plan CLI — `serve` and `build` sections)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — `serve` and `build` sections)
 
 ## Summary
 
@@ -29,15 +29,15 @@ Build a lightweight rendering pipeline: scanner → entity registry → Markdoc 
 
 ## Dependencies
 
-- WORK-027 (plugin architecture)
-- WORK-028 (plan file scanner)
-- WORK-020 (entity registration — for xref resolution)
-- WORK-022 (backlog rune — for dashboard views)
-- WORK-023 (decision-log rune — for dashboard views)
-- WORK-034 (dashboard theme CSS)
+- {% ref "WORK-027" /%} (plugin architecture)
+- {% ref "WORK-028" /%} (plan file scanner)
+- {% ref "WORK-020" /%} (entity registration — for xref resolution)
+- {% ref "WORK-022" /%} (backlog rune — for dashboard views)
+- {% ref "WORK-023" /%} (decision-log rune — for dashboard views)
+- {% ref "WORK-034" /%} (dashboard theme CSS)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 
 {% /work %}

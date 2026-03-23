@@ -2,7 +2,7 @@
 
 # Milestone Auto-Backlog and Checklist Progress
 
-> Ref: SPEC-021 (Plan Runes) — Package: `@refrakt-md/plan`
+> Ref: {% ref "SPEC-021" /%} (Plan Runes) — Package: `@refrakt-md/plan`
 
 ## Summary
 
@@ -30,7 +30,7 @@ Milestone auto-backlog uses a `postProcess` pipeline hook that queries the entit
 
 ## Dependencies
 
-- WORK-020 (entity registration) — entities must be registered first
-- WORK-022 (backlog rune) — card layout rendering can be shared
+- {% ref "WORK-020" /%} (entity registration) — entities must be registered first
+- {% ref "WORK-022" /%} (backlog rune) — card layout rendering can be shared
 
 {% /work %}

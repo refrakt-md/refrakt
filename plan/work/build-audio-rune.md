@@ -2,7 +2,7 @@
 
 # Build `audio` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/media`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/media`
 
 ## Summary
 

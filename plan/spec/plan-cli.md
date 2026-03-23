@@ -856,7 +856,7 @@ The package serves double duty: it provides runes (registered in the transform p
 
 ## Future: Performance at Scale
 
-As the number of plan files grows (hundreds of entities across specs, work items, bugs, and decisions), full directory scans become a bottleneck. The initial implementation includes mtime-based file caching (WORK-028), but several additional strategies are worth considering for the future:
+As the number of plan files grows (hundreds of entities across specs, work items, bugs, and decisions), full directory scans become a bottleneck. The initial implementation includes mtime-based file caching ({% ref "WORK-028" /%}), but several additional strategies are worth considering for the future:
 
 **Filtered scanning.** Most commands don't need every entity. `next` only cares about `status="ready"` work items; `validate` might target a single file. Adding type/status filters to `scanPlanFiles()` would let commands skip irrelevant files entirely when combined with the cache:
 

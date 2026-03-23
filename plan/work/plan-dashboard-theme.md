@@ -2,7 +2,7 @@
 
 # Plan Dashboard Theme
 
-> Ref: SPEC-022 (Plan CLI — Default Theme section)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — Default Theme section)
 
 ## Summary
 
@@ -26,7 +26,7 @@ CSS-only — no JavaScript. Use design tokens from `packages/lumina/tokens/base.
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 - `runes/plan/src/config.ts` (rune configs defining BEM structure)
 - `packages/lumina/tokens/base.css` (design token reference)
 

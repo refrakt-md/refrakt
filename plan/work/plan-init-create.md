@@ -2,7 +2,7 @@
 
 # `plan init` and `plan create` Commands
 
-> Ref: SPEC-022 (Plan CLI — `init` and `create` sections)
+> Ref: {% ref "SPEC-022" /%} (Plan CLI — `init` and `create` sections)
 
 ## Summary
 
@@ -24,11 +24,11 @@ Templates live in `runes/plan/src/templates/` as string constants (not separate 
 
 ## Dependencies
 
-- WORK-027 (plugin architecture — so commands can be registered)
+- {% ref "WORK-027" /%} (plugin architecture — so commands can be registered)
 
 ## References
 
-- SPEC-022 (Plan CLI)
+- {% ref "SPEC-022" /%} (Plan CLI)
 - `plan/CLAUDE.md` (required content structure)
 
 {% /work %}

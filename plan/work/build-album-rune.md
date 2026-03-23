@@ -2,7 +2,7 @@
 
 # Build `album` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/media`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/media`
 
 ## Summary
 
@@ -43,6 +43,6 @@ Grouped release — a music album, podcast season, video season, lecture series.
 
 ## Dependencies
 
-- Requires `track` and `playlist` runes (WORK-015) to exist as child content
+- Requires `track` and `playlist` runes ({% ref "WORK-015" /%}) to exist as child content
 
 {% /work %}

@@ -2,7 +2,7 @@
 
 # Build `prerequisite` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/learning`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/learning`
 
 ## Summary
 

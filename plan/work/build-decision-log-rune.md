@@ -2,7 +2,7 @@
 
 # Build `decision-log` Rune
 
-> Ref: SPEC-021 (Plan Runes) — Package: `@refrakt-md/plan`
+> Ref: {% ref "SPEC-021" /%} (Plan Runes) — Package: `@refrakt-md/plan`
 
 ## Summary
 
@@ -38,7 +38,7 @@ Simpler than the backlog rune — no grouping, no card layout. Just a clean chro
 
 ## Dependencies
 
-- WORK-020 (entity registration) must be complete first
-- Filter parsing can be shared with backlog rune (WORK-022)
+- {% ref "WORK-020" /%} (entity registration) must be complete first
+- Filter parsing can be shared with backlog rune ({% ref "WORK-022" /%})
 
 {% /work %}

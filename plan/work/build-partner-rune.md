@@ -2,7 +2,7 @@
 
 # Build `partner` Rune
 
-> Ref: SPEC-008 (Unbuilt Runes) — Package: `@refrakt-md/business`
+> Ref: {% ref "SPEC-008" /%} (Unbuilt Runes) — Package: `@refrakt-md/business`
 
 ## Summary
 
