@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
 import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig } from '@refrakt-md/runes';
 import { createTransform, renderToHtml, mergeThemeConfig } from '@refrakt-md/transform';
@@ -59,6 +60,8 @@ export interface PipelineOptions {
 // --- Theme resolution ---
 
 function resolveThemeCss(theme: string): string {
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = path.dirname(__filename);
 	const stylesDir = path.resolve(__dirname, '../../styles');
 
 	if (theme === 'default') {

@@ -326,6 +326,9 @@ export interface ContentModelSchemaOptions {
 
   /** Deprecated attribute mappings. */
   deprecations?: Record<string, DeprecationRule>;
+
+  /** Whether this tag is self-closing (no children). */
+  selfClosing?: boolean;
 }
 
 /**
@@ -367,6 +370,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
   const schema: Schema = {
     attributes,
+    ...(options.selfClosing != null && { selfClosing: options.selfClosing }),
     transform: (node, config) => {
       // Resolve deprecated attributes
       if (deprecations) {
