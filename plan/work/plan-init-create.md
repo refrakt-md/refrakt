@@ -1,4 +1,4 @@
-{% work id="WORK-029" status="ready" priority="medium" complexity="simple" tags="cli, plan" %}
+{% work id="WORK-029" status="done" priority="medium" complexity="simple" tags="cli, plan" %}
 
 # `plan init` and `plan create` Commands
 
@@ -10,13 +10,13 @@ Scaffolding commands that create plan directories and template files. `init` set
 
 ## Acceptance Criteria
 
-- [ ] `plan init` creates `plan/work/`, `plan/spec/`, `plan/decision/` directories
-- [ ] `plan init` generates example files (work item, decision, spec) and starter `index.md`
-- [ ] `plan init` appends workflow section to CLAUDE.md (or creates one) including `next`/`update`/`status` commands
-- [ ] `plan create work --id WORK-XXX --title "..."` scaffolds a work item from template
-- [ ] `plan create` supports all 5 types: work, bug, decision, spec, milestone
-- [ ] Templates include all required sections per `plan/CLAUDE.md` structure
-- [ ] Tests for directory creation, file generation, and template rendering
+- [x] `plan init` creates `plan/work/`, `plan/spec/`, `plan/decision/` directories
+- [x] `plan init` generates example files (work item, decision, spec) and starter `index.md`
+- [x] `plan init` appends workflow section to CLAUDE.md (or creates one) including `next`/`update`/`status` commands
+- [x] `plan create work --id WORK-XXX --title "..."` scaffolds a work item from template
+- [x] `plan create` supports all 5 types: work, bug, decision, spec, milestone
+- [x] Templates include all required sections per `plan/CLAUDE.md` structure
+- [x] Tests for directory creation, file generation, and template rendering
 
 ## Approach
 

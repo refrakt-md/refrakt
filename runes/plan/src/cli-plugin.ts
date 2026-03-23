@@ -1,5 +1,8 @@
 import { runUpdate, EXIT_NOT_FOUND, EXIT_VALIDATION_ERROR } from './commands/update.js';
 import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js';
+import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/create.js';
+import { runInit } from './commands/init.js';
+import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
 	name: string;
@@ -160,6 +163,98 @@ function handleNext(args: string[]): void {
 	}
 }
 
+function handleCreate(args: string[]): void {
+	const type = args[0] as PlanItemType;
+	if (!type || !VALID_TYPES.includes(type)) {
+		console.error(`Usage: refrakt plan create <type> --id <id> --title "..."`);
+		console.error(`Types: ${VALID_TYPES.join(', ')}`);
+		process.exit(CREATE_INVALID_ARGS);
+	}
+
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let id = '';
+	let title = '';
+	let formatJson = false;
+	const attrs: Record<string, string> = {};
+
+	for (let i = 1; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--id' && args[i + 1]) {
+			id = args[++i];
+		} else if (arg === '--title' && args[i + 1]) {
+			title = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else if (arg.startsWith('--') && args[i + 1]) {
+			const key = arg.slice(2);
+			attrs[key] = args[++i];
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			process.exit(CREATE_INVALID_ARGS);
+		}
+	}
+
+	try {
+		const result = runCreate({ dir, type, id, title, attrs: Object.keys(attrs).length > 0 ? attrs : undefined });
+		if (formatJson) {
+			console.log(JSON.stringify(result, null, 2));
+		} else {
+			console.log(`Created ${result.type} ${result.id} at ${result.file}`);
+		}
+	} catch (err: any) {
+		const exitCode = err.exitCode ?? 1;
+		if (formatJson) {
+			console.error(JSON.stringify({ error: err.message }, null, 2));
+		} else {
+			console.error(`Error: ${err.message}`);
+		}
+		process.exit(exitCode);
+	}
+}
+
+function handleInit(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let projectRoot = '.';
+	let formatJson = false;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--project-root' && args[i + 1]) {
+			projectRoot = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--format json]');
+			process.exit(1);
+		}
+	}
+
+	const result = runInit({ dir, projectRoot });
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+	} else {
+		if (result.created.length === 0) {
+			console.log('Plan structure already exists. No changes made.');
+		} else {
+			console.log(`Initialized plan in ${result.dir}/`);
+			for (const f of result.created) {
+				console.log(`  + ${f}`);
+			}
+			if (result.claudeMdUpdated) {
+				console.log('  + Updated CLAUDE.md with workflow section');
+			}
+		}
+	}
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
@@ -167,8 +262,8 @@ const plugin: CliPlugin = {
 		{ name: 'next', description: 'Find next work item', handler: handleNext },
 		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
 		{ name: 'validate', description: 'Validate plan structure', handler: notYetImplemented('validate') },
-		{ name: 'create', description: 'Scaffold new plan items', handler: notYetImplemented('create') },
-		{ name: 'init', description: 'Scaffold plan structure', handler: notYetImplemented('init') },
+		{ name: 'create', description: 'Scaffold new plan items', handler: handleCreate },
+		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: notYetImplemented('serve') },
 		{ name: 'build', description: 'Build static plan site', handler: notYetImplemented('build') },
 	],
