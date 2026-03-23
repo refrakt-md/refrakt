@@ -38,7 +38,7 @@ refract.md/
     design/                # @refrakt-md/design
     media/                 # @refrakt-md/media
   site/
-  planning/
+  plan/spec/
 ```
 
 No naming conflict: `packages/runes/` is `@refrakt-md/runes` (core schemas), `runes/marketing/` is `@refrakt-md/marketing` (official package). Different npm scopes.
@@ -72,7 +72,7 @@ Per the community-runes-spec, these are universal primitives that ship built-in:
 
 **Data & Code:** datatable, chart, diagram, budget, codegroup, compare, diff, sandbox, form
 
-*gallery, stat, and math are core runes that haven't been built yet — see `planning/unbuilt-runes-spec.md`.
+*gallery, stat, and math are core runes that haven't been built yet — see `plan/spec/unbuilt-runes.md`.
 
 ---
 

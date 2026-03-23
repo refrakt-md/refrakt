@@ -103,7 +103,7 @@ These are unresolved or partially resolved design questions. When working on fea
 | **Generated routes** (blog indexes, tag pages, RSS feeds) | Manifest `routeRules` can declare `generated` but nothing processes it. |
 | **TypeDoc pipeline** (`refrakt typedoc` command) | Not started. |
 | **Quiz / poll / survey runes** | Specified in the original spec but not implemented as rune definitions. |
-| ~~**Symbol rune** (`{% symbol %}` for code documentation)~~ | ~~Documents code constructs (functions, classes, interfaces, enums) using Markdown reinterpretation. Full spec: `planning/rune-symbol.md`~~ DONE |
+| ~~**Symbol rune** (`{% symbol %}` for code documentation)~~ | ~~Documents code constructs (functions, classes, interfaces, enums) using Markdown reinterpretation. Full spec: `plan/spec/rune-symbol.md`~~ DONE |
 | **Context-aware component switching** | `contextOverrides` in manifest is dead schema -- nothing reads or applies it. CSS-level context modifiers are done (see Q2 above); component-level switching remains unbuilt. |
 | **Critical CSS inlining** | No CSS analysis or inlining pipeline. |
 | **AI authoring modes** (draft, review, enhance, transform) | Write mode exists with single-file and multi-file (`-d`) support. `modes/` architecture established. Four additional modes designed but not implemented. See Section 13. |
@@ -113,9 +113,9 @@ These are unresolved or partially resolved design questions. When working on fea
 | ~~**CSS tree-shaking**~~ | ~~Per-rune CSS files exist but all are bundled unconditionally. No content analysis to determine which rune CSS is needed per page.~~ DONE — Build-time content analysis in `packages/sveltekit/src/plugin.ts` (`buildStart` hook). Virtual module generates selective CSS imports for only the rune blocks used in the site. Dev mode unchanged (all CSS for instant feedback). |
 | ~~**VS Code extension** (Phase 1: static)~~ | ~~TextMate grammar, snippets, bracket matching, folding. Declarative config only, no runtime code. See Section 12.~~ DONE — `packages/vscode/` with injection grammar for rune syntax highlighting, 50 snippets (70 prefixes with aliases), language configuration for bracket matching and folding. |
 | ~~**Language server** (Phase 2: LSP)~~ | ~~Autocompletion, hover docs, diagnostics, validation, cross-file intelligence. Powered by rune registry metadata. See Section 12.~~ DONE — `packages/language-server/` with completion (tag names, attributes, enum values, closing tags), hover docs, and Markdoc-based diagnostics with "did you mean?" suggestions. 58 tests. |
-| **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `planning/local-runes.md` |
+| **Local runes** (declarative rune extension) | Allows projects to declare custom runes in `refrakt.config.json` without writing schema code. Full spec: `plan/spec/local-runes.md` |
 | ~~**Rune Inspector** (VS Code tree view)~~ | ~~Pipeline debugger showing AST, transform, serialized, and identity transform output for the rune at cursor.~~ DONE — `packages/vscode/src/inspector.ts` (TreeDataProvider), `packages/language-server/src/providers/inspector.ts` (pipeline execution), custom LSP request `refrakt/inspectRune`. `serialize()` relocated from svelte to runes package. 10 tests. |
-| ~~**Preview & Sandbox runes**~~ | ~~Preview enhancements: `responsive` attribute for viewport simulation (mobile/tablet/desktop toolbar toggles). Sandbox rune: isolated HTML/CSS/JS rendering via iframe `srcdoc`, raw source extraction (bypasses Markdoc HTML parsing), framework presets, `data-source` markers for multi-language source panels. Full spec: `planning/preview-sandbox-spec.md`~~ DONE — Preview: `responsive` attribute with mobile/tablet/desktop viewport toolbar, theme toggle propagation into sandboxed iframes, flicker-free view/viewport switching. Sandbox: iframe `srcdoc` isolation, raw source extraction, framework presets (Tailwind, Bootstrap, Bulma, Pico), `data-source` markers with server-side Shiki highlighting, dedented source panels. Custom markdoc TextMate grammar for HTML-in-sandbox highlighting. VS Code snippet + docs. |
+| ~~**Preview & Sandbox runes**~~ | ~~Preview enhancements: `responsive` attribute for viewport simulation (mobile/tablet/desktop toolbar toggles). Sandbox rune: isolated HTML/CSS/JS rendering via iframe `srcdoc`, raw source extraction (bypasses Markdoc HTML parsing), framework presets, `data-source` markers for multi-language source panels. Full spec: `plan/spec/preview-sandbox.md`~~ DONE — Preview: `responsive` attribute with mobile/tablet/desktop viewport toolbar, theme toggle propagation into sandboxed iframes, flicker-free view/viewport switching. Sandbox: iframe `srcdoc` isolation, raw source extraction, framework presets (Tailwind, Bootstrap, Bulma, Pico), `data-source` markers with server-side Shiki highlighting, dedented source panels. Custom markdoc TextMate grammar for HTML-in-sandbox highlighting. VS Code snippet + docs. |
 
 ---
 
@@ -602,15 +602,15 @@ This section captures the current priority order. Update it as things change.
 - ~~CSS tree-shaking: use content analysis manifest to include only the per-rune CSS files needed per page~~ -- DONE
 - ~~Extract syntax highlighting from rune level into a dedicated pipeline step~~ -- DONE (`@refrakt-md/highlight` package, see Open Question #6)
 - ~~VS Code extension Phase 1 (TextMate grammar, snippets, bracket matching)~~ -- DONE (`packages/vscode/`, injection grammar + 46 snippets + language config)
-- Local runes v1: declarative rune extension via config (see `planning/local-runes.md`)
-- ~~Preview & Sandbox runes: responsive viewport simulation, sandbox iframe isolation, `data-source` extraction (see `planning/preview-sandbox-spec.md`)~~ -- DONE
+- Local runes v1: declarative rune extension via config (see `plan/spec/local-runes.md`)
+- ~~Preview & Sandbox runes: responsive viewport simulation, sandbox iframe isolation, `data-source` extraction (see `plan/spec/preview-sandbox.md`)~~ -- DONE
 
 **Medium term:**
 - ~~Content analysis step (scan all content, produce rune usage manifest)~~ -- DONE (`analyzeRuneUsage()` in `@refrakt-md/content`)
 - AI authoring modes: enhance + review (Section 13) — requires multi-turn conversation handler + rune attribute introspection (Open Question #1)
 - Pre-processed route generation for production builds
 - Quiz, poll/survey rune implementations
-- ~~Symbol rune (`{% symbol %}`) for code documentation (see `planning/rune-symbol.md`)~~ -- DONE
+- ~~Symbol rune (`{% symbol %}`) for code documentation (see `plan/spec/rune-symbol.md`)~~ -- DONE
 - ~~Language server (Phase 9b)~~ -- DONE (`packages/language-server/`, completion + hover + diagnostics, 58 tests)
 
 **Long term:**
