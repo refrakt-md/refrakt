@@ -28,6 +28,8 @@ The plan site is essentially a lightweight refrakt site with plan-specific conte
 2. **Define a `planLayout`** in `@refrakt-md/transform` alongside `docsLayout` and `blogArticleLayout`
 3. **Decouple from Lumina** — any theme that provides plan layout CSS works; the built-in plan styles (`default.css`, `minimal.css`) remain as fallbacks
 4. **Preserve all existing functionality** — sidebar nav, auto-generated dashboard, hot reload, static build, theme selection, base-url support
+5. **Add syntax highlighting** — apply `@refrakt-md/highlight` to code fences so plan content gets proper code coloring
+6. **Enable client behaviors** — load `@refrakt-md/behaviors` via `initPage()` to provide copy-to-clipboard on code blocks
 
 ## Design
 
@@ -38,6 +40,10 @@ plan serve / plan build
   ├── Scanner (plan-specific content loading — unchanged)
   ├── Pipeline hooks: register/aggregate/postProcess (unchanged)
   ├── Auto-generated dashboard content (unchanged)
+  ├── @refrakt-md/highlight
+  │    └── createHighlightTransform() → walk tree, apply Shiki, emit CSS
+  ├── @refrakt-md/behaviors (client-side)
+  │    └── initPage() → copy-to-clipboard on all <pre> elements
   └── @refrakt-md/html
        ├── renderFullPage(input, options)
        │   ├── layoutTransform(planLayout, pageData)
@@ -117,6 +123,39 @@ For each entity page and the dashboard, `@refrakt-md/plan` builds a `LayoutPageD
 }
 ```
 
+### Syntax Highlighting
+
+The current plan site renders code fences as plain `<pre><code>` with no coloring. The refactored pipeline adds `@refrakt-md/highlight`:
+
+1. **Build time**: `createHighlightTransform()` returns an async tree-walker that finds all elements with `data-language` attributes and applies Shiki syntax highlighting
+2. **Apply**: After serialization and identity transform, run the highlight transform on the tree before passing it to `renderToHtml()`
+3. **CSS**: The transform exposes a `.css` property containing the generated highlight theme CSS — this is concatenated with the plan theme CSS and served as a single stylesheet
+
+```ts
+const highlightTransform = await createHighlightTransform();
+const highlighted = await highlightTransform(transformed);
+// highlightTransform.css → append to theme stylesheet
+```
+
+The highlight transform uses CSS variables by default, so it inherits light/dark mode from the plan theme automatically. No additional configuration needed.
+
+This adds `@refrakt-md/highlight` as a dependency of `@refrakt-md/plan`. The highlight package depends on Shiki (already a project dependency via the editor).
+
+### Client Behaviors
+
+The copy-to-clipboard button (and any future behaviors) are provided by `@refrakt-md/behaviors`, loaded client-side via the `initPage()` entry point from `@refrakt-md/html/client`.
+
+**What this enables:**
+- Copy button (clipboard icon) on all `<pre>` code blocks — automatic, no per-block opt-in
+- Foundation for future interactive behaviors if plan runes ever need them (e.g., collapsible sections)
+
+**How it's wired in:**
+
+- `serve`: The behaviors JS bundle is served at `/__plan-behaviors.js` and included via the `scripts` option on `renderFullPage()`
+- `build`: The bundle is written to `{out}/behaviors.js` and referenced by all pages
+
+The behaviors bundle is small (~4KB gzipped) and has no framework dependencies. The copy behavior wraps each `<pre>` in a `.rf-code-wrapper` div and injects a button — the plan theme CSS needs a few selectors to style these (`.rf-code-wrapper`, `.rf-copy-button`, `.rf-copy-button--copied`).
+
 ### Serve Command Changes
 
 - The HTTP server serves HTML from `renderFullPage()` output (as before, but using the HTML adapter)
@@ -139,10 +178,10 @@ For each entity page and the dashboard, `@refrakt-md/plan` builds a `LayoutPageD
 
 **After:**
 ```
-@refrakt-md/plan → @refrakt-md/runes, @refrakt-md/transform, @refrakt-md/types, @refrakt-md/html
+@refrakt-md/plan → @refrakt-md/runes, @refrakt-md/transform, @refrakt-md/types, @refrakt-md/html, @refrakt-md/highlight
 ```
 
-`@refrakt-md/lumina` is no longer a dependency. `@refrakt-md/html` is added (it only depends on `transform` + `types`, so no new transitive dependencies).
+`@refrakt-md/lumina` is no longer a dependency. `@refrakt-md/html` is added (it only depends on `transform` + `types`, so no new transitive dependencies). `@refrakt-md/highlight` is added for syntax highlighting (depends on Shiki). `@refrakt-md/behaviors` is a runtime dependency loaded client-side — not a build-time package dependency.
 
 ## Scope Boundaries
 
@@ -150,6 +189,9 @@ For each entity page and the dashboard, `@refrakt-md/plan` builds a `LayoutPageD
 - `planLayout` in `packages/transform/src/layouts.ts`
 - Refactor `render-pipeline.ts` to use `renderFullPage()` from `@refrakt-md/html`
 - Navigation region builder
+- Syntax highlighting via `@refrakt-md/highlight` in the render pipeline
+- Client behaviors bundle (copy-to-clipboard) via `@refrakt-md/behaviors`
+- Copy button styling in plan theme CSS (`.rf-code-wrapper`, `.rf-copy-button`)
 - Remove `getLuminaBaseCss()` and the bespoke HTML shell
 - Update `@refrakt-md/plan` dependencies
 - Plan layout CSS in Lumina (`packages/lumina/styles/layouts/plan.css`) — optional, for users who want plan content in a Lumina-themed site
@@ -157,7 +199,7 @@ For each entity page and the dashboard, `@refrakt-md/plan` builds a `LayoutPageD
 
 **Out of scope:**
 - Embedding plan content inside a regular refrakt site (future work — requires content loading integration)
-- Interactive plan runes (the plan site is read-only; behaviors are not needed)
+- Custom highlight themes or language configuration (use defaults)
 - New plan CLI commands or options
 
 ## Migration
