@@ -108,3 +108,6 @@ Custom properties cascade naturally without JavaScript.
 };
 
 export default plan;
+
+export { scanPlanFiles, parseFile } from './scanner.js';
+export type { PlanEntity, PlanRuneType, Criterion, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';

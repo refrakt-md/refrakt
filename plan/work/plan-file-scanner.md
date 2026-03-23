@@ -1,4 +1,4 @@
-{% work id="WORK-028" status="ready" priority="high" complexity="moderate" tags="cli, plan" %}
+{% work id="WORK-028" status="done" priority="high" complexity="moderate" tags="cli, plan" %}
 
 # Plan File Scanner Library
 
@@ -12,16 +12,16 @@ The scanner uses Markdoc's parser (`Markdoc.parse()`) to extract tag nodes and t
 
 ## Acceptance Criteria
 
-- [ ] Scans a directory recursively for `.md` files containing plan rune tags (`{% work`, `{% spec`, `{% bug`, `{% decision`, `{% milestone`)
-- [ ] Extracts rune type, ID, and all attributes from the opening tag line
-- [ ] Extracts title from the first H1 heading
-- [ ] Extracts acceptance criteria checkboxes (`- [ ]` / `- [x]`) with text and checked state
-- [ ] Extracts reference IDs from `{% xref %}` / `{% ref %}` tag nodes in the AST (no plain-text ID parsing needed)
-- [ ] Returns typed `PlanEntity[]` with all extracted fields and file path
-- [ ] Handles all 5 rune types: spec, work, bug, decision, milestone
-- [ ] Supports mtime-based caching: skips re-parsing files whose mtime hasn't changed since the last scan, using a `.plan-cache.json` file in the scan directory
-- [ ] Cache is invalidated per-file (stale entries for deleted files are pruned on each scan)
-- [ ] Tests for scanning, attribute extraction, criteria parsing, caching behaviour, and edge cases (malformed files, nested runes)
+- [x] Scans a directory recursively for `.md` files containing plan rune tags (`{% work`, `{% spec`, `{% bug`, `{% decision`, `{% milestone`)
+- [x] Extracts rune type, ID, and all attributes from the opening tag line
+- [x] Extracts title from the first H1 heading
+- [x] Extracts acceptance criteria checkboxes (`- [ ]` / `- [x]`) with text and checked state
+- [x] Extracts reference IDs from `{% xref %}` / `{% ref %}` tag nodes in the AST (no plain-text ID parsing needed)
+- [x] Returns typed `PlanEntity[]` with all extracted fields and file path
+- [x] Handles all 5 rune types: spec, work, bug, decision, milestone
+- [x] Supports mtime-based caching: skips re-parsing files whose mtime hasn't changed since the last scan, using a `.plan-cache.json` file in the scan directory
+- [x] Cache is invalidated per-file (stale entries for deleted files are pruned on each scan)
+- [x] Tests for scanning, attribute extraction, criteria parsing, caching behaviour, and edge cases (malformed files, nested runes)
 
 ## Approach
 
