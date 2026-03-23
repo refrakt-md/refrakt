@@ -162,6 +162,8 @@
 - bug
 - decision
 - milestone
+- backlog
+- decision-log
 - plan-progress
 - plan-activity
 
