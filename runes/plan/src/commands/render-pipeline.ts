@@ -34,6 +34,7 @@ export interface ProcessedPage {
 	status: string;
 	renderable: RendererNode;
 	filePath: string;
+	headings: Array<{ level: number; text: string; id: string }>;
 }
 
 export interface NavGroup {
@@ -215,7 +216,7 @@ function buildThemeConfig(): ThemeConfig {
 
 // --- Markdoc rendering ---
 
-function parseAndTransform(content: string, filePath: string): { renderable: unknown; title: string } {
+function parseAndTransform(content: string, filePath: string): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
 	const ast = Markdoc.parse(content);
 	const headings = extractHeadings(ast);
 	const config = {
@@ -230,7 +231,7 @@ function parseAndTransform(content: string, filePath: string): { renderable: unk
 	};
 	const renderable = Markdoc.transform(ast, config);
 	const title = headings.length > 0 ? headings[0].text : '';
-	return { renderable, title };
+	return { renderable, title, headings };
 }
 
 // --- Entity registry ---
@@ -733,12 +734,12 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		const filePath = path.resolve(dir, entity.file);
 		const content = fs.readFileSync(filePath, 'utf-8');
 		const url = `${baseUrl}${entity.type}/${slugify(entity.attributes.id || entity.attributes.name || '')}.html`;
-		const { renderable, title } = parseAndTransform(content, entity.file);
+		const { renderable, title, headings } = parseAndTransform(content, entity.file);
 
 		const page: TransformedPage = {
 			url,
 			title: title || entity.title || '',
-			headings: [],
+			headings,
 			frontmatter: {},
 			renderable,
 		};
@@ -815,6 +816,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 			status: mapEntry?.entity.attributes.status || '',
 			renderable: transformed as RendererNode,
 			filePath: mapEntry?.entity.file ?? 'index.md',
+			headings: page.headings ?? [],
 		};
 
 		if (page.url === dashboardUrl) {
@@ -856,7 +858,7 @@ export function renderPage(
 		url: page.url,
 		pages: allPageUrls,
 		frontmatter: {},
-		headings: [],
+		headings: page.headings,
 	};
 
 	const shellOptions: PageShellOptions = {

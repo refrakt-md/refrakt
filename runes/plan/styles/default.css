@@ -505,7 +505,80 @@
 .rf-plan-main {
 	margin-inline-start: var(--plan-sidebar-width);
 	padding: var(--plan-space-xl);
+}
+
+/* Inner wrapper: flex layout when TOC is present */
+.rf-plan-main__inner--has-toc {
+	display: flex;
+	gap: var(--plan-space-xl);
+}
+.rf-plan-main__inner--has-toc .rf-plan-main__body {
+	flex: 1;
+	min-width: 0;
 	max-width: 64rem;
+}
+
+.rf-plan-main__body {
+	max-width: 64rem;
+}
+
+/* "On this page" TOC aside */
+.rf-plan-toc {
+	width: 200px;
+	flex-shrink: 0;
+	position: sticky;
+	top: var(--plan-space-lg);
+	align-self: flex-start;
+	max-height: calc(100vh - var(--plan-space-xl) * 2);
+	overflow-y: auto;
+}
+
+/* On This Page — TOC navigation (plan-themed) */
+.rf-on-this-page {
+	font-size: var(--plan-font-size-sm);
+}
+
+.rf-on-this-page__title {
+	font-size: 0.7rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--plan-color-text-muted);
+	margin: 0 0 0.75rem;
+}
+
+.rf-on-this-page__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.rf-on-this-page__item {
+	border-left: 2px solid transparent;
+}
+
+.rf-on-this-page__item[data-level="3"] {
+	padding-left: 0.75rem;
+}
+
+.rf-on-this-page__item a {
+	display: block;
+	padding: 0.25rem 0.75rem;
+	color: var(--plan-color-text-muted);
+	text-decoration: none;
+	line-height: 1.4;
+}
+
+.rf-on-this-page__item a:hover {
+	color: var(--plan-color-text);
+}
+
+.rf-on-this-page__item[data-active] {
+	border-left-color: var(--plan-color-ready);
+}
+
+.rf-on-this-page__item[data-active] a {
+	color: var(--plan-color-ready);
 }
 
 /* --------------------------------------------------------------------------
@@ -540,6 +613,16 @@
 /* --------------------------------------------------------------------------
    Responsive adjustments
    -------------------------------------------------------------------------- */
+
+/* Hide TOC on medium screens */
+@media (max-width: 64rem) {
+	.rf-plan-toc {
+		display: none;
+	}
+	.rf-plan-main__inner--has-toc {
+		display: block;
+	}
+}
 
 @media (max-width: 48rem) {
 	.rf-plan-sidebar {
