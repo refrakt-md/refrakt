@@ -3,6 +3,7 @@ import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js'
 import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/create.js';
 import { runInit } from './commands/init.js';
 import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
+import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -256,6 +257,52 @@ function handleInit(args: string[]): void {
 	}
 }
 
+function handleValidate(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let formatJson = false;
+	let strict = false;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else if (arg === '--strict') {
+			strict = true;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan validate [--strict] [--format json]');
+			process.exit(VALIDATE_INVALID_ARGS);
+		}
+	}
+
+	const result = runValidate({ dir, strict, formatJson });
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+		process.exit(result.exitCode);
+		return;
+	}
+
+	console.log(`  Scanned: ${result.scanned} files`);
+	console.log();
+
+	for (const issue of result.issues) {
+		const prefix = issue.severity === 'error' ? '  ✗ error  ' :
+			issue.severity === 'warning' ? '  ⚠ warn   ' : '  ℹ info   ';
+		console.log(`${prefix} ${issue.message}`);
+	}
+
+	if (result.issues.length > 0) {
+		console.log();
+	}
+
+	console.log(`  Result: ${result.counts.errors} errors, ${result.counts.warnings} warnings, ${result.counts.info} info`);
+	process.exit(result.exitCode);
+}
+
 function handleStatus(args: string[]): void {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let formatJson = false;
@@ -341,7 +388,7 @@ const plugin: CliPlugin = {
 		{ name: 'status', description: 'Terminal status summary', handler: handleStatus },
 		{ name: 'next', description: 'Find next work item', handler: handleNext },
 		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
-		{ name: 'validate', description: 'Validate plan structure', handler: notYetImplemented('validate') },
+		{ name: 'validate', description: 'Validate plan structure', handler: handleValidate },
 		{ name: 'create', description: 'Scaffold new plan items', handler: handleCreate },
 		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: notYetImplemented('serve') },
