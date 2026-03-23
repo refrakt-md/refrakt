@@ -59,6 +59,38 @@ export interface PipelineOptions {
 
 // --- Theme resolution ---
 
+function getLuminaBaseCss(): string {
+	const luminaFiles = [
+		'tokens/base.css',
+		'styles/global.css',
+		'styles/elements/blockquote.css',
+		'styles/elements/table.css',
+		'styles/base/attributes.css',
+	];
+	try {
+		const luminaDir = path.dirname(fileURLToPath(import.meta.resolve('@refrakt-md/lumina/base.css')));
+		return luminaFiles
+			.map(f => {
+				const filePath = path.join(luminaDir, f);
+				return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
+			})
+			.join('\n');
+	} catch {
+		// @refrakt-md/lumina not available — skip base styles
+		return '';
+	}
+}
+
+function inlineCssImports(css: string, cssDir: string): string {
+	return css.replace(/@import\s+['"]\.\/([^'"]+)['"]\s*;/g, (_match, file) => {
+		const importPath = path.join(cssDir, file);
+		if (fs.existsSync(importPath)) {
+			return fs.readFileSync(importPath, 'utf-8');
+		}
+		return _match;
+	});
+}
+
 function resolveThemeCss(theme: string): string {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = path.dirname(__filename);
@@ -75,17 +107,9 @@ function resolveThemeCss(theme: string): string {
 		throw new Error(`Theme not found: "${theme}". Use "default", "minimal", or a path to a CSS file.`);
 	}
 
-	let css = fs.readFileSync(cssPath, 'utf-8');
-	const cssDir = path.dirname(cssPath);
-	// Inline relative @import directives so CSS works inside <style> tags
-	css = css.replace(/@import\s+['"]\.\/([^'"]+)['"]\s*;/g, (_match, file) => {
-		const importPath = path.join(cssDir, file);
-		if (fs.existsSync(importPath)) {
-			return fs.readFileSync(importPath, 'utf-8');
-		}
-		return _match;
-	});
-	return css;
+	const baseCss = getLuminaBaseCss();
+	const themeCss = inlineCssImports(fs.readFileSync(cssPath, 'utf-8'), path.dirname(cssPath));
+	return baseCss + '\n' + themeCss;
 }
 
 function buildThemeConfig(): ThemeConfig {
