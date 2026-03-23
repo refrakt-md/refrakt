@@ -43,7 +43,7 @@ Each entity renders as a compact summary card showing id, status badge, priority
 - [x] Results grouped into sections when `group` specified
 - [x] Summary card rendering with BEM classes (`rf-backlog`, `rf-backlog__card`, etc.)
 - [x] Engine config in `runes/plan/src/config.ts`
-- [ ] CSS in `packages/lumina/styles/runes/backlog.css`
+- [x] CSS in `packages/lumina/styles/runes/backlog.css`
 - [x] Tests for filter parsing, sorting, grouping, and card rendering
 - [x] Type definition in `runes/plan/src/types.ts`
 - [x] Exported from `runes/plan/src/index.ts`

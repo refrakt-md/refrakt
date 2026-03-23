@@ -32,7 +32,7 @@ Simpler than the backlog rune — no grouping, no card layout. Just a clean chro
 - [x] Filter parsing reuses backlog filter syntax
 - [x] Renders as a list with date, status badge, id, and title per entry
 - [x] Engine config in `runes/plan/src/config.ts`
-- [ ] CSS in `packages/lumina/styles/runes/decision-log.css`
+- [x] CSS in `packages/lumina/styles/runes/decision-log.css`
 - [x] Tests for filtering, sorting, and rendering
 - [x] Exported from `runes/plan/src/index.ts`
 
