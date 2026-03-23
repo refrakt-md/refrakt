@@ -1,4 +1,4 @@
-{% work id="WORK-030" status="ready" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" %}
+{% work id="WORK-030" status="done" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" %}
 
 # `plan update` Command
 
@@ -10,16 +10,16 @@ In-place editing of plan file attributes and acceptance criteria checkboxes. Thi
 
 ## Acceptance Criteria
 
-- [ ] Finds entity file by ID scan (using scanner from {% ref "WORK-028" /%})
-- [ ] `--status <status>` edits the rune tag's status attribute in place
-- [ ] `--check "text"` toggles `- [ ]` to `- [x]` for matching criterion (substring match)
-- [ ] `--uncheck "text"` toggles `- [x]` to `- [ ]`
-- [ ] Validates attribute values against rune schema (rejects invalid statuses like `--status working`)
-- [ ] Multiple flags combine in a single call (`--status in-progress --assignee claude --milestone v0.5.0`)
-- [ ] `--format json` outputs structured change summary with old and new values
-- [ ] Reports error on ambiguous criterion match (multiple lines match substring)
-- [ ] Exit codes: 0 = success, 1 = validation error, 2 = entity not found
-- [ ] Tests for attribute editing, checkbox toggling, validation, ambiguity detection, and error cases
+- [x] Finds entity file by ID scan (using scanner from {% ref "WORK-028" /%})
+- [x] `--status <status>` edits the rune tag's status attribute in place
+- [x] `--check "text"` toggles `- [ ]` to `- [x]` for matching criterion (substring match)
+- [x] `--uncheck "text"` toggles `- [x]` to `- [ ]`
+- [x] Validates attribute values against rune schema (rejects invalid statuses like `--status working`)
+- [x] Multiple flags combine in a single call (`--status in-progress --assignee claude --milestone v0.5.0`)
+- [x] `--format json` outputs structured change summary with old and new values
+- [x] Reports error on ambiguous criterion match (multiple lines match substring)
+- [x] Exit codes: 0 = success, 1 = validation error, 2 = entity not found
+- [x] Tests for attribute editing, checkbox toggling, validation, ambiguity detection, and error cases
 
 ## Approach
 
