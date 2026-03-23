@@ -1,4 +1,4 @@
-{% work id="WORK-021" status="pending" priority="low" tags="plan, xref, content" %}
+{% work id="WORK-021" status="ready" priority="high" tags="plan, xref, content" %}
 
 # Update Plan Documents to Use Xref Syntax
 
@@ -40,5 +40,9 @@ After:
 - [ ] Blockquote `Ref:` lines use xref for each referenced ID
 - [ ] Dependency mentions in prose and lists use xref
 - [ ] No plain-text ID references remain (except inside attribute values like `id="WORK-004"`)
+
+## Dependencies
+
+- WORK-026 (ref alias — so migrated files can use the shorter `{% ref %}` syntax)
 
 {% /work %}

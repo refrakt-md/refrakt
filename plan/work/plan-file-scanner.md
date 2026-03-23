@@ -16,7 +16,7 @@ The scanner uses Markdoc's parser (`Markdoc.parse()`) to extract tag nodes and t
 - [ ] Extracts rune type, ID, and all attributes from the opening tag line
 - [ ] Extracts title from the first H1 heading
 - [ ] Extracts acceptance criteria checkboxes (`- [ ]` / `- [x]`) with text and checked state
-- [ ] Extracts reference IDs from References/Dependencies sections
+- [ ] Extracts reference IDs from `{% xref %}` / `{% ref %}` tag nodes in the AST (no plain-text ID parsing needed)
 - [ ] Returns typed `PlanEntity[]` with all extracted fields and file path
 - [ ] Handles all 5 rune types: spec, work, bug, decision, milestone
 - [ ] Supports mtime-based caching: skips re-parsing files whose mtime hasn't changed since the last scan, using a `.plan-cache.json` file in the scan directory
@@ -25,7 +25,7 @@ The scanner uses Markdoc's parser (`Markdoc.parse()`) to extract tag nodes and t
 
 ## Approach
 
-Create `runes/plan/src/scanner.ts` exporting a `scanPlanFiles(dir: string): PlanEntity[]` function. Use `fs.readdirSync` recursively, read each `.md` file, run `Markdoc.parse()` to get the AST, then walk the AST for tag nodes matching plan rune names (`work`, `spec`, `bug`, `decision`, `milestone`). Extract attributes directly from the parsed tag nodes — no regex needed for tag syntax. For content sections (acceptance criteria checkboxes, H1 title, reference lists), use lightweight text parsing since these are inline Markdown constructs that Markdoc's AST doesn't decompose further. This approach keeps the scanner coupled to Markdoc's parser (the source of truth for tag syntax) rather than duplicating parsing logic via regex.
+Create `runes/plan/src/scanner.ts` exporting a `scanPlanFiles(dir: string): PlanEntity[]` function. Use `fs.readdirSync` recursively, read each `.md` file, run `Markdoc.parse()` to get the AST, then walk the AST for tag nodes matching plan rune names (`work`, `spec`, `bug`, `decision`, `milestone`). Extract attributes directly from the parsed tag nodes — no regex needed for tag syntax. Cross-references are extracted by walking the AST for `xref`/`ref` tag nodes (self-closing inline tags with a `primary` attribute containing the target ID) — no text parsing needed for references. For content sections (acceptance criteria checkboxes, H1 title), use lightweight text parsing since these are inline Markdown constructs that Markdoc's AST doesn't decompose further. This approach keeps the scanner coupled to Markdoc's parser (the source of truth for tag syntax) rather than duplicating parsing logic via regex.
 
 Add `PlanEntity` and `ScanCache` types to `runes/plan/src/types.ts`.
 
@@ -33,7 +33,7 @@ The scan function accepts an optional `cache` parameter. When enabled, it reads 
 
 ## Dependencies
 
-None — the scanner is a pure library with no CLI integration
+- WORK-021 (xref migration — so plan files use `{% xref %}`/`{% ref %}` tags that the scanner can extract from the AST)
 
 ## References
 

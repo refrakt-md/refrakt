@@ -1,4 +1,4 @@
-{% work id="WORK-026" status="pending" priority="low" complexity="trivial" tags="runes, core" %}
+{% work id="WORK-026" status="ready" priority="medium" complexity="trivial" tags="runes, core" %}
 
 # Add `ref` as Alias for `xref`
 
