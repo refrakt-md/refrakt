@@ -275,6 +275,92 @@ Desc.
 		expect(html).toContain('data-status="ready"');
 	});
 
+	it('sidebar has status sub-groups with count badges', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task A
+Desc.
+{% /work %}`);
+
+		writeFile('work/w2.md', `{% work id="WORK-002" status="ready" priority="medium" %}
+# Task B
+Desc.
+{% /work %}`);
+
+		writeFile('work/w3.md', `{% work id="WORK-003" status="done" priority="low" %}
+# Task C
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
+
+		// Status group headers with aria-expanded
+		expect(html).toContain('rf-plan-sidebar__status-header');
+		expect(html).toContain('rf-plan-sidebar__status-group');
+		// Ready group should be expanded (not hidden)
+		expect(html).toMatch(/data-status="ready"[^>]*aria-expanded="true"/);
+		// Done group should be collapsed by default
+		expect(html).toMatch(/data-status="done"[^>]*aria-expanded="false"/);
+		// Count badges
+		expect(html).toContain('rf-plan-sidebar__status-count');
+	});
+
+	it('sidebar includes search input', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
+		expect(html).toContain('rf-plan-sidebar__search');
+		expect(html).toContain('placeholder="Filter');
+	});
+
+	it('nav items include data-priority and data-tags attributes', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" tags="css, plan" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
+		expect(html).toContain('data-priority="high"');
+		expect(html).toContain('data-tags="css, plan"');
+	});
+
+	it('sidebar behavior scripts are injected', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
+		expect(html).toContain('plan-sidebar-collapse');
+		expect(html).toContain('rf-plan-sidebar__search');
+	});
+
 	it('renders full HTML documents via renderPage', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task

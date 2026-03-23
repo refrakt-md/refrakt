@@ -1,4 +1,4 @@
-{% work id="WORK-044" status="draft" priority="high" complexity="moderate" tags="plan, ux, behaviors" %}
+{% work id="WORK-044" status="done" priority="high" complexity="moderate" tags="plan, ux, behaviors" %}
 
 # Collapsible status groups in plan sidebar
 
@@ -6,14 +6,14 @@ Replace the flat entity list in the plan sidebar with status-grouped, collapsibl
 
 ## Acceptance Criteria
 
-- [ ] Sidebar items are grouped by status within each entity type
-- [ ] Groups are collapsible via click on the group header
-- [ ] Terminal statuses (`done`, `fixed`, `accepted`, `complete`, `superseded`, `deprecated`, `wontfix`, `duplicate`) are collapsed by default
-- [ ] Active statuses (`in-progress`, `ready`, `review`, `confirmed`) are expanded by default
-- [ ] Each group header shows a count badge (e.g., "In Progress (3)")
-- [ ] Status ordering follows workflow progression (active statuses first)
-- [ ] Collapse state persists across page navigation via `localStorage`
-- [ ] Works in both `serve` and `build` modes
+- [x] Sidebar items are grouped by status within each entity type
+- [x] Groups are collapsible via click on the group header
+- [x] Terminal statuses (`done`, `fixed`, `accepted`, `complete`, `superseded`, `deprecated`, `wontfix`, `duplicate`) are collapsed by default
+- [x] Active statuses (`in-progress`, `ready`, `review`, `confirmed`) are expanded by default
+- [x] Each group header shows a count badge (e.g., "In Progress (3)")
+- [x] Status ordering follows workflow progression (active statuses first)
+- [x] Collapse state persists across page navigation via `localStorage`
+- [x] Works in both `serve` and `build` modes
 
 ## Approach
 

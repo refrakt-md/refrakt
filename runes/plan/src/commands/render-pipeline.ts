@@ -38,7 +38,16 @@ export interface ProcessedPage {
 
 export interface NavGroup {
 	title: string;
+	type: string;
 	items: NavItem[];
+	statusGroups: NavStatusGroup[];
+}
+
+export interface NavStatusGroup {
+	status: string;
+	label: string;
+	items: NavItem[];
+	collapsed: boolean;
 }
 
 export interface NavItem {
@@ -46,6 +55,11 @@ export interface NavItem {
 	label: string;
 	id: string;
 	status: string;
+	priority?: string;
+	tags?: string;
+	assignee?: string;
+	milestone?: string;
+	severity?: string;
 }
 
 export interface PipelineResult {
@@ -262,6 +276,29 @@ const NAV_TITLES: Record<string, string> = {
 	decision: 'Decisions',
 };
 
+/** Terminal statuses — collapsed by default in sidebar */
+const TERMINAL_STATUSES = new Set([
+	'done', 'fixed', 'accepted', 'complete', 'superseded', 'deprecated', 'wontfix', 'duplicate',
+]);
+
+/** Status ordering — active statuses first, terminal last */
+const STATUS_ORDER: Record<string, number> = {
+	'in-progress': 0, confirmed: 1, review: 2, ready: 3, reported: 4,
+	active: 5, proposed: 6, planning: 7, draft: 8, pending: 9, blocked: 10,
+	done: 20, fixed: 21, accepted: 22, complete: 23,
+	superseded: 30, deprecated: 31, wontfix: 32, duplicate: 33,
+};
+
+/** Human-readable status labels for group headers */
+const STATUS_LABELS: Record<string, string> = {
+	'in-progress': 'In Progress',
+	confirmed: 'Confirmed', review: 'Review', ready: 'Ready', reported: 'Reported',
+	active: 'Active', proposed: 'Proposed', planning: 'Planning', draft: 'Draft',
+	pending: 'Pending', blocked: 'Blocked',
+	done: 'Done', fixed: 'Fixed', accepted: 'Accepted', complete: 'Complete',
+	superseded: 'Superseded', deprecated: 'Deprecated', wontfix: "Won't Fix", duplicate: 'Duplicate',
+};
+
 function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 	const groups = new Map<string, NavItem[]>();
 
@@ -274,15 +311,43 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 			label: `${id}${entity.title ? ' ' + entity.title : ''}`,
 			id,
 			status: entity.attributes.status || '',
+			priority: entity.attributes.priority,
+			tags: entity.attributes.tags,
+			assignee: entity.attributes.assignee,
+			milestone: entity.attributes.milestone,
+			severity: entity.attributes.severity,
 		});
 	}
 
 	return [...groups.entries()]
 		.sort(([a], [b]) => (NAV_ORDER[a] ?? 99) - (NAV_ORDER[b] ?? 99))
-		.map(([type, items]) => ({
-			title: NAV_TITLES[type] || type,
-			items: items.sort((a, b) => a.id.localeCompare(b.id)),
-		}));
+		.map(([type, items]) => {
+			const sorted = items.sort((a, b) => a.id.localeCompare(b.id));
+
+			// Group items by status
+			const byStatus = new Map<string, NavItem[]>();
+			for (const item of sorted) {
+				const s = item.status || 'unknown';
+				if (!byStatus.has(s)) byStatus.set(s, []);
+				byStatus.get(s)!.push(item);
+			}
+
+			const statusGroups: NavStatusGroup[] = [...byStatus.entries()]
+				.sort(([a], [b]) => (STATUS_ORDER[a] ?? 15) - (STATUS_ORDER[b] ?? 15))
+				.map(([status, statusItems]) => ({
+					status,
+					label: STATUS_LABELS[status] || status,
+					items: statusItems,
+					collapsed: TERMINAL_STATUSES.has(status),
+				}));
+
+			return {
+				title: NAV_TITLES[type] || type,
+				type,
+				items: sorted,
+				statusGroups,
+			};
+		});
 }
 
 /**
@@ -298,6 +363,19 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string)
 		name: 'div',
 		attributes: { class: 'rf-plan-sidebar__title' },
 		children: ['Plan'],
+	} as unknown as RendererNode);
+
+	// Search input
+	children.push({
+		$$mdtype: 'Tag',
+		name: 'input',
+		attributes: {
+			class: 'rf-plan-sidebar__search',
+			type: 'text',
+			placeholder: 'Filter… (/ to focus)',
+			'aria-label': 'Filter sidebar items',
+		},
+		children: [],
 	} as unknown as RendererNode);
 
 	// Dashboard link
@@ -323,25 +401,84 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string)
 			children: [group.title],
 		} as unknown as RendererNode);
 
-		for (const item of group.items) {
-			const isActive = item.url === activeUrl;
-			groupChildren.push({
+		// Status sub-groups
+		for (const sg of group.statusGroups) {
+			const subGroupChildren: RendererNode[] = [];
+
+			// Status group header with count badge
+			subGroupChildren.push({
 				$$mdtype: 'Tag',
-				name: 'a',
+				name: 'button',
 				attributes: {
+					class: 'rf-plan-sidebar__status-header',
+					type: 'button',
+					'data-status': sg.status,
+					'aria-expanded': sg.collapsed ? 'false' : 'true',
+				},
+				children: [
+					{
+						$$mdtype: 'Tag',
+						name: 'span',
+						attributes: { class: 'rf-plan-sidebar__status-label' },
+						children: [sg.label],
+					} as unknown as RendererNode,
+					{
+						$$mdtype: 'Tag',
+						name: 'span',
+						attributes: { class: 'rf-plan-sidebar__status-count' },
+						children: [String(sg.items.length)],
+					} as unknown as RendererNode,
+				],
+			} as unknown as RendererNode);
+
+			// Items container
+			const itemNodes: RendererNode[] = [];
+			for (const item of sg.items) {
+				const isActive = item.url === activeUrl;
+				const attrs: Record<string, string> = {
 					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
 					href: item.url,
 					'data-id': item.id,
 					'data-status': item.status,
+				};
+				if (item.priority) attrs['data-priority'] = item.priority;
+				if (item.tags) attrs['data-tags'] = item.tags;
+				if (item.assignee) attrs['data-assignee'] = item.assignee;
+				if (item.milestone) attrs['data-milestone'] = item.milestone;
+				if (item.severity) attrs['data-severity'] = item.severity;
+				itemNodes.push({
+					$$mdtype: 'Tag',
+					name: 'a',
+					attributes: attrs,
+					children: [item.label],
+				} as unknown as RendererNode);
+			}
+
+			subGroupChildren.push({
+				$$mdtype: 'Tag',
+				name: 'div',
+				attributes: {
+					class: 'rf-plan-sidebar__status-items',
+					...(sg.collapsed ? { hidden: '' } : {}),
 				},
-				children: [item.label],
+				children: itemNodes,
+			} as unknown as RendererNode);
+
+			groupChildren.push({
+				$$mdtype: 'Tag',
+				name: 'div',
+				attributes: {
+					class: 'rf-plan-sidebar__status-group',
+					'data-status': sg.status,
+				},
+				children: subGroupChildren,
 			} as unknown as RendererNode);
 		}
 
 		children.push({
 			$$mdtype: 'Tag',
 			name: 'div',
-			attributes: { class: 'rf-plan-sidebar__group' },
+			attributes: { class: 'rf-plan-sidebar__group', 'data-type': group.type },
 			children: groupChildren,
 		} as unknown as RendererNode);
 	}
@@ -407,6 +544,149 @@ const COPY_BUTTON_SCRIPT = `<script>
     };
     wrapper.appendChild(btn);
   });
+})();
+</script>`;
+
+const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
+(function() {
+  var STORAGE_KEY = 'plan-sidebar-collapse';
+
+  // --- Collapse toggling ---
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  var state = loadState();
+  var headers = document.querySelectorAll('.rf-plan-sidebar__status-header');
+
+  headers.forEach(function(btn) {
+    var group = btn.closest('.rf-plan-sidebar__status-group');
+    if (!group) return;
+    var type = group.closest('.rf-plan-sidebar__group');
+    var typeKey = type ? type.getAttribute('data-type') : '';
+    var status = group.getAttribute('data-status');
+    var key = typeKey + ':' + status;
+    var items = group.querySelector('.rf-plan-sidebar__status-items');
+    if (!items) return;
+
+    // Restore saved state (overrides server default)
+    if (key in state) {
+      if (state[key]) {
+        items.setAttribute('hidden', '');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        items.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    btn.addEventListener('click', function() {
+      var isHidden = items.hasAttribute('hidden');
+      if (isHidden) {
+        items.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        state[key] = false;
+      } else {
+        items.setAttribute('hidden', '');
+        btn.setAttribute('aria-expanded', 'false');
+        state[key] = true;
+      }
+      saveState(state);
+    });
+  });
+
+  // --- Sidebar search/filter ---
+  var searchInput = document.querySelector('.rf-plan-sidebar__search');
+  if (searchInput) {
+    // Focus with /
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.activeElement !== searchInput &&
+          !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+    // Clear with Escape
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        searchInput.blur();
+      }
+    });
+
+    searchInput.addEventListener('input', function() {
+      var raw = searchInput.value.trim().toLowerCase();
+      var filters = parseFilters(raw);
+      var links = document.querySelectorAll('.rf-plan-sidebar__link[data-id]');
+
+      links.forEach(function(link) {
+        var match = matchesFilters(link, filters);
+        link.style.display = match ? '' : 'none';
+      });
+
+      // Auto-expand groups with matches, update counts
+      document.querySelectorAll('.rf-plan-sidebar__status-group').forEach(function(sg) {
+        var items = sg.querySelector('.rf-plan-sidebar__status-items');
+        var header = sg.querySelector('.rf-plan-sidebar__status-header');
+        if (!items || !header) return;
+        var visible = items.querySelectorAll('.rf-plan-sidebar__link[data-id]:not([style*="display: none"])');
+        var count = header.querySelector('.rf-plan-sidebar__status-count');
+        if (count) count.textContent = String(visible.length);
+        if (raw && visible.length > 0) {
+          items.removeAttribute('hidden');
+          header.setAttribute('aria-expanded', 'true');
+        }
+        // Hide empty groups entirely when filtering
+        sg.style.display = (raw && visible.length === 0) ? 'none' : '';
+      });
+
+      // Hide empty entity groups
+      document.querySelectorAll('.rf-plan-sidebar__group').forEach(function(g) {
+        var visibleSG = g.querySelectorAll('.rf-plan-sidebar__status-group:not([style*="display: none"])');
+        var title = g.querySelector('.rf-plan-sidebar__group-title');
+        if (title) title.style.display = (raw && visibleSG.length === 0) ? 'none' : '';
+      });
+    });
+  }
+
+  function parseFilters(raw) {
+    var tokens = raw.split(/\\s+/).filter(Boolean);
+    var fields = {};
+    var text = [];
+    tokens.forEach(function(t) {
+      var idx = t.indexOf(':');
+      if (idx > 0) {
+        var k = t.slice(0, idx);
+        var v = t.slice(idx + 1);
+        if (!fields[k]) fields[k] = [];
+        fields[k].push(v);
+      } else {
+        text.push(t);
+      }
+    });
+    return { fields: fields, text: text };
+  }
+
+  function matchesFilters(link, filters) {
+    // Field filters — AND across fields, OR within same field
+    for (var field in filters.fields) {
+      var vals = filters.fields[field];
+      var attr = field === 'tag' || field === 'tags' ? 'data-tags' : 'data-' + field;
+      var data = (link.getAttribute(attr) || '').toLowerCase();
+      var match = vals.some(function(v) { return data.indexOf(v) !== -1; });
+      if (!match) return false;
+    }
+    // Text filters — AND, match against id + label + tags
+    var haystack = ((link.getAttribute('data-id') || '') + ' ' + link.textContent + ' ' + (link.getAttribute('data-tags') || '')).toLowerCase();
+    for (var i = 0; i < filters.text.length; i++) {
+      if (haystack.indexOf(filters.text[i]) === -1) return false;
+    }
+    return true;
+  }
 })();
 </script>`;
 
@@ -591,8 +871,8 @@ export function renderPage(
 
 	let html = htmlRenderFullPage({ theme: planTheme, page: layoutPageData }, shellOptions);
 
-	// Inject copy-to-clipboard behavior before </body>
-	html = html.replace('</body>', COPY_BUTTON_SCRIPT + '\n</body>');
+	// Inject behaviors before </body>
+	html = html.replace('</body>', COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT + '\n</body>');
 
 	return html;
 }

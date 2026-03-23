@@ -380,6 +380,31 @@
 	color: var(--plan-color-text);
 }
 
+/* Search / filter input */
+.rf-plan-sidebar__search {
+	display: block;
+	width: 100%;
+	padding: var(--plan-space-xs) var(--plan-space-sm);
+	margin-block-end: var(--plan-space-md);
+	border: 1px solid var(--plan-color-border);
+	border-radius: var(--plan-radius-sm);
+	background: var(--plan-color-bg);
+	color: var(--plan-color-text);
+	font-family: var(--plan-font-sans);
+	font-size: var(--plan-font-size-sm);
+	outline: none;
+	box-sizing: border-box;
+}
+
+.rf-plan-sidebar__search:focus {
+	border-color: var(--plan-color-ready);
+	box-shadow: 0 0 0 2px var(--plan-color-ready-bg);
+}
+
+.rf-plan-sidebar__search::placeholder {
+	color: var(--plan-color-text-subtle);
+}
+
 .rf-plan-sidebar__group {
 	margin-block-end: var(--plan-space-lg);
 }
@@ -392,6 +417,68 @@
 	letter-spacing: 0.05em;
 	color: var(--plan-color-text-muted);
 	margin-block-end: var(--plan-space-sm);
+}
+
+/* Status sub-group */
+.rf-plan-sidebar__status-group {
+	margin-block-end: var(--plan-space-xs);
+}
+
+.rf-plan-sidebar__status-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: var(--plan-space-xs) var(--plan-space-sm);
+	border: none;
+	border-radius: var(--plan-radius-sm);
+	background: transparent;
+	color: var(--plan-color-text-muted);
+	font-family: var(--plan-font-sans);
+	font-size: var(--plan-font-size-sm);
+	cursor: pointer;
+	text-align: start;
+	transition: background 0.15s ease;
+}
+
+.rf-plan-sidebar__status-header:hover {
+	background: var(--plan-color-surface-alt);
+}
+
+.rf-plan-sidebar__status-header::before {
+	content: '▸';
+	display: inline-block;
+	margin-inline-end: var(--plan-space-xs);
+	transition: transform 0.15s ease;
+	font-size: 0.75em;
+}
+
+.rf-plan-sidebar__status-header[aria-expanded="true"]::before {
+	transform: rotate(90deg);
+}
+
+.rf-plan-sidebar__status-label {
+	flex: 1;
+	font-weight: 500;
+}
+
+.rf-plan-sidebar__status-count {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--plan-color-text-subtle);
+	background: var(--plan-color-surface-alt);
+	padding: 0 0.375rem;
+	border-radius: var(--plan-radius-full);
+	min-width: 1.25rem;
+	text-align: center;
+}
+
+.rf-plan-sidebar__status-items {
+	padding-inline-start: var(--plan-space-sm);
+}
+
+.rf-plan-sidebar__status-items[hidden] {
+	display: none;
 }
 
 .rf-plan-sidebar__link {
