@@ -69,6 +69,33 @@ function extractTextContent(node: unknown): string {
 	return node.children.map(c => extractTextContent(c)).join('');
 }
 
+/** Pattern matching entity ID references in content */
+const ID_REF_PATTERN = /\b(WORK|SPEC|BUG|ADR)-(\d+)\b/g;
+const ID_PREFIX_TO_TYPE: Record<string, string> = {
+	WORK: 'work',
+	SPEC: 'spec',
+	BUG: 'bug',
+	ADR: 'decision',
+};
+
+/** Extract all entity ID references from a tag's text content */
+function extractIdReferences(tag: InstanceType<typeof Tag>): Array<{ id: string; type: string }> {
+	const text = extractTextContent(tag);
+	const refs: Array<{ id: string; type: string }> = [];
+	const seen = new Set<string>();
+	let match: RegExpExecArray | null;
+	ID_REF_PATTERN.lastIndex = 0;
+	while ((match = ID_REF_PATTERN.exec(text)) !== null) {
+		const id = match[0]; // e.g. "WORK-048"
+		const type = ID_PREFIX_TO_TYPE[match[1]];
+		if (type && !seen.has(id)) {
+			seen.add(id);
+			refs.push({ id, type });
+		}
+	}
+	return refs;
+}
+
 /** Build a compact summary card Tag for a work/bug entity */
 function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const id = String(entity.data.id ?? entity.id);
@@ -125,16 +152,39 @@ function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag
 	}, children);
 }
 
+/** A directed reference from one entity to another */
+export interface EntityRelationship {
+	/** The entity that contains the reference */
+	fromId: string;
+	fromType: string;
+	/** The entity being referenced */
+	toId: string;
+	toType: string;
+	/** Relationship kind */
+	kind: 'blocks' | 'blocked-by' | 'related';
+}
+
 export interface PlanAggregatedData {
 	workEntities: EntityRegistration[];
 	bugEntities: EntityRegistration[];
 	decisionEntities: EntityRegistration[];
 	specEntities: EntityRegistration[];
 	milestoneEntities: EntityRegistration[];
+	/** Bidirectional relationship index: entityId → relationships */
+	relationships: Map<string, EntityRelationship[]>;
 }
+
+/**
+ * Module-level store for ID references found during registration.
+ * Maps entityId → array of referenced entity IDs (with type).
+ * Populated by register(), consumed by aggregate().
+ */
+const _idReferences = new Map<string, Array<{ id: string; type: string }>>();
 
 export const planPipelineHooks: PackagePipelineHooks = {
 	register(pages, registry, ctx) {
+		_idReferences.clear();
+
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {
 				const runeType = tag.attributes['data-rune'] as string;
@@ -160,6 +210,12 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				const title = extractTitle(tag);
 				data.title = title;
 
+				// Scan content for ID references
+				const refs = extractIdReferences(tag).filter(r => r.id !== entityId);
+				if (refs.length > 0) {
+					_idReferences.set(entityId, refs);
+				}
+
 				registry.register({
 					type: runeType,
 					id: entityId,
@@ -171,12 +227,71 @@ export const planPipelineHooks: PackagePipelineHooks = {
 	},
 
 	aggregate(registry) {
+		// Build bidirectional relationship index from ID references
+		const relationships = new Map<string, EntityRelationship[]>();
+
+		function addRel(id: string, rel: EntityRelationship) {
+			if (!relationships.has(id)) relationships.set(id, []);
+			relationships.get(id)!.push(rel);
+		}
+
+		// Build a lookup of all registered entities for validation
+		const allEntities = new Map<string, EntityRegistration>();
+		for (const type of registry.getTypes()) {
+			for (const entity of registry.getAll(type)) {
+				allEntities.set(entity.id, entity);
+			}
+		}
+
+		for (const [fromId, refs] of _idReferences) {
+			const fromEntity = allEntities.get(fromId);
+			if (!fromEntity) continue;
+
+			for (const ref of refs) {
+				const toEntity = allEntities.get(ref.id);
+				if (!toEntity) continue; // Reference to unknown entity — skip
+
+				// Determine relationship kind
+				// If entity A has status "blocked" and references entity B, A is "blocked-by" B
+				const fromStatus = String(fromEntity.data.status ?? '');
+				const isBlockedBy = fromStatus === 'blocked';
+
+				if (isBlockedBy) {
+					// A is blocked by B
+					addRel(fromId, {
+						fromId, fromType: fromEntity.type,
+						toId: ref.id, toType: toEntity.type,
+						kind: 'blocked-by',
+					});
+					// B blocks A
+					addRel(ref.id, {
+						fromId: ref.id, fromType: toEntity.type,
+						toId: fromId, toType: fromEntity.type,
+						kind: 'blocks',
+					});
+				} else {
+					// General related reference (bidirectional)
+					addRel(fromId, {
+						fromId, fromType: fromEntity.type,
+						toId: ref.id, toType: toEntity.type,
+						kind: 'related',
+					});
+					addRel(ref.id, {
+						fromId: ref.id, fromType: toEntity.type,
+						toId: fromId, toType: fromEntity.type,
+						kind: 'related',
+					});
+				}
+			}
+		}
+
 		return {
 			workEntities: registry.getAll('work'),
 			bugEntities: registry.getAll('bug'),
 			decisionEntities: registry.getAll('decision'),
 			specEntities: registry.getAll('spec'),
 			milestoneEntities: registry.getAll('milestone'),
+			relationships,
 		} satisfies PlanAggregatedData;
 	},
 
@@ -206,6 +321,25 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				modified = true;
 				return resolvePlanActivity(tag, planData);
 			}
+
+			// Inject relationships section into entity rune tags
+			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
+				const runeType = tag.attributes['data-rune'] as string;
+				const entityId = runeType === 'milestone'
+					? readField(tag, 'name')
+					: readField(tag, 'id');
+				if (entityId) {
+					const rels = planData.relationships.get(entityId);
+					if (rels && rels.length > 0) {
+						const section = buildRelationshipsSection(rels, planData);
+						if (section) {
+							modified = true;
+							return new Tag(tag.name, tag.attributes, [...tag.children, section]);
+						}
+					}
+				}
+			}
+
 			return tag;
 		});
 
@@ -420,4 +554,89 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	newChildren.push(list);
 
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
+}
+
+const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'related': 2 };
+const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'related': 'Related' };
+
+/** Look up an entity across all aggregated type arrays */
+function findEntity(id: string, data: PlanAggregatedData): EntityRegistration | undefined {
+	const allArrays = [data.workEntities, data.bugEntities, data.decisionEntities, data.specEntities, data.milestoneEntities];
+	for (const arr of allArrays) {
+		const found = arr.find(e => e.id === id);
+		if (found) return found;
+	}
+	return undefined;
+}
+
+function buildRelationshipsSection(
+	rels: EntityRelationship[],
+	data: PlanAggregatedData,
+): InstanceType<typeof Tag> | null {
+	// Group by kind
+	const byKind = new Map<string, EntityRelationship[]>();
+	for (const rel of rels) {
+		const kind = rel.kind;
+		if (!byKind.has(kind)) byKind.set(kind, []);
+		byKind.get(kind)!.push(rel);
+	}
+
+	// Deduplicate: same target ID within a kind group
+	for (const [kind, kindRels] of byKind) {
+		const seen = new Set<string>();
+		byKind.set(kind, kindRels.filter(r => {
+			const key = r.toId;
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		}));
+	}
+
+	const groups: any[] = [];
+	const sortedKinds = [...byKind.keys()].sort((a, b) => (KIND_ORDER[a] ?? 9) - (KIND_ORDER[b] ?? 9));
+
+	for (const kind of sortedKinds) {
+		const kindRels = byKind.get(kind)!;
+		const label = KIND_LABELS[kind] || kind;
+
+		const items: any[] = [];
+		for (const rel of kindRels) {
+			const targetId = rel.toId;
+			const target = findEntity(targetId, data);
+			const title = target ? String(target.data.title ?? '') : '';
+			const status = target ? String(target.data.status ?? '') : '';
+			const type = target ? target.type : rel.toType;
+
+			items.push(new Tag('li', {
+				class: 'rf-plan-relationships__item',
+				'data-kind': kind,
+			}, [
+				new Tag('span', { class: 'rf-plan-relationships__id' }, [targetId]),
+				new Tag('span', {
+					class: 'rf-plan-relationships__status',
+					'data-status': status,
+				}, [status]),
+				new Tag('span', { class: 'rf-plan-relationships__type' }, [type]),
+				...(title ? [new Tag('span', { class: 'rf-plan-relationships__title' }, [title])] : []),
+			]));
+		}
+
+		groups.push(new Tag('div', {
+			class: 'rf-plan-relationships__group',
+			'data-kind': kind,
+		}, [
+			new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
+			new Tag('ul', { class: 'rf-plan-relationships__list' }, items),
+		]));
+	}
+
+	if (groups.length === 0) return null;
+
+	return new Tag('section', {
+		class: 'rf-plan-relationships',
+		'data-name': 'relationships',
+	}, [
+		new Tag('h2', { class: 'rf-plan-relationships__heading' }, ['Relationships']),
+		...groups,
+	]);
 }

@@ -61,6 +61,7 @@ export interface NavItem {
 	assignee?: string;
 	milestone?: string;
 	severity?: string;
+	hasUnresolvedBlockers?: boolean;
 }
 
 export interface PipelineResult {
@@ -436,8 +437,9 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 			const itemNodes: RendererNode[] = [];
 			for (const item of sg.items) {
 				const isActive = item.url === activeUrl;
+				const blockerClass = item.hasUnresolvedBlockers ? ' rf-plan-sidebar__link--blocked' : '';
 				const attrs: Record<string, string> = {
-					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
+					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}${blockerClass}`,
 					href: item.url,
 					'data-id': item.id,
 					'data-status': item.status,
@@ -447,11 +449,23 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 				if (item.assignee) attrs['data-assignee'] = item.assignee;
 				if (item.milestone) attrs['data-milestone'] = item.milestone;
 				if (item.severity) attrs['data-severity'] = item.severity;
+				if (item.hasUnresolvedBlockers) attrs['data-has-blockers'] = 'true';
+
+				const linkChildren: (string | RendererNode)[] = [item.label];
+				if (item.hasUnresolvedBlockers) {
+					linkChildren.push({
+						$$mdtype: 'Tag',
+						name: 'span',
+						attributes: { class: 'rf-plan-sidebar__blocker-icon', 'aria-label': 'Has unresolved blockers' },
+						children: ['\u26A0'],
+					} as unknown as RendererNode);
+				}
+
 				itemNodes.push({
 					$$mdtype: 'Tag',
 					name: 'a',
 					attributes: attrs,
-					children: [item.label],
+					children: linkChildren,
 				} as unknown as RendererNode);
 			}
 
@@ -1112,6 +1126,38 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	const identityTransform = createTransform(themeConfig);
 	const themeCss = resolveThemeCss(theme);
 	const nav = buildNavigation(allEntities, baseUrl);
+
+	// Mark nav items with unresolved blockers
+	const typedPlanData = planAggregated as unknown as PlanAggregatedData;
+	const planRels = typedPlanData.relationships;
+	if (planRels) {
+		const RESOLVED_STATUSES = new Set(['done', 'fixed', 'accepted', 'complete', 'wontfix', 'duplicate', 'superseded', 'deprecated']);
+		for (const group of nav) {
+			for (const sg of group.statusGroups) {
+				for (const item of sg.items) {
+					const rels = planRels.get(item.id);
+					if (!rels) continue;
+					const blockedBy = rels.filter(r => r.kind === 'blocked-by');
+					if (blockedBy.length === 0) continue;
+					// Check if any blocker is unresolved
+					const hasUnresolved = blockedBy.some(r => {
+						const allArrays = [
+							typedPlanData.workEntities,
+							typedPlanData.bugEntities,
+							typedPlanData.decisionEntities,
+							typedPlanData.specEntities,
+						];
+						for (const arr of allArrays) {
+							const target = arr.find(e => e.id === r.toId);
+							if (target) return !RESOLVED_STATUSES.has(String(target.data.status ?? ''));
+						}
+						return true; // Unknown target — treat as unresolved
+					});
+					if (hasUnresolved) item.hasUnresolvedBlockers = true;
+				}
+			}
+		}
+	}
 
 	// Initialize syntax highlighting
 	let highlightTransform: HighlightTransform | null = null;

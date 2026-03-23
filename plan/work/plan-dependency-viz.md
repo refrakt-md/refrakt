@@ -1,4 +1,4 @@
-{% work id="WORK-049" status="draft" priority="low" complexity="complex" tags="plan, ux, pipeline" %}
+{% work id="WORK-049" status="done" priority="low" complexity="complex" tags="plan, ux, pipeline" %}
 
 # Dependency visualization for plan site
 
@@ -6,13 +6,13 @@ Surface cross-entity relationships by scanning content for ID references (`WORK-
 
 ## Acceptance Criteria
 
-- [ ] During the `register` pipeline phase, entity content is scanned for ID reference patterns
-- [ ] A bidirectional relationship index is built in the `EntityRegistry`
-- [ ] Each entity page displays a "Relationships" section showing linked entities
-- [ ] Each reference is a live link with an inline status badge
-- [ ] Relationships are categorized: "Blocked by", "Blocks", "Related"
-- [ ] Blocked items show a visual indicator in the sidebar when blockers are unresolved
-- [ ] Relationships render via a computed layout slot or region (not manual HTML injection)
+- [x] During the `register` pipeline phase, entity content is scanned for ID reference patterns
+- [x] A bidirectional relationship index is built in the `EntityRegistry`
+- [x] Each entity page displays a "Relationships" section showing linked entities
+- [x] Each reference is a live link with an inline status badge
+- [x] Relationships are categorized: "Blocked by", "Blocks", "Related"
+- [x] Blocked items show a visual indicator in the sidebar when blockers are unresolved
+- [x] Relationships render via a computed layout slot or region (not manual HTML injection)
 
 ## Approach
 
