@@ -863,6 +863,7 @@ export function renderPage(
 
 	const shellOptions: PageShellOptions = {
 		stylesheets: opts?.stylesheets ?? [],
+		bodyExtra: COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT,
 	};
 
 	// Hot reload SSE script
@@ -871,12 +872,7 @@ export function renderPage(
 		shellOptions.headExtra = hotReloadScript;
 	}
 
-	let html = htmlRenderFullPage({ theme: planTheme, page: layoutPageData }, shellOptions);
-
-	// Inject behaviors before </body>
-	html = html.replace('</body>', COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT + '\n</body>');
-
-	return html;
+	return htmlRenderFullPage({ theme: planTheme, page: layoutPageData }, shellOptions);
 }
 
 export function getThemeCss(theme: string): string {

@@ -1,4 +1,4 @@
-{% work id="WORK-050" status="draft" priority="high" complexity="complex" tags="plan, transform, layout, pipeline" %}
+{% work id="WORK-050" status="done" priority="high" complexity="complex" tags="plan, transform, layout, pipeline" %}
 
 # Converge plan site renderer with shared layout engine
 
@@ -8,17 +8,17 @@ Converge the plan site's renderer to use the shared layout engine so it can leve
 
 ## Acceptance Criteria
 
-- [ ] `planLayout` in `packages/transform/src/layouts.ts` is extended with `computed.toc` (headings, minLevel 2, maxLevel 3, minCount 2)
-- [ ] `planLayout` main slot wraps content with a ToC aside, matching the docs layout pattern
-- [ ] Plan site's `renderPage()` delegates to the shared layout engine instead of manually assembling HTML
-- [ ] The sidebar nav region (status groups, search input, dashboard link) renders identically to current output
-- [ ] Sidebar behavior scripts (collapse, search/filter) are injected via the layout engine or a behavior entry point
-- [ ] Copy-to-clipboard behavior is injected via the layout engine or a behavior entry point
-- [ ] "On this page" ToC appears on entity pages with 2+ headings
-- [ ] ToC is styled consistently with the docs layout ToC (sticky, right-side aside)
-- [ ] Plan-specific CSS for the ToC aside (`.rf-plan-toc` or reusing `.rf-docs-toc` pattern) is added
-- [ ] All existing plan site tests pass
-- [ ] `refrakt plan serve` and `refrakt plan build` produce equivalent output (modulo new ToC)
+- [x] `planLayout` in `packages/transform/src/layouts.ts` is extended with `computed.toc` (headings, minLevel 2, maxLevel 3, minCount 2)
+- [x] `planLayout` main slot wraps content with a ToC aside, matching the docs layout pattern
+- [x] Plan site's `renderPage()` delegates to the shared layout engine instead of manually assembling HTML
+- [x] The sidebar nav region (status groups, search input, dashboard link) renders identically to current output
+- [x] Sidebar behavior scripts (collapse, search/filter) are injected via the layout engine or a behavior entry point
+- [x] Copy-to-clipboard behavior is injected via the layout engine or a behavior entry point
+- [x] "On this page" ToC appears on entity pages with 2+ headings
+- [x] ToC is styled consistently with the docs layout ToC (sticky, right-side aside)
+- [x] Plan-specific CSS for the ToC aside (`.rf-plan-toc` or reusing `.rf-docs-toc` pattern) is added
+- [x] All existing plan site tests pass
+- [x] `refrakt plan serve` and `refrakt plan build` produce equivalent output (modulo new ToC)
 
 ## Approach
 
