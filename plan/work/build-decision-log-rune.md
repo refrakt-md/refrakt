@@ -1,4 +1,4 @@
-{% work id="WORK-023" status="pending" priority="low" complexity="moderate" tags="runes, plan, pipeline" %}
+{% work id="WORK-023" status="done" priority="low" complexity="moderate" tags="runes, plan, pipeline" %}
 
 # Build `decision-log` Rune
 
@@ -26,15 +26,15 @@ Simpler than the backlog rune — no grouping, no card layout. Just a clean chro
 
 ## Acceptance Criteria
 
-- [ ] Rune schema in `runes/plan/src/tags/decision-log.ts` with filter/sort attributes
-- [ ] `aggregate()` pipeline hook queries entity registry for decision entities
-- [ ] Results sorted by date (reverse chronological by default) or id
-- [ ] Filter parsing reuses backlog filter syntax
-- [ ] Renders as a list with date, status badge, id, and title per entry
-- [ ] Engine config in `runes/plan/src/config.ts`
+- [x] Rune schema in `runes/plan/src/tags/decision-log.ts` with filter/sort attributes
+- [x] `aggregate()` pipeline hook queries entity registry for decision entities
+- [x] Results sorted by date (reverse chronological by default) or id
+- [x] Filter parsing reuses backlog filter syntax
+- [x] Renders as a list with date, status badge, id, and title per entry
+- [x] Engine config in `runes/plan/src/config.ts`
 - [ ] CSS in `packages/lumina/styles/runes/decision-log.css`
-- [ ] Tests for filtering, sorting, and rendering
-- [ ] Exported from `runes/plan/src/index.ts`
+- [x] Tests for filtering, sorting, and rendering
+- [x] Exported from `runes/plan/src/index.ts`
 
 ## Dependencies
 

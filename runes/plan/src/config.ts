@@ -119,4 +119,20 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { body: 'none', 'name-badge': 'none', 'status-badge': 'none', 'target-badge': 'none' },
 	},
+	Backlog: {
+		block: 'backlog',
+		modifiers: {
+			filter: { source: 'meta', noBemClass: true },
+			sort: { source: 'meta', noBemClass: true },
+			group: { source: 'meta', noBemClass: true },
+			show: { source: 'meta', noBemClass: true },
+		},
+	},
+	DecisionLog: {
+		block: 'decision-log',
+		modifiers: {
+			filter: { source: 'meta', noBemClass: true },
+			sort: { source: 'meta', noBemClass: true },
+		},
+	},
 };

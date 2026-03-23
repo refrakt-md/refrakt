@@ -1,4 +1,4 @@
-{% work id="WORK-022" status="pending" priority="medium" complexity="complex" tags="runes, plan, pipeline" %}
+{% work id="WORK-022" status="done" priority="medium" complexity="complex" tags="runes, plan, pipeline" %}
 
 # Build `backlog` Rune
 
@@ -36,17 +36,17 @@ Each entity renders as a compact summary card showing id, status badge, priority
 
 ## Acceptance Criteria
 
-- [ ] Rune schema in `runes/plan/src/tags/backlog.ts` with filter/sort/group/show attributes
-- [ ] Filter parser handles `field:value` syntax with AND/OR semantics
-- [ ] `aggregate()` pipeline hook queries entity registry for work and bug entities
-- [ ] Results sorted by specified field
-- [ ] Results grouped into sections when `group` specified
-- [ ] Summary card rendering with BEM classes (`rf-backlog`, `rf-backlog__card`, etc.)
-- [ ] Engine config in `runes/plan/src/config.ts`
+- [x] Rune schema in `runes/plan/src/tags/backlog.ts` with filter/sort/group/show attributes
+- [x] Filter parser handles `field:value` syntax with AND/OR semantics
+- [x] `aggregate()` pipeline hook queries entity registry for work and bug entities
+- [x] Results sorted by specified field
+- [x] Results grouped into sections when `group` specified
+- [x] Summary card rendering with BEM classes (`rf-backlog`, `rf-backlog__card`, etc.)
+- [x] Engine config in `runes/plan/src/config.ts`
 - [ ] CSS in `packages/lumina/styles/runes/backlog.css`
-- [ ] Tests for filter parsing, sorting, grouping, and card rendering
-- [ ] Type definition in `runes/plan/src/types.ts`
-- [ ] Exported from `runes/plan/src/index.ts`
+- [x] Tests for filter parsing, sorting, grouping, and card rendering
+- [x] Type definition in `runes/plan/src/types.ts`
+- [x] Exported from `runes/plan/src/index.ts`
 
 ## Dependencies
 

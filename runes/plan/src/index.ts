@@ -4,7 +4,10 @@ import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
 import { decision } from './tags/decision.js';
 import { milestone } from './tags/milestone.js';
+import { backlog } from './tags/backlog.js';
+import { decisionLog } from './tags/decision-log.js';
 import { config } from './config.js';
+import { planPipelineHooks } from './pipeline.js';
 
 export const plan: RunePackage = {
 	name: 'plan',
@@ -101,13 +104,27 @@ Custom properties cascade naturally without JavaScript.
 - Publish layout spec as documentation
 {% /milestone %}`,
 		},
+		'backlog': {
+			transform: backlog,
+			description: 'Aggregation view of work items and bugs with filtering, sorting, and grouping',
+			reinterprets: {},
+			fixture: `{% backlog filter="status:ready" sort="priority" group="status" /%}`,
+		},
+		'decision-log': {
+			transform: decisionLog,
+			description: 'Chronological view of architecture decision records',
+			reinterprets: {},
+			fixture: `{% decision-log sort="date" /%}`,
+		},
 	},
 	theme: {
 		runes: config as unknown as Record<string, Record<string, unknown>>,
 	},
+	pipeline: planPipelineHooks,
 };
 
 export default plan;
 
 export { scanPlanFiles, parseFile } from './scanner.js';
+export { planPipelineHooks } from './pipeline.js';
 export type { PlanEntity, PlanRuneType, Criterion, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';

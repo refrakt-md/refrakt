@@ -4,6 +4,8 @@ import { Work } from './schema/work.js';
 import { Bug } from './schema/bug.js';
 import { Decision } from './schema/decision.js';
 import { Milestone } from './schema/milestone.js';
+import { Backlog } from './schema/backlog.js';
+import { DecisionLog } from './schema/decision-log.js';
 
 export const schema = {
 	Spec: useSchema(Spec).defineType('Spec'),
@@ -11,6 +13,8 @@ export const schema = {
 	Bug: useSchema(Bug).defineType('Bug'),
 	Decision: useSchema(Decision).defineType('Decision'),
 	Milestone: useSchema(Milestone).defineType('Milestone'),
+	Backlog: useSchema(Backlog).defineType('Backlog'),
+	DecisionLog: useSchema(DecisionLog).defineType('DecisionLog'),
 };
 
 // --- Scanner types ---

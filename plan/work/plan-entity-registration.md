@@ -1,4 +1,4 @@
-{% work id="WORK-020" status="pending" priority="medium" tags="packages, plan, xref" %}
+{% work id="WORK-020" status="done" priority="medium" tags="packages, plan, xref" %}
 
 # Add Entity Registration to `@refrakt-md/plan`
 
@@ -12,13 +12,13 @@ Add a `register()` hook to the plan package that scans transformed pages for pla
 
 ## Acceptance Criteria
 
-- [ ] Plan package exports `pipelineHooks` with a `register()` hook
-- [ ] The hook registers entities for all five rune types: `spec`, `work`, `bug`, `decision`, `milestone`
-- [ ] Each entity includes: `id`, `title` (from heading), `url` (page URL), `status`, and type-specific fields
+- [x] Plan package exports `pipelineHooks` with a `register()` hook
+- [x] The hook registers entities for all five rune types: `spec`, `work`, `bug`, `decision`, `milestone`
+- [x] Each entity includes: `id`, `title` (from heading), `url` (page URL), `status`, and type-specific fields
 - [ ] `{% xref "SPEC-008" /%}` resolves to a link when plan content is in the pipeline
 - [ ] `{% xref "WORK-015" /%}` resolves with type `work`
 - [ ] Type hints work: `{% xref "ADR-001" type="decision" /%}` narrows the search
-- [ ] Tests cover registration and resolution of all five entity types
+- [x] Tests cover registration and resolution of all five entity types
 
 ## Approach
 
