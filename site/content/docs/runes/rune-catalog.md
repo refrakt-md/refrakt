@@ -240,3 +240,5 @@ npm install @refrakt-md/plan
 | [bug](/docs/runes/bug) | Bug report with structured reproduction steps and severity |
 | [decision](/docs/runes/decision) | Architecture decision record with context, options, and rationale |
 | [milestone](/docs/runes/milestone) | Named release target with goals and status |
+| [plan-progress](/docs/runes/plan-progress) | Progress summary showing status counts per entity type |
+| [plan-activity](/docs/runes/plan-activity) | Recent activity feed sorted by file modification time |

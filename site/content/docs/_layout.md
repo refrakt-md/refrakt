@@ -162,6 +162,8 @@
 - bug
 - decision
 - milestone
+- plan-progress
+- plan-activity
 
 {% /nav %}
 {% /region %}
