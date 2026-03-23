@@ -2,24 +2,28 @@
 
 # Dependency visualization for plan site
 
-Surface cross-entity relationships by scanning content for ID references (`WORK-XXX`, `SPEC-XXX`, `BUG-XXX`, `ADR-XXX`). Build a bidirectional relationship index and inject a "Relationships" section into each entity page showing what it blocks, is blocked by, and relates to.
+Surface cross-entity relationships by scanning content for ID references (`WORK-XXX`, `SPEC-XXX`, `BUG-XXX`, `ADR-XXX`). Build a bidirectional relationship index and render relationships in a dedicated layout slot on each entity page.
 
 ## Acceptance Criteria
 
 - [ ] During the `register` pipeline phase, entity content is scanned for ID reference patterns
 - [ ] A bidirectional relationship index is built in the `EntityRegistry`
-- [ ] During `postProcess`, a "Relationships" section is injected into each entity page
+- [ ] Each entity page displays a "Relationships" section showing linked entities
 - [ ] Each reference is a live link with an inline status badge
 - [ ] Relationships are categorized: "Blocked by", "Blocks", "Related"
 - [ ] Blocked items show a visual indicator in the sidebar when blockers are unresolved
+- [ ] Relationships render via a computed layout slot or region (not manual HTML injection)
 
 ## Approach
 
-Extend the plan package's pipeline hooks. In `register()`, scan each entity's content for `(WORK|SPEC|BUG|ADR)-\d+` patterns and index relationships. In `postProcess()`, inject the relationships section as a renderable tag tree at the bottom of each entity page.
+Extend the plan package's pipeline hooks. In `register()`, scan each entity's content for `(WORK|SPEC|BUG|ADR)-\d+` patterns and index relationships. The relationships section is surfaced via the shared layout engine — either as a `computed` slot in `planLayout` (similar to how `computed.toc` works) or as an injected region. This avoids manual HTML injection in `postProcess()` and keeps the rendering declarative.
+
+Once WORK-050 converges the plan renderer with the shared layout engine, the relationships section can sit in the right-side panel alongside the ToC, providing an "on this page" + "related entities" sidebar similar to documentation sites.
 
 ## References
 
 - SPEC-015 (Plan Site UX at Scale — Feature 6)
 - WORK-020 (entity registration — the registry this builds on)
+- WORK-050 (renderer convergence — provides the layout slot mechanism)
 
 {% /work %}

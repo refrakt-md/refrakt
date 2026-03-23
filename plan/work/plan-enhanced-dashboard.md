@@ -18,6 +18,8 @@ Improve the auto-generated dashboard to show project health at a glance: status 
 
 Extend the dashboard generation in `@refrakt-md/plan`'s aggregate pipeline phase. Progress summaries and milestone grouping are computed from the entity registry. Recent activity uses `mtime` from the file scanner.
 
+Note: The dashboard page uses `generateDashboardContent()` which produces Markdoc content, not raw HTML. This approach is independent of WORK-050's renderer convergence — the dashboard generation creates content that flows through whatever renderer is active.
+
 ## References
 
 - SPEC-015 (Plan Site UX at Scale — Feature 3)

@@ -19,10 +19,13 @@ Add keyboard shortcuts for fast navigation: `/` to focus search, `j`/`k` to move
 
 A `keyboard-nav` behavior. Sidebar items get `tabindex` attributes. The behavior manages a virtual focus cursor and delegates to existing collapse/filter behaviors.
 
+Once WORK-050 converges the plan renderer with the shared layout engine, this behavior can be registered in the `planLayout.behaviors` array (like `mobile-menu` and `search` in `docsLayout`), removing the need for inline script injection.
+
 ## References
 
 - SPEC-015 (Plan Site UX at Scale — Feature 5)
 - WORK-044 (collapsible groups — `o` key integration)
 - WORK-045 (search bar — `/` key integration)
+- WORK-050 (renderer convergence — enables `behaviors` array registration)
 
 {% /work %}
