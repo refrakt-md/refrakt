@@ -852,4 +852,24 @@ Custom themes are supported via the `--theme` option pointing to a CSS file. The
 
 The package serves double duty: it provides runes (registered in the transform pipeline like any rune package) and CLI commands (registered as a CLI plugin). Installing `@refrakt-md/plan` gives you both — plan runes in your content and `refrakt plan` commands in your terminal.
 
+-----
+
+## Future: Performance at Scale
+
+As the number of plan files grows (hundreds of entities across specs, work items, bugs, and decisions), full directory scans become a bottleneck. The initial implementation includes mtime-based file caching (WORK-028), but several additional strategies are worth considering for the future:
+
+**Filtered scanning.** Most commands don't need every entity. `next` only cares about `status="ready"` work items; `validate` might target a single file. Adding type/status filters to `scanPlanFiles()` would let commands skip irrelevant files entirely when combined with the cache:
+
+```typescript
+scanPlanFiles(dir, { types?: RuneType[], status?: string[], ids?: string[] })
+```
+
+**Persistent index file.** A generated `plan/.index.json` that maps file paths to entity metadata. Rebuilt on demand (or via `refrakt plan build`). Commands read the index instead of scanning. Unlike the runtime cache, an index file is committable — useful when CI or external tools need plan data without running the scanner.
+
+**Streaming/async API.** Switch from returning `PlanEntity[]` to an async generator. Doesn't reduce total work but lets commands like `next` bail early once they find a match without scanning the entire tree.
+
+**Archive convention.** A `plan/archive/` directory (or `status="archived"` attribute) that the scanner skips by default. Completed milestones and their associated work items move here, reducing the active scan surface without losing history.
+
+These strategies are complementary — caching reduces re-parse cost, filters reduce scan scope, an index eliminates scanning for read-only consumers, and archiving reduces the active file count. The right combination depends on how large plan directories actually get in practice.
+
 {% /spec %}

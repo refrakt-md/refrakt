@@ -19,13 +19,17 @@ The scanner uses Markdoc's parser (`Markdoc.parse()`) to extract tag nodes and t
 - [ ] Extracts reference IDs from References/Dependencies sections
 - [ ] Returns typed `PlanEntity[]` with all extracted fields and file path
 - [ ] Handles all 5 rune types: spec, work, bug, decision, milestone
-- [ ] Tests for scanning, attribute extraction, criteria parsing, and edge cases (malformed files, nested runes)
+- [ ] Supports mtime-based caching: skips re-parsing files whose mtime hasn't changed since the last scan, using a `.plan-cache.json` file in the scan directory
+- [ ] Cache is invalidated per-file (stale entries for deleted files are pruned on each scan)
+- [ ] Tests for scanning, attribute extraction, criteria parsing, caching behaviour, and edge cases (malformed files, nested runes)
 
 ## Approach
 
 Create `runes/plan/src/scanner.ts` exporting a `scanPlanFiles(dir: string): PlanEntity[]` function. Use `fs.readdirSync` recursively, read each `.md` file, run `Markdoc.parse()` to get the AST, then walk the AST for tag nodes matching plan rune names (`work`, `spec`, `bug`, `decision`, `milestone`). Extract attributes directly from the parsed tag nodes — no regex needed for tag syntax. For content sections (acceptance criteria checkboxes, H1 title, reference lists), use lightweight text parsing since these are inline Markdown constructs that Markdoc's AST doesn't decompose further. This approach keeps the scanner coupled to Markdoc's parser (the source of truth for tag syntax) rather than duplicating parsing logic via regex.
 
-Add `PlanEntity` type to `runes/plan/src/types.ts`.
+Add `PlanEntity` and `ScanCache` types to `runes/plan/src/types.ts`.
+
+The scan function accepts an optional `cache` parameter. When enabled, it reads `.plan-cache.json` from the scan directory on startup, compares each file's `mtime` against the cached entry, and only re-parses files that have changed. After scanning, the updated cache is written back. Deleted files are pruned from the cache automatically. The cache stores the full `PlanEntity` data per file path, keyed by path with `mtime` and `size` for invalidation.
 
 ## Dependencies
 
