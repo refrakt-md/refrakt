@@ -23,7 +23,7 @@ async function handleServe(args: string[]): Promise<void> {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let specsDir: string | undefined;
 	let port = 3000;
-	let theme = 'default';
+	let theme = 'auto';
 	let open = false;
 
 	for (let i = 0; i < args.length; i++) {
@@ -63,7 +63,7 @@ async function handleBuild(args: string[]): Promise<void> {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let specsDir: string | undefined;
 	let out = './plan-site';
-	let theme = 'default';
+	let theme = 'auto';
 	let baseUrl = '/';
 
 	for (let i = 0; i < args.length; i++) {

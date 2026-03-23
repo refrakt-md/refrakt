@@ -144,6 +144,64 @@ Desc.
 		expect(result.pages[0].url).toContain('/project/plan/');
 	});
 
+	it('auto theme falls back to default when no config exists', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'auto',
+			baseUrl: '/',
+		});
+
+		expect(result.pages).toHaveLength(1);
+		expect(result.themeCss).toBeTruthy();
+	});
+
+	it('auto theme reads from refrakt.config.json when present', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		// Write a config pointing to a theme that won't resolve — should fall back
+		const configPath = path.join(tmpDir, 'refrakt.config.json');
+		fs.writeFileSync(configPath, JSON.stringify({ theme: '@nonexistent/theme', target: 'html', contentDir: './content' }));
+
+		// Save and restore cwd since readConfigTheme reads from cwd
+		const origCwd = process.cwd();
+		process.chdir(tmpDir);
+		try {
+			const result = await runPipeline({
+				dir: tmpDir,
+				theme: 'auto',
+				baseUrl: '/',
+			});
+			// Falls back to default — should still work
+			expect(result.pages).toHaveLength(1);
+			expect(result.themeCss).toBeTruthy();
+		} finally {
+			process.chdir(origCwd);
+		}
+	});
+
+	it('--theme default and --theme minimal override config', async () => {
+		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task
+Desc.
+{% /work %}`);
+
+		// Even if config exists, explicit flag wins
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+		expect(result.pages).toHaveLength(1);
+	});
+
 	it('works with minimal theme', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task

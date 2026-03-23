@@ -1,4 +1,4 @@
-{% work id="WORK-042" status="ready" priority="medium" complexity="moderate" tags="plan, themes, config" %}
+{% work id="WORK-042" status="done" priority="medium" complexity="moderate" tags="plan, themes, config" %}
 
 # Config-aware theme resolution for plan site
 

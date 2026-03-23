@@ -76,23 +76,122 @@ function inlineCssImports(css: string, cssDir: string): string {
 	});
 }
 
+/** Well-known shorthand names mapped to npm package names. */
+const THEME_SHORTHANDS: Record<string, string> = {
+	lumina: '@refrakt-md/lumina',
+};
+
+/**
+ * Try to read the `theme` field from refrakt.config.json in the working directory.
+ * Returns the theme package name or undefined if no config / no theme field.
+ */
+function readConfigTheme(): string | undefined {
+	const candidates = [
+		path.resolve('refrakt.config.json'),
+		path.resolve('site', 'refrakt.config.json'),
+	];
+
+	for (const configPath of candidates) {
+		if (!fs.existsSync(configPath)) continue;
+		try {
+			const raw = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+			if (typeof raw === 'object' && raw !== null && typeof raw.theme === 'string' && raw.theme) {
+				return raw.theme;
+			}
+		} catch {
+			// Malformed config — silently skip
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Resolve a theme package name to its base CSS content.
+ * Tries `require.resolve(pkg + '/base.css')` first, then the main export.
+ * Returns undefined if the package can't be resolved.
+ */
+function resolvePackageThemeCss(packageName: string): string | undefined {
+	// Try base.css export (design tokens only — preferred for layering)
+	for (const subpath of ['/base.css', '']) {
+		try {
+			const entry = subpath
+				? import.meta.resolve(packageName + subpath)
+				: import.meta.resolve(packageName);
+			const resolved = entry.startsWith('file://') ? fileURLToPath(entry) : entry;
+			if (resolved.endsWith('.css') && fs.existsSync(resolved)) {
+				return inlineCssImports(fs.readFileSync(resolved, 'utf-8'), path.dirname(resolved));
+			}
+		} catch {
+			// Not resolvable — continue
+		}
+	}
+	return undefined;
+}
+
 function resolveThemeCss(theme: string): string {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = path.dirname(__filename);
 	const stylesDir = path.resolve(__dirname, '../../styles');
 
-	let cssPath: string;
+	// Built-in themes
 	if (theme === 'default') {
-		cssPath = path.join(stylesDir, 'default.css');
-	} else if (theme === 'minimal') {
-		cssPath = path.join(stylesDir, 'minimal.css');
-	} else if (fs.existsSync(theme)) {
-		cssPath = theme;
-	} else {
-		throw new Error(`Theme not found: "${theme}". Use "default", "minimal", or a path to a CSS file.`);
+		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'), stylesDir);
+	}
+	if (theme === 'minimal') {
+		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'minimal.css'), 'utf-8'), stylesDir);
 	}
 
-	return inlineCssImports(fs.readFileSync(cssPath, 'utf-8'), path.dirname(cssPath));
+	// Auto: read from refrakt.config.json, fall back to built-in default
+	if (theme === 'auto') {
+		const configTheme = readConfigTheme();
+		if (configTheme) {
+			const css = resolvePackageThemeCss(configTheme);
+			if (css) {
+				// Layer: theme base tokens + plan rune styles
+				const planRuneCss = inlineCssImports(
+					fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
+					stylesDir,
+				);
+				return css + '\n' + planRuneCss;
+			}
+			console.warn(`[plan] Warning: Could not resolve theme "${configTheme}" from config. Using built-in default.`);
+		}
+		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'), stylesDir);
+	}
+
+	// Shorthand name (e.g., "lumina" → "@refrakt-md/lumina")
+	const expanded = THEME_SHORTHANDS[theme];
+	if (expanded) {
+		const css = resolvePackageThemeCss(expanded);
+		if (css) {
+			const planRuneCss = inlineCssImports(
+				fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
+				stylesDir,
+			);
+			return css + '\n' + planRuneCss;
+		}
+		throw new Error(`Theme "${theme}" (${expanded}) could not be resolved. Is it installed?`);
+	}
+
+	// npm package name (starts with @ or contains /)
+	if (theme.startsWith('@') || theme.includes('/')) {
+		const css = resolvePackageThemeCss(theme);
+		if (css) {
+			const planRuneCss = inlineCssImports(
+				fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
+				stylesDir,
+			);
+			return css + '\n' + planRuneCss;
+		}
+		throw new Error(`Theme package "${theme}" could not be resolved. Is it installed?`);
+	}
+
+	// File path
+	if (fs.existsSync(theme)) {
+		return inlineCssImports(fs.readFileSync(theme, 'utf-8'), path.dirname(theme));
+	}
+
+	throw new Error(`Theme not found: "${theme}". Use "default", "minimal", a package name, or a path to a CSS file.`);
 }
 
 function buildThemeConfig(): ThemeConfig {

@@ -1,4 +1,4 @@
-{% work id="WORK-043" status="ready" priority="medium" complexity="moderate" tags="plan, themes, css" %}
+{% work id="WORK-043" status="done" priority="medium" complexity="moderate" tags="plan, themes, css" %}
 
 # Token bridging — update plan CSS to use `--rf-*` tokens
 
