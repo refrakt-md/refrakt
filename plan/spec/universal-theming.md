@@ -1,11 +1,10 @@
-# Universal Theming Dimensions — Specification
+{% spec id="SPEC-025" status="draft" tags="transform, themes, css, dimensions" %}
 
-> **Status:** Design proposal
-> **Scope:** Cross-rune semantic attributes for consistent, low-effort theme development
-> **Package:** Core (identity transform and base CSS)
-> **Related:** Metadata System Specification, Layout Specification, Tint Rune Specification
+# Universal Theming Dimensions
 
------
+> Cross-rune semantic data attributes — surface, density, section anatomy, interactive state, and media slots — so themes can style every rune generically with ~40 CSS rules instead of per-rune overrides. Builds on the metadata system (SPEC-024) to complete the eight-dimension universal theming model.
+
+---
 
 ## Problem
 
@@ -13,9 +12,9 @@ Theme development is expensive. A theme supporting 30+ runes needs hundreds of p
 
 Every new rune — from official packages or the community — requires new theme CSS. A `@refrakt-community/wine` package releases a tasting rune. Every theme needs updating. If the theme author hasn’t written rules for `.rune-wine-tasting`, it renders unstyled.
 
-The metadata system (Metadata System Specification) solved this for badges — three dimensions, ~18 rules, every badge styled. This specification extends the same principle to the rest of the rune: containers, anatomy, density, interactivity, and media.
+The metadata system (SPEC-024) solved this for badges — three dimensions, ~18 rules, every badge styled. This specification extends the same principle to the rest of the rune: containers, anatomy, density, interactivity, and media.
 
------
+---
 
 ## Design Principles
 
@@ -27,14 +26,14 @@ The metadata system (Metadata System Specification) solved this for badges — t
 
 **Community-proof.** A community package rune that declares its dimensions gets themed automatically by any theme that implements the generic rules. No per-rune CSS contribution needed from theme authors.
 
------
+---
 
 ## Dimensions
 
 ### Overview
 
 |Dimension|Attribute     |Values                                                        |Controls                |Declared by          |
-|---------|--------------|--------------------------------------------------------------|------------------------|---------------------|
+|-------|----------|--------------------------------------|----------------|-------------|
 |Density  |`data-density`|`full`, `compact`, `minimal`                                  |Spacing and detail level|Rune config + context|
 |Section  |`data-section`|`header`, `title`, `description`, `body`, `footer`            |Structural anatomy      |Rune config          |
 |State    |`data-state`  |`open`, `closed`, `active`, `inactive`, `selected`, `disabled`|Interactive states      |Behaviour script     |
@@ -45,7 +44,7 @@ Combined with the metadata system’s three dimensions (`data-meta-type`, `data-
 
 **Note on surface:** Surface is deliberately excluded from the rune config. Which runes render as cards, banners, or inline elements is a visual design decision that belongs to the theme, not the rune. A minimal theme might render recipes inline. A dashboard theme might render everything as cards. The rune doesn’t know or care — it declares its structure (sections, media, metadata), and the theme decides the container treatment. See the Surface section for how themes assign surfaces.
 
------
+---
 
 ## Surface
 
@@ -54,7 +53,7 @@ Controls the container treatment — how the rune visually separates from its su
 ### Values
 
 |Value   |Treatment                                             |Typical use                                     |
-|--------|------------------------------------------------------|------------------------------------------------|
+|------|----------------------------------|------------------------------|
 |`card`  |Elevated container with background, border, and radius|Recipe, character, work item, testimonial, event|
 |`inline`|No visual boundary — flows with surrounding prose     |Hint, details, sidenote, conversation message   |
 |`banner`|Full-width strip with background                      |Hero, CTA, feature section                      |
@@ -202,7 +201,7 @@ Alternatively, the theme can provide a catch-all for unassigned runes:
 
 This ensures community runes look reasonable even before the theme explicitly supports them. The catch-all excludes runes the theme has already assigned to non-card surfaces.
 
------
+---
 
 ## Density
 
@@ -211,7 +210,7 @@ Controls how much detail a rune shows and how tightly it’s spaced. A rune on a
 ### Values
 
 |Value    |Treatment                                                       |Context                               |
-|---------|----------------------------------------------------------------|--------------------------------------|
+|-------|----------------------------------------|------------------------|
 |`full`   |All sections visible, generous spacing                          |Dedicated page, expanded view         |
 |`compact`|Descriptions truncated, secondary metadata hidden, tight spacing|Grid cell, card grid, sidebar         |
 |`minimal`|Title and primary metadata only, very tight                     |List view, backlog row, search results|
@@ -221,7 +220,7 @@ Controls how much detail a rune shows and how tightly it’s spaced. A rune on a
 The identity transform sets density based on context. The rune config declares a default, and the rendering context overrides it:
 
 |Context                                 |Density                      |
-|----------------------------------------|-----------------------------|
+|------------------------|-------------------|
 |Rune on a dedicated page                |`full`                       |
 |Rune inside a grid cell                 |`compact`                    |
 |Rune inside a backlog or list view      |`minimal`                    |
@@ -316,7 +315,7 @@ Recipe: {
 
 At compact density, descriptions are clamped to two lines and secondary metadata is hidden. At minimal density, only the header (primary metadata) and title remain. These rules apply to every rune — a compact recipe card, a compact character card, and a compact work item card all truncate the same way.
 
------
+---
 
 ## Section Anatomy
 
@@ -325,7 +324,7 @@ Controls the structural parts of a rune. Most runes follow the same pattern: hea
 ### Values
 
 |Value        |Purpose                         |Contents                                       |
-|-------------|--------------------------------|-----------------------------------------------|
+|---------|--------------------|-----------------------------|
 |`header`     |Metadata row above the title    |Badges, status pills, category chips           |
 |`title`      |Primary heading                 |The rune’s name/headline                       |
 |`description`|Secondary text below the title  |Summary, blurb, subtitle                       |
@@ -478,7 +477,7 @@ All three follow the same anatomy. The theme styles them uniformly.
 
 Six rules for the anatomy. Combined with the density rules, titles scale down, descriptions truncate or hide, and footers disappear — all universally.
 
------
+---
 
 ## Interactive State
 
@@ -487,7 +486,7 @@ Controls the visual state of interactive rune elements — collapsible panels, t
 ### Values
 
 |Value     |Meaning                   |Used by                                         |
-|----------|--------------------------|------------------------------------------------|
+|------|----------------|------------------------------|
 |`open`    |Expanded, visible content |Accordion panel, details content, reveal step   |
 |`closed`  |Collapsed, hidden content |Accordion panel, details content                |
 |`active`  |Currently selected/visible|Active tab, active accordion panel, current step|
@@ -588,7 +587,7 @@ panel.dataset.state = panel.dataset.state === 'open' ? 'closed' : 'open';
 
 The behaviour script sets state. The theme reads state. Clean separation.
 
------
+---
 
 ## Media Slots
 
@@ -597,7 +596,7 @@ Controls the visual treatment of images and media elements within runes.
 ### Values
 
 |Value      |Treatment                                         |Use cases                                             |
-|-----------|--------------------------------------------------|------------------------------------------------------|
+|-------|------------------------------|----------------------------------|
 |`portrait` |Circular crop, 1:1 aspect ratio                   |Character portrait, team member headshot, artist photo|
 |`cover`    |Full-width, 16:9 aspect ratio, rounded top corners|Recipe photo, album cover, event image                |
 |`thumbnail`|Small fixed-size preview                          |Track artwork, search result preview, list item icon  |
@@ -723,14 +722,14 @@ Media slots adapt to density:
 
 At compact density, portraits shrink and cover images become wider and shorter. At minimal density, all media is hidden — only text metadata remains.
 
------
+---
 
 ## Complete Theme Baseline
 
 A theme implementing all universal dimensions writes approximately this many rules:
 
 |Dimension      |Rules                        |Coverage                       |Declared by          |
-|---------------|-----------------------------|-------------------------------|---------------------|
+|---------|-------------------|-------------------|-------------|
 |Meta types     |6                            |Every metadata badge shape     |Rune config          |
 |Meta sentiments|4                            |Every badge colour             |Rune config          |
 |Meta ranks     |2                            |Every badge size               |Rune config          |
@@ -750,7 +749,7 @@ A theme author’s workflow becomes:
 1. Customise specific runes where the generic treatment isn’t sufficient
 1. The generic rules handle every rune they haven’t specifically customised — including community runes they’ve never seen
 
------
+---
 
 ## Rune Config Summary
 
@@ -795,7 +794,7 @@ Recipe: {
 
 All dimensions are optional. A rune that doesn’t declare `sections` renders without `data-section` attributes. A rune that doesn’t declare `mediaSlots` renders images without `data-media` attributes. Migration is per-field, per-rune, at whatever pace makes sense.
 
------
+---
 
 ## Inspector Audit
 
@@ -844,3 +843,5 @@ $ refrakt inspect --audit-dimensions
 ```
 
 The inspector verifies that every dimension value in use has theme CSS, and flags runes — especially community runes — that could benefit from declaring dimensions they’re missing.
+
+{% /spec %}
