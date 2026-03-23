@@ -1,4 +1,4 @@
-{% work id="WORK-036" status="ready" priority="high" complexity="simple" tags="cli, plan, docs" %}
+{% work id="WORK-036" status="done" priority="high" complexity="simple" tags="cli, plan, docs" %}
 
 # Update CLAUDE.md files for plan CLI usage
 
@@ -12,13 +12,13 @@ Currently the Plan section in root `CLAUDE.md` and the Workflow section in `plan
 
 ## Acceptance Criteria
 
-- [ ] Root `CLAUDE.md` Plan section uses `refrakt plan` commands in its workflow instructions
-- [ ] `plan/CLAUDE.md` workflow section references CLI commands for status transitions and checkbox toggling
-- [ ] Examples show real command invocations (e.g., `refrakt plan update WORK-001 --status in-progress`)
-- [ ] Documents `refrakt plan next` for finding the next work item
-- [ ] Documents `refrakt plan status` for viewing project state
-- [ ] Preserves existing guidance about reading specs, decisions, and dependencies before implementing
-- [ ] Only documents commands that are actually implemented at time of writing (no stubs)
+- [x] Root `CLAUDE.md` Plan section uses `refrakt plan` commands in its workflow instructions
+- [x] `plan/CLAUDE.md` workflow section references CLI commands for status transitions and checkbox toggling
+- [x] Examples show real command invocations (e.g., `refrakt plan update WORK-001 --status in-progress`)
+- [x] Documents `refrakt plan next` for finding the next work item
+- [ ] Documents `refrakt plan status` for viewing project state (not yet implemented — skipped per "no stubs" criterion)
+- [x] Preserves existing guidance about reading specs, decisions, and dependencies before implementing
+- [x] Only documents commands that are actually implemented at time of writing (no stubs)
 
 ## Approach
 

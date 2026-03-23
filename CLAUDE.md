@@ -234,21 +234,44 @@ plan/
 
 ### Workflow
 
-1. Find a work item in `plan/work/` with `status="ready"` — prefer higher priority
-2. Before implementing, read:
+```bash
+# 1. Find the next work item
+refrakt plan next
+
+# 2. Start working on it
+refrakt plan update <id> --status in-progress
+```
+
+3. Before implementing, read:
    - The work item's referenced specs in `plan/spec/` (follow ID references)
    - Related decision records in `plan/decision/` (check tags)
    - Any dependency work items (ensure they're done)
-3. Change the work item's `status` to `"in-progress"`
-4. Implement, checking off acceptance criteria as you go
-5. When all criteria are met, change status to `"done"`
+
+```bash
+# 4. Check off acceptance criteria as you complete them
+refrakt plan update <id> --check "criterion text"
+
+# 5. When all criteria are met, mark it done
+refrakt plan update <id> --status done
+```
+
+Use `--format json` on any command for machine-readable output.
 
 ### Creating plan content
 
-- New specs go in `plan/spec/` wrapped in `{% spec %}`
-- New work items go in `plan/work/` wrapped in `{% work %}`
-- New decisions go in `plan/decision/` wrapped in `{% decision %}`
-- Always include a unique `id` attribute
+```bash
+# Scaffold new items from templates
+refrakt plan create work --id WORK-XXX --title "Description"
+refrakt plan create bug --id BUG-XXX --title "Description"
+refrakt plan create decision --id ADR-XXX --title "Description"
+refrakt plan create spec --id SPEC-XXX --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"
+
+# Initialize plan structure in a new project
+refrakt plan init
+```
+
+- Always include a unique `id` attribute — check existing IDs first (see `plan/CLAUDE.md` for conventions)
 - Use H2 sections for structure (Acceptance Criteria, Approach, Context, etc.)
 
 ## Release Process

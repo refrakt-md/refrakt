@@ -181,19 +181,44 @@ Optional notes or context.
 
 ### Implementing a work item
 
-1. Pick a work item with `status="ready"` — prefer higher priority
-2. Read referenced specs and decisions (check tags and ID references in the file)
-3. Check dependency work items are `done`
-4. Change status to `"in-progress"` in the file
-5. Implement the changes in the codebase
-6. Check off acceptance criteria (`- [ ]` → `- [x]`) as you complete each one
-7. When all criteria pass, change status to `"done"`
+```bash
+# 1. Find the next ready work item (considers priority and dependencies)
+refrakt plan next
+
+# 2. Start working on it
+refrakt plan update WORK-XXX --status in-progress
+```
+
+3. Before implementing, read referenced specs and decisions (check tags and ID references in the file). Ensure dependency work items are `done`.
+
+4. Implement the changes in the codebase.
+
+```bash
+# 5. Check off acceptance criteria as you complete each one
+refrakt plan update WORK-XXX --check "criterion text"
+
+# 6. When all criteria pass, mark it done
+refrakt plan update WORK-XXX --status done
+```
+
+Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
 
 ### Creating a work item from a spec
 
 1. Read the spec thoroughly
 2. Identify discrete, independently implementable pieces
-3. Create one work item per piece in `plan/work/`
+
+```bash
+# 3. Scaffold one work item per piece
+refrakt plan create work --id WORK-XXX --title "Description" --priority high
+
+# Other types work the same way
+refrakt plan create bug --id BUG-XXX --title "Description"
+refrakt plan create decision --id ADR-XXX --title "Description"
+refrakt plan create spec --id SPEC-XXX --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"
+```
+
 4. Reference the spec ID in the work item's References section
 5. Set `priority` based on dependencies and importance
 6. Set `complexity` based on scope (see table below)
@@ -201,10 +226,22 @@ Optional notes or context.
 ### Recording a decision during implementation
 
 If you encounter a non-obvious design choice:
-1. Create a decision file in `plan/decision/` with `status="proposed"`
-2. Document the context, options, and your recommendation
-3. Proceed with implementation using the chosen approach
-4. The decision record preserves the reasoning for future sessions
+
+```bash
+refrakt plan create decision --id ADR-XXX --title "Decision title"
+```
+
+1. Document the context, options, and your recommendation in the generated file
+2. Proceed with implementation using the chosen approach
+3. The decision record preserves the reasoning for future sessions
+
+### Initializing plan structure in a new project
+
+```bash
+refrakt plan init
+```
+
+Creates `plan/work/`, `plan/spec/`, `plan/decision/` with example files and updates `CLAUDE.md` with workflow instructions.
 
 ### Complexity guide
 
