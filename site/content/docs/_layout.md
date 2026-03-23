@@ -61,6 +61,7 @@
 - reveal
 - embed
 - icon
+- xref
 
 ## Layout
 
@@ -153,6 +154,18 @@
 - playlist
 - track
 - audio
+
+## @refrakt-md/plan
+
+- spec
+- work
+- bug
+- decision
+- milestone
+- backlog
+- decision-log
+- plan-progress
+- plan-activity
 
 {% /nav %}
 {% /region %}

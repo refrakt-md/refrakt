@@ -220,3 +220,27 @@ npm install @refrakt-md/media
 | [playlist](/docs/runes/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
 | [track](/docs/runes/track) | Standalone track or recording with metadata |
 | [audio](/docs/runes/audio) | Audio player with optional waveform and chapter markers |
+
+### @refrakt-md/plan
+
+Planning runes for spec-driven development with AI-native workflows.
+
+```bash
+npm install @refrakt-md/plan
+```
+
+```json
+{ "packages": ["@refrakt-md/plan"] }
+```
+
+| Rune | Description |
+|------|-------------|
+| [spec](/docs/runes/spec) | Specification document with status tracking and versioning |
+| [work](/docs/runes/work) | Work item with acceptance criteria, priority, and complexity tracking |
+| [bug](/docs/runes/bug) | Bug report with structured reproduction steps and severity |
+| [decision](/docs/runes/decision) | Architecture decision record with context, options, and rationale |
+| [milestone](/docs/runes/milestone) | Named release target with goals and status |
+| [backlog](/docs/runes/backlog) | Aggregation view of work items and bugs with filtering, sorting, and grouping |
+| [decision-log](/docs/runes/decision-log) | Chronological view of architecture decision records |
+| [plan-progress](/docs/runes/plan-progress) | Progress summary showing status counts per entity type |
+| [plan-activity](/docs/runes/plan-activity) | Recent activity feed sorted by file modification time |

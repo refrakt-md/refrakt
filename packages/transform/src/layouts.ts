@@ -266,6 +266,54 @@ export const docsLayout: LayoutConfig = {
 	},
 };
 
+// ─── Plan Layout ─────────────────────────────────────────────────────
+// Sidebar + main layout for the plan site with optional "On this page" TOC.
+// The sidebar nav region is built by @refrakt-md/plan and passed in.
+
+export const planLayout: LayoutConfig = {
+	block: 'plan',
+	computed: {
+		toc: {
+			type: 'toc',
+			source: 'headings',
+			options: { minLevel: 2, maxLevel: 3 },
+			visibility: {
+				minCount: 2,
+			},
+		},
+	},
+	slots: {
+		sidebar: {
+			tag: 'nav',
+			class: 'rf-plan-sidebar',
+			source: 'region:nav',
+			conditional: true,
+		},
+		main: {
+			tag: 'main',
+			class: 'rf-plan-main',
+			wrapper: {
+				tag: 'div',
+				class: 'rf-plan-main__inner',
+				conditionalModifier: { computed: 'toc', modifier: 'has-toc' },
+			},
+			children: [
+				{
+					tag: 'div',
+					class: 'rf-plan-main__body',
+					source: 'content',
+				},
+				{
+					tag: 'aside',
+					class: 'rf-plan-toc',
+					source: 'computed:toc',
+					conditional: true,
+				},
+			],
+		},
+	},
+};
+
 // ─── Blog Article Layout ──────────────────────────────────────────────
 // Matches BlogLayout.svelte article mode (individual post with frontmatter chrome).
 // Blog index mode is handled by a {% blog-index %} rune, not by the layout.

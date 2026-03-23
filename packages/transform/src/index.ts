@@ -37,7 +37,7 @@ export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // Layout configs
-export { defaultLayout, docsLayout, blogArticleLayout } from './layouts.js';
+export { defaultLayout, docsLayout, blogArticleLayout, planLayout } from './layouts.js';
 
 // Provenance tracking
 export type { RuneProvenance } from './provenance.js';

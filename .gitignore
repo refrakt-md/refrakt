@@ -6,3 +6,4 @@ plans/
 .svelte-kit/
 .preview-cache/
 .community-tags-cache/
+.plan-cache.json

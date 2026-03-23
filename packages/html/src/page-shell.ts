@@ -21,6 +21,8 @@ export interface PageShellOptions {
 	scripts?: string[];
 	/** Extra HTML to inject into <head> */
 	headExtra?: string;
+	/** Extra HTML to inject before </body> (inline scripts, etc.) */
+	bodyExtra?: string;
 	/** HTML lang attribute (default: "en") */
 	lang?: string;
 	/** Base URL for OpenGraph canonical URLs */
@@ -51,7 +53,7 @@ function renderOgTag(property: string, content: string): string {
  */
 export function renderFullPage(input: RenderPageInput, options: PageShellOptions = {}): string {
 	const { page } = input;
-	const { lang = 'en', stylesheets = [], scripts = [], headExtra = '', seo } = options;
+	const { lang = 'en', stylesheets = [], scripts = [], headExtra = '', bodyExtra = '', seo } = options;
 
 	const headParts: string[] = [];
 	headParts.push('<meta charset="utf-8">');
@@ -125,6 +127,7 @@ ${headParts.join('\n')}
 ${bodyContent}
 <script type="application/json" id="rf-context">${contextData}</script>
 ${scriptTags}
+${bodyExtra}
 </body>
 </html>`;
 }

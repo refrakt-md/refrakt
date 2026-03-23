@@ -1,0 +1,83 @@
+/* Spec */
+.rf-spec {
+	margin: 1.5rem 0;
+	border-left: 3px solid var(--rf-color-primary);
+	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	background: var(--rf-color-surface);
+	padding: 1rem 1.25rem;
+}
+.rf-spec__header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.75rem;
+}
+.rf-spec__id-badge {
+	font-family: var(--rf-font-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--rf-color-primary);
+}
+.rf-spec__status-badge {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+.rf-spec__version-badge {
+	font-size: 0.6875rem;
+	font-weight: 500;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+.rf-spec__supersedes-badge {
+	font-size: 0.6875rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	font-style: italic;
+}
+.rf-spec__body {
+	font-size: 0.925rem;
+	line-height: 1.65;
+}
+.rf-spec__body > header {
+	margin-bottom: 0.75rem;
+}
+.rf-spec__body > header h1,
+.rf-spec__body > header h2,
+.rf-spec__body > header h3 {
+	margin-top: 0;
+}
+.rf-spec__body blockquote {
+	border-left: 3px solid var(--rf-color-border);
+	padding: 0.5rem 1rem;
+	margin: 0.75rem 0;
+	font-style: italic;
+	color: var(--rf-color-muted);
+}
+
+/* Status colors */
+[data-status="draft"] > .rf-spec__header > .rf-spec__status-badge {
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+[data-status="review"] > .rf-spec__header > .rf-spec__status-badge {
+	color: var(--rf-color-warning);
+	background: var(--rf-color-warning-bg);
+}
+[data-status="accepted"] > .rf-spec__header > .rf-spec__status-badge {
+	color: var(--rf-color-success);
+	background: var(--rf-color-success-bg);
+}
+[data-status="superseded"] > .rf-spec__header > .rf-spec__status-badge,
+[data-status="deprecated"] > .rf-spec__header > .rf-spec__status-badge {
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+}

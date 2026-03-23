@@ -1,0 +1,155 @@
+/* Backlog */
+.rf-backlog {
+	margin: 1.5rem 0;
+}
+
+/* Group sections */
+.rf-backlog__group {
+	margin-bottom: 1.5rem;
+}
+.rf-backlog__group-title {
+	font-size: 0.8125rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+	margin: 0 0 0.5rem;
+	padding-bottom: 0.375rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+
+/* Cards */
+.rf-backlog__card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding: 0.625rem 0.75rem;
+	border-left: 3px solid var(--rf-color-border);
+	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
+	background: var(--rf-color-surface);
+	margin-bottom: 0.375rem;
+	transition: border-color 0.15s ease;
+}
+.rf-backlog__card:hover {
+	border-left-color: var(--rf-color-primary);
+}
+
+/* Card header with badges */
+.rf-backlog__card-header {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	flex-wrap: wrap;
+}
+.rf-backlog__card-id {
+	font-family: var(--rf-font-mono);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	color: var(--rf-color-primary);
+}
+.rf-backlog__card-status {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+.rf-backlog__card-priority {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--rf-radius-sm);
+}
+.rf-backlog__card-severity {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--rf-radius-sm);
+}
+.rf-backlog__card-complexity {
+	font-size: 0.625rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+}
+.rf-backlog__card-milestone {
+	font-size: 0.625rem;
+	font-weight: 500;
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+	margin-left: auto;
+}
+.rf-backlog__card-title {
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--rf-color-text);
+}
+
+/* Status-aware card border */
+.rf-backlog__card[data-status="ready"] {
+	border-left-color: var(--rf-color-info);
+}
+.rf-backlog__card[data-status="in-progress"],
+.rf-backlog__card[data-status="review"] {
+	border-left-color: var(--rf-color-warning);
+}
+.rf-backlog__card[data-status="done"],
+.rf-backlog__card[data-status="fixed"] {
+	border-left-color: var(--rf-color-success);
+}
+.rf-backlog__card[data-status="blocked"] {
+	border-left-color: var(--rf-color-danger);
+}
+.rf-backlog__card[data-status="confirmed"] {
+	border-left-color: var(--rf-color-warning);
+}
+
+/* Status badge colors */
+.rf-backlog__card[data-status="ready"] .rf-backlog__card-status {
+	color: var(--rf-color-info);
+	background: var(--rf-color-info-bg);
+}
+.rf-backlog__card[data-status="in-progress"] .rf-backlog__card-status,
+.rf-backlog__card[data-status="review"] .rf-backlog__card-status {
+	color: var(--rf-color-warning);
+	background: var(--rf-color-warning-bg);
+}
+.rf-backlog__card[data-status="done"] .rf-backlog__card-status,
+.rf-backlog__card[data-status="fixed"] .rf-backlog__card-status {
+	color: var(--rf-color-success);
+	background: var(--rf-color-success-bg);
+}
+.rf-backlog__card[data-status="blocked"] .rf-backlog__card-status {
+	color: var(--rf-color-danger);
+	background: var(--rf-color-danger-bg);
+}
+
+/* Priority badge colors */
+.rf-backlog__card .rf-backlog__card-priority[data-name="priority-badge"] {
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
+.rf-backlog__card[data-type="work"] .rf-backlog__card-priority {
+	color: var(--rf-color-info);
+	background: var(--rf-color-info-bg);
+}
+
+/* Severity badge colors */
+.rf-backlog__card[data-type="bug"] .rf-backlog__card-severity {
+	color: var(--rf-color-danger);
+	background: var(--rf-color-danger-bg);
+}
+
+/* Type indicator for bugs */
+.rf-backlog__card[data-type="bug"] {
+	border-left-style: dashed;
+}

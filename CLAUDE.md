@@ -211,6 +211,69 @@ Theme developer documentation lives at `site/content/docs/themes/` (6 pages: ove
 
 Site content lives in `site/content/` as `.md` files with YAML frontmatter. Layouts use `_layout.md` files with `{% layout %}` + `{% region %}` tags that cascade down directory trees.
 
+## Plan
+
+Project planning content lives in `plan/` as Markdoc files using the `@refrakt-md/plan` runes package.
+
+### Structure
+
+```
+plan/
+  spec/      — Specifications (source of truth for what to build)
+  work/      — Work items (what to implement)
+  decision/  — Architecture decision records (why it's built this way)
+```
+
+### Rune syntax
+
+- `{% spec id="SPEC-001" status="accepted" %}` — specification document
+- `{% work id="WORK-001" status="ready" priority="high" %}` — work item
+- `{% bug id="BUG-001" status="confirmed" severity="major" %}` — bug report
+- `{% decision id="ADR-001" status="accepted" %}` — architecture decision record
+- `{% milestone name="v0.5.0" status="active" %}` — release target
+
+### Workflow
+
+```bash
+# 1. Find the next work item
+refrakt plan next
+
+# 2. Start working on it
+refrakt plan update <id> --status in-progress
+```
+
+3. Before implementing, read:
+   - The work item's referenced specs in `plan/spec/` (follow ID references)
+   - Related decision records in `plan/decision/` (check tags)
+   - Any dependency work items (ensure they're done)
+
+```bash
+# 4. Check off acceptance criteria as you complete them
+refrakt plan update <id> --check "criterion text"
+
+# 5. When all criteria are met, mark it done
+refrakt plan update <id> --status done
+```
+
+Use `--format json` on any command for machine-readable output.
+
+### Creating plan content
+
+```bash
+# Scaffold new items from templates
+refrakt plan create work --id WORK-XXX --title "Description"
+refrakt plan create bug --id BUG-XXX --title "Description"
+refrakt plan create decision --id ADR-XXX --title "Description"
+refrakt plan create spec --id SPEC-XXX --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"
+
+# Initialize plan structure in a new project
+refrakt plan init
+```
+
+- Always include a unique `id` attribute — check existing IDs first (see `plan/CLAUDE.md` for conventions)
+- Use H2 sections for structure (Acceptance Criteria, Approach, Context, etc.)
+
 ## Release Process
 
 See [RELEASING.md](RELEASING.md) for the full process. Key commands:
@@ -245,5 +308,7 @@ runes/storytelling/   — @refrakt-md/storytelling (character, realm, faction, l
 runes/business/       — @refrakt-md/business (cast, organization, timeline)
 runes/places/         — @refrakt-md/places (event, map, itinerary)
 runes/media/          — @refrakt-md/media (music-playlist, music-recording)
+runes/plan/           — @refrakt-md/plan (spec, work, bug, decision, milestone)
+plan/                 — Project planning content (specs, work items, decisions)
 site/                 — Documentation site (SvelteKit)
 ```

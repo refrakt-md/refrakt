@@ -39,6 +39,7 @@ import { tint } from './tags/tint.js';
 import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
+import { xref } from './tags/xref.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { schema } from './registry.js';
@@ -70,6 +71,7 @@ export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 export { TINT_TOKENS } from './tags/tint.js';
 export type { TintToken } from './tags/tint.js';
+export { XREF_RUNE_MARKER } from './tags/xref.js';
 
 export const documents = {
   doc: new DocPage(),
@@ -452,6 +454,13 @@ export const runes = {
     reinterprets: { heading: 'section title', paragraph: 'section description' },
     type: schema.Blog,
     category: 'Semantic',
+  }),
+  xref: defineRune({
+    name: 'xref',
+    aliases: ['ref'],
+    schema: xref,
+    description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
+    reinterprets: {},
   }),
 };
 
