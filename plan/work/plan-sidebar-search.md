@@ -1,0 +1,28 @@
+{% work id="WORK-045" status="draft" priority="high" complexity="moderate" tags="plan, ux, behaviors" %}
+
+# Sidebar search and filter bar for plan site
+
+Add a text input at the top of the sidebar that filters visible items in real-time. Supports plain text fuzzy matching across ID, title, tags, assignee, and milestone, plus structured `field:value` filter syntax matching the `{% backlog %}` rune.
+
+## Acceptance Criteria
+
+- [ ] Text input appears at the top of the sidebar
+- [ ] Typing filters items by matching against ID, title, tags, assignee, milestone
+- [ ] `field:value` syntax works (e.g., `status:ready`, `priority:high`, `tags:css`)
+- [ ] Multiple filters combine with AND logic; multiple values for same field use OR
+- [ ] `Escape` clears the filter
+- [ ] `/` keyboard shortcut focuses the filter input
+- [ ] Filtering auto-expands matching groups (works with WORK-044)
+- [ ] Nav items include `data-tags`, `data-priority`, `data-severity`, `data-assignee`, `data-milestone` attributes
+
+## Approach
+
+Client-side behavior (~2KB). All data is already in the DOM via data attributes on nav items (added in WORK-038). No server round-trip needed. The behavior reads data attributes and filters by toggling visibility.
+
+## References
+
+- SPEC-015 (Plan Site UX at Scale — Feature 2)
+- WORK-038 (nav region builder — provides data attributes)
+- WORK-044 (collapsible groups — filtering interacts with collapse state)
+
+{% /work %}
