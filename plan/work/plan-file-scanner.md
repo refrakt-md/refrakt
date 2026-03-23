@@ -8,7 +8,7 @@
 
 Shared library that scans directories for `.md` files containing plan runes, extracts structured data (ID, status, priority, title, tags, acceptance criteria, references), and returns typed objects. Used by `status`, `validate`, `update`, `next`, `serve`, and `build` commands.
 
-The scanner doesn't use the full Markdoc pipeline — it does lightweight regex-based extraction of rune opening tags and key content sections. This keeps it fast and dependency-free.
+The scanner uses Markdoc's parser (`Markdoc.parse()`) to extract tag nodes and their attributes from the AST, ensuring it stays in sync with the actual rune syntax. Lightweight text parsing is used only for content that Markdoc doesn't model — checkbox lists and heading text.
 
 ## Acceptance Criteria
 
@@ -23,13 +23,13 @@ The scanner doesn't use the full Markdoc pipeline — it does lightweight regex-
 
 ## Approach
 
-Create `runes/plan/src/scanner.ts` exporting a `scanPlanFiles(dir: string): PlanEntity[]` function. Use `fs.readdirSync` recursively, read each `.md` file, regex-match `{% (work|spec|bug|decision|milestone) ` for rune detection, then parse the opening tag attributes and key content sections.
+Create `runes/plan/src/scanner.ts` exporting a `scanPlanFiles(dir: string): PlanEntity[]` function. Use `fs.readdirSync` recursively, read each `.md` file, run `Markdoc.parse()` to get the AST, then walk the AST for tag nodes matching plan rune names (`work`, `spec`, `bug`, `decision`, `milestone`). Extract attributes directly from the parsed tag nodes — no regex needed for tag syntax. For content sections (acceptance criteria checkboxes, H1 title, reference lists), use lightweight text parsing since these are inline Markdown constructs that Markdoc's AST doesn't decompose further. This approach keeps the scanner coupled to Markdoc's parser (the source of truth for tag syntax) rather than duplicating parsing logic via regex.
 
 Add `PlanEntity` type to `runes/plan/src/types.ts`.
 
 ## Dependencies
 
-- WORK-027 (plugin architecture — so scanner has a package to live in)
+None — the scanner is a pure library with no CLI integration
 
 ## References
 
