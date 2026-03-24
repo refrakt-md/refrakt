@@ -71,6 +71,12 @@ export interface RuneConfig {
 	 *  no extra attributes in rendered HTML. */
 	editHints?: Record<string, 'inline' | 'link' | 'code' | 'image' | 'icon' | 'none'>;
 
+	/** Maps ref names (data-name values) to media treatment types.
+	 *  The identity transform emits `data-media` on elements whose
+	 *  `data-name` matches a key in this map, enabling generic media styling.
+	 *  Values: 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon' */
+	mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>;
+
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */

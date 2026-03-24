@@ -36,6 +36,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'recipe',
 		defaultDensity: 'full',
 		sections: { meta: 'header', headline: 'title', blurb: 'description', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			prepTime: { source: 'meta' },

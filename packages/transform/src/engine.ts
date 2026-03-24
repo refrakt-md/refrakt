@@ -344,10 +344,10 @@ function transformRune(
 		children = [bgElement, ...children];
 	}
 
-	// 6. Apply BEM element classes and section anatomy to data-name children, then recurse once
+	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block, config.sections), dataRune);
+		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots), dataRune);
 	});
 
 	// 7. Remove consumed meta tags (modifiers + tint)
@@ -435,9 +435,9 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 	});
 }
 
-/** Recursively apply BEM element classes and section anatomy to data-name elements within a rune's children.
+/** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>): SerializedTag {
+function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -445,15 +445,17 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, sections);
+			return applyBemClasses(c, block, sections, mediaSlots);
 		});
 		const sectionRole = sections?.[dataName];
+		const mediaSlot = mediaSlots?.[dataName];
 		return {
 			...child,
 			attributes: {
 				...child.attributes,
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
 				...(sectionRole ? { 'data-section': sectionRole } : {}),
+				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
 			},
 			children: nestedChildren,
 		};

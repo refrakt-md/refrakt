@@ -94,6 +94,7 @@ export const config: Record<string, RuneConfig> = {
 	Mockup: {
 		block: 'mockup',
 		defaultDensity: 'compact',
+		mediaSlots: { viewport: 'hero' },
 		modifiers: {
 			device: { source: 'meta', default: 'browser' },
 			color: { source: 'meta', default: 'dark' },

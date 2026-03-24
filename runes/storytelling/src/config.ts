@@ -6,6 +6,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'character',
 		defaultDensity: 'full',
 		sections: { badge: 'header', name: 'title', content: 'body', portrait: 'media' },
+		mediaSlots: { portrait: 'portrait' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
@@ -30,6 +31,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'realm',
 		defaultDensity: 'full',
 		sections: { badge: 'header', name: 'title', scene: 'media' },
+		mediaSlots: { scene: 'cover' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -173,5 +175,5 @@ export const config: Record<string, RuneConfig> = {
 		styles: { columns: '--sb-columns' },
 		editHints: { panels: 'none' },
 	},
-	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', editHints: { image: 'image', caption: 'inline', body: 'none' } },
+	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: { image: 'cover' }, editHints: { image: 'image', caption: 'inline', body: 'none' } },
 };

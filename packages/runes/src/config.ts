@@ -588,6 +588,7 @@ export const coreConfig: ThemeConfig = {
 				wrap: { source: 'meta' },
 			},
 			sections: { body: 'body', media: 'media' },
+			mediaSlots: { media: 'cover' },
 			editHints: { media: 'image', body: 'none' },
 		},
 

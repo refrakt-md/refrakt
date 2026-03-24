@@ -6,6 +6,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'playlist',
 		defaultDensity: 'full',
 		sections: { header: 'header', title: 'title', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			layout: { source: 'meta', default: 'stacked' },
