@@ -1,6 +1,6 @@
 /* ─── Surface Assignments ──────────────────────────────────────────────
  * Groups runes into 4 surface types: card, inline, banner, inset.
- * Each surface defines container treatment (background, border, padding).
+ * Each surface defines container treatment (background, padding, radius).
  * Padding scales with density via --rune-padding custom property.
  * ────────────────────────────────────────────────────────────────────── */
 
@@ -37,7 +37,6 @@
 .rf-comparison,
 .rf-pricing {
 	background: var(--rf-color-surface);
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
@@ -70,7 +69,6 @@
 .rf-bento,
 .rf-storyboard,
 .rf-map {
-	background: var(--rf-color-surface);
 	padding: var(--rune-padding, var(--rf-spacing-xl)) 0;
 }
 
