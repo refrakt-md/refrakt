@@ -335,18 +335,46 @@ Desc.
 Desc.
 {% /work %}`);
 
+		writeFile('spec/s1.md', `{% spec id="SPEC-001" status="accepted" %}
+# My Spec
+> Summary.
+{% /spec %}`);
+
+		writeFile('decision/d1.md', `{% decision id="ADR-001" status="accepted" date="2026-01-01" %}
+# Decision
+## Context
+C.
+## Decision
+D.
+{% /decision %}`);
+
 		const result = await runPipeline({
 			dir: tmpDir,
 			theme: 'default',
 			baseUrl: '/',
 		});
 
-		// Status filter pages should be generated
-		const statusPages = result.pages.filter(p => !p.entityId && p.type === 'work');
-		expect(statusPages.length).toBeGreaterThan(0);
-		const readyPage = statusPages.find(p => p.status === 'ready');
+		// Work status filter pages
+		const workStatusPages = result.pages.filter(p => !p.entityId && p.type === 'work');
+		expect(workStatusPages.length).toBeGreaterThan(0);
+		const readyPage = workStatusPages.find(p => p.status === 'ready');
 		expect(readyPage).toBeDefined();
 		expect(readyPage!.url).toBe('/work/ready.html');
+
+		// Spec status filter pages
+		const specStatusPages = result.pages.filter(p => !p.entityId && p.type === 'spec');
+		expect(specStatusPages.length).toBeGreaterThan(0);
+		const acceptedSpecPage = specStatusPages.find(p => p.status === 'accepted');
+		expect(acceptedSpecPage).toBeDefined();
+		expect(acceptedSpecPage!.url).toBe('/spec/accepted.html');
+
+		// Decision status filter pages
+		const decisionStatusPages = result.pages.filter(p => !p.entityId && p.type === 'decision');
+		expect(decisionStatusPages.length).toBeGreaterThan(0);
+
+		// Verify status filter pages render with entity cards
+		const acceptedSpecHtml = renderPage(acceptedSpecPage!, result.navRegion, [], { stylesheets: [] });
+		expect(acceptedSpecHtml).toContain('SPEC-001');
 	});
 
 	it('sidebar behavior scripts are injected', async () => {

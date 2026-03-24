@@ -404,9 +404,13 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	const show = readField(tag, 'show') || 'all';
 
 	// Collect entities by type
+	// "all" defaults to work+bug for backward compatibility; other types must be explicit
 	let entities: EntityRegistration[] = [];
 	if (show === 'all' || show === 'work') entities.push(...data.workEntities);
 	if (show === 'all' || show === 'bug') entities.push(...data.bugEntities);
+	if (show === 'spec') entities.push(...data.specEntities);
+	if (show === 'decision') entities.push(...data.decisionEntities);
+	if (show === 'milestone') entities.push(...data.milestoneEntities);
 
 	// Apply filter
 	const filter = parseFilter(filterExpr);
