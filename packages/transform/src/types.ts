@@ -52,6 +52,14 @@ export interface RuneConfig {
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
 
+	/** Default density for this rune. Controls how much detail is shown.
+	 *  'full' — all sections visible, generous spacing (dedicated page)
+	 *  'compact' — descriptions truncated, secondary metadata hidden (grid cell, card)
+	 *  'minimal' — title and primary metadata only (list view, backlog row)
+	 *  Defaults to 'full' if not specified. Can be overridden by author attribute
+	 *  or automatically by rendering context (grid → compact, list → minimal). */
+	defaultDensity?: 'full' | 'compact' | 'minimal';
+
 	/** Declares how named sections should be edited in the block editor.
 	 *  Keys are data-name values. Resolved at click time by the editor —
 	 *  no extra attributes in rendered HTML. */

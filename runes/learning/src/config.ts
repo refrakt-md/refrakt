@@ -12,6 +12,7 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	HowTo: {
 		block: 'howto',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			estimatedTime: { source: 'meta' },
@@ -32,6 +33,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Recipe: {
 		block: 'recipe',
+		defaultDensity: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			prepTime: { source: 'meta' },

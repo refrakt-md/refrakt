@@ -187,6 +187,7 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Hero: {
 		block: 'hero',
+		defaultDensity: 'full',
 		defaultWidth: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
@@ -205,9 +206,10 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
 	},
-	CallToAction: { block: 'cta', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
+		defaultDensity: 'full',
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
 			gap: { source: 'meta', default: '1rem' },
@@ -235,6 +237,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Feature: {
 		block: 'feature',
+		defaultDensity: 'full',
 		defaultWidth: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
@@ -254,7 +257,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature' },
-	Steps: { block: 'steps', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps',
@@ -272,11 +275,12 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { content: 'none', media: 'image' },
 	},
-	Pricing: { block: 'pricing', defaultWidth: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Tier: { block: 'tier', parent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {
 		block: 'testimonial',
+		defaultDensity: 'compact',
 		modifiers: { variant: { source: 'meta', default: 'card' } },
 		autoLabel: { blockquote: 'quote' },
 		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
@@ -315,6 +319,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Comparison: {
 		block: 'comparison',
+		defaultDensity: 'full',
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 		postTransform(node) {

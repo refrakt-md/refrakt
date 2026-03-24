@@ -4,6 +4,7 @@ import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
 export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
+		defaultDensity: 'full',
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			layout: { source: 'meta', default: 'stacked' },
@@ -31,6 +32,7 @@ export const config: Record<string, RuneConfig> = {
 	Track: { block: 'track', parent: 'Playlist', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
 	Audio: {
 		block: 'audio',
+		defaultDensity: 'compact',
 		modifiers: {
 			waveform: { source: 'meta', default: 'false' },
 		},

@@ -173,7 +173,16 @@ function transformRune(
 		tintMetaProps.add('tint-mode');
 	}
 
-	// 1e. Width and spacing — universal base attributes on all block runes
+	// 1e. Density — resolve from author attribute → context → config default → 'full'
+	const COMPACT_CONTEXTS = new Set(['grid', 'bento', 'gallery', 'showcase', 'split']);
+	const MINIMAL_CONTEXTS = new Set(['backlog', 'decision-log']);
+	const authorDensity = tag.attributes?.density;
+	const contextDensity = parentRune
+		? (MINIMAL_CONTEXTS.has(parentRune) ? 'minimal' : COMPACT_CONTEXTS.has(parentRune) ? 'compact' : undefined)
+		: undefined;
+	const resolvedDensity = authorDensity ?? contextDensity ?? config.defaultDensity ?? 'full';
+
+	// 1f. Width and spacing — universal base attributes on all block runes
 	const widthValue = tag.attributes?.width ?? config.defaultWidth;
 	if (widthValue && widthValue !== 'content') {
 		modifierValues['width'] = widthValue;
@@ -384,7 +393,7 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, 'data-rune': _dr, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...passAttrs } = tag.attributes;
 
 	const result: SerializedTag = {
 		...tag,
@@ -395,6 +404,7 @@ function transformRune(
 			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
+			'data-density': resolvedDensity,
 			...(config.rootAttributes || {}),
 			...(inlineStyle ? { style: inlineStyle } : {}),
 		},

@@ -11,6 +11,7 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Cast: {
 		block: 'cast',
+		defaultDensity: 'full',
 		modifiers: {
 			layout: { source: 'meta', default: 'grid' },
 		},
@@ -24,11 +25,13 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Organization: {
 		block: 'organization',
+		defaultDensity: 'full',
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none' },
 	},
 	Timeline: {
 		block: 'timeline',
+		defaultDensity: 'full',
 		modifiers: { direction: { source: 'meta', default: 'vertical' } },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', entries: 'none' },

@@ -12,6 +12,7 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'content' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' },
@@ -51,6 +52,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Itinerary: {
 		block: 'itinerary',
+		defaultDensity: 'full',
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
 		modifiers: {
@@ -76,6 +78,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Map: {
 		block: 'map',
+		defaultDensity: 'compact',
 		editHints: { pins: 'none' },
 		modifiers: {
 			variant: { source: 'meta', default: 'street' },

@@ -4,6 +4,7 @@ import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
 export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
@@ -26,6 +27,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Realm: {
 		block: 'realm',
+		defaultDensity: 'full',
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -58,6 +60,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Lore: {
 		block: 'lore',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			category: { source: 'meta' },
@@ -78,6 +81,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Faction: {
 		block: 'faction',
+		defaultDensity: 'full',
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
@@ -112,6 +116,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Plot: {
 		block: 'plot',
+		defaultDensity: 'full',
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
@@ -143,6 +148,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Bond: {
 		block: 'bond',
+		defaultDensity: 'compact',
 		modifiers: {
 			bondType: { source: 'meta' },
 			status: { source: 'meta', default: 'active' },
@@ -153,6 +159,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Storyboard: {
 		block: 'storyboard',
+		defaultDensity: 'full',
 		modifiers: {
 			variant: { source: 'meta', default: 'clean' },
 			columns: { source: 'meta', default: '3' },

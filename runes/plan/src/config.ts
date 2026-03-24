@@ -3,6 +3,7 @@ import type { RuneConfig } from '@refrakt-md/transform';
 export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -26,6 +27,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Work: {
 		block: 'work',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -53,6 +55,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Bug: {
 		block: 'bug',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -78,6 +81,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Decision: {
 		block: 'decision',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -101,6 +105,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Milestone: {
 		block: 'milestone',
+		defaultDensity: 'full',
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			name: { source: 'meta' },
@@ -121,6 +126,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Backlog: {
 		block: 'backlog',
+		defaultDensity: 'full',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },
@@ -130,6 +136,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	DecisionLog: {
 		block: 'decision-log',
+		defaultDensity: 'full',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },

@@ -1,4 +1,4 @@
-{% work id="WORK-063" status="ready" priority="high" complexity="moderate" tags="transform, themes, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-063" status="done" priority="high" complexity="moderate" tags="transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Density Dimension
 
@@ -12,12 +12,12 @@ Density is set automatically by context (dedicated page → full, grid cell → 
 
 ## Acceptance Criteria
 
-- [ ] `RuneConfig` in `packages/transform/src/types.ts` gains `defaultDensity?: 'full' | 'compact' | 'minimal'`
-- [ ] Identity transform emits `data-density` on the rune's root element
-- [ ] Author can override density via `density="compact"` attribute on the rune tag
-- [ ] Context-based automatic density: rune inside grid → compact, rune inside list/backlog → minimal
-- [ ] All ~60 container-level rune configs annotated with `defaultDensity` per SPEC-025 Table 4
-- [ ] Unit tests verify density attribute emission for default, override, and context-based scenarios
+- [x] `RuneConfig` in `packages/transform/src/types.ts` gains `defaultDensity?: 'full' | 'compact' | 'minimal'`
+- [x] Identity transform emits `data-density` on the rune's root element
+- [x] Author can override density via `density="compact"` attribute on the rune tag
+- [x] Context-based automatic density: rune inside grid → compact, rune inside list/backlog → minimal
+- [x] All ~60 container-level rune configs annotated with `defaultDensity` per SPEC-025 Table 4
+- [x] Unit tests verify density attribute emission for default, override, and context-based scenarios
 
 ## Approach
 
