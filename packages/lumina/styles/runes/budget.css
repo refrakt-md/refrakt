@@ -18,9 +18,9 @@
 	flex-wrap: wrap;
 	gap: 0.75rem 1.25rem;
 	align-items: center;
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 0.625rem 1rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
+	padding: 0.5em 1.0em;
 }
 .rf-budget__meta-item {
 	font-size: 0.8125rem;
