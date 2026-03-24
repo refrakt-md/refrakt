@@ -28,8 +28,10 @@ Project planning content lives in \`plan/\` as Markdoc files using the \`@refrak
 1. Find next work item: \`refrakt plan next\`
 2. Start working: \`refrakt plan update <id> --status in-progress\`
 3. Check off criteria: \`refrakt plan update <id> --check "criterion text"\`
-4. Mark complete: \`refrakt plan update <id> --status done\`
+4. Mark complete with resolution: \`refrakt plan update <id> --status done --resolve "summary of what was done"\`
 5. Check project status: \`refrakt plan status\`
+
+When marking a work item done, always provide a \`--resolve\` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
 `;
 
 /**

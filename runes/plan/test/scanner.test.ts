@@ -267,6 +267,117 @@ describe('caching', () => {
 	});
 });
 
+describe('resolution extraction', () => {
+	it('should extract a full resolution section', () => {
+		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+
+# Task
+
+## Resolution
+
+Completed: 2026-03-24
+
+Branch: \`claude/feature-xyz\`
+PR: refrakt-md/refrakt#142
+
+### What was done
+- Implemented X, Y, Z
+
+### Notes
+- Chose A over B
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.resolution).toBeDefined();
+		expect(entity.resolution!.date).toBe('2026-03-24');
+		expect(entity.resolution!.branch).toBe('claude/feature-xyz');
+		expect(entity.resolution!.pr).toBe('refrakt-md/refrakt#142');
+		expect(entity.resolution!.body).toContain('### What was done');
+		expect(entity.resolution!.body).toContain('Implemented X, Y, Z');
+		expect(entity.resolution!.body).toContain('### Notes');
+	});
+
+	it('should extract a minimal resolution (just a sentence)', () => {
+		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+
+# Task
+
+## Resolution
+
+Completed: 2026-03-24
+
+Trivial config fix — added missing block field.
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.resolution).toBeDefined();
+		expect(entity.resolution!.date).toBe('2026-03-24');
+		expect(entity.resolution!.branch).toBeUndefined();
+		expect(entity.resolution!.pr).toBeUndefined();
+		expect(entity.resolution!.body).toContain('Trivial config fix');
+	});
+
+	it('should return undefined resolution when no section exists', () => {
+		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+
+# Task
+
+## Acceptance Criteria
+- [ ] Something
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.resolution).toBeUndefined();
+	});
+
+	it('should extract resolution with only some fields', () => {
+		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+
+# Task
+
+## Resolution
+
+Completed: 2026-03-20
+
+### What was done
+- Fixed the bug
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.resolution).toBeDefined();
+		expect(entity.resolution!.date).toBe('2026-03-20');
+		expect(entity.resolution!.branch).toBeUndefined();
+		expect(entity.resolution!.pr).toBeUndefined();
+		expect(entity.resolution!.body).toContain('Fixed the bug');
+	});
+
+	it('should extract resolution from bug runes', () => {
+		writeMd('bug.md', `{% bug id="BUG-001" status="fixed" severity="major" %}
+
+# Button breaks
+
+## Resolution
+
+Completed: 2026-03-22
+
+Branch: \`claude/fix-button\`
+
+### What was done
+- Fixed the click handler
+
+{% /bug %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.resolution).toBeDefined();
+		expect(entity.resolution!.date).toBe('2026-03-22');
+		expect(entity.resolution!.branch).toBe('claude/fix-button');
+	});
+});
+
 describe('edge cases', () => {
 	it('should handle malformed files gracefully (no closing tag)', () => {
 		writeMd('bad.md', '{% work id="WORK-001" status="ready" %}\n\n# Unclosed\n\nNo closing tag.');

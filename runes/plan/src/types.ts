@@ -30,6 +30,17 @@ export interface Criterion {
 	checked: boolean;
 }
 
+export interface Resolution {
+	/** ISO date from "Completed:" line */
+	date?: string;
+	/** Branch name from "Branch:" line (backticks stripped) */
+	branch?: string;
+	/** PR reference from "PR:" line */
+	pr?: string;
+	/** Full resolution section content (excluding parsed metadata lines) */
+	body: string;
+}
+
 export interface PlanEntity {
 	/** File path relative to the scan directory */
 	file: string;
@@ -43,6 +54,8 @@ export interface PlanEntity {
 	criteria: Criterion[];
 	/** Referenced entity IDs extracted from {% ref %} / {% xref %} tags */
 	refs: string[];
+	/** Parsed resolution section, if present */
+	resolution?: Resolution;
 	/** File modification time (ms since epoch) */
 	mtime?: number;
 }
