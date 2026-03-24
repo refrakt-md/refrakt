@@ -12,6 +12,7 @@ export const config: Record<string, RuneConfig> = {
 	Cast: {
 		block: 'cast',
 		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', blurb: 'description' },
 		modifiers: {
 			layout: { source: 'meta', default: 'grid' },
 		},
@@ -26,12 +27,14 @@ export const config: Record<string, RuneConfig> = {
 	Organization: {
 		block: 'organization',
 		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', blurb: 'description', body: 'body' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none' },
 	},
 	Timeline: {
 		block: 'timeline',
 		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', blurb: 'description' },
 		modifiers: { direction: { source: 'meta', default: 'vertical' } },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', entries: 'none' },

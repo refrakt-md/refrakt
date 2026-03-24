@@ -60,6 +60,12 @@ export interface RuneConfig {
 	 *  or automatically by rendering context (grid → compact, list → minimal). */
 	defaultDensity?: 'full' | 'compact' | 'minimal';
 
+	/** Maps structural ref names to standard section roles.
+	 *  The identity transform emits `data-section` on elements whose
+	 *  `data-name` matches a key in this map, enabling generic theme styling.
+	 *  Roles: 'header' | 'title' | 'description' | 'body' | 'footer' | 'media' */
+	sections?: Record<string, 'header' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
+
 	/** Declares how named sections should be edited in the block editor.
 	 *  Keys are data-name values. Resolved at click time by the editor —
 	 *  no extra attributes in rendered HTML. */

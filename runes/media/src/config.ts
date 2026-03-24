@@ -5,6 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
 		defaultDensity: 'full',
+		sections: { header: 'header', title: 'title', media: 'media' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			layout: { source: 'meta', default: 'stacked' },
@@ -33,6 +34,7 @@ export const config: Record<string, RuneConfig> = {
 	Audio: {
 		block: 'audio',
 		defaultDensity: 'compact',
+		sections: { description: 'description' },
 		modifiers: {
 			waveform: { source: 'meta', default: 'false' },
 		},

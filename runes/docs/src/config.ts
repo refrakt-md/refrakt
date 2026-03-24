@@ -12,6 +12,7 @@ export const config: Record<string, RuneConfig> = {
 	Api: {
 		block: 'api',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			method: { source: 'meta', default: 'GET' },
@@ -33,6 +34,7 @@ export const config: Record<string, RuneConfig> = {
 	Symbol: {
 		block: 'symbol',
 		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			kind: { source: 'meta', default: 'function' },
@@ -58,6 +60,6 @@ export const config: Record<string, RuneConfig> = {
 	},
 	SymbolGroup: { block: 'symbol-group', parent: 'Symbol', editHints: { label: 'inline', body: 'none' } },
 	SymbolMember: { block: 'symbol-member', parent: 'Symbol', editHints: { name: 'inline', body: 'none' } },
-	Changelog: { block: 'changelog', defaultDensity: 'full', autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
+	Changelog: { block: 'changelog', defaultDensity: 'full', sections: { header: 'header', headline: 'title' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
 	ChangelogRelease: { block: 'changelog-release', parent: 'Changelog', editHints: { version: 'inline', body: 'none' } },
 };

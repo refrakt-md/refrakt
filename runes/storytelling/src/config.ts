@@ -5,6 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
+		sections: { badge: 'header', name: 'title', content: 'body', portrait: 'media' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
@@ -28,6 +29,7 @@ export const config: Record<string, RuneConfig> = {
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
+		sections: { badge: 'header', name: 'title', scene: 'media' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -61,6 +63,7 @@ export const config: Record<string, RuneConfig> = {
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
+		sections: { badge: 'header', title: 'title', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			category: { source: 'meta' },
@@ -82,6 +85,7 @@ export const config: Record<string, RuneConfig> = {
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
+		sections: { badge: 'header', name: 'title' },
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
@@ -117,6 +121,7 @@ export const config: Record<string, RuneConfig> = {
 	Plot: {
 		block: 'plot',
 		defaultDensity: 'full',
+		sections: { badge: 'header', title: 'title' },
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
@@ -149,6 +154,7 @@ export const config: Record<string, RuneConfig> = {
 	Bond: {
 		block: 'bond',
 		defaultDensity: 'compact',
+		sections: { body: 'body' },
 		modifiers: {
 			bondType: { source: 'meta' },
 			status: { source: 'meta', default: 'active' },

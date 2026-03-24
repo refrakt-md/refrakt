@@ -4,6 +4,7 @@ export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -28,6 +29,7 @@ export const config: Record<string, RuneConfig> = {
 	Work: {
 		block: 'work',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -56,6 +58,7 @@ export const config: Record<string, RuneConfig> = {
 	Bug: {
 		block: 'bug',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -82,6 +85,7 @@ export const config: Record<string, RuneConfig> = {
 	Decision: {
 		block: 'decision',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
@@ -106,6 +110,7 @@ export const config: Record<string, RuneConfig> = {
 	Milestone: {
 		block: 'milestone',
 		defaultDensity: 'full',
+		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
 			name: { source: 'meta' },

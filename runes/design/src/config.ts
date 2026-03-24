@@ -22,6 +22,7 @@ export const config: Record<string, RuneConfig> = {
 	Typography: {
 		block: 'typography',
 		defaultDensity: 'full',
+		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
 			showSizes: { source: 'meta' },
@@ -34,6 +35,7 @@ export const config: Record<string, RuneConfig> = {
 	Spacing: {
 		block: 'spacing',
 		defaultDensity: 'full',
+		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
 		},
@@ -43,6 +45,7 @@ export const config: Record<string, RuneConfig> = {
 	DesignContext: {
 		block: 'design-context',
 		defaultDensity: 'full',
+		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
 		},

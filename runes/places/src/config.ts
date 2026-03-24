@@ -13,6 +13,7 @@ export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
 		defaultDensity: 'full',
+		sections: { details: 'header', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' },
@@ -53,6 +54,7 @@ export const config: Record<string, RuneConfig> = {
 	Itinerary: {
 		block: 'itinerary',
 		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', blurb: 'description' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
 		modifiers: {
