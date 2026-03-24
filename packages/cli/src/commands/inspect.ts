@@ -21,8 +21,11 @@ import {
 	formatAuditResult,
 	formatAuditSummary,
 	buildAuditJson,
+	formatMetaAuditResult,
+	buildMetaAuditJson,
 	heading,
 } from '../lib/format.js';
+import { collectMetadata, checkMetaCss, type MetaAuditResult } from '../lib/meta-audit.js';
 
 /** Dependencies injected at runtime via dynamic imports */
 export interface InspectDeps {
@@ -45,6 +48,7 @@ export interface InspectOptions {
 	list: boolean;
 	json: boolean;
 	audit: boolean;
+	auditMeta: boolean;
 	all: boolean;
 	theme: string;
 	items: number;
@@ -68,6 +72,11 @@ export async function inspectCommand(
 
 	// Resolve theme config
 	const config = await resolveTheme(options.theme, baseConfig);
+
+	// --audit-meta: metadata dimension audit
+	if (options.auditMeta) {
+		return runMetaAudit(config, options);
+	}
 
 	// --all --audit: full-theme audit
 	if (options.all && options.audit) {
@@ -362,6 +371,24 @@ function findRune(name: string, runes: Record<string, Rune>): Rune | undefined {
 	}
 
 	return undefined;
+}
+
+/** Run metadata dimension audit across all rune configs */
+function runMetaAudit(
+	config: ThemeConfig,
+	options: InspectOptions,
+): void {
+	const metadata = collectMetadata(config);
+	const cssDir = resolveCssDir(options.cssDir);
+	const cssResult = cssDir ? checkMetaCss(cssDir) : undefined;
+
+	const result: MetaAuditResult = { ...metadata, css: cssResult };
+
+	if (options.json) {
+		console.log(JSON.stringify(buildMetaAuditJson(result), null, 2));
+	} else {
+		console.log(formatMetaAuditResult(result));
+	}
 }
 
 /** Check if any flag has value "all" and corresponds to a known variant */

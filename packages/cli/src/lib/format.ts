@@ -1,5 +1,6 @@
 import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
 import type { AuditResult } from './css-audit.js';
+import type { MetaAuditResult } from './meta-audit.js';
 
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
@@ -245,5 +246,104 @@ export function buildAuditJson(results: AuditResult[], theme: string): object {
 			status: r.status,
 			selectors: r.selectors,
 		}])),
+	};
+}
+
+/** Format metadata audit result for terminal output */
+export function formatMetaAuditResult(result: MetaAuditResult): string {
+	const lines: string[] = [];
+	lines.push(heading('Metadata Dimension Audit'));
+
+	// Meta types in use
+	lines.push('');
+	lines.push(`  ${BOLD}Meta Types in Use${RESET}`);
+	for (const [type, count] of Object.entries(result.typeCount).sort(([,a], [,b]) => b - a)) {
+		lines.push(`    ${type.padEnd(12)} ${count} field${count !== 1 ? 's' : ''}`);
+	}
+	if (Object.keys(result.typeCount).length === 0) {
+		lines.push(`    ${DIM}none${RESET}`);
+	}
+
+	// Rank distribution
+	lines.push('');
+	lines.push(`  ${BOLD}Ranks${RESET}`);
+	for (const [rank, count] of Object.entries(result.rankCount)) {
+		lines.push(`    ${rank.padEnd(12)} ${count} field${count !== 1 ? 's' : ''}`);
+	}
+
+	// Sentiment coverage
+	lines.push('');
+	lines.push(`  ${BOLD}Sentiment Coverage${RESET}`);
+	lines.push(`    With sentiment map:    ${result.withSentiment} field${result.withSentiment !== 1 ? 's' : ''}`);
+	lines.push(`    Without sentiment map: ${result.withoutSentiment} field${result.withoutSentiment !== 1 ? 's' : ''}`);
+
+	// Fields grouped by rune
+	lines.push('');
+	lines.push(`  ${BOLD}Fields by Rune${RESET}`);
+	const byRune = new Map<string, typeof result.fields>();
+	for (const field of result.fields) {
+		const arr = byRune.get(field.rune) ?? [];
+		arr.push(field);
+		byRune.set(field.rune, arr);
+	}
+	for (const [rune, fields] of [...byRune.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+		lines.push(`    ${CYAN}${rune}${RESET}`);
+		for (const f of fields) {
+			const sentiment = f.hasSentiment ? `${GREEN}\u2713 sentiment${RESET}` : `${DIM}no sentiment${RESET}`;
+			const rank = f.metaRank ? ` ${DIM}(${f.metaRank})${RESET}` : '';
+			lines.push(`      ${f.ref.padEnd(20)} ${f.metaType.padEnd(10)} ${sentiment}${rank}`);
+		}
+	}
+
+	// CSS coverage
+	if (result.css) {
+		lines.push('');
+		lines.push(`  ${BOLD}Theme CSS Coverage${RESET}`);
+
+		const allChecks = [
+			...Object.entries(result.css.types).map(([k, v]) => [`[data-meta-type="${k}"]`, v] as const),
+			...Object.entries(result.css.sentiments).map(([k, v]) => [`[data-meta-sentiment="${k}"]`, v] as const),
+			...Object.entries(result.css.ranks).map(([k, v]) => [`[data-meta-rank="${k}"]`, v] as const),
+		];
+
+		const warnings: string[] = [];
+		for (const [sel, info] of allChecks) {
+			if (info.styled) {
+				lines.push(`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+			} else {
+				lines.push(`    ${RED}\u2717${RESET} ${sel}  ${RED}MISSING${RESET}`);
+				warnings.push(sel);
+			}
+		}
+
+		if (warnings.length > 0) {
+			lines.push('');
+			lines.push(`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`);
+		} else {
+			lines.push('');
+			lines.push(`  ${GREEN}\u2713 All metadata CSS rules present${RESET}`);
+		}
+	}
+
+	// Summary
+	lines.push('');
+	lines.push(`  ${DIM}${'─'.repeat(40)}${RESET}`);
+	lines.push(`  Total: ${result.fields.length} annotated fields across ${byRune.size} runes`);
+
+	return lines.join('\n');
+}
+
+/** Build JSON output for metadata audit */
+export function buildMetaAuditJson(result: MetaAuditResult): object {
+	return {
+		fields: result.fields,
+		summary: {
+			totalFields: result.fields.length,
+			typeCount: result.typeCount,
+			rankCount: result.rankCount,
+			withSentiment: result.withSentiment,
+			withoutSentiment: result.withoutSentiment,
+		},
+		css: result.css ?? null,
 	};
 }

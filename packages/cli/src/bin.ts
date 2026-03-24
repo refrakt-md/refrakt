@@ -268,6 +268,7 @@ function runInspect(inspectArgs: string[]): void {
 	let list = false;
 	let json = false;
 	let audit = false;
+	let auditMeta = false;
 	let all = false;
 	let cssDir: string | undefined;
 	let theme = 'base';
@@ -283,6 +284,8 @@ function runInspect(inspectArgs: string[]): void {
 			json = true;
 		} else if (arg === '--audit') {
 			audit = true;
+		} else if (arg === '--audit-meta') {
+			auditMeta = true;
 		} else if (arg === '--all') {
 			all = true;
 		} else if (arg === '--css') {
@@ -349,7 +352,7 @@ function runInspect(inspectArgs: string[]): void {
 		const merged = await loadMergedConfig(runesModule, assembleThemeConfig);
 
 		return inspectCommand(
-			{ runeName, list, json, audit, all, cssDir, theme, items, flags },
+			{ runeName, list, json, audit, auditMeta, all, cssDir, theme, items, flags },
 			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
 		);
 	}).catch((err) => {
