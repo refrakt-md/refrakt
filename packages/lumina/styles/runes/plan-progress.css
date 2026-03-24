@@ -1,0 +1,70 @@
+/* Plan Progress */
+.rf-plan-progress {
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	padding: 0.75rem 1.25rem;
+	margin: 1.5rem 0;
+}
+.rf-plan-progress__row {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding-block: 0.25rem;
+}
+.rf-plan-progress__row + .rf-plan-progress__row {
+	border-block-start: 1px solid var(--rf-color-border);
+}
+.rf-plan-progress__label {
+	font-weight: 600;
+	font-size: 0.8125rem;
+	color: var(--rf-color-text);
+	min-width: 8rem;
+}
+.rf-plan-progress__counts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.5rem;
+}
+.rf-plan-progress__count {
+	font-size: 0.75rem;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	white-space: nowrap;
+}
+
+/* Status-colored counts */
+.rf-plan-progress__count[data-status="done"],
+.rf-plan-progress__count[data-status="fixed"],
+.rf-plan-progress__count[data-status="accepted"],
+.rf-plan-progress__count[data-status="active"],
+.rf-plan-progress__count[data-status="complete"] {
+	color: var(--rf-color-success);
+	background: var(--rf-color-success-bg);
+}
+.rf-plan-progress__count[data-status="in-progress"],
+.rf-plan-progress__count[data-status="confirmed"],
+.rf-plan-progress__count[data-status="review"] {
+	color: var(--rf-color-warning);
+	background: var(--rf-color-warning-bg);
+}
+.rf-plan-progress__count[data-status="ready"],
+.rf-plan-progress__count[data-status="reported"],
+.rf-plan-progress__count[data-status="proposed"],
+.rf-plan-progress__count[data-status="planning"] {
+	color: var(--rf-color-info);
+	background: var(--rf-color-info-bg);
+}
+.rf-plan-progress__count[data-status="blocked"] {
+	color: var(--rf-color-danger);
+	background: var(--rf-color-danger-bg);
+}
+.rf-plan-progress__count[data-status="draft"],
+.rf-plan-progress__count[data-status="pending"],
+.rf-plan-progress__count[data-status="superseded"],
+.rf-plan-progress__count[data-status="deprecated"],
+.rf-plan-progress__count[data-status="wontfix"],
+.rf-plan-progress__count[data-status="duplicate"] {
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-active);
+}
