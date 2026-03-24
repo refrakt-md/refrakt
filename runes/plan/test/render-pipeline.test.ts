@@ -377,6 +377,30 @@ D.
 		expect(acceptedSpecHtml).toContain('SPEC-001');
 	});
 
+	it('milestone status filter page links to milestone entity page', async () => {
+		writeFile('milestone/m1.md', `{% milestone name="v1.0" status="active" %}
+# v1.0 — First Release
+- Goal one
+{% /milestone %}`);
+
+		const result = await runPipeline({
+			dir: tmpDir,
+			theme: 'default',
+			baseUrl: '/',
+		});
+
+		const milestoneStatusPages = result.pages.filter(p => !p.entityId && p.type === 'milestone');
+		const activePage = milestoneStatusPages.find(p => p.status === 'active');
+		expect(activePage).toBeDefined();
+
+		const html = renderPage(activePage!, result.navRegion, [], { stylesheets: [] });
+		// The milestone card should link to the milestone entity page, not the dashboard
+		expect(html).toContain('v1.0');
+		expect(html).toContain('/milestone/v1-0.html');
+		// The card link should point to the entity page, not /index.html
+		expect(html).toMatch(/rf-backlog__card-link" href="\/milestone\/v1-0\.html"/);
+	});
+
 	it('sidebar behavior scripts are injected', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task

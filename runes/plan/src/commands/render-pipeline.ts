@@ -243,7 +243,11 @@ function createRegistry(): { registry: EntityRegistry; entries: EntityRegistrati
 		register(entry: EntityRegistration) {
 			entries.push(entry);
 			if (!byTypeAndId.has(entry.type)) byTypeAndId.set(entry.type, new Map());
-			byTypeAndId.get(entry.type)!.set(entry.id, entry);
+			// Keep the first registration (entity's own page) — don't overwrite with
+			// duplicates from dashboard, status filter pages, etc.
+			if (!byTypeAndId.get(entry.type)!.has(entry.id)) {
+				byTypeAndId.get(entry.type)!.set(entry.id, entry);
+			}
 			if (!byTypeAndUrl.has(entry.type)) byTypeAndUrl.set(entry.type, new Map());
 			if (!byTypeAndUrl.get(entry.type)!.has(entry.sourceUrl)) byTypeAndUrl.get(entry.type)!.set(entry.sourceUrl, []);
 			byTypeAndUrl.get(entry.type)!.get(entry.sourceUrl)!.push(entry);
