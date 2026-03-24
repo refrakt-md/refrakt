@@ -19,7 +19,6 @@
 
 [data-media="cover"] {
 	width: 100%;
-	aspect-ratio: 16 / 9;
 	object-fit: cover;
 	border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
 }
@@ -52,13 +51,9 @@
 
 /* ─── Density × Media ─────────────────────────────────────────────── */
 
-/* Compact: smaller portraits and covers */
+/* Compact: smaller portraits */
 [data-density="compact"] [data-media="portrait"] {
 	--media-portrait-size: 3rem;
-}
-
-[data-density="compact"] [data-media="cover"] {
-	aspect-ratio: 2 / 1;
 }
 
 /* Minimal: hide all media */

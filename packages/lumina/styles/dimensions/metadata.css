@@ -25,68 +25,88 @@
 [data-meta-sentiment="caution"]  { --meta-color: var(--rf-color-warning, #f59e0b); }
 [data-meta-sentiment="neutral"]  { --meta-color: var(--rf-color-muted, #64748b); }
 
-/* ─── Meta Types ───────────────────────────────────────────────────── */
-
-/* Status: coloured pill with dot indicator */
-[data-meta-type="status"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.5em 1.0em;
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-weight: 500;
-	background: color-mix(in oklch, var(--meta-color, var(--rf-color-muted)) 12%, transparent);
-	color: var(--meta-color, var(--rf-color-muted));
-}
-
-[data-meta-type="status"]::before {
+/* Colored dot for any item with a sentiment */
+[data-meta-sentiment]::before {
 	content: '';
 	width: 0.5rem;
 	height: 0.5rem;
 	border-radius: 50%;
 	background: var(--meta-color, var(--rf-color-muted));
+	flex-shrink: 0;
 }
 
-/* Category: outlined chip */
+/* ─── Meta Types ───────────────────────────────────────────────────── */
+
+/* Status: bordered pill */
+[data-meta-type="status"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.5em 1.0em;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
+	font-size: var(--meta-font-size, 0.8125rem);
+	font-weight: 500;
+	color: var(--rf-color-muted);
+}
+
+/* Category: bordered pill */
 [data-meta-type="category"] {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.375rem;
 	padding: 0.5em 1.0em;
-	border: 1px solid var(--meta-color, var(--rf-color-border));
+	border: 1px solid var(--rf-color-border);
 	border-radius: 999px;
 	font-size: var(--meta-font-size, 0.8125rem);
 	font-weight: 500;
-	color: var(--meta-color, var(--rf-color-text));
+	color: var(--rf-color-muted);
 }
 
-/* Quantity: bold tabular number */
+/* Quantity: bordered pill with tabular numbers */
 [data-meta-type="quantity"] {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5em 1.0em;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
 	font-variant-numeric: tabular-nums;
 	font-weight: 600;
 	font-size: var(--meta-font-size, 0.8125rem);
-	color: var(--meta-color, var(--rf-color-text));
+	color: var(--rf-color-muted);
 }
 
-/* Temporal: value with time association */
+/* Temporal: bordered pill with time association */
 [data-meta-type="temporal"] {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.25rem;
+	padding: 0.5em 1.0em;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
 	font-size: var(--meta-font-size, 0.8125rem);
 	font-variant-numeric: tabular-nums;
-	color: var(--meta-color, var(--rf-color-muted));
+	color: var(--rf-color-muted);
 }
 
-/* Tag: flat muted label */
+/* Tag: bordered pill */
 [data-meta-type="tag"] {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5em 1.0em;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
 	font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
 	color: var(--rf-color-muted);
 }
 
-/* ID: monospace identifier */
+/* ID: bordered pill, monospace */
 [data-meta-type="id"] {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5em 1.0em;
+	border: 1px solid var(--rf-color-border);
+	border-radius: 999px;
 	font-family: var(--rf-font-mono, monospace);
 	font-size: var(--meta-font-size, 0.8125rem);
 	font-weight: 500;
