@@ -1,71 +1,130 @@
-# Metadata System — Specification
+{% spec id="SPEC-024" status="draft" tags="transform, themes, css, metadata" %}
 
-> **Status:** Design proposal
-> **Scope:** Semantic metadata attributes for consistent cross-rune styling
-> **Package:** Core (identity transform and base CSS)
-> **Related:** Layout Specification, Tint Rune Specification, Theme-Extensible Presets Specification
+# Metadata System
 
------
+> Semantic metadata attributes on structure entries for consistent cross-rune badge styling. Extends the existing `StructureEntry` interface with three dimensions — type, sentiment, and rank — so themes can style every metadata badge generically.
+
+---
 
 ## Problem
 
-Runes across all packages emit metadata badges — status indicators, categories, durations, tags, quantities. Today these are styled per-rune: the recipe’s difficulty badge has its own CSS, the character’s role badge has its own CSS, the work item’s status badge has its own CSS. They all look slightly different because each theme author styles them independently.
+Runes across all packages emit metadata badges — status indicators, categories, durations, tags, quantities. Today these are styled per-rune: the recipe's difficulty badge has its own CSS, the character's role badge has its own CSS, the work item's status badge has its own CSS. They all look slightly different because each theme author styles them independently.
 
-This creates two problems. Theme authors must write CSS for every rune’s metadata individually — a theme supporting 30 runes needs dozens of rune-specific badge rules. And the visual language is inconsistent — a “status” concept looks different on a character card than on a work item, even though both are lifecycle states that should feel the same.
+This creates two problems. Theme authors must write CSS for every rune's metadata individually — a theme supporting 30 runes needs dozens of rune-specific badge rules. And the visual language is inconsistent — a "status" concept looks different on a character card than on a work item, even though both are lifecycle states that should feel the same.
 
------
+---
 
 ## Solution
 
-Three semantic dimensions describe any piece of rune metadata. The rune config declares them. The identity transform emits them as data attributes. The theme styles them generically. A theme author writes roughly 18 CSS rules and every metadata badge across every rune in the ecosystem is handled.
+Three semantic dimensions describe any piece of rune metadata. The rune config declares them on structure entry children. The identity transform emits them as data attributes. The theme styles them generically. A theme author writes roughly 18 CSS rules and every metadata badge across every rune in the ecosystem is handled.
 
 ### The Three Dimensions
 
-|Dimension    |Attribute            |Question it answers                    |Values                                                   |
-|-------------|---------------------|---------------------------------------|---------------------------------------------------------|
-|**Type**     |`data-meta-type`     |What kind of information is this?      |`status`, `category`, `quantity`, `temporal`, `tag`, `id`|
-|**Sentiment**|`data-meta-sentiment`|Is this positive, negative, or neutral?|`positive`, `negative`, `caution`, `neutral`             |
-|**Rank**     |`data-meta-rank`     |How prominent should this be?          |`primary`, `secondary`                                   |
+| Dimension     | Attribute             | Question it answers                     | Values                                                    |
+|---------------|-----------------------|-----------------------------------------|-----------------------------------------------------------|
+| **Type**      | `data-meta-type`      | What kind of information is this?       | `status`, `category`, `quantity`, `temporal`, `tag`, `id` |
+| **Sentiment** | `data-meta-sentiment` | Is this positive, negative, or neutral? | `positive`, `negative`, `caution`, `neutral`              |
+| **Rank**      | `data-meta-rank`      | How prominent should this be?           | `primary`, `secondary`                                    |
 
-**Type** determines the fundamental visual treatment — pill, chip, inline metric, icon-prefixed value, flat text, monospace. It answers “what shape should this be?”
+**Type** determines the fundamental visual treatment — pill, chip, inline metric, icon-prefixed value, flat text, monospace. It answers "what shape should this be?"
 
-**Sentiment** determines colour. It answers “what feeling should this convey?” A positive sentiment maps to the theme’s success colour. A negative sentiment maps to the danger colour. The theme defines what those colours are. The rune declares which values are positive, negative, or cautionary.
+**Sentiment** determines colour. It answers "what feeling should this convey?" A positive sentiment maps to the theme's success colour. A negative sentiment maps to the danger colour. The theme defines what those colours are. The rune declares which values are positive, negative, or cautionary.
 
-**Rank** determines visual prominence. It answers “how important is this?” Primary metadata is full-size and prominent. Secondary metadata is smaller and muted. The theme defines what those size/opacity levels are.
+**Rank** determines visual prominence. It answers "how important is this?" Primary metadata is full-size and prominent. Secondary metadata is smaller and muted. The theme defines what those size/opacity levels are.
 
------
+---
 
-## Rune Config Declaration
+## Extending StructureEntry
 
-Each metadata ref in the rune config declares its type, rank, and optionally a sentiment map:
+Today, metadata badges are emitted via `modifiers` (to read values from meta tags) and `structure` entries (to inject badge elements with `metaText`, `ref`, `condition`). For example, the current recipe config emits badges like this:
 
 ```typescript
-interface MetaRefConfig {
-  metaType: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
-  metaRank: 'primary' | 'secondary';
+// Current pattern — runes/learning/src/config.ts
+Recipe: {
+  block: 'recipe',
+  modifiers: {
+    prepTime: { source: 'meta' },
+    cookTime: { source: 'meta' },
+    servings: { source: 'meta' },
+    difficulty: { source: 'meta', default: 'medium' },
+  },
+  structure: {
+    meta: {
+      tag: 'div', before: true,
+      conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
+      children: [
+        { tag: 'span', ref: 'meta-item', metaText: 'prepTime', transform: 'duration',
+          textPrefix: 'Prep: ', condition: 'prepTime' },
+        { tag: 'span', ref: 'meta-item', metaText: 'cookTime', transform: 'duration',
+          textPrefix: 'Cook: ', condition: 'cookTime' },
+        { tag: 'span', ref: 'meta-item', metaText: 'servings',
+          textPrefix: 'Serves: ', condition: 'servings' },
+        { tag: 'span', ref: 'badge', metaText: 'difficulty', condition: 'difficulty' },
+      ],
+    },
+  },
+}
+```
+
+This spec proposes adding three optional fields to the existing `StructureEntry` interface:
+
+```typescript
+// Proposed additions to StructureEntry (packages/transform/src/types.ts)
+interface StructureEntry {
+  // ... all existing fields (tag, ref, metaText, condition, etc.) ...
+
+  /** Semantic metadata type — determines visual shape (pill, chip, metric, etc.) */
+  metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+
+  /** Metadata visual prominence */
+  metaRank?: 'primary' | 'secondary';
+
+  /** Maps specific modifier values to sentiment colours */
   sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
 }
 ```
 
-The `sentimentMap` maps specific attribute values to sentiments. Not all metadata has sentiment — categories like “protagonist” or temporal values like “30 min” are sentiment-neutral by default.
+The `sentimentMap` maps specific attribute values to sentiments. Not all metadata has sentiment — categories like "protagonist" or temporal values like "30 min" are sentiment-neutral by default.
 
-### Examples
+When `metaType` is present on a structure entry, the identity transform emits `data-meta-type`, `data-meta-rank`, and optionally `data-meta-sentiment` attributes on the generated element. The engine resolves sentiment by looking up the current modifier value in the `sentimentMap`.
+
+---
+
+## Rune Config Examples
+
+The metadata dimensions are declared inline on structure entry children, alongside the existing `metaText`, `ref`, and `condition` fields.
 
 **Recipe:**
 
 ```typescript
 Recipe: {
   block: 'recipe',
-  refs: {
-    prepTime: { metaType: 'temporal', metaRank: 'primary' },
-    cookTime: { metaType: 'temporal', metaRank: 'primary' },
-    difficulty: {
-      metaType: 'category',
-      metaRank: 'primary',
-      sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
+  modifiers: {
+    prepTime: { source: 'meta' },
+    cookTime: { source: 'meta' },
+    servings: { source: 'meta' },
+    difficulty: { source: 'meta', default: 'medium' },
+    // ... existing layout modifiers
+  },
+  structure: {
+    meta: {
+      tag: 'div', before: true,
+      conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
+      children: [
+        { tag: 'span', ref: 'meta-item', metaText: 'prepTime', transform: 'duration',
+          textPrefix: 'Prep: ', condition: 'prepTime',
+          metaType: 'temporal', metaRank: 'primary' },
+        { tag: 'span', ref: 'meta-item', metaText: 'cookTime', transform: 'duration',
+          textPrefix: 'Cook: ', condition: 'cookTime',
+          metaType: 'temporal', metaRank: 'primary' },
+        { tag: 'span', ref: 'meta-item', metaText: 'servings',
+          textPrefix: 'Serves: ', condition: 'servings',
+          metaType: 'quantity', metaRank: 'primary' },
+        { tag: 'span', ref: 'badge', metaText: 'difficulty', condition: 'difficulty',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
+      ],
     },
-    servings: { metaType: 'quantity', metaRank: 'primary' },
-    tags: { metaType: 'tag', metaRank: 'secondary' },
   },
 }
 ```
@@ -75,297 +134,320 @@ Recipe: {
 ```typescript
 Character: {
   block: 'character',
-  refs: {
-    role: { metaType: 'category', metaRank: 'primary' },
-    status: {
-      metaType: 'status',
-      metaRank: 'primary',
-      sentimentMap: {
-        alive: 'positive',
-        dead: 'negative',
-        unknown: 'neutral',
-        missing: 'caution',
-      },
+  contentWrapper: { tag: 'div', ref: 'content' },
+  modifiers: {
+    role: { source: 'meta', default: 'supporting' },
+    status: { source: 'meta', default: 'alive' },
+    aliases: { source: 'meta' },
+    tags: { source: 'meta' },
+  },
+  structure: {
+    badge: {
+      tag: 'div', before: true,
+      children: [
+        { tag: 'span', ref: 'role-badge', metaText: 'role',
+          metaType: 'category', metaRank: 'primary' },
+        { tag: 'span', ref: 'status-badge', metaText: 'status', condition: 'status',
+          metaType: 'status', metaRank: 'primary',
+          sentimentMap: {
+            alive: 'positive',
+            dead: 'negative',
+            unknown: 'neutral',
+            missing: 'caution',
+          } },
+      ],
     },
   },
 }
 ```
 
-**Work Item:**
+**Work Item (plan package):**
 
 ```typescript
 Work: {
   block: 'work',
-  refs: {
-    id: { metaType: 'id', metaRank: 'primary' },
-    status: {
-      metaType: 'status',
-      metaRank: 'primary',
-      sentimentMap: {
-        draft: 'neutral',
-        ready: 'neutral',
-        'in-progress': 'neutral',
-        review: 'caution',
-        done: 'positive',
-        blocked: 'negative',
-      },
+  modifiers: {
+    id: { source: 'meta' },
+    status: { source: 'meta', default: 'draft' },
+    priority: { source: 'meta', default: 'medium' },
+    complexity: { source: 'meta' },
+    milestone: { source: 'meta' },
+    tags: { source: 'meta' },
+  },
+  structure: {
+    header: {
+      tag: 'div', before: true,
+      children: [
+        { tag: 'span', ref: 'id-badge', metaText: 'id', condition: 'id',
+          metaType: 'id', metaRank: 'primary' },
+        { tag: 'span', ref: 'status-badge', metaText: 'status',
+          metaType: 'status', metaRank: 'primary',
+          sentimentMap: {
+            draft: 'neutral',
+            ready: 'neutral',
+            'in-progress': 'neutral',
+            review: 'caution',
+            done: 'positive',
+            blocked: 'negative',
+          } },
+        { tag: 'span', ref: 'priority-badge', metaText: 'priority',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: {
+            critical: 'negative',
+            high: 'caution',
+            medium: 'neutral',
+            low: 'neutral',
+          } },
+        { tag: 'span', ref: 'complexity-badge', metaText: 'complexity', condition: 'complexity',
+          metaType: 'quantity', metaRank: 'secondary' },
+        { tag: 'span', ref: 'milestone-badge', metaText: 'milestone', condition: 'milestone',
+          metaType: 'tag', metaRank: 'secondary' },
+      ],
     },
-    priority: {
-      metaType: 'category',
-      metaRank: 'primary',
-      sentimentMap: {
-        critical: 'negative',
-        high: 'caution',
-        medium: 'neutral',
-        low: 'neutral',
-      },
-    },
-    complexity: { metaType: 'quantity', metaRank: 'secondary' },
-    milestone: { metaType: 'tag', metaRank: 'secondary' },
-    tags: { metaType: 'tag', metaRank: 'secondary' },
   },
 }
 ```
 
-**Decision:**
+**Decision (plan package):**
 
 ```typescript
 Decision: {
   block: 'decision',
-  refs: {
-    id: { metaType: 'id', metaRank: 'primary' },
-    status: {
-      metaType: 'status',
-      metaRank: 'primary',
-      sentimentMap: {
-        proposed: 'neutral',
-        accepted: 'positive',
-        superseded: 'caution',
-        deprecated: 'negative',
-      },
+  modifiers: {
+    id: { source: 'meta' },
+    status: { source: 'meta', default: 'proposed' },
+    date: { source: 'meta' },
+    tags: { source: 'meta' },
+  },
+  structure: {
+    header: {
+      tag: 'div', before: true,
+      children: [
+        { tag: 'span', ref: 'id-badge', metaText: 'id', condition: 'id',
+          metaType: 'id', metaRank: 'primary' },
+        { tag: 'span', ref: 'status-badge', metaText: 'status',
+          metaType: 'status', metaRank: 'primary',
+          sentimentMap: {
+            proposed: 'neutral',
+            accepted: 'positive',
+            superseded: 'caution',
+            deprecated: 'negative',
+          } },
+        { tag: 'span', ref: 'date-badge', metaText: 'date', condition: 'date',
+          metaType: 'temporal', metaRank: 'secondary' },
+      ],
     },
-    date: { metaType: 'temporal', metaRank: 'secondary' },
-    tags: { metaType: 'tag', metaRank: 'secondary' },
   },
 }
 ```
 
-**Event:**
-
-```typescript
-Event: {
-  block: 'event',
-  refs: {
-    date: { metaType: 'temporal', metaRank: 'primary' },
-    location: { metaType: 'category', metaRank: 'primary' },
-    register: { metaType: 'tag', metaRank: 'secondary' },
-  },
-}
-```
-
-**Bond:**
+**Bond (storytelling package):**
 
 ```typescript
 Bond: {
   block: 'bond',
-  refs: {
-    bondType: {
-      metaType: 'category',
-      metaRank: 'primary',
-      sentimentMap: {
-        alliance: 'positive',
-        rivalry: 'negative',
-        mentor: 'positive',
-        romance: 'positive',
-        distrust: 'caution',
-      },
-    },
-    status: {
-      metaType: 'status',
-      metaRank: 'secondary',
-      sentimentMap: {
-        active: 'positive',
-        broken: 'negative',
-        dormant: 'neutral',
-      },
+  modifiers: {
+    bondType: { source: 'meta' },
+    status: { source: 'meta', default: 'active' },
+    bidirectional: { source: 'meta', default: 'true' },
+  },
+  structure: {
+    badge: {
+      tag: 'div', before: true,
+      children: [
+        { tag: 'span', ref: 'type-badge', metaText: 'bondType', condition: 'bondType',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: {
+            alliance: 'positive',
+            rivalry: 'negative',
+            mentor: 'positive',
+            romance: 'positive',
+            distrust: 'caution',
+          } },
+        { tag: 'span', ref: 'status-badge', metaText: 'status',
+          metaType: 'status', metaRank: 'secondary',
+          sentimentMap: {
+            active: 'positive',
+            broken: 'negative',
+            dormant: 'neutral',
+          } },
+      ],
     },
   },
 }
 ```
 
-**HowTo:**
+**HowTo (learning package):**
 
 ```typescript
 HowTo: {
   block: 'howto',
-  refs: {
-    time: { metaType: 'temporal', metaRank: 'primary' },
-    difficulty: {
-      metaType: 'category',
-      metaRank: 'primary',
-      sentimentMap: { beginner: 'positive', intermediate: 'neutral', advanced: 'caution' },
+  contentWrapper: { tag: 'div', ref: 'content' },
+  modifiers: {
+    estimatedTime: { source: 'meta' },
+    difficulty: { source: 'meta', default: 'medium' },
+  },
+  structure: {
+    meta: {
+      tag: 'div', before: true,
+      conditionAny: ['estimatedTime', 'difficulty'],
+      children: [
+        { tag: 'span', ref: 'meta-item', metaText: 'estimatedTime', transform: 'duration',
+          textPrefix: 'Estimated time: ', condition: 'estimatedTime',
+          metaType: 'temporal', metaRank: 'primary' },
+        { tag: 'span', ref: 'meta-item', metaText: 'difficulty',
+          textPrefix: 'Difficulty: ', condition: 'difficulty',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: { beginner: 'positive', intermediate: 'neutral', advanced: 'caution' } },
+      ],
     },
   },
 }
 ```
 
-**API Endpoint:**
+**API Endpoint (docs package):**
 
 ```typescript
 Api: {
   block: 'api',
-  refs: {
-    method: {
-      metaType: 'category',
-      metaRank: 'primary',
-      sentimentMap: {
-        GET: 'positive',
-        POST: 'neutral',
-        PUT: 'neutral',
-        PATCH: 'caution',
-        DELETE: 'negative',
-      },
+  modifiers: {
+    method: { source: 'meta', default: 'GET' },
+    auth: { source: 'meta' },
+    // ... existing modifiers
+  },
+  structure: {
+    header: {
+      tag: 'div', before: true,
+      children: [
+        { tag: 'span', ref: 'method-badge', metaText: 'method',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: {
+            GET: 'positive',
+            POST: 'neutral',
+            PUT: 'neutral',
+            PATCH: 'caution',
+            DELETE: 'negative',
+          } },
+        { tag: 'span', ref: 'auth-badge', metaText: 'auth', condition: 'auth',
+          metaType: 'status', metaRank: 'secondary' },
+      ],
     },
-    auth: { metaType: 'status', metaRank: 'secondary' },
   },
 }
 ```
 
-**Track:**
-
-```typescript
-Track: {
-  block: 'track',
-  refs: {
-    artist: { metaType: 'category', metaRank: 'primary' },
-    duration: { metaType: 'temporal', metaRank: 'secondary' },
-    date: { metaType: 'temporal', metaRank: 'secondary' },
-  },
-}
-```
-
-**Stat:**
-
-```typescript
-Stat: {
-  block: 'stat',
-  refs: {
-    value: { metaType: 'quantity', metaRank: 'primary' },
-    label: { metaType: 'tag', metaRank: 'primary' },
-    trend: {
-      metaType: 'category',
-      metaRank: 'secondary',
-      sentimentMap: { up: 'positive', down: 'negative', flat: 'neutral' },
-    },
-    change: { metaType: 'quantity', metaRank: 'secondary' },
-  },
-}
-```
-
------
+---
 
 ## Identity Transform
 
-The identity transform reads the meta config and emits data attributes on each metadata element.
+The identity transform reads `metaType`, `metaRank`, and `sentimentMap` from structure entry children and emits data attributes on the generated elements.
 
-### Input
+### Recipe Output
 
 A recipe with `difficulty="easy"`, `prepTime="30 min"`, `cookTime="1 hr"`, `servings="4"`:
 
-### Output
-
 ```html
-<div class="rune-recipe__header">
-  <span class="rune-recipe__prep-time"
+<div class="rf-recipe__meta" data-name="meta">
+  <span class="rf-recipe__meta-item"
         data-meta-type="temporal"
-        data-meta-rank="primary">
-    30 min
+        data-meta-rank="primary"
+        data-name="meta-item">
+    Prep: 30 min
   </span>
-  <span class="rune-recipe__cook-time"
+  <span class="rf-recipe__meta-item"
         data-meta-type="temporal"
-        data-meta-rank="primary">
-    1 hr
+        data-meta-rank="primary"
+        data-name="meta-item">
+    Cook: 1 hr
   </span>
-  <span class="rune-recipe__difficulty"
+  <span class="rf-recipe__meta-item"
+        data-meta-type="quantity"
+        data-meta-rank="primary"
+        data-name="meta-item">
+    Serves: 4
+  </span>
+  <span class="rf-recipe__badge"
         data-meta-type="category"
         data-meta-rank="primary"
         data-meta-sentiment="positive"
-        data-value="easy">
-    Easy
-  </span>
-  <span class="rune-recipe__servings"
-        data-meta-type="quantity"
-        data-meta-rank="primary"
-        data-value="4">
-    4 servings
+        data-difficulty="easy"
+        data-name="badge">
+    easy
   </span>
 </div>
 ```
 
-The `data-meta-sentiment` attribute is only present when the ref config has a `sentimentMap` and the current value has a mapping. Fields without sentiment maps (like `prepTime`) get no sentiment attribute — the theme treats them as neutral by default.
+The `data-meta-sentiment` attribute is only present when the structure entry has a `sentimentMap` and the current modifier value has a mapping. Fields without sentiment maps (like `prepTime`) get no sentiment attribute — the theme treats them as neutral by default.
 
-The `data-value` attribute carries the raw value for conditional styling. It’s present on all metadata elements.
+The existing `data-{modifier-name}` attribute (e.g., `data-difficulty="easy"`) is still emitted by the engine as it does today — the metadata attributes are additive.
 
-### Character Example
+### Character Output
 
 ```html
-<div class="rune-character__badges">
-  <span class="rune-character__role"
+<div class="rf-character__badge" data-name="badge">
+  <span class="rf-character__role-badge"
         data-meta-type="category"
         data-meta-rank="primary"
-        data-value="antagonist">
-    Antagonist
+        data-role="antagonist"
+        data-name="role-badge">
+    antagonist
   </span>
-  <span class="rune-character__status"
+  <span class="rf-character__status-badge"
         data-meta-type="status"
         data-meta-rank="primary"
         data-meta-sentiment="positive"
-        data-value="alive">
-    Alive
+        data-status="alive"
+        data-name="status-badge">
+    alive
   </span>
 </div>
 ```
 
-### Work Item Example
+### Work Item Output
 
 ```html
-<div class="rune-work__header">
-  <span class="rune-work__id"
+<div class="rf-work__header" data-name="header">
+  <span class="rf-work__id-badge"
         data-meta-type="id"
         data-meta-rank="primary"
-        data-value="RF-142">
-    RF-142
+        data-id="WORK-142"
+        data-name="id-badge">
+    WORK-142
   </span>
-  <span class="rune-work__status"
+  <span class="rf-work__status-badge"
         data-meta-type="status"
         data-meta-rank="primary"
         data-meta-sentiment="neutral"
-        data-value="in-progress">
-    In Progress
+        data-status="in-progress"
+        data-name="status-badge">
+    in-progress
   </span>
-  <span class="rune-work__priority"
+  <span class="rf-work__priority-badge"
         data-meta-type="category"
         data-meta-rank="primary"
         data-meta-sentiment="caution"
-        data-value="high">
-    High
+        data-priority="high"
+        data-name="priority-badge">
+    high
   </span>
-  <span class="rune-work__complexity"
+  <span class="rf-work__complexity-badge"
         data-meta-type="quantity"
         data-meta-rank="secondary"
-        data-value="moderate">
-    ●●●○
+        data-complexity="moderate"
+        data-name="complexity-badge">
+    moderate
   </span>
-  <span class="rune-work__milestone"
+  <span class="rf-work__milestone-badge"
         data-meta-type="tag"
         data-meta-rank="secondary"
-        data-value="v0.5.0">
+        data-milestone="v0.5.0"
+        data-name="milestone-badge">
     v0.5.0
   </span>
 </div>
 ```
 
------
+---
 
 ## Theme CSS
 
@@ -471,7 +553,7 @@ The `--meta-font-size` custom property is consumed by the type styles. Secondary
 
 ### Combined Example
 
-A work item’s “High” priority badge has:
+A work item's "High" priority badge has:
 
 - `data-meta-type="category"` → outlined chip shape
 - `data-meta-sentiment="caution"` → `--meta-color` set to warning colour
@@ -479,11 +561,11 @@ A work item’s “High” priority badge has:
 
 The chip gets a warning-coloured border and text, at primary size. No rune-specific CSS needed — the three dimensions compose through the `--meta-color` and `--meta-font-size` custom properties.
 
------
+---
 
 ## Dark Mode
 
-Sentiment colours adapt to the colour scheme through the theme’s colour token definitions:
+Sentiment colours adapt to the colour scheme through the theme's colour token definitions:
 
 ```css
 :root {
@@ -503,13 +585,13 @@ Sentiment colours adapt to the colour scheme through the theme’s colour token 
 
 The sentiment rules reference these tokens. When the colour scheme changes, all sentiment colours update automatically. No metadata-specific dark mode CSS needed.
 
-Inside a tinted section with `data-color-scheme="dark"`, the theme’s dark colour tokens apply to the metadata badges within that section. The tint and metadata systems compose naturally through the CSS cascade.
+Inside a tinted section with `data-color-scheme="dark"`, the theme's dark colour tokens apply to the metadata badges within that section. The tint and metadata systems compose naturally through the CSS cascade.
 
------
+---
 
 ## Inspector Audit
 
-The inspector verifies metadata configuration:
+The inspector gains a new `--audit-meta` flag to verify metadata configuration:
 
 ```bash
 $ refrakt inspect --audit-meta
@@ -542,35 +624,50 @@ $ refrakt inspect --audit-meta
 
 The audit checks that the theme provides CSS for all meta types and sentiments in use. Missing rules are flagged — if a rune uses `metaType: 'temporal'` but the theme has no `[data-meta-type="temporal"]` rule, the inspector warns.
 
------
+---
 
 ## Community Package Benefits
 
-A community package author declares metadata dimensions on their rune’s refs and gets themed metadata badges for free:
+A community package author declares metadata dimensions on their rune's structure entries and gets themed metadata badges for free:
 
 ```typescript
 // @refrakt-community/wine
 WineTasting: {
   block: 'wine-tasting',
-  refs: {
-    vintage: { metaType: 'temporal', metaRank: 'primary' },
-    region: { metaType: 'category', metaRank: 'primary' },
-    rating: {
-      metaType: 'quantity',
-      metaRank: 'primary',
-      sentimentMap: { '90+': 'positive', '80-89': 'neutral', '<80': 'caution' },
+  modifiers: {
+    vintage: { source: 'meta' },
+    region: { source: 'meta' },
+    rating: { source: 'meta' },
+    varietal: { source: 'meta' },
+    price: { source: 'meta' },
+  },
+  structure: {
+    meta: {
+      tag: 'div', before: true,
+      conditionAny: ['vintage', 'region', 'rating', 'varietal', 'price'],
+      children: [
+        { tag: 'span', ref: 'meta-item', metaText: 'vintage', condition: 'vintage',
+          metaType: 'temporal', metaRank: 'primary' },
+        { tag: 'span', ref: 'meta-item', metaText: 'region', condition: 'region',
+          metaType: 'category', metaRank: 'primary' },
+        { tag: 'span', ref: 'badge', metaText: 'rating', condition: 'rating',
+          metaType: 'quantity', metaRank: 'primary',
+          sentimentMap: { '90+': 'positive', '80-89': 'neutral', '<80': 'caution' } },
+        { tag: 'span', ref: 'meta-item', metaText: 'varietal', condition: 'varietal',
+          metaType: 'tag', metaRank: 'secondary' },
+        { tag: 'span', ref: 'meta-item', metaText: 'price', condition: 'price',
+          metaType: 'quantity', metaRank: 'secondary' },
+      ],
     },
-    varietal: { metaType: 'tag', metaRank: 'secondary' },
-    price: { metaType: 'quantity', metaRank: 'secondary' },
   },
 }
 ```
 
-The wine tasting rune’s vintage renders as a temporal marker. Its region renders as a category chip. Its rating renders as a quantity with sentiment-based colour. No theme CSS needed for this specific rune — the existing meta type, sentiment, and rank rules handle it.
+The wine tasting rune's vintage renders as a temporal marker. Its region renders as a category chip. Its rating renders as a quantity with sentiment-based colour. No theme CSS needed for this specific rune — the existing meta type, sentiment, and rank rules handle it.
 
 This means community runes look consistent with core runes and official package runes from day one. The visual language is shared across the entire ecosystem.
 
------
+---
 
 ## Metadata Without Sentiment
 
@@ -586,16 +683,93 @@ Not every metadata field needs a sentiment map. Fields where no value is inheren
 
 This is the common case. Sentiment is the exception — it applies to statuses, difficulties, severities, trends, and other fields where values carry inherent valence. Most categorical and temporal fields are sentiment-neutral.
 
------
+---
+
+## Rune Metadata Map
+
+The table below maps every rune field that appears as a metadata badge (emitted via `structure` entries with `metaText` or `ref` containing badge/meta-item semantics) to proposed `metaType`, `metaRank`, and `sentimentMap` values.
+
+| Package | Rune | Field | metaType | metaRank | sentimentMap |
+|---------|------|-------|----------|----------|--------------|
+| **core** | Budget | currency | `category` | `primary` | — |
+| **core** | Budget | travelers | `quantity` | `primary` | — |
+| **core** | Budget | duration | `temporal` | `secondary` | — |
+| **docs** | Api | method | `category` | `primary` | `GET: positive, POST: neutral, PUT: neutral, PATCH: caution, DELETE: negative` |
+| **docs** | Api | path | `id` | `primary` | — |
+| **docs** | Api | auth | `status` | `secondary` | — |
+| **docs** | Symbol | kind | `category` | `primary` | — |
+| **docs** | Symbol | lang | `category` | `secondary` | — |
+| **docs** | Symbol | since | `temporal` | `secondary` | — |
+| **docs** | Symbol | deprecated | `status` | `primary` | `(any truthy value): negative` |
+| **learning** | HowTo | estimatedTime | `temporal` | `primary` | — |
+| **learning** | HowTo | difficulty | `category` | `primary` | `beginner: positive, intermediate: neutral, advanced: caution` |
+| **learning** | Recipe | prepTime | `temporal` | `primary` | — |
+| **learning** | Recipe | cookTime | `temporal` | `primary` | — |
+| **learning** | Recipe | servings | `quantity` | `primary` | — |
+| **learning** | Recipe | difficulty | `category` | `primary` | `easy: positive, medium: neutral, hard: caution` |
+| **storytelling** | Character | role | `category` | `primary` | — |
+| **storytelling** | Character | status | `status` | `primary` | `alive: positive, dead: negative, unknown: neutral, missing: caution` |
+| **storytelling** | Realm | realmType | `category` | `primary` | — |
+| **storytelling** | Realm | scale | `category` | `secondary` | — |
+| **storytelling** | Lore | category | `category` | `primary` | — |
+| **storytelling** | Faction | factionType | `category` | `primary` | — |
+| **storytelling** | Faction | alignment | `category` | `primary` | `good: positive, neutral: neutral, evil: negative, chaotic: caution, lawful: neutral` |
+| **storytelling** | Faction | size | `quantity` | `secondary` | — |
+| **storytelling** | Plot | plotType | `category` | `primary` | — |
+| **storytelling** | Plot | structure | `category` | `secondary` | — |
+| **storytelling** | Bond | bondType | `category` | `primary` | `alliance: positive, rivalry: negative, mentor: positive, romance: positive, distrust: caution` |
+| **storytelling** | Bond | status | `status` | `secondary` | `active: positive, broken: negative, dormant: neutral` |
+| **media** | Playlist | type | `category` | `primary` | — |
+| **places** | Event | date | `temporal` | `primary` | — |
+| **places** | Event | endDate | `temporal` | `secondary` | — |
+| **places** | Event | location | `category` | `primary` | — |
+| **plan** | Spec | id | `id` | `primary` | — |
+| **plan** | Spec | status | `status` | `primary` | `draft: neutral, review: caution, accepted: positive, superseded: caution, deprecated: negative` |
+| **plan** | Spec | version | `tag` | `secondary` | — |
+| **plan** | Spec | supersedes | `id` | `secondary` | — |
+| **plan** | Work | id | `id` | `primary` | — |
+| **plan** | Work | status | `status` | `primary` | `draft: neutral, ready: neutral, in-progress: neutral, review: caution, done: positive, blocked: negative` |
+| **plan** | Work | priority | `category` | `primary` | `critical: negative, high: caution, medium: neutral, low: neutral` |
+| **plan** | Work | complexity | `quantity` | `secondary` | — |
+| **plan** | Work | assignee | `tag` | `secondary` | — |
+| **plan** | Work | milestone | `tag` | `secondary` | — |
+| **plan** | Bug | id | `id` | `primary` | — |
+| **plan** | Bug | status | `status` | `primary` | `reported: neutral, confirmed: caution, in-progress: neutral, fixed: positive, wontfix: neutral, duplicate: neutral` |
+| **plan** | Bug | severity | `category` | `primary` | `critical: negative, major: caution, minor: neutral, trivial: neutral` |
+| **plan** | Bug | assignee | `tag` | `secondary` | — |
+| **plan** | Bug | milestone | `tag` | `secondary` | — |
+| **plan** | Decision | id | `id` | `primary` | — |
+| **plan** | Decision | status | `status` | `primary` | `proposed: neutral, accepted: positive, superseded: caution, deprecated: negative` |
+| **plan** | Decision | date | `temporal` | `secondary` | — |
+| **plan** | Decision | supersedes | `id` | `secondary` | — |
+| **plan** | Milestone | name | `id` | `primary` | — |
+| **plan** | Milestone | status | `status` | `primary` | `planning: neutral, active: positive, complete: positive` |
+| **plan** | Milestone | target | `temporal` | `secondary` | — |
+
+### Edge Cases and Notes
+
+**Bond and Beat runes** (storytelling) declare modifiers with semantic meaning (`bondType`, `status`, `id`, `track`) but currently lack `structure` entries in their config — they render via other mechanisms. When migrating, structure entries with badge children would need to be added alongside the metadata annotations.
+
+**Symbol.deprecated** is a boolean-like field (presence indicates deprecation). The sentimentMap would need a convention for boolean fields — mapping any truthy value (e.g., a version string like `"v2.0"`) to `negative`. This is unlike enum fields where each value maps individually.
+
+**Event.location** is free-text (city names, venue names) with no inherent valence, so it receives `category` type with no sentimentMap. The same applies to Realm.scale, Faction.size, and similar open-ended fields.
+
+**Faction.alignment** values are proposed here as `good/neutral/evil/chaotic/lawful` based on typical RPG conventions, but the actual valid values depend on what authors write. The sentimentMap should cover the most common values; unrecognized values default to no sentiment (neutral styling).
+
+**Assignee and milestone fields** across plan runes are typed as `tag` rather than `category` because they are cross-referencing labels (linking to people or release targets) rather than classifying the item.
+
+---
 
 ## Migration
 
-Existing rune configs that declare refs without meta dimensions continue to work. The identity transform emits metadata elements without the `data-meta-*` attributes. Existing per-rune CSS styles them as before.
+Existing rune configs that use `structure` entries without `metaType` continue to work. The identity transform emits metadata elements without the `data-meta-*` attributes. Existing per-rune CSS styles them as before.
 
-Migration is per-rune:
+Migration is per-rune, per-structure-entry:
 
-1. Add `metaType`, `metaRank`, and optionally `sentimentMap` to each metadata ref in the rune config
-1. Verify the identity transform emits the correct data attributes
-1. The theme’s generic meta CSS takes over — per-rune metadata CSS can be removed
+1. Add `metaType`, `metaRank`, and optionally `sentimentMap` to each badge's structure entry child
+1. Verify the identity transform emits the correct data attributes via `refrakt inspect`
+1. The theme's generic meta CSS takes over — per-rune metadata CSS can be removed
 
-Runes can be migrated incrementally. A partially migrated project has some runes using the metadata system and others using per-rune CSS. Both coexist because the metadata data attributes are additive — they don’t change the BEM classes that existing CSS targets.
+Runes can be migrated incrementally. A partially migrated project has some runes using the metadata system and others using per-rune CSS. Both coexist because the metadata data attributes are additive — they don't change the BEM classes or `data-name` attributes that existing CSS targets.
+
+{% /spec %}
