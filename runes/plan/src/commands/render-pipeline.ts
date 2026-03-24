@@ -127,8 +127,8 @@ function readConfigTheme(): string | undefined {
  * Returns undefined if the package can't be resolved.
  */
 function resolvePackageThemeCss(packageName: string): string | undefined {
-	// Try base.css export (design tokens only — preferred for layering)
-	for (const subpath of ['/base.css', '']) {
+	// Try main export first (full theme with rune styles), then base.css (tokens only)
+	for (const subpath of ['', '/base.css']) {
 		try {
 			const entry = subpath
 				? import.meta.resolve(packageName + subpath)
