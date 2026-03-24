@@ -251,9 +251,21 @@ refrakt plan update <id> --status in-progress
 # 4. Check off acceptance criteria as you complete them
 refrakt plan update <id> --check "criterion text"
 
-# 5. When all criteria are met, mark it done
-refrakt plan update <id> --status done
+# 5. When all criteria are met, mark it done with a resolution summary
+refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
+Branch: `claude/feature-name`
+PR: refrakt-md/refrakt#123
+
+### What was done
+- List of concrete changes
+
+### Notes
+- Implementation decisions and tradeoffs
+EOF
+)"
 ```
+
+When marking a work item done, always provide a `--resolve` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
 
 Use `--format json` on any command for machine-readable output.
 
