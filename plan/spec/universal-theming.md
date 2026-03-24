@@ -2,7 +2,7 @@
 
 # Universal Theming Dimensions
 
-> Cross-rune semantic data attributes — surface, density, section anatomy, interactive state, and media slots — so themes can style every rune generically with ~40 CSS rules instead of per-rune overrides. Builds on the metadata system (SPEC-024) to complete the eight-dimension universal theming model.
+> Cross-rune semantic data attributes — surface, density, section anatomy, interactive state, media slots, checklist, and sequential items — so themes can style every rune generically with ~54 CSS rules instead of per-rune overrides. Builds on the metadata system (SPEC-024) to complete the ten-dimension universal theming model.
 
 ---
 
@@ -38,9 +38,11 @@ The metadata system (SPEC-024) solved this for badges — three dimensions, ~18 
 |Section  |`data-section`|`header`, `title`, `description`, `body`, `footer`            |Structural anatomy      |Rune config          |
 |State    |`data-state`  |`open`, `closed`, `active`, `inactive`, `selected`, `disabled`|Interactive states      |Behaviour script     |
 |Media    |`data-media`  |`portrait`, `cover`, `thumbnail`, `hero`                      |Image treatment         |Rune config          |
+|Checklist|`data-checked`|`checked`, `unchecked`, `active`, `skipped`                   |Checkbox list items     |Content detection    |
+|Sequence |`data-sequence`|`numbered`, `connected`, `plain`                             |Ordered item indicators |Rune config          |
 |Surface  |(class-based) |`card`, `inline`, `banner`, `inset`                           |Container treatment     |**Theme only**       |
 
-Combined with the metadata system’s three dimensions (`data-meta-type`, `data-meta-sentiment`, `data-meta-rank`), the full set is eight dimensions covering every visual aspect of rune rendering.
+Combined with the metadata system’s three dimensions (`data-meta-type`, `data-meta-sentiment`, `data-meta-rank`), the full set is ten dimensions covering every visual aspect of rune rendering.
 
 **Note on surface:** Surface is deliberately excluded from the rune config. Which runes render as cards, banners, or inline elements is a visual design decision that belongs to the theme, not the rune. A minimal theme might render recipes inline. A dashboard theme might render everything as cards. The rune doesn’t know or care — it declares its structure (sections, media, metadata), and the theme decides the container treatment. See the Surface section for how themes assign surfaces.
 
@@ -724,6 +726,423 @@ At compact density, portraits shrink and cover images become wider and shorter. 
 
 ---
 
+## Checklist
+
+Controls the visual treatment of checkbox-style list items — the `[x]`/`[ ]` pattern common in acceptance criteria, progress tracking, and status lists. Today this pattern is styled independently in each rune that uses it (plot beats, comparison rows) or not styled at all (work/bug acceptance criteria). A universal checklist treatment eliminates the duplication and ensures every rune with checkbox items gets consistent styling for free.
+
+### Values
+
+|Value      |Marker|Meaning                    |Visual treatment                                  |
+|-----------|------|---------------------------|--------------------------------------------------|
+|`checked`  |`[x]` |Complete / done / included |Filled indicator (checkmark), muted text           |
+|`unchecked`|`[ ]` |Pending / todo / excluded  |Empty indicator (hollow circle or empty box)       |
+|`active`   |`[>]` |In progress / current      |Primary-coloured indicator with emphasis ring       |
+|`skipped`  |`[-]` |Abandoned / excluded / N/A |Muted indicator, strikethrough text                |
+
+### How It Works
+
+The identity transform detects checkbox markers at the start of list item text content. When found, it:
+
+1. Strips the marker text (`[x] `, `[ ] `, `[>] `, `[-] `) from the rendered output
+2. Sets `data-checked` on the `<li>` element with the resolved value (`checked`, `unchecked`, `active`, `skipped`)
+
+This is a **content-level** pattern, not a rune-config-level dimension. Any list item in any rune's body content that starts with a checkbox marker gets the attribute automatically. Runes don't need to declare anything — the transform handles it generically.
+
+### Opt-in via Rune Config
+
+Runes that want checkbox detection on specific structural lists (not just body content) can declare it in their config:
+
+```typescript
+Work: {
+  block: 'work',
+  checklist: true,  // enable checkbox detection on all lists within this rune
+  // ...
+}
+```
+
+When `checklist` is not set, checkbox detection still applies to standard Markdown task list items (which Markdoc may already parse with a `checked` attribute on the AST node). The `checklist: true` flag extends detection to all lists, including those inside content model fields.
+
+### Identity Transform Output
+
+**Work item acceptance criteria:**
+
+```html
+<div class="rf-work__body" data-section="body">
+  <section data-name="acceptance-criteria">
+    <h2>Acceptance Criteria</h2>
+    <ul>
+      <li data-checked="checked">First criterion — done</li>
+      <li data-checked="unchecked">Second criterion — pending</li>
+      <li data-checked="unchecked">Third criterion — pending</li>
+    </ul>
+  </section>
+</div>
+```
+
+**Plot beats (rune-specific styling still applies via BEM):**
+
+```html
+<li class="rf-beat rf-beat--complete" data-checked="checked">
+  <span data-field="label">Completed step</span>
+</li>
+<li class="rf-beat rf-beat--active" data-checked="active">
+  <span data-field="label">Active step</span>
+</li>
+```
+
+Plot beats get both the universal `data-checked` attribute and their rune-specific BEM modifier. The theme can style beats with the BEM classes for the dot/timeline treatment, while the universal `data-checked` rules provide the baseline text treatment (muted for checked, strikethrough for skipped). The two layers compose — specific overrides generic.
+
+### Theme CSS
+
+```css
+/* === Checklist: universal checkbox item styling === */
+
+/* All checklist items get left padding for the indicator */
+[data-checked] {
+  position: relative;
+  padding-left: 1.75rem;
+  list-style: none;
+}
+
+/* Indicator base — positioned left of text */
+[data-checked]::before {
+  content: '';
+  position: absolute;
+  left: 0.125rem;
+  top: 0.5em;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--radius-sm, 0.25rem);
+  border: 2px solid var(--color-border);
+  background: transparent;
+}
+
+/* Checked — filled with checkmark */
+[data-checked="checked"]::before {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  /* checkmark via CSS mask or content */
+}
+
+[data-checked="checked"] {
+  color: var(--color-text-muted);
+}
+
+/* Active — primary colour with emphasis */
+[data-checked="active"]::before {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 20%, transparent);
+}
+
+[data-checked="active"] {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Skipped — muted with strikethrough */
+[data-checked="skipped"]::before {
+  background: var(--color-text-muted);
+  border-color: var(--color-text-muted);
+}
+
+[data-checked="skipped"] {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+/* Unchecked — empty indicator (default styling from base rules) */
+```
+
+Six rules for the checklist. Every rune with checkbox-style list items gets consistent visual treatment. Plot beats can override with their dot/timeline treatment via BEM specificity. Work acceptance criteria, comparison feature lists, and any community rune with checklists all work automatically.
+
+### Checklist and Density Interaction
+
+```css
+/* Compact: tighter spacing */
+[data-density="compact"] [data-checked] {
+  padding-left: 1.5rem;
+}
+
+[data-density="compact"] [data-checked]::before {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Minimal: indicators only, no text */
+[data-density="minimal"] [data-checked] {
+  font-size: 0;        /* hide text */
+  padding-left: 0;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+}
+```
+
+### Existing Rune Migration
+
+| Package | Rune | Current approach | Migration |
+|---------|------|-----------------|-----------|
+| storytelling | Plot (beats) | Marker regex → status modifier → BEM classes + custom dot CSS | Add `data-checked` alongside existing BEM. Dot styling stays via BEM; text treatment from universal rules |
+| marketing | Comparison | Marker regex → row type → per-rune styling | Add `data-checked` for check/cross rows. Row-specific layout stays via BEM |
+| plan | Work/Bug | Pipeline counts `[x]`/`[ ]` for progress badges; no visual styling on items | Add `data-checked` to list items. Acceptance criteria get checkbox indicators for free |
+| plan | Backlog | Displays progress counts from pipeline | No change — still reads counts from entity data |
+
+Migration is additive. Existing BEM styling continues to work. The universal `data-checked` rules layer underneath.
+
+---
+
+## Sequential Items
+
+Controls the visual treatment of ordered, sequential items within runes — numbered step circles, vertical connector lines with dots, and horizontal connector lines. Today every rune that displays sequential items writes its own counter styling independently: steps, recipe, howto, track, timeline, itinerary, and plot (linear variant) all produce nearly identical CSS for numbered circles or connector dots with different BEM selectors. A universal sequential item treatment eliminates this duplication.
+
+### Values
+
+|Value       |Attribute         |Treatment                                                         |
+|------------|------------------|------------------------------------------------------------------|
+|`numbered`  |`data-sequence`   |Numbered circle indicator (counter) to the left of each item      |
+|`connected` |`data-sequence`   |Vertical connector line between items with dots at each node      |
+|`plain`     |`data-sequence`   |No visual indicator — ordered semantics only                      |
+
+An optional `data-sequence-direction` attribute controls orientation:
+
+|Value        |Treatment                                                    |
+|-------------|-------------------------------------------------------------|
+|`vertical`   |Items stacked vertically (default), connector runs top→bottom|
+|`horizontal` |Items laid out horizontally, connector runs left→right       |
+
+### How It Works
+
+The identity transform sets `data-sequence` on ordered item containers (`<ol>` elements or item wrappers) based on the rune config. Individual `<li>` elements within a `data-sequence` container inherit the sequential treatment automatically via CSS — no per-item attributes needed.
+
+### Rune Config
+
+Runes declare their sequence style in config:
+
+```typescript
+Steps: {
+  block: 'steps',
+  sequence: 'numbered',
+  // ...
+}
+
+Timeline: {
+  block: 'timeline',
+  sequence: 'connected',
+  // modifiers control direction
+  // ...
+}
+
+Track: {
+  block: 'track',
+  sequence: 'numbered',
+  // ...
+}
+```
+
+Runes that don't declare `sequence` render ordered lists with default browser styling. The attribute is opt-in.
+
+### Identity Transform Output
+
+**Steps (numbered):**
+
+```html
+<ol data-sequence="numbered">
+  <li class="rf-step">
+    <!-- counter circle generated by CSS -->
+    <span>Mix the dry ingredients</span>
+  </li>
+  <li class="rf-step">
+    <span>Add wet ingredients slowly</span>
+  </li>
+</ol>
+```
+
+**Timeline (connected, vertical):**
+
+```html
+<ol data-sequence="connected" data-sequence-direction="vertical">
+  <li class="rf-timeline-entry">
+    <time>2024-01-15</time>
+    <span>Project kickoff</span>
+  </li>
+  <li class="rf-timeline-entry">
+    <time>2024-03-01</time>
+    <span>Beta release</span>
+  </li>
+</ol>
+```
+
+**Timeline (connected, horizontal):**
+
+```html
+<ol data-sequence="connected" data-sequence-direction="horizontal">
+  <li class="rf-timeline-entry">...</li>
+  <li class="rf-timeline-entry">...</li>
+</ol>
+```
+
+The rune-specific BEM classes remain for per-rune overrides. The universal `data-sequence` rules provide the baseline treatment — numbered circles, connector lines — that every sequential rune shares.
+
+### Theme CSS
+
+```css
+/* === Sequential Items: universal ordered item styling === */
+
+/* Numbered — counter circle to the left of each item */
+[data-sequence="numbered"] {
+  counter-reset: sequence;
+  list-style: none;
+  padding-left: 0;
+}
+
+[data-sequence="numbered"] > li {
+  counter-increment: sequence;
+  position: relative;
+  padding-left: 2.25rem;
+}
+
+[data-sequence="numbered"] > li::before {
+  content: counter(sequence);
+  position: absolute;
+  left: 0;
+  top: 0.625rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border-radius: 50%;
+}
+
+[data-sequence="numbered"] > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+/* Connected vertical — line with dots */
+[data-sequence="connected"],
+[data-sequence="connected"][data-sequence-direction="vertical"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+[data-sequence="connected"] > li,
+[data-sequence="connected"][data-sequence-direction="vertical"] > li {
+  position: relative;
+  padding-left: 2rem;
+  padding-bottom: 2rem;
+  border-left: 2px solid var(--color-border);
+  margin-left: 0.375rem;
+}
+
+[data-sequence="connected"] > li:last-child,
+[data-sequence="connected"][data-sequence-direction="vertical"] > li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+[data-sequence="connected"] > li::before,
+[data-sequence="connected"][data-sequence-direction="vertical"] > li::before {
+  content: '';
+  position: absolute;
+  left: -0.4375rem;
+  top: 0.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* Connected horizontal — line with dots */
+[data-sequence="connected"][data-sequence-direction="horizontal"] {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+}
+
+[data-sequence="connected"][data-sequence-direction="horizontal"] > li {
+  position: relative;
+  min-width: 12rem;
+  padding-top: 1.5rem;
+  padding-left: 0;
+  padding-bottom: 0;
+  border-left: none;
+  border-top: 2px solid var(--color-border);
+  margin-left: 0;
+}
+
+[data-sequence="connected"][data-sequence-direction="horizontal"] > li:last-child {
+  border-top-color: 2px solid var(--color-border);
+}
+
+[data-sequence="connected"][data-sequence-direction="horizontal"] > li::before {
+  left: 0.5rem;
+  top: -0.4375rem;
+}
+
+/* Plain — no indicators, just ordered semantics */
+[data-sequence="plain"] {
+  list-style: none;
+  padding-left: 0;
+}
+```
+
+Approximately 8 rules (numbered base + item + indicator + separator, connected vertical + horizontal, plain). Every rune with sequential items gets consistent visual treatment. Per-rune BEM rules override where needed — plot beats keep their status-coloured dots, tracks keep their inline flex layout.
+
+### Sequential Items and Density Interaction
+
+```css
+/* Compact: smaller circles, tighter spacing */
+[data-density="compact"] [data-sequence="numbered"] > li {
+  padding-left: 1.75rem;
+}
+
+[data-density="compact"] [data-sequence="numbered"] > li::before {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.625rem;
+}
+
+[data-density="compact"] [data-sequence="connected"] > li {
+  padding-bottom: 1rem;
+}
+
+/* Minimal: no indicators, collapsed list */
+[data-density="minimal"] [data-sequence] > li::before {
+  display: none;
+}
+
+[data-density="minimal"] [data-sequence="connected"] > li {
+  border-left: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+```
+
+### Existing Rune Migration
+
+| Package | Rune | Current approach | Migration |
+|---------|------|-----------------|-----------|
+| marketing | Steps | `counter-reset: step` on `.rf-steps`, counter circle on `.rf-step::before` | Add `data-sequence="numbered"` to `<ol>`. Remove ~15 lines of counter CSS. BEM classes stay for step-specific content styling |
+| learning | Recipe | `counter-reset: recipe-step` on `.rf-recipe__content ol`, circle on `li::before` | Add `data-sequence="numbered"` to `<ol>`. Remove ~15 lines of counter CSS |
+| learning | HowTo | `counter-reset: howto-step` on `.rf-howto__content ol`, circle on `li::before` | Add `data-sequence="numbered"` to `<ol>`. Remove ~15 lines of counter CSS |
+| media | Track | `counter-increment: track` on `.rf-track`, counter on `::before` | Add `data-sequence="numbered"` to track list. Track uses inline flex layout so BEM overrides the positioned circle with inline number styling |
+| business | Timeline (vertical) | `border-left` + dot on `.rf-timeline--vertical .rf-timeline-entry` | Add `data-sequence="connected" data-sequence-direction="vertical"`. Remove ~12 lines of connector CSS |
+| business | Timeline (horizontal) | `border-top` + dot on `.rf-timeline--horizontal .rf-timeline-entry` | Add `data-sequence="connected" data-sequence-direction="horizontal"`. Remove ~12 lines of connector CSS |
+| places | Itinerary | `border-left` + dot on `.rf-itinerary-stop` | Add `data-sequence="connected"`. Remove ~12 lines of connector CSS |
+| storytelling | Plot (linear) | `border-left` + status-coloured dot on `.rf-plot--linear .rf-beat` | Add `data-sequence="connected"`. Status-coloured dots stay via `.rf-beat--complete::before` etc. which override the universal primary-colour dot |
+
+Migration is additive. Existing BEM classes remain. The universal rules handle the baseline; per-rune CSS can be reduced to only what's specific to that rune (content layout, status colours, media slots).
+
+---
+
 ## Complete Theme Baseline
 
 A theme implementing all universal dimensions writes approximately this many rules:
@@ -738,13 +1157,15 @@ A theme implementing all universal dimensions writes approximately this many rul
 |Sections       |6                            |Every structural element       |Rune config          |
 |States         |6                            |Every interactive state        |Behaviour script     |
 |Media slots    |5                            |Every image treatment          |Rune config          |
-|**Total**      |**~40 + surface assignments**|**Every rune in the ecosystem**|                     |
+|Checklist      |6                            |Every checkbox-style list item |Content detection    |
+|Sequence       |8                            |Every ordered item indicator   |Rune config          |
+|**Total**      |**~54 + surface assignments**|**Every rune in the ecosystem**|                     |
 
 The surface assignments are the one per-rune cost — the theme lists which runes get which surface treatment. This is typically 4 selector groups (one per surface type) totalling maybe 10 additional lines. Everything else is universal.
 
 A theme author’s workflow becomes:
 
-1. Style the 7 rune-declared dimensions (~36 rules) for universal coverage
+1. Style the 9 rune-declared dimensions (~50 rules) for universal coverage
 1. Assign surfaces to runes (~4 selector groups)
 1. Customise specific runes where the generic treatment isn’t sufficient
 1. The generic rules handle every rune they haven’t specifically customised — including community runes they’ve never seen
