@@ -38,25 +38,6 @@
 	align-items: center;
 	margin-bottom: 1.5rem;
 }
-.rf-recipe__meta-item {
-	font-size: 0.8125rem;
-	color: var(--rf-color-muted);
-	font-weight: 400;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	padding: 0.5em 1.0em;
-}
-
-/* Difficulty — plain text, same style as other meta items */
-.rf-recipe__badge {
-	font-size: 0.8125rem;
-	font-weight: 400;
-	text-transform: capitalize;
-	color: var(--rf-color-muted);
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	padding: 0.5em 1.0em;
-}
 
 /* Content wrapper */
 .rf-recipe__content {

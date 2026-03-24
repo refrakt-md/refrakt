@@ -9,45 +9,10 @@
 	flex-wrap: wrap;
 	margin-bottom: 0.75rem;
 }
-.rf-bug__id-badge {
-	font-family: var(--rf-font-mono);
-	font-size: 0.75rem;
-	font-weight: 700;
-	color: var(--rf-color-danger);
-}
-.rf-bug__status-badge {
-	font-size: 0.6875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-.rf-bug__severity-badge {
-	font-size: 0.6875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-}
 .rf-bug__assignee-badge {
-	font-size: 0.6875rem;
-	font-weight: 500;
-	color: var(--rf-color-muted);
 	margin-left: auto;
 }
 .rf-bug__assignee-badge::before { content: '@'; }
-.rf-bug__milestone-badge {
-	font-size: 0.6875rem;
-	font-weight: 500;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
 .rf-bug__body {
 	font-size: 0.925rem;
 	line-height: 1.65;
@@ -67,45 +32,4 @@
 }
 .rf-bug__body > div > section:first-child {
 	margin-top: 0.75rem;
-}
-
-/* Status colors */
-[data-status="reported"] > .rf-bug__header > .rf-bug__status-badge {
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-[data-status="confirmed"] > .rf-bug__header > .rf-bug__status-badge {
-	color: var(--rf-color-info);
-	background: var(--rf-color-info-bg);
-}
-[data-status="in-progress"] > .rf-bug__header > .rf-bug__status-badge {
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg);
-}
-[data-status="fixed"] > .rf-bug__header > .rf-bug__status-badge {
-	color: var(--rf-color-success);
-	background: var(--rf-color-success-bg);
-}
-[data-status="wontfix"] > .rf-bug__header > .rf-bug__status-badge,
-[data-status="duplicate"] > .rf-bug__header > .rf-bug__status-badge {
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface);
-}
-
-/* Severity colors */
-[data-severity="critical"] > .rf-bug__header > .rf-bug__severity-badge {
-	color: var(--rf-color-danger);
-	background: var(--rf-color-danger-bg);
-}
-[data-severity="major"] > .rf-bug__header > .rf-bug__severity-badge {
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg);
-}
-[data-severity="minor"] > .rf-bug__header > .rf-bug__severity-badge {
-	color: var(--rf-color-info);
-	background: var(--rf-color-info-bg);
-}
-[data-severity="cosmetic"] > .rf-bug__header > .rf-bug__severity-badge {
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
 }

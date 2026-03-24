@@ -11,16 +11,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-character__role-badge,
-.rf-character__status-badge {
-	font-size: 0.8125rem;
-	font-weight: 500;
-	text-transform: capitalize;
-	color: var(--rf-color-muted);
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	padding: 0.5em 1.0em;
-}
 .rf-character__role-badge::before { content: 'Role: '; font-weight: 400; opacity: 0.65; }
 .rf-character__status-badge::before { content: 'Status: '; font-weight: 400; opacity: 0.65; }
 
@@ -59,22 +49,6 @@
 	font-weight: 700;
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-heading);
-}
-
-/* Role variant colors — text color only */
-.rf-character[data-role="protagonist"] .rf-character__role-badge {
-	color: var(--rf-color-success);
-}
-.rf-character[data-role="antagonist"] .rf-character__role-badge {
-	color: var(--rf-color-danger);
-}
-
-/* Status indicators — text color only */
-.rf-character[data-status="dead"] .rf-character__status-badge {
-	color: var(--rf-color-danger);
-}
-.rf-character[data-status="missing"] .rf-character__status-badge {
-	color: var(--rf-color-warning);
 }
 
 /* Character Section */

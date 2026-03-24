@@ -28,20 +28,6 @@
 	line-height: 1.5;
 }
 
-/* Type badge */
-.rf-playlist__type-badge {
-	display: inline-block;
-	font-size: 0.7rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-primary);
-	background: color-mix(in srgb, var(--rf-color-primary) 10%, transparent);
-	width: fit-content;
-}
-
 /* Tracks list wrapper */
 .rf-playlist__tracks {
 	list-style: none;

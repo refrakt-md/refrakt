@@ -13,14 +13,6 @@
 	align-items: center;
 	margin-bottom: 1.5rem;
 }
-.rf-howto__meta-item {
-	font-size: 0.8125rem;
-	color: var(--rf-color-muted);
-	font-weight: 400;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	padding: 0.5em 1.0em;
-}
 
 /* Tools/materials list — surfaced zone with primary markers */
 .rf-howto__content ul {

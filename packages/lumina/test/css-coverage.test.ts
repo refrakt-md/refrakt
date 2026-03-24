@@ -42,6 +42,16 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-timeline__header', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
 	'.rf-event__header', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
 	'.rf-preview__header', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
+	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
+	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
+	'.rf-work__id-badge', '.rf-work__status-badge', '.rf-work__priority-badge', '.rf-work__milestone-badge',
+	'.rf-decision__id-badge', '.rf-decision__status-badge', '.rf-decision__date-badge', '.rf-decision__supersedes-badge',
+	'.rf-milestone__name-badge', '.rf-milestone__status-badge',
+	'.rf-bug__id-badge', '.rf-bug__status-badge', '.rf-bug__severity-badge', '.rf-bug__milestone-badge',
+	'.rf-symbol__kind-badge', '.rf-symbol__lang-badge', '.rf-symbol__since-badge', '.rf-symbol__deprecated-badge',
+	'.rf-recipe__meta-item', '.rf-recipe__badge',
+	'.rf-howto__meta-item',
+	'.rf-budget__meta-item',
 ]);
 
 // ─── Helpers ───
