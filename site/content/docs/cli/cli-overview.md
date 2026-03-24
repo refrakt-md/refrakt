@@ -44,4 +44,12 @@ refrakt inspect --all --audit
 refrakt contracts -o contracts/structures.json --config .
 ```
 
+## Package commands
+
+Community packages can extend the CLI with additional subcommands. These are available when the package is installed.
+
+| Package | Command | Purpose |
+|---------|---------|---------|
+| [`@refrakt-md/plan`](/docs/runes/plan) | [`refrakt plan`](/docs/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
+
 Run `refrakt --help` to see all available commands and options.

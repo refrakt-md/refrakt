@@ -9,7 +9,7 @@ This rune is part of **@refrakt-md/marketing**. Install with `npm install @refra
 
 # CTA
 
-A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/docs/runes/hero) instead.
+A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/docs/runes/marketing/hero) instead.
 
 ## Basic usage
 

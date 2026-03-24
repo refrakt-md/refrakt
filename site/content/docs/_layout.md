@@ -97,6 +97,7 @@
 
 ## @refrakt-md/marketing
 
+- marketing
 - hero
 - cta
 - bento
@@ -108,12 +109,14 @@
 
 ## @refrakt-md/docs
 
+- docs
 - api
 - symbol
 - changelog
 
 ## @refrakt-md/storytelling
 
+- storytelling
 - character
 - realm
 - lore
@@ -124,23 +127,27 @@
 
 ## @refrakt-md/places
 
+- places
 - event
 - map
 - itinerary
 
 ## @refrakt-md/business
 
+- business
 - cast
 - organization
 - timeline
 
 ## @refrakt-md/learning
 
+- learning
 - howto
 - recipe
 
 ## @refrakt-md/design
 
+- design
 - swatch
 - palette
 - typography
@@ -151,12 +158,16 @@
 
 ## @refrakt-md/media
 
+- media
 - playlist
 - track
 - audio
 
 ## @refrakt-md/plan
 
+- plan
+- plan/cli
+- plan/workflow
 - spec
 - work
 - bug

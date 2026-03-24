@@ -64,183 +64,111 @@ These runes are available out of the box — no extra installation needed. They 
 
 ## Official Packages
 
-Official rune packages are maintained by the refrakt team and styled by the Lumina theme. Install the packages you need and add them to your config.
+Official rune packages are maintained by the refrakt team and styled by the Lumina theme. Install the packages you need and add them to your config. Each package page includes installation instructions, a full rune reference, and documentation for any additional features like CLI commands or pipeline hooks.
 
-### @refrakt-md/marketing
+### [@refrakt-md/marketing](/docs/runes/marketing)
 
 Landing page and conversion runes for marketing sites and product pages.
 
-```bash
-npm install @refrakt-md/marketing
-```
-
-```json
-{ "packages": ["@refrakt-md/marketing"] }
-```
-
 | Rune | Description |
 |------|-------------|
-| [hero](/docs/runes/hero) | Full-width intro sections for landing pages with background support and action buttons |
-| [cta](/docs/runes/cta) | Focused call-to-action blocks with headlines, descriptions, and action buttons |
-| [bento](/docs/runes/bento) | Magazine-style bento grid where heading levels control cell size |
-| [feature](/docs/runes/feature) | Feature showcases with name, description, and optional icons |
-| [steps](/docs/runes/steps) | Step-by-step instructions with numbered indicators |
-| [pricing](/docs/runes/pricing) | Pricing tables with tier comparison |
-| [testimonial](/docs/runes/testimonial) | Customer testimonials and reviews |
-| [comparison](/docs/runes/comparison) | Product and feature comparison matrices from Markdown |
+| [hero](/docs/runes/marketing/hero) | Full-width intro sections for landing pages with background support and action buttons |
+| [cta](/docs/runes/marketing/cta) | Focused call-to-action blocks with headlines, descriptions, and action buttons |
+| [bento](/docs/runes/marketing/bento) | Magazine-style bento grid where heading levels control cell size |
+| [feature](/docs/runes/marketing/feature) | Feature showcases with name, description, and optional icons |
+| [steps](/docs/runes/marketing/steps) | Step-by-step instructions with numbered indicators |
+| [pricing](/docs/runes/marketing/pricing) | Pricing tables with tier comparison |
+| [testimonial](/docs/runes/marketing/testimonial) | Customer testimonials and reviews |
+| [comparison](/docs/runes/marketing/comparison) | Product and feature comparison matrices from Markdown |
 
-### @refrakt-md/docs
+### [@refrakt-md/docs](/docs/runes/docs)
 
 Technical documentation runes for API references, code symbols, and changelogs.
 
-```bash
-npm install @refrakt-md/docs
-```
-
-```json
-{ "packages": ["@refrakt-md/docs"] }
-```
-
 | Rune | Description |
 |------|-------------|
-| [api](/docs/runes/api) | API endpoint documentation with method, path, and parameters |
-| [symbol](/docs/runes/symbol) | Code construct documentation for functions, classes, interfaces, enums, and type aliases |
-| [changelog](/docs/runes/changelog) | Version history with release notes |
+| [api](/docs/runes/docs/api) | API endpoint documentation with method, path, and parameters |
+| [symbol](/docs/runes/docs/symbol) | Code construct documentation for functions, classes, interfaces, enums, and type aliases |
+| [changelog](/docs/runes/docs/changelog) | Version history with release notes |
 
-### @refrakt-md/storytelling
+### [@refrakt-md/storytelling](/docs/runes/storytelling)
 
 Worldbuilding and narrative runes for fiction, games, and creative writing.
 
-```bash
-npm install @refrakt-md/storytelling
-```
-
-```json
-{ "packages": ["@refrakt-md/storytelling"] }
-```
-
 | Rune | Description |
 |------|-------------|
-| [character](/docs/runes/character) | Rich character profiles with sections for backstory, abilities, and more |
-| [realm](/docs/runes/realm) | Location profiles for worldbuilding with geography and notable features |
-| [lore](/docs/runes/lore) | In-world knowledge entries for myths, prophecies, and historical records |
-| [faction](/docs/runes/faction) | Organizations and groups with ranks, holdings, and alignment |
-| [plot](/docs/runes/plot) | Story arcs and quest trackers with progress markers |
-| [bond](/docs/runes/bond) | Relationship connections between characters or entities |
-| [storyboard](/docs/runes/storyboard) | Comic and storyboard layouts from images and captions |
+| [character](/docs/runes/storytelling/character) | Rich character profiles with sections for backstory, abilities, and more |
+| [realm](/docs/runes/storytelling/realm) | Location profiles for worldbuilding with geography and notable features |
+| [lore](/docs/runes/storytelling/lore) | In-world knowledge entries for myths, prophecies, and historical records |
+| [faction](/docs/runes/storytelling/faction) | Organizations and groups with ranks, holdings, and alignment |
+| [plot](/docs/runes/storytelling/plot) | Story arcs and quest trackers with progress markers |
+| [bond](/docs/runes/storytelling/bond) | Relationship connections between characters or entities |
+| [storyboard](/docs/runes/storytelling/storyboard) | Comic and storyboard layouts from images and captions |
 
-### @refrakt-md/places
+### [@refrakt-md/places](/docs/runes/places)
 
 Event planning and location runes for travel guides and venue pages.
 
-```bash
-npm install @refrakt-md/places
-```
-
-```json
-{ "packages": ["@refrakt-md/places"] }
-```
-
 | Rune | Description |
 |------|-------------|
-| [event](/docs/runes/event) | Event information with date, location, and agenda |
-| [map](/docs/runes/map) | Interactive map visualization from Markdown lists of locations |
-| [itinerary](/docs/runes/itinerary) | Day-by-day travel itineraries with timed stops and locations |
+| [event](/docs/runes/places/event) | Event information with date, location, and agenda |
+| [map](/docs/runes/places/map) | Interactive map visualization from Markdown lists of locations |
+| [itinerary](/docs/runes/places/itinerary) | Day-by-day travel itineraries with timed stops and locations |
 
-### @refrakt-md/business
+### [@refrakt-md/business](/docs/runes/business)
 
 Organizational runes for team directories, company profiles, and timelines.
 
-```bash
-npm install @refrakt-md/business
-```
-
-```json
-{ "packages": ["@refrakt-md/business"] }
-```
-
 | Rune | Description |
 |------|-------------|
-| [cast](/docs/runes/cast) | People directory for team pages and speaker lineups |
-| [organization](/docs/runes/organization) | Structured business or organization information |
-| [timeline](/docs/runes/timeline) | Chronological events displayed as a timeline |
+| [cast](/docs/runes/business/cast) | People directory for team pages and speaker lineups |
+| [organization](/docs/runes/business/organization) | Structured business or organization information |
+| [timeline](/docs/runes/business/timeline) | Chronological events displayed as a timeline |
 
-### @refrakt-md/learning
+### [@refrakt-md/learning](/docs/runes/learning)
 
 Educational runes for tutorials, recipes, and instructional content.
 
-```bash
-npm install @refrakt-md/learning
-```
+| Rune | Description |
+|------|-------------|
+| [howto](/docs/runes/learning/howto) | Step-by-step how-to guide with tools and instructions |
+| [recipe](/docs/runes/learning/recipe) | Structured recipe with ingredients, steps, and chef tips |
 
-```json
-{ "packages": ["@refrakt-md/learning"] }
-```
+### [@refrakt-md/design](/docs/runes/design)
+
+Design system runes for color palettes, typography specimens, and token visualization. Includes a cross-page pipeline for design token aggregation.
 
 | Rune | Description |
 |------|-------------|
-| [howto](/docs/runes/howto) | Step-by-step how-to guide with tools and instructions |
-| [recipe](/docs/runes/recipe) | Structured recipe with ingredients, steps, and chef tips |
+| [swatch](/docs/runes/design/swatch) | Inline color chip for referencing colors in prose |
+| [palette](/docs/runes/design/palette) | Color swatch grid with optional WCAG contrast and accessibility info |
+| [typography](/docs/runes/design/typography) | Font specimen display with live Google Fonts loading |
+| [spacing](/docs/runes/design/spacing) | Spacing scale, border radius, and shadow token display |
+| [preview](/docs/runes/design/preview) | Component showcase with theme toggle, responsive viewports, and adjustable width |
+| [design-context](/docs/runes/design/design-context) | Unified design token card composing palette, typography, and spacing runes |
 
-### @refrakt-md/design
-
-Design system runes for color palettes, typography specimens, and token visualization.
-
-```bash
-npm install @refrakt-md/design
-```
-
-```json
-{ "packages": ["@refrakt-md/design"] }
-```
-
-| Rune | Description |
-|------|-------------|
-| [swatch](/docs/runes/swatch) | Inline color chip for referencing colors in prose |
-| [palette](/docs/runes/palette) | Color swatch grid with optional WCAG contrast and accessibility info |
-| [typography](/docs/runes/typography) | Font specimen display with live Google Fonts loading |
-| [spacing](/docs/runes/spacing) | Spacing scale, border radius, and shadow token display |
-| [preview](/docs/runes/preview) | Component showcase with theme toggle, responsive viewports, and adjustable width |
-| [design-context](/docs/runes/design-context) | Unified design token card composing palette, typography, and spacing runes |
-
-### @refrakt-md/media
+### [@refrakt-md/media](/docs/runes/media)
 
 Audio and music runes for playlists, tracks, and audio players.
 
-```bash
-npm install @refrakt-md/media
-```
+| Rune | Description |
+|------|-------------|
+| [playlist](/docs/runes/media/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
+| [track](/docs/runes/media/track) | Standalone track or recording with metadata |
+| [audio](/docs/runes/media/audio) | Audio player with optional waveform and chapter markers |
 
-```json
-{ "packages": ["@refrakt-md/media"] }
-```
+### [@refrakt-md/plan](/docs/runes/plan)
+
+Spec-driven project planning with AI-native workflows. Includes [CLI commands](/docs/runes/plan/cli) and a [workflow guide](/docs/runes/plan/workflow).
 
 | Rune | Description |
 |------|-------------|
-| [playlist](/docs/runes/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
-| [track](/docs/runes/track) | Standalone track or recording with metadata |
-| [audio](/docs/runes/audio) | Audio player with optional waveform and chapter markers |
-
-### @refrakt-md/plan
-
-Planning runes for spec-driven development with AI-native workflows.
-
-```bash
-npm install @refrakt-md/plan
-```
-
-```json
-{ "packages": ["@refrakt-md/plan"] }
-```
-
-| Rune | Description |
-|------|-------------|
-| [spec](/docs/runes/spec) | Specification document with status tracking and versioning |
-| [work](/docs/runes/work) | Work item with acceptance criteria, priority, and complexity tracking |
-| [bug](/docs/runes/bug) | Bug report with structured reproduction steps and severity |
-| [decision](/docs/runes/decision) | Architecture decision record with context, options, and rationale |
-| [milestone](/docs/runes/milestone) | Named release target with goals and status |
-| [backlog](/docs/runes/backlog) | Aggregation view of work items and bugs with filtering, sorting, and grouping |
-| [decision-log](/docs/runes/decision-log) | Chronological view of architecture decision records |
-| [plan-progress](/docs/runes/plan-progress) | Progress summary showing status counts per entity type |
-| [plan-activity](/docs/runes/plan-activity) | Recent activity feed sorted by file modification time |
+| [spec](/docs/runes/plan/spec) | Specification document with status tracking and versioning |
+| [work](/docs/runes/plan/work) | Work item with acceptance criteria, priority, and complexity tracking |
+| [bug](/docs/runes/plan/bug) | Bug report with structured reproduction steps and severity |
+| [decision](/docs/runes/plan/decision) | Architecture decision record with context, options, and rationale |
+| [milestone](/docs/runes/plan/milestone) | Named release target with goals and status |
+| [backlog](/docs/runes/plan/backlog) | Aggregation view of work items and bugs with filtering, sorting, and grouping |
+| [decision-log](/docs/runes/plan/decision-log) | Chronological view of architecture decision records |
+| [plan-progress](/docs/runes/plan/plan-progress) | Progress summary showing status counts per entity type |
+| [plan-activity](/docs/runes/plan/plan-activity) | Recent activity feed sorted by file modification time |
