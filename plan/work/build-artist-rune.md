@@ -1,4 +1,4 @@
-{% work id="WORK-017" status="pending" priority="low" tags="runes, media" %}
+{% work id="WORK-017" status="pending" priority="low" tags="runes, media" milestone="v1.0.0" %}
 
 # Build `artist` Rune
 

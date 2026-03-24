@@ -1,4 +1,4 @@
-{% work id="WORK-013" status="pending" priority="low" tags="runes, business" %}
+{% work id="WORK-013" status="pending" priority="low" tags="runes, business" milestone="v1.0.0" %}
 
 # Build `partner` Rune
 

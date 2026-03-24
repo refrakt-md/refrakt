@@ -1,4 +1,4 @@
-{% work id="WORK-011" status="pending" priority="low" tags="runes, learning" %}
+{% work id="WORK-011" status="pending" priority="low" tags="runes, learning" milestone="v1.0.0" %}
 
 # Build `prerequisite` Rune
 

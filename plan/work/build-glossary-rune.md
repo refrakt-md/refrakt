@@ -1,4 +1,4 @@
-{% work id="WORK-010" status="pending" priority="medium" tags="runes, learning" %}
+{% work id="WORK-010" status="pending" priority="medium" tags="runes, learning" milestone="v1.0.0" %}
 
 # Build `glossary` Rune
 

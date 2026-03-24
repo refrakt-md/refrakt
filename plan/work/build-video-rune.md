@@ -1,4 +1,4 @@
-{% work id="WORK-018" status="pending" priority="medium" tags="runes, media" %}
+{% work id="WORK-018" status="pending" priority="medium" tags="runes, media" milestone="v1.0.0" %}
 
 # Build `video` Rune
 
