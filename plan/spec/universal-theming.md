@@ -796,6 +796,215 @@ All dimensions are optional. A rune that doesn’t declare `sections` renders wi
 
 ---
 
+## Dimension Map
+
+The following tables map every rune across all packages to its proposed universal theming dimension values, derived from the actual rune configs (`structure`, `contentWrapper`, `autoLabel`, `modifiers`, and interactive behaviour).
+
+### Table 1: Section Anatomy Map
+
+Maps each container-level rune's structural refs to the standard `data-section` roles. The cell value is the actual ref name used in config; "---" means the rune has no equivalent section.
+
+| Package | Rune | header | title | description | body | footer | media |
+|---------|------|--------|-------|-------------|------|--------|-------|
+| core | Hint | header (icon + title) | --- | --- | (content children) | --- | --- |
+| core | Accordion | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (panels) | --- | --- |
+| core | Details | --- | summary | --- | (content children) | --- | --- |
+| core | CodeGroup | topbar (dots + title) | title | --- | (panels) | --- | --- |
+| core | Grid | --- | --- | --- | (cells) | --- | --- |
+| core | Tabs | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (tab panels) | --- | --- |
+| core | DataTable | --- | --- | --- | table | --- | --- |
+| core | Form | --- | --- | --- | body | --- | --- |
+| core | Reveal | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (steps) | --- | --- |
+| core | Compare | --- | --- | --- | (panels) | --- | --- |
+| core | Conversation | --- | --- | --- | (messages) | --- | --- |
+| core | Annotate | --- | --- | --- | body | --- | --- |
+| core | Sidenote | --- | --- | --- | body | --- | --- |
+| core | Figure | --- | --- | caption | (image content) | --- | --- |
+| core | Gallery | --- | --- | --- | (items) | --- | --- |
+| core | PullQuote | --- | --- | --- | body | --- | --- |
+| core | TextBlock | --- | --- | --- | body | --- | --- |
+| core | MediaText | --- | --- | --- | body | --- | media |
+| core | Showcase | --- | --- | --- | viewport | --- | --- |
+| core | Embed | --- | --- | --- | fallback | --- | --- |
+| core | Diagram | --- | title (figcaption) | --- | container | --- | --- |
+| core | Chart | --- | title (figcaption) | --- | container | legend | --- |
+| core | Blog | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | content | --- | --- |
+| core | Budget | header (title + meta) | title | --- | (categories) | footer (totals) | --- |
+| core | Breadcrumb | --- | --- | --- | items | --- | --- |
+| core | Nav | --- | --- | --- | (groups/items) | --- | --- |
+| core | Juxtapose | --- | --- | --- | (panels) | --- | --- |
+| core | Sandbox | --- | --- | --- | source | --- | --- |
+| core | Diff | --- | --- | --- | (lines) | --- | --- |
+| marketing | Hero | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (actions) | --- | media |
+| marketing | CallToAction | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (actions) | --- | --- |
+| marketing | Bento | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (cells) | --- | --- |
+| marketing | Feature | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (definitions) | --- | image |
+| marketing | Steps | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (step items) | --- | --- |
+| marketing | Pricing | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (tiers) | --- | --- |
+| marketing | Testimonial | --- | --- | --- | content | --- | avatar |
+| marketing | Comparison | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | table/cards | verdict | --- |
+| docs | Api | header (method + path + auth) | --- | --- | body | --- | --- |
+| docs | Symbol | header (kind, lang, since, deprecated, source) | headline | --- | body | --- | --- |
+| docs | Changelog | header (eyebrow, headline via autoLabel) | headline | --- | (releases) | --- | --- |
+| learning | HowTo | meta (estimatedTime + difficulty) | headline | blurb | content | --- | --- |
+| learning | Recipe | meta (prep, cook, servings, difficulty) | headline | blurb | (ingredients + steps) | --- | media |
+| storytelling | Character | badge (role + status) | name | --- | content | --- | portrait |
+| storytelling | Realm | badge (type + scale) | name | --- | (sections) | --- | scene |
+| storytelling | Lore | badge (category) | title | --- | content | --- | --- |
+| storytelling | Faction | badge (type + alignment + size) | name | --- | (sections) | --- | --- |
+| storytelling | Plot | badge (type + structure) | title | --- | (beats) | --- | --- |
+| storytelling | Bond | --- | --- | --- | body | --- | --- |
+| storytelling | Storyboard | --- | --- | --- | (panels) | --- | --- |
+| business | Cast | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (members) | --- | --- |
+| business | Organization | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | body | --- | --- |
+| business | Timeline | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (entries) | --- | --- |
+| places | Event | details (date, location, register) | headline | blurb | content | --- | --- |
+| places | Itinerary | header (eyebrow, headline, blurb via autoLabel) | headline | blurb | (days) | --- | --- |
+| places | Map | --- | --- | --- | container | --- | --- |
+| media | Playlist | header (type-badge) | title | --- | (tracks) | --- | media |
+| media | Audio | --- | --- | description | (audio content) | --- | --- |
+| design | Swatch | --- | --- | --- | chip | --- | --- |
+| design | Palette | --- | --- | --- | grid/scale | --- | --- |
+| design | Typography | --- | title | --- | specimens | --- | --- |
+| design | Spacing | --- | title | --- | scale/radii/shadows | --- | --- |
+| design | DesignContext | --- | title | --- | (sections) | --- | --- |
+| design | Preview | --- | --- | --- | source | --- | --- |
+| design | Mockup | --- | label | --- | frame (viewport) | --- | --- |
+| plan | Spec | header (id, status, version, supersedes) | --- | --- | body | --- | --- |
+| plan | Work | header (id, status, priority, complexity, assignee, milestone) | --- | --- | body | --- | --- |
+| plan | Bug | header (id, status, severity, assignee, milestone) | --- | --- | body | --- | --- |
+| plan | Decision | header (id, status, date, supersedes) | --- | --- | body | --- | --- |
+| plan | Milestone | header (name, status, target) | --- | --- | body | --- | --- |
+| plan | Backlog | --- | --- | --- | (work items) | --- | --- |
+| plan | DecisionLog | --- | --- | --- | (decisions) | --- | --- |
+
+### Table 2: Media Slots Map
+
+Runes that have image or media refs in their config, mapped to the proposed `data-media` slot type.
+
+| Package | Rune | Slot ref | Media type |
+|---------|------|----------|-----------|
+| core | MediaText | media | cover |
+| core | Figure | (image content) | cover |
+| marketing | Hero | media | hero |
+| marketing | Feature | image | cover |
+| marketing | Testimonial | avatar | portrait |
+| marketing | Step | media | cover |
+| learning | Recipe | media | cover |
+| storytelling | Character | portrait | portrait |
+| storytelling | Realm | scene | cover |
+| storytelling | Storyboard (panel) | image | cover |
+| media | Playlist | media | cover |
+| business | Cast (member) | (avatar via content) | portrait |
+| design | Mockup | viewport | hero |
+| design | Preview | (rendered content) | hero |
+
+### Table 3: Interactive State Map
+
+Runes that have interactive behaviour (toggling, selecting, expanding).
+
+| Package | Rune | States used | Mechanism |
+|---------|------|------------|-----------|
+| core | Accordion | `open` / `closed`, `active` / `inactive` | `@refrakt-md/behaviors` accordion script; panels toggle open/closed, triggers toggle active/inactive |
+| core | Details | `open` / `closed` | Native `<details>` element or behaviours script |
+| core | Tabs | `active` / `inactive` | `@refrakt-md/behaviors` tabs script; tabs and panels toggle active/inactive |
+| core | DataTable | `selected` (rows) | `@refrakt-md/behaviors` datatable script; sortable columns, searchable rows |
+| core | Form | `disabled` (fields) | `@refrakt-md/behaviors` form script; field validation states |
+| core | Reveal | `open` / `closed`, `active` / `inactive` | `@refrakt-md/behaviors` reveal script; steps toggle through sequentially |
+| core | Juxtapose | `active` / `inactive` | `@refrakt-md/behaviors` juxtapose script; slider or animation toggle |
+| core | Gallery | `selected` (lightbox) | `@refrakt-md/behaviors` gallery lightbox; selected image in overlay |
+| core | Nav | `active` / `inactive` | Web component `<rf-nav>`; active state tracks current page |
+| core | CodeGroup | `active` / `inactive` | `@refrakt-md/behaviors` tabs script (reused); panels toggle |
+| core | Sandbox | `active` / `inactive` | Web component `<rf-sandbox>`; live/source toggle |
+| core | Diagram | --- | Web component `<rf-diagram>`; renders on client, no toggle state |
+| places | Map | --- | Web component `<rf-map>`; interactive map, no discrete states |
+
+### Table 4: Default Density
+
+Proposed default density for every container-level rune. Child/item runes are excluded (they inherit from their parent).
+
+| Package | Rune | Default density |
+|---------|------|----------------|
+| core | Hint | `compact` |
+| core | Accordion | `full` |
+| core | Details | `compact` |
+| core | CodeGroup | `compact` |
+| core | Grid | `full` |
+| core | Tabs | `full` |
+| core | DataTable | `compact` |
+| core | Form | `full` |
+| core | Reveal | `full` |
+| core | Compare | `full` |
+| core | Conversation | `compact` |
+| core | Annotate | `full` |
+| core | Sidenote | `minimal` |
+| core | Figure | `compact` |
+| core | Gallery | `full` |
+| core | PullQuote | `compact` |
+| core | TextBlock | `full` |
+| core | MediaText | `full` |
+| core | Showcase | `compact` |
+| core | Embed | `compact` |
+| core | Diagram | `compact` |
+| core | Chart | `compact` |
+| core | Blog | `full` |
+| core | Budget | `full` |
+| core | Breadcrumb | `minimal` |
+| core | Nav | `compact` |
+| core | Juxtapose | `compact` |
+| core | Sandbox | `compact` |
+| core | Diff | `compact` |
+| marketing | Hero | `full` |
+| marketing | CallToAction | `full` |
+| marketing | Bento | `full` |
+| marketing | Feature | `full` |
+| marketing | Steps | `full` |
+| marketing | Pricing | `full` |
+| marketing | Testimonial | `compact` |
+| marketing | Comparison | `full` |
+| docs | Api | `full` |
+| docs | Symbol | `full` |
+| docs | Changelog | `full` |
+| learning | HowTo | `full` |
+| learning | Recipe | `full` |
+| storytelling | Character | `full` |
+| storytelling | Realm | `full` |
+| storytelling | Lore | `full` |
+| storytelling | Faction | `full` |
+| storytelling | Plot | `full` |
+| storytelling | Bond | `compact` |
+| storytelling | Storyboard | `full` |
+| business | Cast | `full` |
+| business | Organization | `full` |
+| business | Timeline | `full` |
+| places | Event | `full` |
+| places | Itinerary | `full` |
+| places | Map | `compact` |
+| media | Playlist | `full` |
+| media | Audio | `compact` |
+| design | Swatch | `minimal` |
+| design | Palette | `full` |
+| design | Typography | `full` |
+| design | Spacing | `full` |
+| design | DesignContext | `full` |
+| design | Preview | `compact` |
+| design | Mockup | `compact` |
+| plan | Spec | `full` |
+| plan | Work | `full` |
+| plan | Bug | `full` |
+| plan | Decision | `full` |
+| plan | Milestone | `full` |
+| plan | Backlog | `full` |
+| plan | DecisionLog | `full` |
+
+### Child and Item Runes
+
+Child runes --- AccordionItem, Tab/TabPanel, BentoCell, ComparisonColumn/ComparisonRow, Step, Tier/FeaturedTier, RevealStep, JuxtaposePanel, ConversationMessage, AnnotateNote, BreadcrumbItem, NavGroup/NavItem, FormField, Definition, BudgetCategory/BudgetLineItem, Track, MapPin, ItineraryDay/ItineraryStop, CastMember, TimelineEntry, Beat, CharacterSection, RealmSection, FactionSection, SymbolGroup/SymbolMember, ChangelogRelease, StoryboardPanel, RecipeIngredient, etc. --- do **not** independently declare density, section anatomy, or media slot dimensions. They inherit their parent rune's density and render within the parent's structural context. The parent rune's config determines the overall anatomy; child runes contribute to the parent's `body` section content.
+
+The one exception is media refs on child runes (e.g., StoryboardPanel has an `image` ref, CastMember may contain an avatar). These inherit the parent's density for sizing but declare their own `data-media` slot so the theme can apply the correct media treatment (portrait, cover, thumbnail) regardless of nesting depth.
+
+---
+
 ## Inspector Audit
 
 ```bash

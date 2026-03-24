@@ -685,6 +685,81 @@ This is the common case. Sentiment is the exception — it applies to statuses, 
 
 ---
 
+## Rune Metadata Map
+
+The table below maps every rune field that appears as a metadata badge (emitted via `structure` entries with `metaText` or `ref` containing badge/meta-item semantics) to proposed `metaType`, `metaRank`, and `sentimentMap` values.
+
+| Package | Rune | Field | metaType | metaRank | sentimentMap |
+|---------|------|-------|----------|----------|--------------|
+| **core** | Budget | currency | `category` | `primary` | — |
+| **core** | Budget | travelers | `quantity` | `primary` | — |
+| **core** | Budget | duration | `temporal` | `secondary` | — |
+| **docs** | Api | method | `category` | `primary` | `GET: positive, POST: neutral, PUT: neutral, PATCH: caution, DELETE: negative` |
+| **docs** | Api | path | `id` | `primary` | — |
+| **docs** | Api | auth | `status` | `secondary` | — |
+| **docs** | Symbol | kind | `category` | `primary` | — |
+| **docs** | Symbol | lang | `category` | `secondary` | — |
+| **docs** | Symbol | since | `temporal` | `secondary` | — |
+| **docs** | Symbol | deprecated | `status` | `primary` | `(any truthy value): negative` |
+| **learning** | HowTo | estimatedTime | `temporal` | `primary` | — |
+| **learning** | HowTo | difficulty | `category` | `primary` | `beginner: positive, intermediate: neutral, advanced: caution` |
+| **learning** | Recipe | prepTime | `temporal` | `primary` | — |
+| **learning** | Recipe | cookTime | `temporal` | `primary` | — |
+| **learning** | Recipe | servings | `quantity` | `primary` | — |
+| **learning** | Recipe | difficulty | `category` | `primary` | `easy: positive, medium: neutral, hard: caution` |
+| **storytelling** | Character | role | `category` | `primary` | — |
+| **storytelling** | Character | status | `status` | `primary` | `alive: positive, dead: negative, unknown: neutral, missing: caution` |
+| **storytelling** | Realm | realmType | `category` | `primary` | — |
+| **storytelling** | Realm | scale | `category` | `secondary` | — |
+| **storytelling** | Lore | category | `category` | `primary` | — |
+| **storytelling** | Faction | factionType | `category` | `primary` | — |
+| **storytelling** | Faction | alignment | `category` | `primary` | `good: positive, neutral: neutral, evil: negative, chaotic: caution, lawful: neutral` |
+| **storytelling** | Faction | size | `quantity` | `secondary` | — |
+| **storytelling** | Plot | plotType | `category` | `primary` | — |
+| **storytelling** | Plot | structure | `category` | `secondary` | — |
+| **storytelling** | Bond | bondType | `category` | `primary` | `alliance: positive, rivalry: negative, mentor: positive, romance: positive, distrust: caution` |
+| **storytelling** | Bond | status | `status` | `secondary` | `active: positive, broken: negative, dormant: neutral` |
+| **media** | Playlist | type | `category` | `primary` | — |
+| **places** | Event | date | `temporal` | `primary` | — |
+| **places** | Event | endDate | `temporal` | `secondary` | — |
+| **places** | Event | location | `category` | `primary` | — |
+| **plan** | Spec | id | `id` | `primary` | — |
+| **plan** | Spec | status | `status` | `primary` | `draft: neutral, review: caution, accepted: positive, superseded: caution, deprecated: negative` |
+| **plan** | Spec | version | `tag` | `secondary` | — |
+| **plan** | Spec | supersedes | `id` | `secondary` | — |
+| **plan** | Work | id | `id` | `primary` | — |
+| **plan** | Work | status | `status` | `primary` | `draft: neutral, ready: neutral, in-progress: neutral, review: caution, done: positive, blocked: negative` |
+| **plan** | Work | priority | `category` | `primary` | `critical: negative, high: caution, medium: neutral, low: neutral` |
+| **plan** | Work | complexity | `quantity` | `secondary` | — |
+| **plan** | Work | assignee | `tag` | `secondary` | — |
+| **plan** | Work | milestone | `tag` | `secondary` | — |
+| **plan** | Bug | id | `id` | `primary` | — |
+| **plan** | Bug | status | `status` | `primary` | `reported: neutral, confirmed: caution, in-progress: neutral, fixed: positive, wontfix: neutral, duplicate: neutral` |
+| **plan** | Bug | severity | `category` | `primary` | `critical: negative, major: caution, minor: neutral, trivial: neutral` |
+| **plan** | Bug | assignee | `tag` | `secondary` | — |
+| **plan** | Bug | milestone | `tag` | `secondary` | — |
+| **plan** | Decision | id | `id` | `primary` | — |
+| **plan** | Decision | status | `status` | `primary` | `proposed: neutral, accepted: positive, superseded: caution, deprecated: negative` |
+| **plan** | Decision | date | `temporal` | `secondary` | — |
+| **plan** | Decision | supersedes | `id` | `secondary` | — |
+| **plan** | Milestone | name | `id` | `primary` | — |
+| **plan** | Milestone | status | `status` | `primary` | `planning: neutral, active: positive, complete: positive` |
+| **plan** | Milestone | target | `temporal` | `secondary` | — |
+
+### Edge Cases and Notes
+
+**Bond and Beat runes** (storytelling) declare modifiers with semantic meaning (`bondType`, `status`, `id`, `track`) but currently lack `structure` entries in their config — they render via other mechanisms. When migrating, structure entries with badge children would need to be added alongside the metadata annotations.
+
+**Symbol.deprecated** is a boolean-like field (presence indicates deprecation). The sentimentMap would need a convention for boolean fields — mapping any truthy value (e.g., a version string like `"v2.0"`) to `negative`. This is unlike enum fields where each value maps individually.
+
+**Event.location** is free-text (city names, venue names) with no inherent valence, so it receives `category` type with no sentimentMap. The same applies to Realm.scale, Faction.size, and similar open-ended fields.
+
+**Faction.alignment** values are proposed here as `good/neutral/evil/chaotic/lawful` based on typical RPG conventions, but the actual valid values depend on what authors write. The sentimentMap should cover the most common values; unrecognized values default to no sentiment (neutral styling).
+
+**Assignee and milestone fields** across plan runes are typed as `tag` rather than `category` because they are cross-referencing labels (linking to people or release targets) rather than classifying the item.
+
+---
+
 ## Migration
 
 Existing rune configs that use `structure` entries without `metaType` continue to work. The identity transform emits metadata elements without the `data-meta-*` attributes. Existing per-rune CSS styles them as before.
