@@ -7,8 +7,9 @@ This directory contains project planning content using the `@refrakt-md/plan` ru
 ```
 plan/
   spec/      — Specifications (what to build)
-  work/      — Work items (how to build it)
+  work/      — Work items and bugs (how to build it)
   decision/  — Architecture decision records (why it's built this way)
+  milestone/ — Named release targets with scope and goals
 ```
 
 ## ID Conventions
@@ -21,8 +22,9 @@ Each rune type uses a unique prefix. To assign a new ID, scan existing files for
 | Work | `WORK-` | `WORK-051` | WORK-068 |
 | Decision | `ADR-` | `ADR-005` | ADR-004 |
 | Bug | `BUG-` | `BUG-001` | (none yet) |
+| Milestone | `v`+semver | `v0.9.0` | v0.9.0 |
 
-IDs are zero-padded to 3 digits. Always verify the next ID by scanning:
+IDs are zero-padded to 3 digits (except milestones, which use version names). Always verify the next ID by scanning:
 ```bash
 grep -rh 'id="SPEC-' plan/spec/ | sort
 grep -rh 'id="WORK-' plan/work/ | sort

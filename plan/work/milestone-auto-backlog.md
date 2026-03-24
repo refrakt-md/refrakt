@@ -1,4 +1,4 @@
-{% work id="WORK-025" status="pending" priority="low" complexity="moderate" tags="runes, plan, pipeline" %}
+{% work id="WORK-025" status="done" priority="low" complexity="moderate" tags="runes, plan, pipeline" %}
 
 # Milestone Auto-Backlog and Checklist Progress
 
@@ -14,13 +14,13 @@ Two related rendering enhancements for the plan package:
 
 ## Acceptance Criteria
 
-- [ ] Milestone `postProcess` hook queries entity registry for work/bug entities with matching `milestone` field
-- [ ] Queried items rendered as summary cards below the milestone's own content
-- [ ] Items grouped by status (done, in-progress, ready, etc.)
-- [ ] Work items with checkbox lists show checked/total count in header
-- [ ] Milestone shows aggregate progress (total checked / total checkboxes across all items)
-- [ ] CSS for progress indicator (bar or fraction display)
-- [ ] Tests for milestone query, progress counting, and rendering
+- [x] Milestone `postProcess` hook queries entity registry for work/bug entities with matching `milestone` field
+- [x] Queried items rendered as summary cards below the milestone's own content
+- [x] Items grouped by status (done, in-progress, ready, etc.)
+- [x] Work items with checkbox lists show checked/total count in header
+- [x] Milestone shows aggregate progress (total checked / total checkboxes across all items)
+- [x] CSS for progress indicator (bar or fraction display)
+- [x] Tests for milestone query, progress counting, and rendering
 
 ## Approach
 

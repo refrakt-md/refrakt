@@ -21,6 +21,7 @@ describe('plan init', () => {
 		expect(existsSync(join(planDir, 'work'))).toBe(true);
 		expect(existsSync(join(planDir, 'spec'))).toBe(true);
 		expect(existsSync(join(planDir, 'decision'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestone'))).toBe(true);
 	});
 
 	it('creates example files', () => {
@@ -31,6 +32,7 @@ describe('plan init', () => {
 		// Work item is created via the template slug
 		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'decision', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestone', 'first-release.md'))).toBe(true);
 	});
 
 	it('creates index.md', () => {
@@ -118,5 +120,15 @@ describe('plan init', () => {
 		const decision = readFileSync(join(planDir, 'decision', 'example-decision.md'), 'utf-8');
 		expect(decision).toContain('{% decision');
 		expect(decision).toContain('{% /decision %}');
+	});
+
+	it('example milestone is valid markdoc', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const milestone = readFileSync(join(planDir, 'milestone', 'first-release.md'), 'utf-8');
+		expect(milestone).toContain('{% milestone');
+		expect(milestone).toContain('name="v0.1.0"');
+		expect(milestone).toContain('{% /milestone %}');
 	});
 });

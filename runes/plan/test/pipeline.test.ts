@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, findAllTags } from './helpers.js';
 import { planPipelineHooks } from '../src/pipeline.js';
 import type { TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
 
@@ -190,5 +190,180 @@ Description.
 		planPipelineHooks.register!([page], registry, warnCtx);
 		// Either warned or just didn't register
 		expect(entries.length + warnings.length).toBeGreaterThanOrEqual(0);
+	});
+
+	it('counts checklist progress for work items', () => {
+		const page = makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task with checklist
+
+## Acceptance Criteria
+- [x] First criterion done
+- [x] Second criterion done
+- [ ] Third criterion pending
+- [ ] Fourth criterion pending
+- [ ] Fifth criterion pending
+{% /work %}`);
+
+		planPipelineHooks.register!([page], registry, ctx);
+
+		expect(entries).toHaveLength(1);
+		expect(entries[0].data.checkedCount).toBe(2);
+		expect(entries[0].data.totalCount).toBe(5);
+	});
+
+	it('does not set checklist counts when no checkboxes', () => {
+		const page = makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+# Task without checklist
+
+Just a description, no checkboxes.
+{% /work %}`);
+
+		planPipelineHooks.register!([page], registry, ctx);
+
+		expect(entries).toHaveLength(1);
+		expect(entries[0].data.checkedCount).toBeUndefined();
+		expect(entries[0].data.totalCount).toBeUndefined();
+	});
+});
+
+describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
+	function runPipeline(pages: TransformedPage[]) {
+		const { entries, registry } = makeRegistry();
+		const { ctx } = makeCtx();
+		planPipelineHooks.register!(pages, registry, ctx);
+		const aggregated = { plan: planPipelineHooks.aggregate!(registry) };
+
+		return pages.map(page => {
+			return planPipelineHooks.postProcess!(page, aggregated);
+		});
+	}
+
+	it('injects backlog cards into milestone', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0 — First Release
+- Ship core features
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}
+# Done task
+## Acceptance Criteria
+- [x] Implemented
+{% /work %}`),
+			makePage('/plan/work/w2', `{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}
+# Ready task
+## Acceptance Criteria
+- [ ] Not started
+{% /work %}`),
+			makePage('/plan/work/w3', `{% work id="WORK-003" status="ready" priority="high" milestone="v2.0" %}
+# Different milestone
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+
+		// The milestone page should have a backlog section injected
+		const milestonePage = processed[0];
+		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
+		expect(backlog).toBeDefined();
+
+		// Should contain cards for WORK-001 and WORK-002, but NOT WORK-003
+		const cards = findAllTags(backlog!, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(2);
+		const cardIds = cards.map(c => c.attributes['data-id']);
+		expect(cardIds).toContain('WORK-001');
+		expect(cardIds).toContain('WORK-002');
+		expect(cardIds).not.toContain('WORK-003');
+	});
+
+	it('shows aggregate progress on milestone', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}
+# Task A
+## Acceptance Criteria
+- [x] Done A
+- [x] Done B
+{% /work %}`),
+			makePage('/plan/work/w2', `{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}
+# Task B
+## Acceptance Criteria
+- [ ] Pending C
+- [ ] Pending D
+- [ ] Pending E
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const progress = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__progress');
+		expect(progress).toBeDefined();
+		expect(progress!.attributes['data-checked']).toBe('2');
+		expect(progress!.attributes['data-total']).toBe('5');
+	});
+
+	it('does not inject backlog when no items assigned', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" milestone="v2.0" %}
+# Different milestone
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
+		expect(backlog).toBeUndefined();
+	});
+
+	it('groups backlog items by status', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}
+# Done task
+{% /work %}`),
+			makePage('/plan/work/w2', `{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}
+# Ready task
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const groups = findAllTags(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog-group');
+		expect(groups.length).toBeGreaterThanOrEqual(2);
+
+		const groupStatuses = groups.map(g => g.attributes['data-status']);
+		expect(groupStatuses).toContain('done');
+		expect(groupStatuses).toContain('ready');
+	});
+
+	it('shows progress badge on backlog cards', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" milestone="v1.0" %}
+# Task with checklist
+## Acceptance Criteria
+- [x] First done
+- [ ] Second pending
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const progressBadge = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-backlog__card-progress');
+		expect(progressBadge).toBeDefined();
+		expect(progressBadge!.attributes['data-checked']).toBe('1');
+		expect(progressBadge!.attributes['data-total']).toBe('2');
 	});
 });

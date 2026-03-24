@@ -12,7 +12,7 @@ const TYPE_DIRS: Record<PlanItemType, string> = {
 	bug: 'work', // bugs live alongside work items
 	decision: 'decision',
 	spec: 'spec',
-	milestone: 'work', // milestones alongside work items
+	milestone: 'milestone',
 };
 
 export interface CreateOptions {
