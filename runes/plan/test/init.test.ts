@@ -131,4 +131,97 @@ describe('plan init', () => {
 		expect(milestone).toContain('name="v0.1.0"');
 		expect(milestone).toContain('{% /milestone %}');
 	});
+
+	it('creates status filter pages for work items', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		for (const status of ['in-progress', 'ready', 'blocked', 'done']) {
+			const filePath = join(planDir, 'work', `${status}.md`);
+			expect(existsSync(filePath)).toBe(true);
+			const content = readFileSync(filePath, 'utf-8');
+			expect(content).toContain(`filter="status:${status}"`);
+			expect(content).toContain('{% backlog');
+		}
+	});
+
+	it('creates status filter pages for specs', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		for (const status of ['accepted', 'draft']) {
+			const filePath = join(planDir, 'spec', `${status}.md`);
+			expect(existsSync(filePath)).toBe(true);
+			const content = readFileSync(filePath, 'utf-8');
+			expect(content).toContain(`filter="status:${status}"`);
+		}
+	});
+
+	it('creates status filter pages for decisions', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		for (const status of ['accepted', 'proposed']) {
+			const filePath = join(planDir, 'decision', `${status}.md`);
+			expect(existsSync(filePath)).toBe(true);
+			const content = readFileSync(filePath, 'utf-8');
+			expect(content).toContain(`filter="status:${status}"`);
+		}
+	});
+
+	it('creates status filter pages for milestones', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		for (const status of ['active', 'complete']) {
+			const filePath = join(planDir, 'milestone', `${status}.md`);
+			expect(existsSync(filePath)).toBe(true);
+			const content = readFileSync(filePath, 'utf-8');
+			expect(content).toContain(`filter="status:${status}"`);
+		}
+	});
+
+	it('creates type-level index pages with status links', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		for (const typeDir of ['work', 'spec', 'decision', 'milestone']) {
+			const indexPath = join(planDir, typeDir, 'index.md');
+			expect(existsSync(indexPath)).toBe(true);
+			const content = readFileSync(indexPath, 'utf-8');
+			// Should contain markdown links to status pages
+			expect(content).toMatch(/\[.+\]\(.+\)/);
+		}
+	});
+
+	it('work type index links to all work status pages', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const content = readFileSync(join(planDir, 'work', 'index.md'), 'utf-8');
+		expect(content).toContain('[In Progress](in-progress)');
+		expect(content).toContain('[Ready](ready)');
+		expect(content).toContain('[Blocked](blocked)');
+		expect(content).toContain('[Done](done)');
+	});
+
+	it('root index links to type directories', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const content = readFileSync(join(planDir, 'index.md'), 'utf-8');
+		expect(content).toContain('[Specifications](spec/)');
+		expect(content).toContain('[Work Items](work/)');
+		expect(content).toContain('[Decisions](decision/)');
+		expect(content).toContain('[Milestones](milestone/)');
+	});
+
+	it('status filter pages are idempotent', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+		const r2 = runInit({ dir: planDir, projectRoot: TMP });
+
+		// No new files created on second run
+		expect(r2.created).toHaveLength(0);
+	});
 });

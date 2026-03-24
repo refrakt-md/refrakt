@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { runCreate } from './create.js';
+import { STATUS_PAGES, renderStatusPage, renderTypeIndexPage } from './templates.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
@@ -64,6 +65,26 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
+	// Create status filter pages for each type
+	for (const def of STATUS_PAGES) {
+		const slug = `${def.status}.md`;
+		const filePath = join(dir, def.typeDir, slug);
+		if (!existsSync(filePath)) {
+			writeFileSync(filePath, renderStatusPage(def));
+			created.push(filePath);
+		}
+	}
+
+	// Create type-level index pages with links to status filter pages
+	const typeDirs = [...new Set(STATUS_PAGES.map(p => p.typeDir))];
+	for (const typeDir of typeDirs) {
+		const filePath = join(dir, typeDir, 'index.md');
+		if (!existsSync(filePath)) {
+			writeFileSync(filePath, renderTypeIndexPage(typeDir));
+			created.push(filePath);
+		}
+	}
+
 	// Create index.md
 	const indexFile = join(dir, 'index.md');
 	if (!existsSync(indexFile)) {
@@ -73,10 +94,10 @@ This directory contains project planning content.
 
 ## Structure
 
-- \`spec/\` — Specifications (what to build)
-- \`work/\` — Work items and bugs (how to build it)
-- \`decision/\` — Architecture decision records (why it's built this way)
-- \`milestone/\` — Named release targets with scope and goals
+- [Specifications](spec/) — What to build
+- [Work Items](work/) — How to build it
+- [Decisions](decision/) — Why it's built this way
+- [Milestones](milestone/) — Named release targets
 
 ## Quick Start
 

@@ -128,3 +128,69 @@ function milestoneTemplate({ id, title, attrs }: TemplateOptions): string {
 {% /milestone %}
 `;
 }
+
+// --- Status filter page templates ---
+
+export interface StatusPageDef {
+	/** Plan type directory (work, spec, decision, milestone) */
+	typeDir: string;
+	/** Status value used in the backlog filter */
+	status: string;
+	/** Human-readable title */
+	title: string;
+	/** Sort field for the backlog rune */
+	sort: string;
+	/** Entity types to show (for work dir which includes bugs) */
+	show?: string;
+}
+
+/** Status pages generated during init — focused on the most useful statuses per type. */
+export const STATUS_PAGES: StatusPageDef[] = [
+	// Work items
+	{ typeDir: 'work', status: 'in-progress', title: 'In Progress', sort: 'priority', show: 'all' },
+	{ typeDir: 'work', status: 'ready', title: 'Ready', sort: 'priority', show: 'all' },
+	{ typeDir: 'work', status: 'blocked', title: 'Blocked', sort: 'priority', show: 'all' },
+	{ typeDir: 'work', status: 'done', title: 'Done', sort: 'priority', show: 'all' },
+	// Specs
+	{ typeDir: 'spec', status: 'accepted', title: 'Accepted', sort: 'id' },
+	{ typeDir: 'spec', status: 'draft', title: 'Draft', sort: 'id' },
+	// Decisions
+	{ typeDir: 'decision', status: 'accepted', title: 'Accepted', sort: 'id' },
+	{ typeDir: 'decision', status: 'proposed', title: 'Proposed', sort: 'id' },
+	// Milestones
+	{ typeDir: 'milestone', status: 'active', title: 'Active', sort: 'id' },
+	{ typeDir: 'milestone', status: 'complete', title: 'Complete', sort: 'id' },
+];
+
+/** Human-readable labels for type directories. */
+const TYPE_TITLES: Record<string, string> = {
+	work: 'Work Items',
+	spec: 'Specifications',
+	decision: 'Decisions',
+	milestone: 'Milestones',
+};
+
+/**
+ * Render a status filter page containing a backlog rune that filters by status.
+ */
+export function renderStatusPage(def: StatusPageDef): string {
+	const showAttr = def.show ? ` show="${def.show}"` : '';
+	return `# ${def.title}
+
+{% backlog filter="status:${def.status}" sort="${def.sort}"${showAttr} /%}
+`;
+}
+
+/**
+ * Render a type-level index page with links to each status filter page.
+ */
+export function renderTypeIndexPage(typeDir: string): string {
+	const title = TYPE_TITLES[typeDir] || typeDir;
+	const pages = STATUS_PAGES.filter(p => p.typeDir === typeDir);
+	const links = pages.map(p => `- [${p.title}](${p.status})`).join('\n');
+
+	return `# ${title}
+
+${links}
+`;
+}
