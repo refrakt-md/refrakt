@@ -7,6 +7,7 @@ import { plot, beat } from './tags/plot.js';
 import { bond } from './tags/bond.js';
 import { storyboard, storyboardPanel } from './tags/storyboard.js';
 import { config } from './config.js';
+import { storytellingPipelineHooks } from './pipeline.js';
 
 export const storytelling: RunePackage = {
   name: 'storytelling',
@@ -170,6 +171,7 @@ The journey begins.
   theme: {
     runes: config as unknown as Record<string, Record<string, unknown>>,
   },
+  pipeline: storytellingPipelineHooks,
 };
 
 export default storytelling;

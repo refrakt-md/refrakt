@@ -1,4 +1,4 @@
-{% work id="WORK-054" status="ready" priority="high" complexity="moderate" tags="storytelling, pipeline" milestone="v0.9.0" %}
+{% work id="WORK-054" status="in-progress" priority="high" complexity="moderate" tags="storytelling, pipeline" milestone="v0.9.0" %}
 
 # Storytelling Package Pipeline Hooks
 
