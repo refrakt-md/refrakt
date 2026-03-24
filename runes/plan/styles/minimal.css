@@ -49,44 +49,6 @@
 	border-block-end: 1px solid var(--plan-color-border);
 }
 
-/* All badges — plain text, no background */
-[class*="__id-badge"],
-[class*="__name-badge"] {
-	font-family: var(--plan-font-mono);
-	font-size: var(--plan-font-size-sm);
-	font-weight: 700;
-	color: var(--plan-color-text);
-}
-
-[class*="__status-badge"] {
-	font-size: var(--plan-font-size-sm);
-	font-weight: 600;
-	color: var(--plan-color-text-muted);
-	text-transform: capitalize;
-}
-
-[class*="__status-badge"]::before {
-	content: '— ';
-}
-
-.rf-work__priority-badge,
-.rf-bug__severity-badge,
-.rf-work__complexity-badge {
-	font-size: var(--plan-font-size-sm);
-	color: var(--plan-color-text-muted);
-	text-transform: capitalize;
-}
-
-[class*="__date-badge"],
-[class*="__target-badge"],
-[class*="__supersedes-badge"],
-[class*="__version-badge"],
-[class*="__assignee-badge"],
-[class*="__milestone-badge"] {
-	font-size: var(--plan-font-size-sm);
-	color: var(--plan-color-text-muted);
-}
-
 /* --------------------------------------------------------------------------
    Body content
    -------------------------------------------------------------------------- */
