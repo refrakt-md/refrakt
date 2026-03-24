@@ -21,9 +21,9 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'method', metaText: 'method' },
-					{ tag: 'code', ref: 'path', metaText: 'path' },
-					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth' },
+					{ tag: 'span', ref: 'method', metaText: 'method', metaType: 'category', metaRank: 'primary', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
+					{ tag: 'code', ref: 'path', metaText: 'path', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth', metaType: 'status', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -43,10 +43,10 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'kind-badge', metaText: 'kind' },
-					{ tag: 'span', ref: 'lang-badge', metaText: 'lang' },
-					{ tag: 'span', ref: 'since-badge', metaText: 'since', textPrefix: 'Since ', condition: 'since' },
-					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', textPrefix: 'Deprecated ', condition: 'deprecated' },
+					{ tag: 'span', ref: 'kind-badge', metaText: 'kind', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'lang-badge', metaText: 'lang', metaType: 'category', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'since-badge', metaText: 'since', textPrefix: 'Since ', condition: 'since', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', textPrefix: 'Deprecated ', condition: 'deprecated', metaType: 'status', metaRank: 'primary', sentimentMap: { true: 'negative' } },
 					{ tag: 'a', ref: 'source-link', condition: 'source', attrs: { href: { fromModifier: 'source' } }, children: ['Source'] },
 				],
 			},

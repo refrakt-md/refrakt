@@ -15,10 +15,10 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status' },
-					{ tag: 'span', ref: 'version-badge', metaText: 'version', condition: 'version', textPrefix: 'v' },
-					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', textPrefix: 'Supersedes ' },
+					{ tag: 'span', ref: 'id-badge', metaText: 'id', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
+					{ tag: 'span', ref: 'version-badge', metaText: 'version', condition: 'version', textPrefix: 'v', metaType: 'tag', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', textPrefix: 'Supersedes ', metaType: 'id', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -40,12 +40,12 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status' },
-					{ tag: 'span', ref: 'priority-badge', metaText: 'priority' },
-					{ tag: 'span', ref: 'complexity-badge', metaText: 'complexity' },
-					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', condition: 'assignee' },
-					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', condition: 'milestone' },
+					{ tag: 'span', ref: 'id-badge', metaText: 'id', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' } },
+					{ tag: 'span', ref: 'priority-badge', metaText: 'priority', metaType: 'category', metaRank: 'primary', sentimentMap: { critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral' } },
+					{ tag: 'span', ref: 'complexity-badge', metaText: 'complexity', metaType: 'quantity', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -66,11 +66,11 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status' },
-					{ tag: 'span', ref: 'severity-badge', metaText: 'severity' },
-					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', condition: 'assignee' },
-					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', condition: 'milestone' },
+					{ tag: 'span', ref: 'id-badge', metaText: 'id', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' } },
+					{ tag: 'span', ref: 'severity-badge', metaText: 'severity', metaType: 'category', metaRank: 'primary', sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' } },
+					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -90,10 +90,10 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status' },
-					{ tag: 'time', ref: 'date-badge', metaText: 'date', condition: 'date' },
-					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', textPrefix: 'Supersedes ' },
+					{ tag: 'span', ref: 'id-badge', metaText: 'id', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
+					{ tag: 'time', ref: 'date-badge', metaText: 'date', condition: 'date', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', textPrefix: 'Supersedes ', metaType: 'id', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -111,9 +111,9 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'name-badge', metaText: 'name' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status' },
-					{ tag: 'time', ref: 'target-badge', metaText: 'target', condition: 'target' },
+					{ tag: 'span', ref: 'name-badge', metaText: 'name', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' } },
+					{ tag: 'time', ref: 'target-badge', metaText: 'target', condition: 'target', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},

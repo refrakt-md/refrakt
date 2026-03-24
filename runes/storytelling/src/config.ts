@@ -15,8 +15,8 @@ export const config: Record<string, RuneConfig> = {
 			badge: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'role-badge', metaText: 'role' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', condition: 'status' },
+					{ tag: 'span', ref: 'role-badge', metaText: 'role', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'status-badge', metaText: 'status', condition: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' } },
 				],
 			},
 		},
@@ -46,8 +46,8 @@ export const config: Record<string, RuneConfig> = {
 			badge: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'realmType' },
-					{ tag: 'span', ref: 'scale-badge', metaText: 'scale', condition: 'scale' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'realmType', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'scale-badge', metaText: 'scale', condition: 'scale', metaType: 'category', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -69,7 +69,7 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				conditionAny: ['category'],
 				children: [
-					{ tag: 'span', ref: 'category-badge', metaText: 'category', condition: 'category' },
+					{ tag: 'span', ref: 'category-badge', metaText: 'category', condition: 'category', metaType: 'category', metaRank: 'primary' },
 				],
 			},
 		},
@@ -99,9 +99,9 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				conditionAny: ['factionType', 'alignment', 'size'],
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'factionType', condition: 'factionType' },
-					{ tag: 'span', ref: 'alignment-badge', metaText: 'alignment', condition: 'alignment' },
-					{ tag: 'span', ref: 'size-badge', metaText: 'size', condition: 'size' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'factionType', condition: 'factionType', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'alignment-badge', metaText: 'alignment', condition: 'alignment', metaType: 'category', metaRank: 'primary', sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' } },
+					{ tag: 'span', ref: 'size-badge', metaText: 'size', condition: 'size', metaType: 'quantity', metaRank: 'secondary' },
 				],
 			},
 		},
@@ -122,8 +122,8 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				conditionAny: ['plotType', 'structure'],
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'plotType', condition: 'plotType' },
-					{ tag: 'span', ref: 'structure-badge', metaText: 'structure', condition: 'structure' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'plotType', condition: 'plotType', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'structure-badge', metaText: 'structure', condition: 'structure', metaType: 'category', metaRank: 'secondary' },
 				],
 			},
 		},

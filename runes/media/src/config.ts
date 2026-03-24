@@ -21,7 +21,7 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'type' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category', metaRank: 'primary' },
 				],
 			},
 		},

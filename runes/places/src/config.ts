@@ -29,15 +29,15 @@ export const config: Record<string, RuneConfig> = {
 						tag: 'div', ref: 'detail', condition: 'date',
 						children: [
 							{ tag: 'span', ref: 'label', children: ['Date'] },
-							{ tag: 'span', ref: 'value', metaText: 'date' },
-							{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate' },
+							{ tag: 'span', ref: 'value', metaText: 'date', metaType: 'temporal', metaRank: 'primary' },
+							{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate', metaType: 'temporal', metaRank: 'secondary' },
 						],
 					},
 					{
 						tag: 'div', ref: 'detail', condition: 'location',
 						children: [
 							{ tag: 'span', ref: 'label', children: ['Location'] },
-							{ tag: 'span', ref: 'value', metaText: 'location' },
+							{ tag: 'span', ref: 'value', metaText: 'location', metaType: 'category', metaRank: 'primary' },
 						],
 					},
 					{
