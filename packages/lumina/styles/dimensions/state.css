@@ -1,0 +1,57 @@
+/* ─── Interactive State Dimension ───────────────────────────────────────
+ * Generic styling for interactive rune states: open/closed, active/inactive,
+ * selected, and disabled. Behaviours toggle data-state; themes read it here.
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Open/Closed: collapsible content ────────────────────────────── */
+
+[data-state="closed"] > [class*="__body"],
+[data-state="closed"] > [class*="__content"] {
+	display: none;
+}
+
+[data-state="open"] > [class*="__body"],
+[data-state="open"] > [class*="__content"] {
+	display: block;
+	animation: rf-expand 0.2s ease-out;
+}
+
+@keyframes rf-expand {
+	from { opacity: 0; transform: translateY(-0.5rem); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Active/Inactive: selection indicators ───────────────────────── */
+
+button[data-state="active"] {
+	border-bottom: 2px solid var(--rf-color-primary);
+	color: var(--rf-color-primary);
+}
+
+button[data-state="inactive"] {
+	border-bottom: 2px solid transparent;
+	color: var(--rf-color-muted);
+}
+
+/* Panels controlled by tab/toggle state */
+[role="tabpanel"][data-state="inactive"] {
+	display: none;
+}
+
+[role="tabpanel"][data-state="active"] {
+	display: block;
+}
+
+/* ─── Selected: user selection highlight ──────────────────────────── */
+
+[data-state="selected"] {
+	background: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+	outline: 2px solid var(--rf-color-primary);
+}
+
+/* ─── Disabled: dimmed non-interactive ────────────────────────────── */
+
+[data-state="disabled"] {
+	opacity: 0.4;
+	pointer-events: none;
+}

@@ -1,0 +1,94 @@
+/* ─── Surface Assignments ──────────────────────────────────────────────
+ * Groups runes into 4 surface types: card, inline, banner, inset.
+ * Each surface defines container treatment (background, border, padding).
+ * Padding scales with density via --rune-padding custom property.
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Card: elevated container ────────────────────────────────────── */
+
+.rf-recipe,
+.rf-character,
+.rf-work,
+.rf-bug,
+.rf-decision,
+.rf-spec,
+.rf-milestone,
+.rf-testimonial,
+.rf-event,
+.rf-realm,
+.rf-faction,
+.rf-lore,
+.rf-plot,
+.rf-bond,
+.rf-playlist,
+.rf-track,
+.rf-budget,
+.rf-cast,
+.rf-organization,
+.rf-timeline,
+.rf-swatch,
+.rf-palette,
+.rf-typography,
+.rf-itinerary,
+.rf-symbol,
+.rf-changelog,
+.rf-api,
+.rf-howto,
+.rf-comparison,
+.rf-pricing {
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	padding: var(--rune-padding, var(--rf-spacing-md));
+}
+
+/* ─── Inline: no visual boundary ──────────────────────────────────── */
+
+.rf-hint,
+.rf-details,
+.rf-sidenote,
+.rf-conversation,
+.rf-annotate,
+.rf-xref,
+.rf-diff,
+.rf-pullquote,
+.rf-textblock,
+.rf-nav,
+.rf-breadcrumb,
+.rf-toc,
+.rf-datatable,
+.rf-form {
+	padding: var(--rune-padding, var(--rf-spacing-sm)) 0;
+}
+
+/* ─── Banner: full-width strip ────────────────────────────────────── */
+
+.rf-hero,
+.rf-cta,
+.rf-feature,
+.rf-steps,
+.rf-bento,
+.rf-storyboard,
+.rf-map {
+	background: var(--rf-color-surface);
+	padding: var(--rune-padding, var(--rf-spacing-xl)) 0;
+}
+
+/* ─── Inset: recessed container ───────────────────────────────────── */
+
+.rf-codegroup,
+.rf-sandbox,
+.rf-preview,
+.rf-mockup,
+.rf-showcase,
+.rf-diagram,
+.rf-chart,
+.rf-embed,
+.rf-juxtapose,
+.rf-gallery,
+.rf-figure,
+.rf-reveal {
+	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-md);
+	padding: var(--rune-padding, var(--rf-spacing-md));
+}
