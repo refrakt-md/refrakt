@@ -3,7 +3,7 @@ import { join, relative, resolve } from 'path';
 import { execSync } from 'child_process';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type { PlanEntity, PlanRuneType, Criterion, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
+import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
 const REF_TAG_NAMES = new Set<string>(['ref', 'xref']);
@@ -67,6 +67,53 @@ function extractCriteria(source: string, runeStartLine: number, runeEndLine: num
 	return criteria;
 }
 
+/** Extract the Resolution section from the raw source within the rune's line range */
+function extractResolution(source: string, runeStartLine: number, runeEndLine: number): Resolution | undefined {
+	const lines = source.split('\n');
+	// Find the first ## Resolution heading within the rune range
+	let resolutionStart = -1;
+	for (let i = runeStartLine; i < runeEndLine && i < lines.length; i++) {
+		if (/^##\s+Resolution\s*$/.test(lines[i])) {
+			resolutionStart = i;
+			break;
+		}
+	}
+	if (resolutionStart === -1) return undefined;
+
+	// Collect all lines from after the heading to the end of the rune (or next ## heading)
+	const contentLines: string[] = [];
+	for (let i = resolutionStart + 1; i < runeEndLine && i < lines.length; i++) {
+		// Stop at the next H2 heading (but not H3+)
+		if (/^##\s+[^#]/.test(lines[i])) break;
+		contentLines.push(lines[i]);
+	}
+
+	const content = contentLines.join('\n').trim();
+
+	// Parse metadata lines
+	let date: string | undefined;
+	let branch: string | undefined;
+	let pr: string | undefined;
+	const bodyLines: string[] = [];
+
+	for (const line of contentLines) {
+		const dateMatch = line.match(/^Completed:\s*(.+)$/);
+		if (dateMatch) { date = dateMatch[1].trim(); continue; }
+
+		const branchMatch = line.match(/^Branch:\s*(.+)$/);
+		if (branchMatch) { branch = branchMatch[1].trim().replace(/^`|`$/g, ''); continue; }
+
+		const prMatch = line.match(/^PR:\s*(.+)$/);
+		if (prMatch) { pr = prMatch[1].trim(); continue; }
+
+		bodyLines.push(line);
+	}
+
+	const body = bodyLines.join('\n').trim();
+
+	return { date, branch, pr, body };
+}
+
 /** Extract all referenced entity IDs from ref/xref tag nodes in the AST */
 function extractRefs(ast: Node): string[] {
 	const refNodes = walkNodes(ast, n => n.type === 'tag' && REF_TAG_NAMES.has(n.tag as string));
@@ -103,8 +150,9 @@ export function parseFile(filePath: string, relPath: string): PlanEntity | null 
 	const criteria = extractCriteria(source, startLine, endLine);
 
 	const refs = extractRefs(planTag);
+	const resolution = extractResolution(source, startLine, endLine);
 
-	return { file: relPath, type: runeType, attributes, title, criteria, refs };
+	return { file: relPath, type: runeType, attributes, title, criteria, refs, resolution };
 }
 
 /** Read the cache file, returning an empty cache if it doesn't exist or is invalid */

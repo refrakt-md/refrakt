@@ -103,7 +103,7 @@ async function handleBuild(args: string[]): Promise<void> {
 function handleUpdate(args: string[]): void {
 	const id = args[0];
 	if (!id || id.startsWith('-')) {
-		console.error('Usage: refrakt plan update <id> [--status <s>] [--check "text"] [--uncheck "text"] [--<attr> <value>] [--format json]');
+		console.error('Usage: refrakt plan update <id> [--status <s>] [--check "text"] [--uncheck "text"] [--resolve "text"] [--resolve-file <path>] [--<attr> <value>] [--format json]');
 		process.exit(1);
 	}
 
@@ -111,6 +111,8 @@ function handleUpdate(args: string[]): void {
 	let formatJson = false;
 	let check: string | undefined;
 	let uncheck: string | undefined;
+	let resolveText: string | undefined;
+	let resolveFile: string | undefined;
 	const attrs: Record<string, string> = {};
 
 	for (let i = 1; i < args.length; i++) {
@@ -124,6 +126,10 @@ function handleUpdate(args: string[]): void {
 			check = args[++i];
 		} else if (arg === '--uncheck' && args[i + 1]) {
 			uncheck = args[++i];
+		} else if (arg === '--resolve' && args[i + 1]) {
+			resolveText = args[++i];
+		} else if (arg === '--resolve-file' && args[i + 1]) {
+			resolveFile = args[++i];
 		} else if (arg.startsWith('--') && args[i + 1]) {
 			const key = arg.slice(2);
 			attrs[key] = args[++i];
@@ -133,13 +139,13 @@ function handleUpdate(args: string[]): void {
 		}
 	}
 
-	if (Object.keys(attrs).length === 0 && !check && !uncheck) {
-		console.error('Error: No changes specified. Use --status, --check, --uncheck, or --<attr> <value>.');
+	if (Object.keys(attrs).length === 0 && !check && !uncheck && !resolveText && !resolveFile) {
+		console.error('Error: No changes specified. Use --status, --check, --uncheck, --resolve, or --<attr> <value>.');
 		process.exit(1);
 	}
 
 	try {
-		const result = runUpdate({ id, dir, attrs, check, uncheck, formatJson });
+		const result = runUpdate({ id, dir, attrs, check, uncheck, resolve: resolveText, resolveFile, formatJson });
 		if (formatJson) {
 			console.log(JSON.stringify(result, null, 2));
 		} else {
@@ -444,6 +450,17 @@ function handleStatus(args: string[]): void {
 		console.log('  Ready (highest priority):');
 		for (const r of result.ready) {
 			console.log(`    ${r.id}  ${(r.title ?? '(untitled)').padEnd(35)}  ${r.priority.padEnd(9)} ${r.complexity}`);
+		}
+		console.log();
+	}
+
+	// Done (recent)
+	if (result.done.length > 0) {
+		console.log('  Done (recent):');
+		for (const d of result.done) {
+			const dateStr = d.date ? `  ${d.date}` : '';
+			const prStr = d.pr ? `  → ${d.pr}` : '';
+			console.log(`    ${d.id}  ${(d.title ?? '(untitled)').padEnd(35)}${dateStr}${prStr}`);
 		}
 		console.log();
 	}

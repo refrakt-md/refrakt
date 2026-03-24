@@ -57,6 +57,13 @@ export interface ReadyItem {
 	complexity: string;
 }
 
+export interface DoneItem {
+	id: string;
+	title: string | undefined;
+	date?: string;
+	pr?: string;
+}
+
 export interface Warning {
 	type: 'broken-ref' | 'no-milestone' | 'stale-in-progress';
 	source: string;
@@ -69,6 +76,7 @@ export interface StatusResult {
 	counts: Record<string, StatusCounts>;
 	blocked: BlockedItem[];
 	ready: ReadyItem[];
+	done: DoneItem[];
 	warnings: Warning[];
 }
 
@@ -140,6 +148,23 @@ function findReadyItems(entities: PlanEntity[], allEntities: PlanEntity[]): Read
 	});
 
 	return ready.slice(0, 5);
+}
+
+function findDoneItems(entities: PlanEntity[]): DoneItem[] {
+	const items: DoneItem[] = [];
+	for (const e of entities) {
+		if (!DONE_STATUSES.has(e.attributes.status || '')) continue;
+		if (!e.resolution) continue;
+		items.push({
+			id: e.attributes.id || '',
+			title: e.title,
+			date: e.resolution.date,
+			pr: e.resolution.pr,
+		});
+	}
+	// Sort by date descending (most recent first)
+	items.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+	return items.slice(0, 10);
 }
 
 function findWarnings(allEntities: PlanEntity[]): Warning[] {
@@ -230,7 +255,8 @@ export function runStatus(options: StatusOptions): StatusResult {
 	const milestoneProgress = findMilestoneProgress(milestones, workAndBugs, milestoneName);
 	const blocked = findBlockedItems(workAndBugs, allEntities);
 	const ready = findReadyItems(workAndBugs, allEntities);
+	const done = findDoneItems(workAndBugs);
 	const warnings = findWarnings(allEntities);
 
-	return { milestone: milestoneProgress, counts, blocked, ready, warnings };
+	return { milestone: milestoneProgress, counts, blocked, ready, done, warnings };
 }

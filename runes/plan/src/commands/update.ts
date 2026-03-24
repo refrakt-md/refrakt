@@ -53,6 +53,8 @@ export interface UpdateOptions {
 	attrs: Record<string, string>;
 	check?: string;
 	uncheck?: string;
+	resolve?: string;
+	resolveFile?: string;
 	formatJson?: boolean;
 }
 
@@ -216,6 +218,55 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 		lines[idx] = old.replace(/\[[xX]\]/, '[ ]');
 		const text = old.replace(/^[\s]*-\s+\[[xX]\]\s+/, '').trim();
 		changes.push({ field: 'criterion', old: '[x] ' + text, new: '[ ] ' + text });
+	}
+
+	// --- Apply resolution ---
+	let resolveBody = options.resolve;
+	if (options.resolveFile) {
+		resolveBody = readFileSync(resolve(options.resolveFile), 'utf8');
+	}
+
+	if (resolveBody !== undefined) {
+		// Only allow on work and bug types
+		if (entity.type !== 'work' && entity.type !== 'bug') {
+			const err = new Error(`Resolution sections are only supported on work and bug items, not ${entity.type}`);
+			(err as any).exitCode = EXIT_VALIDATION_ERROR;
+			throw err;
+		}
+
+		const today = new Date().toISOString().slice(0, 10);
+		const resolutionContent = `Completed: ${today}\n\n${resolveBody}`.trimEnd();
+
+		// Check if a ## Resolution section already exists
+		const resolutionHeadingIdx = lines.findIndex(l => /^##\s+Resolution\s*$/.test(l));
+
+		if (resolutionHeadingIdx !== -1) {
+			// Find the closing rune tag or next H2 heading to know where to insert the append
+			let insertIdx = resolutionHeadingIdx + 1;
+			for (let i = resolutionHeadingIdx + 1; i < lines.length; i++) {
+				const closingTag = new RegExp(`^\\{%\\s+/${entity.type}\\s+%\\}`);
+				if (closingTag.test(lines[i]) || /^##\s+[^#]/.test(lines[i])) {
+					insertIdx = i;
+					break;
+				}
+				insertIdx = i + 1;
+			}
+			// Append with separator
+			const appendBlock = `\n---\n\n${resolutionContent}\n`;
+			lines.splice(insertIdx, 0, appendBlock);
+			changes.push({ field: 'resolution', old: '(appended)', new: 'updated' });
+		} else {
+			// Insert new ## Resolution section before the closing rune tag
+			const closingTag = new RegExp(`^\\{%\\s+/${entity.type}\\s+%\\}`);
+			const closingIdx = lines.findIndex(l => closingTag.test(l));
+			if (closingIdx === -1) {
+				// No closing tag — append at end
+				lines.push('', '## Resolution', '', resolutionContent, '');
+			} else {
+				lines.splice(closingIdx, 0, '## Resolution', '', resolutionContent, '');
+			}
+			changes.push({ field: 'resolution', old: '', new: 'added' });
+		}
 	}
 
 	// --- Write back ---

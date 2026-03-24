@@ -186,6 +186,46 @@ describe('validate — completed milestones with open items', () => {
 	});
 });
 
+describe('validate — resolution checks', () => {
+	it('reports info when done item has no resolution', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'done-without-resolution');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('info');
+	});
+
+	it('does not report info when done item has resolution', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n\n## Resolution\n\nCompleted: 2026-03-24\n\nDid the thing.\n\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'done-without-resolution');
+		expect(issues).toHaveLength(0);
+	});
+
+	it('warns when resolution exists but item is not done', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="in-progress" milestone="v1.0" %}\n# A\n\n## Resolution\n\nCompleted: 2026-03-24\n\nStarted work.\n\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'resolution-not-done');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+	});
+
+	it('warns when file has multiple Resolution sections', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n\n## Resolution\n\nFirst.\n\n## Resolution\n\nSecond.\n\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'multiple-resolutions');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+	});
+
+	it('does not check resolutions on non-work/bug types', () => {
+		writeMd('spec/a.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'done-without-resolution');
+		expect(issues).toHaveLength(0);
+	});
+});
+
 describe('validate — strict mode', () => {
 	it('promotes warnings to errors in strict mode', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n{% /work %}');

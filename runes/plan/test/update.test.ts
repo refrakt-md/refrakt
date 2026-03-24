@@ -246,6 +246,90 @@ describe('plan update — error cases', () => {
 	});
 });
 
+describe('plan update — resolution', () => {
+	it('appends a resolution section when using --resolve', () => {
+		writeMd('work/task.md', SAMPLE_WORK);
+		const result = runUpdate({
+			id: 'WORK-001', dir: TMP, attrs: {},
+			resolve: 'Branch: `claude/feature`\n\n### What was done\n- Built the thing',
+		});
+		expect(result.changes).toContainEqual(expect.objectContaining({ field: 'resolution' }));
+		const content = readMd('work/task.md');
+		expect(content).toContain('## Resolution');
+		expect(content).toContain('Completed: ');
+		expect(content).toContain('Branch: `claude/feature`');
+		expect(content).toContain('### What was done');
+		// Resolution should be before the closing tag
+		const resIdx = content.indexOf('## Resolution');
+		const closeIdx = content.indexOf('{% /work %}');
+		expect(resIdx).toBeLessThan(closeIdx);
+	});
+
+	it('combines --resolve with --status done', () => {
+		writeMd('work/task.md', SAMPLE_WORK);
+		runUpdate({
+			id: 'WORK-001', dir: TMP,
+			attrs: { status: 'done' },
+			resolve: 'Quick fix',
+		});
+		const content = readMd('work/task.md');
+		expect(content).toContain('status="done"');
+		expect(content).toContain('## Resolution');
+		expect(content).toContain('Quick fix');
+	});
+
+	it('appends to existing resolution with separator', () => {
+		const workWithResolution = `{% work id="WORK-001" status="in-progress" priority="high" %}
+
+# Build the scanner
+
+## Resolution
+
+Completed: 2026-03-20
+
+Initial notes here.
+
+{% /work %}`;
+		writeMd('work/task.md', workWithResolution);
+		runUpdate({
+			id: 'WORK-001', dir: TMP, attrs: {},
+			resolve: 'Added more context.',
+		});
+		const content = readMd('work/task.md');
+		expect(content).toContain('Initial notes here.');
+		expect(content).toContain('---');
+		expect(content).toContain('Added more context.');
+	});
+
+	it('rejects resolution on spec rune', () => {
+		writeMd('spec/auth.md', SAMPLE_SPEC);
+		try {
+			runUpdate({
+				id: 'SPEC-001', dir: TMP, attrs: {},
+				resolve: 'Some resolution',
+			});
+			expect.unreachable('should have thrown');
+		} catch (err: any) {
+			expect(err.message).toContain('only supported on work and bug');
+			expect(err.message).toContain('spec');
+			expect(err.exitCode).toBe(EXIT_VALIDATION_ERROR);
+		}
+	});
+
+	it('works on bug runes', () => {
+		writeMd('bug/mobile.md', SAMPLE_BUG);
+		runUpdate({
+			id: 'BUG-001', dir: TMP,
+			attrs: { status: 'fixed' },
+			resolve: 'Fixed the click handler',
+		});
+		const content = readMd('bug/mobile.md');
+		expect(content).toContain('status="fixed"');
+		expect(content).toContain('## Resolution');
+		expect(content).toContain('Fixed the click handler');
+	});
+});
+
 describe('plan update — JSON output', () => {
 	it('returns structured result for JSON format', () => {
 		writeMd('work/task.md', SAMPLE_WORK);

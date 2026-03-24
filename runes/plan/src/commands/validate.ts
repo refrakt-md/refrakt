@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
 
@@ -208,6 +210,60 @@ function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): Valid
 	return issues;
 }
 
+function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name || e.file;
+		const status = e.attributes.status || '';
+		const isDone = DONE_STATUSES.has(status);
+		const hasResolution = e.resolution !== undefined;
+
+		// Done without resolution (info)
+		if (isDone && !hasResolution && (e.type === 'work' || e.type === 'bug')) {
+			issues.push({
+				severity: 'info',
+				type: 'done-without-resolution',
+				source: id,
+				file: e.file,
+				message: `${id} is ${status} but has no Resolution section`,
+			});
+		}
+
+		// Resolution on non-terminal item (warning)
+		if (hasResolution && !isDone && (e.type === 'work' || e.type === 'bug')) {
+			issues.push({
+				severity: 'warning',
+				type: 'resolution-not-done',
+				source: id,
+				file: e.file,
+				message: `${id} has a Resolution section but status is "${status}"`,
+			});
+		}
+
+		// Multiple ## Resolution headings (warning) — scan raw file
+		if (e.type === 'work' || e.type === 'bug') {
+			try {
+				const content = readFileSync(join(dir, e.file), 'utf8');
+				const headingCount = (content.match(/^##\s+Resolution\s*$/gm) || []).length;
+				if (headingCount > 1) {
+					issues.push({
+						severity: 'warning',
+						type: 'multiple-resolutions',
+						source: id,
+						file: e.file,
+						message: `${id} has ${headingCount} Resolution sections (expected at most 1)`,
+					});
+				}
+			} catch {
+				// File read failed — skip this check
+			}
+		}
+	}
+
+	return issues;
+}
+
 function checkOrphanedWorkItems(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	for (const e of entities) {
@@ -268,6 +324,7 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkCircularDeps(entities, knownIds),
 		...checkOrphanedWorkItems(entities),
 		...checkCompletedMilestones(entities),
+		...checkResolutions(entities, dir),
 	];
 
 	let errors = 0;
