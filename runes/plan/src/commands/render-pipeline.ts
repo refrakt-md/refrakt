@@ -703,9 +703,10 @@ function generateStatusFilterPages(entities: PlanEntity[], baseUrl: string): Sta
 		spec: 'id', decision: 'id', milestone: 'id',
 	};
 
-	// Show attribute for work/bug types
+	// Show attribute — work/bug use "all" (to include both), others filter to their own type
 	const SHOW_ATTRS: Record<string, string> = {
 		work: ' show="all"', bug: ' show="all"',
+		spec: ' show="spec"', decision: ' show="decision"', milestone: ' show="milestone"',
 	};
 
 	for (const [type, byStatus] of byType) {

@@ -10,7 +10,7 @@ export const backlog = createContentModelSchema({
 		filter: { type: String, required: false, default: '', description: 'Filter: space-separated field:value pairs (e.g., "status:ready priority:high").' },
 		sort: { type: String, required: false, default: 'priority', description: 'Sort field: priority, status, id, assignee, complexity, milestone.' },
 		group: { type: String, required: false, default: '', description: 'Group by field: status, priority, assignee, milestone, type, tags.' },
-		show: { type: String, required: false, default: 'all', description: 'Entity types: all, work, bug.' },
+		show: { type: String, required: false, default: 'all', description: 'Entity types: all, work, bug, spec, decision, milestone.' },
 	},
 	selfClosing: true,
 	contentModel: {
