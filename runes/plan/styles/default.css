@@ -878,6 +878,191 @@
 	white-space: nowrap;
 }
 
+/* --------------------------------------------------------------------------
+   Backlog
+   -------------------------------------------------------------------------- */
+
+.rf-backlog {
+	margin-block-end: var(--plan-space-lg);
+}
+
+/* Group sections */
+.rf-backlog__group {
+	margin-bottom: var(--plan-space-lg);
+}
+.rf-backlog__group-title {
+	font-size: var(--plan-font-size-sm);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--plan-color-text-muted);
+	margin: 0 0 var(--plan-space-sm);
+	padding-bottom: var(--plan-space-xs);
+	border-bottom: 1px solid var(--plan-color-border);
+}
+
+/* Cards */
+.rf-backlog__card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--plan-space-xs);
+	padding: var(--plan-space-sm) var(--plan-space-md);
+	border-left: 3px solid var(--plan-color-border);
+	border-radius: 0 var(--plan-radius-sm) var(--plan-radius-sm) 0;
+	background: var(--plan-color-surface);
+	margin-bottom: var(--plan-space-xs);
+	transition: border-color 0.15s ease;
+}
+.rf-backlog__card:hover {
+	border-left-color: var(--plan-color-in-progress);
+}
+
+/* Card header with badges */
+.rf-backlog__card-header {
+	display: flex;
+	align-items: center;
+	gap: var(--plan-space-xs);
+	flex-wrap: wrap;
+}
+.rf-backlog__card-id {
+	font-family: var(--plan-font-mono);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	color: var(--plan-color-text);
+}
+.rf-backlog__card-status {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem var(--plan-space-xs);
+	border-radius: var(--plan-radius-sm);
+	color: var(--plan-color-text-muted);
+	background: var(--plan-color-surface-alt);
+}
+.rf-backlog__card-priority,
+.rf-backlog__card-severity {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem var(--plan-space-xs);
+	border-radius: var(--plan-radius-sm);
+}
+.rf-backlog__card-complexity {
+	font-size: 0.625rem;
+	font-weight: 500;
+	color: var(--plan-color-text-muted);
+}
+.rf-backlog__card-milestone {
+	font-size: 0.625rem;
+	font-weight: 500;
+	padding: 0.0625rem var(--plan-space-xs);
+	border-radius: var(--plan-radius-sm);
+	color: var(--plan-color-text-muted);
+	background: var(--plan-color-surface-alt);
+	margin-left: auto;
+}
+.rf-backlog__card-title {
+	font-size: var(--plan-font-size-base);
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--plan-color-text);
+}
+
+/* Status-aware card border */
+.rf-backlog__card[data-status="ready"] { border-left-color: var(--plan-color-ready); }
+.rf-backlog__card[data-status="in-progress"],
+.rf-backlog__card[data-status="review"] { border-left-color: var(--plan-color-in-progress); }
+.rf-backlog__card[data-status="done"],
+.rf-backlog__card[data-status="fixed"] { border-left-color: var(--plan-color-done); }
+.rf-backlog__card[data-status="blocked"] { border-left-color: var(--plan-color-blocked); }
+.rf-backlog__card[data-status="confirmed"] { border-left-color: var(--plan-color-confirmed); }
+
+/* Status badge colors */
+.rf-backlog__card[data-status="ready"] .rf-backlog__card-status { color: var(--plan-color-ready); background: var(--plan-color-ready-bg); }
+.rf-backlog__card[data-status="in-progress"] .rf-backlog__card-status,
+.rf-backlog__card[data-status="review"] .rf-backlog__card-status { color: var(--plan-color-in-progress); background: var(--plan-color-in-progress-bg); }
+.rf-backlog__card[data-status="done"] .rf-backlog__card-status,
+.rf-backlog__card[data-status="fixed"] .rf-backlog__card-status { color: var(--plan-color-done); background: var(--plan-color-done-bg); }
+.rf-backlog__card[data-status="blocked"] .rf-backlog__card-status { color: var(--plan-color-blocked); background: var(--plan-color-blocked-bg); }
+.rf-backlog__card[data-status="confirmed"] .rf-backlog__card-status { color: var(--plan-color-confirmed); background: var(--plan-color-confirmed-bg); }
+
+/* Priority badge colors */
+.rf-backlog__card[data-type="work"] .rf-backlog__card-priority { color: var(--plan-color-ready); background: var(--plan-color-ready-bg); }
+
+/* Severity badge colors */
+.rf-backlog__card[data-type="bug"] .rf-backlog__card-severity { color: var(--plan-color-blocked); background: var(--plan-color-blocked-bg); }
+
+/* Type indicator for bugs */
+.rf-backlog__card[data-type="bug"] { border-left-style: dashed; }
+
+/* --------------------------------------------------------------------------
+   Decision Log
+   -------------------------------------------------------------------------- */
+
+.rf-decision-log {
+	margin-block-end: var(--plan-space-lg);
+}
+
+.rf-decision-log__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-decision-log__entry {
+	display: flex;
+	align-items: baseline;
+	gap: var(--plan-space-sm);
+	padding: var(--plan-space-sm) 0;
+	border-bottom: 1px solid var(--plan-color-border-light);
+}
+.rf-decision-log__entry:last-child {
+	border-bottom: none;
+}
+.rf-decision-log__date {
+	font-family: var(--plan-font-mono);
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--plan-color-text-muted);
+	min-width: 6.5rem;
+	flex-shrink: 0;
+}
+.rf-decision-log__id {
+	font-family: var(--plan-font-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--plan-color-text);
+	min-width: 5rem;
+	flex-shrink: 0;
+}
+.rf-decision-log__status {
+	font-size: 0.625rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.0625rem var(--plan-space-xs);
+	border-radius: var(--plan-radius-sm);
+	color: var(--plan-color-text-muted);
+	background: var(--plan-color-surface-alt);
+	flex-shrink: 0;
+}
+.rf-decision-log__title {
+	font-size: var(--plan-font-size-base);
+	font-weight: 500;
+	color: var(--plan-color-text);
+	flex: 1;
+	min-width: 0;
+}
+
+/* Status colors */
+.rf-decision-log__entry[data-status="accepted"] .rf-decision-log__status { color: var(--plan-color-accepted); background: var(--plan-color-accepted-bg); }
+.rf-decision-log__entry[data-status="proposed"] .rf-decision-log__status { color: var(--plan-color-proposed); background: var(--plan-color-proposed-bg); }
+.rf-decision-log__entry[data-status="superseded"] .rf-decision-log__status,
+.rf-decision-log__entry[data-status="deprecated"] .rf-decision-log__status { color: var(--plan-color-text-muted); background: var(--plan-color-surface); text-decoration: line-through; }
+.rf-decision-log__entry[data-status="superseded"] .rf-decision-log__title,
+.rf-decision-log__entry[data-status="deprecated"] .rf-decision-log__title { color: var(--plan-color-text-muted); text-decoration: line-through; }
+
 /* === Relationships section === */
 
 .rf-plan-relationships {

@@ -162,6 +162,123 @@
 .rf-plan-progress__label { font-size: var(--plan-font-size-sm); font-family: var(--plan-font-mono); color: var(--plan-color-text-muted); }
 
 /* --------------------------------------------------------------------------
+   Backlog — minimal
+   -------------------------------------------------------------------------- */
+
+.rf-backlog {
+	margin-block-end: 1.5rem;
+}
+.rf-backlog__group {
+	margin-bottom: 1.5rem;
+}
+.rf-backlog__group-title {
+	font-size: var(--plan-font-size-sm);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--plan-color-text-muted);
+	margin: 0 0 0.5rem;
+	padding-bottom: 0.25rem;
+	border-bottom: 1px solid var(--plan-color-border);
+}
+.rf-backlog__card {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--plan-color-border);
+}
+.rf-backlog__card:last-child {
+	border-bottom: none;
+}
+.rf-backlog__card-header {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.rf-backlog__card-id {
+	font-family: var(--plan-font-mono);
+	font-size: var(--plan-font-size-sm);
+	font-weight: 700;
+	color: var(--plan-color-text);
+}
+.rf-backlog__card-status {
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+	text-transform: capitalize;
+}
+.rf-backlog__card-status::before { content: '— '; }
+.rf-backlog__card-priority,
+.rf-backlog__card-severity,
+.rf-backlog__card-complexity {
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+	text-transform: capitalize;
+}
+.rf-backlog__card-milestone {
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+	margin-left: auto;
+}
+.rf-backlog__card-title {
+	font-size: var(--plan-font-size-base);
+	font-weight: 500;
+	color: var(--plan-color-text);
+}
+
+/* --------------------------------------------------------------------------
+   Decision Log — minimal
+   -------------------------------------------------------------------------- */
+
+.rf-decision-log {
+	margin-block-end: 1.5rem;
+}
+.rf-decision-log__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-decision-log__entry {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding: 0.375rem 0;
+	border-bottom: 1px solid var(--plan-color-border);
+}
+.rf-decision-log__entry:last-child {
+	border-bottom: none;
+}
+.rf-decision-log__date {
+	font-family: var(--plan-font-mono);
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+	min-width: 6.5rem;
+	flex-shrink: 0;
+}
+.rf-decision-log__id {
+	font-family: var(--plan-font-mono);
+	font-size: var(--plan-font-size-sm);
+	font-weight: 700;
+	color: var(--plan-color-text);
+}
+.rf-decision-log__status {
+	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+	text-transform: capitalize;
+}
+.rf-decision-log__status::before { content: '— '; }
+.rf-decision-log__title {
+	font-size: var(--plan-font-size-base);
+	font-weight: 500;
+	color: var(--plan-color-text);
+	flex: 1;
+	min-width: 0;
+}
+.rf-decision-log__entry[data-status="superseded"] .rf-decision-log__title,
+.rf-decision-log__entry[data-status="deprecated"] .rf-decision-log__title {
+	color: var(--plan-color-text-muted);
+	text-decoration: line-through;
+}
+
+/* --------------------------------------------------------------------------
    Print styles
    -------------------------------------------------------------------------- */
 
