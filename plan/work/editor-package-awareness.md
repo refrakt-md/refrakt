@@ -1,4 +1,4 @@
-{% work id="WORK-051" status="ready" priority="high" complexity="complex" tags="editor, packages" %}
+{% work id="WORK-051" status="in-progress" priority="high" complexity="complex" tags="editor, packages" %}
 
 # Editor Package Awareness
 
@@ -12,9 +12,9 @@ The SvelteKit plugin (`packages/sveltekit/src/plugin.ts`) and CLI inspect comman
 
 ## Acceptance Criteria
 
-- [ ] Editor loads packages from `refrakt.config.json` on startup using `loadRunePackage()` + `mergePackages()`
-- [ ] Package runes appear in the rune palette (`/api/runes` endpoint)
-- [ ] Package runes parse and render correctly in the preview panel
+- [x] Editor loads packages from `refrakt.config.json` on startup using `loadRunePackage()` + `mergePackages()`
+- [x] Package runes appear in the rune palette (`/api/runes` endpoint)
+- [x] Package runes parse and render correctly in the preview panel
 - [ ] Rune palette groups package runes by package name (using `RunePackage.displayName`)
 - [ ] `CHILD_RUNES` set is derived from rune schemas rather than hardcoded
 - [ ] `RUNE_CATEGORIES` map uses package `displayName` for package runes instead of hardcoded categories
