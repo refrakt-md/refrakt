@@ -124,12 +124,16 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const header = new Tag('div', { class: 'rf-backlog__card-header' }, badges);
 	const titleEl = new Tag('div', { class: 'rf-backlog__card-title' }, [title]);
 
+	const children: any[] = entity.sourceUrl
+		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, [header, titleEl])]
+		: [header, titleEl];
+
 	return new Tag('article', {
 		class: 'rf-backlog__card',
 		'data-type': type,
 		'data-status': status,
 		'data-id': id,
-	}, [header, titleEl]);
+	}, children);
 }
 
 /** Build a decision log entry Tag */
@@ -139,11 +143,15 @@ function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag
 	const status = String(entity.data.status ?? '');
 	const date = String(entity.data.date ?? '');
 
-	const children: any[] = [];
-	if (date) children.push(new Tag('time', { class: 'rf-decision-log__date' }, [date]));
-	children.push(new Tag('span', { class: 'rf-decision-log__status' }, [status]));
-	children.push(new Tag('span', { class: 'rf-decision-log__id' }, [id]));
-	children.push(new Tag('span', { class: 'rf-decision-log__title' }, [title]));
+	const innerChildren: any[] = [];
+	if (date) innerChildren.push(new Tag('time', { class: 'rf-decision-log__date' }, [date]));
+	innerChildren.push(new Tag('span', { class: 'rf-decision-log__status' }, [status]));
+	innerChildren.push(new Tag('span', { class: 'rf-decision-log__id' }, [id]));
+	innerChildren.push(new Tag('span', { class: 'rf-decision-log__title' }, [title]));
+
+	const children: any[] = entity.sourceUrl
+		? [new Tag('a', { class: 'rf-decision-log__link', href: entity.sourceUrl }, innerChildren)]
+		: innerChildren;
 
 	return new Tag('li', {
 		class: 'rf-decision-log__entry',
@@ -530,17 +538,23 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 		const mtime = Number(e.data.mtime);
 		const dateStr = new Date(mtime).toISOString().slice(0, 10);
 
-		return new Tag('li', {
-			class: 'rf-plan-activity__entry',
-			'data-type': type,
-			'data-status': status,
-		}, [
+		const innerChildren = [
 			new Tag('time', { class: 'rf-plan-activity__date' }, [dateStr]),
 			new Tag('span', { class: 'rf-plan-activity__type' }, [type]),
 			new Tag('span', { class: 'rf-plan-activity__id' }, [id]),
 			new Tag('span', { class: 'rf-plan-activity__status', 'data-status': status }, [status]),
 			new Tag('span', { class: 'rf-plan-activity__title' }, [title]),
-		]);
+		];
+
+		const children: any[] = e.sourceUrl
+			? [new Tag('a', { class: 'rf-plan-activity__link', href: e.sourceUrl }, innerChildren)]
+			: innerChildren;
+
+		return new Tag('li', {
+			class: 'rf-plan-activity__entry',
+			'data-type': type,
+			'data-status': status,
+		}, children);
 	});
 
 	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-plan-activity__list' }, entries);
@@ -607,10 +621,7 @@ function buildRelationshipsSection(
 			const status = target ? String(target.data.status ?? '') : '';
 			const type = target ? target.type : rel.toType;
 
-			items.push(new Tag('li', {
-				class: 'rf-plan-relationships__item',
-				'data-kind': kind,
-			}, [
+			const innerChildren = [
 				new Tag('span', { class: 'rf-plan-relationships__id' }, [targetId]),
 				new Tag('span', {
 					class: 'rf-plan-relationships__status',
@@ -618,7 +629,16 @@ function buildRelationshipsSection(
 				}, [status]),
 				new Tag('span', { class: 'rf-plan-relationships__type' }, [type]),
 				...(title ? [new Tag('span', { class: 'rf-plan-relationships__title' }, [title])] : []),
-			]));
+			];
+
+			const children: any[] = target?.sourceUrl
+				? [new Tag('a', { class: 'rf-plan-relationships__link', href: target.sourceUrl }, innerChildren)]
+				: innerChildren;
+
+			items.push(new Tag('li', {
+				class: 'rf-plan-relationships__item',
+				'data-kind': kind,
+			}, children));
 		}
 
 		groups.push(new Tag('div', {

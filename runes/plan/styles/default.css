@@ -877,6 +877,17 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+.rf-plan-activity__link {
+	display: flex;
+	align-items: baseline;
+	gap: var(--plan-space-sm);
+	color: inherit;
+	text-decoration: none;
+	width: 100%;
+}
+.rf-plan-activity__link:hover .rf-plan-activity__title {
+	color: var(--plan-color-primary);
+}
 
 /* --------------------------------------------------------------------------
    Backlog
@@ -969,6 +980,16 @@
 	line-height: 1.4;
 	color: var(--plan-color-text);
 }
+.rf-backlog__card-link {
+	display: flex;
+	flex-direction: column;
+	gap: var(--plan-space-xs);
+	color: inherit;
+	text-decoration: none;
+}
+.rf-backlog__card-link:hover .rf-backlog__card-title {
+	color: var(--plan-color-primary);
+}
 
 /* Status-aware card border */
 .rf-backlog__card[data-status="ready"] { border-left-color: var(--plan-color-ready); }
@@ -1053,6 +1074,17 @@
 	color: var(--plan-color-text);
 	flex: 1;
 	min-width: 0;
+}
+.rf-decision-log__link {
+	display: flex;
+	align-items: baseline;
+	gap: var(--plan-space-sm);
+	color: inherit;
+	text-decoration: none;
+	width: 100%;
+}
+.rf-decision-log__link:hover .rf-decision-log__title {
+	color: var(--plan-color-primary);
 }
 
 /* Status colors */
@@ -1152,4 +1184,18 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+.rf-plan-relationships__link {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: inherit;
+	text-decoration: none;
+	width: 100%;
+}
+.rf-plan-relationships__link:hover .rf-plan-relationships__title {
+	color: var(--plan-color-primary);
+}
+.rf-plan-relationships__link:hover .rf-plan-relationships__id {
+	color: var(--plan-color-primary);
 }
