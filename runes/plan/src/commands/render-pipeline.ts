@@ -1244,7 +1244,7 @@ export function renderPage(
 
 	// Hot reload SSE script
 	if (opts?.hotReload) {
-		const hotReloadScript = `<script>(function(){var es=new EventSource('/__plan-reload');es.onmessage=function(e){if(e.data==='reload')location.reload();};})()</script>`;
+		const hotReloadScript = `<script>(function(){var es=new EventSource('/__plan-reload');es.onmessage=function(e){if(e.data==='reload')location.reload();};window.addEventListener('beforeunload',function(){es.close();});})()</script>`;
 		shellOptions.headExtra = hotReloadScript;
 	}
 
