@@ -167,7 +167,7 @@ describe('validate — orphaned work items', () => {
 
 describe('validate — completed milestones with open items', () => {
 	it('warns about complete milestone with open work', () => {
-		writeMd('work/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="in-progress" milestone="v1.0" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
 		const issues = result.issues.filter(i => i.type === 'complete-milestone-open-item');
@@ -178,7 +178,7 @@ describe('validate — completed milestones with open items', () => {
 	});
 
 	it('does not warn when all items are done', () => {
-		writeMd('work/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
 		const issues = result.issues.filter(i => i.type === 'complete-milestone-open-item');

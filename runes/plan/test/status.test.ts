@@ -48,7 +48,7 @@ describe('plan status — counts', () => {
 
 describe('plan status — milestone progress', () => {
 	it('shows active milestone with progress', () => {
-		writeMd('work/m.md', '{% milestone name="v1.0" status="active" target="2026-04-01" %}\n# v1.0\n{% /milestone %}');
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="active" target="2026-04-01" %}\n# v1.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}\n# A\n{% /work %}');
 		writeMd('work/b.md', '{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}\n# B\n{% /work %}');
 		writeMd('work/c.md', '{% work id="WORK-003" status="in-progress" priority="medium" milestone="v1.0" %}\n# C\n{% /work %}');
@@ -64,8 +64,8 @@ describe('plan status — milestone progress', () => {
 	});
 
 	it('scopes to a specific milestone via --milestone', () => {
-		writeMd('work/m1.md', '{% milestone name="v1.0" status="active" %}\n# v1.0\n{% /milestone %}');
-		writeMd('work/m2.md', '{% milestone name="v2.0" status="planning" %}\n# v2.0\n{% /milestone %}');
+		writeMd('milestone/m1.md', '{% milestone name="v1.0" status="active" %}\n# v1.0\n{% /milestone %}');
+		writeMd('milestone/m2.md', '{% milestone name="v2.0" status="planning" %}\n# v2.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v2.0" %}\n# A\n{% /work %}');
 
 		const result = runStatus({ dir: TMP, milestone: 'v2.0' });

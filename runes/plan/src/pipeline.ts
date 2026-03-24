@@ -69,6 +69,14 @@ function extractTextContent(node: unknown): string {
 	return node.children.map(c => extractTextContent(c)).join('');
 }
 
+/** Count checkbox items ([ ] and [x]) in a renderable tree's text content */
+function countCheckboxes(tag: InstanceType<typeof Tag>): { checked: number; total: number } {
+	const text = extractTextContent(tag);
+	const unchecked = (text.match(/\[ \]/g) || []).length;
+	const checked = (text.match(/\[x\]/gi) || []).length;
+	return { checked, total: checked + unchecked };
+}
+
 /** Pattern matching entity ID references in content */
 const ID_REF_PATTERN = /\b(WORK|SPEC|BUG|ADR)-(\d+)\b/g;
 const ID_PREFIX_TO_TYPE: Record<string, string> = {
@@ -120,6 +128,18 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 
 	const milestone = String(entity.data.milestone ?? '');
 	if (milestone) badges.push(new Tag('span', { 'data-name': 'milestone-badge', class: `rf-backlog__card-milestone` }, [milestone]));
+
+	// Add checklist progress if available
+	const checkedCount = Number(entity.data.checkedCount ?? 0);
+	const totalCount = Number(entity.data.totalCount ?? 0);
+	if (totalCount > 0) {
+		badges.push(new Tag('span', {
+			'data-name': 'progress-badge',
+			class: 'rf-backlog__card-progress',
+			'data-checked': String(checkedCount),
+			'data-total': String(totalCount),
+		}, [`${checkedCount}/${totalCount}`]));
+	}
 
 	const header = new Tag('div', { class: 'rf-backlog__card-header' }, badges);
 	const titleEl = new Tag('div', { class: 'rf-backlog__card-title' }, [title]);
@@ -217,6 +237,15 @@ export const planPipelineHooks: PackagePipelineHooks = {
 
 				const title = extractTitle(tag);
 				data.title = title;
+
+				// Count checklist progress for work and bug items
+				if (runeType === 'work' || runeType === 'bug') {
+					const { checked, total } = countCheckboxes(tag);
+					if (total > 0) {
+						data.checkedCount = checked;
+						data.totalCount = total;
+					}
+				}
 
 				// Scan content for ID references
 				const refs = extractIdReferences(tag).filter(r => r.id !== entityId);
@@ -330,6 +359,18 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				return resolvePlanActivity(tag, planData);
 			}
 
+			// Inject auto-backlog into milestone rune tags
+			if (tag.attributes['data-rune'] === 'milestone') {
+				const milestoneName = readField(tag, 'name');
+				if (milestoneName) {
+					const backlog = buildMilestoneBacklog(milestoneName, planData);
+					if (backlog) {
+						modified = true;
+						tag = new Tag(tag.name, tag.attributes, [...tag.children, backlog]) as typeof tag;
+					}
+				}
+			}
+
 			// Inject relationships section into entity rune tags
 			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
 				const runeType = tag.attributes['data-rune'] as string;
@@ -403,6 +444,64 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
+/** Build auto-backlog section for a milestone, showing assigned work/bug items grouped by status */
+function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData): InstanceType<typeof Tag> | null {
+	// Collect work and bug entities assigned to this milestone
+	let entities = [
+		...data.workEntities,
+		...data.bugEntities,
+	].filter(e => String(e.data.milestone ?? '') === milestoneName);
+
+	if (entities.length === 0) return null;
+
+	// Sort by priority within each group
+	entities = sortEntities(entities, 'priority');
+
+	// Group by status
+	const groups = groupEntities(entities, 'status');
+
+	// Calculate aggregate progress from checklist counts
+	let totalChecked = 0;
+	let totalCheckboxes = 0;
+	for (const e of entities) {
+		const checked = Number(e.data.checkedCount ?? 0);
+		const total = Number(e.data.totalCount ?? 0);
+		if (total > 0) {
+			totalChecked += checked;
+			totalCheckboxes += total;
+		}
+	}
+
+	const children: any[] = [];
+
+	// Add aggregate progress if any items have checklists
+	if (totalCheckboxes > 0) {
+		const fraction = `${totalChecked}/${totalCheckboxes}`;
+		const pct = Math.round((totalChecked / totalCheckboxes) * 100);
+		children.push(new Tag('div', {
+			class: 'rf-milestone__progress',
+			'data-checked': String(totalChecked),
+			'data-total': String(totalCheckboxes),
+			'data-percent': String(pct),
+		}, [
+			new Tag('span', { class: 'rf-milestone__progress-label' }, [`Progress: ${fraction} criteria`]),
+			new Tag('span', { class: 'rf-milestone__progress-bar', style: `--rf-progress: ${pct}%` }, []),
+		]));
+	}
+
+	// Add status-grouped cards
+	for (const [groupName, groupItems] of groups) {
+		const groupTitle = new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]);
+		const cards = groupItems.map(e => buildEntityCard(e));
+		children.push(new Tag('div', {
+			class: 'rf-milestone__backlog-group',
+			'data-status': groupName,
+		}, [groupTitle, ...cards]));
+	}
+
+	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog' }, children);
+}
+
 function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
 	const filterExpr = readField(tag, 'filter');
 	const sortField = readField(tag, 'sort') || 'date';
@@ -437,6 +536,7 @@ const STATUS_LABELS: Record<string, string[]> = {
 	bug: ['fixed', 'in-progress', 'confirmed', 'reported', 'wontfix', 'duplicate'],
 	spec: ['accepted', 'review', 'draft', 'superseded', 'deprecated'],
 	decision: ['accepted', 'proposed', 'superseded', 'deprecated'],
+	milestone: ['complete', 'active', 'planning'],
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -444,6 +544,7 @@ const TYPE_LABELS: Record<string, string> = {
 	bug: 'bugs',
 	spec: 'specs',
 	decision: 'decisions',
+	milestone: 'milestones',
 };
 
 function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
@@ -454,6 +555,7 @@ function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregated
 		bug: data.bugEntities,
 		spec: data.specEntities,
 		decision: data.decisionEntities,
+		milestone: data.milestoneEntities,
 	};
 
 	const types = show === 'all' ? Object.keys(typeMap) : show.split(',').map(s => s.trim());
@@ -522,6 +624,7 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 		...data.bugEntities,
 		...data.decisionEntities,
 		...data.specEntities,
+		...data.milestoneEntities,
 	];
 
 	// Sort by mtime descending (entities with mtime data)

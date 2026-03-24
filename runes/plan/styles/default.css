@@ -1018,6 +1018,69 @@
 /* Type indicator for bugs */
 .rf-backlog__card[data-type="bug"] { border-left-style: dashed; }
 
+/* Checklist progress badge */
+.rf-backlog__card-progress {
+	font-family: var(--plan-font-mono);
+	font-size: 0.625rem;
+	font-weight: 600;
+	padding: 0.0625rem var(--plan-space-xs);
+	border-radius: var(--plan-radius-sm);
+	color: var(--plan-color-text-muted);
+	background: var(--plan-color-surface-alt);
+	margin-left: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Milestone Auto-Backlog
+   -------------------------------------------------------------------------- */
+
+.rf-milestone__backlog {
+	margin-block-start: var(--plan-space-lg);
+	padding-block-start: var(--plan-space-md);
+	border-block-start: 1px solid var(--plan-color-border);
+}
+.rf-milestone__backlog-group {
+	margin-block-end: var(--plan-space-md);
+}
+.rf-milestone__backlog-group-label {
+	font-size: var(--plan-font-size-sm);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--plan-color-text-muted);
+	margin: 0 0 var(--plan-space-xs);
+	padding-block-end: var(--plan-space-xs);
+	border-block-end: 1px solid var(--plan-color-border);
+}
+.rf-milestone__progress {
+	display: flex;
+	align-items: center;
+	gap: var(--plan-space-sm);
+	margin-block-end: var(--plan-space-md);
+}
+.rf-milestone__progress-label {
+	font-size: var(--plan-font-size-sm);
+	font-weight: 600;
+	font-family: var(--plan-font-mono);
+	color: var(--plan-color-text-muted);
+	white-space: nowrap;
+}
+.rf-milestone__progress-bar {
+	flex: 1;
+	height: 0.375rem;
+	border-radius: var(--plan-radius-sm);
+	background: var(--plan-color-surface-alt);
+	overflow: hidden;
+}
+.rf-milestone__progress-bar::after {
+	content: '';
+	display: block;
+	height: 100%;
+	width: var(--rf-progress, 0%);
+	background: var(--plan-color-done);
+	border-radius: var(--plan-radius-sm);
+}
+
 /* --------------------------------------------------------------------------
    Decision Log
    -------------------------------------------------------------------------- */

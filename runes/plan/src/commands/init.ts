@@ -39,7 +39,7 @@ export function runInit(options: InitOptions): InitResult {
 	const created: string[] = [];
 
 	// Create directories
-	const dirs = ['work', 'spec', 'decision'];
+	const dirs = ['work', 'spec', 'decision', 'milestone'];
 	for (const sub of dirs) {
 		const path = join(dir, sub);
 		if (!existsSync(path)) {
@@ -49,10 +49,11 @@ export function runInit(options: InitOptions): InitResult {
 	}
 
 	// Create example files — use runCreate which generates slug-based filenames
-	const examples: { type: 'spec' | 'work' | 'decision'; id: string; title: string; subDir: string; slug: string; attrs?: Record<string, string> }[] = [
+	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; subDir: string; slug: string; attrs?: Record<string, string> }[] = [
 		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec', subDir: 'spec', slug: 'example-spec.md' },
 		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', subDir: 'work', slug: 'example-work-item.md', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
 		{ type: 'decision', id: 'ADR-001', title: 'Example Decision', subDir: 'decision', slug: 'example-decision.md' },
+		{ type: 'milestone', id: 'v0.1.0', title: 'First Release', subDir: 'milestone', slug: 'first-release.md' },
 	];
 
 	for (const ex of examples) {
@@ -73,8 +74,9 @@ This directory contains project planning content.
 ## Structure
 
 - \`spec/\` — Specifications (what to build)
-- \`work/\` — Work items (how to build it)
+- \`work/\` — Work items and bugs (how to build it)
 - \`decision/\` — Architecture decision records (why it's built this way)
+- \`milestone/\` — Named release targets with scope and goals
 
 ## Quick Start
 
