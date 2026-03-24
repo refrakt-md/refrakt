@@ -34,6 +34,8 @@ export const config: Record<string, RuneConfig> = {
 	Timeline: {
 		block: 'timeline',
 		defaultDensity: 'full',
+		sequence: 'connected',
+		sequenceDirection: { fromModifier: 'direction', default: 'vertical' },
 		sections: { header: 'header', headline: 'title', blurb: 'description' },
 		modifiers: { direction: { source: 'meta', default: 'vertical' } },
 		autoLabel: pageSectionAutoLabel,

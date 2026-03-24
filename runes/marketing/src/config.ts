@@ -262,7 +262,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', sequence: 'numbered', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps',

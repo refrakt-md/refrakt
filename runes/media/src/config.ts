@@ -5,6 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
 		defaultDensity: 'full',
+		sequence: 'numbered',
 		sections: { header: 'header', title: 'title', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {

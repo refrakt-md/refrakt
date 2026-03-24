@@ -36,6 +36,9 @@ export interface DimensionAuditResult {
 	/** Media slots: which slot types are declared and by which runes */
 	mediaSlots: Record<string, string[]>;
 
+	/** Sequential items: which sequence styles are declared and by which runes */
+	sequenceStyles: Record<string, string[]>;
+
 	/** CSS coverage for dimension selectors */
 	css?: DimensionCssCoverage;
 }
@@ -46,12 +49,14 @@ export interface DimensionCssCoverage {
 	sections: Record<string, DimCssEntry>;
 	states: Record<string, DimCssEntry>;
 	media: Record<string, DimCssEntry>;
+	sequence: Record<string, DimCssEntry>;
 }
 
 const DENSITY_LEVELS = ['full', 'compact', 'minimal'] as const;
 const SECTION_ROLES = ['header', 'title', 'description', 'body', 'footer', 'media'] as const;
 const STATE_VALUES = ['open', 'closed', 'active', 'inactive', 'selected', 'disabled'] as const;
 const MEDIA_SLOTS = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
+const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
 
 /** Collect dimension declarations from all rune configs */
 export function collectDimensions(config: ThemeConfig): Omit<DimensionAuditResult, 'css' | 'surfaces' | 'unassignedRunes'> {
@@ -59,6 +64,7 @@ export function collectDimensions(config: ThemeConfig): Omit<DimensionAuditResul
 	const sectionRoles: Record<string, number> = {};
 	const interactiveRunes: string[] = [];
 	const mediaSlots: Record<string, string[]> = {};
+	const sequenceStyles: Record<string, string[]> = {};
 
 	for (const [runeKey, runeConfig] of Object.entries(config.runes)) {
 		// Density
@@ -84,13 +90,19 @@ export function collectDimensions(config: ThemeConfig): Omit<DimensionAuditResul
 				mediaSlots[slotType].push(`${runeKey}.${ref}`);
 			}
 		}
+
+		// Sequence styles
+		if (runeConfig.sequence) {
+			if (!sequenceStyles[runeConfig.sequence]) sequenceStyles[runeConfig.sequence] = [];
+			sequenceStyles[runeConfig.sequence].push(runeKey);
+		}
 	}
 
-	return { densityLevels, sectionRoles, interactiveRunes, mediaSlots };
+	return { densityLevels, sectionRoles, interactiveRunes, mediaSlots, sequenceStyles };
 }
 
 const SURFACE_RE = /\.rf-[\w-]+/g;
-const DIM_ATTR_RE = /\[data-(?:density|section|state|media)(?:="[^"]*")?\]/g;
+const DIM_ATTR_RE = /\[data-(?:density|section|state|media|sequence(?:-direction)?)(?:="[^"]*")?\]/g;
 
 /** Scan CSS for surface assignments and dimension selectors */
 export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; unassignedRunes: string[]; css: DimensionCssCoverage } {
@@ -190,10 +202,17 @@ export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; u
 		media[slot] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
 	}
 
+	const sequence: DimensionCssCoverage['sequence'] = {};
+	for (const seq of SEQUENCE_VALUES) {
+		const sel = `[data-sequence="${seq}"]`;
+		const match = dimSelectors.get(sel);
+		sequence[seq] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+	}
+
 	return {
 		surfaces,
 		unassignedRunes: [], // Filled in by the caller after comparing with config
-		css: { density, sections, states, media },
+		css: { density, sections, states, media, sequence },
 	};
 }
 

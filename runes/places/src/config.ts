@@ -65,6 +65,7 @@ export const config: Record<string, RuneConfig> = {
 	ItineraryDay: {
 		block: 'itinerary-day',
 		parent: 'Itinerary',
+		sequence: 'connected',
 		autoLabel: { label: 'header' },
 		editHints: { header: 'inline', stops: 'none' },
 	},

@@ -78,8 +78,8 @@ function parseDimensionSelectors(): Set<string> {
 		const css = readFileSync(join(DIMENSIONS_DIR, file), 'utf-8');
 		const root = postcss.parse(css);
 		root.walkRules(rule => {
-			// Match data-meta-* and data-checked selectors
-			const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked)(?:="[\w-]+")?]/g);
+			// Match data-meta-*, data-checked, data-sequence, and data-sequence-direction selectors
+			const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g);
 			for (const m of matches) {
 				selectors.add(m[0]);
 			}
@@ -352,5 +352,28 @@ describe('Lumina CSS coverage', () => {
 				).toBe(true);
 			}
 		);
+	});
+
+	describe('sequence dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
+
+		it.each(SEQUENCE_VALUES)(
+			'sequence value "%s" has CSS rule',
+			(value) => {
+				expect(
+					dimensionSelectors.has(`[data-sequence="${value}"]`),
+					`Missing CSS for [data-sequence="${value}"]`
+				).toBe(true);
+			}
+		);
+
+		it('has horizontal direction rule', () => {
+			expect(
+				dimensionSelectors.has('[data-sequence-direction="horizontal"]'),
+				'Missing CSS for [data-sequence-direction="horizontal"]'
+			).toBe(true);
+		});
 	});
 });

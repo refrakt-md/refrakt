@@ -416,6 +416,20 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 		lines.push(`    ${DIM}none${RESET}`);
 	}
 
+	// Sequential items
+	lines.push('');
+	lines.push(`  ${BOLD}Sequential Items${RESET}`);
+	if (Object.keys(result.sequenceStyles).length > 0) {
+		for (const [style, runes] of Object.entries(result.sequenceStyles).sort()) {
+			lines.push(`    ${CYAN}${style}${RESET} (${runes.length})`);
+			for (const rune of runes.sort()) {
+				lines.push(`      ${DIM}${rune}${RESET}`);
+			}
+		}
+	} else {
+		lines.push(`    ${DIM}none${RESET}`);
+	}
+
 	// CSS coverage
 	if (result.css) {
 		lines.push('');
@@ -426,6 +440,7 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 			...Object.entries(result.css.sections).map(([k, v]) => [`[data-section="${k}"]`, v] as [string, DimCssEntry]),
 			...Object.entries(result.css.states).map(([k, v]) => [`[data-state="${k}"]`, v] as [string, DimCssEntry]),
 			...Object.entries(result.css.media).map(([k, v]) => [`[data-media="${k}"]`, v] as [string, DimCssEntry]),
+			...Object.entries(result.css.sequence).map(([k, v]) => [`[data-sequence="${k}"]`, v] as [string, DimCssEntry]),
 		];
 
 		const warnings: string[] = [];
@@ -450,9 +465,10 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 	// Summary
 	const totalSlots = Object.values(result.mediaSlots).reduce((sum, refs) => sum + refs.length, 0);
 	const totalSections = Object.values(result.sectionRoles).reduce((sum, c) => sum + c, 0);
+	const totalSequence = Object.values(result.sequenceStyles).reduce((sum, r) => sum + r.length, 0);
 	lines.push('');
 	lines.push(`  ${DIM}${'─'.repeat(40)}${RESET}`);
-	lines.push(`  ${totalSections} section assignments, ${result.interactiveRunes.length} interactive runes, ${totalSlots} media slots`);
+	lines.push(`  ${totalSections} section assignments, ${result.interactiveRunes.length} interactive runes, ${totalSlots} media slots, ${totalSequence} sequential runes`);
 
 	return lines.join('\n');
 }
@@ -466,6 +482,7 @@ export function buildDimensionAuditJson(result: DimensionAuditResult): object {
 		sections: result.sectionRoles,
 		interactiveRunes: result.interactiveRunes,
 		mediaSlots: result.mediaSlots,
+		sequenceStyles: result.sequenceStyles,
 		css: result.css ?? null,
 	};
 }

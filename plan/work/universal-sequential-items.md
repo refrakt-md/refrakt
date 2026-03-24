@@ -1,4 +1,4 @@
-{% work id="WORK-070" status="ready" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-070" status="done" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" %}
 
 # Universal Sequential Item Styling
 
@@ -12,18 +12,18 @@ Implement the universal sequential items dimension: emit `data-sequence` attribu
 
 ## Acceptance Criteria
 
-- [ ] `RuneConfig` type extended with optional `sequence?: 'numbered' | 'connected' | 'plain'` field in `packages/transform/src/types.ts`
-- [ ] Identity transform emits `data-sequence` on `<ol>` containers based on rune config
-- [ ] Identity transform emits `data-sequence-direction` (`vertical` | `horizontal`) when declared
-- [ ] Lumina CSS: `[data-sequence="numbered"]` rules — counter-reset, counter-increment, positioned circle with `1.5rem` size, `tabular-nums`, primary colour, surface background, full border-radius
-- [ ] Lumina CSS: `[data-sequence="numbered"] > li + li` separator border
-- [ ] Lumina CSS: `[data-sequence="connected"]` vertical rules — `border-left` connector line, `0.75rem` dot at each node, transparent border on last item
-- [ ] Lumina CSS: `[data-sequence="connected"][data-sequence-direction="horizontal"]` rules — `border-top` connector, horizontal flex layout, repositioned dots
-- [ ] Lumina CSS: `[data-sequence="plain"]` — list-style none, no indicators
-- [ ] Density interaction: compact shrinks circles/dots and tightens spacing, minimal hides indicators
-- [ ] Rune configs annotated: Steps (`numbered`), Recipe (`numbered` on steps `<ol>`), HowTo (`numbered` on steps `<ol>`), Track (`numbered`), Timeline (`connected`), Itinerary (`connected`), Plot linear (`connected`)
-- [ ] Existing per-rune counter/connector CSS identified for future cleanup (not removed yet — additive migration)
-- [ ] CSS coverage tests updated for all new `[data-sequence]` selectors
+- [x] `RuneConfig` type extended with optional `sequence?: 'numbered' | 'connected' | 'plain'` field in `packages/transform/src/types.ts`
+- [x] Identity transform emits `data-sequence` on `<ol>` containers based on rune config
+- [x] Identity transform emits `data-sequence-direction` (`vertical` | `horizontal`) when declared
+- [x] Lumina CSS: `[data-sequence="numbered"]` rules — counter-reset, counter-increment, positioned circle with `1.5rem` size, `tabular-nums`, primary colour, surface background, full border-radius
+- [x] Lumina CSS: `[data-sequence="numbered"] > li + li` separator border
+- [x] Lumina CSS: `[data-sequence="connected"]` vertical rules — `border-left` connector line, `0.75rem` dot at each node, transparent border on last item
+- [x] Lumina CSS: `[data-sequence="connected"][data-sequence-direction="horizontal"]` rules — `border-top` connector, horizontal flex layout, repositioned dots
+- [x] Lumina CSS: `[data-sequence="plain"]` — list-style none, no indicators
+- [x] Density interaction: compact shrinks circles/dots and tightens spacing, minimal hides indicators
+- [x] Rune configs annotated: Steps (`numbered`), Recipe (`numbered` on steps `<ol>`), HowTo (`numbered` on steps `<ol>`), Track (`numbered`), Timeline (`connected`), Itinerary (`connected`), Plot linear (`connected`)
+- [x] Existing per-rune counter/connector CSS identified for future cleanup (not removed yet — additive migration)
+- [x] CSS coverage tests updated for all new `[data-sequence]` selectors
 
 ## Approach
 

@@ -78,6 +78,17 @@ export interface RuneConfig {
 	 *  documents the intent for discoverability and tooling. */
 	checklist?: boolean;
 
+	/** Sequential item style for ordered lists within this rune.
+	 *  The identity transform emits `data-sequence` on `<ol>` elements.
+	 *  'numbered' — counter circle indicators, 'connected' — connector line with dots,
+	 *  'plain' — no visual indicators */
+	sequence?: 'numbered' | 'connected' | 'plain';
+
+	/** Direction source for sequential items.
+	 *  Reads the named modifier value and emits `data-sequence-direction`.
+	 *  Only used when `sequence` is set. */
+	sequenceDirection?: { fromModifier: string; default?: string };
+
 	/** Maps ref names (data-name values) to media treatment types.
 	 *  The identity transform emits `data-media` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic media styling.

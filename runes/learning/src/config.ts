@@ -13,6 +13,7 @@ export const config: Record<string, RuneConfig> = {
 	HowTo: {
 		block: 'howto',
 		defaultDensity: 'full',
+		sequence: 'numbered',
 		sections: { meta: 'header', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
@@ -35,6 +36,7 @@ export const config: Record<string, RuneConfig> = {
 	Recipe: {
 		block: 'recipe',
 		defaultDensity: 'full',
+		sequence: 'numbered',
 		sections: { meta: 'header', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {

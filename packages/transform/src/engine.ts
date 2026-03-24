@@ -375,6 +375,14 @@ function transformRune(
 		return true;
 	});
 
+	// 7b. Annotate <ol> elements with data-sequence when config declares sequence style
+	if (config.sequence) {
+		const seqDirection = config.sequenceDirection
+			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
+			: undefined;
+		annotateSequence(filteredChildren, config.sequence, seqDirection);
+	}
+
 	// 8. Build inline styles from styles config + tint tokens
 	let inlineStyle = tag.attributes.style || '';
 	const styleParts: string[] = [];
@@ -526,6 +534,32 @@ function detectCheckboxMarker(li: SerializedTag): SerializedTag | null {
 	}
 
 	return null;
+}
+
+/**
+ * Recursively walk children to find `<ol>` elements and annotate them with
+ * `data-sequence` and optionally `data-sequence-direction`.
+ * Mutates the array in-place for efficiency (replaces matching elements).
+ */
+function annotateSequence(children: RendererNode[], sequence: string, direction?: string): void {
+	for (let i = 0; i < children.length; i++) {
+		const child = children[i];
+		if (!isTag(child)) continue;
+
+		if (child.name === 'ol') {
+			const attrs: Record<string, string> = {
+				...child.attributes,
+				'data-sequence': sequence,
+			};
+			if (direction) {
+				attrs['data-sequence-direction'] = direction;
+			}
+			children[i] = { ...child, attributes: attrs };
+		} else if (child.children.length > 0) {
+			// Recurse into wrappers (contentWrapper, structural elements)
+			annotateSequence(child.children, sequence, direction);
+		}
+	}
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
