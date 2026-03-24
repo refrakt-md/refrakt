@@ -3,6 +3,9 @@
 	padding: 2.5rem 0 2rem;
 }
 .rf-feature__header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
 .rf-feature__eyebrow {

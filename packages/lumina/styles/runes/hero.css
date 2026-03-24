@@ -6,6 +6,9 @@
 	background-position: center;
 }
 .rf-hero__header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
 	margin-bottom: 2rem;
 }
 /* Higher specificity needed to override .rf-hero p (0,1,1) */
