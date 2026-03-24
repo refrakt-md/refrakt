@@ -474,7 +474,24 @@ function buildStructureElement(
 		}
 	}
 
-	const baseAttrs = { 'data-name': dataName, ...extraAttrs };
+	const baseAttrs: Record<string, string> = { 'data-name': dataName, ...extraAttrs };
+
+	// Metadata dimension attributes — additive semantic markers for generic theme styling
+	if (entry.metaType) {
+		baseAttrs['data-meta-type'] = entry.metaType;
+	}
+	if (entry.metaRank) {
+		baseAttrs['data-meta-rank'] = entry.metaRank;
+	}
+	if (entry.sentimentMap && entry.metaText) {
+		const rawValue = modifierValues[entry.metaText];
+		if (rawValue) {
+			const sentiment = entry.sentimentMap[rawValue];
+			if (sentiment) {
+				baseAttrs['data-meta-sentiment'] = sentiment;
+			}
+		}
+	}
 
 	// Icon entry: create empty element, CSS displays icon via mask-image
 	if (entry.icon) {

@@ -91,6 +91,17 @@ export interface StructureEntry {
 	textPrefix?: string;
 	/** Static text appended to metaText value */
 	textSuffix?: string;
+
+	/** Semantic metadata type — emits `data-meta-type` attribute.
+	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
+	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+	/** Semantic metadata rank — emits `data-meta-rank` attribute.
+	 *  Values: 'primary' | 'secondary' */
+	metaRank?: 'primary' | 'secondary';
+	/** Maps modifier values to sentiment — emits `data-meta-sentiment` when the
+	 *  current modifier value (from `metaText`) has a matching entry.
+	 *  E.g., `{ accepted: 'positive', rejected: 'negative' }` */
+	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
 }
 
 // ─── Tint Types ──────────────────────────────────────────────────────
