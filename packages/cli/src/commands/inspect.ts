@@ -23,9 +23,12 @@ import {
 	buildAuditJson,
 	formatMetaAuditResult,
 	buildMetaAuditJson,
+	formatDimensionAuditResult,
+	buildDimensionAuditJson,
 	heading,
 } from '../lib/format.js';
 import { collectMetadata, checkMetaCss, type MetaAuditResult } from '../lib/meta-audit.js';
+import { collectDimensions, checkDimensionCss, type DimensionAuditResult } from '../lib/dimension-audit.js';
 
 /** Dependencies injected at runtime via dynamic imports */
 export interface InspectDeps {
@@ -49,6 +52,7 @@ export interface InspectOptions {
 	json: boolean;
 	audit: boolean;
 	auditMeta: boolean;
+	auditDimensions: boolean;
 	all: boolean;
 	theme: string;
 	items: number;
@@ -76,6 +80,11 @@ export async function inspectCommand(
 	// --audit-meta: metadata dimension audit
 	if (options.auditMeta) {
 		return runMetaAudit(config, options);
+	}
+
+	// --audit-dimensions: universal theming dimension audit
+	if (options.auditDimensions) {
+		return runDimensionAudit(config, options);
 	}
 
 	// --all --audit: full-theme audit
@@ -388,6 +397,34 @@ function runMetaAudit(
 		console.log(JSON.stringify(buildMetaAuditJson(result), null, 2));
 	} else {
 		console.log(formatMetaAuditResult(result));
+	}
+}
+
+/** Run universal theming dimension audit across all rune configs */
+function runDimensionAudit(
+	config: ThemeConfig,
+	options: InspectOptions,
+): void {
+	const dimensions = collectDimensions(config);
+	const cssDir = resolveCssDir(options.cssDir);
+	const cssResult = cssDir ? checkDimensionCss(cssDir) : undefined;
+
+	// Determine unassigned runes: runes with dimensions but no surface in CSS
+	const allRuneBlocks = new Set(Object.values(config.runes).map(r => r.block));
+	const assignedBlocks = new Set(cssResult?.surfaces.flatMap(g => g.runes) ?? []);
+	const unassignedRunes = [...allRuneBlocks].filter(b => !assignedBlocks.has(b)).sort();
+
+	const result: DimensionAuditResult = {
+		...dimensions,
+		surfaces: cssResult?.surfaces ?? [],
+		unassignedRunes,
+		css: cssResult?.css,
+	};
+
+	if (options.json) {
+		console.log(JSON.stringify(buildDimensionAuditJson(result), null, 2));
+	} else {
+		console.log(formatDimensionAuditResult(result));
 	}
 }
 

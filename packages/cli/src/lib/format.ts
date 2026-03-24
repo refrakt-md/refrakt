@@ -1,6 +1,7 @@
 import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
 import type { AuditResult } from './css-audit.js';
 import type { MetaAuditResult } from './meta-audit.js';
+import type { DimensionAuditResult, DimCssEntry } from './dimension-audit.js';
 
 const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
@@ -344,6 +345,127 @@ export function buildMetaAuditJson(result: MetaAuditResult): object {
 			withSentiment: result.withSentiment,
 			withoutSentiment: result.withoutSentiment,
 		},
+		css: result.css ?? null,
+	};
+}
+
+/** Format human-readable dimension audit output */
+export function formatDimensionAuditResult(result: DimensionAuditResult): string {
+	const lines: string[] = [];
+	lines.push(heading('Dimension Audit'));
+
+	// Surface assignments
+	lines.push('');
+	lines.push(`  ${BOLD}Surface Assignments${RESET}`);
+	if (result.surfaces.length > 0) {
+		for (const group of result.surfaces) {
+			lines.push(`    ${CYAN}${group.name}${RESET} (${group.runes.length} rune${group.runes.length !== 1 ? 's' : ''})`);
+			for (const rune of group.runes) {
+				lines.push(`      ${DIM}${rune}${RESET}`);
+			}
+		}
+	} else {
+		lines.push(`    ${DIM}No surface CSS found${RESET}`);
+	}
+
+	if (result.unassignedRunes.length > 0) {
+		lines.push('');
+		lines.push(`  ${YELLOW}\u26a0 Unassigned runes (${result.unassignedRunes.length}):${RESET}`);
+		for (const rune of result.unassignedRunes) {
+			lines.push(`    ${YELLOW}${rune}${RESET}`);
+		}
+	}
+
+	// Density
+	lines.push('');
+	lines.push(`  ${BOLD}Density Coverage${RESET}`);
+	for (const [level, count] of Object.entries(result.densityLevels).sort(([,a], [,b]) => b - a)) {
+		lines.push(`    ${level.padEnd(12)} ${count} rune${count !== 1 ? 's' : ''}`);
+	}
+
+	// Section anatomy
+	lines.push('');
+	lines.push(`  ${BOLD}Section Anatomy${RESET}`);
+	for (const [role, count] of Object.entries(result.sectionRoles).sort(([,a], [,b]) => b - a)) {
+		lines.push(`    ${role.padEnd(14)} ${count} rune${count !== 1 ? 's' : ''}`);
+	}
+
+	// Interactive state
+	lines.push('');
+	lines.push(`  ${BOLD}Interactive State${RESET}`);
+	if (result.interactiveRunes.length > 0) {
+		lines.push(`    ${result.interactiveRunes.length} rune${result.interactiveRunes.length !== 1 ? 's' : ''} with initial data-state:`);
+		for (const rune of result.interactiveRunes.sort()) {
+			lines.push(`      ${DIM}${rune}${RESET}`);
+		}
+	} else {
+		lines.push(`    ${DIM}none${RESET}`);
+	}
+
+	// Media slots
+	lines.push('');
+	lines.push(`  ${BOLD}Media Slots${RESET}`);
+	if (Object.keys(result.mediaSlots).length > 0) {
+		for (const [slot, refs] of Object.entries(result.mediaSlots).sort()) {
+			lines.push(`    ${CYAN}${slot}${RESET} (${refs.length})`);
+			for (const ref of refs.sort()) {
+				lines.push(`      ${DIM}${ref}${RESET}`);
+			}
+		}
+	} else {
+		lines.push(`    ${DIM}none${RESET}`);
+	}
+
+	// CSS coverage
+	if (result.css) {
+		lines.push('');
+		lines.push(`  ${BOLD}Theme CSS Coverage${RESET}`);
+
+		const allChecks: [string, DimCssEntry][] = [
+			...Object.entries(result.css.density).map(([k, v]) => [`[data-density="${k}"]`, v] as [string, DimCssEntry]),
+			...Object.entries(result.css.sections).map(([k, v]) => [`[data-section="${k}"]`, v] as [string, DimCssEntry]),
+			...Object.entries(result.css.states).map(([k, v]) => [`[data-state="${k}"]`, v] as [string, DimCssEntry]),
+			...Object.entries(result.css.media).map(([k, v]) => [`[data-media="${k}"]`, v] as [string, DimCssEntry]),
+		];
+
+		const warnings: string[] = [];
+		for (const [sel, info] of allChecks) {
+			if (info.styled) {
+				lines.push(`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+			} else {
+				lines.push(`    ${RED}\u2717${RESET} ${sel}  ${RED}MISSING${RESET}`);
+				warnings.push(sel);
+			}
+		}
+
+		if (warnings.length > 0) {
+			lines.push('');
+			lines.push(`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`);
+		} else {
+			lines.push('');
+			lines.push(`  ${GREEN}\u2713 All dimension CSS rules present${RESET}`);
+		}
+	}
+
+	// Summary
+	const totalSlots = Object.values(result.mediaSlots).reduce((sum, refs) => sum + refs.length, 0);
+	const totalSections = Object.values(result.sectionRoles).reduce((sum, c) => sum + c, 0);
+	lines.push('');
+	lines.push(`  ${DIM}${'─'.repeat(40)}${RESET}`);
+	lines.push(`  ${totalSections} section assignments, ${result.interactiveRunes.length} interactive runes, ${totalSlots} media slots`);
+
+	return lines.join('\n');
+}
+
+/** Build JSON output for dimension audit */
+export function buildDimensionAuditJson(result: DimensionAuditResult): object {
+	return {
+		surfaces: result.surfaces,
+		unassignedRunes: result.unassignedRunes,
+		density: result.densityLevels,
+		sections: result.sectionRoles,
+		interactiveRunes: result.interactiveRunes,
+		mediaSlots: result.mediaSlots,
 		css: result.css ?? null,
 	};
 }

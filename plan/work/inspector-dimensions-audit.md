@@ -1,4 +1,4 @@
-{% work id="WORK-068" status="ready" priority="medium" complexity="simple" tags="cli, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-068" status="done" priority="medium" complexity="simple" tags="cli, dimensions" milestone="v0.9.0" %}
 
 # Inspector Dimensions Audit
 
@@ -12,13 +12,13 @@ Add a `--audit-dimensions` flag to `refrakt inspect` that verifies universal the
 
 ## Acceptance Criteria
 
-- [ ] `refrakt inspect --audit-dimensions` shows surface assignments with rune counts and unassigned runes
-- [ ] Audit shows density coverage across all three levels
-- [ ] Audit shows section anatomy coverage for all 6 section roles
-- [ ] Audit shows interactive state coverage
-- [ ] Audit shows media slot coverage for all 5 slot types
-- [ ] Community runes with dimensions but no surface assignment are flagged
-- [ ] `--json` flag works with `--audit-dimensions`
+- [x] `refrakt inspect --audit-dimensions` shows surface assignments with rune counts and unassigned runes
+- [x] Audit shows density coverage across all three levels
+- [x] Audit shows section anatomy coverage for all 6 section roles
+- [x] Audit shows interactive state coverage
+- [x] Audit shows media slot coverage for all 5 slot types
+- [x] Community runes with dimensions but no surface assignment are flagged
+- [x] `--json` flag works with `--audit-dimensions`
 
 ## Approach
 
