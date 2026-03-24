@@ -1,4 +1,4 @@
-{% work id="WORK-054" status="ready" priority="high" complexity="moderate" tags="storytelling, pipeline" milestone="v0.9.0" %}
+{% work id="WORK-054" status="done" priority="high" complexity="moderate" tags="storytelling, pipeline" milestone="v0.9.0" %}
 
 # Storytelling Package Pipeline Hooks
 
@@ -12,16 +12,16 @@ Add pipeline hooks that register storytelling entities, build a relationship gra
 
 ## Acceptance Criteria
 
-- [ ] Storytelling package exports `pipelineHooks` with `register`, `aggregate`, and `postProcess` hooks
-- [ ] `register` hook registers entities for: character, realm, faction, lore, plot, bond
-- [ ] Each entity includes: name, type, source page URL, and type-specific metadata (role, spoiler level, etc.)
-- [ ] `aggregate` hook builds a relationship graph from bond entities
-- [ ] `aggregate` hook validates bond references — warns on orphaned bonds (from/to entity doesn't exist)
-- [ ] `postProcess` hook resolves bold text (`**Veshra**`) to cross-page links when the name matches a registered entity
-- [ ] Cross-links only resolve to other pages (not self-links on the entity's own page)
-- [ ] Cross-links resolve first occurrence per page only (avoid over-linking)
-- [ ] Cross-links don't resolve inside headings, code blocks, or other runes
-- [ ] Tests cover entity registration, bond validation, and cross-link resolution
+- [x] Storytelling package exports `pipelineHooks` with `register`, `aggregate`, and `postProcess` hooks
+- [x] `register` hook registers entities for: character, realm, faction, lore, plot, bond
+- [x] Each entity includes: name, type, source page URL, and type-specific metadata (role, spoiler level, etc.)
+- [x] `aggregate` hook builds a relationship graph from bond entities
+- [x] `aggregate` hook validates bond references — warns on orphaned bonds (from/to entity doesn't exist)
+- [x] `postProcess` hook resolves bold text (`**Veshra**`) to cross-page links when the name matches a registered entity
+- [x] Cross-links only resolve to other pages (not self-links on the entity's own page)
+- [x] Cross-links resolve first occurrence per page only (avoid over-linking)
+- [x] Cross-links don't resolve inside headings, code blocks, or other runes
+- [x] Tests cover entity registration, bond validation, and cross-link resolution
 
 ## Approach
 
@@ -33,5 +33,22 @@ For bold-text cross-linking in `postProcess`, walk the AST looking for `strong` 
 
 - SPEC-002 (Cross-Page Pipeline — Pattern 1: Reference Resolution)
 - SPEC-001 (Community Runes — `@refrakt-md/storytelling`)
+
+## Resolution
+
+Branch: `claude/work-item-054-aBDgF`
+PR: refrakt-md/refrakt#130
+
+### What was done
+- Created `runes/storytelling/src/pipeline.ts` with all three pipeline hooks
+- `register` hook identifies runes via `data-rune` attribute, reads entity names from `data-name` refs and metadata from `data-field` meta tags (using kebab-case conversion matching the identity transform engine)
+- `aggregate` hook builds entity-by-name map including character aliases, constructs bidirectional relationship graph from bonds, and emits warnings for orphaned bond references
+- `postProcess` hook walks the renderable tree, wrapping matching `strong` tags in `<a>` links to entity pages; tracks linked names per page for first-occurrence-only behavior; skips headings, code blocks, and nested rune containers
+- Wired hooks into the `RunePackage` export via `pipeline` field in `index.ts`
+- Added 19 tests covering all acceptance criteria (64 total storytelling tests passing)
+
+### Notes
+- Property names are stored as kebab-case `data-field` attributes after identity transform (e.g., `bondType` → `bond-type`), so the pipeline's `readField` helper applies `toKebabCase` conversion
+- Character aliases are registered as additional entity-by-name entries pointing to the same entity registration, enabling cross-links via alternate names (e.g., "Strider" → Aragorn's page)
 
 {% /work %}
