@@ -103,3 +103,5 @@
 @import './styles/runes/milestone.css';
 @import './styles/runes/backlog.css';
 @import './styles/runes/decision-log.css';
+@import './styles/runes/plan-progress.css';
+@import './styles/runes/plan-activity.css';

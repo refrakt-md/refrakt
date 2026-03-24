@@ -149,65 +149,62 @@ function resolveThemeCss(theme: string): string {
 	const __dirname = path.dirname(__filename);
 	const stylesDir = path.resolve(__dirname, '../../styles');
 
-	// Built-in themes
-	if (theme === 'default') {
-		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'), stylesDir);
-	}
+	// Minimal is self-contained — no shell or theme layering needed
 	if (theme === 'minimal') {
 		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'minimal.css'), 'utf-8'), stylesDir);
 	}
 
-	// Auto: read from refrakt.config.json, fall back to built-in default
-	if (theme === 'auto') {
+	// Shell CSS (CLI layout: sidebar, dashboard, TOC, cross-refs, relationships)
+	// is appended to all non-minimal themes. Rune styling comes from the theme.
+	const shellCss = inlineCssImports(
+		fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
+		stylesDir,
+	);
+
+	// Resolve the theme CSS (rune styling + design tokens)
+	let themeCss: string | undefined;
+
+	if (theme === 'default') {
+		// Default theme: use Lumina for rune styling
+		themeCss = resolvePackageThemeCss('@refrakt-md/lumina');
+		if (!themeCss) {
+			console.warn('[plan] Warning: @refrakt-md/lumina could not be resolved. Rune styling will be missing.');
+		}
+	} else if (theme === 'auto') {
+		// Auto: read from refrakt.config.json, fall back to Lumina
 		const configTheme = readConfigTheme();
 		if (configTheme) {
-			const css = resolvePackageThemeCss(configTheme);
-			if (css) {
-				// Layer: theme base tokens + plan rune styles
-				const planRuneCss = inlineCssImports(
-					fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
-					stylesDir,
-				);
-				return css + '\n' + planRuneCss;
+			themeCss = resolvePackageThemeCss(configTheme);
+			if (!themeCss) {
+				console.warn(`[plan] Warning: Could not resolve theme "${configTheme}" from config. Falling back to Lumina.`);
 			}
-			console.warn(`[plan] Warning: Could not resolve theme "${configTheme}" from config. Using built-in default.`);
 		}
-		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'), stylesDir);
-	}
-
-	// Shorthand name (e.g., "lumina" → "@refrakt-md/lumina")
-	const expanded = THEME_SHORTHANDS[theme];
-	if (expanded) {
-		const css = resolvePackageThemeCss(expanded);
-		if (css) {
-			const planRuneCss = inlineCssImports(
-				fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
-				stylesDir,
-			);
-			return css + '\n' + planRuneCss;
+		if (!themeCss) {
+			themeCss = resolvePackageThemeCss('@refrakt-md/lumina');
 		}
-		throw new Error(`Theme "${theme}" (${expanded}) could not be resolved. Is it installed?`);
-	}
-
-	// npm package name (starts with @ or contains /)
-	if (theme.startsWith('@') || theme.includes('/')) {
-		const css = resolvePackageThemeCss(theme);
-		if (css) {
-			const planRuneCss = inlineCssImports(
-				fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
-				stylesDir,
-			);
-			return css + '\n' + planRuneCss;
+	} else {
+		// Shorthand name (e.g., "lumina" → "@refrakt-md/lumina")
+		const expanded = THEME_SHORTHANDS[theme];
+		if (expanded) {
+			themeCss = resolvePackageThemeCss(expanded);
+			if (!themeCss) {
+				throw new Error(`Theme "${theme}" (${expanded}) could not be resolved. Is it installed?`);
+			}
+		} else if (theme.startsWith('@') || theme.includes('/')) {
+			// npm package name
+			themeCss = resolvePackageThemeCss(theme);
+			if (!themeCss) {
+				throw new Error(`Theme package "${theme}" could not be resolved. Is it installed?`);
+			}
+		} else if (fs.existsSync(theme)) {
+			// File path
+			themeCss = inlineCssImports(fs.readFileSync(theme, 'utf-8'), path.dirname(theme));
+		} else {
+			throw new Error(`Theme not found: "${theme}". Use "default", "minimal", a package name, or a path to a CSS file.`);
 		}
-		throw new Error(`Theme package "${theme}" could not be resolved. Is it installed?`);
 	}
 
-	// File path
-	if (fs.existsSync(theme)) {
-		return inlineCssImports(fs.readFileSync(theme, 'utf-8'), path.dirname(theme));
-	}
-
-	throw new Error(`Theme not found: "${theme}". Use "default", "minimal", a package name, or a path to a CSS file.`);
+	return (themeCss ? themeCss + '\n' : '') + shellCss;
 }
 
 function buildThemeConfig(): ThemeConfig {

@@ -70,7 +70,7 @@ Desc.
 		// Theme CSS file is written separately
 		expect(fs.existsSync(path.join(outDir, 'theme.css'))).toBe(true);
 		const themeCss = fs.readFileSync(path.join(outDir, 'theme.css'), 'utf-8');
-		expect(themeCss).toContain('--plan-color');
+		expect(themeCss).toContain('--rf-color');
 	});
 
 	it('generates layout structure in HTML', async () => {
