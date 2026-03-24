@@ -125,29 +125,29 @@ The following runes support the eyebrow / headline / blurb / image pattern:
 - [Reveal](/docs/runes/reveal)
 
 **@refrakt-md/marketing**
-- [Hero](/docs/runes/hero)
-- [CTA](/docs/runes/cta)
-- [Feature](/docs/runes/feature)
-- [Steps](/docs/runes/steps)
-- [Pricing](/docs/runes/pricing)
-- [Comparison](/docs/runes/comparison)
-- [Bento](/docs/runes/bento)
+- [Hero](/docs/runes/marketing/hero)
+- [CTA](/docs/runes/marketing/cta)
+- [Feature](/docs/runes/marketing/feature)
+- [Steps](/docs/runes/marketing/steps)
+- [Pricing](/docs/runes/marketing/pricing)
+- [Comparison](/docs/runes/marketing/comparison)
+- [Bento](/docs/runes/marketing/bento)
 
 **@refrakt-md/learning**
-- [How-to](/docs/runes/howto)
-- [Recipe](/docs/runes/recipe)
+- [How-to](/docs/runes/learning/howto)
+- [Recipe](/docs/runes/learning/recipe)
 
 **@refrakt-md/docs**
-- [Changelog](/docs/runes/changelog)
+- [Changelog](/docs/runes/docs/changelog)
 
 **@refrakt-md/business**
-- [Cast](/docs/runes/cast)
-- [Organization](/docs/runes/organization)
-- [Timeline](/docs/runes/timeline)
+- [Cast](/docs/runes/business/cast)
+- [Organization](/docs/runes/business/organization)
+- [Timeline](/docs/runes/business/timeline)
 
 **@refrakt-md/places**
-- [Event](/docs/runes/event)
-- [Itinerary](/docs/runes/itinerary)
+- [Event](/docs/runes/places/event)
+- [Itinerary](/docs/runes/places/itinerary)
 
 **@refrakt-md/media**
 - Music Playlist
