@@ -1,4 +1,4 @@
-{% work id="WORK-066" status="ready" priority="medium" complexity="simple" tags="transform, themes, dimensions" %}
+{% work id="WORK-066" status="ready" priority="medium" complexity="simple" tags="transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Media Slots Dimension
 

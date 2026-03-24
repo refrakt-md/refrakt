@@ -1,4 +1,4 @@
-{% work id="WORK-068" status="ready" priority="medium" complexity="simple" tags="cli, dimensions" %}
+{% work id="WORK-068" status="ready" priority="medium" complexity="simple" tags="cli, dimensions" milestone="v0.9.0" %}
 
 # Inspector Dimensions Audit
 

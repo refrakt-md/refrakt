@@ -1,4 +1,4 @@
-{% work id="WORK-055" status="ready" priority="high" complexity="complex" tags="learning, pipeline" %}
+{% work id="WORK-055" status="ready" priority="high" complexity="complex" tags="learning, pipeline" milestone="v0.9.0" %}
 
 # Learning Package Pipeline Hooks
 

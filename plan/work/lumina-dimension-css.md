@@ -1,4 +1,4 @@
-{% work id="WORK-067" status="ready" priority="high" complexity="moderate" tags="lumina, css, dimensions" %}
+{% work id="WORK-067" status="ready" priority="high" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
 
 # Lumina Universal Dimension CSS
 

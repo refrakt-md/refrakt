@@ -1,4 +1,4 @@
-{% work id="WORK-062" status="ready" priority="medium" complexity="simple" tags="cli, metadata" %}
+{% work id="WORK-062" status="ready" priority="medium" complexity="simple" tags="cli, metadata" milestone="v0.9.0" %}
 
 # Inspector Metadata Audit
 

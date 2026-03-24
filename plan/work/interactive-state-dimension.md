@@ -1,4 +1,4 @@
-{% work id="WORK-065" status="ready" priority="medium" complexity="moderate" tags="behaviors, transform, themes, dimensions" %}
+{% work id="WORK-065" status="ready" priority="medium" complexity="moderate" tags="behaviors, transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Interactive State Dimension
 

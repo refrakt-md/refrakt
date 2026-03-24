@@ -1,4 +1,4 @@
-{% work id="WORK-057" status="ready" priority="medium" complexity="moderate" tags="editor, pipeline" %}
+{% work id="WORK-057" status="ready" priority="medium" complexity="moderate" tags="editor, pipeline" milestone="v0.9.0" %}
 
 # Editor Registry-Powered Autocomplete
 

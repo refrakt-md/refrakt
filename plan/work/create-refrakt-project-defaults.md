@@ -1,4 +1,4 @@
-{% work id="WORK-052" status="in-progress" priority="medium" complexity="simple" tags="create-refrakt, packages" %}
+{% work id="WORK-052" status="in-progress" priority="medium" complexity="simple" tags="create-refrakt, packages" milestone="v0.9.0" %}
 
 # Create-Refrakt Project Type Defaults
 

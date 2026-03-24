@@ -1,4 +1,4 @@
-{% work id="WORK-059" status="ready" priority="high" complexity="moderate" tags="transform, themes, metadata" %}
+{% work id="WORK-059" status="ready" priority="high" complexity="moderate" tags="transform, themes, metadata" milestone="v0.9.0" %}
 
 # Metadata Dimensions on StructureEntry
 

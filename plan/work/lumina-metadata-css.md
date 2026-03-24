@@ -1,4 +1,4 @@
-{% work id="WORK-061" status="ready" priority="high" complexity="moderate" tags="lumina, css, metadata" %}
+{% work id="WORK-061" status="ready" priority="high" complexity="moderate" tags="lumina, css, metadata" milestone="v0.9.0" %}
 
 # Lumina Generic Metadata CSS
 
