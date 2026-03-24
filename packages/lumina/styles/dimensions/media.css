@@ -58,7 +58,7 @@
 }
 
 [data-density="compact"] [data-media="cover"] {
-	aspect-ratio: 3 / 1;
+	aspect-ratio: 2 / 1;
 }
 
 /* Minimal: hide all media */
