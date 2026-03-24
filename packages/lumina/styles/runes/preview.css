@@ -79,11 +79,12 @@
 	box-shadow: var(--rf-shadow-xs);
 }
 
-/* Canvas — frame for the preview content */
+/* Canvas — framed area for the preview content */
 .rf-preview__canvas {
 	padding: 2rem 2.5rem;
 	background: var(--rf-color-bg);
 	color: var(--rf-color-text);
+	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 	overflow: hidden;
 }
@@ -175,6 +176,8 @@
 	}
 	.rf-preview__canvas {
 		border-radius: 0;
+		border-left: none;
+		border-right: none;
 		padding: 1.5rem var(--rf-content-padding, 1.5rem);
 	}
 	.rf-preview__source {
