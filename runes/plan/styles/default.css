@@ -41,7 +41,7 @@
 	inset-block: 0;
 	inset-inline-start: 0;
 	width: var(--plan-sidebar-width);
-	background: var(--rf-color-surface, #f8f9fa);
+	background: var(--rf-color-bg, #fff);
 	border-inline-end: 1px solid var(--rf-color-border, #dee2e6);
 	padding: var(--rf-spacing-lg, 1.5rem) var(--rf-spacing-md, 1rem);
 	overflow-y: auto;
@@ -239,14 +239,20 @@
 	display: flex;
 	gap: var(--rf-spacing-xl, 2rem);
 }
+.rf-plan-main__inner--has-toc {
+	max-width: calc(60rem + 200px + 2rem);
+	margin: 0 auto;
+}
 .rf-plan-main__inner--has-toc .rf-plan-main__body {
 	flex: 1;
 	min-width: 0;
-	max-width: 64rem;
+	max-width: 60rem;
 }
 
 .rf-plan-main__body {
-	max-width: 64rem;
+	max-width: 60rem;
+	margin: 0 auto;
+	padding: 0 2.5rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -526,6 +532,10 @@
 
 	.rf-plan-main {
 		margin-inline-start: 0;
+	}
+
+	.rf-plan-main__body {
+		padding: 0 1.5rem;
 	}
 
 	.rf-plan-dashboard {
