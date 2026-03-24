@@ -48,6 +48,14 @@ export function createTransform(config: ThemeConfig) {
 			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
 		}
 
+		// Detect checkbox markers on list items
+		if (tree.name === 'li') {
+			const checked = detectCheckboxMarker(tree);
+			if (checked) {
+				return { ...checked, children: checked.children.map(n => identityTransform(n, parentRune)) };
+			}
+		}
+
 		// Recurse into children even for non-rune tags (pass parent context through)
 		return { ...tree, children: tree.children.map(n => identityTransform(n, parentRune)) };
 	}
@@ -461,6 +469,63 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 		};
 	}
 	return child;
+}
+
+/** Checkbox marker pattern: [x], [ ], [>], [-] at start of text */
+const CHECKBOX_RE = /^\[(x|X|>|\s|-)\]\s*/;
+
+/** Map marker characters to data-checked values */
+const MARKER_TO_CHECKED: Record<string, string> = {
+	'x': 'checked',
+	'X': 'checked',
+	' ': 'unchecked',
+	'>': 'active',
+	'-': 'skipped',
+};
+
+/**
+ * Detect a checkbox marker at the start of a list item's text content.
+ * If found, strips the marker and returns a new node with `data-checked` set.
+ * Returns null if no marker is found.
+ */
+function detectCheckboxMarker(li: SerializedTag): SerializedTag | null {
+	// Find the first text node (may be the first child, or inside a nested <p>)
+	const children = li.children;
+	if (children.length === 0) return null;
+
+	const first = children[0];
+
+	// Direct text child: "[ ] Some text"
+	if (typeof first === 'string') {
+		const match = first.match(CHECKBOX_RE);
+		if (!match) return null;
+		const value = MARKER_TO_CHECKED[match[1]] ?? 'unchecked';
+		const stripped = first.slice(match[0].length);
+		return {
+			...li,
+			attributes: { ...li.attributes, 'data-checked': value },
+			children: [stripped, ...children.slice(1)],
+		};
+	}
+
+	// Text inside a <p> wrapper (common Markdoc output)
+	if (isTag(first) && first.name === 'p' && first.children.length > 0) {
+		const pFirst = first.children[0];
+		if (typeof pFirst === 'string') {
+			const match = pFirst.match(CHECKBOX_RE);
+			if (!match) return null;
+			const value = MARKER_TO_CHECKED[match[1]] ?? 'unchecked';
+			const stripped = pFirst.slice(match[0].length);
+			const newP = { ...first, children: [stripped, ...first.children.slice(1)] };
+			return {
+				...li,
+				attributes: { ...li.attributes, 'data-checked': value },
+				children: [newP, ...children.slice(1)],
+			};
+		}
+	}
+
+	return null;
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */

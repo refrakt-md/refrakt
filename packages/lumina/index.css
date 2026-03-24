@@ -32,6 +32,7 @@
 @import './styles/dimensions/state.css';
 @import './styles/dimensions/media.css';
 @import './styles/dimensions/surfaces.css';
+@import './styles/dimensions/checklist.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';

@@ -78,7 +78,8 @@ function parseDimensionSelectors(): Set<string> {
 		const css = readFileSync(join(DIMENSIONS_DIR, file), 'utf-8');
 		const root = postcss.parse(css);
 		root.walkRules(rule => {
-			const matches = rule.selector.matchAll(/\[data-meta-[\w-]+(?:="[\w-]+")?]/g);
+			// Match data-meta-* and data-checked selectors
+			const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked)(?:="[\w-]+")?]/g);
 			for (const m of matches) {
 				selectors.add(m[0]);
 			}
@@ -325,6 +326,29 @@ describe('Lumina CSS coverage', () => {
 				expect(
 					dimensionSelectors.has(`[data-meta-rank="${rank}"]`),
 					`Missing CSS for [data-meta-rank="${rank}"]`
+				).toBe(true);
+			}
+		);
+	});
+
+	describe('checklist dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const CHECKED_VALUES = ['checked', 'unchecked', 'active', 'skipped'] as const;
+
+		it('has base [data-checked] rule', () => {
+			expect(
+				dimensionSelectors.has('[data-checked]'),
+				'Missing CSS for [data-checked]'
+			).toBe(true);
+		});
+
+		it.each(CHECKED_VALUES)(
+			'checked value "%s" has CSS rule',
+			(value) => {
+				expect(
+					dimensionSelectors.has(`[data-checked="${value}"]`),
+					`Missing CSS for [data-checked="${value}"]`
 				).toBe(true);
 			}
 		);

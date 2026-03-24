@@ -386,5 +386,16 @@ export const config: Record<string, RuneConfig> = {
 		parent: 'Comparison',
 		modifiers: { rowType: { source: 'meta', default: 'text' } },
 		editHints: { label: 'inline', body: 'inline' },
+		postTransform(node, { modifiers }) {
+			const ROW_TO_CHECKED: Record<string, string> = {
+				check: 'checked',
+				cross: 'unchecked',
+			};
+			const checked = ROW_TO_CHECKED[modifiers.rowType];
+			if (checked) {
+				return { ...node, attributes: { ...node.attributes, 'data-checked': checked } };
+			}
+			return node;
+		},
 	},
 };

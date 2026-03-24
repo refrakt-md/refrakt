@@ -1,4 +1,4 @@
-{% work id="WORK-069" status="ready" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-069" status="done" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" %}
 
 # Universal Checklist Styling
 
@@ -12,17 +12,17 @@ Implement the universal checklist dimension: detect `[x]`/`[ ]`/`[>]`/`[-]` chec
 
 ## Acceptance Criteria
 
-- [ ] Identity transform detects checkbox markers (`[x]`, `[ ]`, `[>]`, `[-]`) at the start of list item text content
-- [ ] Detected markers are stripped from rendered text output
-- [ ] `data-checked` attribute emitted on `<li>` elements with values: `checked`, `unchecked`, `active`, `skipped`
-- [ ] Optional `checklist: true` flag on `RuneConfig` enables detection on all lists within a rune (not just standard task list items)
-- [ ] Lumina CSS: `[data-checked]` base rules (padding, indicator position), `[data-checked="checked"]` (success colour, muted text), `[data-checked="unchecked"]` (empty indicator), `[data-checked="active"]` (primary colour, emphasis ring), `[data-checked="skipped"]` (muted, strikethrough)
-- [ ] Density interaction CSS: compact shrinks indicators, minimal hides text
-- [ ] Plot beats emit `data-checked` alongside existing BEM status modifiers — existing dot/timeline styling preserved via BEM specificity
-- [ ] Work/bug acceptance criteria lists get checkbox indicators without any schema changes
-- [ ] Comparison check/cross rows get `data-checked` alongside existing row-type styling
-- [ ] CSS coverage tests updated for all new `[data-checked]` selectors
-- [ ] `ThemeConfig` / `RuneConfig` types updated with optional `checklist` field
+- [x] Identity transform detects checkbox markers (`[x]`, `[ ]`, `[>]`, `[-]`) at the start of list item text content
+- [x] Detected markers are stripped from rendered text output
+- [x] `data-checked` attribute emitted on `<li>` elements with values: `checked`, `unchecked`, `active`, `skipped`
+- [x] Optional `checklist: true` flag on `RuneConfig` enables detection on all lists within a rune (not just standard task list items)
+- [x] Lumina CSS: `[data-checked]` base rules (padding, indicator position), `[data-checked="checked"]` (success colour, muted text), `[data-checked="unchecked"]` (empty indicator), `[data-checked="active"]` (primary colour, emphasis ring), `[data-checked="skipped"]` (muted, strikethrough)
+- [x] Density interaction CSS: compact shrinks indicators, minimal hides text
+- [x] Plot beats emit `data-checked` alongside existing BEM status modifiers — existing dot/timeline styling preserved via BEM specificity
+- [x] Work/bug acceptance criteria lists get checkbox indicators without any schema changes
+- [x] Comparison check/cross rows get `data-checked` alongside existing row-type styling
+- [x] CSS coverage tests updated for all new `[data-checked]` selectors
+- [x] `ThemeConfig` / `RuneConfig` types updated with optional `checklist` field
 
 ## Approach
 

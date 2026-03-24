@@ -1,0 +1,80 @@
+/* === Checklist: universal checkbox item styling === */
+
+/* All checklist items get left padding for the indicator */
+[data-checked] {
+	position: relative;
+	padding-left: 1.75rem;
+	list-style: none;
+}
+
+/* Indicator base — positioned left of text */
+[data-checked]::before {
+	content: '';
+	position: absolute;
+	left: 0.125rem;
+	top: 0.5em;
+	width: 1rem;
+	height: 1rem;
+	border-radius: var(--rf-radius-sm, 0.25rem);
+	border: 2px solid var(--rf-color-border);
+	background: transparent;
+}
+
+/* Checked — filled with checkmark */
+[data-checked="checked"]::before {
+	background: var(--rf-color-success);
+	border-color: var(--rf-color-success);
+}
+
+[data-checked="checked"] {
+	color: var(--rf-color-muted);
+}
+
+/* Active — primary colour with emphasis */
+[data-checked="active"]::before {
+	border-color: var(--rf-color-primary);
+	background: var(--rf-color-primary);
+	box-shadow: 0 0 0 3px color-mix(in oklch, var(--rf-color-primary) 20%, transparent);
+}
+
+[data-checked="active"] {
+	color: var(--rf-color-primary);
+	font-weight: 600;
+}
+
+/* Skipped — muted with strikethrough */
+[data-checked="skipped"]::before {
+	background: var(--rf-color-muted);
+	border-color: var(--rf-color-muted);
+}
+
+[data-checked="skipped"] {
+	text-decoration: line-through;
+	color: var(--rf-color-muted);
+}
+
+/* Unchecked — empty indicator (inherits base styling) */
+[data-checked="unchecked"]::before {
+	background: transparent;
+}
+
+/* === Density interaction === */
+
+/* Compact: tighter spacing */
+[data-density="compact"] [data-checked] {
+	padding-left: 1.5rem;
+}
+
+[data-density="compact"] [data-checked]::before {
+	width: 0.75rem;
+	height: 0.75rem;
+}
+
+/* Minimal: indicators only, no text */
+[data-density="minimal"] [data-checked] {
+	font-size: 0;
+	padding-left: 0;
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+}

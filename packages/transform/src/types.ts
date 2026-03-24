@@ -71,6 +71,13 @@ export interface RuneConfig {
 	 *  no extra attributes in rendered HTML. */
 	editHints?: Record<string, 'inline' | 'link' | 'code' | 'image' | 'icon' | 'none'>;
 
+	/** Enable checkbox marker detection on all list items within this rune.
+	 *  When true, the identity transform scans `<li>` text for `[x]`, `[ ]`, `[>]`, `[-]`
+	 *  markers, strips them, and emits `data-checked` on the element.
+	 *  Detection also applies generically to all list items, but this flag
+	 *  documents the intent for discoverability and tooling. */
+	checklist?: boolean;
+
 	/** Maps ref names (data-name values) to media treatment types.
 	 *  The identity transform emits `data-media` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic media styling.

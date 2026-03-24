@@ -29,6 +29,7 @@ export const config: Record<string, RuneConfig> = {
 	Work: {
 		block: 'work',
 		defaultDensity: 'full',
+		checklist: true,
 		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {
@@ -58,6 +59,7 @@ export const config: Record<string, RuneConfig> = {
 	Bug: {
 		block: 'bug',
 		defaultDensity: 'full',
+		checklist: true,
 		sections: { header: 'header', body: 'body' },
 		contentWrapper: { tag: 'div', ref: 'body' },
 		modifiers: {

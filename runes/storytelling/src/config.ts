@@ -151,6 +151,19 @@ export const config: Record<string, RuneConfig> = {
 			follows: { source: 'meta' },
 		},
 		editHints: { label: 'inline', body: 'none' },
+		postTransform(node, { modifiers }) {
+			const STATUS_TO_CHECKED: Record<string, string> = {
+				complete: 'checked',
+				active: 'active',
+				planned: 'unchecked',
+				abandoned: 'skipped',
+			};
+			const checked = STATUS_TO_CHECKED[modifiers.status];
+			if (checked) {
+				return { ...node, attributes: { ...node.attributes, 'data-checked': checked } };
+			}
+			return node;
+		},
 	},
 
 	Bond: {
