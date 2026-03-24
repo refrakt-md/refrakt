@@ -47,6 +47,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 // ─── Helpers ───
 
 const CSS_DIR = join(__dirname, '..', 'styles', 'runes');
+const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
 
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
@@ -64,6 +65,25 @@ function parseAllCssSelectors(): Set<string> {
 		});
 	}
 
+	return selectors;
+}
+
+/** Parse all CSS files in the dimensions directory and collect attribute selectors */
+function parseDimensionSelectors(): Set<string> {
+	const selectors = new Set<string>();
+	if (!readdirSync(DIMENSIONS_DIR, { withFileTypes: true }).length) return selectors;
+
+	const files = readdirSync(DIMENSIONS_DIR).filter(f => f.endsWith('.css'));
+	for (const file of files) {
+		const css = readFileSync(join(DIMENSIONS_DIR, file), 'utf-8');
+		const root = postcss.parse(css);
+		root.walkRules(rule => {
+			const matches = rule.selector.matchAll(/\[data-meta-[\w-]+(?:="[\w-]+")?]/g);
+			for (const m of matches) {
+				selectors.add(m[0]);
+			}
+		});
+	}
 	return selectors;
 }
 
@@ -270,5 +290,43 @@ describe('Lumina CSS coverage', () => {
 				`These selectors now have CSS — remove from KNOWN_MISSING_SELECTORS: ${nowPresent.join(', ')}`
 			).toEqual([]);
 		});
+	});
+
+	describe('metadata dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const META_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
+		const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
+		const RANKS = ['primary', 'secondary'] as const;
+
+		it.each(META_TYPES)(
+			'meta type "%s" has CSS rule',
+			(type) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-type="${type}"]`),
+					`Missing CSS for [data-meta-type="${type}"]`
+				).toBe(true);
+			}
+		);
+
+		it.each(SENTIMENTS)(
+			'sentiment "%s" has CSS rule',
+			(sentiment) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
+					`Missing CSS for [data-meta-sentiment="${sentiment}"]`
+				).toBe(true);
+			}
+		);
+
+		it.each(RANKS)(
+			'rank "%s" has CSS rule',
+			(rank) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-rank="${rank}"]`),
+					`Missing CSS for [data-meta-rank="${rank}"]`
+				).toBe(true);
+			}
+		);
 	});
 });

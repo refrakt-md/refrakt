@@ -25,6 +25,9 @@
 /* Universal Rune Attributes */
 @import './styles/base/attributes.css';
 
+/* Dimensions */
+@import './styles/dimensions/metadata.css';
+
 /* Runes */
 @import './styles/runes/accordion.css';
 @import './styles/runes/annotate.css';

@@ -1,4 +1,4 @@
-{% work id="WORK-061" status="ready" priority="high" complexity="moderate" tags="lumina, css, metadata" milestone="v0.9.0" %}
+{% work id="WORK-061" status="done" priority="high" complexity="moderate" tags="lumina, css, metadata" milestone="v0.9.0" %}
 
 # Lumina Generic Metadata CSS
 
@@ -12,13 +12,13 @@ Write the ~18 generic CSS rules in Lumina that style every metadata badge across
 
 ## Acceptance Criteria
 
-- [ ] Lumina includes CSS rules for all 6 meta types: status (coloured pill with dot), category (outlined chip), quantity (bold tabular number), temporal (icon-prefixed value), tag (flat muted label), id (monospace)
-- [ ] Lumina includes CSS rules for all 4 sentiments: positive → success colour, negative → danger colour, caution → warning colour, neutral → muted colour
-- [ ] Lumina includes CSS rules for both ranks: primary (full size), secondary (smaller + faded)
-- [ ] Sentiment colours adapt to dark mode via existing Lumina colour token definitions
-- [ ] `--meta-color` and `--meta-font-size` custom properties cascade correctly from sentiment/rank to type rules
-- [ ] CSS coverage tests updated to expect the new `[data-meta-*]` selectors
-- [ ] Per-rune badge CSS that is now redundant is identified (removal can be done incrementally in a follow-up)
+- [x] Lumina includes CSS rules for all 6 meta types: status (coloured pill with dot), category (outlined chip), quantity (bold tabular number), temporal (icon-prefixed value), tag (flat muted label), id (monospace)
+- [x] Lumina includes CSS rules for all 4 sentiments: positive → success colour, negative → danger colour, caution → warning colour, neutral → muted colour
+- [x] Lumina includes CSS rules for both ranks: primary (full size), secondary (smaller + faded)
+- [x] Sentiment colours adapt to dark mode via existing Lumina colour token definitions
+- [x] `--meta-color` and `--meta-font-size` custom properties cascade correctly from sentiment/rank to type rules
+- [x] CSS coverage tests updated to expect the new `[data-meta-*]` selectors
+- [x] Per-rune badge CSS that is now redundant is identified (removal can be done incrementally in a follow-up)
 
 ## Approach
 

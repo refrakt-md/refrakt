@@ -1,0 +1,94 @@
+/* ─── Metadata Dimensions ──────────────────────────────────────────────
+ * Generic styling for metadata badges across all runes.
+ * Works via data-meta-type, data-meta-rank, and data-meta-sentiment
+ * attributes emitted by the identity transform engine.
+ *
+ * Composability: --meta-color cascades from sentiment → type rules.
+ *                --meta-font-size cascades from rank → type rules.
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Rank ─────────────────────────────────────────────────────────── */
+
+[data-meta-rank="primary"] {
+	--meta-font-size: 0.8125rem;
+}
+
+[data-meta-rank="secondary"] {
+	--meta-font-size: 0.75rem;
+	opacity: 0.8;
+}
+
+/* ─── Sentiment ────────────────────────────────────────────────────── */
+
+[data-meta-sentiment="positive"] { --meta-color: var(--rf-color-success, #10b981); }
+[data-meta-sentiment="negative"] { --meta-color: var(--rf-color-danger, #ef4444); }
+[data-meta-sentiment="caution"]  { --meta-color: var(--rf-color-warning, #f59e0b); }
+[data-meta-sentiment="neutral"]  { --meta-color: var(--rf-color-muted, #64748b); }
+
+/* ─── Meta Types ───────────────────────────────────────────────────── */
+
+/* Status: coloured pill with dot indicator */
+[data-meta-type="status"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.125rem 0.75rem;
+	border-radius: 999px;
+	font-size: var(--meta-font-size, 0.8125rem);
+	font-weight: 500;
+	background: color-mix(in oklch, var(--meta-color, var(--rf-color-muted)) 12%, transparent);
+	color: var(--meta-color, var(--rf-color-muted));
+}
+
+[data-meta-type="status"]::before {
+	content: '';
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--meta-color, var(--rf-color-muted));
+}
+
+/* Category: outlined chip */
+[data-meta-type="category"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.125rem 0.625rem;
+	border: 1px solid var(--meta-color, var(--rf-color-border));
+	border-radius: var(--rf-radius-sm, 0.25rem);
+	font-size: var(--meta-font-size, 0.8125rem);
+	font-weight: 500;
+	color: var(--meta-color, var(--rf-color-text));
+}
+
+/* Quantity: bold tabular number */
+[data-meta-type="quantity"] {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	font-size: var(--meta-font-size, 0.8125rem);
+	color: var(--meta-color, var(--rf-color-text));
+}
+
+/* Temporal: value with time association */
+[data-meta-type="temporal"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: var(--meta-font-size, 0.8125rem);
+	font-variant-numeric: tabular-nums;
+	color: var(--meta-color, var(--rf-color-muted));
+}
+
+/* Tag: flat muted label */
+[data-meta-type="tag"] {
+	font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
+	color: var(--rf-color-muted);
+}
+
+/* ID: monospace identifier */
+[data-meta-type="id"] {
+	font-family: var(--rf-font-mono, monospace);
+	font-size: var(--meta-font-size, 0.8125rem);
+	font-weight: 500;
+	color: var(--rf-color-muted);
+}
