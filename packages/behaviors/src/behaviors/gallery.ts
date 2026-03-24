@@ -101,6 +101,7 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 
 	function open(index: number) {
 		currentIndex = index;
+		items[currentIndex]?.setAttribute('data-state', 'selected');
 
 		overlay = document.createElement('div');
 		overlay.className = 'rf-gallery__lightbox';
@@ -148,7 +149,9 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 
 	function navigate(direction: number) {
 		if (!overlay) return;
+		items[currentIndex]?.removeAttribute('data-state');
 		currentIndex = (currentIndex + direction + items.length) % items.length;
+		items[currentIndex]?.setAttribute('data-state', 'selected');
 		const img = overlay.querySelector('img');
 		if (img) {
 			img.src = getImageSrc(items[currentIndex]);
@@ -158,6 +161,7 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 
 	function close() {
 		if (!overlay) return;
+		items[currentIndex]?.removeAttribute('data-state');
 		document.removeEventListener('keydown', onOverlayKeydown);
 		overlay.remove();
 		overlay = null;

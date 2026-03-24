@@ -90,7 +90,7 @@ export const coreConfig: ThemeConfig = {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
+		AccordionItem: { block: 'accordion-item', parent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
 		Details: { block: 'details', defaultDensity: 'compact', sections: { summary: 'title' }, autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
@@ -623,8 +623,8 @@ export const coreConfig: ThemeConfig = {
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
 		TabGroup: { block: 'tabs', defaultDensity: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		Tab: { block: 'tab', parent: 'TabGroup', editHints: { name: 'inline' } },
-		TabPanel: { block: 'tab-panel', parent: 'TabGroup' },
+		Tab: { block: 'tab', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
+		TabPanel: { block: 'tab-panel', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
 		DataTable: {
 			block: 'datatable',
 			defaultDensity: 'compact',
@@ -668,7 +668,7 @@ export const coreConfig: ThemeConfig = {
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
-		RevealStep: { block: 'reveal-step', parent: 'Reveal', editHints: { body: 'none' } },
+		RevealStep: { block: 'reveal-step', parent: 'Reveal', rootAttributes: { 'data-state': 'closed' }, editHints: { body: 'none' } },
 		Juxtapose: {
 			block: 'juxtapose',
 			defaultDensity: 'compact',
@@ -684,7 +684,7 @@ export const coreConfig: ThemeConfig = {
 			},
 			editHints: { panels: 'none' },
 		},
-		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', editHints: { body: 'none' } },
+		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', rootAttributes: { 'data-state': 'inactive' }, editHints: { body: 'none' } },
 		Diagram: {
 			block: 'diagram',
 			defaultDensity: 'compact',
