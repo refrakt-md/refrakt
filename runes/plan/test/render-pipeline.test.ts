@@ -41,7 +41,9 @@ Body content.
 			baseUrl: '/',
 		});
 
-		expect(result.pages).toHaveLength(2);
+		// Entity pages + status filter pages are included
+		const entityPages = result.pages.filter(p => p.entityId);
+		expect(entityPages).toHaveLength(2);
 		expect(result.dashboard).toBeDefined();
 
 		// Check work page
@@ -156,7 +158,7 @@ Desc.
 			baseUrl: '/',
 		});
 
-		expect(result.pages).toHaveLength(1);
+		expect(result.pages.filter(p => p.entityId).length).toBe(1);
 		expect(result.themeCss).toBeTruthy();
 	});
 
@@ -180,7 +182,7 @@ Desc.
 				baseUrl: '/',
 			});
 			// Falls back to default — should still work
-			expect(result.pages).toHaveLength(1);
+			expect(result.pages.filter(p => p.entityId).length).toBe(1);
 			expect(result.themeCss).toBeTruthy();
 		} finally {
 			process.chdir(origCwd);
@@ -199,7 +201,7 @@ Desc.
 			theme: 'default',
 			baseUrl: '/',
 		});
-		expect(result.pages).toHaveLength(1);
+		expect(result.pages.filter(p => p.entityId).length).toBe(1);
 	});
 
 	it('works with minimal theme', async () => {
@@ -215,7 +217,7 @@ Desc.
 			baseUrl: '/',
 		});
 
-		expect(result.pages).toHaveLength(1);
+		expect(result.pages.filter(p => p.entityId).length).toBe(1);
 	});
 
 	it('populates backlog rune in dashboard via pipeline', async () => {
@@ -258,7 +260,7 @@ Desc.
 		expect(result.navRegion.length).toBeGreaterThan(0);
 	});
 
-	it('nav region items include data-id and data-status attributes', async () => {
+	it('nav region status links include data-status attributes', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Desc.
@@ -271,11 +273,11 @@ Desc.
 		});
 
 		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
-		expect(html).toContain('data-id="WORK-001"');
 		expect(html).toContain('data-status="ready"');
+		expect(html).toContain('rf-plan-sidebar__status-link');
 	});
 
-	it('sidebar has status sub-groups with count badges', async () => {
+	it('sidebar has status links with count badges', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task A
 Desc.
@@ -299,15 +301,15 @@ Desc.
 
 		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
 
-		// Status group headers with aria-expanded
-		expect(html).toContain('rf-plan-sidebar__status-header');
-		expect(html).toContain('rf-plan-sidebar__status-group');
-		// Ready group should be expanded (not hidden)
-		expect(html).toMatch(/data-status="ready"[^>]*aria-expanded="true"/);
-		// Done group should be collapsed by default
-		expect(html).toMatch(/data-status="done"[^>]*aria-expanded="false"/);
+		// Status links (not collapsible sub-groups)
+		expect(html).toContain('rf-plan-sidebar__status-link');
+		expect(html).toContain('data-status="ready"');
+		expect(html).toContain('data-status="done"');
 		// Count badges
 		expect(html).toContain('rf-plan-sidebar__status-count');
+		// Links should point to status filter pages
+		expect(html).toContain('href="/work/ready.html"');
+		expect(html).toContain('href="/work/done.html"');
 	});
 
 	it('sidebar includes search input', async () => {
@@ -327,7 +329,7 @@ Desc.
 		expect(html).toContain('placeholder="Filter');
 	});
 
-	it('nav items include data-priority and data-tags attributes', async () => {
+	it('generates status filter pages for each entity type and status', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" tags="css, plan" %}
 # Task
 Desc.
@@ -339,9 +341,12 @@ Desc.
 			baseUrl: '/',
 		});
 
-		const html = renderPage(result.pages[0], result.navRegion, [], { stylesheets: [] });
-		expect(html).toContain('data-priority="high"');
-		expect(html).toContain('data-tags="css, plan"');
+		// Status filter pages should be generated
+		const statusPages = result.pages.filter(p => !p.entityId && p.type === 'work');
+		expect(statusPages.length).toBeGreaterThan(0);
+		const readyPage = statusPages.find(p => p.status === 'ready');
+		expect(readyPage).toBeDefined();
+		expect(readyPage!.url).toBe('/work/ready.html');
 	});
 
 	it('sidebar behavior scripts are injected', async () => {

@@ -289,13 +289,22 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 /** Human-readable status labels for group headers */
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS_DISPLAY: Record<string, string> = {
 	'in-progress': 'In Progress',
 	confirmed: 'Confirmed', review: 'Review', ready: 'Ready', reported: 'Reported',
 	active: 'Active', proposed: 'Proposed', planning: 'Planning', draft: 'Draft',
 	pending: 'Pending', blocked: 'Blocked',
 	done: 'Done', fixed: 'Fixed', accepted: 'Accepted', complete: 'Complete',
 	superseded: 'Superseded', deprecated: 'Deprecated', wontfix: "Won't Fix", duplicate: 'Duplicate',
+};
+
+/** Status ordering per entity type (for nav display) */
+const STATUS_ORDER_BY_TYPE: Record<string, string[]> = {
+	work: ['in-progress', 'review', 'ready', 'blocked', 'draft', 'pending', 'done'],
+	bug: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'],
+	spec: ['review', 'draft', 'accepted', 'superseded', 'deprecated'],
+	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
+	milestone: ['active', 'planning', 'complete'],
 };
 
 function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
@@ -335,7 +344,7 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 				.sort(([a], [b]) => (STATUS_ORDER[a] ?? 15) - (STATUS_ORDER[b] ?? 15))
 				.map(([status, statusItems]) => ({
 					status,
-					label: STATUS_LABELS[status] || status,
+					label: STATUS_LABELS_DISPLAY[status] || status,
 					items: statusItems,
 					collapsed: TERMINAL_STATUSES.has(status),
 				}));
@@ -353,7 +362,7 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
  * Convert NavGroup[] to a serialized tag tree for the layout's nav region.
  * Produces BEM-classed elements matching the existing .rf-plan-sidebar__* selectors.
  */
-function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string, viewDefs?: ViewPageDef[]): RendererNode[] {
+function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string, viewDefs?: ViewPageDef[], statusFilterPages?: StatusFilterPageDef[]): RendererNode[] {
 	const children: RendererNode[] = [];
 
 	// Title
@@ -400,91 +409,120 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 			children: [group.title],
 		} as unknown as RendererNode);
 
-		// Status sub-groups
-		for (const sg of group.statusGroups) {
-			const subGroupChildren: RendererNode[] = [];
+		// Status links — each links to a filter page instead of listing individual items
+		const typeFilterPages = (statusFilterPages ?? []).filter(p => p.type === group.type);
+		if (typeFilterPages.length > 0) {
+			for (const fp of typeFilterPages) {
+				const isActive = fp.url === activeUrl;
+				groupChildren.push({
+					$$mdtype: 'Tag',
+					name: 'a',
+					attributes: {
+						class: `rf-plan-sidebar__link rf-plan-sidebar__status-link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
+						href: fp.url,
+						'data-status': fp.status,
+					},
+					children: [
+						{
+							$$mdtype: 'Tag',
+							name: 'span',
+							attributes: { class: 'rf-plan-sidebar__status-label' },
+							children: [STATUS_LABELS_DISPLAY[fp.status] || fp.status],
+						} as unknown as RendererNode,
+						{
+							$$mdtype: 'Tag',
+							name: 'span',
+							attributes: { class: 'rf-plan-sidebar__status-count' },
+							children: [String(fp.count)],
+						} as unknown as RendererNode,
+					],
+				} as unknown as RendererNode);
+			}
+		} else {
+			// Fallback: render status sub-groups with individual item links (legacy behavior)
+			for (const sg of group.statusGroups) {
+				const subGroupChildren: RendererNode[] = [];
 
-			// Status group header with count badge
-			subGroupChildren.push({
-				$$mdtype: 'Tag',
-				name: 'button',
-				attributes: {
-					class: 'rf-plan-sidebar__status-header',
-					type: 'button',
-					'data-status': sg.status,
-					'aria-expanded': sg.collapsed ? 'false' : 'true',
-				},
-				children: [
-					{
-						$$mdtype: 'Tag',
-						name: 'span',
-						attributes: { class: 'rf-plan-sidebar__status-label' },
-						children: [sg.label],
-					} as unknown as RendererNode,
-					{
-						$$mdtype: 'Tag',
-						name: 'span',
-						attributes: { class: 'rf-plan-sidebar__status-count' },
-						children: [String(sg.items.length)],
-					} as unknown as RendererNode,
-				],
-			} as unknown as RendererNode);
+				subGroupChildren.push({
+					$$mdtype: 'Tag',
+					name: 'button',
+					attributes: {
+						class: 'rf-plan-sidebar__status-header',
+						type: 'button',
+						'data-status': sg.status,
+						'aria-expanded': sg.collapsed ? 'false' : 'true',
+					},
+					children: [
+						{
+							$$mdtype: 'Tag',
+							name: 'span',
+							attributes: { class: 'rf-plan-sidebar__status-label' },
+							children: [sg.label],
+						} as unknown as RendererNode,
+						{
+							$$mdtype: 'Tag',
+							name: 'span',
+							attributes: { class: 'rf-plan-sidebar__status-count' },
+							children: [String(sg.items.length)],
+						} as unknown as RendererNode,
+					],
+				} as unknown as RendererNode);
 
-			// Items container
-			const itemNodes: RendererNode[] = [];
-			for (const item of sg.items) {
-				const isActive = item.url === activeUrl;
-				const blockerClass = item.hasUnresolvedBlockers ? ' rf-plan-sidebar__link--blocked' : '';
-				const attrs: Record<string, string> = {
-					class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}${blockerClass}`,
-					href: item.url,
-					'data-id': item.id,
-					'data-status': item.status,
-				};
-				if (item.priority) attrs['data-priority'] = item.priority;
-				if (item.tags) attrs['data-tags'] = item.tags;
-				if (item.assignee) attrs['data-assignee'] = item.assignee;
-				if (item.milestone) attrs['data-milestone'] = item.milestone;
-				if (item.severity) attrs['data-severity'] = item.severity;
-				if (item.hasUnresolvedBlockers) attrs['data-has-blockers'] = 'true';
+				const itemNodes: RendererNode[] = [];
+				for (const item of sg.items) {
+					const isActive = item.url === activeUrl;
+					const blockerClass = item.hasUnresolvedBlockers ? ' rf-plan-sidebar__link--blocked' : '';
+					const attrs: Record<string, string> = {
+						class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}${blockerClass}`,
+						href: item.url,
+						'data-id': item.id,
+						'data-status': item.status,
+					};
+					if (item.priority) attrs['data-priority'] = item.priority;
+					if (item.tags) attrs['data-tags'] = item.tags;
+					if (item.assignee) attrs['data-assignee'] = item.assignee;
+					if (item.milestone) attrs['data-milestone'] = item.milestone;
+					if (item.severity) attrs['data-severity'] = item.severity;
+					if (item.hasUnresolvedBlockers) attrs['data-has-blockers'] = 'true';
 
-				const linkChildren: (string | RendererNode)[] = [item.label];
-				if (item.hasUnresolvedBlockers) {
-					linkChildren.push({
+					const linkChildren: (string | RendererNode)[] = [item.label];
+					if (item.hasUnresolvedBlockers) {
+						linkChildren.push({
+							$$mdtype: 'Tag',
+							name: 'span',
+							attributes: { class: 'rf-plan-sidebar__blocker-icon', 'aria-label': 'Has unresolved blockers' },
+							children: ['\u26A0'],
+						} as unknown as RendererNode);
+					}
+
+					itemNodes.push({
 						$$mdtype: 'Tag',
-						name: 'span',
-						attributes: { class: 'rf-plan-sidebar__blocker-icon', 'aria-label': 'Has unresolved blockers' },
-						children: ['\u26A0'],
+						name: 'a',
+						attributes: attrs,
+						children: linkChildren,
 					} as unknown as RendererNode);
 				}
 
-				itemNodes.push({
+				subGroupChildren.push({
 					$$mdtype: 'Tag',
-					name: 'a',
-					attributes: attrs,
-					children: linkChildren,
+					name: 'div',
+					attributes: {
+						class: 'rf-plan-sidebar__status-items',
+						...(sg.collapsed ? { hidden: '' } : {}),
+					},
+					children: itemNodes,
+				} as unknown as RendererNode);
+
+				groupChildren.push({
+					$$mdtype: 'Tag',
+					name: 'div',
+					attributes: {
+						class: 'rf-plan-sidebar__status-group',
+						'data-status': sg.status,
+					},
+					children: subGroupChildren,
 				} as unknown as RendererNode);
 			}
-
-			subGroupChildren.push({
-				$$mdtype: 'Tag',
-				name: 'div',
-				attributes: {
-					class: 'rf-plan-sidebar__status-items',
-					...(sg.collapsed ? { hidden: '' } : {}),
-				},
-				children: itemNodes,
-			} as unknown as RendererNode);
-
-			groupChildren.push({
-				$$mdtype: 'Tag',
-				name: 'div',
-				attributes: {
-					class: 'rf-plan-sidebar__status-group',
-					'data-status': sg.status,
-				},
-				children: subGroupChildren,
-			} as unknown as RendererNode);
 		}
 
 		children.push({
@@ -632,6 +670,70 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	md += `{% plan-activity limit="10" /%}\n`;
 
 	return md;
+}
+
+// --- Status filter page generation ---
+
+interface StatusFilterPageDef {
+	url: string;
+	title: string;
+	content: string;
+	type: string;
+	status: string;
+	count: number;
+}
+
+function generateStatusFilterPages(entities: PlanEntity[], baseUrl: string): StatusFilterPageDef[] {
+	const pages: StatusFilterPageDef[] = [];
+
+	// Group entities by type, then by status
+	const byType = new Map<string, Map<string, PlanEntity[]>>();
+	for (const entity of entities) {
+		const type = entity.type;
+		if (!byType.has(type)) byType.set(type, new Map());
+		const byStatus = byType.get(type)!;
+		const status = entity.attributes.status || 'unknown';
+		if (!byStatus.has(status)) byStatus.set(status, []);
+		byStatus.get(status)!.push(entity);
+	}
+
+	// Sort fields by type
+	const SORT_FIELDS: Record<string, string> = {
+		work: 'priority', bug: 'priority',
+		spec: 'id', decision: 'id', milestone: 'id',
+	};
+
+	// Show attribute for work/bug types
+	const SHOW_ATTRS: Record<string, string> = {
+		work: ' show="all"', bug: ' show="all"',
+	};
+
+	for (const [type, byStatus] of byType) {
+		const statusOrder = STATUS_ORDER_BY_TYPE[type] ?? [];
+		const sortedStatuses = [...byStatus.keys()].sort((a, b) => {
+			const ai = statusOrder.indexOf(a);
+			const bi = statusOrder.indexOf(b);
+			return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+		});
+
+		for (const status of sortedStatuses) {
+			const items = byStatus.get(status)!;
+			const label = STATUS_LABELS_DISPLAY[status] || status;
+			const sort = SORT_FIELDS[type] || 'priority';
+			const show = SHOW_ATTRS[type] || '';
+			const slug = slugify(status);
+			pages.push({
+				url: `${baseUrl}${type}/${slug}.html`,
+				title: `${label} ${NAV_TITLES[type] || type}`,
+				type,
+				status,
+				count: items.length,
+				content: `# ${label}\n\n{% backlog filter="status:${status}" sort="${sort}"${show} /%}\n`,
+			});
+		}
+	}
+
+	return pages;
 }
 
 // --- View page generation ---
@@ -1073,7 +1175,22 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	};
 	transformedPages.push(dashboardPage);
 
-	// 3b. Generate view pages (by tag, assignee, milestone)
+	// 3b. Generate status filter pages
+	const statusFilterPages = generateStatusFilterPages(allEntities, baseUrl);
+	const statusFilterMap = new Map(statusFilterPages.map(p => [p.url, p]));
+	for (const sfp of statusFilterPages) {
+		const { renderable: sfRenderable, title: sfTitle, headings: sfHeadings } = parseAndTransform(sfp.content, `${sfp.type}/${slugify(sfp.status)}.md`);
+		const sfPage: TransformedPage = {
+			url: sfp.url,
+			title: sfTitle || sfp.title,
+			headings: sfHeadings,
+			frontmatter: {},
+			renderable: sfRenderable,
+		};
+		transformedPages.push(sfPage);
+	}
+
+	// 3c. Generate view pages (by tag, assignee, milestone)
 	const viewDefs = generateViewPages(allEntities, baseUrl);
 	const viewDefMap = new Map(viewDefs.map(v => [v.url, v]));
 	for (const viewDef of viewDefs) {
@@ -1180,15 +1297,16 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 
 		const mapEntry = pageMap.get(page.url);
 		const viewDef = viewDefMap.get(page.url);
+		const statusFilterDef = statusFilterMap.get(page.url);
 
 		const processed: ProcessedPage = {
 			url: page.url,
 			title: page.title,
-			type: mapEntry?.entity.type ?? (viewDef ? 'view' : 'dashboard'),
+			type: mapEntry?.entity.type ?? (statusFilterDef ? statusFilterDef.type : viewDef ? 'view' : 'dashboard'),
 			entityId: mapEntry?.entity.attributes.id || mapEntry?.entity.attributes.name || '',
-			status: mapEntry?.entity.attributes.status || '',
+			status: mapEntry?.entity.attributes.status || (statusFilterDef?.status ?? ''),
 			renderable: transformed as RendererNode,
-			filePath: mapEntry?.entity.file ?? (viewDef ? `view/${viewDef.field}/${slugify(viewDef.value)}.md` : 'index.md'),
+			filePath: mapEntry?.entity.file ?? (statusFilterDef ? `${statusFilterDef.type}/${slugify(statusFilterDef.status)}.md` : viewDef ? `view/${viewDef.field}/${slugify(viewDef.value)}.md` : 'index.md'),
 			headings: page.headings ?? [],
 		};
 
@@ -1203,7 +1321,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		pages,
 		dashboard: dashboardProcessed!,
 		nav,
-		navRegion: buildNavRegion(nav, baseUrl, undefined, viewDefs),
+		navRegion: buildNavRegion(nav, baseUrl, undefined, viewDefs, statusFilterPages),
 		themeCss,
 		highlightCss,
 	};
