@@ -52,11 +52,15 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 	function setActive(index: number) {
 		activeIndex = index;
 		for (let i = 0; i < buttons.length; i++) {
-			buttons[i].setAttribute('aria-selected', String(i === activeIndex));
-			if (buttonClass) buttons[i].classList.toggle(`${buttonClass}--active`, i === activeIndex);
+			const isActive = i === activeIndex;
+			buttons[i].setAttribute('aria-selected', String(isActive));
+			buttons[i].setAttribute('data-state', isActive ? 'active' : 'inactive');
+			if (buttonClass) buttons[i].classList.toggle(`${buttonClass}--active`, isActive);
 		}
 		for (let i = 0; i < panelItems.length; i++) {
-			panelItems[i].hidden = i !== activeIndex;
+			const isActive = i === activeIndex;
+			panelItems[i].hidden = !isActive;
+			panelItems[i].setAttribute('data-state', isActive ? 'active' : 'inactive');
 		}
 	}
 
@@ -115,12 +119,14 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 			btn.removeAttribute('id');
 			btn.removeAttribute('aria-controls');
 			btn.removeAttribute('aria-selected');
+			btn.removeAttribute('data-state');
 			if (buttonClass) btn.classList.remove(`${buttonClass}--active`);
 		}
 		for (const panel of panelItems) {
 			panel.hidden = false;
 			panel.removeAttribute('id');
 			panel.removeAttribute('aria-labelledby');
+			panel.removeAttribute('data-state');
 		}
 	};
 }

@@ -1,4 +1,4 @@
-{% work id="WORK-067" status="ready" priority="high" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-067" status="done" priority="high" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
 
 # Lumina Universal Dimension CSS
 
@@ -12,15 +12,15 @@ Write the universal dimension CSS in Lumina: density rules (~3 + interactions), 
 
 ## Acceptance Criteria
 
-- [ ] Density CSS: `[data-density="full"]`, `[data-density="compact"]`, `[data-density="minimal"]` with padding, description truncation, and secondary metadata hiding
-- [ ] Section anatomy CSS: `[data-section="header"]`, `title`, `description`, `body`, `footer`, `media` with layout, typography, and spacing
-- [ ] Density × section interactions: title font scales with density, descriptions hide at minimal, footers hide at minimal
-- [ ] Interactive state CSS: `[data-state="open/closed"]` show/hide with animation, `[data-state="active/inactive"]` tab indicators, `[data-state="selected"]` highlight, `[data-state="disabled"]` dimming
-- [ ] Media slot CSS: portrait (circular, 5rem), cover (16:9, full-width), thumbnail (3rem square), hero (responsive), icon (2rem square)
-- [ ] Media × density: compact shrinks portraits and covers, minimal hides all media
-- [ ] Surface assignments: runes grouped into card/inline/banner/inset selector lists per SPEC-026
-- [ ] Surface × density interaction via `--rune-padding` custom property
-- [ ] CSS coverage tests updated for all new selectors
+- [x] Density CSS: `[data-density="full"]`, `[data-density="compact"]`, `[data-density="minimal"]` with padding, description truncation, and secondary metadata hiding
+- [x] Section anatomy CSS: `[data-section="header"]`, `title`, `description`, `body`, `footer`, `media` with layout, typography, and spacing
+- [x] Density × section interactions: title font scales with density, descriptions hide at minimal, footers hide at minimal
+- [x] Interactive state CSS: `[data-state="open/closed"]` show/hide with animation, `[data-state="active/inactive"]` tab indicators, `[data-state="selected"]` highlight, `[data-state="disabled"]` dimming
+- [x] Media slot CSS: portrait (circular, 5rem), cover (16:9, full-width), thumbnail (3rem square), hero (responsive), icon (2rem square)
+- [x] Media × density: compact shrinks portraits and covers, minimal hides all media
+- [x] Surface assignments: runes grouped into card/inline/banner/inset selector lists per SPEC-026
+- [x] Surface × density interaction via `--rune-padding` custom property
+- [x] CSS coverage tests updated for all new selectors
 - [ ] Per-rune CSS that is now redundant identified for future cleanup
 
 ## Approach

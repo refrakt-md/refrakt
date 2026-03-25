@@ -1,44 +1,4 @@
 /* Spec */
-.rf-spec {
-	margin: 1.5rem 0;
-}
-.rf-spec__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	margin-bottom: 0.75rem;
-}
-.rf-spec__id-badge {
-	font-family: var(--rf-font-mono);
-	font-size: 0.75rem;
-	font-weight: 700;
-	color: var(--rf-color-primary);
-}
-.rf-spec__status-badge {
-	font-size: 0.6875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-.rf-spec__version-badge {
-	font-size: 0.6875rem;
-	font-weight: 500;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-.rf-spec__supersedes-badge {
-	font-size: 0.6875rem;
-	font-weight: 500;
-	color: var(--rf-color-muted);
-	font-style: italic;
-}
 .rf-spec__body {
 	font-size: 0.925rem;
 	line-height: 1.65;
@@ -57,23 +17,4 @@
 	margin: 0.75rem 0;
 	font-style: italic;
 	color: var(--rf-color-muted);
-}
-
-/* Status colors */
-[data-status="draft"] > .rf-spec__header > .rf-spec__status-badge {
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-[data-status="review"] > .rf-spec__header > .rf-spec__status-badge {
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg);
-}
-[data-status="accepted"] > .rf-spec__header > .rf-spec__status-badge {
-	color: var(--rf-color-success);
-	background: var(--rf-color-success-bg);
-}
-[data-status="superseded"] > .rf-spec__header > .rf-spec__status-badge,
-[data-status="deprecated"] > .rf-spec__header > .rf-spec__status-badge {
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface);
 }

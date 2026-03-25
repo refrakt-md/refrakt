@@ -1,7 +1,4 @@
 /* Spacing — spacing scale, radii, and shadow display */
-.rf-spacing {
-	margin: 1.5rem 0;
-}
 .rf-spacing__title {
 	font-size: 1.125rem;
 	font-weight: 600;

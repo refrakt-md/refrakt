@@ -1,8 +1,8 @@
 /* Bento */
-.rf-bento {
-	margin: 1.5rem 0;
-}
 .rf-bento__header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
 .rf-bento__eyebrow {
@@ -44,7 +44,6 @@
 	gap: var(--bento-gap, 1rem);
 }
 .rf-bento-cell {
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem;
 	background: var(--rf-color-surface);

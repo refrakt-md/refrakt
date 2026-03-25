@@ -210,11 +210,14 @@ function setupToggle(el: HTMLElement): CleanupFn {
 
 	function render() {
 		panels.forEach((panel, i) => {
-			panel.hidden = i !== activeIndex;
+			const isActive = i === activeIndex;
+			panel.hidden = !isActive;
+			panel.setAttribute('data-state', isActive ? 'active' : 'inactive');
 		});
 		buttons.forEach((btn, i) => {
 			const active = i === activeIndex;
 			btn.setAttribute('aria-checked', String(active));
+			btn.setAttribute('data-state', active ? 'active' : 'inactive');
 			btn.classList.toggle('rf-juxtapose__toggle-btn--active', active);
 		});
 	}
@@ -236,9 +239,10 @@ function setupToggle(el: HTMLElement): CleanupFn {
 		toggleBar.removeEventListener('click', onClick);
 		toggleBar.remove();
 
-		// Restore panel visibility
+		// Restore panel visibility and state
 		for (const panel of panels) {
 			panel.hidden = false;
+			panel.removeAttribute('data-state');
 		}
 	};
 }

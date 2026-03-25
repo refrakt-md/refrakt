@@ -4,6 +4,10 @@ import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
 export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
+		defaultDensity: 'full',
+		sequence: 'numbered',
+		sections: { header: 'header', title: 'title', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			layout: { source: 'meta', default: 'stacked' },
@@ -21,7 +25,7 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'type' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category', metaRank: 'primary' },
 				],
 			},
 		},
@@ -31,6 +35,8 @@ export const config: Record<string, RuneConfig> = {
 	Track: { block: 'track', parent: 'Playlist', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
 	Audio: {
 		block: 'audio',
+		defaultDensity: 'compact',
+		sections: { description: 'description' },
 		modifiers: {
 			waveform: { source: 'meta', default: 'false' },
 		},

@@ -1,7 +1,4 @@
 /* Grid */
-.rf-grid {
-	margin: 1.5rem 0;
-}
 .rf-grid [data-layout="grid"] {
 	display: grid;
 	grid-template-columns: var(--grid-ratio, repeat(auto-fit, minmax(250px, 1fr)));

@@ -52,10 +52,48 @@ export interface RuneConfig {
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
 
+	/** Default density for this rune. Controls how much detail is shown.
+	 *  'full' — all sections visible, generous spacing (dedicated page)
+	 *  'compact' — descriptions truncated, secondary metadata hidden (grid cell, card)
+	 *  'minimal' — title and primary metadata only (list view, backlog row)
+	 *  Defaults to 'full' if not specified. Can be overridden by author attribute
+	 *  or automatically by rendering context (grid → compact, list → minimal). */
+	defaultDensity?: 'full' | 'compact' | 'minimal';
+
+	/** Maps structural ref names to standard section roles.
+	 *  The identity transform emits `data-section` on elements whose
+	 *  `data-name` matches a key in this map, enabling generic theme styling.
+	 *  Roles: 'header' | 'title' | 'description' | 'body' | 'footer' | 'media' */
+	sections?: Record<string, 'header' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
+
 	/** Declares how named sections should be edited in the block editor.
 	 *  Keys are data-name values. Resolved at click time by the editor —
 	 *  no extra attributes in rendered HTML. */
 	editHints?: Record<string, 'inline' | 'link' | 'code' | 'image' | 'icon' | 'none'>;
+
+	/** Enable checkbox marker detection on all list items within this rune.
+	 *  When true, the identity transform scans `<li>` text for `[x]`, `[ ]`, `[>]`, `[-]`
+	 *  markers, strips them, and emits `data-checked` on the element.
+	 *  Detection also applies generically to all list items, but this flag
+	 *  documents the intent for discoverability and tooling. */
+	checklist?: boolean;
+
+	/** Sequential item style for ordered lists within this rune.
+	 *  The identity transform emits `data-sequence` on `<ol>` elements.
+	 *  'numbered' — counter circle indicators, 'connected' — connector line with dots,
+	 *  'plain' — no visual indicators */
+	sequence?: 'numbered' | 'connected' | 'plain';
+
+	/** Direction source for sequential items.
+	 *  Reads the named modifier value and emits `data-sequence-direction`.
+	 *  Only used when `sequence` is set. */
+	sequenceDirection?: { fromModifier: string; default?: string };
+
+	/** Maps ref names (data-name values) to media treatment types.
+	 *  The identity transform emits `data-media` on elements whose
+	 *  `data-name` matches a key in this map, enabling generic media styling.
+	 *  Values: 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon' */
+	mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>;
 
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
@@ -91,6 +129,23 @@ export interface StructureEntry {
 	textPrefix?: string;
 	/** Static text appended to metaText value */
 	textSuffix?: string;
+
+	/** Human-readable label emitted as a separate `<span data-meta-label>` child,
+	 *  enabling independent styling (thin font, hide entirely, etc.).
+	 *  Use for labels like "Prep:", "Role:". For non-label prefixes
+	 *  (e.g., "v" on version badges), use textPrefix instead. */
+	label?: string;
+
+	/** Semantic metadata type — emits `data-meta-type` attribute.
+	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
+	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+	/** Semantic metadata rank — emits `data-meta-rank` attribute.
+	 *  Values: 'primary' | 'secondary' */
+	metaRank?: 'primary' | 'secondary';
+	/** Maps modifier values to sentiment — emits `data-meta-sentiment` when the
+	 *  current modifier value (from `metaText`) has a matching entry.
+	 *  E.g., `{ accepted: 'positive', rejected: 'negative' }` */
+	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
 }
 
 // ─── Tint Types ──────────────────────────────────────────────────────

@@ -1,6 +1,5 @@
 /* Plot */
 .rf-plot {
-	margin: 1.5rem 0;
 	display: flex;
 	flex-direction: column;
 }
@@ -10,29 +9,7 @@
 	font-weight: 700;
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-heading);
-	order: -1;
 }
-
-/* Meta bar — surface strip */
-.rf-plot__badge {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 0.625rem 1rem;
-	margin-bottom: 1rem;
-}
-.rf-plot__type-badge,
-.rf-plot__structure-badge {
-	font-size: 0.8125rem;
-	font-weight: 500;
-	text-transform: capitalize;
-	color: var(--rf-color-muted);
-}
-.rf-plot__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
-.rf-plot__structure-badge::before { content: 'Structure: '; font-weight: 400; opacity: 0.65; }
 
 /* Description */
 .rf-plot > p {

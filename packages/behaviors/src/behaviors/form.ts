@@ -54,12 +54,14 @@ export function formBehavior(el: HTMLElement): CleanupFn {
 		statusEl.hidden = false;
 		statusEl.className = `rf-form__status rf-form__status--${type}`;
 		statusEl.setAttribute('role', type === 'submitting' ? 'status' : 'alert');
+		statusEl.setAttribute('data-state', type);
 		statusEl.textContent = message;
 	}
 
 	function hideStatus() {
 		statusEl.hidden = true;
 		statusEl.className = 'rf-form__status';
+		statusEl.removeAttribute('data-state');
 		statusEl.textContent = '';
 	}
 

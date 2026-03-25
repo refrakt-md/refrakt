@@ -4,15 +4,8 @@
 	--hint-bg: var(--rf-color-info-bg);
 	border-left: 3px solid var(--hint-color);
 	padding: 0.875rem 1.25rem;
-	margin: 1.5rem 0;
 	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
 	background: var(--hint-bg);
-}
-.rf-hint__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	margin-bottom: 0.375rem;
 }
 .rf-hint__icon {
 	display: flex;

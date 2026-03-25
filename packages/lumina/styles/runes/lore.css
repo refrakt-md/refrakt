@@ -1,27 +1,7 @@
 /* Lore */
 .rf-lore {
-	margin: 1.5rem 0;
 	position: relative;
 }
-
-/* Badge bar — surface strip */
-.rf-lore__badge {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 0.625rem 1rem;
-	margin-bottom: 1rem;
-}
-.rf-lore__category-badge {
-	font-size: 0.8125rem;
-	font-weight: 500;
-	text-transform: capitalize;
-	color: var(--rf-color-muted);
-}
-.rf-lore__category-badge::before { content: 'Category: '; font-weight: 400; opacity: 0.65; }
 
 /* Content */
 .rf-lore__content {

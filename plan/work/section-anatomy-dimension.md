@@ -1,4 +1,4 @@
-{% work id="WORK-064" status="ready" priority="high" complexity="moderate" tags="transform, themes, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-064" status="done" priority="high" complexity="moderate" tags="transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Section Anatomy Dimension
 
@@ -10,12 +10,12 @@ Add a section anatomy mapping to rune configs and the identity transform. Runes 
 
 ## Acceptance Criteria
 
-- [ ] `RuneConfig` in `packages/transform/src/types.ts` gains `sections?: Record<string, 'header' | 'title' | 'description' | 'body' | 'footer' | 'media'>`
-- [ ] Identity transform emits `data-section` on elements whose ref maps to a section role
-- [ ] Existing BEM classes and `data-name` attributes are preserved (additive only)
-- [ ] All container-level rune configs annotated with `sections` per SPEC-025 Table 1
-- [ ] `refrakt inspect` output shows `data-section` attributes on structural elements
-- [ ] Unit tests verify section attribute emission for a sample of runes
+- [x] `RuneConfig` in `packages/transform/src/types.ts` gains `sections?: Record<string, 'header' | 'title' | 'description' | 'body' | 'footer' | 'media'>`
+- [x] Identity transform emits `data-section` on elements whose ref maps to a section role
+- [x] Existing BEM classes and `data-name` attributes are preserved (additive only)
+- [x] All container-level rune configs annotated with `sections` per SPEC-025 Table 1
+- [x] `refrakt inspect` output shows `data-section` attributes on structural elements
+- [x] Unit tests verify section attribute emission for a sample of runes
 
 ## Approach
 

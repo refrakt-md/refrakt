@@ -1,9 +1,7 @@
 /* Chart */
 .rf-chart {
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 	padding: 1.5rem;
-	margin: 1.5rem 0;
 }
 .rf-chart__title {
 	font-weight: 600;

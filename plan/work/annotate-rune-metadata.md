@@ -1,4 +1,4 @@
-{% work id="WORK-060" status="ready" priority="high" complexity="moderate" tags="runes, transform, metadata" milestone="v0.9.0" %}
+{% work id="WORK-060" status="done" priority="high" complexity="moderate" tags="runes, transform, metadata" milestone="v0.9.0" %}
 
 # Annotate Rune Configs with Metadata Dimensions
 
@@ -12,15 +12,15 @@ Once the identity transform supports metadata dimensions (WORK-059), annotate al
 
 ## Acceptance Criteria
 
-- [ ] Core rune configs annotated: Budget (currency, travelers, duration)
-- [ ] Docs package configs annotated: Api (method, path, auth), Symbol (kind, lang, since, deprecated)
-- [ ] Learning package configs annotated: HowTo (estimatedTime, difficulty), Recipe (prepTime, cookTime, servings, difficulty)
-- [ ] Storytelling package configs annotated: Character (role, status), Realm (realmType, scale), Lore (category), Faction (factionType, alignment, size), Plot (plotType, structure), Bond (bondType, status)
-- [ ] Places package configs annotated: Event (date, endDate, location)
-- [ ] Media package configs annotated: Playlist (type)
-- [ ] Plan package configs annotated: Spec, Work, Bug, Decision, Milestone (all fields per SPEC-024 map)
-- [ ] `refrakt inspect` output for each annotated rune shows correct `data-meta-*` attributes
-- [ ] CSS coverage tests still pass (metadata attributes are additive, no BEM changes)
+- [x] Core rune configs annotated: Budget (currency, travelers, duration)
+- [x] Docs package configs annotated: Api (method, path, auth), Symbol (kind, lang, since, deprecated)
+- [x] Learning package configs annotated: HowTo (estimatedTime, difficulty), Recipe (prepTime, cookTime, servings, difficulty)
+- [x] Storytelling package configs annotated: Character (role, status), Realm (realmType, scale), Lore (category), Faction (factionType, alignment, size), Plot (plotType, structure), Bond (bondType, status)
+- [x] Places package configs annotated: Event (date, endDate, location)
+- [x] Media package configs annotated: Playlist (type)
+- [x] Plan package configs annotated: Spec, Work, Bug, Decision, Milestone (all fields per SPEC-024 map)
+- [x] `refrakt inspect` output for each annotated rune shows correct `data-meta-*` attributes
+- [x] CSS coverage tests still pass (metadata attributes are additive, no BEM changes)
 
 ## Approach
 

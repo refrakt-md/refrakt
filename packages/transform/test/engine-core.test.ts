@@ -657,6 +657,65 @@ describe('structure metaText', () => {
 		) as SerializedTag;
 		expect(serving.children).toContain('Serves: 4 people');
 	});
+
+	it('emits separate label and value elements when label is set', () => {
+		const config: ThemeConfig = {
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Recipe: {
+					block: 'recipe',
+					modifiers: { prepTime: { source: 'meta' } },
+					structure: {
+						time: { tag: 'span', metaText: 'prepTime', transform: 'duration', label: 'Prep:' },
+					},
+				},
+			},
+		};
+		const transform = createTransform(config);
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
+			makeTag('meta', { 'data-field': 'prep-time', content: 'PT15M' }, []),
+		]);
+
+		const result = asTag(transform(tag));
+		const time = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'time'
+		) as SerializedTag;
+		expect(time.children).toHaveLength(2);
+		const labelEl = asTag(time.children[0] as any);
+		const valueEl = asTag(time.children[1] as any);
+		expect(labelEl.attributes['data-meta-label']).toBe('');
+		expect(labelEl.children[0]).toBe('Prep:');
+		expect(valueEl.attributes['data-meta-value']).toBe('');
+		expect(valueEl.children[0]).toBe('15m');
+	});
+
+	it('wraps textPrefix inside value element when label is also set', () => {
+		const config: ThemeConfig = {
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Test: {
+					block: 'test',
+					modifiers: { val: { source: 'meta' } },
+					structure: {
+						item: { tag: 'span', metaText: 'val', label: 'Label:', textPrefix: '~' },
+					},
+				},
+			},
+		};
+		const transform = createTransform(config);
+		const tag = makeTag('section', { 'data-rune': 'test' }, [
+			makeTag('meta', { 'data-field': 'val', content: 'foo' }, []),
+		]);
+
+		const result = asTag(transform(tag));
+		const item = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'item'
+		) as SerializedTag;
+		const labelEl = asTag(item.children[0] as any);
+		const valueEl = asTag(item.children[1] as any);
+		expect(labelEl.children[0]).toBe('Label:');
+		expect(valueEl.children[0]).toBe('~foo');
+	});
 });
 
 // ---------------------------------------------------------------------------

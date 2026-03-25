@@ -1,0 +1,69 @@
+/* ─── Section Anatomy Dimension ─────────────────────────────────────────
+ * Generic layout and typography for the 6 standard section roles.
+ * Every rune that declares `sections` in its config gets these for free.
+ *
+ * Includes density × section interactions (title scaling, hiding).
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Header: metadata row ────────────────────────────────────────── */
+
+[data-section="header"] {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1.25rem;
+	margin-bottom: 1rem;
+}
+
+/* ─── Title: primary heading ──────────────────────────────────────── */
+
+[data-section="title"] {
+	font-family: var(--rf-font-sans);
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--rf-color-text);
+	margin: 0;
+}
+
+/* Scale title with density */
+[data-density="compact"] [data-section="title"] {
+	font-size: 2.125rem;
+}
+
+[data-density="minimal"] [data-section="title"] {
+	font-size: 1rem;
+}
+
+/* ─── Description: secondary text ─────────────────────────────────── */
+
+[data-section="description"] {
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--rf-color-muted);
+	margin: var(--rf-spacing-xs) 0 var(--rf-spacing-md);
+}
+
+/* ─── Body: main content ──────────────────────────────────────────── */
+
+[data-section="body"] {
+	line-height: 1.6;
+	color: var(--rf-color-text);
+}
+
+/* ─── Footer: actions and links ───────────────────────────────────── */
+
+[data-section="footer"] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--rf-spacing-sm);
+	margin-top: var(--rf-spacing-md);
+	padding-top: var(--rf-spacing-sm);
+	border-top: 1px solid var(--rf-color-border);
+}
+
+/* ─── Media: visual content ───────────────────────────────────────── */
+
+[data-section="media"] {
+	margin: var(--rf-spacing-sm) 0;
+}

@@ -1,7 +1,4 @@
 /* Storyboard */
-.rf-storyboard {
-	margin: 1.5rem 0;
-}
 .rf-storyboard__panels {
 	display: grid;
 	grid-template-columns: repeat(var(--sb-columns, 3), 1fr);

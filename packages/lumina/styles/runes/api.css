@@ -2,13 +2,9 @@
 .rf-api {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	margin: 1.5rem 0;
 	overflow: hidden;
 }
 .rf-api__header {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
 	padding: 1rem 1.25rem;
 	background: var(--rf-color-surface-hover);
 	border-bottom: 1px solid var(--rf-color-border);

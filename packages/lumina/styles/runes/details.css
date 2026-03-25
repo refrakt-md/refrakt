@@ -2,7 +2,6 @@
 .rf-details {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
-	margin: 1.5rem 0;
 	overflow: hidden;
 }
 .rf-details__summary {

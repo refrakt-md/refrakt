@@ -1,9 +1,11 @@
 /* Steps */
 .rf-steps {
 	counter-reset: step;
-	margin: 1.5rem 0;
 }
 .rf-steps__header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
 .rf-steps__eyebrow {

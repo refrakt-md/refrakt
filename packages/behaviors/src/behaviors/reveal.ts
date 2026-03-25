@@ -32,6 +32,7 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 			const visible = i < visibleCount;
 			steps[i].classList.toggle('rf-reveal-step--visible', visible);
 			steps[i].classList.toggle('rf-reveal-step--hidden', !visible);
+			steps[i].setAttribute('data-state', visible ? 'open' : 'closed');
 		}
 
 		// Show Continue button if more steps to reveal
@@ -72,9 +73,10 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 		nextBtn.remove();
 		resetBtn.remove();
 
-		// Remove visibility classes
+		// Remove visibility classes and data-state
 		for (const step of steps) {
 			step.classList.remove('rf-reveal-step--visible', 'rf-reveal-step--hidden');
+			step.removeAttribute('data-state');
 		}
 	};
 }

@@ -42,28 +42,77 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-timeline__header', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
 	'.rf-event__header', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
 	'.rf-preview__header', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
+	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
+	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
+	'.rf-work__id-badge', '.rf-work__status-badge', '.rf-work__priority-badge', '.rf-work__milestone-badge',
+	'.rf-decision__id-badge', '.rf-decision__status-badge', '.rf-decision__date-badge', '.rf-decision__supersedes-badge',
+	'.rf-milestone__name-badge', '.rf-milestone__status-badge',
+	'.rf-bug__id-badge', '.rf-bug__status-badge', '.rf-bug__severity-badge', '.rf-bug__milestone-badge',
+	'.rf-symbol__kind-badge', '.rf-symbol__lang-badge', '.rf-symbol__since-badge', '.rf-symbol__deprecated-badge',
+	'.rf-recipe__meta-item', '.rf-recipe__badge',
+	'.rf-howto__meta-item',
+	'.rf-budget__meta-item',
+	'.rf-character__role-badge', '.rf-character__status-badge',
+	'.rf-realm__type-badge', '.rf-realm__scale-badge',
+	'.rf-lore__category-badge',
+	'.rf-faction__type-badge', '.rf-faction__alignment-badge', '.rf-faction__size-badge',
+	'.rf-plot__type-badge', '.rf-plot__structure-badge',
+	// Badge/meta bar containers — now styled by section header dimension ([data-section="header"])
+	'.rf-character__badge', '.rf-lore__badge', '.rf-plot__badge',
+	'.rf-budget__meta', '.rf-howto__meta',
+	// Section header autoLabel selectors — styled via __name instead
+	'.rf-character-section__header', '.rf-realm-section__header', '.rf-faction-section__header',
+	// Header selectors — now fully handled by [data-section="header"] dimension
+	'.rf-spec__header', '.rf-bug__header',
+	'.rf-decision__header', '.rf-milestone__header',
+	'.rf-recipe__header',
+	'.rf-playlist__type-badge',
 ]);
 
 // ─── Helpers ───
 
 const CSS_DIR = join(__dirname, '..', 'styles', 'runes');
+const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
 
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
 	const selectors = new Set<string>();
-	const files = readdirSync(CSS_DIR).filter(f => f.endsWith('.css'));
+	const dirs = [CSS_DIR, DIMENSIONS_DIR];
 
+	for (const dir of dirs) {
+		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		for (const file of files) {
+			const css = readFileSync(join(dir, file), 'utf-8');
+			const root = postcss.parse(css);
+			root.walkRules(rule => {
+				const matches = rule.selector.matchAll(/\.rf-[\w-]+/g);
+				for (const m of matches) {
+					selectors.add(m[0]);
+				}
+			});
+		}
+	}
+
+	return selectors;
+}
+
+/** Parse all CSS files in the dimensions directory and collect attribute selectors */
+function parseDimensionSelectors(): Set<string> {
+	const selectors = new Set<string>();
+	if (!readdirSync(DIMENSIONS_DIR, { withFileTypes: true }).length) return selectors;
+
+	const files = readdirSync(DIMENSIONS_DIR).filter(f => f.endsWith('.css'));
 	for (const file of files) {
-		const css = readFileSync(join(CSS_DIR, file), 'utf-8');
+		const css = readFileSync(join(DIMENSIONS_DIR, file), 'utf-8');
 		const root = postcss.parse(css);
 		root.walkRules(rule => {
-			const matches = rule.selector.matchAll(/\.rf-[\w-]+/g);
+			// Match data-meta-*, data-checked, data-sequence, and data-sequence-direction selectors
+			const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g);
 			for (const m of matches) {
 				selectors.add(m[0]);
 			}
 		});
 	}
-
 	return selectors;
 }
 
@@ -180,7 +229,10 @@ describe('Lumina CSS coverage', () => {
 			'%s (.rf-%s) has block selector in CSS',
 			(_name, block, _config) => {
 				const selector = `.${prefix}-${block}`;
-				expect(allCssSelectors.has(selector), `Missing CSS for ${selector}`).toBe(true);
+				// Accept if either the exact block selector or any child selector exists
+				const hasBlock = allCssSelectors.has(selector);
+				const hasChild = [...allCssSelectors].some(s => s.startsWith(`${selector}__`) || s.startsWith(`${selector}--`));
+				expect(hasBlock || hasChild, `Missing CSS for ${selector}`).toBe(true);
 			}
 		);
 	});
@@ -269,6 +321,90 @@ describe('Lumina CSS coverage', () => {
 				nowPresent,
 				`These selectors now have CSS — remove from KNOWN_MISSING_SELECTORS: ${nowPresent.join(', ')}`
 			).toEqual([]);
+		});
+	});
+
+	describe('metadata dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const META_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
+		const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
+		const RANKS = ['primary', 'secondary'] as const;
+
+		it.each(META_TYPES)(
+			'meta type "%s" has CSS rule',
+			(type) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-type="${type}"]`),
+					`Missing CSS for [data-meta-type="${type}"]`
+				).toBe(true);
+			}
+		);
+
+		it.each(SENTIMENTS)(
+			'sentiment "%s" has CSS rule',
+			(sentiment) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
+					`Missing CSS for [data-meta-sentiment="${sentiment}"]`
+				).toBe(true);
+			}
+		);
+
+		it.each(RANKS)(
+			'rank "%s" has CSS rule',
+			(rank) => {
+				expect(
+					dimensionSelectors.has(`[data-meta-rank="${rank}"]`),
+					`Missing CSS for [data-meta-rank="${rank}"]`
+				).toBe(true);
+			}
+		);
+	});
+
+	describe('checklist dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const CHECKED_VALUES = ['checked', 'unchecked', 'active', 'skipped'] as const;
+
+		it('has base [data-checked] rule', () => {
+			expect(
+				dimensionSelectors.has('[data-checked]'),
+				'Missing CSS for [data-checked]'
+			).toBe(true);
+		});
+
+		it.each(CHECKED_VALUES)(
+			'checked value "%s" has CSS rule',
+			(value) => {
+				expect(
+					dimensionSelectors.has(`[data-checked="${value}"]`),
+					`Missing CSS for [data-checked="${value}"]`
+				).toBe(true);
+			}
+		);
+	});
+
+	describe('sequence dimension selectors', () => {
+		const dimensionSelectors = parseDimensionSelectors();
+
+		const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
+
+		it.each(SEQUENCE_VALUES)(
+			'sequence value "%s" has CSS rule',
+			(value) => {
+				expect(
+					dimensionSelectors.has(`[data-sequence="${value}"]`),
+					`Missing CSS for [data-sequence="${value}"]`
+				).toBe(true);
+			}
+		);
+
+		it('has horizontal direction rule', () => {
+			expect(
+				dimensionSelectors.has('[data-sequence-direction="horizontal"]'),
+				'Missing CSS for [data-sequence-direction="horizontal"]'
+			).toBe(true);
 		});
 	});
 });

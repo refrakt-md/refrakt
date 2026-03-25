@@ -20,9 +20,10 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 	const { dir, specsDir, port, theme, open } = options;
 	const baseUrl = '/';
 
-	let pipeline: PipelineResult;
+	let pipeline: PipelineResult = undefined!;
 	let combinedCss: string;
 	let pageIndex: Map<string, string>;
+	let ready = false;
 
 	async function rebuild() {
 		pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
@@ -34,11 +35,11 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		];
 
 		const stylesheets = ['/__plan-theme.css'];
-		pageIndex = new Map();
+		const newIndex = new Map<string, string>();
 
 		// Index all pages
 		for (const page of pipeline.pages) {
-			pageIndex.set(page.url, renderPage(page, pipeline.navRegion, allPageUrls, {
+			newIndex.set(page.url, renderPage(page, pipeline.navRegion, allPageUrls, {
 				hotReload: true,
 				stylesheets,
 				activeUrl: page.url,
@@ -50,11 +51,13 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 			stylesheets,
 			activeUrl: baseUrl,
 		});
-		pageIndex.set(baseUrl, dashHtml);
-		pageIndex.set(`${baseUrl}index.html`, dashHtml);
-	}
+		newIndex.set(baseUrl, dashHtml);
+		newIndex.set(`${baseUrl}index.html`, dashHtml);
 
-	await rebuild();
+		// Swap atomically so in-flight requests never see a partial index
+		pageIndex = newIndex;
+		ready = true;
+	}
 
 	// SSE clients for hot reload
 	const sseClients: http.ServerResponse[] = [];
@@ -89,7 +92,17 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		}
 	}
 
-	// HTTP server
+	// Loading page shown while pipeline builds
+	const loadingPage = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Plan — Building...</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;color:#555}
+.loader{text-align:center}.spinner{width:24px;height:24px;border:3px solid #ddd;border-top-color:#888;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}</style></head>
+<body><div class="loader"><div class="spinner"></div><p>Building plan site...</p>
+<script>(function(){var es=new EventSource('/__plan-reload');es.onmessage=function(e){if(e.data==='reload')location.reload();};})()</script>
+</div></body></html>`;
+
+	// HTTP server — starts immediately, serves loading page until pipeline is ready
 	const server = http.createServer((req, res) => {
 		const url = req.url || '/';
 
@@ -106,6 +119,13 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 				const idx = sseClients.indexOf(res);
 				if (idx !== -1) sseClients.splice(idx, 1);
 			});
+			return;
+		}
+
+		// While building, serve a loading page
+		if (!ready) {
+			res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+			res.end(loadingPage);
 			return;
 		}
 
@@ -134,16 +154,22 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		}
 	});
 
+	// Start the server immediately so the user sees something right away
 	server.listen(port, () => {
 		const serverUrl = `http://localhost:${port}`;
 		console.log(`[plan] Dev server running at ${serverUrl}`);
-		console.log(`[plan] Serving ${pipeline.pages.length} entity pages + dashboard`);
-		console.log(`[plan] Watching for changes...`);
+		console.log(`[plan] Building...`);
 
 		if (open) {
 			openBrowser(serverUrl);
 		}
 	});
+
+	// Build the pipeline in the background — loading page is shown until ready
+	await rebuild();
+	console.log(`[plan] Ready — ${pipeline.pages.length} entity pages + dashboard`);
+	console.log(`[plan] Watching for changes...`);
+	notifyReload();
 
 	return { port, url: `http://localhost:${port}` };
 }

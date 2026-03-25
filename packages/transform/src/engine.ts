@@ -48,6 +48,14 @@ export function createTransform(config: ThemeConfig) {
 			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
 		}
 
+		// Detect checkbox markers on list items
+		if (tree.name === 'li') {
+			const checked = detectCheckboxMarker(tree);
+			if (checked) {
+				return { ...checked, children: checked.children.map(n => identityTransform(n, parentRune)) };
+			}
+		}
+
 		// Recurse into children even for non-rune tags (pass parent context through)
 		return { ...tree, children: tree.children.map(n => identityTransform(n, parentRune)) };
 	}
@@ -173,7 +181,16 @@ function transformRune(
 		tintMetaProps.add('tint-mode');
 	}
 
-	// 1e. Width and spacing — universal base attributes on all block runes
+	// 1e. Density — resolve from author attribute → context → config default → 'full'
+	const COMPACT_CONTEXTS = new Set(['grid', 'bento', 'gallery', 'showcase', 'split']);
+	const MINIMAL_CONTEXTS = new Set(['backlog', 'decision-log']);
+	const authorDensity = tag.attributes?.density;
+	const contextDensity = parentRune
+		? (MINIMAL_CONTEXTS.has(parentRune) ? 'minimal' : COMPACT_CONTEXTS.has(parentRune) ? 'compact' : undefined)
+		: undefined;
+	const resolvedDensity = authorDensity ?? contextDensity ?? config.defaultDensity ?? 'full';
+
+	// 1f. Width and spacing — universal base attributes on all block runes
 	const widthValue = tag.attributes?.width ?? config.defaultWidth;
 	if (widthValue && widthValue !== 'content') {
 		modifierValues['width'] = widthValue;
@@ -335,10 +352,10 @@ function transformRune(
 		children = [bgElement, ...children];
 	}
 
-	// 6. Apply BEM element classes to data-name children, then recurse once
+	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	const enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block), dataRune);
+		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots), dataRune);
 	});
 
 	// 7. Remove consumed meta tags (modifiers + tint)
@@ -357,6 +374,14 @@ function transformRune(
 		if (bgMetaProps.has(prop)) return false;
 		return true;
 	});
+
+	// 7b. Annotate <ol> elements with data-sequence when config declares sequence style
+	if (config.sequence) {
+		const seqDirection = config.sequenceDirection
+			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
+			: undefined;
+		annotateSequence(filteredChildren, config.sequence, seqDirection);
+	}
 
 	// 8. Build inline styles from styles config + tint tokens
 	let inlineStyle = tag.attributes.style || '';
@@ -384,7 +409,7 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, 'data-rune': _dr, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...passAttrs } = tag.attributes;
 
 	const result: SerializedTag = {
 		...tag,
@@ -395,6 +420,7 @@ function transformRune(
 			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
+			'data-density': resolvedDensity,
 			...(config.rootAttributes || {}),
 			...(inlineStyle ? { style: inlineStyle } : {}),
 		},
@@ -425,9 +451,9 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 	});
 }
 
-/** Recursively apply BEM element classes to data-name elements within a rune's children.
+/** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string): SerializedTag {
+function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -435,18 +461,105 @@ function applyBemClasses(child: SerializedTag, block: string): SerializedTag {
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block);
+			return applyBemClasses(c, block, sections, mediaSlots);
 		});
+		const sectionRole = sections?.[dataName];
+		const mediaSlot = mediaSlots?.[dataName];
 		return {
 			...child,
 			attributes: {
 				...child.attributes,
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
+				...(sectionRole ? { 'data-section': sectionRole } : {}),
+				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
 			},
 			children: nestedChildren,
 		};
 	}
 	return child;
+}
+
+/** Checkbox marker pattern: [x], [ ], [>], [-] at start of text */
+const CHECKBOX_RE = /^\[(x|X|>|\s|-)\]\s*/;
+
+/** Map marker characters to data-checked values */
+const MARKER_TO_CHECKED: Record<string, string> = {
+	'x': 'checked',
+	'X': 'checked',
+	' ': 'unchecked',
+	'>': 'active',
+	'-': 'skipped',
+};
+
+/**
+ * Detect a checkbox marker at the start of a list item's text content.
+ * If found, strips the marker and returns a new node with `data-checked` set.
+ * Returns null if no marker is found.
+ */
+function detectCheckboxMarker(li: SerializedTag): SerializedTag | null {
+	// Find the first text node (may be the first child, or inside a nested <p>)
+	const children = li.children;
+	if (children.length === 0) return null;
+
+	const first = children[0];
+
+	// Direct text child: "[ ] Some text"
+	if (typeof first === 'string') {
+		const match = first.match(CHECKBOX_RE);
+		if (!match) return null;
+		const value = MARKER_TO_CHECKED[match[1]] ?? 'unchecked';
+		const stripped = first.slice(match[0].length);
+		return {
+			...li,
+			attributes: { ...li.attributes, 'data-checked': value },
+			children: [stripped, ...children.slice(1)],
+		};
+	}
+
+	// Text inside a <p> wrapper (common Markdoc output)
+	if (isTag(first) && first.name === 'p' && first.children.length > 0) {
+		const pFirst = first.children[0];
+		if (typeof pFirst === 'string') {
+			const match = pFirst.match(CHECKBOX_RE);
+			if (!match) return null;
+			const value = MARKER_TO_CHECKED[match[1]] ?? 'unchecked';
+			const stripped = pFirst.slice(match[0].length);
+			const newP = { ...first, children: [stripped, ...first.children.slice(1)] };
+			return {
+				...li,
+				attributes: { ...li.attributes, 'data-checked': value },
+				children: [newP, ...children.slice(1)],
+			};
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Recursively walk children to find `<ol>` elements and annotate them with
+ * `data-sequence` and optionally `data-sequence-direction`.
+ * Mutates the array in-place for efficiency (replaces matching elements).
+ */
+function annotateSequence(children: RendererNode[], sequence: string, direction?: string): void {
+	for (let i = 0; i < children.length; i++) {
+		const child = children[i];
+		if (!isTag(child)) continue;
+
+		if (child.name === 'ol') {
+			const attrs: Record<string, string> = {
+				...child.attributes,
+				'data-sequence': sequence,
+			};
+			if (direction) {
+				attrs['data-sequence-direction'] = direction;
+			}
+			children[i] = { ...child, attributes: attrs };
+		} else if (child.children.length > 0) {
+			// Recurse into wrappers (contentWrapper, structural elements)
+			annotateSequence(child.children, sequence, direction);
+		}
+	}
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
@@ -474,7 +587,24 @@ function buildStructureElement(
 		}
 	}
 
-	const baseAttrs = { 'data-name': dataName, ...extraAttrs };
+	const baseAttrs: Record<string, string> = { 'data-name': dataName, ...extraAttrs };
+
+	// Metadata dimension attributes — additive semantic markers for generic theme styling
+	if (entry.metaType) {
+		baseAttrs['data-meta-type'] = entry.metaType;
+	}
+	if (entry.metaRank) {
+		baseAttrs['data-meta-rank'] = entry.metaRank;
+	}
+	if (entry.sentimentMap && entry.metaText) {
+		const rawValue = modifierValues[entry.metaText];
+		if (rawValue) {
+			const sentiment = entry.sentimentMap[rawValue];
+			if (sentiment) {
+				baseAttrs['data-meta-sentiment'] = sentiment;
+			}
+		}
+	}
 
 	// Icon entry: create empty element, CSS displays icon via mask-image
 	if (entry.icon) {
@@ -486,6 +616,15 @@ function buildStructureElement(
 		let text = modifierValues[entry.metaText] ?? '';
 		if (entry.transform && transforms[entry.transform]) {
 			text = transforms[entry.transform](text);
+		}
+		// When label is specified, emit separate label and value child elements
+		if (entry.label) {
+			const labelEl = makeTag('span', { 'data-meta-label': '' }, [entry.label]);
+			let valueText = text;
+			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
+			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
+			const valueEl = makeTag('span', { 'data-meta-value': '' }, [valueText]);
+			return makeTag(entry.tag, baseAttrs, [labelEl, valueEl]);
 		}
 		if (entry.textPrefix) text = entry.textPrefix + text;
 		if (entry.textSuffix) text = text + entry.textSuffix;

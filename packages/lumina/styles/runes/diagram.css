@@ -3,7 +3,6 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 	padding: 1.5rem;
-	margin: 1.5rem 0;
 	text-align: center;
 }
 .rf-diagram__title {

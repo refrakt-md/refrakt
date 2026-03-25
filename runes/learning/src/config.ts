@@ -12,6 +12,9 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	HowTo: {
 		block: 'howto',
+		defaultDensity: 'full',
+		sequence: 'numbered',
+		sections: { meta: 'header', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			estimatedTime: { source: 'meta' },
@@ -22,8 +25,8 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				conditionAny: ['estimatedTime', 'difficulty'],
 				children: [
-					{ tag: 'span', ref: 'meta-item', metaText: 'estimatedTime', transform: 'duration', textPrefix: 'Estimated time: ', condition: 'estimatedTime' },
-					{ tag: 'span', ref: 'meta-item', metaText: 'difficulty', textPrefix: 'Difficulty: ', condition: 'difficulty' },
+					{ tag: 'span', ref: 'meta-item', metaText: 'estimatedTime', transform: 'duration', label: 'Est. time:', condition: 'estimatedTime', metaType: 'temporal', metaRank: 'primary' },
+					{ tag: 'span', ref: 'meta-item', metaText: 'difficulty', label: 'Difficulty:', condition: 'difficulty', metaType: 'category', metaRank: 'primary', sentimentMap: { beginner: 'positive', intermediate: 'neutral', advanced: 'caution' } },
 				],
 			},
 		},
@@ -32,6 +35,10 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Recipe: {
 		block: 'recipe',
+		defaultDensity: 'full',
+		sequence: 'numbered',
+		sections: { meta: 'header', headline: 'title', blurb: 'description', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			prepTime: { source: 'meta' },
@@ -53,10 +60,10 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
 				children: [
-					{ tag: 'span', ref: 'meta-item', metaText: 'prepTime', transform: 'duration', textPrefix: 'Prep: ', condition: 'prepTime' },
-					{ tag: 'span', ref: 'meta-item', metaText: 'cookTime', transform: 'duration', textPrefix: 'Cook: ', condition: 'cookTime' },
-					{ tag: 'span', ref: 'meta-item', metaText: 'servings', textPrefix: 'Serves: ', condition: 'servings' },
-					{ tag: 'span', ref: 'badge', metaText: 'difficulty', condition: 'difficulty' },
+					{ tag: 'span', ref: 'meta-item', metaText: 'prepTime', transform: 'duration', label: 'Prep:', condition: 'prepTime', metaType: 'temporal', metaRank: 'primary' },
+					{ tag: 'span', ref: 'meta-item', metaText: 'cookTime', transform: 'duration', label: 'Cook:', condition: 'cookTime', metaType: 'temporal', metaRank: 'primary' },
+					{ tag: 'span', ref: 'meta-item', metaText: 'servings', label: 'Serves:', condition: 'servings', metaType: 'quantity', metaRank: 'primary' },
+					{ tag: 'span', ref: 'badge', metaText: 'difficulty', condition: 'difficulty', metaType: 'category', metaRank: 'primary', sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
 				],
 			},
 		},

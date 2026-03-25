@@ -1,6 +1,5 @@
 /* Compare */
 .rf-compare {
-	margin: 1.5rem 0;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	overflow: hidden;

@@ -1,4 +1,4 @@
-{% work id="WORK-066" status="ready" priority="medium" complexity="simple" tags="transform, themes, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-066" status="done" priority="medium" complexity="simple" tags="transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Media Slots Dimension
 
@@ -10,11 +10,11 @@ Add a media slots mapping to rune configs and the identity transform. Runes decl
 
 ## Acceptance Criteria
 
-- [ ] `RuneConfig` in `packages/transform/src/types.ts` gains `mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>`
-- [ ] Identity transform emits `data-media` on image/media elements whose ref maps to a media slot
-- [ ] Rune configs annotated per SPEC-025 Table 2: Character portrait → portrait, Recipe image → cover, Track artwork → thumbnail, Hero media → hero, etc.
-- [ ] `refrakt inspect` output shows `data-media` attributes on media elements
-- [ ] Unit tests verify media attribute emission
+- [x] `RuneConfig` in `packages/transform/src/types.ts` gains `mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>`
+- [x] Identity transform emits `data-media` on image/media elements whose ref maps to a media slot
+- [x] Rune configs annotated per SPEC-025 Table 2: Character portrait → portrait, Recipe image → cover, Track artwork → thumbnail, Hero media → hero, etc.
+- [x] `refrakt inspect` output shows `data-media` attributes on media elements
+- [x] Unit tests verify media attribute emission
 
 ## Approach
 

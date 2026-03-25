@@ -4,7 +4,6 @@
 	border-left: 3px solid var(--rf-color-primary);
 	background: var(--rf-color-surface);
 	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
-	margin: 1.5rem 0;
 }
 .rf-toc__list {
 	font-weight: 650;

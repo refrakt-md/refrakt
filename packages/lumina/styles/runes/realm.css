@@ -1,30 +1,8 @@
 /* Realm */
 .rf-realm {
-	margin: 1.5rem 0;
 	display: flex;
 	flex-direction: column;
 }
-
-/* Badge bar — surface strip */
-.rf-realm__badge {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 0.625rem 1rem;
-	margin-bottom: 1rem;
-}
-.rf-realm__type-badge,
-.rf-realm__scale-badge {
-	font-size: 0.8125rem;
-	font-weight: 500;
-	text-transform: capitalize;
-	color: var(--rf-color-muted);
-}
-.rf-realm__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
-.rf-realm__scale-badge::before { content: 'Scale: '; font-weight: 400; opacity: 0.65; }
 
 /* Scene image */
 .rf-realm__scene {
@@ -54,7 +32,6 @@
 	font-weight: 700;
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-heading);
-	order: -1;
 }
 
 /* Realm Section */
@@ -62,9 +39,11 @@
 	padding: 0.75rem 0;
 	border-top: 1px solid var(--rf-color-border);
 }
-.rf-realm-section__header {
-	font-size: 1.125rem;
-	font-weight: 600;
+.rf-realm-section__name {
+	display: block;
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1.3;
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-heading);
 }
@@ -78,38 +57,59 @@
 .rf-realm[data-layout="split-reverse"] {
 	display: grid;
 	grid-template-columns: var(--split-ratio, 1fr 1fr);
-	gap: var(--split-gap, 2rem);
+	column-gap: var(--split-gap, 2rem);
 	align-items: var(--split-valign, start);
 }
-/* Name and badge span full width at the top */
-.rf-realm[data-layout="split"] > span[property="name"],
-.rf-realm[data-layout="split-reverse"] > span[property="name"] {
-	grid-column: 1 / -1;
+/* Split: badge + name + content left (col 1), scene right (col 2) */
+.rf-realm[data-layout="split"] > .rf-realm__badge {
+	grid-column: 1;
 	grid-row: 1;
 }
-.rf-realm[data-layout="split"] > .rf-realm__badge,
-.rf-realm[data-layout="split-reverse"] > .rf-realm__badge {
-	grid-column: 1 / -1;
+.rf-realm[data-layout="split"] > span[property="name"] {
+	grid-column: 1;
 	grid-row: 2;
 }
-/* Split: content left (col 1), scene right (col 2) */
 .rf-realm[data-layout="split"] > .rf-realm__content {
 	grid-column: 1;
 	grid-row: 3;
 }
 .rf-realm[data-layout="split"] > .rf-realm__scene {
 	grid-column: 2;
+	grid-row: 1 / 4;
+	margin: 0;
+}
+/* Split-reverse: scene left (col 1), badge + name + content right (col 2) */
+.rf-realm[data-layout="split-reverse"] > .rf-realm__badge {
+	grid-column: 2;
+	grid-row: 1;
+}
+.rf-realm[data-layout="split-reverse"] > span[property="name"] {
+	grid-column: 2;
+	grid-row: 2;
+}
+.rf-realm[data-layout="split-reverse"] > .rf-realm__content {
+	grid-column: 2;
 	grid-row: 3;
 }
-/* Split-reverse: scene left (col 1), content right (col 2) — matches DOM order */
+.rf-realm[data-layout="split-reverse"] > .rf-realm__scene {
+	grid-column: 1;
+	grid-row: 1 / 4;
+	margin: 0;
+}
 /* Collapse to single column on small screens */
 @media (max-width: 640px) {
 	.rf-realm[data-layout="split"],
 	.rf-realm[data-layout="split-reverse"] {
 		grid-template-columns: 1fr;
 	}
+	.rf-realm[data-layout="split"] > .rf-realm__badge,
+	.rf-realm[data-layout="split"] > span[property="name"],
 	.rf-realm[data-layout="split"] > .rf-realm__content,
-	.rf-realm[data-layout="split"] > .rf-realm__scene {
+	.rf-realm[data-layout="split"] > .rf-realm__scene,
+	.rf-realm[data-layout="split-reverse"] > .rf-realm__badge,
+	.rf-realm[data-layout="split-reverse"] > span[property="name"],
+	.rf-realm[data-layout="split-reverse"] > .rf-realm__content,
+	.rf-realm[data-layout="split-reverse"] > .rf-realm__scene {
 		grid-column: auto;
 		grid-row: auto;
 	}

@@ -1,0 +1,51 @@
+/* ─── Density Dimension ─────────────────────────────────────────────────
+ * Controls spacing, visibility, and detail level across all runes.
+ * Three levels: full (dedicated page), compact (grid/card), minimal (list).
+ *
+ * Sets --rune-padding which surfaces consume for container padding.
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Full: all content visible, generous spacing ─────────────────── */
+
+[data-density="full"] {
+	--rune-padding: var(--rf-spacing-md);
+}
+
+/* ─── Compact: truncated descriptions, tight spacing ──────────────── */
+
+[data-density="compact"] {
+	--rune-padding: var(--rf-spacing-sm);
+}
+
+[data-density="compact"] [data-section="description"] {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+[data-density="compact"] [data-meta-rank="secondary"] {
+	display: none;
+}
+
+/* ─── Minimal: title and primary metadata only ────────────────────── */
+
+[data-density="minimal"] {
+	--rune-padding: var(--rf-spacing-xs);
+}
+
+[data-density="minimal"] [data-section="description"] {
+	display: none;
+}
+
+[data-density="minimal"] [data-section="body"] {
+	display: none;
+}
+
+[data-density="minimal"] [data-section="footer"] {
+	display: none;
+}
+
+[data-density="minimal"] [data-meta-rank="secondary"] {
+	display: none;
+}

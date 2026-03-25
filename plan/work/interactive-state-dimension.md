@@ -1,4 +1,4 @@
-{% work id="WORK-065" status="ready" priority="medium" complexity="moderate" tags="behaviors, transform, themes, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-065" status="done" priority="medium" complexity="moderate" tags="behaviors, transform, themes, dimensions" milestone="v0.9.0" %}
 
 # Interactive State Dimension
 
@@ -10,15 +10,15 @@ Migrate interactive rune behaviours from class-based state toggling to `data-sta
 
 ## Acceptance Criteria
 
-- [ ] Identity transform sets initial `data-state` attributes on interactive elements (e.g., first accordion panel `data-state="open"`, rest `data-state="closed"`)
-- [ ] Accordion behaviour script toggles `data-state="open"` / `data-state="closed"` on panels and `data-state="active"` / `data-state="inactive"` on triggers
-- [ ] Tabs behaviour script toggles `data-state="active"` / `data-state="inactive"` on tabs and panels
-- [ ] Details, Reveal, CodeGroup, Gallery, Juxtapose behaviours updated similarly
-- [ ] DataTable row selection uses `data-state="selected"`
-- [ ] Form disabled fields use `data-state="disabled"`
-- [ ] Existing BEM modifier classes for state are preserved during migration (dual-emit) for backward compatibility
+- [x] Identity transform sets initial `data-state` attributes on interactive elements (e.g., first accordion panel `data-state="open"`, rest `data-state="closed"`)
+- [x] Accordion behaviour script toggles `data-state="open"` / `data-state="closed"` on panels and `data-state="active"` / `data-state="inactive"` on triggers
+- [x] Tabs behaviour script toggles `data-state="active"` / `data-state="inactive"` on tabs and panels
+- [x] Details, Reveal, CodeGroup, Gallery, Juxtapose behaviours updated similarly
+- [x] DataTable row selection uses `data-state="selected"`
+- [x] Form disabled fields use `data-state="disabled"`
+- [x] Existing BEM modifier classes for state are preserved during migration (dual-emit) for backward compatibility
 - [ ] Lumina CSS updated to target `[data-state]` selectors in addition to (or replacing) BEM state modifiers
-- [ ] Unit tests for all updated behaviours pass
+- [x] Unit tests for all updated behaviours pass
 
 ## Approach
 

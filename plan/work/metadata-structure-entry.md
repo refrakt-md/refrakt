@@ -1,4 +1,4 @@
-{% work id="WORK-059" status="ready" priority="high" complexity="moderate" tags="transform, themes, metadata" milestone="v0.9.0" %}
+{% work id="WORK-059" status="done" priority="high" complexity="moderate" tags="transform, themes, metadata" milestone="v0.9.0" %}
 
 # Metadata Dimensions on StructureEntry
 
@@ -10,13 +10,13 @@ Add three semantic metadata fields to the `StructureEntry` interface: `metaType`
 
 ## Acceptance Criteria
 
-- [ ] `StructureEntry` in `packages/transform/src/types.ts` gains `metaType`, `metaRank`, and `sentimentMap` optional fields
-- [ ] Identity transform engine emits `data-meta-type` when `metaType` is present on a structure entry child
-- [ ] Identity transform engine emits `data-meta-rank` when `metaRank` is present
-- [ ] Identity transform engine resolves sentiment by looking up the current modifier value in `sentimentMap`, emitting `data-meta-sentiment` when a match exists
-- [ ] Existing structure entries without metadata fields continue to work unchanged (backwards compatible)
-- [ ] `refrakt inspect` output shows the new data attributes on badge elements
-- [ ] Unit tests in `packages/transform/test/` verify metadata attribute emission for: status with sentiment, category without sentiment, temporal, quantity, tag, and id types
+- [x] `StructureEntry` in `packages/transform/src/types.ts` gains `metaType`, `metaRank`, and `sentimentMap` optional fields
+- [x] Identity transform engine emits `data-meta-type` when `metaType` is present on a structure entry child
+- [x] Identity transform engine emits `data-meta-rank` when `metaRank` is present
+- [x] Identity transform engine resolves sentiment by looking up the current modifier value in `sentimentMap`, emitting `data-meta-sentiment` when a match exists
+- [x] Existing structure entries without metadata fields continue to work unchanged (backwards compatible)
+- [x] `refrakt inspect` output shows the new data attributes on badge elements
+- [x] Unit tests in `packages/transform/test/` verify metadata attribute emission for: status with sentiment, category without sentiment, temporal, quantity, tag, and id types
 
 ## Approach
 

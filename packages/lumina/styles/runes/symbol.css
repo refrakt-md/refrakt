@@ -1,45 +1,6 @@
 /* Symbol */
-.rf-symbol {
-	margin: 1.5rem 0;
-}
 .rf-symbol__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
 	padding: 0.5rem 0;
-	flex-wrap: wrap;
-}
-.rf-symbol__kind-badge {
-	font-size: 0.6875rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-primary);
-	background: var(--rf-color-primary-bg, rgba(14, 165, 233, 0.1));
-}
-.rf-symbol__lang-badge {
-	font-size: 0.6875rem;
-	font-weight: 500;
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-active);
-}
-.rf-symbol__since-badge {
-	font-size: 0.6875rem;
-	color: var(--rf-color-success);
-	background: var(--rf-color-success-bg);
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-}
-.rf-symbol__deprecated-badge {
-	font-size: 0.6875rem;
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg);
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
 }
 .rf-symbol__source-link {
 	margin-left: auto;

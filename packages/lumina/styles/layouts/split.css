@@ -5,7 +5,7 @@
   display: grid;
   grid-template-columns: var(--split-ratio, 1fr 1fr);
   align-items: var(--split-valign, start);
-  gap: var(--split-gap, var(--rf-spacing-lg));
+  column-gap: var(--split-gap, var(--rf-spacing-lg));
 }
 
 [data-layout="split-reverse"] > [data-name="content"] { order: 2; }

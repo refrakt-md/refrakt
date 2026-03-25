@@ -27,6 +27,8 @@ export function accordionBehavior(el: HTMLElement): CleanupFn {
 
 		summary.id = triggerId;
 		summary.setAttribute('aria-expanded', String(item.open));
+		item.setAttribute('data-state', item.open ? 'open' : 'closed');
+		summary.setAttribute('data-state', item.open ? 'active' : 'inactive');
 
 		// Find the content panel (first non-summary child element)
 		const panel = Array.from(item.children).find(
@@ -42,6 +44,8 @@ export function accordionBehavior(el: HTMLElement): CleanupFn {
 		// Toggle handler for exclusive mode
 		const onToggle = () => {
 			summary.setAttribute('aria-expanded', String(item.open));
+			item.setAttribute('data-state', item.open ? 'open' : 'closed');
+			summary.setAttribute('data-state', item.open ? 'active' : 'inactive');
 
 			if (!allowMultiple && item.open) {
 				for (const other of details) {
@@ -49,6 +53,8 @@ export function accordionBehavior(el: HTMLElement): CleanupFn {
 						other.open = false;
 						const otherSummary = other.querySelector('summary');
 						otherSummary?.setAttribute('aria-expanded', 'false');
+						other.setAttribute('data-state', 'closed');
+						otherSummary?.setAttribute('data-state', 'inactive');
 					}
 				}
 			}

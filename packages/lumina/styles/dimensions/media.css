@@ -1,0 +1,62 @@
+/* ─── Media Slots Dimension ─────────────────────────────────────────────
+ * Generic treatment for 5 media slot types: portrait, cover, thumbnail,
+ * hero, icon. Applied via data-media attribute on image/media elements.
+ *
+ * Includes density × media interactions (compact shrinks, minimal hides).
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* ─── Portrait: circular crop ─────────────────────────────────────── */
+
+[data-media="portrait"] {
+	border-radius: var(--rf-radius-full);
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	width: var(--media-portrait-size, 5rem);
+	height: var(--media-portrait-size, 5rem);
+}
+
+/* ─── Cover: full-width banner image ──────────────────────────────── */
+
+[data-media="cover"] {
+	width: 100%;
+	object-fit: cover;
+	border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+}
+
+/* ─── Thumbnail: small fixed preview ──────────────────────────────── */
+
+[data-media="thumbnail"] {
+	width: var(--media-thumbnail-size, 3rem);
+	height: var(--media-thumbnail-size, 3rem);
+	border-radius: var(--rf-radius-sm);
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+/* ─── Hero: large responsive image ────────────────────────────────── */
+
+[data-media="hero"] {
+	width: 100%;
+	object-fit: cover;
+}
+
+/* ─── Icon: small square, no crop ─────────────────────────────────── */
+
+[data-media="icon"] {
+	width: var(--media-icon-size, 2rem);
+	height: var(--media-icon-size, 2rem);
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+/* ─── Density × Media ─────────────────────────────────────────────── */
+
+/* Compact: smaller portraits */
+[data-density="compact"] [data-media="portrait"] {
+	--media-portrait-size: 3rem;
+}
+
+/* Minimal: hide all media */
+[data-density="minimal"] [data-media] {
+	display: none;
+}

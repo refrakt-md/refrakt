@@ -1,7 +1,4 @@
 /* Event */
-.rf-event {
-	margin: 1.5rem 0;
-}
 .rf-event__details {
 	display: flex;
 	flex-wrap: wrap;

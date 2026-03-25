@@ -12,6 +12,8 @@ const pageSectionAutoLabel = {
 export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
+		defaultDensity: 'full',
+		sections: { details: 'header', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' },
@@ -29,15 +31,15 @@ export const config: Record<string, RuneConfig> = {
 						tag: 'div', ref: 'detail', condition: 'date',
 						children: [
 							{ tag: 'span', ref: 'label', children: ['Date'] },
-							{ tag: 'span', ref: 'value', metaText: 'date' },
-							{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate' },
+							{ tag: 'span', ref: 'value', metaText: 'date', metaType: 'temporal', metaRank: 'primary' },
+							{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate', metaType: 'temporal', metaRank: 'secondary' },
 						],
 					},
 					{
 						tag: 'div', ref: 'detail', condition: 'location',
 						children: [
 							{ tag: 'span', ref: 'label', children: ['Location'] },
-							{ tag: 'span', ref: 'value', metaText: 'location' },
+							{ tag: 'span', ref: 'value', metaText: 'location', metaType: 'category', metaRank: 'primary' },
 						],
 					},
 					{
@@ -51,6 +53,8 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Itinerary: {
 		block: 'itinerary',
+		defaultDensity: 'full',
+		sections: { header: 'header', headline: 'title', blurb: 'description' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
 		modifiers: {
@@ -61,6 +65,7 @@ export const config: Record<string, RuneConfig> = {
 	ItineraryDay: {
 		block: 'itinerary-day',
 		parent: 'Itinerary',
+		sequence: 'connected',
 		autoLabel: { label: 'header' },
 		editHints: { header: 'inline', stops: 'none' },
 	},
@@ -76,6 +81,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Map: {
 		block: 'map',
+		defaultDensity: 'compact',
 		editHints: { pins: 'none' },
 		modifiers: {
 			variant: { source: 'meta', default: 'street' },

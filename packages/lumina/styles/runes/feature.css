@@ -3,6 +3,9 @@
 	padding: 2.5rem 0 2rem;
 }
 .rf-feature__header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
 .rf-feature__eyebrow {
@@ -80,15 +83,13 @@
 }
 .rf-feature[data-layout="split"] .rf-feature__feature-item,
 .rf-feature[data-layout="split-reverse"] .rf-feature__feature-item {
-	border: none;
 	background: none;
 	padding: 0.75rem 0;
 }
 .rf-feature__feature-item {
 	padding: 1.75rem;
 	border-radius: var(--rf-radius-md);
-	border: 1px solid var(--rf-color-border);
-	background: var(--rf-color-bg);
+	background: var(--rf-color-surface);
 }
 .rf-feature__feature-item dt {
 	font-weight: 650;
@@ -120,7 +121,6 @@
 }
 .rf-feature--in-hero .rf-feature__feature-item {
 	background: transparent;
-	border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Context-aware: feature inside a grid — remove outer padding */

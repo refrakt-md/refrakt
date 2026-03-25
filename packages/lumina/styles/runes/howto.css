@@ -1,30 +1,14 @@
 /* HowTo — matches recipe design */
 
-/* Root: no border box, just flow spacing */
-.rf-howto {
-	margin: 1.5rem 0;
-}
-
-/* Meta bar — soft surface strip */
+/* Meta bar — extra bottom spacing beyond section header default */
 .rf-howto__meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 0.625rem 1rem;
 	margin-bottom: 1.5rem;
-}
-.rf-howto__meta-item {
-	font-size: 0.8125rem;
-	color: var(--rf-color-muted);
-	font-weight: 400;
 }
 
 /* Tools/materials list — surfaced zone with primary markers */
 .rf-howto__content ul {
 	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem 1.25rem 1.25rem 2.5rem;
 	margin: 0 0 1.75rem;

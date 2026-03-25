@@ -1,9 +1,7 @@
 /* Testimonial */
 .rf-testimonial {
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 	padding: 1.75rem 2rem;
-	margin: 1.5rem 0;
 	background: var(--rf-color-surface);
 }
 .rf-testimonial__rating {

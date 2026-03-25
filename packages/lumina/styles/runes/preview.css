@@ -79,7 +79,7 @@
 	box-shadow: var(--rf-shadow-xs);
 }
 
-/* Canvas — bordered frame for the preview content */
+/* Canvas — framed area for the preview content */
 .rf-preview__canvas {
 	padding: 2rem 2.5rem;
 	background: var(--rf-color-bg);
@@ -182,7 +182,5 @@
 	}
 	.rf-preview__source {
 		border-radius: 0;
-		border-left: none;
-		border-right: none;
 	}
 }
