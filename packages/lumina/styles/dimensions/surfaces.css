@@ -5,8 +5,10 @@
  * ────────────────────────────────────────────────────────────────────── */
 
 /* ─── Rune Spacing ────────────────────────────────────────────────── */
+/* Only top-level runes get vertical margin; child runes (nav items,
+   accordion items, grid cells, etc.) inherit spacing from their parent. */
 
-[data-rune] {
+[data-rune]:not([data-rune] [data-rune]) {
 	margin: 1.5rem 0;
 }
 
