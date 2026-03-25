@@ -66,6 +66,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-spec__header', '.rf-bug__header',
 	'.rf-decision__header', '.rf-milestone__header',
 	'.rf-recipe__header',
+	'.rf-playlist__type-badge',
 ]);
 
 // ─── Helpers ───

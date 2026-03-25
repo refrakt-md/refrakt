@@ -104,6 +104,37 @@ function extractIdReferences(tag: InstanceType<typeof Tag>): Array<{ id: string;
 	return refs;
 }
 
+// ─── Sentiment maps (matching rune configs in config.ts) ───
+
+const WORK_STATUS_SENTIMENT: Record<string, string> = {
+	draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral',
+	review: 'caution', done: 'positive', blocked: 'negative',
+};
+const BUG_STATUS_SENTIMENT: Record<string, string> = {
+	reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral',
+	fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral',
+};
+const PRIORITY_SENTIMENT: Record<string, string> = {
+	critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral',
+};
+const SEVERITY_SENTIMENT: Record<string, string> = {
+	critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral',
+};
+
+/** Build a metadata badge matching the dimension system output */
+function buildMetaBadge(label: string, value: string, opts: {
+	metaType: string; metaRank: string; sentiment?: string;
+}): InstanceType<typeof Tag> {
+	const labelEl = new Tag('span', { 'data-meta-label': '' }, [label]);
+	const valueEl = new Tag('span', { 'data-meta-value': '' }, [value]);
+	const attrs: Record<string, string> = {
+		'data-meta-type': opts.metaType,
+		'data-meta-rank': opts.metaRank,
+	};
+	if (opts.sentiment) attrs['data-meta-sentiment'] = opts.sentiment;
+	return new Tag('span', attrs, [labelEl, valueEl]);
+}
+
 /** Build a compact summary card Tag for a work/bug entity */
 function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const id = String(entity.data.id ?? entity.id);
@@ -112,37 +143,39 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const type = entity.type;
 
 	const badges: any[] = [
-		new Tag('span', { 'data-name': 'id-badge', class: `rf-backlog__card-id` }, [id]),
-		new Tag('span', { 'data-name': 'status-badge', class: `rf-backlog__card-status` }, [status]),
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
 	];
 
 	if (type === 'work') {
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: WORK_STATUS_SENTIMENT[status] }));
 		const priority = String(entity.data.priority ?? '');
 		const complexity = String(entity.data.complexity ?? '');
-		if (priority) badges.push(new Tag('span', { 'data-name': 'priority-badge', class: `rf-backlog__card-priority` }, [priority]));
-		if (complexity && complexity !== 'unknown') badges.push(new Tag('span', { 'data-name': 'complexity-badge', class: `rf-backlog__card-complexity` }, [complexity]));
+		if (priority) badges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'primary', sentiment: PRIORITY_SENTIMENT[priority] }));
+		if (complexity && complexity !== 'unknown') badges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
 	} else if (type === 'bug') {
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: BUG_STATUS_SENTIMENT[status] }));
 		const severity = String(entity.data.severity ?? '');
-		if (severity) badges.push(new Tag('span', { 'data-name': 'severity-badge', class: `rf-backlog__card-severity` }, [severity]));
+		if (severity) badges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'primary', sentiment: SEVERITY_SENTIMENT[severity] }));
+	} else {
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary' }));
 	}
 
 	const milestone = String(entity.data.milestone ?? '');
-	if (milestone) badges.push(new Tag('span', { 'data-name': 'milestone-badge', class: `rf-backlog__card-milestone` }, [milestone]));
+	if (milestone) badges.push(buildMetaBadge('Milestone:', milestone, { metaType: 'tag', metaRank: 'secondary' }));
 
 	// Add checklist progress if available
 	const checkedCount = Number(entity.data.checkedCount ?? 0);
 	const totalCount = Number(entity.data.totalCount ?? 0);
 	if (totalCount > 0) {
 		badges.push(new Tag('span', {
-			'data-name': 'progress-badge',
 			class: 'rf-backlog__card-progress',
 			'data-checked': String(checkedCount),
 			'data-total': String(totalCount),
 		}, [`${checkedCount}/${totalCount}`]));
 	}
 
-	const header = new Tag('div', { class: 'rf-backlog__card-header' }, badges);
-	const titleEl = new Tag('div', { class: 'rf-backlog__card-title' }, [title]);
+	const header = new Tag('div', { 'data-section': 'header' }, badges);
+	const titleEl = new Tag('div', { 'data-section': 'title' }, [title]);
 
 	const children: any[] = entity.sourceUrl
 		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, [header, titleEl])]
@@ -156,6 +189,10 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	}, children);
 }
 
+const DECISION_STATUS_SENTIMENT: Record<string, string> = {
+	proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative',
+};
+
 /** Build a decision log entry Tag */
 function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const id = String(entity.data.id ?? entity.id);
@@ -163,12 +200,16 @@ function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag
 	const status = String(entity.data.status ?? '');
 	const date = String(entity.data.date ?? '');
 
-	const innerChildren: any[] = [];
-	if (date) innerChildren.push(new Tag('time', { class: 'rf-decision-log__date' }, [date]));
-	innerChildren.push(new Tag('span', { class: 'rf-decision-log__status' }, [status]));
-	innerChildren.push(new Tag('span', { class: 'rf-decision-log__id' }, [id]));
-	innerChildren.push(new Tag('span', { class: 'rf-decision-log__title' }, [title]));
+	const badges: any[] = [
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
+		buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: DECISION_STATUS_SENTIMENT[status] }),
+	];
+	if (date) badges.push(buildMetaBadge('Date:', date, { metaType: 'temporal', metaRank: 'secondary' }));
 
+	const header = new Tag('div', { 'data-section': 'header' }, badges);
+	const titleEl = new Tag('div', { 'data-section': 'title' }, [title]);
+
+	const innerChildren = [header, titleEl];
 	const children: any[] = entity.sourceUrl
 		? [new Tag('a', { class: 'rf-decision-log__link', href: entity.sourceUrl }, innerChildren)]
 		: innerChildren;
