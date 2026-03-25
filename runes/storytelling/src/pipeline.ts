@@ -232,7 +232,7 @@ export const storytellingPipelineHooks: PackagePipelineHooks = {
 
 	postProcess(page, aggregated) {
 		const storyData = aggregated['storytelling'] as StorytellingAggregatedData | undefined;
-		if (!storyData?.entityByName || storyData.entityByName.size === 0) return page;
+		if (!storyData || !storyData.entityByName || storyData.entityByName.size === 0) return page;
 
 		const linkedNames = new Set<string>();
 		let modified = false;
