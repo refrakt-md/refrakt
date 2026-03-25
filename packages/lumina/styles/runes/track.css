@@ -3,12 +3,12 @@
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	padding: 0.625rem 1.5rem;
+	padding: 0.75rem 1.25rem;
 	transition: background 0.15s ease;
 	counter-increment: track;
 }
 .rf-track + .rf-track {
-	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--rf-color-border) 50%, transparent);
+	border-top: 1px solid var(--rf-color-border);
 }
 .rf-track:hover {
 	background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
@@ -34,28 +34,39 @@
 	white-space: nowrap;
 }
 
-/* Artist — secondary text */
+/* Artist — secondary text with dot separator */
 .rf-track__track-artist {
 	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
 }
+.rf-track__track-artist::before {
+	content: '\00b7';
+	margin-right: 0.5rem;
+	opacity: 0.5;
+}
 
-/* Duration — right-aligned, tabular nums */
+/* Duration — pushed right, tabular nums */
 .rf-track__track-duration {
 	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
+	margin-left: auto;
 	min-width: 3rem;
 	text-align: right;
 }
 
-/* Meta (date etc.) */
+/* Meta (date etc.) — dot separator */
 .rf-track__track-meta {
 	font-size: 0.75rem;
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
+}
+.rf-track__track-meta::before {
+	content: '\00b7';
+	margin-right: 0.5rem;
+	opacity: 0.5;
 }
 
 /* Description — full width below the row */
