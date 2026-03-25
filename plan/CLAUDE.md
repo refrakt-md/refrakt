@@ -181,13 +181,15 @@ Optional notes or context.
 
 ## Working with Plan Content
 
+**IMPORTANT: Always use the `refrakt plan` CLI to modify plan files. NEVER edit plan `.md` files directly — the CLI handles attribute validation, checkbox toggling, and resolution sections correctly.**
+
 ### Implementing a work item
 
 ```bash
 # 1. Find the next ready work item (considers priority and dependencies)
 refrakt plan next
 
-# 2. Start working on it
+# 2. Start working on it (REQUIRED before beginning implementation)
 refrakt plan update WORK-XXX --status in-progress
 ```
 
@@ -196,14 +198,26 @@ refrakt plan update WORK-XXX --status in-progress
 4. Implement the changes in the codebase.
 
 ```bash
-# 5. Check off acceptance criteria as you complete each one
+# 5. Check off acceptance criteria as you complete each one (REQUIRED after each criterion is met)
 refrakt plan update WORK-XXX --check "criterion text"
 
-# 6. When all criteria pass, mark it done
-refrakt plan update WORK-XXX --status done
+# 6. When all criteria pass, mark it done with a resolution summary (REQUIRED)
+refrakt plan update WORK-XXX --status done --resolve "$(cat <<'EOF'
+Branch: `claude/feature-name`
+PR: refrakt-md/refrakt#123
+
+### What was done
+- List of concrete changes
+
+### Notes
+- Implementation decisions and tradeoffs
+EOF
+)"
 ```
 
-Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
+**Completion is not optional.** Every work item you finish MUST be marked done via the CLI with `--status done --resolve "..."`. Every acceptance criterion you satisfy MUST be checked off via `--check`. Forgetting these steps leaves the project plan out of sync.
+
+Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`, `--resolve-file <path>`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
 
 ### Creating a work item from a spec
 

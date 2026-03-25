@@ -234,11 +234,13 @@ plan/
 
 ### Workflow
 
+**IMPORTANT: Always use the `refrakt plan` CLI to modify plan files. NEVER edit plan `.md` files directly — the CLI handles attribute validation, checkbox toggling, and resolution sections correctly.**
+
 ```bash
 # 1. Find the next work item
 refrakt plan next
 
-# 2. Start working on it
+# 2. Start working on it (REQUIRED before beginning implementation)
 refrakt plan update <id> --status in-progress
 ```
 
@@ -248,10 +250,10 @@ refrakt plan update <id> --status in-progress
    - Any dependency work items (ensure they're done)
 
 ```bash
-# 4. Check off acceptance criteria as you complete them
+# 4. Check off acceptance criteria as you complete them (REQUIRED after each criterion is met)
 refrakt plan update <id> --check "criterion text"
 
-# 5. When all criteria are met, mark it done with a resolution summary
+# 5. When all criteria are met, mark it done with a resolution summary (REQUIRED)
 refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
 Branch: `claude/feature-name`
 PR: refrakt-md/refrakt#123
@@ -265,7 +267,7 @@ EOF
 )"
 ```
 
-When marking a work item done, always provide a `--resolve` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
+**Completion is not optional.** Every work item you finish MUST be marked done via the CLI with `--status done --resolve "..."`. Every acceptance criterion you satisfy MUST be checked off via `--check`. Forgetting these steps leaves the project plan out of sync.
 
 Use `--format json` on any command for machine-readable output.
 
