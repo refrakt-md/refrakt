@@ -23,7 +23,6 @@
 .rf-playlist,
 .rf-track,
 .rf-budget,
-.rf-cast,
 .rf-organization,
 .rf-timeline,
 .rf-swatch,
@@ -34,8 +33,7 @@
 .rf-changelog,
 .rf-api,
 .rf-howto,
-.rf-comparison,
-.rf-pricing {
+.rf-comparison {
 	background: var(--rf-color-surface);
 	border-radius: var(--rf-radius-md);
 	padding: var(--rune-padding, var(--rf-spacing-md));
@@ -75,7 +73,6 @@
 /* ─── Inset: recessed container ───────────────────────────────────── */
 
 .rf-codegroup,
-.rf-sandbox,
 .rf-mockup,
 .rf-diagram,
 .rf-chart,
