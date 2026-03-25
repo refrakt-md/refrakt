@@ -27,14 +27,12 @@
 }
 .rf-blog__post {
 	padding: 1.25rem 1.5rem;
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	background: var(--rf-color-surface);
-	transition: border-color 200ms ease, box-shadow 200ms ease;
+	transition: box-shadow 200ms ease;
 }
 .rf-blog__post:hover {
-	border-color: var(--rf-color-primary);
-	box-shadow: var(--rf-shadow-sm);
+	box-shadow: var(--rf-shadow-md);
 }
 .rf-blog__post h3 {
 	font-size: 1.25rem;
@@ -75,7 +73,6 @@
 }
 .rf-blog--compact .rf-blog__post {
 	border-radius: 0;
-	border-bottom-width: 0;
 	padding: 1rem 1.25rem;
 }
 .rf-blog--compact .rf-blog__post:first-child {
@@ -83,7 +80,6 @@
 }
 .rf-blog--compact .rf-blog__post:last-child {
 	border-radius: 0 0 var(--rf-radius-md) var(--rf-radius-md);
-	border-bottom-width: 1px;
 }
 .rf-blog--compact .rf-blog__post h3 {
 	font-size: 1.1rem;
