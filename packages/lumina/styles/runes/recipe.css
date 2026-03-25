@@ -164,8 +164,12 @@
 	.rf-recipe[data-layout="split-reverse"] {
 		grid-template-columns: 1fr;
 	}
+	.rf-recipe[data-layout="split"] > .rf-recipe__meta,
 	.rf-recipe[data-layout="split"] > .rf-recipe__content,
-	.rf-recipe[data-layout="split"] > .rf-recipe__media {
+	.rf-recipe[data-layout="split"] > .rf-recipe__media,
+	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__meta,
+	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__content,
+	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
 		grid-column: auto;
 		grid-row: auto;
 	}
