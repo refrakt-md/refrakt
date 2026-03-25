@@ -1,9 +1,5 @@
 /* Juxtapose — interactive comparison between two panels */
 
-.rf-juxtapose {
-	margin: 1.5rem 0;
-}
-
 /* ─── Variant modifiers (for static/no-JS layout) ─── */
 .rf-juxtapose--slider,
 .rf-juxtapose--auto,

@@ -1,7 +1,4 @@
 /* DataTable */
-.rf-datatable {
-	margin: 1.5rem 0;
-}
 .rf-datatable__toolbar {
 	display: flex;
 	justify-content: flex-end;

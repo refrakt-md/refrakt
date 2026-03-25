@@ -1,7 +1,6 @@
 /* Steps */
 .rf-steps {
 	counter-reset: step;
-	margin: 1.5rem 0;
 }
 .rf-steps__header {
 	flex-direction: column;

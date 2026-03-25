@@ -1,7 +1,4 @@
 /* Budget */
-.rf-budget {
-	margin: 1.5rem 0;
-}
 .rf-budget__header {
 	display: flex;
 	flex-direction: column;
@@ -13,14 +10,6 @@
 	font-size: 1.25rem;
 	font-weight: 700;
 	color: var(--rf-color-text);
-}
-
-/* Meta bar — single surface strip matching recipe pattern */
-.rf-budget__meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
 }
 
 /* Categories */

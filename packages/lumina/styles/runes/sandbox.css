@@ -1,6 +1,5 @@
 /* Sandbox — Isolated HTML/CSS/JS rendering via iframe */
 .rf-sandbox {
-	margin: 1.5rem 0;
 	border-radius: var(--rf-radius-md);
 	overflow: hidden;
 }

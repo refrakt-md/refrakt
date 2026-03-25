@@ -1,7 +1,4 @@
 /* MediaText */
-.rf-mediatext {
-	margin: 1.5rem 0;
-}
 
 /* Grid mode (default — no wrap) */
 .rf-mediatext:not([data-wrap="true"]) {

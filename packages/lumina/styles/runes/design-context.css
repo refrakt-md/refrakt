@@ -1,6 +1,5 @@
 /* Design Context — unified token card wrapper */
 .rf-design-context {
-	margin: 1.5rem 0;
 	border: 1px solid var(--rf-color-border, #e5e7eb);
 	border-radius: 0.75rem;
 	overflow: hidden;

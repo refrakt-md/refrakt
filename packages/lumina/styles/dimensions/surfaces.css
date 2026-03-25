@@ -4,6 +4,12 @@
  * Padding scales with density via --rune-padding custom property.
  * ────────────────────────────────────────────────────────────────────── */
 
+/* ─── Rune Spacing ────────────────────────────────────────────────── */
+
+[data-rune] {
+	margin: 1.5rem 0;
+}
+
 /* ─── Card: elevated container ────────────────────────────────────── */
 
 .rf-recipe,
@@ -32,8 +38,7 @@
 .rf-symbol,
 .rf-changelog,
 .rf-api,
-.rf-howto,
-.rf-comparison {
+.rf-howto {
 	background: var(--rf-color-surface);
 	border-radius: var(--rf-radius-md);
 	padding: var(--rune-padding, var(--rf-spacing-md));

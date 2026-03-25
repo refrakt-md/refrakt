@@ -2,7 +2,6 @@
 .rf-api {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	margin: 1.5rem 0;
 	overflow: hidden;
 }
 .rf-api__header {

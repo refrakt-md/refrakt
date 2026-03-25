@@ -1,9 +1,7 @@
 /* Code Group */
 .rf-codegroup {
 	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
 	overflow: hidden;
-	margin: 1.5rem 0;
 	background: var(--rf-color-code-bg);
 	color: var(--rf-color-code-text);
 	box-shadow: var(--rf-shadow-md);

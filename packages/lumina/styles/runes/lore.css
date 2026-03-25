@@ -1,17 +1,8 @@
 /* Lore */
 .rf-lore {
-	margin: 1.5rem 0;
 	position: relative;
 }
 
-/* Badge bar — surface strip */
-.rf-lore__badge {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	margin-bottom: 1rem;
-}
 /* Content */
 .rf-lore__content {
 	transition: filter 0.3s ease;

@@ -1,16 +1,5 @@
 /* Character */
-.rf-character {
-	margin: 1.5rem 0;
-}
 
-/* Badge bar — surface strip */
-.rf-character__badge {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
-	margin-bottom: 1rem;
-}
 /* Portrait */
 .rf-character__portrait {
 	float: right;

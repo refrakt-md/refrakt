@@ -57,6 +57,9 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-lore__category-badge',
 	'.rf-faction__type-badge', '.rf-faction__alignment-badge', '.rf-faction__size-badge',
 	'.rf-plot__type-badge', '.rf-plot__structure-badge',
+	// Badge/meta bar containers — now styled by section header dimension ([data-section="header"])
+	'.rf-character__badge', '.rf-lore__badge', '.rf-plot__badge',
+	'.rf-budget__meta',
 ]);
 
 // ─── Helpers ───
@@ -67,17 +70,20 @@ const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
 	const selectors = new Set<string>();
-	const files = readdirSync(CSS_DIR).filter(f => f.endsWith('.css'));
+	const dirs = [CSS_DIR, DIMENSIONS_DIR];
 
-	for (const file of files) {
-		const css = readFileSync(join(CSS_DIR, file), 'utf-8');
-		const root = postcss.parse(css);
-		root.walkRules(rule => {
-			const matches = rule.selector.matchAll(/\.rf-[\w-]+/g);
-			for (const m of matches) {
-				selectors.add(m[0]);
-			}
-		});
+	for (const dir of dirs) {
+		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		for (const file of files) {
+			const css = readFileSync(join(dir, file), 'utf-8');
+			const root = postcss.parse(css);
+			root.walkRules(rule => {
+				const matches = rule.selector.matchAll(/\.rf-[\w-]+/g);
+				for (const m of matches) {
+					selectors.add(m[0]);
+				}
+			});
+		}
 	}
 
 	return selectors;
@@ -216,7 +222,10 @@ describe('Lumina CSS coverage', () => {
 			'%s (.rf-%s) has block selector in CSS',
 			(_name, block, _config) => {
 				const selector = `.${prefix}-${block}`;
-				expect(allCssSelectors.has(selector), `Missing CSS for ${selector}`).toBe(true);
+				// Accept if either the exact block selector or any child selector exists
+				const hasBlock = allCssSelectors.has(selector);
+				const hasChild = [...allCssSelectors].some(s => s.startsWith(`${selector}__`) || s.startsWith(`${selector}--`));
+				expect(hasBlock || hasChild, `Missing CSS for ${selector}`).toBe(true);
 			}
 		);
 	});

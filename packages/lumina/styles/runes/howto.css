@@ -1,16 +1,7 @@
 /* HowTo — matches recipe design */
 
-/* Root: no border box, just flow spacing */
-.rf-howto {
-	margin: 1.5rem 0;
-}
-
-/* Meta bar — soft surface strip */
+/* Meta bar — extra bottom spacing beyond section header default */
 .rf-howto__meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem 1.25rem;
-	align-items: center;
 	margin-bottom: 1.5rem;
 }
 
