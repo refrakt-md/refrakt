@@ -28,7 +28,7 @@
 
 /* Scale title with density */
 [data-density="compact"] [data-section="title"] {
-	font-size: 1.125rem;
+	font-size: 2.125rem;
 }
 
 [data-density="minimal"] [data-section="title"] {

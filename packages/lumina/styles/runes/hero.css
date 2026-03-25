@@ -7,7 +7,7 @@
 }
 .rf-hero__header {
 	flex-direction: column;
-	align-items: flex-start;
+	align-items: center;
 	gap: 0.25rem;
 	margin-bottom: 2rem;
 }
@@ -73,6 +73,9 @@
 .rf-hero[data-align="left"] > p {
 	text-align: left;
 }
+.rf-hero[data-align="left"] .rf-hero__header {
+	align-items: flex-start;
+}
 .rf-hero[data-align="left"] .rf-hero__actions {
 	margin: 0;
 }
@@ -80,6 +83,9 @@
 .rf-hero[data-align="right"] > h1,
 .rf-hero[data-align="right"] > p {
 	text-align: right;
+}
+.rf-hero[data-align="right"] .rf-hero__header {
+	align-items: flex-end;
 }
 .rf-hero[data-align="right"] .rf-hero__actions {
 	margin: 0 0 0 auto;
