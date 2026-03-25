@@ -1,11 +1,4 @@
 /* Milestone */
-.rf-milestone__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	margin-bottom: 0.75rem;
-}
 .rf-milestone__target-badge {
 	margin-left: auto;
 }

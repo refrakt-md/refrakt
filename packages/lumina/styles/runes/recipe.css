@@ -1,9 +1,5 @@
 /* Recipe — editorial cookbook aesthetic */
 
-/* Header */
-.rf-recipe__header {
-	margin-bottom: 1.25rem;
-}
 .rf-recipe .rf-recipe__eyebrow {
 	font-size: 0.8rem;
 	font-weight: 600;
@@ -23,11 +19,6 @@
 }
 .rf-recipe__image {
 	margin-bottom: 1rem;
-}
-
-/* Meta bar — extra bottom spacing beyond section header default */
-.rf-recipe__meta {
-	margin-bottom: 1.5rem;
 }
 
 /* Content wrapper */

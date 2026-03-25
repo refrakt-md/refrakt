@@ -1,11 +1,4 @@
 /* Work */
-.rf-work__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	margin-bottom: 0.75rem;
-}
 .rf-work__assignee-badge {
 	margin-left: auto;
 }

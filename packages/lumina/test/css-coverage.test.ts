@@ -59,7 +59,13 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-plot__type-badge', '.rf-plot__structure-badge',
 	// Badge/meta bar containers — now styled by section header dimension ([data-section="header"])
 	'.rf-character__badge', '.rf-lore__badge', '.rf-plot__badge',
-	'.rf-budget__meta',
+	'.rf-budget__meta', '.rf-howto__meta',
+	// Section header autoLabel selectors — styled via __name instead
+	'.rf-character-section__header', '.rf-realm-section__header', '.rf-faction-section__header',
+	// Header selectors — now fully handled by [data-section="header"] dimension
+	'.rf-spec__header', '.rf-bug__header',
+	'.rf-decision__header', '.rf-milestone__header',
+	'.rf-recipe__header',
 ]);
 
 // ─── Helpers ───

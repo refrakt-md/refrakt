@@ -1,11 +1,4 @@
 /* Decision */
-.rf-decision__header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	margin-bottom: 0.75rem;
-}
 .rf-decision__body {
 	font-size: 0.925rem;
 	line-height: 1.65;
