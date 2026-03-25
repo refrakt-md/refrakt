@@ -17,6 +17,7 @@
 /* Tools/materials list — surfaced zone with primary markers */
 .rf-howto__content ul {
 	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem 1.25rem 1.25rem 2.5rem;
 	margin: 0 0 1.75rem;

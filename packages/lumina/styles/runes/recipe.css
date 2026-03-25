@@ -49,6 +49,7 @@
 /* Ingredients — surfaced zone with custom markers */
 .rf-recipe__content ul {
 	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem 1.25rem 1.25rem 2.5rem;
 	list-style: disc;
