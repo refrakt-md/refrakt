@@ -57,7 +57,7 @@
 .rf-faction[data-layout="split-reverse"] {
 	display: grid;
 	grid-template-columns: var(--split-ratio, 1fr 1fr);
-	gap: var(--split-gap, 2rem);
+	column-gap: var(--split-gap, 2rem);
 	align-items: var(--split-valign, start);
 }
 /* Split: badge + name + content left (col 1), scene right (col 2) */

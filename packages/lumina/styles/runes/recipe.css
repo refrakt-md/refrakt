@@ -111,7 +111,7 @@
 .rf-recipe[data-layout="split"],
 .rf-recipe[data-layout="split-reverse"] {
 	display: grid;
-	gap: var(--split-gap, 2rem);
+	column-gap: var(--split-gap, 2rem);
 	align-items: var(--split-valign, start);
 }
 /* Both use the same column template */
