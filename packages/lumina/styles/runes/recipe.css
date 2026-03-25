@@ -154,6 +154,10 @@
 	grid-column: 1;
 	grid-row: 1 / 3;
 }
+.rf-recipe[data-layout="split"] > .rf-recipe__media,
+.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
+	margin: 0;
+}
 /* Collapse to single column on small screens */
 @media (max-width: 640px) {
 	.rf-recipe[data-layout="split"],
