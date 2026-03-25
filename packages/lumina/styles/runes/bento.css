@@ -47,7 +47,6 @@
 	gap: var(--bento-gap, 1rem);
 }
 .rf-bento-cell {
-	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem;
 	background: var(--rf-color-surface);
