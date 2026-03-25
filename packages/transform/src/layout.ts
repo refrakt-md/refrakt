@@ -333,6 +333,14 @@ function buildLayoutChrome(
 			const d = new Date(text + 'T00:00:00');
 			text = d.toLocaleDateString('en-US', entry.dateFormat);
 		}
+		if (entry.label) {
+			const labelEl = makeTag('span', { 'data-meta-label': '' }, [entry.label]);
+			let valueText = text;
+			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
+			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
+			const valueEl = makeTag('span', { 'data-meta-value': '' }, [valueText]);
+			return makeTag(entry.tag, resolvedAttrs, [labelEl, valueEl]);
+		}
 		if (entry.textPrefix) text = entry.textPrefix + text;
 		if (entry.textSuffix) text = text + entry.textSuffix;
 		return makeTag(entry.tag, resolvedAttrs, [text]);

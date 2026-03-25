@@ -11,9 +11,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-character__role-badge::before { content: 'Role: '; font-weight: 400; opacity: 0.65; }
-.rf-character__status-badge::before { content: 'Status: '; font-weight: 400; opacity: 0.65; }
-
 /* Portrait */
 .rf-character__portrait {
 	float: right;

@@ -21,9 +21,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-plot__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
-.rf-plot__structure-badge::before { content: 'Structure: '; font-weight: 400; opacity: 0.65; }
-
 /* Description */
 .rf-plot > p {
 	color: var(--rf-color-muted);

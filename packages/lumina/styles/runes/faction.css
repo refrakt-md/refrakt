@@ -13,10 +13,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-faction__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
-.rf-faction__alignment-badge::before { content: 'Alignment: '; font-weight: 400; opacity: 0.65; }
-.rf-faction__size-badge::before { content: 'Size: '; font-weight: 400; opacity: 0.65; }
-
 /* Scene image */
 .rf-faction__scene {
 	border-radius: var(--rf-radius-lg);

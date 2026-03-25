@@ -12,8 +12,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-lore__category-badge::before { content: 'Category: '; font-weight: 400; opacity: 0.65; }
-
 /* Content */
 .rf-lore__content {
 	transition: filter 0.3s ease;

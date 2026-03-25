@@ -13,9 +13,6 @@
 	align-items: center;
 	margin-bottom: 1rem;
 }
-.rf-realm__type-badge::before { content: 'Type: '; font-weight: 400; opacity: 0.65; }
-.rf-realm__scale-badge::before { content: 'Scale: '; font-weight: 400; opacity: 0.65; }
-
 /* Scene image */
 .rf-realm__scene {
 	border-radius: var(--rf-radius-lg);

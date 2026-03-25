@@ -130,6 +130,12 @@ export interface StructureEntry {
 	/** Static text appended to metaText value */
 	textSuffix?: string;
 
+	/** Human-readable label emitted as a separate `<span data-meta-label>` child,
+	 *  enabling independent styling (thin font, hide entirely, etc.).
+	 *  Use for labels like "Prep:", "Role:". For non-label prefixes
+	 *  (e.g., "v" on version badges), use textPrefix instead. */
+	label?: string;
+
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';

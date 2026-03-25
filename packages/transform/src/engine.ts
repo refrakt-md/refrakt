@@ -617,6 +617,15 @@ function buildStructureElement(
 		if (entry.transform && transforms[entry.transform]) {
 			text = transforms[entry.transform](text);
 		}
+		// When label is specified, emit separate label and value child elements
+		if (entry.label) {
+			const labelEl = makeTag('span', { 'data-meta-label': '' }, [entry.label]);
+			let valueText = text;
+			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
+			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
+			const valueEl = makeTag('span', { 'data-meta-value': '' }, [valueText]);
+			return makeTag(entry.tag, baseAttrs, [labelEl, valueEl]);
+		}
 		if (entry.textPrefix) text = entry.textPrefix + text;
 		if (entry.textSuffix) text = text + entry.textSuffix;
 		return makeTag(entry.tag, baseAttrs, [text]);

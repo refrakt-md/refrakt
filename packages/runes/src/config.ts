@@ -223,8 +223,8 @@ export const coreConfig: ThemeConfig = {
 							tag: 'div', ref: 'meta',
 							children: [
 								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency', metaType: 'category', metaRank: 'primary' },
-								{ tag: 'span', ref: 'meta-item', metaText: 'travelers', textPrefix: 'Travelers: ', condition: 'travelers', metaType: 'quantity', metaRank: 'primary' },
-								{ tag: 'span', ref: 'meta-item', metaText: 'duration', textPrefix: 'Duration: ', condition: 'duration', metaType: 'temporal', metaRank: 'secondary' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'travelers', label: 'Travelers:', condition: 'travelers', metaType: 'quantity', metaRank: 'primary' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'duration', label: 'Duration:', condition: 'duration', metaType: 'temporal', metaRank: 'secondary' },
 							],
 						},
 					],

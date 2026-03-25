@@ -112,3 +112,12 @@
 	font-weight: 500;
 	color: var(--rf-color-muted);
 }
+
+/* ─── Labels ──────────────────────────────────────────────────────── */
+
+/* Label element within metadata items — thin, muted style.
+ * Themes can override or hide entirely: [data-meta-label] { display: none } */
+[data-meta-label] {
+	font-weight: 400;
+	opacity: 0.65;
+}

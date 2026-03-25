@@ -52,6 +52,11 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-recipe__meta-item', '.rf-recipe__badge',
 	'.rf-howto__meta-item',
 	'.rf-budget__meta-item',
+	'.rf-character__role-badge', '.rf-character__status-badge',
+	'.rf-realm__type-badge', '.rf-realm__scale-badge',
+	'.rf-lore__category-badge',
+	'.rf-faction__type-badge', '.rf-faction__alignment-badge', '.rf-faction__size-badge',
+	'.rf-plot__type-badge', '.rf-plot__structure-badge',
 ]);
 
 // ─── Helpers ───

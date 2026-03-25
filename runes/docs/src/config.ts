@@ -49,8 +49,8 @@ export const config: Record<string, RuneConfig> = {
 				children: [
 					{ tag: 'span', ref: 'kind-badge', metaText: 'kind', metaType: 'category', metaRank: 'primary' },
 					{ tag: 'span', ref: 'lang-badge', metaText: 'lang', metaType: 'category', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'since-badge', metaText: 'since', textPrefix: 'Since ', condition: 'since', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', textPrefix: 'Deprecated ', condition: 'deprecated', metaType: 'status', metaRank: 'primary', sentimentMap: { true: 'negative' } },
+					{ tag: 'span', ref: 'since-badge', metaText: 'since', label: 'Since:', condition: 'since', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', label: 'Deprecated:', condition: 'deprecated', metaType: 'status', metaRank: 'primary', sentimentMap: { true: 'negative' } },
 					{ tag: 'a', ref: 'source-link', condition: 'source', attrs: { href: { fromModifier: 'source' } }, children: ['Source'] },
 				],
 			},
