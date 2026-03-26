@@ -94,7 +94,6 @@
 .rf-docs-content__inner {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 0 2.5rem;
 	--rf-content-padding: 2.5rem;
 }
 .rf-docs-content__inner--has-toc {
@@ -105,6 +104,33 @@
 .rf-docs-content__inner--has-toc .rf-docs-content__body {
 	flex: 1;
 	min-width: 0;
+}
+
+/* Width-variant grid — mirrors default layout's 5-track grid,
+   simplified to 3 tracks (no full breakout in docs context).
+   The wide inset tracks also serve as the content gutter. */
+.rf-docs-content__body article {
+	display: grid;
+	grid-template-columns:
+		[wide-start] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
+		[content-start] minmax(0, 1fr)
+		[content-end] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
+		[wide-end];
+}
+.rf-docs-content__body article > * {
+	grid-column: content;
+}
+.rf-docs-content__body article > [data-width="wide"],
+.rf-docs-content__body article > [data-width="full"] {
+	grid-column: wide;
+}
+.rf-docs-content__body article > [data-width="compact"] {
+	max-width: var(--rf-width-compact, 30rem);
+	margin-inline: auto;
+}
+.rf-docs-content__body article > [data-width="narrow"] {
+	max-width: var(--rf-width-narrow, 40rem);
+	margin-inline: auto;
 }
 
 /* ---- "On this page" sidebar ---- */
@@ -209,7 +235,7 @@ html:has(.rf-docs-header) {
 		margin-left: 0;
 	}
 	.rf-docs-content__inner {
-		padding: 0 1.5rem;
 		--rf-content-padding: 1.5rem;
+		--rf-docs-wide-inset: 1.5rem;
 	}
 }

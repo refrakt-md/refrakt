@@ -3,19 +3,6 @@
 	margin: 2rem 0;
 }
 
-/* Width variants */
-@container (min-width: 1008px) {
-	.rf-preview[data-width="wide"] {
-		width: calc(100% + 8rem);
-		margin-left: -4rem;
-		max-width: 76rem;
-	}
-}
-.rf-preview[data-width="full"] {
-	width: 100vw;
-	margin-left: calc(-50vw + 50%);
-}
-
 /* Toolbar — transparent, controls float above the canvas */
 .rf-preview__toolbar {
 	display: flex;
@@ -170,7 +157,7 @@
 }
 
 /* Small containers: edge-to-edge bleed */
-@container (max-width: 1008px) {
+@container (max-width: 1280px) {
 	.rf-preview__toolbar {
 		padding: 0.25rem var(--rf-content-padding, 1.5rem) 0.5rem;
 	}
