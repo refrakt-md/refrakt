@@ -619,7 +619,9 @@ function buildStructureElement(
 		}
 		// When label is specified, emit separate label and value child elements
 		if (entry.label) {
-			const labelEl = makeTag('span', { 'data-meta-label': '' }, [entry.label]);
+			const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
+			if (entry.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
+			const labelEl = makeTag('span', labelAttrs, [entry.label]);
 			let valueText = text;
 			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
 			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
