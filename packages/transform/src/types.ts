@@ -135,6 +135,10 @@ export interface StructureEntry {
 	 *  Use for labels like "Prep:", "Role:". For non-label prefixes
 	 *  (e.g., "v" on version badges), use textPrefix instead. */
 	label?: string;
+	/** When true, the label span receives `data-meta-label-hidden` so themes can
+	 *  apply an sr-only pattern — visually hidden but accessible to screen readers.
+	 *  Use for labels where the value is self-explanatory (IDs, status with sentiment dots). */
+	labelHidden?: boolean;
 
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
