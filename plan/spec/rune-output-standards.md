@@ -118,6 +118,54 @@ If the schema transform emits a structural element (e.g. a scene image, a media 
 
 ---
 
+## Standard 3a — Media Zones Must Unwrap Paragraph-Wrapped Images
+
+When Markdoc transforms a Markdown image (`![alt](src)`), it produces `<p><img .../></p>` — the image is inline content inside a paragraph node. Media zones must unwrap this to emit a bare `<img>` inside the media container, not a `<p>` containing an `<img>`.
+
+### Rule
+
+- Media zone transforms must extract the `<img>` tag from its `<p>` wrapper before placing it in the media container.
+- The resulting HTML should be `<div data-name="media"><img .../></div>`, not `<div data-name="media"><p><img .../></p></div>`.
+- Use `RenderableNodeCursor`'s `.tag('img')` traversal (which digs into children) rather than passing the raw `Markdoc.transform()` output directly into the media wrapper.
+
+### Rationale
+
+- A paragraph wrapping an image is semantically wrong — an image is not a paragraph.
+- It forces CSS to work around the extra element (`.rf-recipe__media img` instead of `.rf-recipe__media > img`), breaking direct child selectors that themes might use.
+- The shared `[data-media="cover"]` dimension styles target `img` directly and expect it as a direct child or near-direct descendant.
+- The storytelling runes (`realm.ts`, `faction.ts`) already unwrap this manually with a 15-line paragraph-digging loop. `pageSectionProperties` in `common.ts` also handles it correctly via `cursor.tag('img').limit(1)`.
+
+### Reference
+
+Correct approach (using `RenderableNodeCursor`):
+
+```ts
+// Extract bare <img> from media zone — unwraps Markdoc's <p><img/></p>
+const mediaImg = mediaCursor.tag('img').limit(1);
+const mediaDiv = mediaImg.count() > 0 ? mediaImg.wrap('div') : undefined;
+```
+
+Incorrect (current recipe approach — passes paragraph through):
+
+```ts
+// Media zone rendered as-is — <p><img/></p> survives into output
+const side = new RenderableNodeCursor(
+  Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
+);
+const mediaDiv = side.wrap('div');
+```
+
+### Known Violations
+
+| Rune | Issue |
+|------|-------|
+| Recipe | Media zone passes `Markdoc.transform()` output directly into wrapper — `<p><img/></p>` survives |
+| Playlist | Same pattern — media zone content not unwrapped |
+
+Note: Realm and Faction already unwrap correctly, but with duplicated inline code (see Standard 4).
+
+---
+
 ## Standard 4 — Avoid Duplicated Transform Logic
 
 When multiple runes in the same package share structural patterns (scene image extraction, layout meta tag emission, content building), extract shared logic into package-level helpers rather than copy-pasting.
@@ -125,14 +173,16 @@ When multiple runes in the same package share structural patterns (scene image e
 ### Rule
 
 - Identify repeated patterns across rune transforms within a package.
-- Extract into named helpers (e.g. `extractSceneImage()`, `buildLayoutMetas()`).
+- Extract into named helpers (e.g. `extractMediaImage()`, `buildLayoutMetas()`).
 - Each rune's transform should read as a composition of helpers plus rune-specific logic.
+- Cross-package patterns (like paragraph-unwrapping for media zones) should be provided as shared utilities in `@refrakt-md/runes` alongside existing helpers like `pageSectionProperties` and `RenderableNodeCursor`.
 
 ### Known Violations
 
 | Package | Issue |
 |---------|-------|
 | storytelling | `realm.ts` and `faction.ts` share ~90% identical code: scene image extraction (paragraph → img dig), description rendering, layout meta tag creation, content building, and `createComponentRenderable` structure |
+| cross-package | The paragraph → img unwrap pattern appears in `realm.ts`, `faction.ts` (inline, 15 lines each) and is *missing* from `recipe.ts` and `playlist.ts`. Should be a single shared utility. |
 
 ---
 
