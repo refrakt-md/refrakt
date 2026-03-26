@@ -170,4 +170,11 @@
 	.rf-preview__source {
 		border-radius: 0;
 	}
+	/* Break out of feature's padding-inline to reach viewport edges */
+	.rf-preview--in-feature {
+		margin-inline: calc(-1 * var(--rf-content-gutter, 1.5rem));
+	}
+	.rf-preview--in-feature .rf-preview__toolbar {
+		padding-inline: var(--rf-content-gutter, 1.5rem);
+	}
 }

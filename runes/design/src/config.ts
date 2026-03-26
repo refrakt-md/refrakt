@@ -60,6 +60,7 @@ export const config: Record<string, RuneConfig> = {
 			responsive: { source: 'meta' },
 			title: { source: 'meta' },
 		},
+		contextModifiers: { 'feature': 'in-feature' },
 		editHints: { source: 'code' },
 		postTransform(node) {
 			// Generate themed HTML when source mode is active.
