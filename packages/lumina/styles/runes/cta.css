@@ -2,12 +2,12 @@
 .rf-cta {
 	padding: 3.5rem 2rem 3rem;
 }
-.rf-cta .rf-cta__header,
+.rf-cta .rf-cta__preamble,
 .rf-cta > h1, .rf-cta > h2, .rf-cta > h3,
 .rf-cta > p {
 	text-align: center;
 }
-.rf-cta__header {
+.rf-cta__preamble {
 	flex-direction: column;
 	align-items: center;
 	gap: 0.25rem;
@@ -133,7 +133,7 @@
 .rf-cta--in-pricing {
 	padding: 1.5rem 0 0;
 }
-.rf-cta--in-pricing .rf-cta__header,
+.rf-cta--in-pricing .rf-cta__preamble,
 .rf-cta--in-pricing > h1, .rf-cta--in-pricing > h2, .rf-cta--in-pricing > h3,
 .rf-cta--in-pricing > p {
 	text-align: left;

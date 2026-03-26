@@ -3,7 +3,7 @@
 	padding: 2rem 0;
 }
 .rf-pricing > header,
-.rf-pricing__header {
+.rf-pricing__preamble {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 0.25rem;

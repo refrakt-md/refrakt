@@ -2,7 +2,7 @@
 .rf-steps {
 	counter-reset: step;
 }
-.rf-steps__header {
+.rf-steps__preamble {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 0.25rem;

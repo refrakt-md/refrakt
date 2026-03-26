@@ -2,7 +2,7 @@ import type { RuneConfig } from '@refrakt-md/transform';
 import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
 
 const pageSectionAutoLabel = {
-	header: 'header',
+	header: 'preamble',
 	eyebrow: 'eyebrow',
 	headline: 'headline',
 	blurb: 'blurb',
@@ -14,7 +14,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'howto',
 		defaultDensity: 'full',
 		sequence: 'numbered',
-		sections: { meta: 'header', headline: 'title', blurb: 'description', content: 'body' },
+		sections: { meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			estimatedTime: { source: 'meta' },
@@ -37,7 +37,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'recipe',
 		defaultDensity: 'full',
 		sequence: 'numbered',
-		sections: { meta: 'header', headline: 'title', blurb: 'description', media: 'media' },
+		sections: { meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
