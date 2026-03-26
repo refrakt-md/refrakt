@@ -8,6 +8,7 @@
 .rf-realm__scene {
 	border-radius: var(--rf-radius-lg);
 	overflow: hidden;
+	margin-bottom: var(--rf-spacing-md);
 }
 .rf-realm__scene img {
 	display: block;
@@ -112,6 +113,47 @@
 	.rf-realm[data-layout="split-reverse"] > .rf-realm__scene {
 		grid-column: auto;
 		grid-row: auto;
+	}
+	.rf-realm[data-layout="split"] > .rf-realm__scene,
+	.rf-realm[data-layout="split-reverse"] > .rf-realm__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+/* Reset grid placement when data-collapse triggers single-column from shared split.css */
+@media (max-width: 640px) {
+	.rf-realm[data-collapse="sm"] > .rf-realm__badge,
+	.rf-realm[data-collapse="sm"] > span[property="name"],
+	.rf-realm[data-collapse="sm"] > .rf-realm__content,
+	.rf-realm[data-collapse="sm"] > .rf-realm__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-realm[data-collapse="sm"] > .rf-realm__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+@media (max-width: 768px) {
+	.rf-realm[data-collapse="md"] > .rf-realm__badge,
+	.rf-realm[data-collapse="md"] > span[property="name"],
+	.rf-realm[data-collapse="md"] > .rf-realm__content,
+	.rf-realm[data-collapse="md"] > .rf-realm__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-realm[data-collapse="md"] > .rf-realm__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+@media (max-width: 1024px) {
+	.rf-realm[data-collapse="lg"] > .rf-realm__badge,
+	.rf-realm[data-collapse="lg"] > span[property="name"],
+	.rf-realm[data-collapse="lg"] > .rf-realm__content,
+	.rf-realm[data-collapse="lg"] > .rf-realm__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-realm[data-collapse="lg"] > .rf-realm__scene {
+		margin-bottom: var(--rf-spacing-md);
 	}
 }
 

@@ -133,15 +133,18 @@ export const faction = createContentModelSchema({
 		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
 
 		// Build children array
-		const children: any[] = [
+		// Scene before name so the image appears between header and title in stacked layout.
+		// In split layouts, CSS grid explicit placement controls the visual order.
+		const children: any[] = [];
+		if (sceneDiv) children.push(sceneDiv.next());
+		children.push(
 			nameTag, factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta,
 			layoutMeta,
 			...(ratioMeta ? [ratioMeta] : []),
 			...(valignMeta ? [valignMeta] : []),
 			...(gapMeta ? [gapMeta] : []),
 			...(collapseMeta ? [collapseMeta] : []),
-		];
-		if (sceneDiv) children.push(sceneDiv.next());
+		);
 		children.push(mainContent.next());
 
 		// SEO schema

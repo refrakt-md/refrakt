@@ -134,16 +134,19 @@ export const realm = createContentModelSchema({
 
 		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
 
-		// Build children array: meta tags, then scene before content (image at top in stacked)
-		const children: any[] = [
+		// Build children array
+		// Scene before name so the image appears between header and title in stacked layout.
+		// In split layouts, CSS grid explicit placement controls the visual order.
+		const children: any[] = [];
+		if (sceneDiv) children.push(sceneDiv.next());
+		children.push(
 			nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
 			layoutMeta,
 			...(ratioMeta ? [ratioMeta] : []),
 			...(valignMeta ? [valignMeta] : []),
 			...(gapMeta ? [gapMeta] : []),
 			...(collapseMeta ? [collapseMeta] : []),
-		];
-		if (sceneDiv) children.push(sceneDiv.next());
+		);
 		children.push(mainContent.next());
 
 		// SEO schema

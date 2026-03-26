@@ -8,6 +8,7 @@
 .rf-faction__scene {
 	border-radius: var(--rf-radius-lg);
 	overflow: hidden;
+	margin-bottom: var(--rf-spacing-md);
 }
 .rf-faction__scene img {
 	display: block;
@@ -112,6 +113,47 @@
 	.rf-faction[data-layout="split-reverse"] > .rf-faction__scene {
 		grid-column: auto;
 		grid-row: auto;
+	}
+	.rf-faction[data-layout="split"] > .rf-faction__scene,
+	.rf-faction[data-layout="split-reverse"] > .rf-faction__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+/* Reset grid placement when data-collapse triggers single-column from shared split.css */
+@media (max-width: 640px) {
+	.rf-faction[data-collapse="sm"] > .rf-faction__badge,
+	.rf-faction[data-collapse="sm"] > span[property="name"],
+	.rf-faction[data-collapse="sm"] > .rf-faction__content,
+	.rf-faction[data-collapse="sm"] > .rf-faction__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-faction[data-collapse="sm"] > .rf-faction__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+@media (max-width: 768px) {
+	.rf-faction[data-collapse="md"] > .rf-faction__badge,
+	.rf-faction[data-collapse="md"] > span[property="name"],
+	.rf-faction[data-collapse="md"] > .rf-faction__content,
+	.rf-faction[data-collapse="md"] > .rf-faction__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-faction[data-collapse="md"] > .rf-faction__scene {
+		margin-bottom: var(--rf-spacing-md);
+	}
+}
+@media (max-width: 1024px) {
+	.rf-faction[data-collapse="lg"] > .rf-faction__badge,
+	.rf-faction[data-collapse="lg"] > span[property="name"],
+	.rf-faction[data-collapse="lg"] > .rf-faction__content,
+	.rf-faction[data-collapse="lg"] > .rf-faction__scene {
+		grid-column: auto;
+		grid-row: auto;
+	}
+	.rf-faction[data-collapse="lg"] > .rf-faction__scene {
+		margin-bottom: var(--rf-spacing-md);
 	}
 }
 

@@ -72,8 +72,10 @@ export const character = createContentModelSchema({
 		const sections = sectionNodes.tag('div').typeof('CharacterSection');
 		const hasSections = sections.count() > 0;
 
-		const children: any[] = [nameTag, roleMeta, statusMeta, aliasesMeta, tagsMeta];
+		// Portrait before name so the image appears between header and title in stacked layout.
+		const children: any[] = [];
 		if (portraitDiv) children.push(portraitDiv.next());
+		children.push(nameTag, roleMeta, statusMeta, aliasesMeta, tagsMeta);
 
 		const schemaMap = {
 			name: nameTag,
