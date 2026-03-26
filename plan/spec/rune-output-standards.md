@@ -172,6 +172,66 @@ Runes that extend `SplitLayoutModel` all emit the same boilerplate for layout me
 
 ---
 
+## Standard 7 — Shared Split Layout CSS via Structural Selectors
+
+Runes that follow the standard 3-section structure (meta header, content wrapper, media zone) should not duplicate split layout grid placement CSS. The shared `split.css` layer should handle this using attribute selectors, so per-rune CSS files contain only domain-specific body content styling.
+
+### Rule
+
+- The shared `split.css` (`packages/lumina/styles/layouts/split.css`) should define explicit grid column/row placement for the standard 3-section pattern using `[data-section]` and `[data-name]` attribute selectors.
+- Per-rune CSS files must not redefine grid-template-columns, grid-column, grid-row, or mobile collapse rules for split/split-reverse layouts when the standard structure applies.
+- Per-rune CSS files should contain only domain-specific body content styling (e.g. ingredient lists, track lists, step counters).
+- Shared media container patterns (border-radius, overflow, img sizing, split box-shadow) should also move to the dimension layer.
+
+### Rationale
+
+Recipe and playlist both define ~60 lines of near-identical split layout CSS with the only difference being the BEM prefix (`.rf-recipe__` vs `.rf-playlist__`). Every future rune with split layout + media will copy them again. Since the identity transform already emits `data-section="header"`, `data-name="content"`, and `data-section="media"` on the standard structural elements, the grid placement can be expressed once with attribute selectors:
+
+```css
+/* 3-section split: header + content in primary column, media spans rows */
+[data-layout="split"] > [data-section="header"]  { grid-column: 1; grid-row: 1; }
+[data-layout="split"] > [data-name="content"]    { grid-column: 1; grid-row: 2; }
+[data-layout="split"] > [data-section="media"]   { grid-column: 2; grid-row: 1 / 3; }
+
+[data-layout="split-reverse"] > [data-section="header"]  { grid-column: 2; grid-row: 1; }
+[data-layout="split-reverse"] > [data-name="content"]    { grid-column: 2; grid-row: 2; }
+[data-layout="split-reverse"] > [data-section="media"]   { grid-column: 1; grid-row: 1 / 3; }
+```
+
+This works for any rune that follows the standard structure — no BEM prefix needed.
+
+### Prerequisite
+
+Standard 2 (preamble inside content) must be applied first. If a rune emits its header/title as a direct child of the article instead of inside the content wrapper, it produces 4 direct children instead of 3, breaking the grid placement. Once all runes follow the standard structure, the CSS converges naturally.
+
+### Patterns to Migrate to Shared Layer
+
+| Pattern | Current location | Target |
+|---------|-----------------|--------|
+| Split grid explicit column/row placement | `recipe.css:128–156`, `playlist.css:141–167` | `split.css` |
+| Mobile collapse (reset grid-column/row) | `recipe.css:172–182`, `playlist.css:169–183` | `split.css` |
+| Split media box-shadow | `recipe.css:158–161`, `playlist.css:186–189` | `split.css` or `media.css` |
+| Media zone container (border-radius, overflow, img block sizing) | `recipe.css:104–113`, `playlist.css:119–130` | `media.css` |
+| Mobile full-bleed card header (negative margin bleed) | `recipe.css:184–199` | `split.css` |
+
+### What Stays Per-Rune
+
+Per-rune CSS files retain only domain-specific styling that no other rune shares:
+
+- **Recipe**: ingredient list (surfaced `ul` with disc markers), step counters (`counter-reset: recipe-step`), tip blockquotes
+- **Playlist**: track list layout (flex rows with name/artist/duration), player area, narrow-screen column hiding
+- **Realm/Faction**: section-specific typography or decorative elements
+
+### Known Violations
+
+| Rune | Duplicated lines | Pattern |
+|------|-----------------|---------|
+| Recipe | ~60 lines | Split grid placement, mobile collapse, media container, box-shadow |
+| Playlist | ~55 lines | Same patterns, different BEM prefix |
+| Realm, Faction | (to audit) | Likely same if they gain CSS |
+
+---
+
 ## Scope of Changes
 
 This spec covers runes in the following packages:
