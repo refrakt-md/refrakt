@@ -242,6 +242,69 @@ This spec covers runes in the following packages:
 
 Other community packages should be audited against these standards separately.
 
+### Applicability by Rune Tier
+
+Not all standards apply equally to all runes. Runes fall into three structural tiers based on their output complexity:
+
+#### Tier 1 — Full 3-section split layout (meta + content + media)
+
+These runes extend `SplitLayoutModel`, have `mediaSlots`, and support split/split-reverse layouts. All seven standards apply. Standard 7 (shared split CSS) specifically targets this tier.
+
+| Rune | Package | Follows recipe pattern? | Issues |
+|------|---------|------------------------|--------|
+| **Recipe** | learning | **Reference implementation** | — |
+| **Hero** | core | Yes | — |
+| **Feature** | core | Yes | — |
+| **Step** | core | Yes | — |
+| **Playlist** | media | No | Custom header (Std 2), missing modifiers (Std 3), duplicated CSS (Std 7) |
+| **Realm** | storytelling | No | Non-standard sections (Std 2), duplicated transform (Std 4), duplicated CSS (Std 7) |
+| **Faction** | storytelling | No | Missing mediaSlots (Std 3), duplicated transform (Std 4), duplicated CSS (Std 7) |
+
+Hero, Feature, and Step in core already follow the standard. **Three runes need alignment: Playlist, Realm, and Faction.**
+
+#### Tier 2 — Header + content wrapper, no media zone
+
+These runes have the meta/preamble/content structure but no split layout or media zone. Standards 1–5 apply (BEM hygiene, preamble grouping, config alignment, shared helpers, single code path). Standards 6–7 do not apply since these runes don't use `SplitLayoutModel`.
+
+| Rune | Package | Notes |
+|------|---------|-------|
+| **HowTo** | learning | Structurally similar to recipe minus media/split |
+| **Blog** | core | Page section with preamble + body |
+| **Character** | storytelling | Has portrait `mediaSlots` but no split layout; could graduate to Tier 1 |
+| **Lore** | storytelling | Simple header + body |
+| **Event** | places | Details header + content wrapper |
+| **Api** | docs | Header + body wrapper |
+| **Symbol** | docs | Header + preamble + body |
+| **Organization** | business | Preamble + body sections |
+
+Character is the most notable candidate for promotion to Tier 1 — it already has a portrait media slot. Adding `SplitLayoutModel` would let authors place the portrait beside the character bio in a split layout.
+
+#### Tier 3 — Sections only, no content wrapper
+
+These runes use `sections` for identity transform annotation but have simpler structures that don't need content wrappers or split layouts. Standard 1 (BEM hygiene) applies universally. Other standards apply only where relevant.
+
+| Rune | Package |
+|------|---------|
+| Accordion, CallToAction, Pricing, Steps, Testimonial, Comparison | core |
+| Changelog | docs |
+| Typography, Spacing, DesignContext, Mockup | design |
+| Plot, Beat, Bond, Storyboard | storytelling |
+| Cast, Timeline | business |
+| Itinerary | places |
+| Audio | media |
+
+### Summary
+
+| Standard | Tier 1 (7 runes) | Tier 2 (8 runes) | Tier 3 (~18 runes) |
+|----------|:-:|:-:|:-:|
+| 1 — BEM modifier hygiene | Yes | Yes | Yes |
+| 2 — Preamble inside content | Yes | Yes | — |
+| 3 — Config matches schema | Yes | Yes | Yes |
+| 4 — No duplicated transforms | Yes | Yes | Yes |
+| 5 — Single code path | Yes | Yes | Yes |
+| 6 — Shared layout meta utility | Yes | — | — |
+| 7 — Shared split layout CSS | Yes | — | — |
+
 ---
 
 ## Non-Goals
