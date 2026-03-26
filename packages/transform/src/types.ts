@@ -63,8 +63,8 @@ export interface RuneConfig {
 	/** Maps structural ref names to standard section roles.
 	 *  The identity transform emits `data-section` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic theme styling.
-	 *  Roles: 'header' | 'title' | 'description' | 'body' | 'footer' | 'media' */
-	sections?: Record<string, 'header' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
+	 *  Roles: 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media' */
+	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
 
 	/** Declares how named sections should be edited in the block editor.
 	 *  Keys are data-name values. Resolved at click time by the editor —

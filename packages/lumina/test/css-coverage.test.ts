@@ -29,19 +29,20 @@ const UNSTYLED_BLOCKS = new Set([
 const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-event__end-date',   // end-date span styled via parent date detail
 	'.rf-hero--in-feature',  // context modifier not yet styled
-	// pageSectionAutoLabel selectors — page section header elements inherited from section system
+	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
-	'.rf-comparison__header', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
-	'.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
-	'.rf-changelog__header', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
+	'.rf-comparison__preamble', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
+	'.rf-symbol__preamble', '.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
+	'.rf-changelog__preamble', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
 	'.rf-blog__content', '.rf-blog__eyebrow', '.rf-blog__image',
-	'.rf-howto__header', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
-	'.rf-itinerary__header', '.rf-itinerary__eyebrow', '.rf-itinerary__headline', '.rf-itinerary__blurb', '.rf-itinerary__image',
-	'.rf-cast__header', '.rf-cast__eyebrow', '.rf-cast__headline', '.rf-cast__blurb', '.rf-cast__image',
-	'.rf-organization__header', '.rf-organization__eyebrow', '.rf-organization__headline', '.rf-organization__blurb', '.rf-organization__image',
-	'.rf-timeline__header', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
-	'.rf-event__header', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
-	'.rf-preview__header', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
+	'.rf-howto__preamble', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
+	'.rf-itinerary__preamble', '.rf-itinerary__eyebrow', '.rf-itinerary__headline', '.rf-itinerary__blurb', '.rf-itinerary__image',
+	'.rf-cast__preamble', '.rf-cast__eyebrow', '.rf-cast__headline', '.rf-cast__blurb', '.rf-cast__image',
+	'.rf-organization__preamble', '.rf-organization__eyebrow', '.rf-organization__headline', '.rf-organization__blurb', '.rf-organization__image',
+	'.rf-timeline__preamble', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
+	'.rf-event__preamble', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
+	'.rf-preview__preamble', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
+	'.rf-recipe__preamble',
 	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
 	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
 	'.rf-work__id-badge', '.rf-work__status-badge', '.rf-work__priority-badge', '.rf-work__milestone-badge',

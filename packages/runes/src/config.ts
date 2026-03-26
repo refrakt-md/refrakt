@@ -73,7 +73,7 @@ function readPropText(node: SerializedTag, prop: string): string {
 
 /** autoLabel entries shared by all PageSection-based runes */
 const pageSectionAutoLabel = {
-	header: 'header',     // <header> wrapper element
+	header: 'preamble',   // <header> wrapper element → data-name="preamble"
 	eyebrow: 'eyebrow',   // property="eyebrow"
 	headline: 'headline', // property="headline"
 	blurb: 'blurb',       // property="blurb"
@@ -89,7 +89,7 @@ export const coreConfig: ThemeConfig = {
 	runes: {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
-		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		AccordionItem: { block: 'accordion-item', parent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
 		Details: { block: 'details', defaultDensity: 'compact', sections: { summary: 'title' }, autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
@@ -187,7 +187,7 @@ export const coreConfig: ThemeConfig = {
 		Blog: {
 			block: 'blog',
 			defaultDensity: 'full',
-			sections: { header: 'header', headline: 'title', blurb: 'description', content: 'body' },
+			sections: { preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
 			contentWrapper: { tag: 'div', ref: 'content' },
 			modifiers: {
 				layout: { source: 'meta', default: 'list' },
@@ -623,7 +623,7 @@ export const coreConfig: ThemeConfig = {
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs', defaultDensity: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		TabGroup: { block: 'tabs', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		Tab: { block: 'tab', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
 		TabPanel: { block: 'tab-panel', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
 		DataTable: {
@@ -665,7 +665,7 @@ export const coreConfig: ThemeConfig = {
 			modifiers: {
 				mode: { source: 'meta', default: 'click' },
 			},
-			sections: { header: 'header', headline: 'title', blurb: 'description' },
+			sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},

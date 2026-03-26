@@ -11,9 +11,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-accordion__header",
+					"selector": ".rf-accordion__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -247,9 +247,9 @@
 					"selector": ".rf-blog__content",
 					"source": "contentWrapper"
 				},
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-blog__header",
+					"selector": ".rf-blog__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -762,9 +762,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-tabs__header",
+					"selector": ".rf-tabs__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -914,9 +914,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-reveal__header",
+					"selector": ".rf-reveal__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1084,9 +1084,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-hero__header",
+					"selector": ".rf-hero__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1145,9 +1145,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-cta__header",
+					"selector": ".rf-cta__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1200,9 +1200,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-bento__header",
+					"selector": ".rf-bento__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1313,9 +1313,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-feature__header",
+					"selector": ".rf-feature__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1373,9 +1373,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-steps__header",
+					"selector": ".rf-steps__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1455,9 +1455,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-pricing__header",
+					"selector": ".rf-pricing__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1537,9 +1537,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-comparison__header",
+					"selector": ".rf-comparison__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -1687,9 +1687,9 @@
 			},
 			"elements": {
 				"header": {
-					"tag": "header",
+					"tag": "div",
 					"selector": ".rf-symbol__header",
-					"source": "autoLabel"
+					"source": "structure"
 				},
 				"kind-badge": {
 					"tag": "span",
@@ -1728,6 +1728,11 @@
 					"tag": "div",
 					"selector": ".rf-symbol__body",
 					"source": "contentWrapper"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-symbol__preamble",
+					"source": "autoLabel"
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -1777,9 +1782,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-changelog__header",
+					"selector": ".rf-changelog__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2386,9 +2391,9 @@
 					"selector": ".rf-event__content",
 					"source": "contentWrapper"
 				},
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-event__header",
+					"selector": ".rf-event__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2435,9 +2440,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-itinerary__header",
+					"selector": ".rf-itinerary__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2558,9 +2563,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-cast__header",
+					"selector": ".rf-cast__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2602,9 +2607,9 @@
 				"{content}"
 			],
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-organization__header",
+					"selector": ".rf-organization__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2645,9 +2650,9 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-timeline__header",
+					"selector": ".rf-timeline__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -2893,9 +2898,9 @@
 					"selector": ".rf-howto__content",
 					"source": "contentWrapper"
 				},
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-howto__header",
+					"selector": ".rf-howto__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -3002,9 +3007,9 @@
 					"parent": "meta",
 					"condition": "difficulty"
 				},
-				"header": {
+				"preamble": {
 					"tag": "header",
-					"selector": ".rf-recipe__header",
+					"selector": ".rf-recipe__preamble",
 					"source": "autoLabel"
 				},
 				"eyebrow": {
@@ -3166,6 +3171,461 @@
 			"childOrder": [
 				"{content}"
 			]
+		},
+		"Spec": {
+			"block": "spec",
+			"root": ".rf-spec",
+			"dataRune": "spec",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "draft",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-status"
+				},
+				"version": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-version"
+				},
+				"supersedes": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-supersedes"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-spec__header",
+					"source": "structure"
+				},
+				"id-badge": {
+					"tag": "span",
+					"selector": ".rf-spec__id-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-spec__status-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"version-badge": {
+					"tag": "span",
+					"selector": ".rf-spec__version-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "version"
+				},
+				"supersedes-badge": {
+					"tag": "span",
+					"selector": ".rf-spec__supersedes-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "supersedes"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-spec__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Work": {
+			"block": "work",
+			"root": ".rf-work",
+			"dataRune": "work",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "draft",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-status"
+				},
+				"priority": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-priority"
+				},
+				"complexity": {
+					"source": "meta",
+					"default": "unknown",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-complexity"
+				},
+				"assignee": {
+					"source": "meta",
+					"dataAttribute": "data-assignee"
+				},
+				"milestone": {
+					"source": "meta",
+					"dataAttribute": "data-milestone"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-work__header",
+					"source": "structure"
+				},
+				"id-badge": {
+					"tag": "span",
+					"selector": ".rf-work__id-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-work__status-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"priority-badge": {
+					"tag": "span",
+					"selector": ".rf-work__priority-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"complexity-badge": {
+					"tag": "span",
+					"selector": ".rf-work__complexity-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"assignee-badge": {
+					"tag": "span",
+					"selector": ".rf-work__assignee-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "assignee"
+				},
+				"milestone-badge": {
+					"tag": "span",
+					"selector": ".rf-work__milestone-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "milestone"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-work__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Bug": {
+			"block": "bug",
+			"root": ".rf-bug",
+			"dataRune": "bug",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "reported",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-status"
+				},
+				"severity": {
+					"source": "meta",
+					"default": "major",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-severity"
+				},
+				"assignee": {
+					"source": "meta",
+					"dataAttribute": "data-assignee"
+				},
+				"milestone": {
+					"source": "meta",
+					"dataAttribute": "data-milestone"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-bug__header",
+					"source": "structure"
+				},
+				"id-badge": {
+					"tag": "span",
+					"selector": ".rf-bug__id-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-bug__status-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"severity-badge": {
+					"tag": "span",
+					"selector": ".rf-bug__severity-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"assignee-badge": {
+					"tag": "span",
+					"selector": ".rf-bug__assignee-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "assignee"
+				},
+				"milestone-badge": {
+					"tag": "span",
+					"selector": ".rf-bug__milestone-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "milestone"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-bug__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Decision": {
+			"block": "decision",
+			"root": ".rf-decision",
+			"dataRune": "decision",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-decision--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "proposed",
+					"classPattern": ".rf-decision--{value}",
+					"dataAttribute": "data-status"
+				},
+				"date": {
+					"source": "meta",
+					"dataAttribute": "data-date"
+				},
+				"supersedes": {
+					"source": "meta",
+					"dataAttribute": "data-supersedes"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-decision__header",
+					"source": "structure"
+				},
+				"id-badge": {
+					"tag": "span",
+					"selector": ".rf-decision__id-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-decision__status-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"date-badge": {
+					"tag": "time",
+					"selector": ".rf-decision__date-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "date"
+				},
+				"supersedes-badge": {
+					"tag": "span",
+					"selector": ".rf-decision__supersedes-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "supersedes"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-decision__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Milestone": {
+			"block": "milestone",
+			"root": ".rf-milestone",
+			"dataRune": "milestone",
+			"childOrder": [
+				"header",
+				"{content:body}"
+			],
+			"modifiers": {
+				"name": {
+					"source": "meta",
+					"classPattern": ".rf-milestone--{value}",
+					"dataAttribute": "data-name"
+				},
+				"status": {
+					"source": "meta",
+					"default": "planning",
+					"classPattern": ".rf-milestone--{value}",
+					"dataAttribute": "data-status"
+				},
+				"target": {
+					"source": "meta",
+					"dataAttribute": "data-target"
+				}
+			},
+			"elements": {
+				"header": {
+					"tag": "div",
+					"selector": ".rf-milestone__header",
+					"source": "structure"
+				},
+				"name-badge": {
+					"tag": "span",
+					"selector": ".rf-milestone__name-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"status-badge": {
+					"tag": "span",
+					"selector": ".rf-milestone__status-badge",
+					"source": "structure",
+					"parent": "header"
+				},
+				"target-badge": {
+					"tag": "time",
+					"selector": ".rf-milestone__target-badge",
+					"source": "structure",
+					"parent": "header",
+					"condition": "target"
+				},
+				"body": {
+					"tag": "div",
+					"selector": ".rf-milestone__body",
+					"source": "contentWrapper"
+				}
+			}
+		},
+		"Backlog": {
+			"block": "backlog",
+			"root": ".rf-backlog",
+			"dataRune": "backlog",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"sort": {
+					"source": "meta",
+					"dataAttribute": "data-sort"
+				},
+				"group": {
+					"source": "meta",
+					"dataAttribute": "data-group"
+				},
+				"show": {
+					"source": "meta",
+					"dataAttribute": "data-show"
+				}
+			}
+		},
+		"DecisionLog": {
+			"block": "decision-log",
+			"root": ".rf-decision-log",
+			"dataRune": "decision-log",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"sort": {
+					"source": "meta",
+					"dataAttribute": "data-sort"
+				}
+			}
+		},
+		"PlanProgress": {
+			"block": "plan-progress",
+			"root": ".rf-plan-progress",
+			"dataRune": "plan-progress",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"show": {
+					"source": "meta",
+					"dataAttribute": "data-show"
+				}
+			}
+		},
+		"PlanActivity": {
+			"block": "plan-activity",
+			"root": ".rf-plan-activity",
+			"dataRune": "plan-activity",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"limit": {
+					"source": "meta",
+					"dataAttribute": "data-limit"
+				}
+			}
 		}
 	}
 }

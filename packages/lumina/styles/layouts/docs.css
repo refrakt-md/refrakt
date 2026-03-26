@@ -109,7 +109,7 @@
 /* Width-variant grid — mirrors default layout's 5-track grid,
    simplified to 3 tracks (no full breakout in docs context).
    The wide inset tracks also serve as the content gutter. */
-.rf-docs-content__body article {
+.rf-docs-content__body > div > article {
 	display: grid;
 	grid-template-columns:
 		[wide-start] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
@@ -117,18 +117,18 @@
 		[content-end] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
 		[wide-end];
 }
-.rf-docs-content__body article > * {
+.rf-docs-content__body > div > article > * {
 	grid-column: content;
 }
-.rf-docs-content__body article > [data-width="wide"],
-.rf-docs-content__body article > [data-width="full"] {
+.rf-docs-content__body > div > article > [data-width="wide"],
+.rf-docs-content__body > div > article > [data-width="full"] {
 	grid-column: wide;
 }
-.rf-docs-content__body article > [data-width="compact"] {
+.rf-docs-content__body > div > article > [data-width="compact"] {
 	max-width: var(--rf-width-compact, 30rem);
 	margin-inline: auto;
 }
-.rf-docs-content__body article > [data-width="narrow"] {
+.rf-docs-content__body > div > article > [data-width="narrow"] {
 	max-width: var(--rf-width-narrow, 40rem);
 	margin-inline: auto;
 }

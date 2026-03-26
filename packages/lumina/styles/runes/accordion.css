@@ -4,7 +4,7 @@
 	border-radius: var(--rf-radius-md);
 	overflow: hidden;
 }
-.rf-accordion__header {
+.rf-accordion__preamble {
 	margin-bottom: 1.5rem;
 }
 .rf-accordion__eyebrow {

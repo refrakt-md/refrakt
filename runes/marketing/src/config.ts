@@ -177,7 +177,7 @@ function buildComparisonTable(
 // ─── RuneConfig entries ───
 
 const pageSectionAutoLabel = {
-	header: 'header',
+	header: 'preamble',
 	eyebrow: 'eyebrow',
 	headline: 'headline',
 	blurb: 'blurb',
@@ -203,16 +203,16 @@ export const config: Record<string, RuneConfig> = {
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		contextModifiers: { 'feature': 'in-feature' },
-		sections: { header: 'header', headline: 'title', blurb: 'description', media: 'media' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'hero' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
 	},
-	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
-		sections: { header: 'header', headline: 'title', blurb: 'description' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
 			gap: { source: 'meta', default: '1rem' },
@@ -242,7 +242,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'feature',
 		defaultDensity: 'full',
 		defaultWidth: 'full',
-		sections: { header: 'header', headline: 'title', blurb: 'description', image: 'media' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', image: 'media' },
 		mediaSlots: { image: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
@@ -262,7 +262,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', sequence: 'numbered', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', sequence: 'numbered', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps',
@@ -281,7 +281,7 @@ export const config: Record<string, RuneConfig> = {
 		mediaSlots: { media: 'cover' },
 		editHints: { content: 'none', media: 'image' },
 	},
-	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', sections: { header: 'header', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Tier: { block: 'tier', parent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {
@@ -328,7 +328,7 @@ export const config: Record<string, RuneConfig> = {
 	Comparison: {
 		block: 'comparison',
 		defaultDensity: 'full',
-		sections: { header: 'header', headline: 'title', blurb: 'description', verdict: 'footer' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', verdict: 'footer' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 		postTransform(node) {
