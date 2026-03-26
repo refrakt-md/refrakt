@@ -5,14 +5,6 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
-function tagText(nodes: any[]): string {
-	return nodes.map((n: any) => {
-		if (typeof n === 'string') return n;
-		if (Markdoc.Tag.isTag(n)) return tagText(n.children);
-		return '';
-	}).join('').trim();
-}
-
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
 export const recipe = createContentModelSchema({
@@ -118,7 +110,7 @@ export const recipe = createContentModelSchema({
 				li.attributes['data-name'] = 'step';
 				li.attributes.typeof = 'HowToStep';
 				li.attributes.property = 'recipeInstructions';
-				li.children.push(new Tag('meta', { property: 'text', content: tagText(li.children) }));
+				li.children = [new Tag('p', { property: 'text' }, li.children)];
 			}
 		}
 
