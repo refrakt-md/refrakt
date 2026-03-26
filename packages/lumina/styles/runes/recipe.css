@@ -149,25 +149,47 @@
 .rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
 	margin: 0;
 }
-/* Collapse to single column on small screens */
+/* Split layout media gets subtle depth */
+.rf-recipe[data-layout="split"] .rf-recipe__media img,
+.rf-recipe[data-layout="split-reverse"] .rf-recipe__media img {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Mobile: collapse split layouts + full-bleed card header */
 @media (max-width: 640px) {
+	/* Stacked: needs flex context for order to work */
+	.rf-recipe[data-layout="stacked"] {
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Collapse split layouts to single column */
 	.rf-recipe[data-layout="split"],
 	.rf-recipe[data-layout="split-reverse"] {
 		grid-template-columns: 1fr;
 	}
 	.rf-recipe[data-layout="split"] > .rf-recipe__meta,
 	.rf-recipe[data-layout="split"] > .rf-recipe__content,
-	.rf-recipe[data-layout="split"] > .rf-recipe__media,
 	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__meta,
-	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__content,
-	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
+	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__content {
 		grid-column: auto;
 		grid-row: auto;
 	}
-}
 
-/* Split layout media gets subtle depth */
-.rf-recipe[data-layout="split"] .rf-recipe__media img,
-.rf-recipe[data-layout="split-reverse"] .rf-recipe__media img {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	/* Full-bleed card header: move media to top, bleed to card edges */
+	/* Split-specific selectors needed to override the non-media-query margin: 0 */
+	.rf-recipe > .rf-recipe__media,
+	.rf-recipe[data-layout="split"] > .rf-recipe__media,
+	.rf-recipe[data-layout="split-reverse"] > .rf-recipe__media {
+		order: -1;
+		grid-column: auto;
+		grid-row: auto;
+		width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
+		margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
+		margin-bottom: var(--rune-padding, var(--rf-spacing-md));
+		border-radius: 0;
+	}
+	.rf-recipe > .rf-recipe__media img {
+		border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+	}
 }
