@@ -41,9 +41,9 @@ export const config: Record<string, RuneConfig> = {
 		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
-			prepTime: { source: 'meta' },
-			cookTime: { source: 'meta' },
-			servings: { source: 'meta' },
+			prepTime: { source: 'meta', noBemClass: true },
+			cookTime: { source: 'meta', noBemClass: true },
+			servings: { source: 'meta', noBemClass: true },
 			difficulty: { source: 'meta', default: 'medium' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
 			valign: { source: 'meta', default: 'top', noBemClass: true },
