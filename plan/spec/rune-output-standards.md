@@ -53,6 +53,8 @@ modifiers: {
 | Plot | `tags` | Free-form string |
 | Beat | `id`, `track`, `follows` | Identifiers / free-form |
 
+Note: Playlist config already follows this standard correctly — `type` and `layout` produce BEM classes (enumerable), while `ratio`, `valign`, `gap`, `collapse` use `noBemClass: true`.
+
 ---
 
 ## Standard 2 — Preamble Groups with Content
@@ -90,6 +92,12 @@ For runes that represent page sections (extending `PageSection` or using eyebrow
 </article>
 ```
 
+### Known Violations
+
+| Rune | Issue |
+|------|-------|
+| Playlist | Builds a custom `<div data-name="header">` with imperative `data-name` assignment on the title, bypassing the `pageSectionProperties` + `<header>` preamble pattern. Description paragraphs are not wrapped as a blurb. Config lacks `preamble` section — has `sections: { header: 'header', title: 'title', media: 'media' }` instead of the recipe pattern `{ meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' }`. |
+
 ---
 
 ## Standard 3 — Config Must Match Schema Capabilities
@@ -106,6 +114,7 @@ If the schema transform emits a structural element (e.g. a scene image, a media 
 | Rune | Issue |
 |------|-------|
 | Faction | Schema extracts a scene image and emits a `scene` ref, but config lacks `mediaSlots: { scene: 'cover' }` and `sections` entry for `scene: 'media'` |
+| Playlist | Schema emits `artistMeta`, `hasPlayerMeta`, and an `id` meta tag, but config declares no corresponding modifiers — the identity transform won't produce `data-artist`, `data-player`, or `data-id` attributes on the root element. A theme cannot target `[data-player="true"]` to adjust layout when the player is present. |
 
 ---
 
@@ -144,12 +153,32 @@ A rune's `transform()` function should produce a single `createComponentRenderab
 
 ---
 
+## Standard 6 — Layout Meta Tag Emission Should Be Shared
+
+Runes that extend `SplitLayoutModel` all emit the same boilerplate for layout meta tags (layout, ratio, valign, gap, collapse) with identical conditional logic. This pattern should be extracted rather than repeated.
+
+### Rule
+
+- Layout meta tag creation (the `layout !== 'stacked'` guards, gap/collapse conditionals) should be a shared utility, not copy-pasted per rune.
+- The utility should accept the attrs object and return the set of meta tags and their property map entries.
+
+### Known Violations
+
+| Package | Runes |
+|---------|-------|
+| storytelling | `realm.ts`, `faction.ts` — identical layout meta block |
+| media | `playlist.ts` — same pattern, independently written |
+| learning | `recipe.ts` — same pattern (reference implementation, but should also use the shared utility once extracted) |
+
+---
+
 ## Scope of Changes
 
 This spec covers runes in the following packages:
 
 - `@refrakt-md/learning` (recipe, howto) — recipe is the reference implementation
 - `@refrakt-md/storytelling` (character, realm, faction, lore, plot, beat, bond, storyboard)
+- `@refrakt-md/media` (playlist, track, audio)
 
 Other community packages should be audited against these standards separately.
 
