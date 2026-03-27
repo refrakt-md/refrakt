@@ -1,4 +1,4 @@
-{% work id="WORK-082" status="ready" priority="high" complexity="moderate" tags="lumina, css, transform, architecture" %}
+{% work id="WORK-082" status="done" priority="high" complexity="moderate" tags="lumina, css, transform, architecture" %}
 
 # Shared Split Layout CSS with Two-Mode Mobile Collapse
 
