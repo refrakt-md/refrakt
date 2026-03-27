@@ -15,7 +15,7 @@ describe('playlist rune', () => {
 		expect(tag!.name).toBe('section');
 	});
 
-	it('should extract header with title', () => {
+	it('should extract preamble with title', () => {
 		const result = parse(`{% playlist %}
 # Summer Vibes
 
@@ -25,9 +25,8 @@ describe('playlist rune', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
 		expect(tag).toBeDefined();
 
-		const header = findTag(tag!, t =>
-			t.attributes['data-name'] === 'header');
-		expect(header).toBeDefined();
+		const preamble = findTag(tag!, t => t.name === 'header');
+		expect(preamble).toBeDefined();
 	});
 
 	it('should extract track names from bold text', () => {

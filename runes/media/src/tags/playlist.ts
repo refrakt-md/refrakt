@@ -26,9 +26,9 @@ export const playlist = createContentModelSchema({
 				name: 'content',
 				type: 'sequence',
 				fields: [
-					{ name: 'title', match: 'heading', optional: false,
+					{ name: 'headline', match: 'heading', optional: false,
 						template: '# Playlist Name', description: 'Playlist title' },
-					{ name: 'description', match: 'paragraph', optional: true,
+					{ name: 'blurb', match: 'paragraph', optional: true,
 						template: 'A description of this playlist.', description: 'Playlist description' },
 					{
 						name: 'tracks',
@@ -85,14 +85,13 @@ export const playlist = createContentModelSchema({
 		const contentMode = (attrs.content as string) ?? 'auto';
 		const idValue = (attrs.id as string) ?? '';
 
-		// Transform title
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.title), config) as RenderableTreeNode[],
-		);
-
-		// Transform description
-		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.description), config) as RenderableTreeNode[],
+		// Collect header AST nodes (title, description) and transform together
+		const headerAstNodes = [
+			contentZone.headline,
+			contentZone.blurb,
+		].filter(Boolean) as Node[];
+		const header = new RenderableNodeCursor(
+			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
 		// Transform media zone
@@ -143,24 +142,6 @@ export const playlist = createContentModelSchema({
 
 		const tracksOl = new Tag('ol', { 'data-name': 'tracks' }, trackChildren);
 
-		// Build header
-		const headerChildren: any[] = [];
-		if (titleNodes.count() > 0) {
-			const headingCursor = titleNodes.headings().limit(1);
-			if (headingCursor.count() > 0) {
-				const titleTag = headingCursor.next();
-				titleTag.attributes['data-name'] = 'title';
-				headerChildren.push(titleTag);
-			}
-		}
-		if (descNodes.count() > 0) {
-			headerChildren.push(...descNodes.toArray());
-		}
-
-		const header = headerChildren.length > 0
-			? new Tag('div', { 'data-name': 'header' }, headerChildren)
-			: null;
-
 		// Build player element (when player attribute is set)
 		let playerEl: any = null;
 		if (hasPlayer) {
@@ -191,12 +172,15 @@ export const playlist = createContentModelSchema({
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
 		const hasPlayerMeta = hasPlayer ? new Tag('meta', { content: 'true' }) : null;
 		const artistMeta = artistValue ? new Tag('meta', { content: artistValue }) : null;
+		const idMeta = idValue ? new Tag('meta', { content: idValue }) : null;
 
-		// Wrap content and media zones
-		const contentChildren: any[] = [];
-		if (header) contentChildren.push(header);
-		if (playerEl) contentChildren.push(playerEl);
-		contentChildren.push(tracksOl);
+		// Structural wrapping — standard 3-section pattern (like recipe)
+		const sectionProps = pageSectionProperties(header);
+
+		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
+		const bodyChildren: any[] = [];
+		if (playerEl) bodyChildren.push(playerEl);
+		bodyChildren.push(tracksOl);
 
 		// Transform any remaining body content
 		if (contentZone.body) {
@@ -204,11 +188,14 @@ export const playlist = createContentModelSchema({
 				Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
 			);
 			if (bodyNodes.count() > 0) {
-				contentChildren.push(...bodyNodes.toArray());
+				bodyChildren.push(...bodyNodes.toArray());
 			}
 		}
 
-		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
+		const mainContent = new RenderableNodeCursor([
+			...headerContent,
+			...bodyChildren,
+		]).wrap('div');
 
 		// Unwrap paragraph-wrapped images in the media zone
 		const mediaImgTag = extractMediaImage(side);
@@ -227,13 +214,12 @@ export const playlist = createContentModelSchema({
 		];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
 		if (artistMeta) children.push(artistMeta);
-		if (idValue) children.push(new Tag('meta', { 'data-name': 'id', content: idValue }));
+		if (idMeta) children.push(idMeta);
 
 		// Media before content so cover image appears at the top in stacked layout
 		if (hasMedia) children.push(mediaDiv.next());
 		children.push(mainContent.next());
 
-		const sectionProps = pageSectionProperties(titleNodes);
 		const trackItems = new RenderableNodeCursor(trackChildren);
 
 		return createComponentRenderable(schema.Playlist, {
@@ -247,6 +233,7 @@ export const playlist = createContentModelSchema({
 				gap: gapMeta,
 				collapse: collapseMeta,
 				...(artistMeta ? { artist: artistMeta } : {}),
+				...(idMeta ? { id: idMeta } : {}),
 				track: trackItems,
 			},
 			refs: {

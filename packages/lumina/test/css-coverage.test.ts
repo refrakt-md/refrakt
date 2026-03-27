@@ -43,6 +43,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-event__preamble', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
 	'.rf-preview__preamble', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
 	'.rf-recipe__preamble',
+	'.rf-playlist__eyebrow', '.rf-playlist__image',
 	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
 	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
 	'.rf-work__id-badge', '.rf-work__status-badge', '.rf-work__priority-badge', '.rf-work__milestone-badge',

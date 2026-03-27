@@ -32,7 +32,7 @@ A collection of great tracks.
     expect(trackNames.length).toBe(3);
   });
 
-  it('should extract header from heading and paragraph', () => {
+  it('should extract preamble from heading and paragraph', () => {
     const result = parse(`{% music-playlist %}
 # Summer Vibes
 
@@ -44,7 +44,7 @@ The best summer tunes.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
     expect(tag).toBeDefined();
 
-    const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
-    expect(header).toBeDefined();
+    const preamble = findTag(tag!, t => t.name === 'header');
+    expect(preamble).toBeDefined();
   });
 });
