@@ -13,11 +13,51 @@
 
 /* Grid so children can use justify-self/align-self (default: stretch) */
 [data-layout="split"] > [data-name="media"],
-[data-layout="split-reverse"] > [data-name="media"] {
+[data-layout="split-reverse"] > [data-name="media"],
+[data-layout="split"] > [data-section="media"],
+[data-layout="split-reverse"] > [data-section="media"] {
   display: grid;
 }
 
-/* Collapse breakpoints */
+/* ─── 3-section grid placement (header + content + media) ─────────── */
+
+/* Split: header + content in col 1, media in col 2 spanning both rows */
+[data-layout="split"] > [data-section="header"] { grid-column: 1; grid-row: 1; }
+[data-layout="split"] > [data-name="content"]   { grid-column: 1; grid-row: 2; }
+[data-layout="split"] > [data-section="media"]   { grid-column: 2; grid-row: 1 / 3; }
+
+/* Split-reverse: media in col 1 spanning both rows, header + content in col 2 */
+[data-layout="split-reverse"] > [data-section="header"] { grid-column: 2; grid-row: 1; }
+[data-layout="split-reverse"] > [data-name="content"]   { grid-column: 2; grid-row: 2; }
+[data-layout="split-reverse"] > [data-section="media"]   { grid-column: 1; grid-row: 1 / 3; }
+
+/* Reset margin on media zone in split layouts */
+[data-layout="split"] > [data-section="media"],
+[data-layout="split-reverse"] > [data-section="media"] {
+  margin: 0;
+}
+
+/* ─── Media zone base styles ──────────────────────────────────────── */
+
+[data-section="media"] {
+  border-radius: var(--rf-radius-lg);
+  overflow: hidden;
+}
+[data-section="media"] img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--rf-radius-lg);
+}
+
+/* Split layout media gets subtle depth */
+[data-layout="split"] > [data-section="media"] img,
+[data-layout="split-reverse"] > [data-section="media"] img {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Collapse breakpoints ────────────────────────────────────────── */
+
 @media (max-width: 640px) {
   [data-layout^="split"][data-collapse="sm"] { grid-template-columns: 1fr; }
   [data-layout^="split"][data-collapse="sm"] > * { order: unset; }
@@ -31,4 +71,114 @@
 @media (max-width: 1024px) {
   [data-layout^="split"][data-collapse="lg"] { grid-template-columns: 1fr; }
   [data-layout^="split"][data-collapse="lg"] > * { order: unset; }
+}
+
+/* ─── Default mobile collapse for split layouts ───────────────────── */
+/* Runes without an explicit data-collapse always collapse at sm */
+
+@media (max-width: 640px) {
+  [data-layout^="split"]:not([data-collapse]) {
+    grid-template-columns: 1fr;
+  }
+  [data-layout^="split"]:not([data-collapse]) > [data-section="header"],
+  [data-layout^="split"]:not([data-collapse]) > [data-name="content"],
+  [data-layout^="split"]:not([data-collapse]) > [data-section="media"] {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  [data-layout^="split"]:not([data-collapse]) > * {
+    order: unset;
+  }
+
+  /* ─── Content-first collapse (data-media-position="top") ────────── */
+  /* Media hoists above preamble as full-bleed card header */
+  [data-media-position="top"] > [data-section="media"],
+  [data-media-position="top"][data-layout="split"] > [data-section="media"],
+  [data-media-position="top"][data-layout="split-reverse"] > [data-section="media"] {
+    order: -1;
+    grid-column: auto;
+    grid-row: auto;
+    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
+    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
+    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
+    border-radius: 0;
+  }
+  [data-media-position="top"] > [data-section="media"] img {
+    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+  }
+
+  /* Stacked layout also needs flex context for order to work */
+  [data-media-position="top"][data-layout="stacked"] {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ─── Explicit collapse breakpoint + content-first ────────────────── */
+
+@media (max-width: 640px) {
+  [data-media-position="top"][data-collapse="sm"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="sm"][data-layout="split"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="sm"][data-layout="split-reverse"] > [data-section="media"] {
+    order: -1;
+    grid-column: auto;
+    grid-row: auto;
+    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
+    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
+    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
+    border-radius: 0;
+  }
+  [data-media-position="top"][data-collapse="sm"] > [data-section="media"] img {
+    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+  }
+  /* Reset grid placement on collapse for header/content */
+  [data-media-position="top"][data-collapse="sm"] > [data-section="header"],
+  [data-media-position="top"][data-collapse="sm"] > [data-name="content"] {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-media-position="top"][data-collapse="md"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="md"][data-layout="split"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="md"][data-layout="split-reverse"] > [data-section="media"] {
+    order: -1;
+    grid-column: auto;
+    grid-row: auto;
+    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
+    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
+    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
+    border-radius: 0;
+  }
+  [data-media-position="top"][data-collapse="md"] > [data-section="media"] img {
+    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+  }
+  [data-media-position="top"][data-collapse="md"] > [data-section="header"],
+  [data-media-position="top"][data-collapse="md"] > [data-name="content"] {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  [data-media-position="top"][data-collapse="lg"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="lg"][data-layout="split"] > [data-section="media"],
+  [data-media-position="top"][data-collapse="lg"][data-layout="split-reverse"] > [data-section="media"] {
+    order: -1;
+    grid-column: auto;
+    grid-row: auto;
+    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
+    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
+    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
+    border-radius: 0;
+  }
+  [data-media-position="top"][data-collapse="lg"] > [data-section="media"] img {
+    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+  }
+  [data-media-position="top"][data-collapse="lg"] > [data-section="header"],
+  [data-media-position="top"][data-collapse="lg"] > [data-name="content"] {
+    grid-column: auto;
+    grid-row: auto;
+  }
 }

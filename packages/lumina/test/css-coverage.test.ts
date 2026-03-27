@@ -68,7 +68,10 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-spec__header', '.rf-bug__header',
 	'.rf-decision__header', '.rf-milestone__header',
 	'.rf-recipe__header',
+	'.rf-recipe__meta', // meta bar styled via [data-section="header"] in shared split.css
 	'.rf-playlist__type-badge',
+	// Playlist pageSectionAutoLabel selectors — not used by playlist (pre-existing gap)
+	'.rf-playlist__blurb', '.rf-playlist__eyebrow', '.rf-playlist__image', '.rf-playlist__meta', '.rf-playlist__preamble',
 ]);
 
 // ─── Helpers ───
