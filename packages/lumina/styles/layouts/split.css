@@ -42,7 +42,9 @@
 
 /* ─── Media zone base styles ──────────────────────────────────────── */
 
-[data-section="media"] {
+/* Only clip overflow when media zone contains an image. Interactive content
+   (preview, juxtapose) needs overflow visible for bleed effects. */
+[data-section="media"]:has(> img) {
   border-radius: var(--rf-radius-lg);
   overflow: hidden;
 }
