@@ -409,7 +409,7 @@ These runes use `sections` for identity transform annotation but have simpler st
 | 5 — Single code path | Yes | Yes | Yes |
 | 6 — Shared layout meta utility | Yes | — | — |
 | 7 — Shared split layout CSS | Yes | — | — |
-| 8 — Theme-level shared classes | Yes | Yes | — |
+| 8 — Theme-level shared classes | Yes | Yes | Some (timeline-connector) |
 
 ---
 
@@ -482,11 +482,25 @@ Per-rune CSS retains only truly unique overrides:
 
 ### Candidates for Shared Classes in Lumina
 
-| Shared Class | Runes | Shared Lines |
-|-------------|-------|-------------|
-| `entity-card` | Realm, Faction (potentially Character) | ~150 lines |
+| Shared Class | Runes | Shared Lines | Pattern |
+|-------------|-------|-------------|---------|
+| `entity-card` | Realm, Faction (potentially Character) | ~150 lines | Name header + badge, content sections, scene media zone, split/split-reverse layout with media spanning rows, mobile content-first collapse |
+| `instructional-content` | Recipe, HowTo | ~35–40 lines | Surfaced list zone (background + border + disc markers + primary-colored `::marker`), step counters with circular number badges (`counter-reset`, flex row, centered circle), tip blockquotes (left border + surface background + radius) |
+| `track-list-item` | Playlist, Track | ~40–50 lines | Flex-row layout with counter prefix (fixed-width, right-aligned), track name (flex: 1, ellipsis overflow), artist metadata (muted color, dot separator via `::before`), duration (tabular-nums, right-aligned, margin-left auto), hover states |
+| `marketing-header` | Hero, CTA, Feature, Steps, Pricing, Bento | ~25 lines ×6 | Preamble container (flex column, gap), eyebrow (small caps, letter-spacing, primary color), eyebrow pill-badge variant (`:has(a)` — inline-block, border, radius-full, hover transition), headline, description |
+| `timeline-connector` | Timeline, Itinerary, Plot (beats) | ~15–20 lines | Left border connector line (`border-left: 2px solid`), circular dot pseudo-element (`::before` — absolute positioned, primary background, bg-colored border, box-shadow ring), last-item border removal, left padding for content |
 
-Other groupings may emerge as more runes adopt the standard structure. This standard provides the mechanism; themes decide when to use it.
+#### Notes on each candidate
+
+**`entity-card`** — Realm and Faction CSS files are 95% identical (~157 lines each), differing only in BEM prefix. This is the clearest win. Character could join this group if it gains split layout support (it already has a portrait media slot).
+
+**`instructional-content`** — Recipe and HowTo share the same "materials list + numbered steps + tips" visual pattern. The only differences are the counter name (`recipe-step` vs `howto-step`) and recipe's media zone (which is handled by split.css per Standard 7). Extracting the shared pattern would reduce each file's domain-specific CSS to just a few lines.
+
+**`track-list-item`** — Playlist renders tracks as `<li>` inside `.rf-playlist__tracks`; Track renders each as a standalone `.rf-track` element. Despite different containers, the per-row styling (counter, name, artist, duration, meta dots) is identical. The shared class would target the row internals.
+
+**`marketing-header`** — Six marketing runes duplicate the same eyebrow + preamble pattern with minor variations (eyebrow font-size ranges from 0.8rem to 0.875rem, preamble margin-bottom from 1.5rem to 2rem). A shared class could cover the common base with per-rune overrides for the size differences, or the sizes could be normalized. The pill-badge `:has(a)` variant (~10 lines) is identical across all six.
+
+**`timeline-connector`** — Timeline and Itinerary share identical vertical-timeline dot + line CSS. Itinerary adds activity-type color variants (transport, food, sightseeing, etc.) and compact/horizontal layout options that stay per-rune. Plot beats use a similar but not identical pattern (status-colored dots). The shared class would cover the base connector; per-rune CSS handles color variants and layout modes.
 
 ---
 
