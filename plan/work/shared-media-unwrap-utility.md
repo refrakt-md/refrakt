@@ -1,4 +1,4 @@
-{% work id="WORK-077" status="ready" priority="high" complexity="simple" tags="runes, transform, architecture" %}
+{% work id="WORK-077" status="done" priority="high" complexity="simple" tags="runes, transform, architecture" %}
 
 # Extract Shared Media Image Unwrap Utility
 

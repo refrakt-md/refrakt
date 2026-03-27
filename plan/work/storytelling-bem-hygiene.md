@@ -1,4 +1,4 @@
-{% work id="WORK-078" status="ready" priority="medium" complexity="trivial" tags="storytelling, runes, transform" %}
+{% work id="WORK-078" status="done" priority="medium" complexity="trivial" tags="storytelling, runes, transform" %}
 
 # BEM Modifier Hygiene for Storytelling Runes
 

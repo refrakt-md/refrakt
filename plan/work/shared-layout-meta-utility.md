@@ -1,4 +1,4 @@
-{% work id="WORK-076" status="ready" priority="high" complexity="simple" tags="runes, transform, architecture" %}
+{% work id="WORK-076" status="done" priority="high" complexity="simple" tags="runes, transform, architecture" %}
 
 # Extract Shared Layout Meta Tag Utility
 
