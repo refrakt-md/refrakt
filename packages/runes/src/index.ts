@@ -57,7 +57,7 @@ export { group, groupList } from './lib/annotations/group.js';
 export { id } from './lib/annotations/id.js';
 export { Model } from './lib/model.js';
 export { NodeStream } from './lib/node.js';
-export { linkItem, pageSectionProperties, buildLayoutMetas, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel } from './tags/common.js';
+export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, headingsToList } from './util.js';
 export type { HeadingInfo } from './util.js';

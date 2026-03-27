@@ -92,6 +92,30 @@ export function buildLayoutMetas(attrs: Record<string, any>): {
   };
 }
 
+/**
+ * Extract a bare `<img>` tag from rendered media nodes.
+ *
+ * Markdoc wraps inline images in `<p><img .../></p>`. This utility walks
+ * the top-level nodes looking for either a bare `<img>` or an `<img>` nested
+ * inside a `<p>`, and returns the unwrapped tag.
+ *
+ * @returns The first `<img>` Tag found, or `undefined` if none exists.
+ */
+export function extractMediaImage(cursor: RenderableNodeCursor): Tag | undefined {
+  for (const node of cursor.toArray()) {
+    if (Markdoc.Tag.isTag(node) && node.name === 'img') {
+      return node;
+    }
+    if (Markdoc.Tag.isTag(node) && node.name === 'p') {
+      const img = node.children.find(
+        (c: any) => Markdoc.Tag.isTag(c) && c.name === 'img',
+      ) as Tag | undefined;
+      if (img) return img;
+    }
+  }
+  return undefined;
+}
+
 export function pageSectionProperties(cursor: RenderableNodeCursor) {
   const nodes = cursor.nodes;
   const isH = (n: any) => Markdoc.Tag.isTag(n) && /^h[1-6]$/.test(n.name);

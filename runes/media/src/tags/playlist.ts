@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 import { parseDuration, formatDuration } from '../duration.js';
 
@@ -209,13 +209,17 @@ export const playlist = createContentModelSchema({
 		}
 
 		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
-		const mediaDiv = side.wrap('div');
-		const hasMedia = side.toArray().length > 0;
 
-		// Find first image in media zone for SEO
-		const seoImage = side.toArray().find(
-			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'img'
-		) as Markdoc.Tag | undefined;
+		// Unwrap paragraph-wrapped images in the media zone
+		const mediaImgTag = extractMediaImage(side);
+		const mediaCursor = mediaImgTag
+			? new RenderableNodeCursor([mediaImgTag])
+			: side;
+		const mediaDiv = mediaCursor.wrap('div');
+		const hasMedia = mediaCursor.toArray().length > 0;
+
+		// Use the unwrapped image for SEO structured data
+		const seoImage = mediaImgTag;
 
 		const children: any[] = [
 			typeMeta,

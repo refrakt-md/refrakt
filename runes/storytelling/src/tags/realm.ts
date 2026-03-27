@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class RealmSectionModel extends Model {
@@ -69,23 +69,8 @@ export const realm = createContentModelSchema({
 			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// The image is wrapped in a <p> by Markdoc — look inside paragraph children for <img>
-		let sceneImgTag: Markdoc.Tag | undefined;
-		for (const node of sceneRendered.toArray()) {
-			if (Markdoc.Tag.isTag(node) && node.name === 'img') {
-				sceneImgTag = node;
-				break;
-			}
-			if (Markdoc.Tag.isTag(node) && node.name === 'p') {
-				const img = node.children.find(
-					(c: any) => Markdoc.Tag.isTag(c) && c.name === 'img'
-				) as Markdoc.Tag | undefined;
-				if (img) {
-					sceneImgTag = img;
-					break;
-				}
-			}
-		}
+		// Extract bare <img> from paragraph-wrapped Markdoc output
+		const sceneImgTag = extractMediaImage(sceneRendered);
 
 		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
 		let extraDescription: RenderableTreeNode[] = [];
