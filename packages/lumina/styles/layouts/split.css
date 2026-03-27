@@ -20,16 +20,19 @@
 }
 
 /* ─── 3-section grid placement (header + content + media) ─────────── */
+/* Only applies when a data-section="header" child exists (3-section runes).
+   2-section runes (e.g. Feature with display:contents on content) use the
+   default 2-column flow from the base grid above. */
 
 /* Split: header + content in col 1, media in col 2 spanning both rows */
-[data-layout="split"] > [data-section="header"] { grid-column: 1; grid-row: 1; }
-[data-layout="split"] > [data-name="content"]   { grid-column: 1; grid-row: 2; }
-[data-layout="split"] > [data-section="media"]   { grid-column: 2; grid-row: 1 / 3; }
+[data-layout="split"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 1; grid-row: 1; }
+[data-layout="split"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 1; grid-row: 2; }
+[data-layout="split"]:has(> [data-section="header"]) > [data-section="media"]   { grid-column: 2; grid-row: 1 / 3; }
 
 /* Split-reverse: media in col 1 spanning both rows, header + content in col 2 */
-[data-layout="split-reverse"] > [data-section="header"] { grid-column: 2; grid-row: 1; }
-[data-layout="split-reverse"] > [data-name="content"]   { grid-column: 2; grid-row: 2; }
-[data-layout="split-reverse"] > [data-section="media"]   { grid-column: 1; grid-row: 1 / 3; }
+[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 2; grid-row: 1; }
+[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 2; grid-row: 2; }
+[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-section="media"]   { grid-column: 1; grid-row: 1 / 3; }
 
 /* Reset margin on media zone in split layouts */
 [data-layout="split"] > [data-section="media"],
