@@ -82,49 +82,27 @@ export const character = createContentModelSchema({
 			jobTitle: roleMeta,
 		};
 
-		if (hasSections) {
-			const sectionsContainer = sections.wrap('div');
-			children.push(sectionsContainer.next());
+		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
+		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
+		children.push(hasSections ? sectionsContainer!.next() : body!.next());
 
-			return createComponentRenderable(schema.Character, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					role: roleMeta,
-					status: statusMeta,
-					aliases: aliasesMeta,
-					tags: tagsMeta,
-					section: sections,
-				},
-				refs: {
-					name: nameTag,
-					...(portraitDiv ? { portrait: portraitDiv } : {}),
-					sections: sectionsContainer,
-				},
-				schema: schemaMap,
-				children,
-			});
-		} else {
-			const body = sectionNodes.wrap('div');
-			children.push(body.next());
-
-			return createComponentRenderable(schema.Character, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					role: roleMeta,
-					status: statusMeta,
-					aliases: aliasesMeta,
-					tags: tagsMeta,
-				},
-				refs: {
-					name: nameTag,
-					...(portraitDiv ? { portrait: portraitDiv } : {}),
-					body,
-				},
-				schema: schemaMap,
-				children,
-			});
-		}
+		return createComponentRenderable(schema.Character, {
+			tag: 'article',
+			property: 'contentSection',
+			properties: {
+				role: roleMeta,
+				status: statusMeta,
+				aliases: aliasesMeta,
+				tags: tagsMeta,
+				...(hasSections ? { section: sections } : {}),
+			},
+			refs: {
+				name: nameTag,
+				...(portraitDiv ? { portrait: portraitDiv } : {}),
+				...(hasSections ? { sections: sectionsContainer! } : { body: body! }),
+			},
+			schema: schemaMap,
+			children,
+		});
 	},
 });
