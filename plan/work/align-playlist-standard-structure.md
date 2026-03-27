@@ -1,4 +1,4 @@
-{% work id="WORK-079" status="ready" priority="high" complexity="moderate" tags="media, runes, transform" %}
+{% work id="WORK-079" status="done" priority="high" complexity="moderate" tags="media, runes, transform" %}
 
 # Align Playlist Transform to Standard Structure
 
