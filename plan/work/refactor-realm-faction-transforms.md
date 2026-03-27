@@ -1,4 +1,4 @@
-{% work id="WORK-080" status="ready" priority="high" complexity="moderate" tags="storytelling, runes, transform" %}
+{% work id="WORK-080" status="done" priority="high" complexity="moderate" tags="storytelling, runes, transform" %}
 
 # Refactor Realm and Faction Transforms to Use Shared Utilities
 
