@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 class RealmSectionModel extends Model {
@@ -59,18 +59,9 @@ export const realm = createContentModelSchema({
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
-		// Layout meta tags (following recipe pattern)
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
-
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		// Layout meta tags
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Extract scene image from the first preamble paragraph (if it contains an image)
 		const sceneAstNodes = asNodes(resolved.scene);
@@ -141,11 +132,7 @@ export const realm = createContentModelSchema({
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(
 			nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
-			layoutMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 		);
 		children.push(mainContent.next());
 

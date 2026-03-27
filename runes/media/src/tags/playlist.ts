@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 import { parseDuration, formatDuration } from '../duration.js';
 
@@ -183,18 +183,9 @@ export const playlist = createContentModelSchema({
 			]);
 		}
 
-		// Layout meta tags (following recipe pattern)
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
-
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		// Layout meta tags
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Meta tags for identity transform modifiers
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
@@ -228,11 +219,7 @@ export const playlist = createContentModelSchema({
 
 		const children: any[] = [
 			typeMeta,
-			layoutMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 		];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
 		if (artistMeta) children.push(artistMeta);
