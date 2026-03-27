@@ -2826,6 +2826,12 @@
 					"classPattern": ".rf-preview--{value}",
 					"dataAttribute": "data-title"
 				}
+			},
+			"contextModifiers": {
+				"feature": {
+					"suffix": "in-feature",
+					"selector": ".rf-preview--in-feature"
+				}
 			}
 		},
 		"Mockup": {
@@ -2942,17 +2948,14 @@
 				},
 				"prepTime": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-prep-time"
 				},
 				"cookTime": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-cook-time"
 				},
 				"servings": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-servings"
 				},
 				"difficulty": {
