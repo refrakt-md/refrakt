@@ -409,6 +409,84 @@ These runes use `sections` for identity transform annotation but have simpler st
 | 5 — Single code path | Yes | Yes | Yes |
 | 6 — Shared layout meta utility | Yes | — | — |
 | 7 — Shared split layout CSS | Yes | — | — |
+| 8 — Theme-level shared classes | Yes | Yes | — |
+
+---
+
+## Standard 8 — Theme-Level Shared Classes for Structural Grouping
+
+When multiple runes share nearly identical CSS (same structural pattern, same layout, same styling), themes should be able to emit a shared class on those runes — reducing CSS duplication without coupling unrelated rune packages at the config level.
+
+### Rule
+
+- The `RuneConfig` interface should support an optional `sharedClasses?: string[]` field.
+- The identity transform engine should prefix each entry with the theme prefix (e.g. `['entity-card']` → `.rf-entity-card`) and add them to the root element's class list.
+- **Shared classes must be set by the theme layer** (via `mergeThemeConfig` overrides), not by rune package configs. Different themes may want to group runes differently — a storytelling-focused theme might share styles between realm/faction/character, while a minimal theme might not share at all.
+- Shared class CSS files should live alongside the theme's per-rune CSS (e.g. `packages/lumina/styles/shared/entity-card.css`), not in the rune packages themselves.
+
+### Rationale
+
+Realm and faction currently have ~150 lines of near-identical CSS, differing only in the BEM prefix (`.rf-realm` vs `.rf-faction`). This duplication is a maintenance burden — every change must be made twice. CSS has no native mixin or `@extend` mechanism, and adding a preprocessor is an architectural decision beyond the scope of this spec.
+
+The key insight is that **which runes share styles is a theme decision, not a rune decision**. A rune package defines structure (BEM block, sections, modifiers). A theme decides visual treatment. Two runes might look identical in Lumina but completely different in another theme. Therefore the grouping mechanism belongs in the theme layer.
+
+### Engine Change
+
+Minimal — two lines in `transformRune()`:
+
+```ts
+// After building the BEM class string
+const sharedParts = (config.sharedClasses ?? []).map(c => `${prefix}-${c}`);
+const bemClass = [block, ...sharedParts, ...modifierClasses, existingClass].filter(Boolean).join(' ');
+```
+
+### Theme Usage
+
+Lumina would add shared class overrides via `mergeThemeConfig`:
+
+```ts
+export const luminaConfig = mergeThemeConfig(baseConfig, {
+  runes: {
+    Realm:   { sharedClasses: ['entity-card'] },
+    Faction: { sharedClasses: ['entity-card'] },
+  },
+  // ...existing tints, icons
+});
+```
+
+Then write shared CSS:
+
+```css
+/* packages/lumina/styles/shared/entity-card.css */
+.rf-entity-card { /* ~150 lines of shared layout, typography, section styling */ }
+.rf-entity-card__name { ... }
+.rf-entity-card__scene { ... }
+```
+
+Per-rune CSS retains only truly unique overrides:
+
+```css
+/* realm.css — only realm-specific rules */
+.rf-realm__lore-section { border-left: 2px solid var(--rf-color-accent); }
+
+/* faction.css — only faction-specific rules */
+.rf-faction__influence { font-variant-numeric: tabular-nums; }
+```
+
+### Interaction with Existing Config
+
+- `sharedClasses` is additive — it does not replace the rune's own BEM block class.
+- The shared class participates in `applyBemClasses` for element-level BEM (e.g. `.rf-entity-card__scene`) only if the shared class file defines those selectors. The engine emits the shared class on the root element only.
+- CSS coverage tests should recognize shared classes as valid selectors for any rune that declares them.
+- Contracts should include shared classes in the rune's class list.
+
+### Candidates for Shared Classes in Lumina
+
+| Shared Class | Runes | Shared Lines |
+|-------------|-------|-------------|
+| `entity-card` | Realm, Faction (potentially Character) | ~150 lines |
+
+Other groupings may emerge as more runes adopt the standard structure. This standard provides the mechanism; themes decide when to use it.
 
 ---
 
