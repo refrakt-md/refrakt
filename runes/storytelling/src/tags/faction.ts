@@ -1,8 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
+import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
 import { schema } from '../types.js';
+import { extractScene, buildStoryContent } from './common.js';
 
 class FactionSectionModel extends Model {
 	@attribute({ type: String, required: true })
@@ -53,6 +54,7 @@ export const faction = createContentModelSchema({
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
 		);
 
+		// Domain meta tags
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const factionTypeMeta = new Tag('meta', { content: attrs.type ?? '' });
 		const alignmentMeta = new Tag('meta', { content: attrs.alignment ?? '' });
@@ -63,51 +65,13 @@ export const faction = createContentModelSchema({
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
-		// Extract scene image from the first preamble paragraph
-		const sceneAstNodes = asNodes(resolved.scene);
-		const sceneRendered = new RenderableNodeCursor(
-			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
+		// Extract scene image (shared helper)
+		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
+
+		// Build content div with sections (shared helper)
+		const { mainContent, sections, hasSections } = buildStoryContent(
+			extraDescription, resolved.description, sectionNodes, 'FactionSection', config,
 		);
-
-		// Extract bare <img> from paragraph-wrapped Markdoc output
-		const sceneImgTag = extractMediaImage(sceneRendered);
-
-		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
-		let extraDescription: RenderableTreeNode[] = [];
-
-		if (sceneImgTag) {
-			sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
-		} else if (sceneRendered.count() > 0) {
-			extraDescription = sceneRendered.toArray();
-		}
-
-		// Transform description paragraphs
-		const descAstNodes = asNodes(resolved.description);
-		const descRendered = new RenderableNodeCursor(
-			Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
-		);
-
-		const sections = sectionNodes.tag('div').typeof('FactionSection');
-		const hasSections = sections.count() > 0;
-
-		// Build content children (everything except scene)
-		const contentChildren: any[] = [];
-		const allDescNodes = [...extraDescription, ...descRendered.toArray()];
-		if (allDescNodes.length > 0) {
-			contentChildren.push(...allDescNodes);
-		}
-
-		if (hasSections) {
-			const sectionsContainer = sections.wrap('div');
-			contentChildren.push(sectionsContainer.next());
-		} else {
-			const body = sectionNodes.wrap('div');
-			if (sectionNodes.count() > 0) {
-				contentChildren.push(body.next());
-			}
-		}
-
-		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
 
 		// Build children array
 		// Scene before name so the image appears between header and title in stacked layout.

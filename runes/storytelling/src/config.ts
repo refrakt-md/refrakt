@@ -87,7 +87,8 @@ export const config: Record<string, RuneConfig> = {
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title' },
+		sections: { badge: 'header', name: 'title', scene: 'media' },
+		mediaSlots: { scene: 'cover' },
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
@@ -116,7 +117,7 @@ export const config: Record<string, RuneConfig> = {
 			},
 		},
 		autoLabel: { scene: 'scene' },
-		editHints: { name: 'inline', body: 'none', sections: 'none' },
+		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
