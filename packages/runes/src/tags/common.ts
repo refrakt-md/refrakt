@@ -50,6 +50,72 @@ export function description(cursor: RenderableNodeCursor) {
   return cursor.tag('p').limit(1);
 }
 
+export interface LayoutMetas {
+  layout: Tag;
+  ratio: Tag | undefined;
+  valign: Tag | undefined;
+  gap: Tag | undefined;
+  collapse: Tag | undefined;
+}
+
+/**
+ * Build the five layout meta tags shared by all split-layout runes.
+ * Accepts the attrs object from a `SplitLayoutModel`-based schema and returns
+ * the meta Tag instances plus a convenience array of the non-undefined tags
+ * suitable for spreading into a children array.
+ */
+export function buildLayoutMetas(attrs: Record<string, any>): {
+  metas: LayoutMetas;
+  children: Tag[];
+} {
+  const layout = (attrs.layout as string) || 'stacked';
+  const ratio = (attrs.ratio as string) || '1 1';
+  const valign = (attrs.valign as string) || 'top';
+  const gap = (attrs.gap as string) || 'default';
+  const collapse = attrs.collapse as string | undefined;
+
+  const layoutMeta = new Markdoc.Tag('meta', { content: layout });
+  const ratioMeta = layout !== 'stacked' ? new Markdoc.Tag('meta', { content: ratio }) : undefined;
+  const valignMeta = layout !== 'stacked' ? new Markdoc.Tag('meta', { content: valign }) : undefined;
+  const gapMeta = gap !== 'default' ? new Markdoc.Tag('meta', { content: gap }) : undefined;
+  const collapseMeta = collapse ? new Markdoc.Tag('meta', { content: collapse }) : undefined;
+
+  const children: Tag[] = [layoutMeta];
+  if (ratioMeta) children.push(ratioMeta);
+  if (valignMeta) children.push(valignMeta);
+  if (gapMeta) children.push(gapMeta);
+  if (collapseMeta) children.push(collapseMeta);
+
+  return {
+    metas: { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta },
+    children,
+  };
+}
+
+/**
+ * Extract a bare `<img>` tag from rendered media nodes.
+ *
+ * Markdoc wraps inline images in `<p><img .../></p>`. This utility walks
+ * the top-level nodes looking for either a bare `<img>` or an `<img>` nested
+ * inside a `<p>`, and returns the unwrapped tag.
+ *
+ * @returns The first `<img>` Tag found, or `undefined` if none exists.
+ */
+export function extractMediaImage(cursor: RenderableNodeCursor): Tag | undefined {
+  for (const node of cursor.toArray()) {
+    if (Markdoc.Tag.isTag(node) && node.name === 'img') {
+      return node;
+    }
+    if (Markdoc.Tag.isTag(node) && node.name === 'p') {
+      const img = node.children.find(
+        (c: any) => Markdoc.Tag.isTag(c) && c.name === 'img',
+      ) as Tag | undefined;
+      if (img) return img;
+    }
+  }
+  return undefined;
+}
+
 export function pageSectionProperties(cursor: RenderableNodeCursor) {
   const nodes = cursor.nodes;
   const isH = (n: any) => Markdoc.Tag.isTag(n) && /^h[1-6]$/.test(n.name);

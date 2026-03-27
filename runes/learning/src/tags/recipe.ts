@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
@@ -114,18 +114,9 @@ export const recipe = createContentModelSchema({
 			}
 		}
 
-		// Layout meta tags (following hero pattern)
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
-
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		// Layout meta tags
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Structural wrapping
 		const sectionProps = pageSectionProperties(header);
@@ -144,24 +135,23 @@ export const recipe = createContentModelSchema({
 			...bodyChildren,
 		]).wrap('div');
 
-		const mediaDiv = side.wrap('div');
-		const hasMedia = side.toArray().length > 0;
+		// Unwrap paragraph-wrapped images in the media zone
+		const mediaImgTag = extractMediaImage(side);
+		const mediaCursor = mediaImgTag
+			? new RenderableNodeCursor([mediaImgTag])
+			: side;
+		const mediaDiv = mediaCursor.wrap('div');
+		const hasMedia = mediaCursor.toArray().length > 0;
 
-		// Find first image in media zone for SEO structured data
-		const seoImage = side.toArray().find(
-			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'img'
-		) as Markdoc.Tag | undefined;
+		// Use the unwrapped image for SEO structured data
+		const seoImage = mediaImgTag;
 
 		const children: any[] = [
 			prepTimeMeta,
 			cookTimeMeta,
 			servingsMeta,
 			difficultyMeta,
-			layoutMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 			// Media before content so the image appears at the top in stacked layout.
 			// In split layouts, CSS grid explicit placement controls the visual order.
 			...(hasMedia ? [mediaDiv.next()] : []),

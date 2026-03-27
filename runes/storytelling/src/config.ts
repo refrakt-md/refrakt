@@ -32,6 +32,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		sections: { badge: 'header', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
+		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -87,7 +88,9 @@ export const config: Record<string, RuneConfig> = {
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title' },
+		sections: { badge: 'header', name: 'title', scene: 'media' },
+		mediaSlots: { scene: 'cover' },
+		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },

@@ -115,77 +115,10 @@
 	margin-top: 0.5rem;
 }
 
-/* Media zone — cover art */
-.rf-playlist__media {
-	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
-}
+/* Media zone — domain-specific cover art overrides (base styles in split.css) */
 .rf-playlist__media img {
-	display: block;
-	width: 100%;
-	height: auto;
-	border-radius: var(--rf-radius-lg);
 	aspect-ratio: 1;
 	object-fit: cover;
-}
-
-/* Split layout — shared */
-.rf-playlist[data-layout="split"],
-.rf-playlist[data-layout="split-reverse"] {
-	display: grid;
-	grid-template-columns: var(--split-ratio, 1fr 1fr);
-	column-gap: var(--split-gap, 2rem);
-	align-items: var(--split-valign, start);
-}
-/* Split: header + content left (col 1), media right (col 2) */
-.rf-playlist[data-layout="split"] > .rf-playlist__header {
-	grid-column: 1;
-	grid-row: 1;
-}
-.rf-playlist[data-layout="split"] > .rf-playlist__content {
-	grid-column: 1;
-	grid-row: 2;
-}
-.rf-playlist[data-layout="split"] > .rf-playlist__media {
-	grid-column: 2;
-	grid-row: 1 / 3;
-	margin: 0;
-}
-/* Split-reverse: media left (col 1), header + content right (col 2) */
-.rf-playlist[data-layout="split-reverse"] > .rf-playlist__header {
-	grid-column: 2;
-	grid-row: 1;
-}
-.rf-playlist[data-layout="split-reverse"] > .rf-playlist__content {
-	grid-column: 2;
-	grid-row: 2;
-}
-.rf-playlist[data-layout="split-reverse"] > .rf-playlist__media {
-	grid-column: 1;
-	grid-row: 1 / 3;
-	margin: 0;
-}
-/* Collapse to single column on small screens */
-@media (max-width: 640px) {
-	.rf-playlist[data-layout="split"],
-	.rf-playlist[data-layout="split-reverse"] {
-		grid-template-columns: 1fr;
-	}
-	.rf-playlist[data-layout="split"] > .rf-playlist__header,
-	.rf-playlist[data-layout="split"] > .rf-playlist__content,
-	.rf-playlist[data-layout="split"] > .rf-playlist__media,
-	.rf-playlist[data-layout="split-reverse"] > .rf-playlist__header,
-	.rf-playlist[data-layout="split-reverse"] > .rf-playlist__content,
-	.rf-playlist[data-layout="split-reverse"] > .rf-playlist__media {
-		grid-column: auto;
-		grid-row: auto;
-	}
-}
-
-/* Split layout media gets subtle depth */
-.rf-playlist[data-layout="split"] .rf-playlist__media img,
-.rf-playlist[data-layout="split-reverse"] .rf-playlist__media img {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Hide secondary columns on narrow screens */

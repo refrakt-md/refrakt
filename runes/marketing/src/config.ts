@@ -242,8 +242,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'feature',
 		defaultDensity: 'full',
 		defaultWidth: 'full',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', image: 'media' },
-		mediaSlots: { image: 'cover' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			align: { source: 'meta', default: 'center' },
