@@ -1104,6 +1104,49 @@ const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
 })();
 </script>`;
 
+const MOBILE_MENU_SCRIPT = `<script>
+(function() {
+  var panels = document.querySelectorAll('.rf-mobile-panel');
+  if (!panels.length) return;
+
+  function closeAll() {
+    panels.forEach(function(p) { p.removeAttribute('data-open'); });
+    document.body.style.overflow = '';
+  }
+
+  function openPanel(panel) {
+    closeAll();
+    panel.setAttribute('data-open', '');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Nav toggle buttons
+  var navToggles = document.querySelectorAll('[data-mobile-nav-toggle]');
+  navToggles.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var navPanel = document.querySelector('.rf-mobile-panel--nav');
+      if (!navPanel) return;
+      if (navPanel.hasAttribute('data-open')) {
+        closeAll();
+      } else {
+        openPanel(navPanel);
+      }
+    });
+  });
+
+  // Close buttons
+  var closeBtns = document.querySelectorAll('[data-mobile-menu-close]');
+  closeBtns.forEach(function(btn) {
+    btn.addEventListener('click', closeAll);
+  });
+
+  // Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
+</script>`;
+
 // --- HtmlTheme for the plan site ---
 
 const planTheme: HtmlTheme = {
@@ -1359,7 +1402,7 @@ export function renderPage(
 
 	const shellOptions: PageShellOptions = {
 		stylesheets: opts?.stylesheets ?? [],
-		bodyExtra: COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT,
+		bodyExtra: COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT + '\n' + MOBILE_MENU_SCRIPT,
 	};
 
 	// Hot reload SSE script
