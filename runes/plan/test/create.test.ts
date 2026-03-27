@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { runCreate } from '../src/commands/create.js';
+import { nextId, idExists, runNextId } from '../src/commands/next-id.js';
 
 const TMP = join(import.meta.dirname, '.tmp-create-test');
 
@@ -70,9 +71,9 @@ describe('plan create', () => {
 			.toThrow('already exists');
 	});
 
-	it('throws on missing id', () => {
-		expect(() => runCreate({ dir: TMP, type: 'work', id: '', title: 'Test' }))
-			.toThrow('--id is required');
+	it('throws on missing id for milestone', () => {
+		expect(() => runCreate({ dir: TMP, type: 'milestone', title: 'v2.0 Release' }))
+			.toThrow('--id is required for type "milestone"');
 	});
 
 	it('throws on missing title', () => {
@@ -98,5 +99,85 @@ describe('plan create', () => {
 	it('generates slug-based filenames', () => {
 		const result = runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'My Cool Feature' });
 		expect(result.file).toContain('my-cool-feature.md');
+	});
+
+	it('throws on duplicate ID', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'First' });
+		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Second' }))
+			.toThrow('ID "WORK-001" already exists');
+	});
+});
+
+describe('auto-id', () => {
+	it('auto-assigns WORK-001 when no work items exist', () => {
+		const result = runCreate({ dir: TMP, type: 'work', title: 'Auto Task' });
+		expect(result.id).toBe('WORK-001');
+		const content = readFileSync(result.file, 'utf-8');
+		expect(content).toContain('id="WORK-001"');
+	});
+
+	it('auto-increments from existing items', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-005', title: 'First' });
+		const result = runCreate({ dir: TMP, type: 'work', title: 'Second' });
+		expect(result.id).toBe('WORK-006');
+	});
+
+	it('auto-assigns across different types independently', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-010', title: 'Work Item' });
+		runCreate({ dir: TMP, type: 'spec', id: 'SPEC-003', title: 'Spec Item' });
+
+		const bug = runCreate({ dir: TMP, type: 'bug', title: 'A Bug' });
+		expect(bug.id).toBe('BUG-001');
+
+		const spec = runCreate({ dir: TMP, type: 'spec', title: 'New Spec' });
+		expect(spec.id).toBe('SPEC-004');
+	});
+
+	it('auto-assigns for decision type', () => {
+		const result = runCreate({ dir: TMP, type: 'decision', title: 'Use REST' });
+		expect(result.id).toBe('ADR-001');
+	});
+});
+
+describe('nextId', () => {
+	it('returns WORK-001 for empty directory', () => {
+		expect(nextId(TMP, 'work')).toBe('WORK-001');
+	});
+
+	it('returns next after highest existing ID', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-042', title: 'Existing' });
+		expect(nextId(TMP, 'work')).toBe('WORK-043');
+	});
+
+	it('zero-pads to 3 digits', () => {
+		runCreate({ dir: TMP, type: 'spec', id: 'SPEC-007', title: 'Existing' });
+		expect(nextId(TMP, 'spec')).toBe('SPEC-008');
+	});
+});
+
+describe('idExists', () => {
+	it('returns undefined when ID does not exist', () => {
+		expect(idExists(TMP, 'WORK-999')).toBeUndefined();
+	});
+
+	it('returns file path when ID exists', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Test' });
+		expect(idExists(TMP, 'WORK-001')).toBeDefined();
+	});
+});
+
+describe('runNextId', () => {
+	it('returns result with null highest when no items exist', () => {
+		const result = runNextId(TMP, 'work');
+		expect(result.type).toBe('work');
+		expect(result.nextId).toBe('WORK-001');
+		expect(result.highest).toBeNull();
+	});
+
+	it('returns result with highest when items exist', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-010', title: 'Existing' });
+		const result = runNextId(TMP, 'work');
+		expect(result.nextId).toBe('WORK-011');
+		expect(result.highest).toBe('WORK-010');
 	});
 });

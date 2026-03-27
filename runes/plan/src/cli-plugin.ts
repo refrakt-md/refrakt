@@ -1,6 +1,7 @@
 import { runUpdate, EXIT_NOT_FOUND, EXIT_VALIDATION_ERROR } from './commands/update.js';
 import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js';
 import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/create.js';
+import { runNextId, isAutoIdType, type AutoIdType } from './commands/next-id.js';
 import { runInit } from './commands/init.js';
 import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
@@ -250,13 +251,14 @@ function handleNext(args: string[]): void {
 function handleCreate(args: string[]): void {
 	const type = args[0] as PlanItemType;
 	if (!type || !VALID_TYPES.includes(type)) {
-		console.error(`Usage: refrakt plan create <type> --id <id> --title "..."`);
+		console.error(`Usage: refrakt plan create <type> [--id <id>] --title "..."`);
 		console.error(`Types: ${VALID_TYPES.join(', ')}`);
+		console.error(`When --id is omitted, the next available ID is assigned automatically.`);
 		process.exit(CREATE_INVALID_ARGS);
 	}
 
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
-	let id = '';
+	let id: string | undefined;
 	let title = '';
 	let formatJson = false;
 	const attrs: Record<string, string> = {};
@@ -296,6 +298,44 @@ function handleCreate(args: string[]): void {
 			console.error(`Error: ${err.message}`);
 		}
 		process.exit(exitCode);
+	}
+}
+
+function handleNextId(args: string[]): void {
+	const type = args[0];
+	const autoIdTypes = ['spec', 'work', 'bug', 'decision'];
+	if (!type || !isAutoIdType(type)) {
+		console.error(`Usage: refrakt plan next-id <type> [--format json]`);
+		console.error(`Types: ${autoIdTypes.join(', ')}`);
+		process.exit(EXIT_INVALID_ARGS);
+	}
+
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let formatJson = false;
+
+	for (let i = 1; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			process.exit(EXIT_INVALID_ARGS);
+		}
+	}
+
+	const result = runNextId(dir, type as AutoIdType);
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+	} else {
+		if (result.highest) {
+			console.log(`${result.nextId}  (highest existing: ${result.highest})`);
+		} else {
+			console.log(`${result.nextId}  (no existing ${type} IDs found)`);
+		}
 	}
 }
 
@@ -483,6 +523,7 @@ const plugin: CliPlugin = {
 		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
 		{ name: 'validate', description: 'Validate plan structure', handler: handleValidate },
 		{ name: 'create', description: 'Scaffold new plan items', handler: handleCreate },
+		{ name: 'next-id', description: 'Show next available ID for a type', handler: handleNextId },
 		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
 		{ name: 'build', description: 'Build static plan site', handler: handleBuild },

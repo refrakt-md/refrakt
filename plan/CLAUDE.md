@@ -14,21 +14,27 @@ plan/
 
 ## ID Conventions
 
-Each rune type uses a unique prefix. To assign a new ID, scan existing files for the highest number and increment by 1.
+Each rune type uses a unique prefix with zero-padded 3-digit numbers (except milestones, which use semver names like `v0.9.0`).
 
-| Type | Prefix | Example | Current highest |
-|------|--------|---------|-----------------|
-| Spec | `SPEC-` | `SPEC-023` | SPEC-027 |
-| Work | `WORK-` | `WORK-051` | WORK-075 |
-| Decision | `ADR-` | `ADR-005` | ADR-004 |
-| Bug | `BUG-` | `BUG-001` | (none yet) |
-| Milestone | `v`+semver | `v0.9.0` | v0.9.0 |
+| Type | Prefix | Example |
+|------|--------|---------|
+| Spec | `SPEC-` | `SPEC-023` |
+| Work | `WORK-` | `WORK-051` |
+| Decision | `ADR-` | `ADR-005` |
+| Bug | `BUG-` | `BUG-001` |
+| Milestone | `v`+semver | `v0.9.0` |
 
-IDs are zero-padded to 3 digits (except milestones, which use version names). Always verify the next ID by scanning:
+**IDs are auto-assigned.** When you omit `--id` from `refrakt plan create`, the CLI scans existing files and assigns the next available ID. Duplicate IDs are rejected at create time.
+
 ```bash
-grep -rh 'id="SPEC-' plan/spec/ | sort
-grep -rh 'id="WORK-' plan/work/ | sort
-grep -rh 'id="ADR-' plan/decision/ | sort
+# See the next available ID for a type
+refrakt plan next-id work
+
+# Create with auto-assigned ID (recommended)
+refrakt plan create work --title "My Task"
+
+# Or specify an explicit ID if needed
+refrakt plan create work --id WORK-080 --title "My Task"
 ```
 
 ## Valid Statuses
@@ -211,14 +217,14 @@ Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--unche
 2. Identify discrete, independently implementable pieces
 
 ```bash
-# 3. Scaffold one work item per piece
-refrakt plan create work --id WORK-XXX --title "Description" --priority high
+# 3. Scaffold one work item per piece (ID auto-assigned)
+refrakt plan create work --title "Description" --priority high
 
 # Other types work the same way
-refrakt plan create bug --id BUG-XXX --title "Description"
-refrakt plan create decision --id ADR-XXX --title "Description"
-refrakt plan create spec --id SPEC-XXX --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"
+refrakt plan create bug --title "Description"
+refrakt plan create decision --title "Description"
+refrakt plan create spec --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"  # milestones require explicit ID
 ```
 
 4. Reference the spec ID in the work item's References section
@@ -230,7 +236,7 @@ refrakt plan create milestone --id v1.0 --title "Description"
 If you encounter a non-obvious design choice:
 
 ```bash
-refrakt plan create decision --id ADR-XXX --title "Decision title"
+refrakt plan create decision --title "Decision title"
 ```
 
 1. Document the context, options, and your recommendation in the generated file

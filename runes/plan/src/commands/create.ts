@@ -1,10 +1,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { renderTemplate, VALID_TYPES, type PlanItemType } from './templates.js';
+import { nextId, idExists, isAutoIdType } from './next-id.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
 export const EXIT_INVALID_ARGS = 2;
+export const EXIT_DUPLICATE_ID = 3;
 
 /** Directory name for each type */
 const TYPE_DIRS: Record<PlanItemType, string> = {
@@ -18,7 +20,7 @@ const TYPE_DIRS: Record<PlanItemType, string> = {
 export interface CreateOptions {
 	dir: string;
 	type: PlanItemType;
-	id: string;
+	id?: string;
 	title: string;
 	attrs?: Record<string, string>;
 }
@@ -31,9 +33,11 @@ export interface CreateResult {
 
 /**
  * Scaffold a new plan item from a template.
+ * When id is omitted, auto-assigns the next available ID by scanning existing files.
  */
 export function runCreate(options: CreateOptions): CreateResult {
-	const { dir, type, id, title, attrs } = options;
+	const { dir, type, title, attrs } = options;
+	let { id } = options;
 
 	if (!VALID_TYPES.includes(type)) {
 		const err = new Error(`Invalid type "${type}". Valid types: ${VALID_TYPES.join(', ')}`) as any;
@@ -41,15 +45,27 @@ export function runCreate(options: CreateOptions): CreateResult {
 		throw err;
 	}
 
-	if (!id) {
-		const err = new Error('--id is required') as any;
+	if (!title) {
+		const err = new Error('--title is required') as any;
 		err.exitCode = EXIT_INVALID_ARGS;
 		throw err;
 	}
 
-	if (!title) {
-		const err = new Error('--title is required') as any;
-		err.exitCode = EXIT_INVALID_ARGS;
+	// Auto-assign ID if not provided
+	if (!id) {
+		if (!isAutoIdType(type)) {
+			const err = new Error(`--id is required for type "${type}" (milestones use semver names)`) as any;
+			err.exitCode = EXIT_INVALID_ARGS;
+			throw err;
+		}
+		id = nextId(dir, type);
+	}
+
+	// Check for duplicate IDs
+	const existingFile = idExists(dir, id);
+	if (existingFile) {
+		const err = new Error(`ID "${id}" already exists in ${existingFile}`) as any;
+		err.exitCode = EXIT_DUPLICATE_ID;
 		throw err;
 	}
 

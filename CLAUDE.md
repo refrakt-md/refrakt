@@ -272,18 +272,21 @@ Use `--format json` on any command for machine-readable output.
 ### Creating plan content
 
 ```bash
-# Scaffold new items from templates
-refrakt plan create work --id WORK-XXX --title "Description"
-refrakt plan create bug --id BUG-XXX --title "Description"
-refrakt plan create decision --id ADR-XXX --title "Description"
-refrakt plan create spec --id SPEC-XXX --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"
+# Scaffold new items (IDs auto-assigned by scanning existing files)
+refrakt plan create work --title "Description"
+refrakt plan create bug --title "Description"
+refrakt plan create decision --title "Description"
+refrakt plan create spec --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"  # milestones require explicit ID
+
+# See the next available ID without creating anything
+refrakt plan next-id work
 
 # Initialize plan structure in a new project
 refrakt plan init
 ```
 
-- Always include a unique `id` attribute — check existing IDs first (see `plan/CLAUDE.md` for conventions)
+- IDs are auto-assigned when `--id` is omitted; duplicate IDs are rejected at create time
 - Use H2 sections for structure (Acceptance Criteria, Approach, Context, etc.)
 
 ## Release Process
