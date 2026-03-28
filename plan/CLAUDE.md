@@ -18,7 +18,7 @@ Each rune type uses a unique prefix. To assign a new ID, scan existing files for
 
 | Type | Prefix | Example | Current highest |
 |------|--------|---------|-----------------|
-| Spec | `SPEC-` | `SPEC-023` | SPEC-027 |
+| Spec | `SPEC-` | `SPEC-023` | SPEC-029 |
 | Work | `WORK-` | `WORK-051` | WORK-075 |
 | Decision | `ADR-` | `ADR-005` | ADR-004 |
 | Bug | `BUG-` | `BUG-001` | (none yet) |
