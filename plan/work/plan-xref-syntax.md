@@ -20,9 +20,9 @@ Before:
 ```
 
 After:
-```
+````
 > Ref: {% xref "SPEC-008" /%} — Package: `@refrakt-md/media`
-```
+````
 
 Before:
 ```
@@ -30,9 +30,9 @@ Before:
 ```
 
 After:
-```
+````
 - Requires track and playlist runes ({% xref "WORK-015" /%}) to exist as child content
-```
+````
 
 ## Acceptance Criteria
 

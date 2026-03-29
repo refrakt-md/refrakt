@@ -1353,7 +1353,7 @@ The resolver is a new code path. During migration, runes can be moved one at a t
 
 A test suite verifies that the resolver produces identical output to `processChildren` for every rune that has been migrated. The test provides sample Markdoc content and asserts that both paths produce the same resolved fields.
 
-```typescript
+````typescript
 // Migration test for each rune
 test('hero resolver matches processChildren', () => {
   const input = `
@@ -1377,7 +1377,7 @@ Supporting blurb.
 
   expect(resolverResult).toEqual(legacyResult);
 });
-```
+````
 
 ---
 

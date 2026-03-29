@@ -19,10 +19,10 @@ Simpler than the backlog rune — no grouping, no card layout. Just a clean chro
 
 ## Example
 
-```markdoc
+````markdoc
 {% decision-log sort="date" /%}
 {% decision-log filter="status:accepted" sort="date" /%}
-```
+````
 
 ## Acceptance Criteria
 

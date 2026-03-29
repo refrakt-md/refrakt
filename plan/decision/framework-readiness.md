@@ -301,7 +301,7 @@ layout: base.njk
 
 The template receives pre-rendered HTML from the data file. No recursive component, no framework renderer:
 
-```html
+````html
 {# _includes/base.njk #}
 <!DOCTYPE html>
 <html lang="en">
@@ -326,7 +326,7 @@ The template receives pre-rendered HTML from the data file. No recursive compone
   </script>
 </body>
 </html>
-```
+````
 
 ### 3. Layout System: Complementary
 

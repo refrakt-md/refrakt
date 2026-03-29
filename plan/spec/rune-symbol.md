@@ -117,20 +117,20 @@ renderContent(source: string, options?: RenderOptions): RenderTree
 > Throws `ValidationError` if `strict` is `true` and an unknown rune is encountered.
 
 {% codegroup %}
-```typescript
+````typescript
 import { renderContent } from '@refrakt-md/core';
 
 const tree = renderContent('{% hero %}\n# Hello World\n{% /hero %}', {
   strict: true,
   variables: { siteName: 'My Site' }
 });
-```
+````
 
-```javascript
+````javascript
 const { renderContent } = require('@refrakt-md/core');
 
 const tree = renderContent('{% hero %}\n# Hello World\n{% /hero %}');
-```
+````
 {% /codegroup %}
 
 {% callout type="tip" %}

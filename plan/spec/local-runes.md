@@ -63,13 +63,13 @@ interface AttrDef {
 
 **`"none"`** (default) — Self-closing tag. No closing tag needed. Component receives only declared attributes.
 
-```markdoc
+````markdoc
 {% pricing-calculator plans="starter,pro" %}
-```
+````
 
 **`"render"`** — Children go through the full rune pipeline (Markdoc transform, serialization, identity transform for built-in runes inside, syntax highlighting). Component receives rendered output as a Svelte slot/snippet.
 
-```markdoc
+````markdoc
 {% playground example="comparison" %}
 ## Try this comparison
 
@@ -79,7 +79,7 @@ interface AttrDef {
 | Bundle size | 42kb | 2kb |
 {% /comparison %}
 {% /playground %}
-```
+````
 
 Built-in runes inside a local rune get full treatment — identity transform, BEM classes, SEO extraction.
 

@@ -230,7 +230,7 @@ The distinction: you *reference* a track (metadata card with links to where you 
 
 A community rune package is a standard npm package with a defined structure:
 
-```
+````
 @refrakt-community/dnd-5e/
   package.json
   index.ts              ← rune registration and exports
@@ -258,7 +258,7 @@ A community rune package is a standard npm package with a defined structure:
   prompt/                ← optional: for third-party chat products
     rune-descriptions.md ← AI prompt descriptions for third-party chat integration
   README.md
-```
+````
 
 ### Registration
 
@@ -358,7 +358,7 @@ Local runes override everything — the project author is explicitly saying "I w
 
 Most projects install one community package per domain. The runes it defines don't collide with core runes or each other. Authors write short names with no prefix:
 
-```markdoc
+````markdoc
 {% item name="Resonance Staff" rarity="legendary" %}
 ...
 {% /item %}
@@ -366,7 +366,7 @@ Most projects install one community package per domain. The runes it defines don
 {% character name="Veshra" role="antagonist" class="Warlock" level="12" %}
 ...
 {% /character %}
-```
+````
 
 `{% item %}` resolves to `dnd-5e:item` because it's the only package defining that rune. `{% character %}` resolves to the core character rune, extended with 5e attributes. No disambiguation needed.
 
@@ -423,7 +423,7 @@ Now `{% item %}` is the D&D version and `{% pf-item %}` is the Pathfinder versio
 
 This keeps the Markdoc content clean:
 
-```markdoc
+````markdoc
 {% item name="Longsword +1" %}
 ...
 {% /item %}
@@ -431,7 +431,7 @@ This keeps the Markdoc content clean:
 {% pf-item name="Longsword +1" %}
 ...
 {% /pf-item %}
-```
+````
 
 No dots, no special syntax, no parser modifications. Just short names resolved by config.
 
@@ -548,7 +548,7 @@ Core config:       block, modifiers, contentWrapper
 
 The community package provides additional rune descriptions for the chat AI:
 
-```markdown
+````markdown
 <!-- prompt/rune-descriptions.md -->
 
 When the dnd-5e package is installed:
@@ -562,7 +562,7 @@ For {% character %}, also consider these sections:
 Use the `class`, `level`, `race`, `hp`, and `ac` attributes when 
 the character is a game-playable entity with mechanical stats.
 Omit them for narrative-only characters.
-```
+````
 
 These additions are appended to the character rune's description in the mode prompt. The AI knows to generate Stats and Class Features sections when appropriate and to use the extended attributes.
 
@@ -769,7 +769,7 @@ The `refrakt package validate` command checks for required files, valid schemas,
 
 ### Sample Usage
 
-```markdoc
+````markdoc
 {% character name="Veshra" role="antagonist" class="Warlock" level="14" 
    race="Human" hp="87" ac="15" alignment="Neutral Evil" %}
 
@@ -799,7 +799,7 @@ High priestess of the Waking Choir and warlock of the Sleeper.
 - {% spell name="Earthquake" /%} (1/day, Sleeper patron gift)
 
 {% /character %}
-```
+````
 
 The character rune is the core rune, extended with 5e attributes and sections. The `{% item %}` and `{% spell %}` references are community runes that can render as inline links or compact cards depending on the context.
 
