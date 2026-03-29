@@ -23,12 +23,12 @@ The backlog rune is also the rendering primitive used by the milestone auto-back
 
 Space-separated `field:value` pairs. Multiple values for the same field act as OR. Different fields act as AND.
 
-````markdoc
+```markdoc
 {% backlog filter="status:ready priority:high" /%}
 {% backlog filter="milestone:v0.5.0" sort="priority" group="status" /%}
 {% backlog filter="assignee:bjorn status:in-progress" /%}
 {% backlog filter="tags:tint" show="work" /%}
-````
+```
 
 ## Card Layout
 

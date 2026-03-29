@@ -3,6 +3,7 @@ import { join, relative, resolve } from 'path';
 import { execSync } from 'child_process';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
+import { escapeFenceTags } from '@refrakt-md/runes';
 import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
@@ -129,7 +130,7 @@ function extractRefs(ast: Node): string[] {
 /** Parse a single file and return PlanEntity if it contains a plan rune, or null */
 export function parseFile(filePath: string, relPath: string): PlanEntity | null {
 	const source = readFileSync(filePath, 'utf8');
-	const ast = Markdoc.parse(source);
+	const ast = Markdoc.parse(escapeFenceTags(source));
 
 	// Find the first plan rune tag at the top level
 	const planTag = ast.children.find(

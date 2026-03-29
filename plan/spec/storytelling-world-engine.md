@@ -287,46 +287,46 @@ Query runes that pull from the world graph, analogous to `backlog` and `decision
 
 Renders a character directory from the registry.
 
-````markdoc
+```markdoc
 {% cast group="role" sort="name" %}
 {% cast filter="status:alive" group="faction" %}
-````
+```
 
 ### `atlas`
 
 Renders a realm hierarchy or map from the registry.
 
-````markdoc
+```markdoc
 {% atlas root="Eldergrove" %}
 {% atlas style="tree" %}
-````
+```
 
 ### `compendium`
 
 Renders a lore index grouped by category.
 
-````markdoc
+```markdoc
 {% compendium filter="category:history" sort="title" %}
 {% compendium group="category" %}
-````
+```
 
 ### `saga`
 
 Renders a multi-plot timeline view.
 
-````markdoc
+```markdoc
 {% saga filter="type:quest" %}
 {% saga sort="progress" %}
-````
+```
 
 ### `web`
 
 Renders a relationship graph as an inline visualisation (SVG).
 
-````markdoc
+```markdoc
 {% web focus="Kael" depth=2 %}
 {% web filter="type:fellowship" %}
-````
+```
 
 -----
 

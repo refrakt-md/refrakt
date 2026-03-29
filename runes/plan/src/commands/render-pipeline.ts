@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
-import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig } from '@refrakt-md/runes';
+import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags } from '@refrakt-md/runes';
 import { createTransform, renderToHtml, mergeThemeConfig, planLayout } from '@refrakt-md/transform';
 import type { ThemeConfig, LayoutPageData } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag, TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
@@ -215,7 +215,7 @@ function buildThemeConfig(): ThemeConfig {
 // --- Markdoc rendering ---
 
 function parseAndTransform(content: string, filePath: string): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
-	const ast = Markdoc.parse(content);
+	const ast = Markdoc.parse(escapeFenceTags(content));
 	const headings = extractHeadings(ast);
 	const config = {
 		tags,

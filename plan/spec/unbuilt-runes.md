@@ -200,7 +200,7 @@ Educational and instructional content. These compose within a lesson page: objec
 - Paragraphs → question context
 
 Example:
-````markdoc
+```markdoc
 {% quiz title="Module 1 Assessment" passingScore=70 %}
 
 ## What does the identity transform produce?
@@ -220,7 +220,7 @@ Example:
 > Runes work within the standard Markdoc tag system. They reinterpret Markdown children, not the parser itself.
 
 {% /quiz %}
-````
+```
 
 **Transform output:**
 - typeof: `Quiz`
@@ -306,7 +306,7 @@ Example:
 - Paragraphs → introductory context
 
 Example:
-````markdoc
+```markdoc
 {% objective %}
 After completing this lesson, you will be able to:
 
@@ -314,7 +314,7 @@ After completing this lesson, you will be able to:
 - Install and configure a community rune package
 - Write a custom local rune for your project
 {% /objective %}
-````
+```
 
 **Transform output:**
 - typeof: `Objective`
@@ -349,7 +349,7 @@ After completing this lesson, you will be able to:
 - Header group: heading + paragraph → section eyebrow/headline/blurb
 
 Example:
-````markdoc
+```markdoc
 {% partner columns=5 %}
 
 ## Our Partners
@@ -359,7 +359,7 @@ Example:
 [![Initech](/logos/initech.svg)](https://initech.com)
 
 {% /partner %}
-````
+```
 
 **Transform output:**
 - typeof: `Partner`
@@ -498,7 +498,7 @@ This follows the same pattern as `budget` (hardcoded `description | $amount` reg
 
 **Examples:**
 
-````markdoc
+```markdoc
 {% playlist type="album" artist="Pink Floyd" %}
 # The Dark Side of the Moon
 ![Cover](/images/dsotm.jpg)
@@ -507,9 +507,9 @@ This follows the same pattern as `budget` (hardcoded `description | $amount` reg
 - Breathe | PT2M43S
 - On the Run | PT3M36S
 {% /playlist %}
-````
+```
 
-````markdoc
+```markdoc
 {% playlist type="mix" %}
 # Road Trip Mix
 
@@ -517,9 +517,9 @@ This follows the same pattern as `budget` (hardcoded `description | $amount` reg
 - Hotel California | Eagles | PT6M30S
 - Stairway to Heaven | Led Zeppelin | PT8M02S
 {% /playlist %}
-````
+```
 
-````markdoc
+```markdoc
 {% playlist type="podcast" %}
 # Tech Weekly
 ![Podcast Art](/images/techweekly.jpg)
@@ -529,7 +529,7 @@ A weekly podcast about emerging technology.
 - The AI Revolution | PT45M00S | 2024-01-15
 - Quantum Computing 101 | PT38M00S | 2024-01-22
 {% /playlist %}
-````
+```
 
 **Transform output:**
 - typeof: `Playlist`

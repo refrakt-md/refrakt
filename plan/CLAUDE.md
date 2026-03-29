@@ -2,11 +2,11 @@
 
 This directory contains project planning content using the `@refrakt-md/plan` runes package. All files are Markdoc (`.md` with `{% %}` tags).
 
-## Code Fences
+## Code Fences with Markdoc Tags
 
-**Always use four backticks (`` ```` ``) for code fences that contain Markdoc tag syntax (`{% %}`).**  Triple-backtick fences cause Markdoc to parse the tags inside as real directives, truncating the rendered page. This applies to `markdoc`, `markdown`, `html`, and any other language fences that include `{% %}` examples.
+Markdoc parses `{% %}` tag syntax inside code fences. When a code fence contains an **unpaired** tag (e.g. `{% spec id="X" %}` without a matching `{% /spec %}`), the parser steals a closing tag from the outer document, breaking the page structure and causing truncation.
 
-For nested fences (e.g. a `` ```html `` block inside a `````markdoc` example), the outer fence uses four backticks and inner fences use three.
+The content pipeline escapes tags inside fences automatically (`escapeFenceTags` in `@refrakt-md/runes`), so authors don't need to worry about this. But if you encounter truncation on the plan site, check for `{% %}` tags inside code fences as a first step.
 
 ## Directory Layout
 
@@ -67,7 +67,7 @@ Also: `wontfix`, `duplicate`
 
 ### spec
 
-````markdoc
+```markdoc
 {% spec id="SPEC-XXX" status="draft" tags="area1, area2" %}
 
 # Title
@@ -78,13 +78,13 @@ Also: `wontfix`, `duplicate`
 Body content — prose, tables, code, diagrams. Freeform.
 
 {% /spec %}
-````
+```
 
 Optional attributes: `version`, `supersedes` (ID of replaced spec).
 
 ### work
 
-````markdoc
+```markdoc
 {% work id="WORK-XXX" status="ready" priority="high" complexity="moderate" tags="area" %}
 
 # What needs to be done
@@ -104,7 +104,7 @@ Technical notes on how to implement.
 - WORK-YYY (dependency)
 
 {% /work %}
-````
+```
 
 **Acceptance Criteria is the most important section.** Every work item must have it. Use checkboxes (`- [ ]`) so progress is trackable. Check them off (`- [x]`) as you complete each one.
 
@@ -114,7 +114,7 @@ Optional attributes: `assignee`, `milestone`, `complexity` (`trivial`/`simple`/`
 
 ### bug
 
-````markdoc
+```markdoc
 {% bug id="BUG-XXX" status="reported" severity="major" tags="area" %}
 
 # Short description of the bug
@@ -136,13 +136,13 @@ What actually happens.
 - Package versions
 
 {% /bug %}
-````
+```
 
 Optional attributes: `assignee`, `milestone`.
 
 ### decision
 
-````markdoc
+```markdoc
 {% decision id="ADR-XXX" status="proposed" date="2026-03-22" tags="area" %}
 
 # Decision title
@@ -165,13 +165,13 @@ Why this option was chosen over the alternatives.
 What follows from this decision — trade-offs, follow-up work, constraints imposed.
 
 {% /decision %}
-````
+```
 
 Optional attributes: `supersedes` (ID of replaced decision).
 
 ### milestone
 
-````markdoc
+```markdoc
 {% milestone name="v1.0.0" status="active" target="2026-04-15" %}
 
 # v1.0.0 — Milestone Title
@@ -183,7 +183,7 @@ Optional attributes: `supersedes` (ID of replaced decision).
 Optional notes or context.
 
 {% /milestone %}
-````
+```
 
 ## Working with Plan Content
 

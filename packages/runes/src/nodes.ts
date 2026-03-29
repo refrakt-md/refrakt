@@ -2,6 +2,7 @@ import pb from 'path-browserify';
 import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
+import { unescapeFenceContent } from './fence-escape.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -60,7 +61,7 @@ export const fence: Schema = {
     const lang = node.attributes.language || 'shell';
 
     return new Tag('pre', { 'data-language': lang }, [
-      new Tag('code', { 'data-language': lang }, [node.attributes.content])
+      new Tag('code', { 'data-language': lang }, [unescapeFenceContent(node.attributes.content)])
     ]);
   }
 }
