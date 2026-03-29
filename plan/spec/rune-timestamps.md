@@ -138,6 +138,51 @@ Content directories outside a git repo (or with git unavailable) fall through to
 
 All timestamps are normalized to ISO 8601 date strings (`YYYY-MM-DD`) rather than full datetime strings. This matches the existing `date` frontmatter convention and the plan scanner's display format. Full datetime precision is available internally but truncated at the variable level for consistency.
 
+## Alignment with Blog Dates
+
+The blog system already uses a `date` frontmatter field for publication date, consumed by `blogArticleLayout` (in `packages/transform/src/layouts.ts`) and blog index sorting. This is a distinct semantic concept from file timestamps:
+
+| Concept | Source | Meaning | Example |
+|---------|--------|---------|---------|
+| `date` (frontmatter) | Author-set | Publication / effective date | When a post goes live |
+| `$file.created` | Git / fs | File creation date | When the `.md` was first committed |
+| `$file.modified` | Git / fs | Last content change | When the `.md` was last edited |
+
+**Design principles for coexistence:**
+
+1. **`$file.created` does not replace `date`.** A draft may sit for weeks before publishing — the publication date is an editorial choice, not a file event. Blog authors continue to set `date` in frontmatter explicitly.
+
+2. **`$file.modified` complements `date`.** Layouts can display both: "Published March 2, 2026" (from `date`) and "Last updated March 28, 2026" (from `$file.modified`). The layout engine's existing `pageText` + `dateFormat` + `pageCondition` infrastructure in `StructureEntry` already supports this — a layout can reference `file.modified` just like it references `frontmatter.date`.
+
+3. **Same format, same formatting path.** `$file.created` and `$file.modified` use ISO 8601 date strings (`YYYY-MM-DD`), matching the `date` frontmatter convention. The layout engine's `dateFormat` option works on both without changes.
+
+4. **Fallback for `date` itself.** For blogs or pages where the author omits `date`, the frontmatter parser could default `date` to `$file.created`. This is opt-in (configured in the layout or schema, not automatic) to avoid surprising authors who intentionally omit dates.
+
+### Layout Integration Example
+
+A blog article layout could display both publication and modification dates:
+
+```typescript
+// In blogArticleLayout structure entries:
+{
+  tag: 'time',
+  ref: 'date',
+  pageText: 'frontmatter.date',
+  dateFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+  attrs: { datetime: { fromPageData: 'frontmatter.date' } },
+},
+{
+  tag: 'time',
+  ref: 'updated',
+  pageText: 'file.modified',
+  pageCondition: 'file.modified',
+  dateFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+  attrs: { datetime: { fromPageData: 'file.modified' } },
+},
+```
+
+This renders: "Published March 2, 2026 · Updated March 28, 2026" — using the same formatting infrastructure, no new mechanisms needed.
+
 ## Scope Boundaries
 
 - **In scope:** `$file.created`, `$file.modified` variables; plan rune schema updates; shared git utility
