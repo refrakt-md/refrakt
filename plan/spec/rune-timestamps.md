@@ -37,15 +37,15 @@ When none of the above produce a value, the variable is `undefined` and runes th
 
 Runes opt in by declaring `created` and/or `modified` attributes with variable defaults:
 
-```markdoc
+````markdoc
 {% spec id="SPEC-001" created=$file.created modified=$file.modified %}
-```
+````
 
 For plan runes specifically, the schema defaults could reference `$file.created` and `$file.modified` so authors don't need to write them out — the attributes populate automatically. Authors override by setting an explicit value:
 
-```markdoc
+````markdoc
 {% spec id="SPEC-001" created="2025-06-15" %}
-```
+````
 
 This follows standard Markdoc attribute resolution: explicit values take precedence over variable defaults.
 

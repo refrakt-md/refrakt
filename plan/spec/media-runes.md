@@ -75,7 +75,7 @@ The list index becomes the track number. Unordered lists produce unnumbered trac
 
 ### Album (self-hosted)
 
-```markdoc
+````markdoc
 {% playlist type="album" artist="Pink Floyd" player %}
 # The Dark Side of the Moon
 ![Cover](/images/dsotm.jpg)
@@ -86,13 +86,13 @@ The list index becomes the track number. Unordered lists produce unnumbered trac
 4. [**Time**](/audio/time.mp3) (6:53)
 5. [**The Great Gig in the Sky**](/audio/great-gig.mp3) (4:47)
 {% /playlist %}
-```
+````
 
 Artist is set at the playlist level. Track names are bold, wrapped in links for playback. Durations in parentheses. The `player` attribute enables integrated playback controls.
 
 ### Album (metadata only, no playback)
 
-```markdoc
+````markdoc
 {% playlist type="album" artist="Radiohead" %}
 # OK Computer
 
@@ -102,13 +102,13 @@ Artist is set at the playlist level. Track names are bold, wrapped in links for 
 - **Exit Music (For a Film)** (4:24)
 - **Let Down** (4:59)
 {% /playlist %}
-```
+````
 
 No links, no `player` attribute. A pure track listing for reviews, listening logs, or discography pages.
 
 ### Mix (multiple artists)
 
-```markdoc
+````markdoc
 {% playlist type="mix" player %}
 # Road Trip Mix
 
@@ -117,13 +117,13 @@ No links, no `player` attribute. A pure track listing for reviews, listening log
 - [**Stairway to Heaven**](/audio/stairway.mp3) — *Led Zeppelin* (8:02)
 - [**Purple Rain**](/audio/purple-rain.mp3) — *Prince* (8:41)
 {% /playlist %}
-```
+````
 
 Each track has its own artist in italics. The em-dash separates the name/link from the artist, which reads naturally.
 
 ### Podcast
 
-```markdoc
+````markdoc
 {% playlist type="podcast" %}
 # Tech Weekly
 ![Podcast Art](/images/techweekly.jpg)
@@ -134,13 +134,13 @@ A weekly podcast about emerging technology.
 - [**Quantum Computing 101**](/episodes/quantum.mp3) (38:00) — 2024-01-22
 - [**The Privacy Debate**](/episodes/privacy.mp3) (52:00) — 2024-01-29
 {% /playlist %}
-```
+````
 
 Date after the em-dash. Paragraph above the track list is the podcast description.
 
 ### DJ Mix (single long file with chapters)
 
-```markdoc
+````markdoc
 {% playlist type="mix" player %}
 # Sunset Sessions Vol. 3
 
@@ -155,7 +155,7 @@ Date after the em-dash. Paragraph above the track list is the podcast descriptio
   - Cool Down (1:50:00)
 
 {% /playlist %}
-```
+````
 
 A single track with chapters. The player shows the chapter timeline and allows jumping between sections.
 
@@ -169,7 +169,7 @@ Tracks can carry content beyond the single-line compact format. Indented content
 
 Paragraphs indented under a track become the track's description. The player can display these as expandable show notes.
 
-```markdoc
+````markdoc
 {% playlist type="podcast" player %}
 # Deep Conversations
 
@@ -186,7 +186,7 @@ Paragraphs indented under a track become the track's description. The player can
   with almost religious devotion.
 
 {% /playlist %}
-```
+````
 
 ### Chapters
 
@@ -267,7 +267,7 @@ Two-level hierarchy: major sections (headings) with sub-chapters. The player ren
 
 When nested list items are short (single line, no description paragraphs) and have timestamps, they're lyrics. The player highlights the current line during playback.
 
-```markdoc
+````markdoc
 {% playlist type="album" artist="Pink Floyd" player %}
 # The Dark Side of the Moon
 
@@ -291,7 +291,7 @@ When nested list items are short (single line, no description paragraphs) and ha
   - (0:24) Waiting for someone or something to show you the way
 
 {% /playlist %}
-```
+````
 
 Blank lines between groups of lyric lines represent verse breaks. The player renders them with a visual gap.
 
@@ -314,9 +314,9 @@ The timestamp position is the primary signal: timestamp at the *start* of the te
 
 For cases where the automatic detection doesn't fit, the playlist-level `content` attribute provides an explicit override:
 
-```markdoc
+````markdoc
 {% playlist type="album" content="lyrics" player %}
-```
+````
 
 | Value | Behaviour |
 |---|---|
@@ -364,7 +364,7 @@ The **audio** rune is the player — playback controls, waveform, progress bar, 
 
 **Mode 1: Integrated player.** The playlist renders its own embedded player when the `player` attribute is present. Simplest setup for a self-contained playable playlist:
 
-```markdoc
+````markdoc
 {% playlist type="album" artist="Pink Floyd" player %}
 # The Dark Side of the Moon
 ![Cover](/images/dsotm.jpg)
@@ -373,13 +373,13 @@ The **audio** rune is the player — playback controls, waveform, progress bar, 
 2. [**Breathe**](/audio/breathe.mp3) (2:43)
 3. [**On the Run**](/audio/on-the-run.mp3) (3:36)
 {% /playlist %}
-```
+````
 
 The playlist renders cover art, track listing, and a player bar. Clicking a track starts playback. The player is visually integrated into the playlist component. This is the default for most use cases — a music blog post, a podcast page, a DJ mix showcase.
 
 **Mode 2: Separate player.** The playlist and audio player are separate runes connected by ID reference. The playlist displays metadata. The audio player provides controls. They can be positioned independently on the page:
 
-```markdoc
+````markdoc
 {% playlist id="dsotm" type="album" artist="Pink Floyd" %}
 # The Dark Side of the Moon
 ![Cover](/images/dsotm.jpg)
@@ -390,7 +390,7 @@ The playlist renders cover art, track listing, and a player bar. Clicking a trac
 {% /playlist %}
 
 {% audio playlist="dsotm" waveform %}
-```
+````
 
 The `audio` rune references the playlist by ID. It receives the full track list and provides playback controls, waveform visualisation, and track navigation. The playlist rune above renders as a static track listing (no player controls). Clicking a track in the listing tells the audio player to switch tracks.
 
@@ -398,7 +398,7 @@ This separation is useful when the player and metadata need different page posit
 
 **Mode 3: Standalone player.** The audio rune plays a single file with no playlist:
 
-```markdoc
+````markdoc
 {% audio src="/audio/interview.mp3" title="Interview with the Founder" waveform %}
 
 Recorded on January 15, 2025 in our San Francisco office.
@@ -409,7 +409,7 @@ Recorded on January 15, 2025 in our San Francisco office.
 4. Lessons learned (35:00)
 
 {% /audio %}
-```
+````
 
 No playlist, no track collection. A single audio file with optional chapter markers defined as an ordered list inside the rune body. The audio rune handles its own metadata and playback. This is for one-off audio embeds — an interview, a lecture, a recording.
 
@@ -453,7 +453,7 @@ The player checks for the `.waveform.json` file alongside the audio source. If p
 
 The compact format handles most cases. For tracks that need attributes beyond what Markdown formatting can express, explicit `{% track %}` tags provide full control:
 
-```markdoc
+````markdoc
 {% playlist type="album" artist="Pink Floyd" player %}
 # The Dark Side of the Moon
 ![Cover](/images/dsotm.jpg)
@@ -470,7 +470,7 @@ Breathe
 {% /track %}
 
 {% /playlist %}
-```
+````
 
 Compact format and explicit tags can be mixed in the same playlist. The rune transform handles both.
 
@@ -556,14 +556,14 @@ Track schema.org type is derived from the parent playlist type:
 ### Playlist with Integrated Player
 
 Input:
-```markdoc
+````markdoc
 {% playlist type="mix" player %}
 # Road Trip Mix
 
 - [**Bohemian Rhapsody**](/audio/bohemian.mp3) — *Queen* (5:55)
 - [**Hotel California**](/audio/hotel.mp3) — *Eagles* (6:30)
 {% /playlist %}
-```
+````
 
 Output:
 ```html
@@ -689,7 +689,7 @@ Verse groups separated by blank lines in the source become separate `__verse` co
 
 Playlists export structured data for sandbox use via the `source` attribute pattern from the Sandbox Futures spec:
 
-```markdoc
+````markdoc
 {% playlist id="ambient" type="mix" player %}
 # Ambient Mix
 
@@ -706,7 +706,7 @@ Playlists export structured data for sandbox use via the `source` attribute patt
 ```
 
 {% /sandbox %}
-```
+````
 
 The playlist's DATA export shape:
 
@@ -784,7 +784,7 @@ const audio = {
 
 **Visualisation example:**
 
-```markdoc
+````markdoc
 {% playlist id="mix" type="mix" player %}
 # Evening Session
 
@@ -826,11 +826,11 @@ function draw() {
 ```
 
 {% /sandbox %}
-```
+````
 
 **Beat detection example:**
 
-```markdoc
+````markdoc
 {% sandbox source="mix" framework="three" %}
 
 ```js
@@ -873,11 +873,11 @@ audio.onFrame((frame) => {
 ```
 
 {% /sandbox %}
-```
+````
 
 **Lyric sync example:**
 
-```markdoc
+````markdoc
 {% sandbox source="mix" %}
 
 ```html
@@ -916,7 +916,7 @@ audio.onFrame((frame) => {
 ```
 
 {% /sandbox %}
-```
+````
 
 ### Streaming Lifecycle
 

@@ -78,7 +78,7 @@ The spec rune is intentionally minimal in structure. The body is freeform becaus
 
 **Example:**
 
-```markdoc
+````markdoc
 {% spec id="SPEC-008" status="accepted" version="1.2" tags="tint,theming" %}
 
 # Tint Rune
@@ -95,7 +95,7 @@ A page has a single colour context...
 rune's scope...
 
 {% /spec %}
-```
+````
 
 **Entity registration:** The spec registers in the entity registry with its ID, title, status, and version. Work items reference specs by ID. The cross-page pipeline resolves these references to navigable links. The plan dashboard can show implementation coverage — which specs have work items, which are fully implemented, which have no work started.
 
@@ -193,7 +193,7 @@ contentModel: {
 
 **Example:**
 
-```markdoc
+````markdoc
 {% work id="RF-142" status="ready" priority="high" complexity="moderate" 
        milestone="v0.5.0" tags="tint,theming" %}
 
@@ -228,7 +228,7 @@ values. The theme's base CSS swaps them via `@media (prefers-color-scheme: dark)
 - {% ref "ADR-007" /%} (CSS custom properties for token injection)
 
 ## Verification
-```markdoc
+````markdoc
 {% recipe name="Test" %}
 {% tint %}
 ## Light
@@ -237,7 +237,7 @@ values. The theme's base CSS swaps them via `@media (prefers-color-scheme: dark)
 - background: #2a2118
 {% /tint %}
 {% /recipe %}
-```
+````
 
 Expected: `data-tint-dark` attribute present, both `--tint-background`
 and `--tint-dark-background` in inline style.
@@ -317,7 +317,7 @@ contentModel: {
 
 **Example:**
 
-```markdoc
+````markdoc
 {% bug id="RF-201" status="confirmed" severity="major" %}
 
 # Showcase bleed breaks with overflow:hidden parent
@@ -339,7 +339,7 @@ Showcase is clipped at the section edge.
 - refrakt.md: v0.4.2
 
 {% /bug %}
-```
+````
 
 -----
 
@@ -417,7 +417,7 @@ contentModel: {
 
 **Example:**
 
-```markdoc
+````markdoc
 {% decision id="ADR-007" status="accepted" date="2026-03-11" tags="tint,css" %}
 
 # Use CSS custom properties for tint token injection
@@ -448,7 +448,7 @@ The `--tint-*` namespace avoids collisions with theme-internal tokens.
 - Inspector must audit tint token contrast ratios
 
 {% /decision %}
-```
+````
 
 -----
 
@@ -484,7 +484,7 @@ The milestone automatically includes a backlog view of all work items and bugs w
 
 **Example:**
 
-```markdoc
+````markdoc
 {% milestone name="v0.5.0" target="2026-03-29" status="active" %}
 
 # v0.5.0 — Layout & Tint
@@ -495,7 +495,7 @@ The milestone automatically includes a backlog view of all work items and bugs w
 - Resolve showcase bleed overflow bug
 
 {% /milestone %}
-```
+````
 
 Renders the goals followed by all work items and bugs assigned to `milestone:v0.5.0`, grouped by status, with aggregate progress (checked acceptance criteria across all items).
 
@@ -516,12 +516,12 @@ Aggregation rune that queries the entity registry and renders a filtered view of
 
 **Filter syntax:**
 
-```markdoc
+````markdoc
 {% backlog filter="status:ready priority:high" %}
 {% backlog filter="milestone:v0.5.0" sort="priority" group="status" %}
 {% backlog filter="assignee:bjorn status:in-progress" %}
 {% backlog filter="tags:tint" show="work" %}
-```
+````
 
 **Requires cross-page pipeline** (Level 2). Queries the entity registry for matching entities, applies filters, and renders results.
 
@@ -538,9 +538,9 @@ Aggregation rune that renders a chronological view of all decisions.
 |`filter` |String|No      |—           |Filter by status or tags                   |
 |`sort`   |String|No      |`date`, `id`|Sort order (default: reverse chronological)|
 
-```markdoc
+````markdoc
 {% decision-log sort="date" %}
-```
+````
 
 -----
 
@@ -559,11 +559,11 @@ Aggregation rune that renders a chronological view of all decisions.
 
 The `ref` inline rune resolves any entity by ID, regardless of type:
 
-```markdoc
+````markdoc
 > Depends on {% ref "RF-138" /%}
 See {% ref "SPEC-008" /%} for the full specification.
 This implements {% ref "ADR-007" /%}.
-```
+````
 
 The entity registry finds the entity, resolves its page URL, and renders a link with the entity’s title. The link includes the entity type as a visual indicator — a small badge or icon distinguishing specs from work items from decisions.
 
@@ -681,7 +681,7 @@ my-project/
 
 ### Dashboard Page
 
-```markdoc
+````markdoc
 # refrakt.md — Plan Dashboard
 
 ## Current Milestone
@@ -698,7 +698,7 @@ my-project/
 
 ## Recent Decisions
 {% decision-log filter="status:accepted" sort="date" %}
-```
+````
 
 -----
 

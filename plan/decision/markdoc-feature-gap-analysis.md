@@ -23,10 +23,10 @@ Investigation of Markdoc features not currently leveraged by refrakt.md, assesse
 
 **What it does:** Includes content from another `.md` file at transform time. Supports passing variables to the included file.
 
-```markdoc
+````markdoc
 {% partial file="header.md" /%}
 {% partial file="cta.md" variables={product: "Pro"} /%}
-```
+````
 
 Config requires pre-parsing partials into AST nodes:
 ```js
@@ -47,9 +47,9 @@ config.partials = { 'header.md': Markdoc.parse(headerContent) }
 
 **What it does:** Interpolates variables directly into rendered content, not just in tag attributes. Variables are passed via `config.variables`.
 
-```markdoc
+````markdoc
 Hello, {% $user.name %}! Your plan is {% $plan %}.
-```
+````
 
 **Potential value: Medium.** Currently variables are used internally (headings, icons, paths) but not exposed to content authors. Exposing frontmatter fields or site-level config as variables would let authors write dynamic content:
 - Reference frontmatter values in body text: `Last updated: {% $frontmatter.date %}`
@@ -67,7 +67,7 @@ Hello, {% $user.name %}! Your plan is {% $plan %}.
 
 **What it does:** Conditionally renders content based on variable values.
 
-```markdoc
+````markdoc
 {% if $flags.beta %}
 This feature is in beta.
 {% /if %}
@@ -77,7 +77,7 @@ Pro content here.
 {% else /%}
 Upgrade to see this.
 {% /if %}
-```
+````
 
 **Potential value: Medium.** Useful for:
 - Feature-flagged content (show/hide sections based on deployment environment)
@@ -96,13 +96,13 @@ Upgrade to see this.
 
 **What it does:** Six built-in functions (`equals`, `and`, `or`, `not`, `default`, `debug`) plus ability to define custom functions for use in content.
 
-```markdoc
+````markdoc
 {% if and(equals($lang, "js"), not($legacy)) %}
 Modern JS content
 {% /if %}
 
 Title: {% uppercase($title) %}
-```
+````
 
 **Potential value: Low-Medium.** Built-in functions become useful if conditionals (#3) are adopted. Custom functions could enable:
 - `{% includes($tags, "tutorial") %}` - check if page has a specific tag
@@ -139,12 +139,12 @@ Title: {% uppercase($title) %}
 
 **What it does:** Named content slots in tag schemas, similar to Svelte slots.
 
-```markdoc
+````markdoc
 {% dialog %}
   {% slot "header" %}Dialog Title{% /slot %}
   {% slot "body" %}Dialog content{% /slot %}
 {% /dialog %}
-```
+````
 
 **Potential value: Low for content authoring.** The rune system already handles content decomposition through `@group()` decorators and child node processing, which is more intuitive for content authors than explicit slot syntax. Slots are designed for component-library-style composition, which isn't the refrakt content model.
 
@@ -154,10 +154,10 @@ Title: {% uppercase($title) %}
 
 **What it does:** Attach metadata to standard markdown elements using `{% %}` annotations.
 
-```markdoc
+````markdoc
 # Heading {% .custom-class #custom-id %}
 Paragraph {% align="center" %}
-```
+````
 
 **Potential value: Low.** The rune system already handles metadata via tag attributes and meta tags. Annotations on standard markdown elements could be useful for one-off styling, but could also undermine the theme system's design consistency.
 
