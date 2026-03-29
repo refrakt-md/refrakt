@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
@@ -66,7 +66,7 @@ function transformContent(
   contentVariables?: Record<string, unknown>,
   partials?: Record<string, Node>,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
-  const ast = Markdoc.parse(content);
+  const ast = Markdoc.parse(escapeFenceTags(content));
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
   const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
@@ -113,7 +113,7 @@ export async function loadContent(
   if (partialFiles.size > 0) {
     parsedPartials = {};
     for (const [name, partial] of partialFiles) {
-      parsedPartials[name] = Markdoc.parse(partial.raw);
+      parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
     }
   }
 

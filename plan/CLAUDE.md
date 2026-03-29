@@ -2,6 +2,12 @@
 
 This directory contains project planning content using the `@refrakt-md/plan` runes package. All files are Markdoc (`.md` with `{% %}` tags).
 
+## Code Fences with Markdoc Tags
+
+Markdoc parses `{% %}` tag syntax inside code fences. When a code fence contains an **unpaired** tag (e.g. `{% spec id="X" %}` without a matching `{% /spec %}`), the parser steals a closing tag from the outer document, breaking the page structure and causing truncation.
+
+The content pipeline escapes tags inside fences automatically (`escapeFenceTags` in `@refrakt-md/runes`), so authors don't need to worry about this. But if you encounter truncation on the plan site, check for `{% %}` tags inside code fences as a first step.
+
 ## Directory Layout
 
 ```
