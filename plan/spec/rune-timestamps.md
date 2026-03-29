@@ -138,11 +138,85 @@ Content directories outside a git repo (or with git unavailable) fall through to
 
 All timestamps are normalized to ISO 8601 date strings (`YYYY-MM-DD`) rather than full datetime strings. This matches the existing `date` frontmatter convention and the plan scanner's display format. Full datetime precision is available internally but truncated at the variable level for consistency.
 
+## Alignment with Blog Dates
+
+The blog system already uses a `date` frontmatter field for publication date, consumed by `blogArticleLayout` (in `packages/transform/src/layouts.ts`) and blog index sorting. This is a distinct semantic concept from file timestamps:
+
+| Concept | Source | Meaning | Example |
+|---------|--------|---------|---------|
+| `date` (frontmatter) | Author-set | Publication / effective date | When a post goes live |
+| `$file.created` | Git / fs | File creation date | When the `.md` was first committed |
+| `$file.modified` | Git / fs | Last content change | When the `.md` was last edited |
+
+**Design principles for coexistence:**
+
+1. **`$file.created` does not replace `date`.** A draft may sit for weeks before publishing — the publication date is an editorial choice, not a file event. Blog authors continue to set `date` in frontmatter explicitly.
+
+2. **`$file.modified` complements `date`.** Layouts can display both: "Published March 2, 2026" (from `date`) and "Last updated March 28, 2026" (from `$file.modified`). The layout engine's existing `pageText` + `dateFormat` + `pageCondition` infrastructure in `StructureEntry` already supports this — a layout can reference `file.modified` just like it references `frontmatter.date`.
+
+3. **Same format, same formatting path.** `$file.created` and `$file.modified` use ISO 8601 date strings (`YYYY-MM-DD`), matching the `date` frontmatter convention. The layout engine's `dateFormat` option works on both without changes.
+
+4. **Fallback for `date` itself.** For blogs or pages where the author omits `date`, the frontmatter parser could default `date` to `$file.created`. This is opt-in (configured in the layout or schema, not automatic) to avoid surprising authors who intentionally omit dates.
+
+### Layout Integration Example
+
+A blog article layout could display both publication and modification dates:
+
+```typescript
+// In blogArticleLayout structure entries:
+{
+  tag: 'time',
+  ref: 'date',
+  pageText: 'frontmatter.date',
+  dateFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+  attrs: { datetime: { fromPageData: 'frontmatter.date' } },
+},
+{
+  tag: 'time',
+  ref: 'updated',
+  pageText: 'file.modified',
+  pageCondition: 'file.modified',
+  dateFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+  attrs: { datetime: { fromPageData: 'file.modified' } },
+},
+```
+
+This renders: "Published March 2, 2026 · Updated March 28, 2026" — using the same formatting infrastructure, no new mechanisms needed.
+
+## Broader Impact
+
+Beyond blog and plan runes, several other systems benefit from or are affected by file-derived timestamps:
+
+### Sitemap (`packages/content/src/sitemap.ts`)
+
+The sitemap currently emits no `<lastmod>` tags. With `$file.modified` available in the pipeline, sitemap generation can include `<lastmod>` for each page — search engines use this to prioritize crawl frequency. This is a straightforward enhancement: read `file.modified` from page data during sitemap serialization.
+
+### SEO / JSON-LD (`packages/runes/src/seo.ts`)
+
+The SEO extractor collects structured data via RDFa annotations but does not auto-inject `datePublished` or `dateModified` into JSON-LD output. These are important schema.org properties for blog posts, articles, and documentation pages. With file timestamps available, layouts or runes could emit RDFa-annotated `<meta>` tags that the SEO extractor picks up, or the extractor could inject them directly from page-level data.
+
+### Entity Registry (`packages/runes/src/config.ts` register hook)
+
+The core pipeline `register()` hook currently stores `date: page.frontmatter.date` in the entity registry. Pages without a frontmatter `date` get `undefined`, which causes them to sort to the bottom in blog indexes. If the pipeline populates `file.created` before registration, the register hook could fall back to it: `date: page.frontmatter.date ?? page.file?.created`. This would make blog posts without explicit dates sort by creation time rather than disappearing to the end.
+
+### Decision Rune (`runes/plan/src/tags/decision.ts`)
+
+The decision rune already has a `date` attribute for "date decided." This is semantically close to `$file.created` (when the ADR was first written). The schema could default `date` to `$file.created`, saving authors from manually setting it while preserving the override path.
+
+### Changelog Rune (`runes/docs/src/tags/changelog.ts`)
+
+Parses dates from version headings like "v2.1.0 - 2024-01-15". Not directly affected, but unreleased changelog entries (without a date in the heading) could display `$file.modified` as "last updated" to indicate recent activity.
+
+### Plan Activity Consolidation
+
+The `plan-activity` rune currently gets `mtime` from the plan scanner's `getGitMtimes()` — a separate code path from the content pipeline. With file timestamps in the pipeline, the activity rune's data source and the rune attribute values would be unified, eliminating the possibility of inconsistent dates between the activity feed and individual rune displays.
+
 ## Scope Boundaries
 
-- **In scope:** `$file.created`, `$file.modified` variables; plan rune schema updates; shared git utility
+- **In scope:** `$file.created`, `$file.modified` variables; plan rune schema updates; shared git utility; sitemap `<lastmod>` support
 - **Out of scope:** Per-rune timestamps (tracking when individual runes within a file were added/changed — this would require AST-level git diffing and is a separate, much harder problem)
 - **Out of scope:** Automatic frontmatter injection (writing timestamps back into `.md` files)
 - **Out of scope:** Build-time caching of git data across incremental builds (can be added later if performance requires it)
+- **Out of scope:** Auto-injecting `datePublished`/`dateModified` into JSON-LD (this is a follow-on enhancement that depends on the SEO extractor's design)
 
 {% /spec %}
