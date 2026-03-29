@@ -115,7 +115,7 @@ refrakt plan serve [directory]
 
 **Auto-generated dashboard:** If the directory doesn’t contain an `index.md` with a dashboard layout, the CLI generates one in memory (not written to disk):
 
-````markdoc
+```markdoc
 # Plan Dashboard
 
 ## Active Milestone
@@ -129,7 +129,7 @@ refrakt plan serve [directory]
 
 ## Recent Decisions
 {% decision-log sort="date" %}
-````
+```
 
 If the directory does contain an `index.md`, it’s used as-is. This lets the developer customise their dashboard layout while providing a sensible default for projects that haven’t set one up.
 
@@ -308,7 +308,7 @@ refrakt plan create milestone --id v0.6.0 --title "Media & Audio"
 
 **Generated work item** (`plan/work/RF-143-add-bg-rune.md`):
 
-````markdoc
+```markdoc
 {% work id="RF-143" status="draft" priority="high" milestone="v0.5.0" %}
 
 # Add bg rune
@@ -328,7 +328,7 @@ Technical notes on implementation.
 - {% ref "SPEC-XXX" /%}
 
 {% /work %}
-````
+```
 
 **Interactive mode:** When `--title` is omitted, the CLI prompts interactively:
 

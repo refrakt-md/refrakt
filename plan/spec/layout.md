@@ -61,12 +61,12 @@ Every block rune accepts a `width` attribute that controls which page grid track
 | `wide` | `wide` | Wider than content, narrower than viewport |
 | `full` | `full` | Full viewport width |
 
-````markdoc
+```markdoc
 {% hero width="full" %}          <!-- full-bleed hero -->
 {% gallery width="wide" %}       <!-- wider gallery -->
 {% datatable width="content" %}  <!-- default, explicit -->
 {% sandbox width="wide" %}       <!-- wider sandbox -->
-````
+```
 
 The identity transform maps the attribute to a data attribute and BEM modifier:
 
@@ -116,7 +116,7 @@ Without the class, runes render at whatever width their container provides. The 
 
 Section runes have at most two zones — a **content zone** and a **media zone**. The content zone contains headings, paragraphs, lists, buttons. The media zone contains images, sandboxes, embeds, showcases. The `hr` delimiter (`---`) separates them.
 
-````markdoc
+```markdoc
 {% feature layout="split" %}
 
 # Lightning Fast
@@ -129,7 +129,7 @@ Built on modern architecture for sub-second page loads.
 ![Dashboard](/images/dashboard.png)
 
 {% /feature %}
-````
+```
 
 Everything above the `---` is the content zone. Everything below is the media zone. The layout attributes control how these zones are arranged.
 
@@ -150,39 +150,39 @@ When no `---` is present, the rune has only a content zone. Layout defaults to `
 
 **`layout`** controls zone arrangement:
 
-````markdoc
+```markdoc
 {% feature layout="stacked" %}       <!-- media above/below content (default) -->
 {% feature layout="split" %}          <!-- content left, media right -->
 {% feature layout="split-reverse" %}  <!-- media left, content right -->
-````
+```
 
 **`ratio`** controls column proportions when split:
 
-````markdoc
+```markdoc
 {% feature layout="split" ratio="2 1" %}   <!-- content is twice as wide as media -->
 {% feature layout="split" ratio="1 2" %}   <!-- media is twice as wide as content -->
 {% feature layout="split" ratio="3 2" %}   <!-- content 60%, media 40% -->
-````
+```
 
 The identity transform converts space-separated numbers to `fr` units: `"2 1"` becomes `2fr 1fr`. This conversion is handled by the engine's `styles` config via a `transform` function (see Ratio Format Conversion below).
 
 **`align`** controls vertical alignment when columns have different heights:
 
-````markdoc
+```markdoc
 {% feature layout="split" align="center" %}  <!-- vertically centred -->
 {% feature layout="split" align="start" %}   <!-- top-aligned (default) -->
 {% feature layout="split" align="end" %}     <!-- bottom-aligned -->
-````
+```
 
 Note: `align` means cross-axis alignment (vertical when split). This is distinct from text alignment, which uses the `justify` attribute on runes that support it (e.g., `{% hero justify="center" %}`).
 
 **`collapse`** controls the responsive breakpoint:
 
-````markdoc
+```markdoc
 {% feature layout="split" collapse="sm" %}    <!-- stays split longer, collapses on phones -->
 {% feature layout="split" collapse="lg" %}    <!-- collapses early, single column on tablets -->
 {% feature layout="split" collapse="never" %} <!-- never collapses -->
-````
+```
 
 ### Which Runes Support Split Layout
 
@@ -208,7 +208,7 @@ These runes are content blocks or containers. They don't have a natural content/
 All section runes with `layout="split"` produce the same structural HTML pattern:
 
 Input:
-````markdoc
+```markdoc
 {% feature layout="split" ratio="2 1" align="center" gap="loose" width="wide" %}
 
 # Lightning Fast
@@ -219,7 +219,7 @@ Built on modern architecture.
 ![Dashboard](/images/dashboard.png)
 
 {% /feature %}
-````
+```
 
 Output:
 ```html
@@ -308,7 +308,7 @@ The grid's attributes align with the section rune attributes where they overlap:
 
 **`columns` (default):** Fixed column layout from `ratio`. The number of `hr` delimiters determines the number of cells. `ratio` controls proportions. This is the current grid behaviour with a renamed attribute.
 
-````markdoc
+```markdoc
 {% grid layout="columns" ratio="2 1" gap="loose" %}
 
 Main content area with more space.
@@ -318,11 +318,11 @@ Main content area with more space.
 Sidebar with less space.
 
 {% /grid %}
-````
+```
 
 If `ratio` is omitted, columns are equal width based on cell count:
 
-````markdoc
+```markdoc
 {% grid %}
 
 Column one.
@@ -336,13 +336,13 @@ Column two.
 Column three.
 
 {% /grid %}
-````
+```
 
 Three cells, three equal columns. Same as current behaviour.
 
 **`auto`:** Responsive auto-fill grid. Columns wrap based on available space and minimum width. The number of columns is not fixed — it adapts to the viewport.
 
-````markdoc
+```markdoc
 {% grid layout="auto" min="280px" gap="default" %}
 
 ---
@@ -366,13 +366,13 @@ Card four.
 Card five.
 
 {% /grid %}
-````
+```
 
 Produces `grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))`. Five cards might render as three columns on desktop, two on tablet, one on mobile — all without explicit breakpoints.
 
 **`masonry`:** Masonry layout where items of varying height pack tightly. Uses CSS `grid-template-rows: masonry` where supported, falls back to standard grid where not.
 
-````markdoc
+```markdoc
 {% grid layout="masonry" ratio="1 1 1" gap="default" %}
 
 ---
@@ -392,14 +392,14 @@ Medium card.
 Another short card.
 
 {% /grid %}
-````
+```
 
 > **Known limitation:** CSS masonry is currently only supported in Firefox (behind a flag) and Safari Technology Preview. The fallback is standard grid layout — items align to row tracks, leaving vertical gaps between shorter items. Consider deferring masonry to a later phase, or implement it as progressive enhancement with an explicit note that it degrades to standard grid.
 
 ### Identity Transform
 
 Input:
-````markdoc
+```markdoc
 {% grid ratio="2 1" gap="loose" align="center" width="wide" %}
 
 Main content.
@@ -409,7 +409,7 @@ Main content.
 Sidebar content.
 
 {% /grid %}
-````
+```
 
 Output:
 ```html
@@ -498,15 +498,15 @@ Showcase is a **core rune** (not a community package rune) since it's a generic 
 
 A showcase without special attributes marks its content as presentational media — the theme can style it differently from a plain image in prose:
 
-````markdoc
+```markdoc
 {% showcase %}
 ![Hero image](/images/hero.jpg)
 {% /showcase %}
-````
+```
 
 ### Shadows
 
-````markdoc
+```markdoc
 {% showcase shadow="soft" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}
@@ -514,13 +514,13 @@ A showcase without special attributes marks its content as presentational media 
 {% showcase shadow="elevated" %}
 ![App](/images/app.png)
 {% /showcase %}
-````
+```
 
 ### Composing with Mockup
 
 Showcase wraps mockup for device frames with presentation effects. Showcase handles bleed, shadow, aspect; mockup handles device chrome:
 
-````markdoc
+```markdoc
 {% showcase shadow="elevated" bleed="top" offset="lg" %}
 {% mockup device="browser" %}
 ![Dashboard](/images/dashboard.png)
@@ -532,13 +532,13 @@ Showcase wraps mockup for device frames with presentation effects. Showcase hand
 ![Mobile app](/images/mobile.png)
 {% /mockup %}
 {% /showcase %}
-````
+```
 
 ### Displacement
 
 The showcase extends beyond its parent container's boundary for a dramatic visual effect. Commonly used inside tinted section runes where the media should overlap into the adjacent section.
 
-````markdoc
+```markdoc
 {% feature layout="split" width="wide" %}
 
 {% tint mode="dark" %}
@@ -558,7 +558,7 @@ Built on modern architecture for sub-second page loads.
 {% /showcase %}
 
 {% /feature %}
-````
+```
 
 The dashboard screenshot in a browser frame extends above the dark feature section, overlapping into the section above with an elevated shadow. The content re-centres within the feature section; the media breaks out.
 
@@ -566,7 +566,7 @@ The dashboard screenshot in a browser frame extends above the dark feature secti
 
 The showcase can wrap any content, not just images or mockups:
 
-````markdoc
+```markdoc
 {% showcase shadow="soft" %}
 {% sandbox framework="tailwind" %}
 ```html
@@ -580,13 +580,13 @@ The showcase can wrap any content, not just images or mockups:
 {% showcase bleed="bottom" %}
 {% embed %}https://www.youtube.com/watch?v=...{% /embed %}
 {% /showcase %}
-````
+```
 
 ### Aspect Ratio
 
 The showcase accepts an `aspect` attribute that enforces a ratio on its content:
 
-````markdoc
+```markdoc
 {% showcase aspect="16/9" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}
@@ -594,7 +594,7 @@ The showcase accepts an `aspect` attribute that enforces a ratio on its content:
 {% showcase aspect="1/1" %}
 ![Team member](/images/team-sarah.jpg)
 {% /showcase %}
-````
+```
 
 The image is cropped to fit the ratio using `object-fit: cover`. The showcase container maintains the ratio regardless of content.
 
@@ -719,7 +719,7 @@ On mobile viewports, displacement collapses. The showcase renders inline without
 
 When applied to the grid rune, `aspect` enforces a uniform ratio on all cells. Useful for image galleries and card grids:
 
-````markdoc
+```markdoc
 {% grid layout="auto" min="200px" aspect="1/1" %}
 
 ---
@@ -739,7 +739,7 @@ When applied to the grid rune, `aspect` enforces a uniform ratio on all cells. U
 ![](/images/team-4.jpg)
 
 {% /grid %}
-````
+```
 
 All cells are square. Images crop to fit. The grid stays visually uniform regardless of source image dimensions.
 
@@ -791,9 +791,9 @@ Themes define the actual spacing values through design tokens (see Spacing Token
 
 An author can also pass a CSS value directly for precise control:
 
-````markdoc
+```markdoc
 {% grid ratio="1 1" gap="2.5rem" %}
-````
+```
 
 The identity transform passes it through as the custom property value. Named presets are preferred for consistency; direct values are the escape hatch.
 
@@ -832,7 +832,7 @@ Every block rune accepts a `spacing` attribute that controls its vertical margin
 | `loose` | Increased margin above | Separation, breathing room |
 | `breathe` | Large margin above and below | Isolated section floating in space |
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 # Welcome
 {% /hero %}
@@ -857,7 +857,7 @@ Every block rune accepts a `spacing` attribute that controls its vertical margin
 {% cta width="wide" spacing="loose" %}
 # Ready to get started?
 {% /cta %}
-````
+```
 
 The three feature sections stack flush — no gap between them, creating a continuous band of alternating content. The testimonial floats with generous space above and below. The CTA has moderate extra space above.
 
@@ -914,49 +914,49 @@ The `bg` rune must be a child of a block rune, like `tint`. It produces no visib
 
 **Background image:**
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg src="/images/mountains.jpg" %}
 
 # Adventure Awaits
 Explore the world's most beautiful trails.
 {% /hero %}
-````
+```
 
 **Background image with overlay for text legibility:**
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg src="/images/mountains.jpg" overlay="dark" %}
 
 # Adventure Awaits
 Explore the world's most beautiful trails.
 {% /hero %}
-````
+```
 
 **Background image with blur:**
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg src="/images/mountains.jpg" overlay="dark" blur="sm" %}
 
 # Adventure Awaits
 {% /hero %}
-````
+```
 
 **Background video:**
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg video="/videos/timelapse.mp4" overlay="dark" %}
 
 # Watch the World Move
 {% /hero %}
-````
+```
 
 **Combining bg with tint:**
 
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg src="/images/mountains.jpg" overlay="dark" blur="sm" %}
 {% tint mode="dark" %}
@@ -965,7 +965,7 @@ Explore the world's most beautiful trails.
 
 # Adventure Awaits
 {% /hero %}
-````
+```
 
 The `bg` rune sets the background image with a dark overlay. The `tint` rune overrides the foreground accent colour. They compose — `bg` handles the backdrop, `tint` handles the content colours.
 
@@ -998,12 +998,12 @@ The overlay ensures text remains legible over busy background images. `dark` is 
 ### Identity Transform
 
 Input:
-````markdoc
+```markdoc
 {% hero width="full" %}
 {% bg src="/images/mountains.jpg" overlay="dark" blur="sm" position="top" %}
 # Adventure Awaits
 {% /hero %}
-````
+```
 
 Output:
 ```html
@@ -1208,7 +1208,7 @@ The grid rune uses the same pattern with `--grid-ratio`.
 
 All four systems compose naturally on the same rune:
 
-````markdoc
+```markdoc
 {% feature layout="split" ratio="3 2" align="center" width="wide" spacing="loose" %}
 
 {% bg src="/images/dark-texture.jpg" overlay="dark" blur="sm" %}
@@ -1231,7 +1231,7 @@ Built on modern architecture for sub-second page loads.
 {% /showcase %}
 
 {% /feature %}
-````
+```
 
 This produces a wide feature section with extra spacing above, a blurred dark background image, dark colour scheme with a custom accent, content on the left (60%) vertically centred against a browser-framed dashboard screenshot on the right (40%) that bleeds above the section boundary. Five systems, one rune, no CSS.
 

@@ -516,7 +516,7 @@ With context propagation, the design runes are the single source of truth. Chang
 
 Design runes accept a `scope` attribute that names the context they contribute to. Consumer runes (`sandbox`, `preview`) accept a `context` attribute that names the context they consume.
 
-````markdoc
+```markdoc
 {% palette scope="brand-a" %}
 - primary: #2563eb
 - secondary: #7c3aed
@@ -534,17 +534,17 @@ Design runes accept a `scope` attribute that names the context they contribute t
 {% sandbox context="brand-b" %}
 <button style="background: var(--color-primary)">FireBrand</button>
 {% /sandbox %}
-````
+```
 
 When `scope` is omitted, tokens go into the **default context** — the project-wide design system. When `context` is omitted on a consumer, it consumes the default. The simple case (one design system per project) requires zero new attributes.
 
 **Context inheritance:** A scoped context can extend another, inheriting its tokens and overriding selectively:
 
-````markdoc
+```markdoc
 {% palette scope="brand-b" extends="brand-a" %}
 - primary: #dc2626
 {% /palette %}
-````
+```
 
 Brand B inherits Brand A's full token set (typography, spacing, secondary colours), overriding only `--color-primary`. The pipeline merges parent → child, child wins on conflict.
 

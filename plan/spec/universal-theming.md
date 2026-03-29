@@ -231,11 +231,11 @@ The identity transform sets density based on context. The rune config declares a
 
 The author can override the automatic density:
 
-````markdoc
+```markdoc
 {% recipe density="compact" %}
 ...
 {% /recipe %}
-````
+```
 
 ### Rune Config
 

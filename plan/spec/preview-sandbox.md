@@ -26,7 +26,7 @@ Exists in the codebase. Supports `title`, `theme` (auto/light/dark), `width` (na
 
 Add a `responsive` attribute that places viewport-width simulation toggles in the toolbar. This is orthogonal to `width` (which controls the preview's footprint on the page) and `theme` (which controls color scheme).
 
-````markdoc
+```markdoc
 {% preview responsive="mobile,tablet,desktop" %}
 {% nav style="horizontal" %}
 - [Home](/)
@@ -34,7 +34,7 @@ Add a `responsive` attribute that places viewport-width simulation toggles in th
 - [Blog](/blog)
 {% /nav %}
 {% /preview %}
-````
+```
 
 Built-in responsive presets:
 
@@ -114,11 +114,11 @@ The `framework` attribute loads common CSS frameworks/libraries automatically:
 
 Custom dependencies override or extend presets:
 
-````markdoc
+```markdoc
 {% sandbox dependencies="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2/dist/shoelace.js" %}
 <sl-button variant="primary">Shoelace Button</sl-button>
 {% /sandbox %}
-````
+```
 
 ### Source Extraction with `data-source`
 
@@ -126,19 +126,19 @@ When the parent preview has `source=true`, the sandbox provides source code for 
 
 **Simple case — no markers:** Everything inside the sandbox becomes the source.
 
-````markdoc
+```markdoc
 {% sandbox framework="tailwind" %}
 <button class="bg-purple-600 text-white px-6 py-3 rounded-lg">
   Click me
 </button>
 {% /sandbox %}
-````
+```
 
 Source tab shows the button HTML.
 
 **With scaffolding — element markers:** Only elements marked with `data-source` appear in the source tab. The marker is stripped from the rendered output.
 
-````markdoc
+```markdoc
 {% sandbox framework="tailwind" %}
 <div class="min-h-[200px] flex items-center justify-center bg-gray-50">
   <button data-source class="bg-purple-600 text-white px-6 py-3 rounded-lg">
@@ -146,13 +146,13 @@ Source tab shows the button HTML.
   </button>
 </div>
 {% /sandbox %}
-````
+```
 
 Source tab shows only the button. The centering wrapper is excluded.
 
 **Multi-language — labelled markers:** Named `data-source` values create separate labelled panels in the source tab, auto-generating a codegroup-style tabbed view.
 
-````markdoc
+```markdoc
 {% sandbox %}
 <style data-source="CSS">
   .card {
@@ -168,13 +168,13 @@ Source tab shows only the button. The centering wrapper is excluded.
   </div>
 </div>
 {% /sandbox %}
-````
+```
 
 Source tab shows two panels: "CSS" and "HTML".
 
 This extends naturally to JavaScript:
 
-````markdoc
+```markdoc
 {% sandbox %}
 <style data-source="CSS">
   .dropdown-menu { display: none; }
@@ -193,7 +193,7 @@ This extends naturally to JavaScript:
   }
 </script>
 {% /sandbox %}
-````
+```
 
 Source tab shows three panels: CSS, HTML, JavaScript.
 
@@ -201,7 +201,7 @@ Source tab shows three panels: CSS, HTML, JavaScript.
 
 The sandbox rune works without a preview wrapper. It simply renders isolated HTML inline with the content — no toolbar, no source toggle, no chrome. Useful for embedding a live widget or animation in the middle of a blog post.
 
-````markdoc
+```markdoc
 Here's what the animation looks like in practice:
 
 {% sandbox %}
@@ -214,7 +214,7 @@ Here's what the animation looks like in practice:
 {% /sandbox %}
 
 As you can see, the easing creates a natural breathing effect.
-````
+```
 
 ### Static Rendering Fallback
 
@@ -234,19 +234,19 @@ This is progressive enhancement: the static output shows source code, and JS hyd
 
 Rune documentation, Markdown tutorials. No sandbox needed — content renders through the normal pipeline.
 
-````markdoc
+```markdoc
 {% preview source=true %}
 {% callout type="warning" %}
 This is a warning callout rendered by the rune system.
 {% /callout %}
 {% /preview %}
-````
+```
 
 ### Live Example: Preview + Sandbox
 
 Design system docs, multi-language tutorials.
 
-````markdoc
+```markdoc
 {% preview source=true %}
 {% sandbox framework="tailwind" %}
 <style data-source="CSS">
@@ -264,13 +264,13 @@ Design system docs, multi-language tutorials.
 </div>
 {% /sandbox %}
 {% /preview %}
-````
+```
 
 ### Responsive Preview
 
 Layout documentation where the author wants to show how content reflows at different viewport widths.
 
-````markdoc
+```markdoc
 {% preview source=true responsive="mobile,tablet,desktop" %}
 {% sandbox framework="tailwind" %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
@@ -280,7 +280,7 @@ Layout documentation where the author wants to show how content reflows at diffe
 </div>
 {% /sandbox %}
 {% /preview %}
-````
+```
 
 The toolbar shows mobile/tablet/desktop viewport toggles alongside the theme and source toggles.
 
@@ -288,7 +288,7 @@ The toolbar shows mobile/tablet/desktop viewport toggles alongside the theme and
 
 Blog posts, inline demos. No preview chrome.
 
-````markdoc
+```markdoc
 The CSS `backdrop-filter` property creates frosted glass effects:
 
 {% sandbox %}
@@ -309,7 +309,7 @@ The CSS `backdrop-filter` property creates frosted glass effects:
 {% /sandbox %}
 
 This works in all modern browsers and degrades gracefully.
-````
+```
 
 ### When to Use Which
 
@@ -336,7 +336,7 @@ A lightweight syntax where a code fence annotation triggers live rendering — t
 
 Extend the existing compare rune to support non-fence children (currently only handles `<pre>` code blocks). This would enable side-by-side sandbox comparisons:
 
-````markdoc
+```markdoc
 {% preview source=true %}
 {% compare labels="Before,After" %}
 {% sandbox label="Before" %}
@@ -347,7 +347,7 @@ Extend the existing compare rune to support non-fence children (currently only h
 {% /sandbox %}
 {% /compare %}
 {% /preview %}
-````
+```
 
 This reuses compare's existing layout/label logic rather than duplicating it inside preview.
 
