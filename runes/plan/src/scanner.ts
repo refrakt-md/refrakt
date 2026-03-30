@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, relative, resolve } from 'path';
-import { execSync } from 'child_process';
+import { getGitTimestamps } from '@refrakt-md/content';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import { escapeFenceTags } from '@refrakt-md/runes';
@@ -173,37 +173,18 @@ function writeCache(dir: string, cache: ScanCache): void {
 }
 
 /**
- * Get the git commit timestamps (in ms) for all files under a directory.
- * Uses a single `git log` call for efficiency. Returns a map of absolute path → ms timestamp.
- * Falls back gracefully to an empty map if git is unavailable or the dir is not a repo.
+ * Adapter: convert the shared git timestamp utility output to the legacy
+ * Map<absolutePath, milliseconds> format used by the scanner.
  */
 function getGitMtimes(dir: string): Map<string, number> {
+	const timestamps = getGitTimestamps(dir);
 	const mtimes = new Map<string, number>();
-	try {
-		// Get the last commit timestamp for each file in one pass
-		// Output: <unix-seconds>\t<file-path> per line
-		const output = execSync(
-			'git log --format="%at" --name-only --diff-filter=ACMR HEAD',
-			{ cwd: dir, encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] },
-		);
-
-		let currentTimestamp = 0;
-		for (const line of output.split('\n')) {
-			const trimmed = line.trim();
-			if (!trimmed) continue;
-			// Lines that are purely numeric are commit timestamps
-			if (/^\d+$/.test(trimmed)) {
-				currentTimestamp = parseInt(trimmed, 10);
-				continue;
-			}
-			// Otherwise it's a file path — only record the first (most recent) timestamp per file
-			if (currentTimestamp > 0 && trimmed.endsWith('.md') && !mtimes.has(trimmed)) {
-				const absPath = resolve(dir, trimmed);
-				mtimes.set(absPath, currentTimestamp * 1000);
-			}
+	for (const [relPath, ts] of timestamps) {
+		if (ts.modified) {
+			const absPath = resolve(dir, relPath);
+			// Convert ISO date string back to ms for compatibility
+			mtimes.set(absPath, new Date(ts.modified + 'T00:00:00Z').getTime());
 		}
-	} catch {
-		// Not a git repo or git not available — fall back to stat mtime
 	}
 	return mtimes;
 }

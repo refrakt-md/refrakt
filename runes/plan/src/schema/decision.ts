@@ -4,4 +4,6 @@ export class Decision {
 	date: string = '';
 	supersedes: string = '';
 	tags: string = '';
+	created: string = '';
+	modified: string = '';
 }

@@ -5,4 +5,6 @@ export class Bug {
 	assignee: string = '';
 	milestone: string = '';
 	tags: string = '';
+	created: string = '';
+	modified: string = '';
 }

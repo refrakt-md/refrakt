@@ -4,4 +4,6 @@ export class Spec {
 	version: string = '';
 	supersedes: string = '';
 	tags: string = '';
+	created: string = '';
+	modified: string = '';
 }

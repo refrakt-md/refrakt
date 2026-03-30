@@ -63,4 +63,22 @@ describe('generateSitemap', () => {
 		expect(xml).toContain('&amp;');
 		expect(xml).not.toContain('&b=');
 	});
+
+	it('should include lastmod when provided', () => {
+		const pages: SitemapEntry[] = [
+			{ url: '/', draft: false, lastmod: '2025-06-20' },
+		];
+		const xml = generateSitemap(pages, 'https://example.com');
+
+		expect(xml).toContain('<lastmod>2025-06-20</lastmod>');
+	});
+
+	it('should omit lastmod when not provided', () => {
+		const pages: SitemapEntry[] = [
+			{ url: '/', draft: false },
+		];
+		const xml = generateSitemap(pages, 'https://example.com');
+
+		expect(xml).not.toContain('<lastmod>');
+	});
 });
