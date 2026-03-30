@@ -6,14 +6,35 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.9.0 - March 30, 2026
+
+- Metadata dimensions system: density, section anatomy, media slots, checklist, sequential items, and interactive state dimensions added to rune configs and identity transform engine
+- Universal dimension CSS in Lumina theme with generic metadata styling
+- Shared split layout CSS with two-mode mobile collapse for marketing and storytelling runes
+- Rune output standardization: recipe, howto, playlist, character, realm, and faction runes refactored to consistent 3-section structure
+- @refrakt-md/plan community rune package for project planning with spec, work, bug, decision, and milestone runes
+- Markdoc partials support with LSP and VS Code integration
+- xref rune for inline cross-referencing via entity registry
+- Sandbox directory source support for multi-file sandboxes
+- labelHidden option to hide self-explanatory metadata labels
+- Rename intro header to preamble to disambiguate from chrome header
+- Lumina design refresh: soft gray page background, borderless surfaces, bordered pill badges, transparent banners
+- `--audit-dimensions` and `--audit-meta` flags for refrakt inspect CLI
+- Fix tint-mode CSS stripped in production builds
+- Fix preview rune light mode toggle when OS is in dark mode
+- Fix sandbox ignoring tint-mode by reading data-color-scheme attribute
+- Fix overflow:hidden on media zones clipping preview bleed
+- Fix Feature config: sections/mediaSlots key should be 'media' not 'image'
+- Fix docs layout 3-track grid leaking into rune articles
+- Fix media/scene positioning in storytelling runes
+- Fix missing dimensions CSS in production build
+- Fix storytelling pipeline TypeScript narrowing errors
+- Fix theme CSS resolution to load full theme instead of tokens only
+- Many Lumina CSS refinements: recipe cover ratio, CTA alignment, hero centering, testimonial borders, blog post hover shadows
+
 ## v0.8.5 - March 20, 2026
 
-- Add blog rune for listing posts with filtering and sorting
-- Expose frontmatter and page data as content-level Markdoc variables
-- Redesign juxtapose rune with `---` delimiter and overlay labels
-- Auto-discover runes in VS Code extension and editor
-- Fix map rune collapsed border and add spacing support
-- Fix juxtapose tint mode
+- Add blog rune for listing posts with filtering and sorting. Expose frontmatter and page data as content-level Markdoc variables. Redesign juxtapose rune with --- delimiter and overlay labels. Auto-discover runes in VS Code extension and editor. Fix map rune collapsed border and add spacing support. Fix juxtapose tint mode.
 
 ## v0.8.4 - March 19, 2026
 

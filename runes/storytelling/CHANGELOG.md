@@ -1,5 +1,7 @@
 # @refrakt-md/storytelling
 
+## 0.9.0
+
 ## 0.8.5
 
 ### Patch Changes
