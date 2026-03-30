@@ -69,7 +69,6 @@
 .rf-faction[data-layout="split"] > .rf-faction__scene {
 	grid-column: 2;
 	grid-row: 1 / 4;
-	margin: 0;
 }
 /* Split-reverse: scene left (col 1), badge + name + content right (col 2) */
 .rf-faction[data-layout="split-reverse"] > .rf-faction__badge {
