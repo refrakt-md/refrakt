@@ -25,10 +25,10 @@ Each rune type uses a unique prefix. To assign a new ID, scan existing files for
 | Type | Prefix | Example | Current highest |
 |------|--------|---------|-----------------|
 | Spec | `SPEC-` | `SPEC-023` | SPEC-029 |
-| Work | `WORK-` | `WORK-051` | WORK-075 |
+| Work | `WORK-` | `WORK-051` | WORK-076 |
 | Decision | `ADR-` | `ADR-005` | ADR-004 |
 | Bug | `BUG-` | `BUG-001` | (none yet) |
-| Milestone | `v`+semver | `v0.9.0` | v0.9.0 |
+| Milestone | `v`+semver | `v1.0.0` | v1.0.0 |
 
 IDs are zero-padded to 3 digits (except milestones, which use version names). Always verify the next ID by scanning:
 ```bash

@@ -5,9 +5,9 @@
 Update the workflow section that `refrakt plan init` writes to CLAUDE.md to include guidance on using `--resolve` when completing work items.
 
 ## Acceptance Criteria
-- [ ] `WORKFLOW_SECTION` in `runes/plan/src/commands/init.ts` includes a step for `--resolve` when marking items done
-- [ ] The guidance matches the pattern from SPEC-027: "when marking a work item done, always provide a `--resolve` summary unless the change is trivial"
-- [ ] Existing plan CLAUDE.md workflow instructions are consistent with the updated template
+- [x] `WORKFLOW_SECTION` in `runes/plan/src/commands/init.ts` includes a step for `--resolve` when marking items done
+- [x] The guidance matches the pattern from SPEC-027: "when marking a work item done, always provide a `--resolve` summary unless the change is trivial"
+- [x] Existing plan CLAUDE.md workflow instructions are consistent with the updated template
 
 ## Approach
 

@@ -5,15 +5,15 @@
 Extend the `refrakt plan update` command to accept resolution content and append a `## Resolution` section to work item and bug files.
 
 ## Acceptance Criteria
-- [ ] `--resolve <text>` flag appends a `## Resolution` section before the closing rune tag
-- [ ] `--resolve-file <path>` reads resolution body from a file
-- [ ] `Completed: <today's ISO date>` is auto-prepended as the first line of the section
-- [ ] Resolution section is inserted before `{% /work %}` or `{% /bug %}` closing tag
-- [ ] If a `## Resolution` section already exists, new content is appended with a `---` separator
-- [ ] `--resolve` can be combined with `--status done` in a single command
-- [ ] `--resolve` can be used standalone (without changing status) for incremental updates
-- [ ] `--resolve` is only allowed on `work` and `bug` rune types (error for spec/decision/milestone)
-- [ ] Unit tests cover: new resolution, append to existing, combined with status change, standalone resolve, file input, type restriction
+- [x] `--resolve <text>` flag appends a `## Resolution` section before the closing rune tag
+- [x] `--resolve-file <path>` reads resolution body from a file
+- [x] `Completed: <today's ISO date>` is auto-prepended as the first line of the section
+- [x] Resolution section is inserted before `{% /work %}` or `{% /bug %}` closing tag
+- [x] If a `## Resolution` section already exists, new content is appended with a `---` separator
+- [x] `--resolve` can be combined with `--status done` in a single command
+- [x] `--resolve` can be used standalone (without changing status) for incremental updates
+- [x] `--resolve` is only allowed on `work` and `bug` rune types (error for spec/decision/milestone)
+- [x] Unit tests cover: new resolution, append to existing, combined with status change, standalone resolve, file input, type restriction
 
 ## Approach
 
