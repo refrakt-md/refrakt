@@ -1,5 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
 import { attribute, createSchema, Model } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -114,6 +114,29 @@ export function extractMediaImage(cursor: RenderableNodeCursor): Tag | undefined
     }
   }
   return undefined;
+}
+
+/**
+ * Unwrap paragraph-wrapped images in-place.
+ *
+ * Walks the node list and replaces any `<p>` containing only an `<img>`
+ * with the bare `<img>`. All other nodes pass through unchanged.
+ * Unlike `extractMediaImage()` which extracts a single image,
+ * this preserves the full node list for mixed-content zones.
+ */
+export function unwrapParagraphImages(nodes: RenderableTreeNode[]): RenderableTreeNode[] {
+  return nodes.map((node) => {
+    if (
+      Markdoc.Tag.isTag(node) &&
+      node.name === 'p' &&
+      node.children.length === 1 &&
+      Markdoc.Tag.isTag(node.children[0]) &&
+      node.children[0].name === 'img'
+    ) {
+      return node.children[0];
+    }
+    return node;
+  });
 }
 
 export function pageSectionProperties(cursor: RenderableNodeCursor) {

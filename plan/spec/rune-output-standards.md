@@ -157,12 +157,13 @@ const mediaDiv = side.wrap('div');
 
 ### Known Violations
 
-| Rune | Issue |
-|------|-------|
-| Recipe | Media zone passes `Markdoc.transform()` output directly into wrapper — `<p><img/></p>` survives |
-| Playlist | Same pattern — media zone content not unwrapped |
+| Rune | Issue | Status |
+|------|-------|--------|
+| Recipe | Media zone passed `Markdoc.transform()` output directly into wrapper | Fixed (WORK-077, `extractMediaImage`) |
+| Playlist | Same pattern — media zone content not unwrapped | Fixed (WORK-077, `extractMediaImage`) |
+| Juxtapose | Panel body passed `Markdoc.transform()` output without unwrapping | Fixed (`unwrapParagraphImages`) |
 
-Note: Realm and Faction already unwrap correctly, but with duplicated inline code (see Standard 4).
+Note: Realm and Faction already unwrap correctly via shared `extractMediaImage` utility (WORK-077).
 
 ---
 
