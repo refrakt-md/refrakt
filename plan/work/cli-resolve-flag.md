@@ -1,4 +1,4 @@
-{% work id="WORK-072" status="ready" priority="high" complexity="moderate" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-072" status="done" priority="high" complexity="moderate" tags="plan, cli" milestone="v0.9.0" %}
 
 # Add --resolve and --resolve-file flags to plan update
 
@@ -22,5 +22,11 @@ Extend `UpdateOptions` in `runes/plan/src/commands/update.ts` with `resolve?: st
 ## References
 - {% ref "SPEC-027" /%}
 - {% ref "WORK-071" /%} — scanner must understand resolution format (parallel, not blocking)
+
+## Resolution
+
+Completed: 2026-03-30
+
+Full implementation in `runes/plan/src/commands/update.ts` with 9 unit tests covering all acceptance criteria (new resolution, append to existing, combined with status change, standalone resolve, file input, type restriction). All criteria verified met.
 
 {% /work %}

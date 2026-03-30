@@ -1,4 +1,4 @@
-{% work id="WORK-052" status="in-progress" priority="medium" complexity="simple" tags="create-refrakt, packages" milestone="v0.9.0" %}
+{% work id="WORK-052" status="ready" priority="medium" complexity="simple" tags="create-refrakt, packages" milestone="v0.9.0" %}
 
 # Create-Refrakt Project Type Defaults
 
@@ -10,7 +10,7 @@ New projects created with `create-refrakt` should pre-install official packages 
 
 ## Acceptance Criteria
 
-- [x] `create-refrakt` prompts for project type (or accepts it as an argument via `--type`)
+- [ ] `create-refrakt` prompts for project type (or accepts it as an argument via `--type`)
 - [ ] Project type determines which official packages are pre-installed
 - [ ] Pre-installed packages are added to `package.json` dependencies
 - [ ] Pre-installed packages are listed in `refrakt.config.json` `packages` array

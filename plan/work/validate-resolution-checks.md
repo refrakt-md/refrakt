@@ -1,4 +1,4 @@
-{% work id="WORK-073" status="ready" priority="medium" complexity="simple" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-073" status="done" priority="medium" complexity="simple" tags="plan, cli" milestone="v0.9.0" %}
 
 # Add resolution validation checks to plan validate
 
@@ -18,5 +18,11 @@ Add a `checkResolutions()` function in `runes/plan/src/commands/validate.ts`. Th
 ## References
 - {% ref "SPEC-027" /%}
 - {% ref "WORK-071" /%} — scanner resolution parsing (dependency)
+
+## Resolution
+
+Completed: 2026-03-30
+
+All three resolution checks implemented in `runes/plan/src/commands/validate.ts` with `checkResolutions()` function. Five unit tests cover each check type. All criteria verified met.
 
 {% /work %}
