@@ -94,7 +94,7 @@ register(pages, registry, ctx) {
 },
 ```
 
-Core always registers `page` entities (with `url`, `title`, `parentUrl`, `draft`, `description`, `date`, `order`) and `heading` entities (with `level`, `text`, `id`, `url`).
+Core always registers `page` entities (with `url`, `title`, `parentUrl`, `draft`, `description`, `date`, `order`) and `heading` entities (with `level`, `text`, `id`, `url`). File-derived timestamps (`$file.created` and `$file.modified`) are available as Markdoc variables on every page before registration runs — rune schemas can consume them as attribute defaults.
 
 ### Phase 3 — aggregate
 

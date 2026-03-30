@@ -1,4 +1,4 @@
-{% work id="WORK-087" status="ready" priority="low" complexity="simple" tags="content, seo" milestone="v1.0.0" %}
+{% work id="WORK-087" status="done" priority="low" complexity="simple" tags="content, seo" milestone="v1.0.0" %}
 
 # Add Sitemap lastmod Support Using File Timestamps
 

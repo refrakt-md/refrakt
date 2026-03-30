@@ -68,6 +68,8 @@ A milestone with all goals achieved.
 | `name` | `string` | — | Milestone name, e.g. `v0.5.0` (required) |
 | `target` | `string` | — | Target date (aspirational, not a commitment) |
 | `status` | `string` | `planning` | Current status: `planning`, `active`, `complete` |
+| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
+| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
 ### Common attributes
 

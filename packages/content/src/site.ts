@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, relative } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags } from '@refrakt-md/runes';
@@ -12,6 +12,7 @@ import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
+import { getGitTimestamps, resolveTimestamps } from './timestamps.js';
 
 export interface Site {
   /** The content tree */
@@ -117,13 +118,26 @@ export async function loadContent(
     }
   }
 
+  // Batch-collect git timestamps once before the page loop
+  const gitTimestamps = getGitTimestamps(dirPath);
+
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
     const layout = resolveLayouts(page, tree.root, icons);
+    const fileTimestamps = resolveTimestamps(
+      page.relativePath,
+      page.filePath,
+      gitTimestamps,
+      frontmatter,
+    );
     const contentVariables: Record<string, unknown> = {
       frontmatter,
       page: { url: route.url, filePath: route.filePath, draft: route.draft },
+      file: {
+        created: fileTimestamps.created,
+        modified: fileTimestamps.modified,
+      },
       __sandboxReadFile: sandboxReadFile,
       __sandboxListDir: sandboxListDir,
       __sandboxDirExists: sandboxDirExists,

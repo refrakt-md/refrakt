@@ -6,4 +6,6 @@ export class Work {
 	assignee: string = '';
 	milestone: string = '';
 	tags: string = '';
+	created: string = '';
+	modified: string = '';
 }

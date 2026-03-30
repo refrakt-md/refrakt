@@ -125,6 +125,30 @@ export class GameItemModel extends BaseModel {
 export default GameItemModel.schema;
 ```
 
+## Using Content Pipeline Variables
+
+The content pipeline injects several variables into every page's Markdoc transform config. Your rune schemas can access these via `config.variables` in their transform functions:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `$frontmatter` | `object` | Parsed YAML frontmatter |
+| `$page` | `object` | Page metadata: `url`, `filePath`, `draft` |
+| `$file.created` | `string` | File creation date (ISO 8601, from git history) |
+| `$file.modified` | `string` | File modification date (ISO 8601, from git history) |
+
+Timestamps follow a three-tier resolution order: explicit frontmatter values take highest priority, then git commit timestamps, then filesystem stat as a last resort. When no data is available the variable is `undefined`.
+
+To consume file timestamps in a rune schema's transform function:
+
+```typescript
+transform(resolved, attrs, config) {
+  const fileVars = config.variables?.file as
+    { created?: string; modified?: string } | undefined;
+  const created = attrs.created || fileVars?.created || '';
+  // ... use in meta tags or rendered output
+}
+```
+
 ## Theme Config
 
 The `theme` field contributes identity transform config and icons for your runes:
