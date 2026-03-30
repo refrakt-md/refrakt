@@ -241,10 +241,74 @@ When your site uses `{% design-context %}` runes to define tokens, a sandbox can
 
 Tokens are injected into the iframe as CSS custom properties and Google Fonts links, using the same names the design-context defines (`--color-*`, `--font-*`, `--spacing-unit`, `--radius-*`, `--shadow-*`). If `context` is omitted or no matching design context exists for the default scope, no tokens are injected.
 
+## External source files
+
+Instead of writing HTML inline, load sandbox content from a directory of source files. The `src` attribute points to a named subdirectory inside your project's examples directory.
+
+```markdoc
+{% sandbox src="login-form" /%}
+```
+
+### Directory structure
+
+By default, the examples directory is `../examples` relative to your content root. Each example is a subdirectory containing the files for that sandbox.
+
+```
+project/
+├── content/
+│   └── docs/
+│       └── components.md
+└── examples/
+    └── login-form/
+        ├── index.html
+        ├── styles.css
+        └── app.js
+```
+
+### File discovery
+
+The sandbox scans the directory and assembles content from these file types:
+
+| Extension | Role | Behavior |
+|-----------|------|----------|
+| `.html` | HTML body | If multiple exist, `index.html` is preferred |
+| `.css` | Stylesheet | Multiple files concatenated alphabetically |
+| `.js` | Script | Multiple files concatenated alphabetically |
+| `.svg` | SVG asset | Injected into the HTML body |
+| `.glsl-vert` | Vertex shader | Exposed as a `VERTEX_SHADER` JavaScript constant |
+| `.glsl-frag` | Fragment shader | Exposed as a `FRAGMENT_SHADER` JavaScript constant |
+
+Discovered content is automatically wrapped in `data-source` annotated elements, so source panels appear when used inside `{% preview source=true %}`.
+
+### Combining with frameworks
+
+The `src` attribute works alongside other sandbox attributes. For example, load files from a directory and apply a CSS framework:
+
+{% preview source=true %}
+{% sandbox src="profile-card" framework="tailwind" /%}
+{% /preview %}
+
+### Merging with inline content
+
+You can combine file-sourced and inline content. Write additional HTML, CSS, or JavaScript between the tags — it merges with the file content.
+
+```markdoc
+{% sandbox src="login-form" %}
+<style data-source="Overrides">
+  .form { border: 2px solid red; }
+</style>
+{% /sandbox %}
+```
+
+### Error handling
+
+If the named directory does not exist, the sandbox displays an error message in place of the preview.
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `src` | `string` | — | Name of a subdirectory in the examples directory to load files from |
 | `framework` | `string` | — | Framework preset to load: `tailwind`, `bootstrap`, `bulma`, `pico` |
 | `dependencies` | `string` | — | Comma-separated URLs of scripts/stylesheets to load |
 | `label` | `string` | — | Label for the sandbox (used when inside compare) |
