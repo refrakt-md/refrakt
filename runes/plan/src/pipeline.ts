@@ -123,9 +123,11 @@ const SEVERITY_SENTIMENT: Record<string, string> = {
 
 /** Build a metadata badge matching the dimension system output */
 function buildMetaBadge(label: string, value: string, opts: {
-	metaType: string; metaRank: string; sentiment?: string;
+	metaType: string; metaRank: string; sentiment?: string; labelHidden?: boolean;
 }): InstanceType<typeof Tag> {
-	const labelEl = new Tag('span', { 'data-meta-label': '' }, [label]);
+	const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
+	if (opts.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
+	const labelEl = new Tag('span', labelAttrs, [label]);
 	const valueEl = new Tag('span', { 'data-meta-value': '' }, [value]);
 	const attrs: Record<string, string> = {
 		'data-meta-type': opts.metaType,
@@ -143,21 +145,21 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const type = entity.type;
 
 	const badges: any[] = [
-		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary', labelHidden: true }),
 	];
 
 	if (type === 'work') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: WORK_STATUS_SENTIMENT[status] }));
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: WORK_STATUS_SENTIMENT[status], labelHidden: true }));
 		const priority = String(entity.data.priority ?? '');
 		const complexity = String(entity.data.complexity ?? '');
 		if (priority) badges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'primary', sentiment: PRIORITY_SENTIMENT[priority] }));
 		if (complexity && complexity !== 'unknown') badges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
 	} else if (type === 'bug') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: BUG_STATUS_SENTIMENT[status] }));
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: BUG_STATUS_SENTIMENT[status], labelHidden: true }));
 		const severity = String(entity.data.severity ?? '');
 		if (severity) badges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'primary', sentiment: SEVERITY_SENTIMENT[severity] }));
 	} else {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary' }));
+		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', labelHidden: true }));
 	}
 
 	const milestone = String(entity.data.milestone ?? '');
@@ -201,8 +203,8 @@ function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag
 	const date = String(entity.data.date ?? '');
 
 	const badges: any[] = [
-		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
-		buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: DECISION_STATUS_SENTIMENT[status] }),
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary', labelHidden: true }),
+		buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: DECISION_STATUS_SENTIMENT[status], labelHidden: true }),
 	];
 	if (date) badges.push(buildMetaBadge('Date:', date, { metaType: 'temporal', metaRank: 'secondary' }));
 
