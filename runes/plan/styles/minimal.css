@@ -255,6 +255,42 @@
 	padding-block-start: 1rem;
 	border-block-start: 1px solid var(--plan-color-border);
 }
+.rf-milestone__tabs {
+	display: flex;
+	border-bottom: 1px solid var(--plan-color-border);
+	overflow-x: auto;
+	margin-bottom: 0;
+}
+.rf-milestone__tab {
+	flex: 0 0 auto;
+	padding: 0.375rem 0.75rem;
+	font-size: var(--plan-font-size-sm);
+	font-weight: 500;
+	color: var(--plan-color-text-muted);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	white-space: nowrap;
+	font-family: var(--plan-font-sans);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.rf-milestone__tab:hover {
+	color: var(--plan-color-text);
+}
+.rf-milestone__tab--active {
+	color: var(--plan-color-text);
+	border-bottom-color: var(--plan-color-text);
+	font-weight: 700;
+}
+.rf-milestone__panels {
+	padding: 0;
+	margin: 0;
+}
+.rf-milestone__panel {
+	padding-top: 0.5rem;
+}
 .rf-milestone__backlog-group {
 	margin-block-end: 1rem;
 }

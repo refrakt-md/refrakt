@@ -534,17 +534,51 @@ function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData):
 		]));
 	}
 
-	// Add status-grouped cards
-	for (const [groupName, groupItems] of groups) {
-		const groupTitle = new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]);
+	// Build status-grouped cards as tabs (or flat list for single group)
+	const groupEntries = [...groups.entries()];
+
+	if (groupEntries.length === 1) {
+		// Single status — no tabs needed, render flat
+		const [groupName, groupItems] = groupEntries[0];
 		const cards = groupItems.map(e => buildEntityCard(e));
 		children.push(new Tag('div', {
 			class: 'rf-milestone__backlog-group',
 			'data-status': groupName,
-		}, [groupTitle, ...cards]));
+		}, [new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]), ...cards]));
+	} else {
+		// Multiple statuses — render as tabs
+		const tabButtons: any[] = [];
+		const tabPanels: any[] = [];
+
+		for (const [groupName, groupItems] of groupEntries) {
+			const label = groupName.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+			tabButtons.push(new Tag('button', {
+				role: 'tab',
+				class: 'rf-milestone__tab',
+				'data-status': groupName,
+			}, [`${label} (${groupItems.length})`]));
+
+			const cards = groupItems.map(e => buildEntityCard(e));
+			tabPanels.push(new Tag('div', {
+				role: 'tabpanel',
+				class: 'rf-milestone__panel',
+				'data-status': groupName,
+			}, cards));
+		}
+
+		children.push(new Tag('div', {
+			'data-name': 'tabs',
+			role: 'tablist',
+			class: 'rf-milestone__tabs',
+		}, tabButtons));
+
+		children.push(new Tag('div', {
+			'data-name': 'panels',
+			class: 'rf-milestone__panels',
+		}, tabPanels));
 	}
 
-	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog' }, children);
+	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog', 'data-rune': 'milestone-backlog' }, children);
 }
 
 function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {

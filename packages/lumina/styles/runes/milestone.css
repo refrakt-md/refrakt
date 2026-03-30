@@ -36,6 +36,45 @@
 	margin: 0 0 0.375rem;
 }
 
+/* Backlog tabs */
+.rf-milestone__tabs {
+	display: flex;
+	border-bottom: 1px solid var(--rf-color-border);
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	margin-bottom: 0;
+}
+.rf-milestone__tab {
+	flex: 0 0 auto;
+	padding: 0.5rem 1rem;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--rf-color-muted);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	transition: color 200ms ease, border-color 200ms ease;
+	white-space: nowrap;
+	font-family: inherit;
+}
+.rf-milestone__tab:hover {
+	color: var(--rf-color-text);
+}
+.rf-milestone__tab--active {
+	color: var(--rf-color-primary);
+	border-bottom-color: var(--rf-color-primary);
+	font-weight: 600;
+}
+.rf-milestone__panels {
+	padding: 0;
+	margin: 0;
+}
+.rf-milestone__panel {
+	padding-top: 0.75rem;
+}
+
 /* Aggregate progress */
 .rf-milestone__progress {
 	display: flex;

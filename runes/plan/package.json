@@ -37,6 +37,7 @@
     "@refrakt-md/runes": "0.8.5",
     "@refrakt-md/html": "0.8.5",
     "@refrakt-md/highlight": "0.8.5",
+    "@refrakt-md/behaviors": "0.8.5",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0"
   }
