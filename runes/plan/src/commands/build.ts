@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { runPipeline, renderPage } from './render-pipeline.js';
+import { bundleBehaviors } from './bundle-behaviors.js';
 
 export interface BuildOptions {
 	dir: string;
@@ -31,16 +32,23 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
 	fs.writeFileSync(path.join(out, 'theme.css'), combinedCss, 'utf-8');
 	files.push('theme.css');
 
+	// Bundle and write behaviors JS
+	const behaviorsJs = await bundleBehaviors();
+	fs.writeFileSync(path.join(out, 'behaviors.js'), behaviorsJs, 'utf-8');
+	files.push('behaviors.js');
+
 	const allPageUrls = [
 		{ url: baseUrl, title: pipeline.dashboard.title, draft: false },
 		...pipeline.pages.map(p => ({ url: p.url, title: p.title, draft: false })),
 	];
 
 	const stylesheets = [`${baseUrl}theme.css`];
+	const scripts = [`${baseUrl}behaviors.js`];
 
 	// Write dashboard
 	const dashboardHtml = renderPage(pipeline.dashboard, pipeline.navRegion, allPageUrls, {
 		stylesheets,
+		scripts,
 		activeUrl: baseUrl,
 	});
 	const indexPath = path.join(out, 'index.html');
@@ -60,6 +68,7 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
 
 		const html = renderPage(page, pipeline.navRegion, allPageUrls, {
 			stylesheets,
+			scripts,
 			activeUrl: page.url,
 		});
 		fs.writeFileSync(outPath, html, 'utf-8');

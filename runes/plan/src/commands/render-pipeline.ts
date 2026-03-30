@@ -830,36 +830,6 @@ function generateViewPages(entities: PlanEntity[], baseUrl: string): ViewPageDef
 	return views;
 }
 
-// --- Copy-to-clipboard behavior (inline script) ---
-
-const COPY_BUTTON_SCRIPT = `<script>
-(function() {
-  document.querySelectorAll('pre').forEach(function(pre) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'rf-code-wrapper';
-    pre.parentNode.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
-    var btn = document.createElement('button');
-    btn.className = 'rf-copy-button';
-    btn.setAttribute('aria-label', 'Copy code');
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-    btn.onclick = function() {
-      var sel = pre.getAttribute('data-copy-selector');
-      var text = sel ? (pre.querySelector(sel) || pre).textContent : pre.textContent;
-      navigator.clipboard.writeText(text || '').then(function() {
-        btn.classList.add('rf-copy-button--copied');
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(function() {
-          btn.classList.remove('rf-copy-button--copied');
-          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-        }, 2000);
-      });
-    };
-    wrapper.appendChild(btn);
-  });
-})();
-</script>`;
-
 const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
 (function() {
   var STORAGE_KEY = 'plan-sidebar-collapse';
@@ -1104,49 +1074,6 @@ const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
 })();
 </script>`;
 
-const MOBILE_MENU_SCRIPT = `<script>
-(function() {
-  var panels = document.querySelectorAll('.rf-mobile-panel');
-  if (!panels.length) return;
-
-  function closeAll() {
-    panels.forEach(function(p) { p.removeAttribute('data-open'); });
-    document.body.style.overflow = '';
-  }
-
-  function openPanel(panel) {
-    closeAll();
-    panel.setAttribute('data-open', '');
-    document.body.style.overflow = 'hidden';
-  }
-
-  // Nav toggle buttons
-  var navToggles = document.querySelectorAll('[data-mobile-nav-toggle]');
-  navToggles.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var navPanel = document.querySelector('.rf-mobile-panel--nav');
-      if (!navPanel) return;
-      if (navPanel.hasAttribute('data-open')) {
-        closeAll();
-      } else {
-        openPanel(navPanel);
-      }
-    });
-  });
-
-  // Close buttons
-  var closeBtns = document.querySelectorAll('[data-mobile-menu-close]');
-  closeBtns.forEach(function(btn) {
-    btn.addEventListener('click', closeAll);
-  });
-
-  // Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeAll();
-  });
-})();
-</script>`;
-
 // --- HtmlTheme for the plan site ---
 
 const planTheme: HtmlTheme = {
@@ -1382,7 +1309,7 @@ export function renderPage(
 	page: ProcessedPage,
 	navRegion: RendererNode[],
 	allPageUrls: Array<{ url: string; title: string; draft: boolean }>,
-	opts?: { hotReload?: boolean; stylesheets?: string[]; activeUrl?: string },
+	opts?: { hotReload?: boolean; stylesheets?: string[]; scripts?: string[]; activeUrl?: string },
 ): string {
 	const layoutPageData: LayoutPageData = {
 		renderable: page.renderable,
@@ -1402,7 +1329,8 @@ export function renderPage(
 
 	const shellOptions: PageShellOptions = {
 		stylesheets: opts?.stylesheets ?? [],
-		bodyExtra: COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT + '\n' + MOBILE_MENU_SCRIPT,
+		scripts: opts?.scripts ?? [],
+		bodyExtra: SIDEBAR_BEHAVIOR_SCRIPT,
 	};
 
 	// Hot reload SSE script
