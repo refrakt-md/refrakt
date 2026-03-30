@@ -200,6 +200,11 @@ structure: {
 | `conditionAny` | Only inject if any of the named modifiers has a value |
 | `transform` | Transform metaText: `'duration'`, `'uppercase'`, `'capitalize'` |
 | `textPrefix` / `textSuffix` | Static text around metaText |
+| `label` | Emits `<span data-meta-label>` child for styled labels |
+| `labelHidden` | Makes label visually hidden (sr-only) but accessible |
+| `metaType` | Emits `data-meta-type`: `'status'`, `'category'`, `'quantity'`, `'temporal'`, `'tag'`, `'id'` |
+| `metaRank` | Emits `data-meta-rank`: `'primary'`, `'secondary'` |
+| `sentimentMap` | Maps modifier values to `data-meta-sentiment`: `'positive'`, `'negative'`, `'caution'`, `'neutral'` |
 | `attrs` | Extra attributes, can reference modifiers |
 
 ### `contentWrapper`
@@ -303,6 +308,32 @@ Only elements with a `data-name` attribute can be editable. The `data-name` come
 The editor resolves hints at click time from the engine config — no extra attributes appear in the rendered HTML.
 
 **Structure tab:** When a rune has a [declarative content model](/docs/authoring/content-models), the editor's structure tab shows the model's fields as a tree. Filled fields show content previews, empty optional fields show an add button, and empty required fields are highlighted. The content model's `template` and `description` field values are surfaced in this UI.
+
+### Universal theming dimensions
+
+These fields enable generic cross-rune styling via data attributes. See [Universal Theming Dimensions](/docs/themes/dimensions) for the complete system and CSS patterns.
+
+```typescript
+Recipe: {
+  block: 'recipe',
+  defaultDensity: 'full',       // → data-density="full"
+  sections: { meta: 'header', title: 'title', content: 'body' },  // → data-section
+  mediaSlots: { media: 'cover' },  // → data-media
+  checklist: true,              // → data-checked on list items
+  sequence: 'numbered',         // → data-sequence on <ol> elements
+}
+```
+
+| Field | Attribute emitted | Description |
+|-------|-------------------|-------------|
+| `defaultDensity` | `data-density` | Detail level: `'full'`, `'compact'`, `'minimal'` |
+| `sections` | `data-section` | Maps ref names to section roles: `'header'`, `'title'`, `'description'`, `'body'`, `'footer'`, `'media'`, `'preamble'` |
+| `mediaSlots` | `data-media` | Maps ref names to media types: `'portrait'`, `'cover'`, `'thumbnail'`, `'hero'`, `'icon'` |
+| `checklist` | `data-checked` | Detects `[x]`/`[ ]`/`[>]`/`[-]` markers on `<li>` elements |
+| `sequence` | `data-sequence` | Ordered list style: `'numbered'`, `'connected'`, `'plain'` |
+| `sequenceDirection` | `data-sequence-direction` | Direction from modifier: `{ fromModifier: 'direction', default: 'vertical' }` |
+
+Metadata dimensions (`metaType`, `metaRank`, `sentimentMap`) are declared on individual `StructureEntry` children, not on the `RuneConfig`. See the [StructureEntry options](#structure) table above.
 
 ---
 

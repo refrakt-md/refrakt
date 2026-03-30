@@ -304,9 +304,24 @@ Create a `styles/runes/` directory. Start with a simple rune and build from ther
 
 {% /tabs %}
 
-#### Working through all runes
+#### Dimension CSS
 
-The base config defines 74 rune configurations. You don't need CSS for all of them immediately — the identity transform still produces valid HTML with BEM classes even without CSS. Prioritize the runes your content uses most.
+Before writing per-rune CSS, create the dimension layer — generic rules that handle cross-rune patterns. Create a `styles/dimensions/` directory with files for each dimension:
+
+- `metadata.css` — badge styling via `[data-meta-type]`, `[data-meta-sentiment]`, `[data-meta-rank]`
+- `density.css` — spacing and visibility via `[data-density]`
+- `sections.css` — structural anatomy via `[data-section]`
+- `state.css` — interactive states via `[data-state]`
+- `media.css` — image treatments via `[data-media]`
+- `surfaces.css` — container groupings (card, inline, banner, inset)
+- `checklist.css` — checkbox items via `[data-checked]`
+- `sequence.css` — ordered list styles via `[data-sequence]`
+
+This layer handles ~70% of visual styling generically. See [Universal Theming Dimensions](/docs/themes/dimensions) for the complete CSS patterns you can adapt.
+
+#### Working through per-rune CSS
+
+The base config defines 74 rune configurations. With dimension CSS in place, many runes are already styled. Per-rune CSS files only need to cover rune-specific styling that the dimensions don't handle (e.g., Hint's colored left border, Nav's tree layout).
 
 A good order:
 1. **Layout basics**: grid, tabs, accordion, details
@@ -374,6 +389,16 @@ Create `index.css` that imports everything:
 @import './tokens/base.css';
 @import './tokens/dark.css';
 @import './styles/global.css';
+/* Dimension CSS — generic cross-rune rules */
+@import './styles/dimensions/metadata.css';
+@import './styles/dimensions/density.css';
+@import './styles/dimensions/sections.css';
+@import './styles/dimensions/state.css';
+@import './styles/dimensions/media.css';
+@import './styles/dimensions/surfaces.css';
+@import './styles/dimensions/checklist.css';
+@import './styles/dimensions/sequence.css';
+/* Per-rune CSS — rune-specific overrides */
 @import './styles/runes/grid.css';
 @import './styles/runes/hint.css';
 @import './styles/runes/recipe.css';
@@ -540,7 +565,16 @@ packages/my-theme/
 │   └── dark.css
 ├── styles/
 │   ├── global.css
-│   ├── runes/
+│   ├── dimensions/          # Generic cross-rune rules
+│   │   ├── metadata.css
+│   │   ├── density.css
+│   │   ├── sections.css
+│   │   ├── state.css
+│   │   ├── media.css
+│   │   ├── surfaces.css
+│   │   ├── checklist.css
+│   │   └── sequence.css
+│   ├── runes/               # Per-rune overrides
 │   │   ├── hint.css
 │   │   ├── grid.css
 │   │   └── ...
