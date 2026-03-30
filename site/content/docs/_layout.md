@@ -35,6 +35,7 @@
 - content-models
 - output-contract
 - patterns
+- partials
 - page-sections
 
 ## Rune Catalog
