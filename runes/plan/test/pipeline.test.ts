@@ -265,6 +265,13 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 		const milestonePage = processed[0];
 		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
 		expect(backlog).toBeDefined();
+		expect(backlog!.attributes['data-rune']).toBe('milestone-backlog');
+
+		// Multiple statuses → should use tab structure
+		const tabBar = findTag(backlog!, t => t.attributes['data-name'] === 'tabs');
+		expect(tabBar).toBeDefined();
+		const panels = findTag(backlog!, t => t.attributes['data-name'] === 'panels');
+		expect(panels).toBeDefined();
 
 		// Should contain cards for WORK-001 and WORK-002, but NOT WORK-003
 		const cards = findAllTags(backlog!, t => t.attributes.class === 'rf-backlog__card');
@@ -321,7 +328,7 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 		expect(backlog).toBeUndefined();
 	});
 
-	it('groups backlog items by status', () => {
+	it('renders backlog as tabs when multiple statuses', () => {
 		const pages = [
 			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
 # v1.0
@@ -337,12 +344,87 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 
 		const processed = runPipeline(pages);
 		const milestonePage = processed[0];
-		const groups = findAllTags(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog-group');
-		expect(groups.length).toBeGreaterThanOrEqual(2);
+		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
 
-		const groupStatuses = groups.map(g => g.attributes['data-status']);
-		expect(groupStatuses).toContain('done');
-		expect(groupStatuses).toContain('ready');
+		// Tab bar with buttons
+		const tabBar = findTag(backlog!, t => t.attributes['data-name'] === 'tabs');
+		expect(tabBar).toBeDefined();
+		expect(tabBar!.attributes.role).toBe('tablist');
+		const tabs = findAllTags(tabBar!, t => t.attributes.role === 'tab');
+		expect(tabs).toHaveLength(2);
+		const tabStatuses = tabs.map(t => t.attributes['data-status']);
+		expect(tabStatuses).toContain('done');
+		expect(tabStatuses).toContain('ready');
+
+		// Panels with cards
+		const panelsContainer = findTag(backlog!, t => t.attributes['data-name'] === 'panels');
+		expect(panelsContainer).toBeDefined();
+		const panels = findAllTags(panelsContainer!, t => t.attributes.role === 'tabpanel');
+		expect(panels).toHaveLength(2);
+		const panelStatuses = panels.map(p => p.attributes['data-status']);
+		expect(panelStatuses).toContain('done');
+		expect(panelStatuses).toContain('ready');
+	});
+
+	it('renders flat list when single status group', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" milestone="v1.0" %}
+# Task A
+{% /work %}`),
+			makePage('/plan/work/w2', `{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}
+# Task B
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
+		expect(backlog).toBeDefined();
+
+		// No tabs — single status group renders flat
+		const tabBar = findTag(backlog!, t => t.attributes['data-name'] === 'tabs');
+		expect(tabBar).toBeUndefined();
+
+		// Cards rendered directly in a group div
+		const group = findTag(backlog!, t => t.attributes.class === 'rf-milestone__backlog-group');
+		expect(group).toBeDefined();
+		expect(group!.attributes['data-status']).toBe('ready');
+		const cards = findAllTags(group!, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(2);
+	});
+
+	it('tab buttons show item counts', () => {
+		const pages = [
+			makePage('/plan/milestone/v1', `{% milestone name="v1.0" status="active" %}
+# v1.0
+- Goals
+{% /milestone %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}
+# Done A
+{% /work %}`),
+			makePage('/plan/work/w2', `{% work id="WORK-002" status="ready" priority="high" milestone="v1.0" %}
+# Ready A
+{% /work %}`),
+			makePage('/plan/work/w3', `{% work id="WORK-003" status="ready" priority="medium" milestone="v1.0" %}
+# Ready B
+{% /work %}`),
+		];
+
+		const processed = runPipeline(pages);
+		const milestonePage = processed[0];
+		const backlog = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__backlog');
+		const tabBar = findTag(backlog!, t => t.attributes['data-name'] === 'tabs');
+		const tabs = findAllTags(tabBar!, t => t.attributes.role === 'tab');
+
+		// Find tabs by status and check their label text includes count
+		const doneTab = tabs.find(t => t.attributes['data-status'] === 'done');
+		const readyTab = tabs.find(t => t.attributes['data-status'] === 'ready');
+		expect(doneTab!.children[0]).toContain('(1)');
+		expect(readyTab!.children[0]).toContain('(2)');
 	});
 
 	it('shows progress badge on backlog cards', () => {

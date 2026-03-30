@@ -1,4 +1,5 @@
 import type { RunePackage } from '@refrakt-md/types';
+import { tabsBehavior } from '@refrakt-md/behaviors';
 import { spec } from './tags/spec.js';
 import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
@@ -133,6 +134,9 @@ Custom properties cascade naturally without JavaScript.
 	},
 	theme: {
 		runes: config as unknown as Record<string, Record<string, unknown>>,
+	},
+	behaviors: {
+		'milestone-backlog': tabsBehavior,
 	},
 	pipeline: planPipelineHooks,
 };
