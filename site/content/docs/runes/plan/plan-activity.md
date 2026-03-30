@@ -47,4 +47,4 @@ The rune resolves to an ordered list of entries, each containing:
 - Status badge with `[data-status]` color-coding
 - Entity title
 
-Items are sorted by file modification time, most recent first. Only entities with available `mtime` data are included.
+Items are sorted by file modification time, most recent first. Only entities with available modification data are included. Modification dates are sourced from the shared content pipeline's `$file.modified` variable, which uses git commit timestamps with a filesystem stat fallback.

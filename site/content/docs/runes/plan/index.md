@@ -75,6 +75,10 @@ The plan package registers pipeline hooks that:
 - **Aggregate**: Build cross-page indexes for backlog and decision-log views
 - **Post-process**: Resolve aggregation rune placeholders with indexed entity data
 
+### File timestamps
+
+All plan runes automatically receive `created` and `modified` dates from the content pipeline's `$file.created` and `$file.modified` variables. These are derived from git commit history (with filesystem stat as fallback) and displayed in each rune's header metadata. Authors can override them with explicit attribute values.
+
 ## Directory structure
 
 ```
