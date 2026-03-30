@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateSymbolMarkdown, generateMultiSymbolMarkdown, toSlug } from '../src/lib/symbol-generator.js';
-import type { SymbolDoc } from '../src/extractors/types.js';
+import { generateSymbolMarkdown, generateMultiSymbolMarkdown, toSlug } from '../src/extract/symbol-generator.js';
+import type { SymbolDoc } from '../src/extract/types.js';
 
 describe('toSlug', () => {
 	it('converts camelCase to kebab-case', () => {

@@ -1,4 +1,4 @@
-import type { SymbolDoc } from '../extractors/types.js';
+import type { SymbolDoc } from './types.js';
 import { toSlug } from './symbol-generator.js';
 
 export interface LayoutOptions {

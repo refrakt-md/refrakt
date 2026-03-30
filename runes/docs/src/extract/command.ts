@@ -1,9 +1,9 @@
 import { resolve, join, relative, dirname } from 'node:path';
 import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
-import type { SymbolDoc } from '../extractors/types.js';
-import { loadExtractor } from '../extractors/index.js';
-import { generateSymbolMarkdown, toSlug } from '../lib/symbol-generator.js';
-import { generateLayoutMarkdown } from '../lib/layout-generator.js';
+import type { SymbolDoc } from './types.js';
+import { loadExtractor } from './extractors.js';
+import { generateSymbolMarkdown, toSlug } from './symbol-generator.js';
+import { generateLayoutMarkdown } from './layout-generator.js';
 
 export interface ExtractOptions {
 	input: string;
@@ -159,7 +159,7 @@ export async function extractCommand(opts: ExtractOptions): Promise<void> {
 		}
 
 		if (stale) {
-			console.error('\nAPI reference is out of date. Run `refrakt extract` to regenerate.');
+			console.error('\nAPI reference is out of date. Run `refrakt docs extract` to regenerate.');
 			process.exit(1);
 		} else {
 			console.log(`OK: ${generated.size} files up to date (${allSymbols.length} symbols)`);

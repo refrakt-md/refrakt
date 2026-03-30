@@ -14,6 +14,16 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli-plugin": {
+      "types": "./dist/cli-plugin.d.ts",
+      "default": "./dist/cli-plugin.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -25,6 +35,9 @@
     "@refrakt-md/transform": "0.9.0",
     "@refrakt-md/runes": "0.9.0",
     "@markdoc/markdoc": "0.4.0",
-    "reflect-metadata": "^0.2.0"
+    "reflect-metadata": "^0.2.0",
+    "tree-sitter-wasms": "^0.1.13",
+    "typescript": "^5.4.0",
+    "web-tree-sitter": "^0.24.7"
   }
 }

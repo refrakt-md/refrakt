@@ -35,7 +35,7 @@ refrakt inspect hint --type=warning
 refrakt write -d content/ "Set up a docs site with guides and a blog"
 
 # Generate API reference from source code
-refrakt extract ./src -o ./content/api
+refrakt docs extract ./src -o ./content/api
 
 # Audit CSS coverage across all runes
 refrakt inspect --all --audit

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { resolve } from 'node:path';
-import { TypeScriptExtractor } from '../src/extractors/typescript.js';
-import type { SymbolDoc } from '../src/extractors/types.js';
+import { TypeScriptExtractor } from '../src/extract/typescript.js';
+import type { SymbolDoc } from '../src/extract/types.js';
 
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 
