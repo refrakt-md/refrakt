@@ -14,6 +14,7 @@ import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
 import { planPipelineHooks, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
+import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
 
 // --- Markdoc tag registry (built once) ---
@@ -214,7 +215,7 @@ function buildThemeConfig(): ThemeConfig {
 
 // --- Markdoc rendering ---
 
-function parseAndTransform(content: string, filePath: string): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
+function parseAndTransform(content: string, filePath: string, fileTimestamps?: FileTimestamps): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
 	const ast = Markdoc.parse(escapeFenceTags(content));
 	const headings = extractHeadings(ast);
 	const config = {
@@ -225,6 +226,7 @@ function parseAndTransform(content: string, filePath: string): { renderable: unk
 			path: filePath,
 			headings,
 			__source: content,
+			...(fileTimestamps ? { file: { created: fileTimestamps.created, modified: fileTimestamps.modified } } : {}),
 		},
 	};
 	const renderable = Markdoc.transform(ast, config);
@@ -1109,6 +1111,10 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	}
 	const allEntities = [...entities, ...specsEntities];
 
+	// Batch-collect git timestamps for the plan directory (and specs dir if separate)
+	const gitTimestamps = getGitTimestamps(dir);
+	const specsGitTimestamps = specsDir && specsDir !== dir ? getGitTimestamps(specsDir) : gitTimestamps;
+
 	// 2. Parse and transform each entity file
 	const transformedPages: TransformedPage[] = [];
 	const pageMap = new Map<string, { entity: PlanEntity; page: TransformedPage }>();
@@ -1117,7 +1123,9 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		const filePath = path.resolve(dir, entity.file);
 		const content = fs.readFileSync(filePath, 'utf-8');
 		const url = `${baseUrl}${entity.type}/${slugify(entity.attributes.id || entity.attributes.name || '')}.html`;
-		const { renderable, title, headings } = parseAndTransform(content, entity.file);
+		const tsMap = specsEntities.includes(entity) ? specsGitTimestamps : gitTimestamps;
+		const ts = tsMap.get(entity.file) ?? getStatTimestamps(filePath);
+		const { renderable, title, headings } = parseAndTransform(content, entity.file, ts);
 
 		const page: TransformedPage = {
 			url,
