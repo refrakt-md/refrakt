@@ -17,6 +17,7 @@
 
 - overview
 - configuration
+- dimensions
 - css
 - creating-a-theme
 - components
