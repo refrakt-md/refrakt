@@ -1,4 +1,4 @@
-{% work id="WORK-075" status="ready" priority="low" complexity="trivial" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-075" status="done" priority="low" complexity="trivial" tags="plan, cli" milestone="v0.9.0" %}
 
 # Update plan init CLAUDE.md template with resolution guidance
 
@@ -16,5 +16,11 @@ Update the `WORKFLOW_SECTION` constant in `runes/plan/src/commands/init.ts` to a
 ## References
 - {% ref "SPEC-027" /%}
 - {% ref "WORK-072" /%} — CLI resolve flag (dependency — flag must exist first)
+
+## Resolution
+
+Completed: 2026-03-30
+
+`WORKFLOW_SECTION` in `runes/plan/src/commands/init.ts` updated with `--resolve` guidance matching SPEC-027 pattern. Root CLAUDE.md already reflects the updated workflow. All criteria verified met.
 
 {% /work %}
