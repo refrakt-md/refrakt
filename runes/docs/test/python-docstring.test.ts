@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectStyle, parseDocstring } from '../src/extractors/python-docstring.js';
+import { detectStyle, parseDocstring } from '../src/extract/python-docstring.js';
 
 describe('detectStyle', () => {
 	it('detects Google style', () => {

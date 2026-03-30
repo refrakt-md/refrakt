@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { resolve } from 'node:path';
-import { PythonExtractor } from '../src/extractors/python.js';
+import { PythonExtractor } from '../src/extract/python.js';
 
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 

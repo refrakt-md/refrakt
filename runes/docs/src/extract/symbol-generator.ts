@@ -1,4 +1,4 @@
-import type { SymbolDoc, SymbolKind, SymbolParameter, SymbolMemberDoc } from '../extractors/types.js';
+import type { SymbolDoc, SymbolKind, SymbolParameter, SymbolMemberDoc } from './types.js';
 
 export interface GeneratorOptions {
 	/** Whether to include frontmatter (default: true) */

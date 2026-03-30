@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { extractCommand } from '../src/commands/extract.js';
+import { extractCommand } from '../src/extract/command.js';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';

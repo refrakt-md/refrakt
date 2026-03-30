@@ -1,16 +1,16 @@
 ---
-title: refrakt extract
+title: refrakt docs extract
 description: Generate API reference documentation from TypeScript or Python source code
 ---
 
-# refrakt extract
+# refrakt docs extract
 
 Extracts exported symbols from TypeScript or Python source code and generates Markdown documentation using the `{% symbol %}` rune. Each exported function, class, interface, or type gets its own `.md` file, plus a `_layout.md` for navigation.
 
 ## Basic usage
 
 ```shell
-refrakt extract ./src -o ./content/api
+refrakt docs extract ./src -o ./content/api
 ```
 
 This scans `./src` for source files, extracts all exported symbols, and writes one Markdown file per symbol to `./content/api/`.
@@ -24,7 +24,7 @@ The language is auto-detected from file extensions and the presence of `tsconfig
 {% tab name="TypeScript" %}
 
 ```shell
-refrakt extract ./src -o ./content/api --lang typescript
+refrakt docs extract ./src -o ./content/api --lang typescript
 ```
 
 {% /tab %}
@@ -32,7 +32,7 @@ refrakt extract ./src -o ./content/api --lang typescript
 {% tab name="Python" %}
 
 ```shell
-refrakt extract ./lib -o ./content/api --lang python
+refrakt docs extract ./lib -o ./content/api --lang python
 ```
 
 {% /tab %}
@@ -44,7 +44,7 @@ refrakt extract ./lib -o ./content/api --lang python
 Add clickable links back to source code in the generated docs:
 
 ```shell
-refrakt extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
+refrakt docs extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
 ```
 
 ## Custom section title
@@ -52,7 +52,7 @@ refrakt extract ./src -o ./content/api --source-url https://github.com/my/repo/b
 By default the generated `_layout.md` uses "API Reference" as the navigation title. Override it with:
 
 ```shell
-refrakt extract ./src -o ./content/api --title "SDK Reference"
+refrakt docs extract ./src -o ./content/api --title "SDK Reference"
 ```
 
 ## CI validation
@@ -60,7 +60,7 @@ refrakt extract ./src -o ./content/api --title "SDK Reference"
 Use `--validate` to check that generated files are up to date without overwriting them:
 
 ```shell
-refrakt extract ./src -o ./content/api --validate
+refrakt docs extract ./src -o ./content/api --validate
 ```
 
 This exits with code 1 if any files are missing or stale, making it suitable for CI pipelines that enforce documentation freshness.
