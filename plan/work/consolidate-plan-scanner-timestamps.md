@@ -1,4 +1,4 @@
-{% work id="WORK-086" status="ready" priority="medium" complexity="simple" tags="plan, content, pipeline" %}
+{% work id="WORK-086" status="ready" priority="medium" complexity="simple" tags="plan, content, pipeline" milestone="v1.0.0" %}
 
 # Consolidate Plan Scanner with Shared Git Timestamp Utility
 
