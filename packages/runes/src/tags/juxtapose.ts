@@ -4,6 +4,7 @@ const { Tag } = Markdoc;
 import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
+import { unwrapParagraphImages } from './common.js';
 
 const variantType = ['slider', 'toggle', 'fade', 'auto'] as const;
 const orientationType = ['horizontal', 'vertical'] as const;
@@ -33,7 +34,9 @@ export const juxtapose = createContentModelSchema({
 
 		const panelNodes: RenderableTreeNode[] = zones.map((zone, i) => {
 			const body = new RenderableNodeCursor(
-				Markdoc.transform(asNodes(zone.body), config) as RenderableTreeNode[],
+				unwrapParagraphImages(
+					Markdoc.transform(asNodes(zone.body), config) as RenderableTreeNode[],
+				),
 			);
 			const bodyRef = body.wrap('div');
 
