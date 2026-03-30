@@ -1,10 +1,7 @@
-import { loadContent } from '@refrakt-md/content';
-import * as path from 'node:path';
-
-const contentDir = path.resolve('content');
+import { getSite } from '$lib/content';
 
 export async function load() {
-	const site = await loadContent(contentDir);
+	const site = await getSite();
 
 	return {
 		pages: site.pages.map(p => ({
