@@ -475,7 +475,7 @@
 	position: relative;
 }
 
-.rf-copy-button {
+.rf-copy-btn {
 	position: absolute;
 	top: 0.25rem;
 	right: 0.25rem;
@@ -494,16 +494,16 @@
 	transition: opacity 0.15s ease;
 }
 
-.rf-code-wrapper:hover .rf-copy-button {
+.rf-code-wrapper:hover .rf-copy-btn {
 	opacity: 1;
 }
 
-.rf-copy-button:hover {
+.rf-copy-btn:hover {
 	color: var(--rf-color-text, #212529);
 	border-color: var(--rf-color-muted, #6c757d);
 }
 
-.rf-copy-button--copied {
+.rf-copy-btn--copied {
 	color: var(--rf-color-success, #51cf66);
 	border-color: var(--rf-color-success, #51cf66);
 }

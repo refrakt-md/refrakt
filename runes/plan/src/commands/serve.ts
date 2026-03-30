@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as fs from 'fs';
 import { runPipeline, renderPage } from './render-pipeline.js';
 import type { PipelineResult } from './render-pipeline.js';
+import { bundleBehaviors } from './bundle-behaviors.js';
 
 export interface ServeOptions {
 	dir: string;
@@ -22,12 +23,14 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 
 	let pipeline: PipelineResult = undefined!;
 	let combinedCss: string;
+	let behaviorsJs: string;
 	let pageIndex: Map<string, string>;
 	let ready = false;
 
 	async function rebuild() {
 		pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
 		combinedCss = pipeline.themeCss + (pipeline.highlightCss ? '\n' + pipeline.highlightCss : '');
+		behaviorsJs = await bundleBehaviors();
 
 		const allPageUrls = [
 			{ url: baseUrl, title: pipeline.dashboard.title, draft: false },
@@ -35,6 +38,7 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		];
 
 		const stylesheets = ['/__plan-theme.css'];
+		const scripts = ['/__plan-behaviors.js'];
 		const newIndex = new Map<string, string>();
 
 		// Index all pages
@@ -42,6 +46,7 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 			newIndex.set(page.url, renderPage(page, pipeline.navRegion, allPageUrls, {
 				hotReload: true,
 				stylesheets,
+				scripts,
 				activeUrl: page.url,
 			}));
 		}
@@ -49,6 +54,7 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		const dashHtml = renderPage(pipeline.dashboard, pipeline.navRegion, allPageUrls, {
 			hotReload: true,
 			stylesheets,
+			scripts,
 			activeUrl: baseUrl,
 		});
 		newIndex.set(baseUrl, dashHtml);
@@ -133,6 +139,13 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		if (url === '/__plan-theme.css') {
 			res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
 			res.end(combinedCss);
+			return;
+		}
+
+		// Serve bundled behaviors JS
+		if (url === '/__plan-behaviors.js') {
+			res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+			res.end(behaviorsJs);
 			return;
 		}
 
