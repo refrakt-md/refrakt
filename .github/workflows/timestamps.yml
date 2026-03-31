@@ -1,0 +1,66 @@
+name: Update Timestamps Cache
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plan/**'
+      - 'site/content/**'
+
+jobs:
+  timestamps:
+    name: Regenerate .timestamps.json
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate timestamps cache
+        run: |
+          node -e "
+          const { execSync } = require('child_process');
+          const { writeFileSync } = require('fs');
+
+          function formatDate(s) {
+            const d = new Date(s * 1000);
+            return d.toISOString().slice(0, 10);
+          }
+
+          function parselog(cmd) {
+            const out = execSync(cmd, { encoding: 'utf-8', maxBuffer: 10*1024*1024 });
+            const map = new Map();
+            let ts = 0;
+            for (const line of out.split('\n')) {
+              const t = line.trim();
+              if (!t) continue;
+              if (/^\d+$/.test(t)) { ts = parseInt(t, 10); continue; }
+              if (ts > 0 && !map.has(t)) map.set(t, ts);
+            }
+            return map;
+          }
+
+          const modified = parselog('git log --format=\"%at\" --name-only --diff-filter=ACMR HEAD');
+          const created = parselog('git log --format=\"%at\" --name-only --diff-filter=A --reverse HEAD');
+          const all = new Set([...modified.keys(), ...created.keys()]);
+          const cache = {};
+          for (const p of all) {
+            cache[p] = {
+              created: created.has(p) ? formatDate(created.get(p)) : undefined,
+              modified: modified.has(p) ? formatDate(modified.get(p)) : undefined,
+            };
+          }
+          writeFileSync('.timestamps.json', JSON.stringify(cache, null, '\t') + '\n');
+          console.log('Wrote ' + Object.keys(cache).length + ' entries to .timestamps.json');
+          "
+
+      - name: Commit and push if changed
+        run: |
+          git diff --quiet .timestamps.json 2>/dev/null && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .timestamps.json
+          git commit -m "chore: update timestamps cache"
+          git push
