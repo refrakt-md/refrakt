@@ -9,6 +9,8 @@ export interface BuildOptions {
 	out: string;
 	theme: string;
 	baseUrl: string;
+	/** Path to a .timestamps.json cache file (for deploys without full git history). */
+	timestampsCache?: string;
 }
 
 export interface BuildResult {
@@ -18,9 +20,9 @@ export interface BuildResult {
 }
 
 export async function runBuild(options: BuildOptions): Promise<BuildResult> {
-	const { dir, specsDir, out, theme, baseUrl } = options;
+	const { dir, specsDir, out, theme, baseUrl, timestampsCache } = options;
 
-	const pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
+	const pipeline = await runPipeline({ dir, specsDir, theme, baseUrl, timestampsCache });
 
 	const files: string[] = [];
 

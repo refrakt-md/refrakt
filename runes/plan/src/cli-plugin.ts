@@ -1,3 +1,5 @@
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import { runUpdate, EXIT_NOT_FOUND, EXIT_VALIDATION_ERROR } from './commands/update.js';
 import { runNext, EXIT_NO_MATCHES, EXIT_INVALID_ARGS } from './commands/next.js';
 import { runCreate, EXIT_INVALID_ARGS as CREATE_INVALID_ARGS } from './commands/create.js';
@@ -6,6 +8,7 @@ import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
 import { runServe } from './commands/serve.js';
 import { runBuild } from './commands/build.js';
+import { writeTimestampsCache } from '@refrakt-md/content';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -65,6 +68,7 @@ async function handleBuild(args: string[]): Promise<void> {
 	let out = './plan-site';
 	let theme = 'auto';
 	let baseUrl = '/';
+	let timestampsCache: string | undefined;
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -79,17 +83,34 @@ async function handleBuild(args: string[]): Promise<void> {
 		} else if (arg === '--base-url' && args[i + 1]) {
 			baseUrl = args[++i];
 			if (!baseUrl.endsWith('/')) baseUrl += '/';
+		} else if (arg === '--timestamps' && args[i + 1]) {
+			timestampsCache = args[++i];
 		} else if (!arg.startsWith('-')) {
 			dir = arg;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url]');
+			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url] [--timestamps path]');
 			process.exit(1);
 		}
 	}
 
+	// Auto-detect .timestamps.json if not explicitly provided
+	if (!timestampsCache) {
+		const candidates = [
+			resolve(dir, '.timestamps.json'),
+			resolve('.timestamps.json'),
+		];
+		for (const candidate of candidates) {
+			if (existsSync(candidate)) {
+				timestampsCache = candidate;
+				console.log(`Using timestamp cache from ${candidate}`);
+				break;
+			}
+		}
+	}
+
 	try {
-		const result = await runBuild({ dir, specsDir, out, theme, baseUrl });
+		const result = await runBuild({ dir, specsDir, out, theme, baseUrl, timestampsCache });
 		console.log(`Built ${result.pages} pages to ${result.outputDir}/`);
 		for (const f of result.files) {
 			console.log(`  + ${f}`);
@@ -475,6 +496,24 @@ function handleStatus(args: string[]): void {
 	}
 }
 
+function handleTimestamps(args: string[]): void {
+	let out = '.timestamps.json';
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--out' && args[i + 1]) {
+			out = args[++i];
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan timestamps [--out path]');
+			process.exit(1);
+		}
+	}
+
+	const count = writeTimestampsCache(out);
+	console.log(`Wrote ${count} entries to ${out}`);
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
@@ -486,6 +525,7 @@ const plugin: CliPlugin = {
 		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
 		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
+		{ name: 'timestamps', description: 'Generate timestamp cache from git history', handler: handleTimestamps },
 	],
 };
 

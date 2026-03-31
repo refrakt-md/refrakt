@@ -1,0 +1,4709 @@
+{
+	".changeset/README.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	".changeset/config.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	".github/workflows/release.yml": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	".github/workflows/timestamps.yml": {
+		"created": "2026-03-31",
+		"modified": "2026-03-31"
+	},
+	".gitignore": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	".vscode/launch.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	".vscode/tasks.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"CLAUDE.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"README.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"RELEASING.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"contracts/structures.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"internal-spec.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"package-lock.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/ai/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/ai/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/ai/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/modes/chat.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/modes/write.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/prompt.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/provider.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/providers/anthropic.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/providers/gemini.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/src/providers/ollama.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/test/modes/write.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/test/prompt.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/test/providers/anthropic.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/test/providers/gemini.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/test/providers/ollama.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/ai/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/behaviors/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/behaviors/src/behaviors/accordion.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/copy.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/datatable.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/form.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/gallery.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/juxtapose.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/mobile-menu.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/preview.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/reveal.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/scrollspy.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/search.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/tabs.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/behaviors/version-switcher.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/audio.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/context.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/diagram.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/map.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/nav.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/sandbox.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/elements/ssr-safe.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/src/utils.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/accordion.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/copy.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/datatable.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/form.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/init.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/preview.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/register.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/reveal.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/test/tabs.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/behaviors/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/cli/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/cli/src/bin.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-31"
+	},
+	"packages/cli/src/commands/contracts.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/edit.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/extract.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/inspect.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/package-validate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/scaffold-css.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/theme.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/validate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/commands/write.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/config-file.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/extractors/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/extractors/python-docstring.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/extractors/python.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/extractors/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/extractors/typescript.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/css-audit.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/css-resolve.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/dimension-audit.ts": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/fixtures.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/format.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/layout-generator.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/meta-audit.ts": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/symbol-generator.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/src/lib/variants.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/config.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/css-audit.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/extract.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/classes.py": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/classes.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/enums.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/functions.py": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/functions.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/interfaces.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/fixtures/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/package-validate.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/plugin.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/python-docstring.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/python-extractor.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/scaffold-css.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/symbol-generator.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/typescript-extractor.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/test/write.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/cli/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/content/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/content/src/analyze.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/content-tree.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/frontmatter.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/content/src/layout.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/navigation.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/registry.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/router.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/src/site.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-31"
+	},
+	"packages/content/src/sitemap.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/content/src/timestamps.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"packages/content/test/analyze.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/content-tree.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/_partials/cta.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/_partials/shared/disclaimer.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/blog/draft-post.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/blog/first-post.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/docs/01-getting-started.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/docs/02-installation.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/docs/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/partials-test.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/fixtures/site/variables.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/frontmatter.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/layout.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/partials.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/pipeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/registry.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/router.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/site.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/content/test/sitemap.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/content/test/timestamps.test.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"packages/content/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/create-refrakt/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/create-refrakt/src/bin.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/src/scaffold.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/_gitignore": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/build.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/content/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/content/docs/getting-started.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/content/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template-html/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/_gitignore": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/_npmrc": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/content/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/content/docs/getting-started.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/content/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/app.d.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/app.html": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/lib/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/routes/+layout.server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/routes/+layout.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/routes/[...slug]/+page.server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/src/routes/[...slug]/+page.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/static/robots.txt": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/svelte.config.js": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/template/vite.config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/test/scaffold-theme.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/test/scaffold.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/create-refrakt/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/editor/app/index.html": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/App.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/api/client.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ActionEditPopover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/BlockCard.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/BlockEditPanel.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/BlockEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/CategoryNav.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/CodeEditPopover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ConfirmDialog.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ContentModelTree.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ContentTree.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ContextMenu.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/CreateCategoryModal.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/CreateDirectoryModal.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/CreatePageModal.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/EditorLayout.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ExternalChangeBanner.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/FileTree.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/FileTreeNode.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/FrontmatterEditPanel.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/FrontmatterEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/HeaderBar.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/IconPickerPopover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ImageEditPopover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/InlineEditPopover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/InlineEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/InsertBlockDialog.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/LayoutEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/MarkdownEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/NavEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/NavItemRow.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/PageCard.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/Popover.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/PreviewPane.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ProseBlockCard.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ProseEditPanel.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/RawYamlEditor.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/RegionCard.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/RenameDialog.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/ResizeHandle.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/RuneAttributes.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/components/TagsInput.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/attribute-completion.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/block-parser.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/codemirror-theme.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/content-model-resolver.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/inline-markdown.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/markdoc-highlight.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/rune-palette.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/editor/section-mapper.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/preview/block-renderer.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/state/editor.svelte.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/styles/tokens.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/utils/frontmatter.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/lib/utils/layout-parser.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/src/main.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/svelte.config.js": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/app/vite.config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/editor/preview-runtime/App.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/preview-runtime/index.html": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/community-tags-builder.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/css.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/layout-resolver.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/preview-builder.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/preview.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/src/server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/test/inline-markdown.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/editor/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/highlight/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/highlight/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/highlight/src/highlight.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/highlight/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/highlight/src/langs/markdoc.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/highlight/test/highlight.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/highlight/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/html/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/html/src/client.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/src/page-shell.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/src/render.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/src/theme.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/src/tree-transforms.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/test/render.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/html/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/language-server/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/language-server/src/parser/document.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/parser/markdoc.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/providers/completion.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/providers/definition.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/providers/diagnostics.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/providers/hover.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/providers/inspector.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/registry/loader.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/src/server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/completion.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/diagnostics.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/document.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/hover.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/inspector.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/test/registry.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/language-server/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/lumina/base.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/contracts/structures.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/html/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/index.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/manifest.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/lumina/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/src/icons.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/src/transform.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/base/attributes.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/dimensions/checklist.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/dimensions/density.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/dimensions/media.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/dimensions/metadata.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/styles/dimensions/sections.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/dimensions/sequence.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/dimensions/state.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/dimensions/surfaces.css": {
+		"created": "2026-03-25",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/elements/blockquote.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/elements/code.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/elements/table.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/global.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/blog.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/default.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/docs.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/layouts/mobile.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/on-this-page.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/search.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/layouts/split.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/styles/layouts/version-switcher.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/accordion.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/annotate.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/api.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/audio.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/backlog.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/bento.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/bg.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/blog.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/bond.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/breadcrumb.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/budget.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/bug.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/cast.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/changelog.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/character.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/chart.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/codegroup.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/compare.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/comparison.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/conversation.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/cta.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/datatable.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/decision-log.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/decision.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/design-context.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/details.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/diagram.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/diff.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/embed.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/event.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/faction.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/lumina/styles/runes/feature.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/figure.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/form.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/gallery.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/grid.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/hero.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/hint.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/howto.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/itinerary.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/juxtapose.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/lore.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/map.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/mediatext.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/milestone.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/lumina/styles/runes/mockup.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/nav.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/organization.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/page-section.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/palette.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/plan-activity.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/plan-progress.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/playlist.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/styles/runes/plot.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/preview.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/pricing.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/pullquote.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/realm.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/lumina/styles/runes/recipe.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/styles/runes/reveal.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/sandbox.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/showcase.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/sidenote.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/spacing.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/spec.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/steps.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/storyboard.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/swatch.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/symbol.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/tabs.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/styles/runes/testimonial.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/textblock.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/timeline.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/tint.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/toc.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/track.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/typography.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/work.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/styles/runes/xref.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/svelte/elements.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/svelte/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/svelte/manifest.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/svelte/registry.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/svelte/tokens.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/test/contracts.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/test/css-coverage.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/lumina/tokens/base.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/lumina/tokens/dark.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/lumina/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/runes/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/runes/src/attributes.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/runes/src/documents/doc.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/documents/page.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/examples.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/fence-escape.ts": {
+		"created": "2026-03-29",
+		"modified": "2026-03-29"
+	},
+	"packages/runes/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/runes/src/interfaces.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/layouts/grid.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/layouts/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/annotation.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/attribute.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/decoration.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/group.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/id.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/annotations/interfaces.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/component.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/model.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/node.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/renderable.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/resolver.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/lib/svg.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/nodes.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"packages/runes/src/packages.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/registry.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/rune.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/sandbox-sources.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/accordion.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/annotate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/bg.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/blog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/breadcrumb.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/budget.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/chart.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/codegroup.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/compare.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/conversation.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/datatable.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/details.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/diagram.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/diff.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/docpage.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/embed.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/error.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/figure.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/form.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/gallery.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/grid.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/hint.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/juxtapose.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/mediatext.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/nav.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/pagination.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/pullquote.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/reveal.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/sandbox.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/showcase.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/sidenote.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/tabs.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/textblock.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/tint.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/toc.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/schema/xref.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/seo.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/serialize.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/accordion.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/annotate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/bg.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/blog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/breadcrumb.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/budget.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/chart.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/codegroup.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/common.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/runes/src/tags/compare.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/conversation.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/datatable.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/details.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/diagram.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/diff.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/embed.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/error.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/figure.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/form.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/gallery.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/grid.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/hint.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/icon.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/juxtapose.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/runes/src/tags/layout.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/mediatext.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/nav.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/pullquote.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/region.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/reveal.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/sandbox.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/showcase.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/sidenote.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/tabs.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/textblock.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/tint.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/toc.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/tags/xref.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/src/util.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/accordion.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/annotate.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/attributes.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/bg.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/blog-pipeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/blog.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/breadcrumb-auto.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/breadcrumb.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/chart.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/codegroup.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/compare.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/conversation.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/datatable.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/details.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/diagram.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/diff.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/embed.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/figure.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/fixture-discovery.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/fixtures/mock-community-package-alt/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/fixtures/mock-community-package/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/form.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/grid.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/hint.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/icon.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/layout.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/mediatext.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/nav-auto.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/nav.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/packages.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/pipeline-hooks.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/region.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/renderable.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/resolver.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/reveal.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/rune.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/sandbox-sources.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/sandbox.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/showcase.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/sidenote.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/tabs.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/textblock.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/toc.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/util.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/xref-resolve.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/test/xref.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/runes/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/svelte/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/svelte/src/Renderer.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/ThemeShell.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/behaviors.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/context.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/elements.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/elements/Pre.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/elements/Table.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/registry.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/route-rules.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/serialize.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/theme.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/test/serialize.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/svelte/test/theme.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/sveltekit/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/sveltekit/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/src/content-hmr.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/src/plugin.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-31"
+	},
+	"packages/sveltekit/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/src/virtual-modules.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/test/config.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/test/plugin.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/test/virtual-modules.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/sveltekit/virtual.d.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/transform/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/transform/src/assemble.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/computed.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/contracts.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/engine.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/transform/src/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/html.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/layout.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/layouts.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"packages/transform/src/merge.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/provenance.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/route-rules.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/selectors.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"packages/transform/src/validate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/assemble.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/computed.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/context-modifiers.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/density.test.ts": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/engine-core.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/engine-features.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/html.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/layout.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/metadata.test.ts": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/sections.test.ts": {
+		"created": "2026-03-25",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/selectors.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/test/validate.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/transform/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/types/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/types/src/content-model.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/interfaces.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/package.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/schema/common.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/schema/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/schema/page.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/serialized.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/theme.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-31"
+	},
+	"packages/types/src/tokens.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/types/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/.vscodeignore": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"packages/vscode/README.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/language-configuration.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/snippets/runes.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/src/extension.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/src/generate-snippets.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/src/inspector.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"packages/vscode/syntaxes/refrakt.tmLanguage.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/CLAUDE.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/decision/astro-readiness.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/decision/framework-readiness.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/decision/markdoc-feature-gap-analysis.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/decision/plan-site-theme-resolution.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/milestone/v0.9.0.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/milestone/v1.0.0.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/spec/community-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/cross-page-pipeline.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/declarative-content-model.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/local-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/lumina-theme.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/media-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/metadata-system.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/multi-framework-layout-transform.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/plan-cli.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/plan-html-adapter.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/plan-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/plan-site-ux.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/preview-sandbox.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/rune-editor-compat.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/rune-inspector.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/rune-output-standards.md": {
+		"created": "2026-03-26",
+		"modified": "2026-03-30"
+	},
+	"plan/spec/rune-symbol.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/rune-timestamps.md": {
+		"created": "2026-03-28",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/storytelling-world-engine.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/theme-studio.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/spec/unbuilt-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/universal-theming.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/spec/work-item-summaries.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/align-playlist-standard-structure.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/annotate-rune-metadata.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/batch-3-sections-rune-conversions.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-album-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-artist-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-audio-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-backlog-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/work/build-concept-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-decision-log-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/work/build-exercise-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-gallery-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-glossary-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-job-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-math-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-objective-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-partner-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-prerequisite-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-quiz-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-stat-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-track-playlist-runes.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/build-video-rune.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/character-single-code-path.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/cli-plugin-architecture.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/cli-resolve-flag.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/consolidate-plan-scanner-timestamps.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/work/converge-plan-site-renderer-with-shared-layout-engine.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/create-refrakt-project-defaults.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/css-fallback-resolution.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/density-dimension.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/display-resolution-in-status.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/editor-background-registry.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/editor-package-awareness.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/editor-registry-autocomplete.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/editor-visual-polish.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/git-timestamp-utility.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/work/init-resolution-guidance.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/inject-file-timestamp-variables.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/work/inspector-dimensions-audit.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/inspector-metadata-audit.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/interactive-state-dimension.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/learning-pipeline-hooks.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/lumina-dimension-css.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/lumina-metadata-css.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/lumina-redundant-css-cleanup.md": {
+		"created": "2026-03-25",
+		"modified": "2026-03-30"
+	},
+	"plan/work/media-slots-dimension.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/metadata-structure-entry.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/milestone-auto-backlog.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/official-packages-breakout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/pipeline-incremental-builds.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/plan-cli-claude-md.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-client-behaviors.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-collapsible-sidebar.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-config-theme-resolution.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-dashboard-theme.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-dependency-viz.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-enhanced-dashboard.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-entity-registration.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-file-scanner.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-html-adapter-refactor.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-init-create.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-keyboard-nav.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-known-sections.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-nav-region.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-next-command.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-rune-timestamp-attributes.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/work/plan-serve-build.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-sidebar-search.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-status-command.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-syntax-highlighting.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-tag-views.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-token-bridging.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-update-command.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-validate-command.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/plan-xref-syntax.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-29"
+	},
+	"plan/work/ref-alias-for-xref.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/refactor-realm-faction-transforms.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/scanner-resolution-parsing.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"plan/work/section-anatomy-dimension.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/shared-layout-meta-utility.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/shared-media-unwrap-utility.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/shared-split-layout-css.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/sitemap-lastmod-support.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"plan/work/storytelling-bem-hygiene.md": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"plan/work/storytelling-pipeline-hooks.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/universal-checklist-styling.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/universal-sequential-items.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"plan/work/validate-resolution-checks.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/business/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/business/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/business/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"runes/business/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/business/src/schema/cast.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/schema/organization.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/schema/timeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/tags/cast.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/tags/organization.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/tags/timeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/test/cast.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/test/organization.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/test/timeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/business/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/design/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/design/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"runes/design/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/design/src/pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/design-context.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/palette.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/preview.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/spacing.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/swatch.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/schema/typography.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/design-context.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/mockup.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/palette.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/preview.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/spacing.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/swatch.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/tags/typography.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/test/preview.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/design/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/docs/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/cli-plugin.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"runes/docs/src/extract/command.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/extractors.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/layout-generator.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/python-docstring.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/python.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/symbol-generator.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/types.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/extract/typescript.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/docs/src/schema/api.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/schema/changelog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/schema/symbol.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/tags/api.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/tags/changelog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/tags/symbol.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/test/api.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/test/changelog.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/test/extract.test.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/classes.py": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/classes.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/enums.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/functions.py": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/functions.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/interfaces.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/tsconfig.json": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/fixtures/types.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/test/python-docstring.test.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/python-extractor.test.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/symbol-generator.test.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/test/symbol.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/docs/test/typescript-extractor.test.ts": {
+		"modified": "2026-03-30"
+	},
+	"runes/docs/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/learning/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/learning/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/learning/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/learning/src/schema/howto.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/src/schema/recipe.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/src/tags/howto.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"runes/learning/src/tags/recipe.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/learning/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/test/howto.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/test/recipe.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/learning/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/marketing/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/marketing/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/marketing/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/marketing/src/schema/bento.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/comparison.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/cta.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/feature.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/hero.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/pricing.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/steps.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/schema/testimonial.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/bento.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/comparison.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/cta.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/feature.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/hero.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/pricing.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/steps.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/tags/testimonial.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/bento.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/comparison.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/cta.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/feature.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/hero-content-model.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/hero.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/pricing.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/steps.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/test/testimonial.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/marketing/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/media/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/media/src/attributes.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/media/src/duration.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/media/src/schema/audio.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/src/tags/audio.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/src/tags/playlist.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/media/src/tags/track.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/test/audio.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/test/music-playlist.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/media/test/playlist.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/media/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/test/track.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/media/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/places/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/places/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-26"
+	},
+	"runes/places/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/places/src/schema/event.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/schema/itinerary.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/schema/map.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/tags/event.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/tags/itinerary.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/tags/map.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/test/event.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/test/map.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/places/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/CHANGELOG.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/cli-plugin.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/build.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/bundle-behaviors.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/create.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/init.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/next.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/plan-behaviors.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/render-pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/serve.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/commands/status.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/templates.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/update.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/commands/validate.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/filter.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/scanner.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/schema/backlog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/schema/bug.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/schema/decision-log.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/schema/decision.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/schema/milestone.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/schema/plan-activity.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/schema/plan-progress.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/schema/spec.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/schema/work.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/tags/backlog.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/tags/bug.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/tags/decision-log.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/tags/decision.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/tags/milestone.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/tags/plan-activity.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/tags/plan-progress.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/src/tags/spec.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/tags/work.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/src/util.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/styles/default.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/styles/minimal.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/styles/tokens.css": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/backlog.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/bug.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/build.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/test/create.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/decision-log.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/decision.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/filter.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/init.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/milestone.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/next.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/pipeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/plan/test/render-pipeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/scanner.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/spec.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/status.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/update.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/validate.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/test/work.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/plan/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/CHANGELOG.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/storytelling/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/storytelling/src/config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/storytelling/src/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"runes/storytelling/src/pipeline.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/bond.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/character.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/faction.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/lore.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/plot.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/realm.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/story-section.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/schema/storyboard.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/tags/bond.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/tags/character.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/storytelling/src/tags/common.ts": {
+		"created": "2026-03-27",
+		"modified": "2026-03-27"
+	},
+	"runes/storytelling/src/tags/faction.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/storytelling/src/tags/lore.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/tags/plot.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/tags/realm.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-27"
+	},
+	"runes/storytelling/src/tags/storyboard.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/src/types.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/bond.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/character.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/faction.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/helpers.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/lore.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/pipeline.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-24"
+	},
+	"runes/storytelling/test/plot.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/realm.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/seo.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/test/storyboard.test.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"runes/storytelling/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"scripts/generate-changelog.mjs": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"scripts/sync-rune-versions.mjs": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/.gitignore": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/.npmrc": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/README.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/architecture.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-4.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-5.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-6.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-7.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-8.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/blog/whats-new-in-0-9.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/_layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/adapters/adapters-overview.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/adapters/html.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/adapters/sveltekit.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/authoring/authoring-overview.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/authoring/content-models.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/authoring/model-api.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/authoring/output-contract.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/authoring/page-sections.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/authoring/partials.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/authoring/patterns.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/cli/cli-overview.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/cli/extract.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/cli/inspect.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/cli/theme-tools.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/cli/write.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/getting-started.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/packages/authoring.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/packages/extending-core.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/packages/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/packages/pipeline.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/accordion.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/annotate.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/bg.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/blog.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/breadcrumb.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/budget.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/business/cast.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/business/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/business/organization.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/business/timeline.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/chart.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/codegroup.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/compare.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/conversation.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/datatable.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/design-context.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/mockup.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/palette.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/preview.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/spacing.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/swatch.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/design/typography.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/details.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/diagram.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/diff.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/docs/api.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/docs/changelog.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/docs/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/docs/symbol.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/embed.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/figure.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/form.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/gallery.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/grid.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/hint.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/icon.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/juxtapose.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/layout.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/learning/howto.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/learning/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/learning/recipe.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/bento.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/comparison.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/cta.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/feature.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/hero.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/pricing.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/steps.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/marketing/testimonial.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/media/audio.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/media/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/media/playlist.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/media/track.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/mediatext.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/nav.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/places/event.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/places/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/places/itinerary.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/places/map.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/plan/backlog.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/plan/bug.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/cli.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/plan/decision-log.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/plan/decision.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/milestone.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/plan-activity.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/plan-progress.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/plan/spec.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/work.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/plan/workflow.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/pullquote.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/reveal.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/rune-catalog.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/sandbox.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/runes/showcase.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/sidenote.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/bond.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/character.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/faction.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/lore.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/plot.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/realm.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/storytelling/storyboard.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/tabs.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/textblock.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/tint.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/toc.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/runes/xref.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/themes/components.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/themes/configuration.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/themes/creating-a-theme.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/themes/css.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/themes/dimensions.md": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/themes/layouts.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/docs/themes/overview.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/docs/themes/tooling.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/content/index.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/content/releases.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/examples/profile-card/index.html": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"site/package.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/refrakt.config.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/app.d.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/app.html": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/lib/assets/favicon.svg": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/lib/content.ts": {
+		"created": "2026-03-30",
+		"modified": "2026-03-30"
+	},
+	"site/src/lib/index.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/routes/+layout.server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/src/routes/+layout.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/routes/[...slug]/+page.server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-30"
+	},
+	"site/src/routes/[...slug]/+page.svelte": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/src/routes/sitemap.xml/+server.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/static/mark.svg": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/static/robots.txt": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/svelte.config.js": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"site/vite.config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"specs/runes-consistency-audit.md": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"tsconfig.json": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	},
+	"vitest.config.ts": {
+		"created": "2026-03-24",
+		"modified": "2026-03-25"
+	}
+}

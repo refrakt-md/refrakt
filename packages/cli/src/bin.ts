@@ -27,6 +27,8 @@ if (command === 'write') {
 	runPlugin('docs', ['extract', ...args.slice(1)]);
 } else if (command === 'edit') {
 	runEdit(args.slice(1));
+} else if (command === 'timestamps') {
+	runTimestamps(args.slice(1));
 } else if (command === 'package') {
 	runPackage(args.slice(1));
 } else if (command.startsWith('-')) {
@@ -50,6 +52,7 @@ Commands:
   validate             Validate theme config and manifest
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
+  timestamps           Generate timestamp cache from git history
   package <subcommand> Manage rune packages (validate)
 
 Write Options:
@@ -132,6 +135,48 @@ Edit Options:
   --dev-server <url>       URL of running dev server for live preview
   --no-open                Don't auto-open browser
 `);
+}
+
+function runTimestamps(timestampsArgs: string[]): void {
+	let out = '.timestamps.json';
+
+	for (let i = 0; i < timestampsArgs.length; i++) {
+		const arg = timestampsArgs[i];
+		if (arg === '--out' || arg === '-o') {
+			out = timestampsArgs[++i];
+			if (!out) {
+				console.error('Error: --out requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--help' || arg === '-h') {
+			console.log(`
+Usage: refrakt timestamps [--out path]
+
+Generate a .timestamps.json cache file from full git history.
+Use this in CI before deploying to environments without full git history
+(e.g. Cloudflare Pages). The cache is auto-detected by plan build and
+can be referenced in refrakt.config.json via timestampsCache.
+
+Options:
+  --out, -o <path>   Output path (default: .timestamps.json)
+`);
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"`);
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			process.exit(1);
+		}
+	}
+
+	import('@refrakt-md/content').then(({ writeTimestampsCache }) => {
+		const count = writeTimestampsCache(out);
+		console.log(`Wrote ${count} entries to ${out}`);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
 }
 
 // --- Plugin system ---

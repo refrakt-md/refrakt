@@ -133,6 +133,9 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				const sandboxExamplesDir = refraktConfig.sandbox?.examplesDir
 					? resolve(resolvedRoot, refraktConfig.sandbox.examplesDir)
 					: undefined;
+				const timestampsCache = refraktConfig.timestampsCache
+					? resolve(resolvedRoot, refraktConfig.timestampsCache)
+					: undefined;
 				const site = await loadContent(
 					resolve(resolvedRoot, refraktConfig.contentDir),
 					'/',
@@ -140,6 +143,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					communityTags,
 					mergedPackages,
 					sandboxExamplesDir,
+					timestampsCache ? { timestampsCache } : undefined,
 				);
 
 				const { pipelineStats: stats } = site;

@@ -6,6 +6,6 @@ export { buildNavigation, type NavTree, type NavGroup, type NavItem } from './na
 export { loadContent, type Site, type SitePage } from './site.js';
 export { generateSitemap, type SitemapEntry } from './sitemap.js';
 export { collectRuneTypes, analyzeRuneUsage, type RuneUsageReport } from './analyze.js';
-export { getGitTimestamps, getStatTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
+export { getGitTimestamps, getStatTimestamps, resolveTimestamps, generateTimestampsCache, writeTimestampsCache, loadTimestampsCache, type FileTimestamps } from './timestamps.js';
 export { EntityRegistryImpl } from './registry.js';
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';

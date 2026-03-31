@@ -79,6 +79,8 @@ export interface PipelineOptions {
 	specsDir?: string;
 	theme: string;
 	baseUrl: string;
+	/** Path to a .timestamps.json cache file (for deploys without full git history). */
+	timestampsCache?: string;
 }
 
 // --- Theme resolution ---
@@ -1096,7 +1098,7 @@ const planTheme: HtmlTheme = {
 // --- Main pipeline ---
 
 export async function runPipeline(options: PipelineOptions): Promise<PipelineResult> {
-	const { dir, specsDir, theme, baseUrl } = options;
+	const { dir, specsDir, theme, baseUrl, timestampsCache } = options;
 	const ctx: PipelineContext = {
 		info: () => {},
 		warn: (msg: string) => { console.warn(`[plan] warn: ${msg}`); },
@@ -1104,16 +1106,18 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	};
 
 	// 1. Scan plan files
-	const entities = scanPlanFiles(dir);
+	const scanOpts = timestampsCache ? { timestampsCache } : undefined;
+	const entities = scanPlanFiles(dir, scanOpts);
 	let specsEntities: PlanEntity[] = [];
 	if (specsDir && specsDir !== dir && fs.existsSync(specsDir)) {
-		specsEntities = scanPlanFiles(specsDir);
+		specsEntities = scanPlanFiles(specsDir, scanOpts);
 	}
 	const allEntities = [...entities, ...specsEntities];
 
 	// Batch-collect git timestamps for the plan directory (and specs dir if separate)
-	const gitTimestamps = getGitTimestamps(dir);
-	const specsGitTimestamps = specsDir && specsDir !== dir ? getGitTimestamps(specsDir) : gitTimestamps;
+	const cacheOpts = timestampsCache ? { cachePath: timestampsCache } : undefined;
+	const gitTimestamps = getGitTimestamps(dir, cacheOpts);
+	const specsGitTimestamps = specsDir && specsDir !== dir ? getGitTimestamps(specsDir, cacheOpts) : gitTimestamps;
 
 	// 2. Parse and transform each entity file
 	const transformedPages: TransformedPage[] = [];

@@ -76,4 +76,6 @@ export interface ScanCache {
 export interface ScanOptions {
 	/** Enable mtime-based caching via .plan-cache.json */
 	cache?: boolean;
+	/** Path to a .timestamps.json cache file (for deploys without full git history). */
+	timestampsCache?: string;
 }

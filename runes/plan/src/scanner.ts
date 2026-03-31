@@ -176,8 +176,8 @@ function writeCache(dir: string, cache: ScanCache): void {
  * Adapter: convert the shared git timestamp utility output to the legacy
  * Map<absolutePath, milliseconds> format used by the scanner.
  */
-function getGitMtimes(dir: string): Map<string, number> {
-	const timestamps = getGitTimestamps(dir);
+function getGitMtimes(dir: string, cachePath?: string): Map<string, number> {
+	const timestamps = getGitTimestamps(dir, cachePath ? { cachePath } : undefined);
 	const mtimes = new Map<string, number>();
 	for (const [relPath, ts] of timestamps) {
 		if (ts.modified) {
@@ -201,7 +201,7 @@ export function scanPlanFiles(dir: string, options: ScanOptions = {}): PlanEntit
 	const entities: PlanEntity[] = [];
 
 	// Prefer git commit dates over filesystem mtime (git doesn't preserve file mtimes)
-	const gitMtimes = getGitMtimes(dir);
+	const gitMtimes = getGitMtimes(dir, options.timestampsCache);
 
 	for (const filePath of files) {
 		const relPath = relative(dir, filePath);

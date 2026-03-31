@@ -1,7 +1,7 @@
 // ─── Git / Filesystem Timestamp Collection ───
 
 import { execSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export interface FileTimestamps {
@@ -146,8 +146,21 @@ function getGitRelativePrefix(cwd: string): string | null {
  *
  * Frontmatter overrides are NOT applied here — that's the caller's responsibility
  * (see `loadContent()` in site.ts).
+ *
+ * If `options.cachePath` is provided and the file exists, timestamps are loaded
+ * from the cache instead of running `git log`. This is useful in deploy
+ * environments (e.g. Cloudflare Pages) that only have shallow clones.
  */
-export function getGitTimestamps(contentDir: string): Map<string, FileTimestamps> {
+export function getGitTimestamps(contentDir: string, options?: { cachePath?: string }): Map<string, FileTimestamps> {
+	// If a cache file is provided, load from it instead of git
+	if (options?.cachePath) {
+		const cached = loadTimestampsCache(options.cachePath);
+		if (cached) {
+			return filterCacheForDirectory(cached, contentDir);
+		}
+		// Cache file missing or invalid — fall through to git
+	}
+
 	const absDir = resolve(contentDir);
 	const prefix = getGitRelativePrefix(absDir);
 	const hasGit = prefix !== null;
@@ -183,6 +196,89 @@ export function getGitTimestamps(contentDir: string): Map<string, FileTimestamps
 	}
 
 	return timestamps;
+}
+
+// ─── Timestamps Cache ───
+
+/**
+ * Filter a cache (keyed by git-root-relative paths) to only include files under
+ * the given content directory, re-keying them as directory-relative paths.
+ */
+function filterCacheForDirectory(cache: Map<string, FileTimestamps>, contentDir: string): Map<string, FileTimestamps> {
+	const absDir = resolve(contentDir);
+	const prefix = getGitRelativePrefix(absDir);
+
+	// If we can't determine the git prefix, return the cache as-is (best effort)
+	if (prefix === null) return cache;
+
+	const filtered = new Map<string, FileTimestamps>();
+	for (const [gitPath, ts] of cache) {
+		if (prefix === '') {
+			filtered.set(gitPath, ts);
+		} else if (gitPath.startsWith(prefix)) {
+			filtered.set(gitPath.slice(prefix.length), ts);
+		}
+	}
+	return filtered;
+}
+
+/**
+ * Generate a timestamps cache object from full git history.
+ * Returns a plain object mapping git-root-relative paths to `FileTimestamps`.
+ *
+ * Run this in an environment with full git history (e.g. CI before deploy)
+ * and write the result to a JSON file that the deploy build can consume.
+ */
+export function generateTimestampsCache(cwd: string = '.'): Record<string, FileTimestamps> {
+	const absDir = resolve(cwd);
+	const modifiedMap = getGitModifiedTimes(absDir);
+	const createdMap = getGitCreatedTimes(absDir);
+
+	const cache: Record<string, FileTimestamps> = {};
+	const allPaths = new Set([...modifiedMap.keys(), ...createdMap.keys()]);
+	for (const gitPath of allPaths) {
+		const modifiedTs = modifiedMap.get(gitPath);
+		const createdTs = createdMap.get(gitPath);
+		cache[gitPath] = {
+			created: createdTs ? formatDate(createdTs) : undefined,
+			modified: modifiedTs ? formatDate(modifiedTs) : undefined,
+		};
+	}
+	return cache;
+}
+
+/**
+ * Generate and write a timestamps cache JSON file.
+ * Convenience wrapper around `generateTimestampsCache()`.
+ * Returns the number of entries written.
+ */
+export function writeTimestampsCache(outputPath: string, cwd: string = '.'): number {
+	const cache = generateTimestampsCache(cwd);
+	writeFileSync(outputPath, JSON.stringify(cache, null, '\t') + '\n');
+	return Object.keys(cache).length;
+}
+
+/**
+ * Load a timestamps cache from a JSON file.
+ * Returns a `Map<string, FileTimestamps>` keyed by git-root-relative path,
+ * or `null` if the file doesn't exist or is invalid.
+ */
+export function loadTimestampsCache(cachePath: string): Map<string, FileTimestamps> | null {
+	try {
+		if (!existsSync(cachePath)) return null;
+		const raw = JSON.parse(readFileSync(cachePath, 'utf-8'));
+		const map = new Map<string, FileTimestamps>();
+		for (const [key, value] of Object.entries(raw)) {
+			const ts = value as { created?: string; modified?: string };
+			map.set(key, {
+				created: typeof ts.created === 'string' ? ts.created : undefined,
+				modified: typeof ts.modified === 'string' ? ts.modified : undefined,
+			});
+		}
+		return map;
+	} catch {
+		return null;
+	}
 }
 
 /**
