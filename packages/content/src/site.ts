@@ -98,6 +98,7 @@ export async function loadContent(
   additionalTags?: Record<string, Schema>,
   packages?: RunePackage[],
   sandboxExamplesDir?: string,
+  options?: { timestampsCache?: string },
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
@@ -119,7 +120,8 @@ export async function loadContent(
   }
 
   // Batch-collect git timestamps once before the page loop
-  const gitTimestamps = getGitTimestamps(dirPath);
+  const cacheOpts = options?.timestampsCache ? { cachePath: options.timestampsCache } : undefined;
+  const gitTimestamps = getGitTimestamps(dirPath, cacheOpts);
 
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);

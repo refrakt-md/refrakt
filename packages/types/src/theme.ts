@@ -28,6 +28,9 @@ export interface RefraktConfig {
 		/** Directory for external sandbox examples, relative to project root. Default: './examples' */
 		examplesDir?: string;
 	};
+	/** Path to a .timestamps.json cache file for deploy environments without full git history.
+	 *  When set, file timestamps are read from this cache instead of running `git log`. */
+	timestampsCache?: string;
 	/** Rune resolution configuration */
 	runes?: {
 		/** Resolve name collisions between community packages: rune name → preferred package name.
