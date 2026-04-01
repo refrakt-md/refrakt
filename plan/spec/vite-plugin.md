@@ -1,52 +1,67 @@
-# Vite Plugin — Specification
+{% spec id="SPEC-031" status="draft" tags="vite, architecture, frameworks" %}
 
-> **Status:** Design proposal
-> **Scope:** Framework-agnostic Vite plugin for rendering refrakt.md runes in existing projects
-> **Related:** Cross-Page Pipeline Specification, Community Runes Specification
+# Vite Plugin — Framework-Agnostic Rune Integration
 
------
+> A standalone `@refrakt-md/vite` plugin that lets developers use refrakt runes in existing Vite-based projects without adopting the full refrakt site editor or routing system. Complements SPEC-030 (Framework Adapter System) by providing a lighter-weight, framework-agnostic entry point.
 
 ## Problem
 
-Developers with existing Vite-based projects (SvelteKit, Nuxt, Astro, Remix, etc.) want to use refrakt.md runes in their markdown content without adopting the full refrakt.md site editor or routing system. They have their own layouts, routing, components, and build pipeline — they just want runes inside `.md` files.
+Developers with existing Vite-based projects (SvelteKit, Nuxt, Astro, etc.) want to use refrakt runes in their markdown content without adopting the full refrakt site editor or routing system. They have their own layouts, routing, components, and build pipeline — they just want runes inside `.md` files.
 
-Today, there’s no way to use runes outside the refrakt.md ecosystem. The Vite plugin is the lightest possible integration point: it slots into their existing build pipeline, transforms Markdoc files into rendered HTML, and leaves everything else untouched.
+Today, the only integration point is `@refrakt-md/sveltekit`, which is tightly coupled to SvelteKit's conventions (`refrakt.config.json` with `contentDir`, `theme`, `target`; virtual modules for theme/tokens/config; full content pipeline). There's no way to use runes in a project that just wants per-file markdown transforms.
 
------
+## Relationship to SPEC-030
+
+SPEC-030 defines **full framework adapters** — packages like `@refrakt-md/astro`, `@refrakt-md/nuxt`, `@refrakt-md/next`, `@refrakt-md/eleventy` that each own the content pipeline end-to-end: content loading, layout transform, SEO, behavior init, routing integration. They replace the project's content system.
+
+This spec defines a **lightweight Vite plugin** that sits below those adapters. It transforms `.md` files in-place during the Vite build and emits consumable modules. It does not own routing, layouts, SEO, or content loading — the user's framework handles all of that.
+
+The two specs are complementary, not competing:
+
+| Concern | `@refrakt-md/vite` (this spec) | SPEC-030 adapters |
+|---------|--------------------------------|---------------------|
+| **Scope** | Per-file rune transforms | Full content pipeline |
+| **Routing** | User's framework | Adapter-managed |
+| **Layouts** | User's framework | `layoutTransform()` |
+| **SEO** | User extracts from frontmatter | Adapter generates meta tags |
+| **Content loading** | User imports `.md` as module | `loadContent()` pipeline |
+| **Cross-page features** | Opt-in (Level 2) | Always available |
+| **Target user** | "I want runes in my existing site" | "I want a refrakt-powered site" |
+
+SPEC-030's Vite-based adapters (Astro, Nuxt) could use `@refrakt-md/vite` internally for shared Vite plugin logic (virtual modules, HMR, CSS injection), but that's an implementation detail for those adapters to decide.
+
+---
 
 ## Design Principles
 
-**Zero intrusion.** The plugin transforms markdown files. It does not touch routing, layouts, data loading, server-side logic, or any other aspect of the user’s project. Their framework owns the architecture. The plugin owns the content transform.
+**Zero intrusion.** The plugin transforms markdown files. It does not touch routing, layouts, data loading, server-side logic, or any other aspect of the user's project.
 
-**Progressive depth.** Three integration levels, each building on the last. Users start with Level 1 (static transforms, zero config beyond package selection) and opt into deeper integration only when they need it.
+**Progressive depth.** Two integration levels, each building on the last. Users start with Level 1 (static transforms, zero config beyond package selection) and opt into Level 2 only when they need cross-page features.
 
-**Framework-agnostic core.** The transform pipeline — Markdoc parse, rune transforms, identity transform, HTML emission — has no framework dependency. Framework-specific adapters are optional layers on top.
+**Framework-agnostic core.** The transform pipeline — Markdoc parse, rune schema transforms, identity transform (`createTransform` from `@refrakt-md/transform`), HTML emission (`renderToHtml`) — has no framework dependency.
 
------
+---
 
 ## Architecture
 
 ```
 User's Vite project
 ├── vite.config.js          ← registers @refrakt-md/vite plugin
-├── src/routes/             ← their routing (SvelteKit example)
-│   ├── +page.svelte        ← their pages, untouched
-│   ├── +layout.svelte      ← their layouts, untouched
+├── src/routes/             ← their routing (untouched)
 │   └── blog/
-│       ├── +layout.svelte  ← their blog layout wraps rendered markdown
-│       ├── my-post.md      ← runes work here
-│       └── recipes/
-│           └── sourdough.md ← and here
+│       ├── +layout.svelte  ← their layout wraps rendered markdown
+│       └── sourdough.md    ← runes work here
 └── node_modules/
-    ├── @refrakt-md/vite    ← the plugin
-    ├── @refrakt-md/transform ← rune transform pipeline
-    ├── @refrakt-md/base    ← structural CSS + design tokens
-    └── @refrakt/learning   ← installed official package
+    ├── @refrakt-md/vite      ← this plugin
+    ├── @refrakt-md/transform  ← identity transform engine + renderToHtml
+    ├── @refrakt-md/runes      ← core rune schemas + config
+    ├── @refrakt-md/lumina     ← theme CSS + design tokens
+    └── @refrakt-md/learning   ← installed community package
 ```
 
-The plugin intercepts `.md` files during Vite’s transform phase, runs them through the refrakt.md pipeline, and emits framework-consumable output (HTML string, or framework component at higher integration levels).
+The plugin intercepts `.md` files during Vite's `transform` hook, runs them through the refrakt pipeline, and emits a JS module exporting rendered HTML and frontmatter.
 
------
+---
 
 ## Configuration
 
@@ -58,104 +73,99 @@ import { refrakt } from '@refrakt-md/vite';
 export default {
   plugins: [
     refrakt({
-      // Which file extensions to process (default: ['.md'])
-      extensions: ['.md'],
-      
-      // Installed packages — official and community
+      // Installed rune packages — official and community
       packages: [
-        '@refrakt/learning',
-        '@refrakt/docs',
-        '@refrakt-community/dnd-5e',
+        '@refrakt-md/learning',
+        '@refrakt-md/docs',
       ],
-      
-      // Theme CSS — path to custom theme or name of published theme
-      theme: './src/theme/my-theme.css',
-      
+
       // Integration level (default: 'static')
-      // 'static' — Level 1: per-file transforms, no cross-page awareness
-      // 'pipeline' — Level 2: full cross-page pipeline with entity registry
+      // 'static'   — Level 1: per-file transforms, no cross-page awareness
+      // 'pipeline'  — Level 2: full cross-page pipeline with entity registry
       level: 'static',
-      
-      // Include base CSS automatically (default: true)
-      // When true, base structural CSS is injected into the output
-      // When false, user imports it manually for more control
-      injectBaseCSS: true,
-      
-      // Directory containing .md files to process (default: auto-detected)
-      // Only needed for Level 2 to know which files participate in the pipeline
-      contentDir: './src/routes',
+
+      // Theme for CSS (default: '@refrakt-md/lumina')
+      // Can be a published theme package or path to custom CSS
+      theme: '@refrakt-md/lumina',
+
+      // Include structural CSS automatically (default: true)
+      // When true, CSS is injected via virtual module
+      // When false, user imports it manually
+      injectCSS: true,
+
+      // File extensions to process (default: ['.md'])
+      extensions: ['.md'],
+
+      // Content directory — only needed for Level 2
+      contentDir: './src/content',
     }),
     sveltekit(),
   ]
 };
 ```
 
-Minimal configuration for common cases:
+Minimal configurations:
 
 ```javascript
 // Just runes in markdown, no packages
 refrakt()
 
-// With a few packages
-refrakt({ packages: ['@refrakt/learning'] })
+// With community packages
+refrakt({ packages: ['@refrakt-md/learning'] })
 
 // With cross-page features
-refrakt({ packages: ['@refrakt/learning'], level: 'pipeline' })
+refrakt({ level: 'pipeline', contentDir: './src/content' })
 ```
 
------
+---
 
 ## Integration Levels
 
-### Level 1: Static Transform
+### Level 1: Static Transform (default)
 
-**What it does:** Each `.md` file is independently parsed, transformed, and rendered. No awareness of other files. No entity registry. No cross-page linking.
+Each `.md` file is independently parsed, transformed, and rendered. No awareness of other files. No entity registry.
 
-**What works:**
-
-All runes that are self-contained render correctly — `hint`, `tabs`, `figure`, `budget`, `recipe`, `howto`, `character`, `sandbox`, `datatable`, `chart`, `diagram`, `math`, `gallery`, `stat`, and everything else that operates within a single page.
-
-Vanilla JS behaviours (accordion toggle, tab switching, datatable sorting) are included via the base behaviour script.
-
-Design runes render visually (palette swatches, typography specimens) but do not propagate context to sandbox runes on other pages. Within the same file, a design context declared above a sandbox does propagate — the plugin handles intra-page context as part of the single-file transform.
-
-**What doesn’t work:**
-
-- `breadcrumb` — needs page hierarchy (renders empty or with a warning)
-- `nav` — needs page tree (renders empty or with a warning)
-- `glossary` auto-linking — needs cross-page term registry
-- `prerequisite` graph — needs cross-page lesson registry
-- Storytelling cross-links — bold character names don’t become links
-- Cross-page design context propagation — sandbox only receives tokens from its own page
-
-These runes either render as static content without their cross-page features, or emit a build warning explaining that Level 2 is needed.
-
-**Pipeline:**
+**Pipeline per file:**
 
 ```
 .md file
-  → Markdoc parse
-  → Rune transforms (per-file)
-  → Intra-page context resolution (design tokens → sandbox on same page)
-  → Identity transform
-  → HTML string + frontmatter export
+  → Markdoc.parse()
+  → Rune schema transforms (tags from @refrakt-md/runes + packages)
+  → serialize() (Tag → plain objects)
+  → createTransform() (identity transform — BEM classes, structure, meta)
+  → renderToHtml() (serialized tree → HTML string)
+  → emit JS module
 ```
 
-**Output:** The plugin emits a module that exports the rendered HTML and parsed frontmatter:
+This reuses the existing pipeline stages from `@refrakt-md/transform`. The identity transform engine (`packages/transform/src/engine.ts`) applies BEM classes (`.rf-{block}`, `.rf-{block}--{modifier}`, `.rf-{block}__{element}`), injects structural elements, reads meta tags, and strips consumed metadata — exactly as it does in the full site.
+
+**What works:** All self-contained runes render correctly — `hint`, `tabs`, `figure`, `recipe`, `howto`, `character`, `sandbox`, `datatable`, `chart`, `diagram`, `math`, `gallery`, `stat`, and everything else that operates within a single page. Vanilla JS behaviors from `@refrakt-md/behaviors` (accordion toggle, tab switching, datatable sorting) attach automatically.
+
+**What doesn't work** (requires Level 2):
+
+- `breadcrumb` — needs page hierarchy
+- `nav` — needs page tree
+- `glossary` auto-linking — needs cross-page term registry
+- `prerequisite` graph — needs cross-page lesson registry
+- Storytelling cross-links — character names don't become links
+
+These runes render as static content without their cross-page features and emit a build warning.
+
+**Output module format:**
 
 ```javascript
-// What the plugin emits for my-post.md
-export const html = `<article class="rune-page">...</article>`;
-export const frontmatter = { title: 'My Post', date: '2026-01-15' };
+// What the plugin emits for sourdough.md
+export const html = '<article class="rf-page">...</article>';
+export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
 export const meta = { runes: ['recipe', 'hint'], packages: ['learning'] };
 ```
 
-The user’s framework page imports and renders it:
+The user's page imports and renders it:
 
 ```svelte
 <!-- +page.svelte (SvelteKit example) -->
 <script>
-  import { html, frontmatter } from './my-post.md';
+  import { html, frontmatter } from './sourdough.md';
 </script>
 
 <h1>{frontmatter.title}</h1>
@@ -164,298 +174,180 @@ The user’s framework page imports and renders it:
 
 ### Level 2: Cross-Page Pipeline
 
-**What it does:** The full five-phase pipeline from the Cross-Page Pipeline Specification runs at build time. The plugin scans all `.md` files in `contentDir`, builds the entity registry, runs aggregation and post-processing, then emits enriched HTML for each file.
+The full pipeline from `@refrakt-md/content` runs at build time. The plugin scans all `.md` files in `contentDir`, builds the `EntityRegistry`, runs aggregation and post-processing via `runPipeline()`, then emits enriched HTML.
 
-**What additionally works:**
+This uses the existing four-phase cross-page pipeline (`packages/content/src/pipeline.ts`):
 
-- `breadcrumb` — resolves from page hierarchy derived from file tree
-- `nav` — resolves page slugs to titles
-- `glossary` auto-linking — terms linked across all pages
-- `prerequisite` graph — dependency graph built from all lesson files
-- Storytelling cross-links — character names become links
-- Cross-page design context propagation — sandbox receives tokens from any page
+1. **Parse** all `.md` files, run rune schema transforms
+2. **Register** — each package's `register()` hook indexes entities into `EntityRegistryImpl`
+3. **Aggregate** — `aggregate()` hooks build cross-page indexes (pageTree, breadcrumbPaths, headingIndex)
+4. **Post-process** — `postProcess()` hooks resolve deferred sentinels using aggregated data
 
-**Pipeline:**
+**What additionally works:** `breadcrumb`, `nav`, `glossary` auto-linking, `prerequisite` graphs, storytelling cross-links.
 
-```
-Phase 1: Parse all .md files, run rune transforms
-Phase 2: Register entities from all pages
-Phase 3: Aggregate — build indexes, graphs, token contexts
-Phase 4: Post-process — resolve references, inject links, propagate context
-Phase 5: Identity transform and HTML emission for each file
-```
+**Build integration:** The plugin uses Vite's `buildStart` hook to run the full pipeline (same pattern as the existing `packages/sveltekit/src/plugin.ts`). Results are cached in memory. Individual file `transform` calls read from the cache.
 
-**Build integration:** The plugin uses Vite’s `buildStart` hook to scan and process all files before individual transforms run. The entity registry and aggregated data are cached in memory during the build. In dev mode (`vite dev`), the registry rebuilds incrementally when a file changes — only the changed file is re-parsed, but post-processing re-runs for files whose cross-page dependencies are affected.
+**Dev server:** In dev mode, file changes trigger re-parse of the changed file. If the change affects registered entities, dependent files are re-processed. The `crossPageDeps` metadata enables targeted invalidation.
 
-**Page hierarchy derivation:** Since the plugin doesn’t control routing, it derives page hierarchy from the file system:
-
-```
-src/routes/
-  blog/
-    my-post.md          → /blog/my-post/
-    recipes/
-      sourdough.md      → /blog/recipes/sourdough/
-```
-
-The slug is derived from the file path relative to `contentDir`. Frontmatter can override the title and slug:
-
-```yaml
----
-title: Perfect Sourdough
-slug: sourdough-bread
----
-```
-
-Users can also provide explicit hierarchy in config if their routing doesn’t match the file tree:
+**Output module format:**
 
 ```javascript
-refrakt({
-  level: 'pipeline',
-  routes: {
-    // Override auto-derived slugs
-    'blog/recipes/sourdough.md': '/recipes/sourdough-bread/',
-  }
-})
-```
-
-**Output:** Same module format as Level 1, but with enriched HTML:
-
-```javascript
-export const html = `<article class="rune-page">...</article>`;
-export const frontmatter = { title: 'My Post', date: '2026-01-15' };
-export const meta = { 
-  runes: ['recipe', 'hint', 'glossary'], 
+export const html = '<article class="rf-page">...</article>';
+export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
+export const meta = {
+  runes: ['recipe', 'hint', 'glossary'],
   packages: ['learning'],
   entities: [
-    { type: 'term', name: 'levain', page: '/recipes/sourdough-bread/' }
+    { type: 'term', name: 'levain', page: '/recipes/sourdough/' }
   ],
-  crossPageDeps: ['/glossary/'], // pages this file depends on
+  crossPageDeps: ['/glossary/'],
 };
 ```
 
-The `crossPageDeps` field enables the dev server’s incremental rebuild — when `/glossary/` changes, this file’s post-processing re-runs.
+**Page hierarchy derivation:** Since the plugin doesn't control routing, it derives page hierarchy from the file system relative to `contentDir`. Frontmatter can override title and slug.
 
-### Level 3: Framework Components
-
-**What it does:** Instead of emitting an HTML string, the plugin emits framework-native components. A `{% tabs %}` rune becomes a `<Tabs>` Svelte component (or Vue component, or React component). Interactive behaviours use the framework’s reactivity system rather than vanilla JS.
-
-**Why this exists:** Level 1 and 2 emit HTML + vanilla JS behaviours. This works, but it means rune interactivity is disconnected from the framework’s component model. A SvelteKit developer can’t bind to a datatable’s selected row, or react to a tab change with Svelte stores. Level 3 makes runes first-class framework citizens.
-
-**Architecture:**
-
-```
-@refrakt-md/vite              ← core plugin (Levels 1–2)
-@refrakt-md/svelte            ← Svelte component adapter
-@refrakt-md/vue               ← Vue component adapter
-@refrakt-md/react             ← React component adapter (JSX output)
-```
-
-The core plugin handles the transform pipeline. The adapter maps rune types to framework components and emits framework-specific module output.
-
-```javascript
-// vite.config.js with Svelte adapter
-import { refrakt } from '@refrakt-md/vite';
-import { svelteAdapter } from '@refrakt-md/svelte';
-
-export default {
-  plugins: [
-    refrakt({
-      packages: ['@refrakt/learning'],
-      adapter: svelteAdapter(),
-    }),
-    sveltekit(),
-  ]
-};
-```
-
-**Output:** The plugin emits a Svelte component instead of an HTML string:
-
-```svelte
-<!-- Auto-generated from my-post.md -->
-<script>
-  import Tabs from '@refrakt-md/svelte/Tabs.svelte';
-  import Hint from '@refrakt-md/svelte/Hint.svelte';
-  import Recipe from '@refrakt-md/svelte/Recipe.svelte';
-</script>
-
-<article class="rune-page">
-  <h1>My Sourdough Guide</h1>
-  <Hint type="note">Start the levain 12 hours before you plan to mix.</Hint>
-  <Recipe name="Classic Sourdough" servings="2 loaves" time="24h">
-    <!-- ... rendered recipe content ... -->
-  </Recipe>
-</article>
-```
-
-**Scope:** Level 3 is a stretch goal. It requires maintaining component libraries for each supported framework, keeping them in sync with rune transform changes, and testing across framework versions. The vanilla JS behaviours from Levels 1–2 cover most interactive needs. Level 3 is worth building only if there’s strong demand for framework-native rune components.
-
------
+---
 
 ## CSS Strategy
 
-### Base CSS
-
-The `@refrakt-md/base` package provides structural CSS that makes runes render correctly regardless of theme. This includes BEM class definitions, layout rules, and design token custom properties with sensible defaults.
-
-```css
-/* @refrakt-md/base — structural CSS */
-.rune-hint { /* layout */ }
-.rune-hint--note { /* note variant layout */ }
-.rune-hint__icon { /* icon positioning */ }
-.rune-hint__body { /* content area */ }
-/* ... */
-```
-
-When `injectBaseCSS: true` (default), the plugin injects this CSS automatically. When `false`, the user imports it manually — useful when they want to control CSS load order or bundle it differently:
-
-```javascript
-// Manual import in their layout
-import '@refrakt-md/base/style.css';
-import '@refrakt/learning/style.css';  // package CSS
-import './my-theme.css';               // their theme overrides
-```
-
-### Package CSS
-
-Each installed package provides its own structural CSS for its runes. The plugin collects CSS from all registered packages and includes it in the output.
-
-### Theme CSS
-
-The user’s theme CSS overrides the base and package structural styles. The plugin includes it last in the cascade, ensuring theme rules take precedence.
+The plugin provides CSS through a virtual module, following the same pattern as the existing `virtual:refrakt/tokens` module in `@refrakt-md/sveltekit`.
 
 ### CSS load order
 
 ```
-1. @refrakt-md/base/style.css        ← structural layout, token defaults
-2. @refrakt/learning/style.css        ← package structural CSS
-3. @refrakt/docs/style.css            ← package structural CSS
-4. @refrakt-community/dnd-5e/style.css ← community package CSS
-5. ./src/theme/my-theme.css           ← user's theme (highest precedence)
+1. Theme base tokens       ← design token custom properties (--rf-color-*, --rf-radius-*, etc.)
+2. Per-rune structural CSS ← BEM selectors (.rf-hint, .rf-hint__body, etc.)
+3. Package rune CSS        ← community package styles
+4. User theme overrides    ← user's custom CSS (highest precedence)
 ```
 
------
+When `injectCSS: true` (default), the plugin provides a `virtual:refrakt/styles` module that imports the appropriate CSS files. This mirrors the existing `virtual:refrakt/tokens` module but is framework-agnostic.
 
-## Behaviours
+### CSS tree-shaking
 
-### Levels 1–2: Vanilla JS
+At build time, the plugin can analyze which runes are actually used across all content (via `analyzeRuneUsage` from `@refrakt-md/content`) and include only the CSS for those runes. This is the same optimization the existing SvelteKit plugin performs in `buildStart`.
 
-The plugin includes the `@refrakt-md/behaviors` script that provides interactive features — accordion toggling, tab switching, datatable sorting, details animation. The script initialises automatically on page load, scanning for rune elements and attaching event handlers.
+When tree-shaking is active, the virtual module imports only:
 
-In a SvelteKit context, the behaviour script needs to re-initialise after client-side navigation (SvelteKit doesn’t reload the page). The plugin provides a lifecycle helper:
+- Theme base CSS (always)
+- Per-rune CSS files for runes found in content (e.g., `@refrakt-md/lumina/styles/runes/hint.css`)
+- `tint.css` (always — tint is a universal attribute)
 
-```svelte
-<!-- In the user's +layout.svelte -->
-<script>
-  import { afterNavigate } from '$app/navigation';
-  import { initBehaviours } from '@refrakt-md/behaviors';
-  
-  afterNavigate(() => {
-    initBehaviours(document.querySelector('.rune-page'));
-  });
-</script>
+---
+
+## Behaviors
+
+The plugin includes `@refrakt-md/behaviors` for interactive features — accordion toggling, tab switching, datatable sorting, details animation.
+
+In SPA frameworks (SvelteKit, Nuxt), behaviors need re-initialization after client-side navigation. The plugin exports a helper:
+
+```javascript
+import { initBehaviors } from '@refrakt-md/vite/behaviors';
+
+// SvelteKit
+afterNavigate(() => initBehaviors(document.querySelector('.rf-page')));
+
+// Vue/Nuxt
+onMounted(() => initBehaviors(document.querySelector('.rf-page')));
+watch(() => route.path, () => nextTick(() => initBehaviors(...)));
+
+// Astro (MPA) — automatic, no re-init needed
 ```
 
-Equivalent helpers exist for other frameworks (Vue’s `onMounted`, React’s `useEffect`).
+This is a thin wrapper around `initRuneBehaviors()` from `@refrakt-md/behaviors`.
 
-### Level 3: Framework-Native
-
-At Level 3, behaviours are implemented as framework component logic. No vanilla JS script needed — interactivity is handled by Svelte stores, Vue reactivity, or React state. The behaviour library is not loaded.
-
------
+---
 
 ## Package Discovery
 
-The plugin discovers installed packages through the same mechanism as the full refrakt.md pipeline. Packages listed in the `packages` config are imported, their rune transforms and schemas are registered, and their CSS is collected.
+The plugin discovers rune packages through the same mechanism as the existing SvelteKit plugin. Packages listed in the `packages` config are dynamically imported, their `RunePackage` exports are loaded via `loadRunePackage()` from `@refrakt-md/runes`, and merged with core runes via `mergePackages()`.
 
-```typescript
-// Plugin initialisation
-async function loadPackages(packageNames: string[]) {
-  const packages: RunePackage[] = [];
-  
-  for (const name of packageNames) {
-    const pkg = await import(name);
-    packages.push(pkg.default || pkg);
-  }
-  
-  return packages;
-}
-```
+Community packages work identically to official packages — the plugin doesn't distinguish between `@refrakt-md/learning` and `@refrakt-community/dnd-5e`.
 
-Community packages work identically to official packages — the plugin doesn’t distinguish between `@refrakt/learning` and `@refrakt-community/dnd-5e`. Both register transforms, schemas, CSS, and (at Level 2) pipeline hooks.
-
------
+---
 
 ## Dev Server
 
-In development (`vite dev`), the plugin provides:
+**Hot reload:** When a `.md` file changes, the plugin re-transforms it and triggers Vite's HMR via `server.moduleGraph.invalidateModule()` + full reload. This matches the existing HMR implementation in `packages/sveltekit/src/content-hmr.ts`.
 
-**Hot reload:** When a `.md` file changes, the plugin re-transforms it and triggers Vite’s HMR. The page updates without a full reload. At Level 2, if the change affects registered entities (a character was renamed, a term was added), dependent files are also re-processed.
-
-**Build warnings in terminal:** Runes that need Level 2 but are running at Level 1 emit clear warnings:
+**Level warnings:** Runes requiring Level 2 that are running at Level 1 emit terminal warnings:
 
 ```
-⚠ refrakt: breadcrumb on /blog/my-post.md requires level: 'pipeline'
-           Rendering without page hierarchy. Set level: 'pipeline' in plugin config.
-⚠ refrakt: glossary auto-linking disabled at level: 'static'
-           Term "levain" on /recipes/sourdough.md will not be linked.
+[refrakt] breadcrumb in /blog/my-post.md requires level: 'pipeline'
+          Set level: 'pipeline' in plugin config for cross-page features.
 ```
 
-**Inspector integration:** The `refrakt inspect` CLI works against the user’s project. It discovers fixtures from installed packages and audits theme coverage against the user’s theme CSS.
-
------
+---
 
 ## NPM Package Structure
 
 ```
-@refrakt-md/vite               ← core Vite plugin
-  ├── index.ts                 ← plugin entry, config parsing
-  ├── transform.ts             ← Level 1 per-file transform
-  ├── pipeline.ts              ← Level 2 cross-page pipeline
-  ├── css.ts                   ← CSS collection and injection
-  └── hmr.ts                   ← dev server hot reload
-
-@refrakt-md/transform          ← framework-agnostic transform pipeline
-  ├── parse.ts                 ← Markdoc parsing
-  ├── rune-transform.ts        ← rune transform application
-  ├── identity-transform.ts    ← BEM class injection
-  └── render.ts                ← HTML emission
-
-@refrakt-md/base               ← structural CSS + design tokens
-  └── style.css
-
-@refrakt-md/behaviors          ← vanilla JS interactive behaviours
-  └── index.ts
-
-@refrakt-md/svelte             ← Level 3 Svelte adapter (future)
-@refrakt-md/vue                ← Level 3 Vue adapter (future)
-@refrakt-md/react              ← Level 3 React adapter (future)
+@refrakt-md/vite
+├── src/
+│   ├── index.ts           ← plugin entry, config parsing
+│   ├── transform.ts       ← per-file transform (Markdoc parse → renderToHtml)
+│   ├── pipeline.ts        ← Level 2 cross-page pipeline integration
+│   ├── virtual-css.ts     ← CSS virtual module generation
+│   ├── hmr.ts             ← dev server hot reload
+│   └── behaviors.ts       ← framework-agnostic behavior init helper
+├── package.json
+└── tsconfig.json
 ```
 
-The `@refrakt-md/transform` package is the core engine shared by the Vite plugin, the refrakt.md site editor, and the chat product. The Vite plugin is a thin wrapper that invokes it within Vite’s build lifecycle.
+Dependencies:
 
------
+- `@refrakt-md/transform` — identity transform engine, `renderToHtml()`, `createTransform()`
+- `@refrakt-md/runes` — core rune schemas, `coreConfig`, `loadRunePackage()`, `mergePackages()`
+- `@refrakt-md/types` — `RunePackage`, `SerializedTag`, pipeline types
+- `@markdoc/markdoc` — Markdoc parser
 
-## Relationship to refrakt.md Products
+Peer dependency:
 
-The Vite plugin is not a replacement for the refrakt.md site editor. It’s a different entry point into the same rune ecosystem.
+- `vite` — `^5.0.0 || ^6.0.0`
 
-|Capability        |Vite plugin      |Site editor             |
-|------------------|-----------------|------------------------|
-|Rune transforms   |Same pipeline    |Same pipeline           |
-|Identity transform|Same output      |Same output             |
-|Themes            |Same CSS contract|Same CSS contract       |
-|Packages          |Same registry    |Same registry           |
-|Routing           |User’s framework |refrakt.md routing      |
-|Layouts           |User’s framework |refrakt.md layout system|
-|AI chat           |Not included     |Integrated              |
-|Visual editing    |Not included     |Integrated              |
-|Export/publish    |User’s build     |refrakt.md publish      |
+Optional peer dependencies (for Level 2):
 
-The rune transforms, identity transform, theme CSS, and package system are identical. The difference is who controls the surrounding architecture. The Vite plugin says “your framework, our runes.” The site editor says “our framework, our runes.”
+- `@refrakt-md/content` — `runPipeline()`, `EntityRegistryImpl`, `analyzeRuneUsage()`
 
-Users can move between them. Content authored with runes in a SvelteKit project works in the site editor with no changes — the Markdoc is the same. A storytelling world built in the chat product can be exported and rendered in a Nuxt site via the Vite plugin. The rune is the portable unit.
+---
 
------
+## What This Plugin Is Not
+
+This plugin is **not** a replacement for the full framework adapters defined in SPEC-030. Key differences:
+
+| Feature | `@refrakt-md/vite` | SPEC-030 adapters |
+|---------|---------------------|---------------------|
+| Layout system | No — user's framework | Yes — `layoutTransform()` |
+| SEO generation | No — user handles | Yes — per-framework SEO |
+| Component rendering | No — HTML string only | Yes — `renderToHtml()` + framework wrapper |
+| Content routing | No — user's framework | Yes — `loadContent()` + framework routing |
+| Web components | No — user initializes | Yes — adapter handles `RfContext` |
+| Behavior lifecycle | Helper exported | Adapter manages fully |
+
+Users wanting the full refrakt experience in a non-SvelteKit framework should use the SPEC-030 adapters. Users wanting just runes in their existing content should use this plugin.
+
+---
+
+## Reuse from Existing Codebase
+
+The implementation draws heavily from existing code:
+
+| Component | Source | Reuse strategy |
+|-----------|--------|----------------|
+| Markdoc parse + schema transforms | `@refrakt-md/runes` | Direct import |
+| Identity transform | `@refrakt-md/transform/engine.ts` | `createTransform()` |
+| HTML rendering | `@refrakt-md/transform/html.ts` | `renderToHtml()` |
+| Serialization | `@refrakt-md/transform` (or `@refrakt-md/svelte` pending SPEC-030 Phase 0 extraction) | Direct import |
+| Package loading | `@refrakt-md/runes/packages.ts` | `loadRunePackage()`, `mergePackages()` |
+| CSS tree-shaking | `@refrakt-md/content/analyze.ts` | `analyzeRuneUsage()` |
+| Cross-page pipeline | `@refrakt-md/content/pipeline.ts` | `runPipeline()` |
+| Virtual module pattern | `@refrakt-md/sveltekit/virtual-modules.ts` | Adapted (simplified) |
+| HMR pattern | `@refrakt-md/sveltekit/content-hmr.ts` | Adapted (simplified) |
+| SSR noExternal list | `@refrakt-md/sveltekit/plugin.ts` | Same `CORE_NO_EXTERNAL` pattern |
+
+Estimated new code: ~300 lines (plugin glue, per-file transform wrapper, CSS virtual module).
+
+---
 
 ## Example: SvelteKit Blog with Recipes
 
@@ -466,20 +358,10 @@ import { refrakt } from '@refrakt-md/vite';
 
 export default {
   plugins: [
-    refrakt({ packages: ['@refrakt/learning'] }),
+    refrakt({ packages: ['@refrakt-md/learning'] }),
     sveltekit(),
   ]
 };
-```
-
-```
-src/routes/
-  +layout.svelte
-  recipes/
-    +layout.svelte        ← wraps recipe pages with nav, styling
-    sourdough.md          ← uses {% recipe %}, {% hint %}, {% howto %}
-    pasta.md              ← uses {% recipe %}
-    +page.svelte          ← recipe index (their own component)
 ```
 
 ```markdoc
@@ -503,98 +385,37 @@ Start your levain 12 hours before you plan to mix the dough.
 ## Steps
 1. Mix flour and water, rest 30 minutes (autolyse)
 2. Add levain and salt, fold to incorporate
-3. Bulk ferment 4–5 hours with stretch-and-folds every 30 minutes
+3. Bulk ferment 4-5 hours with stretch-and-folds every 30 minutes
 4. Shape and place in bannetons
-5. Cold retard overnight (12–16 hours)
-6. Preheat Dutch oven to 260°C
-7. Score and bake: 20 min covered, 20 min uncovered at 230°C
-
-> Start with wet hands for the stretch-and-folds. The dough is sticky at first but firms up with each fold.
+5. Cold retard overnight (12-16 hours)
+6. Preheat Dutch oven to 260C
+7. Score and bake: 20 min covered, 20 min uncovered at 230C
 
 {% /recipe %}
 ```
 
-The plugin transforms this into HTML with proper `Recipe` schema.org markup, BEM classes for styling, and the base CSS for layout. The user’s `+layout.svelte` wraps it in their site’s navigation and footer. Their `+page.svelte` index page lists all recipes however they want — the plugin doesn’t interfere with their routing or data loading.
+The plugin transforms this into HTML with BEM classes (`.rf-recipe`, `.rf-recipe__body`, `.rf-hint--note`), structural elements, and data attributes — identical output to the full refrakt site. The user's `+layout.svelte` wraps it in their own navigation and footer.
 
------
+---
 
-## Future Considerations
+## Open Questions
 
-### Astro Integration
+1. **Relationship to `@refrakt-md/sveltekit`**: Should the existing SvelteKit plugin be refactored to use `@refrakt-md/vite` internally? This would reduce duplication but adds a dependency layer. The SvelteKit plugin's virtual modules (`virtual:refrakt/theme`, `virtual:refrakt/tokens`, `virtual:refrakt/config`) are more complex than what this plugin needs.
 
-Astro’s content-first architecture aligns closely with refrakt.md. Where the Vite plugin is a general-purpose transform hook, the Astro integration is a purpose-built content pipeline integration that takes advantage of Astro-specific capabilities.
+2. **SPEC-030 Phase 0 dependency**: `serialize.ts` currently lives in `@refrakt-md/svelte`. SPEC-030 Phase 0 moves it to `@refrakt-md/transform`. This plugin needs serialization — should it wait for Phase 0, or import from `@refrakt-md/svelte` initially?
 
-**Why a dedicated integration:** Astro already has official Markdoc support (`@astrojs/markdoc`), typed content collections with schema validation, and an islands architecture that ships zero JS by default. A dedicated `@refrakt-md/astro` integration hooks into all three rather than working around them through Vite’s generic transform layer.
+3. **Component rendering (Level 3)**: The original draft proposed a Level 3 that emits framework-native components instead of HTML strings. This overlaps significantly with SPEC-030's per-framework adapters. Recommendation: drop Level 3 from this spec — users wanting component-level integration should use the SPEC-030 adapters.
 
-**Configuration:**
+---
 
-```javascript
-// astro.config.mjs
-import { defineConfig } from 'astro/config';
-import markdoc from '@astrojs/markdoc';
-import { refrakt } from '@refrakt-md/astro';
+## References
 
-export default defineConfig({
-  integrations: [
-    markdoc(),
-    refrakt({
-      packages: ['@refrakt/learning', '@refrakt/docs'],
-      theme: './src/theme/my-theme.css',
-    }),
-  ],
-});
-```
+- SPEC-030 — Framework Adapter System
+- SPEC-013 — Multi-Framework Support: Layout Transform Architecture
+- ADR-001 — Astro Readiness Investigation
+- ADR-002 — Framework Readiness Investigation
+- `packages/sveltekit/src/plugin.ts` — existing Vite plugin implementation
+- `packages/transform/src/engine.ts` — identity transform engine
+- `packages/transform/src/html.ts` — `renderToHtml()`
 
-**How it works:** The integration auto-registers rune transforms as Markdoc tag definitions within Astro’s existing `@astrojs/markdoc` pipeline. Runes become available in `.mdoc` files (Astro’s convention for Markdoc) without manual tag registration. The user’s `markdoc.config.mjs` can still define additional custom tags alongside runes.
-
-**Astro components for runes:** Each rune maps to an `.astro` component that renders the identity-transformed HTML. Since Astro components are server-rendered by default, this is effectively Level 3 integration with no extra cost — rune components are HTML templates with BEM classes, rendered at build time.
-
-Interactive runes (tabs, accordion, datatable) use Astro’s islands architecture. A `<script>` tag on the component loads the behaviour library only when the component is on the page, shipping zero JS for pages that only use static runes.
-
-**Content collections:** Content files live in standard Astro collections with standard Astro schemas. The integration doesn’t change how collections are defined — it changes how `.mdoc` files within them are rendered:
-
-```
-src/content/
-  recipes/
-    sourdough.mdoc       ← runes work here via @astrojs/markdoc
-    pasta.mdoc
-  docs/
-    getting-started.mdoc
-```
-
-Pages render content with Astro’s standard `entry.render()` API. The integration intercepts the render call, applies rune transforms, runs post-processing if the cross-page pipeline is enabled, and returns enriched HTML.
-
-**Cross-page pipeline:** Astro’s content collections provide a typed manifest of all content files at build time. The integration queries all collections during the `astro:build:start` hook, builds the entity registry, and runs aggregation before any page renders. Individual page renders receive the full registry for post-processing — breadcrumbs, glossary auto-linking, storytelling cross-links all resolve correctly.
-
-Content collections also provide frontmatter-level schema validation (via Zod), while rune schemas provide content-level validation (via Markdoc). Together they catch invalid content at both layers during the build.
-
-**Relationship to Astro’s existing references:** Astro content collections already support typed references between collections (a recipe referencing an author from an authors collection). The refrakt.md entity registry handles a different layer — content-level references (bold character names becoming links, design tokens propagating to sandboxes, term auto-linking). The two systems are complementary: Astro handles structural data relationships, the pipeline handles content-level enrichment.
-
-**Package structure:**
-
-```
-@refrakt-md/astro
-  ├── index.ts                 ← Astro integration entry
-  ├── markdoc-tags.ts          ← auto-registers rune transforms as Markdoc tags
-  ├── pipeline.ts              ← cross-page pipeline via build hooks
-  ├── components/              ← Astro components for each rune
-  │   ├── Hint.astro
-  │   ├── Tabs.astro
-  │   ├── Recipe.astro
-  │   └── ...
-  └── behaviors.ts             ← islands-compatible behaviour loader
-```
-
-### MDX Interop
-
-Some projects use MDX (markdown with JSX). The Vite plugin processes Markdoc, not MDX. A project can use both — MDX for pages that need framework components inline, Markdoc for pages that use runes. The plugin only processes files with the configured extensions.
-
-### Standalone CLI
-
-For projects not using Vite (Hugo, Jekyll, Eleventy, custom build systems), a standalone CLI could provide the same transform:
-
-```bash
-refrakt transform ./content/ --out ./dist/ --packages @refrakt/learning
-```
-
-This emits HTML files that any static site generator can include. Lower priority than the Vite plugin since Vite covers the majority of modern frameworks.
+{% /spec %}
