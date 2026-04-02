@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { buildSections } from '../util.js';
 
 const statusValues = ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'] as const;
@@ -51,7 +50,7 @@ export const bug = createContentModelSchema({
 		const contentChildren = buildSections(sections, config);
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable(schema.Bug, {
+		return createComponentRenderable({ rune: 'bug',
 			tag: 'article',
 			properties: {
 				id: idMeta,

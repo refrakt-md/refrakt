@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const statusValues = ['planning', 'active', 'complete'] as const;
 
@@ -52,7 +51,7 @@ export const milestone = createContentModelSchema({
 		}
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable(schema.Milestone, {
+		return createComponentRenderable({ rune: 'milestone',
 			tag: 'section',
 			properties: {
 				name: nameMeta,

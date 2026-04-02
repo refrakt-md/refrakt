@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -73,7 +72,7 @@ export const budgetLineItem = createContentModelSchema({
 		const descTag = new Tag('span', {}, [attrs.description ?? '']);
 		const amountTag = new Tag('span', {}, [attrs.amount ?? '']);
 
-		return createComponentRenderable(schema.BudgetLineItem, {
+		return createComponentRenderable({ rune: 'budget-line-item',
 			tag: 'li',
 			properties: {
 				description: descTag,
@@ -158,7 +157,7 @@ export const budgetCategory = createContentModelSchema({
 		const items = body.tag('li').typeof('BudgetLineItem');
 		const itemsList = new Tag('ul', {}, items.toArray());
 
-		return createComponentRenderable(schema.BudgetCategory, {
+		return createComponentRenderable({ rune: 'budget-category',
 			tag: 'div',
 			properties: {
 				label: labelTag,
@@ -252,7 +251,7 @@ export const budget = createContentModelSchema({
 		}
 		children.push(categoriesDiv);
 
-		return createComponentRenderable(schema.Budget, {
+		return createComponentRenderable({ rune: 'budget', schemaOrgType: 'ItemList',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

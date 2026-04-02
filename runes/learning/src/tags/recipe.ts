@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
@@ -158,7 +157,7 @@ export const recipe = createContentModelSchema({
 			mainContent.next(),
 		];
 
-		return createComponentRenderable(schema.Recipe, {
+		return createComponentRenderable({ rune: 'recipe', schemaOrgType: 'Recipe',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

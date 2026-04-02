@@ -1,5 +1,4 @@
 import type { Schema } from '@markdoc/markdoc';
-import { Type } from '@refrakt-md/types';
 
 export interface RuneDescriptor {
   /** The primary tag name used in Markdoc (e.g., 'cta') */
@@ -20,8 +19,11 @@ export interface RuneDescriptor {
   /** Schema.org type for SEO JSON-LD generation */
   seoType?: string;
 
-  /** The Type from the registry this rune renders as */
-  type?: Type;
+  /** Rune type name (e.g. 'Hint', 'Accordion') */
+  typeName?: string;
+
+  /** Schema.org type for typeof attribute (e.g. 'FAQPage') */
+  schemaOrgType?: string;
 
   /** AI prompt extension — additional context appended to the rune description in AI prompts */
   prompt?: string;
@@ -41,7 +43,8 @@ export class Rune {
   readonly description: string;
   readonly reinterprets: Record<string, string>;
   readonly seoType: string | undefined;
-  readonly type: Type | undefined;
+  readonly typeName: string | undefined;
+  readonly schemaOrgType: string | undefined;
   readonly prompt: string | undefined;
   readonly category: string | undefined;
   readonly snippet: string[] | undefined;
@@ -53,7 +56,8 @@ export class Rune {
     this.description = descriptor.description ?? '';
     this.reinterprets = descriptor.reinterprets ?? {};
     this.seoType = descriptor.seoType;
-    this.type = descriptor.type;
+    this.typeName = descriptor.typeName;
+    this.schemaOrgType = descriptor.schemaOrgType;
     this.prompt = descriptor.prompt;
     this.category = descriptor.category;
     this.snippet = descriptor.snippet;

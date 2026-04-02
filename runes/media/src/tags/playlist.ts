@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, pageSectionProperties, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { parseDuration, formatDuration } from '../duration.js';
 
 const playlistType = ['album', 'podcast', 'audiobook', 'series', 'mix'] as const;
@@ -222,7 +221,7 @@ export const playlist = createContentModelSchema({
 
 		const trackItems = new RenderableNodeCursor(trackChildren);
 
-		return createComponentRenderable(schema.Playlist, {
+		return createComponentRenderable({ rune: 'playlist', schemaOrgType: 'MusicPlaylist',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

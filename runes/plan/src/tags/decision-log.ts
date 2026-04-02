@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const DECISION_LOG_SENTINEL = '__decision-log-sentinel';
 
@@ -23,7 +22,7 @@ export const decisionLog = createContentModelSchema({
 		// Placeholder list — replaced by postProcess
 		const placeholder = new Tag('div', {}, []);
 
-		return createComponentRenderable(schema.DecisionLog, {
+		return createComponentRenderable({ rune: 'decision-log',
 			tag: 'section',
 			properties: {
 				filter: filterMeta,

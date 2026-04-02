@@ -3,7 +3,6 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Map marker characters to status strings
 const MARKER_TO_STATUS: Record<string, string> = {
@@ -51,7 +50,7 @@ export const beat = createContentModelSchema({
 		}
 		const body = new RenderableNodeCursor(bodyChildren).wrap('div');
 
-		return createComponentRenderable(schema.Beat, {
+		return createComponentRenderable({ rune: 'beat',
 			tag: 'li',
 			properties: {
 				status: statusMeta,
@@ -115,7 +114,7 @@ export const plot = createContentModelSchema({
 		}
 		children.push(beatsList);
 
-		return createComponentRenderable(schema.Plot, {
+		return createComponentRenderable({ rune: 'plot', schemaOrgType: 'CreativeWork',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

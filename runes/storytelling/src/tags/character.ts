@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const characterSection = createContentModelSchema({
 	attributes: {
@@ -20,7 +19,7 @@ export const characterSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.CharacterSection, {
+		return createComponentRenderable({ rune: 'character-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -92,7 +91,7 @@ export const character = createContentModelSchema({
 		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
 		children.push(hasSections ? sectionsContainer!.next() : body!.next());
 
-		return createComponentRenderable(schema.Character, {
+		return createComponentRenderable({ rune: 'character', schemaOrgType: 'Person',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

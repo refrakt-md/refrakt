@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { extractScene, buildStoryContent } from './common.js';
 
 export const factionSection = createContentModelSchema({
@@ -21,7 +20,7 @@ export const factionSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.FactionSection, {
+		return createComponentRenderable({ rune: 'faction-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -98,7 +97,7 @@ export const faction = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable(schema.Faction, {
+		return createComponentRenderable({ rune: 'faction', schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

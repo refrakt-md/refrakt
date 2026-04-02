@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 /** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
@@ -186,7 +185,7 @@ export const feature = createContentModelSchema({
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
 		];
 
-		return createComponentRenderable(schema.Feature, {
+		return createComponentRenderable({ rune: 'feature',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, Tag as TagType, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, pageSectionProperties, asNodes } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 /** Check if a node is a paragraph containing an icon tag. */
 function isIconParagraph(node: Node): boolean {
@@ -82,7 +81,7 @@ export const bentoCell = createContentModelSchema({
 
 		children.push(body.next());
 
-		return createComponentRenderable(schema.BentoCell, {
+		return createComponentRenderable({ rune: 'bento-cell',
 			tag: 'div',
 			properties,
 			refs,
@@ -216,7 +215,7 @@ export const bento = createContentModelSchema({
 			? [header.wrap('header').next(), gapMeta, columnsMeta, sizingMeta, grid.next()]
 			: [gapMeta, columnsMeta, sizingMeta, grid.next()];
 
-		return createComponentRenderable(schema.Bento, {
+		return createComponentRenderable({ rune: 'bento',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

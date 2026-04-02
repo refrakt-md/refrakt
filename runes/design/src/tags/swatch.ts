@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const _swatch = createContentModelSchema({
 	attributes: {
@@ -29,7 +28,7 @@ const _swatch = createContentModelSchema({
 			const valueTag = new Tag('span', {}, [color]);
 			children.push(valueTag);
 
-			return createComponentRenderable(schema.Swatch, {
+			return createComponentRenderable({ rune: 'swatch',
 				tag: 'span',
 				properties: {
 					color: colorMeta,
@@ -44,7 +43,7 @@ const _swatch = createContentModelSchema({
 			});
 		}
 
-		return createComponentRenderable(schema.Swatch, {
+		return createComponentRenderable({ rune: 'swatch',
 			tag: 'span',
 			properties: {
 				color: colorMeta,

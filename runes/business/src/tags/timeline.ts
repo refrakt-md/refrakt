@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const timelineEntry = createContentModelSchema({
 	attributes: {
@@ -22,7 +21,7 @@ export const timelineEntry = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.TimelineEntry, {
+		return createComponentRenderable({ rune: 'timeline-entry', schemaOrgType: 'ListItem',
 			tag: 'li',
 			refs: {
 				date: dateTag,
@@ -90,7 +89,7 @@ export const timeline = createContentModelSchema({
 		}
 		children.push(entriesList);
 
-		return createComponentRenderable(schema.Timeline, {
+		return createComponentRenderable({ rune: 'timeline', schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

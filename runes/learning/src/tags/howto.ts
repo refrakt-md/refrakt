@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
@@ -81,7 +80,7 @@ export const howto = createContentModelSchema({
 		}
 		children.push(stepsList);
 
-		return createComponentRenderable(schema.HowTo, {
+		return createComponentRenderable({ rune: 'how-to', schemaOrgType: 'HowTo',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

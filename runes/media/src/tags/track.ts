@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { parseDuration, formatDuration } from '../duration.js';
 
 const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
@@ -94,7 +93,7 @@ export const track = createContentModelSchema({
 		if (numberMeta) children.push(numberMeta);
 		if (dateMeta) children.push(dateMeta);
 
-		return createComponentRenderable(schema.Track, {
+		return createComponentRenderable({ rune: 'track', schemaOrgType: 'MusicRecording',
 			tag: 'li',
 			properties: {
 				name: nameTag,

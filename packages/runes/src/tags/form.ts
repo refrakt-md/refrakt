@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -212,7 +211,7 @@ const formField = createContentModelSchema({
 		const body = new Tag('div', {}, [label, inputElement]);
 		const fieldTypeMeta = new Tag('meta', { content: fieldType });
 
-		return createComponentRenderable(schema.FormField, {
+		return createComponentRenderable({ rune: 'form-field',
 			tag: 'div',
 			properties: {
 				fieldType: fieldTypeMeta,
@@ -389,7 +388,7 @@ export const form = createContentModelSchema({
 		const fields = body.tag('div').typeof('FormField');
 		const bodyContainer = body.wrap('div');
 
-		return createComponentRenderable(schema.Form, {
+		return createComponentRenderable({ rune: 'form',
 			tag: 'form',
 			properties: {
 				action: actionMeta,

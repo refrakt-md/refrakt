@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
@@ -167,7 +166,7 @@ export const preview = createContentModelSchema({
 			...children.toArray(),
 		];
 
-		return createComponentRenderable(schema.Preview, {
+		return createComponentRenderable({ rune: 'preview',
 			tag: 'div',
 			properties: {
 				...(titleMeta ? { title: titleMeta } : {}),

@@ -1,26 +1,3 @@
-import { useSchema } from '@refrakt-md/types';
-import { Spec } from './schema/spec.js';
-import { Work } from './schema/work.js';
-import { Bug } from './schema/bug.js';
-import { Decision } from './schema/decision.js';
-import { Milestone } from './schema/milestone.js';
-import { Backlog } from './schema/backlog.js';
-import { DecisionLog } from './schema/decision-log.js';
-import { PlanProgress } from './schema/plan-progress.js';
-import { PlanActivity } from './schema/plan-activity.js';
-
-export const schema = {
-	Spec: useSchema(Spec).defineType('Spec'),
-	Work: useSchema(Work).defineType('Work'),
-	Bug: useSchema(Bug).defineType('Bug'),
-	Decision: useSchema(Decision).defineType('Decision'),
-	Milestone: useSchema(Milestone).defineType('Milestone'),
-	Backlog: useSchema(Backlog).defineType('Backlog'),
-	DecisionLog: useSchema(DecisionLog).defineType('DecisionLog'),
-	PlanProgress: useSchema(PlanProgress).defineType('PlanProgress'),
-	PlanActivity: useSchema(PlanActivity).defineType('PlanActivity'),
-};
-
 // --- Scanner types ---
 
 export type PlanRuneType = 'spec' | 'work' | 'bug' | 'decision' | 'milestone';

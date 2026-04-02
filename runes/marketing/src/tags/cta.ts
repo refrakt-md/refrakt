@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const cta = createContentModelSchema({
 	contentModel: {
@@ -40,7 +39,7 @@ export const cta = createContentModelSchema({
 
 		const actionsDiv = actions.wrap('div');
 
-		return createComponentRenderable(schema.CallToAction, {
+		return createComponentRenderable({ rune: 'call-to-action',
 			tag: 'section',
 			property: 'contentSection',
 			class: attrs.class,

@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { unwrapParagraphImages } from './common.js';
@@ -43,7 +42,7 @@ export const juxtapose = createContentModelSchema({
 			const label = labelParts[i];
 			const nameTag = label ? new Tag('span', {}, [label]) : undefined;
 
-			return createComponentRenderable(schema.JuxtaposePanel, {
+			return createComponentRenderable({ rune: 'juxtapose-panel',
 				tag: 'div',
 				properties: nameTag ? { name: nameTag } : {},
 				refs: {
@@ -62,7 +61,7 @@ export const juxtapose = createContentModelSchema({
 		const positionMeta = new Tag('meta', { content: String(attrs.position ?? 50) });
 		const durationMeta = new Tag('meta', { content: String(attrs.duration ?? 1000) });
 
-		return createComponentRenderable(schema.Juxtapose, {
+		return createComponentRenderable({ rune: 'juxtapose',
 			tag: 'section',
 			properties: {
 				panel: panels,

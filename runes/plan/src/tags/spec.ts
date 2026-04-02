@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const statusValues = ['draft', 'review', 'accepted', 'superseded', 'deprecated'] as const;
 
@@ -54,7 +53,7 @@ export const spec = createContentModelSchema({
 		}
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable(schema.Spec, {
+		return createComponentRenderable({ rune: 'spec',
 			tag: 'article',
 			properties: {
 				id: idMeta,

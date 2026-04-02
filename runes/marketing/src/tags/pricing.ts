@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const NAME_PRICE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;
 
@@ -74,7 +73,7 @@ export const pricing = createContentModelSchema({
     const sectionProps = pageSectionProperties(header);
     const tiersList = tiers.wrap('ul', { 'data-layout': 'grid', 'data-columns': tiers.nodes.length });
 
-    return createComponentRenderable(schema.Pricing, {
+    return createComponentRenderable({ rune: 'pricing', schemaOrgType: 'Product',
       tag: 'section',
       property: 'contentSection',
       properties: {
@@ -112,7 +111,7 @@ export const tier = createContentModelSchema({
     ],
   },
   transform(resolved, attrs, config) {
-    const type = attrs.featured ? schema.FeaturedTier : schema.Tier;
+    const runeName = attrs.featured ? 'featured-tier' : 'tier';
 
     const priceValue = attrs.price || attrs.priceMonthly || '';
     const nameTag = new Tag('h1', {}, [attrs.name ?? '']);
@@ -129,7 +128,7 @@ export const tier = createContentModelSchema({
     const parsedPriceMeta = new Tag('meta', { content: numericMatch ? numericMatch[0] : priceValue });
     const resolvedCurrencyMeta = new Tag('meta', { content: attrs.currency || inferCurrency(priceValue) });
 
-    return createComponentRenderable(type, {
+    return createComponentRenderable({ rune: runeName, schemaOrgType: 'Offer',
       tag: 'li',
       properties: {
         description: description(children),

@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode, Node } from '@markdoc/markdoc';
 import { headingsToList } from '../util.js';
-import { schema } from '../registry.js';
 import { createContentModelSchema, asNodes } from '../lib/index.js';
 import { createComponentRenderable } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
@@ -38,7 +37,7 @@ const navItem = createContentModelSchema({
       ? [...slug.toArray(), ...nestedItems.toArray()]
       : slug.toArray();
 
-    return createComponentRenderable(schema.NavItem, {
+    return createComponentRenderable({ rune: 'nav-item',
       tag: 'li',
       properties: {
         slug,
@@ -58,7 +57,7 @@ function buildGroups(allNodes: RenderableTreeNode[]): Tag<'section'>[] {
 
   const flush = () => {
     if (!currentHeading) return;
-    groups.push(createComponentRenderable(schema.NavGroup, {
+    groups.push(createComponentRenderable({ rune: 'nav-group',
       tag: 'section',
       properties: {
         title: currentHeading as Tag<'h1'>,
@@ -100,7 +99,7 @@ export const nav = createContentModelSchema({
       // The core post-process hook will replace this with resolved child page items.
       const sentinelMeta = new Markdoc.Tag('meta', { 'data-field': NAV_AUTO_SENTINEL, content: 'true' });
 
-      return createComponentRenderable(schema.Nav, {
+      return createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         properties: {
           group: [],
@@ -130,7 +129,7 @@ export const nav = createContentModelSchema({
     if (hasGroups) {
       const groups = buildGroups(children.toArray());
 
-      return createComponentRenderable(schema.Nav, {
+      return createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         class: attrs.ordered ? 'ordered' : undefined,
         properties: {
@@ -147,7 +146,7 @@ export const nav = createContentModelSchema({
     // Flat list (no groups)
     const allItems = children.flatten().tag('li');
 
-    return createComponentRenderable(schema.Nav, {
+    return createComponentRenderable({ rune: 'nav',
       tag: 'nav',
       class: attrs.ordered ? 'ordered' : undefined,
       properties: {

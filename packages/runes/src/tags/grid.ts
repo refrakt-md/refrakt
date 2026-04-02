@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { SpaceSeparatedList } from '../attributes.js';
@@ -73,7 +72,7 @@ export const grid = createContentModelSchema({
 
 		const metas: any[] = [ratioMeta, gapMeta, valignMeta, collapseMeta, modeMeta, minMeta, aspectMeta, stackMeta].filter(Boolean);
 
-		return createComponentRenderable(schema.Grid, {
+		return createComponentRenderable({ rune: 'grid',
 			tag: 'section',
 			children: [...metas, layout],
 			properties: {

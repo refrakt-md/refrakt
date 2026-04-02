@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const event = createContentModelSchema({
 	attributes: {
@@ -49,7 +48,7 @@ export const event = createContentModelSchema({
 		];
 		if (locationWrapper) resultChildren.push(locationWrapper);
 
-		return createComponentRenderable(schema.Event, {
+		return createComponentRenderable({ rune: 'event', schemaOrgType: 'Event',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -17,7 +16,7 @@ export const annotateNote = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.AnnotateNote, {
+		return createComponentRenderable({ rune: 'annotate-note',
 			tag: 'aside',
 			properties: {},
 			refs: {
@@ -49,7 +48,7 @@ export const annotate = createContentModelSchema({
 		const notes = children.tag('aside').typeof('AnnotateNote');
 		const body = children.wrap('div');
 
-		return createComponentRenderable(schema.Annotate, {
+		return createComponentRenderable({ rune: 'annotate',
 			tag: 'div',
 			properties: {
 				note: notes,

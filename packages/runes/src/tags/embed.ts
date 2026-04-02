@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -111,7 +110,7 @@ export const embed = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.fallback), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.Embed, {
+		return createComponentRenderable({ rune: 'embed', schemaOrgType: 'VideoObject',
 			tag: 'figure',
 			properties: {
 				url: urlMeta,

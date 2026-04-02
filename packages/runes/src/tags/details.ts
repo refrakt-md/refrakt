@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -25,7 +24,7 @@ export const details = createContentModelSchema({
 		const summaryTag = new Tag('summary', {}, [summaryText]);
 		const body = children.wrap('div');
 
-		const tag = createComponentRenderable(schema.Details, {
+		const tag = createComponentRenderable({ rune: 'details',
 			tag: 'details',
 			properties: {
 				summary: summaryTag,

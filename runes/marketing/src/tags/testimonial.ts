@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
@@ -96,7 +95,7 @@ export const testimonial = createContentModelSchema({
 			]));
 		}
 
-		return createComponentRenderable(schema.Testimonial, {
+		return createComponentRenderable({ rune: 'testimonial', schemaOrgType: 'Review',
 			tag: 'article',
 			properties: {
 				rating: ratingMeta,

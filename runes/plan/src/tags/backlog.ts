@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const BACKLOG_SENTINEL = '__backlog-sentinel';
 
@@ -27,7 +26,7 @@ export const backlog = createContentModelSchema({
 		// Placeholder list — replaced by postProcess
 		const placeholder = new Tag('div', {}, []);
 
-		return createComponentRenderable(schema.Backlog, {
+		return createComponentRenderable({ rune: 'backlog',
 			tag: 'section',
 			properties: {
 				filter: filterMeta,

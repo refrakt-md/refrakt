@@ -1,20 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { useSchema } from '@refrakt-md/types';
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-
-class Mockup {
-	device: string = 'browser';
-	label: string = '';
-	color: string = 'dark';
-	statusBar: string = 'true';
-	url: string = '';
-	scale: string = '1';
-	fit: string = 'auto';
-}
-
-const MockupType = useSchema(Mockup).defineType('Mockup');
 
 const deviceType = ['iphone-15', 'iphone-se', 'pixel', 'phone', 'ipad', 'tablet', 'browser', 'browser-dark', 'macbook', 'watch', 'none'] as const;
 const colorType = ['dark', 'light', 'auto'] as const;
@@ -70,7 +57,7 @@ export const mockup = createContentModelSchema({
 			viewport.next(),
 		];
 
-		return createComponentRenderable(MockupType, {
+		return createComponentRenderable({ rune: 'mockup',
 			tag: 'div',
 			properties: {
 				device: deviceMeta,

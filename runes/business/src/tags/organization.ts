@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const orgType = ['Organization', 'LocalBusiness', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'NonProfit'] as const;
 
@@ -29,7 +28,7 @@ export const organization = createContentModelSchema({
 
 		const bodyDiv = body.wrap('div');
 
-		return createComponentRenderable(schema.Organization, {
+		return createComponentRenderable({ rune: 'organization', schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			typeof: attrs.type || undefined,

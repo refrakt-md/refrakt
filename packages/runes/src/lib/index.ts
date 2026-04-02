@@ -5,6 +5,7 @@ import type { Config, Node, RenderableTreeNodes, Schema, SchemaAttribute, Tag, V
 import { resolveContentModel } from './resolver.js';
 
 export { createComponentRenderable } from './component.js';
+export type { InlineTransformResult } from './component.js';
 export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './resolver.js';
 
 /**

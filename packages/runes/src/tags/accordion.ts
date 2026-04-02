@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
@@ -43,7 +42,7 @@ export const accordionItem = createContentModelSchema({
 			}
 		}
 
-		return createComponentRenderable(schema.AccordionItem, {
+		return createComponentRenderable({ rune: 'accordion-item', schemaOrgType: 'Question',
 			tag: 'details',
 			properties: {
 				name: nameTag,
@@ -96,7 +95,7 @@ export const accordion = createContentModelSchema({
 			? [headerNodes.wrap('header').next(), itemsContainer.next()]
 			: [itemsContainer.next()];
 
-		return createComponentRenderable(schema.Accordion, {
+		return createComponentRenderable({ rune: 'accordion', schemaOrgType: 'FAQPage',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
