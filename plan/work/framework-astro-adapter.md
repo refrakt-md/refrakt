@@ -17,6 +17,7 @@ Build the Astro framework adapter — the first non-SvelteKit target. Astro is M
 - [ ] Lumina Astro adapter exists (`packages/lumina/astro/index.ts`) exporting theme config + CSS entry point
 - [ ] Content HMR works in dev mode via Vite `server.watcher`
 - [ ] Example site renders core runes, layouts (docs + default), behaviors, and web components correctly
+- [ ] Adapter documentation page at `site/content/docs/adapters/astro.md` with installation, project structure, configuration, code examples (integration setup, page component, layout, content loading, behavior init, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

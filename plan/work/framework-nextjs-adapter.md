@@ -16,6 +16,7 @@ Build the Next.js framework adapter. Uses React Server Components + `renderToHtm
 - [ ] Lumina Next.js adapter exports theme config + types
 - [ ] Custom elements (`rf-*`) render correctly via raw HTML string (bypasses React's custom element issues)
 - [ ] Example site renders core runes, layouts, behaviors, and web components correctly
+- [ ] Adapter documentation page at `site/content/docs/adapters/nextjs.md` with installation, project structure, configuration, code examples (RefraktContent server component, BehaviorInit client component, generateMetadata helper, generateStaticParams, CSS import, layout setup), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

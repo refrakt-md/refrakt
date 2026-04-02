@@ -15,6 +15,7 @@ Build the Eleventy (11ty v3) framework adapter. The simplest integration — no 
 - [ ] Behavior initialization via `<script type="module">` in template (with bundled or passthrough-copied behaviors JS)
 - [ ] Works with Eleventy 3.0 ESM-native mode
 - [ ] Example site renders core runes, layouts, behaviors, and web components correctly
+- [ ] Adapter documentation page at `site/content/docs/adapters/eleventy.md` with installation, project structure, configuration, code examples (plugin setup, global data file, base template, pagination config, behavior script, CSS passthrough), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 
