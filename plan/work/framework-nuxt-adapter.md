@@ -1,4 +1,4 @@
-{% work id="WORK-090" status="ready" priority="medium" complexity="moderate" tags="frameworks, nuxt" %}
+{% work id="WORK-090" status="ready" priority="medium" complexity="moderate" tags="frameworks, nuxt" milestone="v1.0.0" %}
 
 # Create @refrakt-md/nuxt adapter package
 
@@ -15,6 +15,7 @@ Build the Nuxt framework adapter. Nuxt is Vite-based like SvelteKit, so the exis
 - [ ] Behavior init/cleanup handled via `onMounted`/`onBeforeUnmount`, re-init on route change via watcher
 - [ ] Lumina Nuxt adapter exports theme config + CSS entry point
 - [ ] Example site renders core runes, layouts, behaviors, and web components correctly
+- [ ] Adapter documentation page at `site/content/docs/adapters/nuxt.md` with installation, project structure, configuration, code examples (Nuxt module setup, RefraktContent usage, useRefraktMeta composable, route setup, behavior lifecycle, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

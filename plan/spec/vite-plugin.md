@@ -23,7 +23,7 @@ The two specs are complementary, not competing:
 | **Scope** | Per-file rune transforms | Full content pipeline |
 | **Routing** | User's framework | Adapter-managed |
 | **Layouts** | User's framework | `layoutTransform()` |
-| **SEO** | User extracts from frontmatter | Adapter generates meta tags |
+| **SEO** | Extracted and exported; user injects into `<head>` | Adapter injects into `<head>` automatically |
 | **Content loading** | User imports `.md` as module | `loadContent()` pipeline |
 | **Cross-page features** | Opt-in (Level 2) | Always available |
 | **Target user** | "I want runes in my existing site" | "I want a refrakt-powered site" |
@@ -158,22 +158,57 @@ These runes render as static content without their cross-page features and emit 
 export const html = '<article class="rf-page">...</article>';
 export const tree = { $$mdtype: 'Tag', name: 'article', attributes: { class: 'rf-page' }, children: [...] };
 export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
+export const seo = {
+  jsonLd: [
+    { '@context': 'https://schema.org', '@type': 'Recipe', name: 'Classic Sourdough', ... }
+  ],
+  og: { title: 'Perfect Sourdough', description: '...', image: null, type: 'website' },
+};
 export const meta = { runes: ['recipe', 'hint'], packages: ['learning'] };
 ```
 
 The `html` export is the common path — most users render it directly. The `tree` export is the serialized tag tree after identity transform (the intermediate form before `renderToHtml()` flattens it). Users who need component-level control over specific runes use `tree` instead — see "Component Override Pattern" below.
 
-The user's page imports and renders it:
+The `seo` export contains structured SEO data extracted from the rendered tree via `extractSeo()` from `@refrakt-md/runes`. Runes emit RDFa attributes (`typeof`, `property`) during schema transform, and the identity transform preserves them. The extraction walks the tree and produces JSON-LD objects (schema.org structured data) and Open Graph metadata (title, description, image — derived from frontmatter, hero runes, or first heading/paragraph as fallback). The user injects this into their framework's `<head>`:
 
 ```svelte
-<!-- +page.svelte (SvelteKit example) -->
+<!-- SvelteKit: +page.svelte -->
 <script>
-  import { html, frontmatter } from './sourdough.md';
+  import { html, seo } from './sourdough.md';
 </script>
 
-<h1>{frontmatter.title}</h1>
+<svelte:head>
+  {#if seo.og.title}<title>{seo.og.title}</title>{/if}
+  {#if seo.og.description}<meta name="description" content={seo.og.description} />{/if}
+  {#each seo.jsonLd as schema}
+    {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
+  {/each}
+</svelte:head>
+
 {@html html}
 ```
+
+```astro
+---
+// Astro: [...slug].astro
+import { html, seo } from './sourdough.md';
+---
+
+<html>
+  <head>
+    {seo.og.title && <title>{seo.og.title}</title>}
+    {seo.og.description && <meta name="description" content={seo.og.description} />}
+    {seo.jsonLd.map(schema => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </head>
+  <body>
+    <Fragment set:html={html} />
+  </body>
+</html>
+```
+
+The SEO extraction is automatic — any rune that declares a `schemaOrgType` (Recipe, FAQPage, BreadcrumbList, ImageObject, VideoObject, etc.) produces JSON-LD. The user just needs to inject the output into `<head>`.
 
 ### Level 2: Cross-Page Pipeline
 
@@ -198,6 +233,10 @@ This uses the existing four-phase cross-page pipeline (`packages/content/src/pip
 export const html = '<article class="rf-page">...</article>';
 export const tree = { $$mdtype: 'Tag', name: 'article', ... };
 export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
+export const seo = {
+  jsonLd: [{ '@context': 'https://schema.org', '@type': 'Recipe', ... }],
+  og: { title: 'Perfect Sourdough', description: '...', type: 'website' },
+};
 export const meta = {
   runes: ['recipe', 'hint', 'glossary'],
   packages: ['learning'],
@@ -470,7 +509,8 @@ This plugin is **not** a replacement for the full framework adapters defined in 
 | Feature | `@refrakt-md/vite` | SPEC-030 adapters |
 |---------|---------------------|---------------------|
 | Layout system | No — user's framework | Yes — `layoutTransform()` |
-| SEO generation | No — user handles | Yes — per-framework SEO |
+| SEO extraction | Yes — exported as `seo` | Yes — same extraction |
+| SEO `<head>` injection | No — user injects | Yes — adapter injects automatically |
 | Component rendering | No — HTML string only | Yes — `renderToHtml()` + framework wrapper |
 | Content routing | No — user's framework | Yes — `loadContent()` + framework routing |
 | Web components | No — user initializes | Yes — adapter handles `RfContext` |
