@@ -1,4 +1,4 @@
-{% decision id="ADR-005" status="proposed" date="2026-04-02" tags="runes, types, architecture, authoring" %}
+{% decision id="ADR-005" status="accepted" date="2026-04-02" tags="runes, types, architecture, authoring" %}
 
 # Replace the useSchema / Type class system with plain rune identifiers
 
