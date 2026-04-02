@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, headingsToList, descriptionHelper as description, pageSectionProperties } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const NAME_PRICE_PATTERN = /^(.+?)\s*[-–—]\s*(.+)$/;
@@ -97,38 +97,37 @@ export const pricing = createContentModelSchema({
   },
 });
 
-export class TierModel extends Model {
-  @attribute({ type: String, required: true })
-  name: string;
+export const tier = createContentModelSchema({
+  attributes: {
+    name: { type: String, required: true },
+    price: { type: String, required: false },
+    featured: { type: Boolean, required: false },
+    currency: { type: String, required: false },
+    priceMonthly: { type: String, required: false },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'body', match: 'any', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const type = attrs.featured ? schema.FeaturedTier : schema.Tier;
 
-  @attribute({ type: String, required: false })
-  price: string = '';
-
-  @attribute({ type: Boolean, required: false })
-  featured: boolean = false;
-
-  @attribute({ type: String, required: false })
-  currency: string = '';
-
-  // Backwards compat: accept priceMonthly as alias for price
-  @attribute({ type: String, required: false })
-  priceMonthly: string = '';
-
-  transform(): RenderableTreeNodes {
-    const type = this.featured ? schema.FeaturedTier : schema.Tier;
-
-    const priceValue = this.price || this.priceMonthly;
-    const nameTag = new Tag('h1', {}, [this.name]);
+    const priceValue = attrs.price || attrs.priceMonthly || '';
+    const nameTag = new Tag('h1', {}, [attrs.name ?? '']);
     const priceTag = new Tag('p', {}, [priceValue]);
-    const children = this.transformChildren();
+    const children = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+    );
     const body = children.wrap('div');
 
-    const currencyMeta = this.currency ? new Tag('meta', { content: this.currency }) : undefined;
+    const currencyMeta = attrs.currency ? new Tag('meta', { content: attrs.currency }) : undefined;
 
     // Schema.org price parsing: extract numeric value and infer currency
     const numericMatch = priceValue.match(/[\d.]+/);
     const parsedPriceMeta = new Tag('meta', { content: numericMatch ? numericMatch[0] : priceValue });
-    const resolvedCurrencyMeta = new Tag('meta', { content: this.currency || inferCurrency(priceValue) });
+    const resolvedCurrencyMeta = new Tag('meta', { content: attrs.currency || inferCurrency(priceValue) });
 
     return createComponentRenderable(type, {
       tag: 'li',
@@ -149,7 +148,5 @@ export class TierModel extends Model {
       },
       children: [nameTag, priceTag, parsedPriceMeta, resolvedCurrencyMeta, ...(currencyMeta ? [currencyMeta] : []), body.next()],
     })
-  }
-}
-
-export const tier = createSchema(TierModel);
+  },
+});

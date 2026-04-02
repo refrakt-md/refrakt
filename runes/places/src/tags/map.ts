@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
@@ -89,36 +89,28 @@ function parseLocationItem(node: Node): {
 	return { name, description, lat, lng, address, url };
 }
 
-class MapPinModel extends Model {
-	@attribute({ type: String, required: false })
-	name: string = '';
-
-	@attribute({ type: String, required: false })
-	description: string = '';
-
-	@attribute({ type: String, required: false })
-	lat: string = '';
-
-	@attribute({ type: String, required: false })
-	lng: string = '';
-
-	@attribute({ type: String, required: false })
-	address: string = '';
-
-	@attribute({ type: String, required: false })
-	url: string = '';
-
-	@attribute({ type: String, required: false })
-	group: string = '';
-
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const descriptionTag = new Tag('span', {}, [this.description]);
-		const latMeta = new Tag('meta', { content: this.lat });
-		const lngMeta = new Tag('meta', { content: this.lng });
-		const addressMeta = new Tag('meta', { content: this.address });
-		const urlMeta = new Tag('meta', { content: this.url });
-		const groupMeta = new Tag('meta', { content: this.group });
+const mapPin = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: false },
+		description: { type: String, required: false },
+		lat: { type: String, required: false },
+		lng: { type: String, required: false },
+		address: { type: String, required: false },
+		url: { type: String, required: false },
+		group: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [],
+	},
+	transform(resolved, attrs) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const descriptionTag = new Tag('span', {}, [attrs.description ?? '']);
+		const latMeta = new Tag('meta', { content: attrs.lat ?? '' });
+		const lngMeta = new Tag('meta', { content: attrs.lng ?? '' });
+		const addressMeta = new Tag('meta', { content: attrs.address ?? '' });
+		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
+		const groupMeta = new Tag('meta', { content: attrs.group ?? '' });
 
 		return createComponentRenderable(schema.MapPin, {
 			tag: 'li',
@@ -135,8 +127,8 @@ class MapPinModel extends Model {
 			},
 			children: [nameTag, descriptionTag, latMeta, lngMeta, addressMeta, urlMeta, groupMeta],
 		});
-	}
-}
+	},
+});
 
 // Parse list items into map-pin tags with heading-based grouping
 function convertMapChildren(nodes: unknown[]): unknown[] {
@@ -169,7 +161,7 @@ function convertMapChildren(nodes: unknown[]): unknown[] {
 	return converted;
 }
 
-export const mapPin = createSchema(MapPinModel);
+export { mapPin };
 
 export const map = createContentModelSchema({
 	attributes: {

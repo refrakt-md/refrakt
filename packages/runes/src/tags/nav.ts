@@ -1,19 +1,35 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Tag, RenderableTreeNode, RenderableTreeNodes, Node } from '@markdoc/markdoc';
+import type { Tag, RenderableTreeNode, Node } from '@markdoc/markdoc';
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
-import { attribute, Model, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createContentModelSchema, asNodes } from '../lib/index.js';
 import { createComponentRenderable } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 /** Sentinel meta property written by nav auto mode; consumed by corePipelineHooks.postProcess */
 export const NAV_AUTO_SENTINEL = '__nav-auto';
 
-class NavItemModel extends Model {
-  transform(): RenderableTreeNodes {
-    const children = this.transformChildren({
-      text: node => new Markdoc.Tag('span', { 'data-field': 'slug' }, [node.attributes.content]),
-    });
+const navItem = createContentModelSchema({
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'body', match: 'any', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const children = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(resolved.body), {
+        ...config,
+        nodes: {
+          ...config.nodes,
+          text: {
+            transform(node: Node) {
+              return new Markdoc.Tag('span', { 'data-field': 'slug' }, [node.attributes.content]);
+            },
+          },
+        },
+      }) as RenderableTreeNode[],
+    );
 
     const slug = children.tag('span');
     const nestedItems = children.tag('ul');
@@ -32,10 +48,8 @@ class NavItemModel extends Model {
       },
       children: itemChildren,
     });
-  }
-}
-
-const navItem = createSchema(NavItemModel);
+  },
+});
 
 function buildGroups(allNodes: RenderableTreeNode[]): Tag<'section'>[] {
   const groups: Tag<'section'>[] = [];
