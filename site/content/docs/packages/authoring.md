@@ -44,14 +44,14 @@ Each key in `runes` is the Markdoc tag name. The value is a `RunePackageEntry`:
 
 ```typescript
 import type { RunePackage } from '@refrakt-md/types';
-import { GameItemModel } from './game-item.js';
+import { gameItem } from './game-item.js';
 
 export const myPackage: RunePackage = {
   name: 'dnd-5e',
   version: '1.0.0',
   runes: {
     'game-item': {
-      transform: GameItemModel.schema,   // Markdoc Schema
+      transform: gameItem,   // Markdoc Schema
       description: 'A magical item with rarity and properties',
       aliases: ['item', 'magic-item'],
       seoType: 'Product',
@@ -96,33 +96,50 @@ export const myPackage: RunePackage = {
 
 ## Writing the Rune Schema
 
-Rune schemas are standard Markdoc `Schema` objects built using the same Model API documented in the [Authoring Guide](/docs/authoring/authoring-overview). Use `@refrakt-md/runes` model utilities:
+Rune schemas are standard Markdoc `Schema` objects built using `createContentModelSchema` from `@refrakt-md/runes`. See the [Authoring Guide](/docs/authoring/authoring-overview) and [Content Models](/docs/authoring/content-models) for full documentation.
 
 ```typescript
 // src/game-item.ts
+import Markdoc from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 import {
+  createContentModelSchema,
   createComponentRenderable,
-  BaseModel,
-  attribute,
-  group,
+  RenderableNodeCursor,
+  asNodes,
 } from '@refrakt-md/runes';
 
-export class GameItemModel extends BaseModel {
-  @attribute() rarity?: string;
+export const gameItem = createContentModelSchema({
+  attributes: {
+    rarity: { type: String, required: false, matches: ['common', 'uncommon', 'rare', 'very-rare', 'legendary'] },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'headline', match: 'heading', optional: true },
+      { name: 'properties', match: 'list', optional: true },
+      { name: 'lore', match: 'blockquote', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const rarityMeta = new Tag('meta', { content: attrs.rarity ?? 'common' });
+    const body = new RenderableNodeCursor(
+      Markdoc.transform([
+        ...asNodes(resolved.headline),
+        ...asNodes(resolved.properties),
+        ...asNodes(resolved.lore),
+      ], config) as RenderableTreeNode[],
+    ).wrap('div');
 
-  transform() {
-    const { headings, items, quotes } = this.processChildren();
-    return createComponentRenderable('GameItem', {
-      tag: this.tag,
-      properties: {
-        rarity: this.rarity,
-      },
-      children: [...headings, ...items, ...quotes],
+    return createComponentRenderable('GameItem' as any, {
+      tag: 'div',
+      properties: { rarity: rarityMeta },
+      refs: { body: body.tag('div') },
+      children: [rarityMeta, body.next()],
     });
-  }
-}
-
-export default GameItemModel.schema;
+  },
+});
 ```
 
 ## Using Content Pipeline Variables

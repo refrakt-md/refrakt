@@ -32,7 +32,6 @@
 ## Authoring
 
 - authoring-overview
-- model-api
 - content-models
 - output-contract
 - patterns
