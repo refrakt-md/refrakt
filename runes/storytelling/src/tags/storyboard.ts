@@ -1,15 +1,23 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
 
-class StoryboardPanelModel extends Model {
-	transform(): RenderableTreeNodes {
-		const children = this.transformChildren();
+export const storyboardPanel = createContentModelSchema({
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
 		const image = children.tag('img').limit(1);
 		const caption = children.tag('p').limit(1);
@@ -24,8 +32,8 @@ class StoryboardPanelModel extends Model {
 			},
 			children: [body.next()],
 		});
-	}
-}
+	},
+});
 
 // Group nodes into panels: each image starts a new panel
 function convertStoryboardChildren(nodes: unknown[]): unknown[] {
@@ -56,8 +64,6 @@ function convertStoryboardChildren(nodes: unknown[]): unknown[] {
 
 	return converted;
 }
-
-export const storyboardPanel = createSchema(StoryboardPanelModel);
 
 export const storyboard = createContentModelSchema({
 	attributes: {

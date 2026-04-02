@@ -1,39 +1,45 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
-class TabModel extends Model {
-  @attribute({ type: String, required: true })
-  name: string;
+export const tab = createContentModelSchema({
+  attributes: {
+    name: { type: String, required: true },
+    image: { type: String, required: false },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'body', match: 'any', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    let tabCursor = new RenderableNodeCursor<RenderableTreeNode>([]);
 
-  @attribute({ type: String, required: false })
-  image: string;
-
-  transform(): RenderableTreeNodes {
-    let tab = new RenderableNodeCursor<RenderableTreeNode>([]);
-
-    if (this.image) {
-      tab = tab.concat(Markdoc.transform(new Ast.Node('image', { src: this.image }), this.config));
+    if (attrs.image) {
+      tabCursor = tabCursor.concat(Markdoc.transform(new Ast.Node('image', { src: attrs.image }), config));
     }
 
-    tab = tab.concat(new Tag('span', {}, [this.name]));
+    tabCursor = tabCursor.concat(new Tag('span', {}, [attrs.name ?? '']));
 
-    const panel = this.transformChildren();
+    const panel = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+    );
 
-    const name = tab.tag('span');
-    const image = tab.tag('svg');
+    const name = tabCursor.tag('span');
+    const image = tabCursor.tag('svg');
 
     return [
       createComponentRenderable(schema.Tab, {
         tag: 'button',
         properties: { image },
         refs: { name },
-        children: tab.toArray(),
+        children: tabCursor.toArray(),
       }),
       createComponentRenderable(schema.TabPanel, {
         tag: 'div',
@@ -41,10 +47,8 @@ class TabModel extends Model {
         children: panel.toArray(),
       })
     ];
-  }
-}
-
-export const tab = createSchema(TabModel);
+  },
+});
 
 function convertHeadings(nodes: Node[]): Node[] {
   const converted = headingsToList()(nodes);

@@ -1,8 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -14,13 +14,21 @@ function tagText(nodes: any[]): string {
 	}).join('').trim();
 }
 
-class AccordionItemModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string;
-
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('summary', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
+export const accordionItem = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('summary', {}, [attrs.name ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 		const bodyDivs = body.tag('div');
 
 		// For FAQ schema: body div becomes Answer entity with text property
@@ -50,10 +58,8 @@ class AccordionItemModel extends Model {
 			},
 			children: [nameTag, body.next()],
 		});
-	}
-}
-
-export const accordionItem = createSchema(AccordionItemModel);
+	},
+});
 
 export const accordion = createContentModelSchema({
 	attributes: {

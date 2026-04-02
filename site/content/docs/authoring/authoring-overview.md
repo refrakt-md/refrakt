@@ -54,18 +54,28 @@ Every core rune has five parts. Here's the Hint rune as an example (core rune �
 ```typescript
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createSchema } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
+import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const hintType = ['caution', 'check', 'note', 'warning'] as const;
 
-class HintModel extends Model {
-  @attribute({ type: String, matches: hintType.slice(), errorLevel: 'critical' })
-  type: typeof hintType[number] = 'note';
-
-  transform() {
-    const hintType = new Tag('meta', { content: this.type });
-    const children = this.transformChildren().wrap('div');
+export const hint = createContentModelSchema({
+  attributes: {
+    type: { type: String, matches: hintType.slice(), errorLevel: 'critical' },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [
+      { name: 'body', match: 'any', optional: true, greedy: true },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
+    const body = new RenderableNodeCursor(
+      Markdoc.transform(resolved.body ?? [], config) as RenderableTreeNode[],
+    ).wrap('div');
 
     return createComponentRenderable(schema.Hint, {
       tag: 'section',
@@ -74,20 +84,18 @@ class HintModel extends Model {
         hintType,
       },
       refs: {
-        body: children.tag('div'),
+        body: body.tag('div'),
       },
-      children: [hintType, children.next()],
+      children: [hintType, body.next()],
     });
-  }
-}
-
-export const hint = createSchema(HintModel);
+  },
+});
 ```
 
 Key points:
-- Extends `Model` base class
-- `@attribute` declares the `type` attribute with enum validation
-- `transform()` wraps children in a `div`, creates a meta tag for the hint type, and calls `createComponentRenderable` to produce output
+- `createContentModelSchema` defines the rune with declarative attributes and content model
+- `contentModel` declares how children are resolved (here, a simple greedy body)
+- `transform()` receives resolved content, wraps it, creates a meta tag, and calls `createComponentRenderable`
 - `properties` carry metadata (consumed by engine for modifiers)
 - `refs` label structural elements (engine adds BEM element classes)
 
@@ -172,7 +180,7 @@ For runes that belong in the core library (`packages/runes/src/tags/` — univer
 
 | File | Purpose |
 |------|---------|
-| `packages/runes/src/tags/{name}.ts` | Schema — Model class with `transform()` |
+| `packages/runes/src/tags/{name}.ts` | Schema — `createContentModelSchema()` with `transform()` |
 | `packages/types/src/schema/{name}.ts` | Type definition — class + component interface |
 | `packages/runes/src/config.ts` | Engine config — BEM block, modifiers, structure |
 | `packages/runes/src/registry.ts` | Type registration — `useSchema().defineType()` |
@@ -192,7 +200,7 @@ For domain-specific runes (marketing, storytelling, API docs, games, etc.) that 
 
 | File | Purpose |
 |------|---------|
-| `runes/{package}/src/{name}.ts` | Schema — Model class with `transform()`, same API as core |
+| `runes/{package}/src/{name}.ts` | Schema — `createContentModelSchema()` with `transform()`, same API as core |
 | `runes/{package}/src/index.ts` | Add the rune to the package's `RunePackage.runes` map |
 | `runes/{package}/styles/{block}.css` | CSS for the identity transform output |
 | `runes/{package}/test/{name}.test.ts` | Tests — output structure verification |

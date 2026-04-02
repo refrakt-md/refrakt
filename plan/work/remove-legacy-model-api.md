@@ -1,4 +1,4 @@
-{% work id="WORK-103" status="ready" priority="high" complexity="moderate" tags="runes, content-model, architecture" milestone="v1.0.0" %}
+{% work id="WORK-103" status="done" priority="high" complexity="moderate" tags="runes, content-model, architecture" milestone="v1.0.0" %}
 
 # Remove legacy Model class, decorators, and createSchema
 
@@ -24,13 +24,13 @@ From `packages/runes/src/lib/index.ts` and `packages/runes/src/index.ts`:
 
 ## Acceptance Criteria
 
-- [ ] All files listed above are deleted
-- [ ] `Model`, `@attribute`, `@group`, `@groupList`, `@id`, `createSchema` are no longer exported from `@refrakt-md/runes`
-- [ ] `NodeStream` and `RenderableNodeCursor` are removed if no longer used outside Model
-- [ ] No remaining imports of deleted modules anywhere in the monorepo (`grep` confirms zero hits)
-- [ ] `npm run build` succeeds for the full monorepo
-- [ ] `npm test` passes
-- [ ] CSS coverage tests pass
+- [x] All files listed above are deleted
+- [x] `Model`, `@attribute`, `@group`, `@groupList`, `@id`, `createSchema` are no longer exported from `@refrakt-md/runes`
+- [x] `NodeStream` and `RenderableNodeCursor` are removed if no longer used outside Model
+- [x] No remaining imports of deleted modules anywhere in the monorepo (`grep` confirms zero hits)
+- [x] `npm run build` succeeds for the full monorepo
+- [x] `npm test` passes
+- [x] CSS coverage tests pass
 
 ## Approach
 
@@ -49,5 +49,26 @@ From `packages/runes/src/lib/index.ts` and `packages/runes/src/index.ts`:
 ## References
 
 - SPEC-032 (parent spec)
+
+## Resolution
+
+Completed: 2026-04-02
+
+Branch: `claude/implement-spec-032-2KBbw`
+
+### What was done
+- Deleted `model.ts`, entire `annotations/` directory (6 files), removed `NodeStream` from `node.ts`
+- Removed `createSchema`, `Model`, `attribute`, `group`, `groupList`, `id`, `NodeStream` exports from `lib/index.ts` and `index.ts`
+- Converted `SplitLayoutModel` from Model subclass to plain `splitLayoutAttributes` record
+- Updated `createContentModelSchema` `base` option to accept plain `Record<string, SchemaAttribute>` instead of `Newable<Model>`
+- Updated error message in `packages.ts`
+- Removed `Group` interface from `interfaces.ts`
+- 696 lines deleted, 58 added
+
+### Notes
+- `RenderableNodeCursor` is still used extensively by all runes — kept as-is
+- `isFilterMatching` in `node.ts` is still used by `util.ts` — kept
+- `TypedNode` and `TransformFunction` in `interfaces.ts` are unused but harmless public types — left in place
+- All 7 rune files using `base: SplitLayoutModel` work unchanged since `SplitLayoutModel` is now aliased to the plain `splitLayoutAttributes` object
 
 {% /work %}

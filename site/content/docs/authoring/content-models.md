@@ -1,13 +1,11 @@
 ---
 title: Declarative Content Models
-description: Define rune content structure with contentModel instead of @group decorators
+description: Define rune content structure with contentModel
 ---
 
-# Declarative Content Models
+# Content Models
 
-The `createContentModelSchema` factory defines how a rune's children are parsed using a declarative `contentModel` object instead of `processChildren()` and `@group` decorators. The resolver engine matches children by type and position, then hands the resolved fields to your `transform` function.
-
-Prefer content models for new runes. The [Model class approach](/docs/authoring/model-api) still works for runes with complex imperative logic.
+The `createContentModelSchema` factory defines how a rune's children are parsed using a declarative `contentModel` object. The resolver engine matches children by type and position, then hands the resolved fields to your `transform` function.
 
 ## createContentModelSchema
 
@@ -15,8 +13,8 @@ Prefer content models for new runes. The [Model class approach](/docs/authoring/
 import { createContentModelSchema } from '@refrakt-md/runes';
 
 export const myRune = createContentModelSchema({
-  base: SplitLayoutModel,       // optional — base class for inherited attributes
-  attributes: {                  // tag attributes (same options as @attribute)
+  base: splitLayoutAttributes,   // optional — base attribute record to merge
+  attributes: {                  // tag attributes
     type: { type: String, required: false, matches: ['a', 'b'], default: 'a' },
   },
   contentModel: {                // how children are resolved (see patterns below)

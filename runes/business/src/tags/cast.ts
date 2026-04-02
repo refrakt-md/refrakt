@@ -1,33 +1,37 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { schema } from '../types.js';
 
 const layoutType = ['grid', 'list'] as const;
 
-class CastMemberModel extends Model {
-	@attribute({ type: String, required: false, description: 'Display name of the cast member.' })
-	name: string = '';
-
-	@attribute({ type: String, required: false, description: 'Job title or role held by this member.' })
-	role: string = '';
-
-	@attribute({ type: String, required: false, description: 'Portrait image URL.' })
-	image: string = '';
-
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const roleTag = new Tag('span', {}, [this.role]);
-		const body = this.transformChildren().wrap('div');
+export const castMember = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: false, description: 'Display name of the cast member.' },
+		role: { type: String, required: false, description: 'Job title or role held by this member.' },
+		image: { type: String, required: false, description: 'Portrait image URL.' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const roleTag = new Tag('span', {}, [attrs.role ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
 		const children: any[] = [];
 
 		// Create portrait image from attribute (extracted by item model or set explicitly)
 		let portraitTag: Markdoc.Tag | undefined;
-		if (this.image) {
-			portraitTag = new Tag('img', { src: this.image, alt: this.name });
+		if (attrs.image) {
+			portraitTag = new Tag('img', { src: attrs.image, alt: attrs.name ?? '' });
 			children.push(portraitTag);
 		}
 
@@ -47,10 +51,8 @@ class CastMemberModel extends Model {
 			},
 			children,
 		});
-	}
-}
-
-export const castMember = createSchema(CastMemberModel);
+	},
+});
 
 export const cast = createContentModelSchema({
 	attributes: {

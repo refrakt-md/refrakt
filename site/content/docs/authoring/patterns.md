@@ -13,12 +13,15 @@ Many runes use headings as structural boundaries — each heading starts a new s
 
 ### Auto-detect
 
-Runes that split on headings auto-detect the level from the first heading in the content. Use `headingsToList()` with no arguments:
+Runes that split on headings auto-detect the level from the first heading in the content. Use a `sections` content model with `sectionHeading: 'heading'`:
 
 ```typescript
-processChildren(nodes: Node[]) {
-  return headingsToList()(nodes);
-}
+contentModel: {
+  type: 'sections',
+  sectionHeading: 'heading',  // auto-detect level from first heading
+  emitTag: 'my-item',
+  emitAttributes: { name: '$heading' },
+},
 ```
 
 This works because content authors typically use a consistent heading level within a rune. It also handles AI-generated content seamlessly.
@@ -35,32 +38,36 @@ const converted = headingsToList({ level: 2 })(nodes);
 
 ## Header + body group split
 
-The standard pattern for runes with a title area:
+The standard pattern for runes with a title area uses a `delimited` content model with header fields before the body:
 
 ```typescript
-@group({ include: ['heading', 'paragraph'] })
-header: NodeStream;
-
-@group({ include: ['list', 'tag'] })
-body: NodeStream;
+contentModel: {
+  type: 'sequence',
+  fields: [
+    { name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+    { name: 'body', match: 'any', optional: true, greedy: true },
+  ],
+},
 ```
 
 Use `pageSectionProperties(header)` for consistent extraction of eyebrow, headline, image, and blurb:
 
 ```typescript
-transform() {
-  const header = this.header.transform();
+transform(resolved, attrs, config) {
+  const header = new RenderableNodeCursor(
+    Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+  );
 
   return createComponentRenderable(schema.MyRune, {
     tag: 'section',
     property: 'contentSection',
-    properties: {
+    refs: {
       ...pageSectionProperties(header),
       // adds: eyebrow, headline, image, blurb
     },
     children: [...],
   });
-}
+},
 ```
 
 This pattern gives you:
@@ -73,35 +80,41 @@ This pattern gives you:
 
 ## Child item runes
 
-When a rune has repeating items (Steps, Accordion, Tabs), create a separate Model class for the child:
+When a rune has repeating items (Steps, Accordion, Tabs), create a separate schema for the child:
 
 ```typescript
-// Parent
-class AccordionModel extends Model {
-  processChildren(nodes) {
-    return super.processChildren(this.convertHeadings(nodes));
-  }
-  // ...
-}
-
-// Child — separate Model class
-class AccordionItemModel extends Model {
-  @attribute({ type: String, required: true })
-  name: string;
-
-  transform() {
+// Child — separate schema
+export const accordionItem = createContentModelSchema({
+  attributes: {
+    name: { type: String, required: true },
+  },
+  contentModel: {
+    type: 'sequence',
+    fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+  },
+  transform(resolved, attrs, config) {
     return createComponentRenderable(schema.AccordionItem, {
       tag: 'details',
       // ...
     });
-  }
-}
+  },
+});
 
-export const accordion = createSchema(AccordionModel);
-export const accordionItem = createSchema(AccordionItemModel);
+// Parent — uses sections content model to emit child tags
+export const accordion = createContentModelSchema({
+  attributes: {},
+  contentModel: () => ({
+    type: 'sections',
+    sectionHeading: 'heading',
+    emitTag: 'accordion-item',
+    emitAttributes: { name: '$heading' },
+    // ...
+  }),
+  transform(resolved, attrs, config) { /* ... */ },
+});
 ```
 
-Don't inline item logic in the parent's `transform()`. Separate item models:
+Don't inline item logic in the parent's `transform()`. Separate item schemas:
 - Get their own `typeof` marker for engine config
 - Can have their own attributes and groups
 - Are reusable as explicit child tags: `{% accordion-item name="..." %}`
@@ -203,32 +216,34 @@ This separation means:
 
 ---
 
-## Group ordering
+## Field ordering
 
-Groups consume nodes **in declaration order**. Each group takes matching nodes from where the previous group stopped.
+Sequence fields consume nodes **in declaration order**. Each field matches the next eligible node from where the previous field stopped.
 
 ```typescript
-// These groups are evaluated top to bottom:
-@group({ include: ['heading', 'paragraph'] })
-header: NodeStream;          // takes headings + paragraphs first
-
-@group({ include: ['list'] })
-ingredients: NodeStream;     // then takes lists
-
-@group({ include: ['tag'] })
-body: NodeStream;            // finally takes remaining tags
+contentModel: {
+  type: 'sequence',
+  fields: [
+    { name: 'header', match: 'heading|paragraph', greedy: true },  // headings + paragraphs first
+    { name: 'ingredients', match: 'list' },                         // then lists
+    { name: 'body', match: 'any', optional: true, greedy: true },   // remaining content
+  ],
+},
 ```
 
-Design group `include` filters to be **mutually exclusive** when possible. If two groups can match the same node type, the first one wins.
+Design field `match` patterns to be **mutually exclusive** when possible. If two fields can match the same node type, the first one wins.
 
-Use **section-based grouping** (HR delimiter) when content has explicit visual breaks:
+Use **delimited content models** (HR delimiter) when content has explicit visual breaks:
 
 ```typescript
-@group({ section: 0 })       // before first ---
-main: NodeStream;
-
-@group({ section: 1 })       // after first ---
-showcase: NodeStream;
+contentModel: {
+  type: 'delimited',
+  delimiter: 'hr',
+  zones: [
+    { name: 'main', type: 'sequence', fields: [...] },     // before first ---
+    { name: 'showcase', type: 'sequence', fields: [...] },  // after first ---
+  ],
+},
 ```
 
 ---
