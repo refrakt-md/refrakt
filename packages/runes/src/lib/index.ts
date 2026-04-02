@@ -316,12 +316,14 @@ export interface ContentModelSchemaOptions {
 
   /**
    * Transform function that receives resolved content, the rune's
-   * attributes, and the Markdoc config.  Returns the renderable output.
+   * attributes, the Markdoc config, and optionally the AST node.
+   * Returns the renderable output.
    */
   transform: (
     resolved: ResolvedContent,
     attrs: Record<string, any>,
     config: Config,
+    node: Node,
   ) => RenderableTreeNodes;
 
   /** Deprecated attribute mappings. */
@@ -400,7 +402,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       );
 
       // Call the user's transform function
-      const result = options.transform(content, attrs, config);
+      const result = options.transform(content, attrs, config, node);
 
       // Inject tint / bg metas
       const tintBgCtx: TintBgContext = {
