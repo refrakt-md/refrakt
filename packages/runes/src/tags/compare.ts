@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -48,7 +47,7 @@ export const compare = createContentModelSchema({
 
 		const panelsDiv = new Tag('div', { 'data-panels': true }, panels);
 
-		return createComponentRenderable(schema.Compare, {
+		return createComponentRenderable({ rune: 'compare',
 			tag: 'div',
 			properties: {
 				layout: layoutMeta,

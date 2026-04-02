@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -41,7 +40,7 @@ export const figure = createContentModelSchema({
 		if (sizeMeta) childNodes.push(sizeMeta);
 		if (alignMeta) childNodes.push(alignMeta);
 
-		return createComponentRenderable(schema.Figure, {
+		return createComponentRenderable({ rune: 'figure', schemaOrgType: 'ImageObject',
 			tag: 'figure',
 			properties: {
 				...(sizeMeta ? { size: sizeMeta } : {}),

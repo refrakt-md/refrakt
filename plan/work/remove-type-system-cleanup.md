@@ -1,4 +1,4 @@
-{% work id="WORK-109" status="ready" priority="medium" complexity="moderate" tags="runes, types, architecture" milestone="v1.0.0" %}
+{% work id="WORK-109" status="done" priority="medium" complexity="moderate" tags="runes, types, architecture" milestone="v1.0.0" %}
 
 # Remove Type system — delete schema classes, registries, and old signature
 

@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { extractScene, buildStoryContent } from './common.js';
 
 export const realmSection = createContentModelSchema({
@@ -21,7 +20,7 @@ export const realmSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.RealmSection, {
+		return createComponentRenderable({ rune: 'realm-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -99,7 +98,7 @@ export const realm = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable(schema.Realm, {
+		return createComponentRenderable({ rune: 'realm', schemaOrgType: 'Place',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

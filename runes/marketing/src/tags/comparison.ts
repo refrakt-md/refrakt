@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Extract plain text from an AST node by walking all text children
 function extractText(node: Node): string {
@@ -110,7 +109,7 @@ const comparisonRow = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.ComparisonRow, {
+		return createComponentRenderable({ rune: 'comparison-row',
 			tag: 'div',
 			properties: {
 				rowType: rowTypeMeta,
@@ -145,7 +144,7 @@ const comparisonColumn = createContentModelSchema({
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
 		const body = rowItems.wrap('div');
 
-		return createComponentRenderable(schema.ComparisonColumn, {
+		return createComponentRenderable({ rune: 'comparison-column',
 			tag: 'div',
 			properties: {
 				highlighted: highlightedMeta,
@@ -343,7 +342,7 @@ export const comparison = createContentModelSchema({
 
 		const titleTag = attrs.title ? new Tag('h2', {}, [attrs.title]) : undefined;
 
-		return createComponentRenderable(schema.Comparison, {
+		return createComponentRenderable({ rune: 'comparison',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

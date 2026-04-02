@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -23,7 +22,7 @@ export const conversationMessage = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.ConversationMessage, {
+		return createComponentRenderable({ rune: 'conversation-message',
 			tag: 'div',
 			properties: {
 				speaker: speakerTag,
@@ -103,7 +102,7 @@ export const conversation = createContentModelSchema({
 		const messages = body.tag('div').typeof('ConversationMessage');
 		const messagesContainer = messages.wrap('div');
 
-		return createComponentRenderable(schema.Conversation, {
+		return createComponentRenderable({ rune: 'conversation',
 			tag: 'div',
 			properties: {
 				message: messages,

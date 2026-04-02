@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {
@@ -165,7 +164,7 @@ export const spacing = createContentModelSchema({
 			]));
 		}
 
-		return createComponentRenderable(schema.Spacing, {
+		return createComponentRenderable({ rune: 'spacing',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

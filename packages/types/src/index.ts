@@ -4,16 +4,6 @@ export {
   NodeType,
 } from './interfaces.js';
 
-// Schema definition utilities
-export {
-  Type,
-  TypeFactory,
-  useSchema,
-} from './schema/index.js';
-
-// Foundational schema data classes (shared across packages)
-export { Page, PageSection } from './schema/page.js';
-export { LinkItem, Command } from './schema/common.js';
 
 // Design tokens (standalone interface, not tied to a rune schema)
 export type { DesignTokens } from './tokens.js';

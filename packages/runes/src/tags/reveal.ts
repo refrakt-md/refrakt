@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
@@ -24,7 +23,7 @@ export const revealStep = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.RevealStep, {
+		return createComponentRenderable({ rune: 'reveal-step',
 			tag: 'div',
 			properties: {
 				name: nameTag,
@@ -73,7 +72,7 @@ export const reveal = createContentModelSchema({
 			? [headerNodes.wrap('header').next(), modeMeta, stepsContainer.next()]
 			: [modeMeta, stepsContainer.next()];
 
-		return createComponentRenderable(schema.Reveal, {
+		return createComponentRenderable({ rune: 'reveal',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

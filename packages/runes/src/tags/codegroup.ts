@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode, Tag as TagType } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -72,7 +71,7 @@ export const codegroup = createContentModelSchema({
 
 		children.push(tabList.next(), panelList.next());
 
-		return createComponentRenderable(schema.CodeGroup, {
+		return createComponentRenderable({ rune: 'code-group',
 			tag: 'section',
 			properties,
 			refs: { tabs: tabList, panels: panelList, panel: panelsCursor },

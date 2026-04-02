@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Parse "v2.1.0 - 2024-01-15" or "0.1.0 — January 2024"
 const VERSION_DATE_PATTERN = /^v?([\d.]+(?:-[\w.]+)?)\s*[-–—]\s*(.+)$/;
@@ -25,7 +24,7 @@ export const changelogRelease = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.ChangelogRelease, {
+		return createComponentRenderable({ rune: 'changelog-release',
 			tag: 'section',
 			properties: {
 				date: dateTag,
@@ -92,7 +91,7 @@ export const changelog = createContentModelSchema({
 		}
 		children.push(releasesDiv);
 
-		return createComponentRenderable(schema.Changelog, {
+		return createComponentRenderable({ rune: 'changelog',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

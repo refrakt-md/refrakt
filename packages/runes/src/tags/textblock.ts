@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -43,7 +42,7 @@ export const textblock = createContentModelSchema({
 		if (alignMeta) childNodes.push(alignMeta);
 		childNodes.push(body.next());
 
-		return createComponentRenderable(schema.TextBlock, {
+		return createComponentRenderable({ rune: 'text-block',
 			tag: 'div',
 			properties: {
 				...(dropcapMeta ? { dropcap: dropcapMeta } : {}),

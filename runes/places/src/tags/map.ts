@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
 const heightType = ['small', 'medium', 'large', 'full'] as const;
@@ -112,7 +111,7 @@ const mapPin = createContentModelSchema({
 		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
 		const groupMeta = new Tag('meta', { content: attrs.group ?? '' });
 
-		return createComponentRenderable(schema.MapPin, {
+		return createComponentRenderable({ rune: 'map-pin',
 			tag: 'li',
 			properties: {
 				lat: latMeta,
@@ -197,7 +196,7 @@ export const map = createContentModelSchema({
 		const pins = body.tag('li').typeof('MapPin');
 		const pinsList = new Tag('ol', {}, pins.toArray());
 
-		return createComponentRenderable(schema.Map, {
+		return createComponentRenderable({ rune: 'map', schemaOrgType: 'Place',
 			tag: 'div',
 			properties: {
 				zoom: zoomMeta,

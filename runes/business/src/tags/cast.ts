@@ -3,7 +3,6 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const layoutType = ['grid', 'list'] as const;
 
@@ -37,7 +36,7 @@ export const castMember = createContentModelSchema({
 
 		children.push(nameTag, roleTag, body.next());
 
-		return createComponentRenderable(schema.CastMember, {
+		return createComponentRenderable({ rune: 'cast-member', schemaOrgType: 'Person',
 			tag: 'li',
 			refs: {
 				name: nameTag,
@@ -95,7 +94,7 @@ export const cast = createContentModelSchema({
 		}
 		children.push(membersList);
 
-		return createComponentRenderable(schema.Cast, {
+		return createComponentRenderable({ rune: 'cast',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

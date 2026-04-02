@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -33,7 +32,7 @@ export const breadcrumb = createContentModelSchema({
 			const sentinelMeta = new Tag('meta', { 'data-field': BREADCRUMB_AUTO_SENTINEL, content: 'true' });
 			const emptyList = new Tag('ol', {}, []);
 
-			return createComponentRenderable(schema.Breadcrumb, {
+			return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
 				tag: 'nav',
 				properties: {
 					separator: separatorMeta,
@@ -69,7 +68,7 @@ export const breadcrumb = createContentModelSchema({
 							const urlLink = new Tag('a', { href: link.attributes.href }, link.children);
 
 							listItems.push(
-								createComponentRenderable(schema.BreadcrumbItem, {
+								createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
@@ -89,7 +88,7 @@ export const breadcrumb = createContentModelSchema({
 							const nameSpan = new Tag('span', {}, text ? [text] : li.children);
 
 							listItems.push(
-								createComponentRenderable(schema.BreadcrumbItem, {
+								createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
@@ -109,7 +108,7 @@ export const breadcrumb = createContentModelSchema({
 
 		const itemsList = new Tag('ol', {}, listItems);
 
-		return createComponentRenderable(schema.Breadcrumb, {
+		return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
 			tag: 'nav',
 			properties: {
 				separator: separatorMeta,

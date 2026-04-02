@@ -1,6 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 
 const languageType = ['mermaid', 'plantuml', 'ascii'] as const;
@@ -30,7 +29,7 @@ export const diagram = createContentModelSchema({
 
 		const sourceMeta = new Tag('meta', { content: source });
 
-		return createComponentRenderable(schema.Diagram, {
+		return createComponentRenderable({ rune: 'diagram',
 			tag: 'figure',
 			properties: {
 				language: languageMeta,

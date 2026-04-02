@@ -4,7 +4,6 @@ import type { ResolvedContent } from '@refrakt-md/types';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const step = createContentModelSchema({
   base: SplitLayoutModel,
@@ -64,7 +63,7 @@ export const step = createContentModelSchema({
       ...(side.toArray().length > 0 ? [sideContent.next()] : []),
     ];
 
-    return createComponentRenderable(schema.Step, {
+    return createComponentRenderable({ rune: 'step',
       tag: 'li',
       properties: {
         name: name(main),
@@ -156,7 +155,7 @@ export const steps = createContentModelSchema({
       ? [...headerNodes.toArray(), stepList]
       : [stepList];
 
-    return createComponentRenderable(schema.Steps, {
+    return createComponentRenderable({ rune: 'steps',
       tag: 'section',
       property: 'contentSection',
       properties: {

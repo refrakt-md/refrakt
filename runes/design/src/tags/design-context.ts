@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { extractPaletteTokens } from './palette.js';
 import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';
@@ -66,7 +65,7 @@ export const designContext = createContentModelSchema({
 		if (titleTag) topChildren.push(titleTag);
 		topChildren.push(sectionsTag);
 
-		return createComponentRenderable(schema.DesignContext, {
+		return createComponentRenderable({ rune: 'design-context',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

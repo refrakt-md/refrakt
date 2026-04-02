@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -32,7 +31,7 @@ export const datatable = createContentModelSchema({
 		const table = children.tag('table');
 		const tableTag = table.count() > 0 ? table.next() : new Tag('table', {}, []);
 
-		return createComponentRenderable(schema.DataTable, {
+		return createComponentRenderable({ rune: 'data-table', schemaOrgType: 'Dataset',
 			tag: 'div',
 			properties: {
 				sortable: sortableMeta,

@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {
@@ -189,7 +188,7 @@ export const palette = createContentModelSchema({
 		}
 		topChildren.push(...groupTags);
 
-		return createComponentRenderable(schema.Palette, {
+		return createComponentRenderable({ rune: 'palette',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

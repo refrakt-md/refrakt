@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema } from '../lib/index.js';
 import { assembleFromDirectory, mergeContent, type SandboxSourcePanel } from '../sandbox-sources.js';
 
@@ -149,7 +148,7 @@ export const sandbox = createContentModelSchema({
 			...panelNodes,
 		];
 
-		return createComponentRenderable(schema.Sandbox, {
+		return createComponentRenderable({ rune: 'sandbox',
 			tag: 'div',
 			properties: {
 				content: contentMeta,

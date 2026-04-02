@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -24,7 +23,7 @@ export const sidenote = createContentModelSchema({
 		);
 		const bodyDiv = body.wrap('div');
 
-		return createComponentRenderable(schema.Sidenote, {
+		return createComponentRenderable({ rune: 'sidenote',
 			tag: 'aside',
 			properties: {
 				variant: variantMeta,

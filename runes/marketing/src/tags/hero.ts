@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, linkItem, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -107,7 +106,7 @@ export const hero = createContentModelSchema({
 		]).wrap('div');
 		const mediaDiv = side.wrap('div');
 
-		return createComponentRenderable(schema.Hero, {
+		return createComponentRenderable({ rune: 'hero',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

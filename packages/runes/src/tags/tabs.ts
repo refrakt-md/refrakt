@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
-import { schema } from '../registry.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
@@ -35,13 +34,13 @@ export const tab = createContentModelSchema({
     const image = tabCursor.tag('svg');
 
     return [
-      createComponentRenderable(schema.Tab, {
+      createComponentRenderable({ rune: 'tab',
         tag: 'button',
         properties: { image },
         refs: { name },
         children: tabCursor.toArray(),
       }),
-      createComponentRenderable(schema.TabPanel, {
+      createComponentRenderable({ rune: 'tab-panel',
         tag: 'div',
         properties: {},
         children: panel.toArray(),
@@ -106,7 +105,7 @@ export const tabs = createContentModelSchema({
       ? [headerNodes.wrap('header').next(), tabList.next(), panelList.next()]
       : [tabList.next(), panelList.next()];
 
-    return createComponentRenderable(schema.TabGroup, {
+    return createComponentRenderable({ rune: 'tab-group',
       tag: 'section',
       class: attrs.class,
       property: 'contentSection',

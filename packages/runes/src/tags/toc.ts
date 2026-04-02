@@ -1,6 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 import type { HeadingInfo } from '../util.js';
 
@@ -30,7 +29,7 @@ export const toc = createContentModelSchema({
 		const depthMeta = new Tag('meta', { content: attrs.depth });
 		const orderedMeta = new Tag('meta', { content: attrs.ordered });
 
-		return createComponentRenderable(schema.TableOfContents, {
+		return createComponentRenderable({ rune: 'table-of-contents',
 			tag: 'nav',
 			properties: {
 				depth: depthMeta,

@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
 
@@ -23,7 +22,7 @@ export const storyboardPanel = createContentModelSchema({
 		const caption = children.tag('p').limit(1);
 		const body = children.wrap('div');
 
-		return createComponentRenderable(schema.StoryboardPanel, {
+		return createComponentRenderable({ rune: 'storyboard-panel',
 			tag: 'div',
 			refs: {
 				image,
@@ -88,7 +87,7 @@ export const storyboard = createContentModelSchema({
 		const panels = body.tag('div').typeof('StoryboardPanel');
 		const panelsContainer = panels.wrap('div');
 
-		return createComponentRenderable(schema.Storyboard, {
+		return createComponentRenderable({ rune: 'storyboard',
 			tag: 'div',
 			properties: {
 				panel: panels,
