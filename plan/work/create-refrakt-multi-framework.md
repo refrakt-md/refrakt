@@ -1,4 +1,4 @@
-{% work id="WORK-093" status="ready" priority="medium" complexity="moderate" tags="create-refrakt, frameworks" %}
+{% work id="WORK-093" status="ready" priority="medium" complexity="moderate" tags="create-refrakt, frameworks" milestone="v1.0.0" %}
 
 # Add multi-framework support to create-refrakt
 

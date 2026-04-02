@@ -1,4 +1,4 @@
-{% work id="WORK-090" status="ready" priority="medium" complexity="moderate" tags="frameworks, nuxt" %}
+{% work id="WORK-090" status="ready" priority="medium" complexity="moderate" tags="frameworks, nuxt" milestone="v1.0.0" %}
 
 # Create @refrakt-md/nuxt adapter package
 
