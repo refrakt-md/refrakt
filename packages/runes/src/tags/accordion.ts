@@ -5,14 +5,6 @@ import { createComponentRenderable, createContentModelSchema, asNodes } from '..
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
-function tagText(nodes: any[]): string {
-	return nodes.map((n: any) => {
-		if (typeof n === 'string') return n;
-		if (Tag.isTag(n)) return tagText(n.children);
-		return '';
-	}).join('').trim();
-}
-
 export const accordionItem = createContentModelSchema({
 	attributes: {
 		name: { type: String, required: true },
@@ -31,14 +23,12 @@ export const accordionItem = createContentModelSchema({
 		const bodyDivs = body.tag('div');
 
 		// For FAQ schema: body div becomes Answer entity with text property
-		const bodyNode = bodyDivs.nodes[0];
-		const answerText = Tag.isTag(bodyNode) ? tagText(bodyNode.children) : '';
-		const textMeta = new Tag('meta', { content: answerText });
-
+		// Wrap children in a div with property="text" so the visible content
+		// serves as the schema.org property value (no duplicated meta tag)
 		for (const node of bodyDivs.nodes) {
 			if (Tag.isTag(node)) {
 				node.attributes['typeof'] = 'Answer';
-				node.children.push(textMeta);
+				node.children = [new Tag('div', { property: 'text' }, node.children)];
 			}
 		}
 
@@ -53,7 +43,6 @@ export const accordionItem = createContentModelSchema({
 			schema: {
 				name: nameTag,
 				acceptedAnswer: bodyDivs,
-				text: textMeta,
 			},
 			children: [nameTag, body.next()],
 		});
