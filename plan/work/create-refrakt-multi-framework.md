@@ -17,6 +17,7 @@ Extend `create-refrakt` to scaffold projects for Astro, Nuxt, Next.js, and Eleve
 - [ ] Each target generates correct `package.json` with framework-appropriate dependencies (peer deps, dev deps) using the same `~version` coupling strategy as existing targets
 - [ ] Each target generates correct `refrakt.config.json` with appropriate `target` field
 - [ ] Starter content (`_layout.md`, `index.md`, `docs/getting-started.md`) is shared across all targets — only the surrounding framework boilerplate differs
+- [ ] Interactive mode when `--target` is not provided: prompts for project name (if not given as positional arg) and target selection from a list (SvelteKit, Astro, Nuxt, Next.js, Eleventy, HTML)
 - [ ] CLI help text and post-scaffold "next steps" messages are framework-appropriate
 - [ ] `site/content/docs/adapters/` overview page updated to list all available targets
 - [ ] Existing tests updated; new tests cover each target's generated file structure, dependency versions, and config correctness
@@ -29,7 +30,7 @@ Starter content files (`content/`) are identical across targets and can be symli
 
 Dependency versions follow the existing pattern: `@refrakt-md/*` packages use `~${getRefraktVersion()}`, framework deps use pinned semver ranges (e.g., `astro@^5.0.0`, `nuxt@^3.0.0`, `next@^14.0.0 || ^15.0.0`, `@11ty/eleventy@^3.0.0`).
 
-Consider also adding an interactive mode (`npx create-refrakt` with no args) that prompts for project name and target selection, since four framework choices plus HTML is enough to warrant guided selection. This is optional — the `--target` flag is sufficient for CI and experienced users.
+Interactive mode is the default when `--target` is omitted. Running `npx create-refrakt` (or `npx create-refrakt my-site` without `--target`) presents a list of framework targets to choose from. The `--target` flag remains available for CI and scripted usage. Use a lightweight prompting library (e.g., `@inquirer/prompts` or `@clack/prompts`) — keep the dependency small.
 
 ## Dependencies
 
