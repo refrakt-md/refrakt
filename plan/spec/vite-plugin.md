@@ -398,6 +398,92 @@ The plugin transforms this into HTML with BEM classes (`.rf-recipe`, `.rf-recipe
 
 ---
 
+## Astro Content Collections Integration
+
+Astro is a particularly strong fit for this plugin because Astro already has native Markdoc support via `@astrojs/markdoc` and typed content collections. The vite plugin slots into this existing ecosystem without replacing it.
+
+**How it works:** The user keeps their Astro content collections (`src/content/`) and `@astrojs/markdoc` integration. The `@refrakt-md/vite` plugin runs alongside them in the Vite pipeline, intercepting `.mdoc` files during the transform phase and applying rune schemas before Astro's own rendering.
+
+**Content collections remain the content system.** Astro's Zod schemas validate frontmatter, `getCollection()` and `getEntry()` work as normal, and typed references between collections are unaffected. The plugin adds a second validation layer — Markdoc's schema validation catches invalid rune syntax at build time, while Zod catches invalid frontmatter. Two layers, complementary.
+
+**Example project structure:**
+
+```
+src/content/
+  config.ts              ← Astro collection schemas (Zod)
+  recipes/
+    sourdough.mdoc       ← runes work here via @astrojs/markdoc
+    pasta.mdoc
+  docs/
+    getting-started.mdoc
+src/pages/
+  recipes/
+    [...slug].astro      ← renders content via entry.render()
+```
+
+```typescript
+// src/content/config.ts — standard Astro content config
+import { defineCollection, z } from 'astro:content';
+
+const recipes = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    servings: z.string(),
+    prepTime: z.string(),
+  }),
+});
+
+export const collections = { recipes };
+```
+
+```javascript
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import markdoc from '@astrojs/markdoc';
+import { refrakt } from '@refrakt-md/vite';
+
+export default defineConfig({
+  integrations: [markdoc()],
+  vite: {
+    plugins: [
+      refrakt({ packages: ['@refrakt-md/learning'] }),
+    ],
+  },
+});
+```
+
+```astro
+---
+// src/pages/recipes/[...slug].astro — standard Astro content page
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const recipes = await getCollection('recipes');
+  return recipes.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<html>
+  <body>
+    <h1>{entry.data.title}</h1>
+    <Content />
+  </body>
+</html>
+```
+
+The plugin transforms runes during `entry.render()` — the output HTML contains BEM classes, structural elements, and data attributes identical to any other refrakt integration. The user's Astro layout wraps it.
+
+**Relationship to SPEC-030's Astro adapter:** This is the lightweight alternative. SPEC-030's `@refrakt-md/astro` adapter replaces Astro's content system with `loadContent()` and provides layouts, SEO, and full cross-page pipeline out of the box. This plugin leaves Astro's content collections intact and adds rune rendering only. Users who want cross-page rune features (glossary auto-linking, breadcrumbs) can use Level 2, which builds the entity registry from `.mdoc` files discovered in `contentDir`.
+
+---
+
 ## Open Questions
 
 1. **Relationship to `@refrakt-md/sveltekit`**: Should the existing SvelteKit plugin be refactored to use `@refrakt-md/vite` internally? This would reduce duplication but adds a dependency layer. The SvelteKit plugin's virtual modules (`virtual:refrakt/theme`, `virtual:refrakt/tokens`, `virtual:refrakt/config`) are more complex than what this plugin needs.
