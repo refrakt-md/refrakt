@@ -49,3 +49,6 @@ export type { AssembleInput, AssembleResult } from './assemble.js';
 
 // Route rules
 export { matchRouteRule } from './route-rules.js';
+
+// Serialization
+export { serialize, serializeTree } from './serialize.js';

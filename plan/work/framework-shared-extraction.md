@@ -1,4 +1,4 @@
-{% work id="WORK-088" status="ready" priority="high" complexity="simple" tags="frameworks, transform, svelte" milestone="v1.0.0" %}
+{% work id="WORK-088" status="done" priority="high" complexity="simple" tags="frameworks, transform, svelte" milestone="v1.0.0" %}
 
 # Extract shared utilities from @refrakt-md/svelte to @refrakt-md/transform
 
@@ -12,7 +12,7 @@ Prerequisite for all framework adapters. Two modules in `@refrakt-md/svelte` are
 - [ ] `@refrakt-md/svelte` re-exports both modules — no breaking change for existing consumers
 - [ ] `@refrakt-md/transform` adds `@markdoc/markdoc` as a dependency (needed by `serialize()`)
 - [ ] All existing tests pass without modification
-- [ ] Build succeeds in dependency order (types → transform → svelte)
+- [x] Build succeeds in dependency order (types → transform → svelte)
 
 ## Approach
 
@@ -27,5 +27,22 @@ Prerequisite for all framework adapters. Two modules in `@refrakt-md/svelte` are
 
 - SPEC-030 (Phase 0)
 - ADR-001, ADR-002 (both identify this as a shared prerequisite)
+
+## Resolution
+
+Completed: 2026-04-02
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Moved `serialize()` and `serializeTree()` from `packages/svelte/src/serialize.ts` to `packages/transform/src/serialize.ts`
+- `matchRouteRule()` was already in `packages/transform/src/route-rules.ts` (previously extracted)
+- Added `@markdoc/markdoc` as dependency to `@refrakt-md/transform`
+- Exported both `serialize` and `serializeTree` from transform's public API
+- Updated `@refrakt-md/svelte` serialize.ts to re-export from transform
+- All 167 test files (1877 tests) pass, build succeeds
+
+### Notes
+- Route rules extraction was already done in a prior session — only serialize needed moving
 
 {% /work %}
