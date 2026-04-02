@@ -104,6 +104,16 @@ A page wrapper component that:
 
 MPA model — each page load is a fresh DOM. Call `initRuneBehaviors()` and `initLayoutBehaviors()` in a `<script type="module">`. No cleanup functions needed. For View Transitions, listen to the `astro:page-load` event.
 
+### Compatibility notes
+
+**`@astrojs/markdoc` coexistence:** The adapter replaces `@astrojs/markdoc`, it does not supplement it. Refrakt needs the full schema transform pipeline (rune models, content models, meta tag injection) which cannot be expressed as simple Markdoc tag registrations. Users who want a lighter integration — rune transforms within Astro's existing `@astrojs/markdoc` pipeline and content collections — should use `@refrakt-md/vite` (SPEC-031) instead, which operates at the per-file transform level and leaves Astro's content system intact.
+
+**Astro content collections:** This adapter uses `loadContent()` + `getStaticPaths()`, bypassing Astro's native content collections. This is intentional — the refrakt content pipeline (entity registry, cross-page aggregation, layout cascade) provides richer cross-page features than content collections alone. Users who prefer to keep Astro content collections as their content system can use the `@refrakt-md/vite` plugin (SPEC-031) at Level 1 or 2 within their existing Astro project.
+
+**View Transitions:** When Astro View Transitions are enabled, behavior initialization must re-run after each navigation. The behavior init script should listen to the `astro:page-load` event rather than relying solely on initial page load.
+
+**Islands-aware behavior loading:** Since Astro ships zero JS by default, the behavior script should only be included on pages that use interactive runes (tabs, accordion, datatable). The integration can check the page's rune metadata to conditionally include the behavior `<script>` tag, avoiding unnecessary JS on static-only pages.
+
 ### Estimated size: ~205 lines
 
 ---
