@@ -156,9 +156,12 @@ These runes render as static content without their cross-page features and emit 
 ```javascript
 // What the plugin emits for sourdough.md
 export const html = '<article class="rf-page">...</article>';
+export const tree = { $$mdtype: 'Tag', name: 'article', attributes: { class: 'rf-page' }, children: [...] };
 export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
 export const meta = { runes: ['recipe', 'hint'], packages: ['learning'] };
 ```
+
+The `html` export is the common path — most users render it directly. The `tree` export is the serialized tag tree after identity transform (the intermediate form before `renderToHtml()` flattens it). Users who need component-level control over specific runes use `tree` instead — see "Component Override Pattern" below.
 
 The user's page imports and renders it:
 
@@ -193,6 +196,7 @@ This uses the existing four-phase cross-page pipeline (`packages/content/src/pip
 
 ```javascript
 export const html = '<article class="rf-page">...</article>';
+export const tree = { $$mdtype: 'Tag', name: 'article', ... };
 export const frontmatter = { title: 'Perfect Sourdough', date: '2026-01-15' };
 export const meta = {
   runes: ['recipe', 'hint', 'glossary'],
@@ -255,6 +259,154 @@ watch(() => route.path, () => nextTick(() => initBehaviors(...)));
 ```
 
 This is a thin wrapper around `initRuneBehaviors()` from `@refrakt-md/behaviors`.
+
+---
+
+## Component Override Pattern
+
+Most users render the `html` export directly and style runes with CSS. But some users need to replace a specific rune with a framework-native component — for example, rendering Recipe as a custom Astro component with a different layout, interactive islands, or additional data fetching.
+
+The `tree` export makes this possible. The tree is the serialized tag tree after identity transform — the same intermediate form that `renderToHtml()` consumes. Each rune subtree has a `typeof` attribute identifying its type (`Recipe`, `Hint`, `Tabs`, etc.), BEM classes, data attributes, and structured children with `data-name` labels.
+
+### How it works
+
+The user writes a thin renderer component for their framework that walks the top-level children of the tree. For each child:
+
+- If its `typeof` matches a component in their override map → render their custom component, passing the subtree as a prop
+- Otherwise → render the subtree to HTML via `renderToHtml()` (the default Lumina output)
+
+This is **not** a recursive walk of every node. The renderer only inspects top-level rune boundaries. Everything inside a non-overridden rune is bulk-rendered to HTML, avoiding recursion depth issues.
+
+### Astro example
+
+```astro
+---
+// src/components/RefrактRenderer.astro
+import type { SerializedTag, RendererNode } from '@refrakt-md/types';
+import { renderToHtml } from '@refrakt-md/transform';
+
+interface Props {
+  tree: SerializedTag;
+  components?: Record<string, any>;
+}
+
+const { tree, components = {} } = Astro.props;
+
+// Walk top-level children, check typeof for component overrides
+function categorize(children: RendererNode[]) {
+  return children.map(child => {
+    if (typeof child === 'string' || !child?.attributes?.typeof) {
+      return { kind: 'html' as const, html: renderToHtml(child) };
+    }
+    const Component = components[child.attributes.typeof];
+    if (Component) {
+      return { kind: 'component' as const, Component, node: child };
+    }
+    return { kind: 'html' as const, html: renderToHtml(child) };
+  });
+}
+
+const sections = categorize(tree.children ?? []);
+---
+
+{sections.map(section =>
+  section.kind === 'component' ? (
+    <section.Component node={section.node} />
+  ) : (
+    <Fragment set:html={section.html} />
+  )
+)}
+```
+
+The user's page:
+
+```astro
+---
+// src/pages/recipes/[...slug].astro
+import { getCollection } from 'astro:content';
+import Renderer from '../../components/RefraktRenderer.astro';
+import Recipe from '../../components/Recipe.astro';
+
+export async function getStaticPaths() {
+  const recipes = await getCollection('recipes');
+  return recipes.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { tree, frontmatter } = await entry.render();
+---
+
+<html>
+  <body>
+    <h1>{frontmatter.title}</h1>
+    <!-- Everything renders as Lumina HTML except Recipe -->
+    <Renderer {tree} components={{ Recipe }} />
+  </body>
+</html>
+```
+
+The custom Recipe component receives the full rune subtree and can render it however it wants — restructuring children, adding Astro islands for interactivity, or mixing `renderToHtml()` for subsections it doesn't need to customize:
+
+```astro
+---
+// src/components/Recipe.astro
+import { renderToHtml } from '@refrakt-md/transform';
+import Timer from './Timer.astro'; // an interactive island
+
+const { node } = Astro.props;
+const title = node.children.find(c => c.attributes?.['data-name'] === 'title');
+const ingredients = node.children.find(c => c.attributes?.['data-name'] === 'ingredients');
+const steps = node.children.find(c => c.attributes?.['data-name'] === 'steps');
+---
+
+<div class="my-recipe-card">
+  <div class="my-recipe-card__sidebar">
+    <Fragment set:html={renderToHtml(ingredients)} />
+  </div>
+  <div class="my-recipe-card__main">
+    <Fragment set:html={renderToHtml(title)} />
+    <Timer client:visible duration={node.attributes?.['data-time']} />
+    <Fragment set:html={renderToHtml(steps)} />
+  </div>
+</div>
+```
+
+### SvelteKit example
+
+The same pattern works in SvelteKit. The user ignores `html`, imports `tree`, and writes a small renderer that checks component overrides:
+
+```svelte
+<!-- src/lib/RefraktRenderer.svelte -->
+<script>
+  import { renderToHtml } from '@refrakt-md/transform';
+
+  export let tree;
+  export let components = {};
+</script>
+
+{#each tree.children ?? [] as child}
+  {@const typeName = child?.attributes?.typeof}
+  {@const Component = typeName ? components[typeName] : null}
+  {#if Component}
+    <Component node={child} />
+  {:else}
+    {@html renderToHtml(child)}
+  {/if}
+{/each}
+```
+
+### When to use each approach
+
+| Need | Approach |
+|------|----------|
+| Different visual styling for a rune | CSS override on `.rf-{block}` classes |
+| Client-side interactivity (framework-agnostic) | Web component via `@refrakt-md/behaviors` |
+| Custom HTML structure or framework-native interactivity | `tree` export + component override |
+
+The `tree` export is always available but most users won't need it. The `html` export covers the common case.
 
 ---
 
