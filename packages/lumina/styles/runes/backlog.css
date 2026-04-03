@@ -56,11 +56,16 @@
 	gap: 0.5rem;
 }
 
-/* Strip borders and pill styling from header badges */
-.rf-backlog__card [data-section="header"] [data-meta-type] {
+/* Strip borders and pill styling from header badges — doubled class for specificity */
+.rf-backlog__card [data-section="header"] [data-meta-type][data-meta-type] {
 	border: none;
 	padding: 0;
 	border-radius: 0;
+}
+
+/* Suppress sentiment circles in header */
+.rf-backlog__card [data-section="header"] [data-meta-sentiment]::before {
+	display: none;
 }
 
 /* ─── Body: title ───────────────────────────────────────────────────── */
@@ -84,10 +89,19 @@
 	opacity: 1;
 }
 
-/* Checklist progress badge — plain text in header, no circle */
+/* Checklist progress badge — plain text in header.
+   Override checklist dimension styles that match [data-checked]. */
 .rf-backlog__card-progress {
 	font-family: var(--rf-font-mono);
 	font-size: 0.75rem;
 	font-weight: 600;
 	color: var(--rf-color-muted);
+	border: none;
+	padding: 0;
+	padding-left: 0;
+	margin-left: 0;
+	position: static;
+}
+.rf-backlog__card-progress::before {
+	display: none;
 }
