@@ -39,28 +39,28 @@ These tests derive expected BEM selectors from `baseConfig` and verify they exis
 
 ```bash
 # See the identity transform output for a rune
-refrakt inspect hint --type=warning
+npx refrakt inspect hint --type=warning
 
 # Expand all variants of an attribute
-refrakt inspect hint --type=all
+npx refrakt inspect hint --type=all
 
 # Set multiple attributes
-refrakt inspect api --method=POST --path="/users"
+npx refrakt inspect api --method=POST --path="/users"
 
 # JSON output for programmatic use
-refrakt inspect hint --json
+npx refrakt inspect hint --json
 
 # List all available runes
-refrakt inspect --list
+npx refrakt inspect --list
 
 # CSS coverage audit for a single rune
-refrakt inspect hint --audit
+npx refrakt inspect hint --audit
 
 # Full-theme CSS audit
-refrakt inspect --all --audit
+npx refrakt inspect --all --audit
 
 # Audit with explicit CSS directory
-refrakt inspect hint --audit --css packages/lumina/styles/runes
+npx refrakt inspect hint --audit --css packages/lumina/styles/runes
 ```
 
 Use `refrakt inspect` to see exactly what HTML the identity transform produces for any rune — BEM classes, data attributes, structural elements, and consumed meta tags. The `--audit` flag checks which generated selectors have CSS coverage.
@@ -71,10 +71,10 @@ Use `refrakt inspect` to see exactly what HTML the identity transform produces f
 # Generate structure contracts (all BEM selectors, data attrs, element structure)
 # Use --config to point at the directory containing refrakt.config.json
 # so community packages are included (without it, only core runes are generated)
-refrakt contracts -o contracts/structures.json --config site
+npx refrakt contracts -o contracts/structures.json --config site
 
 # Validate existing contracts file is up to date (for CI)
-refrakt contracts --check -o contracts/structures.json --config site
+npx refrakt contracts --check -o contracts/structures.json --config site
 ```
 
 Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config. Use `--check` in CI to catch config-contract drift.
@@ -236,10 +236,10 @@ plan/
 
 ```bash
 # 1. Find the next work item
-refrakt plan next
+npx refrakt plan next
 
 # 2. Start working on it
-refrakt plan update <id> --status in-progress
+npx refrakt plan update <id> --status in-progress
 ```
 
 3. Before implementing, read:
@@ -249,10 +249,10 @@ refrakt plan update <id> --status in-progress
 
 ```bash
 # 4. Check off acceptance criteria as you complete them
-refrakt plan update <id> --check "criterion text"
+npx refrakt plan update <id> --check "criterion text"
 
 # 5. When all criteria are met, mark it done with a resolution summary
-refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
+npx refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
 Branch: `claude/feature-name`
 PR: refrakt-md/refrakt#123
 
@@ -267,20 +267,48 @@ EOF
 
 When marking a work item done, always provide a `--resolve` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
 
+### MANDATORY: Work Item Completion Checklist
+
+**When you finish implementing a work item, you MUST do ALL of the following before considering the task complete. Do NOT skip any step. Do NOT manually edit work item files — always use the CLI.**
+
+1. **Check off each acceptance criterion** individually using the CLI:
+   ```bash
+   npx refrakt plan update <id> --check "exact criterion text"
+   ```
+   Run this for EVERY criterion that was satisfied. Copy the criterion text exactly from the work item.
+
+2. **Mark the item as done with a `--resolve` summary**:
+   ```bash
+   npx refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
+   Branch: `claude/branch-name`
+
+   ### What was done
+   - Concrete list of files changed and what was done in each
+
+   ### Notes
+   - Any implementation decisions or tradeoffs worth recording
+   EOF
+   )"
+   ```
+
+3. **Commit the updated work item file** along with your implementation changes.
+
+Never mark a work item done without checking off criteria first. Never skip the `--resolve` summary. These are the project's historical record of what was built and why.
+
 Use `--format json` on any command for machine-readable output.
 
 ### Creating plan content
 
 ```bash
 # Scaffold new items from templates
-refrakt plan create work --id WORK-XXX --title "Description"
-refrakt plan create bug --id BUG-XXX --title "Description"
-refrakt plan create decision --id ADR-XXX --title "Description"
-refrakt plan create spec --id SPEC-XXX --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"
+npx refrakt plan create work --id WORK-XXX --title "Description"
+npx refrakt plan create bug --id BUG-XXX --title "Description"
+npx refrakt plan create decision --id ADR-XXX --title "Description"
+npx refrakt plan create spec --id SPEC-XXX --title "Description"
+npx refrakt plan create milestone --id v1.0 --title "Description"
 
 # Initialize plan structure in a new project
-refrakt plan init
+npx refrakt plan init
 ```
 
 - Always include a unique `id` attribute — check existing IDs first (see `plan/CLAUDE.md` for conventions)

@@ -191,10 +191,10 @@ Optional notes or context.
 
 ```bash
 # 1. Find the next ready work item (considers priority and dependencies)
-refrakt plan next
+npx refrakt plan next
 
 # 2. Start working on it
-refrakt plan update WORK-XXX --status in-progress
+npx refrakt plan update WORK-XXX --status in-progress
 ```
 
 3. Before implementing, read referenced specs and decisions (check tags and ID references in the file). Ensure dependency work items are `done`.
@@ -203,13 +203,28 @@ refrakt plan update WORK-XXX --status in-progress
 
 ```bash
 # 5. Check off acceptance criteria as you complete each one
-refrakt plan update WORK-XXX --check "criterion text"
+npx refrakt plan update WORK-XXX --check "criterion text"
 
-# 6. When all criteria pass, mark it done
-refrakt plan update WORK-XXX --status done
+# 6. When all criteria pass, mark it done with a --resolve summary
+npx refrakt plan update WORK-XXX --status done --resolve "$(cat <<'EOF'
+Branch: `claude/branch-name`
+
+### What was done
+- Concrete list of changes
+
+### Notes
+- Implementation decisions or tradeoffs
+EOF
+)"
 ```
 
 Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
+
+**IMPORTANT: When finishing a work item, you MUST:**
+1. Check off EVERY satisfied acceptance criterion with `npx refrakt plan update <id> --check "exact criterion text"` — do not skip any
+2. Always include `--resolve` with a summary when marking done — this is the project's historical record
+3. Never manually edit work item `.md` files — always use the CLI
+4. Commit the updated work item file with your implementation changes
 
 ### Creating a work item from a spec
 
@@ -218,13 +233,13 @@ Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--unche
 
 ```bash
 # 3. Scaffold one work item per piece
-refrakt plan create work --id WORK-XXX --title "Description" --priority high
+npx refrakt plan create work --id WORK-XXX --title "Description" --priority high
 
 # Other types work the same way
-refrakt plan create bug --id BUG-XXX --title "Description"
-refrakt plan create decision --id ADR-XXX --title "Description"
-refrakt plan create spec --id SPEC-XXX --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"
+npx refrakt plan create bug --id BUG-XXX --title "Description"
+npx refrakt plan create decision --id ADR-XXX --title "Description"
+npx refrakt plan create spec --id SPEC-XXX --title "Description"
+npx refrakt plan create milestone --id v1.0 --title "Description"
 ```
 
 4. Reference the spec ID in the work item's References section
@@ -236,7 +251,7 @@ refrakt plan create milestone --id v1.0 --title "Description"
 If you encounter a non-obvious design choice:
 
 ```bash
-refrakt plan create decision --id ADR-XXX --title "Decision title"
+npx refrakt plan create decision --id ADR-XXX --title "Decision title"
 ```
 
 1. Document the context, options, and your recommendation in the generated file
@@ -246,7 +261,7 @@ refrakt plan create decision --id ADR-XXX --title "Decision title"
 ### Initializing plan structure in a new project
 
 ```bash
-refrakt plan init
+npx refrakt plan init
 ```
 
 Creates `plan/work/`, `plan/spec/`, `plan/decision/` with example files and updates `CLAUDE.md` with workflow instructions.

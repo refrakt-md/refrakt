@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "npm run build 2>&1 | tail -5",
+        "timeout": 120000
+      }
+    ]
+  }
+}
