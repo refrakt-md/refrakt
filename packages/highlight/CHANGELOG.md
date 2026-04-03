@@ -1,5 +1,36 @@
 # @refrakt-md/highlight
 
+## 0.9.1
+
+### Patch Changes
+
+- ### Transform engine enhancements (SPEC-033)
+
+  - Named slots with ordering for structured element placement
+  - Repeated element generation for multi-instance structures
+  - Element projection (hide, group, relocate) for layout control
+  - Value mapping and configurable density contexts
+  - Migrate postTransform uses to declarative config
+
+  ### Rune schema modernization
+
+  - Replace legacy Model class with `createContentModelSchema` across all runes (WORK-099–102)
+  - Replace `useSchema`/`Type` system with inline rune identifiers (ADR-005)
+  - Remove legacy Model class, decorators, `createSchema`, and `NodeStream`
+
+  ### Other improvements
+
+  - File-derived timestamps for runes (SPEC-029)
+  - Move extract command from CLI to `@refrakt-md/docs` package
+  - Fix accordion item schema metadata duplication
+  - Fix paragraph-wrapped images in juxtapose panels
+  - Auto-assign IDs and detect duplicates in plan CLI
+  - Inspect and contracts updated for structure slots
+
+- Updated dependencies
+  - @refrakt-md/transform@0.9.1
+  - @refrakt-md/types@0.9.1
+
 ## 0.9.0
 
 ## 0.8.5

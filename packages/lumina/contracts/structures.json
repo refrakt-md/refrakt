@@ -124,7 +124,8 @@
 				},
 				"min": "--grid-min",
 				"aspect": "--grid-aspect"
-			}
+			},
+			"childDensity": "compact"
 		},
 		"CodeGroup": {
 			"block": "codegroup",
@@ -494,7 +495,8 @@
 				"gap": {
 					"prop": "--gallery-gap"
 				}
-			}
+			},
+			"childDensity": "compact"
 		},
 		"Sidenote": {
 			"block": "sidenote",
@@ -752,7 +754,8 @@
 					"prop": "--showcase-offset"
 				},
 				"aspect": "--showcase-aspect"
-			}
+			},
+			"childDensity": "compact"
 		},
 		"TabGroup": {
 			"block": "tabs",
@@ -1229,7 +1232,8 @@
 			"inlineStyles": {
 				"columns": "--bento-columns",
 				"gap": "--bento-gap"
-			}
+			},
+			"childDensity": "compact"
 		},
 		"BentoCell": {
 			"block": "bento-cell",
@@ -1511,7 +1515,8 @@
 			"root": ".rf-testimonial",
 			"dataRune": "testimonial",
 			"childOrder": [
-				"{content}"
+				"rating",
+				"{content:content}"
 			],
 			"modifiers": {
 				"variant": {
@@ -1519,9 +1524,35 @@
 					"default": "card",
 					"classPattern": ".rf-testimonial--{value}",
 					"dataAttribute": "data-variant"
+				},
+				"rating": {
+					"source": "meta",
+					"dataAttribute": "data-rating"
+				},
+				"ratingTotal": {
+					"source": "meta",
+					"default": "5",
+					"dataAttribute": "data-rating-total"
 				}
 			},
 			"elements": {
+				"rating": {
+					"tag": "div",
+					"selector": ".rf-testimonial__rating",
+					"source": "structure",
+					"condition": "rating"
+				},
+				"star": {
+					"tag": "span",
+					"selector": ".rf-testimonial__star",
+					"source": "structure",
+					"parent": "rating"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-testimonial__content",
+					"source": "contentWrapper"
+				},
 				"quote": {
 					"tag": "blockquote",
 					"selector": ".rf-testimonial__quote",
@@ -1586,7 +1617,12 @@
 					"source": "meta",
 					"default": "text",
 					"classPattern": ".rf-comparison-row--{value}",
-					"dataAttribute": "data-row-type"
+					"dataAttribute": "data-row-type",
+					"valueMap": {
+						"check": "checked",
+						"cross": "unchecked"
+					},
+					"mapTarget": "data-checked"
 				}
 			}
 		},
@@ -2237,7 +2273,14 @@
 					"source": "meta",
 					"default": "planned",
 					"classPattern": ".rf-beat--{value}",
-					"dataAttribute": "data-status"
+					"dataAttribute": "data-status",
+					"valueMap": {
+						"complete": "checked",
+						"active": "active",
+						"planned": "unchecked",
+						"abandoned": "skipped"
+					},
+					"mapTarget": "data-checked"
 				},
 				"id": {
 					"source": "meta",
@@ -2521,7 +2564,7 @@
 			"root": ".rf-map",
 			"dataRune": "map",
 			"childOrder": [
-				"{content}"
+				"{content:container}"
 			],
 			"modifiers": {
 				"variant": {
@@ -2535,6 +2578,41 @@
 					"default": "medium",
 					"classPattern": ".rf-map--{value}",
 					"dataAttribute": "data-height"
+				},
+				"zoom": {
+					"source": "meta",
+					"dataAttribute": "data-zoom"
+				},
+				"center": {
+					"source": "meta",
+					"dataAttribute": "data-center"
+				},
+				"provider": {
+					"source": "meta",
+					"dataAttribute": "data-provider"
+				},
+				"interactive": {
+					"source": "meta",
+					"dataAttribute": "data-interactive"
+				},
+				"route": {
+					"source": "meta",
+					"dataAttribute": "data-route"
+				},
+				"cluster": {
+					"source": "meta",
+					"dataAttribute": "data-cluster"
+				},
+				"apiKey": {
+					"source": "meta",
+					"dataAttribute": "data-api-key"
+				}
+			},
+			"elements": {
+				"container": {
+					"tag": "div",
+					"selector": ".rf-map__container",
+					"source": "contentWrapper"
 				}
 			}
 		},
