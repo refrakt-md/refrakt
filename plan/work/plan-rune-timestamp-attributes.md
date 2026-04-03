@@ -12,14 +12,14 @@ Add `created` and `modified` attributes to the plan rune schemas (`spec`, `work`
 
 ## Acceptance Criteria
 
-- [ ] `spec`, `work`, `bug`, `decision`, and `milestone` schemas each declare `created` and `modified` attributes
-- [ ] Attribute defaults reference `$file.created` and `$file.modified` via Markdoc variable default syntax (or equivalent fallback if Markdoc doesn't support `{ $variable }` in defaults)
-- [ ] Authors can override timestamps with explicit attribute values (e.g. `created="2025-06-15"`)
-- [ ] Plan rune configs in `runes/plan/src/config.ts` updated to render timestamps in the header metadata area
-- [ ] The `decision` rune's existing `date` attribute remains unchanged; `created` and `modified` are additive
-- [ ] Rendered output displays dates in a consistent format alongside existing badges
-- [ ] Existing plan content that omits `created`/`modified` attributes continues to work (attributes are optional)
-- [ ] Tests updated for new attributes and rendering output
+- [x] `spec`, `work`, `bug`, `decision`, and `milestone` schemas each declare `created` and `modified` attributes
+- [x] Attribute defaults reference `$file.created` and `$file.modified` via Markdoc variable default syntax (or equivalent fallback if Markdoc doesn't support `{ $variable }` in defaults)
+- [x] Authors can override timestamps with explicit attribute values (e.g. `created="2025-06-15"`)
+- [x] Plan rune configs in `runes/plan/src/config.ts` updated to render timestamps in the header metadata area
+- [x] The `decision` rune's existing `date` attribute remains unchanged; `created` and `modified` are additive
+- [x] Rendered output displays dates in a consistent format alongside existing badges
+- [x] Existing plan content that omits `created`/`modified` attributes continues to work (attributes are optional)
+- [x] Tests updated for new attributes and rendering output
 
 ## Approach
 

@@ -16,14 +16,14 @@ Migrate the remaining runes that have custom `processChildren` overrides with st
 
 ## Acceptance Criteria
 
-- [ ] `form` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `conversation` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `tabs` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `bento` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `comparison` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
-- [ ] All existing tests pass — especially form, tabs, and conversation tests which cover edge cases
-- [ ] No Model class import remains in any of the migrated files
+- [x] `form` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `conversation` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `tabs` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `bento` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `comparison` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
+- [x] All existing tests pass — especially form, tabs, and conversation tests which cover edge cases
+- [x] No Model class import remains in any of the migrated files
 
 ## Approach
 

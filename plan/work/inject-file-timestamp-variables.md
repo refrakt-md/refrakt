@@ -12,14 +12,14 @@ Wire the shared git timestamp utility into `packages/content/src/site.ts` so tha
 
 ## Acceptance Criteria
 
-- [ ] `loadContent()` in `packages/content/src/site.ts` calls the git timestamp utility once before the page loop
-- [ ] Each page's `contentVariables` includes a `file` object with `created` and `modified` string properties
-- [ ] Three-tier resolution order: frontmatter override > git history > fs.stat fallback
-- [ ] When no timestamp is available, the variable is `undefined` (not an empty string or null)
-- [ ] Variables are accessible in Markdoc schemas as `$file.created` and `$file.modified`
-- [ ] Existing `$page` and `$frontmatter` variables are unaffected
-- [ ] Integration test: a page with no frontmatter dates gets git-derived `$file.created` and `$file.modified`
-- [ ] Integration test: a page with explicit frontmatter `created`/`modified` uses those values instead of git data
+- [x] `loadContent()` in `packages/content/src/site.ts` calls the git timestamp utility once before the page loop
+- [x] Each page's `contentVariables` includes a `file` object with `created` and `modified` string properties
+- [x] Three-tier resolution order: frontmatter override > git history > fs.stat fallback
+- [x] When no timestamp is available, the variable is `undefined` (not an empty string or null)
+- [x] Variables are accessible in Markdoc schemas as `$file.created` and `$file.modified`
+- [x] Existing `$page` and `$frontmatter` variables are unaffected
+- [x] Integration test: a page with no frontmatter dates gets git-derived `$file.created` and `$file.modified`
+- [x] Integration test: a page with explicit frontmatter `created`/`modified` uses those values instead of git data
 
 ## Approach
 

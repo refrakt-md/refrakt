@@ -12,11 +12,11 @@ All core rune tags in `packages/runes/src/tags/` that call `createComponentRende
 
 ## Acceptance Criteria
 
-- [ ] Every `createComponentRenderable(schema.X, { ... })` call in `packages/runes/src/tags/` is replaced with `createComponentRenderable({ rune: 'x', ... })`
-- [ ] Runes with `schemaOrgType` pass it in the new inline object
-- [ ] No core rune file imports from `packages/runes/src/registry.ts`
-- [ ] `refrakt inspect <rune> --type=all --json` output is identical before and after for each rune
-- [ ] All existing tests pass
+- [x] Every `createComponentRenderable(schema.X, { ... })` call in `packages/runes/src/tags/` is replaced with `createComponentRenderable({ rune: 'x', ... })`
+- [x] Runes with `schemaOrgType` pass it in the new inline object
+- [x] No core rune file imports from `packages/runes/src/registry.ts`
+- [x] `refrakt inspect <rune> --type=all --json` output is identical before and after for each rune
+- [x] All existing tests pass
 
 ## Approach
 

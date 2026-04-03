@@ -15,13 +15,13 @@ Migrate the straightforward core runes that use `@group` decorators with sequent
 
 ## Acceptance Criteria
 
-- [ ] `accordion` rewritten using `createContentModelSchema` with `sections` content model
-- [ ] `budget` rewritten using `createContentModelSchema` with `sequence` content model
-- [ ] `reveal` rewritten using `createContentModelSchema` with `delimited` content model
-- [ ] `sandbox` rewritten using `createContentModelSchema` with `sequence` content model
-- [ ] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
-- [ ] All existing tests pass after each migration
-- [ ] No Model class import remains in any of the migrated files
+- [x] `accordion` rewritten using `createContentModelSchema` with `sections` content model
+- [x] `budget` rewritten using `createContentModelSchema` with `sequence` content model
+- [x] `reveal` rewritten using `createContentModelSchema` with `delimited` content model
+- [x] `sandbox` rewritten using `createContentModelSchema` with `sequence` content model
+- [x] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
+- [x] All existing tests pass after each migration
+- [x] No Model class import remains in any of the migrated files
 
 ## Approach
 

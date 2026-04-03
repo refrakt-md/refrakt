@@ -10,16 +10,16 @@ Create a shared utility in `packages/content/` that batch-collects git timestamp
 
 ## Acceptance Criteria
 
-- [ ] New module in `packages/content/` exports a function (e.g. `getGitTimestamps`) that returns `Map<string, { created: string; modified: string }>` for all files under a given directory
-- [ ] Uses batch `git log` commands (not per-file) for both created and modified timestamps
-- [ ] Modified timestamp derived from `git log --format="%at" --name-only --diff-filter=ACMR HEAD`
-- [ ] Created timestamp derived from `git log --format="%at" --name-only --diff-filter=A --reverse HEAD`
-- [ ] Timestamps normalized to ISO 8601 date strings (`YYYY-MM-DD`)
-- [ ] Falls back to `fs.stat()` (`birthtimeMs` / `mtimeMs`) when git data is unavailable for a file
-- [ ] Detects shallow clones via `git rev-parse --is-shallow-repository` and omits or marks `created` as unreliable
-- [ ] Handles non-git directories gracefully (falls back entirely to fs.stat)
-- [ ] Results cached in memory for the duration of a single `loadContent()` call (no cross-build caching needed)
-- [ ] Unit tests covering: normal git repo, shallow clone detection, non-git fallback, date formatting
+- [x] New module in `packages/content/` exports a function (e.g. `getGitTimestamps`) that returns `Map<string, { created: string; modified: string }>` for all files under a given directory
+- [x] Uses batch `git log` commands (not per-file) for both created and modified timestamps
+- [x] Modified timestamp derived from `git log --format="%at" --name-only --diff-filter=ACMR HEAD`
+- [x] Created timestamp derived from `git log --format="%at" --name-only --diff-filter=A --reverse HEAD`
+- [x] Timestamps normalized to ISO 8601 date strings (`YYYY-MM-DD`)
+- [x] Falls back to `fs.stat()` (`birthtimeMs` / `mtimeMs`) when git data is unavailable for a file
+- [x] Detects shallow clones via `git rev-parse --is-shallow-repository` and omits or marks `created` as unreliable
+- [x] Handles non-git directories gracefully (falls back entirely to fs.stat)
+- [x] Results cached in memory for the duration of a single `loadContent()` call (no cross-build caching needed)
+- [x] Unit tests covering: normal git repo, shallow clone detection, non-git fallback, date formatting
 
 ## Approach
 

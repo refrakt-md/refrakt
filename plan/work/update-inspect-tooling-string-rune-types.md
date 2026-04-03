@@ -8,11 +8,11 @@ Depends on WORK-105 (dual-signature support) being complete.
 
 ## Acceptance Criteria
 
-- [ ] `packages/cli/src/commands/inspect.ts` uses `rune.typeName` instead of `rune.type?.name`
-- [ ] `refrakt inspect hint --type=all` output is identical before and after
-- [ ] `refrakt inspect --list` output is identical before and after
-- [ ] `refrakt inspect hint --audit` output is identical before and after
-- [ ] Any other tooling that reads `rune.type` is updated (language server inspector, vscode inspector)
+- [x] `packages/cli/src/commands/inspect.ts` uses `rune.typeName` instead of `rune.type?.name`
+- [x] `refrakt inspect hint --type=all` output is identical before and after
+- [x] `refrakt inspect --list` output is identical before and after
+- [x] `refrakt inspect hint --audit` output is identical before and after
+- [x] Any other tooling that reads `rune.type` is updated (language server inspector, vscode inspector)
 
 ## Key Files
 

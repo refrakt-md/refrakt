@@ -12,12 +12,12 @@ Refactor the plan scanner's `getGitMtimes()` in `runes/plan/src/scanner.ts` to u
 
 ## Acceptance Criteria
 
-- [ ] `runes/plan/src/scanner.ts` imports and uses the shared timestamp utility from `packages/content/` instead of its own `getGitMtimes()` implementation
-- [ ] The `getGitMtimes()` function is removed from `scanner.ts`
-- [ ] The `mtime` field in scanner results is derived from the shared utility's `modified` value
-- [ ] `plan-activity` rune displays the same modification dates as `$file.modified` on individual plan runes
-- [ ] No functional change in plan-activity output (dates match previous behavior)
-- [ ] All existing plan scanner tests pass
+- [x] `runes/plan/src/scanner.ts` imports and uses the shared timestamp utility from `packages/content/` instead of its own `getGitMtimes()` implementation
+- [x] The `getGitMtimes()` function is removed from `scanner.ts`
+- [x] The `mtime` field in scanner results is derived from the shared utility's `modified` value
+- [x] `plan-activity` rune displays the same modification dates as `$file.modified` on individual plan runes
+- [x] No functional change in plan-activity output (dates match previous behavior)
+- [x] All existing plan scanner tests pass
 
 ## Approach
 

@@ -12,11 +12,11 @@ The sitemap generator in `packages/content/src/sitemap.ts` currently emits no `<
 
 ## Acceptance Criteria
 
-- [ ] Sitemap XML output includes `<lastmod>` elements for pages that have a `file.modified` value
-- [ ] `<lastmod>` uses ISO 8601 date format (`YYYY-MM-DD`)
-- [ ] Pages without a modification date omit `<lastmod>` rather than emitting an empty element
-- [ ] Existing sitemap output structure (URL, priority, changefreq if present) is unaffected
-- [ ] Test verifying `<lastmod>` appears in sitemap output when file timestamps are available
+- [x] Sitemap XML output includes `<lastmod>` elements for pages that have a `file.modified` value
+- [x] `<lastmod>` uses ISO 8601 date format (`YYYY-MM-DD`)
+- [x] Pages without a modification date omit `<lastmod>` rather than emitting an empty element
+- [x] Existing sitemap output structure (URL, priority, changefreq if present) is unaffected
+- [x] Test verifying `<lastmod>` appears in sitemap output when file timestamps are available
 
 ## Approach
 

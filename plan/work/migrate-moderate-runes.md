@@ -15,13 +15,13 @@ Migrate runes that have multiple groups, context-dependent group logic, or light
 
 ## Acceptance Criteria
 
-- [ ] `nav` rewritten using `createContentModelSchema` with `sections` content model
-- [ ] `pricing` rewritten using `createContentModelSchema` with `sections` content model
-- [ ] `map` rewritten using `createContentModelSchema` with `sections` content model
-- [ ] `storyboard` rewritten using `createContentModelSchema` with `custom` content model
-- [ ] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
-- [ ] All existing tests pass after each migration
-- [ ] No Model class import remains in any of the migrated files
+- [x] `nav` rewritten using `createContentModelSchema` with `sections` content model
+- [x] `pricing` rewritten using `createContentModelSchema` with `sections` content model
+- [x] `map` rewritten using `createContentModelSchema` with `sections` content model
+- [x] `storyboard` rewritten using `createContentModelSchema` with `custom` content model
+- [x] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
+- [x] All existing tests pass after each migration
+- [x] No Model class import remains in any of the migrated files
 
 ## Approach
 

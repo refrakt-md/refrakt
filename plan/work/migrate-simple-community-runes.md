@@ -21,11 +21,11 @@ Migrate community package runes that use straightforward `@group` decorator patt
 
 ## Acceptance Criteria
 
-- [ ] All 10 runes rewritten using `createContentModelSchema`
-- [ ] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
-- [ ] All existing tests pass after each migration
-- [ ] No Model class import remains in any of the migrated files
-- [ ] Community package builds succeed (`npm run build` for each affected package)
+- [x] All 10 runes rewritten using `createContentModelSchema`
+- [x] `refrakt inspect <rune> --type=all` output is identical before and after for each rune
+- [x] All existing tests pass after each migration
+- [x] No Model class import remains in any of the migrated files
+- [x] Community package builds succeed (`npm run build` for each affected package)
 
 ## Approach
 

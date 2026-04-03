@@ -8,12 +8,12 @@ Both signatures must work simultaneously so Phase 2 migration can happen increme
 
 ## Acceptance Criteria
 
-- [ ] `createComponentRenderable` in `packages/runes/src/lib/component.ts` accepts both `Type` and `{ rune: string, schemaOrgType?: string, ...TransformResult }` signatures
-- [ ] When called with the new signature, output is identical to the old signature (same `typeof`, `data-rune`, RDFa attributes)
-- [ ] `RuneDescriptor` in `packages/runes/src/rune.ts` has `typeName?: string` and `schemaOrgType?: string` fields alongside the existing `type?: Type`
-- [ ] `Rune` class exposes `typeName` and `schemaOrgType` as readonly fields, derived from either the new string fields or the legacy `Type` instance
-- [ ] All existing tests pass with no changes to rune schemas
-- [ ] TypeScript compiles cleanly — no type errors in any package
+- [x] `createComponentRenderable` in `packages/runes/src/lib/component.ts` accepts both `Type` and `{ rune: string, schemaOrgType?: string, ...TransformResult }` signatures
+- [x] When called with the new signature, output is identical to the old signature (same `typeof`, `data-rune`, RDFa attributes)
+- [x] `RuneDescriptor` in `packages/runes/src/rune.ts` has `typeName?: string` and `schemaOrgType?: string` fields alongside the existing `type?: Type`
+- [x] `Rune` class exposes `typeName` and `schemaOrgType` as readonly fields, derived from either the new string fields or the legacy `Type` instance
+- [x] All existing tests pass with no changes to rune schemas
+- [x] TypeScript compiles cleanly — no type errors in any package
 
 ## Approach
 
