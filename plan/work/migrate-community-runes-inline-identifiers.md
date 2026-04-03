@@ -22,12 +22,12 @@ Depends on WORK-105 (dual-signature support) being complete.
 
 ## Acceptance Criteria
 
-- [ ] Every `createComponentRenderable(schema.X, { ... })` call in `runes/*/src/tags/` is replaced with inline form
-- [ ] Runes with `schemaOrgType` pass it in the new inline object
-- [ ] No community package file imports from any `schema/` directory or registry for Type purposes
-- [ ] Each package's local registry/schema imports for Type creation are removed
-- [ ] `refrakt inspect <rune> --type=all --json` output is identical before and after for each rune
-- [ ] All existing tests pass
+- [x] Every `createComponentRenderable(schema.X, { ... })` call in `runes/*/src/tags/` is replaced with inline form
+- [x] Runes with `schemaOrgType` pass it in the new inline object
+- [x] No community package file imports from any `schema/` directory or registry for Type purposes
+- [x] Each package's local registry/schema imports for Type creation are removed
+- [x] `refrakt inspect <rune> --type=all --json` output is identical before and after for each rune
+- [x] All existing tests pass
 
 ## Approach
 

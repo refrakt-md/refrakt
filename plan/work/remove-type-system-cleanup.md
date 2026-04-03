@@ -8,17 +8,17 @@ Depends on WORK-106, WORK-107, and WORK-108 all being complete.
 
 ## Acceptance Criteria
 
-- [ ] `createComponentRenderable` only accepts the new inline `{ rune, schemaOrgType?, ... }` signature — old `Type` overload removed
-- [ ] `Type`, `TypeFactory`, and `useSchema` deleted from `packages/types/src/schema/index.ts`
-- [ ] All ~35 schema class files in `packages/runes/src/schema/` deleted
-- [ ] All schema class files in community packages (`runes/*/src/schema/`) deleted
-- [ ] `packages/runes/src/registry.ts` deleted (or reduced to only non-Type exports if any exist)
-- [ ] `RuneDescriptor.type` field removed — only `typeName` and `schemaOrgType` remain
-- [ ] `Rune` class no longer references `Type`
-- [ ] `@refrakt-md/types` no longer exports schema classes (`Page`, `Hint`, etc.)
-- [ ] All tests pass
-- [ ] TypeScript compiles cleanly across the entire monorepo
-- [ ] A changeset is created for the breaking change
+- [x] `createComponentRenderable` only accepts the new inline `{ rune, schemaOrgType?, ... }` signature — old `Type` overload removed
+- [x] `Type`, `TypeFactory`, and `useSchema` deleted from `packages/types/src/schema/index.ts`
+- [x] All ~35 schema class files in `packages/runes/src/schema/` deleted
+- [x] All schema class files in community packages (`runes/*/src/schema/`) deleted
+- [x] `packages/runes/src/registry.ts` deleted (or reduced to only non-Type exports if any exist)
+- [x] `RuneDescriptor.type` field removed — only `typeName` and `schemaOrgType` remain
+- [x] `Rune` class no longer references `Type`
+- [x] `@refrakt-md/types` no longer exports schema classes (`Page`, `Hint`, etc.)
+- [x] All tests pass
+- [x] TypeScript compiles cleanly across the entire monorepo
+- [x] A changeset is created for the breaking change
 
 ## Scope
 
