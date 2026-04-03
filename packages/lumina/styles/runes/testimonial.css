@@ -17,6 +17,9 @@
 .rf-testimonial__star[data-filled="true"] {
 	color: var(--rf-color-warning);
 }
+.rf-testimonial__content {
+	display: contents;
+}
 .rf-testimonial blockquote {
 	border: none;
 	padding: 0;

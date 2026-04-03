@@ -6,7 +6,24 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.9.0 - March 30, 2026
+## v0.9.1
+
+- Named slots with ordering for structured element placement
+- Repeated element generation for multi-instance structures
+- Element projection (hide, group, relocate) for layout control
+- Value mapping and configurable density contexts
+- Migrate postTransform uses to declarative config
+- Replace legacy Model class with `createContentModelSchema` across all runes (WORK-099–102)
+- Replace `useSchema`/`Type` system with inline rune identifiers (ADR-005)
+- Remove legacy Model class, decorators, `createSchema`, and `NodeStream`
+- File-derived timestamps for runes (SPEC-029)
+- Move extract command from CLI to `@refrakt-md/docs` package
+- Fix accordion item schema metadata duplication
+- Fix paragraph-wrapped images in juxtapose panels
+- Auto-assign IDs and detect duplicates in plan CLI
+- Inspect and contracts updated for structure slots
+
+## v0.9.0
 
 - Metadata dimensions system: density, section anatomy, media slots, checklist, sequential items, and interactive state dimensions added to rune configs and identity transform engine
 - Universal dimension CSS in Lumina theme with generic metadata styling
@@ -32,15 +49,15 @@ description: Release history for refrakt.md
 - Fix theme CSS resolution to load full theme instead of tokens only
 - Many Lumina CSS refinements: recipe cover ratio, CTA alignment, hero centering, testimonial borders, blog post hover shadows
 
-## v0.8.5 - March 20, 2026
+## v0.8.5
 
 - Add blog rune for listing posts with filtering and sorting. Expose frontmatter and page data as content-level Markdoc variables. Redesign juxtapose rune with --- delimiter and overlay labels. Auto-discover runes in VS Code extension and editor. Fix map rune collapsed border and add spacing support. Fix juxtapose tint mode.
 
-## v0.8.4 - March 19, 2026
+## v0.8.4
 
 - Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.
 
-## v0.8.3 - March 19, 2026
+## v0.8.3
 
 - Add draggable popover and clickable prose blocks
 - Redesign prose editor with popover tabs and hover inline editing
@@ -56,15 +73,15 @@ description: Release history for refrakt.md
 - Sync language server and VS Code extension with current runes
 - Polish datatable rune and unify table wrapper class
 
-## v0.8.2 - March 17, 2026
+## v0.8.2
 
 - Bug fixes and editor improvements including CodeMirror code editing, mobile search fix, structure tab enhancements, and block editor UI refinements.
 
-## v0.8.1 - March 16, 2026
+## v0.8.1
 
 - Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
 
-## v0.8.0 - March 10, 2026
+## v0.8.0
 
 - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`
 - Cross-page pipeline: EntityRegistry, breadcrumb auto-resolution, aggregated data
@@ -80,7 +97,7 @@ description: Release history for refrakt.md
 - `style` attribute renamed to `variant` across all runes
 - `typeof`/`property` renamed to `data-rune`/`data-field` across the pipeline
 
-## v0.7.2 - March 4, 2026
+## v0.7.2
 
 - Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`, and `PackagePipelineHooks`. Includes nav auto mode, pipeline build output, design token context propagation, and editor preview/autocomplete support for community runes.
 - Fix duplicate BEM classes on runes nested inside `data-name` elements. Make `autoLabel` recursive in the identity transform engine so eyebrow, headline, and blurb children inside `<header>` wrappers receive BEM classes. Add `pageSectionAutoLabel` to all marketing and core page-section runes.
@@ -88,15 +105,15 @@ description: Release history for refrakt.md
 - Add `mockup` rune to `@refrakt-md/design` for wrapping content in device frames.
 - Fix multiple preview runtime issues: `structuredClone` errors, `DataCloneError` when sending `routeRules` via `postMessage`, and cache not invalidating on source changes. Remove `ComponentType` and `PropertyNodes` from the schema system.
 
-## v0.7.1 - March 3, 2026
+## v0.7.1
 
 - Fix production builds excluding CSS for runes from @refrakt-md/\* rune packages. The CSS tree-shaker now uses the assembled config (core + package runes) instead of only the core theme config when determining which rune CSS files to include.
 
-## v0.7.0 - March 3, 2026
+## v0.7.0
 
 - Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
 
-## v0.6.0 - March 2, 2026
+## v0.6.0
 
 - WYSIWYG block editor with stacked previews, Shadow DOM isolation, and rail navigation
 - Three-mode editor toggle: Visual, Code, and Preview with unified header bar
@@ -131,7 +148,7 @@ description: Release history for refrakt.md
 
 - Fix scaffolded dependency versions to derive from package version at runtime instead of hardcoding. Previously, the template hardcoded `^0.4.0` which with 0.x semver resolved to `<0.5.0`, causing newly scaffolded sites to install incompatible older packages. Also fixes invalid rune attribute usage in the kitchen sink template.
 
-## v0.5.0 - February 23, 2026
+## v0.5.0
 
 - **`refrakt scaffold --theme`** generates a complete custom theme with layout, CSS tokens, manifest, test infrastructure, and kitchen sink content
 - **`refrakt inspect`** command for theme developers — rune coverage audit, CSS audit, structure contracts
@@ -184,7 +201,7 @@ description: Release history for refrakt.md
 - Fix mobile nav hidden links and panel positioning
 - Fix TS2307 on Cloudflare with dynamic import
 
-## v0.4.0 - February 16, 2026
+## v0.4.0
 
 - `@refrakt-md/highlight` — Shiki-based syntax highlighting with Markdoc grammar support, CSS variables integration, and copy-to-clipboard
 - `@refrakt-md/transform` — Identity transform engine extracted into its own package (BEM classes, structural injection, meta consumption)
@@ -205,14 +222,14 @@ description: Release history for refrakt.md
 - Copy-to-clipboard for code blocks
 - Test coverage expanded from ~299 to 370 tests
 
-## v0.3.0 - February 13, 2026
+## v0.3.0
 
 - New runes and bug fixes
 - recipe — Ingredients, steps, chef's tips with prep/cook time metadata howto — Step-by-step instructions with tools/materials list event — Event info with date, location, registration URL cast (alias: team) — People directory with name/role parsing organization (alias: business) — Structured business information
 - datatable (alias: data-table) — Interactive table with sortable/searchable attributes api (alias: endpoint) — API endpoint documentation with method badges diff — Side-by-side or unified diff between two code blocks 0chart — Bar/line/pie/area charts from Markdown tables diagram — Mermaid.js diagram rendering
 - Other: sidenote (aliases: footnote, marginnote) — Margin notes, footnotes, and tooltips
 
-## v0.2.0 - February 12, 2026
+## v0.2.0
 
 - Added SEO layer
 {% /changelog %}
