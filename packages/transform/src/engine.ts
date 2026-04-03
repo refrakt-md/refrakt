@@ -45,7 +45,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -71,6 +71,8 @@ function transformRune(
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
 	backgrounds: Record<string, BgPresetDefinition>,
+	allRunes: Record<string, RuneConfig>,
+	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
 	parentRune?: string
 ): SerializedTag {
@@ -80,6 +82,7 @@ function transformRune(
 	// 1. Read modifiers from meta tags, collecting resolved values
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
+	const mappedValues: Record<string, string> = {};
 	if (config.modifiers) {
 		for (const [name, mod] of Object.entries(config.modifiers)) {
 			const value = mod.source === 'meta'
@@ -89,6 +92,15 @@ function transformRune(
 				modifierValues[name] = value;
 				if (!mod.noBemClass) {
 					modifierClasses.push(`${block}--${value}`);
+				}
+				// Value mapping: translate raw value through valueMap
+				if (mod.valueMap) {
+					const mapped = mod.valueMap[value] ?? value;
+					if (mod.mapTarget) {
+						mappedValues[mod.mapTarget] = mapped;
+					} else {
+						modifierValues[name] = mapped;
+					}
 				}
 			}
 		}
@@ -182,12 +194,10 @@ function transformRune(
 	}
 
 	// 1e. Density — resolve from author attribute → context → config default → 'full'
-	const COMPACT_CONTEXTS = new Set(['grid', 'bento', 'gallery', 'showcase', 'split']);
-	const MINIMAL_CONTEXTS = new Set(['backlog', 'decision-log']);
 	const authorDensity = tag.attributes?.density;
-	const contextDensity = parentRune
-		? (MINIMAL_CONTEXTS.has(parentRune) ? 'minimal' : COMPACT_CONTEXTS.has(parentRune) ? 'compact' : undefined)
-		: undefined;
+	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
+	const parentChildDensity = parentConfigKey ? allRunes[parentConfigKey]?.childDensity : undefined;
+	const contextDensity = parentChildDensity;
 	const resolvedDensity = authorDensity ?? contextDensity ?? config.defaultDensity ?? 'full';
 
 	// 1f. Width and spacing — universal base attributes on all block runes
@@ -307,6 +317,11 @@ function transformRune(
 	for (const [name, value] of Object.entries(modifierValues)) {
 		const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
 		modDataAttrs[`data-${kebab}`] = value;
+	}
+	// Add mapped value attributes (from valueMap + mapTarget)
+	for (const [attr, value] of Object.entries(mappedValues)) {
+		const key = attr.startsWith('data-') ? attr : `data-${attr}`;
+		modDataAttrs[key] = value;
 	}
 
 	// 3. Build the class string

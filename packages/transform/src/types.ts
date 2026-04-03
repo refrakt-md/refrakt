@@ -17,6 +17,14 @@ export interface RuneConfig {
 		default?: string;
 		/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
 		noBemClass?: boolean;
+		/** Maps raw modifier values to output values before emitting data attributes.
+		 *  Unmapped values pass through unchanged. */
+		valueMap?: Record<string, string>;
+		/** Target data attribute name for the mapped value (e.g., 'data-checked').
+		 *  When set, the mapped value is emitted on this attribute instead of the
+		 *  default `data-{modifier-name}` attribute. The original modifier attribute
+		 *  is still emitted with the raw value. */
+		mapTarget?: string;
 	}>;
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
@@ -94,6 +102,11 @@ export interface RuneConfig {
 	 *  `data-name` matches a key in this map, enabling generic media styling.
 	 *  Values: 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon' */
 	mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>;
+
+	/** Density imposed on child runes when this rune is the parent context.
+	 *  Replaces hardcoded density context sets — community packages can declare
+	 *  their own density behavior without modifying the engine. */
+	childDensity?: 'compact' | 'minimal';
 
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.

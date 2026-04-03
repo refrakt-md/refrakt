@@ -212,6 +212,7 @@ export const config: Record<string, RuneConfig> = {
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
+		childDensity: 'compact',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
