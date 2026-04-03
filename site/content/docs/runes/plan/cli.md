@@ -112,14 +112,20 @@ refrakt plan update WORK-042 --status done
 
 ## refrakt plan create
 
-Scaffold a new plan item from a template.
+Scaffold a new plan item from a template. When `--id` is omitted, the next available ID is assigned automatically by scanning existing plan files. Duplicate IDs are rejected at create time.
+
+```bash
+refrakt plan create work --title "Add search indexing"
+refrakt plan create bug --title "Login fails on Safari" --severity critical
+refrakt plan create spec --title "Search API"
+refrakt plan create decision --title "Use SQLite for local storage"
+refrakt plan create milestone --id v2.0 --title "Version 2.0"
+```
+
+You can also specify an explicit ID if needed:
 
 ```bash
 refrakt plan create work --id WORK-042 --title "Add search indexing"
-refrakt plan create bug --id BUG-003 --title "Login fails on Safari"
-refrakt plan create spec --id SPEC-010 --title "Search API"
-refrakt plan create decision --id ADR-005 --title "Use SQLite for local storage"
-refrakt plan create milestone --id v2.0 --title "Version 2.0"
 ```
 
 ### Options
@@ -127,7 +133,7 @@ refrakt plan create milestone --id v2.0 --title "Version 2.0"
 | Flag | Description |
 |------|-------------|
 | `<type>` | Required: `work`, `bug`, `spec`, `decision`, or `milestone` |
-| `--id <id>` | Required: unique identifier |
+| `--id <id>` | Unique identifier. Auto-assigned when omitted (required for `milestone`) |
 | `--title "..."` | Required: item title |
 | `--dir <path>` | Plan directory (default: `plan/`) |
 | `--<attr> <value>` | Set optional attributes (e.g., `--priority high`) |
@@ -142,6 +148,31 @@ refrakt plan create milestone --id v2.0 --title "Version 2.0"
 | spec | `plan/spec/` |
 | decision | `plan/decision/` |
 | milestone | `plan/work/` |
+
+## refrakt plan next-id
+
+Show the next available ID for a given entity type without creating anything. Useful for previewing what ID will be assigned.
+
+```bash
+refrakt plan next-id work
+refrakt plan next-id spec --format json
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `<type>` | Required: `work`, `bug`, `spec`, or `decision` |
+| `--dir <path>` | Plan directory (default: `plan/`) |
+| `--format json` | Output JSON instead of human-readable text |
+
+### Output
+
+Displays the next ID and the current highest existing ID (if any):
+
+```
+WORK-076  (highest existing: WORK-075)
+```
 
 ## refrakt plan validate
 
