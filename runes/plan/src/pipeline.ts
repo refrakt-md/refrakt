@@ -144,44 +144,59 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const status = String(entity.data.status ?? '');
 	const type = entity.type;
 
-	const badges: any[] = [
+	// Header: ID on the left, status + progress on the right
+	const headerLeft: any[] = [
 		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary', labelHidden: true }),
 	];
 
-	if (type === 'work') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: WORK_STATUS_SENTIMENT[status], labelHidden: true }));
-		const priority = String(entity.data.priority ?? '');
-		const complexity = String(entity.data.complexity ?? '');
-		if (priority) badges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'primary', sentiment: PRIORITY_SENTIMENT[priority] }));
-		if (complexity && complexity !== 'unknown') badges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
-	} else if (type === 'bug') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: BUG_STATUS_SENTIMENT[status], labelHidden: true }));
-		const severity = String(entity.data.severity ?? '');
-		if (severity) badges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'primary', sentiment: SEVERITY_SENTIMENT[severity] }));
-	} else {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', labelHidden: true }));
-	}
+	const headerRight: any[] = [];
+	const statusSentiment = type === 'work' ? WORK_STATUS_SENTIMENT[status]
+		: type === 'bug' ? BUG_STATUS_SENTIMENT[status]
+		: undefined;
+	headerRight.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: statusSentiment, labelHidden: true }));
 
-	const milestone = String(entity.data.milestone ?? '');
-	if (milestone) badges.push(buildMetaBadge('Milestone:', milestone, { metaType: 'tag', metaRank: 'secondary' }));
-
-	// Add checklist progress if available
+	// Progress in header (no circle indicator)
 	const checkedCount = Number(entity.data.checkedCount ?? 0);
 	const totalCount = Number(entity.data.totalCount ?? 0);
 	if (totalCount > 0) {
-		badges.push(new Tag('span', {
+		headerRight.push(new Tag('span', {
 			class: 'rf-backlog__card-progress',
 			'data-checked': String(checkedCount),
 			'data-total': String(totalCount),
 		}, [`${checkedCount}/${totalCount}`]));
 	}
 
-	const header = new Tag('div', { 'data-section': 'header' }, badges);
+	const header = new Tag('div', { 'data-section': 'header' }, [
+		new Tag('span', { class: 'rf-backlog__card-header-left' }, headerLeft),
+		new Tag('span', { class: 'rf-backlog__card-header-right' }, headerRight),
+	]);
+
+	// Body: title
 	const titleEl = new Tag('div', { 'data-section': 'title' }, [title]);
 
+	// Footer: secondary metadata pills
+	const footerBadges: any[] = [];
+	if (type === 'work') {
+		const priority = String(entity.data.priority ?? '');
+		const complexity = String(entity.data.complexity ?? '');
+		if (priority) footerBadges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'secondary', sentiment: PRIORITY_SENTIMENT[priority] }));
+		if (complexity && complexity !== 'unknown') footerBadges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
+	} else if (type === 'bug') {
+		const severity = String(entity.data.severity ?? '');
+		if (severity) footerBadges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'secondary', sentiment: SEVERITY_SENTIMENT[severity] }));
+	}
+
+	const milestone = String(entity.data.milestone ?? '');
+	if (milestone) footerBadges.push(buildMetaBadge('Milestone:', milestone, { metaType: 'tag', metaRank: 'secondary', labelHidden: true }));
+
+	const sections: any[] = [header, titleEl];
+	if (footerBadges.length > 0) {
+		sections.push(new Tag('div', { 'data-section': 'footer' }, footerBadges));
+	}
+
 	const children: any[] = entity.sourceUrl
-		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, [header, titleEl])]
-		: [header, titleEl];
+		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, sections)]
+		: sections;
 
 	return new Tag('article', {
 		class: 'rf-backlog__card',
