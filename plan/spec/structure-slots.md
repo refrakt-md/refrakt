@@ -1,4 +1,4 @@
-{% spec id="SPEC-033" status="draft" tags="transform, themes, architecture" %}
+{% spec id="SPEC-033" status="accepted" tags="transform, themes, architecture" %}
 
 # Structure Slots and Declarative Flexibility
 
