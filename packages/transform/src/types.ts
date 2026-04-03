@@ -32,6 +32,11 @@ export interface RuneConfig {
 	 *  Produces classes like: rf-callout--in-hero */
 	contextModifiers?: Record<string, string>;
 
+	/** Ordered slot names for structure assembly. When declared, the engine
+	 *  assembles children by iterating slots in order instead of binary before/after.
+	 *  The special 'content' slot is where content children are placed. */
+	slots?: string[];
+
 	/** Structural overrides — additional elements to inject (keyed by data-name) */
 	structure?: Record<string, StructureEntry>;
 
@@ -126,6 +131,10 @@ export interface StructureEntry {
 	children?: (string | StructureEntry)[];
 	/** Insert before existing children */
 	before?: boolean;
+	/** Which slot this entry occupies (used when RuneConfig.slots is declared) */
+	slot?: string;
+	/** Ordering within a slot (default: 0, lower numbers first) */
+	order?: number;
 	/** Inject an SVG icon from config.icons[group][resolvedVariantValue] */
 	icon?: { group: string; variant: string };
 	/** Inject text from a resolved modifier value */

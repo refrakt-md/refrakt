@@ -336,25 +336,31 @@ function transformRune(
 
 	// 5. Inject structural elements from config
 	if (config.structure) {
-		const prepend: RendererNode[] = [];
-		const append: RendererNode[] = [];
+		if (config.slots) {
+			// Slot-based assembly: iterate slots in declared order
+			children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
+		} else {
+			// Legacy before/after assembly
+			const prepend: RendererNode[] = [];
+			const append: RendererNode[] = [];
 
-		for (const [name, entry] of Object.entries(config.structure)) {
-			const element = buildStructureElement(entry, name, modifierValues, icons);
-			if (!element) continue;
-			if (entry.before) {
-				prepend.push(element);
-			} else {
-				append.push(element);
+			for (const [name, entry] of Object.entries(config.structure)) {
+				const element = buildStructureElement(entry, name, modifierValues, icons);
+				if (!element) continue;
+				if (entry.before) {
+					prepend.push(element);
+				} else {
+					append.push(element);
+				}
 			}
-		}
 
-		if (config.contentWrapper) {
-			const wrapped = makeTag(config.contentWrapper.tag,
-				{ 'data-name': config.contentWrapper.ref }, children);
-			children = [...prepend, wrapped, ...append];
-		} else if (prepend.length || append.length) {
-			children = [...prepend, ...children, ...append];
+			if (config.contentWrapper) {
+				const wrapped = makeTag(config.contentWrapper.tag,
+					{ 'data-name': config.contentWrapper.ref }, children);
+				children = [...prepend, wrapped, ...append];
+			} else if (prepend.length || append.length) {
+				children = [...prepend, ...children, ...append];
+			}
 		}
 	} else if (config.contentWrapper) {
 		const wrapped = makeTag(config.contentWrapper.tag,
@@ -575,6 +581,77 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 			annotateSequence(child.children, sequence, direction);
 		}
 	}
+}
+
+/** Assemble children using named slots.
+ *  Iterates slots in declared order, collecting structure entries per slot sorted by order,
+ *  and places content children at the 'content' slot. */
+function assembleWithSlots(
+	slots: string[],
+	structure: Record<string, StructureEntry>,
+	contentChildren: RendererNode[],
+	contentWrapper: { tag: string; ref: string } | undefined,
+	modifierValues: Record<string, string>,
+	icons: Record<string, Record<string, string>>,
+): RendererNode[] {
+	// Determine the first and last non-content slots for before/after mapping
+	const nonContentSlots = slots.filter(s => s !== 'content');
+	const firstSlot = nonContentSlots[0];
+	const lastSlot = nonContentSlots[nonContentSlots.length - 1];
+
+	// Build all structure elements and assign to slots
+	type SlotEntry = { element: RendererNode; order: number };
+	const slotMap = new Map<string, SlotEntry[]>();
+	for (const slot of slots) {
+		slotMap.set(slot, []);
+	}
+
+	for (const [name, entry] of Object.entries(structure)) {
+		const element = buildStructureElement(entry, name, modifierValues, icons);
+		if (!element) continue;
+
+		// Determine slot assignment: explicit slot > before mapping > last slot
+		let targetSlot: string;
+		if (entry.slot) {
+			targetSlot = entry.slot;
+		} else if (entry.before && firstSlot) {
+			targetSlot = firstSlot;
+		} else if (lastSlot) {
+			targetSlot = lastSlot;
+		} else {
+			// Fallback: place before content if before=true, after otherwise
+			targetSlot = entry.before ? (firstSlot ?? slots[0]) : (lastSlot ?? slots[slots.length - 1]);
+		}
+
+		const bucket = slotMap.get(targetSlot);
+		if (bucket) {
+			bucket.push({ element, order: entry.order ?? 0 });
+		}
+	}
+
+	// Sort entries within each slot by order
+	for (const entries of slotMap.values()) {
+		entries.sort((a, b) => a.order - b.order);
+	}
+
+	// Assemble in slot order
+	const result: RendererNode[] = [];
+	for (const slot of slots) {
+		if (slot === 'content') {
+			if (contentWrapper) {
+				result.push(makeTag(contentWrapper.tag, { 'data-name': contentWrapper.ref }, contentChildren));
+			} else {
+				result.push(...contentChildren);
+			}
+		} else {
+			const entries = slotMap.get(slot) ?? [];
+			for (const { element } of entries) {
+				result.push(element);
+			}
+		}
+	}
+
+	return result;
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
