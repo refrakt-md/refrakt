@@ -7,4 +7,5 @@ plans/
 .preview-cache/
 .community-tags-cache/
 .plan-cache.json
-.claude/
+.claude/*
+!.claude/settings.json
