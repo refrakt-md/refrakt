@@ -113,6 +113,30 @@ export interface RuneConfig {
 	 *  their own density behavior without modifying the engine. */
 	childDensity?: 'compact' | 'minimal';
 
+	/** Declarative structural reshaping of the output tree.
+	 *  Runs after BEM class application (Phase 6) but before meta tag filtering (Phase 7).
+	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate. */
+	projection?: {
+		/** Remove elements matching these data-name values from the children array entirely */
+		hide?: string[];
+		/** Collect elements by data-name, wrap in a new container, place at first member's position */
+		group?: Record<string, {
+			/** Container element tag */
+			tag: string;
+			/** data-name values to collect into this group */
+			members: string[];
+			/** Optional slot assignment for the group container */
+			slot?: string;
+		}>;
+		/** Move elements by data-name into another element or slot */
+		relocate?: Record<string, {
+			/** Target data-name or slot name */
+			into: string;
+			/** Where within the target (default: 'append') */
+			position?: 'prepend' | 'append';
+		}>;
+	};
+
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */

@@ -374,10 +374,15 @@ function transformRune(
 	}
 
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
-	const enhancedChildren = children.map(child => {
+	let enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
 		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots), dataRune);
 	});
+
+	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
+	if (config.projection) {
+		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots);
+	}
 
 	// 7. Remove consumed meta tags (modifiers + tint)
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
@@ -648,6 +653,116 @@ function assembleWithSlots(
 			for (const { element } of entries) {
 				result.push(element);
 			}
+		}
+	}
+
+	return result;
+}
+
+/** Find and remove a child by data-name from a flat children array.
+ *  Returns the removed element and the updated array, or null if not found. */
+function extractByDataName(children: RendererNode[], name: string): { element: SerializedTag; rest: RendererNode[] } | null {
+	const idx = children.findIndex(c => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name);
+	if (idx === -1) return null;
+	const element = children[idx] as SerializedTag;
+	const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
+	return { element, rest };
+}
+
+/** Find a child (or nested child) by data-name without removing it. */
+function findDeepByDataName(children: RendererNode[], name: string): SerializedTag | null {
+	for (const child of children) {
+		if (!isTag(child)) continue;
+		const tag = child as SerializedTag;
+		if (tag.attributes?.['data-name'] === name) return tag;
+		const found = findDeepByDataName(tag.children, name);
+		if (found) return found;
+	}
+	return null;
+}
+
+/** Insert an element into a target element's children (found by data-name). */
+function insertIntoTarget(children: RendererNode[], targetName: string, element: RendererNode, position: 'prepend' | 'append'): RendererNode[] {
+	return children.map(child => {
+		if (!isTag(child)) return child;
+		const tag = child as SerializedTag;
+		if (tag.attributes?.['data-name'] === targetName) {
+			const newChildren = position === 'prepend'
+				? [element, ...tag.children]
+				: [...tag.children, element];
+			return { ...tag, children: newChildren };
+		}
+		// Recurse into children to find nested targets
+		const updatedChildren = insertIntoTarget(tag.children, targetName, element, position);
+		if (updatedChildren !== tag.children) {
+			return { ...tag, children: updatedChildren };
+		}
+		return child;
+	});
+}
+
+/** Apply projection transformations: hide → group → relocate.
+ *  Operates on data-name addresses in the children array. */
+function applyProjection(
+	children: RendererNode[],
+	projection: NonNullable<import('./types.js').RuneConfig['projection']>,
+	block: string,
+	sections?: Record<string, string>,
+	mediaSlots?: Record<string, string>,
+): RendererNode[] {
+	let result = [...children];
+
+	// Phase 1: Hide — remove elements matching hide entries
+	if (projection.hide) {
+		const hideSet = new Set(projection.hide);
+		result = result.filter(child => {
+			if (!isTag(child)) return true;
+			const name = (child as SerializedTag).attributes?.['data-name'];
+			return !name || !hideSet.has(name);
+		});
+	}
+
+	// Phase 2: Group — collect members, wrap in container, place at first member position
+	if (projection.group) {
+		for (const [groupName, groupDef] of Object.entries(projection.group)) {
+			const memberSet = new Set(groupDef.members);
+			const collected: RendererNode[] = [];
+			let firstIdx = -1;
+
+			// Find and collect all members
+			for (let i = result.length - 1; i >= 0; i--) {
+				const child = result[i];
+				if (!isTag(child)) continue;
+				const name = (child as SerializedTag).attributes?.['data-name'];
+				if (name && memberSet.has(name)) {
+					collected.unshift(child);
+					if (firstIdx === -1 || i < firstIdx) firstIdx = i;
+					result.splice(i, 1);
+				}
+			}
+
+			if (collected.length > 0) {
+				// Create group wrapper with data-name and apply BEM classes
+				let wrapper = makeTag(groupDef.tag, { 'data-name': groupName }, collected);
+				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots);
+				result.splice(firstIdx, 0, wrapper);
+			}
+		}
+	}
+
+	// Phase 3: Relocate — move elements into targets
+	if (projection.relocate) {
+		for (const [sourceName, relDef] of Object.entries(projection.relocate)) {
+			const extracted = extractByDataName(result, sourceName);
+			if (!extracted) continue;
+			result = extracted.rest;
+
+			// Try to find target by data-name in the tree
+			const targetExists = findDeepByDataName(result, relDef.into);
+			if (targetExists) {
+				result = insertIntoTarget(result, relDef.into, extracted.element, relDef.position ?? 'append');
+			}
+			// If target not found, element is dropped (no-op for invalid references)
 		}
 	}
 
