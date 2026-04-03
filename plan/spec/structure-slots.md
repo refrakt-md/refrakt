@@ -2,7 +2,7 @@
 
 # Structure Slots and Declarative Flexibility
 
-> Extend the identity transform's `StructureEntry` system with named slots, ordered placement, value mapping, and repeated element generation — giving theme developers structural creative freedom without resorting to `postTransform`.
+> Extend the identity transform's `StructureEntry` system with named slots, ordered placement, value mapping, repeated element generation, and element projection — giving theme developers structural creative freedom without resorting to `postTransform`.
 
 ---
 
@@ -32,7 +32,9 @@ An audit of all `postTransform` usage across community packages reveals that **5
 
 **Theme-layer control.** Slots are structural positions that the theme defines via `mergeThemeConfig`. A rune package declares *what* structure entries exist; the theme decides *where* they go.
 
-**Small surface area.** Four targeted additions, not a template language. The goal is to eliminate the 80% of `postTransform` cases that are simple, not to handle arbitrarily complex layouts.
+**Small surface area.** Five targeted additions, not a template language. The goal is to eliminate the 80% of `postTransform` cases that are simple, not to handle arbitrarily complex layouts.
+
+**Stable addresses.** Projection operates on `data-name` attributes — stable identifiers that rune schemas define as part of their output contract. Themes reference these addresses declaratively; they don't need to know about DOM positions, child indices, or internal schema logic.
 
 ---
 
@@ -316,6 +318,139 @@ Dashboard: { childDensity: 'compact' },
 
 ---
 
+## Feature 5 — Element Projection
+
+### Problem
+
+Features 1–4 give themes control over *structure entries* — elements the theme injects. But rune schemas also produce named elements via `refs` in `createComponentRenderable()`, and these carry `data-name` attributes that form a stable, addressable surface. Today, a theme that wants to relocate, regroup, or suppress a schema-produced element (e.g., move `data-name="caption"` from inline to a header slot, or hide `data-name="meta"` in a minimal density) must use `postTransform` to manually walk the tree.
+
+The `data-name` and `data-field` attributes already give every meaningful element and data value a stable identity. Projection adds a declarative vocabulary for themes to use those addresses for structural reshaping — the complement to slots (which control where *new* elements go) and structure entries (which control *what* gets injected).
+
+### Interface Changes
+
+```ts
+// In RuneConfig (packages/transform/src/types.ts)
+interface RuneConfig {
+  // ... existing fields
+  projection?: {
+    relocate?: Record<string, {
+      into: string;                          // Target data-name or slot name
+      position?: 'prepend' | 'append';       // Where within the target (default: 'append')
+    }>;
+    group?: Record<string, {
+      tag: string;                           // Container element tag
+      members: string[];                     // data-name values to collect
+      slot?: string;                         // Optional slot assignment for the group
+    }>;
+    hide?: string[];                         // data-name values to suppress
+  };
+}
+```
+
+### Behavior
+
+Projection runs as a distinct pass after BEM class application and recursion (Phase 6) but before meta tag filtering (Phase 7). At this point, all `data-name` elements are fully formed with BEM classes applied, so projection operates on the final structural shape.
+
+**Execution order within the projection pass:**
+
+1. **Hide** — Remove elements matching `hide` entries from the children array. Hidden elements are discarded entirely (not just visually hidden).
+2. **Group** — Collect elements matching each group's `members` list, remove them from their current positions, wrap them in a new container element with `data-name` set to the group key, and place the group at the position of the first collected member (or into a named slot if `slot` is specified).
+3. **Relocate** — Find each element by `data-name`, remove it from its current position, and insert it into the target (another `data-name` element or a slot) at the specified position.
+
+This order ensures that groups can be relocation targets (group first, then relocate into the group), and that hidden elements don't interfere with grouping or relocation.
+
+### Example: Gallery Caption Relocation
+
+A gallery rune produces `data-name="caption"` as a child of the root element. A card-style theme wants the caption inside the header:
+
+```ts
+// Theme config override via mergeThemeConfig
+Gallery: {
+  projection: {
+    relocate: {
+      caption: { into: 'header', position: 'append' },
+    },
+  },
+}
+```
+
+Before projection:
+```html
+<figure class="rf-gallery">
+  <div class="rf-gallery__header">...</div>
+  <div class="rf-gallery__items">...</div>
+  <figcaption class="rf-gallery__caption">Photo series</figcaption>
+</figure>
+```
+
+After projection:
+```html
+<figure class="rf-gallery">
+  <div class="rf-gallery__header">
+    ...
+    <figcaption class="rf-gallery__caption">Photo series</figcaption>
+  </div>
+  <div class="rf-gallery__items">...</div>
+</figure>
+```
+
+### Example: Grouping Chrome Elements
+
+A hint rune produces `data-name="icon"` and `data-name="badge"` as separate children. A theme wants them grouped into a single chrome container:
+
+```ts
+Hint: {
+  projection: {
+    group: {
+      chrome: {
+        tag: 'div',
+        members: ['icon', 'badge'],
+      },
+    },
+  },
+}
+```
+
+Output:
+```html
+<section class="rf-hint">
+  <div class="rf-hint__chrome">
+    <span class="rf-hint__icon">...</span>
+    <span class="rf-hint__badge">warning</span>
+  </div>
+  <div class="rf-hint__body">...</div>
+</section>
+```
+
+The group container gets `data-name="chrome"` and receives a BEM element class (`rf-hint__chrome`) through the normal `applyBemClasses` flow (the projection pass re-applies BEM to newly created group wrappers).
+
+### Example: Minimal Density Hiding
+
+A theme suppresses metadata in compact contexts:
+
+```ts
+Work: {
+  projection: {
+    hide: ['meta', 'description'],
+  },
+}
+```
+
+This could be combined with density — a theme override applied only at `compact` density could use `hide` to strip elements that don't fit. (Density-conditional projection is a future extension; for now, `hide` applies unconditionally within the config it's declared in, and density variants would use separate config entries merged via `mergeThemeConfig`.)
+
+### Interaction with Other Features
+
+- **Slots (Feature 1):** Projection `relocate` can target slot names, not just `data-name` values. When `into` matches a declared slot name, the element is placed in that slot at the specified position. This lets themes move schema-produced elements into theme-defined structural zones.
+- **Structure entries:** Projection operates on the full children array, which includes both schema-produced and structure-injected elements. Theme-injected structure entries can be relocation targets or group members.
+- **`postTransform`:** Projection runs before `postTransform`. A rune that uses both gets declarative reshaping first, then the escape hatch for anything projection can't express.
+- **Contracts:** `refrakt contracts` should include projection declarations so themes can validate they reference valid `data-name` values. Invalid references (targeting a `data-name` that doesn't exist in the rune's output) should warn at build time.
+
+### Eliminates postTransform in
+
+- Any community package rune that uses `postTransform` solely to reorder or wrap children by `data-name`
+
+---
+
 ## Out of Scope
 
 ### Multi-branch conditional structure
@@ -328,7 +463,11 @@ The comparison rune's table-vs-cards layout and the preview rune's HTML renderin
 
 ### Multiple content wrappers
 
-While a valid future need (sidebar + main content zones), this is a larger architectural change that interacts with the layout system (SPEC-025's surface/section model). It should be addressed as a separate spec if demand emerges.
+While a valid future need (sidebar + main content zones), this is a larger architectural change that interacts with the layout system (SPEC-025's surface/section model). Feature 5's `group` partially addresses simpler cases — grouping existing named elements into a wrapper — but true multi-zone content splitting (where *content children* are distributed across zones) remains out of scope and should be addressed separately if demand emerges.
+
+### Conditional projection
+
+Projection declarations apply unconditionally within the config they're declared in. Density-conditional or modifier-conditional projection (e.g., "only hide `meta` at compact density") would require a condition syntax on projection entries. This is deferred — themes can achieve density-specific projection today by providing separate config overrides merged via `mergeThemeConfig` for different density contexts.
 
 ---
 
@@ -338,6 +477,7 @@ While a valid future need (sidebar + main content zones), this is a larger archi
 2. **Configurable density contexts** (Feature 4) — removes hardcoded engine knowledge, enables community packages
 3. **Named slots** (Feature 1) — the core structural change, enables the eyebrow scenario and multi-zone metadata
 4. **Repeated elements** (Feature 3) — niche but clean, eliminates the testimonial escape hatch
+5. **Element projection** (Feature 5) — depends on slots (Feature 1) for `relocate` into slot targets; implements hide → group → relocate pass between Phase 6 and Phase 7 in the engine
 
 ---
 
@@ -345,15 +485,18 @@ While a valid future need (sidebar + main content zones), this is a larger archi
 
 | File | Change | Size |
 |------|--------|------|
-| `packages/transform/src/types.ts` | Add `slots`, `slot`, `order`, `repeat`, `childDensity` to interfaces; add `valueMap`, `mapTarget` to `ModifierConfig` | ~25 lines |
-| `packages/transform/src/engine.ts` | Slot-based assembly (replace prepend/append with slot collection); value mapping in modifier resolution; repeat loop in `buildStructureElement`; read `childDensity` from parent config instead of hardcoded sets | ~80 lines |
-| `packages/transform/src/merge.ts` | Ensure `mergeThemeConfig` merges `slots` arrays and `structure` entries with slot assignments | ~10 lines |
+| `packages/transform/src/types.ts` | Add `slots`, `slot`, `order`, `repeat`, `childDensity`, `projection` to interfaces; add `valueMap`, `mapTarget` to `ModifierConfig` | ~40 lines |
+| `packages/transform/src/engine.ts` | Slot-based assembly (replace prepend/append with slot collection); value mapping in modifier resolution; repeat loop in `buildStructureElement`; read `childDensity` from parent config instead of hardcoded sets; projection pass (hide → group → relocate) between Phase 6 and Phase 7 | ~130 lines |
+| `packages/transform/src/merge.ts` | Ensure `mergeThemeConfig` merges `slots` arrays, `structure` entries with slot assignments, and `projection` objects (theme projection fully replaces base, not deep-merged — theme owns the structural intent) | ~15 lines |
 
 ### Contracts and Tooling
 
 - `refrakt inspect` output should show slot assignments when present
+- `refrakt inspect` should visualize projection effects (show before/after tree when projection is active)
 - `refrakt contracts` should include slot ordering in structure contracts
+- `refrakt contracts` should include projection declarations so themes can validate `data-name` references exist in the rune's output contract; invalid references should produce warnings
 - CSS coverage tests need no changes (they test selectors, not DOM order)
+- Projection `group` entries that create new `data-name` wrappers generate new BEM selectors that themes must style — `refrakt inspect --audit` should flag these
 
 ---
 
@@ -367,5 +510,12 @@ Each feature should be validated by:
 4. Running the full test suite
 
 The eyebrow scenario (Feature 1) should be validated by applying a theme override to the plan/work rune config via `mergeThemeConfig` and confirming the ID badge moves to its own structural group in the output.
+
+Feature 5 (projection) should additionally be validated by:
+
+1. Writing a test that applies `hide` to a named element and confirms it's absent from output
+2. Writing a test that applies `group` to collect two `data-name` elements into a wrapper and confirms the wrapper exists with both children, correct BEM class, and `data-name`
+3. Writing a test that applies `relocate` to move a schema-produced element into a structure-injected container and confirms the element appears inside the target
+4. Confirming that `refrakt inspect` shows projection effects and that `refrakt contracts` warns on invalid `data-name` references
 
 {% /spec %}
