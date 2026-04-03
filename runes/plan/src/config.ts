@@ -154,6 +154,7 @@ export const config: Record<string, RuneConfig> = {
 	Backlog: {
 		block: 'backlog',
 		defaultDensity: 'full',
+		childDensity: 'minimal',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },
@@ -164,6 +165,7 @@ export const config: Record<string, RuneConfig> = {
 	DecisionLog: {
 		block: 'decision-log',
 		defaultDensity: 'full',
+		childDensity: 'minimal',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },

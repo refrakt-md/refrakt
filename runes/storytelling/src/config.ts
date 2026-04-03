@@ -162,25 +162,22 @@ export const config: Record<string, RuneConfig> = {
 		block: 'beat',
 		parent: 'Plot',
 		modifiers: {
-			status: { source: 'meta', default: 'planned' },
+			status: {
+				source: 'meta',
+				default: 'planned',
+				valueMap: {
+					complete: 'checked',
+					active: 'active',
+					planned: 'unchecked',
+					abandoned: 'skipped',
+				},
+				mapTarget: 'data-checked',
+			},
 			id: { source: 'meta' },
 			track: { source: 'meta' },
 			follows: { source: 'meta' },
 		},
 		editHints: { label: 'inline', body: 'none' },
-		postTransform(node, { modifiers }) {
-			const STATUS_TO_CHECKED: Record<string, string> = {
-				complete: 'checked',
-				active: 'active',
-				planned: 'unchecked',
-				abandoned: 'skipped',
-			};
-			const checked = STATUS_TO_CHECKED[modifiers.status];
-			if (checked) {
-				return { ...node, attributes: { ...node.attributes, 'data-checked': checked } };
-			}
-			return node;
-		},
 	},
 
 	Bond: {

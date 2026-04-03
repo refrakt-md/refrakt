@@ -94,6 +94,7 @@ export const coreConfig: ThemeConfig = {
 		Grid: {
 			block: 'grid',
 			defaultDensity: 'full',
+			childDensity: 'compact',
 			modifiers: {
 				mode: { source: 'meta', default: 'columns' },
 				collapse: { source: 'meta', noBemClass: true },
@@ -345,6 +346,7 @@ export const coreConfig: ThemeConfig = {
 		Gallery: {
 			block: 'gallery',
 			defaultDensity: 'full',
+			childDensity: 'compact',
 			modifiers: {
 				layout: { source: 'meta', default: 'grid' },
 				lightbox: { source: 'meta', default: 'true', noBemClass: true },
@@ -594,6 +596,7 @@ export const coreConfig: ThemeConfig = {
 		Showcase: {
 			block: 'showcase',
 			defaultDensity: 'compact',
+			childDensity: 'compact',
 			sections: { viewport: 'body' },
 			modifiers: {
 				shadow: { source: 'meta', default: 'none' },

@@ -1,5 +1,4 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { isTag, findMeta, makeTag } from '@refrakt-md/transform';
 
 const pageSectionAutoLabel = {
 	header: 'preamble',
@@ -86,36 +85,18 @@ export const config: Record<string, RuneConfig> = {
 		modifiers: {
 			variant: { source: 'meta', default: 'street' },
 			height: { source: 'meta', default: 'medium' },
+			zoom: { source: 'meta', noBemClass: true },
+			center: { source: 'meta', noBemClass: true },
+			provider: { source: 'meta', noBemClass: true },
+			interactive: { source: 'meta', noBemClass: true },
+			route: { source: 'meta', noBemClass: true },
+			cluster: { source: 'meta', noBemClass: true },
+			apiKey: { source: 'meta', noBemClass: true },
 		},
+		contentWrapper: { tag: 'div', ref: 'container' },
 		postTransform(node) {
-			// Move remaining meta values to data attributes for the web component
-			const metaProps = ['zoom', 'center', 'provider', 'interactive', 'route', 'cluster', 'apiKey'] as const;
-			const dataAttrs: Record<string, string> = {};
-			for (const prop of metaProps) {
-				const meta = findMeta(node, prop);
-				if (meta) {
-					const kebab = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
-					dataAttrs[`data-${kebab}`] = meta.attributes.content;
-				}
-			}
-
-			// Remove consumed meta children — identify by matching against findMeta results
-			const consumedMetas = new Set(
-				metaProps.map(prop => findMeta(node, prop)).filter(Boolean),
-			);
-			const children = node.children.filter(child => !consumedMetas.has(child as any));
-
-			// Wrap remaining children in a container div so the map has
-			// visible height before Leaflet JS initialises (prevents the
-			// border from rendering as a collapsed strip).
-			const containerDiv = makeTag('div', { class: 'rf-map__container' }, children);
-
-			return {
-				...node,
-				name: 'rf-map',
-				attributes: { ...node.attributes, ...dataAttrs },
-				children: [containerDiv],
-			};
+			// Change element name to web component
+			return { ...node, name: 'rf-map' };
 		},
 	},
 	MapPin: { block: 'map-pin', parent: 'Map', editHints: { name: 'inline', description: 'inline' } },

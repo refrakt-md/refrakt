@@ -17,12 +17,25 @@ export interface RuneConfig {
 		default?: string;
 		/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
 		noBemClass?: boolean;
+		/** Maps raw modifier values to output values before emitting data attributes.
+		 *  Unmapped values pass through unchanged. */
+		valueMap?: Record<string, string>;
+		/** Target data attribute name for the mapped value (e.g., 'data-checked').
+		 *  When set, the mapped value is emitted on this attribute instead of the
+		 *  default `data-{modifier-name}` attribute. The original modifier attribute
+		 *  is still emitted with the raw value. */
+		mapTarget?: string;
 	}>;
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
 	 *  Key = parent typeof (e.g., 'Hero'), Value = modifier suffix (e.g., 'in-hero').
 	 *  Produces classes like: rf-callout--in-hero */
 	contextModifiers?: Record<string, string>;
+
+	/** Ordered slot names for structure assembly. When declared, the engine
+	 *  assembles children by iterating slots in order instead of binary before/after.
+	 *  The special 'content' slot is where content children are placed. */
+	slots?: string[];
 
 	/** Structural overrides — additional elements to inject (keyed by data-name) */
 	structure?: Record<string, StructureEntry>;
@@ -95,6 +108,35 @@ export interface RuneConfig {
 	 *  Values: 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon' */
 	mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>;
 
+	/** Density imposed on child runes when this rune is the parent context.
+	 *  Replaces hardcoded density context sets — community packages can declare
+	 *  their own density behavior without modifying the engine. */
+	childDensity?: 'compact' | 'minimal';
+
+	/** Declarative structural reshaping of the output tree.
+	 *  Runs after BEM class application (Phase 6) but before meta tag filtering (Phase 7).
+	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate. */
+	projection?: {
+		/** Remove elements matching these data-name values from the children array entirely */
+		hide?: string[];
+		/** Collect elements by data-name, wrap in a new container, place at first member's position */
+		group?: Record<string, {
+			/** Container element tag */
+			tag: string;
+			/** data-name values to collect into this group */
+			members: string[];
+			/** Optional slot assignment for the group container */
+			slot?: string;
+		}>;
+		/** Move elements by data-name into another element or slot */
+		relocate?: Record<string, {
+			/** Target data-name or slot name */
+			into: string;
+			/** Where within the target (default: 'append') */
+			position?: 'prepend' | 'append';
+		}>;
+	};
+
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */
@@ -113,6 +155,23 @@ export interface StructureEntry {
 	children?: (string | StructureEntry)[];
 	/** Insert before existing children */
 	before?: boolean;
+	/** Which slot this entry occupies (used when RuneConfig.slots is declared) */
+	slot?: string;
+	/** Ordering within a slot (default: 0, lower numbers first) */
+	order?: number;
+	/** Generate N copies of a template element. Used for star ratings, progress dots, etc. */
+	repeat?: {
+		/** Modifier name that provides the total count */
+		count: string;
+		/** Maximum elements to prevent runaway generation (default: 10) */
+		max?: number;
+		/** Modifier name for how many are "filled" (optional) */
+		filled?: string;
+		/** Template for each generated element */
+		element: StructureEntry;
+		/** Template for filled elements (optional — if not set, filled elements get data-filled="true") */
+		filledElement?: StructureEntry;
+	};
 	/** Inject an SVG icon from config.icons[group][resolvedVariantValue] */
 	icon?: { group: string; variant: string };
 	/** Inject text from a resolved modifier value */
