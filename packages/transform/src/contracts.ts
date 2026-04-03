@@ -12,6 +12,8 @@ export interface RuneContract {
 		default?: string;
 		classPattern?: string;
 		dataAttribute: string;
+		valueMap?: Record<string, string>;
+		mapTarget?: string;
 	}>;
 	contextModifiers?: Record<string, {
 		suffix: string;
@@ -31,6 +33,18 @@ export interface RuneContract {
 	}>;
 	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
+	/** Named slot ordering (when declared) */
+	slots?: string[];
+	/** Child density imposed on nested runes */
+	childDensity?: 'compact' | 'minimal';
+	/** Projection declarations for structural reshaping */
+	projection?: {
+		hide?: string[];
+		group?: Record<string, { tag: string; members: string[] }>;
+		relocate?: Record<string, { into: string; position?: string }>;
+	};
+	/** Warnings about invalid projection references */
+	warnings?: string[];
 }
 
 /** Top-level structure contract document */
@@ -84,6 +98,8 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 				...(mod.default !== undefined ? { default: mod.default } : {}),
 				...(mod.noBemClass ? {} : { classPattern: `.${block}--{value}` }),
 				dataAttribute: `data-${kebab}`,
+				...(mod.valueMap ? { valueMap: mod.valueMap } : {}),
+				...(mod.mapTarget ? { mapTarget: mod.mapTarget } : {}),
 			};
 		}
 	}
@@ -152,6 +168,73 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	// Child order
 	contract.childOrder = computeChildOrder(config);
 
+	// Slots
+	if (config.slots) {
+		contract.slots = config.slots;
+	}
+
+	// Child density
+	if (config.childDensity) {
+		contract.childDensity = config.childDensity;
+	}
+
+	// Projection declarations + validation
+	if (config.projection) {
+		contract.projection = {};
+		const warnings: string[] = [];
+
+		// Collect all known data-name values from elements
+		const knownNames = new Set(Object.keys(contract.elements ?? {}));
+
+		if (config.projection.hide) {
+			contract.projection.hide = config.projection.hide;
+			for (const name of config.projection.hide) {
+				if (!knownNames.has(name)) {
+					warnings.push(`projection.hide references unknown data-name "${name}"`);
+				}
+			}
+		}
+		if (config.projection.group) {
+			contract.projection.group = {};
+			for (const [key, def] of Object.entries(config.projection.group)) {
+				contract.projection.group[key] = { tag: def.tag, members: def.members };
+				// The group itself becomes a new element
+				if (!contract.elements) contract.elements = {};
+				contract.elements[key] = {
+					tag: def.tag,
+					selector: `.${block}__${key}`,
+					source: 'projection.group',
+				};
+				for (const member of def.members) {
+					if (!knownNames.has(member)) {
+						warnings.push(`projection.group "${key}" references unknown member "${member}"`);
+					}
+				}
+			}
+		}
+		if (config.projection.relocate) {
+			contract.projection.relocate = {};
+			for (const [source, def] of Object.entries(config.projection.relocate)) {
+				contract.projection.relocate[source] = {
+					into: def.into,
+					...(def.position ? { position: def.position } : {}),
+				};
+				if (!knownNames.has(source)) {
+					warnings.push(`projection.relocate source "${source}" is unknown`);
+				}
+				// Target can be a data-name or a slot name
+				const isSlotTarget = config.slots?.includes(def.into);
+				if (!knownNames.has(def.into) && !isSlotTarget) {
+					warnings.push(`projection.relocate target "${def.into}" is unknown`);
+				}
+			}
+		}
+
+		if (warnings.length > 0) {
+			contract.warnings = warnings;
+		}
+	}
+
 	return contract;
 }
 
@@ -187,6 +270,20 @@ function collectStructureElements(
 		elements[ref] = element;
 	}
 
+	// Collect repeat template elements
+	if (entry.repeat) {
+		const repeatRef = entry.repeat.element.ref ?? '';
+		if (repeatRef) {
+			collectStructureElements(entry.repeat.element, repeatRef, block, elements, ref);
+		}
+		if (entry.repeat.filledElement) {
+			const filledRef = entry.repeat.filledElement.ref ?? '';
+			if (filledRef) {
+				collectStructureElements(entry.repeat.filledElement, filledRef, block, elements, ref);
+			}
+		}
+	}
+
 	// Recurse into children
 	if (entry.children) {
 		for (const child of entry.children) {
@@ -202,9 +299,58 @@ function collectStructureElements(
 
 /** Compute the child order array for a rune */
 function computeChildOrder(config: RuneConfig): string[] {
+	// Slot-based ordering
+	if (config.slots && config.structure) {
+		const order: string[] = [];
+		const nonContentSlots = config.slots.filter(s => s !== 'content');
+		const firstSlot = nonContentSlots[0];
+		const lastSlot = nonContentSlots[nonContentSlots.length - 1];
+
+		// Build slot → entries map
+		const slotEntries = new Map<string, Array<{ name: string; order: number }>>();
+		for (const slot of config.slots) {
+			slotEntries.set(slot, []);
+		}
+
+		for (const [key, entry] of Object.entries(config.structure)) {
+			const ref = entry.ref ?? key;
+			let targetSlot: string;
+			if (entry.slot) {
+				targetSlot = entry.slot;
+			} else if (entry.before && firstSlot) {
+				targetSlot = firstSlot;
+			} else if (lastSlot) {
+				targetSlot = lastSlot;
+			} else {
+				targetSlot = entry.before ? (firstSlot ?? config.slots[0]) : (lastSlot ?? config.slots[config.slots.length - 1]);
+			}
+			const bucket = slotEntries.get(targetSlot);
+			if (bucket) {
+				bucket.push({ name: ref, order: entry.order ?? 0 });
+			}
+		}
+
+		for (const slot of config.slots) {
+			if (slot === 'content') {
+				if (config.contentWrapper) {
+					order.push(`{content:${config.contentWrapper.ref}}`);
+				} else {
+					order.push('{content}');
+				}
+			} else {
+				const entries = slotEntries.get(slot) ?? [];
+				entries.sort((a, b) => a.order - b.order);
+				for (const { name } of entries) {
+					order.push(name);
+				}
+			}
+		}
+		return order;
+	}
+
+	// Legacy before/after ordering
 	const order: string[] = [];
 
-	// Prepended structure entries (before: true)
 	if (config.structure) {
 		for (const [key, entry] of Object.entries(config.structure)) {
 			if (entry.before) {
@@ -213,14 +359,12 @@ function computeChildOrder(config: RuneConfig): string[] {
 		}
 	}
 
-	// Content (possibly wrapped)
 	if (config.contentWrapper) {
 		order.push(`{content:${config.contentWrapper.ref}}`);
 	} else {
 		order.push('{content}');
 	}
 
-	// Appended structure entries (after content)
 	if (config.structure) {
 		for (const [key, entry] of Object.entries(config.structure)) {
 			if (!entry.before) {
