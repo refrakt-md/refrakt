@@ -64,13 +64,13 @@ This separation has three consequences:
 
 3. **The engine stays simple.** The identity transform consumes `RuneConfig` objects. It never parses templates, evaluates expressions, or handles syntax. Compilation happens before the engine runs — at build time or in `mergeThemeConfig`.
 
-A template authoring surface is a likely future addition (see below), but this spec intentionally defines only the model layer. The authoring surface is a DX concern that should be designed after real theme development experience reveals what developers actually reach for.
+A template authoring surface is a possible future addition, but this spec intentionally defines only the model layer. The authoring surface is a DX concern that should be designed after real theme development experience reveals whether the TypeScript config override path has friction that warrants a dedicated syntax.
 
-### Authoring Surface: Structural Template Language
+### Authoring Surface: Design Exploration
 
-A spatial template syntax for theme overrides is explored in **SPEC-034** (Theme Structural Template Language). The key insight: the template is primarily a **patch language** — theme developers express small structural adjustments ("move the badge to the footer", "group icon and title into a chrome bar") rather than rewriting full configs. The syntax compiles to the `RuneConfig` model defined here, inheriting all validation and tooling.
+**SPEC-034** (Theme Structural Template Language) explores a spatial template syntax where theme overrides read as wireframes — `@refs` placed in `[slots]`, compiled to the `RuneConfig` model defined here. The key insight: the template would be a **patch language** for small structural adjustments, not a full config replacement.
 
-SPEC-034 covers: override syntax (slots + refs + hide), full-definition syntax (with frontmatter), comparison with Handlebars, and the compilation model.
+SPEC-034 is a **design exploration**, not a committed build. The TypeScript config override path (using `slots` + `projection` from Features 1 and 5) is the supported approach. The template syntax is preserved as a ready-to-build design if theme development experience reveals the need.
 
 ---
 

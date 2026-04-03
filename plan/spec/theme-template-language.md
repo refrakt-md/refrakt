@@ -1,14 +1,28 @@
-{% spec id="SPEC-034" status="draft" tags="themes, transform, authoring" %}
+{% spec id="SPEC-034" status="draft" tags="themes, transform, authoring, exploration" %}
 
-# Theme Structural Template Language
+# Theme Structural Template Language (Design Exploration)
 
-> A spatial template syntax for theme developers to express structural overrides — compiled to the declarative `RuneConfig` model defined in SPEC-033.
+> A design exploration of a spatial template syntax for theme developers to express structural overrides — compiled to the declarative `RuneConfig` model defined in SPEC-033. **This is not a committed implementation.** It documents a possible future authoring surface so the idea is preserved and can be revisited if real theme development reveals the need.
+
+---
+
+## Status
+
+This spec is a **design exploration**, not a build proposal. The declarative model in SPEC-033 (slots, projection, value mapping, repeat, density contexts) is the implementation priority. Theme developers can express structural overrides using TypeScript `RuneConfig` objects today — and for most scenarios, that's sufficient.
+
+The template language explored here would become worth building if:
+
+- Theme developers regularly override structure across many runes (10+), making spatial readability matter more than one-off precision
+- The `projection` vocabulary (`relocate`, `hide`, `group`) proves unintuitive in practice despite being learnable
+- Community theme authors request a more visual way to describe layout overrides
+
+Until those signals emerge, this spec preserves the design so it doesn't need to be re-derived.
 
 ---
 
 ## Context
 
-SPEC-033 defines a declarative model (slots, projection, value mapping, repeat, density contexts) that gives themes structural control over rune output. The model is the engine's contract — what tooling validates, what `mergeThemeConfig` merges, what `refrakt contracts` checks.
+SPEC-033 defines a declarative model that gives themes structural control over rune output. The model is the engine's contract — what tooling validates, what `mergeThemeConfig` merges, what `refrakt contracts` checks.
 
 This spec explores an **authoring surface** for that model: a template language that compiles to `RuneConfig` objects. Per the architectural layering in SPEC-033, the model is the constraint boundary — any syntax above it is sugar. If something can't be expressed as a `RuneConfig`, it can't be expressed in the template.
 
@@ -404,6 +418,19 @@ The compiler is stateless — each `.rune` file compiles independently. The comp
    ```
 
    This would let TypeScript-native package authors use spatial syntax for structure while keeping data declarations in code.
+
+---
+
+## Decision Criteria
+
+This exploration should be revisited and promoted to an implementation spec when **two or more** of the following are true:
+
+1. **Volume signal.** A real theme (not a test fixture) overrides structure on 10+ runes and the author reports the TypeScript config as painful
+2. **Error signal.** Theme developers consistently produce invalid `projection` configs (wrong `data-name` references, incorrect `into` targets) that a spatial syntax would prevent
+3. **Onboarding signal.** New theme contributors take significantly longer to understand `projection.relocate` + `slots` than the spatial concept those features represent
+4. **Ecosystem signal.** Multiple community themes emerge and structural override patterns stabilize enough to validate the syntax design
+
+Until then, the TypeScript config override path is the supported approach. This spec is preserved as a ready-to-build design if the need arises.
 
 ---
 
