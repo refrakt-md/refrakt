@@ -12,6 +12,8 @@ export const config: Record<string, RuneConfig> = {
 			version: { source: 'meta' },
 			supersedes: { source: 'meta' },
 			tags: { source: 'meta', noBemClass: true },
+			created: { source: 'meta', noBemClass: true },
+			modified: { source: 'meta', noBemClass: true },
 		},
 		structure: {
 			header: {
@@ -21,10 +23,12 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
 					{ tag: 'span', ref: 'version-badge', metaText: 'version', condition: 'version', textPrefix: 'v', metaType: 'tag', metaRank: 'secondary' },
 					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', label: 'Supersedes:', metaType: 'id', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'version-badge': 'none', 'supersedes-badge': 'none' },
+		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'version-badge': 'none', 'supersedes-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Work: {
 		block: 'work',
@@ -40,6 +44,8 @@ export const config: Record<string, RuneConfig> = {
 			assignee: { source: 'meta', noBemClass: true },
 			milestone: { source: 'meta', noBemClass: true },
 			tags: { source: 'meta', noBemClass: true },
+			created: { source: 'meta', noBemClass: true },
+			modified: { source: 'meta', noBemClass: true },
 		},
 		structure: {
 			header: {
@@ -51,10 +57,12 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'complexity-badge', metaText: 'complexity', label: 'Complexity:', metaType: 'quantity', metaRank: 'secondary' },
 					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', label: 'Assignee:', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
 					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', label: 'Milestone:', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'priority-badge': 'none', 'complexity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none' },
+		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'priority-badge': 'none', 'complexity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Bug: {
 		block: 'bug',
@@ -69,6 +77,8 @@ export const config: Record<string, RuneConfig> = {
 			assignee: { source: 'meta', noBemClass: true },
 			milestone: { source: 'meta', noBemClass: true },
 			tags: { source: 'meta', noBemClass: true },
+			created: { source: 'meta', noBemClass: true },
+			modified: { source: 'meta', noBemClass: true },
 		},
 		structure: {
 			header: {
@@ -79,10 +89,12 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'severity-badge', metaText: 'severity', label: 'Severity:', metaType: 'category', metaRank: 'primary', sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' } },
 					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', label: 'Assignee:', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
 					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', label: 'Milestone:', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'severity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none' },
+		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'severity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Decision: {
 		block: 'decision',
@@ -95,6 +107,8 @@ export const config: Record<string, RuneConfig> = {
 			date: { source: 'meta', noBemClass: true },
 			supersedes: { source: 'meta', noBemClass: true },
 			tags: { source: 'meta', noBemClass: true },
+			created: { source: 'meta', noBemClass: true },
+			modified: { source: 'meta', noBemClass: true },
 		},
 		structure: {
 			header: {
@@ -104,10 +118,12 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
 					{ tag: 'time', ref: 'date-badge', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal', metaRank: 'secondary' },
 					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', label: 'Supersedes:', metaType: 'id', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'date-badge': 'none', 'supersedes-badge': 'none' },
+		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'date-badge': 'none', 'supersedes-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Milestone: {
 		block: 'milestone',
@@ -118,6 +134,8 @@ export const config: Record<string, RuneConfig> = {
 			name: { source: 'meta' },
 			status: { source: 'meta', default: 'planning' },
 			target: { source: 'meta', noBemClass: true },
+			created: { source: 'meta', noBemClass: true },
+			modified: { source: 'meta', noBemClass: true },
 		},
 		structure: {
 			header: {
@@ -126,14 +144,17 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'name-badge', metaText: 'name', label: 'Name:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' } },
 					{ tag: 'time', ref: 'target-badge', metaText: 'target', label: 'Target:', condition: 'target', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
+					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
 				],
 			},
 		},
-		editHints: { body: 'none', 'name-badge': 'none', 'status-badge': 'none', 'target-badge': 'none' },
+		editHints: { body: 'none', 'name-badge': 'none', 'status-badge': 'none', 'target-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Backlog: {
 		block: 'backlog',
 		defaultDensity: 'full',
+		childDensity: 'minimal',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },
@@ -144,6 +165,7 @@ export const config: Record<string, RuneConfig> = {
 	DecisionLog: {
 		block: 'decision-log',
 		defaultDensity: 'full',
+		childDensity: 'minimal',
 		modifiers: {
 			filter: { source: 'meta', noBemClass: true },
 			sort: { source: 'meta', noBemClass: true },

@@ -212,6 +212,7 @@ export const config: Record<string, RuneConfig> = {
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
+		childDensity: 'compact',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
@@ -242,8 +243,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'feature',
 		defaultDensity: 'full',
 		defaultWidth: 'full',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', image: 'media' },
-		mediaSlots: { image: 'cover' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
+		mediaSlots: { media: 'cover' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			align: { source: 'meta', default: 'center' },
@@ -289,41 +290,26 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'compact',
 		sections: { content: 'body', avatar: 'media' },
 		mediaSlots: { avatar: 'portrait' },
-		modifiers: { variant: { source: 'meta', default: 'card' } },
-		autoLabel: { blockquote: 'quote' },
-		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
-		postTransform(node) {
-			const block = node.attributes.class?.split(' ')[0] || 'rf-testimonial';
-			const ratingStr = readMeta(node, 'rating');
-
-			// Filter out consumed meta tags, wrap remaining children in content div
-			const contentChildren = node.children.filter(child => {
-				if (!isTag(child) || child.name !== 'meta') return true;
-				return child.attributes['data-field'] !== 'rating';
-			});
-
-			const children: (SerializedTag | string)[] = [];
-
-			// Inject star rating if present
-			if (ratingStr) {
-				const stars = Math.min(5, Math.max(0, Number(ratingStr)));
-				const starSpans: SerializedTag[] = [];
-				for (let i = 0; i < 5; i++) {
-					const cls = i < stars
-						? `${block}__star ${block}__star--filled`
-						: `${block}__star`;
-					starSpans.push(makeTag('span', { class: cls }, ['\u2605']));
-				}
-				children.push(makeTag('div', {
-					class: `${block}__rating`,
-					'aria-label': `${stars} out of 5 stars`,
-				}, starSpans));
-			}
-
-			children.push(makeTag('div', { class: `${block}__content` }, contentChildren));
-
-			return { ...node, children };
+		modifiers: {
+			variant: { source: 'meta', default: 'card' },
+			rating: { source: 'meta', noBemClass: true },
+			ratingTotal: { source: 'meta', noBemClass: true, default: '5' },
 		},
+		autoLabel: { blockquote: 'quote' },
+		contentWrapper: { tag: 'div', ref: 'content' },
+		structure: {
+			rating: {
+				tag: 'div',
+				before: true,
+				condition: 'rating',
+				repeat: {
+					count: 'ratingTotal',
+					filled: 'rating',
+					element: { tag: 'span', ref: 'star' },
+				},
+			},
+		},
+		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
 	},
 	Comparison: {
 		block: 'comparison',
@@ -384,18 +370,17 @@ export const config: Record<string, RuneConfig> = {
 	ComparisonRow: {
 		block: 'comparison-row',
 		parent: 'Comparison',
-		modifiers: { rowType: { source: 'meta', default: 'text' } },
-		editHints: { label: 'inline', body: 'inline' },
-		postTransform(node, { modifiers }) {
-			const ROW_TO_CHECKED: Record<string, string> = {
-				check: 'checked',
-				cross: 'unchecked',
-			};
-			const checked = ROW_TO_CHECKED[modifiers.rowType];
-			if (checked) {
-				return { ...node, attributes: { ...node.attributes, 'data-checked': checked } };
-			}
-			return node;
+		modifiers: {
+			rowType: {
+				source: 'meta',
+				default: 'text',
+				valueMap: {
+					check: 'checked',
+					cross: 'unchecked',
+				},
+				mapTarget: 'data-checked',
+			},
 		},
+		editHints: { label: 'inline', body: 'inline' },
 	},
 };

@@ -1,6 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 
 const modeType = ['unified', 'split', 'inline'] as const;
@@ -177,7 +176,7 @@ export const diff = createContentModelSchema({
 			? buildSplitRenderable(hunks, lang)
 			: buildUnifiedRenderable(hunks, lang);
 
-		return createComponentRenderable(schema.Diff, {
+		return createComponentRenderable({ rune: 'diff',
 			tag: 'div',
 			properties: {
 				mode: modeMeta,

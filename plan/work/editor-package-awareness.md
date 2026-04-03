@@ -1,4 +1,4 @@
-{% work id="WORK-051" status="in-progress" priority="high" complexity="complex" tags="editor, packages" milestone="v0.9.0" %}
+{% work id="WORK-051" status="in-progress" priority="high" complexity="complex" tags="editor, packages" milestone="v1.0.0" %}
 
 # Editor Package Awareness
 

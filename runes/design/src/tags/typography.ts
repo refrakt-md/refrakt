@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Extract plain text from an AST node
 function extractText(node: Node): string {
@@ -172,7 +171,7 @@ export const typography = createContentModelSchema({
 
 		topChildren.push(new Tag('div', { 'data-name': 'specimens' }, specimenTags));
 
-		return createComponentRenderable(schema.Typography, {
+		return createComponentRenderable({ rune: 'typography',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

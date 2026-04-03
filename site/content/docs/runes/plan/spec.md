@@ -74,6 +74,8 @@ This specification has been superseded. See the current token system specificati
 | `version` | `string` | — | Spec version, e.g. `1.0`, `1.2` |
 | `supersedes` | `string` | — | ID of the spec this replaces |
 | `tags` | `string` | — | Comma-separated labels |
+| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
+| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
 ### Common attributes
 

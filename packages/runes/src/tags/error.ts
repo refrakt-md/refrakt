@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { ValidationError } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 
 export const error = createContentModelSchema({
@@ -22,7 +21,7 @@ export const error = createContentModelSchema({
 		const level = new Tag('td', {}, [err.level]);
 		const message = new Tag('td', {}, [err.message]);
 
-		return createComponentRenderable(schema.Error, {
+		return createComponentRenderable({ rune: 'error',
 			tag: 'tr',
 			property: 'error',
 			properties: {

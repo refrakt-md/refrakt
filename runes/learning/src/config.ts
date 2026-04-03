@@ -39,6 +39,7 @@ export const config: Record<string, RuneConfig> = {
 		sequence: 'numbered',
 		sections: { meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
+		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			prepTime: { source: 'meta', noBemClass: true },

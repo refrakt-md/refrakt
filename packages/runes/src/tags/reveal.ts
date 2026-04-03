@@ -1,22 +1,29 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
 const modeType = ['click', 'scroll', 'auto'] as const;
 
-class RevealStepModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string;
+export const revealStep = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.RevealStep, {
+		return createComponentRenderable({ rune: 'reveal-step',
 			tag: 'div',
 			properties: {
 				name: nameTag,
@@ -26,10 +33,8 @@ class RevealStepModel extends Model {
 			},
 			children: [nameTag, body.next()],
 		});
-	}
-}
-
-export const revealStep = createSchema(RevealStepModel);
+	},
+});
 
 export const reveal = createContentModelSchema({
 	attributes: {
@@ -67,7 +72,7 @@ export const reveal = createContentModelSchema({
 			? [headerNodes.wrap('header').next(), modeMeta, stepsContainer.next()]
 			: [modeMeta, stepsContainer.next()];
 
-		return createComponentRenderable(schema.Reveal, {
+		return createComponentRenderable({ rune: 'reveal',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

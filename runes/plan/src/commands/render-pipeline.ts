@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
-import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig } from '@refrakt-md/runes';
+import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags } from '@refrakt-md/runes';
 import { createTransform, renderToHtml, mergeThemeConfig, planLayout } from '@refrakt-md/transform';
 import type { ThemeConfig, LayoutPageData } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag, TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
@@ -14,6 +14,7 @@ import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
 import { planPipelineHooks, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
+import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
 
 // --- Markdoc tag registry (built once) ---
@@ -214,8 +215,8 @@ function buildThemeConfig(): ThemeConfig {
 
 // --- Markdoc rendering ---
 
-function parseAndTransform(content: string, filePath: string): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
-	const ast = Markdoc.parse(content);
+function parseAndTransform(content: string, filePath: string, fileTimestamps?: FileTimestamps): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
+	const ast = Markdoc.parse(escapeFenceTags(content));
 	const headings = extractHeadings(ast);
 	const config = {
 		tags,
@@ -225,6 +226,7 @@ function parseAndTransform(content: string, filePath: string): { renderable: unk
 			path: filePath,
 			headings,
 			__source: content,
+			...(fileTimestamps ? { file: { created: fileTimestamps.created, modified: fileTimestamps.modified } } : {}),
 		},
 	};
 	const renderable = Markdoc.transform(ast, config);
@@ -830,36 +832,6 @@ function generateViewPages(entities: PlanEntity[], baseUrl: string): ViewPageDef
 	return views;
 }
 
-// --- Copy-to-clipboard behavior (inline script) ---
-
-const COPY_BUTTON_SCRIPT = `<script>
-(function() {
-  document.querySelectorAll('pre').forEach(function(pre) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'rf-code-wrapper';
-    pre.parentNode.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
-    var btn = document.createElement('button');
-    btn.className = 'rf-copy-button';
-    btn.setAttribute('aria-label', 'Copy code');
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-    btn.onclick = function() {
-      var sel = pre.getAttribute('data-copy-selector');
-      var text = sel ? (pre.querySelector(sel) || pre).textContent : pre.textContent;
-      navigator.clipboard.writeText(text || '').then(function() {
-        btn.classList.add('rf-copy-button--copied');
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(function() {
-          btn.classList.remove('rf-copy-button--copied');
-          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-        }, 2000);
-      });
-    };
-    wrapper.appendChild(btn);
-  });
-})();
-</script>`;
-
 const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
 (function() {
   var STORAGE_KEY = 'plan-sidebar-collapse';
@@ -1139,6 +1111,10 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	}
 	const allEntities = [...entities, ...specsEntities];
 
+	// Batch-collect git timestamps for the plan directory (and specs dir if separate)
+	const gitTimestamps = getGitTimestamps(dir);
+	const specsGitTimestamps = specsDir && specsDir !== dir ? getGitTimestamps(specsDir) : gitTimestamps;
+
 	// 2. Parse and transform each entity file
 	const transformedPages: TransformedPage[] = [];
 	const pageMap = new Map<string, { entity: PlanEntity; page: TransformedPage }>();
@@ -1147,7 +1123,9 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		const filePath = path.resolve(dir, entity.file);
 		const content = fs.readFileSync(filePath, 'utf-8');
 		const url = `${baseUrl}${entity.type}/${slugify(entity.attributes.id || entity.attributes.name || '')}.html`;
-		const { renderable, title, headings } = parseAndTransform(content, entity.file);
+		const tsMap = specsEntities.includes(entity) ? specsGitTimestamps : gitTimestamps;
+		const ts = tsMap.get(entity.file) ?? getStatTimestamps(filePath);
+		const { renderable, title, headings } = parseAndTransform(content, entity.file, ts);
 
 		const page: TransformedPage = {
 			url,
@@ -1339,7 +1317,7 @@ export function renderPage(
 	page: ProcessedPage,
 	navRegion: RendererNode[],
 	allPageUrls: Array<{ url: string; title: string; draft: boolean }>,
-	opts?: { hotReload?: boolean; stylesheets?: string[]; activeUrl?: string },
+	opts?: { hotReload?: boolean; stylesheets?: string[]; scripts?: string[]; activeUrl?: string },
 ): string {
 	const layoutPageData: LayoutPageData = {
 		renderable: page.renderable,
@@ -1359,7 +1337,8 @@ export function renderPage(
 
 	const shellOptions: PageShellOptions = {
 		stylesheets: opts?.stylesheets ?? [],
-		bodyExtra: COPY_BUTTON_SCRIPT + '\n' + SIDEBAR_BEHAVIOR_SCRIPT,
+		scripts: opts?.scripts ?? [],
+		bodyExtra: SIDEBAR_BEHAVIOR_SCRIPT,
 	};
 
 	// Hot reload SSE script

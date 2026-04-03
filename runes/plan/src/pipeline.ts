@@ -123,9 +123,11 @@ const SEVERITY_SENTIMENT: Record<string, string> = {
 
 /** Build a metadata badge matching the dimension system output */
 function buildMetaBadge(label: string, value: string, opts: {
-	metaType: string; metaRank: string; sentiment?: string;
+	metaType: string; metaRank: string; sentiment?: string; labelHidden?: boolean;
 }): InstanceType<typeof Tag> {
-	const labelEl = new Tag('span', { 'data-meta-label': '' }, [label]);
+	const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
+	if (opts.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
+	const labelEl = new Tag('span', labelAttrs, [label]);
 	const valueEl = new Tag('span', { 'data-meta-value': '' }, [value]);
 	const attrs: Record<string, string> = {
 		'data-meta-type': opts.metaType,
@@ -142,44 +144,59 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const status = String(entity.data.status ?? '');
 	const type = entity.type;
 
-	const badges: any[] = [
-		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
+	// Header: ID on the left, status + progress on the right
+	const headerLeft: any[] = [
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary', labelHidden: true }),
 	];
 
-	if (type === 'work') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: WORK_STATUS_SENTIMENT[status] }));
-		const priority = String(entity.data.priority ?? '');
-		const complexity = String(entity.data.complexity ?? '');
-		if (priority) badges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'primary', sentiment: PRIORITY_SENTIMENT[priority] }));
-		if (complexity && complexity !== 'unknown') badges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
-	} else if (type === 'bug') {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: BUG_STATUS_SENTIMENT[status] }));
-		const severity = String(entity.data.severity ?? '');
-		if (severity) badges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'primary', sentiment: SEVERITY_SENTIMENT[severity] }));
-	} else {
-		badges.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary' }));
-	}
+	const headerRight: any[] = [];
+	const statusSentiment = type === 'work' ? WORK_STATUS_SENTIMENT[status]
+		: type === 'bug' ? BUG_STATUS_SENTIMENT[status]
+		: undefined;
+	headerRight.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: statusSentiment, labelHidden: true }));
 
-	const milestone = String(entity.data.milestone ?? '');
-	if (milestone) badges.push(buildMetaBadge('Milestone:', milestone, { metaType: 'tag', metaRank: 'secondary' }));
-
-	// Add checklist progress if available
+	// Progress in header (no circle indicator)
 	const checkedCount = Number(entity.data.checkedCount ?? 0);
 	const totalCount = Number(entity.data.totalCount ?? 0);
 	if (totalCount > 0) {
-		badges.push(new Tag('span', {
+		headerRight.push(new Tag('span', {
 			class: 'rf-backlog__card-progress',
 			'data-checked': String(checkedCount),
 			'data-total': String(totalCount),
 		}, [`${checkedCount}/${totalCount}`]));
 	}
 
-	const header = new Tag('div', { 'data-section': 'header' }, badges);
+	const header = new Tag('div', { 'data-section': 'header' }, [
+		new Tag('span', { class: 'rf-backlog__card-header-left' }, headerLeft),
+		new Tag('span', { class: 'rf-backlog__card-header-right' }, headerRight),
+	]);
+
+	// Body: title
 	const titleEl = new Tag('div', { 'data-section': 'title' }, [title]);
 
+	// Footer: secondary metadata pills
+	const footerBadges: any[] = [];
+	if (type === 'work') {
+		const priority = String(entity.data.priority ?? '');
+		const complexity = String(entity.data.complexity ?? '');
+		if (priority) footerBadges.push(buildMetaBadge('Priority:', priority, { metaType: 'category', metaRank: 'secondary', sentiment: PRIORITY_SENTIMENT[priority] }));
+		if (complexity && complexity !== 'unknown') footerBadges.push(buildMetaBadge('Complexity:', complexity, { metaType: 'quantity', metaRank: 'secondary' }));
+	} else if (type === 'bug') {
+		const severity = String(entity.data.severity ?? '');
+		if (severity) footerBadges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'secondary', sentiment: SEVERITY_SENTIMENT[severity] }));
+	}
+
+	const milestone = String(entity.data.milestone ?? '');
+	if (milestone) footerBadges.push(buildMetaBadge('Milestone:', milestone, { metaType: 'tag', metaRank: 'secondary', labelHidden: true }));
+
+	const sections: any[] = [header, titleEl];
+	if (footerBadges.length > 0) {
+		sections.push(new Tag('div', { 'data-section': 'footer' }, footerBadges));
+	}
+
 	const children: any[] = entity.sourceUrl
-		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, [header, titleEl])]
-		: [header, titleEl];
+		? [new Tag('a', { class: 'rf-backlog__card-link', href: entity.sourceUrl }, sections)]
+		: sections;
 
 	return new Tag('article', {
 		class: 'rf-backlog__card',
@@ -201,8 +218,8 @@ function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag
 	const date = String(entity.data.date ?? '');
 
 	const badges: any[] = [
-		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary' }),
-		buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: DECISION_STATUS_SENTIMENT[status] }),
+		buildMetaBadge('ID:', id, { metaType: 'id', metaRank: 'primary', labelHidden: true }),
+		buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: DECISION_STATUS_SENTIMENT[status], labelHidden: true }),
 	];
 	if (date) badges.push(buildMetaBadge('Date:', date, { metaType: 'temporal', metaRank: 'secondary' }));
 
@@ -534,17 +551,51 @@ function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData):
 		]));
 	}
 
-	// Add status-grouped cards
-	for (const [groupName, groupItems] of groups) {
-		const groupTitle = new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]);
+	// Build status-grouped cards as tabs (or flat list for single group)
+	const groupEntries = [...groups.entries()];
+
+	if (groupEntries.length === 1) {
+		// Single status — no tabs needed, render flat
+		const [groupName, groupItems] = groupEntries[0];
 		const cards = groupItems.map(e => buildEntityCard(e));
 		children.push(new Tag('div', {
 			class: 'rf-milestone__backlog-group',
 			'data-status': groupName,
-		}, [groupTitle, ...cards]));
+		}, [new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]), ...cards]));
+	} else {
+		// Multiple statuses — render as tabs
+		const tabButtons: any[] = [];
+		const tabPanels: any[] = [];
+
+		for (const [groupName, groupItems] of groupEntries) {
+			const label = groupName.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+			tabButtons.push(new Tag('button', {
+				role: 'tab',
+				class: 'rf-milestone__tab',
+				'data-status': groupName,
+			}, [`${label} (${groupItems.length})`]));
+
+			const cards = groupItems.map(e => buildEntityCard(e));
+			tabPanels.push(new Tag('div', {
+				role: 'tabpanel',
+				class: 'rf-milestone__panel',
+				'data-status': groupName,
+			}, cards));
+		}
+
+		children.push(new Tag('div', {
+			'data-name': 'tabs',
+			role: 'tablist',
+			class: 'rf-milestone__tabs',
+		}, tabButtons));
+
+		children.push(new Tag('div', {
+			'data-name': 'panels',
+			class: 'rf-milestone__panels',
+		}, tabPanels));
 	}
 
-	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog' }, children);
+	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog', 'data-rune': 'milestone-backlog' }, children);
 }
 
 function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {

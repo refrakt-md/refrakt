@@ -475,7 +475,7 @@
 	position: relative;
 }
 
-.rf-copy-button {
+.rf-copy-btn {
 	position: absolute;
 	top: 0.25rem;
 	right: 0.25rem;
@@ -494,18 +494,51 @@
 	transition: opacity 0.15s ease;
 }
 
-.rf-code-wrapper:hover .rf-copy-button {
+.rf-code-wrapper:hover .rf-copy-btn {
 	opacity: 1;
 }
 
-.rf-copy-button:hover {
+.rf-copy-btn:hover {
 	color: var(--rf-color-text, #212529);
 	border-color: var(--rf-color-muted, #6c757d);
 }
 
-.rf-copy-button--copied {
+.rf-copy-btn--copied {
 	color: var(--rf-color-success, #51cf66);
 	border-color: var(--rf-color-success, #51cf66);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile toolbar (hidden on desktop)
+   -------------------------------------------------------------------------- */
+
+.rf-plan-toolbar {
+	display: none;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.625rem 1rem;
+	border-block-end: 1px solid var(--rf-color-border, #dee2e6);
+	background: var(--rf-color-bg, #fff);
+}
+
+.rf-plan-toolbar__hamburger {
+	background: none;
+	border: none;
+	padding: 0.25rem;
+	cursor: pointer;
+	color: var(--rf-color-muted, #6c757d);
+	line-height: 0;
+	flex-shrink: 0;
+}
+
+.rf-plan-toolbar__hamburger:hover {
+	color: var(--rf-color-text, #212529);
+}
+
+.rf-plan-toolbar__title {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--rf-color-text, #212529);
 }
 
 /* --------------------------------------------------------------------------
@@ -523,22 +556,25 @@
 }
 
 @media (max-width: 48rem) {
+	.rf-plan-toolbar {
+		display: flex;
+	}
+
 	.rf-plan-sidebar {
-		position: static;
-		width: 100%;
-		border-inline-end: none;
-		border-block-end: 1px solid var(--rf-color-border, #dee2e6);
+		display: none;
 	}
 
 	.rf-plan-main {
 		margin-inline-start: 0;
+		padding: var(--rf-spacing-md, 1rem);
 	}
 
 	.rf-plan-main__body {
-		padding: 0 1.5rem;
+		padding: 0;
 	}
 
 	.rf-plan-dashboard {
 		grid-template-columns: 1fr;
+		padding: var(--rf-spacing-md, 1rem);
 	}
 }

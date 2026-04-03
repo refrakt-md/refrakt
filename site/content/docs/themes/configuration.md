@@ -190,6 +190,89 @@ styles: {
 
 Multiple style entries produce semicolon-separated values. Existing inline styles on the tag are preserved.
 
+### defaultDensity
+
+Controls how much detail a rune shows by default. The engine emits `data-density` on the root element.
+
+```typescript
+Accordion: { block: 'accordion', defaultDensity: 'full' }
+Details: { block: 'details', defaultDensity: 'compact' }
+Breadcrumb: { block: 'breadcrumb', defaultDensity: 'minimal' }
+```
+
+| Value | Behavior |
+|-------|----------|
+| `'full'` | All sections visible, generous spacing (default) |
+| `'compact'` | Descriptions truncated, secondary metadata hidden |
+| `'minimal'` | Title and primary metadata only |
+
+Resolution order: author attribute > rendering context > config default > `'full'`. The engine automatically applies `compact` inside Grid/Bento/Gallery and `minimal` inside backlog/decision-log contexts.
+
+See [Dimensions](/docs/themes/dimensions#density) for the full CSS patterns and density interactions.
+
+### sections
+
+Maps structural ref names (`data-name` values) to standard section roles. The engine emits `data-section` on matching elements, enabling generic layout styling.
+
+```typescript
+Budget: {
+  block: 'budget',
+  sections: { header: 'header', title: 'title', footer: 'footer' },
+}
+```
+
+Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`, `'footer'`, `'media'`.
+
+See [Dimensions](/docs/themes/dimensions#sections) for role descriptions and CSS.
+
+### mediaSlots
+
+Maps ref names to media treatment types. The engine emits `data-media` on matching elements.
+
+```typescript
+Figure: { block: 'figure', mediaSlots: { media: 'cover' } }
+```
+
+Available types: `'portrait'`, `'cover'`, `'thumbnail'`, `'hero'`, `'icon'`.
+
+See [Dimensions](/docs/themes/dimensions#media-slots) for treatment descriptions and CSS.
+
+### checklist
+
+When `true`, the engine scans `<li>` text for checkbox markers (`[x]`, `[ ]`, `[>]`, `[-]`), strips the marker, and emits `data-checked` on the element.
+
+```typescript
+Work: { block: 'work', checklist: true }
+```
+
+See [Dimensions](/docs/themes/dimensions#checklist) for marker values and CSS.
+
+### sequence
+
+Ordered list style. The engine emits `data-sequence` on `<ol>` elements within the rune.
+
+```typescript
+Steps: { block: 'steps', sequence: 'connected' }
+```
+
+| Value | Visual treatment |
+|-------|-----------------|
+| `'numbered'` | Counter circles |
+| `'connected'` | Vertical line with dots |
+| `'plain'` | No visual indicators |
+
+Use `sequenceDirection` to control orientation:
+
+```typescript
+Timeline: {
+  block: 'timeline',
+  sequence: 'connected',
+  sequenceDirection: { fromModifier: 'direction', default: 'vertical' },
+}
+```
+
+See [Dimensions](/docs/themes/dimensions#sequence) for CSS patterns.
+
 ### postTransform
 
 A programmatic escape hatch that runs after all declarative processing. Receives the fully transformed node and resolved modifier values.
@@ -240,6 +323,15 @@ interface StructureEntry {
   transform?: 'duration' | 'uppercase' | 'capitalize';
   textPrefix?: string;        // Prepend to metaText value
   textSuffix?: string;        // Append to metaText value
+
+  // Labels
+  label?: string;             // Emits <span data-meta-label>Label</span> child
+  labelHidden?: boolean;      // Label visually hidden but accessible (sr-only)
+
+  // Metadata dimensions (see Dimensions page)
+  metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+  metaRank?: 'primary' | 'secondary';
+  sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
 
   // Attributes
   attrs?: Record<string, string | { fromModifier: string }>;
@@ -336,6 +428,44 @@ Built-in transforms applied to `metaText` values:
 // With prepTime="PT45M": "Prep: 45m"
 ```
 
+### Labels
+
+The `label` field emits a separate `<span data-meta-label>` child element before the value text. This enables independent styling — themes can make labels thin and muted, or hide them entirely.
+
+```typescript
+{ tag: 'span', ref: 'meta-item', metaText: 'prepTime',
+  label: 'Prep:', metaType: 'temporal', metaRank: 'primary' }
+```
+
+Set `labelHidden: true` to make the label visually hidden but accessible to screen readers (sr-only pattern). Use this for values that are self-explanatory, like ID badges.
+
+### Metadata dimensions
+
+Three fields enable generic cross-rune badge styling. When present, the engine emits `data-meta-*` attributes on the generated element. Themes style these attributes generically instead of writing per-rune badge CSS.
+
+| Field | Attribute emitted | Description |
+|-------|-------------------|-------------|
+| `metaType` | `data-meta-type` | Visual shape — `'status'`, `'category'`, `'quantity'`, `'temporal'`, `'tag'`, `'id'` |
+| `metaRank` | `data-meta-rank` | Prominence — `'primary'` (full size) or `'secondary'` (smaller, faded) |
+| `sentimentMap` | `data-meta-sentiment` | Maps modifier values to colors — `'positive'`, `'negative'`, `'caution'`, `'neutral'` |
+
+```typescript
+{ tag: 'span', ref: 'badge', metaText: 'difficulty',
+  metaType: 'category', metaRank: 'primary',
+  sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } }
+```
+
+When `difficulty="easy"`, the engine emits:
+
+```html
+<span data-meta-type="category" data-meta-rank="primary"
+      data-meta-sentiment="positive" data-difficulty="easy">
+  easy
+</span>
+```
+
+See [Universal Theming Dimensions](/docs/themes/dimensions) for the full CSS system.
+
 ## mergeThemeConfig
 
 Combines the base config with theme-specific overrides.
@@ -415,12 +545,14 @@ Hint: {
 
 ### Complex rune: Recipe
 
-Multiple modifiers, conditional structure, content wrapper, text transforms.
+Multiple modifiers, conditional structure, content wrapper, text transforms, and metadata dimensions.
 
 ```typescript
 Recipe: {
   block: 'recipe',
   contentWrapper: { tag: 'div', ref: 'content' },
+  defaultDensity: 'full',
+  sections: { meta: 'header', title: 'title', content: 'body' },
   modifiers: {
     prepTime: { source: 'meta' },
     cookTime: { source: 'meta' },
@@ -433,15 +565,22 @@ Recipe: {
       conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
       children: [
         { tag: 'span', ref: 'meta-item', metaText: 'prepTime',
-          transform: 'duration', textPrefix: 'Prep: ', condition: 'prepTime' },
+          transform: 'duration', label: 'Prep:', condition: 'prepTime',
+          metaType: 'temporal', metaRank: 'primary' },
         { tag: 'span', ref: 'meta-item', metaText: 'cookTime',
-          transform: 'duration', textPrefix: 'Cook: ', condition: 'cookTime' },
+          transform: 'duration', label: 'Cook:', condition: 'cookTime',
+          metaType: 'temporal', metaRank: 'primary' },
         { tag: 'span', ref: 'meta-item', metaText: 'servings',
-          textPrefix: 'Serves: ', condition: 'servings' },
+          label: 'Serves:', condition: 'servings',
+          metaType: 'quantity', metaRank: 'primary' },
         { tag: 'span', ref: 'badge', metaText: 'difficulty',
-          condition: 'difficulty' },
+          condition: 'difficulty',
+          metaType: 'category', metaRank: 'primary',
+          sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
       ],
     },
   },
 }
 ```
+
+The `metaType`, `metaRank`, and `sentimentMap` fields enable generic badge styling — no rune-specific CSS needed for these badges. The `sections` map and `defaultDensity` enable generic layout and density-responsive behavior. See [Dimensions](/docs/themes/dimensions) for the full system.

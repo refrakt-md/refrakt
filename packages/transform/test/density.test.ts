@@ -60,7 +60,7 @@ describe('density dimension', () => {
 
 	it('context inside Grid parent sets density to compact', () => {
 		const config = baseConfig({
-			Grid: { block: 'grid' },
+			Grid: { block: 'grid', childDensity: 'compact' },
 			Hint: { block: 'hint', defaultDensity: 'full' },
 		});
 		const transform = createTransform(config);
@@ -80,7 +80,7 @@ describe('density dimension', () => {
 
 	it('context inside Backlog parent sets density to minimal', () => {
 		const config = baseConfig({
-			Backlog: { block: 'backlog' },
+			Backlog: { block: 'backlog', childDensity: 'minimal' },
 			Work: { block: 'work', defaultDensity: 'full' },
 		});
 		const transform = createTransform(config);
@@ -98,7 +98,7 @@ describe('density dimension', () => {
 
 	it('author override takes precedence over context', () => {
 		const config = baseConfig({
-			Grid: { block: 'grid' },
+			Grid: { block: 'grid', childDensity: 'compact' },
 			Hint: { block: 'hint', defaultDensity: 'full' },
 		});
 		const transform = createTransform(config);
@@ -130,5 +130,56 @@ describe('density dimension', () => {
 			(c: any) => c?.attributes?.['data-rune'] === 'hint'
 		) as SerializedTag;
 		expect(nestedHint.attributes['data-density']).toBe('compact');
+	});
+
+	it('childDensity on parent config sets density on child runes', () => {
+		const config = baseConfig({
+			Dashboard: { block: 'dashboard', childDensity: 'compact' },
+			Card: { block: 'card', defaultDensity: 'full' },
+		});
+		const transform = createTransform(config);
+
+		const card = makeTag('section', { 'data-rune': 'card' }, []);
+		const dashboard = makeTag('div', { 'data-rune': 'dashboard' }, [card]);
+
+		const result = asTag(transform(dashboard));
+		const nestedCard = result.children.find(
+			(c: any) => c?.attributes?.['data-rune'] === 'card'
+		) as SerializedTag;
+		expect(nestedCard.attributes['data-density']).toBe('compact');
+	});
+
+	it('childDensity: minimal works for community package runes', () => {
+		const config = baseConfig({
+			TaskList: { block: 'task-list', childDensity: 'minimal' },
+			Task: { block: 'task', defaultDensity: 'full' },
+		});
+		const transform = createTransform(config);
+
+		const task = makeTag('section', { 'data-rune': 'task' }, []);
+		const list = makeTag('div', { 'data-rune': 'task-list' }, [task]);
+
+		const result = asTag(transform(list));
+		const nestedTask = result.children.find(
+			(c: any) => c?.attributes?.['data-rune'] === 'task'
+		) as SerializedTag;
+		expect(nestedTask.attributes['data-density']).toBe('minimal');
+	});
+
+	it('parent without childDensity does not affect child density', () => {
+		const config = baseConfig({
+			Wrapper: { block: 'wrapper' },
+			Item: { block: 'item', defaultDensity: 'full' },
+		});
+		const transform = createTransform(config);
+
+		const item = makeTag('section', { 'data-rune': 'item' }, []);
+		const wrapper = makeTag('div', { 'data-rune': 'wrapper' }, [item]);
+
+		const result = asTag(transform(wrapper));
+		const nestedItem = result.children.find(
+			(c: any) => c?.attributes?.['data-rune'] === 'item'
+		) as SerializedTag;
+		expect(nestedItem.attributes['data-density']).toBe('full');
 	});
 });

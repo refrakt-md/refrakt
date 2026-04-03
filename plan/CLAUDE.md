@@ -2,6 +2,12 @@
 
 This directory contains project planning content using the `@refrakt-md/plan` runes package. All files are Markdoc (`.md` with `{% %}` tags).
 
+## Code Fences with Markdoc Tags
+
+Markdoc parses `{% %}` tag syntax inside code fences. When a code fence contains an **unpaired** tag (e.g. `{% spec id="X" %}` without a matching `{% /spec %}`), the parser steals a closing tag from the outer document, breaking the page structure and causing truncation.
+
+The content pipeline escapes tags inside fences automatically (`escapeFenceTags` in `@refrakt-md/runes`), so authors don't need to worry about this. But if you encounter truncation on the plan site, check for `{% %}` tags inside code fences as a first step.
+
 ## Directory Layout
 
 ```
@@ -22,9 +28,9 @@ Each rune type uses a unique prefix with zero-padded 3-digit numbers (except mil
 | Work | `WORK-` | `WORK-051` |
 | Decision | `ADR-` | `ADR-005` |
 | Bug | `BUG-` | `BUG-001` |
-| Milestone | `v`+semver | `v0.9.0` |
+| Milestone | `v`+semver | `v1.0.0` |
 
-**IDs are auto-assigned.** When you omit `--id` from `refrakt plan create`, the CLI scans existing files and assigns the next available ID. Duplicate IDs are rejected at create time.
+**IDs are auto-assigned.** When you omit `--id` from `npx refrakt plan create`, the CLI scans existing files and assigns the next available ID. Duplicate IDs are rejected at create time.
 
 ```bash
 # See the next available ID for a type
@@ -191,10 +197,10 @@ Optional notes or context.
 
 ```bash
 # 1. Find the next ready work item (considers priority and dependencies)
-refrakt plan next
+npx refrakt plan next
 
 # 2. Start working on it
-refrakt plan update WORK-XXX --status in-progress
+npx refrakt plan update WORK-XXX --status in-progress
 ```
 
 3. Before implementing, read referenced specs and decisions (check tags and ID references in the file). Ensure dependency work items are `done`.
@@ -203,13 +209,28 @@ refrakt plan update WORK-XXX --status in-progress
 
 ```bash
 # 5. Check off acceptance criteria as you complete each one
-refrakt plan update WORK-XXX --check "criterion text"
+npx refrakt plan update WORK-XXX --check "criterion text"
 
-# 6. When all criteria pass, mark it done
-refrakt plan update WORK-XXX --status done
+# 6. When all criteria pass, mark it done with a --resolve summary
+npx refrakt plan update WORK-XXX --status done --resolve "$(cat <<'EOF'
+Branch: `claude/branch-name`
+
+### What was done
+- Concrete list of changes
+
+### Notes
+- Implementation decisions or tradeoffs
+EOF
+)"
 ```
 
 Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
+
+**IMPORTANT: When finishing a work item, you MUST:**
+1. Check off EVERY satisfied acceptance criterion with `npx refrakt plan update <id> --check "exact criterion text"` — do not skip any
+2. Always include `--resolve` with a summary when marking done — this is the project's historical record
+3. Never manually edit work item `.md` files — always use the CLI
+4. Commit the updated work item file with your implementation changes
 
 ### Creating a work item from a spec
 
@@ -218,13 +239,13 @@ Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--unche
 
 ```bash
 # 3. Scaffold one work item per piece (ID auto-assigned)
-refrakt plan create work --title "Description" --priority high
+npx refrakt plan create work --title "Description" --priority high
 
 # Other types work the same way
-refrakt plan create bug --title "Description"
-refrakt plan create decision --title "Description"
-refrakt plan create spec --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"  # milestones require explicit ID
+npx refrakt plan create bug --title "Description"
+npx refrakt plan create decision --title "Description"
+npx refrakt plan create spec --title "Description"
+npx refrakt plan create milestone --id v1.0 --title "Description"  # milestones require explicit ID
 ```
 
 4. Reference the spec ID in the work item's References section
@@ -236,7 +257,7 @@ refrakt plan create milestone --id v1.0 --title "Description"  # milestones requ
 If you encounter a non-obvious design choice:
 
 ```bash
-refrakt plan create decision --title "Decision title"
+npx refrakt plan create decision --title "Decision title"
 ```
 
 1. Document the context, options, and your recommendation in the generated file
@@ -246,7 +267,7 @@ refrakt plan create decision --title "Decision title"
 ### Initializing plan structure in a new project
 
 ```bash
-refrakt plan init
+npx refrakt plan init
 ```
 
 Creates `plan/work/`, `plan/spec/`, `plan/decision/` with example files and updates `CLAUDE.md` with workflow instructions.

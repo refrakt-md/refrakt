@@ -160,7 +160,7 @@ function runSingleAudit(
 		throw new Error('No CSS directory found. Use --css <dir> to specify the path to rune CSS files.');
 	}
 
-	const runeTypeof = rune.type?.name;
+	const runeTypeof = rune.typeName;
 	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 	if (!runeConfig) {
 		throw new Error(`No engine config found for rune "${rune.name}". It may be a component-only rune without identity transform config.`);
@@ -219,7 +219,7 @@ function runFullAudit(
 
 	// Iterate over all runes that have engine config
 	for (const rune of Object.values(runes)) {
-		const runeTypeof = rune.type?.name;
+		const runeTypeof = rune.typeName;
 		const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 		if (!runeConfig) continue; // Skip runes without identity transform config
 
@@ -278,7 +278,7 @@ function inspectSingle(
 	const { tree, source } = runPipeline(rune, config, flags, deps);
 	const html = deps.renderToHtml(tree, { pretty: true });
 	const selectors = deps.extractSelectors(tree, config.prefix);
-	const runeTypeof = rune.type?.name;
+	const runeTypeof = rune.typeName;
 	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 
 	return buildJsonOutput({
@@ -301,7 +301,7 @@ function outputFormatted(
 	const { tree, source } = runPipeline(rune, config, flags, deps);
 	const html = deps.renderToHtml(tree, { pretty: true });
 	const selectors = deps.extractSelectors(tree, config.prefix);
-	const runeTypeof = rune.type?.name;
+	const runeTypeof = rune.typeName;
 
 	console.log(heading('Input'));
 	console.log(formatInput(source));

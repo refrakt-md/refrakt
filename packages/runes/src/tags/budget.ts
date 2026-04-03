@@ -1,9 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
-import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 // ─── Amount parsing ───
@@ -60,18 +59,20 @@ function parseEstimate(heading: Node): { label: string; estimate: boolean } {
 
 // ─── BudgetLineItem ───
 
-class BudgetLineItemModel extends Model {
-	@attribute({ type: String, required: false })
-	description: string = '';
+export const budgetLineItem = createContentModelSchema({
+	attributes: {
+		description: { type: String, required: false, description: 'Line item description' },
+		amount: { type: String, required: false, description: 'Line item amount' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [],
+	},
+	transform(resolved, attrs) {
+		const descTag = new Tag('span', {}, [attrs.description ?? '']);
+		const amountTag = new Tag('span', {}, [attrs.amount ?? '']);
 
-	@attribute({ type: String, required: false })
-	amount: string = '';
-
-	transform(): RenderableTreeNodes {
-		const descTag = new Tag('span', {}, [this.description]);
-		const amountTag = new Tag('span', {}, [this.amount]);
-
-		return createComponentRenderable(schema.BudgetLineItem, {
+		return createComponentRenderable({ rune: 'budget-line-item',
 			tag: 'li',
 			properties: {
 				description: descTag,
@@ -79,70 +80,84 @@ class BudgetLineItemModel extends Model {
 			},
 			children: [descTag, amountTag],
 		});
-	}
-}
+	},
+});
 
 // ─── BudgetCategory ───
-// BudgetCategory still uses createSchema because it has its own processChildren
-// with subtotal computation that needs access to `this._subtotal` during transform.
 
-class BudgetCategoryModel extends Model {
-	@attribute({ type: String, required: true })
-	label: string = '';
+// Convert list items into budget-line-item tags and compute subtotal
+function convertCategoryChildren(nodes: unknown[]): unknown[] {
+	const converted: Node[] = [];
 
-	@attribute({ type: Boolean, required: false })
-	estimate: boolean = false;
-
-	private _subtotal: number = 0;
-
-	processChildren(nodes: Node[]) {
-		const converted: Node[] = [];
-		this._subtotal = 0;
-
-		for (const node of nodes) {
-			if (node.type === 'list') {
-				for (const item of node.children) {
-					const textParts: string[] = [];
-					for (const child of item.walk()) {
-						if (child.type === 'text' && child.attributes.content) {
-							textParts.push(child.attributes.content);
-						}
-					}
-					const text = textParts.join(' ').trim();
-					const match = text.match(DESCRIPTION_AMOUNT_PATTERN);
-
-					if (match) {
-						const amount = match[2].trim();
-						this._subtotal += parseAmount(amount);
-						converted.push(new Ast.Node('tag', {
-							description: match[1].trim(),
-							amount,
-						}, [], 'budget-line-item'));
-					} else {
-						converted.push(new Ast.Node('tag', {
-							description: text,
-							amount: '',
-						}, [], 'budget-line-item'));
+	for (const node of nodes as Node[]) {
+		if (node.type === 'list') {
+			for (const item of node.children) {
+				const textParts: string[] = [];
+				for (const child of item.walk()) {
+					if (child.type === 'text' && child.attributes.content) {
+						textParts.push(child.attributes.content);
 					}
 				}
-			} else {
-				converted.push(node);
-			}
-		}
+				const text = textParts.join(' ').trim();
+				const match = text.match(DESCRIPTION_AMOUNT_PATTERN);
 
-		return super.processChildren(converted);
+				if (match) {
+					converted.push(new Ast.Node('tag', {
+						description: match[1].trim(),
+						amount: match[2].trim(),
+					}, [], 'budget-line-item'));
+				} else {
+					converted.push(new Ast.Node('tag', {
+						description: text,
+						amount: '',
+					}, [], 'budget-line-item'));
+				}
+			}
+		} else {
+			converted.push(node);
+		}
 	}
 
-	transform(): RenderableTreeNodes {
-		const body = this.transformChildren();
-		const labelTag = new Tag('meta', { content: this.label });
-		const estimateMeta = new Tag('meta', { content: String(this.estimate) });
-		const subtotalTag = new Tag('meta', { content: String(this._subtotal) });
+	return converted;
+}
+
+/** Compute subtotal from budget-line-item tag nodes. */
+function computeSubtotal(nodes: Node[]): number {
+	let subtotal = 0;
+	for (const node of nodes) {
+		if (node.type === 'tag' && node.tag === 'budget-line-item' && node.attributes.amount) {
+			subtotal += parseAmount(node.attributes.amount);
+		}
+	}
+	return subtotal;
+}
+
+export const budgetCategory = createContentModelSchema({
+	attributes: {
+		label: { type: String, required: true },
+		estimate: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: convertCategoryChildren,
+		description: 'Converts list items into budget-line-item tags with "Description: $Amount" pattern.',
+	},
+	transform(resolved, attrs, config) {
+		// Compute subtotal from the raw children before transforming
+		const allChildren = asNodes(resolved.children);
+		const subtotal = computeSubtotal(allChildren);
+
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(allChildren, config) as RenderableTreeNode[],
+		);
+		const labelTag = new Tag('meta', { content: attrs.label ?? '' });
+		const estimateMeta = new Tag('meta', { content: String(attrs.estimate ?? false) });
+		const subtotalTag = new Tag('meta', { content: String(subtotal) });
 
 		const items = body.tag('li').typeof('BudgetLineItem');
 		const itemsList = new Tag('ul', {}, items.toArray());
 
-		return createComponentRenderable(schema.BudgetCategory, {
+		return createComponentRenderable({ rune: 'budget-category',
 			tag: 'div',
 			properties: {
 				label: labelTag,
@@ -155,8 +170,8 @@ class BudgetCategoryModel extends Model {
 			},
 			children: [labelTag, estimateMeta, subtotalTag, itemsList],
 		});
-	}
-}
+	},
+});
 
 // ─── Budget (parent) ───
 
@@ -178,9 +193,6 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	converted.splice(n, 1, ...tags);
 	return converted;
 }
-
-export const budgetLineItem = createSchema(BudgetLineItemModel);
-export const budgetCategory = createSchema(BudgetCategoryModel);
 
 export const budget = createContentModelSchema({
 	attributes: {
@@ -239,7 +251,7 @@ export const budget = createContentModelSchema({
 		}
 		children.push(categoriesDiv);
 
-		return createComponentRenderable(schema.Budget, {
+		return createComponentRenderable({ rune: 'budget', schemaOrgType: 'ItemList',
 			tag: 'section',
 			properties: {
 				title: titleMeta,

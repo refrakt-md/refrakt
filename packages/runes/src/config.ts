@@ -4,7 +4,6 @@ import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedD
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
-import { schema } from './registry.js';
 import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 import { NAV_AUTO_SENTINEL } from './tags/nav.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
@@ -95,6 +94,7 @@ export const coreConfig: ThemeConfig = {
 		Grid: {
 			block: 'grid',
 			defaultDensity: 'full',
+			childDensity: 'compact',
 			modifiers: {
 				mode: { source: 'meta', default: 'columns' },
 				collapse: { source: 'meta', noBemClass: true },
@@ -346,6 +346,7 @@ export const coreConfig: ThemeConfig = {
 		Gallery: {
 			block: 'gallery',
 			defaultDensity: 'full',
+			childDensity: 'compact',
 			modifiers: {
 				layout: { source: 'meta', default: 'grid' },
 				lightbox: { source: 'meta', default: 'true', noBemClass: true },
@@ -595,6 +596,7 @@ export const coreConfig: ThemeConfig = {
 		Showcase: {
 			block: 'showcase',
 			defaultDensity: 'compact',
+			childDensity: 'compact',
 			sections: { viewport: 'body' },
 			modifiers: {
 				shadow: { source: 'meta', default: 'none' },
@@ -925,7 +927,7 @@ function buildAutoBreadcrumb(
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
 
 		listItems.push(
-			createComponentRenderable(schema.BreadcrumbItem, {
+			createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
 				tag: 'li',
 				properties: { name: nameSpan, url: urlLink },
 				children: [nameSpan, urlLink],
@@ -938,7 +940,7 @@ function buildAutoBreadcrumb(
 	const currentTitle = currentPage?.title ?? pageUrl;
 	const currentSpan = new Tag('span', {}, [currentTitle]);
 	listItems.push(
-		createComponentRenderable(schema.BreadcrumbItem, {
+		createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
 			tag: 'li',
 			properties: { name: currentSpan },
 			children: [currentSpan],
@@ -948,7 +950,7 @@ function buildAutoBreadcrumb(
 	const newSeparatorMeta = new Tag('meta', { content: separator });
 	const itemsList = new Tag('ol', {}, listItems);
 
-	return createComponentRenderable(schema.Breadcrumb, {
+	return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
 		tag: 'nav',
 		properties: { separator: newSeparatorMeta },
 		refs: { items: itemsList },
@@ -1014,7 +1016,7 @@ function buildAutoNav(
 		const titleSpan = new Tag('span', { 'data-field': 'slug' }, [child.title]);
 		const link = new Tag('a', { href: child.url }, [titleSpan]);
 
-		return createComponentRenderable(schema.NavItem, {
+		return createComponentRenderable({ rune: 'nav-item',
 			tag: 'li',
 			properties: { slug: titleSpan },
 			children: [link],
@@ -1023,7 +1025,7 @@ function buildAutoNav(
 
 	const itemsList = new Tag('ul', {}, listItems);
 
-	return createComponentRenderable(schema.Nav, {
+	return createComponentRenderable({ rune: 'nav',
 		tag: 'nav',
 		properties: {
 			group: [],

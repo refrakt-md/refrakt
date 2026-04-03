@@ -1,25 +1,30 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 
 // Parse "v2.1.0 - 2024-01-15" or "0.1.0 — January 2024"
 const VERSION_DATE_PATTERN = /^v?([\d.]+(?:-[\w.]+)?)\s*[-–—]\s*(.+)$/;
 
-class ChangelogReleaseModel extends Model {
-	@attribute({ type: String, required: false })
-	version: string = '';
+export const changelogRelease = createContentModelSchema({
+	attributes: {
+		version: { type: String, required: false },
+		date: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const versionTag = new Tag('h3', {}, [attrs.version ?? '']);
+		const dateTag = new Tag('time', {}, [attrs.date ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	@attribute({ type: String, required: false })
-	date: string = '';
-
-	transform(): RenderableTreeNodes {
-		const versionTag = new Tag('h3', {}, [this.version]);
-		const dateTag = new Tag('time', {}, [this.date]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.ChangelogRelease, {
+		return createComponentRenderable({ rune: 'changelog-release',
 			tag: 'section',
 			properties: {
 				date: dateTag,
@@ -30,10 +35,8 @@ class ChangelogReleaseModel extends Model {
 			},
 			children: [versionTag, dateTag, body.next()],
 		});
-	}
-}
-
-export const changelogRelease = createSchema(ChangelogReleaseModel);
+	},
+});
 
 export const changelog = createContentModelSchema({
 	attributes: {
@@ -88,7 +91,7 @@ export const changelog = createContentModelSchema({
 		}
 		children.push(releasesDiv);
 
-		return createComponentRenderable(schema.Changelog, {
+		return createComponentRenderable({ rune: 'changelog',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

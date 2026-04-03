@@ -127,6 +127,44 @@ This is the preferred pattern because the data attribute is set on the **root** 
 Data attributes follow kebab-case naming. A modifier named `hintType` in the config becomes `data-hint-type` in the HTML. The engine handles the conversion automatically.
 {% /hint %}
 
+## Dimension styling
+
+Beyond per-rune data attributes, the identity transform emits **universal dimension attributes** that enable generic cross-rune styling. Instead of writing separate CSS for every rune's badges, sections, and containers, you write dimension rules once and they apply everywhere.
+
+Ten dimensions cover metadata badges, structural anatomy, density, media treatment, interactivity, and more:
+
+```css
+/* Metadata: style every status badge across every rune */
+[data-meta-type="status"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5em 1.0em;
+  border: 1px solid var(--rf-color-border);
+  border-radius: 999px;
+}
+
+/* Sentiment: color badges by meaning */
+[data-meta-sentiment="positive"] { --meta-color: var(--rf-color-success); }
+[data-meta-sentiment="negative"] { --meta-color: var(--rf-color-danger); }
+
+/* Sections: consistent anatomy across all runes */
+[data-section="header"] { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+[data-section="title"]  { font-size: 1.5rem; font-weight: 700; }
+[data-section="footer"] { border-top: 1px solid var(--rf-color-border); }
+
+/* Density: responsive detail levels */
+[data-density="compact"] [data-section="description"] {
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+[data-density="minimal"] [data-section="body"] { display: none; }
+```
+
+Lumina's dimension CSS lives in `styles/dimensions/` (8 files, ~54 rules total). These handle the generic baseline for all runes — per-rune CSS files only need to cover rune-specific styling that dimensions don't handle.
+
+See [Universal Theming Dimensions](/docs/themes/dimensions) for the full system, all ten dimensions, and complete CSS patterns.
+
 ## Context-aware styling
 
 Context modifiers enable runes to adapt their appearance when nested inside other runes. The modifier class is added to the root element, so all CSS can be scoped under it:
@@ -346,9 +384,27 @@ The config `styles: { columns: '--sb-columns' }` tells the engine to set `style=
 
 ## File organization
 
+### Dimension CSS
+
+Generic cross-rune rules live in a `dimensions/` directory, separate from per-rune files:
+
+```
+styles/dimensions/
+├── metadata.css       # [data-meta-type], [data-meta-sentiment], [data-meta-rank]
+├── density.css        # [data-density]
+├── sections.css       # [data-section]
+├── state.css          # [data-state]
+├── media.css          # [data-media]
+├── surfaces.css       # Surface type groupings (card, inline, banner, inset)
+├── checklist.css      # [data-checked]
+└── sequence.css       # [data-sequence]
+```
+
+These files are imported before per-rune CSS, providing the generic baseline that all runes share.
+
 ### One file per rune block
 
-Each BEM block gets its own CSS file:
+Each BEM block gets its own CSS file for rune-specific styling:
 
 ```
 styles/runes/
@@ -399,9 +455,19 @@ A single `index.css` imports all token and rune CSS files:
 @import './tokens/base.css';
 @import './tokens/dark.css';
 @import './styles/global.css';
+/* Dimension CSS — generic cross-rune rules */
+@import './styles/dimensions/metadata.css';
+@import './styles/dimensions/density.css';
+@import './styles/dimensions/sections.css';
+@import './styles/dimensions/state.css';
+@import './styles/dimensions/media.css';
+@import './styles/dimensions/surfaces.css';
+@import './styles/dimensions/checklist.css';
+@import './styles/dimensions/sequence.css';
+/* Per-rune CSS — rune-specific overrides */
 @import './styles/runes/hint.css';
 @import './styles/runes/recipe.css';
 /* ... all rune CSS files */
 ```
 
-This is the theme's main CSS entry point, consumed by site builds.
+This is the theme's main CSS entry point, consumed by site builds. Dimension CSS comes before per-rune CSS so that rune-specific rules can override the generic baseline when needed.

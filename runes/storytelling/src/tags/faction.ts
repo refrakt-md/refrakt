@@ -1,26 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import { extractScene, buildStoryContent } from './common.js';
 
-class FactionSectionModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string = '';
+export const factionSection = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.FactionSection, {
+		return createComponentRenderable({ rune: 'faction-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
-	}
-}
-
-export const factionSection = createSchema(FactionSectionModel);
+	},
+});
 
 export const faction = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -53,6 +59,7 @@ export const faction = createContentModelSchema({
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
 		);
 
+		// Domain meta tags
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const factionTypeMeta = new Tag('meta', { content: attrs.type ?? '' });
 		const alignmentMeta = new Tag('meta', { content: attrs.alignment ?? '' });
@@ -60,77 +67,16 @@ export const faction = createContentModelSchema({
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
 		// Layout meta tags
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		// Extract scene image (shared helper)
+		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// Extract scene image from the first preamble paragraph
-		const sceneAstNodes = asNodes(resolved.scene);
-		const sceneRendered = new RenderableNodeCursor(
-			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
+		// Build content div with sections (shared helper)
+		const { mainContent, sections, hasSections } = buildStoryContent(
+			extraDescription, resolved.description, sectionNodes, 'FactionSection', config,
 		);
-
-		let sceneImgTag: Markdoc.Tag | undefined;
-		for (const node of sceneRendered.toArray()) {
-			if (Markdoc.Tag.isTag(node) && node.name === 'img') {
-				sceneImgTag = node;
-				break;
-			}
-			if (Markdoc.Tag.isTag(node) && node.name === 'p') {
-				const img = node.children.find(
-					(c: any) => Markdoc.Tag.isTag(c) && c.name === 'img'
-				) as Markdoc.Tag | undefined;
-				if (img) {
-					sceneImgTag = img;
-					break;
-				}
-			}
-		}
-
-		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
-		let extraDescription: RenderableTreeNode[] = [];
-
-		if (sceneImgTag) {
-			sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
-		} else if (sceneRendered.count() > 0) {
-			extraDescription = sceneRendered.toArray();
-		}
-
-		// Transform description paragraphs
-		const descAstNodes = asNodes(resolved.description);
-		const descRendered = new RenderableNodeCursor(
-			Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
-		);
-
-		const sections = sectionNodes.tag('div').typeof('FactionSection');
-		const hasSections = sections.count() > 0;
-
-		// Build content children (everything except scene)
-		const contentChildren: any[] = [];
-		const allDescNodes = [...extraDescription, ...descRendered.toArray()];
-		if (allDescNodes.length > 0) {
-			contentChildren.push(...allDescNodes);
-		}
-
-		if (hasSections) {
-			const sectionsContainer = sections.wrap('div');
-			contentChildren.push(sectionsContainer.next());
-		} else {
-			const body = sectionNodes.wrap('div');
-			if (sectionNodes.count() > 0) {
-				contentChildren.push(body.next());
-			}
-		}
-
-		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
 
 		// Build children array
 		// Scene before name so the image appears between header and title in stacked layout.
@@ -139,11 +85,7 @@ export const faction = createContentModelSchema({
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(
 			nameTag, factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta,
-			layoutMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 		);
 		children.push(mainContent.next());
 
@@ -155,7 +97,7 @@ export const faction = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable(schema.Faction, {
+		return createComponentRenderable({ rune: 'faction', schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

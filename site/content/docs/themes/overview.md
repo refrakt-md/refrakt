@@ -31,11 +31,12 @@ The identity transform is a framework-agnostic function that walks the serialize
 2. Looks up the matching `RuneConfig`
 3. Adds BEM classes (`.rf-hint`, `.rf-hint--warning`)
 4. Reads modifier values from meta tags and sets `data-*` attributes
-5. Injects structural elements (headers, icons, badges) defined in the config
-6. Wraps content children if `contentWrapper` is configured
-7. Consumes processed meta tags from the output
+5. Emits universal dimension attributes (`data-density`, `data-section`, `data-meta-type`, `data-media`, etc.) from the rune config
+6. Injects structural elements (headers, icons, badges) defined in the config
+7. Wraps content children if `contentWrapper` is configured
+8. Consumes processed meta tags from the output
 
-The result is semantic HTML with BEM classes and data attributes. Your CSS styles this output.
+The result is semantic HTML with BEM classes, data attributes, and universal dimension attributes. Your CSS styles this output — dimension attributes enable generic cross-rune rules that handle metadata badges, structural anatomy, density levels, and more without per-rune CSS.
 
 ```
 Content tree → Identity Transform (config) → BEM-classed HTML → CSS → Styled output
@@ -196,6 +197,7 @@ Your CSS targets these selectors:
 ## Next steps
 
 - [Configuration Reference](/docs/themes/configuration) — Complete reference for `ThemeConfig` and `RuneConfig`
+- [Universal Theming Dimensions](/docs/themes/dimensions) — Ten semantic dimensions for generic cross-rune styling
 - [CSS Architecture](/docs/themes/css) — BEM conventions, design tokens, variant styling patterns
 - [Creating a Theme](/docs/themes/creating-a-theme) — Step-by-step guide to building a custom theme
 - [Interactive Components](/docs/themes/components) — How interactivity works without framework components

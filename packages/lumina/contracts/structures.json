@@ -2826,6 +2826,12 @@
 					"classPattern": ".rf-preview--{value}",
 					"dataAttribute": "data-title"
 				}
+			},
+			"contextModifiers": {
+				"feature": {
+					"suffix": "in-feature",
+					"selector": ".rf-preview--in-feature"
+				}
 			}
 		},
 		"Mockup": {
@@ -2942,17 +2948,14 @@
 				},
 				"prepTime": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-prep-time"
 				},
 				"cookTime": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-cook-time"
 				},
 				"servings": {
 					"source": "meta",
-					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-servings"
 				},
 				"difficulty": {
@@ -3064,7 +3067,7 @@
 			"root": ".rf-playlist",
 			"dataRune": "playlist",
 			"childOrder": [
-				"header",
+				"meta",
 				"{content}"
 			],
 			"modifiers": {
@@ -3098,19 +3101,56 @@
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
+				},
+				"artist": {
+					"source": "meta",
+					"dataAttribute": "data-artist"
+				},
+				"hasPlayer": {
+					"source": "meta",
+					"dataAttribute": "data-has-player"
+				},
+				"id": {
+					"source": "meta",
+					"dataAttribute": "data-id"
 				}
 			},
 			"elements": {
-				"header": {
+				"meta": {
 					"tag": "div",
-					"selector": ".rf-playlist__header",
+					"selector": ".rf-playlist__meta",
 					"source": "structure"
 				},
 				"type-badge": {
 					"tag": "span",
 					"selector": ".rf-playlist__type-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "meta"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-playlist__preamble",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-playlist__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-playlist__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-playlist__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-playlist__image",
+					"source": "autoLabel"
 				},
 				"media": {
 					"tag": "media",

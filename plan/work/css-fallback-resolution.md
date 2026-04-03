@@ -1,4 +1,4 @@
-{% work id="WORK-053" status="ready" priority="medium" complexity="moderate" tags="sveltekit, packages, css" milestone="v0.9.0" %}
+{% work id="WORK-053" status="ready" priority="medium" complexity="moderate" tags="sveltekit, packages, css" milestone="v1.0.0" %}
 
 # CSS Fallback Resolution for Third-Party Packages
 

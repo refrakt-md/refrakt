@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { walkTag } from '../util.js';
 
@@ -81,7 +80,7 @@ export const chart = createContentModelSchema({
 		const tableData = extractTableData(children);
 		const dataMeta = new Tag('meta', { content: JSON.stringify(tableData) });
 
-		return createComponentRenderable(schema.Chart, {
+		return createComponentRenderable({ rune: 'chart',
 			tag: 'figure',
 			properties: {
 				type: typeMeta,

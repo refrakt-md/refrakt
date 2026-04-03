@@ -1,4 +1,4 @@
-{% work id="WORK-071" status="ready" priority="high" complexity="moderate" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-076" status="ready" priority="high" complexity="moderate" tags="plan, cli" milestone="v1.0.0" %}
 
 # Parse Resolution sections in the plan scanner
 

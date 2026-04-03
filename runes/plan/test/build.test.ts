@@ -166,6 +166,10 @@ Desc.
 		});
 
 		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
-		expect(indexHtml).toContain('rf-copy-button');
+		// Behaviors JS is included as a script tag
+		expect(indexHtml).toContain('behaviors.js');
+		// The bundled JS contains the copy behavior's class name
+		const behaviorsJs = fs.readFileSync(path.join(outDir, 'behaviors.js'), 'utf-8');
+		expect(behaviorsJs).toContain('rf-copy-btn');
 	});
 });

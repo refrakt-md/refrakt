@@ -1,26 +1,32 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, SplitLayoutModel } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import { extractScene, buildStoryContent } from './common.js';
 
-class RealmSectionModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string = '';
+export const realmSection = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.RealmSection, {
+		return createComponentRenderable({ rune: 'realm-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
-	}
-}
-
-export const realmSection = createSchema(RealmSectionModel);
+	},
+});
 
 export const realm = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -53,86 +59,24 @@ export const realm = createContentModelSchema({
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
 		);
 
+		// Domain meta tags
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const realmTypeMeta = new Tag('meta', { content: attrs.type ?? 'place' });
 		const scaleMeta = new Tag('meta', { content: attrs.scale ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
-		// Layout meta tags (following recipe pattern)
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
+		// Layout meta tags
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
 
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		// Extract scene image (shared helper)
+		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// Extract scene image from the first preamble paragraph (if it contains an image)
-		const sceneAstNodes = asNodes(resolved.scene);
-		const sceneRendered = new RenderableNodeCursor(
-			Markdoc.transform(sceneAstNodes, config) as RenderableTreeNode[],
+		// Build content div with sections (shared helper)
+		const { mainContent, sections, hasSections } = buildStoryContent(
+			extraDescription, resolved.description, sectionNodes, 'RealmSection', config,
 		);
-
-		// The image is wrapped in a <p> by Markdoc — look inside paragraph children for <img>
-		let sceneImgTag: Markdoc.Tag | undefined;
-		for (const node of sceneRendered.toArray()) {
-			if (Markdoc.Tag.isTag(node) && node.name === 'img') {
-				sceneImgTag = node;
-				break;
-			}
-			if (Markdoc.Tag.isTag(node) && node.name === 'p') {
-				const img = node.children.find(
-					(c: any) => Markdoc.Tag.isTag(c) && c.name === 'img'
-				) as Markdoc.Tag | undefined;
-				if (img) {
-					sceneImgTag = img;
-					break;
-				}
-			}
-		}
-
-		let sceneDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
-		let extraDescription: RenderableTreeNode[] = [];
-
-		if (sceneImgTag) {
-			sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
-		} else if (sceneRendered.count() > 0) {
-			// First paragraph was text, not an image — include as description
-			extraDescription = sceneRendered.toArray();
-		}
-
-		// Transform description paragraphs
-		const descAstNodes = asNodes(resolved.description);
-		const descRendered = new RenderableNodeCursor(
-			Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
-		);
-
-		const sections = sectionNodes.tag('div').typeof('RealmSection');
-		const hasSections = sections.count() > 0;
-
-		// Build content children (everything except scene)
-		const contentChildren: any[] = [];
-		const allDescNodes = [...extraDescription, ...descRendered.toArray()];
-		if (allDescNodes.length > 0) {
-			contentChildren.push(...allDescNodes);
-		}
-
-		if (hasSections) {
-			const sectionsContainer = sections.wrap('div');
-			contentChildren.push(sectionsContainer.next());
-		} else {
-			const body = sectionNodes.wrap('div');
-			if (sectionNodes.count() > 0) {
-				contentChildren.push(body.next());
-			}
-		}
-
-		const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
 
 		// Build children array
 		// Scene before name so the image appears between header and title in stacked layout.
@@ -141,11 +85,7 @@ export const realm = createContentModelSchema({
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(
 			nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
-			layoutMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 		);
 		children.push(mainContent.next());
 
@@ -158,7 +98,7 @@ export const realm = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable(schema.Realm, {
+		return createComponentRenderable({ rune: 'realm', schemaOrgType: 'Place',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

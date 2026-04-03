@@ -1,4 +1,5 @@
 import type { RunePackage } from '@refrakt-md/types';
+import { tabsBehavior } from '@refrakt-md/behaviors';
 import { spec } from './tags/spec.js';
 import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
@@ -14,7 +15,7 @@ import { planPipelineHooks } from './pipeline.js';
 export const plan: RunePackage = {
 	name: 'plan',
 	displayName: 'Plan',
-	version: '0.8.4',
+	version: '0.9.0',
 	runes: {
 		'spec': {
 			transform: spec,
@@ -133,6 +134,9 @@ Custom properties cascade naturally without JavaScript.
 	},
 	theme: {
 		runes: config as unknown as Record<string, Record<string, unknown>>,
+	},
+	behaviors: {
+		'milestone-backlog': tabsBehavior,
 	},
 	pipeline: planPipelineHooks,
 };

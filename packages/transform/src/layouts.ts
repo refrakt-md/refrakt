@@ -272,6 +272,7 @@ export const docsLayout: LayoutConfig = {
 
 export const planLayout: LayoutConfig = {
 	block: 'plan',
+	behaviors: ['mobile-menu'],
 	computed: {
 		toc: {
 			type: 'toc',
@@ -282,7 +283,60 @@ export const planLayout: LayoutConfig = {
 			},
 		},
 	},
+	chrome: {
+		closeButton,
+		hamburger: {
+			tag: 'button',
+			ref: 'toolbar-hamburger',
+			attrs: {
+				class: 'rf-plan-toolbar__hamburger',
+				'aria-label': 'Toggle navigation',
+				'data-mobile-nav-toggle': '',
+			},
+			svg: HAMBURGER_SVG,
+		},
+	},
 	slots: {
+		toolbar: {
+			tag: 'div',
+			class: 'rf-plan-toolbar',
+			conditionalRegion: 'nav',
+			children: [
+				'chrome:hamburger',
+				{
+					tag: 'span',
+					ref: 'toolbar-title',
+					attrs: { class: 'rf-plan-toolbar__title' },
+					children: ['Plan'],
+				} as LayoutStructureEntry,
+			],
+		},
+		mobileNavPanel: {
+			tag: 'div',
+			class: 'rf-mobile-panel rf-mobile-panel--nav',
+			conditionalRegion: 'nav',
+			attrs: { role: 'dialog', 'aria-label': 'Plan navigation' },
+			children: [
+				{
+					tag: 'div',
+					class: 'rf-mobile-panel__header',
+					children: [
+						{
+							tag: 'span',
+							ref: 'mobile-panel-title',
+							attrs: { class: 'rf-mobile-panel__title' },
+							children: ['Plan'],
+						} as LayoutStructureEntry,
+						'chrome:closeButton',
+					],
+				},
+				{
+					tag: 'div',
+					class: 'rf-mobile-panel__body',
+					source: 'region:nav',
+				},
+			],
+		},
 		sidebar: {
 			tag: 'nav',
 			class: 'rf-plan-sidebar',

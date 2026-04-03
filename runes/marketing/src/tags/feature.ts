@@ -2,53 +2,90 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { attribute, group, Model, createContentModelSchema, createComponentRenderable, createSchema, asNodes, NodeStream, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
 
-export class DefinitionModel extends Model {
-  @group({ include: [{ node: 'paragraph', descendant: 'image' }, { node: 'paragraph', descendantTag: 'icon' }, { node: 'paragraph', descendant: 'strong' }, 'heading'] })
-  term: NodeStream;
+/** Check if a paragraph node contains an image, icon tag, or strong element. */
+function isTermParagraph(node: Node): boolean {
+  for (const child of node.walk()) {
+    if (child.type === 'image') return true;
+    if (child.type === 'tag' && child.tag === 'icon') return true;
+    if (child.type === 'strong') return true;
+  }
+  return false;
+}
 
-  @group({ include: ['paragraph'] })
-  description: NodeStream;
+/**
+ * Split definition children into term (headings + paragraphs with image/icon/strong)
+ * and description (remaining paragraphs), matching the original @group behavior.
+ */
+function splitDefinitionChildren(nodes: unknown[]): unknown[] {
+  // We don't actually rewrite nodes here — just pass them through.
+  // The term/description split happens in transform based on node type analysis.
+  return nodes as Node[];
+}
 
-  transform() {
+export const definition = createContentModelSchema({
+  contentModel: {
+    type: 'custom',
+    processChildren: splitDefinitionChildren,
+    description: 'Splits children into term (headings + paragraphs with image/icon/strong) and description (remaining paragraphs).',
+  },
+  transform(resolved, attrs, config) {
     const labelIcon = (node: any) => { if (Tag.isTag(node)) node.attributes['data-name'] = 'icon'; return node; };
 
-    const dt = this.term
-      .useNode('paragraph', node => {
+    // Split children into term and description groups (replicating @group behavior)
+    const allChildren = asNodes(resolved.children);
+    const termNodes: Node[] = [];
+    const descNodes: Node[] = [];
+    let inDescription = false;
+
+    for (const node of allChildren) {
+      if (!inDescription && (node.type === 'heading' || (node.type === 'paragraph' && isTermParagraph(node)))) {
+        termNodes.push(node);
+      } else if (node.type === 'paragraph') {
+        inDescription = true;
+        descNodes.push(node);
+      } else if (!inDescription) {
+        // Non-matching node before description starts — skip (matches @group behavior)
+        inDescription = true;
+      }
+    }
+
+    const dtChildren: any[] = [];
+    for (const node of termNodes) {
+      if (node.type === 'paragraph') {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
-        if (img) return labelIcon(Markdoc.transform(img, this.config));
+        if (img) { dtChildren.push(labelIcon(Markdoc.transform(img, config))); continue; }
         const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
         if (iconTag) {
           const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-          const iconResult = labelIcon(Markdoc.transform(iconTag, this.config));
-          if (strong) return [iconResult, new Tag('span', { 'data-name': 'title' }, strong.transformChildren(this.config))];
-          return iconResult;
+          const iconResult = labelIcon(Markdoc.transform(iconTag, config));
+          if (strong) { dtChildren.push(iconResult, new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config))); continue; }
+          dtChildren.push(iconResult); continue;
         }
         const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-        if (strong) return new Tag('span', { 'data-name': 'title' }, strong.transformChildren(this.config));
-        return Markdoc.transform(node, this.config);
-      })
-      .useNode('heading', node => {
+        if (strong) { dtChildren.push(new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config))); continue; }
+        dtChildren.push(Markdoc.transform(node, config)); continue;
+      }
+      if (node.type === 'heading') {
         const img = Array.from(node.walk()).find(n => n.type === 'image');
         const text = Array.from(node.walk()).filter(n => n.type === 'text');
-        const span = new Tag('span', { 'data-name': 'title' }, Markdoc.transform(text, this.config));
-        if (img) return [labelIcon(Markdoc.transform(img, this.config)), span];
-        return span;
-      })
-      .transform()
-      .wrap('dt');
+        const span = new Tag('span', { 'data-name': 'title' }, Markdoc.transform(text, config));
+        if (img) { dtChildren.push(labelIcon(Markdoc.transform(img, config)), span); continue; }
+        dtChildren.push(span); continue;
+      }
+    }
+    const dt = new RenderableNodeCursor(dtChildren).wrap('dt');
 
-    const dd = this.description
-      .useNode('paragraph', node => new Tag('dd', { 'data-name': 'description' }, node.transformChildren(this.config)))
-      .transform();
+    const ddChildren: any[] = [];
+    for (const node of descNodes) {
+      ddChildren.push(new Tag('dd', { 'data-name': 'description' }, node.transformChildren(config)));
+    }
+    const dd = new RenderableNodeCursor(ddChildren);
 
     return new Tag('div', {}, dt.concat(dd).toArray());
-  }
-}
-
-export const definition = createSchema(DefinitionModel);
+  },
+});
 
 const alignType = ['left', 'center', 'right'] as const;
 
@@ -148,7 +185,7 @@ export const feature = createContentModelSchema({
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
 		];
 
-		return createComponentRenderable(schema.Feature, {
+		return createComponentRenderable({ rune: 'feature',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

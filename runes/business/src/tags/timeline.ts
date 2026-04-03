@@ -1,22 +1,27 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
 
-class TimelineEntryModel extends Model {
-	@attribute({ type: String, required: false, description: 'Date or time shown on this entry (e.g. "2024-03", "Q1 2025").' })
-	date: string = '';
+export const timelineEntry = createContentModelSchema({
+	attributes: {
+		date: { type: String, required: false, description: 'Date or time shown on this entry (e.g. "2024-03", "Q1 2025").' },
+		label: { type: String, required: false, description: 'Short title or milestone name for the entry.' },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const dateTag = new Tag('time', {}, [attrs.date ?? '']);
+		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	@attribute({ type: String, required: false, description: 'Short title or milestone name for the entry.' })
-	label: string = '';
-
-	transform(): RenderableTreeNodes {
-		const dateTag = new Tag('time', {}, [this.date]);
-		const labelTag = new Tag('span', {}, [this.label]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.TimelineEntry, {
+		return createComponentRenderable({ rune: 'timeline-entry', schemaOrgType: 'ListItem',
 			tag: 'li',
 			refs: {
 				date: dateTag,
@@ -29,10 +34,8 @@ class TimelineEntryModel extends Model {
 			},
 			children: [dateTag, labelTag, body.next()],
 		});
-	}
-}
-
-export const timelineEntry = createSchema(TimelineEntryModel);
+	},
+});
 
 export const timeline = createContentModelSchema({
 	attributes: {
@@ -86,7 +89,7 @@ export const timeline = createContentModelSchema({
 		}
 		children.push(entriesList);
 
-		return createComponentRenderable(schema.Timeline, {
+		return createComponentRenderable({ rune: 'timeline', schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

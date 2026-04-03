@@ -1,4 +1,4 @@
-{% work id="WORK-071" status="ready" priority="low" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-071" status="done" priority="low" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
 
 # Lumina Per-Rune Redundant CSS Cleanup
 
@@ -12,14 +12,14 @@ Now that universal dimension CSS handles density, section anatomy, interactive s
 
 ## Acceptance Criteria
 
-- [ ] Each per-rune CSS file in `packages/lumina/styles/runes/` audited against dimension CSS
-- [ ] Redundant surface rules removed (background, border, border-radius, padding duplicating `surfaces.css`)
-- [ ] Redundant section layout rules removed (header flex, title font-size, description color duplicating `sections.css`)
-- [ ] Redundant density rules removed (compact/minimal overrides duplicating `density.css`)
-- [ ] Redundant state rules removed (open/closed, active/inactive duplicating `state.css`)
-- [ ] Rune-specific overrides preserved (unique layouts, custom structures, variant-specific styling)
-- [ ] CSS coverage tests still pass after cleanup
-- [ ] Visual regression check on site dev server confirms no breakage
+- [x] Each per-rune CSS file in `packages/lumina/styles/runes/` audited against dimension CSS
+- [x] Redundant surface rules removed (background, border, border-radius, padding duplicating `surfaces.css`)
+- [x] Redundant section layout rules removed (header flex, title font-size, description color duplicating `sections.css`)
+- [x] Redundant density rules removed (compact/minimal overrides duplicating `density.css`)
+- [x] Redundant state rules removed (open/closed, active/inactive duplicating `state.css`)
+- [x] Rune-specific overrides preserved (unique layouts, custom structures, variant-specific styling)
+- [x] CSS coverage tests still pass after cleanup
+- [x] Visual regression check on site dev server confirms no breakage
 
 ## Approach
 
@@ -33,5 +33,11 @@ Now that universal dimension CSS handles density, section anatomy, interactive s
 
 - WORK-067 (Lumina Universal Dimension CSS)
 - SPEC-025 (Universal Theming Dimensions)
+
+## Resolution
+
+Completed: 2026-03-30
+
+All per-rune CSS files audited against dimension CSS. Redundant surface, section layout, density, and state rules removed while preserving rune-specific overrides. CSS coverage tests pass. Implementation completed in commit 6dc9615 but work item was not previously marked done.
 
 {% /work %}

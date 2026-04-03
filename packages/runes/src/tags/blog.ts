@@ -3,7 +3,6 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
-import { schema } from '../registry.js';
 
 const { Tag } = Markdoc;
 
@@ -57,7 +56,7 @@ export const blog = createContentModelSchema({
 			postList,
 		];
 
-		return createComponentRenderable(schema.Blog, {
+		return createComponentRenderable({ rune: 'blog', schemaOrgType: 'Blog',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

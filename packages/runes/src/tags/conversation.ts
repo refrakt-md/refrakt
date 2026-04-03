@@ -1,23 +1,28 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { schema } from '../registry.js';
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
-class ConversationMessageModel extends Model {
-	@attribute({ type: String, required: false })
-	speaker: string = '';
+export const conversationMessage = createContentModelSchema({
+	attributes: {
+		speaker: { type: String, required: false },
+		align: { type: String, required: false, matches: ['left', 'right'] },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const speakerTag = new Tag('span', {}, [attrs.speaker ?? '']);
+		const alignMeta = new Tag('meta', { content: attrs.align ?? 'left' });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	@attribute({ type: String, required: false, matches: ['left', 'right'] })
-	align: string = 'left';
-
-	transform(): RenderableTreeNodes {
-		const speakerTag = new Tag('span', {}, [this.speaker]);
-		const alignMeta = new Tag('meta', { content: this.align });
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.ConversationMessage, {
+		return createComponentRenderable({ rune: 'conversation-message',
 			tag: 'div',
 			properties: {
 				speaker: speakerTag,
@@ -28,10 +33,8 @@ class ConversationMessageModel extends Model {
 			},
 			children: [speakerTag, alignMeta, body.next()],
 		});
-	}
-}
-
-export const conversationMessage = createSchema(ConversationMessageModel);
+	},
+});
 
 function convertConversationChildren(nodes: Node[], attrs: Record<string, unknown>): Node[] {
 	const speakerList = attrs.speakers
@@ -99,7 +102,7 @@ export const conversation = createContentModelSchema({
 		const messages = body.tag('div').typeof('ConversationMessage');
 		const messagesContainer = messages.wrap('div');
 
-		return createComponentRenderable(schema.Conversation, {
+		return createComponentRenderable({ rune: 'conversation',
 			tag: 'div',
 			properties: {
 				message: messages,

@@ -17,7 +17,7 @@ Migrate interactive rune behaviours from class-based state toggling to `data-sta
 - [x] DataTable row selection uses `data-state="selected"`
 - [x] Form disabled fields use `data-state="disabled"`
 - [x] Existing BEM modifier classes for state are preserved during migration (dual-emit) for backward compatibility
-- [ ] Lumina CSS updated to target `[data-state]` selectors in addition to (or replacing) BEM state modifiers
+- [x] Lumina CSS updated to target `[data-state]` selectors in addition to (or replacing) BEM state modifiers
 - [x] Unit tests for all updated behaviours pass
 
 ## Approach

@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 const methodType = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] as const;
 
@@ -29,7 +28,7 @@ export const api = createContentModelSchema({
 
 		const bodyDiv = children.wrap('div');
 
-		return createComponentRenderable(schema.Api, {
+		return createComponentRenderable({ rune: 'api',
 			tag: 'article',
 			properties: {
 				method: methodMeta,

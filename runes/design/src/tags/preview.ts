@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createSchema } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
+import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
@@ -71,38 +72,63 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 	return lines.join('\n');
 }
 
-class PreviewModel extends Model {
-	@attribute({ type: String, required: false, description: 'Label shown in the preview card header.' })
-	title: string = '';
+/** Extract fence node from children, returning it separately. */
+function extractFence(children: unknown[]): { fence: Node | undefined; rest: unknown[] } {
+	const nodes = children as Node[];
+	const fenceIdx = nodes.findIndex(c => c.type === 'fence');
+	if (fenceIdx === -1) return { fence: undefined, rest: nodes };
+	const fence = nodes[fenceIdx];
+	return { fence, rest: [...nodes.slice(0, fenceIdx), ...nodes.slice(fenceIdx + 1)] };
+}
 
-	@attribute({ type: String, required: false, matches: ['auto', 'light', 'dark'], description: 'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.' })
-	theme: string = 'auto';
+export const preview = createContentModelSchema({
+	attributes: {
+		title: { type: String, required: false, description: 'Label shown in the preview card header.' },
+		theme: { type: String, required: false, matches: ['auto', 'light', 'dark'], description: 'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.' },
+		source: { type: Boolean, required: false, description: 'Enable/disable showing the source code panel alongside the rendered preview.' },
+		responsive: { type: String, required: false, description: 'Comma-separated viewport widths (e.g. "375,768,1024") for responsive preview frames.' },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: (nodes, attributes) => {
+			// Extract fence before normal content model processing
+			const { fence, rest } = extractFence(nodes);
+			// Pass fence through as a special marker node at the end
+			if (fence) return [...rest, fence];
+			return rest;
+		},
+		description: 'Extracts fence blocks for source display, passes remaining children for preview rendering.',
+	},
+	transform(resolved, attrs, config, node) {
+		const title = attrs.title ?? '';
+		const theme = attrs.theme ?? 'auto';
+		const showSource = attrs.source ?? false;
+		const responsive = attrs.responsive ?? '';
 
-	@attribute({ type: Boolean, required: false, description: 'Enable/disable showing the source code panel alongside the rendered preview.' })
-	source: boolean = false;
+		const allChildren = asNodes(resolved.children);
 
-	@attribute({ type: String, required: false, description: 'Comma-separated viewport widths (e.g. "375,768,1024") for responsive preview frames.' })
-	responsive: string = '';
-
-	transform() {
-		// 1. Extract first direct fence child as source (fence always wins)
-		const fenceIdx = this.node.children.findIndex(c => c.type === 'fence');
+		// 1. Extract fence child for source display
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
+		const fenceIdx = allChildren.findIndex(c => c.type === 'fence');
+		let contentChildren: Node[];
 		if (fenceIdx !== -1) {
-			const fence = this.node.children.splice(fenceIdx, 1)[0];
+			const fence = allChildren[fenceIdx];
+			contentChildren = [...allChildren.slice(0, fenceIdx), ...allChildren.slice(fenceIdx + 1)];
 			const lang = fence.attributes.language || 'shell';
 			sourcePre = new Tag('pre', { 'data-language': lang }, [
 				new Tag('code', { 'data-language': lang }, [fence.attributes.content])
 			]) as Markdoc.Tag<'pre'>;
+		} else {
+			contentChildren = allChildren;
 		}
 
-		// 2. Auto-infer from children source (fallback when no fence)
-		if (!sourcePre && this.source) {
-			const raw = this.config.variables?.__source;
-			if (typeof raw === 'string' && this.node.lines?.length >= 2) {
+		// 2. Auto-infer source from raw content (fallback when no fence)
+		if (!sourcePre && showSource) {
+			const raw = config.variables?.__source;
+			if (typeof raw === 'string' && node.lines?.length >= 2) {
 				const allLines = raw.split('\n');
-				const start = this.node.lines[0] + 1;
-				const end = this.node.lines[this.node.lines.length - 1] - 1;
+				const start = node.lines[0] + 1;
+				const end = node.lines[node.lines.length - 1] - 1;
 				const childSource = dedent(allLines.slice(start, end).join('\n').trim());
 				if (childSource) {
 					sourcePre = new Tag('pre', { 'data-language': 'markdoc' }, [
@@ -112,7 +138,9 @@ class PreviewModel extends Model {
 			}
 		}
 
-		const children = this.transformChildren();
+		const children = new RenderableNodeCursor(
+			Markdoc.transform(contentChildren, config) as RenderableTreeNode[],
+		);
 
 		// 3. Generate rune output HTML when source is present
 		let htmlSourcePre: Markdoc.Tag<'pre'> | undefined;
@@ -125,9 +153,9 @@ class PreviewModel extends Model {
 			}
 		}
 
-		const titleMeta = this.title ? new Tag('meta', { content: this.title }) : undefined;
-		const themeMeta = new Tag('meta', { content: this.theme });
-		const responsiveMeta = this.responsive ? new Tag('meta', { content: this.responsive }) : undefined;
+		const titleMeta = title ? new Tag('meta', { content: title }) : undefined;
+		const themeMeta = new Tag('meta', { content: theme });
+		const responsiveMeta = responsive ? new Tag('meta', { content: responsive }) : undefined;
 
 		const childNodes = [
 			...(titleMeta ? [titleMeta] : []),
@@ -138,7 +166,7 @@ class PreviewModel extends Model {
 			...children.toArray(),
 		];
 
-		return createComponentRenderable(schema.Preview, {
+		return createComponentRenderable({ rune: 'preview',
 			tag: 'div',
 			properties: {
 				...(titleMeta ? { title: titleMeta } : {}),
@@ -151,7 +179,5 @@ class PreviewModel extends Model {
 			},
 			children: childNodes,
 		});
-	}
-}
-
-export const preview = createSchema(PreviewModel);
+	},
+});

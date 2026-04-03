@@ -1,29 +1,34 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode, RenderableTreeNodes } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 
-class StorySectionModel extends Model {
-	@attribute({ type: String, required: true })
-	name: string = '';
+export const characterSection = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: true },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.CharacterSection, {
+		return createComponentRenderable({ rune: 'character-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
 		});
-	}
-}
+	},
+});
 
 const roleType = ['protagonist', 'antagonist', 'supporting', 'minor'] as const;
 const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
-
-export const characterSection = createSchema(StorySectionModel);
 
 export const character = createContentModelSchema({
 	attributes: {
@@ -82,49 +87,27 @@ export const character = createContentModelSchema({
 			jobTitle: roleMeta,
 		};
 
-		if (hasSections) {
-			const sectionsContainer = sections.wrap('div');
-			children.push(sectionsContainer.next());
+		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
+		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
+		children.push(hasSections ? sectionsContainer!.next() : body!.next());
 
-			return createComponentRenderable(schema.Character, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					role: roleMeta,
-					status: statusMeta,
-					aliases: aliasesMeta,
-					tags: tagsMeta,
-					section: sections,
-				},
-				refs: {
-					name: nameTag,
-					...(portraitDiv ? { portrait: portraitDiv } : {}),
-					sections: sectionsContainer,
-				},
-				schema: schemaMap,
-				children,
-			});
-		} else {
-			const body = sectionNodes.wrap('div');
-			children.push(body.next());
-
-			return createComponentRenderable(schema.Character, {
-				tag: 'article',
-				property: 'contentSection',
-				properties: {
-					role: roleMeta,
-					status: statusMeta,
-					aliases: aliasesMeta,
-					tags: tagsMeta,
-				},
-				refs: {
-					name: nameTag,
-					...(portraitDiv ? { portrait: portraitDiv } : {}),
-					body,
-				},
-				schema: schemaMap,
-				children,
-			});
-		}
+		return createComponentRenderable({ rune: 'character', schemaOrgType: 'Person',
+			tag: 'article',
+			property: 'contentSection',
+			properties: {
+				role: roleMeta,
+				status: statusMeta,
+				aliases: aliasesMeta,
+				tags: tagsMeta,
+				...(hasSections ? { section: sections } : {}),
+			},
+			refs: {
+				name: nameTag,
+				...(portraitDiv ? { portrait: portraitDiv } : {}),
+				...(hasSections ? { sections: sectionsContainer! } : { body: body! }),
+			},
+			schema: schemaMap,
+			children,
+		});
 	},
 });

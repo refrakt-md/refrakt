@@ -15,11 +15,6 @@ export type NodeFilterFunction = (node: Node) => boolean;
 
 export type NodeFilter = MarkdocNodeType | NodeFilterOptions | NodeFilterFunction;
 
-export interface Group {
-  section?: number,
-  include?: NodeFilter[],
-}
-
 export class TypedNode<IN extends MarkdocNodeType, OUT extends NodeType> extends Ast.Node {
   constructor(
     type: IN,

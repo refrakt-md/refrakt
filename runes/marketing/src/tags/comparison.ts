@@ -1,9 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Extract plain text from an AST node by walking all text children
 function extractText(node: Node): string {
@@ -92,19 +91,25 @@ interface ParsedColumn {
 	callouts: ParsedRow[];
 }
 
-class ComparisonRowModel extends Model {
-	@attribute({ type: String, required: false })
-	label: string = '';
+const comparisonRow = createContentModelSchema({
+	attributes: {
+		label: { type: String, required: false },
+		rowType: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
+		const rowTypeMeta = new Tag('meta', { content: attrs.rowType ?? 'text' });
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		).wrap('div');
 
-	@attribute({ type: String, required: false })
-	rowType: string = 'text';
-
-	transform(): RenderableTreeNodes {
-		const labelTag = new Tag('span', {}, [this.label]);
-		const rowTypeMeta = new Tag('meta', { content: this.rowType });
-		const body = this.transformChildren().wrap('div');
-
-		return createComponentRenderable(schema.ComparisonRow, {
+		return createComponentRenderable({ rune: 'comparison-row',
 			tag: 'div',
 			properties: {
 				rowType: rowTypeMeta,
@@ -115,25 +120,31 @@ class ComparisonRowModel extends Model {
 			},
 			children: [labelTag, rowTypeMeta, body.next()],
 		});
-	}
-}
+	},
+});
 
-class ComparisonColumnModel extends Model {
-	@attribute({ type: String, required: false })
-	name: string = '';
-
-	@attribute({ type: Boolean, required: false })
-	highlighted: boolean = false;
-
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const highlightedMeta = new Tag('meta', { content: String(this.highlighted) });
-		const rowStream = this.transformChildren();
+const comparisonColumn = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: false },
+		highlighted: { type: Boolean, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const highlightedMeta = new Tag('meta', { content: String(attrs.highlighted ?? false) });
+		const rowStream = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
 
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
 		const body = rowItems.wrap('div');
 
-		return createComponentRenderable(schema.ComparisonColumn, {
+		return createComponentRenderable({ rune: 'comparison-column',
 			tag: 'div',
 			properties: {
 				highlighted: highlightedMeta,
@@ -145,8 +156,8 @@ class ComparisonColumnModel extends Model {
 			},
 			children: [nameTag, highlightedMeta, body.next()],
 		});
-	}
-}
+	},
+});
 
 // Multi-pass heading+list parser with cross-column row alignment
 function convertComparisonChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
@@ -269,8 +280,7 @@ function convertComparisonChildren(nodes: unknown[], attributes: Record<string, 
 	return result;
 }
 
-export const comparisonRow = createSchema(ComparisonRowModel);
-export const comparisonColumn = createSchema(ComparisonColumnModel);
+export { comparisonRow, comparisonColumn };
 
 export const comparison = createContentModelSchema({
 	attributes: {
@@ -332,7 +342,7 @@ export const comparison = createContentModelSchema({
 
 		const titleTag = attrs.title ? new Tag('h2', {}, [attrs.title]) : undefined;
 
-		return createComponentRenderable(schema.Comparison, {
+		return createComponentRenderable({ rune: 'comparison',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

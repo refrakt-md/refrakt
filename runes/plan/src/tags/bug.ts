@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { buildSections } from '../util.js';
 
 const statusValues = ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'] as const;
@@ -16,6 +15,8 @@ export const bug = createContentModelSchema({
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone for the fix.' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
+		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
+		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -39,6 +40,9 @@ export const bug = createContentModelSchema({
 		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
+		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
+		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
+		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
 		const title = titleNodes.wrap('header');
 
@@ -46,7 +50,7 @@ export const bug = createContentModelSchema({
 		const contentChildren = buildSections(sections, config);
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable(schema.Bug, {
+		return createComponentRenderable({ rune: 'bug',
 			tag: 'article',
 			properties: {
 				id: idMeta,
@@ -55,12 +59,14 @@ export const bug = createContentModelSchema({
 				assignee: assigneeMeta,
 				milestone: milestoneMeta,
 				tags: tagsMeta,
+				created: createdMeta,
+				modified: modifiedMeta,
 			},
 			refs: {
 				title: title.tag('header'),
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, tagsMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
 		});
 	},
 });

@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { schema } from '../registry.js';
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -35,7 +34,7 @@ export const pullquote = createContentModelSchema({
 
 		const childNodes: any[] = [...quoteChildren, alignMeta, variantMeta];
 
-		return createComponentRenderable(schema.PullQuote, {
+		return createComponentRenderable({ rune: 'pull-quote',
 			tag: 'blockquote',
 			properties: {
 				align: alignMeta,

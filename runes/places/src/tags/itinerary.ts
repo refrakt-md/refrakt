@@ -3,7 +3,6 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const itineraryStop = createContentModelSchema({
 	attributes: {
@@ -29,7 +28,7 @@ export const itineraryStop = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.ItineraryStop, {
+		return createComponentRenderable({ rune: 'itinerary-stop',
 			tag: 'li',
 			properties: {
 				time: timeTag,
@@ -95,7 +94,7 @@ export const itineraryDay = createContentModelSchema({
 		}
 		children.push(stopsList);
 
-		return createComponentRenderable(schema.ItineraryDay, {
+		return createComponentRenderable({ rune: 'itinerary-day',
 			tag: 'article',
 			properties: {
 				label: labelTag,
@@ -168,7 +167,7 @@ export const itinerary = createContentModelSchema({
 		}
 		children.push(daysContainer);
 
-		return createComponentRenderable(schema.Itinerary, {
+		return createComponentRenderable({ rune: 'itinerary', schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

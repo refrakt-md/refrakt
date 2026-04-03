@@ -1,45 +1,63 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNodes, Tag as TagType, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, Tag as TagType, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, Model, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, RenderableNodeCursor, pageSectionProperties, asNodes } from '@refrakt-md/runes';
-import { schema } from '../types.js';
+import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 
-class BentoCellModel extends Model {
-	@attribute({ type: String, required: false })
-	name: string = '';
+/** Check if a node is a paragraph containing an icon tag. */
+function isIconParagraph(node: Node): boolean {
+	if (node.type !== 'paragraph') return false;
+	return Array.from(node.walk()).some(c => c.type === 'tag' && c.tag === 'icon');
+}
 
-	@attribute({ type: String, required: false })
-	size: string = 'small';
+/** Split children into icon paragraphs and body content. */
+function splitBentoCellChildren(nodes: unknown[]): unknown[] {
+	// Pass through — splitting happens in transform
+	return nodes as Node[];
+}
 
-	@attribute({ type: String, required: false })
-	span: string = '';
+export const bentoCell = createContentModelSchema({
+	attributes: {
+		name: { type: String, required: false },
+		size: { type: String, required: false },
+		span: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'custom',
+		processChildren: splitBentoCellChildren,
+		description: 'Passes children through for icon/body splitting in transform.',
+	},
+	transform(resolved, attrs, config) {
+		const allChildren = asNodes(resolved.children);
 
-	@group({ include: [{ node: 'paragraph', descendantTag: 'icon' }] })
-	iconGroup: NodeStream;
+		// Split into icon paragraphs and body content
+		const iconNodes: Node[] = [];
+		const bodyNodes: Node[] = [];
+		for (const node of allChildren) {
+			if (isIconParagraph(node)) {
+				iconNodes.push(node);
+			} else {
+				bodyNodes.push(node);
+			}
+		}
 
-	processChildren(nodes: Node[]) {
-		const result = super.processChildren(nodes);
-		// Remove icon paragraphs from children — they're captured by @group(iconGroup)
-		// but @group doesn't remove them, so transformChildren() would include them in the body
-		return result.filter(n => {
-			if (n.type !== 'paragraph') return true;
-			return !Array.from(n.walk()).some(c => c.type === 'tag' && c.tag === 'icon');
-		});
-	}
+		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
+		const sizeMeta = new Tag('meta', { content: attrs.size ?? 'small' });
 
-	transform(): RenderableTreeNodes {
-		const nameTag = new Tag('span', {}, [this.name]);
-		const sizeMeta = new Tag('meta', { content: this.size });
+		// Transform icon paragraphs, extracting just the icon tag
+		const iconRendered: RenderableTreeNode[] = [];
+		for (const node of iconNodes) {
+			const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
+			if (iconTag) {
+				iconRendered.push(Markdoc.transform(iconTag, config) as RenderableTreeNode);
+			} else {
+				iconRendered.push(Markdoc.transform(node, config) as RenderableTreeNode);
+			}
+		}
+		const iconContent = new RenderableNodeCursor(iconRendered);
 
-		const iconContent = this.iconGroup
-			.useNode('paragraph', (node, config) => {
-				const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
-				if (iconTag) return Markdoc.transform(iconTag, config);
-				return Markdoc.transform(node, config);
-			})
-			.transform();
-
-		const body = this.transformChildren().wrap('div');
+		const body = new RenderableNodeCursor(
+			Markdoc.transform(bodyNodes, config) as RenderableTreeNode[],
+		).wrap('div');
 		const hasIcon = iconContent.count() > 0;
 
 		const properties: Record<string, any> = { name: nameTag, size: sizeMeta };
@@ -55,24 +73,22 @@ class BentoCellModel extends Model {
 
 		children.push(nameTag, sizeMeta);
 
-		if (this.span) {
-			const spanMeta = new Tag('meta', { content: this.span });
+		if (attrs.span) {
+			const spanMeta = new Tag('meta', { content: attrs.span });
 			properties.span = spanMeta;
 			children.push(spanMeta);
 		}
 
 		children.push(body.next());
 
-		return createComponentRenderable(schema.BentoCell, {
+		return createComponentRenderable({ rune: 'bento-cell',
 			tag: 'div',
 			properties,
 			refs,
 			children,
 		});
-	}
-}
-
-export const bentoCell = createSchema(BentoCellModel);
+	},
+});
 
 function tieredSize(headingLevel: number, level: number): string {
 	const diff = level - headingLevel;
@@ -199,7 +215,7 @@ export const bento = createContentModelSchema({
 			? [header.wrap('header').next(), gapMeta, columnsMeta, sizingMeta, grid.next()]
 			: [gapMeta, columnsMeta, sizingMeta, grid.next()];
 
-		return createComponentRenderable(schema.Bento, {
+		return createComponentRenderable({ rune: 'bento',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

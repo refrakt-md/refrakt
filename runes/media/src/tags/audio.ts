@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { parseDuration } from '../duration.js';
 
 export const audio = createContentModelSchema({
@@ -87,7 +86,7 @@ export const audio = createContentModelSchema({
 			children.push(descNodes.wrap('div', { 'data-name': 'description' }).next());
 		}
 
-		return createComponentRenderable(schema.Audio, {
+		return createComponentRenderable({ rune: 'audio',
 			tag: 'div',
 			properties: {
 				...(waveformMeta ? { waveform: waveformMeta } : {}),

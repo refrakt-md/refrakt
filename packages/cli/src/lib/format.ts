@@ -34,6 +34,11 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 		lines.push(`  ${DIM}modifiers:${RESET}        ${DIM}none${RESET}`);
 	}
 
+	// Slots
+	if (runeConfig.slots && runeConfig.slots.length > 0) {
+		lines.push(`  ${DIM}slots:${RESET}            ${runeConfig.slots.join(' → ')}`);
+	}
+
 	// Structure
 	if (runeConfig.structure && Object.keys(runeConfig.structure).length > 0) {
 		const structs = Object.entries(runeConfig.structure)
@@ -41,13 +46,33 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 				const children = entry.children
 					? entry.children.map(c => typeof c === 'string' ? c : (c.ref ?? '?')).join(' + ')
 					: name;
-				const pos = entry.before ? 'before' : 'after';
-				return `${name} → ${children} (${pos})`;
+				const slot = entry.slot ? `slot:${entry.slot}` : (entry.before ? 'before' : 'after');
+				const repeat = entry.repeat ? ` ×${entry.repeat.count}` : '';
+				return `${name} → ${children} (${slot})${repeat}`;
 			})
 			.join(', ');
 		lines.push(`  ${DIM}structure:${RESET}        ${structs}`);
 	} else {
 		lines.push(`  ${DIM}structure:${RESET}        ${DIM}none${RESET}`);
+	}
+
+	// Projection
+	if (runeConfig.projection) {
+		const parts: string[] = [];
+		if (runeConfig.projection.hide?.length) {
+			parts.push(`hide: ${runeConfig.projection.hide.join(', ')}`);
+		}
+		if (runeConfig.projection.group) {
+			const groups = Object.entries(runeConfig.projection.group)
+				.map(([name, def]) => `${name} ← [${def.members.join(', ')}]`);
+			parts.push(`group: ${groups.join('; ')}`);
+		}
+		if (runeConfig.projection.relocate) {
+			const relocations = Object.entries(runeConfig.projection.relocate)
+				.map(([name, def]) => `${name} → ${def.into}`);
+			parts.push(`relocate: ${relocations.join('; ')}`);
+		}
+		lines.push(`  ${DIM}projection:${RESET}       ${parts.join(' | ')}`);
 	}
 
 	// Content wrapper
@@ -160,6 +185,9 @@ export function buildJsonOutput(opts: {
 			rootAttributes: opts.config.rootAttributes ?? {},
 			staticModifiers: opts.config.staticModifiers ?? [],
 			styles: opts.config.styles ?? {},
+			...(opts.config.slots ? { slots: opts.config.slots } : {}),
+			...(opts.config.childDensity ? { childDensity: opts.config.childDensity } : {}),
+			...(opts.config.projection ? { projection: opts.config.projection } : {}),
 		} : null,
 		html: opts.html,
 		selectors: opts.selectors,

@@ -17,6 +17,7 @@
 
 - overview
 - configuration
+- dimensions
 - css
 - creating-a-theme
 - components
@@ -31,10 +32,10 @@
 ## Authoring
 
 - authoring-overview
-- model-api
 - content-models
 - output-contract
 - patterns
+- partials
 - page-sections
 
 ## Rune Catalog

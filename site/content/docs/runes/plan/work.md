@@ -67,6 +67,8 @@ Migrate all runes from manual alignment classes to the new alignment system.
 | `assignee` | `string` | — | Person or agent working on this |
 | `milestone` | `string` | — | Milestone this belongs to |
 | `tags` | `string` | — | Comma-separated labels |
+| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
+| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
 ### Common attributes
 

@@ -3,6 +3,8 @@
 export interface SitemapEntry {
 	url: string;
 	draft: boolean;
+	/** ISO 8601 date string (YYYY-MM-DD) for the last modification date */
+	lastmod?: string;
 }
 
 /**
@@ -16,7 +18,8 @@ export function generateSitemap(pages: SitemapEntry[], baseUrl: string): string 
 			const loc = `${baseUrl.replace(/\/$/, '')}${p.url}`;
 			const depth = p.url === '/' ? 0 : p.url.split('/').filter(Boolean).length;
 			const priority = depth === 0 ? '1.0' : depth <= 1 ? '0.8' : '0.6';
-			return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <priority>${priority}</priority>\n  </url>`;
+			const lastmod = p.lastmod ? `\n    <lastmod>${escapeXml(p.lastmod)}</lastmod>` : '';
+			return `  <url>\n    <loc>${escapeXml(loc)}</loc>${lastmod}\n    <priority>${priority}</priority>\n  </url>`;
 		});
 
 	return `<?xml version="1.0" encoding="UTF-8"?>

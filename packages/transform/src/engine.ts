@@ -45,7 +45,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -71,6 +71,8 @@ function transformRune(
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
 	backgrounds: Record<string, BgPresetDefinition>,
+	allRunes: Record<string, RuneConfig>,
+	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
 	parentRune?: string
 ): SerializedTag {
@@ -80,6 +82,7 @@ function transformRune(
 	// 1. Read modifiers from meta tags, collecting resolved values
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
+	const mappedValues: Record<string, string> = {};
 	if (config.modifiers) {
 		for (const [name, mod] of Object.entries(config.modifiers)) {
 			const value = mod.source === 'meta'
@@ -89,6 +92,15 @@ function transformRune(
 				modifierValues[name] = value;
 				if (!mod.noBemClass) {
 					modifierClasses.push(`${block}--${value}`);
+				}
+				// Value mapping: translate raw value through valueMap
+				if (mod.valueMap) {
+					const mapped = mod.valueMap[value] ?? value;
+					if (mod.mapTarget) {
+						mappedValues[mod.mapTarget] = mapped;
+					} else {
+						modifierValues[name] = mapped;
+					}
 				}
 			}
 		}
@@ -182,12 +194,10 @@ function transformRune(
 	}
 
 	// 1e. Density — resolve from author attribute → context → config default → 'full'
-	const COMPACT_CONTEXTS = new Set(['grid', 'bento', 'gallery', 'showcase', 'split']);
-	const MINIMAL_CONTEXTS = new Set(['backlog', 'decision-log']);
 	const authorDensity = tag.attributes?.density;
-	const contextDensity = parentRune
-		? (MINIMAL_CONTEXTS.has(parentRune) ? 'minimal' : COMPACT_CONTEXTS.has(parentRune) ? 'compact' : undefined)
-		: undefined;
+	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
+	const parentChildDensity = parentConfigKey ? allRunes[parentConfigKey]?.childDensity : undefined;
+	const contextDensity = parentChildDensity;
 	const resolvedDensity = authorDensity ?? contextDensity ?? config.defaultDensity ?? 'full';
 
 	// 1f. Width and spacing — universal base attributes on all block runes
@@ -308,6 +318,11 @@ function transformRune(
 		const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
 		modDataAttrs[`data-${kebab}`] = value;
 	}
+	// Add mapped value attributes (from valueMap + mapTarget)
+	for (const [attr, value] of Object.entries(mappedValues)) {
+		const key = attr.startsWith('data-') ? attr : `data-${attr}`;
+		modDataAttrs[key] = value;
+	}
 
 	// 3. Build the class string
 	const existingClass = tag.attributes.class || '';
@@ -321,25 +336,31 @@ function transformRune(
 
 	// 5. Inject structural elements from config
 	if (config.structure) {
-		const prepend: RendererNode[] = [];
-		const append: RendererNode[] = [];
+		if (config.slots) {
+			// Slot-based assembly: iterate slots in declared order
+			children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
+		} else {
+			// Legacy before/after assembly
+			const prepend: RendererNode[] = [];
+			const append: RendererNode[] = [];
 
-		for (const [name, entry] of Object.entries(config.structure)) {
-			const element = buildStructureElement(entry, name, modifierValues, icons);
-			if (!element) continue;
-			if (entry.before) {
-				prepend.push(element);
-			} else {
-				append.push(element);
+			for (const [name, entry] of Object.entries(config.structure)) {
+				const element = buildStructureElement(entry, name, modifierValues, icons);
+				if (!element) continue;
+				if (entry.before) {
+					prepend.push(element);
+				} else {
+					append.push(element);
+				}
 			}
-		}
 
-		if (config.contentWrapper) {
-			const wrapped = makeTag(config.contentWrapper.tag,
-				{ 'data-name': config.contentWrapper.ref }, children);
-			children = [...prepend, wrapped, ...append];
-		} else if (prepend.length || append.length) {
-			children = [...prepend, ...children, ...append];
+			if (config.contentWrapper) {
+				const wrapped = makeTag(config.contentWrapper.tag,
+					{ 'data-name': config.contentWrapper.ref }, children);
+				children = [...prepend, wrapped, ...append];
+			} else if (prepend.length || append.length) {
+				children = [...prepend, ...children, ...append];
+			}
 		}
 	} else if (config.contentWrapper) {
 		const wrapped = makeTag(config.contentWrapper.tag,
@@ -353,10 +374,15 @@ function transformRune(
 	}
 
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
-	const enhancedChildren = children.map(child => {
+	let enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
 		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots), dataRune);
 	});
+
+	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
+	if (config.projection) {
+		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots);
+	}
 
 	// 7. Remove consumed meta tags (modifiers + tint)
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
@@ -562,6 +588,187 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 	}
 }
 
+/** Assemble children using named slots.
+ *  Iterates slots in declared order, collecting structure entries per slot sorted by order,
+ *  and places content children at the 'content' slot. */
+function assembleWithSlots(
+	slots: string[],
+	structure: Record<string, StructureEntry>,
+	contentChildren: RendererNode[],
+	contentWrapper: { tag: string; ref: string } | undefined,
+	modifierValues: Record<string, string>,
+	icons: Record<string, Record<string, string>>,
+): RendererNode[] {
+	// Determine the first and last non-content slots for before/after mapping
+	const nonContentSlots = slots.filter(s => s !== 'content');
+	const firstSlot = nonContentSlots[0];
+	const lastSlot = nonContentSlots[nonContentSlots.length - 1];
+
+	// Build all structure elements and assign to slots
+	type SlotEntry = { element: RendererNode; order: number };
+	const slotMap = new Map<string, SlotEntry[]>();
+	for (const slot of slots) {
+		slotMap.set(slot, []);
+	}
+
+	for (const [name, entry] of Object.entries(structure)) {
+		const element = buildStructureElement(entry, name, modifierValues, icons);
+		if (!element) continue;
+
+		// Determine slot assignment: explicit slot > before mapping > last slot
+		let targetSlot: string;
+		if (entry.slot) {
+			targetSlot = entry.slot;
+		} else if (entry.before && firstSlot) {
+			targetSlot = firstSlot;
+		} else if (lastSlot) {
+			targetSlot = lastSlot;
+		} else {
+			// Fallback: place before content if before=true, after otherwise
+			targetSlot = entry.before ? (firstSlot ?? slots[0]) : (lastSlot ?? slots[slots.length - 1]);
+		}
+
+		const bucket = slotMap.get(targetSlot);
+		if (bucket) {
+			bucket.push({ element, order: entry.order ?? 0 });
+		}
+	}
+
+	// Sort entries within each slot by order
+	for (const entries of slotMap.values()) {
+		entries.sort((a, b) => a.order - b.order);
+	}
+
+	// Assemble in slot order
+	const result: RendererNode[] = [];
+	for (const slot of slots) {
+		if (slot === 'content') {
+			if (contentWrapper) {
+				result.push(makeTag(contentWrapper.tag, { 'data-name': contentWrapper.ref }, contentChildren));
+			} else {
+				result.push(...contentChildren);
+			}
+		} else {
+			const entries = slotMap.get(slot) ?? [];
+			for (const { element } of entries) {
+				result.push(element);
+			}
+		}
+	}
+
+	return result;
+}
+
+/** Find and remove a child by data-name from a flat children array.
+ *  Returns the removed element and the updated array, or null if not found. */
+function extractByDataName(children: RendererNode[], name: string): { element: SerializedTag; rest: RendererNode[] } | null {
+	const idx = children.findIndex(c => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name);
+	if (idx === -1) return null;
+	const element = children[idx] as SerializedTag;
+	const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
+	return { element, rest };
+}
+
+/** Find a child (or nested child) by data-name without removing it. */
+function findDeepByDataName(children: RendererNode[], name: string): SerializedTag | null {
+	for (const child of children) {
+		if (!isTag(child)) continue;
+		const tag = child as SerializedTag;
+		if (tag.attributes?.['data-name'] === name) return tag;
+		const found = findDeepByDataName(tag.children, name);
+		if (found) return found;
+	}
+	return null;
+}
+
+/** Insert an element into a target element's children (found by data-name). */
+function insertIntoTarget(children: RendererNode[], targetName: string, element: RendererNode, position: 'prepend' | 'append'): RendererNode[] {
+	return children.map(child => {
+		if (!isTag(child)) return child;
+		const tag = child as SerializedTag;
+		if (tag.attributes?.['data-name'] === targetName) {
+			const newChildren = position === 'prepend'
+				? [element, ...tag.children]
+				: [...tag.children, element];
+			return { ...tag, children: newChildren };
+		}
+		// Recurse into children to find nested targets
+		const updatedChildren = insertIntoTarget(tag.children, targetName, element, position);
+		if (updatedChildren !== tag.children) {
+			return { ...tag, children: updatedChildren };
+		}
+		return child;
+	});
+}
+
+/** Apply projection transformations: hide → group → relocate.
+ *  Operates on data-name addresses in the children array. */
+function applyProjection(
+	children: RendererNode[],
+	projection: NonNullable<import('./types.js').RuneConfig['projection']>,
+	block: string,
+	sections?: Record<string, string>,
+	mediaSlots?: Record<string, string>,
+): RendererNode[] {
+	let result = [...children];
+
+	// Phase 1: Hide — remove elements matching hide entries
+	if (projection.hide) {
+		const hideSet = new Set(projection.hide);
+		result = result.filter(child => {
+			if (!isTag(child)) return true;
+			const name = (child as SerializedTag).attributes?.['data-name'];
+			return !name || !hideSet.has(name);
+		});
+	}
+
+	// Phase 2: Group — collect members, wrap in container, place at first member position
+	if (projection.group) {
+		for (const [groupName, groupDef] of Object.entries(projection.group)) {
+			const memberSet = new Set(groupDef.members);
+			const collected: RendererNode[] = [];
+			let firstIdx = -1;
+
+			// Find and collect all members
+			for (let i = result.length - 1; i >= 0; i--) {
+				const child = result[i];
+				if (!isTag(child)) continue;
+				const name = (child as SerializedTag).attributes?.['data-name'];
+				if (name && memberSet.has(name)) {
+					collected.unshift(child);
+					if (firstIdx === -1 || i < firstIdx) firstIdx = i;
+					result.splice(i, 1);
+				}
+			}
+
+			if (collected.length > 0) {
+				// Create group wrapper with data-name and apply BEM classes
+				let wrapper = makeTag(groupDef.tag, { 'data-name': groupName }, collected);
+				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots);
+				result.splice(firstIdx, 0, wrapper);
+			}
+		}
+	}
+
+	// Phase 3: Relocate — move elements into targets
+	if (projection.relocate) {
+		for (const [sourceName, relDef] of Object.entries(projection.relocate)) {
+			const extracted = extractByDataName(result, sourceName);
+			if (!extracted) continue;
+			result = extracted.rest;
+
+			// Try to find target by data-name in the tree
+			const targetExists = findDeepByDataName(result, relDef.into);
+			if (targetExists) {
+				result = insertIntoTarget(result, relDef.into, extracted.element, relDef.position ?? 'append');
+			}
+			// If target not found, element is dropped (no-op for invalid references)
+		}
+	}
+
+	return result;
+}
+
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
 function buildStructureElement(
 	entry: StructureEntry,
@@ -574,6 +781,43 @@ function buildStructureElement(
 	if (entry.conditionAny && !entry.conditionAny.some(k => modifierValues[k])) return null;
 
 	const dataName = entry.ref ?? name;
+
+	// Repeated element generation: produce N copies of a template element
+	if (entry.repeat) {
+		const countRaw = parseInt(modifierValues[entry.repeat.count] ?? '', 10);
+		if (!countRaw || countRaw < 0 || isNaN(countRaw)) {
+			return makeTag(entry.tag, { 'data-name': dataName }, []);
+		}
+		const max = entry.repeat.max ?? 10;
+		const count = Math.min(countRaw, max);
+		const filledRaw = entry.repeat.filled
+			? parseInt(modifierValues[entry.repeat.filled] ?? '0', 10)
+			: 0;
+		const filled = Math.max(0, Math.min(filledRaw, count));
+
+		const children: RendererNode[] = [];
+		for (let i = 0; i < count; i++) {
+			const isFilled = i < filled;
+			if (isFilled && entry.repeat.filledElement) {
+				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons);
+				if (el) children.push(el);
+			} else {
+				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons);
+				if (el) {
+					if (entry.repeat.filled) {
+						// Add data-filled attribute when filled tracking is active
+						children.push({
+							...el,
+							attributes: { ...el.attributes, 'data-filled': isFilled ? 'true' : 'false' },
+						});
+					} else {
+						children.push(el);
+					}
+				}
+			}
+		}
+		return makeTag(entry.tag, { 'data-name': dataName }, children);
+	}
 
 	// Resolve extra attributes
 	const extraAttrs: Record<string, string> = {};

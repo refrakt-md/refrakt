@@ -14,7 +14,7 @@
 	color: var(--rf-color-border);
 	line-height: 1;
 }
-.rf-testimonial__star--filled {
+.rf-testimonial__star[data-filled="true"] {
 	color: var(--rf-color-warning);
 }
 .rf-testimonial blockquote {

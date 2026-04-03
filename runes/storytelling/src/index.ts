@@ -12,7 +12,7 @@ import { storytellingPipelineHooks } from './pipeline.js';
 export const storytelling: RunePackage = {
   name: 'storytelling',
   displayName: 'Storytelling',
-  version: '0.8.5',
+  version: '0.9.0',
   runes: {
     'character': {
       transform: character,

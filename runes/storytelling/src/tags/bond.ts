@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const bond = createContentModelSchema({
 	attributes: {
@@ -31,7 +30,7 @@ export const bond = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable(schema.Bond, {
+		return createComponentRenderable({ rune: 'bond',
 			tag: 'div',
 			properties: {
 				bondType: bondTypeMeta,

@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 export const PLAN_ACTIVITY_SENTINEL = '__plan-activity-sentinel';
 
@@ -19,7 +18,7 @@ export const planActivity = createContentModelSchema({
 		const sentinelMeta = new Tag('meta', { 'data-field': PLAN_ACTIVITY_SENTINEL, content: 'true' });
 		const placeholder = new Tag('div', {}, []);
 
-		return createComponentRenderable(schema.PlanActivity, {
+		return createComponentRenderable({ rune: 'plan-activity',
 			tag: 'section',
 			properties: {
 				limit: limitMeta,

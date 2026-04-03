@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 import { buildSections } from '../util.js';
 
 const statusValues = ['proposed', 'accepted', 'superseded', 'deprecated'] as const;
@@ -14,6 +13,8 @@ export const decision = createContentModelSchema({
 		date: { type: String, required: false, description: 'Date decided (ISO 8601).' },
 		supersedes: { type: String, required: false, description: 'ID of the decision this replaces.' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
+		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
+		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -36,6 +37,9 @@ export const decision = createContentModelSchema({
 		const dateMeta = new Tag('meta', { content: attrs.date ?? '' });
 		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
+		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
+		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
+		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
 		const title = titleNodes.wrap('header');
 
@@ -43,7 +47,7 @@ export const decision = createContentModelSchema({
 		const contentChildren = buildSections(sections, config);
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable(schema.Decision, {
+		return createComponentRenderable({ rune: 'decision',
 			tag: 'article',
 			properties: {
 				id: idMeta,
@@ -51,12 +55,14 @@ export const decision = createContentModelSchema({
 				date: dateMeta,
 				supersedes: supersedesMeta,
 				tags: tagsMeta,
+				created: createdMeta,
+				modified: modifiedMeta,
 			},
 			refs: {
 				title: title.tag('header'),
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, dateMeta, supersedesMeta, tagsMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, dateMeta, supersedesMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
 		});
 	},
 });

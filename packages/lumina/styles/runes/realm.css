@@ -4,17 +4,9 @@
 	flex-direction: column;
 }
 
-/* Scene image */
+/* Scene image — base styles deferred to shared [data-section="media"] in split.css */
 .rf-realm__scene {
-	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
 	margin-bottom: var(--rf-spacing-md);
-}
-.rf-realm__scene img {
-	display: block;
-	width: 100%;
-	height: auto;
-	border-radius: var(--rf-radius-lg);
 }
 
 /* Content */
@@ -77,7 +69,6 @@
 .rf-realm[data-layout="split"] > .rf-realm__scene {
 	grid-column: 2;
 	grid-row: 1 / 4;
-	margin: 0;
 }
 /* Split-reverse: scene left (col 1), badge + name + content right (col 2) */
 .rf-realm[data-layout="split-reverse"] > .rf-realm__badge {
@@ -114,8 +105,9 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
-	.rf-realm[data-layout="split"] > .rf-realm__scene,
-	.rf-realm[data-layout="split-reverse"] > .rf-realm__scene {
+	/* Only add margin when NOT in full-bleed media-position mode (shared split.css handles that) */
+	.rf-realm[data-layout="split"]:not([data-media-position="top"]) > .rf-realm__scene,
+	.rf-realm[data-layout="split-reverse"]:not([data-media-position="top"]) > .rf-realm__scene {
 		margin-bottom: var(--rf-spacing-md);
 	}
 }
@@ -128,7 +120,7 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
-	.rf-realm[data-collapse="sm"] > .rf-realm__scene {
+	.rf-realm[data-collapse="sm"]:not([data-media-position="top"]) > .rf-realm__scene {
 		margin-bottom: var(--rf-spacing-md);
 	}
 }
@@ -140,7 +132,7 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
-	.rf-realm[data-collapse="md"] > .rf-realm__scene {
+	.rf-realm[data-collapse="md"]:not([data-media-position="top"]) > .rf-realm__scene {
 		margin-bottom: var(--rf-spacing-md);
 	}
 }
@@ -152,7 +144,7 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
-	.rf-realm[data-collapse="lg"] > .rf-realm__scene {
+	.rf-realm[data-collapse="lg"]:not([data-media-position="top"]) > .rf-realm__scene {
 		margin-bottom: var(--rf-spacing-md);
 	}
 }

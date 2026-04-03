@@ -1,9 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { attribute, Model, createComponentRenderable, createContentModelSchema, createSchema, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Map marker characters to status strings
 const MARKER_TO_STATUS: Record<string, string> = {
@@ -13,37 +12,35 @@ const MARKER_TO_STATUS: Record<string, string> = {
 	'-': 'abandoned',
 };
 
-class BeatModel extends Model {
-	@attribute({ type: String, required: true })
-	label: string = '';
-
-	@attribute({ type: String, required: false })
-	status: string = 'planned';
-
-	@attribute({ type: String, required: false })
-	description: string = '';
-
-	@attribute({ type: String, required: false })
-	id: string = '';
-
-	@attribute({ type: String, required: false })
-	track: string = '';
-
-	@attribute({ type: String, required: false })
-	follows: string = '';
-
-	transform(): RenderableTreeNodes {
-		const labelTag = new Tag('span', {}, [this.label]);
+export const beat = createContentModelSchema({
+	attributes: {
+		label: { type: String, required: true },
+		status: { type: String, required: false },
+		description: { type: String, required: false },
+		id: { type: String, required: false },
+		track: { type: String, required: false },
+		follows: { type: String, required: false },
+	},
+	contentModel: {
+		type: 'sequence',
+		fields: [
+			{ name: 'body', match: 'any', optional: true, greedy: true },
+		],
+	},
+	transform(resolved, attrs, config) {
+		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
 		// Map raw marker char to status string if needed
-		const resolvedStatus = MARKER_TO_STATUS[this.status] ?? this.status;
+		const resolvedStatus = MARKER_TO_STATUS[attrs.status] ?? (attrs.status || 'planned');
 		const statusMeta = new Tag('meta', { content: resolvedStatus });
-		const idMeta = new Tag('meta', { content: this.id });
-		const trackMeta = new Tag('meta', { content: this.track });
-		const followsMeta = new Tag('meta', { content: this.follows });
+		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
+		const trackMeta = new Tag('meta', { content: attrs.track ?? '' });
+		const followsMeta = new Tag('meta', { content: attrs.follows ?? '' });
 
 		// Build body from description attribute + any block-level children
-		const childContent = this.transformChildren();
-		const descText = this.description.replace(/^[\s—–-]+/, '').trim();
+		const childContent = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+		);
+		const descText = (attrs.description ?? '').replace(/^[\s—–-]+/, '').trim();
 		const bodyChildren: any[] = [];
 		if (descText) {
 			bodyChildren.push(new Tag('p', {}, [descText]));
@@ -53,7 +50,7 @@ class BeatModel extends Model {
 		}
 		const body = new RenderableNodeCursor(bodyChildren).wrap('div');
 
-		return createComponentRenderable(schema.Beat, {
+		return createComponentRenderable({ rune: 'beat',
 			tag: 'li',
 			properties: {
 				status: statusMeta,
@@ -64,13 +61,11 @@ class BeatModel extends Model {
 			refs: { label: labelTag, body: body.tag('div') },
 			children: [labelTag, statusMeta, idMeta, trackMeta, followsMeta, body.next()],
 		});
-	}
-}
+	},
+});
 
 const plotType = ['arc', 'quest', 'subplot', 'campaign', 'episode', 'act', 'chapter'] as const;
 const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
-
-export const beat = createSchema(BeatModel);
 
 export const plot = createContentModelSchema({
 	attributes: {
@@ -119,7 +114,7 @@ export const plot = createContentModelSchema({
 		}
 		children.push(beatsList);
 
-		return createComponentRenderable(schema.Plot, {
+		return createComponentRenderable({ rune: 'plot', schemaOrgType: 'CreativeWork',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

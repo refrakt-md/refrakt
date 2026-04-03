@@ -6,8 +6,9 @@ export const config: Record<string, RuneConfig> = {
 		block: 'playlist',
 		defaultDensity: 'full',
 		sequence: 'numbered',
-		sections: { header: 'header', title: 'title', media: 'media' },
+		sections: { meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
+		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			layout: { source: 'meta', default: 'stacked' },
@@ -15,6 +16,9 @@ export const config: Record<string, RuneConfig> = {
 			valign: { source: 'meta', default: 'top', noBemClass: true },
 			gap: { source: 'meta', default: 'default', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
+			artist: { source: 'meta', noBemClass: true },
+			hasPlayer: { source: 'meta', noBemClass: true },
+			id: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			ratio: { prop: '--split-ratio', transform: ratioToFr },
@@ -22,15 +26,22 @@ export const config: Record<string, RuneConfig> = {
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		structure: {
-			header: {
+			meta: {
 				tag: 'div', before: true,
 				children: [
 					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category', metaRank: 'primary' },
 				],
 			},
 		},
-		autoLabel: { media: 'media' },
-		editHints: { title: 'inline', header: 'none', tracks: 'none', player: 'none' },
+		autoLabel: {
+			header: 'preamble',
+			eyebrow: 'eyebrow',
+			headline: 'headline',
+			blurb: 'blurb',
+			image: 'image',
+			media: 'media',
+		},
+		editHints: { headline: 'inline', blurb: 'inline', preamble: 'none', tracks: 'none', player: 'none' },
 	},
 	Track: { block: 'track', parent: 'Playlist', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
 	Audio: {

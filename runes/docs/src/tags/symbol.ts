@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, resolveSequence, RenderableNodeCursor, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
 // Kinds that use group/member heading structure
 const GROUP_KINDS = ['class', 'interface', 'module'];
@@ -26,7 +25,7 @@ export const symbolMember = createContentModelSchema({
 		const nameTag = new Tag('h4', {}, hasName ? nameHeading.next().children : []);
 		const body = children.slice(hasName ? 1 : 0).wrap('div');
 
-		return createComponentRenderable(schema.SymbolMember, {
+		return createComponentRenderable({ rune: 'symbol-member',
 			tag: 'section',
 			refs: {
 				name: nameTag,
@@ -67,7 +66,7 @@ export const symbolGroup = createContentModelSchema({
 		const labelTag = new Tag('h3', {}, hasLabel ? labelHeading.next().children : []);
 		const body = children.slice(hasLabel ? 1 : 0).wrap('div');
 
-		return createComponentRenderable(schema.SymbolGroup, {
+		return createComponentRenderable({ rune: 'symbol-group',
 			tag: 'section',
 			refs: {
 				label: labelTag,
@@ -154,7 +153,7 @@ export const symbol = createContentModelSchema({
 		}
 		children.push(bodyDiv.next());
 
-		return createComponentRenderable(schema.Symbol, {
+		return createComponentRenderable({ rune: 'symbol', schemaOrgType: 'TechArticle',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

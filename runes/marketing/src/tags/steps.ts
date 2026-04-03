@@ -1,29 +1,57 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { ResolvedContent } from '@refrakt-md/types';
 const { Ast, Tag } = Markdoc;
-import { attribute, group, createComponentRenderable, createContentModelSchema, createSchema, NodeStream, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-import { schema } from '../types.js';
 
-class StepModel extends SplitLayoutModel {
-  @group({ section: 0 })
-  main: NodeStream;
+export const step = createContentModelSchema({
+  base: SplitLayoutModel,
+  contentModel: {
+    type: 'delimited',
+    delimiter: 'hr',
+    zones: [
+      {
+        name: 'main',
+        type: 'sequence',
+        fields: [
+          { name: 'content', match: 'any', optional: true, greedy: true },
+        ],
+      },
+      {
+        name: 'side',
+        type: 'sequence',
+        fields: [
+          { name: 'content', match: 'any', optional: true, greedy: true },
+        ],
+      },
+    ],
+  },
+  transform(resolved, attrs, config) {
+    const mainZone = (resolved.main ?? {}) as ResolvedContent;
+    const sideZone = (resolved.side ?? {}) as ResolvedContent;
 
-  @group({ section: 1})
-  side: NodeStream;
-
-  transform() {
-    const main = this.main.transform();
-    const side = this.side.transform();
+    const main = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(mainZone.content), config) as RenderableTreeNode[],
+    );
+    const side = new RenderableNodeCursor(
+      Markdoc.transform(asNodes(sideZone.content), config) as RenderableTreeNode[],
+    );
 
     const mainContent = main.wrap('div');
     const sideContent = side.wrap('div');
 
-    const layoutMeta = new Tag('meta', { content: this.layout });
-    const ratioMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.ratio }) : undefined;
-    const valignMeta = this.layout !== 'stacked' ? new Tag('meta', { content: this.valign }) : undefined;
-    const gapMeta = this.gap !== 'default' ? new Tag('meta', { content: this.gap }) : undefined;
-    const collapseMeta = this.collapse ? new Tag('meta', { content: this.collapse }) : undefined;
+    const layout = (attrs.layout as string) || 'stacked';
+    const ratio = (attrs.ratio as string) || '1 1';
+    const valign = (attrs.valign as string) || 'top';
+    const gap = (attrs.gap as string) || 'default';
+    const collapse = attrs.collapse as string | undefined;
+
+    const layoutMeta = new Tag('meta', { content: layout });
+    const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
+    const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
+    const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
+    const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
 
     const children = [
       layoutMeta,
@@ -35,7 +63,7 @@ class StepModel extends SplitLayoutModel {
       ...(side.toArray().length > 0 ? [sideContent.next()] : []),
     ];
 
-    return createComponentRenderable(schema.Step, {
+    return createComponentRenderable({ rune: 'step',
       tag: 'li',
       properties: {
         name: name(main),
@@ -51,15 +79,14 @@ class StepModel extends SplitLayoutModel {
       },
       children,
     });
-  }
-}
-
-export const step = createSchema(StepModel, {
-  split: {
-    newName: 'layout',
-    transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
   },
-  mirror: { newName: '_consumed' },
+  deprecations: {
+    split: {
+      newName: 'layout',
+      transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
+    },
+    mirror: { newName: '_consumed' },
+  },
 });
 
 export const steps = createContentModelSchema({
@@ -128,7 +155,7 @@ export const steps = createContentModelSchema({
       ? [...headerNodes.toArray(), stepList]
       : [stepList];
 
-    return createComponentRenderable(schema.Steps, {
+    return createComponentRenderable({ rune: 'steps',
       tag: 'section',
       property: 'contentSection',
       properties: {

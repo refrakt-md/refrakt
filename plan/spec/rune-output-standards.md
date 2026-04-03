@@ -157,12 +157,13 @@ const mediaDiv = side.wrap('div');
 
 ### Known Violations
 
-| Rune | Issue |
-|------|-------|
-| Recipe | Media zone passes `Markdoc.transform()` output directly into wrapper — `<p><img/></p>` survives |
-| Playlist | Same pattern — media zone content not unwrapped |
+| Rune | Issue | Status |
+|------|-------|--------|
+| Recipe | Media zone passed `Markdoc.transform()` output directly into wrapper | Fixed (WORK-077, `extractMediaImage`) |
+| Playlist | Same pattern — media zone content not unwrapped | Fixed (WORK-077, `extractMediaImage`) |
+| Juxtapose | Panel body passed `Markdoc.transform()` output without unwrapping | Fixed (`unwrapParagraphImages`) |
 
-Note: Realm and Faction already unwrap correctly, but with duplicated inline code (see Standard 4).
+Note: Realm and Faction already unwrap correctly via shared `extractMediaImage` utility (WORK-077).
 
 ---
 
@@ -232,6 +233,7 @@ Runes that follow the standard 3-section structure (meta header, content wrapper
 - Per-rune CSS files must not redefine grid-template-columns, grid-column, grid-row, or mobile collapse rules for split/split-reverse layouts when the standard structure applies.
 - Per-rune CSS files should contain only domain-specific body content styling (e.g. ingredient lists, track lists, step counters).
 - Shared media container patterns (border-radius, overflow, img sizing, split box-shadow) should also move to the dimension layer.
+- Mobile collapse must support two distinct modes depending on the rune category (see below).
 
 ### Rationale
 
@@ -250,6 +252,58 @@ Recipe and playlist both define ~60 lines of near-identical split layout CSS wit
 
 This works for any rune that follows the standard structure — no BEM prefix needed.
 
+### Two-Mode Mobile Collapse
+
+When a split layout collapses to a single column on mobile, the media zone's position relative to the preamble differs by rune category. The shared layer must handle both modes.
+
+#### Content-first media (content runes)
+
+Content runes like **recipe**, **playlist**, **realm**, and **faction** typically have a cover image or scene photo in their media zone. On mobile, this image should appear **above** the preamble as a full-bleed card header — it sets the visual context for the content below. Recipe achieves this today with `order: -1` on the media zone plus negative-margin full-bleed treatment.
+
+Mobile source order: **media → meta → preamble → body**
+
+#### Preamble-first media (marketing runes)
+
+Marketing runes like **hero**, **feature**, and **step** typically have a code block, product screenshot, or interactive demo in their media zone. On mobile, the **preamble (headline + CTA) must lead** — it's the hook that draws the reader in. The media supports the preamble and should appear after it, following the natural DOM order. These runes already delegate to `split.css` today, which resets to DOM order on collapse via `order: unset`.
+
+Mobile source order: **meta → preamble → body → media**
+
+#### Implementation approach
+
+The shared `split.css` should support both modes via a data attribute on the root element (e.g. `data-media-position="top"` for content-first, with preamble-first as the default). This keeps the behavior declarative and avoids per-rune CSS for collapse ordering:
+
+```css
+/* Default collapse: DOM order (preamble first, media after) */
+@media (max-width: 640px) {
+  [data-layout^="split"][data-collapse] {
+    grid-template-columns: 1fr;
+  }
+  [data-layout^="split"][data-collapse] > * {
+    grid-column: auto;
+    grid-row: auto;
+    order: unset;
+  }
+}
+
+/* Content-first: hoist media above preamble on collapse */
+@media (max-width: 640px) {
+  [data-layout^="split"][data-collapse][data-media-position="top"] > [data-section="media"] {
+    order: -1;
+  }
+}
+```
+
+The `data-media-position` attribute would be emitted by the engine config as a modifier (or directly by the schema transform as a meta tag). Content runes opt in with `data-media-position="top"`; marketing runes omit it or use the default. The full-bleed card header treatment (negative margins, border-radius reset) also belongs in the shared layer, gated on `[data-media-position="top"]`.
+
+#### Classification
+
+| Mode | Runes | Rationale |
+|------|-------|-----------|
+| **Preamble-first** (default) | Hero, Feature, Step | Headline/CTA is the hook; media (code blocks, product shots) supports it |
+| **Content-first** (`data-media-position="top"`) | Recipe, Playlist, Realm, Faction | Cover image sets visual context; content follows below |
+
+Future runes choose the appropriate mode based on what their media zone typically contains. Most content/editorial runes will want content-first; most marketing/landing-page runes will want preamble-first.
+
 ### Prerequisite
 
 Standard 2 (preamble inside content) must be applied first. If a rune emits its header/title as a direct child of the article instead of inside the content wrapper, it produces 4 direct children instead of 3, breaking the grid placement. Once all runes follow the standard structure, the CSS converges naturally.
@@ -260,9 +314,10 @@ Standard 2 (preamble inside content) must be applied first. If a rune emits its 
 |---------|-----------------|--------|
 | Split grid explicit column/row placement | `recipe.css:128–156`, `playlist.css:141–167` | `split.css` |
 | Mobile collapse (reset grid-column/row) | `recipe.css:172–182`, `playlist.css:169–183` | `split.css` |
+| Content-first media hoist (`order: -1`) | `recipe.css:186–189` | `split.css` (gated on `[data-media-position="top"]`) |
+| Full-bleed card header (negative margin bleed) | `recipe.css:190–199` | `split.css` (gated on `[data-media-position="top"]`) |
 | Split media box-shadow | `recipe.css:158–161`, `playlist.css:186–189` | `split.css` or `media.css` |
 | Media zone container (border-radius, overflow, img block sizing) | `recipe.css:104–113`, `playlist.css:119–130` | `media.css` |
-| Mobile full-bleed card header (negative margin bleed) | `recipe.css:184–199` | `split.css` |
 
 ### What Stays Per-Rune
 
@@ -271,13 +326,14 @@ Per-rune CSS files retain only domain-specific styling that no other rune shares
 - **Recipe**: ingredient list (surfaced `ul` with disc markers), step counters (`counter-reset: recipe-step`), tip blockquotes
 - **Playlist**: track list layout (flex rows with name/artist/duration), player area, narrow-screen column hiding
 - **Realm/Faction**: section-specific typography or decorative elements
+- **Hero/Feature/Step**: marketing-specific decorative treatments (gradient overlays, accent borders, etc.)
 
 ### Known Violations
 
 | Rune | Duplicated lines | Pattern |
 |------|-----------------|---------|
-| Recipe | ~60 lines | Split grid placement, mobile collapse, media container, box-shadow |
-| Playlist | ~55 lines | Same patterns, different BEM prefix |
+| Recipe | ~60 lines | Split grid placement, mobile collapse, content-first media hoist, full-bleed header, media container, box-shadow |
+| Playlist | ~55 lines | Split grid placement, mobile collapse, media container, box-shadow (missing content-first hoist — should have it) |
 | Realm, Faction | (to audit) | Likely same if they gain CSS |
 
 ---
@@ -354,6 +410,84 @@ These runes use `sections` for identity transform annotation but have simpler st
 | 5 — Single code path | Yes | Yes | Yes |
 | 6 — Shared layout meta utility | Yes | — | — |
 | 7 — Shared split layout CSS | Yes | — | — |
+| 8 — Theme-level shared classes | Yes | Yes | — |
+
+---
+
+## Standard 8 — Theme-Level Shared Classes for Structural Grouping
+
+When multiple runes share nearly identical CSS (same structural pattern, same layout, same styling), themes should be able to emit a shared class on those runes — reducing CSS duplication without coupling unrelated rune packages at the config level.
+
+### Rule
+
+- The `RuneConfig` interface should support an optional `sharedClasses?: string[]` field.
+- The identity transform engine should prefix each entry with the theme prefix (e.g. `['entity-card']` → `.rf-entity-card`) and add them to the root element's class list.
+- **Shared classes must be set by the theme layer** (via `mergeThemeConfig` overrides), not by rune package configs. Different themes may want to group runes differently — a storytelling-focused theme might share styles between realm/faction/character, while a minimal theme might not share at all.
+- Shared class CSS files should live alongside the theme's per-rune CSS (e.g. `packages/lumina/styles/shared/entity-card.css`), not in the rune packages themselves.
+
+### Rationale
+
+Realm and faction currently have ~150 lines of near-identical CSS, differing only in the BEM prefix (`.rf-realm` vs `.rf-faction`). This duplication is a maintenance burden — every change must be made twice. CSS has no native mixin or `@extend` mechanism, and adding a preprocessor is an architectural decision beyond the scope of this spec.
+
+The key insight is that **which runes share styles is a theme decision, not a rune decision**. A rune package defines structure (BEM block, sections, modifiers). A theme decides visual treatment. Two runes might look identical in Lumina but completely different in another theme. Therefore the grouping mechanism belongs in the theme layer.
+
+### Engine Change
+
+Minimal — two lines in `transformRune()`:
+
+```ts
+// After building the BEM class string
+const sharedParts = (config.sharedClasses ?? []).map(c => `${prefix}-${c}`);
+const bemClass = [block, ...sharedParts, ...modifierClasses, existingClass].filter(Boolean).join(' ');
+```
+
+### Theme Usage
+
+Lumina would add shared class overrides via `mergeThemeConfig`:
+
+```ts
+export const luminaConfig = mergeThemeConfig(baseConfig, {
+  runes: {
+    Realm:   { sharedClasses: ['entity-card'] },
+    Faction: { sharedClasses: ['entity-card'] },
+  },
+  // ...existing tints, icons
+});
+```
+
+Then write shared CSS:
+
+```css
+/* packages/lumina/styles/shared/entity-card.css */
+.rf-entity-card { /* ~150 lines of shared layout, typography, section styling */ }
+.rf-entity-card__name { ... }
+.rf-entity-card__scene { ... }
+```
+
+Per-rune CSS retains only truly unique overrides:
+
+```css
+/* realm.css — only realm-specific rules */
+.rf-realm__lore-section { border-left: 2px solid var(--rf-color-accent); }
+
+/* faction.css — only faction-specific rules */
+.rf-faction__influence { font-variant-numeric: tabular-nums; }
+```
+
+### Interaction with Existing Config
+
+- `sharedClasses` is additive — it does not replace the rune's own BEM block class.
+- The shared class participates in `applyBemClasses` for element-level BEM (e.g. `.rf-entity-card__scene`) only if the shared class file defines those selectors. The engine emits the shared class on the root element only.
+- CSS coverage tests should recognize shared classes as valid selectors for any rune that declares them.
+- Contracts should include shared classes in the rune's class list.
+
+### Candidates for Shared Classes in Lumina
+
+| Shared Class | Runes | Shared Lines |
+|-------------|-------|-------------|
+| `entity-card` | Realm, Faction (potentially Character) | ~150 lines |
+
+Other groupings may emerge as more runes adopt the standard structure. This standard provides the mechanism; themes decide when to use it.
 
 ---
 

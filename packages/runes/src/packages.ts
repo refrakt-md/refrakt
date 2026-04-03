@@ -466,7 +466,7 @@ function validateRunePackage(pkg: RunePackage, npmName: string): void {
 		if (!entry.transform || typeof entry.transform !== 'object') {
 			throw new Error(
 				`Package "${npmName}" rune "${name}" has an invalid transform. ` +
-				`Expected a Markdoc Schema object (created via createSchema()).`
+				`Expected a Markdoc Schema object (created via createContentModelSchema()).`
 			);
 		}
 	}
