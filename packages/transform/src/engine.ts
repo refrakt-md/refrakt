@@ -667,6 +667,43 @@ function buildStructureElement(
 
 	const dataName = entry.ref ?? name;
 
+	// Repeated element generation: produce N copies of a template element
+	if (entry.repeat) {
+		const countRaw = parseInt(modifierValues[entry.repeat.count] ?? '', 10);
+		if (!countRaw || countRaw < 0 || isNaN(countRaw)) {
+			return makeTag(entry.tag, { 'data-name': dataName }, []);
+		}
+		const max = entry.repeat.max ?? 10;
+		const count = Math.min(countRaw, max);
+		const filledRaw = entry.repeat.filled
+			? parseInt(modifierValues[entry.repeat.filled] ?? '0', 10)
+			: 0;
+		const filled = Math.max(0, Math.min(filledRaw, count));
+
+		const children: RendererNode[] = [];
+		for (let i = 0; i < count; i++) {
+			const isFilled = i < filled;
+			if (isFilled && entry.repeat.filledElement) {
+				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons);
+				if (el) children.push(el);
+			} else {
+				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons);
+				if (el) {
+					if (entry.repeat.filled) {
+						// Add data-filled attribute when filled tracking is active
+						children.push({
+							...el,
+							attributes: { ...el.attributes, 'data-filled': isFilled ? 'true' : 'false' },
+						});
+					} else {
+						children.push(el);
+					}
+				}
+			}
+		}
+		return makeTag(entry.tag, { 'data-name': dataName }, children);
+	}
+
 	// Resolve extra attributes
 	const extraAttrs: Record<string, string> = {};
 	if (entry.attrs) {

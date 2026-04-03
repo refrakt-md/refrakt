@@ -135,6 +135,19 @@ export interface StructureEntry {
 	slot?: string;
 	/** Ordering within a slot (default: 0, lower numbers first) */
 	order?: number;
+	/** Generate N copies of a template element. Used for star ratings, progress dots, etc. */
+	repeat?: {
+		/** Modifier name that provides the total count */
+		count: string;
+		/** Maximum elements to prevent runaway generation (default: 10) */
+		max?: number;
+		/** Modifier name for how many are "filled" (optional) */
+		filled?: string;
+		/** Template for each generated element */
+		element: StructureEntry;
+		/** Template for filled elements (optional — if not set, filled elements get data-filled="true") */
+		filledElement?: StructureEntry;
+	};
 	/** Inject an SVG icon from config.icons[group][resolvedVariantValue] */
 	icon?: { group: string; variant: string };
 	/** Inject text from a resolved modifier value */
