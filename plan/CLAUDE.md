@@ -26,7 +26,7 @@ Each rune type uses a unique prefix. To assign a new ID, scan existing files for
 |------|--------|---------|-----------------|
 | Spec | `SPEC-` | `SPEC-023` | SPEC-034 |
 | Work | `WORK-` | `WORK-051` | WORK-116 |
-| Decision | `ADR-` | `ADR-005` | ADR-005 |
+| Decision | `ADR-` | `ADR-005` | ADR-007 |
 | Bug | `BUG-` | `BUG-001` | (none yet) |
 | Milestone | `v`+semver | `v1.0.0` | v1.0.0 |
 
