@@ -150,46 +150,55 @@
 .rf-backlog__card:last-child {
 	border-bottom: none;
 }
-.rf-backlog__card-header {
+/* Header: ID left, status + progress right */
+.rf-backlog__card [data-section="header"] {
 	display: flex;
 	align-items: baseline;
+	justify-content: space-between;
 	gap: 0.5rem;
-	flex-wrap: wrap;
 }
-.rf-backlog__card-id {
-	font-family: var(--plan-font-mono);
+.rf-backlog__card-header-left,
+.rf-backlog__card-header-right {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.5rem;
+}
+.rf-backlog__card [data-section="header"] [data-meta-type] {
+	border: none;
+	padding: 0;
+	border-radius: 0;
 	font-size: var(--plan-font-size-sm);
+	color: var(--plan-color-text-muted);
+}
+.rf-backlog__card [data-section="header"] [data-meta-type="id"] {
 	font-weight: 700;
 	color: var(--plan-color-text);
 }
-.rf-backlog__card-status {
-	font-size: var(--plan-font-size-sm);
-	color: var(--plan-color-text-muted);
-	text-transform: capitalize;
+.rf-backlog__card [data-section="header"] [data-meta-sentiment]::before {
+	display: none;
 }
-.rf-backlog__card-status::before { content: '— '; }
-.rf-backlog__card-priority,
-.rf-backlog__card-severity,
-.rf-backlog__card-complexity {
-	font-size: var(--plan-font-size-sm);
-	color: var(--plan-color-text-muted);
-	text-transform: capitalize;
+/* Title */
+.rf-backlog__card [data-section="title"] {
+	font-size: var(--plan-font-size-base);
+	font-weight: 500;
+	color: var(--plan-color-text);
 }
-.rf-backlog__card-milestone {
+/* Footer pills */
+.rf-backlog__card [data-section="footer"] {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.375rem;
+}
+.rf-backlog__card [data-section="footer"] [data-meta-type] {
 	font-size: var(--plan-font-size-sm);
 	color: var(--plan-color-text-muted);
-	margin-left: auto;
+	opacity: 1;
 }
 .rf-backlog__card-progress {
 	font-family: var(--plan-font-mono);
 	font-size: var(--plan-font-size-sm);
 	color: var(--plan-color-text-muted);
-	margin-left: auto;
-}
-.rf-backlog__card-title {
-	font-size: var(--plan-font-size-base);
-	font-weight: 500;
-	color: var(--plan-color-text);
 }
 
 /* --------------------------------------------------------------------------
