@@ -38,6 +38,61 @@ An audit of all `postTransform` usage across community packages reveals that **5
 
 ---
 
+## Architectural Layering: Model vs. Authoring Surface
+
+The five features in this spec define a **declarative structural model** — an intermediate representation (IR) that the identity transform engine consumes. This model is the engine's contract: it's what `mergeThemeConfig` merges, what `refrakt contracts` validates, what `refrakt inspect` renders, and what constrains what themes can structurally express.
+
+```
+  Authoring surfaces          Declarative model (IR)           Engine
+  ─────────────────          ──────────────────────           ──────
+  Config objects ──────┐
+                       ├───→  RuneConfig                ───→  identityTransform()
+  Template syntax ─────┤      (slots, projection,             (tree manipulation)
+  (future)             │       repeat, valueMap, etc.)
+                       │
+  Visual editor ───────┘
+  (future)
+```
+
+**The model is the constraint boundary.** Any authoring surface — whether it's raw `RuneConfig` objects, a spatial template language, or a drag-and-drop tool — compiles down to this model. If something can't be expressed as a `RuneConfig`, it's out of bounds for declarative theming regardless of how the author writes it. If it compiles to a valid `RuneConfig`, it's legal.
+
+This separation has three consequences:
+
+1. **Multiple authoring surfaces can coexist.** Rune package authors comfortable with TypeScript may prefer raw config objects. Theme developers who think spatially may prefer a template syntax that compiles to the same config. Both are first-class; neither is canonical.
+
+2. **Tooling targets the model, not the syntax.** `refrakt contracts`, `refrakt inspect --audit`, and CSS coverage tests all operate on the compiled `RuneConfig`. They don't need to understand the authoring surface. A template syntax inherits all existing validation for free.
+
+3. **The engine stays simple.** The identity transform consumes `RuneConfig` objects. It never parses templates, evaluates expressions, or handles syntax. Compilation happens before the engine runs — at build time or in `mergeThemeConfig`.
+
+A template authoring surface is a likely future addition (see below), but this spec intentionally defines only the model layer. The authoring surface is a DX concern that should be designed after real theme development experience reveals what developers actually reach for.
+
+### Future: Spatial Template Syntax
+
+A plausible authoring surface for Features 1 and 5 is a spatial layout syntax — a constrained notation where theme developers describe output structure visually:
+
+```
+[eyebrow]
+  @id-badge
+
+[header]
+  @icon
+  @title
+  @status-badge
+
+[content]
+
+[footer]
+  @meta
+```
+
+Here `[name]` declares a slot and `@name` references a `data-name` element for projection. The compiler maps this to the equivalent `slots` + `projection.relocate` config. The syntax has no logic, no conditionals, no expressions — just spatial arrangement of named elements. It's a wireframe, not a template language.
+
+This kind of syntax is valuable because theme developers think in layout, and the config object form of Features 1 and 5 requires translating spatial intent into relational declarations (`relocate X into Y`). A spatial syntax makes the intent legible. But it compiles to the same `RuneConfig` model — same validation, same constraints, same tooling.
+
+The design of this syntax is deferred to a separate spec. The model defined here is sufficient for implementation and for authoring via config objects.
+
+---
+
 ## Feature 1 — Named Slots with Ordering
 
 ### Interface Changes
