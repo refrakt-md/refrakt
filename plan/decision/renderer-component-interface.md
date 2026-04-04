@@ -172,47 +172,100 @@ Option 2, but also pass the original `tag` object as a prop for advanced use cas
 
 ## Open Questions
 
-1. **Naming collisions.** What happens if a property name collides with a ref name? Recipe has no collisions, but it's possible in theory. Should properties and refs live in separate namespaces (e.g., `props.prepTime` vs `slots.ingredients`), or is a flat namespace with a collision rule (properties win? refs win?) sufficient?
+1. ~~**Naming collisions.**~~ **Resolved.** Top-level ref names and property names must be unique within the same rune. A flat namespace is sufficient — properties and slots share it. This is enforceable at schema build time: `createComponentRenderable` already receives both the `properties` and `refs` objects, so a duplicate key across the two can be a static error. Separate namespaces (e.g., `props.x` vs `slots.x`) add API complexity without practical benefit given the low collision risk.
 
-2. **Nested refs.** Some runes have refs nested inside other refs (e.g., `headline` inside `content`). Should the renderer flatten all refs to top-level slots, or only extract top-level refs? Flattening is more convenient but loses structural information.
+2. ~~**Nested refs.**~~ **Resolved.** Only top-level refs become slots. Nested refs (children with `data-name` inside another ref) remain internal to the parent slot's pre-rendered content. Rationale:
 
-3. **Opt-in vs default.** Should the new interface be the default for all component overrides, or should components opt in (e.g., via a registry flag)? Default is cleaner but is a breaking change for existing components that expect `tag`.
+   - **Naming scope.** Nested refs often have generic names (`title`, `label`, `value`, `icon`) that are contextual to their parent. Flattening them to top-level slots would create ambiguity — e.g., `Event` has `label` and `value` nested inside multiple `detail` refs. Top-level-only avoids the scoping problem entirely.
+   - **Right level of control.** A component override's purpose is to *place* major content regions, not restructure their internals. The identity transform handles internal structure (BEM classes, nested elements), and that arrives pre-rendered inside the slot.
+   - **Escape hatch.** For the rare case where a component needs finer-grained access than slot-level placement, Option 4 (hybrid) provides the `tag` prop as a fallback. The component can then use existing helpers to dig into nested structure.
 
-4. **BEM classes on slot content.** Named slots arrive with identity-transform BEM classes applied. Should there be a way to opt out and receive raw content? Or is CSS override sufficient for restyling?
+   Audit of current rune configs confirms this is safe: the vast majority of runes have unique top-level ref names. The only rune with nested naming collisions (`Event` with `label`/`value` inside `detail`) would not be affected since those nested refs stay inside the `detail` slot.
 
-5. **Svelte 5 snippet mechanics.** Snippets in Svelte 5 are render functions, not slotted content. The renderer would need to create snippet functions that render the extracted subtrees. What's the right way to construct these — wrapping in `{#snippet}` blocks, or using the programmatic `createRawSnippet` API?
+3. ~~**Opt-in vs default.**~~ **Resolved.** The new interface is the default for all component overrides, with the original `tag` prop passed alongside as a companion (Option 4 — hybrid). Existing components that destructure `tag` continue to work unchanged — they simply ignore the new props and slots. New components use props and slots and ignore `tag`. No migration flag, no opt-in mechanism. The renderer always performs extraction; what the component consumes is up to it.
 
-6. **Typed component interfaces.** The information needed to generate TypeScript interfaces already exists in the rune schema — `createComponentRenderable` declares `properties` (with values derived from typed attributes) and `refs` (with names). Property types can be inferred from the schema's attribute definitions (`String`, `Number`, `matches: ['easy','medium','hard']`). Several approaches for surfacing types to component authors:
+4. ~~**BEM classes on slot content.**~~ **Resolved.** Slots always arrive identity-transformed. No opt-out mechanism. Component overrides control *placement* of content regions, not their internal rendering. CSS overrides are sufficient for restyling internals (BEM selectors like `.rf-recipe__ingredient` remain valid targets). Providing raw content would require the renderer to maintain two versions of each subtree, adding real complexity for a niche case. Components needing fundamentally different internal structure should pair with a schema override, not just a renderer override.
+
+5. ~~**Svelte 5 snippet mechanics.**~~ **Deferred to implementation.** The ADR specifies the contract — components receive named renderables — not the framework-specific mechanism. Each framework adapter implements extraction using its native construct (`createRawSnippet` in Svelte 5, named slots in Astro, render props or children-as-object in React). Pinning the mechanism here would couple the ADR to framework internals that may evolve independently.
+
+6. ~~**Typed component interfaces.**~~ **Resolved.** Approach B (generic interface with renderable type parameter) is the primary path. Rune packages export a generic interface parameterized over the renderable type, keeping packages framework-agnostic:
    - **Package exports.** Each rune package exports prop interfaces alongside schemas (e.g., `import type { RecipeProps } from '@refrakt-md/learning'`). Types are generated as part of the package build from schema metadata.
    - **CLI generation.** `refrakt inspect recipe --types` emits a TypeScript interface with scalar props typed from attributes and `Snippet` types for each named ref.
    - **Vite virtual modules.** The SvelteKit plugin already knows which packages are loaded — it could generate virtual type modules (like it does for content modules) so components get autocompletion and type errors without explicit imports.
    
-   The package export approach is the simplest starting point. The key insight is that props (from properties) would carry the attribute's original type (`string`, `number`, union literals), while slots (from refs) would be typed as `Snippet` (Svelte 5) or framework-equivalent. Example generated interface:
+   The package export approach is the simplest starting point. However, the renderable type for slots is framework-specific (`Snippet` in Svelte 5, `astroHTML.JSX.Element` in Astro, `ReactNode` in React), so rune packages — which are framework-agnostic — cannot ship a complete typed interface directly.
+   
+   **Approach A: Split scalar props from slot names.** The rune package exports a framework-agnostic contract — scalar property types and slot names as separate constructs. Each framework adapter applies its own renderable type:
    
    ```ts
-   interface RecipeProps {
+   // From the rune package (framework-agnostic)
+   interface RecipeProperties {
      prepTime?: string;
      cookTime?: string;
      servings?: string;
      difficulty?: 'easy' | 'medium' | 'hard';
-     headline?: Snippet;
-     ingredients?: Snippet;
-     steps?: Snippet;
-     tips?: Snippet;
-     media?: Snippet;
-     children?: Snippet;
+   }
+   
+   type RecipeSlotNames = 'headline' | 'ingredients' | 'steps' | 'tips' | 'media';
+   ```
+   
+   ```ts
+   // In a Svelte component
+   import type { Snippet } from 'svelte';
+   import type { RecipeProperties, RecipeSlotNames } from '@refrakt-md/learning';
+   
+   type RecipeProps = RecipeProperties & Record<RecipeSlotNames, Snippet | undefined> & { children?: Snippet };
+   ```
+   
+   **Approach B: Generic interface with a renderable type parameter.** The rune package exports a single generic interface parameterized over the renderable type:
+   
+   ```ts
+   // From the rune package
+   interface RecipeProps<R = unknown> {
+     prepTime?: string;
+     cookTime?: string;
+     servings?: string;
+     difficulty?: 'easy' | 'medium' | 'hard';
+     headline?: R;
+     ingredients?: R;
+     steps?: R;
+     tips?: R;
+     media?: R;
+     children?: R;
    }
    ```
+   
+   ```ts
+   // In a Svelte component
+   import type { Snippet } from 'svelte';
+   import type { RecipeProps } from '@refrakt-md/learning';
+   
+   let { prepTime, headline, ingredients, ...rest }: RecipeProps<Snippet> = $props();
+   ```
+   
+   **Approach C: Framework adapter generates concrete types.** The rune package exports only the contract metadata (property names/types, slot names). The framework adapter — or the Vite plugin — generates fully concrete types using the framework's native renderable type. This keeps rune packages entirely free of type-level framework coupling.
+   
+   Approach B is the most ergonomic for component authors (one import, one generic parameter). Approach A offers the cleanest separation but requires the component author to assemble the full type. Approach C (adapter-generated types from the Vite plugin) is the most decoupled but adds tooling complexity — it can be layered on top of Approach B later when multiple framework adapters exist and the generation story is proven.
 
 ## Decision
 
-**Pending.** This ADR documents the design space for discussion. The proposal (Option 2 or Option 4) addresses a real ergonomics gap that will become more acute as we add framework adapters beyond Svelte.
+**Option 4: Hybrid — framework-native by default, tag prop as escape hatch.** The renderer extracts property meta tags as props and top-level refs as named slots, passing them alongside the original `tag` object. Types are provided via generic interfaces (Approach B) exported from rune packages.
 
-## Consequences (if adopted)
+## Rationale
+
+The framework-native interface (props + slots) is the right default because it matches what component authors in every framework expect. Passing `tag` alongside preserves backwards compatibility and provides an escape hatch for advanced cases that need full tree access. Together these eliminate the migration burden — existing components keep working, new components get the clean interface.
+
+Always delivering identity-transformed content in slots is the right trade-off because component overrides exist to control placement, not to reimplement internal rendering. The identity transform already handles BEM classes, structural elements, and nested refs — duplicating that in components would be wasted effort.
+
+Deferring snippet/slot mechanics to each framework adapter keeps this decision stable across framework evolution. The contract (named renderables as props) is durable; the mechanism (`createRawSnippet`, `<slot name>`, render props) is framework-specific and may change.
+
+Generic type parameters (Approach B) strike the right balance between ergonomics and framework independence. `RecipeProps<Snippet>` is a single import and one type parameter — minimal ceremony while keeping the rune package free of framework types.
+
+## Consequences
 
 1. **Each framework renderer gains an extraction phase.** Before dispatching to a component, the renderer partitions children into properties, named refs, and anonymous content. This is ~20-30 lines of extraction logic per renderer.
 
-2. **Existing Svelte component overrides need migration.** Components currently using `tag` prop and helpers would need to be updated to use props and snippets. If Option 4 is chosen, this can be gradual — `tag` remains available.
+2. **Existing Svelte component overrides continue to work.** The `tag` prop is always passed alongside extracted props and slots. Components can migrate gradually from `tag`-based access to props/slots.
 
 3. **Component authoring documentation simplifies.** Instead of documenting helper functions, we document "your component receives these props and these slots" — which is what framework developers already understand.
 
