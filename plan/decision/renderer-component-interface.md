@@ -187,22 +187,59 @@ Option 2, but also pass the original `tag` object as a prop for advanced use cas
    - **CLI generation.** `refrakt inspect recipe --types` emits a TypeScript interface with scalar props typed from attributes and `Snippet` types for each named ref.
    - **Vite virtual modules.** The SvelteKit plugin already knows which packages are loaded — it could generate virtual type modules (like it does for content modules) so components get autocompletion and type errors without explicit imports.
    
-   The package export approach is the simplest starting point. The key insight is that props (from properties) would carry the attribute's original type (`string`, `number`, union literals), while slots (from refs) would be typed as `Snippet` (Svelte 5) or framework-equivalent. Example generated interface:
+   The package export approach is the simplest starting point. However, the renderable type for slots is framework-specific (`Snippet` in Svelte 5, `astroHTML.JSX.Element` in Astro, `ReactNode` in React), so rune packages — which are framework-agnostic — cannot ship a complete typed interface directly.
+   
+   **Approach A: Split scalar props from slot names.** The rune package exports a framework-agnostic contract — scalar property types and slot names as separate constructs. Each framework adapter applies its own renderable type:
    
    ```ts
-   interface RecipeProps {
+   // From the rune package (framework-agnostic)
+   interface RecipeProperties {
      prepTime?: string;
      cookTime?: string;
      servings?: string;
      difficulty?: 'easy' | 'medium' | 'hard';
-     headline?: Snippet;
-     ingredients?: Snippet;
-     steps?: Snippet;
-     tips?: Snippet;
-     media?: Snippet;
-     children?: Snippet;
+   }
+   
+   type RecipeSlotNames = 'headline' | 'ingredients' | 'steps' | 'tips' | 'media';
+   ```
+   
+   ```ts
+   // In a Svelte component
+   import type { Snippet } from 'svelte';
+   import type { RecipeProperties, RecipeSlotNames } from '@refrakt-md/learning';
+   
+   type RecipeProps = RecipeProperties & Record<RecipeSlotNames, Snippet | undefined> & { children?: Snippet };
+   ```
+   
+   **Approach B: Generic interface with a renderable type parameter.** The rune package exports a single generic interface parameterized over the renderable type:
+   
+   ```ts
+   // From the rune package
+   interface RecipeProps<R = unknown> {
+     prepTime?: string;
+     cookTime?: string;
+     servings?: string;
+     difficulty?: 'easy' | 'medium' | 'hard';
+     headline?: R;
+     ingredients?: R;
+     steps?: R;
+     tips?: R;
+     media?: R;
+     children?: R;
    }
    ```
+   
+   ```ts
+   // In a Svelte component
+   import type { Snippet } from 'svelte';
+   import type { RecipeProps } from '@refrakt-md/learning';
+   
+   let { prepTime, headline, ingredients, ...rest }: RecipeProps<Snippet> = $props();
+   ```
+   
+   **Approach C: Framework adapter generates concrete types.** The rune package exports only the contract metadata (property names/types, slot names). The framework adapter — or the Vite plugin — generates fully concrete types using the framework's native renderable type. This keeps rune packages entirely free of type-level framework coupling.
+   
+   Approach B is the most ergonomic for component authors (one import, one generic parameter). Approach A offers the cleanest separation but requires the component author to assemble the full type. Approach C is the most decoupled but adds tooling complexity.
 
 ## Decision
 
