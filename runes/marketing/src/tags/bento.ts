@@ -66,7 +66,7 @@ export const bentoCell = createContentModelSchema({
 
 		if (hasIcon) {
 			const iconWrapper = iconContent.wrap('div');
-			properties.icon = iconContent.tags('svg', 'span');
+			properties.iconSource = iconContent.tags('svg', 'span');
 			refs.icon = iconWrapper;
 			children.push(iconWrapper.next());
 		}

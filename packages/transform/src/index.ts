@@ -19,7 +19,8 @@ export { generateStructureContract } from './contracts.js';
 export type { StructureContract, RuneContract } from './contracts.js';
 
 // Helpers (useful for theme authors building custom transforms)
-export { toKebabCase, isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from './helpers.js';
+export { toKebabCase, fromKebabCase, isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta, extractComponentInterface, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from './helpers.js';
+export type { ComponentInterface } from './helpers.js';
 
 // HTML rendering
 export { renderToHtml } from './html.js';

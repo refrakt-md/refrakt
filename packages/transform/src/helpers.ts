@@ -44,6 +44,58 @@ export function readMeta(tag: SerializedTag, property: string, defaultValue?: st
 	return meta?.attributes.content ?? defaultValue;
 }
 
+/** Convert kebab-case to camelCase: "prep-time" → "prepTime" */
+export function fromKebabCase(s: string): string {
+	return s.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+}
+
+/**
+ * Result of extracting the component interface from a serialized tag.
+ *
+ * - `properties` — scalar values keyed by camelCase property name (from meta children with `data-field`)
+ * - `refs` — named content regions keyed by `data-name` (top-level children only; nested refs stay inside their parent)
+ * - `children` — anonymous content (everything that is neither a property meta tag nor a named ref)
+ */
+export interface ComponentInterface {
+	properties: Record<string, string>;
+	refs: Record<string, SerializedTag[]>;
+	children: RendererNode[];
+}
+
+/**
+ * Partition a serialized tag's children into properties, named refs, and anonymous content.
+ *
+ * - **Properties**: `<meta>` children with a `data-field` attribute. Key is the camelCased
+ *   field name, value is the `content` attribute.
+ * - **Refs**: Top-level children with a `data-name` attribute. Only direct children are
+ *   extracted — nested refs (children inside another ref) remain inside their parent.
+ * - **Children**: Everything else — neither a property meta tag nor a named ref.
+ */
+export function extractComponentInterface(tag: SerializedTag): ComponentInterface {
+	const properties: Record<string, string> = {};
+	const refs: Record<string, SerializedTag[]> = {};
+	const children: RendererNode[] = [];
+
+	for (const child of tag.children) {
+		if (isTag(child)) {
+			if (child.name === 'meta' && child.attributes['data-field']) {
+				const key = fromKebabCase(child.attributes['data-field']);
+				properties[key] = child.attributes.content ?? '';
+				continue;
+			}
+			if (child.attributes['data-name']) {
+				const name = child.attributes['data-name'];
+				if (!refs[name]) refs[name] = [];
+				refs[name].push(child);
+				continue;
+			}
+		}
+		children.push(child);
+	}
+
+	return { properties, refs, children };
+}
+
 // ─── Layout Transform Helpers ─────────────────────────────────────────
 
 /** Named gap presets → CSS values */

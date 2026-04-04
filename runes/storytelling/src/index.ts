@@ -175,3 +175,12 @@ The journey begins.
 };
 
 export default storytelling;
+
+export type {
+	CharacterSectionProps, CharacterProps,
+	RealmSectionProps, RealmProps,
+	BeatProps, PlotProps, BondProps,
+	StoryboardPanelProps, StoryboardProps,
+	LoreProps,
+	FactionSectionProps, FactionProps,
+} from './props.js';

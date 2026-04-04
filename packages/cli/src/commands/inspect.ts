@@ -1,6 +1,8 @@
 import type { Rune } from '@refrakt-md/runes';
 import type { ThemeConfig } from '@refrakt-md/transform';
 
+import { extractComponentInterface, fromKebabCase, isTag } from '@refrakt-md/transform';
+import type { SerializedTag } from '@refrakt-md/types';
 import { getFixture } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import {
@@ -54,6 +56,7 @@ export interface InspectOptions {
 	auditMeta: boolean;
 	auditDimensions: boolean;
 	all: boolean;
+	showInterface: boolean;
 	theme: string;
 	items: number;
 	cssDir?: string;
@@ -113,6 +116,11 @@ export async function inspectCommand(
 	// --audit mode for a single rune
 	if (options.audit) {
 		return runSingleAudit(rune, config, options, deps);
+	}
+
+	// --interface mode: show component override interface
+	if (options.showInterface) {
+		return showComponentInterface(rune, config, options, deps);
 	}
 
 	// Check for variant expansion (e.g., --type=all)
@@ -426,6 +434,166 @@ function runDimensionAudit(
 	} else {
 		console.log(formatDimensionAuditResult(result));
 	}
+}
+
+/** Show the component override interface for a rune (ADR-008) */
+function showComponentInterface(
+	rune: Rune,
+	config: ThemeConfig,
+	options: InspectOptions,
+	deps: InspectDeps,
+): void {
+	// Run the pipeline to get the serialized (pre-identity-transform) tree
+	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, options.flags);
+	const ast = deps.Markdoc.parse(source);
+	const headings = deps.extractHeadings(ast);
+
+	const transformed = deps.Markdoc.transform(ast, {
+		tags: deps.tags,
+		nodes: deps.nodes,
+		variables: {
+			generatedIds: new Set<string>(),
+			path: '/inspect.md',
+			headings,
+			__source: source,
+			frontmatter: {},
+			page: { url: '/inspect.md', filePath: 'inspect.md', draft: false },
+		},
+	});
+
+	const serialized = deps.serializeTree(transformed) as any;
+
+	// Find the rune's root tag in the serialized tree.
+	// The data-rune attribute may differ from the CLI rune name (e.g., tabs → tab-group),
+	// so search for any tag with a data-rune attribute first.
+	const runeTag = findRuneTag(serialized, rune.name) ?? findFirstRuneTag(serialized);
+	if (!runeTag) {
+		throw new Error(`Could not find rune "${rune.name}" in the serialized output.`);
+	}
+
+	const iface = extractComponentInterface(runeTag as SerializedTag);
+
+	// Get schema attribute types for richer type info
+	const schema = rune.schema;
+	const attrTypes: Record<string, string> = {};
+	if (schema?.attributes) {
+		for (const [key, def] of Object.entries(schema.attributes)) {
+			if (def.matches && Array.isArray(def.matches)) {
+				attrTypes[key] = (def.matches as string[]).map((v: string) => `'${v}'`).join(' | ');
+			} else if (def.type === String) {
+				attrTypes[key] = 'string';
+			} else if (def.type === Number) {
+				attrTypes[key] = 'string'; // meta content is always string
+			} else if (def.type === Boolean) {
+				attrTypes[key] = 'string';
+			} else {
+				attrTypes[key] = 'string';
+			}
+		}
+	}
+
+	if (options.json) {
+		const result = {
+			rune: rune.name,
+			typeName: rune.typeName,
+			properties: Object.entries(iface.properties).map(([name, value]) => ({
+				name,
+				type: attrTypes[name] ?? 'string',
+				example: value || undefined,
+			})),
+			slots: Object.entries(iface.refs).map(([name, tags]) => ({
+				name,
+				elements: tags.length,
+			})),
+			hasAnonymousContent: iface.children.length > 0,
+		};
+		console.log(JSON.stringify(result, null, 2));
+	} else {
+		console.log(heading('Component Interface'));
+		console.log(`  Rune: ${rune.name}${rune.typeName ? ` (${rune.typeName})` : ''}\n`);
+
+		const propEntries = Object.entries(iface.properties);
+		if (propEntries.length > 0) {
+			console.log(heading('Properties (scalar props)'));
+			for (const [name, value] of propEntries) {
+				const type = attrTypes[name] ?? 'string';
+				const example = value ? ` = "${value}"` : '';
+				console.log(`  ${name}: ${type}${example}`);
+			}
+			console.log('');
+		}
+
+		const refEntries = Object.entries(iface.refs);
+		if (refEntries.length > 0) {
+			console.log(heading('Slots (named renderables)'));
+			for (const [name, tags] of refEntries) {
+				const tagNames = tags.map(t => t.name).join(', ');
+				console.log(`  ${name}: Snippet  (${tagNames})`);
+			}
+			console.log('');
+		}
+
+		if (iface.children.length > 0) {
+			console.log(heading('Default Slot'));
+			console.log(`  children: Snippet  (${iface.children.length} node(s))`);
+			console.log('');
+		}
+
+		// Show usage example
+		console.log(heading('Svelte 5 Usage'));
+		const props = [
+			...propEntries.map(([n]) => n),
+			...refEntries.map(([n]) => n),
+			...(iface.children.length > 0 ? ['children'] : []),
+			'tag',
+		];
+		console.log(`  let { ${props.join(', ')} }: ${rune.typeName ?? 'Props'}<Snippet> = $props();`);
+		console.log('');
+	}
+}
+
+/** Recursively find the rune root tag by data-rune attribute */
+function findRuneTag(node: any, runeName: string): any {
+	if (!node) return undefined;
+	if (Array.isArray(node)) {
+		for (const child of node) {
+			const found = findRuneTag(child, runeName);
+			if (found) return found;
+		}
+		return undefined;
+	}
+	if (typeof node === 'object' && node.$$mdtype === 'Tag') {
+		if (node.attributes?.['data-rune'] === runeName) return node;
+		if (node.children) {
+			for (const child of node.children) {
+				const found = findRuneTag(child, runeName);
+				if (found) return found;
+			}
+		}
+	}
+	return undefined;
+}
+
+/** Find the first tag with any data-rune attribute (fallback when name doesn't match) */
+function findFirstRuneTag(node: any): any {
+	if (!node) return undefined;
+	if (Array.isArray(node)) {
+		for (const child of node) {
+			const found = findFirstRuneTag(child);
+			if (found) return found;
+		}
+		return undefined;
+	}
+	if (typeof node === 'object' && node.$$mdtype === 'Tag') {
+		if (node.attributes?.['data-rune']) return node;
+		if (node.children) {
+			for (const child of node.children) {
+				const found = findFirstRuneTag(child);
+				if (found) return found;
+			}
+		}
+	}
+	return undefined;
 }
 
 /** Check if any flag has value "all" and corresponds to a known variant */

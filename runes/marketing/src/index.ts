@@ -202,3 +202,10 @@ Select the plan that best fits your needs.
 };
 
 export default marketing;
+
+export type {
+	FeatureProps, CtaProps, StepProps, StepsProps,
+	TierProps, PricingProps,
+	ComparisonRowProps, ComparisonColumnProps, ComparisonProps,
+	HeroProps, BentoCellProps, BentoProps, TestimonialProps,
+} from './props.js';

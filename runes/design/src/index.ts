@@ -138,3 +138,8 @@ A landing page with a hero section and call to action.
 };
 
 export default design;
+
+export type {
+	PreviewProps, SpacingProps, SwatchProps, TypographyProps,
+	DesignContextProps, MockupProps, PaletteProps,
+} from './props.js';

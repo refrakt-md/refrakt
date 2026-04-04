@@ -76,3 +76,9 @@ Launch of the theme marketplace and inspect tooling for developers.
 };
 
 export default business;
+
+export type {
+	CastMemberProps, CastProps,
+	OrganizationProps,
+	TimelineEntryProps, TimelineProps,
+} from './props.js';

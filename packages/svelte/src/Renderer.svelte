@@ -3,9 +3,12 @@
 </script>
 
 <script lang="ts">
+	import { createRawSnippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import type { Component } from 'svelte';
 	import type { SerializedTag, RendererNode } from './types.js';
 	import { getComponent, getElementOverrides } from './context.js';
+	import { extractComponentInterface } from '@refrakt-md/transform';
 	import Renderer from './Renderer.svelte';
 
 	let { node, overrides }: { node: RendererNode; overrides?: Record<string, Component<any>> } = $props();
@@ -43,6 +46,47 @@
 		return `<${tag.name}${attrs}>${children}</${tag.name}>`;
 	}
 
+	const VOID_ELEMENTS = new Set([
+		'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+		'link', 'meta', 'param', 'source', 'track', 'wbr',
+	]);
+
+	/** Render a RendererNode tree to an HTML string, handling codeblock/raw-html content */
+	function nodeToHtml(n: RendererNode): string {
+		if (n === null || n === undefined) return '';
+		if (typeof n === 'string') return escapeAttr(n);
+		if (typeof n === 'number') return String(n);
+		if (Array.isArray(n)) return n.map(nodeToHtml).join('');
+		if (!isTag(n)) return '';
+		if (n.name === 'svg') return svgToHtml(n);
+
+		const attrs = Object.entries(htmlAttrs(n.attributes))
+			.map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
+			.join('');
+
+		if (VOID_ELEMENTS.has(n.name)) return `<${n.name}${attrs}>`;
+
+		const isRaw = n.attributes?.['data-codeblock'] || n.attributes?.['data-raw-html'];
+		const inner = n.children.map(child => {
+			if (isRaw && typeof child === 'string') return child;
+			return nodeToHtml(child);
+		}).join('');
+
+		return `<${n.name}${attrs}>${inner}</${n.name}>`;
+	}
+
+	/** Create a Svelte 5 snippet from an array of serialized nodes */
+	function createNodeSnippet(nodes: RendererNode[]): Snippet {
+		return createRawSnippet(() => ({
+			render: () => {
+				if (nodes.length === 1 && isTag(nodes[0])) {
+					return nodeToHtml(nodes[0]);
+				}
+				return `<div data-snippet-wrapper>${nodes.map(nodeToHtml).join('')}</div>`;
+			},
+		}));
+	}
+
 	const globalOverrides = getElementOverrides();
 	const merged = $derived(overrides
 		? { ...globalOverrides, ...overrides }
@@ -63,11 +107,12 @@
 	{@const Component = node.attributes?.['data-rune'] ? getComponent(node.attributes['data-rune']) : undefined}
 	{@const ElementOverride = !Component && merged?.[node.name] ? merged[node.name] : undefined}
 	{#if Component}
-		<Component tag={node}>
-			{#each node.children as child}
-				<Renderer node={child} overrides={merged} />
-			{/each}
-		</Component>
+		{@const iface = extractComponentInterface(node)}
+		{@const refSnippets = Object.fromEntries(
+			Object.entries(iface.refs).map(([name, tags]) => [name, createNodeSnippet(tags)])
+		)}
+		{@const childSnippet = iface.children.length > 0 ? createNodeSnippet(iface.children) : undefined}
+		<Component {...iface.properties} {...refSnippets} children={childSnippet} tag={node} />
 	{:else if ElementOverride}
 		<ElementOverride tag={node}>
 			{#each node.children as child}

@@ -79,3 +79,5 @@ Track Name
 };
 
 export default media;
+
+export type { TrackProps, AudioProps, PlaylistProps } from './props.js';

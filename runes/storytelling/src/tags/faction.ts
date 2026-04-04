@@ -101,7 +101,6 @@ export const faction = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				name: nameTag,
 				factionType: factionTypeMeta,
 				alignment: alignmentMeta,
 				size: sizeMeta,

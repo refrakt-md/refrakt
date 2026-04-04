@@ -39,6 +39,18 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
   const runeName = result.rune;
   const schemaOrgType = result.typeof ?? result.schemaOrgType;
 
+  // Validate that property and ref names don't collide (ADR-008: flat namespace)
+  if (result.properties && result.refs) {
+    const propKeys = new Set(Object.keys(result.properties));
+    const collisions = Object.keys(result.refs).filter(k => propKeys.has(k));
+    if (collisions.length > 0) {
+      throw new Error(
+        `Rune "${runeName}" has naming collisions between properties and refs: ${collisions.join(', ')}. ` +
+        `Properties and refs share a flat namespace (ADR-008) and must have unique names.`
+      );
+    }
+  }
+
   for (const [k, v] of Object.entries(result.properties ?? {})) {
     if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];

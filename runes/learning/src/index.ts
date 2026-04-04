@@ -72,3 +72,5 @@ A timeless Italian favorite with a crispy crust and fresh toppings.
 };
 
 export default learning;
+
+export type { RecipeProps, HowtoProps } from './props.js';
