@@ -182,6 +182,28 @@ Option 2, but also pass the original `tag` object as a prop for advanced use cas
 
 5. **Svelte 5 snippet mechanics.** Snippets in Svelte 5 are render functions, not slotted content. The renderer would need to create snippet functions that render the extracted subtrees. What's the right way to construct these — wrapping in `{#snippet}` blocks, or using the programmatic `createRawSnippet` API?
 
+6. **Typed component interfaces.** The information needed to generate TypeScript interfaces already exists in the rune schema — `createComponentRenderable` declares `properties` (with values derived from typed attributes) and `refs` (with names). Property types can be inferred from the schema's attribute definitions (`String`, `Number`, `matches: ['easy','medium','hard']`). Several approaches for surfacing types to component authors:
+   - **Package exports.** Each rune package exports prop interfaces alongside schemas (e.g., `import type { RecipeProps } from '@refrakt-md/learning'`). Types are generated as part of the package build from schema metadata.
+   - **CLI generation.** `refrakt inspect recipe --types` emits a TypeScript interface with scalar props typed from attributes and `Snippet` types for each named ref.
+   - **Vite virtual modules.** The SvelteKit plugin already knows which packages are loaded — it could generate virtual type modules (like it does for content modules) so components get autocompletion and type errors without explicit imports.
+   
+   The package export approach is the simplest starting point. The key insight is that props (from properties) would carry the attribute's original type (`string`, `number`, union literals), while slots (from refs) would be typed as `Snippet` (Svelte 5) or framework-equivalent. Example generated interface:
+   
+   ```ts
+   interface RecipeProps {
+     prepTime?: string;
+     cookTime?: string;
+     servings?: string;
+     difficulty?: 'easy' | 'medium' | 'hard';
+     headline?: Snippet;
+     ingredients?: Snippet;
+     steps?: Snippet;
+     tips?: Snippet;
+     media?: Snippet;
+     children?: Snippet;
+   }
+   ```
+
 ## Decision
 
 **Pending.** This ADR documents the design space for discussion. The proposal (Option 2 or Option 4) addresses a real ergonomics gap that will become more acute as we add framework adapters beyond Svelte.
