@@ -47,7 +47,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		sections: { title: 'title' },
 		modifiers: {
-			title: { source: 'meta' },
+			titleText: { source: 'meta' },
 		},
 		editHints: { title: 'none', sections: 'none' },
 	},

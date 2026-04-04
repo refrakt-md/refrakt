@@ -91,3 +91,8 @@ Start the day with a peaceful walk through the shrine grounds.
 };
 
 export default places;
+
+export type {
+	ItineraryStopProps, ItineraryDayProps, ItineraryProps,
+	MapPinProps, MapProps, EventProps,
+} from './props.js';

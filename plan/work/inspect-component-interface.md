@@ -1,4 +1,4 @@
-{% work id="WORK-121" status="ready" priority="medium" complexity="low" tags="cli, tooling, dx" milestone="v1.0.0" %}
+{% work id="WORK-121" status="done" priority="medium" complexity="low" tags="cli, tooling, dx" milestone="v1.0.0" %}
 
 # Add component interface view to refrakt inspect
 
@@ -12,12 +12,12 @@ Extend `refrakt inspect` to show the component override interface for a rune —
 
 ## Acceptance Criteria
 
-- [ ] `refrakt inspect <rune> --interface` (or similar flag) outputs the component interface
-- [ ] Output shows property names with their types (string, number, union values)
-- [ ] Output shows slot names (top-level ref names)
-- [ ] Output shows which slots are always present vs conditional
-- [ ] Works for both core and community package runes
-- [ ] `--json` flag produces machine-readable output of the interface
+- [x] `refrakt inspect <rune> --interface` (or similar flag) outputs the component interface
+- [x] Output shows property names with their types (string, number, union values)
+- [x] Output shows slot names (top-level ref names)
+- [x] Output shows which slots are always present vs conditional
+- [x] Works for both core and community package runes
+- [x] `--json` flag produces machine-readable output of the interface
 
 ## Approach
 
@@ -25,3 +25,23 @@ Extend `refrakt inspect` to show the component override interface for a rune —
 2. Collect property names from `properties` keys, types from schema attribute definitions
 3. Collect slot names from top-level `refs` keys
 4. Format and display
+
+
+## Resolution
+
+Completed: 2026-04-04
+
+Branch: `claude/adr-008-implementation-nBN9K`
+
+### What was done
+- Added `--interface` flag to `packages/cli/src/bin.ts` argument parser
+- Added `showComponentInterface()` function in `packages/cli/src/commands/inspect.ts`
+- Added `findRuneTag()` and `findFirstRuneTag()` helpers for tree search
+- Human-readable output shows Properties, Slots, and Svelte 5 Usage example
+- JSON output includes rune name, typeName, properties with types/examples, slots, and hasAnonymousContent
+- Updated CLI help text with --interface flag and example
+
+### Notes
+- Uses the serialized (pre-identity-transform) tree since properties are consumed by the engine
+- Falls back to findFirstRuneTag when data-rune doesn't match CLI name (e.g., tabs → tab-group)
+- Schema attribute types used for richer type info in output (union literals for enum matches)

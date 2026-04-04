@@ -62,6 +62,7 @@ Write Options:
 Inspect Options:
   --list                   List all available runes
   --json                   Output as JSON
+  --interface              Show component override interface (props + slots)
   --audit                  Check CSS coverage for generated selectors
   --all                    Audit all runes (use with --audit)
   --css <dir>              CSS directory for audit (auto-detected by default)
@@ -100,6 +101,7 @@ Examples:
   refrakt inspect --list
   refrakt inspect --list --json
   refrakt inspect hint --audit
+  refrakt inspect hint --interface
   refrakt inspect --all --audit
   refrakt inspect hint --audit --css path/to/styles
   refrakt write -d content/ "Set up a docs site with index, guides, and blog"
@@ -264,6 +266,7 @@ function runInspect(inspectArgs: string[]): void {
 	let audit = false;
 	let auditMeta = false;
 	let auditDimensions = false;
+	let showInterface = false;
 	let all = false;
 	let cssDir: string | undefined;
 	let theme = 'base';
@@ -283,6 +286,8 @@ function runInspect(inspectArgs: string[]): void {
 			auditMeta = true;
 		} else if (arg === '--audit-dimensions') {
 			auditDimensions = true;
+		} else if (arg === '--interface') {
+			showInterface = true;
 		} else if (arg === '--all') {
 			all = true;
 		} else if (arg === '--css') {
@@ -349,7 +354,7 @@ function runInspect(inspectArgs: string[]): void {
 		const merged = await loadMergedConfig(runesModule, assembleThemeConfig);
 
 		return inspectCommand(
-			{ runeName, list, json, audit, auditMeta, auditDimensions, all, cssDir, theme, items, flags },
+			{ runeName, list, json, audit, auditMeta, auditDimensions, showInterface, all, cssDir, theme, items, flags },
 			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
 		);
 	}).catch((err) => {

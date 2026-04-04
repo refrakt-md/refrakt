@@ -29,6 +29,13 @@ export type {
 // Serialized tree types
 export type { SerializedTag, RendererNode } from './serialized.js';
 
+// Component override prop types (ADR-008)
+export type {
+	BaseComponentProps,
+	PageSectionSlots,
+	SplitLayoutProperties,
+} from './component-props.js';
+
 // Declarative content model types
 export type {
 	ContentFieldDefinition,

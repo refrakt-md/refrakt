@@ -68,6 +68,41 @@ export type { TintToken } from './tags/tint.js';
 export { XREF_RUNE_MARKER } from './tags/xref.js';
 export { escapeFenceTags } from './fence-escape.js';
 
+// Component override prop interfaces (ADR-008)
+export type {
+	AccordionItemProps, AccordionProps,
+	AnnotateNoteProps, AnnotateProps,
+	BlogProps,
+	BreadcrumbItemProps, BreadcrumbProps,
+	BudgetLineItemProps, BudgetCategoryProps, BudgetProps,
+	ChartProps,
+	CodeGroupProps,
+	CompareProps,
+	ConversationMessageProps, ConversationProps,
+	DataTableProps,
+	DetailsProps,
+	DiagramProps,
+	DiffProps,
+	EmbedProps,
+	ErrorProps,
+	FigureProps,
+	FormProps,
+	GalleryProps,
+	GridProps,
+	HintProps,
+	JuxtaposePanelProps, JuxtaposeProps,
+	MediaTextProps,
+	NavItemProps, NavGroupProps, NavProps,
+	PullQuoteProps,
+	RevealStepProps, RevealProps,
+	SandboxProps,
+	ShowcaseProps,
+	SidenoteProps,
+	TabProps, TabPanelProps, TabGroupProps,
+	TextBlockProps,
+	TableOfContentsProps,
+} from './props.js';
+
 export const documents = {
   doc: new DocPage(),
 }

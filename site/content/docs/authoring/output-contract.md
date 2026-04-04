@@ -65,6 +65,18 @@ These serve fundamentally different purposes:
 
 **Refs** flow: rune emits `<div data-name="body">` -> engine reads it -> adds `rf-hint__body` class -> element stays in output.
 
+### Component override mapping
+
+When a rune has a registered component override, the renderer automatically maps properties and refs to a framework-native interface:
+
+| Output contract | Component receives | Example |
+|----------------|-------------------|---------|
+| **Properties** (meta tags with `data-field`) | Scalar string props | `prepTime="15 min"` |
+| **Refs** (elements with `data-name`) | Named snippets/slots | `{@render ingredients?.()}` |
+| Everything else | Default `children` slot | `{@render children?.()}` |
+
+This means the properties and refs you define in `createComponentRenderable` directly determine the component author's API. Use `refrakt inspect <rune> --interface` to see the resulting interface.
+
 ## Meta tags
 
 Meta tags are the bridge between rune schemas and the engine. They carry configuration values without producing visible output.

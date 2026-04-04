@@ -102,7 +102,6 @@ export const realm = createContentModelSchema({
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
-				name: nameTag,
 				realmType: realmTypeMeta,
 				scale: scaleMeta,
 				tags: tagsMeta,

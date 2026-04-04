@@ -142,6 +142,38 @@ export const gameItem = createContentModelSchema({
 });
 ```
 
+## Exporting typed component interfaces
+
+Rune packages should export generic TypeScript interfaces for each rune that uses `createComponentRenderable`. These interfaces describe the component override contract — scalar property types and named slot names — parameterized over a framework-specific renderable type.
+
+Create a `src/props.ts` file in your package:
+
+```ts
+import type { BaseComponentProps } from '@refrakt-md/types';
+
+export interface GameItemProps<R = unknown> extends BaseComponentProps<R> {
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
+  body?: R;
+}
+```
+
+Then export the type from your package's `index.ts`:
+
+```ts
+export type { GameItemProps } from './props.js';
+```
+
+Component authors consume the interface with their framework's renderable type:
+
+```ts
+import type { Snippet } from 'svelte';
+import type { GameItemProps } from '@my-scope/game-runes';
+
+let { rarity, body, tag }: GameItemProps<Snippet> = $props();
+```
+
+The `BaseComponentProps<R>` base type provides `children?: R` and `tag?: SerializedTag`. Use `PageSectionSlots<R>` for runes with `pageSectionProperties` (adds `eyebrow`, `headline`, `blurb`, `image` slots), and `SplitLayoutProperties` for runes with split layout support (adds `layout`, `ratio`, `valign`, `gap`, `collapse` properties).
+
 ## Using Content Pipeline Variables
 
 The content pipeline injects several variables into every page's Markdoc transform config. Your rune schemas can access these via `config.variables` in their transform functions:

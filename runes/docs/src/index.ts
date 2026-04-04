@@ -88,3 +88,8 @@ function createTransform(config: ThemeConfig): (tree: RendererNode) => RendererN
 };
 
 export default docs;
+
+export type {
+	ApiProps, ChangelogReleaseProps, ChangelogProps,
+	SymbolMemberProps, SymbolGroupProps, SymbolProps,
+} from './props.js';

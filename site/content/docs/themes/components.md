@@ -112,6 +112,61 @@ Standard HTML elements like `<table>` and `<pre>` sometimes need additional stru
 - The **SvelteKit adapter** uses Svelte component overrides that wrap the element. See [SvelteKit adapter — Element overrides](/docs/adapters/sveltekit).
 - The **HTML adapter** applies tree transforms during rendering (e.g., wrapping `<table>` in a `.rf-table-wrapper` div). See [HTML adapter](/docs/adapters/html).
 
+## Component override interface
+
+When a rune has a registered component override, the renderer extracts a framework-native interface from the serialized tag tree. Component authors receive **props** and **slots** (Svelte 5 snippets) instead of working with the raw `tag` object.
+
+### What components receive
+
+The renderer partitions a rune's children into three categories:
+
+| Category | Source | Component receives |
+|----------|--------|--------------------|
+| **Properties** | `<meta>` children with `data-field` | Scalar string props (e.g., `prepTime="15 min"`) |
+| **Named refs** | Top-level children with `data-name` | Named snippets with identity-transformed content |
+| **Anonymous content** | Everything else | `children` snippet |
+
+The original `tag` object is always passed alongside as an escape hatch for advanced use cases.
+
+### Svelte 5 example
+
+A recipe component override using the typed interface:
+
+```svelte
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+  import type { RecipeProps } from '@refrakt-md/learning';
+
+  let {
+    prepTime, cookTime, servings, difficulty,
+    headline, ingredients, steps, media,
+    children, tag
+  }: RecipeProps<Snippet> = $props();
+</script>
+
+<article class="my-recipe">
+  <div class="hero">
+    {@render media?.()}
+    {@render headline?.()}
+  </div>
+  <div class="meta">
+    {#if prepTime}<span>Prep: {prepTime}</span>{/if}
+    {#if cookTime}<span>Cook: {cookTime}</span>{/if}
+  </div>
+  <div class="body">
+    {@render ingredients?.()}
+    {@render steps?.()}
+  </div>
+</article>
+```
+
+### Key points
+
+- **Slots arrive identity-transformed.** BEM classes, structural elements, and data attributes are already applied. Component overrides control *placement*, not internal rendering.
+- **Nested refs stay inside their parent.** Only top-level `data-name` children become slots. Nested refs (e.g., `label` inside `detail`) remain inside the parent slot's content.
+- **The `tag` escape hatch.** For cases that need full tree access, the original `tag` prop is always available. Existing components using `tag` continue to work unchanged.
+- **Use `refrakt inspect <rune> --interface`** to discover what props and slots a rune provides.
+
 ## The component registry
 
 The component registry is a SvelteKit-specific extension point for runes that need custom rendering beyond what the identity transform provides. It's empty by default — all runes render through the identity transform. See the [SvelteKit adapter — Component registry](/docs/adapters/sveltekit) for details.

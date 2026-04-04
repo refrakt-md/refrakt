@@ -68,7 +68,7 @@ export const designContext = createContentModelSchema({
 		return createComponentRenderable({ rune: 'design-context',
 			tag: 'section',
 			properties: {
-				title: titleMeta,
+				titleText: titleMeta,
 				tokens: tokensMeta,
 				scope: scopeMeta,
 			},
