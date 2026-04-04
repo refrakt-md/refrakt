@@ -172,9 +172,15 @@ Option 2, but also pass the original `tag` object as a prop for advanced use cas
 
 ## Open Questions
 
-1. **Naming collisions.** What happens if a property name collides with a ref name? Recipe has no collisions, but it's possible in theory. Should properties and refs live in separate namespaces (e.g., `props.prepTime` vs `slots.ingredients`), or is a flat namespace with a collision rule (properties win? refs win?) sufficient?
+1. ~~**Naming collisions.**~~ **Resolved.** Top-level ref names and property names must be unique within the same rune. A flat namespace is sufficient — properties and slots share it. This is enforceable at schema build time: `createComponentRenderable` already receives both the `properties` and `refs` objects, so a duplicate key across the two can be a static error. Separate namespaces (e.g., `props.x` vs `slots.x`) add API complexity without practical benefit given the low collision risk.
 
-2. **Nested refs.** Some runes have refs nested inside other refs (e.g., `headline` inside `content`). Should the renderer flatten all refs to top-level slots, or only extract top-level refs? Flattening is more convenient but loses structural information.
+2. ~~**Nested refs.**~~ **Resolved.** Only top-level refs become slots. Nested refs (children with `data-name` inside another ref) remain internal to the parent slot's pre-rendered content. Rationale:
+
+   - **Naming scope.** Nested refs often have generic names (`title`, `label`, `value`, `icon`) that are contextual to their parent. Flattening them to top-level slots would create ambiguity — e.g., `Event` has `label` and `value` nested inside multiple `detail` refs. Top-level-only avoids the scoping problem entirely.
+   - **Right level of control.** A component override's purpose is to *place* major content regions, not restructure their internals. The identity transform handles internal structure (BEM classes, nested elements), and that arrives pre-rendered inside the slot.
+   - **Escape hatch.** For the rare case where a component needs finer-grained access than slot-level placement, Option 4 (hybrid) provides the `tag` prop as a fallback. The component can then use existing helpers to dig into nested structure.
+
+   Audit of current rune configs confirms this is safe: the vast majority of runes have unique top-level ref names. The only rune with nested naming collisions (`Event` with `label`/`value` inside `detail`) would not be affected since those nested refs stay inside the `detail` slot.
 
 3. **Opt-in vs default.** Should the new interface be the default for all component overrides, or should components opt in (e.g., via a registry flag)? Default is cleaner but is a breaking change for existing components that expect `tag`.
 
