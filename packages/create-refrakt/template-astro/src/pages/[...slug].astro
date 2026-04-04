@@ -1,0 +1,87 @@
+---
+import { loadContent } from '@refrakt-md/content';
+import { createTransform } from '@refrakt-md/transform';
+import { baseConfig } from '@refrakt-md/runes';
+import { theme } from '@refrakt-md/lumina/astro';
+import { renderPage, buildSeoHead, hasInteractiveRunes } from '@refrakt-md/astro';
+import type { RendererNode } from '@refrakt-md/types';
+
+export async function getStaticPaths() {
+	const site = await loadContent('./content', '/');
+	const transform = createTransform(baseConfig);
+
+	return site.pages
+		.filter((p: any) => !p.route.draft)
+		.map((page: any) => {
+			const renderable = transform(page.renderable) as RendererNode;
+			const regions: Record<string, any> = {};
+			for (const [name, region] of page.layout.regions.entries()) {
+				regions[name] = {
+					name: region.name,
+					mode: region.mode,
+					content: region.content.map((c: any) => transform(c) as RendererNode),
+				};
+			}
+
+			const pages = site.pages
+				.filter((p: any) => !p.route.draft)
+				.map((p: any) => ({
+					url: p.route.url,
+					title: (p.frontmatter.title as string) ?? '',
+					draft: false,
+				}));
+
+			const slug = page.route.url === '/' ? undefined : page.route.url.slice(1);
+
+			return {
+				params: { slug },
+				props: {
+					page: {
+						renderable,
+						regions,
+						title: (page.frontmatter.title as string) ?? '',
+						url: page.route.url,
+						pages,
+						frontmatter: page.frontmatter,
+						headings: page.headings,
+					},
+					seo: page.seo,
+				},
+			};
+		});
+}
+
+const { page, seo } = Astro.props;
+const html = renderPage({ theme, page });
+const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
+const needsBehaviors = hasInteractiveRunes(page.renderable);
+const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
+---
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	{head.title && <title>{head.title}</title>}
+	<Fragment set:html={head.metaTags} />
+	<Fragment set:html={head.jsonLd} />
+</head>
+<body>
+	<Fragment set:html={html} />
+	<script type="application/json" id="rf-context" set:html={contextData} />
+	{needsBehaviors && (
+		<script>
+			import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
+			function init() {
+				const el = document.getElementById('rf-context');
+				if (el) { try { const ctx = JSON.parse(el.textContent || '{}'); RfContext.pages = ctx.pages; RfContext.currentUrl = ctx.currentUrl; } catch {} }
+				registerElements();
+				initRuneBehaviors();
+				initLayoutBehaviors();
+			}
+			init();
+			document.addEventListener('astro:page-load', () => init());
+		</script>
+	)}
+</body>
+</html>
