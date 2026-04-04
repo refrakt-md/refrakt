@@ -1,4 +1,4 @@
-{% work id="WORK-093" status="ready" priority="medium" complexity="moderate" tags="create-refrakt, frameworks" milestone="v1.0.0" %}
+{% work id="WORK-093" status="done" priority="medium" complexity="moderate" tags="create-refrakt, frameworks" milestone="v1.0.0" %}
 
 # Add multi-framework support to create-refrakt
 
@@ -48,5 +48,26 @@ Note: Templates can be written before adapters ship, but the scaffolded projects
 - `packages/create-refrakt/src/scaffold.ts` — existing scaffolding logic
 - `packages/create-refrakt/template/` — SvelteKit template (reference for new templates)
 - `site/content/docs/adapters/` — existing adapter documentation
+
+## Resolution
+
+Completed: 2026-04-04
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Created template directories for Astro, Nuxt, Next.js, and Eleventy with framework-specific boilerplate (config files, page templates, tsconfig)
+- All templates share starter content (index.md, getting-started.md, _layout.md) via identical content/ directories
+- Added scaffold functions and package.json generators for each target in scaffold.ts
+- Expanded --target CLI flag to accept 6 targets: sveltekit, html, astro, nuxt, next, eleventy
+- Updated post-scaffold messages per target
+- Added template directories to create-refrakt's files array for npm publishing
+- Added 12 new tests (3 per target) covering file creation, dependency generation, and config — 46 total tests pass
+- Refactored dotfile renaming into shared renameDotfiles() helper
+
+### Notes
+- Eleventy template uses src/ as input dir with _data/refrakt.js and _includes/base.njk
+- Package.json generators pin @refrakt-md/* deps to ~version, framework deps to semver ranges
+- Each target generates appropriate refrakt.config.json with correct target value
 
 {% /work %}
