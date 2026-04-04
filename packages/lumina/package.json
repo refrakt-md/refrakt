@@ -36,6 +36,18 @@
       "types": "./astro/index.ts",
       "default": "./astro/index.ts"
     },
+    "./nuxt": {
+      "types": "./nuxt/index.ts",
+      "default": "./nuxt/index.ts"
+    },
+    "./next": {
+      "types": "./next/index.ts",
+      "default": "./next/index.ts"
+    },
+    "./eleventy": {
+      "types": "./eleventy/index.ts",
+      "default": "./eleventy/index.ts"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./svelte/tokens.css": "./svelte/tokens.css",
     "./svelte/manifest": "./svelte/manifest.json"
@@ -50,7 +62,10 @@
     "manifest.json",
     "svelte",
     "html",
-    "astro"
+    "astro",
+    "nuxt",
+    "next",
+    "eleventy"
   ],
   "scripts": {
     "build": "tsc"
@@ -65,7 +80,10 @@
     "svelte": "^5.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@refrakt-md/html": "0.9.1",
-    "@refrakt-md/astro": "0.9.1"
+    "@refrakt-md/astro": "0.9.1",
+    "@refrakt-md/nuxt": "0.9.1",
+    "@refrakt-md/next": "0.9.1",
+    "@refrakt-md/eleventy": "0.9.1"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
@@ -81,6 +99,15 @@
       "optional": true
     },
     "@refrakt-md/astro": {
+      "optional": true
+    },
+    "@refrakt-md/nuxt": {
+      "optional": true
+    },
+    "@refrakt-md/next": {
+      "optional": true
+    },
+    "@refrakt-md/eleventy": {
       "optional": true
     }
   }
