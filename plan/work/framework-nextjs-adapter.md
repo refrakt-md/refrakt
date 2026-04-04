@@ -1,4 +1,4 @@
-{% work id="WORK-091" status="ready" priority="medium" complexity="moderate" tags="frameworks, nextjs" milestone="v1.0.0" %}
+{% work id="WORK-091" status="done" priority="medium" complexity="moderate" tags="frameworks, nextjs" milestone="v1.0.0" %}
 
 # Create @refrakt-md/next adapter package
 
@@ -34,5 +34,23 @@ No custom HMR in Phase 1 — rely on Next.js dev server defaults. Custom Webpack
 
 - SPEC-030 (Phase 3)
 - ADR-002 (Next.js section)
+
+## Resolution
+
+Completed: 2026-04-04
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Created `packages/next/` with RefraktContent server component, BehaviorInit client component, buildMetadata helper
+- Separate ./client export for tree-shaking (client code stays out of server bundles)
+- Uses moduleResolution: bundler in tsconfig for Next.js compatibility
+- Lumina Next.js adapter at `packages/lumina/next/index.ts`
+- Docs page at `site/content/docs/adapters/nextjs.md`
+
+### Notes
+- RefraktContent uses dangerouslySetInnerHTML — zero hydration cost
+- BehaviorInit manages lifecycle via useEffect, re-inits on pathname change
+- hasInteractiveRunes uses getBehaviorNames() from @refrakt-md/behaviors registry
 
 {% /work %}
