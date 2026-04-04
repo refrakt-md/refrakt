@@ -1,4 +1,4 @@
-{% decision id="ADR-008" status="proposed" date="2026-04-04" tags="svelte, transform, architecture, renderer, astro" %}
+{% decision id="ADR-008" status="accepted" date="2026-04-04" tags="svelte, transform, architecture, renderer, astro" %}
 
 # Framework-native component interface for rune overrides
 
