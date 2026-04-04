@@ -28,9 +28,10 @@ export interface TypographyProps<R = unknown> extends BaseComponentProps<R> {
 }
 
 export interface DesignContextProps<R = unknown> extends BaseComponentProps<R> {
-	title?: string;
+	titleText?: string;
 	tokens?: string;
 	scope?: string;
+	title?: R;
 	sections?: R;
 }
 
