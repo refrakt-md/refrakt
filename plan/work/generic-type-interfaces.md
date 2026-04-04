@@ -1,4 +1,4 @@
-{% work id="WORK-120" status="ready" priority="medium" complexity="moderate" tags="types, runes, architecture" %}
+{% work id="WORK-120" status="ready" priority="medium" complexity="moderate" tags="types, runes, architecture" milestone="v1.0.0" %}
 
 # Export generic type interfaces for rune component overrides
 

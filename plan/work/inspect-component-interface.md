@@ -1,4 +1,4 @@
-{% work id="WORK-121" status="ready" priority="medium" complexity="low" tags="cli, tooling, dx" %}
+{% work id="WORK-121" status="ready" priority="medium" complexity="low" tags="cli, tooling, dx" milestone="v1.0.0" %}
 
 # Add component interface view to refrakt inspect
 

@@ -1,4 +1,4 @@
-{% work id="WORK-117" status="ready" priority="high" complexity="moderate" tags="transform, renderer, architecture" %}
+{% work id="WORK-117" status="ready" priority="high" complexity="moderate" tags="transform, renderer, architecture" milestone="v1.0.0" %}
 
 # Implement framework-agnostic extraction logic for component interface
 
