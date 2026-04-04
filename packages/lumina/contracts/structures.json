@@ -2873,10 +2873,10 @@
 				"{content}"
 			],
 			"modifiers": {
-				"title": {
+				"titleText": {
 					"source": "meta",
 					"classPattern": ".rf-design-context--{value}",
-					"dataAttribute": "data-title"
+					"dataAttribute": "data-title-text"
 				}
 			}
 		},
