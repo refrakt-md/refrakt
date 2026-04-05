@@ -1,4 +1,4 @@
-{% decision id="ADR-009" status="proposed" date="2026-04-05" tags="themes, architecture, transform, astro, svelte" %}
+{% decision id="ADR-009" status="accepted" date="2026-04-05" tags="themes, architecture, transform, astro, svelte" %}
 
 # Framework-agnostic theme packages
 
@@ -202,8 +202,6 @@ Approach B is the simplest migration path and doesn't require changes to the man
 6. **Astro mixed-framework themes.** An Astro theme could theoretically use `.astro` components for static runes and React/Svelte islands for interactive ones. This is a single-framework theme (Astro) that happens to use multiple component technologies internally. The manifest would declare `target: "astro"` and list component paths — the Astro adapter handles the island rendering mechanics. No special framework-agnostic support needed.
 
 ## Decision
-
-*Proposed but not yet accepted — needs discussion.*
 
 **Option 2: Themes export generic parts, adapters assemble theme objects.** Combined with layout resolution approach B (theme exports a layout map alongside the manifest).
 
