@@ -174,12 +174,30 @@ Approach B is the simplest migration path and doesn't require changes to the man
 
 4. ~~**Theme config (icon overrides, rune extensions).**~~ **Resolved.** Currently imported via `{theme}/transform`. This is already framework-agnostic. No change needed.
 
-5. **Framework theme component loading.** When a framework theme ships components (e.g., a React theme with custom rune renderers), how does the adapter discover and load them? Options:
+5. ~~**Framework theme component loading.**~~ **Resolved.** No new mechanism needed. The manifest's `components` field already maps typeof names to `ComponentDefinition` objects with component paths. Today it's empty for Lumina (`"components": {}`). A framework theme populates it:
 
-   - The manifest's `components` field already maps typeof names to component paths. The adapter resolves these paths relative to the theme package. This is a natural extension of the existing manifest format.
-   - Alternatively, the theme exports a `{theme}/components` entry point that the adapter imports. This is simpler for themes but less declarative.
+   ```json
+   {
+     "name": "Aurora",
+     "target": "react",
+     "components": {
+       "Recipe": { "component": "./components/Recipe.tsx" },
+       "Tabs": { "component": "./components/Tabs.tsx" }
+     }
+   }
+   ```
 
-   Both approaches work. The manifest path is more consistent with the overall declarative theme model. Deferred to implementation.
+   The adapter's virtual module generator reads `manifest.components`, resolves paths relative to the theme package (e.g., `./components/Recipe.tsx` → `@refrakt-md/aurora/components/Recipe.tsx`), and generates imports — the same pattern the SvelteKit plugin already uses for site-level `overrides`. Three layers of component declarations, each overriding the previous:
+
+   ```
+   Framework defaults (from @refrakt-md/svelte registry)
+       ↑ overridden by
+   Theme components (from manifest.components)
+       ↑ overridden by
+   Site overrides (from refrakt.config.json overrides)
+   ```
+
+   This preserves the user's ability to override any theme component at the site level, regardless of whether the theme is neutral or framework-specific.
 
 6. **Astro mixed-framework themes.** An Astro theme could theoretically use `.astro` components for static runes and React/Svelte islands for interactive ones. This is a single-framework theme (Astro) that happens to use multiple component technologies internally. The manifest would declare `target: "astro"` and list component paths — the Astro adapter handles the island rendering mechanics. No special framework-agnostic support needed.
 
