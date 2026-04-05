@@ -263,18 +263,35 @@ Generic type parameters (Approach B) strike the right balance between ergonomics
 
 ## Consequences
 
-1. **Each framework renderer gains an extraction phase.** Before dispatching to a component, the renderer partitions children into properties, named refs, and anonymous content. This is ~20-30 lines of extraction logic per renderer.
+1. **Each framework renderer gains an extraction phase.** Before dispatching to a component, the renderer partitions children into properties, named refs, and anonymous content. This is ~20-30 lines of extraction logic per renderer. The extraction logic itself is framework-agnostic and can live in `packages/transform` as a shared utility; only the slot-passing mechanism is framework-specific.
 
-2. **Existing Svelte component overrides continue to work.** The `tag` prop is always passed alongside extracted props and slots. Components can migrate gradually from `tag`-based access to props/slots.
+2. **Adapters and renderers are separate packages.** Framework adapters (`packages/astro`, `packages/nuxt`, `packages/next`, `packages/eleventy`, `packages/sveltekit`) handle routing, build config, and SSR integration. Renderers (`packages/svelte`, and future `packages/react`, `packages/vue`) handle component dispatch and ADR-008 extraction. These are orthogonal concerns:
 
-3. **Component authoring documentation simplifies.** Instead of documenting helper functions, we document "your component receives these props and these slots" — which is what framework developers already understand.
+   | Adapter | UI Framework | Renderer Package |
+   |---------|-------------|-----------------|
+   | `@refrakt-md/sveltekit` | Svelte | `@refrakt-md/svelte` |
+   | `@refrakt-md/next` | React | `@refrakt-md/react` (new) |
+   | `@refrakt-md/nuxt` | Vue | `@refrakt-md/vue` (new) |
+   | `@refrakt-md/astro` | Astro-native + islands | see below |
+   | `@refrakt-md/eleventy` | none (HTML only) | n/a |
 
-4. **`refrakt inspect` gains a component interface view.** The inspect tool could show "this rune provides props: prepTime, difficulty; slots: headline, ingredients, steps, media" — making the component contract discoverable.
+   Adapters that currently use `renderToHtml()` (all except SvelteKit) get component override support by depending on the appropriate renderer package. Eleventy has no component model and relies entirely on the identity transform.
 
-5. **Cross-framework component parity.** A recipe component in Svelte and one in Astro would have the same logical interface (same prop names, same slot names), differing only in framework syntax.
+3. **Astro is a special case.** Astro is both an adapter (routing, `astro:config:setup`) and has its own component format with native named slots (`<slot name="ingredients" />`). This means:
+   - **`.astro` component overrides** — extraction and slot passing happen natively in `packages/astro` using Astro's built-in named slot mechanism. This is the natural choice for static rune overrides.
+   - **Island component overrides** — for interactive runes in Astro islands, the island's renderer (`@refrakt-md/react`, `@refrakt-md/svelte`, or `@refrakt-md/vue`) handles extraction using its own slot mechanism.
+
+4. **Existing Svelte component overrides continue to work.** The `tag` prop is always passed alongside extracted props and slots. Components can migrate gradually from `tag`-based access to props/slots.
+
+5. **Component authoring documentation simplifies.** Instead of documenting helper functions, we document "your component receives these props and these slots" — which is what framework developers already understand.
+
+6. **`refrakt inspect` gains a component interface view.** The inspect tool could show "this rune provides props: prepTime, difficulty; slots: headline, ingredients, steps, media" — making the component contract discoverable.
+
+7. **Cross-framework component parity.** A recipe component in Svelte and one in Astro would have the same logical interface (same prop names, same slot names), differing only in framework syntax.
 
 ## References
 
+- SPEC-030 — Framework Adapter System (adapter architecture for Astro, Nuxt, Next.js, Eleventy)
 - SPEC-033 — Structure Slots and Declarative Flexibility (the structural model that produces refs)
 - ADR-006 — Post-identity-transform hook (related pipeline architecture)
 - `packages/svelte/src/Renderer.svelte` — current renderer implementation
