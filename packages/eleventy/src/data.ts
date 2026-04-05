@@ -1,21 +1,7 @@
 import { resolve } from 'node:path';
-import type { RendererNode } from '@refrakt-md/types';
 import type { LayoutPageData } from '@refrakt-md/transform';
-import { layoutTransform, renderToHtml, matchRouteRule } from '@refrakt-md/transform';
+import { renderPage, extractSeoData, seoToHtml } from '@refrakt-md/transform';
 import type { EleventyTheme } from './types.js';
-
-interface OgMeta {
-	title?: string;
-	description?: string;
-	image?: string;
-	type?: string;
-	url?: string;
-}
-
-interface PageSeo {
-	jsonLd: object[];
-	og: OgMeta;
-}
 
 export interface EleventyPageData {
 	url: string;
@@ -28,48 +14,6 @@ export interface EleventyPageData {
 		jsonLd: string;
 	};
 	frontmatter: Record<string, unknown>;
-}
-
-function escapeAttr(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function buildSeoHtml(title: string, frontmatter: Record<string, unknown>, seo?: PageSeo): { title: string; description: string; metaTags: string; jsonLd: string } {
-	const parts: string[] = [];
-	const resolvedTitle = seo?.og?.title ?? title;
-	const description = seo?.og?.description ?? (frontmatter?.description as string | undefined) ?? '';
-
-	if (description) {
-		parts.push(`<meta name="description" content="${escapeAttr(description)}">`);
-		parts.push(`<meta property="og:description" content="${escapeAttr(description)}">`);
-	}
-	if (resolvedTitle) {
-		parts.push(`<meta property="og:title" content="${escapeAttr(resolvedTitle)}">`);
-	}
-	if (seo?.og?.image) {
-		parts.push(`<meta property="og:image" content="${escapeAttr(seo.og.image)}">`);
-		parts.push(`<meta name="twitter:card" content="summary_large_image">`);
-	}
-	if (seo?.og?.url) {
-		parts.push(`<meta property="og:url" content="${escapeAttr(seo.og.url)}">`);
-	}
-	if (seo?.og?.type) {
-		parts.push(`<meta property="og:type" content="${escapeAttr(seo.og.type)}">`);
-	}
-
-	const jsonLdParts: string[] = [];
-	if (seo?.jsonLd) {
-		for (const schema of seo.jsonLd) {
-			jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(schema)}</script>`);
-		}
-	}
-
-	return {
-		title: resolvedTitle,
-		description,
-		metaTags: parts.join('\n'),
-		jsonLd: jsonLdParts.join('\n'),
-	};
 }
 
 /**
@@ -122,19 +66,15 @@ export function createDataFile(config: {
 				headings: page.headings,
 			};
 
-			// Apply layout transform
-			const layoutName = matchRouteRule(page.url, theme.manifest.routeRules ?? []);
-			const layoutConfig = theme.layouts[layoutName] ?? theme.layouts['default'];
+			const html = renderPage({ theme, page: pageData });
 
-			let html: string;
-			if (layoutConfig) {
-				const tree = layoutTransform(layoutConfig, pageData, 'rf');
-				html = renderToHtml(tree);
-			} else {
-				html = renderToHtml(page.renderable as RendererNode);
-			}
-
-			const seo = buildSeoHtml(page.title, page.frontmatter ?? {}, page.seo);
+			const seoData = extractSeoData({
+				title: page.title,
+				frontmatter: page.frontmatter ?? {},
+				seo: page.seo,
+			});
+			const seoHtml = seoToHtml(seoData);
+			const seo = { ...seoHtml, description: seoData.description };
 
 			return {
 				url: page.url,

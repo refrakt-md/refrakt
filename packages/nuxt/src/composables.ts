@@ -1,22 +1,7 @@
-interface OgMeta {
-	title?: string;
-	description?: string;
-	image?: string;
-	type?: string;
-	url?: string;
-}
+import { extractSeoData } from '@refrakt-md/transform';
+import type { SeoInput } from '@refrakt-md/transform';
 
-interface PageSeo {
-	jsonLd: object[];
-	og: OgMeta;
-}
-
-export interface RefraktMetaInput {
-	title?: string;
-	description?: string;
-	frontmatter?: Record<string, unknown>;
-	seo?: PageSeo;
-}
+export type RefraktMetaInput = SeoInput;
 
 /**
  * Build head meta configuration for use with Nuxt's useHead().
@@ -29,39 +14,35 @@ export function buildRefraktHead(input: RefraktMetaInput): {
 	meta: Array<{ name?: string; property?: string; content: string }>;
 	script: Array<{ type: string; children: string }>;
 } {
+	const data = extractSeoData(input);
 	const meta: Array<{ name?: string; property?: string; content: string }> = [];
 	const script: Array<{ type: string; children: string }> = [];
 
-	const title = input.seo?.og?.title ?? input.title ?? '';
-
-	const description = input.seo?.og?.description ?? (input.frontmatter?.description as string | undefined);
-	if (description) {
-		meta.push({ name: 'description', content: description });
-		meta.push({ property: 'og:description', content: description });
+	if (data.description) {
+		meta.push({ name: 'description', content: data.description });
+		meta.push({ property: 'og:description', content: data.description });
 	}
 
-	if (title) {
-		meta.push({ property: 'og:title', content: title });
+	if (data.title) {
+		meta.push({ property: 'og:title', content: data.title });
 	}
 
-	if (input.seo?.og?.image) {
-		meta.push({ property: 'og:image', content: input.seo.og.image });
+	if (data.ogImage) {
+		meta.push({ property: 'og:image', content: data.ogImage });
 		meta.push({ name: 'twitter:card', content: 'summary_large_image' });
 	}
 
-	if (input.seo?.og?.url) {
-		meta.push({ property: 'og:url', content: input.seo.og.url });
+	if (data.ogUrl) {
+		meta.push({ property: 'og:url', content: data.ogUrl });
 	}
 
-	if (input.seo?.og?.type) {
-		meta.push({ property: 'og:type', content: input.seo.og.type });
+	if (data.ogType) {
+		meta.push({ property: 'og:type', content: data.ogType });
 	}
 
-	if (input.seo?.jsonLd) {
-		for (const schema of input.seo.jsonLd) {
-			script.push({ type: 'application/ld+json', children: JSON.stringify(schema) });
-		}
+	for (const schema of data.jsonLd) {
+		script.push({ type: 'application/ld+json', children: JSON.stringify(schema) });
 	}
 
-	return { title, meta, script };
+	return { title: data.title, meta, script };
 }

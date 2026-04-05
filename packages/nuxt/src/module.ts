@@ -1,28 +1,8 @@
 import { defineNuxtModule } from 'nuxt/kit';
 import { resolve } from 'node:path';
-import { readFileSync, existsSync } from 'node:fs';
-import type { RefraktConfig } from '@refrakt-md/types';
+import { CORE_PACKAGES } from '@refrakt-md/transform';
+import { loadRefraktConfig } from '@refrakt-md/transform/node';
 import type { RefraktNuxtOptions } from './types.js';
-
-const CORE_TRANSPILE = [
-	'@markdoc/markdoc',
-	'@refrakt-md/runes',
-	'@refrakt-md/content',
-	'@refrakt-md/types',
-	'@refrakt-md/nuxt',
-	'@refrakt-md/transform',
-];
-
-function loadRefraktConfig(configPath: string): RefraktConfig {
-	const absPath = resolve(configPath);
-	if (!existsSync(absPath)) {
-		throw new Error(
-			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "nuxt" }`
-		);
-	}
-	return JSON.parse(readFileSync(absPath, 'utf-8'));
-}
 
 export default defineNuxtModule<RefraktNuxtOptions>({
 	meta: {
@@ -37,7 +17,8 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 
 		// Add packages to transpile list
 		const transpile = [
-			...CORE_TRANSPILE,
+			...CORE_PACKAGES,
+			'@refrakt-md/nuxt',
 			refraktConfig.theme,
 			`${refraktConfig.theme}/nuxt`,
 			...(refraktConfig.packages ?? []),

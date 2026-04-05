@@ -1,37 +1,13 @@
-import { resolve, extname } from 'node:path';
-import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { AstroIntegration } from 'astro';
-import type { RefraktConfig, RunePackage, PipelineWarning } from '@refrakt-md/types';
-import type { Schema } from '@markdoc/markdoc';
+import { CORE_PACKAGES } from '@refrakt-md/transform';
+import { loadRefraktConfig } from '@refrakt-md/transform/node';
 import type { RefraktAstroOptions } from './types.js';
-
-const CORE_NO_EXTERNAL = [
-	'@markdoc/markdoc',
-	'@refrakt-md/runes',
-	'@refrakt-md/content',
-	'@refrakt-md/types',
-	'@refrakt-md/transform',
-	'@refrakt-md/astro',
-];
-
-/** File extensions recognized as sandbox example sources */
-const SANDBOX_EXTENSIONS = new Set(['.html', '.css', '.js', '.svg', '.glsl-vert', '.glsl-frag']);
-
-function loadRefraktConfig(configPath: string): RefraktConfig {
-	const absPath = resolve(configPath);
-	if (!existsSync(absPath)) {
-		throw new Error(
-			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "astro" }`
-		);
-	}
-	return JSON.parse(readFileSync(absPath, 'utf-8'));
-}
 
 /**
  * Astro integration for refrakt.
  *
- * Reads `refrakt.config.json`, injects Lumina CSS, configures SSR noExternal,
+ * Reads `refrakt.config.json`, configures SSR noExternal,
  * and sets up content HMR in dev mode.
  */
 export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
@@ -45,13 +21,13 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 
 				const themeAdapter = `${refraktConfig.theme}/astro`;
 				const noExternal = [
-					...CORE_NO_EXTERNAL,
+					...CORE_PACKAGES,
+					'@refrakt-md/astro',
 					refraktConfig.theme,
 					themeAdapter,
 					...(refraktConfig.packages ?? []),
 				];
 
-				// Inject Lumina CSS — the theme's default export is its CSS entry point
 				updateConfig({
 					vite: {
 						ssr: {

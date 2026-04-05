@@ -1,16 +1,12 @@
-import type { ThemeManifest } from '@refrakt-md/types';
-import type { LayoutConfig } from '@refrakt-md/transform';
+import type { AdapterTheme } from '@refrakt-md/transform';
 
 /**
  * Theme definition for the Eleventy adapter.
  *
- * Like HtmlTheme/AstroTheme, no component registry — all runes render
- * through the identity transform and renderToHtml().
+ * Alias for the shared `AdapterTheme` — all non-Svelte adapters
+ * use the same shape (manifest + layouts).
  */
-export interface EleventyTheme {
-	manifest: ThemeManifest;
-	layouts: Record<string, LayoutConfig>;
-}
+export type EleventyTheme = AdapterTheme;
 
 /** Options for the refrakt Eleventy plugin */
 export interface RefraktEleventyOptions {

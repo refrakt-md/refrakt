@@ -20,6 +20,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/adapter-node.d.ts",
+      "default": "./dist/adapter-node.js"
     }
   },
   "files": [

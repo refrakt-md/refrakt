@@ -1,10 +1,12 @@
-import type { ThemeManifest } from '@refrakt-md/types';
-import type { LayoutConfig } from '@refrakt-md/transform';
+import type { AdapterTheme } from '@refrakt-md/transform';
 
-export interface NuxtTheme {
-	manifest: ThemeManifest;
-	layouts: Record<string, LayoutConfig>;
-}
+/**
+ * Theme definition for the Nuxt adapter.
+ *
+ * Alias for the shared `AdapterTheme` — all non-Svelte adapters
+ * use the same shape (manifest + layouts).
+ */
+export type NuxtTheme = AdapterTheme;
 
 export interface RefraktNuxtOptions {
 	configPath?: string;

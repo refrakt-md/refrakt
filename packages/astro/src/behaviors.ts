@@ -1,44 +1,16 @@
-import type { RendererNode, SerializedTag } from '@refrakt-md/types';
+import type { RendererNode } from '@refrakt-md/types';
+import { hasMatchingRunes } from '@refrakt-md/transform';
 import { getBehaviorNames } from '@refrakt-md/behaviors';
 
 /**
  * Check whether a rendered page tree contains any interactive runes
  * that require behavior initialization scripts.
  *
- * Queries the behavior registry from `@refrakt-md/behaviors` to determine
- * which rune types are interactive — automatically includes both core
- * and community-registered behaviors.
- *
  * Used to conditionally include the behavior `<script>` tag,
  * shipping zero JS for static-only pages.
  */
 export function hasInteractiveRunes(node: RendererNode): boolean {
-	const interactiveRunes = getBehaviorNames();
-	return _hasInteractive(node, interactiveRunes);
-}
-
-function _hasInteractive(node: RendererNode, interactiveRunes: Set<string>): boolean {
-	if (node === null || node === undefined || typeof node === 'string' || typeof node === 'number') {
-		return false;
-	}
-	if (Array.isArray(node)) {
-		return node.some(child => _hasInteractive(child as RendererNode, interactiveRunes));
-	}
-	const tag = node as SerializedTag;
-	if (tag.attributes) {
-		const runeType = tag.attributes['data-rune'] as string | undefined;
-		if (runeType && interactiveRunes.has(runeType)) {
-			return true;
-		}
-		// Layout behaviors (mobile-menu, search) also need initialization
-		if (tag.attributes['data-layout-behaviors']) {
-			return true;
-		}
-	}
-	if (tag.children) {
-		return tag.children.some(child => _hasInteractive(child as RendererNode, interactiveRunes));
-	}
-	return false;
+	return hasMatchingRunes(node, getBehaviorNames());
 }
 
 /**

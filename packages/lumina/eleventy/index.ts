@@ -1,4 +1,4 @@
-import type { EleventyTheme } from '@refrakt-md/eleventy';
+import type { AdapterTheme } from '@refrakt-md/transform';
 import manifest from '../manifest.json';
 import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
@@ -17,7 +17,7 @@ for (const [name, def] of Object.entries(manifest.layouts)) {
 const mergedManifest = { ...manifest, layouts };
 export { mergedManifest as manifest };
 
-export const theme: EleventyTheme = {
+export const theme: AdapterTheme = {
 	manifest: mergedManifest as any,
 	layouts: {
 		default: defaultLayout,

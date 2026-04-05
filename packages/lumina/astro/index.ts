@@ -1,4 +1,4 @@
-import type { AstroTheme } from '@refrakt-md/astro';
+import type { AdapterTheme } from '@refrakt-md/transform';
 import manifest from '../manifest.json';
 import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
@@ -19,7 +19,7 @@ const mergedManifest = { ...manifest, layouts };
 export { mergedManifest as manifest };
 
 /** Lumina theme configured for Astro */
-export const theme: AstroTheme = {
+export const theme: AdapterTheme = {
 	manifest: mergedManifest as any,
 	layouts: {
 		default: defaultLayout,

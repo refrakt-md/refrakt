@@ -1,14 +1,9 @@
-import type { ThemeManifest } from '@refrakt-md/types';
-import type { LayoutConfig } from '@refrakt-md/transform';
+import type { AdapterTheme } from '@refrakt-md/transform';
 
 /**
  * Theme definition for the Next.js adapter.
  *
- * Like HtmlTheme, this has no component registry — all runes render through
- * the identity transform and behaviors are handled client-side by
- * @refrakt-md/behaviors via the BehaviorInit client component.
+ * Alias for the shared `AdapterTheme` — all non-Svelte adapters
+ * use the same shape (manifest + layouts).
  */
-export interface NextTheme {
-	manifest: ThemeManifest;
-	layouts: Record<string, LayoutConfig>;
-}
+export type NextTheme = AdapterTheme;

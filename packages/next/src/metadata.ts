@@ -1,21 +1,7 @@
-interface OgMeta {
-	title?: string;
-	description?: string;
-	image?: string;
-	type?: string;
-	url?: string;
-}
+import { extractSeoData } from '@refrakt-md/transform';
+import type { SeoInput } from '@refrakt-md/transform';
 
-interface PageSeo {
-	jsonLd: object[];
-	og: OgMeta;
-}
-
-export interface RefraktMetadataInput {
-	title?: string;
-	frontmatter?: Record<string, unknown>;
-	seo?: PageSeo;
-}
+export type RefraktMetadataInput = SeoInput;
 
 /**
  * Transform refrakt page SEO data into a Next.js Metadata object.
@@ -28,25 +14,21 @@ export interface RefraktMetadataInput {
  *   }
  */
 export function buildMetadata(input: RefraktMetadataInput): Record<string, unknown> {
+	const data = extractSeoData(input);
 	const metadata: Record<string, unknown> = {};
 
-	const title = input.seo?.og?.title ?? input.title;
-	if (title) metadata.title = title;
-
-	const description = input.seo?.og?.description ?? (input.frontmatter?.description as string | undefined);
-	if (description) metadata.description = description;
+	if (data.title) metadata.title = data.title;
+	if (data.description) metadata.description = data.description;
 
 	const openGraph: Record<string, unknown> = {};
-	if (title) openGraph.title = title;
-	if (description) openGraph.description = description;
-	if (input.seo?.og?.image) {
-		openGraph.images = [input.seo.og.image];
-	}
-	if (input.seo?.og?.url) openGraph.url = input.seo.og.url;
-	if (input.seo?.og?.type) openGraph.type = input.seo.og.type;
+	if (data.title) openGraph.title = data.title;
+	if (data.description) openGraph.description = data.description;
+	if (data.ogImage) openGraph.images = [data.ogImage];
+	if (data.ogUrl) openGraph.url = data.ogUrl;
+	if (data.ogType) openGraph.type = data.ogType;
 	if (Object.keys(openGraph).length > 0) metadata.openGraph = openGraph;
 
-	if (input.seo?.og?.image) {
+	if (data.ogImage) {
 		metadata.twitter = { card: 'summary_large_image' };
 	}
 
@@ -56,6 +38,7 @@ export function buildMetadata(input: RefraktMetadataInput): Record<string, unkno
 /**
  * Build JSON-LD structured data objects for inclusion in the page head.
  */
-export function buildJsonLd(seo?: PageSeo): object[] {
-	return seo?.jsonLd ?? [];
+export function buildJsonLd(input?: SeoInput): object[] {
+	if (!input) return [];
+	return extractSeoData(input).jsonLd;
 }
