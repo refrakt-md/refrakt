@@ -36,6 +36,18 @@ What Lumina *doesn't* own but currently assembles:
 
 This creates a maintenance burden: every new theme must create 6+ adapter files (growing with each new framework), most of which are boilerplate assembly of framework-agnostic inputs. Every new framework adapter requires updating every existing theme.
 
+### Theme taxonomy
+
+Themes fall into two distinct categories with fundamentally different relationships to frameworks:
+
+**Neutral themes** (like Lumina) rely entirely on the identity transform — BEM classes, structural elements, data attributes — plus vanilla JS behaviors for interactivity and pure CSS for styling. They work with *every* adapter out of the box because they contain zero framework code. Users override individual runes with their own framework components via ADR-008's per-rune component override mechanism.
+
+**Framework themes** ship actual framework components (React, Svelte, Vue) as rune overrides for deeper visual customization — animations, complex interactions, framework-specific patterns. These themes target a **single framework** because maintaining the same rich component across both React and Svelte is impractical. The frameworks are too different for cross-framework component parity to be a realistic goal. A "React theme" ships React components, period.
+
+Astro is the one exception where a framework theme could theoretically mix component frameworks (e.g., `.astro` components for static runes + React islands for interactive ones), but even there the theme would target Astro specifically, not Astro-plus-React-plus-Svelte.
+
+This taxonomy has an important implication: **neither category needs per-framework adapter files.** Neutral themes have no framework knowledge at all — the adapter should assemble the theme object from generic exports. Framework themes target exactly one framework — they don't need adapter files for the other five.
+
 ### How theme resolution works today
 
 The SvelteKit plugin reads `refrakt.config.json`, computes `${config.theme}/${config.target}` (e.g., `@refrakt-md/lumina/svelte`), and generates a virtual module that imports the theme's adapter file:
@@ -70,21 +82,24 @@ Themes export only framework-agnostic artifacts:
 - `manifest.json` — metadata, layout regions, dark mode config
 - CSS — tokens, rune styles (already framework-agnostic)
 - Transform config — icon overrides, rune config extensions (already framework-agnostic)
-- Optionally, Svelte layout components (for themes that override default layout rendering)
+- Layout map — layout name → `LayoutConfig` object
 
 The adapter or framework plugin reads the manifest and assembles the theme object:
-- For HTML-rendering adapters: `{ manifest, layouts }` from manifest + transform's built-in layout configs
-- For SvelteKit: `{ manifest, layouts, components, elements }` from manifest + layout configs + the framework's default registries
+- For HTML-rendering adapters: `{ manifest, layouts }` from manifest + layout map
+- For SvelteKit: `{ manifest, layouts, components, elements }` from manifest + layout map + the framework's default registries
+
+Framework themes that ship actual components declare their target framework in the manifest. The corresponding adapter loads the components; other adapters fall back to identity transform rendering (the theme degrades gracefully rather than failing).
 
 **Pros:**
-- Themes are purely declarative — no framework knowledge
+- Neutral themes are purely declarative — no framework knowledge
+- Framework themes declare one target, not N adapter files
 - Adding a new framework requires zero changes to existing themes
 - Adding a new theme requires zero adapter boilerplate
 - Clear separation: themes define *what*, adapters define *how*
 
 **Cons:**
-- Themes lose the ability to customize the component registry per-framework (but none currently do)
 - Layout resolution needs a new mechanism — the adapter must know how to map layout names to `LayoutConfig` objects
+- Framework themes need a way to declare their components — but this is already solved by the manifest's `components` field and ADR-008's override mechanism
 
 ### 3. Themes export a single generic adapter, frameworks consume it
 
@@ -151,17 +166,22 @@ Approach B is the simplest migration path and doesn't require changes to the man
 
 ## Open Questions
 
-1. **Custom layout components.** Some themes may want to provide Svelte layout components instead of (or alongside) declarative `LayoutConfig` objects. The `SvelteTheme.layouts` field already supports both (`Component<any> | LayoutConfig`). How does this work in a generic theme that doesn't know about Svelte?
+1. ~~**Custom layout components.**~~ **Resolved.** Themes provide `LayoutConfig` objects generically. The `SvelteTheme.layouts` field supports both `Component<any> | LayoutConfig`, so a theme that truly needs a custom Svelte layout component can provide it via an escape hatch override — but this is a rare, advanced case. Most themes (including all neutral themes) use declarative layouts. Framework themes that want custom layout components would declare them via their target framework's conventions.
 
-   Possible resolution: the theme provides `LayoutConfig` objects generically. If a theme needs a custom Svelte layout component, it provides that via the escape hatch (`{theme}/svelte` override). This is a rare, advanced case — most themes will use declarative layouts.
+2. ~~**Component registry and element overrides.**~~ **Resolved.** The framework adapter provides default `components` and `elements` (from `@refrakt-md/svelte` for SvelteKit, from the future `@refrakt-md/react` for Next.js, etc.). The theme doesn't touch these for neutral themes — Lumina's current re-exports prove it. Framework themes declare component overrides in their manifest's `components` field or via a framework-specific entry point, and the adapter merges them. This is already how `virtual:refrakt/theme` works (it merges `config.overrides` from `refrakt.config.json`). The same mechanism works for theme-level overrides.
 
-2. **Component registry and element overrides.** Currently `SvelteTheme` includes `components` (the rune component registry) and `elements` (element overrides like Table, Pre). These come from `@refrakt-md/svelte`, not from the theme. Should the framework adapter always provide defaults, with the theme able to extend/override?
+3. ~~**CSS entry points.**~~ **Resolved.** The SvelteKit plugin's `virtual:refrakt/tokens` module imports theme CSS via `{theme}/base.css` and `{theme}/styles/runes/{block}.css`. This already works without per-framework adapters. No change needed.
 
-   Possible resolution: the Svelte adapter provides `registry` and `elements` as defaults. The theme's manifest can declare component overrides, and the adapter merges them. This is already partially how `virtual:refrakt/theme` works (it merges `config.overrides`).
+4. ~~**Theme config (icon overrides, rune extensions).**~~ **Resolved.** Currently imported via `{theme}/transform`. This is already framework-agnostic. No change needed.
 
-3. **CSS entry points.** The SvelteKit plugin's `virtual:refrakt/tokens` module imports theme CSS via `{theme}/base.css` and `{theme}/styles/runes/{block}.css`. This already works without per-framework adapters. No change needed.
+5. **Framework theme component loading.** When a framework theme ships components (e.g., a React theme with custom rune renderers), how does the adapter discover and load them? Options:
 
-4. **Theme config (icon overrides, rune extensions).** Currently imported via `{theme}/transform`. This is already framework-agnostic. No change needed.
+   - The manifest's `components` field already maps typeof names to component paths. The adapter resolves these paths relative to the theme package. This is a natural extension of the existing manifest format.
+   - Alternatively, the theme exports a `{theme}/components` entry point that the adapter imports. This is simpler for themes but less declarative.
+
+   Both approaches work. The manifest path is more consistent with the overall declarative theme model. Deferred to implementation.
+
+6. **Astro mixed-framework themes.** An Astro theme could theoretically use `.astro` components for static runes and React/Svelte islands for interactive ones. This is a single-framework theme (Astro) that happens to use multiple component technologies internally. The manifest would declare `target: "astro"` and list component paths — the Astro adapter handles the island rendering mechanics. No special framework-agnostic support needed.
 
 ## Decision
 
@@ -210,23 +230,31 @@ renderPage({ theme, page });
 
 ## Rationale
 
-The maintenance cost of N×M adapter files is already visible with one theme and six frameworks — and both numbers will grow. The per-framework files contain zero framework-specific logic for HTML-rendering adapters, and only re-exported framework defaults for Svelte. Eliminating these files makes theme authoring simpler (one `layouts` export instead of six adapter files) and framework evolution independent of theme evolution.
+Themes naturally fall into two categories — neutral and framework-specific — and neither needs per-framework adapter files.
+
+**Neutral themes** (like Lumina) rely entirely on the identity transform, vanilla JS behaviors, and CSS. They have zero framework code. Asking them to maintain adapter files for every framework is pure overhead — the files are identical boilerplate. Even the Svelte adapter file just re-exports framework defaults that Lumina doesn't own. A neutral theme should export its manifest, CSS, layout configs, and icon overrides. The adapter assembles the rest.
+
+**Framework themes** target a single framework by design. A React theme ships React components; nobody would maintain the same rich component in both React and Svelte. These themes don't need adapter files for the other five frameworks — they declare their target in the manifest, ship their components, and the corresponding adapter loads them. Other adapters fall back to identity transform rendering.
+
+The maintenance cost of N×M adapter files is already visible with one theme and six frameworks — and both numbers will grow. Eliminating these files makes theme authoring simpler (one `layouts` export instead of six adapter files) and decouples theme evolution from framework evolution entirely.
 
 Layout resolution via a dedicated `{theme}/layouts` export (Approach B) is the simplest migration path. It requires one new entry point per theme instead of removing six, and doesn't require manifest format changes or a layout registry.
 
 ## Consequences
 
-1. **Theme packages become simpler.** A minimal theme needs: `manifest.json`, CSS files, and a `layouts` entry point. No framework knowledge, no per-framework adapter files.
+1. **Neutral theme packages become simpler.** A minimal neutral theme needs: `manifest.json`, CSS files, and a `layouts` entry point. No framework knowledge, no per-framework adapter files. This is the common case — most themes will be neutral.
 
-2. **Framework adapter code moves to the framework packages.** The SvelteKit plugin, Astro integration, etc. handle assembly. This is where framework knowledge belongs.
+2. **Framework themes declare a single target.** A React theme sets `target: "react"` in its manifest, ships React components, and provides a `layouts` export. No adapter files for other frameworks. The adapter handles component loading; other adapters fall back to identity transform rendering (graceful degradation).
 
-3. **Existing themes need a minor migration.** Replace 6 per-framework adapter files with 1 `layouts` export. The per-framework files can continue to work as an escape hatch (Option 4's override mechanism) during migration.
+3. **Framework adapter code moves to the framework packages.** The SvelteKit plugin, Astro integration, etc. handle theme object assembly. This is where framework knowledge belongs.
 
-4. **New frameworks require zero theme changes.** A new adapter (e.g., a future React renderer) assembles the theme object from the same generic exports.
+4. **New frameworks require zero theme changes.** A new adapter (e.g., a future React renderer) assembles the theme object from the same generic exports. Neutral themes work immediately; framework themes targeting a different framework degrade to identity transform.
 
-5. **Custom Svelte layout components remain possible** via component overrides in the site config or as a theme-level escape hatch, but are no longer the default path.
+5. **Users customize via per-rune component overrides, not theme forks.** With ADR-008, a user on a neutral theme can override any rune with their own framework component via `refrakt.config.json`'s `overrides` field. This eliminates the main reason a theme might need framework-specific adapter files — rune customization happens at the site level, not the theme level.
 
-6. **The Lumina Svelte adapter files (`registry.ts`, `elements.ts`) become unnecessary** since the framework adapter provides these defaults.
+6. **Existing themes need a minor migration.** Replace 6 per-framework adapter files with 1 `layouts` export. The per-framework files can continue to work as a fallback during migration.
+
+7. **The Lumina Svelte adapter files (`registry.ts`, `elements.ts`, `manifest.json`) become unnecessary** since the framework adapter provides component and element defaults.
 
 ## References
 
