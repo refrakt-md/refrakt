@@ -1,13 +1,13 @@
 {
-  "name": "@refrakt-md/nuxt",
-  "description": "Nuxt module for refrakt.md — render Markdoc runes in Nuxt projects",
+  "name": "@refrakt-md/react",
+  "description": "React renderer for refrakt.md content — ADR-008 component interface with props and named slots",
   "version": "0.9.1",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/refrakt-md/refrakt.git",
-    "directory": "packages/nuxt"
+    "directory": "packages/react"
   },
   "bugs": "https://github.com/refrakt-md/refrakt/issues",
   "homepage": "https://github.com/refrakt-md/refrakt",
@@ -29,16 +29,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/behaviors": "0.9.1",
-    "@refrakt-md/content": "0.9.1",
     "@refrakt-md/transform": "0.9.1",
     "@refrakt-md/types": "0.9.1"
   },
   "devDependencies": {
-    "nuxt": "^3.0.0",
-    "vue": "^3.0.0"
+    "react": "^19.0.0",
+    "@types/react": "^19.0.0"
   },
   "peerDependencies": {
-    "nuxt": "^3.0.0"
+    "react": "^18.0.0 || ^19.0.0"
   }
 }
