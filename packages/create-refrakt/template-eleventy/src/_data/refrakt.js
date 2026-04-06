@@ -1,4 +1,5 @@
 import { createDataFile } from '@refrakt-md/eleventy';
-import { theme } from '@refrakt-md/lumina/eleventy';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
 
-export default createDataFile({ theme });
+export default createDataFile({ theme: { manifest, layouts } });

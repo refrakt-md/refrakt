@@ -114,7 +114,9 @@ Create a server utility that loads and transforms content at build time or on ea
 import { loadContent, type SiteContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
-import { theme } from '@refrakt-md/lumina/nuxt';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 import { resolve } from 'node:path';
 
 let siteContent: SiteContent | null = null;

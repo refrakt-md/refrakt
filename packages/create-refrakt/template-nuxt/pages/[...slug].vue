@@ -2,7 +2,9 @@
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
-import { theme } from '@refrakt-md/lumina/nuxt';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 import { renderPage, buildRefraktHead } from '@refrakt-md/nuxt';
 import type { RendererNode } from '@refrakt-md/types';
 

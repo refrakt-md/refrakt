@@ -1,6 +1,6 @@
 {
   "name": "@refrakt-md/lumina",
-  "description": "Lumina theme for refrakt.md — design tokens, CSS, identity transform, and framework adapters",
+  "description": "Lumina theme for refrakt.md — design tokens, CSS, identity transform, and layout configs",
   "version": "0.9.1",
   "type": "module",
   "license": "MIT",
@@ -23,34 +23,11 @@
     },
     "./manifest": "./manifest.json",
     "./contracts": "./contracts/structures.json",
-    "./svelte": {
-      "types": "./svelte/index.ts",
-      "svelte": "./svelte/index.ts",
-      "default": "./svelte/index.ts"
+    "./layouts": {
+      "types": "./layouts/index.ts",
+      "default": "./layouts/index.ts"
     },
-    "./html": {
-      "types": "./html/index.ts",
-      "default": "./html/index.ts"
-    },
-    "./astro": {
-      "types": "./astro/index.ts",
-      "default": "./astro/index.ts"
-    },
-    "./nuxt": {
-      "types": "./nuxt/index.ts",
-      "default": "./nuxt/index.ts"
-    },
-    "./next": {
-      "types": "./next/index.ts",
-      "default": "./next/index.ts"
-    },
-    "./eleventy": {
-      "types": "./eleventy/index.ts",
-      "default": "./eleventy/index.ts"
-    },
-    "./styles/runes/*.css": "./styles/runes/*.css",
-    "./svelte/tokens.css": "./svelte/tokens.css",
-    "./svelte/manifest": "./svelte/manifest.json"
+    "./styles/runes/*.css": "./styles/runes/*.css"
   },
   "files": [
     "dist",
@@ -60,12 +37,7 @@
     "styles",
     "contracts",
     "manifest.json",
-    "svelte",
-    "html",
-    "astro",
-    "nuxt",
-    "next",
-    "eleventy"
+    "layouts"
   ],
   "scripts": {
     "build": "tsc"
@@ -73,26 +45,9 @@
   "dependencies": {
     "@refrakt-md/runes": "0.9.1",
     "@refrakt-md/transform": "0.9.1",
-    "@refrakt-md/types": "0.9.1",
-    "@refrakt-md/svelte": "0.9.1"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0",
-    "@sveltejs/kit": "^2.0.0",
-    "@refrakt-md/html": "0.9.1"
+    "@refrakt-md/types": "0.9.1"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
-  },
-  "peerDependenciesMeta": {
-    "svelte": {
-      "optional": true
-    },
-    "@sveltejs/kit": {
-      "optional": true
-    },
-    "@refrakt-md/html": {
-      "optional": true
-    }
   }
 }

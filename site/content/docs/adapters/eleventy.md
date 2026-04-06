@@ -109,7 +109,9 @@ Create `_data/refrakt.js`:
 
 ```javascript
 import { createDataFile } from '@refrakt-md/eleventy';
-import { theme } from '@refrakt-md/lumina/eleventy';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 
 export default createDataFile({
   theme,
@@ -289,7 +291,9 @@ The Eleventy adapter sits between the HTML adapter and the SvelteKit adapter in 
 Lumina provides a dedicated Eleventy adapter export:
 
 ```javascript
-import { theme } from '@refrakt-md/lumina/eleventy';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 ```
 
 This export bundles the theme manifest and layout configurations (default, docs, blog-article) so you can pass it directly to `createDataFile`. Custom themes can implement the `EleventyTheme` interface by providing a manifest and layout map.

@@ -33,13 +33,19 @@ describe('loadVirtualModule', () => {
 		target: 'svelte',
 	};
 
-	it('generates theme with routeRules injection from config', () => {
+	it('generates theme by assembling manifest + layouts + framework defaults (ADR-009)', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/theme', config);
-		expect(result).toContain("import { theme as _base } from '@refrakt-md/lumina/svelte';");
+		expect(result).toContain("import _manifest from '@refrakt-md/lumina/manifest';");
+		expect(result).toContain("import { layouts as _layouts } from '@refrakt-md/lumina/layouts';");
+		expect(result).toContain("import { registry as _registry } from '@refrakt-md/svelte';");
+		expect(result).toContain("import { elements as _elements } from '@refrakt-md/svelte';");
 		expect(result).toContain('routeRules:');
 		// Default fallback when no routeRules in config
 		expect(result).toContain('"**"');
 		expect(result).toContain('"default"');
+		expect(result).toContain('layouts: _layouts,');
+		expect(result).toContain('components: _registry,');
+		expect(result).toContain('elements: _elements,');
 	});
 
 	it('injects site config routeRules into theme', () => {
@@ -55,9 +61,9 @@ describe('loadVirtualModule', () => {
 		expect(result).toContain('"docs"');
 	});
 
-	it('generates tokens CSS import from theme/target adapter', () => {
+	it('generates tokens CSS import from theme root export', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/tokens', config);
-		expect(result).toBe("import '@refrakt-md/lumina/svelte/tokens.css';");
+		expect(result).toBe("import '@refrakt-md/lumina';");
 	});
 
 	it('generates config export', () => {
@@ -75,8 +81,10 @@ describe('loadVirtualModule', () => {
 	it('works with different theme package names', () => {
 		const customConfig = { ...config, theme: '@refrakt-md/aurora' };
 		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
-			.toContain("import { theme as _base } from '@refrakt-md/aurora/svelte';");
+			.toContain("import _manifest from '@refrakt-md/aurora/manifest';");
+		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
+			.toContain("import { layouts as _layouts } from '@refrakt-md/aurora/layouts';");
 		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig))
-			.toBe("import '@refrakt-md/aurora/svelte/tokens.css';");
+			.toBe("import '@refrakt-md/aurora';");
 	});
 });

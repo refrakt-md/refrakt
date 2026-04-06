@@ -70,7 +70,9 @@ import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import { themeConfig } from '@refrakt-md/lumina/transform';
-import { theme } from '@refrakt-md/lumina/next';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 import { RefraktContent, buildUrlFromParams, buildMetadata, hasInteractiveRunes } from '@refrakt-md/next';
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { PageParams } from '@refrakt-md/next';
@@ -295,7 +297,9 @@ The adapter works with both the Pages Router and App Router, but the `RefraktCon
 Themes work with the Next.js adapter through their `./next` subpath export:
 
 ```typescript
-import { theme } from '@refrakt-md/lumina/next';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 ```
 
 This provides the `NextTheme` object with the manifest and layout configs. For CSS, import the theme's main export in your root layout.

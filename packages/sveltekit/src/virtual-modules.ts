@@ -27,15 +27,21 @@ export function loadVirtualModule(
 	config: RefraktConfig,
 	buildCtx: BuildContext = { isBuild: false },
 ): string | undefined {
-	const themeAdapter = `${config.theme}/${config.target}`;
+	const theme = config.theme;
 
 	if (id === `${RESOLVED_PREFIX}theme`) {
 		const overrides = config.overrides;
 		const hasOverrides = overrides && Object.keys(overrides).length > 0;
 		const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
-		// Always generate the expanded form to inject routeRules from site config
-		const lines = [`import { theme as _base } from '${themeAdapter}';`];
+		// ADR-009: Assemble theme from generic exports instead of per-framework adapter.
+		// The theme provides manifest + layouts; the framework adapter adds components/elements.
+		const lines = [
+			`import _manifest from '${theme}/manifest';`,
+			`import { layouts as _layouts } from '${theme}/layouts';`,
+			`import { registry as _registry } from '@refrakt-md/svelte';`,
+			`import { elements as _elements } from '@refrakt-md/svelte';`,
+		];
 
 		if (hasOverrides) {
 			const entries = Object.entries(overrides);
@@ -46,36 +52,39 @@ export function loadVirtualModule(
 
 		lines.push('');
 		lines.push('export const theme = {');
-		lines.push('\t..._base,');
 		lines.push('\tmanifest: {');
-		lines.push('\t\t..._base.manifest,');
+		lines.push('\t\t..._manifest,');
 		lines.push(`\t\trouteRules: ${JSON.stringify(routeRules)},`);
 		lines.push('\t},');
+		lines.push('\tlayouts: _layouts,');
 
 		if (hasOverrides) {
 			const entries = Object.entries(overrides);
 			lines.push('\tcomponents: {');
-			lines.push('\t\t..._base.components,');
+			lines.push('\t\t..._registry,');
 			for (let i = 0; i < entries.length; i++) {
 				lines.push(`\t\t'${entries[i][0]}': _o${i},`);
 			}
 			lines.push('\t},');
+		} else {
+			lines.push('\tcomponents: _registry,');
 		}
 
+		lines.push('\telements: _elements,');
 		lines.push('};');
 		return lines.join('\n');
 	}
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {
 		if (buildCtx.isBuild && buildCtx.usedCssBlocks) {
-			const theme = config.theme;
 			const lines = [`import '${theme}/base.css';`];
 			for (const block of [...buildCtx.usedCssBlocks].sort()) {
 				lines.push(`import '${theme}/styles/runes/${block}.css';`);
 			}
 			return lines.join('\n');
 		}
-		return `import '${themeAdapter}/tokens.css';`;
+		// Dev mode: import the full CSS barrel via the package's root export
+		return `import '${theme}';`;
 	}
 
 	if (id === `${RESOLVED_PREFIX}config`) {

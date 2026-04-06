@@ -106,7 +106,9 @@ Use Astro's `getStaticPaths()` to generate pages from your content directory. Th
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
-import { theme } from '@refrakt-md/lumina/astro';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 import { renderPage, buildSeoHead, hasInteractiveRunes } from '@refrakt-md/astro';
 
 export async function getStaticPaths() {
@@ -192,7 +194,9 @@ import BaseLayout from '@refrakt-md/astro/BaseLayout.astro';
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
-import { theme } from '@refrakt-md/lumina/astro';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
+const theme = { manifest, layouts };
 
 export async function getStaticPaths() {
   // ... same content loading as above

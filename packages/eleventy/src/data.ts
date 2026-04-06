@@ -22,8 +22,9 @@ export interface EleventyPageData {
  * Call this in your `_data/refrakt.js` file:
  *
  *   import { createDataFile } from '@refrakt-md/eleventy';
- *   import { theme } from '@refrakt-md/lumina/eleventy';
- *   export default createDataFile({ theme });
+ *   import manifest from '@refrakt-md/lumina/manifest';
+ *   import { layouts } from '@refrakt-md/lumina/layouts';
+ *   export default createDataFile({ theme: { manifest, layouts } });
  *
  * Returns an async function that loads content, applies transforms,
  * and produces an array of page objects with pre-rendered HTML.
