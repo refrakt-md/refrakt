@@ -1,22 +1,22 @@
-{% work id="WORK-124" status="draft" priority="medium" complexity="complex" tags="vue, renderer, architecture" %}
+{% work id="WORK-124" status="done" priority="medium" complexity="complex" tags="vue, renderer, architecture" %}
 
 # Create @refrakt-md/vue renderer with ADR-008 component interface
 
 The Nuxt adapter currently renders all runes via `renderToHtml()` (identity transform only). To support Vue component overrides — where theme or site authors provide custom Vue components for specific runes — we need a `@refrakt-md/vue` renderer package that dispatches on `typeof`/`data-rune` and provides the ADR-008 framework-native interface (props + named slots).
 
 ## Acceptance Criteria
-- [ ] New `packages/vue/` package exists with `@refrakt-md/vue` name
-- [ ] Exports a `Renderer` component that recursively renders a `RendererNode` tree
-- [ ] Renderer dispatches on `typeof` attribute to select registered component overrides (falls back to generic HTML element)
-- [ ] Uses `extractComponentInterface` from `@refrakt-md/transform` to partition children into properties, refs, and anonymous content
-- [ ] Property values passed as named Vue props to component overrides
-- [ ] Top-level refs passed as Vue named slots
-- [ ] Original `tag` object passed as prop alongside extracted props (hybrid per ADR-008 Option 4)
-- [ ] Exports a component registry mechanism (similar to `@refrakt-md/svelte`'s registry)
-- [ ] Exports an `elements` override mechanism for HTML element-level overrides (Table, Pre, etc.)
-- [ ] Nuxt adapter can use the Vue renderer instead of `renderToHtml()` for pages with component overrides
-- [ ] TypeScript compiles cleanly
-- [ ] Test suite covers extraction, dispatch, and fallback rendering
+- [x] New `packages/vue/` package exists with `@refrakt-md/vue` name
+- [x] Exports a `Renderer` component that recursively renders a `RendererNode` tree
+- [x] Renderer dispatches on `typeof` attribute to select registered component overrides (falls back to generic HTML element)
+- [x] Uses `extractComponentInterface` from `@refrakt-md/transform` to partition children into properties, refs, and anonymous content
+- [x] Property values passed as named Vue props to component overrides
+- [x] Top-level refs passed as Vue named slots
+- [x] Original `tag` object passed as prop alongside extracted props (hybrid per ADR-008 Option 4)
+- [x] Exports a component registry mechanism (similar to `@refrakt-md/svelte`'s registry)
+- [x] Exports an `elements` override mechanism for HTML element-level overrides (Table, Pre, etc.)
+- [x] Nuxt adapter can use the Vue renderer instead of `renderToHtml()` for pages with component overrides
+- [x] TypeScript compiles cleanly
+- [x] Test suite covers extraction, dispatch, and fallback rendering
 
 ## Approach
 
@@ -39,5 +39,28 @@ The extraction logic is already framework-agnostic (`extractComponentInterface` 
 - WORK-119 — Svelte renderer extraction (done, reference implementation)
 - `packages/svelte/src/Renderer.svelte` — Svelte renderer (reference)
 - `packages/nuxt/` — Nuxt adapter (consumer of this package)
+
+## Resolution
+
+Completed: 2026-04-06
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Created `packages/vue/` with full ADR-008 component interface
+- `Renderer.ts` — Vue 3 `defineComponent` using `h()` render function for recursive tree rendering
+- Component overrides dispatched via data-rune, receiving:
+  - Properties as named Vue props
+  - Named refs as Vue named slots (pre-rendered HTML via innerHTML)
+  - Anonymous children as default slot
+  - Original tag as escape-hatch prop
+- Element overrides: Table (scrollable wrapper), Pre (rf-codeblock structure)
+- Registry + elements + VueTheme type exports
+- 20 tests using `@vue/server-renderer` SSR rendering
+
+### Notes
+- Used `defineComponent` + `h()` render functions instead of `.vue` SFC to avoid needing vue-tsc/vite in the build
+- Named slots use Vue's native slot mechanism: `h(Component, props, { slotName: () => vnode })`
+- All 2022 tests pass (20 new)
 
 {% /work %}
