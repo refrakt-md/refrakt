@@ -12,5 +12,9 @@ export type { SeoHeadProps } from './seo.js';
 // Behaviors
 export { hasInteractiveRunes, behaviorScript } from './behaviors.js';
 
+// Component registry (ADR-008)
+export { registry } from './registry.js';
+export type { ComponentRegistry } from './registry.js';
+
 // Types
 export type { AstroTheme, RefraktAstroOptions } from './types.js';

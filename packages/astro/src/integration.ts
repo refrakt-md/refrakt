@@ -19,12 +19,10 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 			'astro:config:setup'({ config, updateConfig, addWatchFile }) {
 				const refraktConfig = loadRefraktConfig(configPath);
 
-				const themeAdapter = `${refraktConfig.theme}/astro`;
 				const noExternal = [
 					...CORE_PACKAGES,
 					'@refrakt-md/astro',
 					refraktConfig.theme,
-					themeAdapter,
 					...(refraktConfig.packages ?? []),
 				];
 
