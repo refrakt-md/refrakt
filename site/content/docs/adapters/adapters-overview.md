@@ -12,6 +12,10 @@ An adapter connects the framework-agnostic transform pipeline to a specific rend
 | Adapter | Packages | Use case |
 |---------|----------|----------|
 | **SvelteKit** | `@refrakt-md/svelte` + `@refrakt-md/sveltekit` | SvelteKit apps with SSR, SPA navigation, and the full Svelte component ecosystem |
+| **Astro** | `@refrakt-md/astro` | MPA-first static site generation with zero JS by default |
+| **Next.js** | `@refrakt-md/next` | React Server Components with zero-hydration content rendering |
+| **Nuxt** | `@refrakt-md/nuxt` | Nuxt 3 apps with Vite, SSR, and Vue rendering |
+| **Eleventy** | `@refrakt-md/eleventy` | Template-driven static sites with no bundler — just data files and Nunjucks |
 | **HTML** | `@refrakt-md/html` | Static site generation with pure HTML output — no framework required |
 
 ## What all adapters share
@@ -39,11 +43,11 @@ The `refrakt.config.json` file includes a `target` field that tells tooling whic
 }
 ```
 
-For the HTML adapter, set `target` to `"html"`:
+Valid target values: `"svelte"`, `"astro"`, `"nuxt"`, `"next"`, `"eleventy"`, `"html"`.
 
 ```json
 {
-  "target": "html"
+  "target": "astro"
 }
 ```
 
@@ -63,6 +67,14 @@ npx create-refrakt my-site --target html
 
 **Choose SvelteKit** when you want a full application framework with server-side rendering, client-side navigation, and the ability to use Svelte components for custom rune rendering.
 
-**Choose HTML** when you want the simplest possible setup — a Node.js build script that produces static HTML files. No framework runtime, no build tooling beyond TypeScript. Ideal for documentation sites, blogs, and content that doesn't need client-side routing.
+**Choose Astro** when you want an MPA-first static site with zero client JS by default. Astro ships no JavaScript for static-only pages and progressively adds behavior scripts only where needed.
 
-Both adapters support the behaviors library for interactive runes. Both produce the same semantic HTML with BEM classes. The difference is in how that HTML gets to the browser.
+**Choose Next.js** when you want React Server Components. Content renders with zero hydration cost via `dangerouslySetInnerHTML`, with a thin client component for behavior initialization.
+
+**Choose Nuxt** when you want a Vue-based framework with SSR. Closest to SvelteKit in architecture — Vite-based, file-system routing, same plugin patterns.
+
+**Choose Eleventy** when you want the simplest integration. No Vite, no bundler, no framework — just template-driven static generation with global data files and Nunjucks templates.
+
+**Choose HTML** when you want the simplest possible setup — a Node.js build script that produces static HTML files. No framework runtime, no build tooling beyond TypeScript.
+
+All adapters support the behaviors library for interactive runes. All produce the same semantic HTML with BEM classes. The difference is in how that HTML gets to the browser.

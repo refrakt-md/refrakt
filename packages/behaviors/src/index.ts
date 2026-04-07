@@ -130,6 +130,17 @@ export function initLayoutBehaviors(
 	return () => cleanups.forEach((fn) => fn());
 }
 
+/**
+ * Return the set of rune type names that have registered behaviors.
+ *
+ * Useful for adapters that need to detect at build time whether a page
+ * contains interactive runes (e.g., to conditionally include behavior scripts).
+ * Includes both core and community-registered behaviors.
+ */
+export function getBehaviorNames(): Set<string> {
+	return new Set(Object.keys(behaviors));
+}
+
 export { copyBehavior } from './behaviors/copy.js';
 export { accordionBehavior } from './behaviors/accordion.js';
 export { tabsBehavior } from './behaviors/tabs.js';

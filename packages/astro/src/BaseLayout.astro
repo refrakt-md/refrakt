@@ -1,0 +1,59 @@
+---
+import type { LayoutPageData } from '@refrakt-md/transform';
+import type { AstroTheme } from './types.js';
+import { renderPage } from './render.js';
+import { buildSeoHead } from './seo.js';
+import { hasInteractiveRunes } from './behaviors.js';
+
+interface Props {
+	theme: AstroTheme;
+	page: LayoutPageData;
+	seo?: { jsonLd: object[]; og: { title?: string; description?: string; image?: string; type?: string; url?: string } };
+	lang?: string;
+}
+
+const { theme, page, seo, lang = 'en' } = Astro.props;
+
+const html = renderPage({ theme, page });
+const head = buildSeoHead({ title: page.title, description: undefined, frontmatter: page.frontmatter, seo });
+const needsBehaviors = hasInteractiveRunes(page.renderable);
+const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
+---
+
+<html lang={lang}>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	{head.title && <title>{head.title}</title>}
+	<Fragment set:html={head.metaTags} />
+	<Fragment set:html={head.jsonLd} />
+	<slot name="head" />
+</head>
+<body>
+	<Fragment set:html={html} />
+	<script type="application/json" id="rf-context" set:html={contextData} />
+	{needsBehaviors && (
+		<script>
+			import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
+
+			function init() {
+				const contextEl = document.getElementById('rf-context');
+				if (contextEl) {
+					try {
+						const ctx = JSON.parse(contextEl.textContent || '{}');
+						RfContext.pages = ctx.pages;
+						RfContext.currentUrl = ctx.currentUrl;
+					} catch {}
+				}
+				registerElements();
+				initRuneBehaviors();
+				initLayoutBehaviors();
+			}
+
+			init();
+			document.addEventListener('astro:page-load', () => init());
+		</script>
+	)}
+	<slot name="body-end" />
+</body>
+</html>

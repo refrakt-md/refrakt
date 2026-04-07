@@ -36,11 +36,9 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			isBuild = env.command === 'build';
 			refraktConfig = loadRefraktConfig(configPath);
 
-			const themeAdapter = `${refraktConfig.theme}/${refraktConfig.target}`;
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
 				refraktConfig.theme,
-				themeAdapter,
 				...(refraktConfig.packages ?? []),
 				...(options.noExternal ?? []),
 			];

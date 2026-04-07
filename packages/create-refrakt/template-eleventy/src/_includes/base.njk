@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if seo.title %}<title>{{ seo.title }}</title>{% endif %}
+  {{ seo.metaTags | safe }}
+  {{ seo.jsonLd | safe }}
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+  {{ html | safe }}
+  <script type="module">
+    import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
+
+    RfContext.currentUrl = '{{ url }}';
+    registerElements();
+    initRuneBehaviors();
+    initLayoutBehaviors();
+  </script>
+</body>
+</html>

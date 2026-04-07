@@ -1,0 +1,9 @@
+---
+layout: base.njk
+pagination:
+  data: refrakt
+  size: 1
+  alias: page
+permalink: "{{ page.url | slug }}/"
+---
+{{ page.html | safe }}

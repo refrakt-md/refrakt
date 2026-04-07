@@ -26,7 +26,7 @@ const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
 	'javascript', 'typescript', 'html', 'css', 'json', 'shell',
 	'python', 'ruby', 'go', 'rust', 'java', 'c', 'cpp',
 	'markdown', 'yaml', 'toml', 'sql', 'graphql', 'svelte',
-	'jsx', 'tsx', 'diff', 'xml',
+	'jsx', 'tsx', 'diff', 'xml', 'vue', 'astro', 'jinja',
 	markdocLanguage,
 ];
 

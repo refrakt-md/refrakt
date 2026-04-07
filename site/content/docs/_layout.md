@@ -27,6 +27,10 @@
 
 - adapters-overview
 - sveltekit
+- astro
+- nextjs
+- nuxt
+- eleventy
 - html
 
 ## Authoring

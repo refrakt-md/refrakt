@@ -1,4 +1,4 @@
-{% work id="WORK-089" status="ready" priority="high" complexity="moderate" tags="frameworks, astro" milestone="v1.0.0" %}
+{% work id="WORK-089" status="in-progress" priority="high" complexity="moderate" tags="frameworks, astro" milestone="v1.0.0" %}
 
 # Create @refrakt-md/astro adapter package
 
@@ -6,18 +6,18 @@ Build the Astro framework adapter — the first non-SvelteKit target. Astro is M
 
 ## Acceptance Criteria
 
-- [ ] `packages/astro/` package exists with correct `package.json` (peer dep `astro@^5.0.0`)
-- [ ] Astro integration (`integration.ts`) reads `refrakt.config.json`, injects Lumina CSS, configures SSR noExternal list
-- [ ] `BaseLayout.astro` selects layout via `matchRouteRule()`, runs `layoutTransform()`, renders via `renderToHtml()` + `set:html`
-- [ ] SEO meta tags (Open Graph, JSON-LD) rendered in `<head>` from page SEO data
-- [ ] Behavior initialization script calls `initRuneBehaviors()`, `initLayoutBehaviors()`, `registerElements()` and sets `RfContext`
-- [ ] Behavior script conditionally included — only on pages that use interactive runes (tabs, accordion, datatable, etc.), shipping zero JS for static-only pages
-- [ ] Content loading works via `getStaticPaths()` using `loadContent()`
-- [ ] `AstroTheme` type interface exported for theme authors
-- [ ] Lumina Astro adapter exists (`packages/lumina/astro/index.ts`) exporting theme config + CSS entry point
-- [ ] Content HMR works in dev mode via Vite `server.watcher`
+- [x] `packages/astro/` package exists with correct `package.json` (peer dep `astro@^5.0.0`)
+- [x] Astro integration (`integration.ts`) reads `refrakt.config.json`, injects Lumina CSS, configures SSR noExternal list
+- [x] `BaseLayout.astro` selects layout via `matchRouteRule()`, runs `layoutTransform()`, renders via `renderToHtml()` + `set:html`
+- [x] SEO meta tags (Open Graph, JSON-LD) rendered in `<head>` from page SEO data
+- [x] Behavior initialization script calls `initRuneBehaviors()`, `initLayoutBehaviors()`, `registerElements()` and sets `RfContext`
+- [x] Behavior script conditionally included — only on pages that use interactive runes (tabs, accordion, datatable, etc.), shipping zero JS for static-only pages
+- [x] Content loading works via `getStaticPaths()` using `loadContent()`
+- [x] `AstroTheme` type interface exported for theme authors
+- [x] Lumina Astro adapter exists (`packages/lumina/astro/index.ts`) exporting theme config + CSS entry point
+- [x] Content HMR works in dev mode via Vite `server.watcher`
 - [ ] Example site renders core runes, layouts (docs + default), behaviors, and web components correctly
-- [ ] Adapter documentation page at `site/content/docs/adapters/astro.md` with installation, project structure, configuration, code examples (integration setup, page component, layout, content loading, behavior init, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
+- [x] Adapter documentation page at `site/content/docs/adapters/astro.md` with installation, project structure, configuration, code examples (integration setup, page component, layout, content loading, behavior init, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

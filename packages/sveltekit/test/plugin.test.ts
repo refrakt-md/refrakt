@@ -62,7 +62,8 @@ describe('refrakt plugin', () => {
 		expect(result.ssr.noExternal).toContain('@refrakt-md/types');
 		expect(result.ssr.noExternal).toContain('@refrakt-md/svelte');
 		expect(result.ssr.noExternal).toContain('@refrakt-md/lumina');
-		expect(result.ssr.noExternal).toContain('@refrakt-md/lumina/svelte');
+		// ADR-009: no per-framework adapter path in noExternal
+		expect(result.ssr.noExternal).not.toContain('@refrakt-md/lumina/svelte');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -119,7 +120,8 @@ describe('refrakt plugin', () => {
 		(plugin.config as Function)({}, { command: 'serve' });
 
 		const result = (plugin.load as Function)('\0virtual:refrakt/theme');
-		expect(result).toContain("import { theme as _base } from '@refrakt-md/lumina/svelte'");
+		expect(result).toContain("import _manifest from '@refrakt-md/lumina/manifest'");
+		expect(result).toContain("import { layouts as _layouts } from '@refrakt-md/lumina/layouts'");
 		expect(result).toContain('routeRules:');
 		expect(result).toContain('export const theme');
 

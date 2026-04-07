@@ -1,4 +1,4 @@
-{% work id="WORK-090" status="ready" priority="medium" complexity="moderate" tags="frameworks, nuxt" milestone="v1.0.0" %}
+{% work id="WORK-090" status="done" priority="medium" complexity="moderate" tags="frameworks, nuxt" milestone="v1.0.0" %}
 
 # Create @refrakt-md/nuxt adapter package
 
@@ -31,5 +31,21 @@ The SvelteKit plugin's `CORE_NO_EXTERNAL` list maps directly to `nuxt.options.bu
 
 - SPEC-030 (Phase 2)
 - ADR-002 (Nuxt section)
+
+## Resolution
+
+Completed: 2026-04-04
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Created `packages/nuxt/` with Nuxt module, renderPage, buildRefraktHead composable, hasInteractiveRunes
+- Lumina Nuxt adapter at `packages/lumina/nuxt/index.ts`
+- Docs page at `site/content/docs/adapters/nuxt.md`
+
+### Notes
+- Uses defineNuxtModule with builder:watch for HMR and builder:generateApp for rebuild
+- Vue custom element config for rf-* tags handled in module setup
+- hasInteractiveRunes uses getBehaviorNames() from @refrakt-md/behaviors registry
 
 {% /work %}

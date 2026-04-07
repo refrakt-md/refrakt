@@ -1,4 +1,4 @@
-{% work id="WORK-092" status="ready" priority="low" complexity="simple" tags="frameworks, eleventy" milestone="v1.0.0" %}
+{% work id="WORK-092" status="done" priority="low" complexity="simple" tags="frameworks, eleventy" milestone="v1.0.0" %}
 
 # Create @refrakt-md/eleventy adapter package
 
@@ -33,5 +33,22 @@ For behaviors JS, either use a simple esbuild step to bundle `@refrakt-md/behavi
 
 - SPEC-030 (Phase 4)
 - ADR-002 (Eleventy section)
+
+## Resolution
+
+Completed: 2026-04-04
+
+Branch: `claude/implement-spec-030-F0LFn`
+
+### What was done
+- Created `packages/eleventy/` with createDataFile factory, refraktPlugin, base.njk template
+- Data file loads content, applies layout transform + renderToHtml, produces pre-rendered pages
+- Lumina Eleventy adapter at `packages/lumina/eleventy/index.ts`
+- Docs page at `site/content/docs/adapters/eleventy.md`
+
+### Notes
+- Simplest adapter: no Vite, no bundler — just data files and templates
+- Uses dynamic import for @refrakt-md/content to avoid bundling issues
+- Template uses Nunjucks | safe filter for HTML injection
 
 {% /work %}

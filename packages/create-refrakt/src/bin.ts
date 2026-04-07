@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
 import { scaffold, scaffoldTheme } from './scaffold.js';
+import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
 const args = process.argv.slice(2);
 
+const VALID_TARGETS: ScaffoldTarget[] = ['sveltekit', 'html', 'astro', 'nuxt', 'next', 'eleventy'];
+
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
 let type: 'site' | 'theme' = 'site';
-let target: 'sveltekit' | 'html' = 'sveltekit';
+let target: ScaffoldTarget = 'sveltekit';
 let scope: string | undefined;
 
 for (let i = 0; i < args.length; i++) {
@@ -27,9 +30,9 @@ for (let i = 0; i < args.length; i++) {
 		}
 		type = val;
 	} else if (arg === '--target') {
-		const val = args[++i];
-		if (val !== 'sveltekit' && val !== 'html') {
-			console.error('Error: --target must be "sveltekit" or "html"');
+		const val = args[++i] as ScaffoldTarget;
+		if (!VALID_TARGETS.includes(val)) {
+			console.error(`Error: --target must be one of: ${VALID_TARGETS.join(', ')}`);
 			process.exit(1);
 		}
 		target = val;
@@ -70,13 +73,18 @@ Usage: create-refrakt <name> [options]
 
 Options:
   --type <site|theme>          What to create (default: site)
-  --target <sveltekit|html>    Adapter target (sites only, default: sveltekit)
+  --target <target>            Adapter target (sites only, default: sveltekit)
+                               Targets: ${VALID_TARGETS.join(', ')}
   --theme, -t <package>        Theme package to use (sites only, default: @refrakt-md/lumina)
   --scope, -s <scope>          npm scope for the package (themes only, e.g., @my-org)
   --help, -h                   Show this help message
 
 Examples:
   npx create-refrakt my-site
+  npx create-refrakt my-site --target astro
+  npx create-refrakt my-site --target next
+  npx create-refrakt my-site --target nuxt
+  npx create-refrakt my-site --target eleventy
   npx create-refrakt my-site --target html
   npx create-refrakt my-site --theme @refrakt-md/aurora
   npx create-refrakt my-theme --type theme
@@ -116,25 +124,21 @@ Then use it in a site:
 
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
-} else if (target === 'html') {
-	console.log(`
-Done! Your refrakt.md site is ready.
-
-Next steps:
-
-  cd ${projectName}
-  npm install
-  npm run build
-  npm run serve
-`);
 } else {
+	const devCommands: Record<ScaffoldTarget, string> = {
+		sveltekit: `  cd ${projectName}\n  npm install\n  npm run dev`,
+		astro: `  cd ${projectName}\n  npm install\n  npm run dev`,
+		nuxt: `  cd ${projectName}\n  npm install\n  npm run dev`,
+		next: `  cd ${projectName}\n  npm install\n  npm run dev`,
+		eleventy: `  cd ${projectName}\n  npm install\n  npm run dev`,
+		html: `  cd ${projectName}\n  npm install\n  npm run build\n  npm run serve`,
+	};
+
 	console.log(`
-Done! Your refrakt.md site is ready.
+Done! Your refrakt.md site is ready (target: ${target}).
 
 Next steps:
 
-  cd ${projectName}
-  npm install
-  npm run dev
+${devCommands[target]}
 `);
 }

@@ -1,0 +1,91 @@
+---
+/**
+ * Recursive Astro renderer for refrakt.md content (ADR-008).
+ *
+ * Renders a RendererNode tree, dispatching to registered component overrides
+ * for runes that have them, falling back to HTML for everything else.
+ *
+ * Component overrides receive:
+ * - Extracted properties as named props (e.g., prepTime, difficulty)
+ * - Named refs as named slots (e.g., <slot name="headline" />)
+ * - Anonymous content as the default slot
+ * - The original `tag` object as a prop for escape-hatch access
+ */
+import type { SerializedTag, RendererNode } from '@refrakt-md/types';
+import { isTag, extractComponentInterface, renderToHtml } from '@refrakt-md/transform';
+import RfRenderer from './RfRenderer.astro';
+
+interface Props {
+	node: RendererNode;
+	/** typeof name → Astro component (component overrides) */
+	components?: Record<string, any>;
+	/** HTML element name → Astro component (element-level overrides) */
+	elements?: Record<string, any>;
+}
+
+const { node, components, elements } = Astro.props;
+
+// Determine what kind of node we have
+const isArray = Array.isArray(node);
+const isString = typeof node === 'string';
+const isNumber = typeof node === 'number';
+const isNull = node === null || node === undefined;
+const isTagNode = !isArray && !isString && !isNumber && !isNull && isTag(node);
+
+// For tag nodes, determine the rendering path
+let Component: any = undefined;
+let ElementOverride: any = undefined;
+let iface: { properties: Record<string, string>; refs: Record<string, SerializedTag[]>; children: RendererNode[] } | undefined;
+let refHtml: Record<string, string> = {};
+let tagNode: SerializedTag | undefined;
+
+if (isTagNode) {
+	tagNode = node as SerializedTag;
+	const runeType = tagNode.attributes?.['data-rune'];
+
+	if (runeType && components?.[runeType]) {
+		Component = components[runeType];
+		iface = extractComponentInterface(tagNode);
+
+		// Pre-render refs to HTML for named slots
+		for (const [name, tags] of Object.entries(iface.refs)) {
+			refHtml[name] = tags.map(t => renderToHtml(t)).join('');
+		}
+	} else if (elements?.[tagNode.name]) {
+		ElementOverride = elements[tagNode.name];
+	}
+}
+---
+
+{isNull && null}
+
+{isString && node}
+
+{isNumber && String(node)}
+
+{isArray && (node as RendererNode[]).map((child: RendererNode) => (
+	<RfRenderer node={child} components={components} elements={elements} />
+))}
+
+{isTagNode && Component && iface && (
+	<Component {...iface.properties} tag={tagNode}>
+		{Object.entries(refHtml).map(([name, html]: [string, string]) => (
+			<Fragment slot={name} set:html={html} />
+		))}
+		{iface.children.map((child: RendererNode) => (
+			<RfRenderer node={child} components={components} elements={elements} />
+		))}
+	</Component>
+)}
+
+{isTagNode && ElementOverride && tagNode && (
+	<ElementOverride tag={tagNode}>
+		{tagNode.children.map((child: RendererNode) => (
+			<RfRenderer node={child} components={components} elements={elements} />
+		))}
+	</ElementOverride>
+)}
+
+{isTagNode && !Component && !ElementOverride && tagNode && (
+	<Fragment set:html={renderToHtml(tagNode)} />
+)}

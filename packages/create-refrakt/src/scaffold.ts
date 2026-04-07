@@ -8,11 +8,13 @@ function getRefraktVersion(): string {
 	return pkg.version;
 }
 
+export type ScaffoldTarget = 'sveltekit' | 'html' | 'astro' | 'nuxt' | 'next' | 'eleventy';
+
 export interface ScaffoldOptions {
 	projectName: string;
 	targetDir: string;
 	theme: string;
-	target?: 'sveltekit' | 'html';
+	target?: ScaffoldTarget;
 }
 
 export function scaffold(options: ScaffoldOptions): void {
@@ -24,11 +26,16 @@ export function scaffold(options: ScaffoldOptions): void {
 
 	mkdirSync(targetDir, { recursive: true });
 
-	if (target === 'html') {
-		scaffoldHtmlSite(options);
-	} else {
-		scaffoldSvelteKitSite(options);
-	}
+	const scaffolders: Record<ScaffoldTarget, (opts: ScaffoldOptions) => void> = {
+		sveltekit: scaffoldSvelteKitSite,
+		html: scaffoldHtmlSite,
+		astro: scaffoldAstroSite,
+		nuxt: scaffoldNuxtSite,
+		next: scaffoldNextSite,
+		eleventy: scaffoldEleventySite,
+	};
+
+	scaffolders[target](options);
 }
 
 function scaffoldSvelteKitSite(options: ScaffoldOptions): void {
@@ -49,40 +56,16 @@ function scaffoldSvelteKitSite(options: ScaffoldOptions): void {
 	}
 
 	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
 
-	// Rename dotfiles (npm strips .gitignore from published tarballs)
-	const dotfileRenames: Record<string, string> = {
-		'_gitignore': '.gitignore',
-		'_npmrc': '.npmrc',
-	};
-	for (const [from, to] of Object.entries(dotfileRenames)) {
-		const srcPath = path.join(targetDir, from);
-		if (existsSync(srcPath)) {
-			renameSync(srcPath, path.join(targetDir, to));
-		}
-	}
-
-	// Generate interpolated files
-	writeFileSync(
-		path.join(targetDir, 'package.json'),
-		generatePackageJson(projectName, theme),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'refrakt.config.json'),
-		generateRefraktConfig(theme),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'README.md'),
-		generateReadme(projectName),
-	);
+	writeFileSync(path.join(targetDir, 'package.json'), generatePackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 }
 
 function scaffoldHtmlSite(options: ScaffoldOptions): void {
 	const { projectName, targetDir, theme } = options;
 
-	// Copy HTML template directory
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
@@ -97,33 +80,11 @@ function scaffoldHtmlSite(options: ScaffoldOptions): void {
 	}
 
 	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
 
-	// Rename dotfiles
-	const dotfileRenames: Record<string, string> = {
-		'_gitignore': '.gitignore',
-	};
-	for (const [from, to] of Object.entries(dotfileRenames)) {
-		const srcPath = path.join(targetDir, from);
-		if (existsSync(srcPath)) {
-			renameSync(srcPath, path.join(targetDir, to));
-		}
-	}
-
-	// Generate interpolated files
-	writeFileSync(
-		path.join(targetDir, 'package.json'),
-		generateHtmlPackageJson(projectName, theme),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'refrakt.config.json'),
-		generateRefraktConfig(theme, 'html'),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'README.md'),
-		generateReadme(projectName),
-	);
+	writeFileSync(path.join(targetDir, 'package.json'), generateHtmlPackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'html'));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 }
 
 function generatePackageJson(projectName: string, theme: string): string {
@@ -201,6 +162,235 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 		},
 		devDependencies: {
 			'tsx': '^4.0.0',
+			'typescript': '^5.4.0',
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+function scaffoldAstroSite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
+
+	const templateDir = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'template-astro'
+	);
+
+	if (!existsSync(templateDir)) {
+		throw new Error(
+			`Template directory not found at ${templateDir}. ` +
+			`This is a bug in create-refrakt — please report it.`
+		);
+	}
+
+	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
+
+	writeFileSync(path.join(targetDir, 'package.json'), generateAstroPackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'astro'));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+}
+
+function scaffoldNuxtSite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
+
+	const templateDir = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'template-nuxt'
+	);
+
+	if (!existsSync(templateDir)) {
+		throw new Error(
+			`Template directory not found at ${templateDir}. ` +
+			`This is a bug in create-refrakt — please report it.`
+		);
+	}
+
+	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
+
+	writeFileSync(path.join(targetDir, 'package.json'), generateNuxtPackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'nuxt'));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+}
+
+function scaffoldNextSite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
+
+	const templateDir = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'template-next'
+	);
+
+	if (!existsSync(templateDir)) {
+		throw new Error(
+			`Template directory not found at ${templateDir}. ` +
+			`This is a bug in create-refrakt — please report it.`
+		);
+	}
+
+	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
+
+	writeFileSync(path.join(targetDir, 'package.json'), generateNextPackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'next'));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+}
+
+function scaffoldEleventySite(options: ScaffoldOptions): void {
+	const { projectName, targetDir, theme } = options;
+
+	const templateDir = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'template-eleventy'
+	);
+
+	if (!existsSync(templateDir)) {
+		throw new Error(
+			`Template directory not found at ${templateDir}. ` +
+			`This is a bug in create-refrakt — please report it.`
+		);
+	}
+
+	cpSync(templateDir, targetDir, { recursive: true });
+	renameDotfiles(targetDir);
+
+	writeFileSync(path.join(targetDir, 'package.json'), generateEleventyPackageJson(projectName, theme));
+	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
+	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+}
+
+function renameDotfiles(targetDir: string): void {
+	const dotfileRenames: Record<string, string> = {
+		'_gitignore': '.gitignore',
+		'_npmrc': '.npmrc',
+	};
+	for (const [from, to] of Object.entries(dotfileRenames)) {
+		const srcPath = path.join(targetDir, from);
+		if (existsSync(srcPath)) {
+			renameSync(srcPath, path.join(targetDir, to));
+		}
+	}
+}
+
+function generateAstroPackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			dev: 'astro dev',
+			build: 'astro build',
+			preview: 'astro preview',
+		},
+		dependencies: {
+			'@refrakt-md/astro': v,
+			'@refrakt-md/behaviors': v,
+			'@refrakt-md/content': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/transform': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
+			'astro': '^5.0.0',
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'typescript': '^5.4.0',
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+function generateNuxtPackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			dev: 'nuxt dev',
+			build: 'nuxt generate',
+			preview: 'nuxt preview',
+		},
+		dependencies: {
+			'@refrakt-md/content': v,
+			'@refrakt-md/nuxt': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/transform': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'nuxt': '^3.0.0',
+			'typescript': '^5.4.0',
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+function generateNextPackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			dev: 'next dev',
+			build: 'next build',
+			start: 'npx serve out',
+		},
+		dependencies: {
+			'@refrakt-md/behaviors': v,
+			'@refrakt-md/content': v,
+			'@refrakt-md/next': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/transform': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
+			'next': '^15.0.0',
+			'react': '^19.0.0',
+			'react-dom': '^19.0.0',
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'@types/react': '^19.0.0',
+			'typescript': '^5.4.0',
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+function generateEleventyPackageJson(projectName: string, theme: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			dev: 'eleventy --serve',
+			build: 'eleventy',
+		},
+		dependencies: {
+			'@refrakt-md/content': v,
+			'@refrakt-md/eleventy': v,
+			'@refrakt-md/runes': v,
+			'@refrakt-md/transform': v,
+			'@refrakt-md/types': v,
+			[theme]: v,
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'@11ty/eleventy': '^3.0.0',
 			'typescript': '^5.4.0',
 		},
 	};

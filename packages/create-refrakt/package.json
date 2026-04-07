@@ -19,7 +19,11 @@
   "files": [
     "dist",
     "template",
-    "template-html"
+    "template-html",
+    "template-astro",
+    "template-nuxt",
+    "template-next",
+    "template-eleventy"
   ],
   "scripts": {
     "build": "tsc"

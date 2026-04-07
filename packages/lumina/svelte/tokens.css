@@ -1,6 +1,0 @@
-/* ──────────────────────────────────────────────
-   Lumina Theme — Token Bridge
-   Imports identity tokens + global styles (--rf-* prefix).
-   ────────────────────────────────────────────── */
-
-@import '../index.css';
