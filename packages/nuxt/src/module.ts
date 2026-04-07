@@ -12,7 +12,7 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 	defaults: {
 		configPath: './refrakt.config.json',
 	},
-	setup(options, nuxt) {
+	setup(options: RefraktNuxtOptions, nuxt: any) {
 		const refraktConfig = loadRefraktConfig(options.configPath!);
 
 		// Add packages to transpile list
@@ -30,7 +30,7 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 
 		// Watch content directory for HMR
 		const contentDir = resolve(nuxt.options.rootDir, refraktConfig.contentDir);
-		nuxt.hook('builder:watch', async (_event, relativePath) => {
+		nuxt.hook('builder:watch', async (_event: string, relativePath: string) => {
 			if (relativePath.endsWith('.md')) {
 				const absPath = resolve(nuxt.options.rootDir, relativePath);
 				if (absPath.startsWith(contentDir)) {
