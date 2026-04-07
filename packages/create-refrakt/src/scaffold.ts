@@ -104,6 +104,7 @@ function generatePackageJson(projectName: string, theme: string): string {
 		dependencies: {
 			'@refrakt-md/content': v,
 			'@refrakt-md/highlight': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/svelte': v,
 			'@refrakt-md/sveltekit': v,
@@ -132,6 +133,7 @@ function generateRefraktConfig(theme: string, target: string = 'svelte'): string
 		contentDir: './content',
 		theme,
 		target,
+		packages: ['@refrakt-md/marketing'],
 		routeRules: [
 			{ pattern: '**', layout: 'default' },
 		],
@@ -154,6 +156,7 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/content': v,
 			'@refrakt-md/highlight': v,
 			'@refrakt-md/html': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
@@ -293,6 +296,7 @@ function generateAstroPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/astro': v,
 			'@refrakt-md/behaviors': v,
 			'@refrakt-md/content': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
@@ -321,6 +325,7 @@ function generateNuxtPackageJson(projectName: string, theme: string): string {
 		},
 		dependencies: {
 			'@refrakt-md/content': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/nuxt': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/transform': v,
@@ -351,6 +356,7 @@ function generateNextPackageJson(projectName: string, theme: string): string {
 		dependencies: {
 			'@refrakt-md/behaviors': v,
 			'@refrakt-md/content': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/next': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/transform': v,
@@ -383,6 +389,7 @@ function generateEleventyPackageJson(projectName: string, theme: string): string
 		dependencies: {
 			'@refrakt-md/content': v,
 			'@refrakt-md/eleventy': v,
+			'@refrakt-md/marketing': v,
 			'@refrakt-md/runes': v,
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,

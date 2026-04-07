@@ -8,10 +8,20 @@ const args = process.argv.slice(2);
 
 const VALID_TARGETS: ScaffoldTarget[] = ['sveltekit', 'html', 'astro', 'nuxt', 'next', 'eleventy'];
 
+const TARGET_LABELS: Record<ScaffoldTarget, string> = {
+	sveltekit: 'SvelteKit',
+	astro: 'Astro',
+	nuxt: 'Nuxt',
+	next: 'Next.js',
+	eleventy: 'Eleventy',
+	html: 'Static HTML',
+};
+
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
 let type: 'site' | 'theme' = 'site';
-let target: ScaffoldTarget = 'sveltekit';
+let target: ScaffoldTarget | undefined;
+let targetExplicit = false;
 let scope: string | undefined;
 
 for (let i = 0; i < args.length; i++) {
@@ -36,6 +46,7 @@ for (let i = 0; i < args.length; i++) {
 			process.exit(1);
 		}
 		target = val;
+		targetExplicit = true;
 	} else if (arg === '--scope' || arg === '-s') {
 		scope = args[++i];
 		if (!scope) {
@@ -61,15 +72,9 @@ for (let i = 0; i < args.length; i++) {
 	}
 }
 
-if (!projectName) {
-	console.error('Error: Missing project name\n');
-	printUsage();
-	process.exit(1);
-}
-
 function printUsage(): void {
 	console.log(`
-Usage: create-refrakt <name> [options]
+Usage: create-refrakt [name] [options]
 
 Options:
   --type <site|theme>          What to create (default: site)
@@ -92,21 +97,76 @@ Examples:
 `);
 }
 
-const targetDir = path.resolve(process.cwd(), projectName);
+async function run(): Promise<void> {
+	const needsPrompt = !projectName || (type === 'site' && !targetExplicit);
 
-try {
-	if (type === 'theme') {
-		scaffoldTheme({ themeName: projectName, targetDir, scope });
-	} else {
-		scaffold({ projectName, targetDir, theme, target });
+	if (needsPrompt && process.stdout.isTTY) {
+		const { intro, text, select, isCancel, cancel, outro } = await import('@clack/prompts');
+
+		intro('create-refrakt');
+
+		if (!projectName) {
+			const name = await text({
+				message: 'Project name',
+				placeholder: 'my-site',
+				validate(value) {
+					if (!value || !value.trim()) return 'Project name is required';
+					if (/[^a-zA-Z0-9._-]/.test(value)) return 'Project name contains invalid characters';
+				},
+			});
+
+			if (isCancel(name)) {
+				cancel('Cancelled.');
+				process.exit(0);
+			}
+
+			projectName = name;
+		}
+
+		if (type === 'site' && !targetExplicit) {
+			const selected = await select({
+				message: 'Which framework?',
+				options: VALID_TARGETS.map((t) => ({
+					value: t,
+					label: TARGET_LABELS[t],
+				})),
+			});
+
+			if (isCancel(selected)) {
+				cancel('Cancelled.');
+				process.exit(0);
+			}
+
+			target = selected as ScaffoldTarget;
+		}
+
+		outro(`Creating ${type === 'theme' ? 'theme' : `${TARGET_LABELS[target!]} site`}: ${projectName}`);
+	} else if (!projectName) {
+		console.error('Error: Missing project name\n');
+		printUsage();
+		process.exit(1);
 	}
-} catch (err) {
-	console.error(`\nError: ${(err as Error).message}`);
-	process.exit(1);
-}
 
-if (type === 'theme') {
-	console.log(`
+	// Default target if still unset (non-interactive or theme)
+	if (!target) {
+		target = 'sveltekit';
+	}
+
+	const targetDir = path.resolve(process.cwd(), projectName!);
+
+	try {
+		if (type === 'theme') {
+			scaffoldTheme({ themeName: projectName!, targetDir, scope });
+		} else {
+			scaffold({ projectName: projectName!, targetDir, theme, target });
+		}
+	} catch (err) {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	}
+
+	if (type === 'theme') {
+		console.log(`
 Done! Your refrakt.md theme package is ready.
 
 Next steps:
@@ -124,21 +184,24 @@ Then use it in a site:
 
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
-} else {
-	const devCommands: Record<ScaffoldTarget, string> = {
-		sveltekit: `  cd ${projectName}\n  npm install\n  npm run dev`,
-		astro: `  cd ${projectName}\n  npm install\n  npm run dev`,
-		nuxt: `  cd ${projectName}\n  npm install\n  npm run dev`,
-		next: `  cd ${projectName}\n  npm install\n  npm run dev`,
-		eleventy: `  cd ${projectName}\n  npm install\n  npm run dev`,
-		html: `  cd ${projectName}\n  npm install\n  npm run build\n  npm run serve`,
-	};
+	} else {
+		const devCommands: Record<ScaffoldTarget, string> = {
+			sveltekit: `  cd ${projectName}\n  npm install\n  npm run dev`,
+			astro: `  cd ${projectName}\n  npm install\n  npm run dev`,
+			nuxt: `  cd ${projectName}\n  npm install\n  npm run dev`,
+			next: `  cd ${projectName}\n  npm install\n  npm run dev`,
+			eleventy: `  cd ${projectName}\n  npm install\n  npm run dev`,
+			html: `  cd ${projectName}\n  npm install\n  npm run build\n  npm run serve`,
+		};
 
-	console.log(`
+		console.log(`
 Done! Your refrakt.md site is ready (target: ${target}).
 
 Next steps:
 
 ${devCommands[target]}
 `);
+	}
 }
+
+run();

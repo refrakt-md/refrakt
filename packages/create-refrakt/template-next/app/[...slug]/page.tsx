@@ -1,15 +1,59 @@
 import { loadContent } from '@refrakt-md/content';
-import { createTransform } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/runes';
+import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
 import { RefraktContent, buildMetadata, buildUrlFromParams, hasInteractiveRunes } from '@refrakt-md/next';
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { RendererNode } from '@refrakt-md/types';
+import type { RefraktConfig } from '@refrakt-md/types';
+import type { Schema } from '@markdoc/markdoc';
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+
+const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
+const contentDir = path.resolve(config.contentDir);
+
+async function getTransformAndTags() {
+	const themeModule = await import(config.theme + '/transform');
+	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+
+	const packageNames = config.packages ?? [];
+	if (packageNames.length === 0) {
+		return { transform: createTransform(themeConfig), communityTags: undefined };
+	}
+
+	const loaded = await Promise.all(
+		packageNames.map((name: string) => loadRunePackage(name))
+	);
+	const coreRuneNames = new Set(Object.keys(coreRunes));
+	const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+
+	const communityTags: Record<string, Schema> | undefined =
+		Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+
+	const { config: assembledConfig } = assembleThemeConfig({
+		coreConfig: themeConfig,
+		packageRunes: merged.themeRunes,
+		packageIcons: merged.themeIcons,
+		packageBackgrounds: merged.themeBackgrounds,
+		extensions: merged.extensions as any,
+		provenance: merged.provenance,
+	});
+
+	return { transform: createTransform(assembledConfig), communityTags };
+}
+
+let _cached: Awaited<ReturnType<typeof getTransformAndTags>> | null = null;
+async function getCached() {
+	if (!_cached) _cached = await getTransformAndTags();
+	return _cached;
+}
 
 export async function generateStaticParams() {
-	const site = await loadContent('./content', '/');
+	const { communityTags } = await getCached();
+	const site = await loadContent(contentDir, '/', {}, communityTags);
 	return site.pages
 		.filter((p: any) => !p.route.draft)
 		.map((page: any) => ({
@@ -20,7 +64,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }) {
 	const resolvedParams = await params;
 	const url = buildUrlFromParams(resolvedParams);
-	const site = await loadContent('./content', '/');
+	const { communityTags } = await getCached();
+	const site = await loadContent(contentDir, '/', {}, communityTags);
 	const page = site.pages.find((p: any) => p.route.url === url);
 	if (!page) return {};
 
@@ -34,11 +79,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
 	const resolvedParams = await params;
 	const url = buildUrlFromParams(resolvedParams);
-	const site = await loadContent('./content', '/');
+	const { transform, communityTags } = await getCached();
+	const site = await loadContent(contentDir, '/', {}, communityTags);
 	const currentPage = site.pages.find((p: any) => p.route.url === url);
 	if (!currentPage) return <div>Page not found</div>;
 
-	const transform = createTransform(baseConfig);
 	const renderable = transform(currentPage.renderable) as RendererNode;
 
 	const regions: Record<string, any> = {};

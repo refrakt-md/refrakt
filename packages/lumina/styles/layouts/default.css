@@ -25,6 +25,13 @@
 	margin: 0;
 	line-height: 1;
 }
+.rf-header h1, .rf-header h2, .rf-header h3 {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	line-height: 1;
+}
 .rf-header a {
 	display: inline-block;
 	color: inherit;
