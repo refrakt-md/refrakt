@@ -79,6 +79,7 @@ export async function getSite(): Promise<Site> {
 			basePath: '/',
 			icons,
 			additionalTags: communityTags,
+			variables: { version: __REFRAKT_VERSION__ },
 			dev: import.meta.env.DEV,
 		});
 	}

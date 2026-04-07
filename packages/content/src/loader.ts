@@ -9,6 +9,8 @@ export interface SiteLoaderOptions {
 	additionalTags?: Record<string, Schema>;
 	packages?: RunePackage[];
 	sandboxExamplesDir?: string;
+	/** Site-wide Markdoc variables available in content via {% $name %} syntax. */
+	variables?: Record<string, unknown>;
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
 }
@@ -33,6 +35,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.additionalTags,
 				options.packages,
 				options.sandboxExamplesDir,
+				options.variables,
 			);
 			if (!options.dev) cached = promise;
 			return promise;

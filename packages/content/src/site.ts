@@ -98,6 +98,7 @@ export async function loadContent(
   additionalTags?: Record<string, Schema>,
   packages?: RunePackage[],
   sandboxExamplesDir?: string,
+  variables?: Record<string, unknown>,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
@@ -132,6 +133,7 @@ export async function loadContent(
       frontmatter,
     );
     const contentVariables: Record<string, unknown> = {
+      ...variables,
       frontmatter,
       page: { url: route.url, filePath: route.filePath, draft: route.draft },
       file: {

@@ -3,7 +3,7 @@ title: refrakt.md
 description: A content framework built on Markdoc with 60+ semantic runes
 ---
 {% hero align="left" spacing="tight" layout="split" collapse="lg" %}
-Version 0.9.2 released [Check out what's new](/releases)
+Version {% $version %} released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
 
