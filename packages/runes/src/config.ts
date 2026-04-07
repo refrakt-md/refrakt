@@ -90,7 +90,7 @@ export const coreConfig: ThemeConfig = {
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		AccordionItem: { block: 'accordion-item', parent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
-		Details: { block: 'details', defaultDensity: 'compact', sections: { summary: 'title' }, autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
+		Details: { block: 'details', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
 			defaultDensity: 'full',
@@ -427,7 +427,6 @@ export const coreConfig: ThemeConfig = {
 		},
 		Diff: {
 			block: 'diff',
-			defaultDensity: 'compact',
 			modifiers: { mode: { source: 'meta', default: 'unified' } },
 			editHints: { line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' },
 		},

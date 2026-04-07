@@ -29,7 +29,7 @@
 }
 .rf-diff__code {
 	margin: 0;
-	padding: 0;
+	padding: var(--rf-spacing-sm) 0;
 	border: none;
 	border-radius: 0;
 	background: var(--rf-color-code-bg);
