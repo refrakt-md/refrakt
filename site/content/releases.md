@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.9.2
+## v0.9.2 - April 7, 2026
 
 - Add multi-framework adapter packages (Astro, Eleventy, Next.js, Nuxt, React, Vue) with ADR-008 framework-native component interfaces. Implement ADR-009 framework-agnostic theme architecture. Add vue, astro, and jinja to Shiki default languages.
 
