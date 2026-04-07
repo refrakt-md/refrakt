@@ -33,18 +33,18 @@
 	--rf-color-surface-active: #ece8d0;
 	--rf-color-surface-raised: #fffdf0;
 
-	/* Semantic — harmonized */
+	/* Semantic — harmonized, all backgrounds use surface */
 	--rf-color-info: #6a8caf;
-	--rf-color-info-bg: #f0f4f8;
+	--rf-color-info-bg: var(--rf-color-surface);
 	--rf-color-info-border: #c4d5e4;
 	--rf-color-warning: #d4a54a;
-	--rf-color-warning-bg: #fdf6e3;
+	--rf-color-warning-bg: var(--rf-color-surface);
 	--rf-color-warning-border: #f2cc8f;
 	--rf-color-danger: #c1534a;
-	--rf-color-danger-bg: #fdf0ee;
+	--rf-color-danger-bg: var(--rf-color-surface);
 	--rf-color-danger-border: #e8b4ae;
 	--rf-color-success: #81b29a;
-	--rf-color-success-bg: #eef6f2;
+	--rf-color-success-bg: var(--rf-color-surface);
 	--rf-color-success-border: #b5d5c5;
 
 	/* Code block */
@@ -81,16 +81,16 @@
 	--rf-color-surface-raised: #fffdf0;
 
 	--rf-color-info: #6a8caf;
-	--rf-color-info-bg: #f0f4f8;
+	--rf-color-info-bg: var(--rf-color-surface);
 	--rf-color-info-border: #c4d5e4;
 	--rf-color-warning: #d4a54a;
-	--rf-color-warning-bg: #fdf6e3;
+	--rf-color-warning-bg: var(--rf-color-surface);
 	--rf-color-warning-border: #f2cc8f;
 	--rf-color-danger: #c1534a;
-	--rf-color-danger-bg: #fdf0ee;
+	--rf-color-danger-bg: var(--rf-color-surface);
 	--rf-color-danger-border: #e8b4ae;
 	--rf-color-success: #81b29a;
-	--rf-color-success-bg: #eef6f2;
+	--rf-color-success-bg: var(--rf-color-surface);
 	--rf-color-success-border: #b5d5c5;
 
 	--rf-color-inline-code-bg: #ece8d0;
