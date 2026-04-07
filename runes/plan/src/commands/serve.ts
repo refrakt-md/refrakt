@@ -1,5 +1,6 @@
 import * as http from 'http';
 import * as fs from 'fs';
+import * as path from 'path';
 import { runPipeline, renderPage } from './render-pipeline.js';
 import type { PipelineResult } from './render-pipeline.js';
 import { bundleBehaviors } from './bundle-behaviors.js';
@@ -10,6 +11,7 @@ export interface ServeOptions {
 	port: number;
 	theme: string;
 	open: boolean;
+	css?: string;
 }
 
 export interface ServeResult {
@@ -18,7 +20,7 @@ export interface ServeResult {
 }
 
 export async function runServe(options: ServeOptions): Promise<ServeResult> {
-	const { dir, specsDir, port, theme, open } = options;
+	const { dir, specsDir, port, theme, open, css } = options;
 	const baseUrl = '/';
 
 	let pipeline: PipelineResult = undefined!;
@@ -30,6 +32,9 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 	async function rebuild() {
 		pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
 		combinedCss = pipeline.themeCss + (pipeline.highlightCss ? '\n' + pipeline.highlightCss : '');
+		if (css) {
+			combinedCss += '\n' + fs.readFileSync(path.resolve(css), 'utf-8');
+		}
 		behaviorsJs = await bundleBehaviors();
 
 		const allPageUrls = [

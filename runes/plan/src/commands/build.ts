@@ -9,6 +9,7 @@ export interface BuildOptions {
 	out: string;
 	theme: string;
 	baseUrl: string;
+	css?: string;
 }
 
 export interface BuildResult {
@@ -18,7 +19,7 @@ export interface BuildResult {
 }
 
 export async function runBuild(options: BuildOptions): Promise<BuildResult> {
-	const { dir, specsDir, out, theme, baseUrl } = options;
+	const { dir, specsDir, out, theme, baseUrl, css } = options;
 
 	const pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
 
@@ -27,8 +28,12 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
 	// Ensure output directory
 	fs.mkdirSync(out, { recursive: true });
 
-	// Write combined theme + highlight CSS
-	const combinedCss = pipeline.themeCss + (pipeline.highlightCss ? '\n' + pipeline.highlightCss : '');
+	// Write combined theme + highlight + custom CSS
+	let combinedCss = pipeline.themeCss + (pipeline.highlightCss ? '\n' + pipeline.highlightCss : '');
+	if (css) {
+		const cssPath = path.resolve(css);
+		combinedCss += '\n' + fs.readFileSync(cssPath, 'utf-8');
+	}
 	fs.writeFileSync(path.join(out, 'theme.css'), combinedCss, 'utf-8');
 	files.push('theme.css');
 

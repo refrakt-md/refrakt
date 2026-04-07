@@ -1,0 +1,144 @@
+/* Plan site brand palette — matches the landing site's warm, earthy theme.
+ * Applied via: npx refrakt plan build --css plan/brand.css
+ *
+ * Lumina's dark-mode rules use higher-specificity selectors
+ * (:root:not([data-theme="light"]), [data-theme="dark"], [data-color-scheme="dark"])
+ * that override plain :root. We match those selectors so our tokens win by
+ * cascade order (this file is appended after Lumina).
+ */
+
+/* ─── Light mode ──────────────────────────────────────────────────── */
+
+:root {
+	--rf-color-primary-50: #fdf3f0;
+	--rf-color-primary-100: #fbe4dd;
+	--rf-color-primary-200: #f5c4b5;
+	--rf-color-primary-300: #eba08a;
+	--rf-color-primary-400: #e58d72;
+	--rf-color-primary-500: #e07a5f;
+	--rf-color-primary-600: #c9634a;
+	--rf-color-primary-700: #a84e3a;
+	--rf-color-primary-800: #873e2e;
+	--rf-color-primary-900: #6b3125;
+	--rf-color-primary-950: #4a2019;
+
+	--rf-color-text: #3d405b;
+	--rf-color-muted: #6b6e8a;
+	--rf-color-border: #e2dfc8;
+	--rf-color-bg: #f4f1de;
+	--rf-color-primary: #e07a5f;
+	--rf-color-primary-hover: #c9634a;
+
+	--rf-color-surface: #f9f7eb;
+	--rf-color-surface-hover: #f4f1de;
+	--rf-color-surface-active: #ece8d0;
+	--rf-color-surface-raised: #fffdf0;
+
+	--rf-color-info: #6a8caf;
+	--rf-color-info-bg: var(--rf-color-surface);
+	--rf-color-info-border: #c4d5e4;
+	--rf-color-warning: #d4a54a;
+	--rf-color-warning-bg: var(--rf-color-surface);
+	--rf-color-warning-border: #f2cc8f;
+	--rf-color-danger: #c1534a;
+	--rf-color-danger-bg: var(--rf-color-surface);
+	--rf-color-danger-border: #e8b4ae;
+	--rf-color-success: #81b29a;
+	--rf-color-success-bg: var(--rf-color-surface);
+	--rf-color-success-border: #b5d5c5;
+
+	--rf-color-code-bg: #2d2f45;
+	--rf-color-code-text: #e2e0d0;
+	--rf-color-inline-code-bg: #ece8d0;
+}
+
+/* ─── Dark mode ───────────────────────────────────────────────────── */
+
+[data-theme="dark"],
+[data-color-scheme="dark"] {
+	--rf-color-primary-50: #fdf3f0;
+	--rf-color-primary-100: #fbe4dd;
+	--rf-color-primary-200: #f5c4b5;
+	--rf-color-primary-300: #eba08a;
+	--rf-color-primary-400: #e58d72;
+	--rf-color-primary-500: #e07a5f;
+	--rf-color-primary-600: #c9634a;
+	--rf-color-primary-700: #a84e3a;
+	--rf-color-primary-800: #873e2e;
+	--rf-color-primary-900: #6b3125;
+	--rf-color-primary-950: #4a2019;
+
+	--rf-color-text: #e8e5d4;
+	--rf-color-muted: #a0a3b8;
+	--rf-color-border: rgba(244, 241, 222, 0.12);
+	--rf-color-bg: #2a2c40;
+	--rf-color-primary: #e8927c;
+	--rf-color-primary-hover: #f0a893;
+
+	--rf-color-surface: #33354c;
+	--rf-color-surface-hover: #3d405b;
+	--rf-color-surface-active: #4a4d6a;
+	--rf-color-surface-raised: #3d405b;
+
+	--rf-color-info: #8eacc8;
+	--rf-color-info-bg: rgba(106, 140, 175, 0.12);
+	--rf-color-info-border: rgba(106, 140, 175, 0.3);
+	--rf-color-warning: #f2cc8f;
+	--rf-color-warning-bg: rgba(242, 204, 143, 0.12);
+	--rf-color-warning-border: rgba(242, 204, 143, 0.3);
+	--rf-color-danger: #e07a6f;
+	--rf-color-danger-bg: rgba(193, 83, 74, 0.12);
+	--rf-color-danger-border: rgba(193, 83, 74, 0.3);
+	--rf-color-success: #9cc8b3;
+	--rf-color-success-bg: rgba(129, 178, 154, 0.12);
+	--rf-color-success-border: rgba(129, 178, 154, 0.3);
+
+	--rf-color-code-bg: #1e2035;
+	--rf-color-code-text: #e2e0d0;
+	--rf-color-inline-code-bg: rgba(244, 241, 222, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--rf-color-primary-50: #fdf3f0;
+		--rf-color-primary-100: #fbe4dd;
+		--rf-color-primary-200: #f5c4b5;
+		--rf-color-primary-300: #eba08a;
+		--rf-color-primary-400: #e58d72;
+		--rf-color-primary-500: #e07a5f;
+		--rf-color-primary-600: #c9634a;
+		--rf-color-primary-700: #a84e3a;
+		--rf-color-primary-800: #873e2e;
+		--rf-color-primary-900: #6b3125;
+		--rf-color-primary-950: #4a2019;
+
+		--rf-color-text: #e8e5d4;
+		--rf-color-muted: #a0a3b8;
+		--rf-color-border: rgba(244, 241, 222, 0.12);
+		--rf-color-bg: #2a2c40;
+		--rf-color-primary: #e8927c;
+		--rf-color-primary-hover: #f0a893;
+
+		--rf-color-surface: #33354c;
+		--rf-color-surface-hover: #3d405b;
+		--rf-color-surface-active: #4a4d6a;
+		--rf-color-surface-raised: #3d405b;
+
+		--rf-color-info: #8eacc8;
+		--rf-color-info-bg: rgba(106, 140, 175, 0.12);
+		--rf-color-info-border: rgba(106, 140, 175, 0.3);
+		--rf-color-warning: #f2cc8f;
+		--rf-color-warning-bg: rgba(242, 204, 143, 0.12);
+		--rf-color-warning-border: rgba(242, 204, 143, 0.3);
+		--rf-color-danger: #e07a6f;
+		--rf-color-danger-bg: rgba(193, 83, 74, 0.12);
+		--rf-color-danger-border: rgba(193, 83, 74, 0.3);
+		--rf-color-success: #9cc8b3;
+		--rf-color-success-bg: rgba(129, 178, 154, 0.12);
+		--rf-color-success-border: rgba(129, 178, 154, 0.3);
+
+		--rf-color-code-bg: #1e2035;
+		--rf-color-code-text: #e2e0d0;
+		--rf-color-inline-code-bg: rgba(244, 241, 222, 0.08);
+	}
+}

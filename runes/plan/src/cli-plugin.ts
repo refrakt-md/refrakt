@@ -26,6 +26,7 @@ async function handleServe(args: string[]): Promise<void> {
 	let port = 3000;
 	let theme = 'auto';
 	let open = false;
+	let css: string | undefined;
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -43,17 +44,19 @@ async function handleServe(args: string[]): Promise<void> {
 			theme = args[++i];
 		} else if (arg === '--open') {
 			open = true;
+		} else if (arg === '--css' && args[i + 1]) {
+			css = args[++i];
 		} else if (!arg.startsWith('-')) {
 			dir = arg;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan serve [directory] [--port N] [--specs dir] [--theme name] [--open]');
+			console.error('Usage: refrakt plan serve [directory] [--port N] [--specs dir] [--theme name] [--css file] [--open]');
 			process.exit(1);
 		}
 	}
 
 	try {
-		await runServe({ dir, specsDir, port, theme, open });
+		await runServe({ dir, specsDir, port, theme, open, css });
 	} catch (err: any) {
 		console.error(`Error: ${err.message}`);
 		process.exit(1);
@@ -66,6 +69,7 @@ async function handleBuild(args: string[]): Promise<void> {
 	let out = './plan-site';
 	let theme = 'auto';
 	let baseUrl = '/';
+	let css: string | undefined;
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -80,17 +84,19 @@ async function handleBuild(args: string[]): Promise<void> {
 		} else if (arg === '--base-url' && args[i + 1]) {
 			baseUrl = args[++i];
 			if (!baseUrl.endsWith('/')) baseUrl += '/';
+		} else if (arg === '--css' && args[i + 1]) {
+			css = args[++i];
 		} else if (!arg.startsWith('-')) {
 			dir = arg;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url]');
+			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url] [--css file]');
 			process.exit(1);
 		}
 	}
 
 	try {
-		const result = await runBuild({ dir, specsDir, out, theme, baseUrl });
+		const result = await runBuild({ dir, specsDir, out, theme, baseUrl, css });
 		console.log(`Built ${result.pages} pages to ${result.outputDir}/`);
 		for (const f of result.files) {
 			console.log(`  + ${f}`);
