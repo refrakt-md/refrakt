@@ -25,12 +25,12 @@ Set `target` to `"nuxt"` in `refrakt.config.json`:
 
 ```json
 {
-	"contentDir": "./content",
-	"theme": "@refrakt-md/lumina",
-	"target": "nuxt",
-	"routeRules": [
-		{ "pattern": "**", "layout": "default" }
-	]
+  "contentDir": "./content",
+  "theme": "@refrakt-md/lumina",
+  "target": "nuxt",
+  "routeRules": [
+    { "pattern": "**", "layout": "default" }
+  ]
 }
 ```
 
@@ -42,7 +42,7 @@ Register the refrakt module in `nuxt.config.ts`:
 import { refrakt } from '@refrakt-md/nuxt';
 
 export default defineNuxtConfig({
-	modules: [refrakt],
+  modules: [refrakt],
 });
 ```
 
@@ -58,10 +58,10 @@ Pass options via the `refrakt` key in your Nuxt config:
 
 ```typescript
 export default defineNuxtConfig({
-	modules: [refrakt],
-	refrakt: {
-		configPath: './refrakt.config.json',
-	},
+  modules: [refrakt],
+  refrakt: {
+    configPath: './refrakt.config.json',
+  },
 });
 ```
 
@@ -75,8 +75,8 @@ The Nuxt adapter uses the `NuxtTheme` interface for theme objects — similar to
 
 ```typescript
 interface NuxtTheme {
-	manifest: ThemeManifest;
-	layouts: Record<string, LayoutConfig>;
+  manifest: ThemeManifest;
+  layouts: Record<string, LayoutConfig>;
 }
 ```
 
@@ -109,8 +109,9 @@ my-site/
 
 Create a server utility that loads and transforms content at build time or on each request:
 
+{% codegroup labels="server/utils/refrakt.ts" %}
+
 ```typescript
-// server/utils/refrakt.ts
 import { loadContent, type SiteContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
@@ -122,21 +123,24 @@ import { resolve } from 'node:path';
 let siteContent: SiteContent | null = null;
 
 export async function getContent() {
-	if (!siteContent) {
-		siteContent = await loadContent(resolve('./content'));
-	}
-	return siteContent;
+  if (!siteContent) {
+    siteContent = await loadContent(resolve('./content'));
+  }
+  return siteContent;
 }
 
 export { theme };
 ```
 
+{% /codegroup %}
+
 ### Catch-All Route
 
 Use `useAsyncData` in a catch-all page to load content on the server:
 
+{% codegroup labels="pages/[...slug].vue" %}
+
 ```vue
-<!-- pages/[...slug].vue -->
 <script setup lang="ts">
 import { renderPage, buildRefraktHead, hasInteractiveRunes } from '@refrakt-md/nuxt';
 import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
@@ -145,19 +149,19 @@ const route = useRoute();
 const url = '/' + ((route.params.slug as string[])?.join('/') ?? '');
 
 const { data: page } = await useAsyncData(
-	`page-${url}`,
-	() => $fetch(`/api/content${url === '/' ? '' : url}`)
+  `page-${url}`,
+  () => $fetch(`/api/content${url === '/' ? '' : url}`)
 );
 
 if (!page.value) {
-	throw createError({ statusCode: 404, statusMessage: 'Page not found' });
+  throw createError({ statusCode: 404, statusMessage: 'Page not found' });
 }
 
 // SEO
 const head = buildRefraktHead({
-	title: page.value.title,
-	frontmatter: page.value.frontmatter,
-	seo: page.value.seo,
+  title: page.value.title,
+  frontmatter: page.value.frontmatter,
+  seo: page.value.seo,
 });
 useHead(head);
 
@@ -166,11 +170,11 @@ const contentRef = ref<HTMLElement | null>(null);
 let cleanup: (() => void) | null = null;
 
 function initBehaviors() {
-	if (!contentRef.value) return;
-	cleanup?.();
-	const c1 = initRuneBehaviors(contentRef.value);
-	const c2 = initLayoutBehaviors(contentRef.value);
-	cleanup = () => { c1(); c2(); };
+  if (!contentRef.value) return;
+  cleanup?.();
+  const c1 = initRuneBehaviors(contentRef.value);
+  const c2 = initLayoutBehaviors(contentRef.value);
+  cleanup = () => { c1(); c2(); };
 }
 
 onMounted(initBehaviors);
@@ -178,81 +182,89 @@ onBeforeUnmount(() => cleanup?.());
 
 // Re-init behaviors on client-side navigation
 watch(() => route.fullPath, () => {
-	nextTick(initBehaviors);
+  nextTick(initBehaviors);
 });
 </script>
 
 <template>
-	<div ref="contentRef" v-html="page.html" />
+  <div ref="contentRef" v-html="page.html" />
 </template>
 ```
+
+{% /codegroup %}
 
 ### API Route
 
 Create a server API route that loads content and renders it to HTML:
 
+{% codegroup labels="server/api/content/[...slug].ts" %}
+
 ```typescript
-// server/api/content/[...slug].ts
 import { renderPage } from '@refrakt-md/nuxt';
 import { getContent, theme } from '~/server/utils/refrakt';
 
 export default defineEventHandler(async (event) => {
-	const slug = getRouterParam(event, 'slug') ?? '';
-	const url = '/' + slug;
-	const site = await getContent();
+  const slug = getRouterParam(event, 'slug') ?? '';
+  const url = '/' + slug;
+  const site = await getContent();
 
-	const page = site.pages.find(p => p.route.url === url);
-	if (!page) {
-		throw createError({ statusCode: 404, statusMessage: 'Page not found' });
-	}
+  const page = site.pages.find(p => p.route.url === url);
+  if (!page) {
+    throw createError({ statusCode: 404, statusMessage: 'Page not found' });
+  }
 
-	const html = renderPage({ theme, page: page as any });
+  const html = renderPage({ theme, page: page as any });
 
-	return {
-		html,
-		title: page.frontmatter?.title ?? '',
-		frontmatter: page.frontmatter,
-		seo: page.seo,
-	};
+  return {
+    html,
+    title: page.frontmatter?.title ?? '',
+    frontmatter: page.frontmatter,
+    seo: page.seo,
+  };
 });
 ```
+
+{% /codegroup %}
 
 ## RefraktContent Component
 
 For reusable content rendering, create a Vue component:
 
+{% codegroup labels="components/RefraktContent.vue" %}
+
 ```vue
-<!-- components/RefraktContent.vue -->
 <script setup lang="ts">
 import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
 
 const props = defineProps<{
-	html: string;
+  html: string;
 }>();
 
 const contentRef = ref<HTMLElement | null>(null);
 let cleanup: (() => void) | null = null;
 
 function initBehaviors() {
-	if (!contentRef.value) return;
-	cleanup?.();
-	const c1 = initRuneBehaviors(contentRef.value);
-	const c2 = initLayoutBehaviors(contentRef.value);
-	cleanup = () => { c1(); c2(); };
+  if (!contentRef.value) return;
+  cleanup?.();
+  const c1 = initRuneBehaviors(contentRef.value);
+  const c2 = initLayoutBehaviors(contentRef.value);
+  cleanup = () => { c1(); c2(); };
 }
 
 onMounted(initBehaviors);
 onBeforeUnmount(() => cleanup?.());
 
 watch(() => props.html, () => {
-	nextTick(initBehaviors);
+  nextTick(initBehaviors);
 });
 </script>
 
 <template>
-	<div ref="contentRef" v-html="html" />
+  <div ref="contentRef" v-html="html" />
 </template>
 ```
+
+{% /codegroup %}
 
 ## SEO with buildRefraktHead
 
@@ -262,9 +274,9 @@ The `buildRefraktHead` composable produces an object compatible with Nuxt's `use
 import { buildRefraktHead } from '@refrakt-md/nuxt';
 
 const head = buildRefraktHead({
-	title: page.title,
-	frontmatter: page.frontmatter,
-	seo: page.seo,
+  title: page.title,
+  frontmatter: page.frontmatter,
+  seo: page.seo,
 });
 
 useHead(head);
@@ -296,11 +308,11 @@ const contentRef = ref<HTMLElement | null>(null);
 let cleanup: (() => void) | null = null;
 
 function initBehaviors() {
-	if (!contentRef.value) return;
-	cleanup?.();
-	const c1 = initRuneBehaviors(contentRef.value);
-	const c2 = initLayoutBehaviors(contentRef.value);
-	cleanup = () => { c1(); c2(); };
+  if (!contentRef.value) return;
+  cleanup?.();
+  const c1 = initRuneBehaviors(contentRef.value);
+  const c2 = initLayoutBehaviors(contentRef.value);
+  cleanup = () => { c1(); c2(); };
 }
 
 onMounted(initBehaviors);
@@ -313,7 +325,7 @@ When using Nuxt's client-side navigation, behaviors must be re-initialized after
 const route = useRoute();
 
 watch(() => route.fullPath, () => {
-	nextTick(initBehaviors);
+  nextTick(initBehaviors);
 });
 ```
 
@@ -327,8 +339,8 @@ The Nuxt module does not automatically inject theme CSS. Add the theme styleshee
 
 ```typescript
 export default defineNuxtConfig({
-	modules: [refrakt],
-	css: ['@refrakt-md/lumina'],
+  modules: [refrakt],
+  css: ['@refrakt-md/lumina'],
 });
 ```
 
@@ -342,11 +354,11 @@ If you need to add additional custom element prefixes, extend the config manuall
 
 ```typescript
 export default defineNuxtConfig({
-	vue: {
-		compilerOptions: {
-			isCustomElement: (tag) => tag.startsWith('rf-') || tag.startsWith('my-'),
-		},
-	},
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith('rf-') || tag.startsWith('my-'),
+    },
+  },
 });
 ```
 
@@ -358,7 +370,7 @@ The `hasInteractiveRunes` utility checks whether a rendered tree contains runes 
 import { hasInteractiveRunes } from '@refrakt-md/nuxt';
 
 if (hasInteractiveRunes(page.renderable)) {
-	// Load and initialize behaviors
+  // Load and initialize behaviors
 }
 ```
 
@@ -385,11 +397,11 @@ import manifest from '../manifest.json';
 import { defaultLayout, docsLayout } from '@refrakt-md/transform';
 
 export const theme: NuxtTheme = {
-	manifest,
-	layouts: {
-		default: defaultLayout,
-		docs: docsLayout,
-	},
+  manifest,
+  layouts: {
+    default: defaultLayout,
+    docs: docsLayout,
+  },
 };
 ```
 

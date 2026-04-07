@@ -69,8 +69,9 @@ Keep the content directory separate from Eleventy's template input directory. El
 
 Register the refrakt plugin in your Eleventy configuration file. The plugin configures passthrough file copy for theme CSS:
 
+{% codegroup labels="eleventy.config.js" %}
+
 ```javascript
-// eleventy.config.js
 import { refraktPlugin } from '@refrakt-md/eleventy';
 
 export default function (eleventyConfig) {
@@ -92,6 +93,8 @@ export default function (eleventyConfig) {
   };
 }
 ```
+
+{% /codegroup %}
 
 ### RefraktEleventyOptions
 
@@ -234,12 +237,16 @@ cssFiles: [
 
 Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript from `@refrakt-md/behaviors`. Copy the behaviors bundle to your output and initialize it in the template:
 
+{% codegroup labels="eleventy.config.js" %}
+
 ```javascript
-// eleventy.config.js — add passthrough copy for behaviors
+// add passthrough copy for behaviors
 eleventyConfig.addPassthroughCopy({
   'node_modules/@refrakt-md/behaviors/dist/index.js': 'js/behaviors.js',
 });
 ```
+
+{% /codegroup %}
 
 The template script block registers web component elements, sets the current URL for active-link behaviors, and initializes rune and layout behaviors:
 

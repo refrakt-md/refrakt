@@ -100,9 +100,10 @@ refrakt.config.json
 
 Use Astro's `getStaticPaths()` to generate pages from your content directory. The `loadContent()` function from `@refrakt-md/content` loads all pages at build time:
 
+{% codegroup labels="src/pages/[...slug].astro" %}
+
 ```astro
 ---
-// src/pages/[...slug].astro
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
@@ -183,13 +184,16 @@ const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
 </html>
 ```
 
+{% /codegroup %}
+
 ## BaseLayout Component
 
 For convenience, `@refrakt-md/astro` provides a `BaseLayout.astro` component that handles layout selection, rendering, SEO injection, and conditional behavior loading:
 
+{% codegroup labels="src/pages/[...slug].astro" %}
+
 ```astro
 ---
-// src/pages/[...slug].astro
 import BaseLayout from '@refrakt-md/astro/BaseLayout.astro';
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
@@ -207,6 +211,8 @@ const { page, seo } = Astro.props;
 
 <BaseLayout {theme} {page} {seo} />
 ```
+
+{% /codegroup %}
 
 The BaseLayout component:
 

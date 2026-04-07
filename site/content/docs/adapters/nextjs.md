@@ -64,8 +64,9 @@ The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the 
 
 Load content using `@refrakt-md/content` in a Server Component. Use `generateStaticParams` for static export:
 
+{% codegroup labels="app/[[...slug]]/page.tsx" %}
+
 ```typescript
-// app/[[...slug]]/page.tsx
 import { loadContent } from '@refrakt-md/content';
 import { createTransform } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
@@ -132,6 +133,8 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   );
 }
 ```
+
+{% /codegroup %}
 
 ## RefraktContent Server Component
 
@@ -233,8 +236,9 @@ const jsonLd = buildJsonLd(page.seo);
 
 Import the theme CSS in your root layout:
 
+{% codegroup labels="app/layout.tsx" %}
+
 ```typescript
-// app/layout.tsx
 import '@refrakt-md/lumina';          // Full theme CSS (index.css)
 import '@refrakt-md/lumina/base.css'; // Or just the base tokens
 
@@ -246,6 +250,8 @@ export default function RootLayout({ children }) {
   );
 }
 ```
+
+{% /codegroup %}
 
 Next.js automatically processes CSS imports and includes them in the build output.
 
