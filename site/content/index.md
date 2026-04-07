@@ -21,7 +21,7 @@ npm create refrakt
 {% showcase width="content" shadow="hard" bleed="bottom" offset="10rem" %}
 {% codegroup overflow="wrap" %}
 ````markdoc
-{% hero align="left" spacing="loose" tint="subtle" layout="split" collapse="lg" %}
+{% hero align="left" spacing="tight" layout="split" collapse="lg" %}
 Version 0.9.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
