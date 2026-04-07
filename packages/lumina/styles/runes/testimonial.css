@@ -14,6 +14,9 @@
 	color: var(--rf-color-border);
 	line-height: 1;
 }
+.rf-testimonial__star::before {
+	content: '★';
+}
 .rf-testimonial__star[data-filled="true"] {
 	color: var(--rf-color-warning);
 }
