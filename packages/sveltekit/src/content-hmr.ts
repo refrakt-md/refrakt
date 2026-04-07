@@ -11,13 +11,15 @@ const SANDBOX_EXTENSIONS = new Set(['.html', '.css', '.js', '.svg', '.glsl-vert'
  * When `examplesDir` is provided, also watches sandbox example files
  * and triggers reloads when they change.
  */
-export function setupContentHmr(server: ViteDevServer, contentDir: string, examplesDir?: string): void {
+export function setupContentHmr(server: ViteDevServer, contentDir: string, examplesDir?: string, onInvalidate?: () => void): void {
 	const absContentDir = resolve(contentDir);
 
 	server.watcher.add(absContentDir);
 
 	const reload = (file: string) => {
 		if (!file.startsWith(absContentDir) || !file.endsWith('.md')) return;
+
+		onInvalidate?.();
 
 		for (const mod of server.moduleGraph.getModulesByFile(file) ?? []) {
 			server.moduleGraph.invalidateModule(mod);

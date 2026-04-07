@@ -4,6 +4,7 @@ export { Router, type Route } from './router.js';
 export { resolveLayouts, type ResolvedLayout, type Region } from './layout.js';
 export { buildNavigation, type NavTree, type NavGroup, type NavItem } from './navigation.js';
 export { loadContent, type Site, type SitePage } from './site.js';
+export { createSiteLoader, type SiteLoader, type SiteLoaderOptions } from './loader.js';
 export { generateSitemap, type SitemapEntry } from './sitemap.js';
 export { collectRuneTypes, analyzeRuneUsage, type RuneUsageReport } from './analyze.js';
 export { getGitTimestamps, getStatTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';

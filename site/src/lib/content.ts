@@ -1,5 +1,5 @@
-import { loadContent } from '@refrakt-md/content';
-import type { Site } from '@refrakt-md/content';
+import { createSiteLoader } from '@refrakt-md/content';
+import type { Site, SiteLoader } from '@refrakt-md/content';
 import { luminaConfig } from '@refrakt-md/lumina/transform';
 import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
@@ -20,7 +20,7 @@ const icons = {
 let _hl: HighlightTransform | null = null;
 let _communityTags: Record<string, Schema> | undefined;
 let _transform: ((tree: any) => any) | null = null;
-let _site: Promise<Site> | null = null;
+let _loader: SiteLoader | null = null;
 
 export async function getHighlightTransform(): Promise<HighlightTransform> {
 	if (_hl) return _hl;
@@ -71,10 +71,20 @@ export async function getCommunityTags(): Promise<Record<string, Schema> | undef
 	return _communityTags;
 }
 
-export function getSite(): Promise<Site> {
-	if (_site) return _site;
-	_site = getCommunityTags().then(communityTags =>
-		loadContent(contentDir, '/', icons, communityTags)
-	);
-	return _site;
+export async function getSite(): Promise<Site> {
+	if (!_loader) {
+		const communityTags = await getCommunityTags();
+		_loader = createSiteLoader({
+			dirPath: contentDir,
+			basePath: '/',
+			icons,
+			additionalTags: communityTags,
+			dev: import.meta.env.DEV,
+		});
+	}
+	return _loader.load();
+}
+
+export function invalidateSite(): void {
+	_loader?.invalidate();
 }
