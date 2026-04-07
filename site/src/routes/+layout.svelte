@@ -1,5 +1,6 @@
 <script lang="ts">
 	import 'virtual:refrakt/tokens';
+	import '../styles/brand.css';
 
 	let { children } = $props();
 </script>

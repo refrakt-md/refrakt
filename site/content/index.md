@@ -101,22 +101,22 @@ Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdo
 {% recipe prepTime="PT5M" servings=1 difficulty="easy" layout="split-reverse" collapse="md" %}
 A cocktail classic
 
-## The Gimlet
+## Tequila Sunrise
 
-A crisp, citrus-forward cocktail that balances gin botanicals with the sweetness of lime cordial. Shaken, strained, and served ice-cold.
+A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
 
-- 60ml London dry gin
-- 20ml fresh lime juice
-- 15ml simple syrup
-- Lime wheel for garnish
+- 60ml tequila
+- 120ml fresh orange juice
+- 15ml grenadine
+- Orange slice and cherry for garnish
 
-1. Combine gin, lime juice, and simple syrup in a cocktail shaker with ice.
-2. Shake vigorously for 15 seconds until well-chilled.
-3. Strain into a chilled coupe glass and garnish with a lime wheel.
+1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
+2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
+3. Let the layers settle, then garnish with an orange slice and a cherry.
 
 ---
 
-![A gimlet cocktail](https://assets.refrakt.md/gimlet.png)
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 {% /recipe %}
 {% /preview %}
 {% /feature %}
