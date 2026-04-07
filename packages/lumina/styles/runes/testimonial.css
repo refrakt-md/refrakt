@@ -40,14 +40,14 @@
 .rf-testimonial blockquote p {
 	margin: 0;
 }
-.rf-testimonial span[property="authorName"] {
+.rf-testimonial__author-name {
 	display: block;
 	font-weight: 700;
 	font-style: normal;
 	font-size: 0.925rem;
 	color: var(--rf-color-text);
 }
-.rf-testimonial span[property="authorRole"] {
+.rf-testimonial__author-role {
 	display: block;
 	margin-top: 0.125rem;
 	font-size: 0.85rem;
