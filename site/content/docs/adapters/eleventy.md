@@ -47,18 +47,18 @@ A typical Eleventy + refrakt project looks like this:
 
 ```
 my-site/
-  content/              # Markdoc content (separate from Eleventy templates)
-    index.md
-    docs/
-      getting-started.md
-  _data/
-    refrakt.js          # Global data file — loads and transforms content
-  _includes/
-    base.njk            # Base Nunjucks template
-  pages.njk             # Pagination template — one page per content item
-  eleventy.config.js    # Eleventy configuration
-  refrakt.config.json   # refrakt configuration
-  package.json
+├── content/                # Markdoc content (separate from Eleventy templates)
+│   ├── index.md
+│   └── docs/
+│       └── getting-started.md
+├── _data/
+│   └── refrakt.js          # Global data file — loads and transforms content
+├── _includes/
+│   └── base.njk            # Base Nunjucks template
+├── pages.njk               # Pagination template — one page per content item
+├── eleventy.config.js      # Eleventy configuration
+├── refrakt.config.json     # refrakt configuration
+└── package.json
 ```
 
 {% hint type="note" %}
@@ -155,7 +155,7 @@ interface EleventyPageData {
 
 Use a Nunjucks template that outputs the pre-rendered HTML with the `| safe` filter (to prevent HTML escaping):
 
-```nunjucks
+```jinja
 {# _includes/base.njk #}
 <!DOCTYPE html>
 <html lang="en">
@@ -191,7 +191,7 @@ A reference template is included in the package at `@refrakt-md/eleventy/templat
 
 Use Eleventy's [pagination](https://www.11ty.dev/docs/pagination/) to generate one HTML page per content item from the global data:
 
-```nunjucks
+```jinja
 ---js
 {
   pagination: {
