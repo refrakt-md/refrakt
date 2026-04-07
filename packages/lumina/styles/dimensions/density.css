@@ -49,3 +49,25 @@
 [data-density="minimal"] [data-meta-rank="secondary"] {
 	display: none;
 }
+
+/* ─── Nested density scoping ─────────────────────────────────────── *
+ * Density rules use descendant selectors that leak into nested runes
+ * with their own density. These resets ensure each rune's density is
+ * self-contained — e.g. a full-density recipe inside a compact-density
+ * preview should not have its description truncated.
+ * ──────────────────────────────────────────────────────────────────── */
+
+[data-density="compact"] [data-density="full"] [data-section="description"] {
+	display: block;
+	-webkit-line-clamp: unset;
+	-webkit-box-orient: initial;
+	overflow: visible;
+}
+
+[data-density="compact"] [data-density="full"] [data-meta-rank="secondary"],
+[data-density="minimal"] [data-density="full"] [data-section="description"],
+[data-density="minimal"] [data-density="full"] [data-section="body"],
+[data-density="minimal"] [data-density="full"] [data-section="footer"],
+[data-density="minimal"] [data-density="full"] [data-meta-rank="secondary"] {
+	display: revert;
+}
