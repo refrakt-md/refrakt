@@ -1,5 +1,19 @@
 # @refrakt-md/plan
 
+## 0.9.2
+
+### Patch Changes
+
+- Add multi-framework adapter packages (Astro, Eleventy, Next.js, Nuxt, React, Vue) with ADR-008 framework-native component interfaces. Implement ADR-009 framework-agnostic theme architecture. Add vue, astro, and jinja to Shiki default languages.
+- Updated dependencies
+  - @refrakt-md/types@0.9.2
+  - @refrakt-md/transform@0.9.2
+  - @refrakt-md/runes@0.9.2
+  - @refrakt-md/behaviors@0.9.2
+  - @refrakt-md/content@0.9.2
+  - @refrakt-md/highlight@0.9.2
+  - @refrakt-md/html@0.9.2
+
 ## 0.9.1
 
 ### Patch Changes
