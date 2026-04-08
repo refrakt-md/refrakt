@@ -2,12 +2,13 @@
 .rf-diff {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
+	overflow-x: auto;
 	font-size: 0.875rem;
 }
 .rf-diff__split-container {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
+	min-width: 40rem;
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
