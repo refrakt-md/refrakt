@@ -10,6 +10,7 @@ export const config: Record<string, RuneConfig> = {
 	Palette: {
 		block: 'palette',
 		defaultDensity: 'full',
+		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
 			showContrast: { source: 'meta' },
