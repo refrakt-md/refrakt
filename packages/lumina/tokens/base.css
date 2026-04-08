@@ -86,7 +86,7 @@
 	/* Syntax highlighting (Shiki CSS variables) */
 	--shiki-foreground: #f1faee;
 	--shiki-background: #1d3557;
-	--shiki-token-keyword: #e63946;
+	--shiki-token-keyword: #f2cc8f;
 	--shiki-token-string: #a8dadc;
 	--shiki-token-string-expression: #a8dadc;
 	--shiki-token-constant: #e8c07a;

@@ -33,7 +33,7 @@
 	/* Syntax highlighting (Shiki CSS variables) */
 	--shiki-foreground: #f1faee;
 	--shiki-background: #0c162a;
-	--shiki-token-keyword: #f07078;
+	--shiki-token-keyword: #f2cc8f;
 	--shiki-token-string: #a8dadc;
 	--shiki-token-string-expression: #a8dadc;
 	--shiki-token-constant: #e8c07a;
@@ -84,7 +84,7 @@
 		/* Syntax highlighting (Shiki CSS variables) */
 		--shiki-foreground: #f1faee;
 		--shiki-background: #0c162a;
-		--shiki-token-keyword: #f07078;
+		--shiki-token-keyword: #f2cc8f;
 		--shiki-token-string: #a8dadc;
 		--shiki-token-string-expression: #a8dadc;
 		--shiki-token-constant: #e8c07a;
