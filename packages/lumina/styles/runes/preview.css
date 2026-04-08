@@ -118,7 +118,7 @@
 
 /* Source code view — bordered frame matching the canvas */
 .rf-preview__source {
-	overflow: hidden;
+	overflow: clip;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 }
@@ -169,6 +169,8 @@
 	}
 	.rf-preview__source {
 		border-radius: 0;
+		border-left: none;
+		border-right: none;
 	}
 	/* Break out of feature's padding-inline to reach viewport edges */
 	.rf-preview--in-feature {
