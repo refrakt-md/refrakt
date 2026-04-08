@@ -1,4 +1,4 @@
-{% work id="WORK-002" status="in-progress" priority="medium" tags="runes, content-model" %}
+{% work id="WORK-002" status="done" priority="medium" tags="runes, content-model" %}
 
 # Batch 3: Convert Runes Using `sections` Resolver
 
