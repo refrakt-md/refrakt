@@ -144,7 +144,7 @@ Element overrides receive `tag` and `children` props:
 
 ## Component Registry
 
-The component registry maps rune `typeof` values to Svelte components. The base registry is empty — all runes render through the identity transform + behaviors by default. Themes and projects can register components for runes that need custom rendering:
+The component registry maps rune type names (the `data-rune` attribute value) to Svelte components. The base registry is empty — all runes render through the identity transform + behaviors by default. Themes and projects can register components for runes that need custom rendering:
 
 ```typescript
 import { registry as baseRegistry } from '@refrakt-md/svelte';
@@ -156,6 +156,18 @@ export const registry = {
 };
 ```
 
+The registry is provided to the Renderer via Svelte context. `ThemeShell` calls `setRegistry()` automatically; if you're rendering manually, call it in your layout:
+
+```svelte
+<script>
+  import { setRegistry, setElementOverrides } from '@refrakt-md/svelte';
+  import { registry, elements } from './my-theme';
+
+  setRegistry(registry);
+  setElementOverrides(elements);
+</script>
+```
+
 Projects can also override components via `refrakt.config.json`:
 
 ```json
@@ -165,6 +177,49 @@ Projects can also override components via `refrakt.config.json`:
   }
 }
 ```
+
+### Component props
+
+When the Renderer encounters a node whose `data-rune` matches a registered component, it uses `extractComponentInterface()` to partition the node's children into properties, named refs, and anonymous content. The component receives:
+
+- **Extracted properties** as named props (e.g., `prepTime`, `difficulty`)
+- **Named refs** as Svelte 5 snippets — each ref is converted via `createRawSnippet()` so you render them with `{@render refName()}`
+- **`children`** — anonymous content as a Svelte 5 snippet (if any)
+- **`tag`** — the original serialized tag object for escape-hatch access
+
+```svelte
+<!-- components/MyRecipe.svelte -->
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+  import type { SerializedTag } from '@refrakt-md/svelte';
+
+  let {
+    prepTime,
+    difficulty,
+    headline,   // Snippet — named ref
+    children,   // Snippet — anonymous content
+    tag,        // SerializedTag — escape hatch
+  }: {
+    prepTime?: string;
+    difficulty?: string;
+    headline?: Snippet;
+    children?: Snippet;
+    tag: SerializedTag;
+  } = $props();
+</script>
+
+<div class="my-recipe" data-difficulty={difficulty}>
+  <header>
+    {#if headline}{@render headline()}{/if}
+    {#if prepTime}<span class="prep-time">{prepTime}</span>{/if}
+  </header>
+  <div class="body">
+    {#if children}{@render children()}{/if}
+  </div>
+</div>
+```
+
+Named refs are pre-rendered to HTML and wrapped in `createRawSnippet()`, so they render as static markup. Anonymous children are wrapped the same way. This means component overrides work seamlessly with SSR — no client-side hydration is required for the ref content.
 
 ## Behaviors Action
 

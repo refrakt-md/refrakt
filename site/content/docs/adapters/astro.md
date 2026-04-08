@@ -77,7 +77,7 @@ interface AstroTheme {
 }
 ```
 
-Unlike SvelteTheme, there is no component registry or element overrides — all runes render through the identity transform and `renderToHtml()`. Interactive runes are enhanced client-side by `@refrakt-md/behaviors`.
+By default all runes render through the identity transform and `renderToHtml()`. Interactive runes are enhanced client-side by `@refrakt-md/behaviors`. For runes that need custom rendering, use `RfRenderer` with component overrides — see [Component Overrides](#component-overrides) below.
 
 ## Project Structure
 
@@ -307,6 +307,74 @@ document.addEventListener('astro:page-load', () => {
 
 This is handled automatically by the BaseLayout component.
 
+## Component Overrides
+
+While most runes need only the identity transform, you can register native `.astro` components for runes that need custom rendering. Use `RfRenderer` instead of `renderPage()` to enable component dispatch:
+
+{% codegroup labels="src/pages/[...slug].astro" %}
+
+```astro
+---
+import RfRenderer from '@refrakt-md/astro/RfRenderer.astro';
+import Table from '@refrakt-md/astro/elements/Table.astro';
+import Pre from '@refrakt-md/astro/elements/Pre.astro';
+import MyRecipe from '../components/MyRecipe.astro';
+
+const components = { recipe: MyRecipe };
+const elements = { table: Table, pre: Pre };
+
+// ... getStaticPaths() as before
+const { page } = Astro.props;
+---
+
+<RfRenderer node={page.renderable} components={components} elements={elements} />
+```
+
+{% /codegroup %}
+
+### How it works
+
+`RfRenderer` recursively walks the renderable tree. For each tag node:
+
+1. If the node has a `data-rune` attribute matching a key in `components`, the registered `.astro` component renders it
+2. If the node's HTML tag name matches a key in `elements`, the element override renders it
+3. Otherwise, the node renders as plain HTML via `renderToHtml()`
+
+### Component props
+
+Component overrides receive:
+
+- **Extracted properties** as named props (e.g., `prepTime`, `difficulty`)
+- **Named refs** as named Astro slots (e.g., `<slot name="headline" />`)
+- **Anonymous content** as the default slot
+- **`tag`** — the original tag object for escape-hatch access
+
+```astro
+---
+// components/MyRecipe.astro
+const { prepTime, difficulty, tag } = Astro.props;
+---
+
+<div class="my-recipe" data-difficulty={difficulty}>
+  <header>
+    <slot name="headline" />
+    {prepTime && <span class="prep-time">{prepTime}</span>}
+  </header>
+  <div class="body">
+    <slot />
+  </div>
+</div>
+```
+
+### Built-in element overrides
+
+The adapter ships two element overrides:
+
+- `Table.astro` — wraps tables in a scrollable container
+- `Pre.astro` — enhances code blocks with copy-to-clipboard
+
+Import them from `@refrakt-md/astro/elements/Table.astro` and `@refrakt-md/astro/elements/Pre.astro`.
+
 ## Theme Integration
 
 When creating a theme for Astro, export an `AstroTheme` object from the `./astro` subpath:
@@ -329,8 +397,8 @@ export const theme: AstroTheme = {
 
 | Concern | SvelteKit | Astro |
 |---------|-----------|-------|
-| **Rendering** | Recursive Svelte Renderer | `renderToHtml()` + `set:html` |
-| **Component registry** | Svelte components for custom runes | Not needed (all runes use identity transform) |
+| **Rendering** | Recursive Svelte Renderer | `renderToHtml()` or recursive `RfRenderer` |
+| **Component registry** | Svelte components for custom runes | `.astro` components via `RfRenderer` |
 | **Behavior cleanup** | SPA lifecycle (navigate, destroy) | MPA — no cleanup needed |
 | **CSS** | Virtual module with tree-shaking | Direct import |
 | **Content loading** | `+page.server.ts` with `load()` | `getStaticPaths()` |
