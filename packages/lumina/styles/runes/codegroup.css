@@ -49,7 +49,7 @@
 	padding: 0.5rem 1rem;
 	font-size: 0.8rem;
 	font-family: var(--rf-font-mono);
-	color: rgba(255, 255, 255, 0.5);
+	color: rgba(255, 255, 255, 0.7);
 	background: none;
 	border: none;
 	border-bottom: 2px solid transparent;
@@ -57,12 +57,17 @@
 	transition: color 200ms ease, border-color 200ms ease;
 	white-space: nowrap;
 }
-.rf-codegroup__tab:hover {
+.rf-codegroup__tab:hover,
+.rf-codegroup button[data-state="inactive"]:hover {
 	color: rgba(255, 255, 255, 0.8);
 }
-.rf-codegroup__tab--active {
+.rf-codegroup__tab--active,
+.rf-codegroup button[data-state="active"] {
 	color: rgba(255, 255, 255, 0.95);
-	border-bottom-color: var(--rf-color-primary);
+	border-bottom-color: var(--rf-color-code-text);
+}
+.rf-codegroup button[data-state="inactive"] {
+	color: rgba(255, 255, 255, 0.7);
 }
 .rf-codegroup pre {
 	margin: 0;
