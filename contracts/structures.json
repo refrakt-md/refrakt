@@ -2352,7 +2352,7 @@
 			"root": ".rf-event",
 			"dataRune": "event",
 			"childOrder": [
-				"details",
+				"header",
 				"{content:content}"
 			],
 			"modifiers": {
@@ -2378,42 +2378,34 @@
 				}
 			},
 			"elements": {
-				"details": {
+				"header": {
 					"tag": "div",
-					"selector": ".rf-event__details",
-					"source": "structure"
-				},
-				"detail": {
-					"tag": "div",
-					"selector": ".rf-event__detail",
+					"selector": ".rf-event__header",
 					"source": "structure",
-					"parent": "details",
+					"conditionAny": [
+						"date",
+						"location",
+						"url"
+					]
+				},
+				"meta": {
+					"tag": "div",
+					"selector": ".rf-event__meta",
+					"source": "structure",
+					"parent": "header"
+				},
+				"meta-item": {
+					"tag": "span",
+					"selector": ".rf-event__meta-item",
+					"source": "structure",
+					"parent": "meta",
 					"condition": "date"
-				},
-				"label": {
-					"tag": "span",
-					"selector": ".rf-event__label",
-					"source": "structure",
-					"parent": "detail"
-				},
-				"value": {
-					"tag": "span",
-					"selector": ".rf-event__value",
-					"source": "structure",
-					"parent": "detail"
-				},
-				"end-date": {
-					"tag": "span",
-					"selector": ".rf-event__end-date",
-					"source": "structure",
-					"parent": "detail",
-					"condition": "endDate"
 				},
 				"register": {
 					"tag": "a",
 					"selector": ".rf-event__register",
 					"source": "structure",
-					"parent": "details",
+					"parent": "header",
 					"condition": "url"
 				},
 				"content": {

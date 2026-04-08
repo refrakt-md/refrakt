@@ -12,10 +12,10 @@ export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
 		defaultDensity: 'full',
-		sections: { details: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
+		sections: { header: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', blurb: 'inline', body: 'none', detail: 'none', label: 'none', value: 'none', 'end-date': 'none', register: 'link' },
+		editHints: { headline: 'inline', blurb: 'inline', body: 'none', 'meta-item': 'none', register: 'link' },
 		modifiers: {
 			date: { source: 'meta' },
 			endDate: { source: 'meta' },
@@ -23,22 +23,16 @@ export const config: Record<string, RuneConfig> = {
 			url: { source: 'meta' },
 		},
 		structure: {
-			details: {
+			header: {
 				tag: 'div', before: true,
+				conditionAny: ['date', 'location', 'url'],
 				children: [
 					{
-						tag: 'div', ref: 'detail', condition: 'date',
+						tag: 'div', ref: 'meta',
 						children: [
-							{ tag: 'span', ref: 'label', children: ['Date'] },
-							{ tag: 'span', ref: 'value', metaText: 'date', metaType: 'temporal', metaRank: 'primary' },
-							{ tag: 'span', ref: 'end-date', metaText: 'endDate', textPrefix: ' — ', condition: 'endDate', metaType: 'temporal', metaRank: 'secondary' },
-						],
-					},
-					{
-						tag: 'div', ref: 'detail', condition: 'location',
-						children: [
-							{ tag: 'span', ref: 'label', children: ['Location'] },
-							{ tag: 'span', ref: 'value', metaText: 'location', metaType: 'category', metaRank: 'primary' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal', metaRank: 'primary' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'endDate', label: '—', condition: 'endDate', metaType: 'temporal', metaRank: 'primary' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'location', label: 'Location:', condition: 'location', metaType: 'category', metaRank: 'primary' },
 						],
 					},
 					{

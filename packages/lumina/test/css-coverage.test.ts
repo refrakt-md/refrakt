@@ -27,7 +27,6 @@ const UNSTYLED_BLOCKS = new Set([
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
-	'.rf-event__end-date',   // end-date span styled via parent date detail
 	'.rf-hero--in-feature',  // context modifier not yet styled
 	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
@@ -67,7 +66,8 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-spec__header', '.rf-bug__header',
 	'.rf-decision__header', '.rf-milestone__header',
 	'.rf-recipe__header',
-	'.rf-budget__header', // styled via [data-section="header"] dimension
+	'.rf-budget__header', '.rf-event__header', // styled via [data-section="header"] dimension
+	'.rf-event__meta-item', // styled via metadata dimension
 	'.rf-recipe__meta', // meta bar styled via [data-section="header"] in shared split.css
 	'.rf-playlist__type-badge',
 	// Playlist pageSectionAutoLabel selectors — not used by playlist (pre-existing gap)
