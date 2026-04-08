@@ -1,4 +1,4 @@
-{% spec id="SPEC-012" status="draft" tags="tooling, vscode" %}
+{% spec id="SPEC-012" status="accepted" tags="tooling, vscode" %}
 
 # Rune Inspector — Transformation Pipeline Debugger for VS Code
 

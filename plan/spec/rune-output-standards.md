@@ -1,4 +1,4 @@
-{% spec id="SPEC-028" status="draft" tags="runes, transform, themes, architecture" %}
+{% spec id="SPEC-028" status="review" tags="runes, transform, themes, architecture" %}
 
 # Rune Output Standards
 
