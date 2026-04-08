@@ -24,7 +24,7 @@ export const config: Record<string, RuneConfig> = {
 				tag: 'div', before: true,
 				children: [
 					{ tag: 'span', ref: 'method', metaText: 'method', metaType: 'category', metaRank: 'primary', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
-					{ tag: 'code', ref: 'path', metaText: 'path', metaType: 'id', metaRank: 'primary' },
+					{ tag: 'code', ref: 'path', metaText: 'path' },
 					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth', metaType: 'status', metaRank: 'secondary' },
 				],
 			},
