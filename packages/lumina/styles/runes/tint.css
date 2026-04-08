@@ -11,37 +11,37 @@
 /* ── 0. Token registration ────────────────────────────────────────────────
  * @property makes guaranteed-invalid fall back to the inherited value
  * (inherits: true) rather than propagating as invalid through children.
- * initial-value matches the light-mode defaults from tokens/base.css. */
+ * initial-value must match the light-mode defaults in tokens/base.css. */
 
 @property --rf-color-bg {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #ffffff;
+	initial-value: #faf5eb;
 }
 @property --rf-color-surface {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #f8fafc;
+	initial-value: #fffbf2;
 }
 @property --rf-color-text {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #1a1a2e;
+	initial-value: #1d3557;
 }
 @property --rf-color-muted {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #64748b;
+	initial-value: #5a7a90;
 }
 @property --rf-color-primary {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #0ea5e9;
+	initial-value: #457b9d;
 }
 @property --rf-color-border {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #e2e8f0;
+	initial-value: #d8e4de;
 }
 
 /* ── 1. Colour scheme override ──────────────────────────────────────────────
@@ -49,17 +49,18 @@
  * tokens are also exposed as --cs-* intermediaries so compound selectors
  * in step 4 can fall back to them without a cycle. */
 
+/* Keep in sync with tokens/dark.css */
 [data-color-scheme="dark"] {
 	color-scheme: dark;
 	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
-	--cs-bg: #0c1222;
-	--cs-surface: #0f172a;
-	--cs-text: #e2e8f0;
-	--cs-muted: #94a3b8;
-	--cs-accent: #38bdf8;
-	--cs-border: rgba(255, 255, 255, 0.1);
+	--cs-bg: #152238;
+	--cs-surface: #1a2940;
+	--cs-text: #f1faee;
+	--cs-muted: #a8dadc;
+	--cs-accent: #70b4c0;
+	--cs-border: rgba(168, 218, 220, 0.15);
 
 	--rf-color-bg: var(--cs-bg);
 	--rf-color-surface: var(--cs-surface);
@@ -68,27 +69,27 @@
 	--rf-color-primary: var(--cs-accent);
 	--rf-color-border: var(--cs-border);
 
-	--rf-color-primary-hover: #7dd3fc;
-	--rf-color-surface-hover: #1e293b;
-	--rf-color-surface-active: #334155;
-	--rf-color-surface-raised: #1e293b;
+	--rf-color-primary-hover: #a8dadc;
+	--rf-color-surface-hover: #203048;
+	--rf-color-surface-active: #263850;
+	--rf-color-surface-raised: #1a2940;
 
-	--rf-color-info: #60a5fa;
-	--rf-color-info-bg: rgba(59, 130, 246, 0.1);
-	--rf-color-info-border: rgba(59, 130, 246, 0.3);
-	--rf-color-warning: #fbbf24;
-	--rf-color-warning-bg: rgba(245, 158, 11, 0.1);
-	--rf-color-warning-border: rgba(245, 158, 11, 0.3);
-	--rf-color-danger: #f87171;
-	--rf-color-danger-bg: rgba(239, 68, 68, 0.1);
-	--rf-color-danger-border: rgba(239, 68, 68, 0.3);
-	--rf-color-success: #34d399;
-	--rf-color-success-bg: rgba(16, 185, 129, 0.1);
-	--rf-color-success-border: rgba(16, 185, 129, 0.3);
+	--rf-color-info: #a8dadc;
+	--rf-color-info-bg: rgba(69, 123, 157, 0.12);
+	--rf-color-info-border: rgba(69, 123, 157, 0.3);
+	--rf-color-warning: #e8c07a;
+	--rf-color-warning-bg: rgba(200, 144, 10, 0.12);
+	--rf-color-warning-border: rgba(200, 144, 10, 0.3);
+	--rf-color-danger: #f07078;
+	--rf-color-danger-bg: rgba(230, 57, 70, 0.12);
+	--rf-color-danger-border: rgba(230, 57, 70, 0.3);
+	--rf-color-success: #72c098;
+	--rf-color-success-bg: rgba(61, 143, 101, 0.12);
+	--rf-color-success-border: rgba(61, 143, 101, 0.3);
 
-	--rf-color-code-bg: #0f172a;
-	--rf-color-code-text: #e2e8f0;
-	--rf-color-inline-code-bg: rgba(255, 255, 255, 0.08);
+	--rf-color-code-bg: #152238;
+	--rf-color-code-text: #f1faee;
+	--rf-color-inline-code-bg: rgba(168, 218, 220, 0.08);
 
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
@@ -96,17 +97,18 @@
 	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
 }
 
+/* Keep in sync with tokens/base.css */
 [data-color-scheme="light"] {
 	color-scheme: light;
 	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
-	--cs-bg: #ffffff;
-	--cs-surface: #f8fafc;
-	--cs-text: #1a1a2e;
-	--cs-muted: #64748b;
-	--cs-accent: #0ea5e9;
-	--cs-border: #e2e8f0;
+	--cs-bg: #faf5eb;
+	--cs-surface: #fffbf2;
+	--cs-text: #1d3557;
+	--cs-muted: #5a7a90;
+	--cs-accent: #457b9d;
+	--cs-border: #d8e4de;
 
 	--rf-color-bg: var(--cs-bg);
 	--rf-color-surface: var(--cs-surface);
@@ -115,25 +117,25 @@
 	--rf-color-primary: var(--cs-accent);
 	--rf-color-border: var(--cs-border);
 
-	--rf-color-primary-hover: #0284c7;
-	--rf-color-surface-hover: #f1f5f9;
-	--rf-color-surface-active: #e2e8f0;
+	--rf-color-primary-hover: #376585;
+	--rf-color-surface-hover: #fdf0d5;
+	--rf-color-surface-active: #f9ebcc;
 	--rf-color-surface-raised: #ffffff;
 
-	--rf-color-info: #3b82f6;
-	--rf-color-info-bg: #eff6ff;
-	--rf-color-info-border: #bfdbfe;
-	--rf-color-warning: #f59e0b;
-	--rf-color-warning-bg: #fffbeb;
-	--rf-color-warning-border: #fde68a;
-	--rf-color-danger: #ef4444;
-	--rf-color-danger-bg: #fef2f2;
-	--rf-color-danger-border: #fecaca;
-	--rf-color-success: #10b981;
-	--rf-color-success-bg: #ecfdf5;
-	--rf-color-success-border: #a7f3d0;
+	--rf-color-info: #457b9d;
+	--rf-color-info-bg: #edf4f8;
+	--rf-color-info-border: #a8dadc;
+	--rf-color-warning: #c8900a;
+	--rf-color-warning-bg: #fdf5e4;
+	--rf-color-warning-border: #edd49a;
+	--rf-color-danger: #e63946;
+	--rf-color-danger-bg: #fdeced;
+	--rf-color-danger-border: #f0b0b5;
+	--rf-color-success: #3d8f65;
+	--rf-color-success-bg: #ecf5ef;
+	--rf-color-success-border: #a8d4b8;
 
-	--rf-color-inline-code-bg: #f1f5f9;
+	--rf-color-inline-code-bg: #f9ebcc;
 
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
