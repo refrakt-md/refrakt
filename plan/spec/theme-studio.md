@@ -1,4 +1,4 @@
-{% spec id="SPEC-010" status="review" tags="tooling, themes" %}
+{% spec id="SPEC-010" status="draft" tags="tooling, themes" %}
 
 # Theme Studio — AI-Powered Theme Generator
 

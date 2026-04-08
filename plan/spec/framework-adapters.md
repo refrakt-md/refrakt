@@ -1,4 +1,4 @@
-{% spec id="SPEC-030" status="draft" tags="frameworks, astro, architecture" %}
+{% spec id="SPEC-030" status="accepted" tags="frameworks, astro, architecture" %}
 
 # Framework Adapter System
 

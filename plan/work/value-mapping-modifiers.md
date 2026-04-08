@@ -1,4 +1,4 @@
-{% work id="WORK-110" status="ready" priority="high" complexity="simple" tags="transform, themes" milestone="v1.0.0" %}
+{% work id="WORK-110" status="done" priority="high" complexity="simple" tags="transform, themes" milestone="v1.0.0" %}
 
 # Add value mapping to modifier config
 

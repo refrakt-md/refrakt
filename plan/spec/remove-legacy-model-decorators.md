@@ -1,4 +1,4 @@
-{% spec id="SPEC-032" status="draft" tags="runes, content-model, architecture" %}
+{% spec id="SPEC-032" status="accepted" tags="runes, content-model, architecture" %}
 
 # Remove Legacy Model Class and Decorators
 

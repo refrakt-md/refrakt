@@ -1,4 +1,4 @@
-{% work id="WORK-114" status="ready" priority="medium" complexity="complex" tags="transform, themes" milestone="v1.0.0" %}
+{% work id="WORK-114" status="done" priority="medium" complexity="complex" tags="transform, themes" milestone="v1.0.0" %}
 
 # Implement element projection (hide, group, relocate)
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-015" status="draft" tags="plan, ux, behaviors, architecture" %}
+{% spec id="SPEC-015" status="review" tags="plan, ux, behaviors, architecture" %}
 
 # Plan Site UX at Scale
 

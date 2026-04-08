@@ -1,4 +1,4 @@
-{% spec id="SPEC-027" status="draft" version="1.0" tags="plan, cli, ai-workflow" %}
+{% spec id="SPEC-027" status="accepted" version="1.0" tags="plan, cli, ai-workflow" %}
 
 # Work Item Resolution Summaries
 

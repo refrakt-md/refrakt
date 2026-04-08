@@ -1,4 +1,4 @@
-{% spec id="SPEC-014" status="draft" tags="plan, html, themes, architecture" %}
+{% spec id="SPEC-014" status="accepted" tags="plan, html, themes, architecture" %}
 
 # Plan Site via HTML Adapter
 
