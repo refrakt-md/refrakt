@@ -13,7 +13,13 @@ Use headings for categories and list items with amounts for line items.
 
 {% preview source=true %}
 
-{% budget title="Tokyo Trip" currency="JPY" travelers=2 duration="5 days" %}
+{% budget currency="JPY" travelers=2 duration="5 days" %}
+Spring 2026
+
+# Tokyo Trip
+
+A week in Japan — temples, food, and a night in a ryokan.
+
 ## Accommodation
 
 - Hotel in Shinjuku: ¥15000
@@ -39,7 +45,9 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 
 {% preview source=true %}
 
-{% budget title="Weekend Getaway" currency="USD" variant="summary" %}
+{% budget currency="USD" variant="summary" %}
+# Weekend Getaway
+
 ## Hotel
 
 - Two nights downtown: $250
@@ -53,11 +61,14 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 
 {% /preview %}
 
+## Section header
+
+Budget supports an optional eyebrow, headline, and blurb above the categories. Place a short paragraph or heading before the first category heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | `string` | — | Budget title |
 | `currency` | `string` | `USD` | Currency code |
 | `travelers` | `number` | `1` | Number of travelers for per-person calculations |
 | `duration` | `string` | — | Trip or project duration |

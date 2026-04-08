@@ -4,6 +4,7 @@ const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
 import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
+import { pageSectionProperties } from './common.js';
 
 // ─── Amount parsing ───
 
@@ -177,9 +178,26 @@ export const budgetCategory = createContentModelSchema({
 
 const variantType = ['detailed', 'summary'] as const;
 
-// Convert headings into budget-category tags
+// Convert headings into budget-category tags, preserving leading preamble content
 function convertBudgetChildren(nodes: unknown[]): unknown[] {
-	const converted = headingsToList()(nodes as Node[]);
+	const typed = nodes as Node[];
+
+	// Find the first two headings to detect a preamble title
+	const headings = typed.reduce<{ idx: number; level: number }[]>((acc, n, i) => {
+		if (n.type === 'heading') acc.push({ idx: i, level: n.attributes.level });
+		return acc;
+	}, []);
+
+	// If the first heading has a lower level than the second (e.g. H1 vs H2),
+	// everything before the second heading is preamble content (title, blurb, etc.)
+	let preamble: Node[] = [];
+	let categoryNodes: Node[] = typed;
+	if (headings.length >= 2 && headings[0].level < headings[1].level) {
+		preamble = typed.slice(0, headings[1].idx);
+		categoryNodes = typed.slice(headings[1].idx);
+	}
+
+	const converted = headingsToList()(categoryNodes);
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
@@ -191,12 +209,11 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	});
 
 	converted.splice(n, 1, ...tags);
-	return converted;
+	return [...preamble, ...converted];
 }
 
 export const budget = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, description: 'Title for the budget breakdown' },
 		currency: { type: String, required: false, description: 'Currency symbol or code (e.g. USD, EUR)' },
 		travelers: { type: Number, required: false, description: 'Number of travelers for per-person calculations' },
 		duration: { type: String, required: false, description: 'Trip duration for per-day calculations' },
@@ -213,13 +230,13 @@ export const budget = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// Separate header content from tag nodes
+		// Separate preamble content (headings + paragraphs) from tag nodes (categories)
 		const headerAst: Node[] = [];
 		const bodyAst: Node[] = [];
 		for (const child of allChildren) {
 			if (child.type === 'tag') {
 				bodyAst.push(child);
-			} else if (child.type === 'paragraph') {
+			} else if (child.type === 'paragraph' || child.type === 'heading') {
 				headerAst.push(child);
 			}
 		}
@@ -231,7 +248,8 @@ export const budget = createContentModelSchema({
 			Markdoc.transform(bodyAst, config) as RenderableTreeNode[],
 		);
 
-		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
+		const sectionProps = pageSectionProperties(header);
+
 		const currencyMeta = new Tag('meta', { content: attrs.currency ?? 'USD' });
 		const travelersMeta = new Tag('meta', { content: String(attrs.travelers ?? 1) });
 		const durationMeta = new Tag('meta', { content: attrs.duration ?? '' });
@@ -242,19 +260,20 @@ export const budget = createContentModelSchema({
 		const categories = body.tag('div').typeof('BudgetCategory');
 		const categoriesDiv = new Tag('div', {}, categories.toArray());
 
+		const hasPreamble = header.count() > 0;
+		const preambleTag = hasPreamble ? new Tag('header', {}, header.toArray()) : undefined;
+
 		const children: any[] = [
-			titleMeta, currencyMeta, travelersMeta, durationMeta,
+			currencyMeta, travelersMeta, durationMeta,
 			showPerPersonMeta, showPerDayMeta, variantMeta,
+			...(preambleTag ? [preambleTag] : []),
+			categoriesDiv,
 		];
-		if (header.count() > 0) {
-			children.push(header.wrap('div').next());
-		}
-		children.push(categoriesDiv);
 
 		return createComponentRenderable({ rune: 'budget', schemaOrgType: 'ItemList',
 			tag: 'section',
+			property: 'contentSection',
 			properties: {
-				title: titleMeta,
 				currency: currencyMeta,
 				travelers: travelersMeta,
 				duration: durationMeta,
@@ -264,6 +283,8 @@ export const budget = createContentModelSchema({
 				category: categories,
 			},
 			refs: {
+				...(preambleTag ? { preamble: preambleTag } : {}),
+				...sectionProps,
 				categories: categoriesDiv,
 			},
 			children,

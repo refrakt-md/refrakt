@@ -284,11 +284,6 @@
 				"{content}"
 			],
 			"modifiers": {
-				"title": {
-					"source": "meta",
-					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-title"
-				},
 				"currency": {
 					"source": "meta",
 					"default": "USD",
@@ -331,18 +326,10 @@
 					"selector": ".rf-budget__header",
 					"source": "structure",
 					"conditionAny": [
-						"title",
 						"currency",
 						"travelers",
 						"duration"
 					]
-				},
-				"title": {
-					"tag": "h2",
-					"selector": ".rf-budget__title",
-					"source": "structure",
-					"parent": "header",
-					"condition": "title"
 				},
 				"meta": {
 					"tag": "div",

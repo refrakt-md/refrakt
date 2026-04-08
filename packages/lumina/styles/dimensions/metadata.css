@@ -9,13 +9,9 @@
 
 /* ─── Rank ─────────────────────────────────────────────────────────── */
 
-[data-meta-rank="primary"] {
-	--meta-font-size: 0.8125rem;
-}
-
+[data-meta-rank="primary"],
 [data-meta-rank="secondary"] {
-	--meta-font-size: 0.75rem;
-	opacity: 0.8;
+	--meta-font-size: 0.8125rem;
 }
 
 /* ─── Sentiment ────────────────────────────────────────────────────── */

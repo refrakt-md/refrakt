@@ -202,10 +202,9 @@ export const coreConfig: ThemeConfig = {
 		Budget: {
 			block: 'budget',
 			defaultDensity: 'full',
-			sections: { header: 'header', title: 'title', footer: 'footer' },
-			editHints: { title: 'none', meta: 'none', 'meta-item': 'none' },
+			sections: { header: 'header', preamble: 'preamble', headline: 'title', footer: 'footer' },
+			editHints: { headline: 'inline', meta: 'none', 'meta-item': 'none' },
 			modifiers: {
-				title: { source: 'meta' },
 				currency: { source: 'meta', default: 'USD' },
 				travelers: { source: 'meta', default: '1' },
 				duration: { source: 'meta' },
@@ -216,9 +215,8 @@ export const coreConfig: ThemeConfig = {
 			structure: {
 				header: {
 					tag: 'div', before: true,
-					conditionAny: ['title', 'currency', 'travelers', 'duration'],
+					conditionAny: ['currency', 'travelers', 'duration'],
 					children: [
-						{ tag: 'h2', ref: 'title', metaText: 'title', condition: 'title' },
 						{
 							tag: 'div', ref: 'meta',
 							children: [
