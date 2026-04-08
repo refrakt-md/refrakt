@@ -7,6 +7,9 @@
 	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
 	background: var(--hint-bg);
 }
+.rf-hint__header {
+	margin-bottom: 0.375rem;
+}
 .rf-hint__icon {
 	display: flex;
 	align-items: center;
