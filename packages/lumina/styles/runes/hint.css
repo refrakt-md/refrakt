@@ -7,9 +7,6 @@
 	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
 	background: var(--hint-bg);
 }
-.rf-hint + .rf-hint {
-	margin-top: 0.75rem;
-}
 .rf-hint__header {
 	margin-bottom: 0.375rem;
 }

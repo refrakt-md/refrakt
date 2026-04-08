@@ -84,6 +84,9 @@
 .rf-preview__canvas > *:last-child {
 	margin-bottom: 0;
 }
+.rf-preview__canvas > [data-rune] + [data-rune] {
+	margin-top: 0.75rem;
+}
 
 /* Viewport simulation toggle pill */
 .rf-preview__viewport-toggle {
