@@ -5,46 +5,46 @@
 	--rf-font-sans: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--rf-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-	/* Primary scale (sky-blue) */
-	--rf-color-primary-50: #f0f9ff;
-	--rf-color-primary-100: #e0f2fe;
-	--rf-color-primary-200: #bae6fd;
-	--rf-color-primary-300: #7dd3fc;
-	--rf-color-primary-400: #38bdf8;
-	--rf-color-primary-500: #0ea5e9;
-	--rf-color-primary-600: #0284c7;
-	--rf-color-primary-700: #0369a1;
-	--rf-color-primary-800: #075985;
-	--rf-color-primary-900: #0c4a6e;
-	--rf-color-primary-950: #082f49;
+	/* Primary scale (cerulean → frosted blue) */
+	--rf-color-primary-50: #f0f6f9;
+	--rf-color-primary-100: #dcebf0;
+	--rf-color-primary-200: #b8d6e2;
+	--rf-color-primary-300: #a8dadc;
+	--rf-color-primary-400: #70b4c0;
+	--rf-color-primary-500: #457b9d;
+	--rf-color-primary-600: #376585;
+	--rf-color-primary-700: #1d3557;
+	--rf-color-primary-800: #182c4a;
+	--rf-color-primary-900: #12213a;
+	--rf-color-primary-950: #0c162a;
 
 	/* Core palette */
-	--rf-color-text: #1a1a2e;
-	--rf-color-muted: #64748b;
-	--rf-color-border: #e2e8f0;
-	--rf-color-bg: #ffffff;
-	--rf-color-primary: var(--rf-color-primary-500);
-	--rf-color-primary-hover: var(--rf-color-primary-600);
+	--rf-color-text: #1d3557;
+	--rf-color-muted: #5a7a90;
+	--rf-color-border: #d8e4de;
+	--rf-color-bg: #faf5eb;
+	--rf-color-primary: #457b9d;
+	--rf-color-primary-hover: #376585;
 
-	/* Surfaces */
-	--rf-color-surface: #f8fafc;
-	--rf-color-surface-hover: #f1f5f9;
-	--rf-color-surface-active: #e2e8f0;
+	/* Surfaces — lighter than background */
+	--rf-color-surface: #fffbf2;
+	--rf-color-surface-hover: #fdf0d5;
+	--rf-color-surface-active: #f9ebcc;
 	--rf-color-surface-raised: #ffffff;
 
 	/* Semantic */
-	--rf-color-info: #3b82f6;
-	--rf-color-info-bg: #eff6ff;
-	--rf-color-info-border: #bfdbfe;
-	--rf-color-warning: #f59e0b;
-	--rf-color-warning-bg: #fffbeb;
-	--rf-color-warning-border: #fde68a;
-	--rf-color-danger: #ef4444;
-	--rf-color-danger-bg: #fef2f2;
-	--rf-color-danger-border: #fecaca;
-	--rf-color-success: #10b981;
-	--rf-color-success-bg: #ecfdf5;
-	--rf-color-success-border: #a7f3d0;
+	--rf-color-info: #457b9d;
+	--rf-color-info-bg: #edf4f8;
+	--rf-color-info-border: #a8dadc;
+	--rf-color-warning: #c8900a;
+	--rf-color-warning-bg: #fdf5e4;
+	--rf-color-warning-border: #edd49a;
+	--rf-color-danger: #e63946;
+	--rf-color-danger-bg: #fdeced;
+	--rf-color-danger-border: #f0b0b5;
+	--rf-color-success: #3d8f65;
+	--rf-color-success-bg: #ecf5ef;
+	--rf-color-success-border: #a8d4b8;
 
 	/* Radii */
 	--rf-radius-sm: 6px;
@@ -79,20 +79,20 @@
 	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
 
 	/* Code block */
-	--rf-color-code-bg: #0f172a;
-	--rf-color-code-text: #e2e8f0;
-	--rf-color-inline-code-bg: #f1f5f9;
+	--rf-color-code-bg: #1d3557;
+	--rf-color-code-text: #f1faee;
+	--rf-color-inline-code-bg: #f9ebcc;
 
 	/* Syntax highlighting (Shiki CSS variables) */
-	--shiki-foreground: var(--rf-color-code-text);
-	--shiki-background: var(--rf-color-code-bg);
-	--shiki-token-keyword: #c792ea;
-	--shiki-token-string: #c3e88d;
-	--shiki-token-string-expression: #c3e88d;
-	--shiki-token-constant: #f78c6c;
-	--shiki-token-comment: #637777;
-	--shiki-token-function: #82aaff;
-	--shiki-token-parameter: #d6deeb;
-	--shiki-token-punctuation: #89ddff;
-	--shiki-token-link: #82aaff;
+	--shiki-foreground: #f1faee;
+	--shiki-background: #1d3557;
+	--shiki-token-keyword: #e63946;
+	--shiki-token-string: #a8dadc;
+	--shiki-token-string-expression: #a8dadc;
+	--shiki-token-constant: #e8c07a;
+	--shiki-token-comment: #5a7a90;
+	--shiki-token-function: #70b4c0;
+	--shiki-token-parameter: #b8d6e2;
+	--shiki-token-punctuation: #a8dadc;
+	--shiki-token-link: #70b4c0;
 }

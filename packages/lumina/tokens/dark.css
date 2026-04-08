@@ -1,47 +1,47 @@
 /* Lumina Theme — Dark Mode Token Overrides */
 
 [data-theme="dark"] {
-	--rf-color-text: #e2e8f0;
-	--rf-color-muted: #94a3b8;
-	--rf-color-border: rgba(255, 255, 255, 0.1);
-	--rf-color-bg: #0c1222;
-	--rf-color-primary: #38bdf8;
-	--rf-color-primary-hover: #7dd3fc;
+	--rf-color-text: #f1faee;
+	--rf-color-muted: #a8dadc;
+	--rf-color-border: rgba(168, 218, 220, 0.15);
+	--rf-color-bg: #0c162a;
+	--rf-color-primary: #70b4c0;
+	--rf-color-primary-hover: #a8dadc;
 
-	--rf-color-surface: #0f172a;
-	--rf-color-surface-hover: #1e293b;
-	--rf-color-surface-active: #334155;
-	--rf-color-surface-raised: #1e293b;
+	--rf-color-surface: #111e34;
+	--rf-color-surface-hover: #16263e;
+	--rf-color-surface-active: #1c2e48;
+	--rf-color-surface-raised: #111e34;
 
-	--rf-color-info: #60a5fa;
-	--rf-color-info-bg: rgba(59, 130, 246, 0.1);
-	--rf-color-info-border: rgba(59, 130, 246, 0.3);
-	--rf-color-warning: #fbbf24;
-	--rf-color-warning-bg: rgba(245, 158, 11, 0.1);
-	--rf-color-warning-border: rgba(245, 158, 11, 0.3);
-	--rf-color-danger: #f87171;
-	--rf-color-danger-bg: rgba(239, 68, 68, 0.1);
-	--rf-color-danger-border: rgba(239, 68, 68, 0.3);
-	--rf-color-success: #34d399;
-	--rf-color-success-bg: rgba(16, 185, 129, 0.1);
-	--rf-color-success-border: rgba(16, 185, 129, 0.3);
+	--rf-color-info: #a8dadc;
+	--rf-color-info-bg: rgba(69, 123, 157, 0.12);
+	--rf-color-info-border: rgba(69, 123, 157, 0.3);
+	--rf-color-warning: #e8c07a;
+	--rf-color-warning-bg: rgba(200, 144, 10, 0.12);
+	--rf-color-warning-border: rgba(200, 144, 10, 0.3);
+	--rf-color-danger: #f07078;
+	--rf-color-danger-bg: rgba(230, 57, 70, 0.12);
+	--rf-color-danger-border: rgba(230, 57, 70, 0.3);
+	--rf-color-success: #72c098;
+	--rf-color-success-bg: rgba(61, 143, 101, 0.12);
+	--rf-color-success-border: rgba(61, 143, 101, 0.3);
 
-	--rf-color-code-bg: #0f172a;
-	--rf-color-code-text: #e2e8f0;
-	--rf-color-inline-code-bg: rgba(255, 255, 255, 0.08);
+	--rf-color-code-bg: #0c162a;
+	--rf-color-code-text: #f1faee;
+	--rf-color-inline-code-bg: rgba(168, 218, 220, 0.08);
 
 	/* Syntax highlighting (Shiki CSS variables) */
-	--shiki-foreground: var(--rf-color-code-text);
-	--shiki-background: var(--rf-color-code-bg);
-	--shiki-token-keyword: #c792ea;
-	--shiki-token-string: #c3e88d;
-	--shiki-token-string-expression: #c3e88d;
-	--shiki-token-constant: #f78c6c;
-	--shiki-token-comment: #637777;
-	--shiki-token-function: #82aaff;
-	--shiki-token-parameter: #d6deeb;
-	--shiki-token-punctuation: #89ddff;
-	--shiki-token-link: #82aaff;
+	--shiki-foreground: #f1faee;
+	--shiki-background: #0c162a;
+	--shiki-token-keyword: #f07078;
+	--shiki-token-string: #a8dadc;
+	--shiki-token-string-expression: #a8dadc;
+	--shiki-token-constant: #e8c07a;
+	--shiki-token-comment: #5a7a90;
+	--shiki-token-function: #a8dadc;
+	--shiki-token-parameter: #b8d6e2;
+	--shiki-token-punctuation: #70b4c0;
+	--shiki-token-link: #a8dadc;
 
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
@@ -52,47 +52,47 @@
 /* Auto dark mode via system preference */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
-		--rf-color-text: #e2e8f0;
-		--rf-color-muted: #94a3b8;
-		--rf-color-border: rgba(255, 255, 255, 0.1);
-		--rf-color-bg: #0c1222;
-		--rf-color-primary: #38bdf8;
-		--rf-color-primary-hover: #7dd3fc;
+		--rf-color-text: #f1faee;
+		--rf-color-muted: #a8dadc;
+		--rf-color-border: rgba(168, 218, 220, 0.15);
+		--rf-color-bg: #0c162a;
+		--rf-color-primary: #70b4c0;
+		--rf-color-primary-hover: #a8dadc;
 
-		--rf-color-surface: #0f172a;
-		--rf-color-surface-hover: #1e293b;
-		--rf-color-surface-active: #334155;
-		--rf-color-surface-raised: #1e293b;
+		--rf-color-surface: #111e34;
+		--rf-color-surface-hover: #16263e;
+		--rf-color-surface-active: #1c2e48;
+		--rf-color-surface-raised: #111e34;
 
-		--rf-color-info: #60a5fa;
-		--rf-color-info-bg: rgba(59, 130, 246, 0.1);
-		--rf-color-info-border: rgba(59, 130, 246, 0.3);
-		--rf-color-warning: #fbbf24;
-		--rf-color-warning-bg: rgba(245, 158, 11, 0.1);
-		--rf-color-warning-border: rgba(245, 158, 11, 0.3);
-		--rf-color-danger: #f87171;
-		--rf-color-danger-bg: rgba(239, 68, 68, 0.1);
-		--rf-color-danger-border: rgba(239, 68, 68, 0.3);
-		--rf-color-success: #34d399;
-		--rf-color-success-bg: rgba(16, 185, 129, 0.1);
-		--rf-color-success-border: rgba(16, 185, 129, 0.3);
+		--rf-color-info: #a8dadc;
+		--rf-color-info-bg: rgba(69, 123, 157, 0.12);
+		--rf-color-info-border: rgba(69, 123, 157, 0.3);
+		--rf-color-warning: #e8c07a;
+		--rf-color-warning-bg: rgba(200, 144, 10, 0.12);
+		--rf-color-warning-border: rgba(200, 144, 10, 0.3);
+		--rf-color-danger: #f07078;
+		--rf-color-danger-bg: rgba(230, 57, 70, 0.12);
+		--rf-color-danger-border: rgba(230, 57, 70, 0.3);
+		--rf-color-success: #72c098;
+		--rf-color-success-bg: rgba(61, 143, 101, 0.12);
+		--rf-color-success-border: rgba(61, 143, 101, 0.3);
 
-		--rf-color-code-bg: #0f172a;
-		--rf-color-code-text: #e2e8f0;
-		--rf-color-inline-code-bg: rgba(255, 255, 255, 0.08);
+		--rf-color-code-bg: #0c162a;
+		--rf-color-code-text: #f1faee;
+		--rf-color-inline-code-bg: rgba(168, 218, 220, 0.08);
 
 		/* Syntax highlighting (Shiki CSS variables) */
-		--shiki-foreground: var(--rf-color-code-text);
-		--shiki-background: var(--rf-color-code-bg);
-		--shiki-token-keyword: #c792ea;
-		--shiki-token-string: #c3e88d;
-		--shiki-token-string-expression: #c3e88d;
-		--shiki-token-constant: #f78c6c;
-		--shiki-token-comment: #637777;
-		--shiki-token-function: #82aaff;
-		--shiki-token-parameter: #d6deeb;
-		--shiki-token-punctuation: #89ddff;
-		--shiki-token-link: #82aaff;
+		--shiki-foreground: #f1faee;
+		--shiki-background: #0c162a;
+		--shiki-token-keyword: #f07078;
+		--shiki-token-string: #a8dadc;
+		--shiki-token-string-expression: #a8dadc;
+		--shiki-token-constant: #e8c07a;
+		--shiki-token-comment: #5a7a90;
+		--shiki-token-function: #a8dadc;
+		--shiki-token-parameter: #b8d6e2;
+		--shiki-token-punctuation: #70b4c0;
+		--shiki-token-link: #a8dadc;
 
 		--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
 		--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
