@@ -12,17 +12,7 @@
 	padding-left: 1.5rem;
 }
 .rf-lore__content blockquote {
-	border-left: 2px solid var(--rf-color-primary);
-	background: var(--rf-color-surface);
-	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
-	padding: 0.75rem 1.25rem;
-	margin: 1rem 0;
 	font-style: italic;
-	color: var(--rf-color-muted);
-	line-height: 1.6;
-}
-.rf-lore__content blockquote p {
-	margin: 0;
 }
 .rf-lore > span[property="title"] {
 	display: block;
