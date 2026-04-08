@@ -97,7 +97,7 @@ If both a fence and `source` are present, the fence takes priority.
 
 ## Sandbox embedding
 
-Preview pairs naturally with the [sandbox](/docs/runes/sandbox) rune. Nest a sandbox inside a preview to get live HTML rendering with theme toggling, responsive viewports, and source code panels -- all in one component.
+Preview pairs naturally with the [sandbox](/runes/sandbox) rune. Nest a sandbox inside a preview to get live HTML rendering with theme toggling, responsive viewports, and source code panels -- all in one component.
 
 ```markdoc
 {% preview source=true responsive="mobile,tablet,desktop" %}
@@ -125,7 +125,7 @@ The preview toolbar controls the sandbox iframe -- theme toggles propagate into 
 {% /preview %}
 ```
 
-See the [sandbox rune docs](/docs/runes/sandbox) for full details on framework presets, dependencies, and data-source panels.
+See the [sandbox rune docs](/runes/sandbox) for full details on framework presets, dependencies, and data-source panels.
 
 ### Attributes
 

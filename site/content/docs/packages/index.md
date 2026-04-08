@@ -11,15 +11,15 @@ refrakt.md separates its rune library into focused packages. Core runes (grid, h
 
 | Package | Purpose | Features |
 |---------|---------|----------|
-| [`@refrakt-md/marketing`](/docs/runes/marketing) | Landing pages and conversion content | 8 runes |
-| [`@refrakt-md/docs`](/docs/runes/docs) | Technical API documentation | 3 runes |
-| [`@refrakt-md/design`](/docs/runes/design) | Design system documentation | 7 runes, cross-page token pipeline |
-| [`@refrakt-md/learning`](/docs/runes/learning) | Educational and instructional content | 2 runes, SEO rich snippets |
-| [`@refrakt-md/storytelling`](/docs/runes/storytelling) | Fiction, world-building, and narrative | 7 runes |
-| [`@refrakt-md/business`](/docs/runes/business) | Organizational and team content | 3 runes |
-| [`@refrakt-md/places`](/docs/runes/places) | Events, maps, and travel | 3 runes |
-| [`@refrakt-md/media`](/docs/runes/media) | Music and audio content | 3 runes |
-| [`@refrakt-md/plan`](/docs/runes/plan) | Spec-driven project planning | 9 runes, [8 CLI commands](/docs/runes/plan/cli), cross-page pipeline |
+| [`@refrakt-md/marketing`](/runes/marketing) | Landing pages and conversion content | 8 runes |
+| [`@refrakt-md/docs`](/runes/docs) | Technical API documentation | 3 runes |
+| [`@refrakt-md/design`](/runes/design) | Design system documentation | 7 runes, cross-page token pipeline |
+| [`@refrakt-md/learning`](/runes/learning) | Educational and instructional content | 2 runes, SEO rich snippets |
+| [`@refrakt-md/storytelling`](/runes/storytelling) | Fiction, world-building, and narrative | 7 runes |
+| [`@refrakt-md/business`](/runes/business) | Organizational and team content | 3 runes |
+| [`@refrakt-md/places`](/runes/places) | Events, maps, and travel | 3 runes |
+| [`@refrakt-md/media`](/runes/media) | Music and audio content | 3 runes |
+| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [8 CLI commands](/runes/plan/cli), cross-page pipeline |
 
 ## Installing Packages
 

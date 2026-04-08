@@ -120,34 +120,34 @@ No. Runes use standard Markdoc tag syntax.
 The following runes support the eyebrow / headline / blurb / image pattern:
 
 **Core**
-- [Accordion](/docs/runes/accordion)
-- [Tabs](/docs/runes/tabs)
-- [Reveal](/docs/runes/reveal)
+- [Accordion](/runes/accordion)
+- [Tabs](/runes/tabs)
+- [Reveal](/runes/reveal)
 
 **@refrakt-md/marketing**
-- [Hero](/docs/runes/marketing/hero)
-- [CTA](/docs/runes/marketing/cta)
-- [Feature](/docs/runes/marketing/feature)
-- [Steps](/docs/runes/marketing/steps)
-- [Pricing](/docs/runes/marketing/pricing)
-- [Comparison](/docs/runes/marketing/comparison)
-- [Bento](/docs/runes/marketing/bento)
+- [Hero](/runes/marketing/hero)
+- [CTA](/runes/marketing/cta)
+- [Feature](/runes/marketing/feature)
+- [Steps](/runes/marketing/steps)
+- [Pricing](/runes/marketing/pricing)
+- [Comparison](/runes/marketing/comparison)
+- [Bento](/runes/marketing/bento)
 
 **@refrakt-md/learning**
-- [How-to](/docs/runes/learning/howto)
-- [Recipe](/docs/runes/learning/recipe)
+- [How-to](/runes/learning/howto)
+- [Recipe](/runes/learning/recipe)
 
 **@refrakt-md/docs**
-- [Changelog](/docs/runes/docs/changelog)
+- [Changelog](/runes/docs/changelog)
 
 **@refrakt-md/business**
-- [Cast](/docs/runes/business/cast)
-- [Organization](/docs/runes/business/organization)
-- [Timeline](/docs/runes/business/timeline)
+- [Cast](/runes/business/cast)
+- [Organization](/runes/business/organization)
+- [Timeline](/runes/business/timeline)
 
 **@refrakt-md/places**
-- [Event](/docs/runes/places/event)
-- [Itinerary](/docs/runes/places/itinerary)
+- [Event](/runes/places/event)
+- [Itinerary](/runes/places/itinerary)
 
 **@refrakt-md/media**
 - Music Playlist

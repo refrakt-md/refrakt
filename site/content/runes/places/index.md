@@ -23,9 +23,9 @@ npm install @refrakt-md/places
 
 | Rune | Description |
 |------|-------------|
-| [event](/docs/runes/places/event) | Event information with date, location, and agenda |
-| [map](/docs/runes/places/map) | Interactive map visualization from Markdown lists of locations |
-| [itinerary](/docs/runes/places/itinerary) | Day-by-day travel itineraries with timed stops and locations |
+| [event](/runes/places/event) | Event information with date, location, and agenda |
+| [map](/runes/places/map) | Interactive map visualization from Markdown lists of locations |
+| [itinerary](/runes/places/itinerary) | Day-by-day travel itineraries with timed stops and locations |
 
 ## When to use
 

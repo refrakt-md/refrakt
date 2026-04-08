@@ -23,9 +23,9 @@ npm install @refrakt-md/business
 
 | Rune | Description |
 |------|-------------|
-| [cast](/docs/runes/business/cast) | People directory for team pages and speaker lineups |
-| [organization](/docs/runes/business/organization) | Structured business or organization information |
-| [timeline](/docs/runes/business/timeline) | Chronological events displayed as a timeline |
+| [cast](/runes/business/cast) | People directory for team pages and speaker lineups |
+| [organization](/runes/business/organization) | Structured business or organization information |
+| [timeline](/runes/business/timeline) | Chronological events displayed as a timeline |
 
 ## When to use
 

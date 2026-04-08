@@ -23,9 +23,9 @@ npm install @refrakt-md/media
 
 | Rune | Description |
 |------|-------------|
-| [playlist](/docs/runes/media/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
-| [track](/docs/runes/media/track) | Standalone track or recording with metadata |
-| [audio](/docs/runes/media/audio) | Audio player with optional waveform and chapter markers |
+| [playlist](/runes/media/playlist) | Curated playlist with track listing for albums, podcasts, and mixes |
+| [track](/runes/media/track) | Standalone track or recording with metadata |
+| [audio](/runes/media/audio) | Audio player with optional waveform and chapter markers |
 
 ## When to use
 

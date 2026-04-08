@@ -16,7 +16,7 @@ A breadcrumb trail using the default `/` separator.
 {% breadcrumb %}
 - [Home](/)
 - [Getting started](/docs/getting-started)
-- [Tabs](/docs/runes/tabs)
+- [Tabs](/runes/tabs)
 - Breadcrumb
 {% /breadcrumb %}
 

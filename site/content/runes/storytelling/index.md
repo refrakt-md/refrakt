@@ -23,13 +23,13 @@ npm install @refrakt-md/storytelling
 
 | Rune | Description |
 |------|-------------|
-| [character](/docs/runes/storytelling/character) | Rich character profiles with sections for backstory, abilities, and more |
-| [realm](/docs/runes/storytelling/realm) | Location profiles for worldbuilding with geography and notable features |
-| [lore](/docs/runes/storytelling/lore) | In-world knowledge entries for myths, prophecies, and historical records |
-| [faction](/docs/runes/storytelling/faction) | Organizations and groups with ranks, holdings, and alignment |
-| [plot](/docs/runes/storytelling/plot) | Story arcs and quest trackers with progress markers |
-| [bond](/docs/runes/storytelling/bond) | Relationship connections between characters or entities |
-| [storyboard](/docs/runes/storytelling/storyboard) | Comic and storyboard layouts from images and captions |
+| [character](/runes/storytelling/character) | Rich character profiles with sections for backstory, abilities, and more |
+| [realm](/runes/storytelling/realm) | Location profiles for worldbuilding with geography and notable features |
+| [lore](/runes/storytelling/lore) | In-world knowledge entries for myths, prophecies, and historical records |
+| [faction](/runes/storytelling/faction) | Organizations and groups with ranks, holdings, and alignment |
+| [plot](/runes/storytelling/plot) | Story arcs and quest trackers with progress markers |
+| [bond](/runes/storytelling/bond) | Relationship connections between characters or entities |
+| [storyboard](/runes/storytelling/storyboard) | Comic and storyboard layouts from images and captions |
 
 ## When to use
 

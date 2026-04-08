@@ -7,7 +7,7 @@ description: Spec-driven project planning with AI-native workflows and CLI tooli
 
 Spec-driven project planning with AI-native workflows. Write specs, track work items, record architectural decisions, and manage milestones — all in Markdown files that live alongside your code.
 
-Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/docs/runes/plan/cli) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/docs/runes/plan/workflow) for integrating with AI coding assistants like Claude Code.
+Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/runes/plan/cli) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/runes/plan/workflow) for integrating with AI coding assistants like Claude Code.
 
 ## Installation
 
@@ -35,11 +35,11 @@ This creates the `plan/` directory structure with example files and updates your
 
 | Rune | Description |
 |------|-------------|
-| [spec](/docs/runes/plan/spec) | Specification document with status tracking and versioning |
-| [work](/docs/runes/plan/work) | Work item with acceptance criteria, priority, and complexity tracking |
-| [bug](/docs/runes/plan/bug) | Bug report with structured reproduction steps and severity |
-| [decision](/docs/runes/plan/decision) | Architecture decision record with context, options, and rationale |
-| [milestone](/docs/runes/plan/milestone) | Named release target with goals and status |
+| [spec](/runes/plan/spec) | Specification document with status tracking and versioning |
+| [work](/runes/plan/work) | Work item with acceptance criteria, priority, and complexity tracking |
+| [bug](/runes/plan/bug) | Bug report with structured reproduction steps and severity |
+| [decision](/runes/plan/decision) | Architecture decision record with context, options, and rationale |
+| [milestone](/runes/plan/milestone) | Named release target with goals and status |
 
 ### Aggregation runes
 
@@ -47,14 +47,14 @@ These runes use the cross-page pipeline to build site-wide views from your plan 
 
 | Rune | Description |
 |------|-------------|
-| [backlog](/docs/runes/plan/backlog) | Aggregation view of work items and bugs with filtering, sorting, and grouping |
-| [decision-log](/docs/runes/plan/decision-log) | Chronological view of architecture decision records |
-| [plan-progress](/docs/runes/plan/plan-progress) | Progress summary showing status counts per entity type |
-| [plan-activity](/docs/runes/plan/plan-activity) | Recent activity feed sorted by file modification time |
+| [backlog](/runes/plan/backlog) | Aggregation view of work items and bugs with filtering, sorting, and grouping |
+| [decision-log](/runes/plan/decision-log) | Chronological view of architecture decision records |
+| [plan-progress](/runes/plan/plan-progress) | Progress summary showing status counts per entity type |
+| [plan-activity](/runes/plan/plan-activity) | Recent activity feed sorted by file modification time |
 
 ### CLI commands
 
-The plan package extends the `refrakt` CLI with 8 subcommands under `refrakt plan`. See the full [CLI reference](/docs/runes/plan/cli).
+The plan package extends the `refrakt` CLI with 8 subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
 
 | Command | Purpose |
 |---------|---------|

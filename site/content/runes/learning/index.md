@@ -23,8 +23,8 @@ npm install @refrakt-md/learning
 
 | Rune | Description |
 |------|-------------|
-| [howto](/docs/runes/learning/howto) | Step-by-step how-to guide with tools and instructions |
-| [recipe](/docs/runes/learning/recipe) | Structured recipe with ingredients, steps, and chef tips |
+| [howto](/runes/learning/howto) | Step-by-step how-to guide with tools and instructions |
+| [recipe](/runes/learning/recipe) | Structured recipe with ingredients, steps, and chef tips |
 
 ## When to use
 

@@ -23,13 +23,13 @@ npm install @refrakt-md/design
 
 | Rune | Description |
 |------|-------------|
-| [swatch](/docs/runes/design/swatch) | Inline color chip for referencing colors in prose |
-| [palette](/docs/runes/design/palette) | Color swatch grid with optional WCAG contrast and accessibility info |
-| [typography](/docs/runes/design/typography) | Font specimen display with live Google Fonts loading |
-| [spacing](/docs/runes/design/spacing) | Spacing scale, border radius, and shadow token display |
-| [preview](/docs/runes/design/preview) | Component showcase with theme toggle, responsive viewports, and adjustable width |
-| [mockup](/docs/runes/design/mockup) | Device frame mockups for screenshots |
-| [design-context](/docs/runes/design/design-context) | Unified design token card composing palette, typography, and spacing runes |
+| [swatch](/runes/design/swatch) | Inline color chip for referencing colors in prose |
+| [palette](/runes/design/palette) | Color swatch grid with optional WCAG contrast and accessibility info |
+| [typography](/runes/design/typography) | Font specimen display with live Google Fonts loading |
+| [spacing](/runes/design/spacing) | Spacing scale, border radius, and shadow token display |
+| [preview](/runes/design/preview) | Component showcase with theme toggle, responsive viewports, and adjustable width |
+| [mockup](/runes/design/mockup) | Device frame mockups for screenshots |
+| [design-context](/runes/design/design-context) | Unified design token card composing palette, typography, and spacing runes |
 
 ## Cross-page pipeline
 

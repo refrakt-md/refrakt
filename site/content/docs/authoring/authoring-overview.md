@@ -186,7 +186,7 @@ For runes that belong in the core library (`packages/runes/src/tags/` — univer
 | `packages/runes/src/registry.ts` | Type registration — `useSchema().defineType()` |
 | `packages/runes/src/rune.ts` | Rune catalog — `defineRune()` with description |
 | `packages/runes/test/{name}.test.ts` | Tests — output structure verification |
-| `site/content/docs/runes/{name}.md` | User docs — usage guide with preview examples |
+| `site/content/runes/{name}.md` | User docs — usage guide with preview examples |
 
 If the rune needs CSS (most do), also add:
 - `packages/lumina/styles/runes/{block}.css` — Lumina theme styles
@@ -204,6 +204,6 @@ For domain-specific runes (marketing, storytelling, API docs, games, etc.) that 
 | `runes/{package}/src/index.ts` | Add the rune to the package's `RunePackage.runes` map |
 | `runes/{package}/styles/{block}.css` | CSS for the identity transform output |
 | `runes/{package}/test/{name}.test.ts` | Tests — output structure verification |
-| `site/content/docs/runes/{name}.md` | User docs — usage guide with preview examples |
+| `site/content/runes/{name}.md` | User docs — usage guide with preview examples |
 
 Theme config (BEM blocks, structure, icons) lives in the `RunePackage.theme.runes` field rather than in a separate config file. See [Building a Custom Package](/docs/packages/authoring) for the full authoring guide.

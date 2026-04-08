@@ -50,6 +50,6 @@ Community packages can extend the CLI with additional subcommands. These are ava
 
 | Package | Command | Purpose |
 |---------|---------|---------|
-| [`@refrakt-md/plan`](/docs/runes/plan) | [`refrakt plan`](/docs/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
+| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
 
 Run `refrakt --help` to see all available commands and options.

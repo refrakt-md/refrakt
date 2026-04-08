@@ -23,9 +23,9 @@ npm install @refrakt-md/docs
 
 | Rune | Description |
 |------|-------------|
-| [api](/docs/runes/docs/api) | API endpoint documentation with method, path, and parameters |
-| [symbol](/docs/runes/docs/symbol) | Code construct documentation for functions, classes, interfaces, enums, and type aliases |
-| [changelog](/docs/runes/docs/changelog) | Version history with release notes |
+| [api](/runes/docs/api) | API endpoint documentation with method, path, and parameters |
+| [symbol](/runes/docs/symbol) | Code construct documentation for functions, classes, interfaces, enums, and type aliases |
+| [changelog](/runes/docs/changelog) | Version history with release notes |
 
 ## When to use
 
