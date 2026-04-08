@@ -182,7 +182,7 @@ export const config: Record<string, RuneConfig> = {
 
 	Bond: {
 		block: 'bond',
-		defaultDensity: 'compact',
+		defaultDensity: 'full',
 		sections: { body: 'body' },
 		modifiers: {
 			bondType: { source: 'meta' },
