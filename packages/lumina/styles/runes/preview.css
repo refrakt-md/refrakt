@@ -118,7 +118,6 @@
 
 /* Source code view — bordered frame matching the canvas */
 .rf-preview__source {
-	overflow: clip;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 }
