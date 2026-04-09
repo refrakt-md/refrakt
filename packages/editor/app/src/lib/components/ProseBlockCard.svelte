@@ -321,7 +321,7 @@
 					aggregated,
 					communityStyles ?? undefined,
 				);
-				const scopedCss = css.replace(/:root/g, ':host');
+				const scopedCss = css.replace(/:root/g, ':host').replace(/\bhtml\s*\{/g, ':host {');
 				shadowRoot.innerHTML = `<style>${scopedCss}
 ${hlCss}
 					:host { display: block; }
