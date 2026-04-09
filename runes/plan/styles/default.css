@@ -47,6 +47,10 @@
 	overflow-y: auto;
 }
 
+.rf-plan-sidebar::-webkit-scrollbar {
+	width: 0;
+}
+
 .rf-plan-sidebar__title {
 	font-size: 1.125rem;
 	font-weight: 700;
@@ -182,6 +186,12 @@
 	border-left: 2px solid var(--rf-color-danger, #ff6b6b);
 }
 
+.rf-plan-sidebar__status-link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
 .rf-plan-sidebar__blocker-icon {
 	margin-left: auto;
 	font-size: 0.75rem;
@@ -225,7 +235,7 @@
 .rf-plan-sidebar__group[data-type="views"] .rf-plan-sidebar__link {
 	display: flex;
 	align-items: center;
-	gap: 0.25rem;
+	justify-content: space-between;
 }
 
 /* Main content offset when sidebar is present */
