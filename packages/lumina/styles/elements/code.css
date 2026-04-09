@@ -1,3 +1,14 @@
+/* Standalone code blocks in prose — the rf-codeblock wrapper (from Pre element
+   override) zeros the inner pre margin, so the wrapper itself carries spacing.
+   Inside codegroup the margin is removed by .rf-codegroup .rf-codeblock. */
+.rf-codeblock {
+	margin: 1.5rem 0;
+}
+
+.rf-codeblock > pre {
+	margin: 0;
+}
+
 /* Code wrapper — behavior-injected copy button for code blocks */
 .rf-code-wrapper {
 	position: relative;
