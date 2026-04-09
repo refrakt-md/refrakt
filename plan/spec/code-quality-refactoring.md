@@ -1,4 +1,4 @@
-{% spec id="SPEC-035" status="draft" tags="architecture, transform, runes, cli, content, sveltekit, behaviors" %}
+{% spec id="SPEC-036" status="draft" tags="architecture, transform, runes, cli, content, sveltekit, behaviors" %}
 
 # Code Quality Refactoring — Specification
 
