@@ -1,9 +1,5 @@
 import type { ElementOverrides } from './context.js';
-import Table from './elements/Table.svelte';
-import Pre from './elements/Pre.svelte';
 
-/** Base element overrides — functional enhancements for HTML elements */
-export const elements: ElementOverrides = {
-	'table': Table,
-	'pre': Pre,
-};
+/** Base element overrides — empty by default. User-defined overrides can be
+ *  registered via setElementOverrides(). */
+export const elements: ElementOverrides = {};

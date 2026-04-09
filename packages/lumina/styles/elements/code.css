@@ -1,7 +1,8 @@
-/* Standalone code blocks in prose — the rf-codeblock wrapper (from Pre element
-   override) zeros the inner pre margin, so the wrapper itself carries spacing.
-   Inside codegroup the margin is removed by .rf-codegroup .rf-codeblock. */
+/* Code block wrapper — the rf-codeblock div comes from the Markdoc fence node
+   schema at build time. Inside codegroup the margin is removed by
+   .rf-codegroup .rf-codeblock. */
 .rf-codeblock {
+	position: relative;
 	margin: 1.5rem 0;
 }
 
@@ -9,16 +10,8 @@
 	margin: 0;
 }
 
-/* Code wrapper — behavior-injected copy button for code blocks */
-.rf-code-wrapper {
-	position: relative;
-}
-
-.rf-code-wrapper > pre {
-	margin: 0;
-}
-
-.rf-copy-btn {
+/* Copy button — injected by the copy behavior at runtime */
+.rf-codeblock__copy {
 	position: absolute;
 	top: 0.5rem;
 	right: 0.5rem;
@@ -36,16 +29,16 @@
 	transition: opacity 150ms ease, background-color 150ms ease;
 }
 
-.rf-code-wrapper:hover .rf-copy-btn {
+.rf-codeblock:hover .rf-codeblock__copy {
 	opacity: 0.6;
 }
 
-.rf-copy-btn:hover {
+.rf-codeblock__copy:hover {
 	opacity: 1 !important;
 	background: rgba(255, 255, 255, 0.1);
 }
 
-.rf-copy-btn--copied {
+.rf-codeblock__copy--copied {
 	opacity: 1 !important;
 	color: var(--rf-color-success, #4ade80);
 }

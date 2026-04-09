@@ -1,25 +1,12 @@
-import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import { isTag, makeTag } from '@refrakt-md/transform';
+import type { RendererNode } from '@refrakt-md/types';
 
 /**
  * Apply HTML-adapter-specific tree transforms before rendering.
  *
- * Currently:
- * - Wraps bare `<table>` elements in `<div class="rf-table-wrapper">` to match
- *   Lumina's responsive table styling (packages/lumina/styles/elements/table.css)
+ * Table wrapping and code block structure are now handled by Markdoc node
+ * schemas in @refrakt-md/runes, so this function is a passthrough.
+ * Retained for API compatibility and future extensibility.
  */
 export function applyHtmlTransforms(node: RendererNode): RendererNode {
-	if (!isTag(node)) return node;
-
-	// Recursively transform children first
-	const children = node.children.map(applyHtmlTransforms);
-
-	// Wrap top-level <table> elements in a wrapper div
-	if (node.name === 'table') {
-		return makeTag('div', { class: 'rf-table-wrapper' }, [
-			{ ...node, children },
-		]);
-	}
-
-	return { ...node, children };
+	return node;
 }

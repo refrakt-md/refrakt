@@ -411,7 +411,7 @@ Your theme needs adapter-specific exports so it can be used with a particular ad
 
 #### SvelteKit
 
-Create `svelte/index.ts` to re-export element overrides and behaviors from theme-base:
+Create `svelte/index.ts` to re-export adapter utilities from theme-base:
 
 ```typescript
 export { elements } from '@refrakt-md/svelte';
@@ -419,7 +419,7 @@ export { behaviors } from '@refrakt-md/svelte';
 export { registry } from '@refrakt-md/svelte';
 ```
 
-The element overrides provide enhanced rendering for standard HTML elements like `<table>` and `<pre>`. The behaviors action wires up progressive enhancement. The registry is empty by default but available as an extension point if you need custom Svelte components for specific runes.
+The `elements` export is empty by default but available as an extension point for user-defined element overrides (table and code block wrapping is handled by Markdoc node schemas in `@refrakt-md/runes`). The `behaviors` action wires up progressive enhancement (including copy-to-clipboard on code blocks). The `registry` is empty by default but available if you need custom Svelte components for specific runes.
 
 #### HTML
 

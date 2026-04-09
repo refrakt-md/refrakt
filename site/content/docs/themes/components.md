@@ -113,10 +113,9 @@ Runes using this pattern include Chart, Map, Diagram, Comparison, Embed, Testimo
 
 ## Element overrides
 
-Standard HTML elements like `<table>` and `<pre>` sometimes need additional structure (e.g., a scrollable wrapper for wide tables, or a copy-to-clipboard button on code blocks). How this is handled depends on the adapter:
+Standard HTML elements like `<table>` and `<pre>` get additional structure (e.g., a scrollable wrapper for wide tables, a header with language label on code blocks) from Markdoc node schemas in `@refrakt-md/runes`. This happens in the shared, framework-agnostic schema layer so the output is SSR-correct regardless of adapter. The copy-to-clipboard button on code blocks is handled by `@refrakt-md/behaviors` (progressive enhancement).
 
-- The **SvelteKit adapter** uses Svelte component overrides that wrap the element. See [SvelteKit adapter — Element overrides](/docs/adapters/sveltekit).
-- The **HTML adapter** applies tree transforms during rendering (e.g., wrapping `<table>` in a `.rf-table-wrapper` div). See [HTML adapter](/docs/adapters/html).
+The element override system still exists for user-defined overrides — themes can register custom Svelte components for any HTML element via the `elements` export from `@refrakt-md/svelte`.
 
 ## Component override interface
 

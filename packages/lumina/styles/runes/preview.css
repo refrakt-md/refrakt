@@ -128,9 +128,9 @@
 	margin: 0;
 	border-radius: 0;
 }
-.rf-preview__source .rf-codeblock,
-.rf-preview__source .rf-code-wrapper {
+.rf-preview__source .rf-codeblock {
 	border-radius: 0;
+	margin: 0;
 }
 
 /* Source tabs (data-source panels) */
@@ -138,6 +138,7 @@
 	display: flex;
 	gap: 0;
 	background: var(--rf-color-surface);
+	border-radius: var(--rf-radius-lg);
 }
 .rf-preview__source-tab {
 	padding: 0.5rem 1rem;

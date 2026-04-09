@@ -357,14 +357,12 @@
 		page-break-inside: avoid;
 	}
 
-	.rf-copy-btn { display: none; }
+	.rf-codeblock__copy { display: none; }
 }
 
 /* Copy-to-clipboard */
 
-.rf-code-wrapper { position: relative; }
-
-.rf-copy-btn {
+.rf-codeblock__copy {
 	position: absolute;
 	top: 0.25rem;
 	right: 0.25rem;
@@ -383,6 +381,6 @@
 	transition: opacity 0.15s ease;
 }
 
-.rf-code-wrapper:hover .rf-copy-btn { opacity: 1; }
-.rf-copy-btn:hover { color: #333; border-color: #999; }
-.rf-copy-btn--copied { color: #22863a; border-color: #22863a; }
+.rf-codeblock:hover .rf-codeblock__copy { opacity: 1; }
+.rf-codeblock__copy:hover { color: #333; border-color: #999; }
+.rf-codeblock__copy--copied { color: #22863a; border-color: #22863a; }

@@ -102,8 +102,8 @@ In addition to the engine, also provides:
 
 The adapter handles element-level concerns and rendering:
 
-- **SvelteKit** (`@refrakt-md/svelte`) — Renderer component, element overrides (table/pre wrappers), component registry, behaviors action. See the [SvelteKit adapter](/docs/adapters/sveltekit) page.
-- **HTML** (`@refrakt-md/html`) — Pure HTML rendering with automatic tree transforms (table wrapping). See the [HTML adapter](/docs/adapters/html) page.
+- **SvelteKit** (`@refrakt-md/svelte`) — Renderer component, component registry, behaviors action, user-extensible element overrides. See the [SvelteKit adapter](/docs/adapters/sveltekit) page.
+- **HTML** (`@refrakt-md/html`) — Pure HTML rendering. See the [HTML adapter](/docs/adapters/html) page.
 
 ### Your theme package (e.g., `@refrakt-md/lumina`)
 

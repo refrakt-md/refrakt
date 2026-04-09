@@ -46,7 +46,7 @@ function makePageData(overrides: Partial<LayoutPageData> = {}): LayoutPageData {
 }
 
 describe('applyHtmlTransforms', () => {
-	it('wraps <table> elements in a .rf-table-wrapper div', () => {
+	it('is a passthrough (table/code wrapping is now in Markdoc node schemas)', () => {
 		const table = makeTag('table', { class: 'data' }, [
 			makeTag('tr', {}, [
 				makeTag('td', {}, ['Cell']),
@@ -54,35 +54,9 @@ describe('applyHtmlTransforms', () => {
 		]);
 		const result = applyHtmlTransforms(table) as any;
 
-		expect(result.name).toBe('div');
-		expect(result.attributes.class).toBe('rf-table-wrapper');
-		expect(result.children).toHaveLength(1);
-		expect(result.children[0].name).toBe('table');
-		expect(result.children[0].attributes.class).toBe('data');
-	});
-
-	it('does not wrap non-table elements', () => {
-		const div = makeTag('div', { class: 'content' }, [
-			makeTag('p', {}, ['Text']),
-		]);
-		const result = applyHtmlTransforms(div) as any;
-
-		expect(result.name).toBe('div');
-		expect(result.attributes.class).toBe('content');
-	});
-
-	it('recursively transforms nested tables', () => {
-		const tree = makeTag('div', {}, [
-			makeTag('table', {}, [
-				makeTag('tr', {}, [makeTag('td', {}, ['A'])]),
-			]),
-		]);
-		const result = applyHtmlTransforms(tree) as any;
-
-		// The div should contain a wrapper div, not a bare table
-		expect(result.children[0].name).toBe('div');
-		expect(result.children[0].attributes.class).toBe('rf-table-wrapper');
-		expect(result.children[0].children[0].name).toBe('table');
+		// applyHtmlTransforms is now a no-op; wrapping happens in node schemas
+		expect(result.name).toBe('table');
+		expect(result.attributes.class).toBe('data');
 	});
 
 	it('passes through string nodes unchanged', () => {
@@ -114,11 +88,14 @@ describe('renderPage', () => {
 		expect(html).toContain('<p>Hello world</p>');
 	});
 
-	it('wraps tables in output', () => {
+	it('renders pre-wrapped tables from node schema', () => {
 		const theme = makeTheme({ layouts: {} });
+		// Table wrapping now comes from the Markdoc node schema, not renderPage
 		const page = makePageData({
-			renderable: makeTag('table', {}, [
-				makeTag('tr', {}, [makeTag('td', {}, ['Cell'])]),
+			renderable: makeTag('div', { class: 'rf-table-wrapper' }, [
+				makeTag('table', {}, [
+					makeTag('tr', {}, [makeTag('td', {}, ['Cell'])]),
+				]),
 			]),
 		});
 		const html = renderPage({ theme, page });

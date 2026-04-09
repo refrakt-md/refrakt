@@ -170,6 +170,6 @@ Desc.
 		expect(indexHtml).toContain('behaviors.js');
 		// The bundled JS contains the copy behavior's class name
 		const behaviorsJs = fs.readFileSync(path.join(outDir, 'behaviors.js'), 'utf-8');
-		expect(behaviorsJs).toContain('rf-copy-btn');
+		expect(behaviorsJs).toContain('rf-codeblock__copy');
 	});
 });
