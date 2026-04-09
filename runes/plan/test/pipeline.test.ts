@@ -307,8 +307,8 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 		const milestonePage = processed[0];
 		const progress = findTag(milestonePage.renderable, t => t.attributes.class === 'rf-milestone__progress');
 		expect(progress).toBeDefined();
-		expect(progress!.attributes['data-checked']).toBe('2');
-		expect(progress!.attributes['data-total']).toBe('5');
+		expect(progress!.attributes['data-progress-checked']).toBe('2');
+		expect(progress!.attributes['data-progress-total']).toBe('5');
 	});
 
 	it('does not inject backlog when no items assigned', () => {
