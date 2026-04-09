@@ -49,8 +49,20 @@ function setupSlider(el: HTMLElement): CleanupFn {
 	panels[0].style.position = 'absolute';
 	panels[0].style.inset = '0';
 	panels[0].style.zIndex = '2';
+	// Force a compositing layer so clip-path correctly clips iframes on
+	// mobile WebKit (without this, iframes can paint outside the clip).
+	panels[0].style.willChange = 'clip-path';
 	panels[1].style.position = 'relative';
 	panels[1].style.zIndex = '1';
+
+	// Ensure iframes inside juxtapose panels load eagerly — lazy-loaded
+	// iframes behind a higher-z-index panel may never trigger loading on
+	// mobile browsers that use simple visibility heuristics.
+	for (const panel of panels) {
+		for (const iframe of panel.querySelectorAll<HTMLIFrameElement>('iframe[loading="lazy"]')) {
+			iframe.loading = 'eager';
+		}
+	}
 
 	// Create divider
 	const divider = document.createElement('div');
@@ -173,6 +185,7 @@ function setupSlider(el: HTMLElement): CleanupFn {
 			panel.style.inset = '';
 			panel.style.zIndex = '';
 			panel.style.clipPath = '';
+			panel.style.willChange = '';
 		}
 	};
 }
@@ -268,6 +281,13 @@ function setupFade(el: HTMLElement): CleanupFn {
 	panels[1].style.opacity = '0';
 	panels[1].style.transition = `opacity ${duration}ms ease`;
 
+	// Ensure iframes load eagerly (hidden panel may not trigger lazy load)
+	for (const panel of panels) {
+		for (const iframe of panel.querySelectorAll<HTMLIFrameElement>('iframe[loading="lazy"]')) {
+			iframe.loading = 'eager';
+		}
+	}
+
 	let locked = false;
 
 	const onEnter = () => {
@@ -332,8 +352,16 @@ function setupAuto(el: HTMLElement): CleanupFn {
 	panels[0].style.position = 'absolute';
 	panels[0].style.inset = '0';
 	panels[0].style.zIndex = '2';
+	panels[0].style.willChange = 'clip-path';
 	panels[1].style.position = 'relative';
 	panels[1].style.zIndex = '1';
+
+	// Ensure iframes load eagerly (same rationale as slider)
+	for (const panel of panels) {
+		for (const iframe of panel.querySelectorAll<HTMLIFrameElement>('iframe[loading="lazy"]')) {
+			iframe.loading = 'eager';
+		}
+	}
 
 	function setClip(pct: number) {
 		el.style.setProperty('--jx-position', String(pct));
@@ -397,6 +425,7 @@ function setupAuto(el: HTMLElement): CleanupFn {
 			panel.style.inset = '';
 			panel.style.zIndex = '';
 			panel.style.clipPath = '';
+			panel.style.willChange = '';
 		}
 	};
 }
