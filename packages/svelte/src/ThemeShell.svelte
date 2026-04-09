@@ -139,7 +139,7 @@
 		{@const tree = layoutTransform(layoutEntry, page, 'rf')}
 		<Renderer node={tree} />
 	{:else if layoutEntry}
-		<svelte:component this={layoutEntry}
+		<layoutEntry
 			title={page.title}
 			description={page.description}
 			frontmatter={page.frontmatter}
@@ -148,6 +148,6 @@
 			pages={page.pages}
 			url={page.url}
 			headings={page.headings}
-		/>
+		></layoutEntry>
 	{/if}
 {/key}

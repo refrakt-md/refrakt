@@ -40,7 +40,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 		if (_initPromise) return _initPromise;
 		_initPromise = (async () => {
 			// Dynamically import theme transform module
-			const themeModule = await import(config.theme + '/transform');
+			const themeModule = await import(/* @vite-ignore */ config.theme + '/transform');
 			const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
 			const icons = {

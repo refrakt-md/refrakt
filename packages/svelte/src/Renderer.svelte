@@ -121,6 +121,8 @@
 		</ElementOverride>
 	{:else if node.name === 'svg'}
 		{@html svgToHtml(node)}
+	{:else if VOID_ELEMENTS.has(node.name)}
+		<svelte:element this={node.name} {...htmlAttrs(node.attributes)} />
 	{:else}
 		<svelte:element this={node.name} {...htmlAttrs(node.attributes)}>
 			{#each node.children as child}

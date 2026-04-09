@@ -46,7 +46,7 @@ export interface MergedPackageResult {
 export async function loadRunePackage(npmPackageName: string): Promise<LoadedPackage> {
 	let mod: Record<string, unknown>;
 	try {
-		mod = await import(npmPackageName);
+		mod = await import(/* @vite-ignore */ npmPackageName);
 	} catch (err) {
 		throw new Error(
 			`Failed to load community rune package "${npmPackageName}": ${(err as Error).message}\n` +
@@ -343,7 +343,7 @@ export async function loadLocalRunes(
 		const absPath = resolve(projectRoot, modulePath);
 		let mod: Record<string, unknown>;
 		try {
-			mod = await import(absPath);
+			mod = await import(/* @vite-ignore */ absPath);
 		} catch (err) {
 			throw new Error(
 				`Failed to load local rune "${name}" from "${modulePath}": ${(err as Error).message}`
