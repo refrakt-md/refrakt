@@ -12,6 +12,7 @@ const contentDir = path.resolve(config.contentDir);
 const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
 let _transform: ((tree: any) => any) | null = null;
+let _hl: { (tree: any): any; css: string } | null = null;
 let _theme: { manifest: any; layouts: any } | null = null;
 let _communityTags: Record<string, Schema> | undefined;
 
@@ -70,6 +71,13 @@ export async function getTransform() {
 export async function getTheme() {
 	await init();
 	return _theme!;
+}
+
+export async function getHighlightTransform() {
+	if (_hl) return _hl;
+	const { createHighlightTransform } = await import('@refrakt-md/highlight');
+	_hl = await createHighlightTransform((config as any).highlight);
+	return _hl;
 }
 
 export async function getSite() {

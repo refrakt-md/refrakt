@@ -1,21 +1,21 @@
 ---
-import { getTransform, getSite, getTheme } from '../setup';
+import { getTransform, getSite, getTheme, getHighlightTransform } from '../setup';
 import { renderPage, buildSeoHead } from '@refrakt-md/astro';
 import type { RendererNode } from '@refrakt-md/types';
 
 export async function getStaticPaths() {
-	const [transform, site] = await Promise.all([getTransform(), getSite()]);
+	const [transform, site, hl] = await Promise.all([getTransform(), getSite(), getHighlightTransform()]);
 
 	return site.pages
 		.filter((p: any) => !p.route.draft)
 		.map((page: any) => {
-			const renderable = transform(page.renderable) as RendererNode;
+			const renderable = hl(transform(page.renderable)) as RendererNode;
 			const regions: Record<string, any> = {};
 			for (const [name, region] of page.layout.regions.entries()) {
 				regions[name] = {
 					name: region.name,
 					mode: region.mode,
-					content: region.content.map((c: any) => transform(c) as RendererNode),
+					content: region.content.map((c: any) => hl(transform(c)) as RendererNode),
 				};
 			}
 
@@ -42,12 +42,13 @@ export async function getStaticPaths() {
 						headings: page.headings,
 					},
 					seo: page.seo,
+					highlightCss: hl.css,
 				},
 			};
 		});
 }
 
-const { page, seo } = Astro.props;
+const { page, seo, highlightCss } = Astro.props;
 const theme = await getTheme();
 const html = renderPage({ theme, page });
 const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
@@ -62,6 +63,7 @@ const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
 	{head.title && <title>{head.title}</title>}
 	<Fragment set:html={head.metaTags} />
 	<Fragment set:html={head.jsonLd} />
+	{highlightCss && <style set:html={highlightCss} />}
 </head>
 <body>
 	<Fragment set:html={html} />
