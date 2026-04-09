@@ -10,7 +10,6 @@
 	gap: 2rem;
 }
 .rf-typography__specimen {
-	border: 1px solid var(--rf-color-border, #e5e7eb);
 	border-radius: var(--rf-radius-lg, 12px);
 	padding: 1.5rem;
 }
