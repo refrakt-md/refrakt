@@ -55,6 +55,7 @@ export default defineConfig({
 The integration:
 
 - Reads `refrakt.config.json` for package configuration
+- Injects theme CSS automatically (from the configured `theme` field)
 - Configures SSR `noExternal` for refrakt packages (ensures they're bundled correctly)
 - Watches the content directory for changes in dev mode
 
@@ -83,8 +84,9 @@ By default all runes render through the identity transform and `renderToHtml()`.
 
 ```
 src/
+├── setup.ts                  # Theme + transform initialization (reads refrakt.config.json)
 ├── pages/
-│   └── [...slug].astro      # Catch-all route for content pages
+│   └── [...slug].astro       # Catch-all route for content pages
 ├── layouts/                  # (optional) custom Astro layouts
 content/
 ├── docs/
@@ -96,54 +98,120 @@ astro.config.mjs
 refrakt.config.json
 ```
 
+## Setup Module
+
+The `src/setup.ts` module reads `refrakt.config.json` and initializes the theme, transform pipeline, and content loader. It dynamically imports the theme's manifest and layouts based on the `theme` field in your config — so the page template never hardcodes a specific theme package:
+
+{% codegroup labels="src/setup.ts" %}
+
+```typescript
+import { loadContent } from '@refrakt-md/content';
+import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import type { RefraktConfig } from '@refrakt-md/types';
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+
+const config: RefraktConfig = JSON.parse(
+  readFileSync(path.resolve('refrakt.config.json'), 'utf-8')
+);
+const contentDir = path.resolve(config.contentDir);
+const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+
+let _transform, _theme, _communityTags;
+
+async function init() {
+  if (_transform) return;
+
+  const [themeModule, manifestModule, layoutsModule] = await Promise.all([
+    import(config.theme + '/transform'),
+    import(config.theme + '/manifest'),
+    import(config.theme + '/layouts'),
+  ]);
+
+  _theme = {
+    manifest: { ...manifestModule.default, routeRules },
+    layouts: layoutsModule.layouts,
+  };
+
+  const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+  // ... community package merging (if config.packages is set) ...
+  _transform = createTransform(themeConfig);
+}
+
+export async function getTransform() { await init(); return _transform; }
+export async function getTheme() { await init(); return _theme; }
+export async function getSite() {
+  await init();
+  return loadContent(contentDir, '/', {}, _communityTags);
+}
+```
+
+{% /codegroup %}
+
+The key detail: `config.theme` (e.g. `"@refrakt-md/lumina"`) drives the dynamic imports for `/manifest`, `/layouts`, and `/transform`. Switching themes in `refrakt.config.json` is all you need — no import changes in your page files.
+
 ## Content Loading
 
-Use Astro's `getStaticPaths()` to generate pages from your content directory. The `createRefraktLoader()` from `@refrakt-md/content` handles config loading, community package merging, theme assembly, and caching automatically:
+Use Astro's `getStaticPaths()` to generate pages from your content directory. The setup module handles config loading, community package merging, theme assembly, and caching automatically:
 
 {% codegroup labels="src/pages/[...slug].astro" %}
 
 ```astro
 ---
-import { createRefraktLoader } from '@refrakt-md/content';
-import manifest from '@refrakt-md/lumina/manifest';
-import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
-import { renderPage, buildSeoHead, hasInteractiveRunes } from '@refrakt-md/astro';
-
-const loader = createRefraktLoader();
+import { getTransform, getSite, getTheme } from '../setup';
+import { renderPage, buildSeoHead } from '@refrakt-md/astro';
+import type { RendererNode } from '@refrakt-md/types';
 
 export async function getStaticPaths() {
-  const site = await loader.getSite();
-  const transform = await loader.getTransform();
+  const [transform, site] = await Promise.all([getTransform(), getSite()]);
 
-  return site.pages.map((page) => {
-    const renderable = transform(page.content);
-    return {
-      params: { slug: page.url === '/' ? undefined : page.url.slice(1) },
-      props: {
-        page: {
-          renderable,
-          regions: page.regions,
-          title: page.title,
-          url: page.url,
-          pages: site.pages.map(p => ({
-            url: p.url,
-            title: p.title,
-            draft: p.draft ?? false,
-          })),
-          frontmatter: page.frontmatter,
-          headings: page.headings,
+  return site.pages
+    .filter((p) => !p.route.draft)
+    .map((page) => {
+      const renderable = transform(page.renderable) as RendererNode;
+      const regions = {};
+      for (const [name, region] of page.layout.regions.entries()) {
+        regions[name] = {
+          name: region.name,
+          mode: region.mode,
+          content: region.content.map((c) => transform(c) as RendererNode),
+        };
+      }
+
+      const pages = site.pages
+        .filter((p) => !p.route.draft)
+        .map((p) => ({
+          url: p.route.url,
+          title: p.frontmatter.title ?? '',
+          draft: false,
+        }));
+
+      const slug = page.route.url === '/' ? undefined : page.route.url.slice(1);
+
+      return {
+        params: { slug },
+        props: {
+          page: {
+            renderable,
+            regions,
+            title: page.frontmatter.title ?? '',
+            url: page.route.url,
+            pages,
+            frontmatter: page.frontmatter,
+            headings: page.headings,
+          },
+          seo: page.seo,
         },
-        seo: page.seo,
-      },
-    };
-  });
+      };
+    });
 }
 
 const { page, seo } = Astro.props;
+const theme = await getTheme();
 const html = renderPage({ theme, page });
 const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
-const needsBehaviors = hasInteractiveRunes(page.renderable);
+const needsBehaviors = html.includes('data-layout-behaviors') || html.includes('data-rune=');
 const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
 ---
 
@@ -195,18 +263,14 @@ For convenience, `@refrakt-md/astro` provides a `BaseLayout.astro` component tha
 ```astro
 ---
 import BaseLayout from '@refrakt-md/astro/BaseLayout.astro';
-import { createRefraktLoader } from '@refrakt-md/content';
-import manifest from '@refrakt-md/lumina/manifest';
-import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
-
-const loader = createRefraktLoader();
+import { getSite, getTransform, getTheme } from '../setup';
 
 export async function getStaticPaths() {
   // ... same content loading as above
 }
 
 const { page, seo } = Astro.props;
+const theme = await getTheme();
 ---
 
 <BaseLayout {theme} {page} {seo} />
@@ -235,31 +299,7 @@ BaseLayout accepts named slots for customization:
 
 ## CSS Injection
 
-Import the theme CSS in your Astro layout or page. For Lumina:
-
-```astro
----
-// In your layout or page component
----
-<style is:global>
-  @import '@refrakt-md/lumina';
-</style>
-```
-
-Or add it to your `astro.config.mjs`:
-
-```javascript
-export default defineConfig({
-  integrations: [refrakt()],
-  vite: {
-    css: {
-      preprocessorOptions: {
-        // Theme CSS is handled by the integration
-      }
-    }
-  }
-});
-```
+The `refrakt()` integration automatically injects CSS from the theme specified in `refrakt.config.json`. No manual CSS imports are needed in your page templates — changing the `theme` field in your config is sufficient.
 
 ## SEO
 
@@ -285,12 +325,11 @@ Behaviors are interactive enhancements for runes like tabs, accordions, and data
 
 ### Conditional Loading
 
-Use `hasInteractiveRunes()` to check whether a page needs behavior scripts:
+After rendering the page HTML, check whether it contains interactive runes or layout behaviors:
 
 ```typescript
-import { hasInteractiveRunes } from '@refrakt-md/astro';
-
-const needsBehaviors = hasInteractiveRunes(page.renderable);
+const html = renderPage({ theme, page });
+const needsBehaviors = html.includes('data-layout-behaviors') || html.includes('data-rune=');
 ```
 
 ### View Transitions

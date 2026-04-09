@@ -16,7 +16,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 	return {
 		name: '@refrakt-md/astro',
 		hooks: {
-			'astro:config:setup'({ config, updateConfig, addWatchFile }) {
+			'astro:config:setup'({ config, updateConfig, addWatchFile, injectScript }) {
 				const refraktConfig = loadRefraktConfig(configPath);
 
 				const noExternal = [
@@ -36,6 +36,9 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						},
 					},
 				});
+
+				// Inject theme CSS so page templates don't hardcode a theme package
+				injectScript('page-ssr', `import '${refraktConfig.theme}';`);
 
 				// Watch content directory for changes in dev mode
 				const contentDir = resolve(config.root.pathname, refraktConfig.contentDir);

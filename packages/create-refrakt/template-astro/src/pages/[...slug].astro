@@ -1,12 +1,7 @@
 ---
-import '@refrakt-md/lumina';
-import { getTransform, getSite, routeRules } from '../setup';
-import manifest from '@refrakt-md/lumina/manifest';
-import { layouts } from '@refrakt-md/lumina/layouts';
+import { getTransform, getSite, getTheme } from '../setup';
 import { renderPage, buildSeoHead } from '@refrakt-md/astro';
 import type { RendererNode } from '@refrakt-md/types';
-
-const theme = { manifest: { ...manifest, routeRules }, layouts };
 
 export async function getStaticPaths() {
 	const [transform, site] = await Promise.all([getTransform(), getSite()]);
@@ -53,6 +48,7 @@ export async function getStaticPaths() {
 }
 
 const { page, seo } = Astro.props;
+const theme = await getTheme();
 const html = renderPage({ theme, page });
 const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
 const needsBehaviors = html.includes('data-layout-behaviors') || html.includes('data-rune=');

@@ -9,15 +9,26 @@ import * as path from 'node:path';
 const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
 const contentDir = path.resolve(config.contentDir);
 
-export const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
 let _transform: ((tree: any) => any) | null = null;
+let _theme: { manifest: any; layouts: any } | null = null;
 let _communityTags: Record<string, Schema> | undefined;
 
 async function init() {
 	if (_transform) return;
 
-	const themeModule = await import(config.theme + '/transform');
+	const [themeModule, manifestModule, layoutsModule] = await Promise.all([
+		import(config.theme + '/transform'),
+		import(config.theme + '/manifest'),
+		import(config.theme + '/layouts'),
+	]);
+
+	_theme = {
+		manifest: { ...manifestModule.default, routeRules },
+		layouts: layoutsModule.layouts,
+	};
+
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
 	let transformConfig = themeConfig;
@@ -50,6 +61,11 @@ async function init() {
 export async function getTransform() {
 	await init();
 	return _transform!;
+}
+
+export async function getTheme() {
+	await init();
+	return _theme!;
 }
 
 export async function getSite() {
