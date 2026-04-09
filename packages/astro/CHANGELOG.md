@@ -4,7 +4,18 @@
 
 ### Patch Changes
 
-- Fix Vite dev server warnings (deprecated svelte:component, dynamic imports, void elements), fix gallery responsive behavior, fix pipeline hooks for community packages, fix Astro adapter (manifest imports, layouts, sandbox rendering, syntax highlighting), remove table/pre element overrides in favor of Markdoc node schemas, and improve form rune styling.
+- Fix Vite dev server warnings: deprecated svelte:component, dynamic imports, void elements
+- Fix gallery responsive behavior: reset margin, columns, and gap at breakpoints
+- Fix pipeline hooks: unwrap LoadedPackage to RunePackage for community packages
+- Fix Astro adapter: manifest JSON import, layouts compilation, sandbox rendering
+- Add syntax highlighting to Astro template
+- Derive Astro theme from config instead of hardcoding lumina
+- Remove table/pre element overrides in favor of Markdoc node schemas
+- Fix runes broken by table/codeblock wrapper divs
+- Improve form rune styling: surface background, full width, inline alignment
+- Fix figure rune image extraction
+- Align mark.svg dark mode color with Lumina palette
+- Add SVG favicon using existing mark.svg logo
 - Updated dependencies
   - @refrakt-md/content@0.9.4
   - @refrakt-md/behaviors@0.9.4
