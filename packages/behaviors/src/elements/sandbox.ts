@@ -5,10 +5,8 @@ import { readHiddenContent } from './helpers.js';
 const FRAMEWORK_PRESETS: Record<string, string[]> = {
 	tailwind: [
 		// Set config BEFORE loading CDN so it's available during init.
-		// Also declare dark variant via CSS for Tailwind v4+ compatibility.
 		'<script>window.tailwind = { config: { darkMode: "class" } }<\/script>',
 		'<script src="https://cdn.tailwindcss.com"><\/script>',
-		'<style type="text/tailwindcss">@custom-variant dark (&:where(.dark, .dark *));</style>',
 	],
 	bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
 	bulma: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1/css/bulma.min.css">'],
@@ -223,13 +221,12 @@ ${renderedContent}
 
 		if (framework && FRAMEWORK_PRESETS[framework]) {
 			if (framework === 'tailwind' && tokens) {
-				// Config before CDN + CSS variant for v4 compat (same as preset)
+				// Config before CDN so it's available during init
 				const tokenConfig = this.buildTailwindTokenConfig(tokens);
 				const jsConfig = tokenConfig
 					|| '<script>window.tailwind = { config: { darkMode: "class" } }<\\/script>';
 				tags.push(jsConfig);
 				tags.push('<script src="https://cdn.tailwindcss.com"><\\/script>');
-				tags.push('<style type="text/tailwindcss">@custom-variant dark (&:where(.dark, .dark *));</style>');
 			} else {
 				tags.push(...FRAMEWORK_PRESETS[framework]);
 			}
