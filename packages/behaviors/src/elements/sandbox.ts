@@ -152,8 +152,8 @@ export class RfSandbox extends SafeHTMLElement {
 	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
 		theme = theme || RfContext.theme;
-		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark"'
-			: theme === 'light' ? ' data-theme="light"'
+		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark" style="color-scheme:dark"'
+			: theme === 'light' ? ' data-theme="light" style="color-scheme:light"'
 			: '';
 
 		// Strip data-source attributes from rendered content (authoring markers only)
@@ -193,11 +193,14 @@ ${renderedContent}
       if (theme === 'dark') {
         html.classList.add('dark');
         html.setAttribute('data-theme', 'dark');
+        html.style.colorScheme = 'dark';
       } else if (theme === 'light') {
         html.classList.remove('dark');
         html.setAttribute('data-theme', 'light');
+        html.style.colorScheme = 'light';
       } else {
         html.removeAttribute('data-theme');
+        html.style.colorScheme = '';
         html.classList.toggle('dark', mq.matches);
       }
     }
