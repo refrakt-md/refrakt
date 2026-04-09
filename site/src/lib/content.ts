@@ -8,7 +8,7 @@ import type { HighlightTransform } from '@refrakt-md/highlight';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import type { RefraktConfig } from '@refrakt-md/types';
+import type { RefraktConfig, RunePackage } from '@refrakt-md/types';
 
 const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
 const contentDir = path.resolve(config.contentDir);
@@ -19,6 +19,7 @@ const icons = {
 
 let _hl: HighlightTransform | null = null;
 let _communityTags: Record<string, Schema> | undefined;
+let _communityPackages: RunePackage[] | undefined;
 let _transform: ((tree: any) => any) | null = null;
 let _loader: SiteLoader | null = null;
 
@@ -45,6 +46,7 @@ export async function getTransform(): Promise<(tree: any) => any> {
 	const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
 
 	_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+	_communityPackages = merged.packages;
 
 	const { config: assembledConfig } = assembleThemeConfig({
 		coreConfig: luminaConfig,
@@ -79,6 +81,7 @@ export async function getSite(): Promise<Site> {
 			basePath: '/',
 			icons,
 			additionalTags: communityTags,
+			packages: _communityPackages,
 			variables: { version: __REFRAKT_VERSION__ },
 			dev: import.meta.env.DEV,
 		});

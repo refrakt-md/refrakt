@@ -12,11 +12,11 @@ const PLAN_RUNE_TYPES = new Set(['spec', 'work', 'bug', 'decision', 'milestone']
 
 /** Fields to extract from each rune type's property meta tags */
 const RUNE_FIELDS: Record<string, string[]> = {
-	spec: ['id', 'status', 'version', 'supersedes', 'tags'],
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'tags'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'tags'],
-	decision: ['id', 'status', 'date', 'supersedes', 'tags'],
-	milestone: ['name', 'status', 'target'],
+	spec: ['id', 'status', 'version', 'supersedes', 'tags', 'modified'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'tags', 'modified'],
+	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'tags', 'modified'],
+	decision: ['id', 'status', 'date', 'supersedes', 'tags', 'modified'],
+	milestone: ['name', 'status', 'target', 'modified'],
 };
 
 function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): void {
@@ -102,6 +102,24 @@ function extractIdReferences(tag: InstanceType<typeof Tag>): Array<{ id: string;
 		}
 	}
 	return refs;
+}
+
+/** Parse a modified date value (ISO string or numeric timestamp) to a sortable number */
+function parseModifiedDate(value: unknown): number {
+	if (value == null) return 0;
+	if (typeof value === 'number') return value;
+	const str = String(value);
+	const parsed = Date.parse(str);
+	return isNaN(parsed) ? 0 : parsed;
+}
+
+/** Format a modified date value to an ISO date string */
+function formatModifiedDate(value: unknown): string {
+	if (value == null) return '';
+	if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+	const ts = typeof value === 'number' ? value : Date.parse(String(value));
+	if (isNaN(ts)) return '';
+	return new Date(ts).toISOString().slice(0, 10);
 }
 
 // ─── Sentiment maps (matching rune configs in config.ts) ───
@@ -723,19 +741,27 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 		...data.milestoneEntities,
 	];
 
-	// Sort by mtime descending (entities with mtime data)
-	const withMtime = allEntities
-		.filter(e => e.data.mtime != null && Number(e.data.mtime) > 0)
-		.sort((a, b) => Number(b.data.mtime) - Number(a.data.mtime))
+	// Sort by modified date descending (entities with modification data)
+	const withModified = allEntities
+		.filter(e => {
+			const mod = e.data.modified ?? e.data.mtime;
+			if (mod == null) return false;
+			if (typeof mod === 'string') return mod.length > 0;
+			return Number(mod) > 0;
+		})
+		.sort((a, b) => {
+			const aDate = parseModifiedDate(a.data.modified ?? a.data.mtime);
+			const bDate = parseModifiedDate(b.data.modified ?? b.data.mtime);
+			return bDate - aDate;
+		})
 		.slice(0, limit);
 
-	const entries = withMtime.map(e => {
+	const entries = withModified.map(e => {
 		const id = String(e.data.id ?? e.id);
 		const title = String(e.data.title ?? '');
 		const status = String(e.data.status ?? '');
 		const type = e.type;
-		const mtime = Number(e.data.mtime);
-		const dateStr = new Date(mtime).toISOString().slice(0, 10);
+		const dateStr = formatModifiedDate(e.data.modified ?? e.data.mtime);
 
 		const innerChildren = [
 			new Tag('time', { class: 'rf-plan-activity__date' }, [dateStr]),
