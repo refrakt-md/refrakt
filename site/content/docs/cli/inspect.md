@@ -49,6 +49,7 @@ refrakt inspect --list --json
 |------|-------------|
 | `--list` | List all available runes |
 | `--json` | Output as JSON instead of HTML |
+| `--interface` | Show the component override interface (props and slots) for a rune |
 | `--items <n>` | Number of repeated children to generate (default: 3) |
 | `--theme <name>` | Theme to use (default: base) |
 | `--<attr>=<value>` | Set a rune attribute (e.g., `--type=warning`) |
@@ -86,12 +87,28 @@ By default, the audit auto-detects your CSS directory. To specify one explicitly
 refrakt inspect hint --audit --css packages/my-theme/styles/runes
 ```
 
+### Metadata and dimension audits
+
+Beyond CSS coverage, `inspect` can audit metadata and universal theming dimensions across your rune configs:
+
+```shell
+# Audit metadata dimensions (which runes expose metadata meta tags)
+refrakt inspect --all --audit-meta
+
+# Audit universal theming dimensions (density, sections, media slots, etc.)
+refrakt inspect --all --audit-dimensions
+```
+
+These audits show which runes participate in each dimension and whether the corresponding CSS surfaces exist in your theme.
+
 ### Audit options
 
 | Flag | Description |
 |------|-------------|
 | `--audit` | Enable CSS coverage checking |
-| `--all` | Audit all runes (use with `--audit`) |
+| `--audit-meta` | Audit metadata dimension coverage across rune configs |
+| `--audit-dimensions` | Audit universal theming dimension coverage across rune configs |
+| `--all` | Audit all runes (use with `--audit`, `--audit-meta`, or `--audit-dimensions`) |
 | `--css <dir>` | CSS directory for audit (default: auto-detected) |
 
 ## Typical workflow

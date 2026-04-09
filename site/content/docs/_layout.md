@@ -4,6 +4,8 @@
 ## Guide
 
 - getting-started
+- configuration
+- content
 
 ## CLI
 

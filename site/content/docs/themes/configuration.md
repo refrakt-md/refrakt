@@ -273,6 +273,117 @@ Timeline: {
 
 See [Dimensions](/docs/themes/dimensions#sequence) for CSS patterns.
 
+### parent
+
+Groups a rune under a parent rune in the block editor palette. Does not affect rendering.
+
+```typescript
+AccordionItem: { block: 'accordion-item', parent: 'Accordion' }
+```
+
+### defaultWidth
+
+Sets the default page grid width for the rune. The engine emits `data-width` on the root element.
+
+```typescript
+Hero: { block: 'hero', defaultWidth: 'full' }
+```
+
+| Value | Behavior |
+|-------|----------|
+| `'content'` | Standard content width (default) |
+| `'wide'` | Wider than content, narrower than full |
+| `'full'` | Edge-to-edge |
+
+### childDensity
+
+Imposes a density level on all nested runes. Useful for runes that display children in a compact context.
+
+```typescript
+Grid: { block: 'grid', childDensity: 'compact' }
+Backlog: { block: 'backlog', childDensity: 'minimal' }
+```
+
+### editHints
+
+Declares how named sections are edited in the block editor. Keys are `data-name` values; values are edit mode hints.
+
+```typescript
+Hint: {
+  block: 'hint',
+  editHints: { icon: 'none', title: 'inline' },
+}
+```
+
+| Hint | Behavior |
+|------|----------|
+| `'inline'` | Inline text editing |
+| `'link'` | Link editing |
+| `'code'` | Code editing |
+| `'image'` | Image picker |
+| `'icon'` | Icon picker |
+| `'none'` | Not editable (generated content) |
+
+### rootAttributes
+
+Extra attributes set on the root element unconditionally.
+
+```typescript
+Sandbox: { block: 'sandbox', rootAttributes: { 'data-interactive': 'true' } }
+```
+
+### projection
+
+Declarative tree reshaping — hide, group, or relocate children before structural injection. This is an advanced feature for runes that need to rearrange their content tree.
+
+```typescript
+Comparison: {
+  block: 'comparison',
+  projection: {
+    hide: ['meta'],
+    group: { name: 'items', match: 'ComparisonItem' },
+    relocate: { target: 'header', ref: 'title' },
+  },
+}
+```
+
+### slots
+
+Ordered slot names for structure assembly. When present, structure entries are assigned to slots and rendered in slot order, enabling predictable output regardless of config declaration order.
+
+```typescript
+Recipe: {
+  block: 'recipe',
+  slots: ['meta', 'media', 'content'],
+  structure: {
+    meta: { tag: 'div', slot: 'meta', order: 0, ... },
+    media: { tag: 'div', slot: 'media', order: 1, ... },
+  },
+}
+```
+
+### Advanced modifier options
+
+Modifiers support additional fields beyond `source` and `default`:
+
+| Property | Description |
+|----------|-------------|
+| `noBemClass` | When `true`, skips BEM modifier class generation — only the data attribute is emitted |
+| `valueMap` | Maps modifier values before emitting (e.g., `{ 'GET': 'read', 'POST': 'write' }`) |
+| `mapTarget` | Custom data attribute name for the mapped value (instead of the default) |
+
+```typescript
+modifiers: {
+  method: {
+    source: 'meta',
+    default: 'GET',
+    valueMap: { GET: 'read', POST: 'write', PUT: 'write', DELETE: 'danger' },
+    mapTarget: 'intent',
+  },
+}
+// Emits: data-method="GET" data-intent="read"
+```
+
 ### postTransform
 
 A programmatic escape hatch that runs after all declarative processing. Receives the fully transformed node and resolved modifier values.
@@ -332,6 +443,16 @@ interface StructureEntry {
   metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
   metaRank?: 'primary' | 'secondary';
   sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+
+  // Slot assignment
+  slot?: string;             // Assign to a named slot (see RuneConfig.slots)
+  order?: number;            // Sort order within the slot
+
+  // Repetition
+  repeat?: {                 // Generate N copies of this element
+    count: { fromModifier: string };  // Modifier providing the count
+    filled?: { fromModifier: string }; // Modifier providing how many are "filled"
+  };
 
   // Attributes
   attrs?: Record<string, string | { fromModifier: string }>;
@@ -411,6 +532,24 @@ The `attrs` field sets attributes on the injected element. Values can be literal
 }
 // → <a href="https://example.com" class="rf-event__register">Register</a>
 ```
+
+### Repeated elements
+
+The `repeat` field generates multiple copies of a structure element — useful for star ratings, progress dots, and similar patterns.
+
+```typescript
+{
+  tag: 'span', ref: 'star',
+  repeat: {
+    count: { fromModifier: 'maxRating' },
+    filled: { fromModifier: 'rating' },
+  },
+}
+// With maxRating=5, rating=3:
+// Produces 5 <span> elements, first 3 with data-filled="true"
+```
+
+Each generated element gets `data-filled="true"` or `data-filled="false"` based on whether its index is less than the filled count.
 
 ### Text transforms
 

@@ -15,9 +15,14 @@ The fastest way to get started is to scaffold a project:
 npx create-refrakt my-site
 ```
 
-This creates a SvelteKit site with Lumina theme. For a pure HTML site with no framework, use `--target html`:
+This creates a SvelteKit site with Lumina theme. You can target any supported adapter:
 
 ```shell
+npx create-refrakt my-site --target sveltekit  # default
+npx create-refrakt my-site --target astro
+npx create-refrakt my-site --target next
+npx create-refrakt my-site --target nuxt
+npx create-refrakt my-site --target eleventy
 npx create-refrakt my-site --target html
 ```
 
