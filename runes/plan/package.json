@@ -22,6 +22,10 @@
     "./cli-plugin": {
       "types": "./dist/cli-plugin.d.ts",
       "default": "./dist/cli-plugin.js"
+    },
+    "./scanner": {
+      "types": "./dist/scanner.d.ts",
+      "default": "./dist/scanner.js"
     }
   },
   "files": [
