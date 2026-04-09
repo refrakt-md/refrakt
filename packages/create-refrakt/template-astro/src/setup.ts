@@ -18,14 +18,18 @@ let _communityTags: Record<string, Schema> | undefined;
 async function init() {
 	if (_transform) return;
 
-	const [themeModule, manifestModule, layoutsModule] = await Promise.all([
+	const [themeModule, layoutsModule] = await Promise.all([
 		import(config.theme + '/transform'),
-		import(config.theme + '/manifest'),
 		import(config.theme + '/layouts'),
 	]);
 
+	// Manifest is a JSON file — resolve its path and read directly
+	const { createRequire: cr } = await import('node:module');
+	const manifestPath = cr(import.meta.url).resolve(config.theme + '/manifest');
+	const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+
 	_theme = {
-		manifest: { ...manifestModule.default, routeRules },
+		manifest: { ...manifest, routeRules },
 		layouts: layoutsModule.layouts,
 	};
 

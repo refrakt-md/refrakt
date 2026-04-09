@@ -750,10 +750,16 @@ export const coreConfig: ThemeConfig = {
 					fallbackChildren.push(child);
 				}
 
-				// Add hidden content div for web component
+				// Wrap fallback and source in <template> tags (inert/invisible).
+				// Using <template> instead of <div> avoids HTML parser issues:
+				// when <rf-sandbox> is inside <p>, block elements like <pre> or
+				// <div> cause <p> to auto-close, pushing children out of the
+				// custom element. <template> is parsed but never rendered.
 				const children = [
-					...fallbackChildren,
-					makeTag('div', { 'data-content': 'source', style: 'display:none' }, [content]),
+					...(fallbackChildren.length > 0
+						? [makeTag('template', { 'data-content': 'fallback' }, fallbackChildren)]
+						: []),
+					makeTag('template', { 'data-content': 'source' }, [content]),
 				];
 
 				return {
