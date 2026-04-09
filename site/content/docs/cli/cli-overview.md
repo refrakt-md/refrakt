@@ -19,7 +19,7 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 |---------|---------|
 | [inspect](/docs/cli/inspect) | Preview identity transform output and audit CSS coverage |
 | [write](/docs/cli/write) | Generate Markdown content using AI |
-| [extract](/docs/cli/extract) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
+| [extract](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
 | [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
 | [scaffold-css](/docs/cli/theme-tools#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
 | [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
@@ -61,6 +61,7 @@ Community packages can extend the CLI with additional subcommands. These are ava
 
 | Package | Command | Purpose |
 |---------|---------|---------|
+| [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
 | [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
 
 Run `refrakt --help` to see all available commands and options.

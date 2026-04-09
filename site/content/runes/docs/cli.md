@@ -1,13 +1,17 @@
 ---
-title: refrakt docs extract
-description: Generate API reference documentation from TypeScript or Python source code
+title: Docs CLI Commands
+description: Command reference for refrakt docs extract — generate API reference docs from source code
 ---
 
-# refrakt docs extract
+# Docs CLI Commands
+
+The `@refrakt-md/docs` package extends the `refrakt` CLI with the `docs extract` subcommand for generating API reference documentation from source code.
+
+## refrakt docs extract
 
 Extracts exported symbols from TypeScript or Python source code and generates Markdown documentation using the `{% symbol %}` rune. Each exported function, class, interface, or type gets its own `.md` file, plus a `_layout.md` for navigation.
 
-## Basic usage
+### Basic usage
 
 ```shell
 refrakt docs extract ./src -o ./content/api
@@ -15,7 +19,7 @@ refrakt docs extract ./src -o ./content/api
 
 This scans `./src` for source files, extracts all exported symbols, and writes one Markdown file per symbol to `./content/api/`.
 
-## Language detection
+### Language detection
 
 The language is auto-detected from file extensions and the presence of `tsconfig.json`. You can override it explicitly:
 
@@ -39,7 +43,7 @@ refrakt docs extract ./lib -o ./content/api --lang python
 
 {% /tabs %}
 
-## Source links
+### Source links
 
 Add clickable links back to source code in the generated docs:
 
@@ -47,7 +51,7 @@ Add clickable links back to source code in the generated docs:
 refrakt docs extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
 ```
 
-## Custom section title
+### Custom section title
 
 By default the generated `_layout.md` uses "API Reference" as the navigation title. Override it with:
 
@@ -55,7 +59,7 @@ By default the generated `_layout.md` uses "API Reference" as the navigation tit
 refrakt docs extract ./src -o ./content/api --title "SDK Reference"
 ```
 
-## CI validation
+### CI validation
 
 Use `--validate` to check that generated files are up to date without overwriting them:
 
@@ -65,7 +69,7 @@ refrakt docs extract ./src -o ./content/api --validate
 
 This exits with code 1 if any files are missing or stale, making it suitable for CI pipelines that enforce documentation freshness.
 
-## What gets generated
+### What gets generated
 
 For a project with exported symbols `createClient`, `Config`, and `Response`:
 
@@ -81,7 +85,7 @@ If two symbols produce the same slug (e.g., a `Config` type and a `Config` inter
 
 Files skipped during extraction: `.d.ts`, `.test.ts`, `.spec.ts`.
 
-## Options
+### Options
 
 | Flag | Short | Description |
 |------|-------|-------------|

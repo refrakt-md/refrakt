@@ -67,6 +67,7 @@
 ## Docs
 
 - docs
+- docs/cli
 - api
 - symbol
 - changelog

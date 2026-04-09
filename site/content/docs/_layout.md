@@ -12,7 +12,6 @@
 - cli-overview
 - inspect
 - write
-- extract
 - theme-tools
 
 ## Themes
