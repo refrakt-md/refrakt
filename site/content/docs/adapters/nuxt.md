@@ -107,29 +107,17 @@ my-site/
 
 ### Server Utility
 
-Create a server utility that loads and transforms content at build time or on each request:
+Create a server utility using `createRefraktLoader` — it handles config loading, community package merging, theme assembly, and caching automatically:
 
 {% codegroup labels="server/utils/refrakt.ts" %}
 
 ```typescript
-import { loadContent, type SiteContent } from '@refrakt-md/content';
-import { createTransform } from '@refrakt-md/transform';
-import { createHighlightTransform } from '@refrakt-md/highlight';
+import { createRefraktLoader } from '@refrakt-md/content';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
-import { resolve } from 'node:path';
 
-let siteContent: SiteContent | null = null;
-
-export async function getContent() {
-  if (!siteContent) {
-    siteContent = await loadContent(resolve('./content'));
-  }
-  return siteContent;
-}
-
-export { theme };
+export const loader = createRefraktLoader();
+export const theme = { manifest, layouts };
 ```
 
 {% /codegroup %}
@@ -206,7 +194,7 @@ import { getContent, theme } from '~/server/utils/refrakt';
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? '';
   const url = '/' + slug;
-  const site = await getContent();
+  const site = await loader.getSite();
 
   const page = site.pages.find(p => p.route.url === url);
   if (!page) {

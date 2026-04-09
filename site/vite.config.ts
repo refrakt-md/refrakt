@@ -9,5 +9,5 @@ export default defineConfig({
 	define: {
 		__REFRAKT_VERSION__: JSON.stringify(runesPkg.version),
 	},
-	plugins: [sveltekit(), refrakt()],
+	plugins: [sveltekit(), refrakt({ variables: { version: '__REFRAKT_VERSION__' } })],
 });

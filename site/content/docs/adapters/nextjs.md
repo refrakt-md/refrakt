@@ -62,15 +62,12 @@ The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the 
 
 ## Content Loading
 
-Load content using `@refrakt-md/content` in a Server Component. Use `generateStaticParams` for static export:
+Load content using `createRefraktLoader` from `@refrakt-md/content` in a Server Component. It handles config loading, community package merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
 
 {% codegroup labels="app/[[...slug]]/page.tsx" %}
 
 ```typescript
-import { loadContent } from '@refrakt-md/content';
-import { createTransform } from '@refrakt-md/transform';
-import { createHighlightTransform } from '@refrakt-md/highlight';
-import { themeConfig } from '@refrakt-md/lumina/transform';
+import { createRefraktLoader } from '@refrakt-md/content';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
@@ -78,11 +75,10 @@ import { RefraktContent, buildUrlFromParams, buildMetadata, hasInteractiveRunes 
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { PageParams } from '@refrakt-md/next';
 
-// Cache the content loading at the module level
-const sitePromise = loadContent('./content');
+const loader = createRefraktLoader();
 
 export async function generateStaticParams() {
-  const site = await sitePromise;
+  const site = await loader.getSite();
   return site.pages
     .filter(p => !p.route.draft)
     .map(p => ({
@@ -93,7 +89,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<PageParams> }) {
   const resolvedParams = await params;
   const url = buildUrlFromParams(resolvedParams);
-  const site = await sitePromise;
+  const site = await loader.getSite();
   const page = site.pages.find(p => p.route.url === url);
   if (!page) return {};
   return buildMetadata({ title: page.frontmatter.title as string, seo: page.seo });
@@ -102,14 +98,14 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const resolvedParams = await params;
   const url = buildUrlFromParams(resolvedParams);
-  const site = await sitePromise;
+  const [site, transform, hl] = await Promise.all([
+    loader.getSite(),
+    loader.getTransform(),
+    loader.getHighlightTransform(),
+  ]);
   const page = site.pages.find(p => p.route.url === url);
   if (!page) return notFound();
 
-  const transform = createTransform(themeConfig);
-  const hl = await createHighlightTransform();
-
-  // Apply transforms to content
   const renderable = hl(transform(page.renderable));
   const pages = site.pages
     .filter(p => !p.route.draft)

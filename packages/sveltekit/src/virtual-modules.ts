@@ -7,25 +7,30 @@ export const VIRTUAL_IDS = {
 	theme: `${VIRTUAL_PREFIX}theme`,
 	tokens: `${VIRTUAL_PREFIX}tokens`,
 	config: `${VIRTUAL_PREFIX}config`,
+	content: `${VIRTUAL_PREFIX}content`,
 } as const;
 
 export function resolveVirtualId(id: string): string | undefined {
 	if (id === VIRTUAL_IDS.theme) return `${RESOLVED_PREFIX}theme`;
 	if (id === VIRTUAL_IDS.tokens) return `${RESOLVED_PREFIX}tokens`;
 	if (id === VIRTUAL_IDS.config) return `${RESOLVED_PREFIX}config`;
+	if (id === VIRTUAL_IDS.content) return `${RESOLVED_PREFIX}content`;
 	return undefined;
 }
 
-/** Build-time context for CSS tree-shaking */
+/** Build-time context for CSS tree-shaking and content module generation */
 export interface BuildContext {
 	isBuild: boolean;
 	usedCssBlocks?: Set<string>;
+	resolvedRoot: string;
+	/** Raw JS expressions for Markdoc variables (e.g., { version: '__REFRAKT_VERSION__' }) */
+	variables?: Record<string, string>;
 }
 
 export function loadVirtualModule(
 	id: string,
 	config: RefraktConfig,
-	buildCtx: BuildContext = { isBuild: false },
+	buildCtx: BuildContext = { isBuild: false, resolvedRoot: '' },
 ): string | undefined {
 	const theme = config.theme;
 
@@ -91,5 +96,39 @@ export function loadVirtualModule(
 		return `export default ${JSON.stringify(config)};`;
 	}
 
+	if (id === `${RESOLVED_PREFIX}content`) {
+		return generateContentModule(config, buildCtx);
+	}
+
 	return undefined;
+}
+
+function generateContentModule(config: RefraktConfig, buildCtx: BuildContext): string {
+	const configPath = buildCtx.resolvedRoot
+		? JSON.stringify(buildCtx.resolvedRoot + '/refrakt.config.json')
+		: JSON.stringify('./refrakt.config.json');
+
+	// Build variables object as a raw JS expression
+	let variablesExpr = 'undefined';
+	if (buildCtx.variables && Object.keys(buildCtx.variables).length > 0) {
+		const entries = Object.entries(buildCtx.variables)
+			.map(([key, value]) => `\t\t${JSON.stringify(key)}: ${value}`)
+			.join(',\n');
+		variablesExpr = `{\n${entries}\n\t}`;
+	}
+
+	return [
+		`import { createRefraktLoader } from '@refrakt-md/content';`,
+		``,
+		`const _loader = createRefraktLoader({`,
+		`\tconfigPath: ${configPath},`,
+		`\tvariables: ${variablesExpr},`,
+		`\tdev: import.meta.env.DEV,`,
+		`});`,
+		``,
+		`export const getSite = () => _loader.getSite();`,
+		`export const getTransform = () => _loader.getTransform();`,
+		`export const getHighlightTransform = () => _loader.getHighlightTransform();`,
+		`export const invalidateSite = () => _loader.invalidateSite();`,
+	].join('\n');
 }

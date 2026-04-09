@@ -16,6 +16,7 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/types',
 	'@refrakt-md/svelte',
 	'@refrakt-md/transform',
+	'@refrakt-md/highlight',
 ];
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {
@@ -201,7 +202,12 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		},
 
 		load(id: string) {
-			const buildCtx: BuildContext = { isBuild, usedCssBlocks };
+			const buildCtx: BuildContext = {
+				isBuild,
+				usedCssBlocks,
+				resolvedRoot,
+				variables: options.variables,
+			};
 			return loadVirtualModule(id, refraktConfig, buildCtx);
 		},
 

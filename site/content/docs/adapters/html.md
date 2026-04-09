@@ -118,27 +118,25 @@ cleanup();
 A complete build script that loads content, applies transforms, and writes static HTML:
 
 ```typescript
-import { loadContent } from '@refrakt-md/content';
+import { createRefraktLoader } from '@refrakt-md/content';
 import { renderFullPage } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
-import { createTransform, defaultLayout } from '@refrakt-md/transform';
-import { createHighlightTransform } from '@refrakt-md/highlight';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { defaultLayout } from '@refrakt-md/transform';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
+import manifest from '@refrakt-md/lumina/manifest';
+import { layouts } from '@refrakt-md/lumina/layouts';
 
-const config = JSON.parse(readFileSync('refrakt.config.json', 'utf-8'));
+const theme: HtmlTheme = { manifest, layouts: { default: defaultLayout } };
+const loader = createRefraktLoader();
 
 async function build() {
-  const themeModule = await import(config.theme + '/transform');
-  const transform = createTransform(themeModule.themeConfig);
-  const hl = await createHighlightTransform();
+  const [site, transform, hl] = await Promise.all([
+    loader.getSite(),
+    loader.getTransform(),
+    loader.getHighlightTransform(),
+  ]);
 
-  const theme: HtmlTheme = {
-    manifest: { /* from theme */ },
-    layouts: { default: defaultLayout },
-  };
-
-  const site = await loadContent(path.resolve(config.contentDir));
   const pages = site.pages
     .filter(p => !p.route.draft)
     .map(p => ({ url: p.route.url, title: p.frontmatter.title ?? '', draft: false }));

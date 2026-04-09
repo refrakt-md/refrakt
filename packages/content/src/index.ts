@@ -9,4 +9,5 @@ export { generateSitemap, type SitemapEntry } from './sitemap.js';
 export { collectRuneTypes, analyzeRuneUsage, type RuneUsageReport } from './analyze.js';
 export { getGitTimestamps, getStatTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 export { EntityRegistryImpl } from './registry.js';
+export { createRefraktLoader, type RefraktLoader, type RefraktLoaderOptions } from './refract-loader.js';
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';

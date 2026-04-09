@@ -60,6 +60,7 @@ The Vite plugin provides three virtual modules that decouple your application fr
 |---------------|----------|
 | `virtual:refrakt/theme` | The resolved theme object (component registry, layouts, manifest). Supports component overrides from `refrakt.config.json` |
 | `virtual:refrakt/tokens` | CSS import for the theme's design tokens. In production, includes only CSS for runes actually used |
+| `virtual:refrakt/content` | Content loading functions (`getSite`, `getTransform`, `getHighlightTransform`, `invalidateSite`). Handles config reading, community package loading, theme assembly, and caching automatically |
 | `virtual:refrakt/config` | The project configuration as a JSON module |
 
 ## SvelteTheme Interface
@@ -86,13 +87,66 @@ A SvelteKit refrakt.md site uses a catch-all route with server-side content load
 ```
 src/routes/
 ├── +layout.svelte           # Imports theme tokens CSS
-├── +layout.server.ts        # Loads site pages via loadContent()
 └── [...slug]/
     ├── +page.svelte         # ThemeShell + Renderer from virtual:refrakt/theme
-    └── +page.server.ts      # Loads page content, applies transforms
+    └── +page.server.ts      # Loads page content via virtual:refrakt/content
 ```
 
-The `+page.server.ts` loads content, serializes the tree, applies the identity transform and syntax highlighting, then passes the result to the Svelte Renderer.
+The `+page.server.ts` imports from `virtual:refrakt/content` to load content, apply the identity transform, and add syntax highlighting:
+
+```typescript
+import { getSite, getTransform, getHighlightTransform } from 'virtual:refrakt/content';
+import { serialize, serializeTree } from '@refrakt-md/svelte';
+import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+
+export const prerender = true;
+
+export const load: PageServerLoad = async ({ params }) => {
+  const [site, transform, hl] = await Promise.all([
+    getSite(),
+    getTransform(),
+    getHighlightTransform(),
+  ]);
+
+  const slug = params.slug || '';
+  const url = '/' + slug;
+  const page = site.pages.find(p => p.route.url === url);
+
+  if (!page || page.route.draft) {
+    error(404, 'Page not found');
+  }
+
+  const serialized = serializeTree(page.renderable);
+  const renderable = hl(transform(serialized));
+
+  return {
+    title: page.frontmatter.title ?? '',
+    description: page.frontmatter.description ?? '',
+    frontmatter: page.frontmatter,
+    renderable,
+    regions: Object.fromEntries(
+      [...page.layout.regions.entries()].map(([name, region]) => [
+        name,
+        { name: region.name, mode: region.mode, content: region.content.map(c => hl(transform(serialize(c)))) }
+      ])
+    ),
+    seo: page.seo,
+    url,
+    headings: page.headings,
+    highlightCss: hl.css,
+  };
+};
+
+export async function entries() {
+  const site = await getSite();
+  return site.pages
+    .filter(p => !p.route.draft)
+    .map(p => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));
+}
+```
+
+The virtual module handles all config loading, community package merging, theme assembly, and caching internally — no boilerplate needed.
 
 ## Renderer Component
 

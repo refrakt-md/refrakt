@@ -98,23 +98,23 @@ refrakt.config.json
 
 ## Content Loading
 
-Use Astro's `getStaticPaths()` to generate pages from your content directory. The `loadContent()` function from `@refrakt-md/content` loads all pages at build time:
+Use Astro's `getStaticPaths()` to generate pages from your content directory. The `createRefraktLoader()` from `@refrakt-md/content` handles config loading, community package merging, theme assembly, and caching automatically:
 
 {% codegroup labels="src/pages/[...slug].astro" %}
 
 ```astro
 ---
-import { loadContent } from '@refrakt-md/content';
-import { createTransform } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/runes';
+import { createRefraktLoader } from '@refrakt-md/content';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
 import { renderPage, buildSeoHead, hasInteractiveRunes } from '@refrakt-md/astro';
 
+const loader = createRefraktLoader();
+
 export async function getStaticPaths() {
-  const site = await loadContent('./content', '/');
-  const transform = createTransform(baseConfig);
+  const site = await loader.getSite();
+  const transform = await loader.getTransform();
 
   return site.pages.map((page) => {
     const renderable = transform(page.content);
@@ -195,12 +195,12 @@ For convenience, `@refrakt-md/astro` provides a `BaseLayout.astro` component tha
 ```astro
 ---
 import BaseLayout from '@refrakt-md/astro/BaseLayout.astro';
-import { loadContent } from '@refrakt-md/content';
-import { createTransform } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/runes';
+import { createRefraktLoader } from '@refrakt-md/content';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
+
+const loader = createRefraktLoader();
 
 export async function getStaticPaths() {
   // ... same content loading as above

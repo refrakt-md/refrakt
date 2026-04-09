@@ -12,3 +12,11 @@ declare module 'virtual:refrakt/config' {
 	const config: RefraktConfig;
 	export default config;
 }
+
+declare module 'virtual:refrakt/content' {
+	import type { Site } from '@refrakt-md/content';
+	export function getSite(): Promise<Site>;
+	export function getTransform(): Promise<(tree: any) => any>;
+	export function getHighlightTransform(): Promise<{ (tree: any): any; css: string }>;
+	export function invalidateSite(): void;
+}
