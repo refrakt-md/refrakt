@@ -38,6 +38,7 @@ export class RfSandbox extends SafeHTMLElement {
 	private iframe: HTMLIFrameElement | null = null;
 	private messageHandler: ((e: MessageEvent) => void) | null = null;
 	private themeCleanup: (() => void) | null = null;
+	private ancestorObserver: MutationObserver | null = null;
 
 	connectedCallback() {
 		const content = this.dataset.sourceContent || readHiddenContent(this, 'source');
@@ -49,7 +50,13 @@ export class RfSandbox extends SafeHTMLElement {
 		// data-color-scheme is set by tint-mode and locks the sandbox to a
 		// specific colour scheme, overriding the global RfContext.theme.
 		const localScheme = this.getAttribute('data-color-scheme') as 'light' | 'dark' | null;
-		const effectiveTheme = localScheme || RfContext.theme;
+
+		// Also check ancestors for data-color-scheme (e.g. preview canvas wrapper).
+		const ancestorScheme = !localScheme
+			? (this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute('data-color-scheme') as 'light' | 'dark' | null
+			: null;
+
+		const effectiveTheme = localScheme || ancestorScheme || RfContext.theme;
 
 		const tokensAttr = this.dataset.designTokens;
 		const tokens: DesignTokens | null = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
@@ -84,9 +91,31 @@ export class RfSandbox extends SafeHTMLElement {
 		this.iframe.addEventListener('load', () => sendTheme(effectiveTheme));
 
 		if (!localScheme) {
+			// Subscribe to global theme changes, but only apply when no
+			// ancestor colour scheme is active (e.g. inside a preview with
+			// an explicit theme toggle).
 			this.themeCleanup = RfContext.onThemeChange((theme) => {
-				sendTheme(theme);
+				if (!this.closest('[data-color-scheme]')) {
+					sendTheme(theme);
+				}
 			});
+
+			// Watch ancestors for data-color-scheme changes so the sandbox
+			// reacts to preview theme toggles and similar container-level
+			// colour scheme overrides.
+			this.ancestorObserver = new MutationObserver(() => {
+				const ancestor = this.closest('[data-color-scheme]');
+				const scheme = ancestor?.getAttribute('data-color-scheme');
+				sendTheme(scheme || RfContext.theme);
+			});
+			let el = this.parentElement;
+			while (el) {
+				this.ancestorObserver.observe(el, {
+					attributes: true,
+					attributeFilter: ['data-color-scheme'],
+				});
+				el = el.parentElement;
+			}
 		}
 
 		// Clear fallback content and insert iframe
@@ -101,6 +130,10 @@ export class RfSandbox extends SafeHTMLElement {
 		if (this.themeCleanup) {
 			this.themeCleanup();
 			this.themeCleanup = null;
+		}
+		if (this.ancestorObserver) {
+			this.ancestorObserver.disconnect();
+			this.ancestorObserver = null;
 		}
 		this.iframe = null;
 	}
