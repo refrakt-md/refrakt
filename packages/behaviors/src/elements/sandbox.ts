@@ -88,7 +88,18 @@ export class RfSandbox extends SafeHTMLElement {
 			this.iframe?.contentWindow?.postMessage({ type: 'rf-sandbox-theme', theme }, '*');
 		};
 
-		this.iframe.addEventListener('load', () => sendTheme(effectiveTheme));
+		// On load, re-check the ancestor scheme because the preview
+		// behavior may have set data-color-scheme on its canvas between
+		// iframe creation and the load event firing.
+		this.iframe.addEventListener('load', () => {
+			if (!localScheme) {
+				const ancestor = this.closest('[data-color-scheme]');
+				const current = ancestor?.getAttribute('data-color-scheme');
+				sendTheme(current || effectiveTheme);
+			} else {
+				sendTheme(effectiveTheme);
+			}
+		});
 
 		if (!localScheme) {
 			// Subscribe to global theme changes, but only apply when no
