@@ -368,7 +368,7 @@ if (hasInteractiveRunes(page.renderable)) {
 |---------|-----------|------|
 | **Rendering** | Svelte Renderer component walks the tree, dispatching to registered components | HTML string via `renderToHtml()`, injected with `v-html` |
 | **Component registry** | Maps rune `typeof` to Svelte components for custom rendering | No component registry — all runes render through identity transform |
-| **Element overrides** | `<table>` and `<pre>` enhanced via Svelte component overrides | No element overrides — use CSS or wrap with Vue components manually |
+| **Element overrides** | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic); element override system available for user-defined overrides | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic) |
 | **Behaviors** | `use:behaviors` Svelte action handles lifecycle | `onMounted` / `onBeforeUnmount` + route watcher |
 | **SEO** | `ThemeShell` injects into `<svelte:head>` | `buildRefraktHead` + `useHead()` |
 | **HMR** | Vite plugin with virtual modules and content HMR | Nuxt module watches content directory |

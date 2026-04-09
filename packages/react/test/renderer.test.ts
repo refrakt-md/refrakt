@@ -4,8 +4,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { makeTag } from '@refrakt-md/transform';
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import { Renderer } from '../src/Renderer.js';
-import { Table } from '../src/elements/Table.js';
-import { Pre } from '../src/elements/Pre.js';
 
 function render(node: RendererNode, components?: Record<string, any>, elements?: Record<string, any>): string {
 	return renderToStaticMarkup(createElement(Renderer, { node, components, elements }));
@@ -194,33 +192,4 @@ describe('React Renderer', () => {
 		expect(html).not.toContain('element-override');
 	});
 
-	// ─── Built-in element overrides ──────────────────────────────
-
-	it('Table element wraps in rf-table-wrapper', () => {
-		const node = makeTag('table', { class: 'my-table' }, [
-			makeTag('tr', {}, [makeTag('td', {}, ['cell'])]),
-		]);
-
-		const html = render(node, undefined, { table: Table });
-		expect(html).toContain('rf-table-wrapper');
-		expect(html).toContain('cell');
-	});
-
-	it('Pre element wraps code blocks in rf-codeblock', () => {
-		const node = makeTag('pre', { 'data-language': 'js', class: 'rf-code' }, [
-			makeTag('code', {}, ['const x = 1;']),
-		]);
-
-		const html = render(node, undefined, { pre: Pre });
-		expect(html).toContain('rf-codeblock');
-		expect(html).toContain('const x = 1;');
-	});
-
-	it('Pre element renders plain pre when not a code block', () => {
-		const node = makeTag('pre', {}, ['plain text']);
-
-		const html = render(node, undefined, { pre: Pre });
-		expect(html).not.toContain('rf-codeblock');
-		expect(html).toContain('plain text');
-	});
 });

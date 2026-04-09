@@ -89,9 +89,6 @@ const html = renderFullPage(
 | `baseUrl` | `string` | Base URL for Open Graph canonical URLs |
 | `seo` | `PageSeo` | SEO metadata (JSON-LD schemas and Open Graph tags) |
 
-## Tree Transforms
-
-The HTML adapter automatically wraps bare `<table>` elements in `<div class="rf-table-wrapper">` containers. This matches the responsive table behavior that the SvelteKit adapter achieves through element overrides.
 
 ## Client-Side Behaviors
 

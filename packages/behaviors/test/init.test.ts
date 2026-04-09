@@ -45,7 +45,7 @@ describe('initRuneBehaviors', () => {
 		const container = createContent();
 		initRuneBehaviors(container);
 
-		expect(container.querySelector('.rf-copy-btn')).not.toBeNull();
+		expect(container.querySelector('.rf-codeblock__copy')).not.toBeNull();
 	});
 
 	it('skips framework-managed elements (Alpine.js)', () => {
@@ -103,7 +103,7 @@ describe('initRuneBehaviors', () => {
 		expect(summaries[0].getAttribute('aria-expanded')).toBeNull();
 
 		// Copy should still work (it's not rune-specific)
-		expect(container.querySelector('.rf-copy-btn')).not.toBeNull();
+		expect(container.querySelector('.rf-codeblock__copy')).not.toBeNull();
 	});
 
 	it('returns cleanup function that removes all behaviors', () => {
@@ -111,14 +111,14 @@ describe('initRuneBehaviors', () => {
 		const cleanup = initRuneBehaviors(container);
 
 		// Verify behaviors are active
-		expect(container.querySelector('.rf-copy-btn')).not.toBeNull();
+		expect(container.querySelector('.rf-codeblock__copy')).not.toBeNull();
 		expect(container.querySelector('summary')?.getAttribute('aria-expanded')).toBe('false');
 
 		cleanup();
 
 		// Copy button should be removed
-		expect(container.querySelector('.rf-copy-btn')).toBeNull();
-		expect(container.querySelector('.rf-code-wrapper')).toBeNull();
+		expect(container.querySelector('.rf-codeblock__copy')).toBeNull();
+		expect(container.querySelector('.rf-codeblock')).toBeNull();
 	});
 
 	it('handles empty container', () => {
@@ -136,7 +136,7 @@ describe('initRuneBehaviors', () => {
 		`;
 
 		const cleanup = initRuneBehaviors(document);
-		expect(document.querySelector('.rf-copy-btn')).not.toBeNull();
+		expect(document.querySelector('.rf-codeblock__copy')).not.toBeNull();
 		cleanup();
 	});
 });

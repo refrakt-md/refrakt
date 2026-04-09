@@ -366,14 +366,6 @@ const { prepTime, difficulty, tag } = Astro.props;
 </div>
 ```
 
-### Built-in element overrides
-
-The adapter ships two element overrides:
-
-- `Table.astro` — wraps tables in a scrollable container
-- `Pre.astro` — enhances code blocks with copy-to-clipboard
-
-Import them from `@refrakt-md/astro/elements/Table.astro` and `@refrakt-md/astro/elements/Pre.astro`.
 
 ## Theme Integration
 

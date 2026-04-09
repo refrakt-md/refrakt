@@ -22,15 +22,12 @@
       "default": "./dist/index.js"
     },
     "./BaseLayout.astro": "./src/BaseLayout.astro",
-    "./RfRenderer.astro": "./src/RfRenderer.astro",
-    "./elements/Table.astro": "./src/elements/Table.astro",
-    "./elements/Pre.astro": "./src/elements/Pre.astro"
+    "./RfRenderer.astro": "./src/RfRenderer.astro"
   },
   "files": [
     "dist",
     "src/BaseLayout.astro",
-    "src/RfRenderer.astro",
-    "src/elements"
+    "src/RfRenderer.astro"
   ],
   "scripts": {
     "build": "tsc"

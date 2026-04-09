@@ -481,11 +481,7 @@
    Copy-to-clipboard button on code blocks
    -------------------------------------------------------------------------- */
 
-.rf-code-wrapper {
-	position: relative;
-}
-
-.rf-copy-btn {
+.rf-codeblock__copy {
 	position: absolute;
 	top: 0.25rem;
 	right: 0.25rem;
@@ -504,16 +500,16 @@
 	transition: opacity 0.15s ease;
 }
 
-.rf-code-wrapper:hover .rf-copy-btn {
+.rf-codeblock:hover .rf-codeblock__copy {
 	opacity: 1;
 }
 
-.rf-copy-btn:hover {
+.rf-codeblock__copy:hover {
 	color: var(--rf-color-text, #212529);
 	border-color: var(--rf-color-muted, #6c757d);
 }
 
-.rf-copy-btn--copied {
+.rf-codeblock__copy--copied {
 	color: var(--rf-color-success, #51cf66);
 	border-color: var(--rf-color-success, #51cf66);
 }

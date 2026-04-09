@@ -175,24 +175,14 @@ The `ThemeShell` component wraps the page and handles:
 
 ## Element Overrides
 
-Element overrides enhance standard HTML elements without requiring a `typeof` marker. The base theme overrides `<table>` and `<pre>` with Svelte components that add responsive wrappers and interactive features:
+Table wrapping and code block structure (scrollable containers, copy-to-clipboard buttons) are handled automatically by Markdoc node schemas in `@refrakt-md/runes`. This is framework-agnostic and SSR-correct — no adapter-specific element overrides are needed for these. The copy-to-clipboard button is progressively enhanced by `@refrakt-md/behaviors`.
 
-```typescript
-import type { ElementOverrides } from '@refrakt-md/svelte';
-
-export const elements: ElementOverrides = {
-  'table': Table,     // Scrollable container wrapper
-  'pre': Pre,         // Copy-to-clipboard button
-};
-```
-
-Element overrides receive `tag` and `children` props:
+The element override system is still available for user-defined overrides. You can replace any HTML element with a custom Svelte component by registering it with `setElementOverrides()`. Element overrides receive `tag` and `children` props:
 
 ```svelte
-<div class="table-wrapper">
-  <table {...tag.attributes}>
-    {@render children()}
-  </table>
+<div class="custom-image-wrapper">
+  <img {...tag.attributes} />
+  {@render children()}
 </div>
 ```
 

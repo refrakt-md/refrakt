@@ -60,9 +60,10 @@ export const fence: Schema = {
   transform(node, config) {
     const lang = node.attributes.language || 'shell';
 
-    return new Tag('pre', { 'data-language': lang }, [
+    const pre = new Tag('pre', { 'data-language': lang }, [
       new Tag('code', { 'data-language': lang }, [unescapeFenceContent(node.attributes.content)])
     ]);
+    return new Tag('div', { class: 'rf-codeblock' }, [pre]);
   }
 }
 
@@ -193,6 +194,15 @@ export const image: Schema = {
     return new Tag(this.render, attr, node.transformChildren(config));
   },
 };
+
+export const table: Schema = {
+  children: ['thead', 'tbody', 'tr'],
+  attributes: {},
+  transform(node, config) {
+    const tableTag = new Tag('table', node.transformAttributes(config), node.transformChildren(config));
+    return new Tag('div', { class: 'rf-table-wrapper' }, [tableTag]);
+  }
+}
 
 function jObjToTag(tagName: string, content: Record<string, any> | Record<string, any>[]): any {
   if (Array.isArray(content)) {

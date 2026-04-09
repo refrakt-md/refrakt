@@ -1,4 +1,4 @@
-import { heading, paragraph, fence, list, item, em, strong, text, link, hardbreak, image } from './nodes.js';
+import { heading, paragraph, fence, list, item, em, strong, text, link, hardbreak, image, table } from './nodes.js';
 
 export { Page } from './documents/page.js';
 import { DocPage } from './documents/doc.js';
@@ -512,7 +512,7 @@ export const nodes = {
   link,
   hardbreak,
   image,
-  table: Markdoc.nodes.table,
+  table,
   thead: Markdoc.nodes.thead,
   tbody: Markdoc.nodes.tbody,
   th: Markdoc.nodes.th,

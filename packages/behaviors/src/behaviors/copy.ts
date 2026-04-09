@@ -40,19 +40,21 @@ function getCopyText(pre: HTMLElement): string {
  * Copy-to-clipboard behavior for code blocks.
  *
  * Finds all `<pre>` elements within the container and injects a copy button.
- * Works on standalone code blocks and code blocks inside rune containers.
+ * If the `<pre>` is already inside an `.rf-codeblock` wrapper (from the Markdoc
+ * node schema), the button is added to the existing wrapper. Otherwise a new
+ * `.rf-codeblock` wrapper is created around the `<pre>`.
  */
 export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 	const pres = container.querySelectorAll<HTMLElement>('pre');
 	const cleanups: Array<() => void> = [];
 
 	for (const pre of pres) {
-		// Skip if already wrapped with a copy button (by this behavior or by a framework component)
-		if (pre.parentElement?.classList.contains('rf-code-wrapper')) continue;
-		if (pre.parentElement?.classList.contains('rf-codeblock')) continue;
+		// Skip if a copy button was already injected in this pre's wrapper
+		const parent = pre.parentElement;
+		if (parent?.classList.contains('rf-codeblock') && parent.querySelector(':scope > .rf-codeblock__copy')) continue;
 
 		const btn = document.createElement('button');
-		btn.className = 'rf-copy-btn';
+		btn.className = 'rf-codeblock__copy';
 		btn.type = 'button';
 		btn.setAttribute('aria-label', 'Copy code');
 		btn.appendChild(createIcon(COPY_ICON));
@@ -65,33 +67,46 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 				btn.innerHTML = '';
 				btn.appendChild(createIcon(CHECK_ICON));
 				btn.setAttribute('aria-label', 'Copied');
-				btn.classList.add('rf-copy-btn--copied');
+				btn.classList.add('rf-codeblock__copy--copied');
 				if (timeout) clearTimeout(timeout);
 				timeout = setTimeout(() => {
 					btn.innerHTML = '';
 					btn.appendChild(createIcon(COPY_ICON));
 					btn.setAttribute('aria-label', 'Copy code');
-					btn.classList.remove('rf-copy-btn--copied');
+					btn.classList.remove('rf-codeblock__copy--copied');
 				}, 2000);
 			});
 		};
 
 		btn.addEventListener('click', handler);
 
-		// Wrap pre in a relative container for positioning if not already wrapped
-		const wrapper = document.createElement('div');
-		wrapper.className = 'rf-code-wrapper';
-		pre.parentNode?.insertBefore(wrapper, pre);
-		wrapper.appendChild(pre);
-		wrapper.appendChild(btn);
+		const existingWrapper = pre.parentElement?.classList.contains('rf-codeblock') ? pre.parentElement : null;
 
-		cleanups.push(() => {
-			btn.removeEventListener('click', handler);
-			if (timeout) clearTimeout(timeout);
-			// Unwrap: move pre back out, remove wrapper and button
-			wrapper.parentNode?.insertBefore(pre, wrapper);
-			wrapper.remove();
-		});
+		if (existingWrapper) {
+			// Add button to the existing SSR wrapper
+			existingWrapper.appendChild(btn);
+
+			cleanups.push(() => {
+				btn.removeEventListener('click', handler);
+				if (timeout) clearTimeout(timeout);
+				btn.remove();
+			});
+		} else {
+			// Wrap pre in a new container
+			const wrapper = document.createElement('div');
+			wrapper.className = 'rf-codeblock';
+			pre.parentNode?.insertBefore(wrapper, pre);
+			wrapper.appendChild(pre);
+			wrapper.appendChild(btn);
+
+			cleanups.push(() => {
+				btn.removeEventListener('click', handler);
+				if (timeout) clearTimeout(timeout);
+				// Unwrap: move pre back out, remove wrapper and button
+				wrapper.parentNode?.insertBefore(pre, wrapper);
+				wrapper.remove();
+			});
+		}
 	}
 
 	return () => cleanups.forEach((fn) => fn());
