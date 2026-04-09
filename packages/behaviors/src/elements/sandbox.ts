@@ -78,7 +78,7 @@ export class RfSandbox extends SafeHTMLElement {
 			// ancestor colour scheme is active.
 			this.themeCleanup = RfContext.onThemeChange((theme) => {
 				if (!this.closest('[data-color-scheme]')) {
-					this.rebuildWithTheme(theme);
+					this.setTheme(theme);
 				}
 			});
 
@@ -88,7 +88,7 @@ export class RfSandbox extends SafeHTMLElement {
 			this.ancestorObserver = new MutationObserver(() => {
 				const ancestor = this.closest('[data-color-scheme]');
 				const scheme = ancestor?.getAttribute('data-color-scheme');
-				this.rebuildWithTheme(scheme || RfContext.theme);
+				this.setTheme(scheme || RfContext.theme);
 			});
 			let el = this.parentElement;
 			while (el) {
@@ -148,10 +148,10 @@ export class RfSandbox extends SafeHTMLElement {
 		this.replaceChildren(this.iframe);
 	}
 
-	/** Rebuild the iframe with a new theme. The theme is baked into the
-	 *  srcdoc HTML so that Tailwind CDN sees .dark on <html> at scan time
-	 *  and generates the correct dark: variant CSS from the start. */
-	private rebuildWithTheme(theme: string) {
+	/** Public API for containers (e.g. preview behavior) to set the
+	 *  sandbox theme. Rebuilds the iframe with the theme baked in. */
+	setTheme(theme: string) {
+		if (this._localScheme) return; // tint-mode locked, ignore
 		this.buildIframe(theme);
 	}
 
