@@ -14,7 +14,7 @@ Astro is an MPA-first framework, making it a natural fit for refrakt.md's conten
 ## Installation
 
 ```shell
-npm install @refrakt-md/astro @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/types @refrakt-md/behaviors @markdoc/markdoc
+npm install @refrakt-md/astro @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/types @refrakt-md/behaviors @refrakt-md/highlight @markdoc/markdoc
 ```
 
 Install your theme (Lumina is the default):
@@ -109,6 +109,7 @@ import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
 import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
 import type { RefraktConfig } from '@refrakt-md/types';
+import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
@@ -118,38 +119,84 @@ const config: RefraktConfig = JSON.parse(
 const contentDir = path.resolve(config.contentDir);
 const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
-let _transform, _theme, _communityTags;
+let _transform: ((tree: any) => any) | null = null;
+let _hl: { (tree: any): any; css: string } | null = null;
+let _theme: { manifest: any; layouts: any } | null = null;
+let _communityTags: Record<string, Schema> | undefined;
+let _packages: any[] | undefined;
 
 async function init() {
   if (_transform) return;
 
-  const [themeModule, manifestModule, layoutsModule] = await Promise.all([
+  const [themeModule, layoutsModule] = await Promise.all([
     import(config.theme + '/transform'),
-    import(config.theme + '/manifest'),
     import(config.theme + '/layouts'),
   ]);
 
+  // Manifest is a JSON file — resolve its path and read directly
+  const { createRequire: cr } = await import('node:module');
+  const manifestPath = cr(import.meta.url).resolve(config.theme + '/manifest');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+
   _theme = {
-    manifest: { ...manifestModule.default, routeRules },
+    manifest: { ...manifest, routeRules },
     layouts: layoutsModule.layouts,
   };
 
   const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
-  // ... community package merging (if config.packages is set) ...
-  _transform = createTransform(themeConfig);
+
+  let transformConfig = themeConfig;
+
+  const packageNames = config.packages ?? [];
+  if (packageNames.length > 0) {
+    const loaded = await Promise.all(
+      packageNames.map((name: string) => loadRunePackage(name))
+    );
+    const coreRuneNames = new Set(Object.keys(coreRunes));
+    const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+
+    _communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+    _packages = loaded.map((l: any) => l.pkg);
+
+    const { config: assembledConfig } = assembleThemeConfig({
+      coreConfig: themeConfig,
+      packageRunes: merged.themeRunes,
+      packageIcons: merged.themeIcons,
+      packageBackgrounds: merged.themeBackgrounds,
+      extensions: merged.extensions as any,
+      provenance: merged.provenance,
+    });
+
+    transformConfig = assembledConfig;
+  }
+
+  _transform = createTransform(transformConfig);
 }
 
-export async function getTransform() { await init(); return _transform; }
-export async function getTheme() { await init(); return _theme; }
+export async function getTransform() { await init(); return _transform!; }
+export async function getTheme() { await init(); return _theme!; }
+
+export async function getHighlightTransform() {
+  if (_hl) return _hl;
+  const { createHighlightTransform } = await import('@refrakt-md/highlight');
+  _hl = await createHighlightTransform((config as any).highlight);
+  return _hl;
+}
+
 export async function getSite() {
   await init();
-  return loadContent(contentDir, '/', {}, _communityTags);
+  return loadContent(contentDir, '/', {}, _communityTags, _packages);
 }
 ```
 
 {% /codegroup %}
 
-The key detail: `config.theme` (e.g. `"@refrakt-md/lumina"`) drives the dynamic imports for `/manifest`, `/layouts`, and `/transform`. Switching themes in `refrakt.config.json` is all you need — no import changes in your page files.
+The key details:
+
+- `config.theme` (e.g. `"@refrakt-md/lumina"`) drives the dynamic imports — switching themes in `refrakt.config.json` is all you need
+- The manifest is loaded via `createRequire().resolve()` + `readFileSync` because it's a JSON file (dynamic `import()` without a type attribute fails in Node ESM for JSON)
+- Community packages listed in `config.packages` are loaded, merged, and their `RunePackage` objects are passed to `loadContent()` so pipeline hooks (register, aggregate, post-process) run correctly
+- `getHighlightTransform()` lazily initializes `@refrakt-md/highlight` for syntax highlighting — the highlight transform runs after the identity transform
 
 ## Content Loading
 
@@ -159,23 +206,23 @@ Use Astro's `getStaticPaths()` to generate pages from your content directory. Th
 
 ```astro
 ---
-import { getTransform, getSite, getTheme } from '../setup';
+import { getTransform, getSite, getTheme, getHighlightTransform } from '../setup';
 import { renderPage, buildSeoHead } from '@refrakt-md/astro';
 import type { RendererNode } from '@refrakt-md/types';
 
 export async function getStaticPaths() {
-  const [transform, site] = await Promise.all([getTransform(), getSite()]);
+  const [transform, site, hl] = await Promise.all([getTransform(), getSite(), getHighlightTransform()]);
 
   return site.pages
     .filter((p) => !p.route.draft)
     .map((page) => {
-      const renderable = transform(page.renderable) as RendererNode;
+      const renderable = hl(transform(page.renderable)) as RendererNode;
       const regions = {};
       for (const [name, region] of page.layout.regions.entries()) {
         regions[name] = {
           name: region.name,
           mode: region.mode,
-          content: region.content.map((c) => transform(c) as RendererNode),
+          content: region.content.map((c) => hl(transform(c)) as RendererNode),
         };
       }
 
@@ -202,12 +249,13 @@ export async function getStaticPaths() {
             headings: page.headings,
           },
           seo: page.seo,
+          highlightCss: hl.css,
         },
       };
     });
 }
 
-const { page, seo } = Astro.props;
+const { page, seo, highlightCss } = Astro.props;
 const theme = await getTheme();
 const html = renderPage({ theme, page });
 const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
@@ -222,6 +270,7 @@ const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
   {head.title && <title>{head.title}</title>}
   <Fragment set:html={head.metaTags} />
   <Fragment set:html={head.jsonLd} />
+  {highlightCss && <style set:html={highlightCss} />}
 </head>
 <body>
   <Fragment set:html={html} />
@@ -300,6 +349,33 @@ BaseLayout accepts named slots for customization:
 ## CSS Injection
 
 The `refrakt()` integration automatically injects CSS from the theme specified in `refrakt.config.json`. No manual CSS imports are needed in your page templates — changing the `theme` field in your config is sufficient.
+
+## Syntax Highlighting
+
+The setup module exposes `getHighlightTransform()` which lazily initializes `@refrakt-md/highlight`. The highlight transform runs **after** the identity transform and produces CSS that must be injected into `<head>`:
+
+```typescript
+// In getStaticPaths():
+const [transform, site, hl] = await Promise.all([getTransform(), getSite(), getHighlightTransform()]);
+
+// Apply both transforms — identity first, then highlight:
+const renderable = hl(transform(page.renderable));
+
+// Pass the generated CSS as a prop:
+return { params: { slug }, props: { /* ... */ highlightCss: hl.css } };
+```
+
+In the page template, inject the CSS with a `<style>` tag:
+
+```astro
+{highlightCss && <style set:html={highlightCss} />}
+```
+
+Install the highlight package:
+
+```shell
+npm install @refrakt-md/highlight
+```
 
 ## SEO
 
