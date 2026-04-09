@@ -55,5 +55,5 @@ export { serialize, serializeTree } from './serialize.js';
 
 // Adapter utilities (shared across Astro, Nuxt, Next.js, Eleventy)
 export { renderPage, hasMatchingRunes, extractSeoData, seoToHtml, escapeAttr, CORE_PACKAGES } from './adapter.js';
-export type { AdapterTheme, RenderPageInput, OgMeta, PageSeo, SeoInput, SeoData } from './adapter.js';
+export type { AdapterTheme, RenderPageInput, OgMeta, PageSeo, SeoInput, SeoData, SeoToHtmlOptions } from './adapter.js';
 

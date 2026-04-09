@@ -57,6 +57,8 @@ export interface ThemeManifest {
 	 * Prefer defining routeRules in refrakt.config.json instead — the site config
 	 * takes precedence and keeps content structure independent of the theme. */
 	routeRules?: RouteRule[];
+	/** Human-readable site name for og:site_name and similar meta tags */
+	siteName?: string;
 	/** Rune-to-component mappings keyed by typeof name */
 	components: Record<string, ComponentDefinition>;
 	/** Behavior when a rune has no matching component */
