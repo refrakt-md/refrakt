@@ -560,11 +560,14 @@ function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData):
 		const pct = Math.round((totalChecked / totalCheckboxes) * 100);
 		children.push(new Tag('div', {
 			class: 'rf-milestone__progress',
-			'data-checked': String(totalChecked),
-			'data-total': String(totalCheckboxes),
+			'data-progress-checked': String(totalChecked),
+			'data-progress-total': String(totalCheckboxes),
 			'data-percent': String(pct),
 		}, [
-			new Tag('span', { class: 'rf-milestone__progress-label' }, [`Progress: ${fraction} criteria`]),
+			new Tag('div', { class: 'rf-milestone__progress-header' }, [
+				new Tag('span', { class: 'rf-milestone__progress-label' }, ['Progress']),
+				new Tag('span', { class: 'rf-milestone__progress-count' }, [`${fraction} criteria`]),
+			]),
 			new Tag('span', { class: 'rf-milestone__progress-bar', style: `--rf-progress: ${pct}%` }, []),
 		]));
 	}
