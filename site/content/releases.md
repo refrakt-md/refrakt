@@ -6,6 +6,10 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.9.4
+
+- Fix Vite dev server warnings (deprecated svelte:component, dynamic imports, void elements), fix gallery responsive behavior, fix pipeline hooks for community packages, fix Astro adapter (manifest imports, layouts, sandbox rendering, syntax highlighting), remove table/pre element overrides in favor of Markdoc node schemas, and improve form rune styling.
+
 ## v0.9.3 - April 9, 2026
 
 - Bug fixes, rune restyling, and new features since v0.9.2.

@@ -1,5 +1,15 @@
 # @refrakt-md/lumina
 
+## 0.9.4
+
+### Patch Changes
+
+- Fix Vite dev server warnings (deprecated svelte:component, dynamic imports, void elements), fix gallery responsive behavior, fix pipeline hooks for community packages, fix Astro adapter (manifest imports, layouts, sandbox rendering, syntax highlighting), remove table/pre element overrides in favor of Markdoc node schemas, and improve form rune styling.
+- Updated dependencies
+  - @refrakt-md/runes@0.9.4
+  - @refrakt-md/transform@0.9.4
+  - @refrakt-md/types@0.9.4
+
 ## 0.9.3
 
 ### Patch Changes

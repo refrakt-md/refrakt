@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/types",
   "description": "Shared type definitions for refrakt.md",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "type": "module",
   "license": "MIT",
   "repository": {
