@@ -110,19 +110,52 @@ Nearly identical `Frontmatter` interface and `parseFrontmatter()` function.
 
 **File:** `packages/transform/src/engine.ts:67-465`
 
-This function handles tint processing, background injection, universal modifiers (width, spacing, inset), density, sequence annotation, projection, inline styles, meta filtering, structure injection, and postTransform hooks — all in a single function with 5+ levels of nesting.
+This function handles tint processing, background injection, universal modifiers (width, spacing, inset), density, sequence annotation, projection, inline styles, meta filtering, structure injection, and postTransform hooks — all in a single function with 5+ levels of nesting. It takes 10 parameters and builds up 6+ intermediate state objects (`modifierClasses`, `modifierValues`, `tintMetaProps`, `tintDataAttrs`, `bgMetaProps`, `bgDataAttrs`) that are threaded through the entire function body.
 
-**Plan:** Extract into focused sub-functions:
+**Plan:** Introduce a `RuneTransformer` class. The current function signature passes 10 parameters — shared config (`icons`, `tints`, `backgrounds`, `allRunes`, `runeKeyMap`, `prefix`) that is identical across all runes on a page, plus per-invocation inputs (`tag`, `config`, `recurse`, `parentRune`). A class captures the shared config once in the constructor and turns each transformation phase into a private method that naturally shares state via instance fields:
 
-| Extracted function | Lines | Responsibility |
-|---|---|---|
-| `processTintModifiers()` | ~65 | Tint meta tag reading, token resolution, class generation |
-| `processBackgroundModifiers()` | ~90 | Background layer injection, gradient handling |
-| `processUniversalModifiers()` | ~40 | Width, spacing, inset, density |
-| `buildInlineStyles()` | ~30 | Style map to CSS custom property conversion |
-| `filterConsumedMeta()` | ~20 | Remove consumed meta tags from children |
+```typescript
+class RuneTransformer {
+  // Set once in constructor — shared across all rune transforms on a page
+  private readonly icons: Record<string, Record<string, string>>;
+  private readonly tints: Record<string, TintDefinition>;
+  private readonly backgrounds: Record<string, BgPresetDefinition>;
+  private readonly allRunes: Record<string, RuneConfig>;
+  private readonly runeKeyMap: Map<string, string>;
+  private readonly prefix: string;
 
-The top-level `transformRune()` orchestrates these and assembles the final result. Each sub-function is a pure function taking relevant inputs and returning modifications.
+  // Reset per transform() call — per-rune mutable state
+  private modifierClasses: string[] = [];
+  private modifierValues: Record<string, string> = {};
+  private tintMetaProps = new Set<string>();
+  private bgDataAttrs: Record<string, string> = {};
+
+  constructor(sharedConfig: TransformContext) { ... }
+
+  transform(tag: SerializedTag, config: RuneConfig, recurse: RecurseFn, parentRune?: string): SerializedTag {
+    this.resetState();
+    this.readModifiers(tag, config);
+    this.processTints(tag);
+    this.processBackgrounds(tag);
+    this.processUniversalModifiers(tag, config);
+    this.buildInlineStyles(tag, config);
+    const children = this.filterConsumedMeta(tag);
+    return this.assembleResult(tag, config, children);
+  }
+
+  private readModifiers(tag: SerializedTag, config: RuneConfig): void { ... }
+  private processTints(tag: SerializedTag): void { ... }
+  private processBackgrounds(tag: SerializedTag): void { ... }
+  private processUniversalModifiers(tag: SerializedTag, config: RuneConfig): void { ... }
+  private buildInlineStyles(tag: SerializedTag, config: RuneConfig): void { ... }
+  private filterConsumedMeta(tag: SerializedTag): RendererNode[] { ... }
+  private assembleResult(tag: SerializedTag, config: RuneConfig, children: RendererNode[]): SerializedTag { ... }
+}
+```
+
+The public API remains a function — `createTransform()` returns a transform function that internally creates a `RuneTransformer` instance. This keeps the change internal.
+
+**Why a class over standalone functions:** Extracting standalone sub-functions would still require passing 5+ parameters to each one, or creating an intermediate context object that is functionally equivalent to a class but without the encapsulation. The class makes the shared-config-vs-per-rune-state distinction explicit in the type system (constructor params vs method params). The codebase already validates this pattern with `EntityRegistryImpl`, `LayoutResolver`, and `ContentTree`.
 
 ### 2.2 `buildStructureElement()` — 122 lines
 
@@ -154,21 +187,108 @@ Nine validation blocks with 3+ levels of nesting.
 
 Handles toolbar creation, view toggling, viewport presets, theme toggling, source tabs, and rendering.
 
-**Plan:** Extract `createToolbar()`, `createViewControls()`, `createSourcePanel()`, `renderPreview()`.
+**Plan:** Convert to a `PreviewBehavior` class (see Section 2.8). Private methods: `createToolbar()`, `createViewControls()`, `createSourcePanel()`, `render()`. Instance fields replace the 6+ closure-captured state variables.
 
 ### 2.6 `breadcrumb` transform — 99 lines with triple-nested loops
 
 **File:** `packages/runes/src/tags/breadcrumb.ts:26-125`
 
-**Plan:** Extract `extractBreadcrumbItems()` and `createBreadcrumbItemTag()`.
+**Plan:** Extract `extractBreadcrumbItems()` and `createBreadcrumbItemTag()`. This is a stateless transform — functions are the right fit here.
 
 ### 2.7 `datatable` render — 75 lines
 
 **File:** `packages/behaviors/src/behaviors/datatable.ts:153-227`
 
-Filtering, sorting, pagination, and DOM updates in one function.
+Filtering, sorting, pagination, and DOM updates in one function. Closure captures 4 mutable state variables (`searchQuery`, `sortColumn`, `sortDirection`, `currentPage`).
 
-**Plan:** Extract `filterRows()`, `sortRows()`, `getVisibleRows()`, `updatePagination()`.
+**Plan:** Convert to a `DataTableBehavior` class (see Section 2.8). Instance fields replace closure state. Private methods: `filterRows()`, `sortRows()`, `getVisibleRows()`, `updatePagination()`, `render()`.
+
+### 2.8 Behavior base class pattern
+
+**Directory:** `packages/behaviors/src/behaviors/`
+
+Every behavior function follows the same shape: receive a DOM element, initialize state, bind event handlers, return a cleanup function. Currently this is implemented through closures that capture mutable state. The codebase already uses classes for the more complex Web Components in the same package (`RfAudio`, `RfMap`, `RfSandbox`, `RfNav`) — the behavior functions are the simpler siblings that would benefit from the same structure.
+
+**Affected behaviors and their closure-captured state:**
+
+| Behavior | File | Mutable closure state |
+|---|---|---|
+| `datatableBehavior` | `datatable.ts` | `searchQuery`, `sortColumn`, `sortDirection`, `currentPage` |
+| `previewBehavior` | `preview.ts` | view mode, viewport, theme, source tab, 6+ DOM refs |
+| `tabsBehavior` | `tabs.ts` | `activeIndex` |
+| `accordionBehavior` | `accordion.ts` | toggle states, exclusive mode |
+| `galleryBehavior` | `gallery.ts` | `currentIndex`, `overlay` |
+| `searchBehavior` | `search.ts` | `dialog`, `input`, `resultsContainer`, `activeIndex` |
+| `formBehavior` | `form.ts` | honeypot ref, status ref, action, method |
+| `mobileMenuBehavior` | `mobile-menu.ts` | panel state |
+
+**Plan:** Introduce an abstract `Behavior` base class:
+
+```typescript
+abstract class Behavior {
+  protected readonly el: HTMLElement;
+  private cleanups: (() => void)[] = [];
+
+  constructor(el: HTMLElement) {
+    this.el = el;
+    this.init();
+  }
+
+  protected abstract init(): void;
+
+  protected listen<K extends keyof HTMLElementEventMap>(
+    target: EventTarget,
+    event: K,
+    handler: (e: HTMLElementEventMap[K]) => void,
+    options?: AddEventListenerOptions
+  ): void {
+    target.addEventListener(event, handler as EventListener, options);
+    this.cleanups.push(() => target.removeEventListener(event, handler as EventListener, options));
+  }
+
+  destroy(): void {
+    this.cleanups.forEach(fn => fn());
+    this.cleanups = [];
+  }
+}
+```
+
+Each behavior becomes a subclass:
+
+```typescript
+class DataTableBehavior extends Behavior {
+  private searchQuery = '';
+  private sortColumn = '';
+  private sortDirection: 'asc' | 'desc' = 'asc';
+  private currentPage = 0;
+
+  protected init(): void {
+    this.listen(this.searchInput, 'input', this.onSearch);
+    // ...
+  }
+
+  private onSearch = (e: Event) => { ... };
+  private render(): void { ... }
+}
+```
+
+The exported behavior registration function wraps instantiation:
+
+```typescript
+export function datatableBehavior(el: HTMLElement): () => void {
+  const b = new DataTableBehavior(el);
+  return () => b.destroy();
+}
+```
+
+This preserves the existing public API (a function that returns a cleanup function) while gaining:
+- **Explicit state** — instance fields instead of closure-captured variables
+- **Consistent lifecycle** — `init()` / `destroy()` across all behaviors
+- **Shared event cleanup** — `listen()` helper auto-tracks listeners (eliminates per-behavior cleanup arrays)
+- **Testability** — state is inspectable on the instance, not hidden in closures
+- **Foundation for Section 4.3** — ARIA state management becomes a base class method
+
+Adoption is incremental. Start with `datatable` and `preview` (highest complexity), then migrate others. The base class lives in `packages/behaviors/src/behavior.ts`.
 
 ---
 
@@ -273,7 +393,7 @@ Some rune tags use `||` (wrong for falsy values like `0` or `""`) where `??` is 
 
 Tabs uses `data-state` + `aria-selected`, accordion uses `data-state` + `aria-expanded`, gallery uses only `data-state`. Cleanup thoroughness varies.
 
-**Plan:** Standardize on a shared `setAriaState()` utility in `packages/behaviors/src/utils.ts` that consistently manages both `data-state` and the appropriate `aria-*` attribute.
+**Plan:** Add a `setAriaState()` method to the `Behavior` base class (Section 2.8) that consistently manages both `data-state` and the appropriate `aria-*` attribute. Each subclass calls `this.setAriaState(el, 'active')` instead of manually setting attributes. The base class also handles cleanup restoration in `destroy()`.
 
 ### 4.4 Silent error swallowing in git operations
 
@@ -317,10 +437,26 @@ Tabs uses `data-state` + `aria-selected`, accordion uses `data-state` + `aria-ex
 
 ---
 
+## Design Note: Functions vs Classes
+
+The codebase is predominantly functional, and most of it should stay that way. Pure transformations (rune tag schemas, pipeline hooks, utilities) are naturally functions. Classes are introduced in this spec only where they solve a specific structural problem:
+
+- **`RuneTransformer`** (Section 2.1) — eliminates 10-parameter threading and makes the shared-config-vs-per-rune-state distinction explicit. The codebase already has `EntityRegistryImpl`, `LayoutResolver`, `ContentTree`, and `RenderableNodeCursor` as precedent.
+- **`Behavior` base class** (Section 2.8) — replaces closure-captured mutable state with explicit instance fields across 8 behavior functions. The same package already uses classes for its Web Components (`RfAudio`, `RfMap`, `RfSandbox`, `RfNav`).
+
+Both preserve existing public APIs. `createTransform()` still returns a function. Behavior registration functions still accept an element and return a cleanup function. The classes are internal implementation details.
+
+**Where classes are not appropriate:**
+- Rune tag schemas — pure `transform(node, config)` functions with no mutable state
+- Pipeline hooks — stateless `register()` / `aggregate()` / `postProcess()` functions
+- Utility functions — `escapeHtml()`, `toKebabCase()`, `walkTags()`, etc.
+- CLI commands — stateless orchestration; argument parsing needs a helper function, not a class
+
+---
+
 ## Out of Scope
 
 - **Public API changes** — this spec only covers internal refactoring
-- **New abstractions** — no new packages, no new architectural patterns
 - **Performance optimization** — git timestamp caching, CSS build optimization, etc. are separate concerns
 - **Community package naming conventions** — standardizing child component names (`cast-member` vs `character-section`) is a separate spec
 
@@ -331,13 +467,14 @@ Tabs uses `data-state` + `aria-selected`, accordion uses `data-state` + `aria-ex
 This spec decomposes into the following work items, ordered by impact:
 
 1. **Cross-package utility deduplication** (Section 1.1-1.6) — highest value, eliminates 7+ duplicate implementations
-2. **`transformRune()` decomposition** (Section 2.1) — highest complexity function in the codebase
-3. **Meta tag and body wrapping helpers** (Section 3.1-3.2) — reduces boilerplate across 28+ rune tag files
-4. **Stream parser consolidation** (Section 3.4) — deduplicates AI provider code
-5. **CLI argument parser** (Section 3.5) — eliminates 7 repeated if-else chains
-6. **Remaining function decompositions** (Section 2.2-2.7) — individual extractions
-7. **Validation helpers** (Section 3.3) — `isPlainObject()` and friends
-8. **Consistency fixes** (Section 4) — nullish coalescing, constants, ARIA, error handling
-9. **Cleanup** (Section 5) — stubs, self-aliases, deprecation annotations
+2. **`RuneTransformer` class** (Section 2.1) — highest complexity function in the codebase, decomposed into a class with private methods
+3. **`Behavior` base class and behavior conversions** (Section 2.8) — standardizes lifecycle and state management across 8 behaviors
+4. **Meta tag and body wrapping helpers** (Section 3.1-3.2) — reduces boilerplate across 28+ rune tag files
+5. **Stream parser consolidation** (Section 3.4) — deduplicates AI provider code
+6. **CLI argument parser** (Section 3.5) — eliminates 7 repeated if-else chains
+7. **Remaining function decompositions** (Section 2.2-2.4, 2.6) — individual extractions
+8. **Validation helpers** (Section 3.3) — `isPlainObject()` and friends
+9. **Consistency fixes** (Section 4) — nullish coalescing, constants, ARIA, error handling
+10. **Cleanup** (Section 5) — stubs, self-aliases, deprecation annotations
 
 {% /spec %}
