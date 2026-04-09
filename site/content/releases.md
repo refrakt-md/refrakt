@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.9.3
+## v0.9.3 - April 9, 2026
 
 - Bug fixes, rune restyling, and new features since v0.9.2.
 - Add `createRefraktLoader` and `virtual:refrakt/content` to eliminate content loading boilerplate
