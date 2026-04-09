@@ -2,10 +2,12 @@ import { RfContext } from './context.js';
 import type { DesignTokens } from './context.js';
 import { readHiddenContent } from './helpers.js';
 
+const TAILWIND_CDN = 'https://cdn.tailwindcss.com/3.4.17';
+
 const FRAMEWORK_PRESETS: Record<string, string[]> = {
 	tailwind: [
-		'<script src="https://cdn.tailwindcss.com"><\/script>',
-		'<script>tailwind.config = { darkMode: "selector" }<\/script>',
+		`<script src="${TAILWIND_CDN}"><\/script>`,
+		'<script>tailwind.config = { darkMode: "class" }<\/script>',
 	],
 	bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
 	bulma: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1/css/bulma.min.css">'],
@@ -220,12 +222,12 @@ ${renderedContent}
 
 		if (framework && FRAMEWORK_PRESETS[framework]) {
 			if (framework === 'tailwind' && tokens) {
-				tags.push('<script src="https://cdn.tailwindcss.com"><\\/script>');
+				tags.push(`<script src="${TAILWIND_CDN}"><\\/script>`);
 				const tokenConfig = this.buildTailwindTokenConfig(tokens);
 				if (tokenConfig) {
 					tags.push(tokenConfig);
 				} else {
-					tags.push('<script>tailwind.config = { darkMode: "selector" }<\\/script>');
+					tags.push('<script>tailwind.config = { darkMode: "class" }<\\/script>');
 				}
 			} else {
 				tags.push(...FRAMEWORK_PRESETS[framework]);
@@ -329,6 +331,6 @@ ${renderedContent}
 			}
 		}
 		if (Object.keys(extend).length === 0) return '';
-		return `<script>tailwind.config = { darkMode: "selector", theme: { extend: ${JSON.stringify(extend)} } }<\/script>`;
+		return `<script>tailwind.config = { darkMode: "class", theme: { extend: ${JSON.stringify(extend)} } }<\/script>`;
 	}
 }
