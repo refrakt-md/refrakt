@@ -37,7 +37,8 @@
 .rf-symbol,
 .rf-changelog,
 .rf-api,
-.rf-howto {
+.rf-howto,
+.rf-form {
 	background: var(--rf-color-surface);
 	border-radius: var(--rf-radius-md);
 	padding: var(--rune-padding, var(--rf-spacing-md));
@@ -56,8 +57,7 @@
 .rf-nav,
 .rf-breadcrumb,
 .rf-toc,
-.rf-datatable,
-.rf-form {
+.rf-datatable {
 	padding: var(--rune-padding, var(--rf-spacing-sm)) 0;
 }
 
