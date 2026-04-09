@@ -1,6 +1,6 @@
 ---
 title: Backlog
-description: Aggregation view of work items and bugs with filtering, sorting, and grouping
+description: Aggregation view of plan entities with filtering, sorting, and grouping
 ---
 
 {% hint type="note" %}
@@ -9,7 +9,7 @@ This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md
 
 # Backlog
 
-An aggregation rune that renders a live view of work items and bugs from the entity registry. Supports filtering by any field, sorting, and grouping. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
+An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, and grouping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
 
 ## Ready items sorted by priority
 
@@ -43,6 +43,22 @@ An aggregation rune that renders a live view of work items and bugs from the ent
 
 {% /preview %}
 
+## Decisions
+
+{% preview source=true %}
+
+{% backlog show="decision" sort="date" /%}
+
+{% /preview %}
+
+## Specs
+
+{% preview source=true %}
+
+{% backlog show="spec" /%}
+
+{% /preview %}
+
 ## Multi-field filter
 
 Filters combine with AND logic. Multiple values for the same field combine with OR.
@@ -58,9 +74,9 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `filter` | `string` | — | Space-separated `field:value` pairs. Same-field values are OR'd; different fields are AND'd. Fields: `status`, `priority`, `severity`, `assignee`, `milestone`, `complexity`, `tags` |
-| `sort` | `string` | `priority` | Sort field: `priority`, `status`, `id`, `assignee`, `complexity`, `milestone` |
+| `sort` | `string` | `priority` | Sort field: `priority`, `status`, `id`, `assignee`, `complexity`, `milestone`, `date` |
 | `group` | `string` | — | Group by field: `status`, `priority`, `assignee`, `milestone`, `type`, `tags` |
-| `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug` |
+| `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug`, `spec`, `decision`, `milestone`. Note: `all` includes work and bug only (for backward compatibility) — other types must be requested explicitly |
 
 ### Output structure
 
