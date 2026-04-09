@@ -6,6 +6,37 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.9.3
+
+- Bug fixes, rune restyling, and new features since v0.9.2.
+- Add `createRefraktLoader` and `virtual:refrakt/content` to eliminate content loading boilerplate
+- Add `--css` flag to plan build/serve for custom style overrides
+- Fix content HMR with dev-mode cache bypass (`createSiteLoader`)
+- Fix create-refrakt: interactive mode, CSS imports, community package loading
+- Fix density CSS leaking into nested runes with different density
+- Fix empty aggregation rune showcases on site
+- Fix missing bottom margin on code fences in prose
+- Fix preview source panel horizontal scroll on mobile
+- Fix hint header margin and vertical spacing
+- Fix testimonial star rating and author name/role styling
+- Fix details and diff rune styling issues
+- Fix blockquote quote mark overlap
+- Fix chart rune default figure margin
+- Fix diff split mode on mobile with horizontal scroll
+- Fix codegroup title font size and tab readability
+- Fix compact density title size
+- Fix build order and implicit any types in nuxt module
+- Add missing exports fields for NodeNext module resolution
+- Restyle API, bond, budget, details, event runes with metadata dimension system
+- Unify design rune styling with consistent titles and surfaces
+- Update Lumina default palette: cerulean, frosted blue, warm parchment
+- Thin table header border, cleaner table look with better mobile column sizing
+- Use logo apricot for syntax keywords
+- Document Svelte component override props and snippet pattern
+- Update Astro adapter docs for component override support
+- Audit and fix site documentation gaps
+- Redesign milestone progress indicator as two-row layout
+
 ## v0.9.2 - April 7, 2026
 
 - Add multi-framework adapter packages (Astro, Eleventy, Next.js, Nuxt, React, Vue) with ADR-008 framework-native component interfaces. Implement ADR-009 framework-agnostic theme architecture. Add vue, astro, and jinja to Shiki default languages.

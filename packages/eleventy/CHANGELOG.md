@@ -1,5 +1,14 @@
 # @refrakt-md/eleventy
 
+## 0.9.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/types@0.9.3
+  - @refrakt-md/content@0.9.3
+  - @refrakt-md/transform@0.9.3
+
 ## 0.9.2
 
 ### Patch Changes

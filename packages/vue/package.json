@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/vue",
   "description": "Vue renderer for refrakt.md content — ADR-008 component interface with props and named slots",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,8 +29,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/transform": "0.9.2",
-    "@refrakt-md/types": "0.9.2"
+    "@refrakt-md/transform": "0.9.3",
+    "@refrakt-md/types": "0.9.3"
   },
   "devDependencies": {
     "vue": "^3.5.0"

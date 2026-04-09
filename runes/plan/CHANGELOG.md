@@ -1,5 +1,18 @@
 # @refrakt-md/plan
 
+## 0.9.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/types@0.9.3
+  - @refrakt-md/content@0.9.3
+  - @refrakt-md/highlight@0.9.3
+  - @refrakt-md/html@0.9.3
+  - @refrakt-md/runes@0.9.3
+  - @refrakt-md/transform@0.9.3
+  - @refrakt-md/behaviors@0.9.3
+
 ## 0.9.2
 
 ### Patch Changes
