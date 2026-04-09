@@ -24,17 +24,23 @@ export const figure = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
+		const imgs = children.flatten().tag('img').toArray();
+
+		// For caption fallback, skip paragraphs that only contain an image
+		const textParagraphs = children.tag('p').toArray().filter(p => {
+			const kids = (p.children || []).filter((c: any) => Markdoc.Tag.isTag(c));
+			return !(kids.length === 1 && kids[0].name === 'img');
+		});
+
 		const captionContent = attrs.caption || undefined;
 		const captionTag = captionContent
 			? new Tag('figcaption', {}, [captionContent])
-			: children.tag('p').count() > 0
-				? new Tag('figcaption', {}, children.tag('p').limit(1).toArray())
+			: textParagraphs.length > 0
+				? new Tag('figcaption', {}, [textParagraphs[0]])
 				: undefined;
 
 		const sizeMeta = attrs.size ? new Tag('meta', { content: attrs.size }) : undefined;
 		const alignMeta = attrs.align ? new Tag('meta', { content: attrs.align }) : undefined;
-
-		const imgs = children.tag('img').toArray();
 		const childNodes: any[] = [...imgs];
 		if (captionTag) childNodes.push(captionTag);
 		if (sizeMeta) childNodes.push(sizeMeta);

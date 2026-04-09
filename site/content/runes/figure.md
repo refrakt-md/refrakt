@@ -11,23 +11,23 @@ Enhanced image display with caption, sizing, and alignment controls.
 
 Set the caption directly on the rune.
 
-```markdoc
-{% figure caption="Architecture overview" size="large" align="center" %}
-![Diagram](/images/architecture.png)
+{% preview source=true %}
+{% figure caption="A coral reef teeming with life beneath turquoise waters" size="large" align="center" %}
+![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
 {% /figure %}
-```
+{% /preview %}
 
 ## With paragraph caption
 
 If no `caption` attribute is provided, the first paragraph inside the rune is used as the caption.
 
-```markdoc
+{% preview source=true %}
 {% figure size="medium" %}
-![Photo](/images/photo.jpg)
+![Hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
 
-Photo taken at the summit.
+Steam rising from volcanic hot springs in the Icelandic highlands.
 {% /figure %}
-```
+{% /preview %}
 
 ### Attributes
 
