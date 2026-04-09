@@ -4,9 +4,8 @@ import { readHiddenContent } from './helpers.js';
 
 const FRAMEWORK_PRESETS: Record<string, string[]> = {
 	tailwind: [
-		// Set config BEFORE loading CDN so it's available during init.
-		'<script>window.tailwind = { config: { darkMode: "class" } }<\/script>',
 		'<script src="https://cdn.tailwindcss.com"><\/script>',
+		'<script>tailwind.config = { darkMode: "class" }<\/script>',
 	],
 	bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
 	bulma: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1/css/bulma.min.css">'],
@@ -156,6 +155,9 @@ export class RfSandbox extends SafeHTMLElement {
 		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark" style="color-scheme:dark"'
 			: theme === 'light' ? ' data-theme="light" style="color-scheme:light"'
 			: '';
+		const colorSchemeMeta = theme === 'dark' ? '<meta name="color-scheme" content="dark">'
+			: theme === 'light' ? '<meta name="color-scheme" content="light">'
+			: '<meta name="color-scheme" content="light dark">';
 
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
@@ -165,6 +167,7 @@ export class RfSandbox extends SafeHTMLElement {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${colorSchemeMeta}
 ${depTags}
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
@@ -187,6 +190,12 @@ ${renderedContent}
   applyOsTheme();
   mq.addEventListener('change', applyOsTheme);
 
+  function setColorScheme(scheme) {
+    var meta = document.querySelector('meta[name="color-scheme"]');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'color-scheme'; document.head.appendChild(meta); }
+    meta.content = scheme;
+  }
+
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'rf-sandbox-theme') {
       const theme = e.data.theme;
@@ -195,13 +204,16 @@ ${renderedContent}
         html.classList.add('dark');
         html.setAttribute('data-theme', 'dark');
         html.style.colorScheme = 'dark';
+        setColorScheme('dark');
       } else if (theme === 'light') {
         html.classList.remove('dark');
         html.setAttribute('data-theme', 'light');
         html.style.colorScheme = 'light';
+        setColorScheme('light');
       } else {
         html.removeAttribute('data-theme');
         html.style.colorScheme = '';
+        setColorScheme('light dark');
         html.classList.toggle('dark', mq.matches);
       }
     }
@@ -221,12 +233,13 @@ ${renderedContent}
 
 		if (framework && FRAMEWORK_PRESETS[framework]) {
 			if (framework === 'tailwind' && tokens) {
-				// Config before CDN so it's available during init
-				const tokenConfig = this.buildTailwindTokenConfig(tokens);
-				const jsConfig = tokenConfig
-					|| '<script>window.tailwind = { config: { darkMode: "class" } }<\\/script>';
-				tags.push(jsConfig);
 				tags.push('<script src="https://cdn.tailwindcss.com"><\\/script>');
+				const tokenConfig = this.buildTailwindTokenConfig(tokens);
+				if (tokenConfig) {
+					tags.push(tokenConfig);
+				} else {
+					tags.push('<script>tailwind.config = { darkMode: "class" }<\\/script>');
+				}
 			} else {
 				tags.push(...FRAMEWORK_PRESETS[framework]);
 			}
@@ -329,6 +342,6 @@ ${renderedContent}
 			}
 		}
 		if (Object.keys(extend).length === 0) return '';
-		return `<script>window.tailwind = { config: { darkMode: "class", theme: { extend: ${JSON.stringify(extend)} } } }<\/script>`;
+		return `<script>tailwind.config = { darkMode: "class", theme: { extend: ${JSON.stringify(extend)} } }<\/script>`;
 	}
 }
