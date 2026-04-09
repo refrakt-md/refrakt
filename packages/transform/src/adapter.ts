@@ -131,34 +131,49 @@ export function extractSeoData(input: SeoInput): SeoData {
 	};
 }
 
+export interface SeoToHtmlOptions {
+	/** Site name for og:site_name (falls back to empty string if omitted) */
+	siteName?: string;
+}
+
 /**
  * Format extracted SEO data as HTML meta tag strings.
  *
  * Used by Astro and Eleventy adapters that inject raw HTML into `<head>`.
  */
-export function seoToHtml(data: SeoData): { title: string; metaTags: string; jsonLd: string } {
+export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: string; metaTags: string; jsonLd: string } {
 	const parts: string[] = [];
 
 	if (data.description) {
 		parts.push(`<meta name="description" content="${escapeAttr(data.description)}">`);
 		parts.push(`<meta property="og:description" content="${escapeAttr(data.description)}">`);
+		parts.push(`<meta name="twitter:description" content="${escapeAttr(data.description)}">`);
 	}
 
 	if (data.title) {
 		parts.push(`<meta property="og:title" content="${escapeAttr(data.title)}">`);
+		parts.push(`<meta name="twitter:title" content="${escapeAttr(data.title)}">`);
 	}
 
 	if (data.ogImage) {
 		parts.push(`<meta property="og:image" content="${escapeAttr(data.ogImage)}">`);
 		parts.push(`<meta name="twitter:card" content="summary_large_image">`);
+		parts.push(`<meta name="twitter:image" content="${escapeAttr(data.ogImage)}">`);
+	} else {
+		parts.push(`<meta name="twitter:card" content="summary">`);
 	}
 
 	if (data.ogUrl) {
+		parts.push(`<link rel="canonical" href="${escapeAttr(data.ogUrl)}">`);
 		parts.push(`<meta property="og:url" content="${escapeAttr(data.ogUrl)}">`);
 	}
 
 	if (data.ogType) {
 		parts.push(`<meta property="og:type" content="${escapeAttr(data.ogType)}">`);
+	}
+
+	if (options?.siteName) {
+		parts.push(`<meta property="og:site_name" content="${escapeAttr(options.siteName)}">`);
 	}
 
 	const jsonLdParts: string[] = [];

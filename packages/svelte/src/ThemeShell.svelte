@@ -108,25 +108,32 @@
 	{#if page.seo?.og.title}
 		<title>{page.seo.og.title}</title>
 		<meta property="og:title" content={page.seo.og.title} />
+		<meta name="twitter:title" content={page.seo.og.title} />
 	{:else if page.title}
 		<title>{page.title}</title>
 	{/if}
 	{#if page.seo?.og.description}
 		<meta name="description" content={page.seo.og.description} />
 		<meta property="og:description" content={page.seo.og.description} />
+		<meta name="twitter:description" content={page.seo.og.description} />
 	{:else if page.description}
 		<meta name="description" content={page.description} />
 	{/if}
 	{#if page.seo?.og.image}
 		<meta property="og:image" content={page.seo.og.image} />
 		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content={page.seo.og.image} />
+	{:else}
+		<meta name="twitter:card" content="summary" />
 	{/if}
 	{#if page.seo?.og.url}
+		<link rel="canonical" href={page.seo.og.url} />
 		<meta property="og:url" content={page.seo.og.url} />
 	{/if}
 	{#if page.seo?.og.type}
 		<meta property="og:type" content={page.seo.og.type} />
 	{/if}
+	<meta property="og:site_name" content={theme.manifest.siteName ?? 'refrakt.md'} />
 	{#if page.seo}
 		{#each page.seo.jsonLd as schema}
 			{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
