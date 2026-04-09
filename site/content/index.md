@@ -1,13 +1,13 @@
 ---
 title: refrakt.md
-description: A content framework built on Markdoc with 60+ semantic runes
+description: A content framework built on Markdoc with 100+ semantic runes
 ---
 {% hero align="left" spacing="tight" layout="split" collapse="lg" %}
 Version {% $version %} released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
 
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
 ```shell
 npm create refrakt
@@ -26,7 +26,7 @@ Version 0.9.2 released [Check out what's new](/releases)
 
 # Write Markdown. Get structure.
 
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
 ```shell
 npm create refrakt
@@ -67,7 +67,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 
 - {% icon name="package" /%} **Portable content**
 
-  Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — render with SvelteKit or as static HTML, with more adapters planned.
+  Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — adapters for SvelteKit, Astro, Next.js, Nuxt, Eleventy, and plain HTML.
 {% /feature %}
 
 {% feature layout="split" align="left" ratio="1 1" valign="center" collapse="md" gap="loose" spacing="flush" %}
@@ -122,7 +122,7 @@ A layered showstopper that transitions from deep orange to golden yellow — lik
 {% /feature %}
 
 {% feature spacing="tight" tint-mode="auto" align="left" %}
-8 packages, 60+ runes
+9 packages, 100+ runes
 ## A rune for every domain
 
 Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packages add domain-specific runes — install only what you need.
@@ -159,6 +159,10 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
 - {% icon name="video" /%} **Media**
 
   `playlist`, `track`, `audio`
+
+- {% icon name="clipboard-list" /%} **Plan**
+
+  `spec`, `work`, `bug`, `decision`, `milestone`
 {% /feature %}
 
 {% testimonial variant="quote" spacing="breathe" width="content" %}

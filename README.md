@@ -2,7 +2,7 @@
 
 **Write Markdown. Get structure.**
 
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 60+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
 [Documentation](https://refrakt.md) | [Getting Started](https://refrakt.md/docs/getting-started) | [Rune Catalog](https://refrakt.md/docs/runes)
 
@@ -13,7 +13,7 @@ A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown wit
 - **SEO from the start** — Every rune can emit Schema.org JSON-LD and Open Graph metadata automatically. Recipes get Recipe schema, events get Event schema, FAQs get FAQ schema — no manual wiring.
 - **AI-powered authoring** — Generate full pages with `refrakt write`. The CLI knows every rune and produces valid Markdown with proper rune structure. Supports Claude and local models via Ollama.
 - **Layout inheritance** — Define regions in `_layout.md` files that cascade down directory trees. Headers, navigation, and sidebars compose automatically.
-- **Portable content** — Your content stays decoupled from presentation. Render with SvelteKit or as static HTML, with more adapters planned.
+- **Portable content** — Your content stays decoupled from presentation. Adapters for SvelteKit, Astro, Next.js, Nuxt, and Eleventy. Renderers for Svelte, React, Vue, and plain HTML.
 
 ## Quick Start
 
@@ -42,17 +42,24 @@ npm create refrakt my-site -- --target html
 | `@refrakt-md/lumina` | Lumina theme (design tokens, CSS) |
 | `@refrakt-md/behaviors` | Progressive enhancement JS (tabs, accordion, datatable, form) |
 | `@refrakt-md/content` | Content loading, routing, layout cascade |
-| `@refrakt-md/svelte` | SvelteKit renderer and component registry |
-| `@refrakt-md/sveltekit` | Vite plugin, virtual modules, HMR |
-| `@refrakt-md/html` | Static HTML renderer |
+| `@refrakt-md/svelte` | Svelte renderer and component registry |
+| `@refrakt-md/react` | React renderer (RSC-compatible) |
+| `@refrakt-md/vue` | Vue renderer |
+| `@refrakt-md/html` | Static HTML renderer (no framework required) |
+| `@refrakt-md/sveltekit` | SvelteKit adapter (Vite plugin, virtual modules, HMR) |
+| `@refrakt-md/astro` | Astro integration |
+| `@refrakt-md/next` | Next.js adapter (React Server Components) |
+| `@refrakt-md/nuxt` | Nuxt module |
+| `@refrakt-md/eleventy` | Eleventy (11ty v3) plugin |
 | `@refrakt-md/highlight` | Syntax highlighting with Shiki |
 | `@refrakt-md/ai` | AI prompt building and providers |
 | `@refrakt-md/cli` | CLI tools (write, inspect, contracts) |
 | `create-refrakt` | Project scaffolding |
+| `refrakt-md` (VS Code) | Syntax highlighting, snippets, and rune inspector |
 
 ### Community Packages
 
-Eight official packages add domain-specific runes — install only what you need.
+Nine official packages add domain-specific runes — install only what you need.
 
 | Package | Runes |
 |---------|-------|
@@ -64,16 +71,17 @@ Eight official packages add domain-specific runes — install only what you need
 | `@refrakt-md/business` | cast, organization, timeline |
 | `@refrakt-md/places` | event, map, itinerary |
 | `@refrakt-md/media` | playlist, track, audio |
+| `@refrakt-md/plan` | spec, work, bug, decision, milestone |
 
 ## Documentation
 
 Full documentation is available at **[refrakt.md](https://refrakt.md)**.
 
 - [Getting Started](https://refrakt.md/docs/getting-started) — Scaffold a project and write your first page
-- [Rune Catalog](https://refrakt.md/docs/runes) — Browse all 60+ runes with examples
+- [Rune Catalog](https://refrakt.md/docs/runes) — Browse all 100+ runes with examples
 - [Theme Development](https://refrakt.md/docs/themes) — Create custom themes with design tokens and CSS
 - [CLI Tools](https://refrakt.md/docs/cli) — Inspect runes, generate content with AI, audit CSS coverage
-- [Adapters](https://refrakt.md/docs/adapters) — SvelteKit, HTML, and extensibility
+- [Adapters](https://refrakt.md/docs/adapters) — SvelteKit, Astro, Next.js, Nuxt, Eleventy, and plain HTML
 - [Community Packages](https://refrakt.md/docs/packages) — Install, create, and extend rune packages
 
 ## Contributing
