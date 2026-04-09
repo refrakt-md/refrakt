@@ -9,6 +9,8 @@ import * as path from 'node:path';
 const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
 const contentDir = path.resolve(config.contentDir);
 
+export const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+
 let _transform: ((tree: any) => any) | null = null;
 let _communityTags: Record<string, Schema> | undefined;
 
