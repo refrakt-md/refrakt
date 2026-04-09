@@ -19,11 +19,13 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 |---------|---------|
 | [inspect](/docs/cli/inspect) | Preview identity transform output and audit CSS coverage |
 | [write](/docs/cli/write) | Generate Markdown content using AI |
-| [extract](/docs/cli/extract) | Generate API reference docs from TypeScript or Python source |
+| [extract](/docs/cli/extract) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
 | [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
 | [scaffold-css](/docs/cli/theme-tools#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
 | [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
 | [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes and show theme info |
+| edit | Launch the browser-based content editor |
+| package validate | Validate a rune package before publishing |
 
 ## Quick examples
 
@@ -40,8 +42,17 @@ refrakt docs extract ./src -o ./content/api
 # Audit CSS coverage across all runes
 refrakt inspect --all --audit
 
+# Audit metadata dimensions across all runes
+refrakt inspect --all --audit-dimensions
+
 # Generate structure contracts for CI
 refrakt contracts -o contracts/structures.json --config .
+
+# Launch the content editor
+refrakt edit
+
+# Validate a rune package before publishing
+refrakt package validate ./my-package
 ```
 
 ## Package commands

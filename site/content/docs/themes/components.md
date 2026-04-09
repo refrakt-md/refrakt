@@ -33,6 +33,11 @@ Some runes need interactivity but not a full component. The `@refrakt-md/behavio
 - **Preview** — Live code preview with iframe
 - **CodeGroup** — Tab-like code block switching
 - **Details** — Enhanced native `<details>` elements
+- **Gallery** — Image gallery navigation and lightbox display
+- **Juxtapose** — Before/after image comparison with slider
+- **Copy** — Copy-to-clipboard buttons on all `<pre>` code blocks
+- **Scrollspy** — Active heading tracking for "On This Page" navigation
+- **Version Switcher** — Version switching for versioned documentation pages
 
 Behaviors work by scanning the DOM for `[data-rune]` attributes (set by the identity transform) and enhancing the elements with event listeners and ARIA attributes:
 
@@ -66,9 +71,10 @@ const cleanup = initLayoutBehaviors(document.querySelector('[data-layout]'));
 
 `initLayoutBehaviors()` scans for elements with `data-layout-behaviors` attributes (set by the layout transform) and wires up the matching behaviors.
 
-Currently one layout behavior is available:
+Currently available layout behaviors:
 
 - **`mobile-menu`** — handles mobile panel toggling via `[data-mobile-menu-open]`, `[data-mobile-menu-close]`, and `[data-mobile-nav-toggle]` data attributes. Panels are shown/hidden via a `[data-open]` attribute. Also handles escape key dismissal and body scroll lock.
+- **`search`** — layout-level search functionality for site-wide content search.
 
 See the [layouts reference](/docs/themes/layouts) for details on how layout behaviors connect to `LayoutConfig`.
 
