@@ -27,9 +27,21 @@ export const datatable = createContentModelSchema({
 		const pageSizeMeta = new Tag('meta', { content: String(attrs.pageSize ?? 0) });
 		const defaultSortMeta = new Tag('meta', { content: attrs.defaultSort ?? '' });
 
-		// Find the table element from children
-		const table = children.tag('table');
-		const tableTag = table.count() > 0 ? table.next() : new Tag('table', {}, []);
+		// Find the table element from children (may be wrapped in div.rf-table-wrapper)
+		let tableTag: InstanceType<typeof Tag>;
+		const directTable = children.tag('table');
+		if (directTable.count() > 0) {
+			tableTag = directTable.next();
+		} else {
+			// Unwrap from rf-table-wrapper div
+			const wrapper = children.toArray().find(
+				n => Tag.isTag(n) && n.name === 'div' && n.attributes.class === 'rf-table-wrapper'
+			);
+			const inner = wrapper && Tag.isTag(wrapper)
+				? wrapper.children.find((c: any) => Tag.isTag(c) && c.name === 'table')
+				: undefined;
+			tableTag = (inner && Tag.isTag(inner) ? inner : new Tag('table', {}, [])) as InstanceType<typeof Tag>;
+		}
 
 		return createComponentRenderable({ rune: 'data-table', schemaOrgType: 'Dataset',
 			tag: 'div',

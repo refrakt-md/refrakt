@@ -33,10 +33,18 @@ export const compare = createContentModelSchema({
 
 		let panelIndex = 0;
 		for (const node of children.toArray()) {
+			// Match <pre> directly or <div class="rf-codeblock"> wrapper around <pre>
+			let preNode: typeof node | undefined;
 			if (Tag.isTag(node) && node.name === 'pre') {
-				// Get label from custom labels or from code block's data-language attribute
+				preNode = node;
+			} else if (Tag.isTag(node) && node.name === 'div' && node.attributes.class === 'rf-codeblock') {
+				const inner = node.children.find((c: any) => Tag.isTag(c) && c.name === 'pre');
+				if (inner) preNode = inner as typeof node;
+			}
+
+			if (preNode && Tag.isTag(preNode)) {
 				const label = customLabels[panelIndex]
-					|| node.attributes['data-language']
+					|| preNode.attributes['data-language']
 					|| `Panel ${panelIndex + 1}`;
 
 				const labelTag = new Tag('span', { 'data-label': true }, [label]);

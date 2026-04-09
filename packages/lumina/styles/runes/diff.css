@@ -67,6 +67,9 @@
 }
 .rf-diff__line[data-type="remove"] .rf-diff__gutter-prefix { color: var(--rf-color-danger); }
 .rf-diff__line[data-type="add"] .rf-diff__gutter-prefix    { color: var(--rf-color-success); }
+.rf-diff .rf-codeblock {
+	margin: 0;
+}
 .rf-diff__line-content {
 	flex: 1;
 	white-space: pre;
