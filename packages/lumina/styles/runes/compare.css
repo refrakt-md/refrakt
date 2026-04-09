@@ -33,6 +33,9 @@
 	background: var(--rf-color-surface);
 	border-bottom: 1px solid var(--rf-color-border);
 }
+.rf-compare .rf-codeblock {
+	margin: 0;
+}
 .rf-compare pre {
 	margin: 0;
 	border: none;

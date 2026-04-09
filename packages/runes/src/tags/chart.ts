@@ -17,8 +17,15 @@ function extractTableData(children: any[]): { headers: string[], rows: string[][
 	for (const child of children) {
 		if (!Markdoc.Tag.isTag(child)) continue;
 
-		if (child.name === 'table') {
-			for (const tableChild of child.children) {
+		// Unwrap rf-table-wrapper div if present
+		let tableNode = child;
+		if (child.name === 'div' && child.attributes.class === 'rf-table-wrapper') {
+			const inner = child.children.find((c: any) => Markdoc.Tag.isTag(c) && c.name === 'table');
+			if (inner && Markdoc.Tag.isTag(inner)) tableNode = inner;
+		}
+
+		if (tableNode.name === 'table') {
+			for (const tableChild of tableNode.children) {
 				if (!Markdoc.Tag.isTag(tableChild)) continue;
 
 				if (tableChild.name === 'thead') {
