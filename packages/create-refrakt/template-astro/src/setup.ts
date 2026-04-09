@@ -48,7 +48,7 @@ async function init() {
 		const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
 
 		_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
-		_packages = loaded;
+		_packages = loaded.map((l: any) => l.pkg);
 
 		const { config: assembledConfig } = assembleThemeConfig({
 			coreConfig: themeConfig,
