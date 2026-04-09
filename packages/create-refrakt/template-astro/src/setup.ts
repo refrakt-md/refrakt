@@ -15,6 +15,7 @@ let _transform: ((tree: any) => any) | null = null;
 let _hl: { (tree: any): any; css: string } | null = null;
 let _theme: { manifest: any; layouts: any } | null = null;
 let _communityTags: Record<string, Schema> | undefined;
+let _packages: any[] | undefined;
 
 async function init() {
 	if (_transform) return;
@@ -47,6 +48,7 @@ async function init() {
 		const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
 
 		_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+		_packages = loaded;
 
 		const { config: assembledConfig } = assembleThemeConfig({
 			coreConfig: themeConfig,
@@ -82,5 +84,5 @@ export async function getHighlightTransform() {
 
 export async function getSite() {
 	await init();
-	return loadContent(contentDir, '/', {}, _communityTags);
+	return loadContent(contentDir, '/', {}, _communityTags, _packages);
 }
