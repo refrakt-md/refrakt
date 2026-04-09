@@ -41,75 +41,44 @@ export class RfSandbox extends SafeHTMLElement {
 	private messageHandler: ((e: MessageEvent) => void) | null = null;
 	private themeCleanup: (() => void) | null = null;
 	private ancestorObserver: MutationObserver | null = null;
+	// Cached values for iframe rebuild on theme change
+	private _content = '';
+	private _framework = '';
+	private _dependencies = '';
+	private _label = 'Sandbox';
+	private _heightAttr = 'auto';
+	private _tokens: DesignTokens | null = null;
+	private _localScheme: 'light' | 'dark' | null = null;
 
 	connectedCallback() {
-		const content = this.dataset.sourceContent || readHiddenContent(this, 'source');
-		const framework = this.dataset.framework || '';
-		const dependencies = this.dataset.dependencies || '';
-		const label = this.dataset.label || 'Sandbox';
-		const heightAttr = this.dataset.height || 'auto';
+		this._content = this.dataset.sourceContent || readHiddenContent(this, 'source');
+		this._framework = this.dataset.framework || '';
+		this._dependencies = this.dataset.dependencies || '';
+		this._label = this.dataset.label || 'Sandbox';
+		this._heightAttr = this.dataset.height || 'auto';
 
 		// data-color-scheme is set by tint-mode and locks the sandbox to a
 		// specific colour scheme, overriding the global RfContext.theme.
-		const localScheme = this.getAttribute('data-color-scheme') as 'light' | 'dark' | null;
+		this._localScheme = this.getAttribute('data-color-scheme') as 'light' | 'dark' | null;
 
 		// Also check ancestors for data-color-scheme (e.g. preview canvas wrapper).
-		const ancestorScheme = !localScheme
+		const ancestorScheme = !this._localScheme
 			? (this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute('data-color-scheme') as 'light' | 'dark' | null
 			: null;
 
-		const effectiveTheme = localScheme || ancestorScheme || RfContext.theme;
+		const effectiveTheme = this._localScheme || ancestorScheme || RfContext.theme;
 
 		const tokensAttr = this.dataset.designTokens;
-		const tokens: DesignTokens | null = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
-		const srcdoc = this.buildSrcdoc(content, framework, dependencies, tokens, effectiveTheme);
+		this._tokens = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
 
-		// Create iframe
-		this.iframe = document.createElement('iframe');
-		this.iframe.srcdoc = srcdoc;
-		this.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-		this.iframe.title = label;
-		this.iframe.setAttribute('frameborder', '0');
-		this.iframe.loading = 'lazy';
-		this.iframe.style.cssText = `width: 100%; border: none; height: ${heightAttr !== 'auto' ? parseInt(heightAttr) + 'px' : '150px'};`;
+		this.buildIframe(effectiveTheme);
 
-		// Auto-sizing
-		if (heightAttr === 'auto') {
-			this.messageHandler = (e: MessageEvent) => {
-				if (e.data?.type === 'rf-sandbox-resize' && e.source === this.iframe?.contentWindow) {
-					this.iframe!.style.height = e.data.height + 'px';
-				}
-			};
-			window.addEventListener('message', this.messageHandler);
-		}
-
-		// Theme sync — send initial theme on load, subscribe to changes.
-		// When a local colour scheme is set (tint-mode), the sandbox is
-		// locked to that scheme and ignores global theme changes.
-		const sendTheme = (theme: string) => {
-			this.iframe?.contentWindow?.postMessage({ type: 'rf-sandbox-theme', theme }, '*');
-		};
-
-		// On load, re-check the ancestor scheme because the preview
-		// behavior may have set data-color-scheme on its canvas between
-		// iframe creation and the load event firing.
-		this.iframe.addEventListener('load', () => {
-			if (!localScheme) {
-				const ancestor = this.closest('[data-color-scheme]');
-				const current = ancestor?.getAttribute('data-color-scheme');
-				sendTheme(current || effectiveTheme);
-			} else {
-				sendTheme(effectiveTheme);
-			}
-		});
-
-		if (!localScheme) {
+		if (!this._localScheme) {
 			// Subscribe to global theme changes, but only apply when no
-			// ancestor colour scheme is active (e.g. inside a preview with
-			// an explicit theme toggle).
+			// ancestor colour scheme is active.
 			this.themeCleanup = RfContext.onThemeChange((theme) => {
 				if (!this.closest('[data-color-scheme]')) {
-					sendTheme(theme);
+					this.rebuildWithTheme(theme);
 				}
 			});
 
@@ -119,7 +88,7 @@ export class RfSandbox extends SafeHTMLElement {
 			this.ancestorObserver = new MutationObserver(() => {
 				const ancestor = this.closest('[data-color-scheme]');
 				const scheme = ancestor?.getAttribute('data-color-scheme');
-				sendTheme(scheme || RfContext.theme);
+				this.rebuildWithTheme(scheme || RfContext.theme);
 			});
 			let el = this.parentElement;
 			while (el) {
@@ -130,9 +99,6 @@ export class RfSandbox extends SafeHTMLElement {
 				el = el.parentElement;
 			}
 		}
-
-		// Clear fallback content and insert iframe
-		this.replaceChildren(this.iframe);
 	}
 
 	disconnectedCallback() {
@@ -151,6 +117,44 @@ export class RfSandbox extends SafeHTMLElement {
 		this.iframe = null;
 	}
 
+	/** Build (or rebuild) the iframe with the given theme baked into the srcdoc. */
+	private buildIframe(theme: string) {
+		const srcdoc = this.buildSrcdoc(this._content, this._framework, this._dependencies, this._tokens, theme);
+
+		// Preserve height from existing iframe if rebuilding
+		const currentHeight = this.iframe?.style.height;
+
+		this.iframe = document.createElement('iframe');
+		this.iframe.srcdoc = srcdoc;
+		this.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+		this.iframe.title = this._label;
+		this.iframe.setAttribute('frameborder', '0');
+		this.iframe.loading = 'lazy';
+		this.iframe.style.cssText = `width: 100%; border: none; height: ${currentHeight || (this._heightAttr !== 'auto' ? parseInt(this._heightAttr) + 'px' : '150px')};`;
+
+		// Auto-sizing
+		if (this.messageHandler) {
+			window.removeEventListener('message', this.messageHandler);
+		}
+		if (this._heightAttr === 'auto') {
+			this.messageHandler = (e: MessageEvent) => {
+				if (e.data?.type === 'rf-sandbox-resize' && e.source === this.iframe?.contentWindow) {
+					this.iframe!.style.height = e.data.height + 'px';
+				}
+			};
+			window.addEventListener('message', this.messageHandler);
+		}
+
+		this.replaceChildren(this.iframe);
+	}
+
+	/** Rebuild the iframe with a new theme. The theme is baked into the
+	 *  srcdoc HTML so that Tailwind CDN sees .dark on <html> at scan time
+	 *  and generates the correct dark: variant CSS from the start. */
+	private rebuildWithTheme(theme: string) {
+		this.buildIframe(theme);
+	}
+
 	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
 		theme = theme || RfContext.theme;
@@ -160,6 +164,12 @@ export class RfSandbox extends SafeHTMLElement {
 
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
+
+		// For 'auto' theme, check OS preference to set initial .dark class
+		const autoScript = (!theme || theme === 'auto') ? `
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+  }` : '';
 
 		return `<!DOCTYPE html>
 <html${htmlAttrs}>
@@ -174,39 +184,10 @@ ${depTags}
 <body>
 ${renderedContent}
 <script>
-  const ro = new ResizeObserver(() => {
+  var ro = new ResizeObserver(function() {
     parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
   });
-  ro.observe(document.body);
-
-  const mq = window.matchMedia('(prefers-color-scheme: dark)');
-  function applyOsTheme() {
-    if (!document.documentElement.hasAttribute('data-theme')) {
-      document.documentElement.classList.toggle('dark', mq.matches);
-    }
-  }
-  applyOsTheme();
-  mq.addEventListener('change', applyOsTheme);
-
-  window.addEventListener('message', (e) => {
-    if (e.data?.type === 'rf-sandbox-theme') {
-      const theme = e.data.theme;
-      const html = document.documentElement;
-      if (theme === 'dark') {
-        html.classList.add('dark');
-        html.setAttribute('data-theme', 'dark');
-        html.style.colorScheme = 'dark';
-      } else if (theme === 'light') {
-        html.classList.remove('dark');
-        html.setAttribute('data-theme', 'light');
-        html.style.colorScheme = 'light';
-      } else {
-        html.removeAttribute('data-theme');
-        html.style.colorScheme = '';
-        html.classList.toggle('dark', mq.matches);
-      }
-    }
-  });
+  ro.observe(document.body);${autoScript}
 <\/script>
 </body>
 </html>`;
