@@ -6,7 +6,7 @@
     @media (prefers-color-scheme: dark) {
       .top { fill: #f2cc8f; }
       .right { fill: #e8927c; }
-      .left { fill: #565a7a; }
+      .left { fill: #263850; }
     }
   </style>
 
