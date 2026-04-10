@@ -328,6 +328,15 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		} else {
 			canvas.removeAttribute('data-color-scheme');
 		}
+
+		// Notify sandbox iframes inside this preview to update their theme.
+		// Sandboxes are rebuilt with the new theme baked into their srcdoc
+		// so that Tailwind CDN sees .dark on <html> during its initial scan.
+		for (const sb of canvas.querySelectorAll<HTMLElement>('rf-sandbox')) {
+			if (typeof (sb as any).setTheme === 'function') {
+				(sb as any).setTheme(resolvedTheme || 'auto');
+			}
+		}
 	}
 
 	// Initial render

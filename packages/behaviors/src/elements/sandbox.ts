@@ -78,7 +78,7 @@ export class RfSandbox extends SafeHTMLElement {
 			// ancestor colour scheme is active.
 			this.themeCleanup = RfContext.onThemeChange((theme) => {
 				if (!this.closest('[data-color-scheme]')) {
-					this.rebuildWithTheme(theme);
+					this.setTheme(theme);
 				}
 			});
 
@@ -88,7 +88,7 @@ export class RfSandbox extends SafeHTMLElement {
 			this.ancestorObserver = new MutationObserver(() => {
 				const ancestor = this.closest('[data-color-scheme]');
 				const scheme = ancestor?.getAttribute('data-color-scheme');
-				this.rebuildWithTheme(scheme || RfContext.theme);
+				this.setTheme(scheme || RfContext.theme);
 			});
 			let el = this.parentElement;
 			while (el) {
@@ -148,10 +148,10 @@ export class RfSandbox extends SafeHTMLElement {
 		this.replaceChildren(this.iframe);
 	}
 
-	/** Rebuild the iframe with a new theme. The theme is baked into the
-	 *  srcdoc HTML so that Tailwind CDN sees .dark on <html> at scan time
-	 *  and generates the correct dark: variant CSS from the start. */
-	private rebuildWithTheme(theme: string) {
+	/** Public API for containers (e.g. preview behavior) to set the
+	 *  sandbox theme. Rebuilds the iframe with the theme baked in. */
+	setTheme(theme: string) {
+		if (this._localScheme) return; // tint-mode locked, ignore
 		this.buildIframe(theme);
 	}
 
@@ -165,20 +165,32 @@ export class RfSandbox extends SafeHTMLElement {
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
 
-		// For 'auto' theme, check OS preference to set initial .dark class
-		const autoScript = (!theme || theme === 'auto') ? `
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.classList.add('dark');
-  }` : '';
+		// Inline script that runs BEFORE any framework CDN to guarantee
+		// .dark / data-theme are on <html> via JS. Mobile WebKit may not
+		// apply attributes from the <html> tag in srcdoc iframes, so we
+		// cannot rely on HTML-parser-set attributes alone.
+		let themeScript: string;
+		if (theme === 'dark') {
+			themeScript = `<script>document.documentElement.className='dark';document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.colorScheme='dark'<\/script>`;
+		} else if (theme === 'light') {
+			themeScript = `<script>document.documentElement.setAttribute('data-theme','light');document.documentElement.style.colorScheme='light'<\/script>`;
+		} else {
+			// Auto: detect OS preference
+			themeScript = `<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark')}<\/script>`;
+		}
 
 		return `<!DOCTYPE html>
 <html${htmlAttrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${themeScript}
 ${depTags}
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
+  /* Diagnostic: if .dark is on html, body turns dark gray. Remove after debugging. */
+  html.dark body { background: #1f2937 !important; color: #f3f4f6 !important; }
+  html[data-theme="dark"] body { background: #1f2937 !important; color: #f3f4f6 !important; }
 </style>
 </head>
 <body>
@@ -187,7 +199,7 @@ ${renderedContent}
   var ro = new ResizeObserver(function() {
     parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
   });
-  ro.observe(document.body);${autoScript}
+  ro.observe(document.body);
 <\/script>
 </body>
 </html>`;
