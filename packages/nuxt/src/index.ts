@@ -12,5 +12,8 @@ export type { RefraktMetaInput } from './composables.js';
 // Behaviors
 export { hasInteractiveRunes } from './behaviors.js';
 
+// Client-side behavior initialization
+export { useBehaviors } from './client.js';
+
 // Types
 export type { NuxtTheme, RefraktNuxtOptions } from './types.js';
