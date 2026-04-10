@@ -357,6 +357,7 @@ Architecture decision record. Captures the context, options considered, the deci
 |`status`    |String|No      |`proposed`, `accepted`, `superseded`, `deprecated`|Decision status                 |
 |`date`      |String|No      |—                                                 |Date decided (ISO 8601)         |
 |`supersedes`|String|No      |—                                                 |ID of the decision this replaces|
+|`source`    |String|No      |—                                                 |Comma-separated IDs of specs/entities this decision informs|
 |`tags`      |String|No      |—                                                 |Comma-separated labels          |
 
 **Content model:**
@@ -420,7 +421,7 @@ contentModel: {
 **Example:**
 
 ```markdoc
-{% decision id="ADR-007" status="accepted" date="2026-03-11" tags="tint,css" %}
+{% decision id="ADR-007" status="accepted" date="2026-03-11" source="SPEC-024" tags="tint,css" %}
 
 # Use CSS custom properties for tint token injection
 
