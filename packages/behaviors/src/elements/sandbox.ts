@@ -2,11 +2,9 @@ import { RfContext } from './context.js';
 import type { DesignTokens } from './context.js';
 import { readHiddenContent } from './helpers.js';
 
-const TAILWIND_CDN = 'https://cdn.tailwindcss.com/3.4.17';
-
 const FRAMEWORK_PRESETS: Record<string, string[]> = {
 	tailwind: [
-		`<script src="${TAILWIND_CDN}"><\/script>`,
+		'<script src="https://cdn.tailwindcss.com"><\/script>',
 		'<script>tailwind.config = { darkMode: "class" }<\/script>',
 	],
 	bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
@@ -32,7 +30,7 @@ const ROLE_FALLBACKS: Record<string, string> = {
  * - Framework preset injection (Tailwind, Bootstrap, Bulma, Pico)
  * - Design token CSS custom properties
  * - Auto-sizing via ResizeObserver + postMessage
- * - Theme synchronization via postMessage
+ * - Theme synchronization via iframe rebuild
  */
 import { SafeHTMLElement } from './ssr-safe.js';
 
@@ -158,42 +156,32 @@ export class RfSandbox extends SafeHTMLElement {
 	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
 		theme = theme || RfContext.theme;
+
+		// Apply theme on BOTH <html> and <body>. Mobile WebKit may not
+		// reliably apply or retain attributes on <html> in srcdoc iframes,
+		// so we duplicate on <body> as the primary target.
 		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark" style="color-scheme:dark"'
 			: theme === 'light' ? ' data-theme="light" style="color-scheme:light"'
 			: '';
+		const bodyClass = theme === 'dark' ? ' class="dark"'
+			: '';
+		const bodyDataTheme = (theme === 'dark' || theme === 'light') ? ` data-theme="${theme}"` : '';
 
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
-
-		// Inline script that runs BEFORE any framework CDN to guarantee
-		// .dark / data-theme are on <html> via JS. Mobile WebKit may not
-		// apply attributes from the <html> tag in srcdoc iframes, so we
-		// cannot rely on HTML-parser-set attributes alone.
-		let themeScript: string;
-		if (theme === 'dark') {
-			themeScript = `<script>document.documentElement.className='dark';document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.colorScheme='dark'<\/script>`;
-		} else if (theme === 'light') {
-			themeScript = `<script>document.documentElement.setAttribute('data-theme','light');document.documentElement.style.colorScheme='light'<\/script>`;
-		} else {
-			// Auto: detect OS preference
-			themeScript = `<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark')}<\/script>`;
-		}
 
 		return `<!DOCTYPE html>
 <html${htmlAttrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${themeScript}
 ${depTags}
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
-  /* Diagnostic: if .dark is on html, body turns dark gray. Remove after debugging. */
-  html.dark body { background: #1f2937 !important; color: #f3f4f6 !important; }
-  html[data-theme="dark"] body { background: #1f2937 !important; color: #f3f4f6 !important; }
+  body.dark, body[data-theme="dark"] { color-scheme: dark; }
 </style>
 </head>
-<body>
+<body${bodyClass}${bodyDataTheme}>
 ${renderedContent}
 <script>
   var ro = new ResizeObserver(function() {
@@ -201,6 +189,46 @@ ${renderedContent}
   });
   ro.observe(document.body);
 <\/script>
+<script>
+  // The Tailwind CDN may ignore darkMode:"class" config and generate
+  // @media (prefers-color-scheme: dark) rules instead. On desktop this
+  // works via parent color-scheme propagation; on mobile it doesn't.
+  // Fix: duplicate dark media-query rules as .dark ancestor selectors.
+  function patchDarkCSS() {
+    try {
+      for (var i = 0; i < document.styleSheets.length; i++) {
+        var sheet = document.styleSheets[i], rules;
+        try { rules = sheet.cssRules; } catch(e) { continue; }
+        for (var j = rules.length - 1; j >= 0; j--) {
+          var r = rules[j];
+          if (r instanceof CSSMediaRule && r.conditionText === '(prefers-color-scheme: dark)') {
+            for (var k = 0; k < r.cssRules.length; k++) {
+              var inner = r.cssRules[k];
+              if (inner.cssText) {
+                sheet.insertRule('.dark ' + inner.cssText, rules.length);
+              }
+            }
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  // Run after Tailwind CDN generates CSS (deferred to after current task)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(patchDarkCSS, 0); });
+  } else {
+    setTimeout(patchDarkCSS, 0);
+  }
+  // Also re-patch when Tailwind re-generates (MutationObserver on style tags)
+  new MutationObserver(function(mutations) {
+    for (var m = 0; m < mutations.length; m++) {
+      for (var n = 0; n < mutations[m].addedNodes.length; n++) {
+        if (mutations[m].addedNodes[n].nodeName === 'STYLE') { setTimeout(patchDarkCSS, 0); return; }
+      }
+    }
+  }).observe(document.head, { childList: true });
+<\/script>${(!theme || theme === 'auto') ? `
+<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.body.classList.add('dark');document.body.setAttribute('data-theme','dark')}<\/script>` : ''}
 </body>
 </html>`;
 	}
@@ -215,7 +243,7 @@ ${renderedContent}
 
 		if (framework && FRAMEWORK_PRESETS[framework]) {
 			if (framework === 'tailwind' && tokens) {
-				tags.push(`<script src="${TAILWIND_CDN}"><\\/script>`);
+				tags.push('<script src="https://cdn.tailwindcss.com"><\\/script>');
 				const tokenConfig = this.buildTailwindTokenConfig(tokens);
 				if (tokenConfig) {
 					tags.push(tokenConfig);
