@@ -33,25 +33,6 @@ export const codegroup = createContentModelSchema({
 	},
 	transform(resolved, attrs, config) {
 		const customLabels = (attrs.labels as string | undefined)?.split(',').map(l => l.trim()) ?? [];
-		const tabItems: TagType[] = [];
-		const panelItems: TagType[] = [];
-
-		const panels = asNodes(resolved.panels);
-		for (const child of panels) {
-			const lang = child.attributes.language || 'shell';
-			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
-
-			const nameSpan = new Tag('span', {}, [label]);
-			tabItems.push(new Tag('button', { 'data-name': 'tab', role: 'tab' }, [nameSpan]));
-
-			const code = Markdoc.transform(child, config);
-			panelItems.push(new Tag('div', { role: 'tabpanel' }, [code]));
-		}
-
-		const tabs = new RenderableNodeCursor(tabItems);
-		const panelsCursor = new RenderableNodeCursor(panelItems);
-		const tabList = tabs.wrap('div', { role: 'tablist' });
-		const panelList = panelsCursor.wrap('div');
 
 		const properties: Record<string, any> = {};
 		const children: any[] = [];
@@ -68,6 +49,40 @@ export const codegroup = createContentModelSchema({
 			properties.overflow = overflowMeta;
 			children.push(overflowMeta);
 		}
+
+		const panels = asNodes(resolved.panels);
+		const chromeOnly = panels.length === 1 && customLabels.length === 0;
+
+		if (chromeOnly) {
+			const code = Markdoc.transform(panels[0], config);
+			children.push(code);
+
+			return createComponentRenderable({ rune: 'code-group',
+				tag: 'section',
+				properties,
+				refs: {},
+				children,
+			});
+		}
+
+		const tabItems: TagType[] = [];
+		const panelItems: TagType[] = [];
+
+		for (const child of panels) {
+			const lang = child.attributes.language || 'shell';
+			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
+
+			const nameSpan = new Tag('span', {}, [label]);
+			tabItems.push(new Tag('button', { 'data-name': 'tab', role: 'tab' }, [nameSpan]));
+
+			const code = Markdoc.transform(child, config);
+			panelItems.push(new Tag('div', { role: 'tabpanel' }, [code]));
+		}
+
+		const tabs = new RenderableNodeCursor(tabItems);
+		const panelsCursor = new RenderableNodeCursor(panelItems);
+		const tabList = tabs.wrap('div', { role: 'tablist' });
+		const panelList = panelsCursor.wrap('div');
 
 		children.push(tabList.next(), panelList.next());
 

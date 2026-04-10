@@ -1,11 +1,11 @@
 ---
 title: Codegroup
-description: Tabbed code block with language tabs
+description: Tabbed code blocks and styled code chrome
 ---
 
 # Codegroup
 
-Display multiple code blocks in a tabbed view. Each fenced code block becomes a tab, with the language automatically used as the tab name.
+Display code blocks with terminal-style chrome. Multiple fences become a tabbed view with language-based tab names. A single fence without labels renders as a clean code block with just the chrome — no tabs.
 
 ## Basic usage
 
@@ -53,11 +53,28 @@ export default function App() {
 
 ## With title
 
-Use the `title` attribute to display a filename or label in the topbar.
+Use the `title` attribute to display a filename or label in the topbar. With a single code fence and no `labels`, the codegroup renders as chrome-only — the topbar and code block without any tabs.
 
 {% preview source=true %}
 
 {% codegroup title="app.js" %}
+```js
+import express from 'express';
+
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+```
+{% /codegroup %}
+
+{% /preview %}
+
+To force a tab bar on a single fence, provide the `labels` attribute.
+
+{% preview source=true %}
+
+{% codegroup title="server" labels="Express" %}
 ```js
 import express from 'express';
 

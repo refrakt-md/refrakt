@@ -89,7 +89,7 @@ const x = 1;
     expect(titleMeta).toBeDefined();
   });
 
-  it('should work with a single code fence', () => {
+  it('should emit chrome-only (no tabs) for a single fence without labels', () => {
     const result = parse(`{% codegroup %}
 \`\`\`js
 const x = 1;
@@ -99,6 +99,26 @@ const x = 1;
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
     expect(tag).toBeDefined();
     const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
+    expect(tabItems.length).toBe(0);
+    const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'panel');
+    expect(panels.length).toBe(0);
+    // Code block should still be present
+    const codeBlock = findTag(tag!, t => t.name === 'pre');
+    expect(codeBlock).toBeDefined();
+  });
+
+  it('should still show tabs for a single fence with explicit labels', () => {
+    const result = parse(`{% codegroup labels="MyFile" %}
+\`\`\`js
+const x = 1;
+\`\`\`
+{% /codegroup %}`);
+
+    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
+    expect(tag).toBeDefined();
+    const tabItems = findAllTags(tag!, t => t.name === 'button' && t.attributes['data-name'] === 'tab');
     expect(tabItems.length).toBe(1);
+    const firstSpan = findTag(tabItems[0], t => t.name === 'span');
+    expect(firstSpan?.children).toContain('MyFile');
   });
 });
