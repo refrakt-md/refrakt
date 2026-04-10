@@ -188,6 +188,9 @@ ${themeScript}
 ${depTags}
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
+  /* Diagnostic: if .dark is on html, body turns dark gray. Remove after debugging. */
+  html.dark body { background: #1f2937 !important; color: #f3f4f6 !important; }
+  html[data-theme="dark"] body { background: #1f2937 !important; color: #f3f4f6 !important; }
 </style>
 </head>
 <body>
