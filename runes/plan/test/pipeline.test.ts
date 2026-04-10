@@ -612,6 +612,136 @@ Description.
 		expect(implementsList).toBeDefined();
 	});
 
+	it('creates informs relationship from decision to spec via source attribute', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+# Use BEM naming
+## Context
+Need naming convention.
+## Decision
+BEM.
+{% /decision %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		// ADR-010 should have an 'informs' relationship to SPEC-001
+		const decisionRels = planData.relationships.get('ADR-010');
+		expect(decisionRels).toBeDefined();
+		const informsRel = decisionRels!.find((r: any) => r.kind === 'informs');
+		expect(informsRel).toBeDefined();
+		expect(informsRel!.toId).toBe('SPEC-001');
+
+		// SPEC-001 should have an 'informed-by' relationship to ADR-010
+		const specRels = planData.relationships.get('SPEC-001');
+		expect(specRels).toBeDefined();
+		const informedByRel = specRels!.find((r: any) => r.kind === 'informed-by');
+		expect(informedByRel).toBeDefined();
+		expect(informedByRel!.toId).toBe('ADR-010');
+	});
+
+	it('renders informed-by decisions as decision entries on spec page', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+# Use BEM naming
+## Context
+Context.
+## Decision
+Decision.
+{% /decision %}`),
+		];
+
+		const { processed } = runFullPipeline(pages);
+
+		// The spec page should have a "Decisions" section with decision entries
+		const specPage = processed[0];
+		const relSection = findTag(specPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
+		expect(relSection).toBeDefined();
+		const informedByGroup = findTag(relSection!, t =>
+			t.attributes.class === 'rf-plan-relationships__group' &&
+			t.attributes['data-kind'] === 'informed-by',
+		);
+		expect(informedByGroup).toBeDefined();
+
+		// Should render decision entries (not plain list items)
+		const entries = findAllTags(informedByGroup!, t => t.attributes.class === 'rf-decision-log__entry');
+		expect(entries).toHaveLength(1);
+		expect(entries[0].attributes['data-id']).toBe('ADR-010');
+
+		// Entries container should be an ol
+		const entriesList = findTag(informedByGroup!, t => t.attributes.class === 'rf-plan-relationships__decisions');
+		expect(entriesList).toBeDefined();
+		expect(entriesList!.name).toBe('ol');
+	});
+
+	it('does not duplicate decision source references as related', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+# Decision about SPEC-001
+## Context
+See SPEC-001 for details.
+## Decision
+Decision.
+{% /decision %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		// ADR-010 references SPEC-001 both via source= and in text content
+		// Should only have 'informs', not also 'related'
+		const decisionRels = planData.relationships.get('ADR-010');
+		expect(decisionRels).toBeDefined();
+		const toSpec = decisionRels!.filter((r: any) => r.toId === 'SPEC-001');
+		expect(toSpec).toHaveLength(1);
+		expect(toSpec[0].kind).toBe('informs');
+	});
+
+	it('decision informs shows on decision page as Informs link', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+# Use BEM naming
+## Context
+Context.
+## Decision
+Decision.
+{% /decision %}`),
+		];
+
+		const { processed } = runFullPipeline(pages);
+
+		// The decision page should have an "Informs" section (plain list, not cards)
+		const decisionPage = processed[1];
+		const relSection = findTag(decisionPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
+		expect(relSection).toBeDefined();
+		const informsGroup = findTag(relSection!, t =>
+			t.attributes.class === 'rf-plan-relationships__group' &&
+			t.attributes['data-kind'] === 'informs',
+		);
+		expect(informsGroup).toBeDefined();
+
+		// Informs should use the list format (not decision entries)
+		const informsList = findTag(informsGroup!, t => t.attributes.class === 'rf-plan-relationships__list');
+		expect(informsList).toBeDefined();
+	});
+
 	it('supports source attribute on bug items', () => {
 		const pages = [
 			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}

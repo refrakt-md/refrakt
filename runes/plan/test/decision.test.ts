@@ -48,6 +48,20 @@ Context.
 		expect(tag).toBeDefined();
 	});
 
+	it('should pass source as meta', () => {
+		const result = parse(`{% decision id="ADR-010" status="proposed" date="2026-03-15" source="SPEC-001" %}
+# Some decision
+
+## Context
+Context here.
+{% /decision %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
+		const metas = findAllTags(tag!, t => t.name === 'meta');
+
+		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('SPEC-001');
+	});
+
 	it('should handle sections', () => {
 		const result = parse(`{% decision id="ADR-007" %}
 # Decision title

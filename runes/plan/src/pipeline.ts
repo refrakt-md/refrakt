@@ -15,7 +15,7 @@ const RUNE_FIELDS: Record<string, string[]> = {
 	spec: ['id', 'status', 'version', 'supersedes', 'tags', 'modified'],
 	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
 	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
-	decision: ['id', 'status', 'date', 'supersedes', 'tags', 'modified'],
+	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags', 'modified'],
 	milestone: ['name', 'status', 'target', 'modified'],
 };
 
@@ -265,7 +265,7 @@ export interface EntityRelationship {
 	toId: string;
 	toType: string;
 	/** Relationship kind */
-	kind: 'blocks' | 'blocked-by' | 'implements' | 'implemented-by' | 'related';
+	kind: 'blocks' | 'blocked-by' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'related';
 }
 
 export interface PlanAggregatedData {
@@ -390,10 +390,15 @@ export const planPipelineHooks: PackagePipelineHooks = {
 		// Track IDs already linked via source= to avoid duplicate 'related' edges
 		const sourceLinked = new Set<string>();
 
-		// Process structured source= references → implements / implemented-by
+		// Process structured source= references → implements / implemented-by (or informs / informed-by for decisions)
 		for (const [fromId, refs] of _sourceReferences) {
 			const fromEntity = allEntities.get(fromId);
 			if (!fromEntity) continue;
+
+			// Decisions use informs/informed-by; work/bug use implements/implemented-by
+			const isDecision = fromEntity.type === 'decision';
+			const forwardKind: EntityRelationship['kind'] = isDecision ? 'informs' : 'implements';
+			const reverseKind: EntityRelationship['kind'] = isDecision ? 'informed-by' : 'implemented-by';
 
 			for (const ref of refs) {
 				const toEntity = allEntities.get(ref.id);
@@ -401,17 +406,17 @@ export const planPipelineHooks: PackagePipelineHooks = {
 
 				sourceLinked.add(`${fromId}→${ref.id}`);
 
-				// A implements B
+				// A implements/informs B
 				addRel(fromId, {
 					fromId, fromType: fromEntity.type,
 					toId: ref.id, toType: toEntity.type,
-					kind: 'implements',
+					kind: forwardKind,
 				});
-				// B is implemented by A
+				// B is implemented-by/informed-by A
 				addRel(ref.id, {
 					fromId: ref.id, fromType: toEntity.type,
 					toId: fromId, toType: fromEntity.type,
-					kind: 'implemented-by',
+					kind: reverseKind,
 				});
 			}
 		}
@@ -862,8 +867,8 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
-const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'implements': 2, 'implemented-by': 3, 'related': 4 };
-const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'related': 'Related' };
+const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'implements': 2, 'implemented-by': 3, 'informs': 4, 'informed-by': 5, 'related': 6 };
+const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'informs': 'Informs', 'informed-by': 'Decisions', 'related': 'Related' };
 
 /** Look up an entity across all aggregated type arrays */
 function findEntity(id: string, data: PlanAggregatedData): EntityRegistration | undefined {
@@ -921,6 +926,27 @@ function buildRelationshipsSection(
 				}, [
 					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
 					new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
+				]));
+			}
+			continue;
+		}
+
+		// "Informed by" renders decision entry cards instead of plain links
+		if (kind === 'informed-by') {
+			const entries: any[] = [];
+			for (const rel of kindRels) {
+				const target = findEntity(rel.toId, data);
+				if (target) {
+					entries.push(buildDecisionEntry(target));
+				}
+			}
+			if (entries.length > 0) {
+				groups.push(new Tag('div', {
+					class: 'rf-plan-relationships__group',
+					'data-kind': kind,
+				}, [
+					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
+					new Tag('ol', { class: 'rf-plan-relationships__decisions' }, entries),
 				]));
 			}
 			continue;
