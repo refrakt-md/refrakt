@@ -36,8 +36,16 @@
 
 /* Wrap mode — float-based text wrapping */
 .rf-mediatext[data-wrap="true"] .rf-mediatext__media {
-	max-width: 50%;
 	margin-bottom: 1rem;
+}
+.rf-mediatext[data-ratio="1:1"][data-wrap="true"] .rf-mediatext__media {
+	max-width: 50%;
+}
+.rf-mediatext[data-ratio="1:2"][data-wrap="true"] .rf-mediatext__media {
+	max-width: 33.333%;
+}
+.rf-mediatext[data-ratio="2:1"][data-wrap="true"] .rf-mediatext__media {
+	max-width: 66.666%;
 }
 .rf-mediatext--left[data-wrap="true"] .rf-mediatext__media {
 	float: left;

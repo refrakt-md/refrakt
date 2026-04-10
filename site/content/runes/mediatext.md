@@ -14,7 +14,7 @@ Place an image alongside text — the image is automatically extracted and place
 {% preview source=true %}
 
 {% mediatext align="left" ratio="1:1" %}
-![Mountain landscape](https://picsum.photos/seed/mountain/600/400)
+![Mountain landscape](https://assets.refrakt.md/media-text-valley.jpg)
 
 The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
 
@@ -30,11 +30,11 @@ Flip the layout by setting `align="right"`.
 {% preview source=true %}
 
 {% mediatext align="right" ratio="1:2" %}
-![Portrait](https://picsum.photos/seed/portrait/400/500)
+![Ancient forest](https://assets.refrakt.md/media-text-old-growth.jpg)
 
-Dr. Elena Vasquez has spent two decades studying marine ecosystems in the Pacific. Her research on coral reef resilience has informed conservation policy across twelve nations.
+Old-growth forests like this one in the Pacific Northwest contain trees over 500 years old, forming dense canopies that filter sunlight into soft, dappled patterns on the forest floor. The thick understory of ferns and moss supports an ecosystem found nowhere else on earth.
 
-"The ocean doesn't care about borders," she says. "Neither should our efforts to protect it."
+Walking through these forests feels like stepping back in time. The silence is broken only by birdsong and the occasional crack of a falling branch, while the air carries the rich scent of cedar and damp earth.
 {% /mediatext %}
 
 {% /preview %}
@@ -45,10 +45,12 @@ Enable `wrap` for text that flows around the image rather than staying in a stri
 
 {% preview source=true %}
 
-{% mediatext align="left" ratio="1:2" wrap=true %}
-![Small illustration](https://picsum.photos/seed/sketch/300/300)
+{% mediatext align="left" ratio="2:1" wrap=true %}
+![Japanese zen garden](https://assets.refrakt.md/media-text-zen-garden.jpg)
 
-When text wrapping is enabled, the body text flows around the media element rather than sitting in a rigid side-by-side column layout. This creates a more natural, editorial feel — especially useful for smaller images or illustrations that don't need to dominate the layout.
+The Japanese zen garden, or *karesansui*, is an art form centuries in the making. Raked gravel represents flowing water, while carefully placed stones suggest mountains rising from the sea. Bonsai trees — shaped over decades of patient pruning — anchor the composition with gnarled trunks and delicate canopies that echo their full-sized counterparts in miniature.
+
+In spring, cherry blossoms drift across the garden like pink snow, settling on the raked patterns and dissolving the boundary between the designed and the natural. The transience of the blossoms is central to the experience — a reminder that beauty is most vivid in its passing. Visitors often sit in silence on the wooden engawa, watching petals fall, letting the stillness of the garden quiet the mind.
 {% /mediatext %}
 
 {% /preview %}
