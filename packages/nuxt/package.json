@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/nuxt",
   "description": "Nuxt module for refrakt.md — render Markdoc runes in Nuxt projects",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,10 +29,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/behaviors": "0.9.4",
-    "@refrakt-md/content": "0.9.4",
-    "@refrakt-md/transform": "0.9.4",
-    "@refrakt-md/types": "0.9.4"
+    "@refrakt-md/behaviors": "0.9.5",
+    "@refrakt-md/content": "0.9.5",
+    "@refrakt-md/transform": "0.9.5",
+    "@refrakt-md/types": "0.9.5"
   },
   "devDependencies": {
     "nuxt": "^3.0.0",

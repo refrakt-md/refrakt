@@ -6,6 +6,18 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.9.5
+
+- Fix sidenote rune rendering empty due to minimal density hiding body
+- Fix juxtapose label rendering and restyle toggle buttons
+- Unwrap runes from paragraph wrappers in juxtapose panels
+- Fix diagram surface and style mermaid diagrams with Lumina tokens
+- Fix mediatext wrap mode ignoring ratio attribute
+- Fix budget estimate indicator and improve examples
+- Fix sandbox dark mode on mobile browsers
+- Improve SEO and AI discoverability
+- - Fix annotate rune: margin notes invisible, inline notes not inline
+
 ## v0.9.4 - April 9, 2026
 
 - Fix Vite dev server warnings: deprecated svelte:component, dynamic imports, void elements

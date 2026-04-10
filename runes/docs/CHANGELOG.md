@@ -1,5 +1,14 @@
 # @refrakt-md/docs
 
+## 0.9.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.9.5
+  - @refrakt-md/transform@0.9.5
+  - @refrakt-md/types@0.9.5
+
 ## 0.9.4
 
 ### Patch Changes

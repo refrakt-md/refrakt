@@ -1,5 +1,21 @@
 # @refrakt-md/transform
 
+## 0.9.5
+
+### Patch Changes
+
+- - Fix annotate rune: margin notes invisible, inline notes not inline
+  - Fix sidenote rune rendering empty due to minimal density hiding body
+  - Fix juxtapose label rendering and restyle toggle buttons
+  - Unwrap runes from paragraph wrappers in juxtapose panels
+  - Fix diagram surface and style mermaid diagrams with Lumina tokens
+  - Fix mediatext wrap mode ignoring ratio attribute
+  - Fix budget estimate indicator and improve examples
+  - Fix sandbox dark mode on mobile browsers
+  - Improve SEO and AI discoverability
+- Updated dependencies
+  - @refrakt-md/types@0.9.5
+
 ## 0.9.4
 
 ### Patch Changes
