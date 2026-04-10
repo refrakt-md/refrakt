@@ -141,7 +141,7 @@ export function unwrapParagraphImages(nodes: RenderableTreeNode[]): RenderableTr
       node.name === 'p' &&
       node.children.length === 1 &&
       Markdoc.Tag.isTag(node.children[0]) &&
-      node.children[0].name === 'img'
+      (node.children[0].name === 'img' || node.children[0].attributes?.['data-rune'])
     ) {
       return node.children[0];
     }
