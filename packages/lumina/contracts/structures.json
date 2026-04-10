@@ -2352,7 +2352,8 @@
 			"dataRune": "event",
 			"childOrder": [
 				"header",
-				"{content:content}"
+				"{content:content}",
+				"register"
 			],
 			"modifiers": {
 				"date": {
@@ -2383,8 +2384,7 @@
 					"source": "structure",
 					"conditionAny": [
 						"date",
-						"location",
-						"url"
+						"location"
 					]
 				},
 				"meta": {
@@ -2404,7 +2404,6 @@
 					"tag": "a",
 					"selector": ".rf-event__register",
 					"source": "structure",
-					"parent": "header",
 					"condition": "url"
 				},
 				"content": {

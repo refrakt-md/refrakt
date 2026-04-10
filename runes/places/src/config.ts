@@ -25,7 +25,7 @@ export const config: Record<string, RuneConfig> = {
 		structure: {
 			header: {
 				tag: 'div', before: true,
-				conditionAny: ['date', 'location', 'url'],
+				conditionAny: ['date', 'location'],
 				children: [
 					{
 						tag: 'div', ref: 'meta',
@@ -35,12 +35,12 @@ export const config: Record<string, RuneConfig> = {
 							{ tag: 'span', ref: 'meta-item', metaText: 'location', label: 'Location:', condition: 'location', metaType: 'category', metaRank: 'primary' },
 						],
 					},
-					{
-						tag: 'a', ref: 'register', condition: 'url',
-						attrs: { href: { fromModifier: 'url' } },
-						children: ['Register'],
-					},
 				],
+			},
+			register: {
+				tag: 'a', ref: 'register', before: false, condition: 'url',
+				attrs: { href: { fromModifier: 'url' } },
+				children: ['Register'],
 			},
 		},
 	},

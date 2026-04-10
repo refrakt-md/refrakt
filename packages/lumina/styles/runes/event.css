@@ -14,7 +14,7 @@
 	font-weight: 500;
 	font-size: 0.875rem;
 	text-decoration: none;
-	margin-left: auto;
+	margin-top: 1.5rem;
 }
 .rf-event__register:hover {
 	background: var(--rf-color-primary-hover);
