@@ -359,7 +359,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		Sidenote: {
 			block: 'sidenote',
-			defaultDensity: 'minimal',
+			defaultDensity: 'full',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 			sections: { body: 'body' },
 			editHints: { body: 'inline' },
