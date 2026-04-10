@@ -193,8 +193,13 @@ ${renderedContent}
   // The Tailwind CDN may ignore darkMode:"class" config and generate
   // @media (prefers-color-scheme: dark) rules instead. On desktop this
   // works via parent color-scheme propagation; on mobile it doesn't.
-  // Fix: duplicate dark media-query rules as .dark ancestor selectors.
+  // Fix: when theme is forced (not auto), rewrite the media-query rules:
+  //  - dark: duplicate as .dark ancestor selectors, remove originals
+  //  - light: just remove originals (prevents OS dark from leaking in)
+  //  - auto: leave untouched (media query follows OS preference)
+  var forcedTheme = document.body.getAttribute('data-theme');
   function patchDarkCSS() {
+    if (!forcedTheme) return; // auto — leave media queries intact
     try {
       for (var i = 0; i < document.styleSheets.length; i++) {
         var sheet = document.styleSheets[i], rules;
@@ -202,12 +207,18 @@ ${renderedContent}
         for (var j = rules.length - 1; j >= 0; j--) {
           var r = rules[j];
           if (r instanceof CSSMediaRule && r.conditionText === '(prefers-color-scheme: dark)') {
-            for (var k = 0; k < r.cssRules.length; k++) {
-              var inner = r.cssRules[k];
-              if (inner.cssText) {
-                sheet.insertRule('.dark ' + inner.cssText, rules.length);
+            if (forcedTheme === 'dark') {
+              for (var k = 0; k < r.cssRules.length; k++) {
+                var inner = r.cssRules[k];
+                if (inner.cssText) {
+                  sheet.insertRule('.dark ' + inner.cssText, rules.length);
+                }
               }
             }
+            // Remove original media query rule — for dark, the .dark
+            // ancestor selectors replace it; for light, removing it
+            // prevents OS dark preference from leaking in.
+            sheet.deleteRule(j);
           }
         }
       }
