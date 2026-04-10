@@ -281,12 +281,39 @@ useHead(head);
 | `<meta property="og:image">` | `seo.og.image` |
 | `<meta property="og:url">` | `seo.og.url` |
 | `<meta property="og:type">` | `seo.og.type` |
-| `<meta name="twitter:card">` | Set to `summary_large_image` when `og:image` is present |
+| `<meta name="twitter:card">` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `<meta name="twitter:title">` | `seo.og.title` or `title` |
+| `<meta name="twitter:description">` | `seo.og.description` or `frontmatter.description` |
+| `<meta name="twitter:image">` | `seo.og.image` (when present) |
 | `<script type="application/ld+json">` | Each entry in `seo.jsonLd` |
 
-## Behavior Lifecycle
+## useBehaviors Composable
 
-Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript. In the Nuxt adapter, behaviors are initialized after the DOM is ready and cleaned up on teardown:
+The `useBehaviors` composable is the recommended way to initialize interactive rune behaviors in Nuxt. It handles lifecycle management, cleanup, and re-initialization on client-side navigation automatically:
+
+```typescript
+import { useBehaviors } from '@refrakt-md/nuxt/client';
+
+// In <script setup>:
+useBehaviors({
+  pages: pagesList,       // Array of page metadata for nav/search
+  currentUrl: route.path, // String or Ref<string>
+});
+```
+
+The composable:
+
+1. Dynamically imports `@refrakt-md/behaviors` on mount (no server-side import)
+2. Sets `RfContext.pages` and `RfContext.currentUrl` for nav, search, and version-switcher behaviors
+3. Registers web component elements and initializes rune + layout behaviors
+4. Cleans up all listeners on unmount
+5. When `currentUrl` is a `Ref`, re-initializes automatically on client-side navigation
+
+The `./client` subpath export keeps the composable out of the main entry point, so server-side imports of `@refrakt-md/nuxt` never pull in Vue client APIs.
+
+## Manual Behavior Lifecycle
+
+If you need more control than `useBehaviors` provides, you can initialize behaviors manually:
 
 ```typescript
 import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
@@ -338,17 +365,7 @@ This imports the full Lumina CSS bundle (design tokens + rune styles). For custo
 
 The Nuxt module automatically configures the Vue compiler to treat tags starting with `rf-` as custom elements. This prevents Vue from issuing warnings about unknown components when the identity transform produces custom element tags.
 
-If you need to add additional custom element prefixes, extend the config manually:
-
-```typescript
-export default defineNuxtConfig({
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => tag.startsWith('rf-') || tag.startsWith('my-'),
-    },
-  },
-});
-```
+The module composes with any existing `isCustomElement` function — if you or another Nuxt module have already registered custom element prefixes, those are preserved. You can add additional prefixes in `nuxt.config.ts` before loading the refrakt module, or register them in another module.
 
 ## hasInteractiveRunes
 
@@ -369,7 +386,7 @@ if (hasInteractiveRunes(page.renderable)) {
 | **Rendering** | Svelte Renderer component walks the tree, dispatching to registered components | HTML string via `renderToHtml()`, injected with `v-html` |
 | **Component registry** | Maps rune `typeof` to Svelte components for custom rendering | No component registry — all runes render through identity transform |
 | **Element overrides** | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic); element override system available for user-defined overrides | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic) |
-| **Behaviors** | `use:behaviors` Svelte action handles lifecycle | `onMounted` / `onBeforeUnmount` + route watcher |
+| **Behaviors** | `use:behaviors` Svelte action handles lifecycle | `useBehaviors` composable or manual `onMounted` / `onBeforeUnmount` |
 | **SEO** | `ThemeShell` injects into `<svelte:head>` | `buildRefraktHead` + `useHead()` |
 | **HMR** | Vite plugin with virtual modules and content HMR | Nuxt module watches content directory |
 | **Theme type** | `SvelteTheme` (includes components, elements) | `NuxtTheme` (manifest + layouts only) |

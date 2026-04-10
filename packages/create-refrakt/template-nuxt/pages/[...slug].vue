@@ -6,7 +6,8 @@ import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
-import { renderPage, buildRefraktHead } from '@refrakt-md/nuxt';
+import { renderPage, buildRefraktHead, hasInteractiveRunes } from '@refrakt-md/nuxt';
+import { useBehaviors } from '@refrakt-md/nuxt/client';
 import type { RendererNode } from '@refrakt-md/types';
 import type { RefraktConfig } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
@@ -90,6 +91,7 @@ const { data } = await useAsyncData('refrakt-' + route.path, async () => {
 			frontmatter: currentPage.frontmatter,
 			seo: currentPage.seo,
 		}),
+		pages,
 	};
 });
 
@@ -99,6 +101,11 @@ if (data.value?.seo) {
 		meta: data.value.seo.meta,
 		script: data.value.seo.script,
 	});
+}
+
+// Initialize interactive rune behaviors on the client
+if (data.value?.pages) {
+	useBehaviors({ pages: data.value.pages, currentUrl: route.path });
 }
 </script>
 

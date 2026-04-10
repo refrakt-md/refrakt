@@ -103,6 +103,8 @@ export default function (eleventyConfig) {
 | `configPath` | `string` | `'./refrakt.config.json'` | Path to the refrakt config file |
 | `cssFiles` | `string[]` | — | CSS file paths to passthrough copy (typically from `node_modules`) |
 | `cssPrefix` | `string` | `'/css'` | URL prefix for copied CSS files in the output |
+| `behaviorFile` | `string` | — | Path to the behaviors JS bundle for passthrough copy |
+| `jsPrefix` | `string` | `'/js'` | URL prefix for copied JS files in the output |
 
 ## Global Data File
 
@@ -130,7 +132,7 @@ export default createDataFile({
 | `theme` | `EleventyTheme` | — | Theme definition (required) |
 | `contentDir` | `string` | `'./content'` | Path to the content directory |
 | `basePath` | `string` | `'/'` | Base URL path for all generated pages |
-| `configPath` | `string` | `'./refrakt.config.json'` | Path to refrakt config |
+| `packages` | `RunePackage[]` | — | Community rune packages to include in the content pipeline |
 
 ### EleventyPageData
 
@@ -138,16 +140,18 @@ Each item in the returned array has this shape:
 
 ```typescript
 interface EleventyPageData {
-  url: string;           // e.g. '/docs/getting-started/'
-  title: string;         // Page title from frontmatter
-  html: string;          // Pre-rendered HTML (identity + layout transform)
+  url: string;                    // e.g. '/docs/getting-started/'
+  title: string;                  // Page title from frontmatter
+  html: string;                   // Pre-rendered HTML (identity + layout transform)
   seo: {
-    title: string;       // Resolved page title
-    description: string; // Meta description
-    metaTags: string;    // Pre-built <meta> tags (OG, Twitter)
-    jsonLd: string;      // Pre-built <script type="application/ld+json"> tags
+    title: string;                // Resolved page title
+    description: string;          // Meta description
+    metaTags: string;             // Pre-built <meta> tags (OG, Twitter)
+    jsonLd: string;               // Pre-built <script type="application/ld+json"> tags
   };
   frontmatter: Record<string, unknown>;
+  contextJson: string;            // Pre-serialized JSON for #rf-context (pages + currentUrl)
+  hasInteractiveRunes: boolean;   // Whether this page needs behavior JS
 }
 ```
 
@@ -169,20 +173,32 @@ Use a Nunjucks template that outputs the pre-rendered HTML with the `| safe` fil
 </head>
 <body>
   {{ page.html | safe }}
+  <script type="application/json" id="rf-context">{{ page.contextJson | safe }}</script>
+  {% if page.hasInteractiveRunes %}
   <script type="module">
     import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
 
-    RfContext.currentUrl = '{{ page.url }}';
+    const contextEl = document.getElementById('rf-context');
+    if (contextEl) {
+      try {
+        const ctx = JSON.parse(contextEl.textContent || '{}');
+        RfContext.pages = ctx.pages;
+        RfContext.currentUrl = ctx.currentUrl;
+      } catch {}
+    }
     registerElements();
     initRuneBehaviors();
     initLayoutBehaviors();
   </script>
+  {% endif %}
 </body>
 </html>
 ```
 
+The `contextJson` field contains the pre-serialized pages list and current URL. The `#rf-context` script element makes this data available to behaviors like navigation, search, and version-switcher. The behavior script is conditionally included based on `hasInteractiveRunes` — pages with only static runes ship zero JavaScript.
+
 {% hint type="warning" %}
-Always use `| safe` when outputting `page.html`, `page.seo.metaTags`, and `page.seo.jsonLd`. Without it, Nunjucks escapes the HTML entities and the output renders as visible markup instead of formatted content.
+Always use `| safe` when outputting `page.html`, `page.seo.metaTags`, `page.seo.jsonLd`, and `page.contextJson`. Without it, Nunjucks escapes the HTML entities and the output renders as visible markup instead of formatted content.
 {% /hint %}
 
 A reference template is included in the package at `@refrakt-md/eleventy/templates/base.njk`.
@@ -235,30 +251,36 @@ cssFiles: [
 
 ## Behavior Initialization
 
-Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript from `@refrakt-md/behaviors`. Copy the behaviors bundle to your output and initialize it in the template:
-
-{% codegroup labels="eleventy.config.js" %}
+Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript from `@refrakt-md/behaviors`. Use the plugin's `behaviorFile` option to copy the behaviors bundle to your output:
 
 ```javascript
-// add passthrough copy for behaviors
+eleventyConfig.addPlugin(refraktPlugin, {
+  cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
+  behaviorFile: 'node_modules/@refrakt-md/behaviors/dist/index.js',
+  jsPrefix: '/js',
+});
+```
+
+Or use Eleventy's passthrough copy directly:
+
+```javascript
 eleventyConfig.addPassthroughCopy({
   'node_modules/@refrakt-md/behaviors/dist/index.js': 'js/behaviors.js',
 });
 ```
 
-{% /codegroup %}
+### hasInteractiveRunes
 
-The template script block registers web component elements, sets the current URL for active-link behaviors, and initializes rune and layout behaviors:
+The `hasInteractiveRunes()` utility checks whether a rendered tree contains runes that need client-side behavior initialization. Each `EleventyPageData` item includes a pre-computed `hasInteractiveRunes` boolean, which the base template uses to conditionally include the behavior script — pages with only static runes ship zero JavaScript.
 
-```html
-<script type="module">
-  import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
+You can also use `hasInteractiveRunes` directly in custom templates or build scripts:
 
-  RfContext.currentUrl = window.location.pathname;
-  registerElements();
-  initRuneBehaviors();
-  initLayoutBehaviors();
-</script>
+```typescript
+import { hasInteractiveRunes } from '@refrakt-md/eleventy';
+
+if (hasInteractiveRunes(page.renderable)) {
+  // Include behavior script
+}
 ```
 
 {% hint type="note" %}
@@ -289,9 +311,9 @@ The Eleventy adapter sits between the HTML adapter and the SvelteKit adapter in 
 |---------|----------|---------|
 | `@refrakt-md/content` | Yes | Content loading, routing, layout cascade, cross-page pipeline |
 | `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
+| `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement + `hasInteractiveRunes` detection |
 | `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
 | `@11ty/eleventy` | Peer | Eleventy v3 (ESM) |
-| `@refrakt-md/behaviors` | Optional | Client-side progressive enhancement for interactive runes |
 
 ## Theme Integration
 
