@@ -182,7 +182,17 @@ export const coreConfig: ThemeConfig = {
 				};
 			},
 		},
-		Breadcrumb: { block: 'breadcrumb', defaultDensity: 'minimal', editHints: { items: 'none' } },
+		Breadcrumb: {
+			block: 'breadcrumb',
+			defaultDensity: 'minimal',
+			editHints: { items: 'none' },
+			modifiers: {
+				separator: { source: 'meta', default: '/', noBemClass: true },
+			},
+			styles: {
+				separator: { prop: '--separator', template: '"{}"' },
+			},
+		},
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
 		Blog: {
 			block: 'blog',
