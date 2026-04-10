@@ -398,7 +398,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		$$mdtype: 'Tag',
 		name: 'a',
 		attributes: {
-			class: `rf-plan-sidebar__link${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
+			class: `rf-nav-item__link rf-plan-sidebar__link${dashActive ? ' rf-nav-item__link--active rf-plan-sidebar__link--active' : ''}`,
 			href: baseUrl,
 		},
 		children: ['Dashboard'],
@@ -410,7 +410,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 
 		groupChildren.push({
 			$$mdtype: 'Tag',
-			name: 'div',
+			name: 'h2',
 			attributes: { class: 'rf-plan-sidebar__group-title' },
 			children: [group.title],
 		} as unknown as RendererNode);
@@ -424,7 +424,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 					$$mdtype: 'Tag',
 					name: 'a',
 					attributes: {
-						class: `rf-plan-sidebar__link rf-plan-sidebar__status-link${isActive ? ' rf-plan-sidebar__link--active' : ''}`,
+						class: `rf-nav-item__link rf-plan-sidebar__link rf-plan-sidebar__status-link${isActive ? ' rf-nav-item__link--active rf-plan-sidebar__link--active' : ''}`,
 						href: fp.url,
 						'data-status': fp.status,
 					},
@@ -479,7 +479,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 					const isActive = item.url === activeUrl;
 					const blockerClass = item.hasUnresolvedBlockers ? ' rf-plan-sidebar__link--blocked' : '';
 					const attrs: Record<string, string> = {
-						class: `rf-plan-sidebar__link${isActive ? ' rf-plan-sidebar__link--active' : ''}${blockerClass}`,
+						class: `rf-nav-item__link rf-plan-sidebar__link${isActive ? ' rf-nav-item__link--active rf-plan-sidebar__link--active' : ''}${blockerClass}`,
 						href: item.url,
 						'data-id': item.id,
 						'data-status': item.status,
@@ -534,7 +534,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		children.push({
 			$$mdtype: 'Tag',
 			name: 'div',
-			attributes: { class: 'rf-plan-sidebar__group', 'data-type': group.type },
+			attributes: { class: 'rf-nav-group rf-plan-sidebar__group', 'data-type': group.type },
 			children: groupChildren,
 		} as unknown as RendererNode);
 	}
@@ -544,7 +544,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		const viewChildren: RendererNode[] = [];
 		viewChildren.push({
 			$$mdtype: 'Tag',
-			name: 'div',
+			name: 'h2',
 			attributes: { class: 'rf-plan-sidebar__group-title' },
 			children: ['Views'],
 		} as unknown as RendererNode);
@@ -571,7 +571,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 				$$mdtype: 'Tag',
 				name: 'a',
 				attributes: {
-					class: `rf-plan-sidebar__link${v.url === activeUrl ? ' rf-plan-sidebar__link--active' : ''}`,
+					class: `rf-nav-item__link rf-plan-sidebar__link${v.url === activeUrl ? ' rf-nav-item__link--active rf-plan-sidebar__link--active' : ''}`,
 					href: v.url,
 				},
 				children: [
@@ -608,7 +608,7 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		children.push({
 			$$mdtype: 'Tag',
 			name: 'div',
-			attributes: { class: 'rf-plan-sidebar__group', 'data-type': 'views' },
+			attributes: { class: 'rf-nav-group rf-plan-sidebar__group', 'data-type': 'views' },
 			children: viewChildren,
 		} as unknown as RendererNode);
 	}

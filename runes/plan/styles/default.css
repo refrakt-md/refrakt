@@ -82,18 +82,7 @@
 	color: var(--rf-color-muted, #6c757d);
 }
 
-.rf-plan-sidebar__group {
-	margin-block-end: var(--rf-spacing-lg, 1.5rem);
-}
-
-.rf-plan-sidebar__group-title {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--rf-color-muted, #6c757d);
-	margin-block-end: var(--rf-spacing-sm, 0.5rem);
-}
+/* Group spacing and group-title styling inherited from .rf-nav-group / .rf-nav-group h2 */
 
 /* Status sub-group */
 .rf-plan-sidebar__status-group {
@@ -156,25 +145,7 @@
 	display: none;
 }
 
-.rf-plan-sidebar__link {
-	display: block;
-	padding: 0.25rem 0.5rem;
-	border-radius: var(--rf-radius-sm, 0.25rem);
-	color: var(--rf-color-text, #212529);
-	text-decoration: none;
-	font-size: 0.8125rem;
-	transition: background 0.15s ease;
-}
-
-.rf-plan-sidebar__link:hover {
-	background: var(--rf-color-surface-active, #f1f3f5);
-}
-
-.rf-plan-sidebar__link--active {
-	background: var(--rf-color-info-bg, #e7f5ff);
-	color: var(--rf-color-info, #339af0);
-	font-weight: 600;
-}
+/* Base link, hover, and active styles inherited from .rf-nav-item__link */
 
 .rf-plan-sidebar__link--focused {
 	outline: 2px solid var(--rf-color-info, #339af0);
