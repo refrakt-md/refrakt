@@ -4,6 +4,8 @@ export default function (eleventyConfig) {
 	eleventyConfig.addPlugin(refraktPlugin, {
 		cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
 		cssPrefix: '/css',
+		behaviorFile: 'node_modules/@refrakt-md/behaviors/dist/index.js',
+		jsPrefix: '/js',
 	});
 
 	eleventyConfig.addPassthroughCopy({

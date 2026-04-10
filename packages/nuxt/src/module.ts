@@ -25,8 +25,10 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		];
 		nuxt.options.build.transpile.push(...transpile);
 
-		// Configure Vue to treat rf-* as custom elements
-		nuxt.options.vue.compilerOptions.isCustomElement = (tag: string) => tag.startsWith('rf-');
+		// Configure Vue to treat rf-* as custom elements (compose with existing)
+		const prevIsCustomElement = nuxt.options.vue.compilerOptions.isCustomElement;
+		nuxt.options.vue.compilerOptions.isCustomElement = (tag: string) =>
+			tag.startsWith('rf-') || (prevIsCustomElement ? prevIsCustomElement(tag) : false);
 
 		// Watch content directory for HMR
 		const contentDir = resolve(nuxt.options.rootDir, refraktConfig.contentDir);

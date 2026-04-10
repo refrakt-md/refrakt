@@ -28,9 +28,16 @@ export function buildMetadata(input: RefraktMetadataInput): Record<string, unkno
 	if (data.ogType) openGraph.type = data.ogType;
 	if (Object.keys(openGraph).length > 0) metadata.openGraph = openGraph;
 
+	const twitter: Record<string, unknown> = {};
+	if (data.title) twitter.title = data.title;
+	if (data.description) twitter.description = data.description;
 	if (data.ogImage) {
-		metadata.twitter = { card: 'summary_large_image' };
+		twitter.card = 'summary_large_image';
+		twitter.images = [data.ogImage];
+	} else {
+		twitter.card = 'summary';
 	}
+	if (Object.keys(twitter).length > 0) metadata.twitter = twitter;
 
 	return metadata;
 }

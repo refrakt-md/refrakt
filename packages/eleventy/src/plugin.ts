@@ -10,15 +10,22 @@ import type { RefraktEleventyOptions } from './types.js';
 export function refraktPlugin(eleventyConfig: any, options: RefraktEleventyOptions = {}): void {
 	const {
 		cssPrefix = '/css',
+		jsPrefix = '/js',
 	} = options;
 
-	// Passthrough copy Lumina CSS from node_modules
-	// Users should configure the specific paths for their theme
+	// Passthrough copy theme CSS from node_modules
 	if (options.cssFiles) {
 		for (const cssFile of options.cssFiles) {
 			if (existsSync(cssFile)) {
 				eleventyConfig.addPassthroughCopy({ [cssFile]: cssPrefix });
 			}
+		}
+	}
+
+	// Passthrough copy behaviors JS bundle
+	if (options.behaviorFile) {
+		if (existsSync(options.behaviorFile)) {
+			eleventyConfig.addPassthroughCopy({ [options.behaviorFile]: jsPrefix });
 		}
 	}
 }

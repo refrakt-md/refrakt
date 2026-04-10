@@ -21,15 +21,20 @@ export function buildRefraktHead(input: RefraktMetaInput): {
 	if (data.description) {
 		meta.push({ name: 'description', content: data.description });
 		meta.push({ property: 'og:description', content: data.description });
+		meta.push({ name: 'twitter:description', content: data.description });
 	}
 
 	if (data.title) {
 		meta.push({ property: 'og:title', content: data.title });
+		meta.push({ name: 'twitter:title', content: data.title });
 	}
 
 	if (data.ogImage) {
 		meta.push({ property: 'og:image', content: data.ogImage });
 		meta.push({ name: 'twitter:card', content: 'summary_large_image' });
+		meta.push({ name: 'twitter:image', content: data.ogImage });
+	} else {
+		meta.push({ name: 'twitter:card', content: 'summary' });
 	}
 
 	if (data.ogUrl) {

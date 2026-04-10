@@ -207,7 +207,21 @@ export async function generateMetadata({ params }) {
 }
 ```
 
-It extracts `title`, `description`, Open Graph tags, and Twitter card metadata from the page's SEO data.
+It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. The generated metadata object includes:
+
+| Field | Source |
+|-------|--------|
+| `title` | `seo.og.title` or `title` |
+| `description` | `seo.og.description` or `frontmatter.description` |
+| `openGraph.title` | `seo.og.title` or `title` |
+| `openGraph.description` | `seo.og.description` or `frontmatter.description` |
+| `openGraph.images` | `seo.og.image` (when present) |
+| `openGraph.url` | `seo.og.url` |
+| `openGraph.type` | `seo.og.type` |
+| `twitter.card` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `twitter.title` | `seo.og.title` or `title` |
+| `twitter.description` | `seo.og.description` or `frontmatter.description` |
+| `twitter.images` | `seo.og.image` (when present) |
 
 ## JSON-LD Structured Data
 

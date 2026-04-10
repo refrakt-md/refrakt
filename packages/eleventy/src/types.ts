@@ -16,4 +16,8 @@ export interface RefraktEleventyOptions {
 	cssFiles?: string[];
 	/** Path prefix for copied CSS (default: '/css') */
 	cssPrefix?: string;
+	/** Path to the behaviors JS bundle for passthrough copy */
+	behaviorFile?: string;
+	/** Path prefix for copied JS (default: '/js') */
+	jsPrefix?: string;
 }

@@ -10,13 +10,23 @@
 </head>
 <body>
   {{ html | safe }}
+  <script type="application/json" id="rf-context">{{ contextJson | safe }}</script>
+  {% if hasInteractiveRunes %}
   <script type="module">
     import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
 
-    RfContext.currentUrl = '{{ url }}';
+    const contextEl = document.getElementById('rf-context');
+    if (contextEl) {
+      try {
+        const ctx = JSON.parse(contextEl.textContent || '{}');
+        RfContext.pages = ctx.pages;
+        RfContext.currentUrl = ctx.currentUrl;
+      } catch {}
+    }
     registerElements();
     initRuneBehaviors();
     initLayoutBehaviors();
   </script>
+  {% endif %}
 </body>
 </html>
