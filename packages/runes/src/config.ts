@@ -117,7 +117,7 @@ export const coreConfig: ThemeConfig = {
 		CodeGroup: {
 			block: 'codegroup',
 			defaultDensity: 'compact',
-			modifiers: { title: { source: 'meta' }, overflow: { source: 'meta', default: 'scroll' } },
+			modifiers: { title: { source: 'meta', noBemClass: true }, overflow: { source: 'meta', default: 'scroll' } },
 			structure: {
 				topbar: {
 					tag: 'div', before: true,
