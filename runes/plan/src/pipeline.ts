@@ -905,6 +905,27 @@ function buildRelationshipsSection(
 		const kindRels = byKind.get(kind)!;
 		const label = KIND_LABELS[kind] || kind;
 
+		// "Implemented by" renders rich backlog cards instead of plain links
+		if (kind === 'implemented-by') {
+			const cards: any[] = [];
+			for (const rel of kindRels) {
+				const target = findEntity(rel.toId, data);
+				if (target) {
+					cards.push(buildEntityCard(target));
+				}
+			}
+			if (cards.length > 0) {
+				groups.push(new Tag('div', {
+					class: 'rf-plan-relationships__group',
+					'data-kind': kind,
+				}, [
+					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
+					new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
+				]));
+			}
+			continue;
+		}
+
 		const items: any[] = [];
 		for (const rel of kindRels) {
 			const targetId = rel.toId;

@@ -578,7 +578,7 @@ Description.
 
 		const { processed } = runFullPipeline(pages);
 
-		// The spec page should have an "Implemented by" section
+		// The spec page should have an "Implemented by" section with backlog cards
 		const specPage = processed[0];
 		const relSection = findTag(specPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
 		expect(relSection).toBeDefined();
@@ -588,7 +588,16 @@ Description.
 		);
 		expect(implementedByGroup).toBeDefined();
 
-		// The work page should have an "Implements" section
+		// Should render backlog cards (not list items) for implemented-by
+		const cards = findAllTags(implementedByGroup!, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(1);
+		expect(cards[0].attributes['data-id']).toBe('WORK-001');
+
+		// Cards container should be a div, not a ul
+		const cardsContainer = findTag(implementedByGroup!, t => t.attributes.class === 'rf-plan-relationships__cards');
+		expect(cardsContainer).toBeDefined();
+
+		// The work page should have an "Implements" section (still a list)
 		const workPage = processed[1];
 		const workRelSection = findTag(workPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
 		expect(workRelSection).toBeDefined();
@@ -597,6 +606,10 @@ Description.
 			t.attributes['data-kind'] === 'implements',
 		);
 		expect(implementsGroup).toBeDefined();
+
+		// Implements should still use the list format (not cards)
+		const implementsList = findTag(implementsGroup!, t => t.attributes.class === 'rf-plan-relationships__list');
+		expect(implementsList).toBeDefined();
 	});
 
 	it('supports source attribute on bug items', () => {
