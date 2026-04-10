@@ -22,7 +22,7 @@
 		const result: Record<string, any> = {};
 		for (const [k, v] of Object.entries(attrs)) {
 			if (v === undefined || v === null || v === false) continue;
-			result[k] = v === true ? '' : String(v);
+			result[k] = v === true ? true : String(v);
 		}
 		return result;
 	}
@@ -36,7 +36,7 @@
 	 *  outside the SVG namespace context during client-side navigation. */
 	function svgToHtml(tag: SerializedTag): string {
 		const attrs = Object.entries(htmlAttrs(tag.attributes))
-			.map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
+			.map(([k, v]) => v === true ? ` ${k}` : ` ${k}="${escapeAttr(String(v))}"`)
 			.join('');
 		const children = tag.children.map(child => {
 			if (typeof child === 'string') return escapeAttr(child);
@@ -61,7 +61,7 @@
 		if (n.name === 'svg') return svgToHtml(n);
 
 		const attrs = Object.entries(htmlAttrs(n.attributes))
-			.map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
+			.map(([k, v]) => v === true ? ` ${k}` : ` ${k}="${escapeAttr(String(v))}"`)
 			.join('');
 
 		if (VOID_ELEMENTS.has(n.name)) return `<${n.name}${attrs}>`;
