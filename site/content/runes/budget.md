@@ -39,13 +39,45 @@ A week in Japan — temples, food, and a night in a ryokan.
 
 {% /preview %}
 
+## Summary variant
+
+Use `variant="summary"` to show only category totals without individual line items.
+
+{% preview source=true %}
+
+{% budget currency="JPY" travelers=2 duration="5 days" variant="summary" %}
+Spring 2026
+
+# Tokyo Trip
+
+A week in Japan — temples, food, and a night in a ryokan.
+
+## Accommodation
+
+- Hotel in Shinjuku: ¥15000
+- Ryokan in Hakone: ¥25000
+
+## Transportation
+
+- Japan Rail Pass (7-day): ¥29650
+- Airport transfer: ¥3000
+- Local metro cards: ¥5000
+
+## Food & Dining
+
+- Daily meals: ¥5000
+- Sushi experience: ¥8000
+{% /budget %}
+
+{% /preview %}
+
 ## Estimates
 
 Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, or use strikethrough.
 
 {% preview source=true %}
 
-{% budget currency="USD" variant="summary" %}
+{% budget currency="USD" %}
 # Weekend Getaway
 
 ## Hotel

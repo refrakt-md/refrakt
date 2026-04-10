@@ -152,7 +152,7 @@ export const budgetCategory = createContentModelSchema({
 			Markdoc.transform(allChildren, config) as RenderableTreeNode[],
 		);
 		const labelTag = new Tag('meta', { content: attrs.label ?? '' });
-		const estimateMeta = new Tag('meta', { content: String(attrs.estimate ?? false) });
+		const estimateMeta = new Tag('meta', { content: attrs.estimate ? 'estimate' : 'false' });
 		const subtotalTag = new Tag('meta', { content: String(subtotal) });
 
 		const items = body.tag('li').typeof('BudgetLineItem');
