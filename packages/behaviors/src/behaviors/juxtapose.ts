@@ -28,7 +28,7 @@ function getPanels(el: HTMLElement): HTMLElement[] {
 }
 
 function getPanelLabel(panel: HTMLElement): string {
-	const span = panel.querySelector('[property="name"]');
+	const span = panel.querySelector('[data-name="name"]');
 	return span?.textContent?.trim() || '';
 }
 

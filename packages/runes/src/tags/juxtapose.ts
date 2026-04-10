@@ -44,8 +44,9 @@ export const juxtapose = createContentModelSchema({
 
 			return createComponentRenderable({ rune: 'juxtapose-panel',
 				tag: 'div',
-				properties: nameTag ? { name: nameTag } : {},
+				properties: {},
 				refs: {
+					...(nameTag ? { name: nameTag } : {}),
 					body: bodyRef.tag('div'),
 				},
 				children: [...(nameTag ? [nameTag] : []), bodyRef.next()],
