@@ -165,17 +165,26 @@ export class RfSandbox extends SafeHTMLElement {
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
 
-		// For 'auto' theme, check OS preference to set initial .dark class
-		const autoScript = (!theme || theme === 'auto') ? `
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.classList.add('dark');
-  }` : '';
+		// Inline script that runs BEFORE any framework CDN to guarantee
+		// .dark / data-theme are on <html> via JS. Mobile WebKit may not
+		// apply attributes from the <html> tag in srcdoc iframes, so we
+		// cannot rely on HTML-parser-set attributes alone.
+		let themeScript: string;
+		if (theme === 'dark') {
+			themeScript = `<script>document.documentElement.className='dark';document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.colorScheme='dark'<\/script>`;
+		} else if (theme === 'light') {
+			themeScript = `<script>document.documentElement.setAttribute('data-theme','light');document.documentElement.style.colorScheme='light'<\/script>`;
+		} else {
+			// Auto: detect OS preference
+			themeScript = `<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark')}<\/script>`;
+		}
 
 		return `<!DOCTYPE html>
 <html${htmlAttrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${themeScript}
 ${depTags}
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
@@ -187,7 +196,7 @@ ${renderedContent}
   var ro = new ResizeObserver(function() {
     parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
   });
-  ro.observe(document.body);${autoScript}
+  ro.observe(document.body);
 <\/script>
 </body>
 </html>`;
