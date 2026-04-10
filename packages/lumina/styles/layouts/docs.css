@@ -148,15 +148,9 @@
 	width: 0;
 }
 
-/* ---- Smooth scroll with fixed-header offset ---- */
+/* ---- Fixed-header offset ---- */
 html:has(.rf-docs-header) {
-	scroll-behavior: smooth;
 	scroll-padding-top: 5rem;
-}
-@media (prefers-reduced-motion: reduce) {
-	html:has(.rf-docs-header) {
-		scroll-behavior: auto;
-	}
 }
 
 /* ---- Mobile toolbar (hidden on desktop) ---- */
