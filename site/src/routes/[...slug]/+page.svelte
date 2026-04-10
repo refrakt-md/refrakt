@@ -21,6 +21,7 @@
 		renderable: data.renderable,
 		pages: data.pages,
 		url: data.url,
+		seo: data.seo,
 		headings: data.headings,
 	}}
 />

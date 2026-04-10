@@ -127,8 +127,9 @@
 		<meta name="twitter:card" content="summary" />
 	{/if}
 	{#if page.seo?.og.url}
-		<link rel="canonical" href={page.seo.og.url} />
-		<meta property="og:url" content={page.seo.og.url} />
+		{@const absoluteUrl = (theme.manifest.baseUrl ?? '') + page.seo.og.url}
+		<link rel="canonical" href={absoluteUrl} />
+		<meta property="og:url" content={absoluteUrl} />
 	{/if}
 	{#if page.seo?.og.type}
 		<meta property="og:type" content={page.seo.og.type} />

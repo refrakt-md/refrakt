@@ -60,6 +60,12 @@ export function loadVirtualModule(
 		lines.push('\tmanifest: {');
 		lines.push('\t\t..._manifest,');
 		lines.push(`\t\trouteRules: ${JSON.stringify(routeRules)},`);
+		if (config.baseUrl) {
+			lines.push(`\t\tbaseUrl: ${JSON.stringify(config.baseUrl)},`);
+		}
+		if (config.siteName) {
+			lines.push(`\t\tsiteName: ${JSON.stringify(config.siteName)},`);
+		}
 		lines.push('\t},');
 		lines.push('\tlayouts: _layouts,');
 
