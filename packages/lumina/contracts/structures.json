@@ -138,7 +138,6 @@
 			"modifiers": {
 				"title": {
 					"source": "meta",
-					"classPattern": ".rf-codegroup--{value}",
 					"dataAttribute": "data-title"
 				},
 				"overflow": {
