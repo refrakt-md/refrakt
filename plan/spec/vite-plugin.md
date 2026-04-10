@@ -452,6 +452,8 @@ The same pattern works in SvelteKit. The user ignores `html`, imports `tree`, an
 
 The `tree` export is always available but most users won't need it. The `html` export covers the common case.
 
+The renderer components shown above are shipped by the plugin as optional framework-specific exports (e.g., `@refrakt-md/vite/astro`), re-exported from the corresponding SPEC-030 adapter packages. Users don't need to write the renderer boilerplate themselves — they import it, pass `tree` and their component overrides, and the renderer handles dispatch and `renderToHtml()` fallback.
+
 ---
 
 ## Package Discovery
@@ -516,7 +518,7 @@ This plugin is **not** a replacement for the full framework adapters defined in 
 | Layout system | No — user's framework | Yes — `layoutTransform()` |
 | SEO extraction | Yes — exported as `seo` | Yes — same extraction |
 | SEO `<head>` injection | No — user injects | Yes — adapter injects automatically |
-| Component rendering | No — HTML string only | Yes — `renderToHtml()` + framework wrapper |
+| Component rendering | Yes — optional renderer via `@refrakt-md/vite/{framework}` | Yes — `renderToHtml()` + framework wrapper |
 | Content routing | No — user's framework | Yes — `loadContent()` + framework routing |
 | Web components | No — user initializes | Yes — adapter handles `RfContext` |
 | Behavior lifecycle | Helper exported | Adapter manages fully |
@@ -541,8 +543,10 @@ The implementation draws heavily from existing code:
 | Virtual module pattern | `@refrakt-md/sveltekit/virtual-modules.ts` | Adapted (simplified) |
 | HMR pattern | `@refrakt-md/sveltekit/content-hmr.ts` | Adapted (simplified) |
 | SSR noExternal list | `@refrakt-md/sveltekit/plugin.ts` | Same `CORE_NO_EXTERNAL` pattern |
+| Component interface extraction | `@refrakt-md/transform/helpers.ts` | `extractComponentInterface()` |
+| Per-framework renderers | `@refrakt-md/{astro,svelte,react,vue}` | Re-export as `@refrakt-md/vite/{framework}` |
 
-Estimated new code: ~300 lines (plugin glue, per-file transform wrapper, CSS virtual module).
+Estimated new code: ~300 lines (plugin glue, per-file transform wrapper, CSS virtual module). Framework-specific renderer exports are re-exports, not new code.
 
 ---
 
@@ -724,7 +728,33 @@ The plugin transforms runes during `entry.render()` — the output HTML contains
 
 2. **SPEC-030 Phase 0 dependency**: `serialize.ts` currently lives in `@refrakt-md/svelte`. SPEC-030 Phase 0 moves it to `@refrakt-md/transform`. This plugin needs serialization — should it wait for Phase 0, or import from `@refrakt-md/svelte` initially?
 
-3. **Component rendering (Level 3)**: The original draft proposed a Level 3 that emits framework-native components instead of HTML strings. This overlaps significantly with SPEC-030's per-framework adapters. Recommendation: drop Level 3 from this spec — users wanting component-level integration should use the SPEC-030 adapters.
+3. **Component rendering (Level 3)**: ~~The original draft proposed a Level 3 that emits framework-native components instead of HTML strings. This overlaps significantly with SPEC-030's per-framework adapters. Recommendation: drop Level 3 from this spec — users wanting component-level integration should use the SPEC-030 adapters.~~
+
+   **Resolved: ship thin renderer components as optional framework-specific exports, not a separate "Level 3."**
+
+   The original concern was that a component-rendering level would duplicate SPEC-030's adapters. But the two serve different purposes: SPEC-030 adapters replace the user's content system entirely, while this plugin sits alongside it. A developer using Astro content collections who wants to override Recipe with a custom `.astro` component shouldn't have to switch to the full `@refrakt-md/astro` adapter just for that.
+
+   The infrastructure already exists and can be reused directly:
+
+   - **Framework-agnostic core**: `extractComponentInterface()` from `@refrakt-md/transform` (`packages/transform/src/helpers.ts`) partitions a rune's children into `properties`, `refs`, and `children` — the same structured interface regardless of framework. `renderToHtml()` handles fallback rendering for non-overridden runes.
+   - **Per-framework renderers**: `packages/astro/src/RfRenderer.astro` and `packages/svelte/src/Renderer.svelte` already implement the dispatch pattern — check `data-rune` attribute, look up in component registry, render custom component or fall back to `renderToHtml()`. The same pattern is established via `registry.ts` in `packages/react/` and `packages/vue/`.
+   - **Component registry**: `Record<string, ComponentType>` — identical interface across all frameworks. The user populates it with `typeof` → component mappings.
+
+   The vite plugin exposes this via optional framework-specific entry points:
+
+   ```javascript
+   // User imports the renderer for their framework
+   import { RefraktRenderer } from '@refrakt-md/vite/astro';
+   import { RefraktRenderer } from '@refrakt-md/vite/react';
+   import { RefraktRenderer } from '@refrakt-md/vite/vue';
+   import { RefraktRenderer } from '@refrakt-md/vite/svelte';
+   ```
+
+   These are re-exports of the existing renderer components from `@refrakt-md/astro`, `@refrakt-md/svelte`, etc. — not new code. The plugin's `tree` export feeds directly into the renderer's `tree` prop.
+
+   This means the plugin config stays unchanged (no `components` option at the plugin level — component overrides are a rendering concern, not a transform concern). The user imports `tree` instead of `html`, passes it to the framework-specific renderer with their override map, and gets selective component rendering with `renderToHtml()` fallback for everything else. The "Component Override Pattern" section above already documents this flow; the only change is that the renderer component is shipped rather than DIY.
+
+   **What this is NOT**: The plugin does not generate framework-native component code, does not emit `.astro`/`.jsx`/`.vue` files, and does not know which framework the user is running. The framework-specific entry points are optional peer-dependency-gated re-exports. Users who only need `html` never touch this.
 
 ---
 
