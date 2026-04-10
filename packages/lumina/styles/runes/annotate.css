@@ -3,28 +3,26 @@
 	display: contents;
 }
 /* Margin style */
-.rf-annotate--margin {
-	position: relative;
-}
 .rf-annotate--margin .rf-annotate-note {
 	float: right;
 	clear: right;
 	width: 40%;
-	margin: 0 -44% 0.5rem 1rem;
-	padding: 0.75rem 1rem;
+	margin: 0.25rem 0 0.5rem 1rem;
+	padding: 0.5rem 0 0.5rem 1rem;
 	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
 	border-left: 2px solid var(--rf-color-border);
 }
 /* Inline style */
+.rf-annotate--inline p { display: inline; }
 .rf-annotate--inline .rf-annotate-note {
-	margin: 0.5rem 0 1rem;
-	padding: 0.75rem 1rem;
-	font-size: 0.875rem;
+	display: inline-block;
+	vertical-align: baseline;
+	margin: 0 0.25rem;
+	padding: 0.125rem 0 0.125rem 0.5rem;
+	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	border-left: 3px solid var(--rf-color-primary);
+	border-left: 2px solid var(--rf-color-border);
 }
 /* Tooltip style */
 .rf-annotate--tooltip .rf-annotate-note {
@@ -78,7 +76,5 @@
 		width: 100%;
 		margin: 0.5rem 0 1rem;
 		padding: 0.75rem 1rem;
-		background: var(--rf-color-surface);
-		border-radius: var(--rf-radius-md);
 	}
 }
