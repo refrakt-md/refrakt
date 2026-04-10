@@ -1,4 +1,4 @@
-{% work id="WORK-095" status="ready" priority="high" complexity="simple" tags="vite, css, lumina" milestone="v1.0.0" %}
+{% work id="WORK-095" status="ready" priority="high" complexity="simple" tags="vite, css, lumina" milestone="v1.0.0" source="SPEC-031" %}
 
 # Vite plugin — virtual CSS module and tree-shaking
 

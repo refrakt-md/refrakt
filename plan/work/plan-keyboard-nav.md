@@ -1,4 +1,4 @@
-{% work id="WORK-048" status="done" priority="low" complexity="simple" tags="plan, ux, behaviors" %}
+{% work id="WORK-048" status="done" priority="low" complexity="simple" tags="plan, ux, behaviors" source="SPEC-015" %}
 
 # Keyboard navigation for plan site
 

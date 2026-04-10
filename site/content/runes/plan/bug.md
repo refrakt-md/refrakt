@@ -71,6 +71,7 @@ Build crashes with undefined reference error.
 | `severity` | `string` | `major` | Impact level: `critical`, `major`, `minor`, `cosmetic` |
 | `assignee` | `string` | — | Person or agent working on this |
 | `milestone` | `string` | — | Milestone for the fix |
+| `source` | `string` | — | Comma-separated IDs of specs or decisions this relates to (e.g. `SPEC-001`) |
 | `tags` | `string` | — | Comma-separated labels |
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |

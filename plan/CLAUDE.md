@@ -91,7 +91,7 @@ Optional attributes: `version`, `supersedes` (ID of replaced spec).
 ### work
 
 ```markdoc
-{% work id="WORK-XXX" status="ready" priority="high" complexity="moderate" tags="area" %}
+{% work id="WORK-XXX" status="ready" priority="high" complexity="moderate" source="SPEC-XXX" tags="area" %}
 
 # What needs to be done
 
@@ -116,12 +116,12 @@ Technical notes on how to implement.
 
 Other useful sections: Edge Cases, Verification, Dependencies.
 
-Optional attributes: `assignee`, `milestone`, `complexity` (`trivial`/`simple`/`moderate`/`complex`/`unknown`).
+Optional attributes: `assignee`, `milestone`, `complexity` (`trivial`/`simple`/`moderate`/`complex`/`unknown`), `source` (comma-separated IDs of specs/decisions this implements, e.g. `SPEC-001,ADR-002`).
 
 ### bug
 
 ```markdoc
-{% bug id="BUG-XXX" status="reported" severity="major" tags="area" %}
+{% bug id="BUG-XXX" status="reported" severity="major" source="SPEC-XXX" tags="area" %}
 
 # Short description of the bug
 
@@ -144,7 +144,7 @@ What actually happens.
 {% /bug %}
 ```
 
-Optional attributes: `assignee`, `milestone`.
+Optional attributes: `assignee`, `milestone`, `source` (comma-separated IDs of related specs/decisions).
 
 ### decision
 

@@ -1,4 +1,4 @@
-{% work id="WORK-081" status="done" priority="low" complexity="trivial" tags="storytelling, runes, transform" %}
+{% work id="WORK-081" status="done" priority="low" complexity="trivial" tags="storytelling, runes, transform" source="SPEC-028" %}
 
 # Consolidate Character Transform to Single Code Path
 

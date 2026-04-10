@@ -1,4 +1,4 @@
-{% work id="WORK-073" status="done" priority="medium" complexity="simple" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-073" status="done" priority="medium" complexity="simple" tags="plan, cli" milestone="v0.9.0" source="SPEC-027" %}
 
 # Add resolution validation checks to plan validate
 

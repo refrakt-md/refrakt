@@ -66,6 +66,7 @@ Migrate all runes from manual alignment classes to the new alignment system.
 | `complexity` | `string` | `unknown` | Complexity: `trivial`, `simple`, `moderate`, `complex`, `unknown` |
 | `assignee` | `string` | — | Person or agent working on this |
 | `milestone` | `string` | — | Milestone this belongs to |
+| `source` | `string` | — | Comma-separated IDs of specs or decisions this implements (e.g. `SPEC-001,ADR-002`) |
 | `tags` | `string` | — | Comma-separated labels |
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |

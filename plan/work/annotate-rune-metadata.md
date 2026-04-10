@@ -1,4 +1,4 @@
-{% work id="WORK-060" status="done" priority="high" complexity="moderate" tags="runes, transform, metadata" milestone="v0.9.0" %}
+{% work id="WORK-060" status="done" priority="high" complexity="moderate" tags="runes, transform, metadata" milestone="v0.9.0" source="SPEC-024" %}
 
 # Annotate Rune Configs with Metadata Dimensions
 

@@ -1,4 +1,4 @@
-{% work id="WORK-108" status="done" priority="medium" complexity="simple" tags="cli, tooling" milestone="v1.0.0" %}
+{% work id="WORK-108" status="done" priority="medium" complexity="simple" tags="cli, tooling" milestone="v1.0.0" source="ADR-005" %}
 
 # Update inspect tooling for string-based rune types
 

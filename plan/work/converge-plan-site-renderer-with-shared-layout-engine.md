@@ -1,4 +1,4 @@
-{% work id="WORK-050" status="done" priority="high" complexity="complex" tags="plan, transform, layout, pipeline" %}
+{% work id="WORK-050" status="done" priority="high" complexity="complex" tags="plan, transform, layout, pipeline" source="SPEC-014,SPEC-015" %}
 
 # Converge plan site renderer with shared layout engine
 

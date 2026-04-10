@@ -1,4 +1,4 @@
-{% work id="WORK-115" status="ready" priority="medium" complexity="moderate" tags="transform, themes, runes" milestone="v1.0.0" %}
+{% work id="WORK-115" status="ready" priority="medium" complexity="moderate" tags="transform, themes, runes" milestone="v1.0.0" source="SPEC-033" %}
 
 # Migrate community package postTransform uses to declarative config
 

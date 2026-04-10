@@ -1,4 +1,4 @@
-{% work id="WORK-091" status="done" priority="medium" complexity="moderate" tags="frameworks, nextjs" milestone="v1.0.0" %}
+{% work id="WORK-091" status="done" priority="medium" complexity="moderate" tags="frameworks, nextjs" milestone="v1.0.0" source="ADR-002,SPEC-030" %}
 
 # Create @refrakt-md/next adapter package
 

@@ -50,6 +50,32 @@ Do something.
 		expect(tag).toBeDefined();
 	});
 
+	it('should pass source attribute as meta', () => {
+		const result = parse(`{% work id="RF-300" status="ready" priority="high" source="SPEC-001,ADR-002" %}
+# Implement feature from spec
+
+Description.
+{% /work %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const metas = findAllTags(tag!, t => t.name === 'meta');
+
+		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('SPEC-001,ADR-002');
+	});
+
+	it('should default source to empty string when omitted', () => {
+		const result = parse(`{% work id="RF-301" status="ready" priority="high" %}
+# Work without source
+
+Description.
+{% /work %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const metas = findAllTags(tag!, t => t.name === 'meta');
+
+		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('');
+	});
+
 	it('should handle sections with data-name', () => {
 		const result = parse(`{% work id="RF-150" %}
 # Work item

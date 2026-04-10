@@ -1,4 +1,4 @@
-{% work id="WORK-113" status="done" priority="medium" complexity="moderate" tags="transform, themes" milestone="v1.0.0" %}
+{% work id="WORK-113" status="done" priority="medium" complexity="moderate" tags="transform, themes" milestone="v1.0.0" source="SPEC-033" %}
 
 # Add repeated element generation to structure entries
 

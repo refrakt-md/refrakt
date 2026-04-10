@@ -1,4 +1,4 @@
-{% work id="WORK-096" status="ready" priority="medium" complexity="simple" tags="vite, hmr" milestone="v1.0.0" %}
+{% work id="WORK-096" status="ready" priority="medium" complexity="simple" tags="vite, hmr" milestone="v1.0.0" source="SPEC-031" %}
 
 # Vite plugin — dev server HMR
 

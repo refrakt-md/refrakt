@@ -1,4 +1,4 @@
-{% work id="WORK-032" status="done" priority="medium" complexity="moderate" tags="cli, plan" %}
+{% work id="WORK-032" status="done" priority="medium" complexity="moderate" tags="cli, plan" source="SPEC-022" %}
 
 # `plan status` Command
 

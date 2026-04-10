@@ -1,4 +1,4 @@
-{% work id="WORK-122" status="done" priority="medium" complexity="moderate" tags="docs, site, themes, packages" milestone="v1.0.0" %}
+{% work id="WORK-122" status="done" priority="medium" complexity="moderate" tags="docs, site, themes, packages" milestone="v1.0.0" source="ADR-008" %}
 
 # Document framework-native component override interface
 

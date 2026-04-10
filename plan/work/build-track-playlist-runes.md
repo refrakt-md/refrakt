@@ -1,4 +1,4 @@
-{% work id="WORK-015" status="done" priority="medium" tags="runes, media" %}
+{% work id="WORK-015" status="done" priority="medium" tags="runes, media" source="SPEC-006,SPEC-008" %}
 
 # Build `track` and `playlist` Runes
 

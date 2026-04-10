@@ -1,4 +1,4 @@
-{% work id="WORK-084" status="done" priority="high" complexity="moderate" tags="content, pipeline, runes" milestone="v1.0.0" %}
+{% work id="WORK-084" status="done" priority="high" complexity="moderate" tags="content, pipeline, runes" milestone="v1.0.0" source="SPEC-029" %}
 
 # Inject $file.created and $file.modified Variables into Content Pipeline
 

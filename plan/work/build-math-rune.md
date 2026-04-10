@@ -1,4 +1,4 @@
-{% work id="WORK-006" status="pending" priority="medium" tags="runes, core" %}
+{% work id="WORK-006" status="pending" priority="medium" tags="runes, core" source="SPEC-008" %}
 
 # Build `math` Rune
 

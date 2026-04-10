@@ -1,4 +1,4 @@
-{% work id="WORK-097" status="ready" priority="medium" complexity="moderate" tags="vite, pipeline, content" milestone="v1.0.0" %}
+{% work id="WORK-097" status="ready" priority="medium" complexity="moderate" tags="vite, pipeline, content" milestone="v1.0.0" source="SPEC-031" %}
 
 # Vite plugin — Level 2 cross-page pipeline
 

@@ -1,4 +1,4 @@
-{% work id="WORK-119" status="done" priority="high" complexity="high" tags="svelte, renderer, architecture" milestone="v1.0.0" %}
+{% work id="WORK-119" status="done" priority="high" complexity="high" tags="svelte, renderer, architecture" milestone="v1.0.0" source="ADR-008" %}
 
 # Update Svelte renderer to pass props and snippets to component overrides
 

@@ -227,8 +227,8 @@ plan/
 ### Rune syntax
 
 - `{% spec id="SPEC-001" status="accepted" %}` — specification document
-- `{% work id="WORK-001" status="ready" priority="high" %}` — work item
-- `{% bug id="BUG-001" status="confirmed" severity="major" %}` — bug report
+- `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}` — work item (`source` links to parent spec/decision)
+- `{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}` — bug report
 - `{% decision id="ADR-001" status="accepted" %}` — architecture decision record
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 

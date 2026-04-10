@@ -1,4 +1,4 @@
-{% work id="WORK-070" status="done" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-070" status="done" priority="medium" complexity="moderate" tags="transform, lumina, css, dimensions" milestone="v0.9.0" source="SPEC-025" %}
 
 # Universal Sequential Item Styling
 

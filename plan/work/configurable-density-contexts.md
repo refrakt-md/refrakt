@@ -1,4 +1,4 @@
-{% work id="WORK-111" status="done" priority="high" complexity="simple" tags="transform, themes" milestone="v1.0.0" %}
+{% work id="WORK-111" status="done" priority="high" complexity="simple" tags="transform, themes" milestone="v1.0.0" source="SPEC-033" %}
 
 # Replace hardcoded density contexts with configurable childDensity
 

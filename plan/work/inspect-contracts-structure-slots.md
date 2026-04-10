@@ -1,4 +1,4 @@
-{% work id="WORK-116" status="ready" priority="medium" complexity="moderate" tags="cli, tooling, transform" milestone="v1.0.0" %}
+{% work id="WORK-116" status="ready" priority="medium" complexity="moderate" tags="cli, tooling, transform" milestone="v1.0.0" source="SPEC-033" %}
 
 # Update inspect and contracts tooling for structure slots features
 

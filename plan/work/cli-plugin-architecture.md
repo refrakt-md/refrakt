@@ -1,4 +1,4 @@
-{% work id="WORK-027" status="done" priority="high" complexity="moderate" tags="cli, architecture, plan" %}
+{% work id="WORK-027" status="done" priority="high" complexity="moderate" tags="cli, architecture, plan" source="SPEC-022" %}
 
 # CLI Plugin Discovery Architecture
 

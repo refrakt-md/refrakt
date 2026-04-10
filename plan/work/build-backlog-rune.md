@@ -1,4 +1,4 @@
-{% work id="WORK-022" status="done" priority="medium" complexity="complex" tags="runes, plan, pipeline" %}
+{% work id="WORK-022" status="done" priority="medium" complexity="complex" tags="runes, plan, pipeline" source="SPEC-021" %}
 
 # Build `backlog` Rune
 

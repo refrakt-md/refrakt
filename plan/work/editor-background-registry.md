@@ -1,4 +1,4 @@
-{% work id="WORK-056" status="ready" priority="medium" complexity="complex" tags="editor, pipeline" milestone="v1.0.0" %}
+{% work id="WORK-056" status="ready" priority="medium" complexity="complex" tags="editor, pipeline" milestone="v1.0.0" source="SPEC-002" %}
 
 # Editor Background Entity Registry
 

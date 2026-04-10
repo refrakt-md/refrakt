@@ -1,4 +1,4 @@
-{% work id="WORK-112" status="done" priority="high" complexity="moderate" tags="transform, themes" milestone="v1.0.0" %}
+{% work id="WORK-112" status="done" priority="high" complexity="moderate" tags="transform, themes" milestone="v1.0.0" source="SPEC-033" %}
 
 # Implement named slots with ordering for structure entries
 

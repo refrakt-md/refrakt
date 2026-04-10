@@ -1,4 +1,4 @@
-{% work id="WORK-074" status="done" priority="medium" complexity="moderate" tags="plan, cli" milestone="v1.0.0" %}
+{% work id="WORK-074" status="done" priority="medium" complexity="moderate" tags="plan, cli" milestone="v1.0.0" source="SPEC-027" %}
 
 # Display resolution metadata in plan status and plan serve
 

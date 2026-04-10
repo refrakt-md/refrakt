@@ -1,4 +1,4 @@
-{% work id="WORK-016" status="pending" priority="low" tags="runes, media" %}
+{% work id="WORK-016" status="pending" priority="low" tags="runes, media" source="SPEC-008" %}
 
 # Build `album` Rune
 

@@ -115,6 +115,7 @@ A discrete piece of implementation work. Not a user story — no “as a / I wan
 |`complexity`|String|No      |`trivial`, `simple`, `moderate`, `complex`, `unknown`       |Complexity signal for prioritisation|
 |`assignee`  |String|No      |—                                                           |Person or agent working on this     |
 |`milestone` |String|No      |—                                                           |Milestone this belongs to           |
+|`source`    |String|No      |—                                                           |Comma-separated IDs of specs/decisions this implements|
 |`tags`      |String|No      |—                                                           |Comma-separated labels              |
 
 **Content model:**
@@ -260,6 +261,7 @@ Bug report with structured reproduction steps. Separate from `work` because bugs
 | `severity` | String | No | `critical`, `major`, `minor`, `cosmetic` | Impact level |
 | `assignee` | String | No | — | Person or agent working on this |
 | `milestone` | String | No | — | Milestone for the fix |
+| `source` | String | No | — | Comma-separated IDs of specs/decisions this relates to |
 | `tags` | String | No | — | Comma-separated labels |
 
 **Content model:**

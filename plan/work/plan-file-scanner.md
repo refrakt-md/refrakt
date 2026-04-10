@@ -1,4 +1,4 @@
-{% work id="WORK-028" status="done" priority="high" complexity="moderate" tags="cli, plan" %}
+{% work id="WORK-028" status="done" priority="high" complexity="moderate" tags="cli, plan" source="SPEC-022" %}
 
 # Plan File Scanner Library
 

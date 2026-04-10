@@ -1,4 +1,4 @@
-{% work id="WORK-021" status="done" priority="high" tags="plan, xref, content" %}
+{% work id="WORK-021" status="done" priority="high" tags="plan, xref, content" source="SPEC-008" %}
 
 # Update Plan Documents to Use Xref Syntax
 

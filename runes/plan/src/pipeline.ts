@@ -13,8 +13,8 @@ const PLAN_RUNE_TYPES = new Set(['spec', 'work', 'bug', 'decision', 'milestone']
 /** Fields to extract from each rune type's property meta tags */
 const RUNE_FIELDS: Record<string, string[]> = {
 	spec: ['id', 'status', 'version', 'supersedes', 'tags', 'modified'],
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'tags', 'modified'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'tags', 'modified'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
+	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
 	decision: ['id', 'status', 'date', 'supersedes', 'tags', 'modified'],
 	milestone: ['name', 'status', 'target', 'modified'],
 };
@@ -265,7 +265,7 @@ export interface EntityRelationship {
 	toId: string;
 	toType: string;
 	/** Relationship kind */
-	kind: 'blocks' | 'blocked-by' | 'related';
+	kind: 'blocks' | 'blocked-by' | 'implements' | 'implemented-by' | 'related';
 }
 
 export interface PlanAggregatedData {
@@ -278,6 +278,22 @@ export interface PlanAggregatedData {
 	relationships: Map<string, EntityRelationship[]>;
 }
 
+/** Parse a comma-separated `source` attribute into typed ID references */
+function parseSourceIds(source: string): Array<{ id: string; type: string }> {
+	if (!source) return [];
+	const refs: Array<{ id: string; type: string }> = [];
+	for (const raw of source.split(',')) {
+		const id = raw.trim();
+		if (!id) continue;
+		const match = id.match(/^(WORK|SPEC|BUG|ADR)-\d+$/);
+		if (match) {
+			const type = ID_PREFIX_TO_TYPE[match[1]];
+			if (type) refs.push({ id, type });
+		}
+	}
+	return refs;
+}
+
 /**
  * Module-level store for ID references found during registration.
  * Maps entityId → array of referenced entity IDs (with type).
@@ -285,9 +301,17 @@ export interface PlanAggregatedData {
  */
 const _idReferences = new Map<string, Array<{ id: string; type: string }>>();
 
+/**
+ * Module-level store for structured source references (from source= attribute).
+ * Maps entityId → array of source entity IDs (with type).
+ * These produce 'implements' / 'implemented-by' relationships.
+ */
+const _sourceReferences = new Map<string, Array<{ id: string; type: string }>>();
+
 export const planPipelineHooks: PackagePipelineHooks = {
 	register(pages, registry, ctx) {
 		_idReferences.clear();
+		_sourceReferences.clear();
 
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {
@@ -329,6 +353,13 @@ export const planPipelineHooks: PackagePipelineHooks = {
 					_idReferences.set(entityId, refs);
 				}
 
+				// Extract structured source references from source= attribute
+				const sourceVal = String(data.source ?? '');
+				const sourceRefs = parseSourceIds(sourceVal).filter(r => r.id !== entityId);
+				if (sourceRefs.length > 0) {
+					_sourceReferences.set(entityId, sourceRefs);
+				}
+
 				registry.register({
 					type: runeType,
 					id: entityId,
@@ -356,6 +387,36 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			}
 		}
 
+		// Track IDs already linked via source= to avoid duplicate 'related' edges
+		const sourceLinked = new Set<string>();
+
+		// Process structured source= references → implements / implemented-by
+		for (const [fromId, refs] of _sourceReferences) {
+			const fromEntity = allEntities.get(fromId);
+			if (!fromEntity) continue;
+
+			for (const ref of refs) {
+				const toEntity = allEntities.get(ref.id);
+				if (!toEntity) continue;
+
+				sourceLinked.add(`${fromId}→${ref.id}`);
+
+				// A implements B
+				addRel(fromId, {
+					fromId, fromType: fromEntity.type,
+					toId: ref.id, toType: toEntity.type,
+					kind: 'implements',
+				});
+				// B is implemented by A
+				addRel(ref.id, {
+					fromId: ref.id, fromType: toEntity.type,
+					toId: fromId, toType: fromEntity.type,
+					kind: 'implemented-by',
+				});
+			}
+		}
+
+		// Process text-based ID references → blocks / blocked-by / related
 		for (const [fromId, refs] of _idReferences) {
 			const fromEntity = allEntities.get(fromId);
 			if (!fromEntity) continue;
@@ -363,6 +424,9 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			for (const ref of refs) {
 				const toEntity = allEntities.get(ref.id);
 				if (!toEntity) continue; // Reference to unknown entity — skip
+
+				// Skip if already linked via source= attribute
+				if (sourceLinked.has(`${fromId}→${ref.id}`)) continue;
 
 				// Determine relationship kind
 				// If entity A has status "blocked" and references entity B, A is "blocked-by" B
@@ -798,8 +862,8 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
-const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'related': 2 };
-const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'related': 'Related' };
+const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'implements': 2, 'implemented-by': 3, 'related': 4 };
+const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'related': 'Related' };
 
 /** Look up an entity across all aggregated type arrays */
 function findEntity(id: string, data: PlanAggregatedData): EntityRegistration | undefined {
@@ -840,6 +904,27 @@ function buildRelationshipsSection(
 	for (const kind of sortedKinds) {
 		const kindRels = byKind.get(kind)!;
 		const label = KIND_LABELS[kind] || kind;
+
+		// "Implemented by" renders rich backlog cards instead of plain links
+		if (kind === 'implemented-by') {
+			const cards: any[] = [];
+			for (const rel of kindRels) {
+				const target = findEntity(rel.toId, data);
+				if (target) {
+					cards.push(buildEntityCard(target));
+				}
+			}
+			if (cards.length > 0) {
+				groups.push(new Tag('div', {
+					class: 'rf-plan-relationships__group',
+					'data-kind': kind,
+				}, [
+					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
+					new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
+				]));
+			}
+			continue;
+		}
 
 		const items: any[] = [];
 		for (const rel of kindRels) {

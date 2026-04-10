@@ -1,4 +1,4 @@
-{% work id="WORK-123" status="done" priority="medium" complexity="complex" tags="react, renderer, architecture" %}
+{% work id="WORK-123" status="done" priority="medium" complexity="complex" tags="react, renderer, architecture" source="ADR-008" %}
 
 # Create @refrakt-md/react renderer with ADR-008 component interface
 

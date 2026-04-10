@@ -1,4 +1,4 @@
-{% work id="WORK-034" status="done" priority="medium" complexity="moderate" tags="css, plan, themes" %}
+{% work id="WORK-034" status="done" priority="medium" complexity="moderate" tags="css, plan, themes" source="SPEC-022" %}
 
 # Plan Dashboard Theme
 
