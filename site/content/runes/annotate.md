@@ -14,17 +14,13 @@ Notes float in the right margin next to the content they annotate.
 {% preview source=true %}
 
 {% annotate %}
-The refrakt.md framework builds on Markdoc to provide semantic content transformation.
+The refrakt.md framework builds on Markdoc to provide a semantic content transformation pipeline. Authors write standard Markdown with lightweight tag annotations, and the framework handles the rest — parsing, transforming, and rendering into structured, themed HTML.
 
 {% note %}
-Markdoc is an open-source Markdown-based authoring system created by Stripe.
+Markdoc is an open-source Markdown-based authoring system created by Stripe. It extends Markdown with a custom tag syntax that enables structured content without sacrificing readability.
 {% /note %}
 
-Runes are the core abstraction — they wrap ordinary Markdown and reinterpret it based on context.
-
-{% note %}
-The term "rune" refers to a symbol that carries meaning. In refrakt.md, runes carry rendering intent.
-{% /note %}
+Runes are the core abstraction — they wrap ordinary Markdown and reinterpret it based on context. A heading inside a nav rune becomes a group title; a list inside a recipe rune becomes ingredients. The same primitives take on different meaning depending on which rune contains them.
 {% /annotate %}
 
 {% /preview %}
