@@ -182,7 +182,7 @@ export const coreConfig: ThemeConfig = {
 				};
 			},
 		},
-		Breadcrumb: { block: 'breadcrumb', defaultDensity: 'minimal', sections: { items: 'body' }, editHints: { items: 'none' } },
+		Breadcrumb: { block: 'breadcrumb', defaultDensity: 'minimal', editHints: { items: 'none' } },
 		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
 		Blog: {
 			block: 'blog',
