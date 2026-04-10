@@ -74,6 +74,7 @@ Update plan item attributes or toggle acceptance criteria checkboxes.
 
 ```bash
 refrakt plan update WORK-042 --status in-progress
+refrakt plan update WORK-042 --source "SPEC-021,ADR-005"
 refrakt plan update WORK-042 --check "Add unit tests"
 refrakt plan update WORK-042 --uncheck "Add unit tests"
 refrakt plan update BUG-003 --severity major --assignee alice
@@ -109,6 +110,7 @@ refrakt plan update WORK-042 --status done
 | priority (work) | `critical`, `high`, `medium`, `low` |
 | complexity (work) | `trivial`, `simple`, `moderate`, `complex`, `unknown` |
 | severity (bug) | `critical`, `major`, `minor`, `cosmetic` |
+| source (work, bug) | Comma-separated entity IDs, e.g. `SPEC-001,ADR-002` |
 
 ## refrakt plan create
 
