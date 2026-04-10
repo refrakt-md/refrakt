@@ -134,6 +134,8 @@ export function extractSeoData(input: SeoInput): SeoData {
 export interface SeoToHtmlOptions {
 	/** Site name for og:site_name (falls back to empty string if omitted) */
 	siteName?: string;
+	/** Base URL for canonical links and og:url (e.g. "https://refrakt.md") */
+	baseUrl?: string;
 }
 
 /**
@@ -164,8 +166,9 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 	}
 
 	if (data.ogUrl) {
-		parts.push(`<link rel="canonical" href="${escapeAttr(data.ogUrl)}">`);
-		parts.push(`<meta property="og:url" content="${escapeAttr(data.ogUrl)}">`);
+		const absoluteUrl = (options?.baseUrl ?? '') + data.ogUrl;
+		parts.push(`<link rel="canonical" href="${escapeAttr(absoluteUrl)}">`);
+		parts.push(`<meta property="og:url" content="${escapeAttr(absoluteUrl)}">`);
 	}
 
 	if (data.ogType) {

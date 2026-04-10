@@ -2,6 +2,8 @@
 	"contentDir": "./content",
 	"theme": "@refrakt-md/lumina",
 	"target": "svelte",
+	"baseUrl": "https://refrakt.md",
+	"siteName": "refrakt.md",
 	"packages": [
 		"@refrakt-md/marketing",
 		"@refrakt-md/docs",

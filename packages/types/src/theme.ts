@@ -28,6 +28,10 @@ export interface RefraktConfig {
 		/** Directory for external sandbox examples, relative to project root. Default: './examples' */
 		examplesDir?: string;
 	};
+	/** Base URL for canonical links and og:url (e.g. "https://example.com"). Falls back to SITE_URL env var. */
+	baseUrl?: string;
+	/** Human-readable site name for og:site_name meta tag */
+	siteName?: string;
 	/** Rune resolution configuration */
 	runes?: {
 		/** Resolve name collisions between community packages: rune name → preferred package name.
@@ -59,6 +63,8 @@ export interface ThemeManifest {
 	routeRules?: RouteRule[];
 	/** Human-readable site name for og:site_name and similar meta tags */
 	siteName?: string;
+	/** Base URL for canonical links and og:url (e.g. "https://refrakt.md") */
+	baseUrl?: string;
 	/** Rune-to-component mappings keyed by typeof name */
 	components: Record<string, ComponentDefinition>;
 	/** Behavior when a rune has no matching component */

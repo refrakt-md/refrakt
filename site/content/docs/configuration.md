@@ -27,6 +27,26 @@ Every refrakt.md project has a `refrakt.config.json` file at its root. This file
 
 ## Optional fields
 
+### baseUrl
+
+```json
+{
+  "baseUrl": "https://example.com"
+}
+```
+
+The public base URL of your site. Used to generate absolute URLs for `<link rel="canonical">`, `og:url`, and other SEO meta tags. Without this, canonical links and Open Graph URLs will use relative paths.
+
+### siteName
+
+```json
+{
+  "siteName": "My Site"
+}
+```
+
+Human-readable site name, used in the `og:site_name` meta tag. If omitted, defaults to `"refrakt.md"` in the Svelte adapter.
+
 ### packages
 
 ```json
@@ -182,6 +202,8 @@ Configuration for the `{% sandbox %}` rune. The `examplesDir` field sets the dir
   "contentDir": "./content",
   "theme": "@refrakt-md/lumina",
   "target": "svelte",
+  "baseUrl": "https://example.com",
+  "siteName": "My Documentation",
   "packages": [
     "@refrakt-md/marketing",
     "@refrakt-md/docs",
