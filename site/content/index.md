@@ -74,7 +74,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 Composable by design
 ## Runes that work together
 
-The `sandbox` rune turns code fences into components. Drop two of them inside a `juxtapose` and you get an interactive light-vs-dark comparison — no custom code. Each rune handles its own job while combining into something greater than the parts.
+The `sandbox` rune renders code fences as live previews in isolated iframes. Drop two of them inside a `juxtapose` and you get an interactive light-vs-dark comparison — no custom code. Each rune handles its own job while combining into something greater than the parts.
 
 ---
 

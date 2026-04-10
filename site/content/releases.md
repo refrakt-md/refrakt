@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.9.5
+## v0.9.5 - April 10, 2026
 
 - Fix sidenote rune rendering empty due to minimal density hiding body
 - Fix juxtapose label rendering and restyle toggle buttons
