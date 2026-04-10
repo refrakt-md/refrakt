@@ -1,9 +1,10 @@
 /* Diagram */
 .rf-diagram {
-	border: 1px solid var(--rf-color-border);
+	display: block;
 	border-radius: var(--rf-radius-lg);
 	padding: 1.5rem;
 	text-align: center;
+	overflow: hidden;
 }
 .rf-diagram__title {
 	font-weight: 600;
@@ -23,4 +24,17 @@
 	text-align: left;
 	font-size: 0.875rem;
 	margin: 0;
+}
+
+/* Mermaid SVG overrides */
+.rf-diagram__container .label {
+	font-family: var(--rf-font-sans) !important;
+	color: var(--rf-color-text) !important;
+}
+.rf-diagram__container .edgeLabel {
+	background-color: var(--rf-color-surface) !important;
+}
+.rf-diagram__container .marker {
+	fill: var(--rf-color-muted) !important;
+	stroke: var(--rf-color-muted) !important;
 }
