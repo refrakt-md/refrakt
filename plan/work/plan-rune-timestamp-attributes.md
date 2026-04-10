@@ -1,4 +1,4 @@
-{% work id="WORK-085" status="done" priority="medium" complexity="moderate" tags="plan, runes" milestone="v1.0.0" %}
+{% work id="WORK-085" status="done" priority="medium" complexity="moderate" tags="plan, runes" milestone="v1.0.0" source="SPEC-029" %}
 
 # Add Timestamp Attributes to Plan Rune Schemas
 

@@ -1,4 +1,4 @@
-{% work id="WORK-024" status="blocked" priority="low" complexity="moderate" tags="runes, plan, content-model" %}
+{% work id="WORK-024" status="blocked" priority="low" complexity="moderate" tags="runes, plan, content-model" source="SPEC-003,SPEC-021" %}
 
 # Add `knownSections` to Plan Rune Content Models
 

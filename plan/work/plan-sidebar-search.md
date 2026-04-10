@@ -1,4 +1,4 @@
-{% work id="WORK-045" status="done" priority="high" complexity="moderate" tags="plan, ux, behaviors" %}
+{% work id="WORK-045" status="done" priority="high" complexity="moderate" tags="plan, ux, behaviors" source="SPEC-015" %}
 
 # Sidebar search and filter bar for plan site
 

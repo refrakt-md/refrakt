@@ -1,4 +1,4 @@
-{% work id="WORK-125" status="done" priority="medium" complexity="complex" tags="astro, renderer, architecture" %}
+{% work id="WORK-125" status="done" priority="medium" complexity="complex" tags="astro, renderer, architecture" source="ADR-008,ADR-009" %}
 
 # Add Astro native component override support with ADR-008 named slots
 

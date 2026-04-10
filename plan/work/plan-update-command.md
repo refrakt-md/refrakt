@@ -1,4 +1,4 @@
-{% work id="WORK-030" status="done" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" %}
+{% work id="WORK-030" status="done" priority="high" complexity="moderate" tags="cli, plan, ai-workflow" source="SPEC-022" %}
 
 # `plan update` Command
 

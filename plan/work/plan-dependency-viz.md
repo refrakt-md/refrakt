@@ -1,4 +1,4 @@
-{% work id="WORK-049" status="done" priority="low" complexity="complex" tags="plan, ux, pipeline" %}
+{% work id="WORK-049" status="done" priority="low" complexity="complex" tags="plan, ux, pipeline" source="SPEC-015" %}
 
 # Dependency visualization for plan site
 

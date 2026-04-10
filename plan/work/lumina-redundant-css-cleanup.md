@@ -1,4 +1,4 @@
-{% work id="WORK-071" status="done" priority="low" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" %}
+{% work id="WORK-071" status="done" priority="low" complexity="moderate" tags="lumina, css, dimensions" milestone="v0.9.0" source="SPEC-025" %}
 
 # Lumina Per-Rune Redundant CSS Cleanup
 

@@ -1,4 +1,4 @@
-{% work id="WORK-058" status="ready" priority="low" complexity="complex" tags="pipeline, content, performance" milestone="v1.0.0" %}
+{% work id="WORK-058" status="ready" priority="low" complexity="complex" tags="pipeline, content, performance" milestone="v1.0.0" source="SPEC-002" %}
 
 # Pipeline Incremental Build Optimization
 

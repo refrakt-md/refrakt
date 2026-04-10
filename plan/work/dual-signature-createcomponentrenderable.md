@@ -1,4 +1,4 @@
-{% work id="WORK-105" status="done" priority="high" complexity="moderate" tags="runes, types, architecture" milestone="v1.0.0" %}
+{% work id="WORK-105" status="done" priority="high" complexity="moderate" tags="runes, types, architecture" milestone="v1.0.0" source="ADR-005" %}
 
 # Add dual-signature support to createComponentRenderable and update RuneDescriptor
 

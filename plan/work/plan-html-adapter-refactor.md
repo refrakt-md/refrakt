@@ -1,4 +1,4 @@
-{% work id="WORK-039" status="done" priority="high" complexity="complex" tags="plan, html, architecture" %}
+{% work id="WORK-039" status="done" priority="high" complexity="complex" tags="plan, html, architecture" source="SPEC-014" %}
 
 # Refactor plan render pipeline to use `@refrakt-md/html`
 

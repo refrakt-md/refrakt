@@ -1,4 +1,4 @@
-{% work id="WORK-088" status="done" priority="high" complexity="simple" tags="frameworks, transform, svelte" milestone="v1.0.0" %}
+{% work id="WORK-088" status="done" priority="high" complexity="simple" tags="frameworks, transform, svelte" milestone="v1.0.0" source="ADR-001,ADR-002,SPEC-030" %}
 
 # Extract shared utilities from @refrakt-md/svelte to @refrakt-md/transform
 

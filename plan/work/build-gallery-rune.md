@@ -1,4 +1,4 @@
-{% work id="WORK-004" status="done" priority="medium" tags="runes, core" %}
+{% work id="WORK-004" status="done" priority="medium" tags="runes, core" source="SPEC-008" %}
 
 # Build `gallery` Rune
 

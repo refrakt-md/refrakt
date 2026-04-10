@@ -1,4 +1,4 @@
-{% work id="WORK-047" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
+{% work id="WORK-047" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" source="SPEC-015" %}
 
 # Tag-based cross-cutting view pages for plan site
 

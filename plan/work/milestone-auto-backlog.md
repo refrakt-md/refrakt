@@ -1,4 +1,4 @@
-{% work id="WORK-025" status="done" priority="low" complexity="moderate" tags="runes, plan, pipeline" %}
+{% work id="WORK-025" status="done" priority="low" complexity="moderate" tags="runes, plan, pipeline" source="SPEC-021" %}
 
 # Milestone Auto-Backlog and Checklist Progress
 

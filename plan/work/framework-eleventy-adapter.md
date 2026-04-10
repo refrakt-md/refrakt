@@ -1,4 +1,4 @@
-{% work id="WORK-092" status="done" priority="low" complexity="simple" tags="frameworks, eleventy" milestone="v1.0.0" %}
+{% work id="WORK-092" status="done" priority="low" complexity="simple" tags="frameworks, eleventy" milestone="v1.0.0" source="ADR-002,SPEC-030" %}
 
 # Create @refrakt-md/eleventy adapter package
 

@@ -1,4 +1,4 @@
-{% work id="WORK-020" status="done" priority="medium" tags="packages, plan, xref" %}
+{% work id="WORK-020" status="done" priority="medium" tags="packages, plan, xref" source="ADR-001,SPEC-002,SPEC-008" %}
 
 # Add Entity Registration to `@refrakt-md/plan`
 

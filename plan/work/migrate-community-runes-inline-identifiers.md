@@ -1,4 +1,4 @@
-{% work id="WORK-107" status="done" priority="high" complexity="simple" tags="runes, types, packages" milestone="v1.0.0" %}
+{% work id="WORK-107" status="done" priority="high" complexity="simple" tags="runes, types, packages" milestone="v1.0.0" source="ADR-005" %}
 
 # Migrate community package runes to inline rune identifiers
 

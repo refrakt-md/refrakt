@@ -1,4 +1,4 @@
-{% work id="WORK-100" status="done" priority="high" complexity="simple" tags="runes, content-model" milestone="v1.0.0" %}
+{% work id="WORK-100" status="done" priority="high" complexity="simple" tags="runes, content-model" milestone="v1.0.0" source="SPEC-032" %}
 
 # Migrate simple community runes from Model to createContentModelSchema
 

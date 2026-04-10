@@ -1,4 +1,4 @@
-{% work id="WORK-089" status="in-progress" priority="high" complexity="moderate" tags="frameworks, astro" milestone="v1.0.0" %}
+{% work id="WORK-089" status="in-progress" priority="high" complexity="moderate" tags="frameworks, astro" milestone="v1.0.0" source="ADR-001,SPEC-013,SPEC-030,SPEC-031" %}
 
 # Create @refrakt-md/astro adapter package
 

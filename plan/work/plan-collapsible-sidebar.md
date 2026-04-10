@@ -1,4 +1,4 @@
-{% work id="WORK-044" status="done" priority="high" complexity="moderate" tags="plan, ux, behaviors" %}
+{% work id="WORK-044" status="done" priority="high" complexity="moderate" tags="plan, ux, behaviors" source="SPEC-015" %}
 
 # Collapsible status groups in plan sidebar
 

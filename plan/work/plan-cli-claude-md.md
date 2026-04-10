@@ -1,4 +1,4 @@
-{% work id="WORK-036" status="done" priority="high" complexity="simple" tags="cli, plan, docs" %}
+{% work id="WORK-036" status="done" priority="high" complexity="simple" tags="cli, plan, docs" source="SPEC-022" %}
 
 # Update CLAUDE.md files for plan CLI usage
 

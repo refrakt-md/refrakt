@@ -1,4 +1,4 @@
-{% work id="WORK-098" status="ready" priority="low" complexity="trivial" tags="vite, behaviors" milestone="v1.0.0" %}
+{% work id="WORK-098" status="ready" priority="low" complexity="trivial" tags="vite, behaviors" milestone="v1.0.0" source="SPEC-031" %}
 
 # Vite plugin — behavior init helper export
 

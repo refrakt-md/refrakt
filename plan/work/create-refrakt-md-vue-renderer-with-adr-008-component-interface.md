@@ -1,4 +1,4 @@
-{% work id="WORK-124" status="done" priority="medium" complexity="complex" tags="vue, renderer, architecture" %}
+{% work id="WORK-124" status="done" priority="medium" complexity="complex" tags="vue, renderer, architecture" source="ADR-008" %}
 
 # Create @refrakt-md/vue renderer with ADR-008 component interface
 

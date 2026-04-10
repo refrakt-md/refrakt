@@ -1,4 +1,4 @@
-{% work id="WORK-103" status="done" priority="high" complexity="moderate" tags="runes, content-model, architecture" milestone="v1.0.0" %}
+{% work id="WORK-103" status="done" priority="high" complexity="moderate" tags="runes, content-model, architecture" milestone="v1.0.0" source="SPEC-032" %}
 
 # Remove legacy Model class, decorators, and createSchema
 

@@ -1,4 +1,4 @@
-{% work id="WORK-072" status="done" priority="high" complexity="moderate" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-072" status="done" priority="high" complexity="moderate" tags="plan, cli" milestone="v0.9.0" source="SPEC-027" %}
 
 # Add --resolve and --resolve-file flags to plan update
 

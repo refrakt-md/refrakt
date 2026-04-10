@@ -1,4 +1,4 @@
-{% work id="WORK-104" status="done" priority="medium" complexity="simple" tags="docs, content-model" milestone="v1.0.0" %}
+{% work id="WORK-104" status="done" priority="medium" complexity="simple" tags="docs, content-model" milestone="v1.0.0" source="SPEC-032" %}
 
 # Update authoring docs after legacy Model removal
 

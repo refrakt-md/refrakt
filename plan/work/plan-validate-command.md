@@ -1,4 +1,4 @@
-{% work id="WORK-033" status="done" priority="medium" complexity="moderate" tags="cli, plan, ci" %}
+{% work id="WORK-033" status="done" priority="medium" complexity="moderate" tags="cli, plan, ci" source="SPEC-022" %}
 
 # `plan validate` Command
 

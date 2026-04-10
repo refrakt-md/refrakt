@@ -1,4 +1,4 @@
-{% work id="WORK-075" status="done" priority="low" complexity="trivial" tags="plan, cli" milestone="v0.9.0" %}
+{% work id="WORK-075" status="done" priority="low" complexity="trivial" tags="plan, cli" milestone="v0.9.0" source="SPEC-027" %}
 
 # Update plan init CLAUDE.md template with resolution guidance
 

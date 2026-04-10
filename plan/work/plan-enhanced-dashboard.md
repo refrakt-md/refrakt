@@ -1,4 +1,4 @@
-{% work id="WORK-046" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" %}
+{% work id="WORK-046" status="done" priority="medium" complexity="moderate" tags="plan, ux, pipeline" source="SPEC-015" %}
 
 # Enhanced plan dashboard with progress and milestone scoping
 

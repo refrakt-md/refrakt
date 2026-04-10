@@ -1,4 +1,4 @@
-{% work id="WORK-094" status="ready" priority="high" complexity="moderate" tags="vite, transform, frameworks" milestone="v1.0.0" %}
+{% work id="WORK-094" status="ready" priority="high" complexity="moderate" tags="vite, transform, frameworks" milestone="v1.0.0" source="SPEC-031" %}
 
 # Create @refrakt-md/vite plugin — Level 1 static transform
 
