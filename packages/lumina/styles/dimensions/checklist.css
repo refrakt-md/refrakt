@@ -23,8 +23,8 @@
 
 /* Checked — filled with checkmark */
 [data-checked="checked"]::before {
-	background: var(--rf-color-success);
-	border-color: var(--rf-color-success);
+	background: var(--rf-color-primary);
+	border-color: var(--rf-color-primary);
 }
 
 [data-checked="checked"] {
