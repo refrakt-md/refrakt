@@ -30,7 +30,7 @@ function attrString(base: Record<string, string>, extra?: Record<string, string>
 }
 
 function workTemplate({ id, title, attrs }: TemplateOptions): string {
-	const a = attrString({ id, status: 'draft', priority: 'medium', complexity: 'unknown', tags: '' }, attrs);
+	const a = attrString({ id, status: 'draft', priority: 'medium', complexity: 'unknown', source: '', tags: '' }, attrs);
 	return `{% work ${a} %}
 
 # ${title}
@@ -51,7 +51,7 @@ Technical notes on how to implement.
 }
 
 function bugTemplate({ id, title, attrs }: TemplateOptions): string {
-	const a = attrString({ id, status: 'reported', severity: 'major', tags: '' }, attrs);
+	const a = attrString({ id, status: 'reported', severity: 'major', source: '', tags: '' }, attrs);
 	return `{% bug ${a} %}
 
 # ${title}

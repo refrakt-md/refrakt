@@ -14,6 +14,7 @@ export const bug = createContentModelSchema({
 		severity: { type: String, required: false, matches: severityValues.slice(), description: 'Impact level: critical, major, minor, or cosmetic.' },
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone for the fix.' },
+		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -39,6 +40,7 @@ export const bug = createContentModelSchema({
 		const severityMeta = new Tag('meta', { content: attrs.severity ?? 'major' });
 		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
+		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -58,6 +60,7 @@ export const bug = createContentModelSchema({
 				severity: severityMeta,
 				assignee: assigneeMeta,
 				milestone: milestoneMeta,
+				source: sourceMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -66,7 +69,7 @@ export const bug = createContentModelSchema({
 				title: title.tag('header'),
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
 		});
 	},
 });

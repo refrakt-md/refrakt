@@ -449,3 +449,177 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 		expect(progressBadge!.attributes['data-total']).toBe('2');
 	});
 });
+
+describe('planPipelineHooks — source attribute and implements relationships', () => {
+	function runFullPipeline(pages: TransformedPage[]) {
+		const { entries, registry } = makeRegistry();
+		const { ctx } = makeCtx();
+		planPipelineHooks.register!(pages, registry, ctx);
+		const aggregated = { plan: planPipelineHooks.aggregate!(registry) };
+		return {
+			entries,
+			aggregated,
+			processed: pages.map(page => planPipelineHooks.postProcess!(page, aggregated)),
+		};
+	}
+
+	it('registers source attribute on work items', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+# Implement spec
+Description.
+{% /work %}`),
+		];
+
+		const { entries } = runFullPipeline(pages);
+		const workEntry = entries.find(e => e.id === 'WORK-001');
+		expect(workEntry).toBeDefined();
+		expect(workEntry!.data.source).toBe('SPEC-001');
+	});
+
+	it('creates implements relationship from work to spec via source attribute', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+# Implement spec
+Description.
+{% /work %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		// WORK-001 should have an 'implements' relationship to SPEC-001
+		const workRels = planData.relationships.get('WORK-001');
+		expect(workRels).toBeDefined();
+		const implementsRel = workRels!.find((r: any) => r.kind === 'implements');
+		expect(implementsRel).toBeDefined();
+		expect(implementsRel!.toId).toBe('SPEC-001');
+
+		// SPEC-001 should have an 'implemented-by' relationship to WORK-001
+		const specRels = planData.relationships.get('SPEC-001');
+		expect(specRels).toBeDefined();
+		const implementedByRel = specRels!.find((r: any) => r.kind === 'implemented-by');
+		expect(implementedByRel).toBeDefined();
+		expect(implementedByRel!.toId).toBe('WORK-001');
+	});
+
+	it('handles multiple source IDs', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Spec One
+> Summary.
+{% /spec %}`),
+			makePage('/plan/decision/d1', `{% decision id="ADR-001" status="accepted" date="2026-03-01" %}
+# Decision One
+## Context
+Context.
+## Decision
+Decision.
+{% /decision %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001,ADR-001" %}
+# Multi-source task
+Description.
+{% /work %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		const workRels = planData.relationships.get('WORK-001');
+		const implementsRels = workRels!.filter((r: any) => r.kind === 'implements');
+		expect(implementsRels).toHaveLength(2);
+		const targetIds = implementsRels.map((r: any) => r.toId).sort();
+		expect(targetIds).toEqual(['ADR-001', 'SPEC-001']);
+	});
+
+	it('does not duplicate source references as related', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+# Implement spec
+See SPEC-001 for details.
+{% /work %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		// WORK-001 references SPEC-001 both via source= and in text content
+		// Should only have 'implements', not also 'related'
+		const workRels = planData.relationships.get('WORK-001');
+		expect(workRels).toBeDefined();
+		const toSpec = workRels!.filter((r: any) => r.toId === 'SPEC-001');
+		expect(toSpec).toHaveLength(1);
+		expect(toSpec[0].kind).toBe('implements');
+	});
+
+	it('injects implements/implemented-by into relationships section', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Test Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+# Implement spec
+Description.
+{% /work %}`),
+		];
+
+		const { processed } = runFullPipeline(pages);
+
+		// The spec page should have an "Implemented by" section
+		const specPage = processed[0];
+		const relSection = findTag(specPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
+		expect(relSection).toBeDefined();
+		const implementedByGroup = findTag(relSection!, t =>
+			t.attributes.class === 'rf-plan-relationships__group' &&
+			t.attributes['data-kind'] === 'implemented-by',
+		);
+		expect(implementedByGroup).toBeDefined();
+
+		// The work page should have an "Implements" section
+		const workPage = processed[1];
+		const workRelSection = findTag(workPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
+		expect(workRelSection).toBeDefined();
+		const implementsGroup = findTag(workRelSection!, t =>
+			t.attributes.class === 'rf-plan-relationships__group' &&
+			t.attributes['data-kind'] === 'implements',
+		);
+		expect(implementsGroup).toBeDefined();
+	});
+
+	it('supports source attribute on bug items', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+# Spec
+> Summary.
+{% /spec %}`),
+			makePage('/plan/work/b1', `{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}
+# Bug from spec
+## Steps to Reproduce
+1. Step one
+{% /bug %}`),
+		];
+
+		const { aggregated } = runFullPipeline(pages);
+		const planData = aggregated.plan as any;
+
+		const bugRels = planData.relationships.get('BUG-001');
+		expect(bugRels).toBeDefined();
+		expect(bugRels!.find((r: any) => r.kind === 'implements')!.toId).toBe('SPEC-001');
+
+		const specRels = planData.relationships.get('SPEC-001');
+		expect(specRels!.find((r: any) => r.kind === 'implemented-by')!.toId).toBe('BUG-001');
+	});
+});
