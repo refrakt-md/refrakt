@@ -130,12 +130,17 @@ Each `.md` file is independently parsed, transformed, and rendered. No awareness
 ```
 .md file
   → Markdoc.parse()
-  → Rune schema transforms (tags from @refrakt-md/runes + packages)
+  → extract frontmatter from AST
+  → Markdoc.transform(ast, { tags, variables: { frontmatter, ... } })
+      ↳ Rune schema transforms (tags from @refrakt-md/runes + packages)
+      ↳ $frontmatter.* references resolved to concrete values
   → serialize() (Tag → plain objects)
   → createTransform() (identity transform — BEM classes, structure, meta)
   → renderToHtml() (serialized tree → HTML string)
   → emit JS module
 ```
+
+**Frontmatter as Markdoc variables:** The plugin extracts YAML frontmatter from the parsed AST and passes it to `Markdoc.transform()` as `variables.frontmatter`, matching the existing content pipeline in `packages/content/src/site.ts`. This means authors can reference frontmatter fields in rune attributes using Markdoc's native variable syntax — e.g., `{% recipe servings=$frontmatter.servings %}`. By the time the rune schema's `transform()` runs, variable references are already resolved to concrete values.
 
 This reuses the existing pipeline stages from `@refrakt-md/transform`. The identity transform engine (`packages/transform/src/engine.ts`) applies BEM classes (`.rf-{block}`, `.rf-{block}--{modifier}`, `.rf-{block}__{element}`), injects structural elements, reads meta tags, and strips consumed metadata — exactly as it does in the full site.
 
@@ -560,13 +565,15 @@ export default {
 ---
 title: Perfect Sourdough
 date: 2026-01-15
+servings: 2 loaves
+time: 24h
 ---
 
 {% hint type="note" %}
 Start your levain 12 hours before you plan to mix the dough.
 {% /hint %}
 
-{% recipe name="Classic Sourdough" servings="2 loaves" time="24h" %}
+{% recipe name=$frontmatter.title servings=$frontmatter.servings time=$frontmatter.time %}
 
 ## Ingredients
 - 500g bread flour
@@ -586,6 +593,8 @@ Start your levain 12 hours before you plan to mix the dough.
 {% /recipe %}
 ```
 
+Frontmatter fields are available as `$frontmatter.*` variables inside rune attributes. This avoids duplicating values between frontmatter and tag attributes — the Zod schema (in Astro) or framework validates the shape, and the rune consumes the values via variable references.
+
 The plugin transforms this into HTML with BEM classes (`.rf-recipe`, `.rf-recipe__body`, `.rf-hint--note`), structural elements, and data attributes — identical output to the full refrakt site. The user's `+layout.svelte` wraps it in their own navigation and footer.
 
 ---
@@ -597,6 +606,8 @@ Astro is a particularly strong fit for this plugin because Astro already has nat
 **How it works:** The user keeps their Astro content collections (`src/content/`) and `@astrojs/markdoc` integration. The `@refrakt-md/vite` plugin runs alongside them in the Vite pipeline, intercepting `.mdoc` files during the transform phase and applying rune schemas before Astro's own rendering.
 
 **Content collections remain the content system.** Astro's Zod schemas validate frontmatter, `getCollection()` and `getEntry()` work as normal, and typed references between collections are unaffected. The plugin adds a second validation layer — Markdoc's schema validation catches invalid rune syntax at build time, while Zod catches invalid frontmatter. Two layers, complementary.
+
+**Frontmatter as Markdoc variables:** The plugin passes parsed frontmatter into `Markdoc.transform()` as `variables.frontmatter`, so authors can reference Zod-validated fields directly in rune attributes — e.g., `{% recipe servings=$frontmatter.servings %}`. This bridges Astro's type-safe content layer with Markdoc's variable system: Zod validates that `servings` exists and is a string, Markdoc resolves `$frontmatter.servings` to its value, and the rune schema receives a concrete string. One source of truth in frontmatter, no duplication in tag attributes. Note that Zod validates the frontmatter **shape** but not which fields are actually **referenced** — a typo like `$frontmatter.sevrings` silently resolves to `undefined`. Markdoc's own schema validation can catch this if the rune attribute is marked as required.
 
 **Example project structure:**
 
@@ -628,6 +639,37 @@ const recipes = defineCollection({
 
 export const collections = { recipes };
 ```
+
+```markdoc
+---
+# src/content/recipes/sourdough.mdoc
+# Frontmatter validated by Zod schema above
+title: Perfect Sourdough
+servings: 2 loaves
+prepTime: 30 minutes
+---
+
+# {% $frontmatter.title %}
+
+{% recipe name=$frontmatter.title servings=$frontmatter.servings time=$frontmatter.prepTime %}
+
+## Ingredients
+- 500g bread flour
+- 350g water
+- 100g active levain
+- 10g salt
+
+## Steps
+1. Mix flour and water, rest 30 minutes (autolyse)
+2. Add levain and salt, fold to incorporate
+3. Bulk ferment 4-5 hours, stretch-and-fold every 30 minutes
+4. Shape and cold retard overnight
+5. Bake in Dutch oven at 260C
+
+{% /recipe %}
+```
+
+The `$frontmatter.*` references are resolved during `Markdoc.transform()` — the recipe rune receives `"2 loaves"` for `servings`, not the variable reference. If a frontmatter field is missing, the Zod schema catches it at build time before Markdoc ever runs.
 
 ```javascript
 // astro.config.mjs
