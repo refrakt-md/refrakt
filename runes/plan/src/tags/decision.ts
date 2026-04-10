@@ -12,6 +12,7 @@ export const decision = createContentModelSchema({
 		status: { type: String, required: false, matches: statusValues.slice(), description: 'Decision status: proposed, accepted, superseded, or deprecated.' },
 		date: { type: String, required: false, description: 'Date decided (ISO 8601).' },
 		supersedes: { type: String, required: false, description: 'ID of the decision this replaces.' },
+		source: { type: String, required: false, description: 'Comma-separated IDs of specs or other entities this decision informs.' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -36,6 +37,7 @@ export const decision = createContentModelSchema({
 		const statusMeta = new Tag('meta', { content: attrs.status ?? 'proposed' });
 		const dateMeta = new Tag('meta', { content: attrs.date ?? '' });
 		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
+		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -54,6 +56,7 @@ export const decision = createContentModelSchema({
 				status: statusMeta,
 				date: dateMeta,
 				supersedes: supersedesMeta,
+				source: sourceMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -62,7 +65,7 @@ export const decision = createContentModelSchema({
 				title: title.tag('header'),
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, dateMeta, supersedesMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, dateMeta, supersedesMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
 		});
 	},
 });

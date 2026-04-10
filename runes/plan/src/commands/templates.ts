@@ -76,7 +76,7 @@ What actually happens.
 
 function decisionTemplate({ id, title, attrs }: TemplateOptions): string {
 	const today = new Date().toISOString().slice(0, 10);
-	const a = attrString({ id, status: 'proposed', date: today, tags: '' }, attrs);
+	const a = attrString({ id, status: 'proposed', date: today, source: '', tags: '' }, attrs);
 	return `{% decision ${a} %}
 
 # ${title}

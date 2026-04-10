@@ -149,7 +149,7 @@ Optional attributes: `assignee`, `milestone`, `source` (comma-separated IDs of r
 ### decision
 
 ```markdoc
-{% decision id="ADR-XXX" status="proposed" date="2026-03-22" tags="area" %}
+{% decision id="ADR-XXX" status="proposed" date="2026-03-22" source="SPEC-XXX" tags="area" %}
 
 # Decision title
 
@@ -173,7 +173,7 @@ What follows from this decision — trade-offs, follow-up work, constraints impo
 {% /decision %}
 ```
 
-Optional attributes: `supersedes` (ID of replaced decision).
+Optional attributes: `supersedes` (ID of replaced decision), `source` (comma-separated IDs of specs/entities this decision informs, e.g. `SPEC-001`).
 
 ### milestone
 
@@ -261,8 +261,9 @@ npx refrakt plan create decision --title "Decision title"
 ```
 
 1. Document the context, options, and your recommendation in the generated file
-2. Proceed with implementation using the chosen approach
-3. The decision record preserves the reasoning for future sessions
+2. Set `source="SPEC-XXX"` to link the decision to the spec it informs — this surfaces the decision on the spec's page
+3. Proceed with implementation using the chosen approach
+4. The decision record preserves the reasoning for future sessions
 
 ### Initializing plan structure in a new project
 

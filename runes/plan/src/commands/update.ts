@@ -37,7 +37,7 @@ const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
 	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags'],
 	spec: ['id', 'status', 'version', 'supersedes', 'tags'],
 	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags'],
-	decision: ['id', 'status', 'date', 'supersedes', 'tags'],
+	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags'],
 	milestone: ['name', 'status', 'target'],
 };
 

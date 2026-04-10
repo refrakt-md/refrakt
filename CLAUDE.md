@@ -229,7 +229,7 @@ plan/
 - `{% spec id="SPEC-001" status="accepted" %}` — specification document
 - `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}` — work item (`source` links to parent spec/decision)
 - `{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}` — bug report
-- `{% decision id="ADR-001" status="accepted" %}` — architecture decision record
+- `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 
 ### Workflow
