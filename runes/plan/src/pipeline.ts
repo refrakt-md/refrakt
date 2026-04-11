@@ -138,6 +138,12 @@ const PRIORITY_SENTIMENT: Record<string, string> = {
 const SEVERITY_SENTIMENT: Record<string, string> = {
 	critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral',
 };
+const SPEC_STATUS_SENTIMENT: Record<string, string> = {
+	draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative',
+};
+const DECISION_STATUS_SENTIMENT: Record<string, string> = {
+	proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative',
+};
 
 /** Build a metadata badge matching the dimension system output */
 function buildMetaBadge(label: string, value: string, opts: {
@@ -155,7 +161,7 @@ function buildMetaBadge(label: string, value: string, opts: {
 	return new Tag('span', attrs, [labelEl, valueEl]);
 }
 
-/** Build a compact summary card Tag for a work/bug entity */
+/** Build a compact summary card Tag for any plan entity */
 function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const id = String(entity.data.id ?? entity.id);
 	const title = String(entity.data.title ?? '');
@@ -170,6 +176,8 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	const headerRight: any[] = [];
 	const statusSentiment = type === 'work' ? WORK_STATUS_SENTIMENT[status]
 		: type === 'bug' ? BUG_STATUS_SENTIMENT[status]
+		: type === 'spec' ? SPEC_STATUS_SENTIMENT[status]
+		: type === 'decision' ? DECISION_STATUS_SENTIMENT[status]
 		: undefined;
 	headerRight.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: statusSentiment, labelHidden: true }));
 
@@ -202,6 +210,12 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	} else if (type === 'bug') {
 		const severity = String(entity.data.severity ?? '');
 		if (severity) footerBadges.push(buildMetaBadge('Severity:', severity, { metaType: 'category', metaRank: 'secondary', sentiment: SEVERITY_SENTIMENT[severity] }));
+	} else if (type === 'spec') {
+		const version = String(entity.data.version ?? '');
+		if (version) footerBadges.push(buildMetaBadge('Version:', version, { metaType: 'quantity', metaRank: 'secondary' }));
+	} else if (type === 'decision') {
+		const date = String(entity.data.date ?? '');
+		if (date) footerBadges.push(buildMetaBadge('Date:', date, { metaType: 'temporal', metaRank: 'secondary' }));
 	}
 
 	const milestone = String(entity.data.milestone ?? '');
@@ -223,10 +237,6 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 		'data-id': id,
 	}, children);
 }
-
-const DECISION_STATUS_SENTIMENT: Record<string, string> = {
-	proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative',
-};
 
 /** Build a decision log entry Tag */
 function buildDecisionEntry(entity: EntityRegistration): InstanceType<typeof Tag> {
@@ -910,28 +920,7 @@ function buildRelationshipsSection(
 		const kindRels = byKind.get(kind)!;
 		const label = KIND_LABELS[kind] || kind;
 
-		// "Implemented by" renders rich backlog cards instead of plain links
-		if (kind === 'implemented-by') {
-			const cards: any[] = [];
-			for (const rel of kindRels) {
-				const target = findEntity(rel.toId, data);
-				if (target) {
-					cards.push(buildEntityCard(target));
-				}
-			}
-			if (cards.length > 0) {
-				groups.push(new Tag('div', {
-					class: 'rf-plan-relationships__group',
-					'data-kind': kind,
-				}, [
-					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
-					new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
-				]));
-			}
-			continue;
-		}
-
-		// "Informed by" renders decision entry cards instead of plain links
+		// "Informed by" renders decision entry cards
 		if (kind === 'informed-by') {
 			const entries: any[] = [];
 			for (const rel of kindRels) {
@@ -952,41 +941,22 @@ function buildRelationshipsSection(
 			continue;
 		}
 
-		const items: any[] = [];
+		const cards: any[] = [];
 		for (const rel of kindRels) {
-			const targetId = rel.toId;
-			const target = findEntity(targetId, data);
-			const title = target ? String(target.data.title ?? '') : '';
-			const status = target ? String(target.data.status ?? '') : '';
-			const type = target ? target.type : rel.toType;
-
-			const innerChildren = [
-				new Tag('span', { class: 'rf-plan-relationships__id' }, [targetId]),
-				new Tag('span', {
-					class: 'rf-plan-relationships__status',
-					'data-status': status,
-				}, [status]),
-				new Tag('span', { class: 'rf-plan-relationships__type' }, [type]),
-				...(title ? [new Tag('span', { class: 'rf-plan-relationships__title' }, [title])] : []),
-			];
-
-			const children: any[] = target?.sourceUrl
-				? [new Tag('a', { class: 'rf-plan-relationships__link', href: target.sourceUrl }, innerChildren)]
-				: innerChildren;
-
-			items.push(new Tag('li', {
-				class: 'rf-plan-relationships__item',
-				'data-kind': kind,
-			}, children));
+			const target = findEntity(rel.toId, data);
+			if (target) {
+				cards.push(buildEntityCard(target));
+			}
 		}
-
-		groups.push(new Tag('div', {
-			class: 'rf-plan-relationships__group',
-			'data-kind': kind,
-		}, [
-			new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
-			new Tag('ul', { class: 'rf-plan-relationships__list' }, items),
-		]));
+		if (cards.length > 0) {
+			groups.push(new Tag('div', {
+				class: 'rf-plan-relationships__group',
+				'data-kind': kind,
+			}, [
+				new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
+				new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
+			]));
+		}
 	}
 
 	if (groups.length === 0) return null;

@@ -597,7 +597,7 @@ Description.
 		const cardsContainer = findTag(implementedByGroup!, t => t.attributes.class === 'rf-plan-relationships__cards');
 		expect(cardsContainer).toBeDefined();
 
-		// The work page should have an "Implements" section (still a list)
+		// The work page should have an "Implements" section with backlog cards
 		const workPage = processed[1];
 		const workRelSection = findTag(workPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
 		expect(workRelSection).toBeDefined();
@@ -607,9 +607,10 @@ Description.
 		);
 		expect(implementsGroup).toBeDefined();
 
-		// Implements should still use the list format (not cards)
-		const implementsList = findTag(implementsGroup!, t => t.attributes.class === 'rf-plan-relationships__list');
-		expect(implementsList).toBeDefined();
+		// Implements should use backlog cards (same as implemented-by)
+		const implementsCards = findAllTags(implementsGroup!, t => t.attributes.class === 'rf-backlog__card');
+		expect(implementsCards).toHaveLength(1);
+		expect(implementsCards[0].attributes['data-id']).toBe('SPEC-001');
 	});
 
 	it('creates informs relationship from decision to spec via source attribute', () => {
@@ -727,7 +728,7 @@ Decision.
 
 		const { processed } = runFullPipeline(pages);
 
-		// The decision page should have an "Informs" section (plain list, not cards)
+		// The decision page should have an "Informs" section with backlog cards
 		const decisionPage = processed[1];
 		const relSection = findTag(decisionPage.renderable, t => t.attributes.class === 'rf-plan-relationships');
 		expect(relSection).toBeDefined();
@@ -737,9 +738,10 @@ Decision.
 		);
 		expect(informsGroup).toBeDefined();
 
-		// Informs should use the list format (not decision entries)
-		const informsList = findTag(informsGroup!, t => t.attributes.class === 'rf-plan-relationships__list');
-		expect(informsList).toBeDefined();
+		// Informs should use backlog cards
+		const informsCards = findAllTags(informsGroup!, t => t.attributes.class === 'rf-backlog__card');
+		expect(informsCards).toHaveLength(1);
+		expect(informsCards[0].attributes['data-id']).toBe('SPEC-001');
 	});
 
 	it('supports source attribute on bug items', () => {
