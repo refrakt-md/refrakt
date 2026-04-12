@@ -6,13 +6,13 @@ Extend `ModifierConfig` with `valueMap` and `mapTarget` fields so that modifier 
 
 ## Acceptance Criteria
 
-- [ ] `ModifierConfig` in `packages/transform/src/types.ts` has `valueMap?: Record<string, string>` and `mapTarget?: string` fields
-- [ ] The engine's modifier resolution in `packages/transform/src/engine.ts` applies `valueMap` before emitting data attributes — mapped values go to `mapTarget` (or the same attribute if `mapTarget` is not set)
-- [ ] Unmapped values pass through unchanged
-- [ ] `mergeThemeConfig` correctly merges `valueMap` overrides (theme replaces base valueMap per modifier)
-- [ ] Unit tests cover: basic mapping, unmapped passthrough, mapTarget redirection, merge behavior
-- [ ] TypeScript compiles cleanly across all packages
-- [ ] All existing tests pass
+- [x] `ModifierConfig` in `packages/transform/src/types.ts` has `valueMap?: Record<string, string>` and `mapTarget?: string` fields
+- [x] The engine's modifier resolution in `packages/transform/src/engine.ts` applies `valueMap` before emitting data attributes — mapped values go to `mapTarget` (or the same attribute if `mapTarget` is not set)
+- [x] Unmapped values pass through unchanged
+- [x] `mergeThemeConfig` correctly merges `valueMap` overrides (theme replaces base valueMap per modifier)
+- [x] Unit tests cover: basic mapping, unmapped passthrough, mapTarget redirection, merge behavior
+- [x] TypeScript compiles cleanly across all packages
+- [x] All existing tests pass
 
 ## Approach
 

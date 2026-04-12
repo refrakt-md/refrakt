@@ -15,9 +15,9 @@ Add a `register()` hook to the plan package that scans transformed pages for pla
 - [x] Plan package exports `pipelineHooks` with a `register()` hook
 - [x] The hook registers entities for all five rune types: `spec`, `work`, `bug`, `decision`, `milestone`
 - [x] Each entity includes: `id`, `title` (from heading), `url` (page URL), `status`, and type-specific fields
-- [ ] `{% xref "SPEC-008" /%}` resolves to a link when plan content is in the pipeline
-- [ ] `{% xref "WORK-015" /%}` resolves with type `work`
-- [ ] Type hints work: `{% xref "ADR-001" type="decision" /%}` narrows the search
+- [x] `{% xref "SPEC-008" /%}` resolves to a link when plan content is in the pipeline
+- [x] `{% xref "WORK-015" /%}` resolves with type `work`
+- [x] Type hints work: `{% xref "ADR-001" type="decision" /%}` narrows the search
 - [x] Tests cover registration and resolution of all five entity types
 
 ## Approach

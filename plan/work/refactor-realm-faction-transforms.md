@@ -12,14 +12,14 @@ Realm and Faction share ~90% identical transform code (scene image extraction, d
 
 ## Acceptance Criteria
 
-- [ ] Realm transform uses shared `buildLayoutMetas()` from WORK-076
-- [ ] Faction transform uses shared `buildLayoutMetas()` from WORK-076
-- [ ] Both transforms use shared `extractMediaImage()` from WORK-077 (replacing ~15-line inline unwrap loops)
-- [ ] Shared storytelling helpers extracted for any remaining duplicated patterns between Realm and Faction
-- [ ] Faction config declares `mediaSlots: { scene: 'cover' }` and corresponding `sections` entry for `scene: 'media'`
-- [ ] Both runes follow standard 3-section structure (meta, content with preamble, media)
-- [ ] Realm config sections aligned to standard pattern (preamble inside content)
-- [ ] All existing tests pass (update snapshots if structure changes)
+- [x] Realm transform uses shared `buildLayoutMetas()` from WORK-076
+- [x] Faction transform uses shared `buildLayoutMetas()` from WORK-076
+- [x] Both transforms use shared `extractMediaImage()` from WORK-077 (replacing ~15-line inline unwrap loops)
+- [x] Shared storytelling helpers extracted for any remaining duplicated patterns between Realm and Faction
+- [x] Faction config declares `mediaSlots: { scene: 'cover' }` and corresponding `sections` entry for `scene: 'media'`
+- [x] Both runes follow standard 3-section structure (meta, content with preamble, media)
+- [x] Realm config sections aligned to standard pattern (preamble inside content)
+- [x] All existing tests pass (update snapshots if structure changes)
 
 ## Approach
 

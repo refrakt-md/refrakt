@@ -10,9 +10,9 @@ The Character rune has two full `createComponentRenderable` calls in a `hasSecti
 
 ## Acceptance Criteria
 
-- [ ] Character transform has exactly one `createComponentRenderable` call
-- [ ] Conditional `hasSections` logic uses spread syntax to vary properties/refs
-- [ ] Identity transform output is unchanged — all existing tests pass
+- [x] Character transform has exactly one `createComponentRenderable` call
+- [x] Conditional `hasSections` logic uses spread syntax to vary properties/refs
+- [x] Identity transform output is unchanged — all existing tests pass
 
 ## Approach
 

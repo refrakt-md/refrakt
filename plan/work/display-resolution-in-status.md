@@ -5,11 +5,11 @@
 Show resolution data (completion date, PR link) in the `plan status` output and the `plan serve` dashboard.
 
 ## Acceptance Criteria
-- [ ] `plan status` shows completion date and PR reference for recently done items (as shown in SPEC-027)
-- [ ] `plan status --format json` includes resolution data in its output
-- [ ] `plan serve` entity pages render the Resolution section with visual distinction (muted background, timestamp badge)
-- [ ] Branch and PR values render as links in `plan serve` when patterns are recognised
-- [ ] Unit tests for the status output formatting
+- [x] `plan status` shows completion date and PR reference for recently done items (as shown in SPEC-027)
+- [x] `plan status --format json` includes resolution data in its output
+- [x] `plan serve` entity pages render the Resolution section with visual distinction (muted background, timestamp badge)
+- [x] Branch and PR values render as links in `plan serve` when patterns are recognised
+- [x] Unit tests for the status output formatting
 
 ## Approach
 

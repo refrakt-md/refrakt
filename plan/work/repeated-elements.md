@@ -6,14 +6,14 @@ Extend `StructureEntry` with a `repeat` field that generates N copies of a templ
 
 ## Acceptance Criteria
 
-- [ ] `StructureEntry` in `packages/transform/src/types.ts` has a `repeat` field with `count` (modifier name), `max` (cap, default 10), `filled` (optional modifier name), `element` (template), and `filledElement` (optional template)
-- [ ] The engine's `buildStructureElement` generates `count` copies when `repeat` is present
-- [ ] When `filled` is specified, the first N elements get `data-filled="true"` (or use `filledElement`), the rest get `data-filled="false"` (or use `element`)
-- [ ] The `max` cap prevents runaway generation
-- [ ] Non-numeric or missing count values produce zero elements (no crash)
-- [ ] Unit tests cover: basic repetition, filled/unfilled split, max cap, edge cases (0, negative, non-numeric)
-- [ ] TypeScript compiles cleanly
-- [ ] All existing tests pass
+- [x] `StructureEntry` in `packages/transform/src/types.ts` has a `repeat` field with `count` (modifier name), `max` (cap, default 10), `filled` (optional modifier name), `element` (template), and `filledElement` (optional template)
+- [x] The engine's `buildStructureElement` generates `count` copies when `repeat` is present
+- [x] When `filled` is specified, the first N elements get `data-filled="true"` (or use `filledElement`), the rest get `data-filled="false"` (or use `element`)
+- [x] The `max` cap prevents runaway generation
+- [x] Non-numeric or missing count values produce zero elements (no crash)
+- [x] Unit tests cover: basic repetition, filled/unfilled split, max cap, edge cases (0, negative, non-numeric)
+- [x] TypeScript compiles cleanly
+- [x] All existing tests pass
 
 ## Approach
 

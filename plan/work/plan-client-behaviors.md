@@ -6,11 +6,11 @@ Wire `@refrakt-md/behaviors` into the plan site via `initPage()` from `@refrakt-
 
 ## Acceptance Criteria
 
-- [ ] Behaviors JS bundle is served at `/__plan-behaviors.js` (serve) or written to `behaviors.js` (build)
-- [ ] `initPage()` is called on page load via a `<script>` tag
-- [ ] Copy-to-clipboard button appears on all `<pre>` code blocks
-- [ ] Plan theme CSS includes `.rf-code-wrapper`, `.rf-copy-button`, `.rf-copy-button--copied` selectors
-- [ ] Behaviors work in both `serve` and `build` modes
+- [x] Behaviors JS bundle is served at `/__plan-behaviors.js` (serve) or written to `behaviors.js` (build)
+- [x] `initPage()` is called on page load via a `<script>` tag
+- [x] Copy-to-clipboard button appears on all `<pre>` code blocks
+- [x] Plan theme CSS includes `.rf-code-wrapper`, `.rf-copy-button`, `.rf-copy-button--copied` selectors
+- [x] Behaviors work in both `serve` and `build` modes
 
 ## Approach
 

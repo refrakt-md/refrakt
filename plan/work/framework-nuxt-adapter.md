@@ -6,16 +6,16 @@ Build the Nuxt framework adapter. Nuxt is Vite-based like SvelteKit, so the exis
 
 ## Acceptance Criteria
 
-- [ ] `packages/nuxt/` package exists with correct `package.json` (peer dep `nuxt@^3.0.0`)
-- [ ] Nuxt module (`module.ts`) registers Vite plugin, injects CSS, configures `build.transpile`, sets Vue `isCustomElement` for `rf-*` tags
-- [ ] Adapted Vite plugin reuses virtual module and content HMR logic from SvelteKit plugin
-- [ ] `RefraktContent.vue` renders page tree via `renderToHtml()` + `v-html`
-- [ ] `useRefraktMeta()` composable maps page SEO data to Nuxt's `useHead()` (OG tags, JSON-LD)
-- [ ] Catch-all route `pages/[...slug].vue` loads content via `useAsyncData()` + `loadContent()`
-- [ ] Behavior init/cleanup handled via `onMounted`/`onBeforeUnmount`, re-init on route change via watcher
-- [ ] Lumina Nuxt adapter exports theme config + CSS entry point
-- [ ] Example site renders core runes, layouts, behaviors, and web components correctly
-- [ ] Adapter documentation page at `site/content/docs/adapters/nuxt.md` with installation, project structure, configuration, code examples (Nuxt module setup, RefraktContent usage, useRefraktMeta composable, route setup, behavior lifecycle, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
+- [x] `packages/nuxt/` package exists with correct `package.json` (peer dep `nuxt@^3.0.0`)
+- [x] Nuxt module (`module.ts`) registers Vite plugin, injects CSS, configures `build.transpile`, sets Vue `isCustomElement` for `rf-*` tags
+- [x] Adapted Vite plugin reuses virtual module and content HMR logic from SvelteKit plugin
+- [x] `RefraktContent.vue` renders page tree via `renderToHtml()` + `v-html`
+- [x] `useRefraktMeta()` composable maps page SEO data to Nuxt's `useHead()` (OG tags, JSON-LD)
+- [x] Catch-all route `pages/[...slug].vue` loads content via `useAsyncData()` + `loadContent()`
+- [x] Behavior init/cleanup handled via `onMounted`/`onBeforeUnmount`, re-init on route change via watcher
+- [x] Lumina Nuxt adapter exports theme config + CSS entry point
+- [x] Example site renders core runes, layouts, behaviors, and web components correctly
+- [x] Adapter documentation page at `site/content/docs/adapters/nuxt.md` with installation, project structure, configuration, code examples (Nuxt module setup, RefraktContent usage, useRefraktMeta composable, route setup, behavior lifecycle, SEO injection), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

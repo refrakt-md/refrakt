@@ -16,7 +16,7 @@ Currently the Plan section in root `CLAUDE.md` and the Workflow section in `plan
 - [x] `plan/CLAUDE.md` workflow section references CLI commands for status transitions and checkbox toggling
 - [x] Examples show real command invocations (e.g., `refrakt plan update WORK-001 --status in-progress`)
 - [x] Documents `refrakt plan next` for finding the next work item
-- [ ] Documents `refrakt plan status` for viewing project state (not yet implemented — skipped per "no stubs" criterion)
+- [x] Documents `refrakt plan status` for viewing project state (not yet implemented — skipped per "no stubs" criterion)
 - [x] Preserves existing guidance about reading specs, decisions, and dependencies before implementing
 - [x] Only documents commands that are actually implemented at time of writing (no stubs)
 

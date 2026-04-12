@@ -8,13 +8,13 @@ When a theme package is specified in config, resolve its CSS (design tokens + ba
 
 ## Acceptance Criteria
 
-- [ ] When `--theme` is omitted and `refrakt.config.json` exists with a `theme` field, that theme is used
-- [ ] Theme package is resolved via its npm package exports (`package/html` or `package/base.css`)
-- [ ] `--theme` flag still overrides config when provided
-- [ ] `--theme default` and `--theme minimal` still use built-in themes regardless of config
-- [ ] When config exists but theme resolution fails, falls back to built-in default with a warning
-- [ ] When no config exists, uses built-in default (standalone mode unchanged)
-- [ ] `--theme lumina` works as shorthand for `@refrakt-md/lumina`
+- [x] When `--theme` is omitted and `refrakt.config.json` exists with a `theme` field, that theme is used
+- [x] Theme package is resolved via its npm package exports (`package/html` or `package/base.css`)
+- [x] `--theme` flag still overrides config when provided
+- [x] `--theme default` and `--theme minimal` still use built-in themes regardless of config
+- [x] When config exists but theme resolution fails, falls back to built-in default with a warning
+- [x] When no config exists, uses built-in default (standalone mode unchanged)
+- [x] `--theme lumina` works as shorthand for `@refrakt-md/lumina`
 
 ## Approach
 

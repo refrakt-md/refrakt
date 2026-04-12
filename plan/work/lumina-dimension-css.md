@@ -21,7 +21,7 @@ Write the universal dimension CSS in Lumina: density rules (~3 + interactions), 
 - [x] Surface assignments: runes grouped into card/inline/banner/inset selector lists per SPEC-026
 - [x] Surface × density interaction via `--rune-padding` custom property
 - [x] CSS coverage tests updated for all new selectors
-- [ ] Per-rune CSS that is now redundant identified for future cleanup
+- [x] Per-rune CSS that is now redundant identified for future cleanup
 
 ## Approach
 

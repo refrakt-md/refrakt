@@ -5,14 +5,14 @@
 Extend the plan scanner to extract `## Resolution` sections from work item and bug files into a structured `resolution` field on `PlanEntity`.
 
 ## Acceptance Criteria
-- [ ] `PlanEntity` interface in `runes/plan/src/types.ts` gains an optional `resolution` field with `date`, `branch`, `pr`, and `body` subfields
-- [ ] `parseFile()` in `runes/plan/src/scanner.ts` extracts the Resolution section from the raw source when present
-- [ ] `Completed:` line is parsed into `resolution.date` (ISO date string)
-- [ ] `Branch:` line is parsed into `resolution.branch` (backticks stripped)
-- [ ] `PR:` line is parsed into `resolution.pr`
-- [ ] Remaining content goes into `resolution.body`
-- [ ] Files without a `## Resolution` section produce `resolution: undefined`
-- [ ] Unit tests cover: full resolution, minimal resolution (just a sentence), missing resolution, resolution with only some fields
+- [x] `PlanEntity` interface in `runes/plan/src/types.ts` gains an optional `resolution` field with `date`, `branch`, `pr`, and `body` subfields
+- [x] `parseFile()` in `runes/plan/src/scanner.ts` extracts the Resolution section from the raw source when present
+- [x] `Completed:` line is parsed into `resolution.date` (ISO date string)
+- [x] `Branch:` line is parsed into `resolution.branch` (backticks stripped)
+- [x] `PR:` line is parsed into `resolution.pr`
+- [x] Remaining content goes into `resolution.body`
+- [x] Files without a `## Resolution` section produce `resolution: undefined`
+- [x] Unit tests cover: full resolution, minimal resolution (just a sentence), missing resolution, resolution with only some fields
 
 ## Approach
 

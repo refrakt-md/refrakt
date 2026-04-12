@@ -6,12 +6,12 @@ Update plan rune CSS to reference `--rf-*` tokens (the standard refrakt token na
 
 ## Acceptance Criteria
 
-- [ ] Plan rune CSS references `--rf-*` tokens where equivalent tokens exist (colors, spacing, typography, radii)
-- [ ] `--plan-*` tokens are used as fallbacks: `var(--rf-color-success, var(--plan-status-done))`
-- [ ] Built-in `tokens.css` still defines `--plan-*` tokens (standalone mode unaffected)
-- [ ] Visual appearance with built-in themes is unchanged
-- [ ] When a `--rf-*` theme is active, plan runes pick up the theme's palette
-- [ ] Both `default.css` and `minimal.css` updated consistently
+- [x] Plan rune CSS references `--rf-*` tokens where equivalent tokens exist (colors, spacing, typography, radii)
+- [x] `--plan-*` tokens are used as fallbacks: `var(--rf-color-success, var(--plan-status-done))`
+- [x] Built-in `tokens.css` still defines `--plan-*` tokens (standalone mode unaffected)
+- [x] Visual appearance with built-in themes is unchanged
+- [x] When a `--rf-*` theme is active, plan runes pick up the theme's palette
+- [x] Both `default.css` and `minimal.css` updated consistently
 
 ## Approach
 

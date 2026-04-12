@@ -10,17 +10,17 @@ Extend `create-refrakt` to scaffold projects for Astro, Nuxt, Next.js, and Eleve
 
 ## Acceptance Criteria
 
-- [ ] `--target astro` scaffolds an Astro project with `astro.config.mjs`, `@refrakt-md/astro` integration, `BaseLayout.astro` usage, `getStaticPaths()` content loading, behavior init script, and starter content
-- [ ] `--target nuxt` scaffolds a Nuxt project with `nuxt.config.ts`, `@refrakt-md/nuxt` module registration, catch-all route `pages/[...slug].vue` with `RefraktContent`, `useRefraktMeta` composable usage, and starter content
-- [ ] `--target next` scaffolds a Next.js App Router project with `app/layout.tsx` (CSS import), `app/[...slug]/page.tsx` (RSC content loading + `RefraktContent` + `BehaviorInit`), `generateStaticParams`, `generateMetadata` helper usage, and starter content
-- [ ] `--target eleventy` scaffolds an Eleventy 3.0 project with `.eleventy.js` plugin config, `_data/refrakt.js` global data file, `base.njk` template, pagination config, CSS passthrough copy, behavior script inclusion, and starter content
-- [ ] Each target generates correct `package.json` with framework-appropriate dependencies (peer deps, dev deps) using the same `~version` coupling strategy as existing targets
-- [ ] Each target generates correct `refrakt.config.json` with appropriate `target` field
-- [ ] Starter content (`_layout.md`, `index.md`, `docs/getting-started.md`) is shared across all targets — only the surrounding framework boilerplate differs
+- [x] `--target astro` scaffolds an Astro project with `astro.config.mjs`, `@refrakt-md/astro` integration, `BaseLayout.astro` usage, `getStaticPaths()` content loading, behavior init script, and starter content
+- [x] `--target nuxt` scaffolds a Nuxt project with `nuxt.config.ts`, `@refrakt-md/nuxt` module registration, catch-all route `pages/[...slug].vue` with `RefraktContent`, `useRefraktMeta` composable usage, and starter content
+- [x] `--target next` scaffolds a Next.js App Router project with `app/layout.tsx` (CSS import), `app/[...slug]/page.tsx` (RSC content loading + `RefraktContent` + `BehaviorInit`), `generateStaticParams`, `generateMetadata` helper usage, and starter content
+- [x] `--target eleventy` scaffolds an Eleventy 3.0 project with `.eleventy.js` plugin config, `_data/refrakt.js` global data file, `base.njk` template, pagination config, CSS passthrough copy, behavior script inclusion, and starter content
+- [x] Each target generates correct `package.json` with framework-appropriate dependencies (peer deps, dev deps) using the same `~version` coupling strategy as existing targets
+- [x] Each target generates correct `refrakt.config.json` with appropriate `target` field
+- [x] Starter content (`_layout.md`, `index.md`, `docs/getting-started.md`) is shared across all targets — only the surrounding framework boilerplate differs
 - [x] Interactive mode when `--target` is not provided: prompts for project name (if not given as positional arg) and target selection from a list (SvelteKit, Astro, Nuxt, Next.js, Eleventy, HTML)
-- [ ] CLI help text and post-scaffold "next steps" messages are framework-appropriate
-- [ ] `site/content/docs/adapters/` overview page updated to list all available targets
-- [ ] Existing tests updated; new tests cover each target's generated file structure, dependency versions, and config correctness
+- [x] CLI help text and post-scaffold "next steps" messages are framework-appropriate
+- [x] `site/content/docs/adapters/` overview page updated to list all available targets
+- [x] Existing tests updated; new tests cover each target's generated file structure, dependency versions, and config correctness
 
 ## Approach
 

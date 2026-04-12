@@ -6,13 +6,13 @@ Apply `@refrakt-md/highlight` to the plan render pipeline so code fences in plan
 
 ## Acceptance Criteria
 
-- [ ] `@refrakt-md/highlight` is added as a dependency of `@refrakt-md/plan`
-- [ ] `createHighlightTransform()` is applied after identity transform in the pipeline
-- [ ] Code fences with language annotations render with syntax highlighting
-- [ ] Highlight CSS is concatenated with the plan theme CSS
-- [ ] Light/dark mode works via CSS variables (inherited from plan theme)
-- [ ] Common plan content languages work: `bash`, `json`, `typescript`, `markdown`
-- [ ] Build output includes highlighted code (no client-side JS required)
+- [x] `@refrakt-md/highlight` is added as a dependency of `@refrakt-md/plan`
+- [x] `createHighlightTransform()` is applied after identity transform in the pipeline
+- [x] Code fences with language annotations render with syntax highlighting
+- [x] Highlight CSS is concatenated with the plan theme CSS
+- [x] Light/dark mode works via CSS variables (inherited from plan theme)
+- [x] Common plan content languages work: `bash`, `json`, `typescript`, `markdown`
+- [x] Build output includes highlighted code (no client-side JS required)
 
 ## Approach
 

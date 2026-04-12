@@ -12,20 +12,20 @@ Migrate duplicated split layout grid placement CSS from per-rune files into the 
 
 ## Acceptance Criteria
 
-- [ ] `split.css` defines explicit grid column/row placement for the 3-section pattern using `[data-section]` and `[data-name]` attribute selectors
-- [ ] `split.css` handles split-reverse placement via the same selectors
-- [ ] Default mobile collapse resets to DOM order (preamble-first — marketing runes like Hero, Feature, Step)
-- [ ] Content-first mobile collapse hoists media above preamble via `order: -1`, gated on `[data-media-position="top"]`
-- [ ] Full-bleed card header treatment (negative margins, border-radius reset) in shared layer, gated on `[data-media-position="top"]`
-- [ ] Split media box-shadow moved to shared layer
-- [ ] Media zone container base styles (border-radius, overflow, img block sizing) moved to shared `media.css` or dimension layer
-- [ ] Content rune configs (recipe, playlist, realm, faction) emit `data-media-position="top"` via engine config modifier or meta tag
-- [ ] Marketing rune configs (hero, feature, step) do NOT emit `data-media-position` (use default preamble-first behavior)
-- [ ] Per-rune split layout CSS removed from `recipe.css` (~60 lines), `playlist.css` (~55 lines)
-- [ ] Per-rune CSS files retain only domain-specific body content styling
-- [ ] CSS coverage tests pass
-- [ ] Visual regression check: recipe and playlist split layouts render correctly at desktop and mobile breakpoints
-- [ ] Visual regression check: hero, feature, and step split layouts render correctly at desktop and mobile breakpoints (preamble leads on mobile)
+- [x] `split.css` defines explicit grid column/row placement for the 3-section pattern using `[data-section]` and `[data-name]` attribute selectors
+- [x] `split.css` handles split-reverse placement via the same selectors
+- [x] Default mobile collapse resets to DOM order (preamble-first — marketing runes like Hero, Feature, Step)
+- [x] Content-first mobile collapse hoists media above preamble via `order: -1`, gated on `[data-media-position="top"]`
+- [x] Full-bleed card header treatment (negative margins, border-radius reset) in shared layer, gated on `[data-media-position="top"]`
+- [x] Split media box-shadow moved to shared layer
+- [x] Media zone container base styles (border-radius, overflow, img block sizing) moved to shared `media.css` or dimension layer
+- [x] Content rune configs (recipe, playlist, realm, faction) emit `data-media-position="top"` via engine config modifier or meta tag
+- [x] Marketing rune configs (hero, feature, step) do NOT emit `data-media-position` (use default preamble-first behavior)
+- [x] Per-rune split layout CSS removed from `recipe.css` (~60 lines), `playlist.css` (~55 lines)
+- [x] Per-rune CSS files retain only domain-specific body content styling
+- [x] CSS coverage tests pass
+- [x] Visual regression check: recipe and playlist split layouts render correctly at desktop and mobile breakpoints
+- [x] Visual regression check: hero, feature, and step split layouts render correctly at desktop and mobile breakpoints (preamble leads on mobile)
 
 ## Approach
 

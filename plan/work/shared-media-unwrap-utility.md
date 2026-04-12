@@ -10,13 +10,13 @@ Media zones must unwrap Markdoc's `<p><img/></p>` to emit a bare `<img>` inside 
 
 ## Acceptance Criteria
 
-- [ ] New `extractMediaImage()` utility (or similar) exported from `packages/runes/src/common.ts`
-- [ ] Utility uses `RenderableNodeCursor`'s `.tag('img')` traversal to unwrap paragraph-wrapped images
-- [ ] `recipe.ts` media zone updated to use the utility — `<p><img/></p>` no longer survives into output
-- [ ] `playlist.ts` media zone updated to use the utility
-- [ ] `realm.ts` and `faction.ts` inline unwrap code replaced with calls to the shared utility
-- [ ] Identity transform output for recipe and playlist now emits `<div data-name="media"><img .../></div>` (no `<p>` wrapper)
-- [ ] All existing tests pass (update snapshots if media zone output changes)
+- [x] New `extractMediaImage()` utility (or similar) exported from `packages/runes/src/common.ts`
+- [x] Utility uses `RenderableNodeCursor`'s `.tag('img')` traversal to unwrap paragraph-wrapped images
+- [x] `recipe.ts` media zone updated to use the utility — `<p><img/></p>` no longer survives into output
+- [x] `playlist.ts` media zone updated to use the utility
+- [x] `realm.ts` and `faction.ts` inline unwrap code replaced with calls to the shared utility
+- [x] Identity transform output for recipe and playlist now emits `<div data-name="media"><img .../></div>` (no `<p>` wrapper)
+- [x] All existing tests pass (update snapshots if media zone output changes)
 
 ## Approach
 

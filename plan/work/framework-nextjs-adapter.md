@@ -6,17 +6,17 @@ Build the Next.js framework adapter. Uses React Server Components + `renderToHtm
 
 ## Acceptance Criteria
 
-- [ ] `packages/next/` package exists with correct `package.json` (peer dep `next@^14.0.0 || ^15.0.0`)
-- [ ] `RefraktContent` Server Component renders via `renderToHtml()` + `dangerouslySetInnerHTML` (no `'use client'`)
-- [ ] `BehaviorInit` Client Component (`'use client'`) initializes behaviors via `useEffect`, cleans up on unmount, re-initializes on route change
-- [ ] `metadata.ts` helper transforms page SEO data into Next.js `Metadata` objects for `generateMetadata()`
-- [ ] `loader.ts` wraps `loadContent()` for Next.js patterns (caching, revalidation)
-- [ ] Content loading works via `generateStaticParams()` + async Server Component
-- [ ] CSS injection works via `import '@refrakt-md/lumina'` in root `app/layout.tsx`
-- [ ] Lumina Next.js adapter exports theme config + types
-- [ ] Custom elements (`rf-*`) render correctly via raw HTML string (bypasses React's custom element issues)
-- [ ] Example site renders core runes, layouts, behaviors, and web components correctly
-- [ ] Adapter documentation page at `site/content/docs/adapters/nextjs.md` with installation, project structure, configuration, code examples (RefraktContent server component, BehaviorInit client component, generateMetadata helper, generateStaticParams, CSS import, layout setup), and getting-started guide matching the depth of existing SvelteKit adapter docs
+- [x] `packages/next/` package exists with correct `package.json` (peer dep `next@^14.0.0 || ^15.0.0`)
+- [x] `RefraktContent` Server Component renders via `renderToHtml()` + `dangerouslySetInnerHTML` (no `'use client'`)
+- [x] `BehaviorInit` Client Component (`'use client'`) initializes behaviors via `useEffect`, cleans up on unmount, re-initializes on route change
+- [x] `metadata.ts` helper transforms page SEO data into Next.js `Metadata` objects for `generateMetadata()`
+- [x] `loader.ts` wraps `loadContent()` for Next.js patterns (caching, revalidation)
+- [x] Content loading works via `generateStaticParams()` + async Server Component
+- [x] CSS injection works via `import '@refrakt-md/lumina'` in root `app/layout.tsx`
+- [x] Lumina Next.js adapter exports theme config + types
+- [x] Custom elements (`rf-*`) render correctly via raw HTML string (bypasses React's custom element issues)
+- [x] Example site renders core runes, layouts, behaviors, and web components correctly
+- [x] Adapter documentation page at `site/content/docs/adapters/nextjs.md` with installation, project structure, configuration, code examples (RefraktContent server component, BehaviorInit client component, generateMetadata helper, generateStaticParams, CSS import, layout setup), and getting-started guide matching the depth of existing SvelteKit adapter docs
 
 ## Approach
 

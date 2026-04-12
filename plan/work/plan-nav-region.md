@@ -8,12 +8,12 @@ Currently the sidebar HTML is hand-rolled in the HTML shell template. This work 
 
 ## Acceptance Criteria
 
-- [ ] `buildNavRegion(groups, activePath)` function exists in `@refrakt-md/plan`
-- [ ] Output is a serialized tag tree (plain `{$$mdtype:'Tag'}` objects)
-- [ ] Tags use correct BEM classes: `.rf-plan-sidebar`, `.rf-plan-sidebar__group`, `.rf-plan-sidebar__link`, `.rf-plan-sidebar__link--active`
-- [ ] Entity links include `data-status`, `data-id` attributes for future filtering (SPEC-015)
-- [ ] Existing sidebar visual appearance is preserved
-- [ ] Unit tests verify the tag tree structure
+- [x] `buildNavRegion(groups, activePath)` function exists in `@refrakt-md/plan`
+- [x] Output is a serialized tag tree (plain `{$$mdtype:'Tag'}` objects)
+- [x] Tags use correct BEM classes: `.rf-plan-sidebar`, `.rf-plan-sidebar__group`, `.rf-plan-sidebar__link`, `.rf-plan-sidebar__link--active`
+- [x] Entity links include `data-status`, `data-id` attributes for future filtering (SPEC-015)
+- [x] Existing sidebar visual appearance is preserved
+- [x] Unit tests verify the tag tree structure
 
 ## Approach
 

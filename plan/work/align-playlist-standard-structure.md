@@ -12,15 +12,15 @@ The playlist rune uses a custom header structure that diverges from the standard
 
 ## Acceptance Criteria
 
-- [ ] Playlist transform uses `pageSectionProperties` + `<header data-name="preamble">` pattern instead of custom `<div data-name="header">` with imperative title assignment
-- [ ] Description paragraphs wrapped as a blurb inside the preamble header
-- [ ] Config sections updated to recipe pattern: `{ meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' }`
-- [ ] Config declares modifiers for `artistMeta`, `hasPlayerMeta`, and `id` meta tags emitted by the schema
-- [ ] Media zone uses shared unwrap utility from WORK-077
-- [ ] Layout meta tags use shared utility from WORK-076
-- [ ] Identity transform output follows standard 3-section structure: meta div, media div, content div (with preamble inside)
-- [ ] Playlist CSS updated to target new BEM class names (e.g. `__preamble` instead of `__header`)
-- [ ] All existing tests pass (update snapshots for new structure)
+- [x] Playlist transform uses `pageSectionProperties` + `<header data-name="preamble">` pattern instead of custom `<div data-name="header">` with imperative title assignment
+- [x] Description paragraphs wrapped as a blurb inside the preamble header
+- [x] Config sections updated to recipe pattern: `{ meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' }`
+- [x] Config declares modifiers for `artistMeta`, `hasPlayerMeta`, and `id` meta tags emitted by the schema
+- [x] Media zone uses shared unwrap utility from WORK-077
+- [x] Layout meta tags use shared utility from WORK-076
+- [x] Identity transform output follows standard 3-section structure: meta div, media div, content div (with preamble inside)
+- [x] Playlist CSS updated to target new BEM class names (e.g. `__preamble` instead of `__header`)
+- [x] All existing tests pass (update snapshots for new structure)
 
 ## Approach
 

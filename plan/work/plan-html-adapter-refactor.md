@@ -6,19 +6,19 @@ The main refactor: replace the bespoke HTML shell template in `@refrakt-md/plan`
 
 ## Acceptance Criteria
 
-- [ ] `render-pipeline.ts` calls `renderFullPage()` from `@refrakt-md/html` instead of building HTML strings
-- [ ] The bespoke HTML shell template is removed
-- [ ] `getLuminaBaseCss()` is removed — `@refrakt-md/lumina` is no longer a dependency
-- [ ] `escapeHtml` utility is removed (handled by the HTML adapter)
-- [ ] Built-in theme CSS is served at `/__plan-theme.css` (serve) or written to `theme.css` (build)
-- [ ] SSE hot reload script is injected via `headExtra` option
-- [ ] `planLayout` from WORK-037 is used for structural placement
-- [ ] Nav region from WORK-038 is passed as `regions.nav`
-- [ ] `plan serve` produces identical visual output as before
-- [ ] `plan build` produces identical static output as before
-- [ ] `--theme` flag still works for `default`, `minimal`, and custom paths
-- [ ] `--base-url` flag still works correctly
-- [ ] All existing plan serve/build tests pass
+- [x] `render-pipeline.ts` calls `renderFullPage()` from `@refrakt-md/html` instead of building HTML strings
+- [x] The bespoke HTML shell template is removed
+- [x] `getLuminaBaseCss()` is removed — `@refrakt-md/lumina` is no longer a dependency
+- [x] `escapeHtml` utility is removed (handled by the HTML adapter)
+- [x] Built-in theme CSS is served at `/__plan-theme.css` (serve) or written to `theme.css` (build)
+- [x] SSE hot reload script is injected via `headExtra` option
+- [x] `planLayout` from WORK-037 is used for structural placement
+- [x] Nav region from WORK-038 is passed as `regions.nav`
+- [x] `plan serve` produces identical visual output as before
+- [x] `plan build` produces identical static output as before
+- [x] `--theme` flag still works for `default`, `minimal`, and custom paths
+- [x] `--base-url` flag still works correctly
+- [x] All existing plan serve/build tests pass
 
 ## Approach
 

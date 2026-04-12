@@ -6,14 +6,14 @@ Remove the hardcoded `COMPACT_CONTEXTS` and `MINIMAL_CONTEXTS` sets from the ide
 
 ## Acceptance Criteria
 
-- [ ] `RuneConfig` in `packages/transform/src/types.ts` has `childDensity?: 'compact' | 'minimal'` field
-- [ ] The engine in `packages/transform/src/engine.ts` reads `childDensity` from the parent rune's config instead of checking hardcoded sets
-- [ ] `data-density` attribute is applied to child runes identically to current behavior
-- [ ] Core config in `packages/runes/src/config.ts` declares `childDensity` for Grid, Bento, Gallery, Showcase, Split (compact) and Backlog, DecisionLog (minimal)
-- [ ] Hardcoded `COMPACT_CONTEXTS` and `MINIMAL_CONTEXTS` sets are removed from the engine
-- [ ] Community packages can declare `childDensity` in their `RunePackage.theme.runes` config
-- [ ] All existing tests pass — HTML output is identical before and after
-- [ ] TypeScript compiles cleanly
+- [x] `RuneConfig` in `packages/transform/src/types.ts` has `childDensity?: 'compact' | 'minimal'` field
+- [x] The engine in `packages/transform/src/engine.ts` reads `childDensity` from the parent rune's config instead of checking hardcoded sets
+- [x] `data-density` attribute is applied to child runes identically to current behavior
+- [x] Core config in `packages/runes/src/config.ts` declares `childDensity` for Grid, Bento, Gallery, Showcase, Split (compact) and Backlog, DecisionLog (minimal)
+- [x] Hardcoded `COMPACT_CONTEXTS` and `MINIMAL_CONTEXTS` sets are removed from the engine
+- [x] Community packages can declare `childDensity` in their `RunePackage.theme.runes` config
+- [x] All existing tests pass — HTML output is identical before and after
+- [x] TypeScript compiles cleanly
 
 ## Approach
 

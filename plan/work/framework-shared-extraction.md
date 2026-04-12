@@ -6,12 +6,12 @@ Prerequisite for all framework adapters. Two modules in `@refrakt-md/svelte` are
 
 ## Acceptance Criteria
 
-- [ ] `serialize()` and `serializeTree()` moved to `packages/transform/src/serialize.ts`
-- [ ] `matchRouteRule()` moved to `packages/transform/src/route-rules.ts`
-- [ ] Both are exported from `@refrakt-md/transform` public API (`packages/transform/src/index.ts`)
-- [ ] `@refrakt-md/svelte` re-exports both modules — no breaking change for existing consumers
-- [ ] `@refrakt-md/transform` adds `@markdoc/markdoc` as a dependency (needed by `serialize()`)
-- [ ] All existing tests pass without modification
+- [x] `serialize()` and `serializeTree()` moved to `packages/transform/src/serialize.ts`
+- [x] `matchRouteRule()` moved to `packages/transform/src/route-rules.ts`
+- [x] Both are exported from `@refrakt-md/transform` public API (`packages/transform/src/index.ts`)
+- [x] `@refrakt-md/svelte` re-exports both modules — no breaking change for existing consumers
+- [x] `@refrakt-md/transform` adds `@markdoc/markdoc` as a dependency (needed by `serialize()`)
+- [x] All existing tests pass without modification
 - [x] Build succeeds in dependency order (types → transform → svelte)
 
 ## Approach

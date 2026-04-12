@@ -10,14 +10,14 @@ Several storytelling rune configs emit BEM modifier classes for free-form string
 
 ## Acceptance Criteria
 
-- [ ] `character` config: `aliases` and `tags` modifiers have `noBemClass: true`
-- [ ] `realm` config: `scale`, `tags`, and `parent` modifiers have `noBemClass: true`
-- [ ] `faction` config: `factionType` and `tags` modifiers have `noBemClass: true`
-- [ ] `lore` config: `tags` modifier has `noBemClass: true`
-- [ ] `plot` config: `tags` modifier has `noBemClass: true`
-- [ ] `beat` config: `id`, `track`, and `follows` modifiers have `noBemClass: true`
-- [ ] Data attributes still emitted for all modified fields (verified via `refrakt inspect`)
-- [ ] CSS coverage tests still pass (no selectors should depend on these classes)
+- [x] `character` config: `aliases` and `tags` modifiers have `noBemClass: true`
+- [x] `realm` config: `scale`, `tags`, and `parent` modifiers have `noBemClass: true`
+- [x] `faction` config: `factionType` and `tags` modifiers have `noBemClass: true`
+- [x] `lore` config: `tags` modifier has `noBemClass: true`
+- [x] `plot` config: `tags` modifier has `noBemClass: true`
+- [x] `beat` config: `id`, `track`, and `follows` modifiers have `noBemClass: true`
+- [x] Data attributes still emitted for all modified fields (verified via `refrakt inspect`)
+- [x] CSS coverage tests still pass (no selectors should depend on these classes)
 
 ## Approach
 

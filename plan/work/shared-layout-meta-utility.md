@@ -10,13 +10,13 @@ Runes that extend `SplitLayoutModel` all emit identical boilerplate for layout m
 
 ## Acceptance Criteria
 
-- [ ] New `buildLayoutMetas()` utility exported from `packages/runes/src/common.ts` (or a new `layout-helpers.ts`)
-- [ ] Utility accepts the split layout attrs object and returns `{ metas: Tag[], properties: Record<string, Tag> }`
-- [ ] Handles the `layout !== 'stacked'` guard, gap/collapse conditionals, and all five meta tags (layout, ratio, valign, gap, collapse)
-- [ ] `recipe.ts` in `@refrakt-md/learning` refactored to use the shared utility
-- [ ] `realm.ts` and `faction.ts` in `@refrakt-md/storytelling` refactored to use the shared utility
-- [ ] `playlist.ts` in `@refrakt-md/media` refactored to use the shared utility
-- [ ] All existing tests pass — no change to identity transform output
+- [x] New `buildLayoutMetas()` utility exported from `packages/runes/src/common.ts` (or a new `layout-helpers.ts`)
+- [x] Utility accepts the split layout attrs object and returns `{ metas: Tag[], properties: Record<string, Tag> }`
+- [x] Handles the `layout !== 'stacked'` guard, gap/collapse conditionals, and all five meta tags (layout, ratio, valign, gap, collapse)
+- [x] `recipe.ts` in `@refrakt-md/learning` refactored to use the shared utility
+- [x] `realm.ts` and `faction.ts` in `@refrakt-md/storytelling` refactored to use the shared utility
+- [x] `playlist.ts` in `@refrakt-md/media` refactored to use the shared utility
+- [x] All existing tests pass — no change to identity transform output
 
 ## Approach
 

@@ -8,11 +8,11 @@ The plan layout is structurally simple: a fixed sidebar slot for navigation and 
 
 ## Acceptance Criteria
 
-- [ ] `planLayout` is exported from `packages/transform/src/layouts.ts`
-- [ ] Layout has `sidebar` slot (source: `region:nav`) and `main` slot (source: `content`)
-- [ ] Layout block name is `plan`
-- [ ] Layout is importable as `import { planLayout } from '@refrakt-md/transform'`
-- [ ] Existing layout tests still pass
+- [x] `planLayout` is exported from `packages/transform/src/layouts.ts`
+- [x] Layout has `sidebar` slot (source: `region:nav`) and `main` slot (source: `content`)
+- [x] Layout block name is `plan`
+- [x] Layout is importable as `import { planLayout } from '@refrakt-md/transform'`
+- [x] Existing layout tests still pass
 
 ## Approach
 
