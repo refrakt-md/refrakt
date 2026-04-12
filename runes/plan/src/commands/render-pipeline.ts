@@ -464,10 +464,33 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		$$mdtype: 'Tag',
 		name: 'a',
 		attributes: {
-			class: `rf-plan-sidebar__link${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
+			class: `rf-plan-sidebar__link rf-plan-sidebar__link--dashboard${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
 			href: baseUrl,
 		},
-		children: ['Dashboard'],
+		children: [
+			{
+				$$mdtype: 'Tag',
+				name: 'svg',
+				attributes: {
+					class: 'rf-plan-sidebar__dashboard-icon',
+					width: '14',
+					height: '14',
+					viewBox: '0 0 24 24',
+					fill: 'none',
+					stroke: 'currentColor',
+					'stroke-width': '2',
+					'stroke-linecap': 'round',
+					'stroke-linejoin': 'round',
+				},
+				children: [
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '3', y: '3', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '14', y: '3', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '3', y: '14', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '14', y: '14', width: '7', height: '7', rx: '1' }, children: [] },
+				],
+			},
+			'Dashboard',
+		],
 	} as unknown as RendererNode);
 
 	// Entity groups

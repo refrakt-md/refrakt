@@ -172,6 +172,22 @@
 	background: var(--rf-color-surface-active, #f1f3f5);
 }
 
+.rf-plan-sidebar__link--dashboard {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	margin-block-end: var(--rf-spacing-md, 1rem);
+}
+
+.rf-plan-sidebar__dashboard-icon {
+	flex-shrink: 0;
+	opacity: 0.6;
+}
+
+.rf-plan-sidebar__link--dashboard.rf-plan-sidebar__link--active .rf-plan-sidebar__dashboard-icon {
+	opacity: 1;
+}
+
 .rf-plan-sidebar__link--active {
 	background: var(--rf-color-info-bg, #e7f5ff);
 	color: var(--rf-color-info, #339af0);
