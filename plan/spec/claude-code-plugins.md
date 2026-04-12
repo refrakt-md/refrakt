@@ -250,31 +250,67 @@ The initial implementation should use `exit 0` (warn). Blocking session end is a
 
 -----
 
+## Platform Compatibility
+
+Skills and hooks are only available on Claude Code environments that have local filesystem and shell access:
+
+| Feature | CLI | Desktop | VS Code | JetBrains | Web (claude.ai/code) | Mobile |
+|---------|-----|---------|---------|-----------|----------------------|--------|
+| Custom skills | Yes | Yes | Yes | Yes | No | No |
+| Hooks | Yes | Yes | Yes | Yes | No | No |
+| `CLAUDE.md` | Yes | Yes | Yes | Yes | Yes | Yes |
+| `plan/CLAUDE.md` | Yes | Yes | Yes | Yes | Yes | Yes |
+
+The web and mobile versions run on Anthropic's managed cloud infrastructure without access to `.claude/skills/` or hook configurations. `CLAUDE.md` is the only extension mechanism available there.
+
+### Fallback strategy
+
+**Don't remove `plan/CLAUDE.md`.** The plan-specific instructions file (`plan/CLAUDE.md`) serves as the fallback for web/mobile sessions. It contains the command reference, status progressions, content structure templates, and workflow steps — everything the agent needs to follow the plan workflow without skills or hooks.
+
+The root `CLAUDE.md` plan section can be trimmed to a pointer:
+
+```markdown
+## Plan
+
+Project planning uses `@refrakt-md/plan`. See `plan/CLAUDE.md` for workflow
+details. On CLI/desktop, use `/plan-next` and `/plan-done` skills instead.
+```
+
+This means:
+- **CLI/desktop sessions**: Skills load on demand, hooks enforce completion, `plan/CLAUDE.md` provides reference if needed. The root `CLAUDE.md` is minimal.
+- **Web/mobile sessions**: `plan/CLAUDE.md` loads when working in the `plan/` directory or when plan commands are relevant. No enforcement, but the workflow instructions are available.
+
+The tradeoff is maintaining two representations — skills and `plan/CLAUDE.md` — but `plan/CLAUDE.md` already exists and is the authoritative reference. The skills are thin wrappers that encode the *sequence* (what to do in what order), while `plan/CLAUDE.md` provides the *reference* (command syntax, valid statuses, content templates). There's minimal duplication because they serve different purposes.
+
+-----
+
 ## CLAUDE.md Changes
 
-### Content to remove from root `CLAUDE.md`
+### Root `CLAUDE.md`
 
-The following sections move to skills and can be removed:
+Replace the `## Plan` section (~80 lines of workflow instructions, completion checklist, and command reference) with a short pointer:
 
-| Section | Destination |
-|---------|-------------|
-| `## Plan` (everything under this heading) | Split across skills |
-| "Workflow" subsection | `/plan-next` skill |
-| "MANDATORY: Work Item Completion Checklist" | `/plan-done` skill |
-| "Creating plan content" subsection | `/plan-create` skill |
-| `refrakt plan` command reference | Supporting file in skill directory |
+```markdown
+## Plan
 
-### Content to keep in root `CLAUDE.md`
+Project planning uses `@refrakt-md/plan`. See `plan/CLAUDE.md` for workflow
+details and command reference. On CLI/desktop, use `/plan-next` and `/plan-done`
+skills instead.
+```
 
-- Build & Test commands
-- Architecture overview
-- Conventions (BEM, engine config, etc.)
-- Release process
-- Monorepo structure
+Everything else in root `CLAUDE.md` stays: build commands, architecture, conventions, release process, monorepo structure.
 
-### Content to keep in `plan/CLAUDE.md`
+### `plan/CLAUDE.md`
 
-The plan-specific `CLAUDE.md` file (`plan/CLAUDE.md`) contains reference material about ID conventions, valid statuses, required content structure, and the complexity guide. This file is loaded contextually when Claude is working in the `plan/` directory and provides useful reference for the skills. It should remain as-is.
+**Keep as-is.** This file is the authoritative reference for the plan system and the fallback for web/mobile sessions. It contains:
+
+- ID conventions and valid statuses
+- Required content structure and templates for each item type
+- The full workflow steps (find next → implement → check criteria → mark done)
+- Command reference with all flags
+- Complexity guide and tag conventions
+
+On CLI/desktop, this file provides reference material that the skills can lean on. On web/mobile, it's the entire workflow — no skills or hooks, but all the information the agent needs to follow the process.
 
 -----
 
