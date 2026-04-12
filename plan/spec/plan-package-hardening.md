@@ -1,16 +1,34 @@
-{% spec id="SPEC-037" status="draft" version="1.0" tags="plan, cli, validation, quality" %}
+{% spec id="SPEC-037" status="draft" version="1.0" tags="plan, cli, validation, content-model, quality" %}
 
 # Plan Package Hardening
 
-> Fix bugs, close validation gaps, and add missing capabilities in `@refrakt-md/plan` before building the Claude Code plugin layer (SPEC-036).
+> Fix bugs, close validation gaps, implement `knownSections` for plan runes, and add missing CLI capabilities — all before building the Claude Code plugin layer (SPEC-036).
 
 ## Problem
 
-An audit of the plan package revealed several categories of issues: schema/documentation mismatches, missing validation in the CLI, and a missing capability (attribute clearing) that the planned Claude Code skills will need. These are small individually but compound — a `/plan-done` skill built on a foundation with unreliable validation would inherit and amplify the problems.
+An audit of the plan package revealed three categories of issues:
+
+**Schema and documentation drift.** The work rune schema doesn't include `pending` status even though 13 work items use it. Severity enums disagree between `bug.ts` and `validate.ts`. Three work items have invalid complexity values that pass undetected.
+
+**Validation blind spots.** The `source` attribute references specs and decisions that may not exist — never checked. Same for `milestone`. Work items can reach `ready` status with zero acceptance criteria. Complexity values aren't validated at all.
+
+**Prose-embedded structure.** Dependencies, acceptance criteria, approach notes, and references are documented as free-form prose under H2 headings. The content is there, but the system can't distinguish a "Dependencies" section from any other H2. It can't validate that required sections exist, can't extract structured data from them, and can't accept aliases like "AC" for "Acceptance Criteria".
+
+The first two categories are bug fixes. The third is the `knownSections` feature — already designed in SPEC-003 and SPEC-021 but never implemented. It's the right foundation for structured section validation, and it eliminates the need for attribute-heavy workarounds like `depends_on="WORK-076,WORK-080"`.
 
 -----
 
-## Bugs
+## Design Principles
+
+**Sections over attributes for rich content.** Dependencies have context ("needs the config interface from WORK-076"). Acceptance criteria are checkboxes with prose descriptions. These are naturally sections — paragraphs, lists, references — not comma-separated attribute values. `knownSections` formalises what authors are already writing.
+
+**No migration required.** Existing work items already have `## Acceptance Criteria`, `## Approach`, `## References` headings. `knownSections` recognises these retroactively. Files don't need to change — the system becomes smarter about what's already there.
+
+**Aliases accept variation.** Authors write "AC", "Criteria", "Done When", "Acceptance Criteria" — all valid. `knownSections` maps them to a canonical name. Same for "Deps", "Depends On", "Dependencies" and "Repro", "Steps", "Steps to Reproduce".
+
+-----
+
+## Part 1: Bug Fixes
 
 ### 1. `pending` status missing from work schema
 
@@ -38,7 +56,7 @@ Three work items use `complexity="high"` or `complexity="low"` instead of the va
 
 -----
 
-## Validation Gaps
+## Part 2: Validation Gaps
 
 ### 5. `source` attribute references not validated
 
@@ -52,13 +70,7 @@ Work items can reference a milestone that doesn't exist (`milestone="v99.0.0"`) 
 
 **Fix:** In `validate`, check that `milestone` values match an existing milestone entity.
 
-### 7. No acceptance criteria warning
-
-20 work items have zero checkboxes. Some are in `ready` status — meaning `next` would pick them up for implementation even though there's nothing to check off. The `CLAUDE.md` says "Every work item must have [acceptance criteria]" but nothing enforces this.
-
-**Fix:** In `validate`, warn when work items in `ready` or later status have no acceptance criteria. Info-level for `draft` items, warning for `ready`+.
-
-### 8. Complexity validation missing
+### 7. Complexity validation missing
 
 `validate` checks status, priority, and severity values but not complexity. Invalid values like `high` or `low` pass silently.
 
@@ -66,9 +78,80 @@ Work items can reference a milestone that doesn't exist (`milestone="v99.0.0"`) 
 
 -----
 
-## Missing Capability
+## Part 3: `knownSections` for Plan Runes
 
-### 9. No way to clear an attribute
+SPEC-003 (Declarative Content Model) designs the `knownSections` extension to the sections content model. SPEC-021 (Plan Runes) shows the exact section definitions for work, bug, and decision runes. WORK-024 tracks the implementation but is currently blocked on framework support. This spec unblocks it.
+
+### Framework support
+
+The `SectionsModel` interface in `packages/types/src/content-model.ts` needs a `knownSections` field. The resolver in `packages/runes/src/lib/resolver.ts` needs to match section headings against known names and aliases (case-insensitive), falling back to the default `sectionModel` for unrecognised headings. The pseudocode already exists in SPEC-003 (lines 1116-1118):
+
+```typescript
+const sectionModel = model.knownSections?.[headingText]
+  || findAlias(model.knownSections, headingText)
+  || model.sectionModel;
+```
+
+### Work rune sections
+
+| Section | Aliases | Required | Content |
+|---------|---------|----------|---------|
+| Acceptance Criteria | Criteria, AC, Done When | Yes (for `ready`+) | Checkbox list |
+| Dependencies | Deps, Depends On, Blocked By, Requires | No | List with `{% ref %}` tags and context prose |
+| Approach | Technical Notes, Implementation Notes, How | No | Freeform prose |
+| References | Refs, Related, Context | No | List of `{% ref %}` tags |
+| Edge Cases | Exceptions, Corner Cases | No | Freeform prose |
+| Verification | Test Cases, Tests | No | Freeform prose |
+
+**Dependencies as a known section** replaces the "formal dependency attribute" that was considered and rejected. The section approach is better because:
+
+- Dependencies often have context: "Needs the config interface from WORK-076" — not just an ID
+- Existing files already use `## Dependencies` or `## References` with prose descriptions
+- The scanner can extract `{% ref %}` tags from the Dependencies section to build the dependency graph, giving the `next` command structured data without requiring a rigid attribute
+- No migration: files with `## Dependencies` or `## Depends On` are recognised automatically
+
+### Bug rune sections
+
+| Section | Aliases | Required | Content |
+|---------|---------|----------|---------|
+| Steps to Reproduce | Reproduction, Steps, Repro | Yes (for `confirmed`+) | Ordered list |
+| Expected | Expected Behaviour | Yes (for `confirmed`+) | Prose |
+| Actual | Actual Behaviour | Yes (for `confirmed`+) | Prose |
+| Environment | Env | No | List |
+
+### Decision rune sections
+
+| Section | Aliases | Required | Content |
+|---------|---------|----------|---------|
+| Context | Background, Why | Yes | Prose |
+| Options Considered | Options, Alternatives | No | Prose |
+| Decision | | Yes | Prose |
+| Rationale | Reasoning, Why | No | Prose |
+| Consequences | Impact, Trade-offs | No | Prose |
+
+### Scanner integration
+
+The scanner currently extracts acceptance criteria by finding checkbox list items anywhere in the file. With `knownSections`, it should additionally:
+
+- Extract `{% ref %}` tags from the Dependencies section to populate structured dependency data
+- Report which known sections are present/missing per entity
+- Use the canonical section name (not the alias) for indexing
+
+### Validation integration
+
+Once `knownSections` are declared, `validate` gains new checks:
+
+- **Missing required sections**: warn when a work item in `ready`+ status has no Acceptance Criteria section
+- **Missing required sections**: warn when a confirmed+ bug has no Steps to Reproduce, Expected, or Actual section
+- **Missing required sections**: warn when an accepted decision has no Context or Decision section
+
+These replace the standalone "acceptance criteria warning" (item 7 from the original spec) with a general-purpose mechanism.
+
+-----
+
+## Part 4: Missing CLI Capability
+
+### 8. No way to clear an attribute
 
 `update` can set or replace attribute values but cannot remove them. Once you set `--assignee claude` or `--milestone v1.0.0`, there's no way to unset it.
 
@@ -76,21 +159,32 @@ Work items can reference a milestone that doesn't exist (`milestone="v99.0.0"`) 
 
 -----
 
+## Implementation Order
+
+1. **Part 1: Bug fixes** — small, no dependencies, immediately shippable
+2. **Part 2: Validation gaps** — small, depends only on existing scanner data
+3. **Part 3: `knownSections`** — the main work, unblocks WORK-024. Framework support first, then plan rune declarations, then scanner/validation integration
+4. **Part 4: Attribute clearing** — independent, can ship alongside any part
+
+Parts 1-2 and 4 are prerequisite for SPEC-036 (Claude Code plugin). Part 3 makes the plugin significantly better (structured dependency data, section validation) but is not a hard blocker — the plugin can launch with basic validation and gain knownSections support later.
+
+-----
+
 ## Out of Scope
 
-The following were identified in the audit but are intentionally deferred:
-
 - **Backward links from specs to work items** — navigability improvement, not a correctness issue. The `source` attribute on work items already creates the reverse mapping; display is a dashboard concern.
-- **Formal dependency attributes** — the `{% ref %}` tag approach works for the `next` command. Adding `depends_on` would require migrating 126 files for marginal benefit.
-- **Status workflow enforcement** (preventing draft→done jumps) — desirable but changes the CLI's behavior for existing users. Better addressed by the `/plan-done` skill which can check pre-conditions.
+- **Status workflow enforcement** (preventing draft→done jumps) — desirable but better addressed by the `/plan-done` skill which can check pre-conditions without restricting the CLI.
 - **Timestamp auto-population** — the scanner reads `created`/`modified` from git, which is the right source of truth. The `create` command not setting them is acceptable.
-- **Resolution backfill** for the 97 completed items missing summaries — historical debt, not a blocker. Would be a separate effort.
+- **Resolution backfill** for the 97 completed items missing summaries — historical debt, not a blocker.
 
 -----
 
 ## References
 
+- {% ref "SPEC-003" /%} — Declarative Content Model (framework-level `knownSections` design)
+- {% ref "SPEC-021" /%} — Plan Runes (section definitions for work/bug/decision)
 - {% ref "SPEC-036" /%} — Claude Code Skills and Hooks (the plugin that depends on a clean foundation)
 - {% ref "SPEC-022" /%} — Plan CLI (the commands being fixed)
+- {% ref "WORK-024" /%} — Add `knownSections` to Plan Rune Content Models (blocked, unblocked by this spec)
 
 {% /spec %}
