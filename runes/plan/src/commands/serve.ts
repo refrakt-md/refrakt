@@ -1,6 +1,8 @@
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
+import { execSync } from 'child_process';
 import { runPipeline, renderPage } from './render-pipeline.js';
 import type { PipelineResult } from './render-pipeline.js';
 import { bundleBehaviors } from './bundle-behaviors.js';
@@ -28,6 +30,36 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 	let behaviorsJs: string;
 	let pageIndex: Map<string, string>;
 	let ready = false;
+
+	// Temp directory for pagefind indexing
+	const pagefindTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'plan-pagefind-'));
+	const pagefindOutDir = path.join(pagefindTmpDir, 'pagefind');
+	let pagefindAvailable = false;
+
+	function buildPagefindIndex(index: Map<string, string>) {
+		try {
+			// Write all HTML pages to the temp directory for pagefind to index
+			for (const [url, html] of index) {
+				const relPath = url === baseUrl ? 'index.html' : url.replace(/^\//, '');
+				const filePath = path.join(pagefindTmpDir, relPath);
+				fs.mkdirSync(path.dirname(filePath), { recursive: true });
+				fs.writeFileSync(filePath, html, 'utf-8');
+			}
+			execSync(`npx pagefind --site ${JSON.stringify(pagefindTmpDir)}`, {
+				stdio: 'pipe',
+				timeout: 60_000,
+			});
+			if (!pagefindAvailable) {
+				console.log('[plan] Search index ready (Cmd/Ctrl+K to search)');
+			}
+			pagefindAvailable = true;
+		} catch {
+			if (!pagefindAvailable) {
+				console.warn('[plan] Warning: Could not run pagefind. Full-text search will not be available.');
+				console.warn('[plan] Install pagefind to enable search: npm install -D pagefind');
+			}
+		}
+	}
 
 	async function rebuild() {
 		pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });
@@ -68,6 +100,9 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 		// Swap atomically so in-flight requests never see a partial index
 		pageIndex = newIndex;
 		ready = true;
+
+		// Build pagefind index in the background (non-blocking)
+		setImmediate(() => buildPagefindIndex(newIndex));
 	}
 
 	// SSE clients for hot reload
@@ -152,6 +187,28 @@ export async function runServe(options: ServeOptions): Promise<ServeResult> {
 			res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
 			res.end(behaviorsJs);
 			return;
+		}
+
+		// Serve pagefind assets
+		if (url.startsWith('/pagefind/') && pagefindAvailable) {
+			const safePath = url.slice('/pagefind/'.length).replace(/\.\./g, '');
+			const filePath = path.join(pagefindOutDir, safePath);
+			if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+				const ext = path.extname(filePath);
+				const mimeTypes: Record<string, string> = {
+					'.js': 'application/javascript',
+					'.css': 'text/css',
+					'.wasm': 'application/wasm',
+					'.json': 'application/json',
+					'.pf_meta': 'application/octet-stream',
+					'.pf_fragment': 'application/octet-stream',
+					'.pf_index': 'application/octet-stream',
+				};
+				const contentType = mimeTypes[ext] || 'application/octet-stream';
+				res.writeHead(200, { 'Content-Type': contentType });
+				fs.createReadStream(filePath).pipe(res);
+				return;
+			}
 		}
 
 		// Find the page

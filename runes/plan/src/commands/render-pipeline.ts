@@ -411,25 +411,51 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string, viewDefs?: ViewPageDef[], statusFilterPages?: StatusFilterPageDef[]): RendererNode[] {
 	const children: RendererNode[] = [];
 
-	// Title
+	// Title row with search trigger
 	children.push({
 		$$mdtype: 'Tag',
 		name: 'div',
 		attributes: { class: 'rf-plan-sidebar__title' },
-		children: ['Plan'],
-	} as unknown as RendererNode);
-
-	// Search input
-	children.push({
-		$$mdtype: 'Tag',
-		name: 'input',
-		attributes: {
-			class: 'rf-plan-sidebar__search',
-			type: 'text',
-			placeholder: 'Filter… (/ to focus)',
-			'aria-label': 'Filter sidebar items',
-		},
-		children: [],
+		children: [
+			'Plan',
+			{
+				$$mdtype: 'Tag',
+				name: 'button',
+				attributes: {
+					class: 'rf-plan-sidebar__search-trigger',
+					'aria-label': 'Search',
+					'data-search-trigger': '',
+				},
+				children: [{
+					$$mdtype: 'Tag',
+					name: 'svg',
+					attributes: {
+						width: '16',
+						height: '16',
+						viewBox: '0 0 24 24',
+						fill: 'none',
+						stroke: 'currentColor',
+						'stroke-width': '2',
+						'stroke-linecap': 'round',
+						'stroke-linejoin': 'round',
+					},
+					children: [
+						{
+							$$mdtype: 'Tag',
+							name: 'circle',
+							attributes: { cx: '11', cy: '11', r: '8' },
+							children: [],
+						},
+						{
+							$$mdtype: 'Tag',
+							name: 'line',
+							attributes: { x1: '21', y1: '21', x2: '16.65', y2: '16.65' },
+							children: [],
+						},
+					],
+				}],
+			},
+		],
 	} as unknown as RendererNode);
 
 	// Dashboard link
@@ -438,10 +464,33 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		$$mdtype: 'Tag',
 		name: 'a',
 		attributes: {
-			class: `rf-plan-sidebar__link${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
+			class: `rf-plan-sidebar__link rf-plan-sidebar__link--dashboard${dashActive ? ' rf-plan-sidebar__link--active' : ''}`,
 			href: baseUrl,
 		},
-		children: ['Dashboard'],
+		children: [
+			{
+				$$mdtype: 'Tag',
+				name: 'svg',
+				attributes: {
+					class: 'rf-plan-sidebar__dashboard-icon',
+					width: '14',
+					height: '14',
+					viewBox: '0 0 24 24',
+					fill: 'none',
+					stroke: 'currentColor',
+					'stroke-width': '2',
+					'stroke-linecap': 'round',
+					'stroke-linejoin': 'round',
+				},
+				children: [
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '3', y: '3', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '14', y: '3', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '3', y: '14', width: '7', height: '7', rx: '1' }, children: [] },
+					{ $$mdtype: 'Tag', name: 'rect', attributes: { x: '14', y: '14', width: '7', height: '7', rx: '1' }, children: [] },
+				],
+			},
+			'Dashboard',
+		],
 	} as unknown as RendererNode);
 
 	// Entity groups
@@ -922,96 +971,6 @@ const SIDEBAR_BEHAVIOR_SCRIPT = `<script>
       saveState(state);
     });
   });
-
-  // --- Sidebar search/filter ---
-  var searchInput = document.querySelector('.rf-plan-sidebar__search');
-  if (searchInput) {
-    // Focus with /
-    document.addEventListener('keydown', function(e) {
-      if (e.key === '/' && document.activeElement !== searchInput &&
-          !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
-        e.preventDefault();
-        searchInput.focus();
-      }
-    });
-    // Clear with Escape
-    searchInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        searchInput.value = '';
-        searchInput.dispatchEvent(new Event('input'));
-        searchInput.blur();
-      }
-    });
-
-    searchInput.addEventListener('input', function() {
-      var raw = searchInput.value.trim().toLowerCase();
-      var filters = parseFilters(raw);
-      var links = document.querySelectorAll('.rf-plan-sidebar__link[data-id]');
-
-      links.forEach(function(link) {
-        var match = matchesFilters(link, filters);
-        link.style.display = match ? '' : 'none';
-      });
-
-      // Auto-expand groups with matches, update counts
-      document.querySelectorAll('.rf-plan-sidebar__status-group').forEach(function(sg) {
-        var items = sg.querySelector('.rf-plan-sidebar__status-items');
-        var header = sg.querySelector('.rf-plan-sidebar__status-header');
-        if (!items || !header) return;
-        var visible = items.querySelectorAll('.rf-plan-sidebar__link[data-id]:not([style*="display: none"])');
-        var count = header.querySelector('.rf-plan-sidebar__status-count');
-        if (count) count.textContent = String(visible.length);
-        if (raw && visible.length > 0) {
-          items.removeAttribute('hidden');
-          header.setAttribute('aria-expanded', 'true');
-        }
-        // Hide empty groups entirely when filtering
-        sg.style.display = (raw && visible.length === 0) ? 'none' : '';
-      });
-
-      // Hide empty entity groups
-      document.querySelectorAll('.rf-plan-sidebar__group').forEach(function(g) {
-        var visibleSG = g.querySelectorAll('.rf-plan-sidebar__status-group:not([style*="display: none"])');
-        var title = g.querySelector('.rf-plan-sidebar__group-title');
-        if (title) title.style.display = (raw && visibleSG.length === 0) ? 'none' : '';
-      });
-    });
-  }
-
-  function parseFilters(raw) {
-    var tokens = raw.split(/\\s+/).filter(Boolean);
-    var fields = {};
-    var text = [];
-    tokens.forEach(function(t) {
-      var idx = t.indexOf(':');
-      if (idx > 0) {
-        var k = t.slice(0, idx);
-        var v = t.slice(idx + 1);
-        if (!fields[k]) fields[k] = [];
-        fields[k].push(v);
-      } else {
-        text.push(t);
-      }
-    });
-    return { fields: fields, text: text };
-  }
-
-  function matchesFilters(link, filters) {
-    // Field filters — AND across fields, OR within same field
-    for (var field in filters.fields) {
-      var vals = filters.fields[field];
-      var attr = field === 'tag' || field === 'tags' ? 'data-tags' : 'data-' + field;
-      var data = (link.getAttribute(attr) || '').toLowerCase();
-      var match = vals.some(function(v) { return data.indexOf(v) !== -1; });
-      if (!match) return false;
-    }
-    // Text filters — AND, match against id + label + tags
-    var haystack = ((link.getAttribute('data-id') || '') + ' ' + link.textContent + ' ' + (link.getAttribute('data-tags') || '')).toLowerCase();
-    for (var i = 0; i < filters.text.length; i++) {
-      if (haystack.indexOf(filters.text[i]) === -1) return false;
-    }
-    return true;
-  }
 
   // --- Keyboard navigation ---
   var focusIndex = -1;

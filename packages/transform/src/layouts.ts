@@ -272,7 +272,7 @@ export const docsLayout: LayoutConfig = {
 
 export const planLayout: LayoutConfig = {
 	block: 'plan',
-	behaviors: ['mobile-menu', 'section-nav'],
+	behaviors: ['mobile-menu', 'section-nav', 'search'],
 	computed: {
 		toc: {
 			type: 'toc',
@@ -285,6 +285,7 @@ export const planLayout: LayoutConfig = {
 	},
 	chrome: {
 		closeButton,
+		searchButton,
 		hamburger: {
 			tag: 'button',
 			ref: 'toolbar-hamburger',
@@ -319,6 +320,7 @@ export const planLayout: LayoutConfig = {
 					attrs: { class: 'rf-plan-toolbar__title' },
 					pageText: 'frontmatter.toolbarTitle',
 				} as LayoutStructureEntry,
+				'chrome:searchButton',
 				'chrome:sectionNavToggle',
 			],
 		},
@@ -354,6 +356,7 @@ export const planLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-plan-main__body',
 					source: 'content',
+					attrs: { 'data-pagefind-body': '' },
 				},
 				{
 					tag: 'aside',
