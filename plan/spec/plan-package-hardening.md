@@ -145,11 +145,38 @@ const sectionModel = model.knownSections?.[headingText]
 
 ### Scanner integration
 
-The scanner currently extracts acceptance criteria by finding checkbox list items anywhere in the file. With `knownSections`, it should additionally:
+The scanner currently extracts acceptance criteria by finding checkbox list items anywhere in the file, and extracts `{% ref %}` tags from the entire file without knowing which section they belong to. With `knownSections`, it becomes section-aware:
 
-- Extract `{% ref %}` tags from the Dependencies section to populate structured dependency data
-- Report which known sections are present/missing per entity
-- Use the canonical section name (not the alias) for indexing
+- **Section-scoped ref extraction.** Refs are tagged with the canonical section they came from. A `{% ref "WORK-076" /%}` in the Dependencies section is structurally distinct from one in the References section.
+- **Known section presence.** Report which known sections are present/missing per entity, using the canonical name regardless of which alias the author used.
+- **Canonical indexing.** Use the canonical section name (not the alias) for all indexing and data access.
+
+### Dependency resolution via `next`
+
+Today, the `next` command treats every `{% ref %}` tag in a file as a potential blocker — if the referenced entity isn't done, the item is excluded. This is imprecise: a `{% ref "SPEC-008" /%}` in the References section (informational context) blocks the item just as much as one in a Dependencies section (actual prerequisite).
+
+With section-scoped refs, the `next` command gains precision:
+
+| Section containing the ref | Meaning | Effect on `next` |
+|---|---|---|
+| Dependencies | Prerequisite — must be completed first | Blocks the item until the referenced entity is done |
+| References | Related context — informational | No blocking effect |
+| Approach, Edge Cases, etc. | Mentioned for context | No blocking effect |
+
+Only refs in the Dependencies section (or its aliases: Deps, Depends On, Blocked By, Requires) are treated as blockers. All other refs are informational.
+
+**Authoring convention:** Use `{% ref %}` tags in the Dependencies section for machine-readable blocking relationships:
+
+```markdown
+## Dependencies
+- {% ref "WORK-076" /%} — needs the config interface it introduces
+- {% ref "SPEC-008" /%} must reach `accepted` before this can start
+- The Lumina CSS tokens need to be finalized first (no work item yet)
+```
+
+The first two bullets are machine-readable blockers — the `next` command checks their status. The third is human context — visible to the reader, invisible to the CLI. That's the right behavior: if there's no ref tag, there's nothing to check the status of.
+
+This is strictly more accurate than the current approach. No existing behavior is lost — files that put all their refs in undifferentiated sections continue to work via the fallback (all refs treated as potential blockers, same as today). Files that adopt the Dependencies known section get the improved precision.
 
 ### Validation integration
 
