@@ -52,10 +52,36 @@
 }
 
 .rf-plan-sidebar__title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	font-size: 1.125rem;
 	font-weight: 700;
 	margin-block-end: var(--rf-spacing-lg, 1.5rem);
 	color: var(--rf-color-text, #212529);
+}
+
+.rf-plan-sidebar__search-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.25rem;
+	border: 1px solid var(--rf-color-border, #dee2e6);
+	border-radius: var(--rf-radius-sm, 4px);
+	background: var(--rf-color-surface, #f8f9fa);
+	color: var(--rf-color-muted, #868e96);
+	cursor: pointer;
+	transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.rf-plan-sidebar__search-trigger:hover {
+	border-color: var(--rf-color-primary, #228be6);
+	color: var(--rf-color-text, #212529);
+	background: var(--rf-color-surface-hover, #f1f3f5);
+}
+.rf-plan-sidebar__search-trigger svg {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
 }
 
 /* Search / filter input */

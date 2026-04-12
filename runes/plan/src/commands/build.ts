@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import { runPipeline, renderPage } from './render-pipeline.js';
 import { bundleBehaviors } from './bundle-behaviors.js';
 
@@ -78,6 +79,18 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
 		});
 		fs.writeFileSync(outPath, html, 'utf-8');
 		files.push(relPath);
+	}
+
+	// Run Pagefind to generate the search index
+	try {
+		execSync(`npx pagefind --site ${JSON.stringify(path.resolve(out))}`, {
+			stdio: 'pipe',
+			timeout: 60_000,
+		});
+		files.push('pagefind/');
+	} catch {
+		console.warn('[plan] Warning: Could not run pagefind. Full-text search will not be available.');
+		console.warn('[plan] Install pagefind to enable search: npm install -D pagefind');
 	}
 
 	return {

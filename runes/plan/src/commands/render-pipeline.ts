@@ -411,12 +411,51 @@ function buildNavigation(entities: PlanEntity[], baseUrl: string): NavGroup[] {
 function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string, viewDefs?: ViewPageDef[], statusFilterPages?: StatusFilterPageDef[]): RendererNode[] {
 	const children: RendererNode[] = [];
 
-	// Title
+	// Title row with search trigger
 	children.push({
 		$$mdtype: 'Tag',
 		name: 'div',
 		attributes: { class: 'rf-plan-sidebar__title' },
-		children: ['Plan'],
+		children: [
+			'Plan',
+			{
+				$$mdtype: 'Tag',
+				name: 'button',
+				attributes: {
+					class: 'rf-plan-sidebar__search-trigger',
+					'aria-label': 'Search',
+					'data-search-trigger': '',
+				},
+				children: [{
+					$$mdtype: 'Tag',
+					name: 'svg',
+					attributes: {
+						width: '16',
+						height: '16',
+						viewBox: '0 0 24 24',
+						fill: 'none',
+						stroke: 'currentColor',
+						'stroke-width': '2',
+						'stroke-linecap': 'round',
+						'stroke-linejoin': 'round',
+					},
+					children: [
+						{
+							$$mdtype: 'Tag',
+							name: 'circle',
+							attributes: { cx: '11', cy: '11', r: '8' },
+							children: [],
+						},
+						{
+							$$mdtype: 'Tag',
+							name: 'line',
+							attributes: { x1: '21', y1: '21', x2: '16.65', y2: '16.65' },
+							children: [],
+						},
+					],
+				}],
+			},
+		],
 	} as unknown as RendererNode);
 
 	// Search input
