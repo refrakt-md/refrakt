@@ -47,6 +47,8 @@ export interface HeadingInfo {
   level: number;
   text: string;
   id: string;
+  /** Canonical name of the known section this heading belongs to, if any. */
+  knownSection?: string;
 }
 
 /**

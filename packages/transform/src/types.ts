@@ -287,7 +287,7 @@ export interface LayoutPageData {
 		versionGroup?: string;
 	}>;
 	frontmatter: Record<string, unknown>;
-	headings?: Array<{ level: number; text: string; id: string }>;
+	headings?: Array<{ level: number; text: string; id: string; knownSection?: string }>;
 }
 
 /** Declarative layout configuration */

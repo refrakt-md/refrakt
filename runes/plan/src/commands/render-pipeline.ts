@@ -215,7 +215,7 @@ function buildThemeConfig(): ThemeConfig {
 
 // --- Markdoc rendering ---
 
-function parseAndTransform(content: string, filePath: string, fileTimestamps?: FileTimestamps): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string }> } {
+function parseAndTransform(content: string, filePath: string, fileTimestamps?: FileTimestamps): { renderable: unknown; title: string; headings: Array<{ level: number; text: string; id: string; knownSection?: string }> } {
 	const ast = Markdoc.parse(escapeFenceTags(content));
 	const headings = extractHeadings(ast);
 	const config = {
@@ -231,7 +231,47 @@ function parseAndTransform(content: string, filePath: string, fileTimestamps?: F
 	};
 	const renderable = Markdoc.transform(ast, config);
 	const title = headings.length > 0 ? headings[0].text : '';
+
+	// Annotate headings with known-section data from the rendered tree.
+	// buildSections adds data-known-section to heading Tags during transform.
+	annotateKnownSections(headings, renderable);
+
 	return { renderable, title, headings };
+}
+
+/** Walk the rendered Markdoc Tag tree and annotate HeadingInfo entries
+ *  with their canonical known-section name when the heading has
+ *  a `data-known-section` attribute set by buildSections. */
+function annotateKnownSections(
+	headings: Array<{ level: number; text: string; id: string; knownSection?: string }>,
+	renderable: unknown,
+): void {
+	const headingById = new Map(headings.map(h => [h.id, h]));
+
+	function walk(node: unknown): void {
+		if (!node || typeof node !== 'object') return;
+		if (Array.isArray(node)) {
+			for (const child of node) walk(child);
+			return;
+		}
+		if (!Markdoc.Tag.isTag(node)) return;
+		const tag = node as InstanceType<typeof Markdoc.Tag>;
+		const name = tag.name;
+		if (/^h[1-6]$/.test(name) && tag.attributes['data-known-section']) {
+			const id = tag.attributes.id as string;
+			if (id) {
+				const heading = headingById.get(id);
+				if (heading) {
+					heading.knownSection = tag.attributes['data-known-section'] as string;
+				}
+			}
+		}
+		if (tag.children) {
+			for (const child of tag.children) walk(child);
+		}
+	}
+
+	walk(renderable);
 }
 
 // --- Entity registry ---
@@ -1352,7 +1392,9 @@ export function renderPage(
 		title: page.title,
 		url: page.url,
 		pages: allPageUrls,
-		frontmatter: {},
+		frontmatter: {
+			toolbarTitle: page.entityId || 'Plan',
+		},
 		headings: page.headings,
 	};
 

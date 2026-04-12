@@ -272,12 +272,12 @@ export const docsLayout: LayoutConfig = {
 
 export const planLayout: LayoutConfig = {
 	block: 'plan',
-	behaviors: ['mobile-menu'],
+	behaviors: ['mobile-menu', 'section-nav'],
 	computed: {
 		toc: {
 			type: 'toc',
 			source: 'headings',
-			options: { minLevel: 2, maxLevel: 3 },
+			options: { minLevel: 2, maxLevel: 3, knownSectionsOnly: true },
 			visibility: {
 				minCount: 2,
 			},
@@ -295,6 +295,16 @@ export const planLayout: LayoutConfig = {
 			},
 			svg: HAMBURGER_SVG,
 		},
+		sectionNavToggle: {
+			tag: 'button',
+			ref: 'section-nav-toggle',
+			attrs: {
+				class: 'rf-plan-toolbar__section-nav-toggle',
+				'aria-label': 'Jump to section',
+				'data-section-nav-toggle': '',
+			},
+			svg: MENU_DOTS_SVG,
+		},
 	},
 	slots: {
 		toolbar: {
@@ -307,8 +317,9 @@ export const planLayout: LayoutConfig = {
 					tag: 'span',
 					ref: 'toolbar-title',
 					attrs: { class: 'rf-plan-toolbar__title' },
-					children: ['Plan'],
+					pageText: 'frontmatter.toolbarTitle',
 				} as LayoutStructureEntry,
+				'chrome:sectionNavToggle',
 			],
 		},
 		mobileNavPanel: {
