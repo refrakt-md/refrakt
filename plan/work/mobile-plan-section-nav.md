@@ -1,4 +1,4 @@
-{% work id="WORK-133" status="ready" priority="medium" complexity="moderate" source="SPEC-015" tags="plan, layout, mobile, behaviors, css" %}
+{% work id="WORK-133" status="done" priority="medium" complexity="moderate" source="SPEC-015" tags="plan, layout, mobile, behaviors, css" %}
 
 # Mobile plan section navigation and desktop TOC filtering
 
@@ -8,16 +8,16 @@ Plan runes already declare known sections with canonical names (Acceptance Crite
 
 ## Acceptance Criteria
 
-- [ ] Plan toolbar is sticky on mobile (stays visible when scrolling)
-- [ ] Toolbar title shows the entity ID (e.g., "WORK-127") instead of the hardcoded "Plan"
-- [ ] Toolbar has a three-dot icon button on the right side that opens a section nav
-- [ ] Section nav lists only known sections present on the current page
-- [ ] Tapping a section in the nav smooth-scrolls to that section
-- [ ] Current section is highlighted in the section nav via scrollspy integration
-- [ ] Section nav dismisses after selecting a section
-- [ ] On desktop, the TOC sidebar for plan pages is filtered to known sections only (not all H2/H3 headings)
-- [ ] Plan rune transform marks known-section headings with a `data-known-section` attribute so both mobile nav and desktop TOC can key off the same signal
-- [ ] Spec and milestone runes (which lack known sections) retain the existing full-heading TOC behaviour
+- [x] Plan toolbar is sticky on mobile (stays visible when scrolling)
+- [x] Toolbar title shows the entity ID (e.g., "WORK-127") instead of the hardcoded "Plan"
+- [x] Toolbar has a three-dot icon button on the right side that opens a section nav
+- [x] Section nav lists only known sections present on the current page
+- [x] Tapping a section in the nav smooth-scrolls to that section
+- [x] Current section is highlighted in the section nav via scrollspy integration
+- [x] Section nav dismisses after selecting a section
+- [x] On desktop, the TOC sidebar for plan pages is filtered to known sections only (not all H2/H3 headings)
+- [x] Plan rune transform marks known-section headings with a `data-known-section` attribute so both mobile nav and desktop TOC can key off the same signal
+- [x] Spec and milestone runes (which lack known sections) retain the existing full-heading TOC behaviour
 
 ## Dependencies
 
@@ -38,5 +38,29 @@ Three layers of change:
 
 - {% ref "SPEC-015" /%} — Plan site UX (notes mobile-specific UI as out of scope, but this is a targeted improvement that benefits responsive use)
 - {% ref "SPEC-037" /%} — Plan package hardening (knownSections design)
+
+## Resolution
+
+Completed: 2026-04-12
+
+Branch: `claude/mobile-plan-section-nav-SNE06`
+
+### What was done
+
+- `runes/plan/src/util.ts` — `buildSections` now adds `data-known-section` attribute (canonical name) to H2 headings that match a known section via `$canonicalName` from the resolver
+- `runes/plan/src/commands/render-pipeline.ts` — Added `annotateKnownSections()` that walks the rendered Markdoc tree post-transform and propagates `data-known-section` to the `HeadingInfo` array; populated `frontmatter.toolbarTitle` with entity ID for layout access
+- `packages/runes/src/util.ts` — Extended `HeadingInfo` interface with optional `knownSection` field
+- `packages/transform/src/types.ts` — Extended `LayoutPageData.headings` type with `knownSection`
+- `packages/transform/src/layouts.ts` — Plan layout: toolbar title uses `pageText: 'frontmatter.toolbarTitle'` (shows entity ID), added `sectionNavToggle` chrome element (three-dot button), added `section-nav` behavior, set `knownSectionsOnly: true` on TOC computed config
+- `packages/transform/src/layout.ts` — `resolveComputed` TOC case: added `knownSectionsOnly` filtering with fallback to all headings when no known sections exist
+- `packages/behaviors/src/behaviors/section-nav.ts` — New behavior: scans `[data-known-section]` headings, builds dropdown with smooth-scroll links, integrates IntersectionObserver scrollspy for active section highlighting, dismisses on selection/Escape/outside-click
+- `packages/behaviors/src/index.ts` — Registered `section-nav` as layout behavior
+- `runes/plan/styles/default.css` — Sticky toolbar (`position: sticky; top: 0; z-index: 100`), toolbar title flex-grow for button alignment, section nav toggle button styles, section nav dropdown (absolute positioned, shadow, active state with blue border accent)
+
+### Notes
+
+- The `data-known-section` attribute serves as the single source of truth for both the mobile section nav behavior and the desktop TOC filter — no duplication of known-section definitions
+- Desktop TOC filtering uses a graceful fallback: when `knownSectionsOnly` is true but no headings have `knownSection` set (specs, milestones), the full H2/H3 heading list is used instead
+- The section-nav behavior hides the toggle button entirely when no `[data-known-section]` headings exist on the page
 
 {% /work %}
