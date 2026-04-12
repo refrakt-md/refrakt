@@ -28,8 +28,8 @@ Refactor the plan scanner's `getGitMtimes()` in `runes/plan/src/scanner.ts` to u
 
 ## References
 
-- SPEC-029 (Phase 4 — Plan Scanner Consolidation)
-- WORK-083 (shared git timestamp utility — dependency)
+- {% ref "SPEC-029" /%} (Phase 4 — Plan Scanner Consolidation)
+- {% ref "WORK-083" /%} (shared git timestamp utility — dependency)
 - `runes/plan/src/scanner.ts` — current `getGitMtimes()` implementation
 
 {% /work %}

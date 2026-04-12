@@ -22,6 +22,6 @@ The Character rune has two full `createComponentRenderable` calls in a `hasSecti
 
 ## References
 
-- SPEC-028 (Standard 5 — Minimize Transform Code Paths)
+- {% ref "SPEC-028" /%} (Standard 5 — Minimize Transform Code Paths)
 
 {% /work %}

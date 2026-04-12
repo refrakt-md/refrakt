@@ -31,11 +31,11 @@ Build the core Vite plugin that intercepts `.md` files and emits JS modules with
 
 ## Dependencies
 
-- WORK-088 — `serialize()` must be available from `@refrakt-md/transform`
+- {% ref "WORK-088" /%} — `serialize()` must be available from `@refrakt-md/transform`
 
 ## References
 
-- SPEC-031 (Architecture, Configuration, Level 1 sections)
+- {% ref "SPEC-031" /%} (Architecture, Configuration, Level 1 sections)
 - `packages/sveltekit/src/plugin.ts` — existing Vite plugin to reference
 - `packages/transform/src/engine.ts` — identity transform
 - `packages/transform/src/html.ts` — `renderToHtml()`

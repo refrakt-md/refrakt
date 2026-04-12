@@ -28,7 +28,7 @@ Work through SPEC-024's Rune Metadata Map table package by package. For each fie
 
 ## References
 
-- SPEC-024 (Metadata System — Rune Metadata Map)
-- WORK-059 (Metadata Dimensions on StructureEntry)
+- {% ref "SPEC-024" /%} (Metadata System — Rune Metadata Map)
+- {% ref "WORK-059" /%} (Metadata Dimensions on StructureEntry)
 
 {% /work %}

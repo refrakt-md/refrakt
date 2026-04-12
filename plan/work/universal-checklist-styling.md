@@ -48,7 +48,7 @@ Add optional `checklist?: boolean` to `RuneConfig`.
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Checklist section)
-- WORK-067 (Lumina Universal Dimension CSS — sibling work item)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Checklist section)
+- {% ref "WORK-067" /%} (Lumina Universal Dimension CSS — sibling work item)
 
 {% /work %}

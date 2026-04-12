@@ -28,12 +28,12 @@ No custom HMR in Phase 1 — rely on Next.js dev server defaults. Custom Webpack
 
 ## Dependencies
 
-- WORK-088 (shared utility extraction)
+- {% ref "WORK-088" /%} (shared utility extraction)
 
 ## References
 
-- SPEC-030 (Phase 3)
-- ADR-002 (Next.js section)
+- {% ref "SPEC-030" /%} (Phase 3)
+- {% ref "ADR-002" /%} (Next.js section)
 
 ## Resolution
 

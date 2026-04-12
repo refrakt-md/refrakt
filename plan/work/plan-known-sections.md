@@ -1,4 +1,4 @@
-{% work id="WORK-024" status="blocked" priority="low" complexity="moderate" tags="runes, plan, content-model" source="SPEC-003,SPEC-021" %}
+{% work id="WORK-024" status="done" priority="medium" complexity="moderate" tags="runes, plan, content-model" source="SPEC-003,SPEC-021,SPEC-037" %}
 
 # Add `knownSections` to Plan Rune Content Models
 
@@ -37,17 +37,36 @@ The `knownSections` feature would let content models declare expected section na
 
 ## Acceptance Criteria
 
-- [ ] `knownSections` supported in the content model framework (`packages/runes/src/content-model/`)
-- [ ] Work rune declares known sections with aliases
-- [ ] Bug rune declares known sections with aliases
-- [ ] Decision rune declares known sections with aliases
-- [ ] Alias matching is case-insensitive
-- [ ] Unknown sections still pass through via `sectionModel` fallback
-- [ ] Validation warns on missing required sections (if any declared as required)
-- [ ] Tests for alias resolution and fallback behaviour
+- [x] `knownSections` supported in the content model framework (`packages/runes/src/content-model/`)
+- [x] Work rune declares known sections with aliases
+- [x] Bug rune declares known sections with aliases
+- [x] Decision rune declares known sections with aliases
+- [x] Alias matching is case-insensitive
+- [x] Unknown sections still pass through via `sectionModel` fallback
+- [x] Validation warns on missing required sections (if any declared as required)
+- [x] Tests for alias resolution and fallback behaviour
 
-## Status
+## Dependencies
 
-**Blocked** — the `knownSections` feature does not exist in the content model framework yet. It appears in {% ref "SPEC-003" /%} (Declarative Content Model) as a planned extension but has not been implemented. This work item is blocked until the framework support ships.
+- {% ref "SPEC-037" /%} — accepted spec that defines the full knownSections design for plan runes
+
+## References
+
+- {% ref "SPEC-003" /%} (Declarative Content Model — framework-level knownSections design)
+- {% ref "SPEC-021" /%} (Plan Runes — section definitions for work/bug/decision)
+- {% ref "SPEC-037" /%} (Plan Package Hardening — unblocks this work item)
+
+## Resolution
+
+Completed: 2026-04-12
+
+Branch: `claude/spec-037-breakdown-docs-Whj40`
+
+### What was done
+- Added KnownSectionDefinition type to packages/types/src/content-model.ts
+- Added knownSections field to SectionsModel interface
+- Implemented matchKnownSection() in packages/runes/src/lib/resolver.ts
+- Resolver adds $canonicalName to resolved sections when matched
+- Declared knownSections for work (6 sections), bug (4 sections), decision (5 sections)
 
 {% /work %}

@@ -31,7 +31,7 @@ Create a shared utility in `packages/content/` that batch-collects git timestamp
 
 ## References
 
-- SPEC-029 (Phase 1 — Git Timestamp Utility)
+- {% ref "SPEC-029" /%} (Phase 1 — Git Timestamp Utility)
 - `runes/plan/src/scanner.ts` — existing `getGitMtimes()` implementation to draw from
 
 {% /work %}

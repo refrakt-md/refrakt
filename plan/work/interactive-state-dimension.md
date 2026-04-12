@@ -29,6 +29,6 @@ Migrate interactive rune behaviours from class-based state toggling to `data-sta
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Interactive State, Table 3: Interactive State Map)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Interactive State, Table 3: Interactive State Map)
 
 {% /work %}

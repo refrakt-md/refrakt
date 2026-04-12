@@ -33,6 +33,6 @@ For each rune:
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 {% /work %}

@@ -102,19 +102,23 @@ Description of the change and why it's needed.
 - [ ] Second criterion
 - [ ] Third criterion
 
+## Dependencies
+- {% ref "WORK-YYY" /%} — needs the config interface it introduces
+
 ## Approach
 Technical notes on how to implement.
 
 ## References
-- SPEC-XXX (relevant spec)
-- WORK-YYY (dependency)
+- {% ref "SPEC-XXX" /%} (relevant spec)
 
 {% /work %}
 ```
 
 **Acceptance Criteria is the most important section.** Every work item must have it. Use checkboxes (`- [ ]`) so progress is trackable. Check them off (`- [x]`) as you complete each one.
 
-Other useful sections: Edge Cases, Verification, Dependencies.
+**Dependencies vs References.** Use `## Dependencies` for blocking prerequisites — the `next` command checks their status and excludes items with unfinished dependencies. Use `## References` for informational context that doesn't block. Always use `{% ref "ID" /%}` tags (not plain text IDs) so the system can resolve them.
+
+**Known sections** (with aliases) for work items: Acceptance Criteria (AC, Criteria, Done When), Dependencies (Deps, Depends On, Blocked By, Requires), Approach (Technical Notes, Implementation Notes, How), References (Refs, Related, Context), Edge Cases (Exceptions, Corner Cases), Verification (Test Cases, Tests).
 
 Optional attributes: `assignee`, `milestone`, `complexity` (`trivial`/`simple`/`moderate`/`complex`/`unknown`), `source` (comma-separated IDs of specs/decisions this implements, e.g. `SPEC-001,ADR-002`).
 
@@ -146,6 +150,8 @@ What actually happens.
 
 Optional attributes: `assignee`, `milestone`, `source` (comma-separated IDs of related specs/decisions).
 
+**Known sections** for bugs: Steps to Reproduce (Reproduction, Steps, Repro), Expected (Expected Behaviour), Actual (Actual Behaviour), Environment (Env). Steps to Reproduce, Expected, and Actual are required for `confirmed`+ status.
+
 ### decision
 
 ```markdoc
@@ -174,6 +180,8 @@ What follows from this decision — trade-offs, follow-up work, constraints impo
 ```
 
 Optional attributes: `supersedes` (ID of replaced decision), `source` (comma-separated IDs of specs/entities this decision informs, e.g. `SPEC-001`).
+
+**Known sections** for decisions: Context (Background), Options Considered (Options, Alternatives), Decision, Rationale (Reasoning), Consequences (Impact, Trade-offs). Context and Decision are required for `accepted` status.
 
 ### milestone
 
@@ -224,7 +232,7 @@ EOF
 )"
 ```
 
-Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call.
+Additional `update` options: `--priority`, `--milestone`, `--assignee`, `--complexity`, `--uncheck`. Use `--format json` for machine-readable output. Multiple flags can be combined in a single call. To clear an attribute, pass an empty string: `--assignee ""` removes the assignee, `--milestone ""` removes the milestone.
 
 **IMPORTANT: When finishing a work item, you MUST:**
 1. Check off EVERY satisfied acceptance criterion with `npx refrakt plan update <id> --check "exact criterion text"` — do not skip any

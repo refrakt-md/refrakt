@@ -26,6 +26,6 @@ Add three semantic metadata fields to the `StructureEntry` interface: `metaType`
 
 ## References
 
-- SPEC-024 (Metadata System — Extending StructureEntry, Identity Transform)
+- {% ref "SPEC-024" /%} (Metadata System — Extending StructureEntry, Identity Transform)
 
 {% /work %}

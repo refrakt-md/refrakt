@@ -33,7 +33,7 @@ The SvelteKit plugin (`packages/sveltekit/src/plugin.ts`) and CLI inspect comman
 
 ## References
 
-- SPEC-001 (Community Runes — Product Boundaries)
-- WORK-001 (Official Rune Packages — Editor impact section)
+- {% ref "SPEC-001" /%} (Community Runes — Product Boundaries)
+- {% ref "WORK-001" /%} (Official Rune Packages — Editor impact section)
 
 {% /work %}

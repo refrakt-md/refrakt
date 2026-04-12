@@ -20,7 +20,7 @@ After serialization and identity transform, run the highlight transform on the t
 
 ## References
 
-- SPEC-014 (Plan Site via HTML Adapter)
-- WORK-039 (the refactored pipeline this plugs into)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "WORK-039" /%} (the refactored pipeline this plugs into)
 
 {% /work %}

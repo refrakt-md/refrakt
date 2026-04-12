@@ -25,6 +25,6 @@ Remove the hardcoded `COMPACT_CONTEXTS` and `MINIMAL_CONTEXTS` sets from the ide
 
 ## References
 
-- SPEC-033 (Feature 4 — Configurable Density Contexts)
+- {% ref "SPEC-033" /%} (Feature 4 — Configurable Density Contexts)
 
 {% /work %}

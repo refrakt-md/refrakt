@@ -66,6 +66,7 @@ export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 export { TINT_TOKENS } from './tags/tint.js';
 export type { TintToken } from './tags/tint.js';
 export { XREF_RUNE_MARKER } from './tags/xref.js';
+export { resolveXrefs } from './xref-resolve.js';
 export { escapeFenceTags } from './fence-escape.js';
 
 // Component override prop interfaces (ADR-008)

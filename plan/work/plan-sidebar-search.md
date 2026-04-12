@@ -21,8 +21,8 @@ Client-side behavior (~2KB). All data is already in the DOM via data attributes 
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 2)
-- WORK-038 (nav region builder — provides data attributes)
-- WORK-044 (collapsible groups — filtering interacts with collapse state)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 2)
+- {% ref "WORK-038" /%} (nav region builder — provides data attributes)
+- {% ref "WORK-044" /%} (collapsible groups — filtering interacts with collapse state)
 
 {% /work %}

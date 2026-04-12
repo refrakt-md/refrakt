@@ -208,6 +208,57 @@ describe('plan next — count', () => {
 	});
 });
 
+describe('plan next — section-aware blocking', () => {
+	it('only Dependencies refs block when Dependencies section exists', () => {
+		writeMd('work/dep.md', `{% work id="WORK-001" status="in-progress" priority="high" %}
+# Still working
+{% /work %}`);
+		writeMd('work/informational.md', `{% work id="WORK-002" status="ready" priority="high" %}
+# Has WORK-001 in References only
+
+## References
+- {% ref "WORK-001" /%}
+{% /work %}`);
+		// Without a Dependencies section, all refs block (backward compat)
+		const result1 = runNext({ dir: TMP, count: 5 });
+		expect(result1.items.map(i => i.id)).not.toContain('WORK-002');
+	});
+
+	it('informational refs in References do not block when Dependencies section exists', () => {
+		writeMd('work/dep.md', `{% work id="WORK-001" status="in-progress" priority="high" %}
+# Still working
+{% /work %}`);
+		writeMd('work/a.md', `{% work id="WORK-002" status="ready" priority="high" %}
+# Has WORK-001 in References but Dependencies is empty
+
+## Dependencies
+
+## References
+- {% ref "WORK-001" /%}
+{% /work %}`);
+		// With a Dependencies section (even empty), only deps block — WORK-001 in References doesn't block
+		const result = runNext({ dir: TMP, count: 5 });
+		expect(result.items.map(i => i.id)).toContain('WORK-002');
+	});
+
+	it('Dependencies refs still block', () => {
+		writeMd('work/dep.md', `{% work id="WORK-001" status="in-progress" priority="high" %}
+# Still working
+{% /work %}`);
+		writeMd('work/a.md', `{% work id="WORK-002" status="ready" priority="high" %}
+# Has WORK-001 as actual dependency
+
+## Dependencies
+- {% ref "WORK-001" /%}
+
+## References
+- {% ref "SPEC-001" /%}
+{% /work %}`);
+		const result = runNext({ dir: TMP, count: 5 });
+		expect(result.items.map(i => i.id)).not.toContain('WORK-002');
+	});
+});
+
 describe('plan next — JSON output includes full data', () => {
 	it('includes criteria and refs in result', () => {
 		writeMd('work/a.md', `{% work id="WORK-001" status="ready" priority="high" complexity="moderate" %}

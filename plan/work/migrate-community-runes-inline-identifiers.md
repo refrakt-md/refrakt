@@ -41,7 +41,7 @@ Can be done one package at a time. Order doesn't matter.
 
 ## References
 
-- ADR-005 (Phase 2)
-- WORK-105 (dependency — dual-signature support)
+- {% ref "ADR-005" /%} (Phase 2)
+- {% ref "WORK-105" /%} (dependency — dual-signature support)
 
 {% /work %}

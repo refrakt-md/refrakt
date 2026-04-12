@@ -63,11 +63,11 @@ Add plan-specific ToC styles (`.rf-plan-toc`) to `runes/plan/styles/default.css`
 
 ## References
 
-- WORK-037 (original planLayout definition — this extends it)
-- WORK-039 (HTML adapter refactor — prerequisite infrastructure)
-- WORK-049 (dependency viz — unblocked by this, can use a computed slot)
-- WORK-048 (keyboard nav — can use the `behaviors` array)
-- SPEC-014 (Plan Site via HTML Adapter)
-- SPEC-015 (Plan Site UX at Scale)
+- {% ref "WORK-037" /%} (original planLayout definition — this extends it)
+- {% ref "WORK-039" /%} (HTML adapter refactor — prerequisite infrastructure)
+- {% ref "WORK-049" /%} (dependency viz — unblocked by this, can use a computed slot)
+- {% ref "WORK-048" /%} (keyboard nav — can use the `behaviors` array)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale)
 
 {% /work %}

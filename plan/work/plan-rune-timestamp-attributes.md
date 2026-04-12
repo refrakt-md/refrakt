@@ -31,8 +31,8 @@ Add `created` and `modified` attributes to the plan rune schemas (`spec`, `work`
 
 ## References
 
-- SPEC-029 (Phase 3 — Plan Rune Schemas)
-- WORK-084 (variable injection — dependency)
+- {% ref "SPEC-029" /%} (Phase 3 — Plan Rune Schemas)
+- {% ref "WORK-084" /%} (variable injection — dependency)
 - `runes/plan/src/tags/` — plan rune schema files
 - `runes/plan/src/config.ts` — plan rune engine configs
 

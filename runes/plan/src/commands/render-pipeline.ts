@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
-import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags } from '@refrakt-md/runes';
+import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags, resolveXrefs } from '@refrakt-md/runes';
 import { createTransform, renderToHtml, mergeThemeConfig, planLayout } from '@refrakt-md/transform';
 import type { ThemeConfig, LayoutPageData } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag, TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
@@ -12,7 +12,7 @@ import type { HtmlTheme, PageShellOptions } from '@refrakt-md/html';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
-import { planPipelineHooks, type PlanAggregatedData } from '../pipeline.js';
+import { planPipelineHooks, setScannerDependencies, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
 import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
@@ -1189,6 +1189,20 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	}
 
 	// 4. Run pipeline hooks: register → aggregate → postProcess
+	// Pass scanner dependency data (from ## Dependencies sections) to the pipeline
+	const depMap = new Map<string, string[]>();
+	for (const entity of allEntities) {
+		const entityId = entity.attributes.id || entity.attributes.name;
+		if (!entityId) continue;
+		// Guard: scopedRefs may be absent on entities loaded from stale cache
+		const scopedRefs = entity.scopedRefs ?? [];
+		const depRefs = scopedRefs
+			.filter(r => r.section === 'Dependencies')
+			.map(r => r.id);
+		if (depRefs.length > 0) depMap.set(entityId, depRefs);
+	}
+	setScannerDependencies(depMap);
+
 	const { registry } = createRegistry();
 	planPipelineHooks.register!(transformedPages, registry, ctx);
 
@@ -1214,9 +1228,16 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 
 	aggregated['plan'] = planAggregated;
 
-	const processedPages = transformedPages.map(p =>
+	const postProcessedPages = transformedPages.map(p =>
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,
 	);
+
+	// 4b. Resolve xref placeholders into clickable links
+	const processedPages = postProcessedPages.map(p => {
+		const resolved = resolveXrefs(p.renderable, p.url, registry, ctx);
+		if (resolved === p.renderable) return p;
+		return { ...p, renderable: resolved as typeof p.renderable };
+	});
 
 	// 5. Identity transform + syntax highlighting
 	const themeConfig = buildThemeConfig();
@@ -1234,7 +1255,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 				for (const item of sg.items) {
 					const rels = planRels.get(item.id);
 					if (!rels) continue;
-					const blockedBy = rels.filter(r => r.kind === 'blocked-by');
+					const blockedBy = rels.filter(r => r.kind === 'blocked-by' || r.kind === 'depends-on');
 					if (blockedBy.length === 0) continue;
 					// Check if any blocker is unresolved
 					const hasUnresolved = blockedBy.some(r => {

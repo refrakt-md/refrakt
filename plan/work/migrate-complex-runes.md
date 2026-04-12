@@ -39,11 +39,11 @@ Each rune's `processChildren` logic moves into the `custom` content model's `pro
 
 ## Dependencies
 
-- WORK-099 (simple core runes migrated)
-- WORK-101 (moderate runes migrated — validates the `custom` pattern on storyboard first)
+- {% ref "WORK-099" /%} (simple core runes migrated)
+- {% ref "WORK-101" /%} (moderate runes migrated — validates the `custom` pattern on storyboard first)
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 {% /work %}

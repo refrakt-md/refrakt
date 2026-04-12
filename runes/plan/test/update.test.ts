@@ -330,6 +330,46 @@ Initial notes here.
 	});
 });
 
+describe('plan update — attribute clearing', () => {
+	it('removes an attribute when value is empty string', () => {
+		const content = `{% work id="WORK-001" status="ready" assignee="claude" priority="high" %}\n\n# A\n\n{% /work %}`;
+		writeMd('work/task.md', content);
+		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { assignee: '' } });
+		expect(result.changes).toEqual([
+			{ field: 'assignee', old: 'claude', new: '(removed)' },
+		]);
+		const updated = readMd('work/task.md');
+		expect(updated).not.toContain('assignee');
+		expect(updated).toContain('status="ready"');
+		expect(updated).toContain('priority="high"');
+	});
+
+	it('removes milestone attribute', () => {
+		const content = `{% work id="WORK-001" status="ready" milestone="v1.0" %}\n\n# A\n\n{% /work %}`;
+		writeMd('work/task.md', content);
+		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { milestone: '' } });
+		expect(result.changes).toEqual([
+			{ field: 'milestone', old: 'v1.0', new: '(removed)' },
+		]);
+		const updated = readMd('work/task.md');
+		expect(updated).not.toContain('milestone');
+	});
+
+	it('silently does nothing when clearing a non-existent attribute', () => {
+		writeMd('work/task.md', SAMPLE_WORK);
+		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { assignee: '' } });
+		expect(result.changes).toHaveLength(0);
+	});
+
+	it('skips enum validation for empty string (clearing)', () => {
+		const content = `{% work id="WORK-001" status="ready" complexity="moderate" %}\n\n# A\n\n{% /work %}`;
+		writeMd('work/task.md', content);
+		// This should not throw even though '' is not a valid complexity value
+		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { complexity: '' } });
+		expect(result.changes[0].new).toBe('(removed)');
+	});
+});
+
 describe('plan update — JSON output', () => {
 	it('returns structured result for JSON format', () => {
 		writeMd('work/task.md', SAMPLE_WORK);

@@ -41,14 +41,14 @@ From `packages/runes/src/lib/index.ts` and `packages/runes/src/index.ts`:
 
 ## Dependencies
 
-- WORK-099 (simple core runes migrated)
-- WORK-100 (simple community runes migrated)
-- WORK-101 (moderate runes migrated)
-- WORK-102 (complex runes migrated)
+- {% ref "WORK-099" /%} (simple core runes migrated)
+- {% ref "WORK-100" /%} (simple community runes migrated)
+- {% ref "WORK-101" /%} (moderate runes migrated)
+- {% ref "WORK-102" /%} (complex runes migrated)
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 ## Resolution
 

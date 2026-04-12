@@ -41,11 +41,11 @@ const { prepTime, difficulty } = Astro.props;
 The main complexity is integrating the component dispatch into Astro's rendering pipeline, which differs from Svelte/React/Vue's recursive component model.
 
 ## References
-- ADR-008 — Framework-native component interface for rune overrides (see Astro special case in Consequences)
-- WORK-117 — Framework-agnostic extraction logic (done)
-- WORK-119 — Svelte renderer extraction (done, reference implementation)
-- WORK-123 — React renderer (for island components)
-- WORK-124 — Vue renderer (for island components)
+- {% ref "ADR-008" /%} — Framework-native component interface for rune overrides (see Astro special case in Consequences)
+- {% ref "WORK-117" /%} — Framework-agnostic extraction logic (done)
+- {% ref "WORK-119" /%} — Svelte renderer extraction (done, reference implementation)
+- {% ref "WORK-123" /%} — React renderer (for island components)
+- {% ref "WORK-124" /%} — Vue renderer (for island components)
 - `packages/astro/` — Astro adapter (this package gets the additions)
 
 ## Resolution

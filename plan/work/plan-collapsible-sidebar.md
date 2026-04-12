@@ -21,8 +21,8 @@ The server renders the full grouped structure with data attributes. A client-sid
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 1)
-- WORK-038 (nav region builder — emits the structure this behavior enhances)
-- WORK-039 (HTML adapter refactor — prerequisite infrastructure)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 1)
+- {% ref "WORK-038" /%} (nav region builder — emits the structure this behavior enhances)
+- {% ref "WORK-039" /%} (HTML adapter refactor — prerequisite infrastructure)
 
 {% /work %}

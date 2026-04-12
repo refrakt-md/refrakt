@@ -34,7 +34,7 @@ This is the most complex pipeline integration because it implements three distin
 
 ## References
 
-- SPEC-002 (Cross-Page Pipeline — Pattern 2: Content Aggregation, Pattern 3: Content Injection)
-- SPEC-001 (Community Runes — `@refrakt-md/learning` implementation note)
+- {% ref "SPEC-002" /%} (Cross-Page Pipeline — Pattern 2: Content Aggregation, Pattern 3: Content Injection)
+- {% ref "SPEC-001" /%} (Community Runes — `@refrakt-md/learning` implementation note)
 
 {% /work %}

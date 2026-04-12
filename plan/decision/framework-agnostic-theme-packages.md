@@ -40,7 +40,7 @@ This creates a maintenance burden: every new theme must create 6+ adapter files 
 
 Themes fall into two distinct categories with fundamentally different relationships to frameworks:
 
-**Neutral themes** (like Lumina) rely entirely on the identity transform — BEM classes, structural elements, data attributes — plus vanilla JS behaviors for interactivity and pure CSS for styling. They work with *every* adapter out of the box because they contain zero framework code. Users override individual runes with their own framework components via ADR-008's per-rune component override mechanism.
+**Neutral themes** (like Lumina) rely entirely on the identity transform — BEM classes, structural elements, data attributes — plus vanilla JS behaviors for interactivity and pure CSS for styling. They work with *every* adapter out of the box because they contain zero framework code. Users override individual runes with their own framework components via {% ref "ADR-008" /%}'s per-rune component override mechanism.
 
 **Framework themes** ship actual framework components (React, Svelte, Vue) as rune overrides for deeper visual customization — animations, complex interactions, framework-specific patterns. These themes target a **single framework** because maintaining the same rich component across both React and Svelte is impractical. The frameworks are too different for cross-framework component parity to be a realistic goal. A "React theme" ships React components, period.
 
@@ -274,8 +274,8 @@ Layout resolution via a dedicated `{theme}/layouts` export (Approach B) is the s
 
 ## References
 
-- ADR-008 — Framework-native component interface (renderer architecture)
-- SPEC-030 — Framework Adapter System (adapter packages)
+- {% ref "ADR-008" /%} — Framework-native component interface (renderer architecture)
+- {% ref "SPEC-030" /%} — Framework Adapter System (adapter packages)
 - `packages/sveltekit/src/virtual-modules.ts` — current theme resolution
 - `packages/lumina/svelte/index.ts` — current Svelte theme assembly
 - `packages/transform/src/layouts.ts` — built-in layout configs

@@ -18,6 +18,14 @@ export interface Resolution {
 	body: string;
 }
 
+/** A ref tag scoped to the section it appears in */
+export interface ScopedRef {
+	/** The referenced entity ID */
+	id: string;
+	/** The canonical section name this ref appears in, or undefined if not in a known section */
+	section?: string;
+}
+
 export interface PlanEntity {
 	/** File path relative to the scan directory */
 	file: string;
@@ -31,6 +39,10 @@ export interface PlanEntity {
 	criteria: Criterion[];
 	/** Referenced entity IDs extracted from {% ref %} / {% xref %} tags */
 	refs: string[];
+	/** Section-scoped refs (refs tagged with the section they appear in) */
+	scopedRefs: ScopedRef[];
+	/** Canonical names of known sections present in this entity */
+	knownSectionsPresent: string[];
 	/** Parsed resolution section, if present */
 	resolution?: Resolution;
 	/** File modification time (ms since epoch) */

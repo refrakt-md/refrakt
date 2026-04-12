@@ -20,7 +20,7 @@ During the aggregate phase, scan the entity registry for distinct tag/assignee/m
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 4)
-- WORK-022 (backlog rune — provides the filtering display)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 4)
+- {% ref "WORK-022" /%} (backlog rune — provides the filtering display)
 
 {% /work %}

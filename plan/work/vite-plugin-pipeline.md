@@ -28,12 +28,12 @@ Implement the `level: 'pipeline'` mode that runs the full four-phase cross-page 
 
 ## Dependencies
 
-- WORK-094 — core plugin must exist first
-- WORK-096 — HMR infrastructure for dev mode re-processing
+- {% ref "WORK-094" /%} — core plugin must exist first
+- {% ref "WORK-096" /%} — HMR infrastructure for dev mode re-processing
 
 ## References
 
-- SPEC-031 (Level 2: Cross-Page Pipeline section)
+- {% ref "SPEC-031" /%} (Level 2: Cross-Page Pipeline section)
 - `packages/content/src/pipeline.ts` — `runPipeline()` orchestrator
 - `packages/content/src/registry.ts` — `EntityRegistryImpl`
 

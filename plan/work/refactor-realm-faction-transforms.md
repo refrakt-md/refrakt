@@ -31,10 +31,10 @@ Realm and Faction share ~90% identical transform code (scene image extraction, d
 
 ## References
 
-- SPEC-028 (Standard 2 — Preamble Groups with Content)
-- SPEC-028 (Standard 3 — Config Must Match Schema Capabilities)
-- SPEC-028 (Standard 4 — Avoid Duplicated Transform Logic)
-- WORK-076 (shared layout meta utility)
-- WORK-077 (shared media unwrap utility)
+- {% ref "SPEC-028" /%} (Standard 2 — Preamble Groups with Content)
+- {% ref "SPEC-028" /%} (Standard 3 — Config Must Match Schema Capabilities)
+- {% ref "SPEC-028" /%} (Standard 4 — Avoid Duplicated Transform Logic)
+- {% ref "WORK-076" /%} (shared layout meta utility)
+- {% ref "WORK-077" /%} (shared media unwrap utility)
 
 {% /work %}

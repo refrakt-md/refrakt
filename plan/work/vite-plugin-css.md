@@ -25,11 +25,11 @@ Implement `virtual:refrakt/styles` module that imports theme tokens, per-rune CS
 
 ## Dependencies
 
-- WORK-094 — core plugin must exist first
+- {% ref "WORK-094" /%} — core plugin must exist first
 
 ## References
 
-- SPEC-031 (CSS Strategy section)
+- {% ref "SPEC-031" /%} (CSS Strategy section)
 - `packages/sveltekit/src/virtual-modules.ts` — existing virtual module pattern
 - `packages/lumina/styles/runes/` — per-rune CSS files
 

@@ -34,6 +34,6 @@ This is a performance optimization — the pipeline already produces correct res
 
 ## References
 
-- SPEC-002 (Cross-Page Pipeline — Performance Considerations, Incremental Builds)
+- {% ref "SPEC-002" /%} (Cross-Page Pipeline — Performance Considerations, Incremental Builds)
 
 {% /work %}

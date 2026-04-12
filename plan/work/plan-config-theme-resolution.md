@@ -27,8 +27,8 @@ When a theme package is specified in config, resolve its CSS (design tokens + ba
 
 ## References
 
-- ADR-004 (Plan Site Theme Resolution)
-- SPEC-014 (Plan Site via HTML Adapter)
-- WORK-039 (the refactored pipeline this builds on)
+- {% ref "ADR-004" /%} (Plan Site Theme Resolution)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "WORK-039" /%} (the refactored pipeline this builds on)
 
 {% /work %}

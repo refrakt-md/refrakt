@@ -24,8 +24,8 @@ Update `refrakt inspect` and `refrakt contracts` to surface the new SPEC-033 fea
 
 ## References
 
-- SPEC-033 (Contracts and Tooling section)
-- WORK-112 (slots)
-- WORK-114 (projection)
+- {% ref "SPEC-033" /%} (Contracts and Tooling section)
+- {% ref "WORK-112" /%} (slots)
+- {% ref "WORK-114" /%} (projection)
 
 {% /work %}

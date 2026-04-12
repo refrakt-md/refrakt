@@ -23,9 +23,9 @@ Once WORK-050 converges the plan renderer with the shared layout engine, this be
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 5)
-- WORK-044 (collapsible groups — `o` key integration)
-- WORK-045 (search bar — `/` key integration)
-- WORK-050 (renderer convergence — enables `behaviors` array registration)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 5)
+- {% ref "WORK-044" /%} (collapsible groups — `o` key integration)
+- {% ref "WORK-045" /%} (search bar — `/` key integration)
+- {% ref "WORK-050" /%} (renderer convergence — enables `behaviors` array registration)
 
 {% /work %}

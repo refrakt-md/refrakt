@@ -21,11 +21,11 @@ Export a thin `initBehaviors()` wrapper from `@refrakt-md/vite/behaviors` that f
 
 ## Dependencies
 
-- WORK-094 — package must exist first
+- {% ref "WORK-094" /%} — package must exist first
 
 ## References
 
-- SPEC-031 (Behaviors section)
+- {% ref "SPEC-031" /%} (Behaviors section)
 - `packages/behaviors/` — source of `initRuneBehaviors()`
 
 {% /work %}

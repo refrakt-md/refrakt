@@ -22,8 +22,8 @@ Once WORK-050 converges the plan renderer with the shared layout engine, the rel
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 6)
-- WORK-020 (entity registration — the registry this builds on)
-- WORK-050 (renderer convergence — provides the layout slot mechanism)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 6)
+- {% ref "WORK-020" /%} (entity registration — the registry this builds on)
+- {% ref "WORK-050" /%} (renderer convergence — provides the layout slot mechanism)
 
 {% /work %}

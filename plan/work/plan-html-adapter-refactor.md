@@ -32,8 +32,8 @@ The main refactor: replace the bespoke HTML shell template in `@refrakt-md/plan`
 
 ## References
 
-- SPEC-014 (Plan Site via HTML Adapter)
-- WORK-037 (planLayout definition)
-- WORK-038 (nav region builder)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "WORK-037" /%} (planLayout definition)
+- {% ref "WORK-038" /%} (nav region builder)
 
 {% /work %}

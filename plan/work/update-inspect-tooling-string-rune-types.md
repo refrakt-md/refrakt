@@ -28,7 +28,7 @@ Depends on WORK-105 (dual-signature support) being complete.
 
 ## References
 
-- ADR-005 (Phase 2)
-- WORK-105 (dependency — dual-signature support)
+- {% ref "ADR-005" /%} (Phase 2)
+- {% ref "WORK-105" /%} (dependency — dual-signature support)
 
 {% /work %}

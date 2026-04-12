@@ -54,8 +54,8 @@ This is additive — existing BEM classes and per-rune CSS continue to work. The
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Sequential Items section)
-- WORK-067 (Lumina Universal Dimension CSS — sibling work item)
-- WORK-069 (Universal Checklist Styling — sibling pattern)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Sequential Items section)
+- {% ref "WORK-067" /%} (Lumina Universal Dimension CSS — sibling work item)
+- {% ref "WORK-069" /%} (Universal Checklist Styling — sibling pattern)
 
 {% /work %}

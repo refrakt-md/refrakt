@@ -275,7 +275,20 @@ export interface EntityRelationship {
 	toId: string;
 	toType: string;
 	/** Relationship kind */
-	kind: 'blocks' | 'blocked-by' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'related';
+	kind: 'blocks' | 'blocked-by' | 'depends-on' | 'dependency-of' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'related';
+}
+
+/**
+ * Module-level store for dependency refs extracted from ## Dependencies sections.
+ * Maps entityId → array of dependency entity IDs.
+ * Set by render-pipeline.ts from scanner data before register() runs.
+ */
+const _scannerDependencies = new Map<string, string[]>();
+
+/** Set scanner dependency data for the pipeline's aggregate() hook to consume */
+export function setScannerDependencies(deps: Map<string, string[]>): void {
+	_scannerDependencies.clear();
+	for (const [k, v] of deps) _scannerDependencies.set(k, v);
 }
 
 export interface PlanAggregatedData {
@@ -431,6 +444,35 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			}
 		}
 
+		// Track IDs already linked via depends-on to avoid duplicate 'related' edges
+		const depLinked = new Set<string>();
+
+		// Process scanner dependency data → depends-on / dependency-of
+		for (const [fromId, depIds] of _scannerDependencies) {
+			const fromEntity = allEntities.get(fromId);
+			if (!fromEntity) continue;
+
+			for (const depId of depIds) {
+				const toEntity = allEntities.get(depId);
+				if (!toEntity) continue;
+
+				depLinked.add(`${fromId}→${depId}`);
+
+				// A depends-on B
+				addRel(fromId, {
+					fromId, fromType: fromEntity.type,
+					toId: depId, toType: toEntity.type,
+					kind: 'depends-on',
+				});
+				// B is dependency-of A
+				addRel(depId, {
+					fromId: depId, fromType: toEntity.type,
+					toId: fromId, toType: fromEntity.type,
+					kind: 'dependency-of',
+				});
+			}
+		}
+
 		// Process text-based ID references → blocks / blocked-by / related
 		for (const [fromId, refs] of _idReferences) {
 			const fromEntity = allEntities.get(fromId);
@@ -440,8 +482,9 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				const toEntity = allEntities.get(ref.id);
 				if (!toEntity) continue; // Reference to unknown entity — skip
 
-				// Skip if already linked via source= attribute
+				// Skip if already linked via source= attribute or dependency
 				if (sourceLinked.has(`${fromId}→${ref.id}`)) continue;
+				if (depLinked.has(`${fromId}→${ref.id}`)) continue;
 
 				// Determine relationship kind
 				// If entity A has status "blocked" and references entity B, A is "blocked-by" B
@@ -877,8 +920,8 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
-const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'implements': 2, 'implemented-by': 3, 'informs': 4, 'informed-by': 5, 'related': 6 };
-const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'informs': 'Informs', 'informed-by': 'Decisions', 'related': 'Related' };
+const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'depends-on': 2, 'dependency-of': 3, 'implements': 4, 'implemented-by': 5, 'informs': 6, 'informed-by': 7, 'related': 8 };
+const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'depends-on': 'Depends on', 'dependency-of': 'Dependency of', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'informs': 'Informs', 'informed-by': 'Decisions', 'related': 'Related' };
 
 /** Look up an entity across all aggregated type arrays */
 function findEntity(id: string, data: PlanAggregatedData): EntityRegistration | undefined {

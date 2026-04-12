@@ -25,7 +25,7 @@ Extend `StructureEntry` with a `repeat` field that generates N copies of a templ
 
 ## References
 
-- SPEC-033 (Feature 3 — Repeated Elements)
-- WORK-112 (slots should land first so repeat can target slots)
+- {% ref "SPEC-033" /%} (Feature 3 — Repeated Elements)
+- {% ref "WORK-112" /%} (slots should land first so repeat can target slots)
 
 {% /work %}

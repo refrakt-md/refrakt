@@ -30,8 +30,8 @@ Wire the shared git timestamp utility into `packages/content/src/site.ts` so tha
 
 ## References
 
-- SPEC-029 (Phase 2 — Variable Injection)
-- WORK-083 (shared git timestamp utility — dependency)
+- {% ref "SPEC-029" /%} (Phase 2 — Variable Injection)
+- {% ref "WORK-083" /%} (shared git timestamp utility — dependency)
 - `packages/content/src/site.ts` — existing variable injection point
 
 {% /work %}

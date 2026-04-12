@@ -38,9 +38,9 @@ Migrate duplicated split layout grid placement CSS from per-rune files into the 
 
 ## References
 
-- SPEC-028 (Standard 7 — Shared Split Layout CSS via Structural Selectors)
-- SPEC-028 (Two-Mode Mobile Collapse section)
-- WORK-079 (Playlist structural alignment — prerequisite)
-- WORK-080 (Realm/Faction structural alignment — prerequisite)
+- {% ref "SPEC-028" /%} (Standard 7 — Shared Split Layout CSS via Structural Selectors)
+- {% ref "SPEC-028" /%} (Two-Mode Mobile Collapse section)
+- {% ref "WORK-079" /%} (Playlist structural alignment — prerequisite)
+- {% ref "WORK-080" /%} (Realm/Faction structural alignment — prerequisite)
 
 {% /work %}

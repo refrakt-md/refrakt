@@ -1,4 +1,4 @@
-{% work id="WORK-118" status="done" priority="high" complexity="low" tags="runes, validation, architecture" milestone="v1.0.0" source="ADR-008" %}
+{% work id="WORK-118" status="done" priority="high" complexity="simple" tags="runes, validation, architecture" milestone="v1.0.0" source="ADR-008" %}
 
 # Validate property and ref name uniqueness in createComponentRenderable
 
