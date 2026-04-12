@@ -6,7 +6,7 @@ import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenc
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
-import { ContentTree, type PartialFile } from './content-tree.js';
+import { ContentTree, type ContentPage, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
@@ -122,9 +122,24 @@ export async function loadContent(
   // Batch-collect git timestamps once before the page loop
   const gitTimestamps = getGitTimestamps(dirPath);
 
+  // Pre-pass: resolve routes for all pages and build the file-path → URL map.
+  // This lets authors use file-system links (e.g. ./getting-started.md) that
+  // editors can follow, and the transform pipeline rewrites them to proper URLs.
+  const pageEntries: Array<{
+    page: ContentPage;
+    frontmatter: Frontmatter;
+    content: string;
+    route: Route;
+  }> = [];
+  const urls: Record<string, string> = {};
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
+    urls[page.relativePath] = route.url;
+    pageEntries.push({ page, frontmatter, content, route });
+  }
+
+  for (const { page, frontmatter, content, route } of pageEntries) {
     const layout = resolveLayouts(page, tree.root, icons);
     const fileTimestamps = resolveTimestamps(
       page.relativePath,
@@ -134,6 +149,8 @@ export async function loadContent(
     );
     const contentVariables: Record<string, unknown> = {
       ...variables,
+      urls,
+      filePath: page.relativePath,
       frontmatter,
       page: { url: route.url, filePath: route.filePath, draft: route.draft },
       file: {

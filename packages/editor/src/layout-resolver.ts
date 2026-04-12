@@ -24,6 +24,8 @@ export class LayoutResolver {
 	private tree: ContentTree | null = null;
 	private router = new Router('/');
 	private pagesList: Array<{ url: string; path: string; title: string; draft: boolean }> = [];
+	/** File-path → URL map for resolving .md file links in the editor preview */
+	private urlsMap: Record<string, string> = {};
 	private hookSets: HookSet[] = [];
 	private aggregated: AggregatedData = {};
 
@@ -47,6 +49,10 @@ export class LayoutResolver {
 	async refresh(): Promise<void> {
 		this.tree = await ContentTree.fromDirectory(this.contentDir);
 		this.pagesList = this.buildPagesList();
+		this.urlsMap = {};
+		for (const p of this.pagesList) {
+			this.urlsMap[p.path] = p.url;
+		}
 	}
 
 	/**
@@ -66,7 +72,7 @@ export class LayoutResolver {
 		const rendered = Markdoc.transform(ast, {
 			tags: this.mergedTags,
 			nodes,
-			variables: { __source: content, __icons: this.themeConfig.icons },
+			variables: { __source: content, __icons: this.themeConfig.icons, urls: this.urlsMap, filePath },
 		});
 
 		// Phase 4: run postProcess hooks before serialization
