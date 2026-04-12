@@ -1,4 +1,4 @@
-{% spec id=”SPEC-022” status=”accepted” version=”1.0” tags=”plan,cli” %}
+{% spec id="SPEC-022" status="accepted" version="1.0" tags="plan,cli" %}
 
 # Plan CLI
 
@@ -733,7 +733,7 @@ refrakt plan next --milestone v0.5.0 --assignee unassigned --count 10
 
 ## Directory Discovery
 
-The CLI discovers plan files by scanning for Markdoc rune tags. A file is a project file if it contains `{% work`, `{% bug`, `{% decision`, `{% milestone`, or `{% spec` as a tag.
+The CLI discovers plan files by scanning for Markdoc rune tags. A file is a project file if it contains a `work`, `bug`, `decision`, `milestone`, or `spec` tag.
 
 The default directory structure follows the convention from the plan runes spec:
 

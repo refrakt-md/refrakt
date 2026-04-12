@@ -1,4 +1,4 @@
-{% spec id=“SPEC-021” status=“draft” version=“1.0” tags=“plan,runes” %}
+{% spec id="SPEC-021" status="draft" version="1.0" tags="plan,runes" %}
 
 # Plan Runes
 
@@ -103,7 +103,7 @@ rune's scope...
 
 ## `work`
 
-A discrete piece of implementation work. Not a user story — no “as a / I want / so that” ceremony. A work item has a clear description of what needs to change, acceptance criteria that define done, and references to the specs and decisions that inform it.
+A discrete piece of implementation work. Not a user story — no "as a / I want / so that" ceremony. A work item has a clear description of what needs to change, acceptance criteria that define done, and references to the specs and decisions that inform it.
 
 **Attributes:**
 
@@ -194,7 +194,7 @@ contentModel: {
 
 **Example:**
 
-```markdoc
+````markdoc
 {% work id="RF-142" status="ready" priority="high" complexity="moderate" 
        milestone="v0.5.0" tags="tint,theming" %}
 
@@ -245,7 +245,7 @@ and `--tint-dark-background` in inline style.
 
 {% /work %}
 
-```
+````
 ---
 
 ## `bug`
@@ -347,7 +347,7 @@ Showcase is clipped at the section edge.
 
 ## `decision`
 
-Architecture decision record. Captures the context, options considered, the decision made, the rationale, and the consequences. The most important rune in the package for AI-native workflows — without decision records, every AI session lacks the “why” behind the system’s architecture.
+Architecture decision record. Captures the context, options considered, the decision made, the rationale, and the consequences. The most important rune in the package for AI-native workflows — without decision records, every AI session lacks the "why" behind the system’s architecture.
 
 **Attributes:**
 
@@ -639,7 +639,7 @@ reasoning before implementing.
 
 AI agents don’t just consume plan runes — they author them:
 
-**Breaking down specs.** “Read {% ref "SPEC-008" /%} and create work items for each unimplemented section.” The AI reads the spec, identifies discrete pieces of work, and creates `.md` files with the work item template filled in.
+**Breaking down specs.** "Read {% ref "SPEC-008" /%} and create work items for each unimplemented section." The AI reads the spec, identifies discrete pieces of work, and creates `.md` files with the work item template filled in.
 
 **Triaging bugs.** The AI reads a bug report, searches existing bugs in the registry for duplicates, suggests severity, and links to relevant specs or work items.
 

@@ -1,4 +1,4 @@
-{% work id="WORK-024" status="blocked" priority="low" complexity="moderate" tags="runes, plan, content-model" source="SPEC-003,SPEC-021" %}
+{% work id="WORK-024" status="ready" priority="medium" complexity="moderate" tags="runes, plan, content-model" source="SPEC-003,SPEC-021,SPEC-037" %}
 
 # Add `knownSections` to Plan Rune Content Models
 
@@ -46,8 +46,14 @@ The `knownSections` feature would let content models declare expected section na
 - [ ] Validation warns on missing required sections (if any declared as required)
 - [ ] Tests for alias resolution and fallback behaviour
 
-## Status
+## Dependencies
 
-**Blocked** — the `knownSections` feature does not exist in the content model framework yet. It appears in {% ref "SPEC-003" /%} (Declarative Content Model) as a planned extension but has not been implemented. This work item is blocked until the framework support ships.
+- {% ref "SPEC-037" /%} — accepted spec that defines the full knownSections design for plan runes
+
+## References
+
+- {% ref "SPEC-003" /%} (Declarative Content Model — framework-level knownSections design)
+- {% ref "SPEC-021" /%} (Plan Runes — section definitions for work/bug/decision)
+- {% ref "SPEC-037" /%} (Plan Package Hardening — unblocks this work item)
 
 {% /work %}
