@@ -330,19 +330,6 @@ export const planLayout: LayoutConfig = {
 			children: [
 				{
 					tag: 'div',
-					class: 'rf-mobile-panel__header',
-					children: [
-						{
-							tag: 'span',
-							ref: 'mobile-panel-title',
-							attrs: { class: 'rf-mobile-panel__title' },
-							children: ['Plan'],
-						} as LayoutStructureEntry,
-						'chrome:closeButton',
-					],
-				},
-				{
-					tag: 'div',
 					class: 'rf-mobile-panel__body',
 					source: 'region:nav',
 				},
