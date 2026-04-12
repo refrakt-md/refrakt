@@ -27,6 +27,6 @@ Runes that extend `SplitLayoutModel` all emit identical boilerplate for layout m
 
 ## References
 
-- SPEC-028 (Standard 6 — Layout Meta Tag Emission Should Be Shared)
+- {% ref "SPEC-028" /%} (Standard 6 — Layout Meta Tag Emission Should Be Shared)
 
 {% /work %}

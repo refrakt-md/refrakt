@@ -25,8 +25,8 @@ Prerequisite for all framework adapters. Two modules in `@refrakt-md/svelte` are
 
 ## References
 
-- SPEC-030 (Phase 0)
-- ADR-001, ADR-002 (both identify this as a shared prerequisite)
+- {% ref "SPEC-030" /%} (Phase 0)
+- {% ref "ADR-001" /%}, {% ref "ADR-002" /%} (both identify this as a shared prerequisite)
 
 ## Resolution
 

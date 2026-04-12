@@ -28,6 +28,6 @@ Density is set automatically by context (dedicated page → full, grid cell → 
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Density, Table 4: Default Density)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Density, Table 4: Default Density)
 
 {% /work %}

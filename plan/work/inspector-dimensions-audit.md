@@ -26,6 +26,6 @@ Extend the inspector audit. Walk all rune configs collecting dimension declarati
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Inspector Audit)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Inspector Audit)
 
 {% /work %}

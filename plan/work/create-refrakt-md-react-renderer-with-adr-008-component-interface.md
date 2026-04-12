@@ -38,9 +38,9 @@ The extraction logic is already framework-agnostic (`extractComponentInterface` 
 3. Recursive rendering of the tree (handling both component and HTML element nodes)
 
 ## References
-- ADR-008 — Framework-native component interface for rune overrides
-- WORK-117 — Framework-agnostic extraction logic (done)
-- WORK-119 — Svelte renderer extraction (done, reference implementation)
+- {% ref "ADR-008" /%} — Framework-native component interface for rune overrides
+- {% ref "WORK-117" /%} — Framework-agnostic extraction logic (done)
+- {% ref "WORK-119" /%} — Svelte renderer extraction (done, reference implementation)
 - `packages/svelte/src/Renderer.svelte` — Svelte renderer (reference)
 - `packages/svelte/src/registry.ts` — Svelte component registry (reference)
 - `packages/next/` — Next.js adapter (consumer of this package)

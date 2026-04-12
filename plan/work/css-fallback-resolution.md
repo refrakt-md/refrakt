@@ -28,7 +28,7 @@ Currently the SvelteKit plugin's CSS tree-shaking only checks the theme director
 
 ## References
 
-- SPEC-001 (Community Runes — Theme Integration)
-- WORK-001 (Official Rune Packages — CSS handling)
+- {% ref "SPEC-001" /%} (Community Runes — Theme Integration)
+- {% ref "WORK-001" /%} (Official Rune Packages — CSS handling)
 
 {% /work %}

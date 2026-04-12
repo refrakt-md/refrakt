@@ -27,8 +27,8 @@ Add a `slots` array to `RuneConfig` and `slot`/`order` fields to `StructureEntry
 
 ## References
 
-- SPEC-033 (Feature 1 — Named Slots with Ordering)
-- WORK-110 (value mapping should land first)
-- WORK-111 (density contexts should land first)
+- {% ref "SPEC-033" /%} (Feature 1 — Named Slots with Ordering)
+- {% ref "WORK-110" /%} (value mapping should land first)
+- {% ref "WORK-111" /%} (density contexts should land first)
 
 {% /work %}

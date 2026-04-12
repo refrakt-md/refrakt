@@ -31,8 +31,8 @@ For bold-text cross-linking in `postProcess`, walk the AST looking for `strong` 
 
 ## References
 
-- SPEC-002 (Cross-Page Pipeline — Pattern 1: Reference Resolution)
-- SPEC-001 (Community Runes — `@refrakt-md/storytelling`)
+- {% ref "SPEC-002" /%} (Cross-Page Pipeline — Pattern 1: Reference Resolution)
+- {% ref "SPEC-001" /%} (Community Runes — `@refrakt-md/storytelling`)
 
 ## Resolution
 

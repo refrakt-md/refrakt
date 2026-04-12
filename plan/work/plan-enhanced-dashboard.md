@@ -22,7 +22,7 @@ Note: The dashboard page uses `generateDashboardContent()` which produces Markdo
 
 ## References
 
-- SPEC-015 (Plan Site UX at Scale — Feature 3)
-- WORK-039 (HTML adapter refactor — prerequisite)
+- {% ref "SPEC-015" /%} (Plan Site UX at Scale — Feature 3)
+- {% ref "WORK-039" /%} (HTML adapter refactor — prerequisite)
 
 {% /work %}

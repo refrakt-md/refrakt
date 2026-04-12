@@ -35,6 +35,6 @@ Before the registry is ready, cross-page runes render as visually distinct place
 
 ## References
 
-- SPEC-002 (Cross-Page Pipeline — Editor Integration, Background Registry, Placeholder Rendering)
+- {% ref "SPEC-002" /%} (Cross-Page Pipeline — Editor Integration, Background Registry, Placeholder Rendering)
 
 {% /work %}

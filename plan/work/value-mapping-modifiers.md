@@ -24,6 +24,6 @@ Extend `ModifierConfig` with `valueMap` and `mapTarget` fields so that modifier 
 
 ## References
 
-- SPEC-033 (Feature 2 — Value Mapping)
+- {% ref "SPEC-033" /%} (Feature 2 — Value Mapping)
 
 {% /work %}

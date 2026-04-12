@@ -25,6 +25,6 @@ Add a section anatomy mapping to rune configs and the identity transform. Runes 
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Section Anatomy, Table 1: Section Anatomy Map)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Section Anatomy, Table 1: Section Anatomy Map)
 
 {% /work %}

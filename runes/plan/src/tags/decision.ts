@@ -27,6 +27,21 @@ export const decision = createContentModelSchema({
 			type: 'sequence' as const,
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 		},
+		knownSections: {
+			'Context': {
+				alias: ['Background'],
+			},
+			'Options Considered': {
+				alias: ['Options', 'Alternatives'],
+			},
+			'Decision': {},
+			'Rationale': {
+				alias: ['Reasoning'],
+			},
+			'Consequences': {
+				alias: ['Impact', 'Trade-offs'],
+			},
+		},
 	}),
 	transform(resolved, attrs, config) {
 		const titleNodes = new RenderableNodeCursor(

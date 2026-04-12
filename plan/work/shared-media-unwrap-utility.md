@@ -27,7 +27,7 @@ Media zones must unwrap Markdoc's `<p><img/></p>` to emit a bare `<img>` inside 
 
 ## References
 
-- SPEC-028 (Standard 3a — Media Zones Must Unwrap Paragraph-Wrapped Images)
-- SPEC-028 (Standard 4 — Avoid Duplicated Transform Logic)
+- {% ref "SPEC-028" /%} (Standard 3a — Media Zones Must Unwrap Paragraph-Wrapped Images)
+- {% ref "SPEC-028" /%} (Standard 4 — Avoid Duplicated Transform Logic)
 
 {% /work %}

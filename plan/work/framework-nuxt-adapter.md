@@ -25,12 +25,12 @@ The SvelteKit plugin's `CORE_NO_EXTERNAL` list maps directly to `nuxt.options.bu
 
 ## Dependencies
 
-- WORK-088 (shared utility extraction)
+- {% ref "WORK-088" /%} (shared utility extraction)
 
 ## References
 
-- SPEC-030 (Phase 2)
-- ADR-002 (Nuxt section)
+- {% ref "SPEC-030" /%} (Phase 2)
+- {% ref "ADR-002" /%} (Nuxt section)
 
 ## Resolution
 

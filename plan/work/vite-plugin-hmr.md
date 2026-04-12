@@ -21,11 +21,11 @@ Implement hot module replacement for `.md` file changes during development. When
 
 ## Dependencies
 
-- WORK-094 — core plugin must exist first
+- {% ref "WORK-094" /%} — core plugin must exist first
 
 ## References
 
-- SPEC-031 (Dev Server section)
+- {% ref "SPEC-031" /%} (Dev Server section)
 - `packages/sveltekit/src/content-hmr.ts` — existing HMR implementation
 
 {% /work %}

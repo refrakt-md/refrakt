@@ -29,7 +29,7 @@ Create dimension CSS files in `packages/lumina/styles/dimensions/`: `density.css
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — all Theme CSS sections)
-- SPEC-026 (Lumina Theme — full spec)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — all Theme CSS sections)
+- {% ref "SPEC-026" /%} (Lumina Theme — full spec)
 
 {% /work %}

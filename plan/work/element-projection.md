@@ -29,7 +29,7 @@ Add a `projection` field to `RuneConfig` that enables declarative structural res
 
 ## References
 
-- SPEC-033 (Feature 5 — Element Projection)
-- WORK-112 (slots — projection relocate can target slot names)
+- {% ref "SPEC-033" /%} (Feature 5 — Element Projection)
+- {% ref "WORK-112" /%} (slots — projection relocate can target slot names)
 
 {% /work %}

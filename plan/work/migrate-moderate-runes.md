@@ -32,10 +32,10 @@ Migrate runes that have multiple groups, context-dependent group logic, or light
 
 ## Dependencies
 
-- WORK-099 (core simple runes migrated first)
+- {% ref "WORK-099" /%} (core simple runes migrated first)
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 {% /work %}

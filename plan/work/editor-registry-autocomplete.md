@@ -32,7 +32,7 @@ Build on the background entity registry from WORK-056. Add completion providers 
 
 ## References
 
-- SPEC-002 (Cross-Page Pipeline — Registry-Powered Autocomplete)
-- WORK-056 (Editor Background Entity Registry)
+- {% ref "SPEC-002" /%} (Cross-Page Pipeline — Registry-Powered Autocomplete)
+- {% ref "WORK-056" /%} (Editor Background Entity Registry)
 
 {% /work %}

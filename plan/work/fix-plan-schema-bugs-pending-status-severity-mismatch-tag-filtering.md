@@ -1,4 +1,4 @@
-{% work id="WORK-127" status="ready" priority="high" complexity="simple" source="SPEC-037" tags="plan, cli, validation" %}
+{% work id="WORK-127" status="in-progress" priority="high" complexity="simple" source="SPEC-037" tags="plan, cli, validation" %}
 
 # Fix plan schema bugs: pending status, severity mismatch, tag filtering
 

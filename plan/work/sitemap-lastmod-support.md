@@ -26,8 +26,8 @@ The sitemap generator in `packages/content/src/sitemap.ts` currently emits no `<
 
 ## References
 
-- SPEC-029 (Broader Impact — Sitemap)
-- WORK-084 (variable injection — dependency)
+- {% ref "SPEC-029" /%} (Broader Impact — Sitemap)
+- {% ref "WORK-084" /%} (variable injection — dependency)
 - `packages/content/src/sitemap.ts` — sitemap generator
 
 {% /work %}

@@ -29,13 +29,13 @@ For View Transitions support, the behavior init script should listen to the `ast
 
 ## Dependencies
 
-- WORK-088 (shared utility extraction)
+- {% ref "WORK-088" /%} (shared utility extraction)
 
 ## References
 
-- SPEC-030 (Phase 1, including Compatibility Notes subsection)
-- SPEC-031 (Vite plugin — lighter Astro integration alternative)
-- ADR-001 (Astro readiness investigation)
-- SPEC-013 (layout transform architecture)
+- {% ref "SPEC-030" /%} (Phase 1, including Compatibility Notes subsection)
+- {% ref "SPEC-031" /%} (Vite plugin — lighter Astro integration alternative)
+- {% ref "ADR-001" /%} (Astro readiness investigation)
+- {% ref "SPEC-013" /%} (layout transform architecture)
 
 {% /work %}

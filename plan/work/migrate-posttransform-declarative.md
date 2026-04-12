@@ -23,8 +23,8 @@ With WORK-110 through WORK-114 complete, convert the 5 `postTransform` uses iden
 
 ## References
 
-- SPEC-033 (Validation section)
-- WORK-110 (value mapping — enables Beat, ComparisonRow migration)
-- WORK-113 (repeated elements — enables Testimonial migration)
+- {% ref "SPEC-033" /%} (Validation section)
+- {% ref "WORK-110" /%} (value mapping — enables Beat, ComparisonRow migration)
+- {% ref "WORK-113" /%} (repeated elements — enables Testimonial migration)
 
 {% /work %}

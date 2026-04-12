@@ -94,6 +94,14 @@ export interface HeadingExtract {
 	fields: HeadingExtractField[];
 }
 
+/** Declares a known section with optional aliases and a specific content model. */
+export interface KnownSectionDefinition {
+	/** Alternative heading names that map to this section (case-insensitive). */
+	alias?: string[];
+	/** Content model for this section's body. If omitted, uses the parent sectionModel. */
+	model?: StructuralContentModel;
+}
+
 /** Pattern 2 — children split into sections by heading elements. */
 export interface SectionsModel {
 	type: 'sections';
@@ -110,6 +118,13 @@ export interface SectionsModel {
 
 	/** Content model applied to each section's body. */
 	sectionModel: ContentModel;
+
+	/**
+	 * Named sections with optional aliases and specific content models.
+	 * Heading text is matched case-insensitively against canonical names
+	 * and aliases. Unrecognised headings fall through to `sectionModel`.
+	 */
+	knownSections?: Record<string, KnownSectionDefinition>;
 
 	/** When set, sections are emitted as child rune tag nodes with this tag name. */
 	emitTag?: string;

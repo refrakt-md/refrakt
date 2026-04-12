@@ -24,6 +24,6 @@ Add a media slots mapping to rune configs and the identity transform. Runes decl
 
 ## References
 
-- SPEC-025 (Universal Theming Dimensions — Media Slots, Table 2: Media Slots Map)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions — Media Slots, Table 2: Media Slots Map)
 
 {% /work %}

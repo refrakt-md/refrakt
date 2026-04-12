@@ -25,6 +25,6 @@ Extend the existing inspector audit infrastructure. Walk all rune configs, colle
 
 ## References
 
-- SPEC-024 (Metadata System — Inspector Audit)
+- {% ref "SPEC-024" /%} (Metadata System — Inspector Audit)
 
 {% /work %}

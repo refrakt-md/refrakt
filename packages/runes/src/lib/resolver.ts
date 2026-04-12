@@ -20,6 +20,7 @@ import type {
 	ItemModel,
 	ItemFieldDefinition,
 	HeadingExtract,
+	KnownSectionDefinition,
 	ResolvedContent,
 } from '@refrakt-md/types';
 
@@ -291,6 +292,33 @@ function applyHeadingExtract(
 }
 
 /**
+ * Match a section heading against knownSections definitions.
+ * Matching is case-insensitive against canonical names and aliases.
+ * Returns the canonical name and definition, or undefined if no match.
+ */
+function matchKnownSection(
+	headingText: string,
+	knownSections: Record<string, KnownSectionDefinition>,
+): { canonicalName: string; definition: KnownSectionDefinition } | undefined {
+	const normalized = headingText.toLowerCase().trim();
+
+	for (const [canonicalName, definition] of Object.entries(knownSections)) {
+		if (canonicalName.toLowerCase() === normalized) {
+			return { canonicalName, definition };
+		}
+		if (definition.alias) {
+			for (const alias of definition.alias) {
+				if (alias.toLowerCase() === normalized) {
+					return { canonicalName, definition };
+				}
+			}
+		}
+	}
+
+	return undefined;
+}
+
+/**
  * Resolve a sections model: split children at heading boundaries,
  * optionally extracting heading data and emitting child rune tags.
  *
@@ -423,11 +451,17 @@ export function resolveSections(
 			? applyHeadingExtract(headingText, model.headingExtract)
 			: {};
 
-		const bodyResolved = resolve(section.body, model.sectionModel);
+		// Resolve knownSections: match heading against canonical names and aliases
+		const knownMatch = model.knownSections
+			? matchKnownSection(headingText, model.knownSections)
+			: undefined;
+		const sectionModel = knownMatch?.definition.model ?? model.sectionModel;
+		const bodyResolved = resolve(section.body, sectionModel);
 
 		return {
 			$heading: headingText,
 			$headingNode: section.headingNode,
+			...(knownMatch ? { $canonicalName: knownMatch.canonicalName } : {}),
 			...Object.fromEntries(
 				Object.entries(extracted).map(([k, v]) => [`$${k}`, v]),
 			),

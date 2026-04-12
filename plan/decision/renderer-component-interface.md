@@ -291,9 +291,9 @@ Generic type parameters (Approach B) strike the right balance between ergonomics
 
 ## References
 
-- SPEC-030 — Framework Adapter System (adapter architecture for Astro, Nuxt, Next.js, Eleventy)
-- SPEC-033 — Structure Slots and Declarative Flexibility (the structural model that produces refs)
-- ADR-006 — Post-identity-transform hook (related pipeline architecture)
+- {% ref "SPEC-030" /%} — Framework Adapter System (adapter architecture for Astro, Nuxt, Next.js, Eleventy)
+- {% ref "SPEC-033" /%} — Structure Slots and Declarative Flexibility (the structural model that produces refs)
+- {% ref "ADR-006" /%} — Post-identity-transform hook (related pipeline architecture)
 - `packages/svelte/src/Renderer.svelte` — current renderer implementation
 - `packages/transform/src/helpers.ts` — current helper functions for tag extraction
 - `packages/runes/src/lib/component.ts` — `createComponentRenderable` (sets property attributes)

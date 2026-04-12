@@ -42,6 +42,7 @@ export type {
 	SequenceModel,
 	HeadingExtractField,
 	HeadingExtract,
+	KnownSectionDefinition,
 	SectionsModel,
 	DelimitedZone,
 	DelimitedModel,

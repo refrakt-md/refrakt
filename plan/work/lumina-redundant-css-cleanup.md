@@ -31,8 +31,8 @@ Now that universal dimension CSS handles density, section anatomy, interactive s
 
 ## References
 
-- WORK-067 (Lumina Universal Dimension CSS)
-- SPEC-025 (Universal Theming Dimensions)
+- {% ref "WORK-067" /%} (Lumina Universal Dimension CSS)
+- {% ref "SPEC-025" /%} (Universal Theming Dimensions)
 
 ## Resolution
 

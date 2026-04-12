@@ -25,6 +25,6 @@ Config-only changes in `runes/storytelling/src/config.ts`. Add `noBemClass: true
 
 ## References
 
-- SPEC-028 (Standard 1 — BEM Modifier Classes for Enumerable Values Only)
+- {% ref "SPEC-028" /%} (Standard 1 — BEM Modifier Classes for Enumerable Values Only)
 
 {% /work %}

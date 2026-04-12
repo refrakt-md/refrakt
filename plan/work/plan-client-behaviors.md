@@ -18,8 +18,8 @@ The behaviors bundle is loaded client-side — `@refrakt-md/behaviors` is a runt
 
 ## References
 
-- SPEC-014 (Plan Site via HTML Adapter)
-- WORK-039 (the refactored pipeline)
-- WORK-040 (syntax highlighting — copy buttons are most useful on highlighted code)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "WORK-039" /%} (the refactored pipeline)
+- {% ref "WORK-040" /%} (syntax highlighting — copy buttons are most useful on highlighted code)
 
 {% /work %}

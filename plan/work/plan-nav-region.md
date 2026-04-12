@@ -21,7 +21,7 @@ Create `buildNavRegion()` alongside the existing `buildNavigation()` in `render-
 
 ## References
 
-- SPEC-014 (Plan Site via HTML Adapter)
-- WORK-037 (defines the layout that consumes this region)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
+- {% ref "WORK-037" /%} (defines the layout that consumes this region)
 
 {% /work %}

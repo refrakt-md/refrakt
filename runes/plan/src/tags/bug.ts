@@ -29,6 +29,20 @@ export const bug = createContentModelSchema({
 			type: 'sequence' as const,
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 		},
+		knownSections: {
+			'Steps to Reproduce': {
+				alias: ['Reproduction', 'Steps', 'Repro'],
+			},
+			'Expected': {
+				alias: ['Expected Behaviour'],
+			},
+			'Actual': {
+				alias: ['Actual Behaviour'],
+			},
+			'Environment': {
+				alias: ['Env'],
+			},
+		},
 	}),
 	transform(resolved, attrs, config) {
 		const titleNodes = new RenderableNodeCursor(

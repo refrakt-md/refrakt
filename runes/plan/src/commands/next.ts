@@ -85,13 +85,27 @@ export function runNext(options: NextOptions): NextResult {
 		return readyStatuses.includes(status);
 	});
 
-	// Exclude items with unfinished dependencies
+	// Exclude items with unfinished dependencies.
+	// If the entity has scoped refs, only refs in the Dependencies section block.
+	// Otherwise, fall back to treating all refs as potential blockers (backward compat).
 	candidates = candidates.filter(e => {
-		for (const refId of e.refs) {
-			const refStatus = statusMap.get(refId);
-			// If the referenced entity exists and isn't done, exclude this item
-			if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
-				return false;
+		const hasDepsSection = e.knownSectionsPresent.includes('Dependencies');
+		if (hasDepsSection) {
+			// Section-aware: only Dependencies refs block
+			for (const ref of e.scopedRefs) {
+				if (ref.section !== 'Dependencies') continue;
+				const refStatus = statusMap.get(ref.id);
+				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
+					return false;
+				}
+			}
+		} else {
+			// Fallback: all refs treated as potential blockers (same as before)
+			for (const refId of e.refs) {
+				const refStatus = statusMap.get(refId);
+				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
+					return false;
+				}
 			}
 		}
 		return true;

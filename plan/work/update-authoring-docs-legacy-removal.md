@@ -24,11 +24,11 @@ Remove or rewrite documentation that references the legacy Model class, decorato
 
 ## Dependencies
 
-- WORK-103 (legacy code removed — docs should match the actual API)
+- {% ref "WORK-103" /%} (legacy code removed — docs should match the actual API)
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 ## Resolution
 

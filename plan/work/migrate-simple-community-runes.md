@@ -33,10 +33,10 @@ Same per-rune process as WORK-099. Group by package to minimize context switchin
 
 ## Dependencies
 
-- WORK-099 (builds confidence in the migration pattern on core runes first)
+- {% ref "WORK-099" /%} (builds confidence in the migration pattern on core runes first)
 
 ## References
 
-- SPEC-032 (parent spec)
+- {% ref "SPEC-032" /%} (parent spec)
 
 {% /work %}

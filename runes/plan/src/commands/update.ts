@@ -6,7 +6,7 @@ import type { PlanEntity, PlanRuneType } from '../types.js';
 // --- Valid attribute values by rune type ---
 
 const VALID_STATUS: Record<PlanRuneType, readonly string[]> = {
-	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked'],
+	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending'],
 	spec: ['draft', 'review', 'accepted', 'superseded', 'deprecated'],
 	bug: ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'],
 	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
@@ -93,6 +93,21 @@ function replaceAttr(line: string, attr: string, newValue: string): { line: stri
 }
 
 /**
+ * Remove an attribute entirely from a rune opening tag line.
+ * Handles optional surrounding whitespace.
+ */
+function removeAttr(line: string, attr: string): { line: string; oldValue: string | null } {
+	const regex = new RegExp(`\\s*${attr}=(["'])([^"']*?)\\1`);
+	const match = line.match(regex);
+	if (match) {
+		const oldValue = match[2];
+		const newLine = line.replace(regex, '');
+		return { line: newLine, oldValue };
+	}
+	return { line, oldValue: null };
+}
+
+/**
  * Add an attribute to a rune opening tag line (before the closing %}).
  */
 function addAttr(line: string, attr: string, value: string): string {
@@ -132,6 +147,8 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 			(err as any).exitCode = EXIT_VALIDATION_ERROR;
 			throw err;
 		}
+		// Empty string means "clear" — skip enum validation
+		if (value === '') continue;
 		if (enumAttrs[attr]) {
 			const valid = enumAttrs[attr];
 			if (!valid.includes(value)) {
@@ -157,14 +174,24 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 	// --- Apply attribute changes ---
 	let tagLine = lines[tagLineIdx];
 	for (const [attr, value] of Object.entries(attrs)) {
-		const result = replaceAttr(tagLine, attr, value);
-		if (result.oldValue !== null) {
-			changes.push({ field: attr, old: result.oldValue, new: value });
-			tagLine = result.line;
+		if (value === '') {
+			// Empty string means "clear this attribute"
+			const result = removeAttr(tagLine, attr);
+			if (result.oldValue !== null) {
+				changes.push({ field: attr, old: result.oldValue, new: '(removed)' });
+				tagLine = result.line;
+			}
+			// If the attribute wasn't present, nothing to remove — skip silently
 		} else {
-			// Attribute doesn't exist yet — add it
-			tagLine = addAttr(tagLine, attr, value);
-			changes.push({ field: attr, old: '', new: value });
+			const result = replaceAttr(tagLine, attr, value);
+			if (result.oldValue !== null) {
+				changes.push({ field: attr, old: result.oldValue, new: value });
+				tagLine = result.line;
+			} else {
+				// Attribute doesn't exist yet — add it
+				tagLine = addAttr(tagLine, attr, value);
+				changes.push({ field: attr, old: '', new: value });
+			}
 		}
 	}
 	lines[tagLineIdx] = tagLine;

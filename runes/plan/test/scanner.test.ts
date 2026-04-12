@@ -378,6 +378,83 @@ Branch: \`claude/fix-button\`
 	});
 });
 
+describe('scoped refs and known sections', () => {
+	it('tags refs with their canonical section name', () => {
+		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+
+# Task
+
+## Dependencies
+- {% ref "WORK-002" /%} — needs config
+
+## References
+- {% ref "SPEC-001" /%}
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Dependencies' });
+		expect(entity.scopedRefs).toContainEqual({ id: 'SPEC-001', section: 'References' });
+	});
+
+	it('matches section aliases case-insensitively', () => {
+		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+
+# Task
+
+## Deps
+- {% ref "WORK-002" /%}
+
+## AC
+- [ ] Done
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Dependencies' });
+		expect(entity.knownSectionsPresent).toContain('Dependencies');
+		expect(entity.knownSectionsPresent).toContain('Acceptance Criteria');
+	});
+
+	it('reports known sections present', () => {
+		writeMd('bug/a.md', `{% bug id="BUG-001" status="confirmed" severity="major" %}
+
+# Bug
+
+## Steps to Reproduce
+1. Do stuff
+
+## Expected
+Works.
+
+## Actual
+Broken.
+
+{% /bug %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.knownSectionsPresent).toContain('Steps to Reproduce');
+		expect(entity.knownSectionsPresent).toContain('Expected');
+		expect(entity.knownSectionsPresent).toContain('Actual');
+	});
+
+	it('refs before any section heading have no section', () => {
+		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+
+# Task
+
+{% ref "SPEC-001" /%}
+
+## Approach
+Notes.
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		expect(entity.scopedRefs).toContainEqual({ id: 'SPEC-001', section: undefined });
+	});
+});
+
 describe('edge cases', () => {
 	it('should handle malformed files gracefully (no closing tag)', () => {
 		writeMd('bad.md', '{% work id="WORK-001" status="ready" %}\n\n# Unclosed\n\nNo closing tag.');

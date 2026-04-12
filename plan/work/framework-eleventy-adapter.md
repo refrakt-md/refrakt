@@ -27,12 +27,12 @@ For behaviors JS, either use a simple esbuild step to bundle `@refrakt-md/behavi
 
 ## Dependencies
 
-- WORK-088 (shared utility extraction)
+- {% ref "WORK-088" /%} (shared utility extraction)
 
 ## References
 
-- SPEC-030 (Phase 4)
-- ADR-002 (Eleventy section)
+- {% ref "SPEC-030" /%} (Phase 4)
+- {% ref "ADR-002" /%} (Eleventy section)
 
 ## Resolution
 

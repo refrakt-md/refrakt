@@ -20,6 +20,6 @@ Follow the pattern of `docsLayout` and `blogArticleLayout` in `packages/transfor
 
 ## References
 
-- SPEC-014 (Plan Site via HTML Adapter)
+- {% ref "SPEC-014" /%} (Plan Site via HTML Adapter)
 
 {% /work %}

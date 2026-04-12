@@ -32,9 +32,9 @@ The playlist rune uses a custom header structure that diverges from the standard
 
 ## References
 
-- SPEC-028 (Standard 2 — Preamble Groups with Content)
-- SPEC-028 (Standard 3 — Config Must Match Schema Capabilities)
-- WORK-076 (shared layout meta utility)
-- WORK-077 (shared media unwrap utility)
+- {% ref "SPEC-028" /%} (Standard 2 — Preamble Groups with Content)
+- {% ref "SPEC-028" /%} (Standard 3 — Config Must Match Schema Capabilities)
+- {% ref "WORK-076" /%} (shared layout meta utility)
+- {% ref "WORK-077" /%} (shared media unwrap utility)
 
 {% /work %}

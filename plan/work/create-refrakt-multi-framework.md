@@ -6,7 +6,7 @@ Extend `create-refrakt` to scaffold projects for Astro, Nuxt, Next.js, and Eleve
 
 ## Context
 
-`create-refrakt` currently supports two targets: `--target sveltekit` (default) and `--target html`. With SPEC-030 delivering framework adapters, the scaffolding tool needs to generate correct project templates for each supported framework — appropriate config files, dependencies, routing boilerplate, and starter content.
+`create-refrakt` currently supports two targets: `--target sveltekit` (default) and `--target html`. With {% ref "SPEC-030" /%} delivering framework adapters, the scaffolding tool needs to generate correct project templates for each supported framework — appropriate config files, dependencies, routing boilerplate, and starter content.
 
 ## Acceptance Criteria
 
@@ -34,17 +34,17 @@ Interactive mode is the default when `--target` is omitted. Running `npx create-
 
 ## Dependencies
 
-- WORK-089 (Astro adapter exists)
-- WORK-090 (Nuxt adapter exists)
-- WORK-091 (Next.js adapter exists)
-- WORK-092 (Eleventy adapter exists)
+- {% ref "WORK-089" /%} (Astro adapter exists)
+- {% ref "WORK-090" /%} (Nuxt adapter exists)
+- {% ref "WORK-091" /%} (Next.js adapter exists)
+- {% ref "WORK-092" /%} (Eleventy adapter exists)
 
 Note: Templates can be written before adapters ship, but the scaffolded projects won't work until the corresponding adapter package is published. Consider gating targets behind adapter availability or scaffolding with a "coming soon" note.
 
 ## References
 
-- SPEC-030 (Framework Adapter System)
-- WORK-052 (project-type defaults — complementary, covers package pre-selection)
+- {% ref "SPEC-030" /%} (Framework Adapter System)
+- {% ref "WORK-052" /%} (project-type defaults — complementary, covers package pre-selection)
 - `packages/create-refrakt/src/scaffold.ts` — existing scaffolding logic
 - `packages/create-refrakt/template/` — SvelteKit template (reference for new templates)
 - `site/content/docs/adapters/` — existing adapter documentation

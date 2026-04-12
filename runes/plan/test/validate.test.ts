@@ -99,6 +99,36 @@ describe('validate — invalid attributes', () => {
 		expect(invalid[0].severity).toBe('error');
 	});
 
+	it('accepts cosmetic severity (not trivial)', () => {
+		writeMd('bug/a.md', '{% bug id="BUG-001" status="reported" severity="cosmetic" %}\n# B\n{% /bug %}');
+		const result = runValidate({ dir: TMP });
+		const invalid = result.issues.filter(i => i.type === 'invalid-severity');
+		expect(invalid).toHaveLength(0);
+	});
+
+	it('detects invalid complexity', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" complexity="high" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const invalid = result.issues.filter(i => i.type === 'invalid-complexity');
+		expect(invalid).toHaveLength(1);
+		expect(invalid[0].severity).toBe('error');
+		expect(invalid[0].message).toContain('high');
+	});
+
+	it('accepts valid complexity values', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" complexity="moderate" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const invalid = result.issues.filter(i => i.type === 'invalid-complexity');
+		expect(invalid).toHaveLength(0);
+	});
+
+	it('accepts pending status for work items', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="pending" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const invalid = result.issues.filter(i => i.type === 'invalid-status');
+		expect(invalid).toHaveLength(0);
+	});
+
 	it('accepts valid attributes', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="ready" priority="high" %}\n# A\n{% /work %}');
 		writeMd('bug/b.md', '{% bug id="BUG-001" status="confirmed" severity="major" %}\n# B\n{% /bug %}');
@@ -109,6 +139,54 @@ describe('validate — invalid attributes', () => {
 			i.type === 'invalid-status' || i.type === 'invalid-priority' || i.type === 'invalid-severity'
 		);
 		expect(invalid).toHaveLength(0);
+	});
+});
+
+describe('validate — source references', () => {
+	it('detects broken source references', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" source="SPEC-999" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const broken = result.issues.filter(i => i.type === 'broken-source');
+		expect(broken).toHaveLength(1);
+		expect(broken[0].severity).toBe('error');
+		expect(broken[0].target).toBe('SPEC-999');
+	});
+
+	it('validates comma-separated source IDs individually', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" source="SPEC-001,ADR-999" %}\n# A\n{% /work %}');
+		writeMd('spec/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
+		const result = runValidate({ dir: TMP });
+		const broken = result.issues.filter(i => i.type === 'broken-source');
+		expect(broken).toHaveLength(1);
+		expect(broken[0].target).toBe('ADR-999');
+	});
+
+	it('does not report valid source references', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" source="SPEC-001,ADR-001" %}\n# A\n{% /work %}');
+		writeMd('spec/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
+		writeMd('decision/d.md', '{% decision id="ADR-001" status="accepted" %}\n# D\n{% /decision %}');
+		const result = runValidate({ dir: TMP });
+		const broken = result.issues.filter(i => i.type === 'broken-source');
+		expect(broken).toHaveLength(0);
+	});
+});
+
+describe('validate — milestone references', () => {
+	it('warns about references to non-existent milestones', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v99.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'unknown-milestone');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+		expect(issues[0].target).toBe('v99.0');
+	});
+
+	it('does not warn when milestone exists', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n{% /work %}');
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="active" %}\n# v1.0\n{% /milestone %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'unknown-milestone');
+		expect(issues).toHaveLength(0);
 	});
 });
 
@@ -223,6 +301,51 @@ describe('validate — resolution checks', () => {
 		const result = runValidate({ dir: TMP });
 		const issues = result.issues.filter(i => i.type === 'done-without-resolution');
 		expect(issues).toHaveLength(0);
+	});
+});
+
+describe('validate — required sections', () => {
+	it('warns when ready work item has no Acceptance Criteria', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n\n## Approach\nSome notes.\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section' && i.message.includes('Acceptance Criteria'));
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+	});
+
+	it('does not warn when work item has Acceptance Criteria', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n\n## Acceptance Criteria\n- [ ] Done\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section' && i.message.includes('Acceptance Criteria'));
+		expect(issues).toHaveLength(0);
+	});
+
+	it('recognises aliases like AC for Acceptance Criteria', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n\n## AC\n- [ ] Done\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section' && i.message.includes('Acceptance Criteria'));
+		expect(issues).toHaveLength(0);
+	});
+
+	it('does not warn for draft work items', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="draft" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section');
+		expect(issues).toHaveLength(0);
+	});
+
+	it('warns when confirmed bug is missing required sections', () => {
+		writeMd('bug/a.md', '{% bug id="BUG-001" status="confirmed" severity="major" milestone="v1.0" %}\n# B\n{% /bug %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section');
+		expect(issues).toHaveLength(3); // Steps to Reproduce, Expected, Actual
+	});
+
+	it('warns when accepted decision is missing required sections', () => {
+		writeMd('decision/a.md', '{% decision id="ADR-001" status="accepted" %}\n# D\n{% /decision %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'missing-section');
+		expect(issues).toHaveLength(2); // Context, Decision
 	});
 });
 

@@ -4,7 +4,7 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { slugify, buildSections } from '../util.js';
 
-const statusValues = ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked'] as const;
+const statusValues = ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending'] as const;
 const priorityValues = ['critical', 'high', 'medium', 'low'] as const;
 const complexityValues = ['trivial', 'simple', 'moderate', 'complex', 'unknown'] as const;
 
@@ -31,6 +31,26 @@ export const work = createContentModelSchema({
 		sectionModel: {
 			type: 'sequence' as const,
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+		},
+		knownSections: {
+			'Acceptance Criteria': {
+				alias: ['Criteria', 'AC', 'Done When'],
+			},
+			'Dependencies': {
+				alias: ['Deps', 'Depends On', 'Blocked By', 'Requires'],
+			},
+			'Approach': {
+				alias: ['Technical Notes', 'Implementation Notes', 'How'],
+			},
+			'References': {
+				alias: ['Refs', 'Related', 'Context'],
+			},
+			'Edge Cases': {
+				alias: ['Exceptions', 'Corner Cases'],
+			},
+			'Verification': {
+				alias: ['Test Cases', 'Tests'],
+			},
 		},
 	}),
 	transform(resolved, attrs, config) {

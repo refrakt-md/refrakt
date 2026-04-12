@@ -14,7 +14,8 @@ const VALID_STATUSES: Record<string, Set<string>> = {
 };
 
 const VALID_PRIORITIES = new Set(['critical', 'high', 'medium', 'low']);
-const VALID_SEVERITIES = new Set(['critical', 'major', 'minor', 'trivial']);
+const VALID_SEVERITIES = new Set(['critical', 'major', 'minor', 'cosmetic']);
+const VALID_COMPLEXITIES = new Set(['trivial', 'simple', 'moderate', 'complex', 'unknown']);
 
 const DONE_STATUSES = new Set(['done', 'fixed']);
 
@@ -134,6 +135,18 @@ function checkInvalidAttributes(entities: PlanEntity[]): ValidationIssue[] {
 				source: id,
 				file: e.file,
 				message: `${id} has invalid severity "${severity}"`,
+			});
+		}
+
+		// Complexity (work items)
+		const complexity = e.attributes.complexity;
+		if (complexity && e.type === 'work' && !VALID_COMPLEXITIES.has(complexity)) {
+			issues.push({
+				severity: 'error',
+				type: 'invalid-complexity',
+				source: id,
+				file: e.file,
+				message: `${id} has invalid complexity "${complexity}"`,
 			});
 		}
 	}
@@ -264,6 +277,114 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 	return issues;
 }
 
+function checkSourceRefs(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name || e.file;
+		const source = e.attributes.source;
+		if (!source) continue;
+		for (const refId of source.split(',').map(s => s.trim()).filter(Boolean)) {
+			if (!knownIds.has(refId)) {
+				issues.push({
+					severity: 'error',
+					type: 'broken-source',
+					source: id,
+					file: e.file,
+					target: refId,
+					message: `${id} has source "${refId}" — entity not found`,
+				});
+			}
+		}
+	}
+	return issues;
+}
+
+function checkMilestoneRefs(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	const milestoneNames = new Set<string>();
+	for (const e of entities) {
+		if (e.type === 'milestone') {
+			const name = e.attributes.name || e.attributes.id;
+			if (name) milestoneNames.add(name);
+		}
+	}
+
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name || e.file;
+		const milestone = e.attributes.milestone;
+		if (!milestone) continue;
+		if (!milestoneNames.has(milestone)) {
+			issues.push({
+				severity: 'warning',
+				type: 'unknown-milestone',
+				source: id,
+				file: e.file,
+				target: milestone,
+				message: `${id} references milestone "${milestone}" — not found`,
+			});
+		}
+	}
+	return issues;
+}
+
+/** Status values at or beyond "ready" for each rune type */
+const ACTIVE_STATUSES: Record<string, Set<string>> = {
+	work: new Set(['ready', 'in-progress', 'review', 'done']),
+	bug: new Set(['confirmed', 'in-progress', 'fixed']),
+	decision: new Set(['accepted']),
+};
+
+function checkRequiredSections(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name || e.file;
+		const status = e.attributes.status || '';
+		const activeStatuses = ACTIVE_STATUSES[e.type];
+		if (!activeStatuses || !activeStatuses.has(status)) continue;
+
+		const present = new Set(e.knownSectionsPresent);
+
+		if (e.type === 'work' && !present.has('Acceptance Criteria')) {
+			issues.push({
+				severity: 'warning',
+				type: 'missing-section',
+				source: id,
+				file: e.file,
+				message: `${id} (status: ${status}) has no Acceptance Criteria section`,
+			});
+		}
+
+		if (e.type === 'bug') {
+			for (const required of ['Steps to Reproduce', 'Expected', 'Actual']) {
+				if (!present.has(required)) {
+					issues.push({
+						severity: 'warning',
+						type: 'missing-section',
+						source: id,
+						file: e.file,
+						message: `${id} (status: ${status}) has no ${required} section`,
+					});
+				}
+			}
+		}
+
+		if (e.type === 'decision') {
+			for (const required of ['Context', 'Decision']) {
+				if (!present.has(required)) {
+					issues.push({
+						severity: 'warning',
+						type: 'missing-section',
+						source: id,
+						file: e.file,
+						message: `${id} (status: ${status}) has no ${required} section`,
+					});
+				}
+			}
+		}
+	}
+	return issues;
+}
+
 function checkOrphanedWorkItems(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	for (const e of entities) {
@@ -321,7 +442,10 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkBrokenRefs(entities, knownIds),
 		...checkDuplicateIds(entities),
 		...checkInvalidAttributes(entities),
+		...checkSourceRefs(entities, knownIds),
+		...checkMilestoneRefs(entities),
 		...checkCircularDeps(entities, knownIds),
+		...checkRequiredSections(entities),
 		...checkOrphanedWorkItems(entities),
 		...checkCompletedMilestones(entities),
 		...checkResolutions(entities, dir),

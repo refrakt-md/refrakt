@@ -44,10 +44,10 @@ Depends on WORK-106, WORK-107, and WORK-108 all being complete.
 
 ## References
 
-- ADR-005 (Phase 3)
-- WORK-105 (dependency — dual-signature support)
-- WORK-106 (dependency — core rune migration)
-- WORK-107 (dependency — community rune migration)
-- WORK-108 (dependency — tooling update)
+- {% ref "ADR-005" /%} (Phase 3)
+- {% ref "WORK-105" /%} (dependency — dual-signature support)
+- {% ref "WORK-106" /%} (dependency — core rune migration)
+- {% ref "WORK-107" /%} (dependency — community rune migration)
+- {% ref "WORK-108" /%} (dependency — tooling update)
 
 {% /work %}

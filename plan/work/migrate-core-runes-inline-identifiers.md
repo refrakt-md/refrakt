@@ -31,7 +31,7 @@ This is mechanical — each file needs the same 2-3 line change.
 
 ## References
 
-- ADR-005 (Phase 2)
-- WORK-105 (dependency — dual-signature support)
+- {% ref "ADR-005" /%} (Phase 2)
+- {% ref "WORK-105" /%} (dependency — dual-signature support)
 
 {% /work %}

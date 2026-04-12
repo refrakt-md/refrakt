@@ -26,7 +26,7 @@ Create `packages/lumina/styles/dimensions/metadata.css` (or similar) with the CS
 
 ## References
 
-- SPEC-024 (Metadata System — Theme CSS, Dark Mode)
-- SPEC-026 (Lumina Theme — Sentiment Colours)
+- {% ref "SPEC-024" /%} (Metadata System — Theme CSS, Dark Mode)
+- {% ref "SPEC-026" /%} (Lumina Theme — Sentiment Colours)
 
 {% /work %}

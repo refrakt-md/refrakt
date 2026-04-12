@@ -31,6 +31,6 @@ Both signatures must work simultaneously so Phase 2 migration can happen increme
 
 ## References
 
-- ADR-005 (Phase 1)
+- {% ref "ADR-005" /%} (Phase 1)
 
 {% /work %}

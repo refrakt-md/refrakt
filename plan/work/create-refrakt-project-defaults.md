@@ -23,6 +23,6 @@ Add a project type selector to the `create-refrakt` scaffold flow. Define a mapp
 
 ## References
 
-- SPEC-001 (Community Runes — New Project Defaults)
+- {% ref "SPEC-001" /%} (Community Runes — New Project Defaults)
 
 {% /work %}

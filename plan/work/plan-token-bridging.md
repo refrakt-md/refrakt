@@ -25,7 +25,7 @@ Status-specific colors (e.g., `--plan-status-in-progress`) have no `--rf-*` equi
 
 ## References
 
-- ADR-004 (Plan Site Theme Resolution)
-- WORK-039 (the refactored pipeline)
+- {% ref "ADR-004" /%} (Plan Site Theme Resolution)
+- {% ref "WORK-039" /%} (the refactored pipeline)
 
 {% /work %}
