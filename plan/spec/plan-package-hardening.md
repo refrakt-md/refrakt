@@ -28,6 +28,20 @@ The first two categories are bug fixes. The third is the `knownSections` feature
 
 -----
 
+## Attributes vs Sections
+
+`knownSections` does not replace existing tag attributes. The two layers serve different purposes:
+
+**Attributes** are scalar values for querying. `status`, `priority`, `source`, `milestone`, `assignee`, `tags` — these are what the CLI filters, sorts, and groups on. `npx refrakt plan next --tag runes --milestone v1.0.0` works because those values are on the tag, compact and machine-readable.
+
+**Known sections** are rich content for reading and validation. A Dependencies section contains prose context ("needs the config interface from WORK-076"), mixed references, and items that may not even have IDs yet ("the Lumina CSS tokens need to be finalized first"). An Acceptance Criteria section contains checkboxes with detailed descriptions. These can't be flattened into attribute values without losing their purpose.
+
+The relationship between `source` and a Dependencies section is a good example. `source="SPEC-008,ADR-002"` tells the CLI which spec this work item implements — a compact link for querying and dashboard display. The Dependencies section tells a reader what must be in place before implementation can start, and why. Different questions, different answers, both useful.
+
+All existing attributes (`id`, `status`, `priority`, `complexity`, `assignee`, `milestone`, `source`, `tags`, `severity`, `version`, `supersedes`, `date`) remain unchanged.
+
+-----
+
 ## Part 1: Bug Fixes
 
 ### 1. `pending` status missing from work schema
