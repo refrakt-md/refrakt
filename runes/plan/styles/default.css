@@ -84,30 +84,6 @@
 	flex-shrink: 0;
 }
 
-/* Search / filter input */
-.rf-plan-sidebar__search {
-	display: block;
-	width: 100%;
-	padding: 0.25rem 0.5rem;
-	margin-block-end: var(--rf-spacing-md, 1rem);
-	border: 1px solid var(--rf-color-border, #dee2e6);
-	border-radius: var(--rf-radius-sm, 0.25rem);
-	background: var(--rf-color-bg, #ffffff);
-	color: var(--rf-color-text, #212529);
-	font-size: 0.8125rem;
-	outline: none;
-	box-sizing: border-box;
-}
-
-.rf-plan-sidebar__search:focus {
-	border-color: var(--rf-color-info, #339af0);
-	box-shadow: 0 0 0 2px var(--rf-color-info-bg, #e7f5ff);
-}
-
-.rf-plan-sidebar__search::placeholder {
-	color: var(--rf-color-muted, #6c757d);
-}
-
 .rf-plan-sidebar__group {
 	margin-block-end: var(--rf-spacing-lg, 1.5rem);
 }
@@ -592,6 +568,11 @@
 	}
 
 	.rf-plan-sidebar {
+		display: none;
+	}
+
+	/* Search trigger is in the toolbar on mobile; hide the sidebar copy */
+	.rf-mobile-panel .rf-plan-sidebar__search-trigger {
 		display: none;
 	}
 
