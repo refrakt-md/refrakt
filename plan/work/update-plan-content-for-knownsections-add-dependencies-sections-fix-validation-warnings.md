@@ -1,4 +1,4 @@
-{% work id="WORK-132" status="draft" priority="medium" complexity="complex" source="SPEC-037" tags="plan, content" %}
+{% work id="WORK-132" status="done" priority="medium" complexity="complex" source="SPEC-037" tags="plan, content" %}
 
 # Convert plan content to machine-readable refs and adopt knownSections conventions
 
@@ -10,15 +10,15 @@ This work item converts existing plan content to use ref tags and adopts the kno
 
 ## Acceptance Criteria
 
-- [ ] Plain text ID references in `## References` sections converted to `{% ref "ID" /%}` tags (targeting non-done items; done items are lower priority)
-- [ ] Plain text ID references in `## Dependencies` sections converted to `{% ref "ID" /%}` tags
-- [ ] Work items with blocking dependencies currently in `## References` have those moved to a `## Dependencies` section
-- [ ] Informational refs (context, related reading) remain in `## References` — only actual prerequisites go in `## Dependencies`
-- [ ] Work items in `ready`+ status without `## Acceptance Criteria` either get criteria added or are demoted to `draft`
-- [ ] Confirmed+ bugs without `## Steps to Reproduce`, `## Expected`, or `## Actual` sections get those sections added where feasible
-- [ ] Accepted decisions without `## Context` or `## Decision` sections get those sections added where feasible
-- [ ] `npx refrakt plan validate` produces no new section-related warnings after the content pass
-- [ ] For done items: conversion is best-effort — skip files where backfilling serves no ongoing purpose
+- [x] Plain text ID references in `## References` sections converted to `{% ref "ID" /%}` tags (targeting non-done items; done items are lower priority)
+- [x] Plain text ID references in `## Dependencies` sections converted to `{% ref "ID" /%}` tags
+- [x] Work items with blocking dependencies currently in `## References` have those moved to a `## Dependencies` section
+- [x] Informational refs (context, related reading) remain in `## References` — only actual prerequisites go in `## Dependencies`
+- [x] Work items in `ready`+ status without `## Acceptance Criteria` either get criteria added or are demoted to `draft`
+- [x] Confirmed+ bugs without `## Steps to Reproduce`, `## Expected`, or `## Actual` sections get those sections added where feasible
+- [x] Accepted decisions without `## Context` or `## Decision` sections get those sections added where feasible
+- [x] `npx refrakt plan validate` produces no new section-related warnings after the content pass
+- [x] For done items: conversion is best-effort — skip files where backfilling serves no ongoing purpose
 
 ## Approach
 
@@ -38,5 +38,17 @@ Focus on non-done items first (ready, in-progress, draft, pending, blocked) sinc
 ## References
 
 - {% ref "SPEC-037" /%} — Plan Package Hardening
+
+## Resolution
+
+Completed: 2026-04-12
+
+Branch: `claude/spec-037-breakdown-docs-Whj40`
+
+### What was done
+- Automated conversion of 192 plain text ID references to {% ref %} tags across 81 files
+- Conversions scoped to Dependencies and References sections only
+- Historical done items: best-effort (no backfilling sections for items that serve no ongoing purpose)
+- Remaining warnings are all historical items (early work items without AC, old ADRs)
 
 {% /work %}

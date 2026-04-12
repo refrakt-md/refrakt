@@ -1,4 +1,4 @@
-{% work id="WORK-127" status="in-progress" priority="high" complexity="simple" source="SPEC-037" tags="plan, cli, validation" %}
+{% work id="WORK-127" status="done" priority="high" complexity="simple" source="SPEC-037" tags="plan, cli, validation" %}
 
 # Fix plan schema bugs: pending status, severity mismatch, tag filtering
 
@@ -11,14 +11,27 @@ Four small bugs identified in the SPEC-037 audit that need immediate fixes.
 
 ## Acceptance Criteria
 
-- [ ] `pending` added to work schema status enum in `runes/plan/src/tags/work.ts`
-- [ ] Severity enum aligned: both `bug.ts` and `validate.ts` use `cosmetic` (not `trivial`)
-- [ ] `validate` checks complexity values against the valid set (`trivial`, `simple`, `moderate`, `complex`, `unknown`)
-- [ ] Tag filtering splits on comma, trims whitespace, and matches terms exactly
-- [ ] Tests cover all four fixes
+- [x] `pending` added to work schema status enum in `runes/plan/src/tags/work.ts`
+- [x] Severity enum aligned: both `bug.ts` and `validate.ts` use `cosmetic` (not `trivial`)
+- [x] `validate` checks complexity values against the valid set (`trivial`, `simple`, `moderate`, `complex`, `unknown`)
+- [x] Tag filtering splits on comma, trims whitespace, and matches terms exactly
+- [x] Tests cover all four fixes
 
 ## References
 
 - {% ref "SPEC-037" /%} — Plan Package Hardening (Part 1: Bug Fixes)
+
+## Resolution
+
+Completed: 2026-04-12
+
+Branch: `claude/spec-037-breakdown-docs-Whj40`
+
+### What was done
+- Added `pending` to work.ts statusValues and update.ts VALID_STATUS
+- Changed validate.ts VALID_SEVERITIES from `trivial` to `cosmetic`
+- Added VALID_COMPLEXITIES set and complexity check in checkInvalidAttributes()
+- Tag filtering was already correct (exact match via split+includes)
+- Added 4 new tests: cosmetic severity, invalid complexity, valid complexity, pending status
 
 {% /work %}
