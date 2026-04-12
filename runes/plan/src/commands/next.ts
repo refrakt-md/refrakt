@@ -89,7 +89,7 @@ export function runNext(options: NextOptions): NextResult {
 	// If the entity has scoped refs, only refs in the Dependencies section block.
 	// Otherwise, fall back to treating all refs as potential blockers (backward compat).
 	candidates = candidates.filter(e => {
-		const hasDepsSection = e.knownSectionsPresent.includes('Dependencies');
+		const hasDepsSection = (e.knownSectionsPresent ?? []).includes('Dependencies');
 		if (hasDepsSection) {
 			// Section-aware: only Dependencies refs block
 			for (const ref of e.scopedRefs) {

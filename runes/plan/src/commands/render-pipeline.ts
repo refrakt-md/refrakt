@@ -1194,7 +1194,9 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	for (const entity of allEntities) {
 		const entityId = entity.attributes.id || entity.attributes.name;
 		if (!entityId) continue;
-		const depRefs = entity.scopedRefs
+		// Guard: scopedRefs may be absent on entities loaded from stale cache
+		const scopedRefs = entity.scopedRefs ?? [];
+		const depRefs = scopedRefs
 			.filter(r => r.section === 'Dependencies')
 			.map(r => r.id);
 		if (depRefs.length > 0) depMap.set(entityId, depRefs);

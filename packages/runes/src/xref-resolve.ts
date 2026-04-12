@@ -88,9 +88,15 @@ export function resolveXrefs(
 
 	// Check if this is an xref placeholder
 	if (tag.attributes?.['data-rune'] === XREF_RUNE_MARKER) {
-		const id = tag.attributes['data-xref-id'] as string;
+		const id = tag.attributes['data-xref-id'] as string | undefined;
 		const label = tag.attributes['data-xref-label'] as string | undefined;
 		const typeHint = tag.attributes['data-xref-type'] as string | undefined;
+
+		if (!id) {
+			return new Tag('span', {
+				class: 'rf-xref rf-xref--unresolved',
+			}, [label || '?']);
+		}
 
 		// Try exact ID match first
 		const idMatch = findEntityById(registry, id, typeHint);
