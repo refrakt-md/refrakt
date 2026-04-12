@@ -569,6 +569,10 @@
 		display: none;
 	}
 
+	.rf-mobile-panel--nav {
+		top: 3.0625rem;
+	}
+
 	.rf-plan-main {
 		margin-inline-start: 0;
 		padding: var(--rf-spacing-md, 1rem);
