@@ -86,13 +86,25 @@ function resolveComputed(
 				const headings = page.headings ?? [];
 				const minLevel = def.options?.minLevel ?? 2;
 				const maxLevel = def.options?.maxLevel ?? 3;
+				const knownSectionsOnly = def.options?.knownSectionsOnly ?? false;
 
 				// Check minCount before building
-				const filtered = headings.filter(h => h.level >= minLevel && h.level <= maxLevel);
+				let filtered = headings.filter(h => h.level >= minLevel && h.level <= maxLevel);
+
+				// Filter to known-section headings if requested.
+				// Falls back to all headings when no known sections are found
+				// (e.g., specs and milestones that don't declare known sections).
+				if (knownSectionsOnly) {
+					const knownOnly = filtered.filter(h => h.knownSection);
+					if (knownOnly.length > 0) {
+						filtered = knownOnly;
+					}
+				}
+
 				if (def.visibility?.minCount && filtered.length < def.visibility.minCount) {
 					result = null;
 				} else {
-					result = buildToc(headings, prefix, { minLevel, maxLevel });
+					result = buildToc(filtered, prefix, { minLevel, maxLevel });
 				}
 				break;
 			}

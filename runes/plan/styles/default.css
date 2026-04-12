@@ -436,7 +436,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   Mobile toolbar (hidden on desktop)
+   Mobile toolbar (hidden on desktop, sticky when visible)
    -------------------------------------------------------------------------- */
 
 .rf-plan-toolbar {
@@ -446,6 +446,9 @@
 	padding: 0.625rem 1rem;
 	border-block-end: 1px solid var(--rf-color-border, #dee2e6);
 	background: var(--rf-color-bg, #fff);
+	position: sticky;
+	top: 0;
+	z-index: 100;
 }
 
 .rf-plan-toolbar__hamburger {
@@ -466,6 +469,76 @@
 	font-size: 0.875rem;
 	font-weight: 600;
 	color: var(--rf-color-text, #212529);
+	flex: 1;
+	min-width: 0;
+}
+
+.rf-plan-toolbar__section-nav-toggle {
+	background: none;
+	border: none;
+	padding: 0.25rem;
+	cursor: pointer;
+	color: var(--rf-color-muted, #6c757d);
+	line-height: 0;
+	flex-shrink: 0;
+}
+
+.rf-plan-toolbar__section-nav-toggle:hover {
+	color: var(--rf-color-text, #212529);
+}
+
+/* --------------------------------------------------------------------------
+   Section nav dropdown (populated by section-nav behavior)
+   -------------------------------------------------------------------------- */
+
+.rf-section-nav {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0.5rem;
+	min-width: 14rem;
+	background: var(--rf-color-bg, #fff);
+	border: 1px solid var(--rf-color-border, #dee2e6);
+	border-radius: var(--rf-radius-md, 0.5rem);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	z-index: 200;
+	padding: 0.25rem 0;
+}
+
+.rf-section-nav[data-open] {
+	display: block;
+}
+
+.rf-section-nav__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.rf-section-nav__item {
+	border-inline-start: 2px solid transparent;
+}
+
+.rf-section-nav__link {
+	display: block;
+	padding: 0.5rem 1rem;
+	color: var(--rf-color-text, #212529);
+	text-decoration: none;
+	font-size: 0.8125rem;
+	line-height: 1.4;
+}
+
+.rf-section-nav__link:hover {
+	background: var(--rf-color-surface-active, #f1f3f5);
+}
+
+.rf-section-nav__item[data-active] {
+	border-inline-start-color: var(--rf-color-info, #339af0);
+}
+
+.rf-section-nav__item[data-active] .rf-section-nav__link {
+	color: var(--rf-color-info, #339af0);
+	font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
@@ -483,6 +556,11 @@
 }
 
 @media (max-width: 48rem) {
+	/* Offset scroll targets for sticky toolbar */
+	html {
+		scroll-padding-top: 3.5rem;
+	}
+
 	.rf-plan-toolbar {
 		display: flex;
 	}
