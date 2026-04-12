@@ -3,12 +3,16 @@ import type { CleanupFn } from '../types.js';
 /**
  * Section navigation behavior for plan pages.
  *
- * Discovers headings with `[data-known-section]` inside the layout,
- * builds a compact dropdown menu listing those sections, and wires up:
+ * Discovers headings to build a compact dropdown menu and wires up:
  * - [data-section-nav-toggle] — opens/closes the section nav dropdown
  * - Smooth-scroll to the selected section on click
  * - Scrollspy integration — highlights the currently visible section
  * - Dismiss on selection, Escape, or outside click
+ *
+ * Heading discovery strategy:
+ * 1. Prefer [data-known-section] headings (work, bug, decision runes)
+ * 2. Fall back to all H2 headings with IDs (specs, milestones)
+ * 3. Additionally include the Relationships section if present
  *
  * The dropdown is injected next to the toggle button in the toolbar.
  */
@@ -18,10 +22,54 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 	if (!toggleEl) return () => {};
 	const toggle = toggleEl;
 
-	// Find all known-section headings in the page content
-	const headings = root.querySelectorAll<HTMLElement>('[data-known-section]');
-	if (headings.length === 0) {
-		// No known sections — hide the toggle button entirely
+	// Collect section entries: { label, id, element }
+	const entries: Array<{ label: string; id: string; element: HTMLElement }> = [];
+
+	// 1. Try known-section headings first (work, bug, decision)
+	const knownHeadings = root.querySelectorAll<HTMLElement>('[data-known-section]');
+	if (knownHeadings.length > 0) {
+		for (const heading of knownHeadings) {
+			const id = heading.id;
+			if (!id) continue;
+			entries.push({
+				label: heading.getAttribute('data-known-section')!,
+				id,
+				element: heading,
+			});
+		}
+	} else {
+		// 2. Fall back to all H2 headings with IDs (for specs, milestones, etc.)
+		const allH2s = root.querySelectorAll<HTMLElement>('h2[id]');
+		for (const heading of allH2s) {
+			// Skip the relationships heading — we add it separately below
+			if (heading.closest('.rf-plan-relationships')) continue;
+			entries.push({
+				label: heading.textContent?.trim() || '',
+				id: heading.id,
+				element: heading,
+			});
+		}
+	}
+
+	// 3. Always include the Relationships section if present
+	const relSection = root.querySelector<HTMLElement>('.rf-plan-relationships');
+	if (relSection) {
+		const relHeading = relSection.querySelector<HTMLElement>('h2');
+		if (relHeading) {
+			// Ensure the heading has an ID for scroll targeting
+			if (!relHeading.id) {
+				relHeading.id = 'relationships';
+			}
+			entries.push({
+				label: 'Relationships',
+				id: relHeading.id,
+				element: relHeading,
+			});
+		}
+	}
+
+	if (entries.length === 0) {
+		// Nothing to navigate — hide the toggle
 		toggle.style.display = 'none';
 		return () => {};
 	}
@@ -37,26 +85,21 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 	const list = document.createElement('ul');
 	list.className = 'rf-section-nav__list';
 
-	const headingToItem = new Map<Element, HTMLLIElement>();
-	const items: HTMLLIElement[] = [];
+	const elementToItem = new Map<Element, HTMLLIElement>();
 
-	for (const heading of headings) {
-		const sectionName = heading.getAttribute('data-known-section')!;
-		const headingId = heading.id;
-		if (!headingId) continue;
-
+	for (const entry of entries) {
 		const li = document.createElement('li');
 		li.className = 'rf-section-nav__item';
 		li.setAttribute('role', 'menuitem');
 
 		const link = document.createElement('a');
-		link.href = `#${headingId}`;
-		link.textContent = sectionName;
+		link.href = `#${entry.id}`;
+		link.textContent = entry.label;
 		link.className = 'rf-section-nav__link';
 
 		link.addEventListener('click', (e) => {
 			e.preventDefault();
-			const target = document.getElementById(headingId);
+			const target = document.getElementById(entry.id);
 			if (target) {
 				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
@@ -65,8 +108,7 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 
 		li.appendChild(link);
 		list.appendChild(li);
-		headingToItem.set(heading, li);
-		items.push(li);
+		elementToItem.set(entry.element, li);
 	}
 
 	dropdown.appendChild(list);
@@ -125,7 +167,7 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 		(entries) => {
 			for (const entry of entries) {
 				if (entry.isIntersecting) {
-					const item = headingToItem.get(entry.target);
+					const item = elementToItem.get(entry.target);
 					if (item && item !== activeItem) {
 						activeItem?.removeAttribute('data-active');
 						item.setAttribute('data-active', '');
@@ -141,8 +183,8 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 		},
 	);
 
-	for (const heading of headings) {
-		observer.observe(heading);
+	for (const entry of entries) {
+		observer.observe(entry.element);
 	}
 	cleanups.push(() => {
 		observer.disconnect();

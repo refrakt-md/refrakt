@@ -556,6 +556,11 @@
 }
 
 @media (max-width: 48rem) {
+	/* Offset scroll targets for sticky toolbar */
+	html {
+		scroll-padding-top: 3.5rem;
+	}
+
 	.rf-plan-toolbar {
 		display: flex;
 	}
