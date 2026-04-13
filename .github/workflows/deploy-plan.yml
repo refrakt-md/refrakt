@@ -1,0 +1,38 @@
+name: Deploy Plan Site
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git timestamps and file history
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Build plan site
+        run: node packages/cli/dist/bin.js plan build --base-url / --theme lumina
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy plan-site --project-name=${{ vars.CLOUDFLARE_PLAN_PROJECT_NAME }}
