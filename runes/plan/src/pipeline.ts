@@ -654,15 +654,15 @@ export const planPipelineHooks: PackagePipelineHooks = {
 					if (relationshipsSection || historySection) {
 						modified = true;
 
-						// Partition children: structural (header, meta fields) stay at top;
+						// Partition children: structural (headers, preamble, meta fields) stay at top;
 						// body content goes into the Overview tab panel
+						const STRUCTURAL_SECTIONS = new Set(['header', 'preamble']);
 						const structural: any[] = [];
 						const bodyContent: any[] = [];
 						for (const child of tag.children) {
 							if (Markdoc.Tag.isTag(child) && (
 								child.attributes['data-field'] != null ||
-								child.attributes['data-name'] === 'header' ||
-								child.name === 'header'
+								STRUCTURAL_SECTIONS.has(child.attributes['data-section'])
 							)) {
 								structural.push(child);
 							} else {
