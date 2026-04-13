@@ -630,20 +630,28 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				}
 			}
 
-			// Inject relationships section into entity rune tags
+			// Inject relationships section + auto-history into entity rune tags
 			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
 				const runeType = tag.attributes['data-rune'] as string;
 				const entityId = runeType === 'milestone'
 					? readField(tag, 'name')
 					: readField(tag, 'id');
 				if (entityId) {
+					const additions: any[] = [];
+
 					const rels = planData.relationships.get(entityId);
 					if (rels && rels.length > 0) {
 						const section = buildRelationshipsSection(rels, planData);
-						if (section) {
-							modified = true;
-							return new Tag(tag.name, tag.attributes, [...tag.children, section]);
-						}
+						if (section) additions.push(section);
+					}
+
+					// Auto-inject history section for entities with >1 commit
+					const historySection = buildAutoHistorySection(entityId, planData);
+					if (historySection) additions.push(historySection);
+
+					if (additions.length > 0) {
+						modified = true;
+						return new Tag(tag.name, tag.attributes, [...tag.children, ...additions]);
 					}
 				}
 			}
@@ -1337,5 +1345,43 @@ function buildRelationshipsSection(
 	}, [
 		new Tag('h2', { class: 'rf-plan-relationships__heading' }, ['Relationships']),
 		...groups,
+	]);
+}
+
+/**
+ * Build an auto-injected History section for an entity page.
+ * Returns null for entities with only a single commit (created and never modified).
+ */
+function buildAutoHistorySection(
+	entityId: string,
+	data: PlanAggregatedData,
+): InstanceType<typeof Tag> | null {
+	// Find history events by matching the entity ID in the first event's attributes
+	let entityEvents: HistoryEvent[] = [];
+	for (const [, events] of data.history) {
+		if (events.length > 0 && events[0].initialAttributes) {
+			const eventId = events[0].initialAttributes.id ?? events[0].initialAttributes.name;
+			if (eventId === entityId) {
+				entityEvents = events;
+				break;
+			}
+		}
+	}
+
+	// Skip entities with only a single commit (creation only) — no meaningful history
+	if (entityEvents.length <= 1) return null;
+
+	// Build timeline (newest-first), limit to 20 events
+	const limited = [...entityEvents].reverse().slice(0, 20);
+	const items = limited.map(e => buildEventTag(e, data.repositoryUrl));
+
+	const list = new Tag('ol', { class: 'rf-plan-history__events' }, items);
+
+	return new Tag('section', {
+		class: 'rf-plan-history',
+		'data-name': 'history',
+	}, [
+		new Tag('h2', { class: 'rf-plan-history__heading' }, ['History']),
+		list,
 	]);
 }

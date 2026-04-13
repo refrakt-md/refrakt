@@ -619,6 +619,13 @@
 	margin-block: var(--rf-spacing-lg, 1.5rem);
 }
 
+.rf-plan-history__heading {
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: var(--rf-color-text, #212529);
+	margin: 0 0 1rem;
+}
+
 .rf-plan-history__events {
 	list-style: none;
 	padding: 0;
