@@ -6,7 +6,17 @@
 	margin-bottom: 0.75rem;
 }
 
-/* Secondary badges: pill row below title */
+/* Preamble: title + optional description between badge groups */
+.rf-decision__preamble {
+	margin-bottom: 0.75rem;
+}
+.rf-decision__title h1,
+.rf-decision__title h2,
+.rf-decision__title h3 {
+	margin-top: 0;
+}
+
+/* Secondary badges: pill row below preamble */
 .rf-decision__header-secondary {
 	margin-bottom: 1.5rem;
 }
@@ -15,19 +25,11 @@
 	font-size: 0.925rem;
 	line-height: 1.65;
 }
-.rf-decision__body > header {
-	margin-bottom: 0.75rem;
-}
-.rf-decision__body > header h1,
-.rf-decision__body > header h2,
-.rf-decision__body > header h3 {
-	margin-top: 0;
-}
-.rf-decision__body > div > section {
+.rf-decision__body > section {
 	margin-top: 1rem;
 	padding-top: 0.75rem;
 	border-top: 1px solid var(--rf-color-border);
 }
-.rf-decision__body > div > section:first-child {
+.rf-decision__body > section:first-child {
 	margin-top: 0.75rem;
 }

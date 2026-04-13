@@ -22,6 +22,7 @@ export const decision = createContentModelSchema({
 		sectionHeading: 'heading:2',
 		fields: [
 			{ name: 'title', match: 'heading', optional: false },
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 		],
 		sectionModel: {
 			type: 'sequence' as const,
@@ -47,6 +48,9 @@ export const decision = createContentModelSchema({
 		const titleNodes = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
 		);
+		const descNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
+		);
 
 		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
 		const statusMeta = new Tag('meta', { content: attrs.status ?? 'proposed' });
@@ -59,6 +63,7 @@ export const decision = createContentModelSchema({
 		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
 		const title = titleNodes.wrap('header');
+		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
 
 		const sections = resolved.sections as any[];
 		const contentChildren = buildSections(sections, config);
@@ -78,9 +83,10 @@ export const decision = createContentModelSchema({
 			},
 			refs: {
 				title: title.tag('header'),
+				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, dateMeta, supersedesMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, dateMeta, supersedesMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

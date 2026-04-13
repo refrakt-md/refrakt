@@ -1,12 +1,22 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+/** Shared projection config — moves title and blurb into the preamble container */
+const preambleProjection: NonNullable<RuneConfig['projection']> = {
+	relocate: {
+		title: { into: 'preamble', position: 'append' },
+		blurb: { into: 'preamble', position: 'append' },
+	},
+};
+
+/** Shared slot order for plan entity runes */
+const entitySlots = ['header-primary', 'preamble', 'header-secondary', 'content'] as const;
+
 export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
 		defaultDensity: 'full',
-		slots: ['header-primary', 'content', 'header-secondary'],
-		sections: { 'header-primary': 'header', 'header-secondary': 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		slots: [...entitySlots],
+		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'draft' },
@@ -24,6 +34,7 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
 				],
 			},
+			preamble: { tag: 'div', slot: 'preamble' },
 			'header-secondary': {
 				tag: 'div', slot: 'header-secondary',
 				children: [
@@ -34,15 +45,15 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		projection: preambleProjection,
 		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'version-badge': 'none', 'supersedes-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Work: {
 		block: 'work',
 		defaultDensity: 'full',
 		checklist: true,
-		slots: ['header-primary', 'content', 'header-secondary'],
-		sections: { 'header-primary': 'header', 'header-secondary': 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		slots: [...entitySlots],
+		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'draft' },
@@ -63,6 +74,7 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' } },
 				],
 			},
+			preamble: { tag: 'div', slot: 'preamble' },
 			'header-secondary': {
 				tag: 'div', slot: 'header-secondary',
 				children: [
@@ -76,15 +88,15 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		projection: preambleProjection,
 		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'priority-badge': 'none', 'complexity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Bug: {
 		block: 'bug',
 		defaultDensity: 'full',
 		checklist: true,
-		slots: ['header-primary', 'content', 'header-secondary'],
-		sections: { 'header-primary': 'header', 'header-secondary': 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		slots: [...entitySlots],
+		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'reported' },
@@ -104,6 +116,7 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' } },
 				],
 			},
+			preamble: { tag: 'div', slot: 'preamble' },
 			'header-secondary': {
 				tag: 'div', slot: 'header-secondary',
 				children: [
@@ -116,14 +129,14 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		projection: preambleProjection,
 		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'severity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Decision: {
 		block: 'decision',
 		defaultDensity: 'full',
-		slots: ['header-primary', 'content', 'header-secondary'],
-		sections: { 'header-primary': 'header', 'header-secondary': 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		slots: [...entitySlots],
+		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'proposed' },
@@ -142,6 +155,7 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
 				],
 			},
+			preamble: { tag: 'div', slot: 'preamble' },
 			'header-secondary': {
 				tag: 'div', slot: 'header-secondary',
 				children: [
@@ -153,14 +167,14 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		projection: preambleProjection,
 		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'date-badge': 'none', 'supersedes-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Milestone: {
 		block: 'milestone',
 		defaultDensity: 'full',
-		slots: ['header-primary', 'content', 'header-secondary'],
-		sections: { 'header-primary': 'header', 'header-secondary': 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		slots: [...entitySlots],
+		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			name: { source: 'meta' },
 			status: { source: 'meta', default: 'planning' },
@@ -176,6 +190,7 @@ export const config: Record<string, RuneConfig> = {
 					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' } },
 				],
 			},
+			preamble: { tag: 'div', slot: 'preamble' },
 			'header-secondary': {
 				tag: 'div', slot: 'header-secondary',
 				children: [
@@ -185,6 +200,7 @@ export const config: Record<string, RuneConfig> = {
 				],
 			},
 		},
+		projection: preambleProjection,
 		editHints: { body: 'none', 'name-badge': 'none', 'status-badge': 'none', 'target-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
 	},
 	Backlog: {

@@ -3286,8 +3286,9 @@
 			"dataRune": "spec",
 			"childOrder": [
 				"header-primary",
-				"{content:body}",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"{content}"
 			],
 			"modifiers": {
 				"id": {
@@ -3342,6 +3343,11 @@
 					"source": "structure",
 					"parent": "header-primary"
 				},
+				"preamble": {
+					"tag": "div",
+					"selector": ".rf-spec__preamble",
+					"source": "structure"
+				},
 				"header-secondary": {
 					"tag": "div",
 					"selector": ".rf-spec__header-secondary",
@@ -3374,17 +3380,29 @@
 					"source": "structure",
 					"parent": "header-secondary",
 					"condition": "modified"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-spec__body",
-					"source": "contentWrapper"
 				}
 			},
 			"slots": [
 				"header-primary",
-				"content",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"content"
+			],
+			"projection": {
+				"relocate": {
+					"title": {
+						"into": "preamble",
+						"position": "append"
+					},
+					"blurb": {
+						"into": "preamble",
+						"position": "append"
+					}
+				}
+			},
+			"warnings": [
+				"projection.relocate source \"title\" is unknown",
+				"projection.relocate source \"blurb\" is unknown"
 			]
 		},
 		"Work": {
@@ -3393,8 +3411,9 @@
 			"dataRune": "work",
 			"childOrder": [
 				"header-primary",
-				"{content:body}",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"{content}"
 			],
 			"modifiers": {
 				"id": {
@@ -3463,6 +3482,11 @@
 					"source": "structure",
 					"parent": "header-primary"
 				},
+				"preamble": {
+					"tag": "div",
+					"selector": ".rf-work__preamble",
+					"source": "structure"
+				},
 				"header-secondary": {
 					"tag": "div",
 					"selector": ".rf-work__header-secondary",
@@ -3514,17 +3538,29 @@
 					"source": "structure",
 					"parent": "header-secondary",
 					"condition": "modified"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-work__body",
-					"source": "contentWrapper"
 				}
 			},
 			"slots": [
 				"header-primary",
-				"content",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"content"
+			],
+			"projection": {
+				"relocate": {
+					"title": {
+						"into": "preamble",
+						"position": "append"
+					},
+					"blurb": {
+						"into": "preamble",
+						"position": "append"
+					}
+				}
+			},
+			"warnings": [
+				"projection.relocate source \"title\" is unknown",
+				"projection.relocate source \"blurb\" is unknown"
 			]
 		},
 		"Bug": {
@@ -3533,8 +3569,9 @@
 			"dataRune": "bug",
 			"childOrder": [
 				"header-primary",
-				"{content:body}",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"{content}"
 			],
 			"modifiers": {
 				"id": {
@@ -3597,6 +3634,11 @@
 					"source": "structure",
 					"parent": "header-primary"
 				},
+				"preamble": {
+					"tag": "div",
+					"selector": ".rf-bug__preamble",
+					"source": "structure"
+				},
 				"header-secondary": {
 					"tag": "div",
 					"selector": ".rf-bug__header-secondary",
@@ -3642,17 +3684,29 @@
 					"source": "structure",
 					"parent": "header-secondary",
 					"condition": "modified"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-bug__body",
-					"source": "contentWrapper"
 				}
 			},
 			"slots": [
 				"header-primary",
-				"content",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"content"
+			],
+			"projection": {
+				"relocate": {
+					"title": {
+						"into": "preamble",
+						"position": "append"
+					},
+					"blurb": {
+						"into": "preamble",
+						"position": "append"
+					}
+				}
+			},
+			"warnings": [
+				"projection.relocate source \"title\" is unknown",
+				"projection.relocate source \"blurb\" is unknown"
 			]
 		},
 		"Decision": {
@@ -3661,8 +3715,9 @@
 			"dataRune": "decision",
 			"childOrder": [
 				"header-primary",
-				"{content:body}",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"{content}"
 			],
 			"modifiers": {
 				"id": {
@@ -3719,6 +3774,11 @@
 					"source": "structure",
 					"parent": "header-primary"
 				},
+				"preamble": {
+					"tag": "div",
+					"selector": ".rf-decision__preamble",
+					"source": "structure"
+				},
 				"header-secondary": {
 					"tag": "div",
 					"selector": ".rf-decision__header-secondary",
@@ -3758,17 +3818,29 @@
 					"source": "structure",
 					"parent": "header-secondary",
 					"condition": "modified"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-decision__body",
-					"source": "contentWrapper"
 				}
 			},
 			"slots": [
 				"header-primary",
-				"content",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"content"
+			],
+			"projection": {
+				"relocate": {
+					"title": {
+						"into": "preamble",
+						"position": "append"
+					},
+					"blurb": {
+						"into": "preamble",
+						"position": "append"
+					}
+				}
+			},
+			"warnings": [
+				"projection.relocate source \"title\" is unknown",
+				"projection.relocate source \"blurb\" is unknown"
 			]
 		},
 		"Milestone": {
@@ -3777,8 +3849,9 @@
 			"dataRune": "milestone",
 			"childOrder": [
 				"header-primary",
-				"{content:body}",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"{content}"
 			],
 			"modifiers": {
 				"name": {
@@ -3823,6 +3896,11 @@
 					"source": "structure",
 					"parent": "header-primary"
 				},
+				"preamble": {
+					"tag": "div",
+					"selector": ".rf-milestone__preamble",
+					"source": "structure"
+				},
 				"header-secondary": {
 					"tag": "div",
 					"selector": ".rf-milestone__header-secondary",
@@ -3848,17 +3926,29 @@
 					"source": "structure",
 					"parent": "header-secondary",
 					"condition": "modified"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-milestone__body",
-					"source": "contentWrapper"
 				}
 			},
 			"slots": [
 				"header-primary",
-				"content",
-				"header-secondary"
+				"preamble",
+				"header-secondary",
+				"content"
+			],
+			"projection": {
+				"relocate": {
+					"title": {
+						"into": "preamble",
+						"position": "append"
+					},
+					"blurb": {
+						"into": "preamble",
+						"position": "append"
+					}
+				}
+			},
+			"warnings": [
+				"projection.relocate source \"title\" is unknown",
+				"projection.relocate source \"blurb\" is unknown"
 			]
 		},
 		"Backlog": {

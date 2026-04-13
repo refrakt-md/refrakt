@@ -6,7 +6,17 @@
 	margin-bottom: 0.75rem;
 }
 
-/* Secondary badges: pill row below title */
+/* Preamble: title + optional description between badge groups */
+.rf-milestone__preamble {
+	margin-bottom: 0.75rem;
+}
+.rf-milestone__title h1,
+.rf-milestone__title h2,
+.rf-milestone__title h3 {
+	margin-top: 0;
+}
+
+/* Secondary badges: pill row below preamble */
 .rf-milestone__header-secondary {
 	margin-bottom: 1.5rem;
 }
@@ -17,14 +27,6 @@
 .rf-milestone__body {
 	font-size: 0.925rem;
 	line-height: 1.65;
-}
-.rf-milestone__body > header {
-	margin-bottom: 0.75rem;
-}
-.rf-milestone__body > header h1,
-.rf-milestone__body > header h2,
-.rf-milestone__body > header h3 {
-	margin-top: 0;
 }
 .rf-milestone__body ul {
 	padding-left: 1.5rem;
