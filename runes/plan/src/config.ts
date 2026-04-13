@@ -199,4 +199,7 @@ export const config: Record<string, RuneConfig> = {
 			group: { source: 'meta', noBemClass: true },
 		},
 	},
+	PlanEntityTabs: {
+		block: 'plan-entity-tabs',
+	},
 };
