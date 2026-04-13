@@ -126,6 +126,38 @@ Default: left-to-right (`rankdir: 'LR'`). Dependencies flow left → right, so t
 
 When the graph is filtered to a milestone, nodes can optionally be clustered by status. dagre supports subgraph clustering, which visually groups done/in-progress/ready items. This turns the graph into both a dependency diagram and a status board.
 
+### Mobile responsive strategy
+
+Left-to-right DAG layouts can easily exceed 1500px wide, making them unusable on a 375px mobile screen. The strategy varies by graph scope:
+
+**Milestone and entity-focused graphs** — generate two SVGs at build time: one LR (desktop), one TB (mobile). Toggle with CSS:
+
+```css
+.rf-plan-graph__lr { display: block; }
+.rf-plan-graph__tb { display: none; }
+
+@media (max-width: 48rem) {
+  .rf-plan-graph__lr { display: none; }
+  .rf-plan-graph__tb { display: block; }
+}
+```
+
+The TB layout is naturally narrower (nodes stack vertically, edges run downward) and fits mobile viewports well. Both SVGs are in the DOM; only one renders. The payload doubles but individual milestone graphs are small.
+
+**Full project graph and dashboard critical-path** — on viewports below 48rem, hide the SVG entirely and show a fallback dependency list. This list uses the same HTML structure as the auto-relationships cards — a compact vertical listing of entities grouped by dependency chain. The graph adds value on desktop where there's spatial room; on mobile, the textual representation is more readable than a squished SVG.
+
+```css
+.rf-plan-graph__svg   { display: block; }
+.rf-plan-graph__list  { display: none; }
+
+@media (max-width: 48rem) {
+  .rf-plan-graph__svg   { display: none; }
+  .rf-plan-graph__list  { display: block; }
+}
+```
+
+The postProcess resolver generates both the SVG and the fallback list for every `plan-graph` instance. The list is cheap — it's the same data, just rendered as nested `<ul>` elements instead of SVG geometry.
+
 -----
 
 ## Site Rune: `plan-graph`
@@ -327,33 +359,113 @@ npx refrakt plan graph --dot | dot -Tpng -o deps.png
 
 The DOT output includes node attributes for styling (shape, colour, label) so it renders well with default Graphviz settings.
 
-### JSON export
+### JSON export and graph insights
 
 ```bash
 npx refrakt plan graph --format json WORK-024
+npx refrakt plan graph --format json --milestone v1.0.0
 ```
 
-Outputs the graph as a JSON object with `nodes` and `edges` arrays, for programmatic consumption or piping to other visualization tools.
+The JSON output includes the raw graph structure (`nodes` and `edges` arrays) plus a computed `insights` object with graph-analytic results. These insights are what make `plan graph` useful for AI agents — an AI doesn't need to *see* the graph, it needs to understand the structural implications for planning decisions.
+
+```json
+{
+  "nodes": [
+    {
+      "id": "WORK-024", "type": "work", "status": "ready",
+      "title": "Add knownSections to content model framework",
+      "priority": "medium", "milestone": "v1.0.0",
+      "inDegree": 2, "outDegree": 3,
+      "onCriticalPath": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "WORK-024", "to": "SPEC-037",
+      "kind": "implements"
+    }
+  ],
+  "insights": {
+    "criticalPath": ["SPEC-037", "WORK-024", "WORK-129", "WORK-131"],
+    "bottlenecks": [
+      { "id": "WORK-024", "unblocksCount": 3,
+        "unblocks": ["WORK-129", "WORK-131", "WORK-130"] }
+    ],
+    "parallelStreams": [
+      ["WORK-025", "WORK-026"],
+      ["WORK-033", "WORK-034", "WORK-035"]
+    ],
+    "orphans": ["WORK-042", "BUG-003"],
+    "completionImpact": {
+      "WORK-024": {
+        "directlyUnblocks": ["WORK-129", "WORK-131"],
+        "transitivelyUnblocks": ["WORK-130"]
+      }
+    }
+  }
+}
+```
+
+**Insight definitions:**
+
+| Insight | Algorithm | What it answers |
+|---------|-----------|-----------------|
+| `criticalPath` | Longest chain of unfinished entities (topological sort, longest path in DAG) | "What's the sequence of work that determines when the milestone can ship?" |
+| `bottlenecks` | Unfinished nodes with highest out-degree (most dependents that are also unfinished) | "Which item should I finish first to unblock the most work?" |
+| `parallelStreams` | Connected components after removing finished nodes, split by independent subgraphs | "Which items can be worked on concurrently without conflicts?" |
+| `orphans` | Unfinished nodes with zero in-degree and zero out-degree (no dependency connections) | "Which items are floating free — possibly missing dependency declarations?" |
+| `completionImpact` | Forward reachability from a given node through unfinished edges | "If I finish WORK-024, what gets unblocked — directly and transitively?" |
+
+The `completionImpact` insight is included when a specific entity ID is queried (`plan graph --format json WORK-024`). For global/milestone queries, it's omitted to keep output size manageable.
+
+All insights filter out finished entities (done/fixed/accepted/complete) — they represent the *remaining* graph, not the historical one. This is the forward-looking view that planning decisions need.
+
+**Terminal output with insights:**
+
+In non-JSON mode, insights are printed as a summary below the tree view:
+
+```bash
+npx refrakt plan graph --milestone v1.0.0
+```
+
+```
+… (tree output) …
+
+Critical path (4 items):
+  SPEC-037 → WORK-024 → WORK-129 → WORK-131
+
+Bottlenecks:
+  WORK-024 — unblocks 3 items (WORK-129, WORK-131, WORK-130)
+
+Parallel streams: 2 independent work streams identified
+Orphans: WORK-042, BUG-003 (no dependency connections)
+```
+
+The insights summary is always shown in CLI output. It can be suppressed with `--no-insights` if only the tree view is wanted.
 
 -----
 
 ## Phased Implementation
 
-### Phase 1: CLI tree view + DOT export
+### Phase 1: CLI tree view + DOT export + insights
 
 - Tree-with-annotations renderer (~30 lines, no dependency)
 - DOT export (~50 lines, no dependency — just string concatenation)
+- Graph insights computation (critical path, bottlenecks, parallel streams, orphans)
+- JSON output with `nodes`, `edges`, and `insights`
 - Entity-focused and global modes
 - `--milestone`, `--type`, `--show`, `--depth` filters
 
-This is immediately useful with zero new dependencies.
+This is immediately useful with zero new dependencies. The insights algorithms (topological sort, reachability, component detection) are standard graph operations that work directly on the relationship Map.
 
 ### Phase 2: Site SVG renderer
 
 - Add `@dagrejs/dagre` as a dependency of `@refrakt-md/plan`
 - Build the graph → dagre layout → SVG generation pipeline
 - `plan-graph` rune with all attributes
-- Node styling with shapes, colours, and links
+- Node styling with shapes, colours, and links via Lumina tokens
+- Dual-layout generation (LR + TB) for mobile responsive toggle
+- Fallback dependency list for large graphs on narrow viewports
 
 ### Phase 3: CLI box-drawing renderer
 
@@ -382,5 +494,15 @@ Show `depends-on`, `blocks`, and `implements`/`informs` by default. Hide `relate
 ### 4. Ghost nodes for external dependencies
 
 When a milestone-scoped or filtered graph has edges pointing to entities outside the filter, those external entities appear as ghost nodes (lighter fill, dashed border, no link). This shows that a dependency exists without cluttering the graph with the full external subgraph. Ghost nodes are not laid out by dagre — they're appended at fixed positions relative to the edge endpoint.
+
+### 5. Mobile responsive: dual layout + list fallback
+
+On viewports below 48rem, milestone and entity-focused graphs switch from LR to TB layout via CSS toggle (both SVGs are in the DOM, only one renders). Full project graphs and dashboard critical-path sections fall back to a dependency list on mobile — the textual representation is more readable than a scaled-down SVG for dense graphs. Both the alternate-direction SVG and the fallback list are generated at build time alongside the primary SVG.
+
+### 6. Graph insights as first-class output
+
+The JSON export always includes computed graph insights (critical path, bottlenecks, parallel streams, orphans, completion impact). These are not optional — they're the primary value of `plan graph` for AI agents and automation. The CLI tree view also prints an insights summary by default. The insights filter out finished entities to show the remaining graph, which is what planning decisions operate on.
+
+This makes `plan graph` a decision-support tool, not just a visualization command. An AI agent can ask "what should I work on to maximise unblocking?" and get a direct answer without parsing visual output.
 
 {% /spec %}
