@@ -1054,7 +1054,7 @@ function buildEventTagInner(
 
 		// Collapse if over threshold
 		if (items.length > collapseThreshold) {
-			const visible = items.slice(0, collapseThreshold);
+			const visible: any[] = items.slice(0, collapseThreshold);
 			const remaining = items.length - collapseThreshold;
 			visible.push(new Tag('li', { class: 'rf-plan-history__more' }, [`+${remaining} more criteria`]));
 			changesChildren.push(new Tag('ul', { class: 'rf-plan-history__criteria' }, visible));
