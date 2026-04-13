@@ -654,15 +654,18 @@ export const planPipelineHooks: PackagePipelineHooks = {
 					if (relationshipsSection || historySection) {
 						modified = true;
 
-						// Partition children: structural (headers, preamble, meta fields) stay at top;
-						// body content goes into the Overview tab panel
-						const STRUCTURAL_SECTIONS = new Set(['header', 'preamble']);
+						// Partition children: structural (meta fields, title, blurb) stay at top;
+						// body content goes into the Overview tab panel.
+						// Note: postProcess runs BEFORE the identity transform, so children
+						// have data-name/data-field from createComponentRenderable but no
+						// data-section or BEM classes yet.
+						const PREAMBLE_NAMES = new Set(['title', 'blurb']);
 						const structural: any[] = [];
 						const bodyContent: any[] = [];
 						for (const child of tag.children) {
 							if (Markdoc.Tag.isTag(child) && (
 								child.attributes['data-field'] != null ||
-								STRUCTURAL_SECTIONS.has(child.attributes['data-section'])
+								PREAMBLE_NAMES.has(child.attributes['data-name'])
 							)) {
 								structural.push(child);
 							} else {
