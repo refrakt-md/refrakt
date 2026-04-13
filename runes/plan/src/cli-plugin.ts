@@ -7,6 +7,7 @@ import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
 import { runServe } from './commands/serve.js';
 import { runBuild } from './commands/build.js';
+import { runHistory } from './commands/history.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -521,6 +522,52 @@ function handleStatus(args: string[]): void {
 	}
 }
 
+function handleHistory(args: string[]): void {
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let id: string | undefined;
+	let limit = 20;
+	let since: string | undefined;
+	let type: string | undefined;
+	let author: string | undefined;
+	let status: string | undefined;
+	let all = false;
+	let formatJson = false;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else if (arg === '--limit' && args[i + 1]) {
+			limit = parseInt(args[++i], 10);
+			if (isNaN(limit) || limit < 1) {
+				console.error('Error: --limit must be a positive integer');
+				process.exit(1);
+			}
+		} else if (arg === '--since' && args[i + 1]) {
+			since = args[++i];
+		} else if (arg === '--type' && args[i + 1]) {
+			type = args[++i];
+		} else if (arg === '--author' && args[i + 1]) {
+			author = args[++i];
+		} else if (arg === '--status' && args[i + 1]) {
+			status = args[++i];
+		} else if (arg === '--all') {
+			all = true;
+		} else if (!arg.startsWith('-')) {
+			id = arg;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			console.error('Usage: refrakt plan history [<id>] [--limit N] [--since <duration|date>] [--type <types>] [--author <name>] [--status <status>] [--all] [--format json]');
+			process.exit(1);
+		}
+	}
+
+	runHistory({ dir, id, limit, since, type, author, status, all, formatJson });
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
@@ -533,6 +580,7 @@ const plugin: CliPlugin = {
 		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
 		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
+		{ name: 'history', description: 'View entity and project history', handler: handleHistory },
 	],
 };
 

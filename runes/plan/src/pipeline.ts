@@ -4,7 +4,16 @@ import { BACKLOG_SENTINEL } from './tags/backlog.js';
 import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
 import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
 import { PLAN_ACTIVITY_SENTINEL } from './tags/plan-activity.js';
+import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
 import { parseFilter, matchesFilter, sortEntities, groupEntities } from './filter.js';
+import { execSync } from 'node:child_process';
+import {
+	extractBatchHistory,
+	readHistoryCache,
+	writeHistoryCache,
+	type HistoryEvent,
+	type HistoryCache,
+} from './history.js';
 
 const { Tag } = Markdoc;
 
@@ -298,6 +307,17 @@ export function setScannerDependencies(deps: Map<string, string[]>): void {
 	for (const [k, v] of deps) _scannerDependencies.set(k, v);
 }
 
+/**
+ * Module-level store for the plan directory path.
+ * Set by render-pipeline.ts before aggregate() runs.
+ */
+let _planDir: string | undefined;
+
+/** Set the plan directory path for the pipeline's aggregate() hook to consume */
+export function setPlanDir(dir: string): void {
+	_planDir = dir;
+}
+
 export interface PlanAggregatedData {
 	workEntities: EntityRegistration[];
 	bugEntities: EntityRegistration[];
@@ -306,6 +326,10 @@ export interface PlanAggregatedData {
 	milestoneEntities: EntityRegistration[];
 	/** Bidirectional relationship index: entityId → relationships */
 	relationships: Map<string, EntityRelationship[]>;
+	/** Git-derived history events per entity file path */
+	history: Map<string, HistoryEvent[]>;
+	/** Repository URL for commit links (parsed from git remote or config) */
+	repositoryUrl?: string;
 }
 
 /** Parse a comma-separated `source` attribute into typed ID references */
@@ -400,7 +424,7 @@ export const planPipelineHooks: PackagePipelineHooks = {
 		}
 	},
 
-	aggregate(registry) {
+	aggregate(registry, ctx) {
 		// Build bidirectional relationship index from ID references
 		const relationships = new Map<string, EntityRelationship[]>();
 
@@ -527,6 +551,36 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			}
 		}
 
+		// Extract git history for all entities
+		let history = new Map<string, HistoryEvent[]>();
+		let repositoryUrl: string | undefined;
+		try {
+			const planDir = _planDir ?? 'plan';
+			const cache = readHistoryCache(planDir);
+			history = extractBatchHistory(planDir, '.', { cache });
+			writeHistoryCache(planDir, cache);
+
+			// Parse repository URL from git remote
+			try {
+				const remoteUrl = execSync('git remote get-url origin', {
+					encoding: 'utf-8',
+					stdio: ['pipe', 'pipe', 'pipe'],
+				}).trim();
+				// Convert SSH URLs to HTTPS
+				const sshMatch = remoteUrl.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
+				if (sshMatch) {
+					repositoryUrl = `https://${sshMatch[1]}/${sshMatch[2]}`;
+				} else if (remoteUrl.startsWith('https://')) {
+					repositoryUrl = remoteUrl.replace(/\.git$/, '');
+				}
+			} catch {
+				// No remote configured
+			}
+		} catch (err) {
+			// Git not available or not a git repo — history will be empty
+			ctx.warn(`Could not extract git history: ${err instanceof Error ? err.message : String(err)}`);
+		}
+
 		return {
 			workEntities: registry.getAll('work'),
 			bugEntities: registry.getAll('bug'),
@@ -534,6 +588,8 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			specEntities: registry.getAll('spec'),
 			milestoneEntities: registry.getAll('milestone'),
 			relationships,
+			history,
+			repositoryUrl,
 		} satisfies PlanAggregatedData;
 	},
 
@@ -563,6 +619,11 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				modified = true;
 				return resolvePlanActivity(tag, planData);
 			}
+			// Handle plan-history sentinel
+			if (tag.attributes['data-rune'] === 'plan-history' && hasSentinel(tag, PLAN_HISTORY_SENTINEL)) {
+				modified = true;
+				return resolvePlanHistory(tag, planData);
+			}
 
 			// Inject auto-backlog into milestone rune tags
 			if (tag.attributes['data-rune'] === 'milestone') {
@@ -576,20 +637,28 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				}
 			}
 
-			// Inject relationships section into entity rune tags
+			// Inject relationships section + auto-history into entity rune tags
 			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
 				const runeType = tag.attributes['data-rune'] as string;
 				const entityId = runeType === 'milestone'
 					? readField(tag, 'name')
 					: readField(tag, 'id');
 				if (entityId) {
+					const additions: any[] = [];
+
 					const rels = planData.relationships.get(entityId);
 					if (rels && rels.length > 0) {
 						const section = buildRelationshipsSection(rels, planData);
-						if (section) {
-							modified = true;
-							return new Tag(tag.name, tag.attributes, [...tag.children, section]);
-						}
+						if (section) additions.push(section);
+					}
+
+					// Auto-inject history section for entities with >1 commit
+					const historySection = buildAutoHistorySection(entityId, planData);
+					if (historySection) additions.push(historySection);
+
+					if (additions.length > 0) {
+						modified = true;
+						return new Tag(tag.name, tag.attributes, [...tag.children, ...additions]);
 					}
 				}
 			}
@@ -927,6 +996,272 @@ function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
+// ─── Plan History Resolution ───
+
+function formatHistoryDate(isoDate: string): string {
+	const d = new Date(isoDate);
+	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function buildAttrChangeTag(change: { field: string; from: string | null; to: string | null }): InstanceType<typeof Tag> {
+	const children: any[] = [
+		new Tag('span', { class: 'rf-plan-history__field' }, [change.field]),
+	];
+	if (change.from !== null) {
+		children.push(new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'remove' }, [change.from]));
+	}
+	if (change.from !== null && change.to !== null) {
+		children.push(new Tag('span', { class: 'rf-plan-history__arrow' }, ['→']));
+	}
+	if (change.to !== null) {
+		const prefix = change.from === null ? '+' : '';
+		children.push(new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'add' }, [prefix + change.to]));
+	}
+	if (change.from !== null && change.to === null) {
+		// Removed attribute — show as removal only
+	}
+	return new Tag('span', { class: 'rf-plan-history__change' }, children);
+}
+
+function buildEventTag(event: HistoryEvent, repositoryUrl?: string, collapseThreshold = 3): InstanceType<typeof Tag> {
+	const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [formatHistoryDate(event.date)]);
+
+	const hashChildren: any[] = [event.shortHash];
+	const hashAttrs: Record<string, any> = { class: 'rf-plan-history__hash' };
+	if (repositoryUrl) {
+		const hashTag = new Tag('a', {
+			class: 'rf-plan-history__hash',
+			href: `${repositoryUrl}/commit/${event.hash}`,
+		}, [event.shortHash]);
+		return buildEventTagInner(event, dateTag, hashTag, collapseThreshold);
+	}
+	const hashTag = new Tag('code', hashAttrs, hashChildren);
+	return buildEventTagInner(event, dateTag, hashTag, collapseThreshold);
+}
+
+function buildEventTagInner(
+	event: HistoryEvent,
+	dateTag: InstanceType<typeof Tag>,
+	hashTag: InstanceType<typeof Tag>,
+	collapseThreshold: number,
+): InstanceType<typeof Tag> {
+	const changesChildren: any[] = [];
+
+	if (event.kind === 'created') {
+		const attrs = event.initialAttributes ?? {};
+		const parts = Object.entries(attrs)
+			.filter(([k]) => k !== 'id' && k !== 'name')
+			.map(([, v]) => v);
+		changesChildren.push(new Tag('span', { class: 'rf-plan-history__created' }, [`Created (${parts.join(', ')})`]));
+	}
+
+	if (event.attributeChanges) {
+		for (const change of event.attributeChanges) {
+			changesChildren.push(buildAttrChangeTag(change));
+		}
+	}
+
+	if (event.criteriaChanges) {
+		const items = event.criteriaChanges.map(c => {
+			const marker = c.action === 'checked' ? '☑' : c.action === 'unchecked' ? '☐' : c.action === 'added' ? '+' : '−';
+			return new Tag('li', { 'data-action': c.action }, [`${marker} ${c.text}`]);
+		});
+
+		// Collapse if over threshold
+		if (items.length > collapseThreshold) {
+			const visible: any[] = items.slice(0, collapseThreshold);
+			const remaining = items.length - collapseThreshold;
+			visible.push(new Tag('li', { class: 'rf-plan-history__more' }, [`+${remaining} more criteria`]));
+			changesChildren.push(new Tag('ul', { class: 'rf-plan-history__criteria' }, visible));
+		} else {
+			changesChildren.push(new Tag('ul', { class: 'rf-plan-history__criteria' }, items));
+		}
+	}
+
+	if (event.kind === 'resolution') {
+		changesChildren.push(new Tag('span', { class: 'rf-plan-history__resolution' }, ['Resolution recorded']));
+	}
+
+	if (event.kind === 'content') {
+		changesChildren.push(new Tag('span', { class: 'rf-plan-history__content-edit' }, ['Content edited']));
+	}
+
+	const changesDiv = new Tag('div', { class: 'rf-plan-history__changes' }, changesChildren);
+
+	return new Tag('li', {
+		class: 'rf-plan-history__event',
+		'data-kind': event.kind,
+	}, [dateTag, hashTag, changesDiv]);
+}
+
+function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+	const entityId = readField(tag, 'id');
+	const limit = parseInt(readField(tag, 'limit') || '20', 10);
+	const typeFilter = readField(tag, 'type') || 'all';
+	const group = readField(tag, 'group') || 'commit';
+
+	const allEntities = [
+		...data.workEntities,
+		...data.bugEntities,
+		...data.decisionEntities,
+		...data.specEntities,
+		...data.milestoneEntities,
+	];
+
+	let listContent: InstanceType<typeof Tag>;
+	let isGlobal = false;
+
+	if (entityId) {
+		// Per-entity mode: find the entity's file path and look up its history
+		const entity = allEntities.find(e => e.id === entityId || e.data.name === entityId);
+		if (!entity) {
+			listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' }, [
+				new Tag('li', { class: 'rf-plan-history__empty' }, [`No history found for ${entityId}`]),
+			]);
+		} else {
+			// Find history by matching entity file path
+			let entityEvents: HistoryEvent[] = [];
+			for (const [file, events] of data.history) {
+				// Match by file path containing the entity ID or by checking attributes
+				if (events.length > 0 && events[0].initialAttributes) {
+					const eventId = events[0].initialAttributes.id ?? events[0].initialAttributes.name;
+					if (eventId === entityId) {
+						entityEvents = events;
+						break;
+					}
+				}
+			}
+
+			// Reverse to newest-first, apply limit
+			const limited = [...entityEvents].reverse().slice(0, limit);
+			const items = limited.map(e => buildEventTag(e, data.repositoryUrl));
+
+			listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' },
+				items.length > 0 ? items : [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
+			);
+		}
+	} else {
+		// Global feed mode
+		isGlobal = true;
+		const typeSet = typeFilter !== 'all' ? new Set(typeFilter.split(',').map(t => t.trim())) : null;
+		const entityByFile = new Map(allEntities.map(e => {
+			// Try to find the file path from history keys
+			const filePath = e.data.file as string | undefined;
+			return [filePath ?? e.id, e];
+		}));
+
+		// Group events by commit
+		const commitMap = new Map<string, {
+			hash: string; shortHash: string; date: string; message: string;
+			entities: Array<{ id: string; event: HistoryEvent }>;
+		}>();
+
+		for (const [file, events] of data.history) {
+			// Determine entity type for filtering
+			const firstEvent = events[0];
+			const initialType = firstEvent?.initialAttributes?.id?.split('-')[0]?.toLowerCase();
+			const entityTypeMap: Record<string, string> = { work: 'work', spec: 'spec', bug: 'bug', adr: 'decision' };
+			const entityType = entityTypeMap[initialType ?? ''];
+
+			if (typeSet && entityType && !typeSet.has(entityType)) continue;
+
+			const entityId = firstEvent?.initialAttributes?.id ?? firstEvent?.initialAttributes?.name ?? file;
+
+			for (const event of events) {
+				if (event.kind === 'content') continue; // Skip content events in global feed
+
+				let commitGroup = commitMap.get(event.hash);
+				if (!commitGroup) {
+					commitGroup = {
+						hash: event.hash,
+						shortHash: event.shortHash,
+						date: event.date,
+						message: event.message,
+						entities: [],
+					};
+					commitMap.set(event.hash, commitGroup);
+				}
+				commitGroup.entities.push({ id: String(entityId), event });
+			}
+		}
+
+		// Sort commits newest-first, apply limit
+		const sortedCommits = [...commitMap.values()]
+			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+			.slice(0, limit);
+
+		const commitItems = sortedCommits.map(commit => {
+			const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [formatHistoryDate(commit.date)]);
+
+			const hashAttrs: Record<string, any> = { class: 'rf-plan-history__hash' };
+			let hashTag: InstanceType<typeof Tag>;
+			if (data.repositoryUrl) {
+				hashTag = new Tag('a', {
+					class: 'rf-plan-history__hash',
+					href: `${data.repositoryUrl}/commit/${commit.hash}`,
+				}, [commit.shortHash]);
+			} else {
+				hashTag = new Tag('code', hashAttrs, [commit.shortHash]);
+			}
+
+			const messageTag = new Tag('span', { class: 'rf-plan-history__commit-message' }, [commit.message]);
+
+			const entitySummaries = commit.entities.map(({ id, event }) => {
+				const parts: string[] = [];
+				if (event.kind === 'created') {
+					const attrs = event.initialAttributes ?? {};
+					const vals = Object.entries(attrs).filter(([k]) => k !== 'id' && k !== 'name').map(([, v]) => v);
+					parts.push(`Created (${vals.join(', ')})`);
+				}
+				if (event.attributeChanges) {
+					for (const c of event.attributeChanges) {
+						if (c.from === null) parts.push(`${c.field}: +${c.to}`);
+						else if (c.to === null) parts.push(`${c.field}: -${c.from}`);
+						else parts.push(`${c.field}: ${c.from} → ${c.to}`);
+					}
+				}
+				if (event.criteriaChanges && event.criteriaChanges.length > 0) {
+					const checked = event.criteriaChanges.filter(c => c.action === 'checked').length;
+					const total = event.criteriaChanges.length;
+					parts.push(`☑ ${checked}/${total}`);
+				}
+				if (event.kind === 'resolution') parts.push('Resolution recorded');
+
+				return new Tag('div', { class: 'rf-plan-history__entity-summary' }, [
+					new Tag('span', { class: 'rf-plan-history__entity-id' }, [id]),
+					new Tag('span', { class: 'rf-plan-history__entity-changes' }, [parts.join(', ')]),
+				]);
+			});
+
+			return new Tag('li', { class: 'rf-plan-history__event' }, [
+				dateTag, hashTag, messageTag,
+				new Tag('div', { class: 'rf-plan-history__changes' }, entitySummaries),
+			]);
+		});
+
+		listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' },
+			commitItems.length > 0 ? commitItems : [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
+		);
+	}
+
+	const attrs = { ...tag.attributes };
+	if (isGlobal) {
+		attrs.class = ((attrs.class ?? '') + ' rf-plan-history--global').trim();
+	}
+
+	const newChildren = tag.children.filter(
+		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
+			c.attributes['data-field'] === PLAN_HISTORY_SENTINEL ||
+			c.attributes['data-name'] === 'events' ||
+			c.attributes['data-name'] === 'items'
+		)),
+	);
+	newChildren.push(listContent);
+
+	return new Tag(tag.name, attrs, newChildren as any[]);
+}
+
 const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'depends-on': 2, 'dependency-of': 3, 'implements': 4, 'implemented-by': 5, 'informs': 6, 'informed-by': 7, 'related': 8 };
 const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'depends-on': 'Depends on', 'dependency-of': 'Dependency of', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'informs': 'Informs', 'informed-by': 'Decisions', 'related': 'Related' };
 
@@ -1017,5 +1352,43 @@ function buildRelationshipsSection(
 	}, [
 		new Tag('h2', { class: 'rf-plan-relationships__heading' }, ['Relationships']),
 		...groups,
+	]);
+}
+
+/**
+ * Build an auto-injected History section for an entity page.
+ * Returns null for entities with only a single commit (created and never modified).
+ */
+function buildAutoHistorySection(
+	entityId: string,
+	data: PlanAggregatedData,
+): InstanceType<typeof Tag> | null {
+	// Find history events by matching the entity ID in the first event's attributes
+	let entityEvents: HistoryEvent[] = [];
+	for (const [, events] of data.history) {
+		if (events.length > 0 && events[0].initialAttributes) {
+			const eventId = events[0].initialAttributes.id ?? events[0].initialAttributes.name;
+			if (eventId === entityId) {
+				entityEvents = events;
+				break;
+			}
+		}
+	}
+
+	// Skip entities with only a single commit (creation only) — no meaningful history
+	if (entityEvents.length <= 1) return null;
+
+	// Build timeline (newest-first), limit to 20 events
+	const limited = [...entityEvents].reverse().slice(0, 20);
+	const items = limited.map(e => buildEventTag(e, data.repositoryUrl));
+
+	const list = new Tag('ol', { class: 'rf-plan-history__events' }, items);
+
+	return new Tag('section', {
+		class: 'rf-plan-history',
+		'data-name': 'history',
+	}, [
+		new Tag('h2', { class: 'rf-plan-history__heading' }, ['History']),
+		list,
 	]);
 }

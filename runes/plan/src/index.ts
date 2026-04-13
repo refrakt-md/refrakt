@@ -9,6 +9,7 @@ import { backlog } from './tags/backlog.js';
 import { decisionLog } from './tags/decision-log.js';
 import { planProgress } from './tags/plan-progress.js';
 import { planActivity } from './tags/plan-activity.js';
+import { planHistory } from './tags/plan-history.js';
 import { config } from './config.js';
 import { planPipelineHooks } from './pipeline.js';
 
@@ -130,6 +131,12 @@ Custom properties cascade naturally without JavaScript.
 			description: 'Recent activity feed sorted by file modification time',
 			reinterprets: {},
 			fixture: `{% plan-activity limit="10" /%}`,
+		},
+		'plan-history': {
+			transform: planHistory,
+			description: 'Git-native entity history timeline showing attribute transitions, criteria progress, and lifecycle events',
+			reinterprets: {},
+			fixture: `{% plan-history limit="20" /%}`,
 		},
 	},
 	theme: {

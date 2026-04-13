@@ -12,7 +12,7 @@ import type { HtmlTheme, PageShellOptions } from '@refrakt-md/html';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
-import { planPipelineHooks, setScannerDependencies, type PlanAggregatedData } from '../pipeline.js';
+import { planPipelineHooks, setScannerDependencies, setPlanDir, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
 import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
@@ -722,9 +722,9 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	// Progress summary
 	md += `{% plan-progress /%}\n\n`;
 
-	// Recent activity (placed high for quick access)
-	md += `## Recent Activity\n\n`;
-	md += `{% plan-activity limit="10" /%}\n\n`;
+	// Recent history (git-derived activity feed)
+	md += `## Recent History\n\n`;
+	md += `{% plan-history limit="15" /%}\n\n`;
 
 	// Active milestone — summary card only
 	if (activeMilestones.length > 0) {
@@ -1200,6 +1200,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		if (depRefs.length > 0) depMap.set(entityId, depRefs);
 	}
 	setScannerDependencies(depMap);
+	setPlanDir(dir);
 
 	const { registry } = createRegistry();
 	planPipelineHooks.register!(transformedPages, registry, ctx);
