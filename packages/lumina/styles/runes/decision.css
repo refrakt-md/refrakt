@@ -1,4 +1,16 @@
 /* Decision */
+
+/* Primary badges: ID left, status right */
+.rf-decision__header-primary {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+/* Secondary badges: pill row below title */
+.rf-decision__header-secondary {
+	margin-bottom: 1.5rem;
+}
+
 .rf-decision__body {
 	font-size: 0.925rem;
 	line-height: 1.65;

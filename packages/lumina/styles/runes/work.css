@@ -1,4 +1,16 @@
 /* Work */
+
+/* Primary badges: ID left, status right */
+.rf-work__header-primary {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+/* Secondary badges: pill row below title */
+.rf-work__header-secondary {
+	margin-bottom: 1.5rem;
+}
+
 .rf-work__assignee-badge {
 	margin-left: auto;
 }
@@ -28,8 +40,8 @@
 .rf-work__complexity-badge::after {
 	margin-left: 0.25rem;
 }
-[data-complexity="trivial"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●'; }
-[data-complexity="simple"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●'; }
-[data-complexity="moderate"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●●'; }
-[data-complexity="complex"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●●●'; }
-[data-complexity="unknown"] > .rf-work__header > .rf-work__complexity-badge::after { content: '?'; }
+[data-complexity="trivial"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●'; }
+[data-complexity="simple"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●'; }
+[data-complexity="moderate"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●'; }
+[data-complexity="complex"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●●'; }
+[data-complexity="unknown"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '?'; }

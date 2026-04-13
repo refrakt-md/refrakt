@@ -1,4 +1,16 @@
 /* Bug */
+
+/* Primary badges: ID left, status right */
+.rf-bug__header-primary {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+/* Secondary badges: pill row below title */
+.rf-bug__header-secondary {
+	margin-bottom: 1.5rem;
+}
+
 .rf-bug__assignee-badge {
 	margin-left: auto;
 }

@@ -3285,8 +3285,9 @@
 			"root": ".rf-spec",
 			"dataRune": "spec",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"header-primary",
+				"{content:body}",
+				"header-secondary"
 			],
 			"modifiers": {
 				"id": {
@@ -3324,49 +3325,54 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"header-primary": {
 					"tag": "div",
-					"selector": ".rf-spec__header",
+					"selector": ".rf-spec__header-primary",
 					"source": "structure"
 				},
 				"id-badge": {
 					"tag": "span",
 					"selector": ".rf-spec__id-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
 				},
 				"status-badge": {
 					"tag": "span",
 					"selector": ".rf-spec__status-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
+				},
+				"header-secondary": {
+					"tag": "div",
+					"selector": ".rf-spec__header-secondary",
+					"source": "structure"
 				},
 				"version-badge": {
 					"tag": "span",
 					"selector": ".rf-spec__version-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "version"
 				},
 				"supersedes-badge": {
 					"tag": "span",
 					"selector": ".rf-spec__supersedes-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "supersedes"
 				},
 				"created-badge": {
 					"tag": "time",
 					"selector": ".rf-spec__created-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "created"
 				},
 				"modified-badge": {
 					"tag": "time",
 					"selector": ".rf-spec__modified-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "modified"
 				},
 				"body": {
@@ -3374,15 +3380,21 @@
 					"selector": ".rf-spec__body",
 					"source": "contentWrapper"
 				}
-			}
+			},
+			"slots": [
+				"header-primary",
+				"content",
+				"header-secondary"
+			]
 		},
 		"Work": {
 			"block": "work",
 			"root": ".rf-work",
 			"dataRune": "work",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"header-primary",
+				"{content:body}",
+				"header-secondary"
 			],
 			"modifiers": {
 				"id": {
@@ -3434,68 +3446,73 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"header-primary": {
 					"tag": "div",
-					"selector": ".rf-work__header",
+					"selector": ".rf-work__header-primary",
 					"source": "structure"
 				},
 				"id-badge": {
 					"tag": "span",
 					"selector": ".rf-work__id-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
 				},
 				"status-badge": {
 					"tag": "span",
 					"selector": ".rf-work__status-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
+				},
+				"header-secondary": {
+					"tag": "div",
+					"selector": ".rf-work__header-secondary",
+					"source": "structure"
 				},
 				"priority-badge": {
 					"tag": "span",
 					"selector": ".rf-work__priority-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-secondary"
 				},
 				"complexity-badge": {
 					"tag": "span",
 					"selector": ".rf-work__complexity-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-secondary"
 				},
 				"assignee-badge": {
 					"tag": "span",
 					"selector": ".rf-work__assignee-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "assignee"
 				},
 				"milestone-badge": {
 					"tag": "span",
 					"selector": ".rf-work__milestone-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "milestone"
 				},
 				"source-badge": {
 					"tag": "span",
 					"selector": ".rf-work__source-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "source"
 				},
 				"created-badge": {
 					"tag": "time",
 					"selector": ".rf-work__created-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "created"
 				},
 				"modified-badge": {
 					"tag": "time",
 					"selector": ".rf-work__modified-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "modified"
 				},
 				"body": {
@@ -3503,15 +3520,21 @@
 					"selector": ".rf-work__body",
 					"source": "contentWrapper"
 				}
-			}
+			},
+			"slots": [
+				"header-primary",
+				"content",
+				"header-secondary"
+			]
 		},
 		"Bug": {
 			"block": "bug",
 			"root": ".rf-bug",
 			"dataRune": "bug",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"header-primary",
+				"{content:body}",
+				"header-secondary"
 			],
 			"modifiers": {
 				"id": {
@@ -3557,62 +3580,67 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"header-primary": {
 					"tag": "div",
-					"selector": ".rf-bug__header",
+					"selector": ".rf-bug__header-primary",
 					"source": "structure"
 				},
 				"id-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__id-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
 				},
 				"status-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__status-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
+				},
+				"header-secondary": {
+					"tag": "div",
+					"selector": ".rf-bug__header-secondary",
+					"source": "structure"
 				},
 				"severity-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__severity-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-secondary"
 				},
 				"assignee-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__assignee-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "assignee"
 				},
 				"milestone-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__milestone-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "milestone"
 				},
 				"source-badge": {
 					"tag": "span",
 					"selector": ".rf-bug__source-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "source"
 				},
 				"created-badge": {
 					"tag": "time",
 					"selector": ".rf-bug__created-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "created"
 				},
 				"modified-badge": {
 					"tag": "time",
 					"selector": ".rf-bug__modified-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "modified"
 				},
 				"body": {
@@ -3620,15 +3648,21 @@
 					"selector": ".rf-bug__body",
 					"source": "contentWrapper"
 				}
-			}
+			},
+			"slots": [
+				"header-primary",
+				"content",
+				"header-secondary"
+			]
 		},
 		"Decision": {
 			"block": "decision",
 			"root": ".rf-decision",
 			"dataRune": "decision",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"header-primary",
+				"{content:body}",
+				"header-secondary"
 			],
 			"modifiers": {
 				"id": {
@@ -3668,56 +3702,61 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"header-primary": {
 					"tag": "div",
-					"selector": ".rf-decision__header",
+					"selector": ".rf-decision__header-primary",
 					"source": "structure"
 				},
 				"id-badge": {
 					"tag": "span",
 					"selector": ".rf-decision__id-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
 				},
 				"status-badge": {
 					"tag": "span",
 					"selector": ".rf-decision__status-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
+				},
+				"header-secondary": {
+					"tag": "div",
+					"selector": ".rf-decision__header-secondary",
+					"source": "structure"
 				},
 				"date-badge": {
 					"tag": "time",
 					"selector": ".rf-decision__date-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "date"
 				},
 				"supersedes-badge": {
 					"tag": "span",
 					"selector": ".rf-decision__supersedes-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "supersedes"
 				},
 				"source-badge": {
 					"tag": "span",
 					"selector": ".rf-decision__source-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "source"
 				},
 				"created-badge": {
 					"tag": "time",
 					"selector": ".rf-decision__created-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "created"
 				},
 				"modified-badge": {
 					"tag": "time",
 					"selector": ".rf-decision__modified-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "modified"
 				},
 				"body": {
@@ -3725,15 +3764,21 @@
 					"selector": ".rf-decision__body",
 					"source": "contentWrapper"
 				}
-			}
+			},
+			"slots": [
+				"header-primary",
+				"content",
+				"header-secondary"
+			]
 		},
 		"Milestone": {
 			"block": "milestone",
 			"root": ".rf-milestone",
 			"dataRune": "milestone",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"header-primary",
+				"{content:body}",
+				"header-secondary"
 			],
 			"modifiers": {
 				"name": {
@@ -3761,42 +3806,47 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"header-primary": {
 					"tag": "div",
-					"selector": ".rf-milestone__header",
+					"selector": ".rf-milestone__header-primary",
 					"source": "structure"
 				},
 				"name-badge": {
 					"tag": "span",
 					"selector": ".rf-milestone__name-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
 				},
 				"status-badge": {
 					"tag": "span",
 					"selector": ".rf-milestone__status-badge",
 					"source": "structure",
-					"parent": "header"
+					"parent": "header-primary"
+				},
+				"header-secondary": {
+					"tag": "div",
+					"selector": ".rf-milestone__header-secondary",
+					"source": "structure"
 				},
 				"target-badge": {
 					"tag": "time",
 					"selector": ".rf-milestone__target-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "target"
 				},
 				"created-badge": {
 					"tag": "time",
 					"selector": ".rf-milestone__created-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "created"
 				},
 				"modified-badge": {
 					"tag": "time",
 					"selector": ".rf-milestone__modified-badge",
 					"source": "structure",
-					"parent": "header",
+					"parent": "header-secondary",
 					"condition": "modified"
 				},
 				"body": {
@@ -3804,7 +3854,12 @@
 					"selector": ".rf-milestone__body",
 					"source": "contentWrapper"
 				}
-			}
+			},
+			"slots": [
+				"header-primary",
+				"content",
+				"header-secondary"
+			]
 		},
 		"Backlog": {
 			"block": "backlog",

@@ -1,4 +1,4 @@
-{% work id="WORK-141" status="ready" priority="medium" complexity="moderate" tags="plan, transform, config, identity-transform" %}
+{% work id="WORK-141" status="done" priority="medium" complexity="moderate" tags="plan, transform, config, identity-transform" %}
 
 # Split plan entity header into primary badges, title, secondary badges
 
@@ -13,18 +13,18 @@ Currently all badges are grouped in a single `header` structure entry with `befo
 
 ## Acceptance Criteria
 
-- [ ] Plan entity rune configs use `slots` to define assembly order: `['header-primary', 'content', 'header-secondary']`
-- [ ] Primary badges (id, status) are assigned to the `header-primary` slot with id on the left and status on the right (justify-between)
-- [ ] Secondary badges (priority, complexity, assignee, milestone, source, created, modified, etc.) are assigned to the `header-secondary` slot
-- [ ] Title (h1 from body content) renders between the two badge groups
-- [ ] All five entity types (spec, work, bug, decision, milestone) are updated consistently
-- [ ] Primary badges render without label text (labelHidden), matching backlog card style
-- [ ] Secondary badges retain their current label + value rendering
-- [ ] Backlog cards remain unchanged (they build their own structure in pipeline.ts)
-- [ ] BEM classes follow the pattern: `.rf-work__header-primary`, `.rf-work__header-secondary`
-- [ ] CSS in Lumina updated to style the split header layout (primary badges inline, title prominent, secondary badges as pills/row)
-- [ ] Existing CSS coverage tests pass
-- [ ] Contracts regenerated
+- [x] Plan entity rune configs use `slots` to define assembly order: `['header-primary', 'content', 'header-secondary']`
+- [x] Primary badges (id, status) are assigned to the `header-primary` slot with id on the left and status on the right (justify-between)
+- [x] Secondary badges (priority, complexity, assignee, milestone, source, created, modified, etc.) are assigned to the `header-secondary` slot
+- [x] Title (h1 from body content) renders between the two badge groups
+- [x] All five entity types (spec, work, bug, decision, milestone) are updated consistently
+- [x] Primary badges render without label text (labelHidden), matching backlog card style
+- [x] Secondary badges retain their current label + value rendering
+- [x] Backlog cards remain unchanged (they build their own structure in pipeline.ts)
+- [x] BEM classes follow the pattern: `.rf-work__header-primary`, `.rf-work__header-secondary`
+- [x] CSS in Lumina updated to style the split header layout (primary badges inline, title prominent, secondary badges as pills/row)
+- [x] Existing CSS coverage tests pass
+- [x] Contracts regenerated
 
 ## Dependencies
 
@@ -67,5 +67,24 @@ Each rune type has different secondary badges:
 - `packages/transform/src/engine.ts` — `assembleWithSlots` implementation
 - `runes/plan/src/pipeline.ts` — backlog card builder (reference for primary/secondary badge pattern)
 - `packages/lumina/styles/runes/work.css` — current work rune CSS
+
+## Resolution
+
+Completed: 2026-04-13
+
+Branch: `claude/implement-work-141-rpJ3J`
+
+### What was done
+- Split the single `header` structure entry into `header-primary` and `header-secondary` for all 5 plan entity rune configs (Spec, Work, Bug, Decision, Milestone) in `runes/plan/src/config.ts`
+- Added `slots: ['header-primary', 'content', 'header-secondary']` to each entity config so the engine assembles: primary badges → body content (title) → secondary badges
+- Primary badges (id/name + status) use `labelHidden: true` matching backlog card style; secondary badges retain labels
+- Updated CSS in `packages/lumina/styles/runes/` for all 5 entity types: header-primary gets `justify-content: space-between`, header-secondary gets appropriate margin
+- Updated complexity dots selectors in work.css to reference `header-secondary` instead of `header`
+- Regenerated `contracts/structures.json`
+
+### Notes
+- No engine changes were needed — the existing `assembleWithSlots` function handles all the slot-based ordering
+- Backlog cards are unaffected since they build their own structure in `pipeline.ts`
+- Both header-primary and header-secondary get `data-section="header"` from the sections map, so the generic section dimension CSS (flex row, wrap, gap) applies to both
 
 {% /work %}

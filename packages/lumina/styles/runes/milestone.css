@@ -1,4 +1,16 @@
 /* Milestone */
+
+/* Primary badges: name left, status right */
+.rf-milestone__header-primary {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+/* Secondary badges: pill row below title */
+.rf-milestone__header-secondary {
+	margin-bottom: 1.5rem;
+}
+
 .rf-milestone__target-badge {
 	margin-left: auto;
 }
