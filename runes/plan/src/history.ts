@@ -516,9 +516,14 @@ export function readHistoryCache(planDir: string): HistoryCache {
 
 /**
  * Write the history cache to disk.
+ * Silently skips if the directory doesn't exist or writing fails.
  */
 export function writeHistoryCache(planDir: string, cache: HistoryCache): void {
-	writeFileSync(join(planDir, HISTORY_CACHE_FILENAME), JSON.stringify(cache, null, '\t') + '\n');
+	try {
+		writeFileSync(join(planDir, HISTORY_CACHE_FILENAME), JSON.stringify(cache, null, '\t') + '\n');
+	} catch {
+		// Non-critical — cache will be rebuilt next time
+	}
 }
 
 /**
