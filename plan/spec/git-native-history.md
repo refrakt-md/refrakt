@@ -269,55 +269,98 @@ The rune follows the established self-closing aggregation rune pattern:
 
 ## Rendering
 
+### Visual language
+
+The plan-history rune draws from two existing rune visual conventions:
+
+**Timeline structure** — from the `timeline` rune (`@refrakt-md/business`). The outer layout follows the same vertical connected-line pattern: an `<ol>` of entries with a left border line (`2px solid`), circular markers (`0.75rem` diameter) at each event, `<time>` elements for dates, and content indented to the right. This is the established visual language for temporal sequences in the design system. Plan-history adopts the same proportions and token references (`--rf-color-border`, `--rf-color-primary` for markers) but under its own `.rf-plan-history` BEM namespace, so the plan package remains self-contained without depending on `@refrakt-md/business`.
+
+**Diff colouring** — from the `diff` rune (core). Attribute changes use the same `data-type="add|remove"` convention and background tints (`rgba(63, 185, 80, 0.15)` for additions, `rgba(248, 81, 73, 0.15)` for removals) that the diff rune uses for added/removed lines. This gives "status: ~~blocked~~ → **ready**" the same visual weight and meaning as a code diff — red for what was, green for what is. The design tokens are shared, not duplicated.
+
+If a third consumer of the vertical connected-timeline pattern emerges, the shared structure (border line, markers, spacing, `<time>` element conventions) should be extracted into a lumina layout primitive. For now, two consumers with aligned conventions is sufficient.
+
 ### Per-entity timeline
 
 ```
-┌─ Apr 12 ─────────────────────────────────── a295513 ─┐
-│  status: ready → done                                 │
-│  ☑ knownSections supported in content model framework │
-│  ☑ Work rune declares known sections with aliases     │
-│  ☑ Bug rune declares known sections with aliases      │
-│  … (+5 more criteria)                                 │
-├─ Apr 12 ─────────────────────────────────── 1676387 ─┤
-│  status: blocked → ready                              │
-│  priority: low → medium                               │
-│  source: +SPEC-037                                    │
-├─ Apr 10 ─────────────────────────────────── f262d7b ─┤
-│  source: +SPEC-003, +SPEC-021                         │
-├─ Apr 08 ─────────────────────────────────── da12420 ─┤
-│  Created (blocked, low, moderate)                     │
-└───────────────────────────────────────────────────────┘
+  ● Apr 12 ······································ a295513
+  │ status: ready → done
+  │ ☑ knownSections supported in content model framework
+  │ ☑ Work rune declares known sections with aliases
+  │ ☑ Bug rune declares known sections with aliases
+  │ … (+5 more criteria)
+  │
+  ● Apr 12 ······································ 1676387
+  │ status: blocked → ready
+  │ priority: low → medium
+  │ source: +SPEC-037
+  │
+  ● Apr 10 ······································ f262d7b
+  │ source: +SPEC-003, +SPEC-021
+  │
+  ○ Apr 08 ······································ da12420
+    Created (blocked, low, moderate)
 ```
 
-BEM structure: `.rf-plan-history`, `.rf-plan-history__event`, `.rf-plan-history__date`, `.rf-plan-history__hash`, `.rf-plan-history__change`, `.rf-plan-history__criteria`.
+HTML structure:
 
-Status transition changes use the existing sentiment colour system — `done` gets positive styling, `blocked` gets negative, transitions show the "to" sentiment.
+```html
+<section class="rf-plan-history" data-rune="plan-history">
+  <ol class="rf-plan-history__events">
+    <li class="rf-plan-history__event">
+      <time class="rf-plan-history__date">Apr 12</time>
+      <code class="rf-plan-history__hash">a295513</code>
+      <div class="rf-plan-history__changes">
+        <span class="rf-plan-history__change">
+          <span class="rf-plan-history__field">status</span>
+          <span class="rf-plan-history__value" data-type="remove">ready</span>
+          <span class="rf-plan-history__arrow">→</span>
+          <span class="rf-plan-history__value" data-type="add">done</span>
+        </span>
+        <ul class="rf-plan-history__criteria">
+          <li data-action="checked">☑ knownSections supported in …</li>
+          <!-- ... -->
+        </ul>
+      </div>
+    </li>
+    <!-- ... more events -->
+  </ol>
+</section>
+```
+
+Key details:
+
+- `<ol>` with left border and circle markers, matching the timeline rune's vertical connected layout
+- Filled circle (`●`) for events with structured changes; open circle (`○`) for creation events — mirrors the timeline rune's marker style with a semantic distinction
+- Attribute values use `data-type="add|remove"` for diff-style background tinting, matching the diff rune's convention
+- `<time>` elements for dates, matching the timeline rune's semantic HTML
+- `<code>` for commit hashes, monospace and subdued — links to the hosting platform when a repository URL is configured
+- Status transition changes use the existing sentiment colour system — `done` gets positive styling, `blocked` gets negative, transitions show the "to" sentiment
 
 When more than 3 criteria change in a single event, the list is collapsed with a "+N more criteria" summary to keep timelines compact. The collapsed items are still present in the DOM for accessibility.
 
 ### Global feed (commit-grouped)
 
 ```
-┌─ Apr 12 ─── a295513 ─────────────────────────────────┐
-│  Mark all SPEC-037 work items done                    │
-│                                                       │
-│  WORK-024  status: ready → done  (☑ 8/8)             │
-│  WORK-127  status: ready → done  (☑ 3/3)             │
-│  WORK-128  status: ready → done  (☑ 4/4)             │
-│  … (+3 more entities)                                 │
-├─ Apr 12 ─── 1676387 ─────────────────────────────────┤
-│  Accept SPEC-037 and break into work items            │
-│                                                       │
-│  SPEC-037  status: draft → accepted                   │
-│  WORK-024  status: blocked → ready                    │
-│  WORK-127  Created (ready, high, simple)              │
-│  … (+3 more entities)                                 │
-└───────────────────────────────────────────────────────┘
+  ● Apr 12 ── a295513
+  │ Mark all SPEC-037 work items done
+  │
+  │ WORK-024  status: ready → done  (☑ 8/8)
+  │ WORK-127  status: ready → done  (☑ 3/3)
+  │ WORK-128  status: ready → done  (☑ 4/4)
+  │ … (+3 more entities)
+  │
+  ● Apr 12 ── 1676387
+  │ Accept SPEC-037 and break into work items
+  │
+  │ SPEC-037  status: draft → accepted
+  │ WORK-024  status: blocked → ready
+  │ WORK-127  Created (ready, high, simple)
+  │ … (+3 more entities)
 ```
 
-BEM structure: `.rf-plan-history--global`, `.rf-plan-history__commit`, `.rf-plan-history__commit-message`, `.rf-plan-history__entity-group`.
+The global feed uses the same timeline structure but each entry represents a commit rather than a single-entity event. The commit message is displayed as the entry's primary content, with affected entities listed below as compact summary lines. Entity IDs link to the entity's page when source URLs are available.
 
-Entity IDs in the global feed link to the entity's page when source URLs are available.
+BEM additions for global mode: `.rf-plan-history--global`, `.rf-plan-history__commit-message`, `.rf-plan-history__entity-summary`.
 
 -----
 
