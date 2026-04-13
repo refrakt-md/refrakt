@@ -4,7 +4,7 @@
 
 Restructure the identity transform config for plan entity runes (spec, work, bug, decision, milestone) so the header badges are split into two groups around the title, matching the visual hierarchy already used by backlog cards:
 
-1. **Primary badges** (id, status) — above the title, minimal chrome
+1. **Primary badges** (id on the left, status on the right, justify-between) — above the title, minimal chrome, matching the backlog card header layout
 2. **Title** (h1) — prominent, between the badge groups
 3. **Secondary badges** (priority, complexity, milestone, assignee, source, dates, etc.) — below the title
 4. **Tabs / body content** — below the secondary badges
@@ -14,7 +14,7 @@ Currently all badges are grouped in a single `header` structure entry with `befo
 ## Acceptance Criteria
 
 - [ ] Plan entity rune configs use `slots` to define assembly order: `['header-primary', 'content', 'header-secondary']`
-- [ ] Primary badges (id, status) are assigned to the `header-primary` slot
+- [ ] Primary badges (id, status) are assigned to the `header-primary` slot with id on the left and status on the right (justify-between)
 - [ ] Secondary badges (priority, complexity, assignee, milestone, source, created, modified, etc.) are assigned to the `header-secondary` slot
 - [ ] Title (h1 from body content) renders between the two badge groups
 - [ ] All five entity types (spec, work, bug, decision, milestone) are updated consistently
@@ -48,7 +48,7 @@ The engine's `assembleWithSlots` function handles the ordering — primary badge
 ### CSS changes (`packages/lumina/styles/runes/`)
 
 Update the per-rune CSS files (work.css, spec.css, bug.css, decision.css) to style the split layout:
-- `.rf-work__header-primary` — flex row, minimal spacing, id + status as compact inline badges
+- `.rf-work__header-primary` — flex row with `justify-content: space-between`, id on the left and status on the right (matching backlog card header layout)
 - `.rf-work__header-secondary` — flex row with wrap, pill-style badges with labels
 
 ### Variant-specific badges
