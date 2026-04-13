@@ -144,6 +144,9 @@ const SPEC_STATUS_SENTIMENT: Record<string, string> = {
 const DECISION_STATUS_SENTIMENT: Record<string, string> = {
 	proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative',
 };
+const MILESTONE_STATUS_SENTIMENT: Record<string, string> = {
+	planning: 'neutral', active: 'positive', complete: 'positive',
+};
 
 /** Build a metadata badge matching the dimension system output */
 function buildMetaBadge(label: string, value: string, opts: {
@@ -163,10 +166,10 @@ function buildMetaBadge(label: string, value: string, opts: {
 
 /** Build a compact summary card Tag for any plan entity */
 function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
-	const id = String(entity.data.id ?? entity.id);
+	const type = entity.type;
+	const id = String(type === 'milestone' ? (entity.data.name ?? entity.id) : (entity.data.id ?? entity.id));
 	const title = String(entity.data.title ?? '');
 	const status = String(entity.data.status ?? '');
-	const type = entity.type;
 
 	// Header: ID on the left, status + progress on the right
 	const headerLeft: any[] = [
@@ -178,6 +181,7 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 		: type === 'bug' ? BUG_STATUS_SENTIMENT[status]
 		: type === 'spec' ? SPEC_STATUS_SENTIMENT[status]
 		: type === 'decision' ? DECISION_STATUS_SENTIMENT[status]
+		: type === 'milestone' ? MILESTONE_STATUS_SENTIMENT[status]
 		: undefined;
 	headerRight.push(buildMetaBadge('Status:', status, { metaType: 'status', metaRank: 'primary', sentiment: statusSentiment, labelHidden: true }));
 
@@ -216,6 +220,9 @@ function buildEntityCard(entity: EntityRegistration): InstanceType<typeof Tag> {
 	} else if (type === 'decision') {
 		const date = String(entity.data.date ?? '');
 		if (date) footerBadges.push(buildMetaBadge('Date:', date, { metaType: 'temporal', metaRank: 'secondary' }));
+	} else if (type === 'milestone') {
+		const target = String(entity.data.target ?? '');
+		if (target) footerBadges.push(buildMetaBadge('Target:', target, { metaType: 'temporal', metaRank: 'secondary' }));
 	}
 
 	const milestone = String(entity.data.milestone ?? '');
