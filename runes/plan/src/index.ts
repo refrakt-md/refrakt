@@ -153,4 +153,5 @@ Custom properties cascade naturally without JavaScript.
 export default plan;
 
 export { planPipelineHooks } from './pipeline.js';
-export type { PlanEntity, PlanRuneType, Criterion, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
+export { parseFileContent, scanPlanSources } from './scanner.js';
+export type { PlanEntity, PlanRuneType, Criterion, FileSource, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';

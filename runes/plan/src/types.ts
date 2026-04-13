@@ -49,6 +49,16 @@ export interface PlanEntity {
 	mtime?: number;
 }
 
+/** A file provided as content rather than read from disk — for use with scanPlanSources() */
+export interface FileSource {
+	/** Relative path (e.g. "work/WORK-042.md") */
+	path: string;
+	/** Full file content */
+	content: string;
+	/** Optional modification time in ms since epoch (e.g. from a git commit timestamp) */
+	mtime?: number;
+}
+
 export interface ScanCacheEntry {
 	/** File modification time (ms since epoch) */
 	mtime: number;

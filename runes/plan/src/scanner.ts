@@ -4,7 +4,7 @@ import { getGitTimestamps } from '@refrakt-md/content';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import { escapeFenceTags } from '@refrakt-md/runes';
-import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScopedRef, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
+import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScopedRef, ScanCache, ScanCacheEntry, ScanOptions, FileSource } from './types.js';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
 const REF_TAG_NAMES = new Set<string>(['ref', 'xref']);
@@ -219,9 +219,8 @@ function extractScopedRefs(planTag: Node, runeType: string): { scopedRefs: Scope
 	return { scopedRefs: deduped, knownSectionsPresent };
 }
 
-/** Parse a single file and return PlanEntity if it contains a plan rune, or null */
-export function parseFile(filePath: string, relPath: string): PlanEntity | null {
-	const source = readFileSync(filePath, 'utf8');
+/** Parse plan content from a string and return PlanEntity if it contains a plan rune, or null */
+export function parseFileContent(source: string, relPath: string): PlanEntity | null {
 	const ast = Markdoc.parse(escapeFenceTags(source));
 
 	// Find the first plan rune tag at the top level
@@ -247,6 +246,12 @@ export function parseFile(filePath: string, relPath: string): PlanEntity | null 
 	const resolution = extractResolution(source, startLine, endLine);
 
 	return { file: relPath, type: runeType, attributes, title, criteria, refs, scopedRefs, knownSectionsPresent, resolution };
+}
+
+/** Parse a single file from disk and return PlanEntity if it contains a plan rune, or null */
+export function parseFile(filePath: string, relPath: string): PlanEntity | null {
+	const source = readFileSync(filePath, 'utf8');
+	return parseFileContent(source, relPath);
 }
 
 /** Read the cache file, returning an empty cache if it doesn't exist or is invalid */
@@ -326,5 +331,22 @@ export function scanPlanFiles(dir: string, options: ScanOptions = {}): PlanEntit
 		writeCache(dir, newCache);
 	}
 
+	return entities;
+}
+
+/**
+ * Scan plan entities from pre-fetched file contents.
+ * Use this when files come from an external source (e.g. GitHub API)
+ * rather than the local filesystem.
+ */
+export function scanPlanSources(sources: FileSource[]): PlanEntity[] {
+	const entities: PlanEntity[] = [];
+	for (const source of sources) {
+		const entity = parseFileContent(source.content, source.path);
+		if (entity) {
+			entity.mtime = source.mtime;
+			entities.push(entity);
+		}
+	}
 	return entities;
 }
