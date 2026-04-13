@@ -64,10 +64,12 @@
 	display: none;
 }
 
-/* Remove top margin from relationships/history sections when inside a tab panel */
+/* Remove top margin, padding, and border from relationships/history sections when inside a tab panel */
 .rf-plan-entity-tabs__panel .rf-plan-relationships,
 .rf-plan-entity-tabs__panel .rf-plan-history {
 	margin-block-start: 0;
+	padding-block-start: 0;
+	border-block-start: none;
 }
 
 /* ---- TOC dimming when non-Overview tab is active ---- */
