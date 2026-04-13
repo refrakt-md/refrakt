@@ -364,29 +364,22 @@ BEM additions for global mode: `.rf-plan-history--global`, `.rf-plan-history__co
 
 -----
 
-## Open Questions
+## Decisions
 
 ### 1. Criteria collapse threshold
 
-When an event checks off many criteria (e.g., 8 at once), how many should display before collapsing? Proposed: show first 3, collapse the rest with "+N more". But for entities with exactly 4–5 criteria total, collapsing feels wrong — all of them matter. Alternative: collapse at >5, or don't collapse at all in per-entity mode (only collapse in global feed where space is tighter).
+Show first 3 criteria, collapse the rest with "+N more criteria". This keeps timelines scannable when an event checks off 8+ criteria at once, while still showing enough detail to understand what happened. The collapsed items remain in the DOM for accessibility and can be expanded. In the global feed, criteria are always summarised as a count (`☑ 8/8`) rather than listed individually.
 
 ### 2. Content-only event visibility
 
-When a file changes but no attributes or criteria changed (body edits, ref tag conversions, section rewrites), should the `content` event appear in the timeline? Arguments for: completeness, every commit is visible. Arguments against: noise — "Backfill source attributes on all 123 work items" might produce 120 `content` events for files where only `source=` was added (which IS captured as an attribute change) plus others that only had body ref conversions.
-
-Proposed: show `content` events in per-entity mode (where completeness matters) but omit them from the global feed (where they're noise). The `--all` CLI flag could override this.
+Show `content` events (body edits with no attribute/criteria/resolution change) in per-entity mode for completeness — every commit that touched the file appears in its timeline. Omit them from the global feed where they'd be noise. The CLI `--all` flag overrides this, showing content events in global mode when explicitly requested.
 
 ### 3. Repository URL configuration
 
-Commit hashes in the site rune should link to the commit on the hosting platform (e.g., `https://github.com/org/repo/commit/abc1234`). Where does the repository URL come from? Options:
-- `git remote get-url origin` (parsed at build time)
-- A `repository` field in `refrakt.config.json`
-- A `repo` attribute on the `plan-history` rune itself
-
-Proposed: parse from `git remote` with config override. This matches how most tools handle it.
+Parse from `git remote get-url origin` at build time, with a `repository` field in `refrakt.config.json` as override. The git remote approach works automatically for most setups; the config override handles cases where the remote URL is SSH, uses a non-standard host, or needs a different base URL (e.g., self-hosted GitLab). The URL is parsed once during the aggregate phase and reused for all commit links.
 
 ### 4. Rename/move tracking
 
-`git log --follow` tracks file renames. If a work item file is renamed (e.g., fixing a typo in the filename), should the history include pre-rename commits? Proposed: yes, always use `--follow`. The rename itself is not surfaced as an event — it's a filesystem concern, not a project management one.
+Always use `git log --follow` to track file history across renames. Pre-rename commits are included in the entity's timeline. The rename itself is not surfaced as an event — it's a filesystem concern, not a project management one. This ensures entity history is complete even when files are reorganised.
 
 {% /spec %}
