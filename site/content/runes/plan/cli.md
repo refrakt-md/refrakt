@@ -233,6 +233,77 @@ refrakt plan init --dir planning
 - Example work item, spec, and decision files
 - Appends workflow instructions to `CLAUDE.md`
 
+## refrakt plan history
+
+View the git-derived lifecycle history for a single entity or for the entire project. Every status transition, priority change, criteria check-off, and resolution is extracted from consecutive git commits.
+
+### Single-entity mode
+
+```bash
+refrakt plan history WORK-024
+refrakt plan history SPEC-038 --limit 10
+refrakt plan history WORK-024 --format json
+```
+
+Shows a reverse-chronological timeline for a single entity: date, structured changes, and short commit hash.
+
+```
+WORK-024: Add knownSections to content model framework
+
+Apr 12  status: ready → done                              a295513
+        ☑ knownSections supported in the content model framework
+        ☑ Work rune declares known sections with aliases
+        ☑ Bug rune declares known sections with aliases
+Apr 12  status: blocked → ready                            1676387
+        priority: low → medium
+Apr 10  source: +SPEC-003, +SPEC-021                       f262d7b
+Apr 08  Created (blocked, low, moderate)                   da12420
+```
+
+### Global mode
+
+```bash
+refrakt plan history
+refrakt plan history --limit 20
+refrakt plan history --since 7d --type work --status done
+```
+
+Shows recent events across all entities, grouped by commit:
+
+```
+Apr 12  a295513  Mark all SPEC-037 work items done
+        WORK-024  status: ready → done  (☑ 8/8 criteria)
+        WORK-127  status: ready → done  (☑ 3/3 criteria)
+
+Apr 12  1676387  Accept SPEC-037 and break into work items
+        SPEC-037  status: draft → accepted
+        WORK-127  Created (ready, high, simple)
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `[id]` | Entity ID for single-entity mode. Omit for global feed. |
+| `--dir <path>` | Plan directory (default: `plan/`) |
+| `--limit <n>` | Maximum events/commits to show (default: `20`) |
+| `--since <duration\|date>` | Time filter: `7d`, `30d`, or ISO date. Passed to `git log --since`. |
+| `--type <types>` | Entity type filter: `work`, `spec`, `bug`, `decision` (comma-separated) |
+| `--author <name>` | Filter by commit author (substring match) |
+| `--status <status>` | Show only events where an entity transitioned to this status |
+| `--all` | Include content-only events in global mode (omitted by default) |
+| `--format json` | Output JSON instead of human-readable text |
+
+### Event kinds
+
+| Kind | Meaning |
+|------|---------|
+| `created` | Entity file first appeared |
+| `attributes` | Tag attributes changed (status, priority, etc.) |
+| `criteria` | Acceptance criteria checkboxes changed |
+| `resolution` | A `## Resolution` section was added or modified |
+| `content` | File changed but no structured diff detected |
+
 ## refrakt plan serve
 
 Browse your plan as an interactive dashboard with hot reload.

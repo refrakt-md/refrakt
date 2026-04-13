@@ -51,10 +51,11 @@ These runes use the cross-page pipeline to build site-wide views from your plan 
 | [decision-log](/runes/plan/decision-log) | Chronological view of architecture decision records |
 | [plan-progress](/runes/plan/plan-progress) | Progress summary showing status counts per entity type |
 | [plan-activity](/runes/plan/plan-activity) | Recent activity feed sorted by file modification time |
+| [plan-history](/runes/plan/plan-history) | Git-native entity history timeline derived from commits |
 
 ### CLI commands
 
-The plan package extends the `refrakt` CLI with 8 subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
+The plan package extends the `refrakt` CLI with 9 subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
 
 | Command | Purpose |
 |---------|---------|
@@ -64,6 +65,7 @@ The plan package extends the `refrakt` CLI with 8 subcommands under `refrakt pla
 | `refrakt plan create` | Scaffold new plan items from templates |
 | `refrakt plan validate` | Check plan structure for errors |
 | `refrakt plan init` | Initialize plan directory structure |
+| `refrakt plan history` | View git-derived entity and project history |
 | `refrakt plan serve` | Browse plan as an interactive dashboard |
 | `refrakt plan build` | Generate a static plan site |
 
