@@ -726,11 +726,10 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	md += `## Recent Activity\n\n`;
 	md += `{% plan-activity limit="10" /%}\n\n`;
 
-	// Active milestone(s) — rendered as a backlog, not the full milestone rune
-	for (const ms of activeMilestones) {
-		const name = ms.attributes.name;
+	// Active milestone — summary card only
+	if (activeMilestones.length > 0) {
 		md += `## Active Milestone\n\n`;
-		md += `{% backlog filter="milestone:${name}" sort="priority" group="status" /%}\n\n`;
+		md += `{% backlog filter="status:active" show="milestone" /%}\n\n`;
 	}
 
 	// Blocked items callout
