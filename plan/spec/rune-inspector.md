@@ -2,7 +2,7 @@
 
 # Rune Inspector — Transformation Pipeline Debugger for VS Code
 
-> `@refrakt-md/vscode`, `@refrakt-md/language-server`
+`@refrakt-md/vscode`, `@refrakt-md/language-server`
 
 ---
 

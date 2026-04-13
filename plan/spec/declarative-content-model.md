@@ -2,8 +2,8 @@
 
 # Declarative Content Model — Specification
 
-> Schema-driven content parsing that replaces per-rune `processChildren` methods
-> Alignment Specification, Media Runes Specification, Layout Specification
+Schema-driven content parsing that replaces per-rune `processChildren` methods
+Alignment Specification, Media Runes Specification, Layout Specification
 
 ---
 

@@ -17,6 +17,7 @@ export const milestone = createContentModelSchema({
 		type: 'sequence',
 		fields: [
 			{ name: 'title', match: 'heading', optional: true },
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'goals', match: 'list', optional: true },
 			{ name: 'notes', match: 'paragraph', optional: true, greedy: true },
 		],
@@ -24,6 +25,9 @@ export const milestone = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const titleNodes = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
+		);
+		const descNodes = new RenderableNodeCursor(
+			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
 		);
 		const goalsNodes = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.goals), config) as RenderableTreeNode[],
@@ -39,10 +43,9 @@ export const milestone = createContentModelSchema({
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
 		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
+		const title = titleNodes.count() > 0 ? titleNodes.wrap('header') : undefined;
+		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
 		const contentChildren: any[] = [];
-		if (titleNodes.count() > 0) {
-			contentChildren.push(titleNodes.wrap('header').next());
-		}
 		if (goalsNodes.count() > 0) {
 			contentChildren.push(goalsNodes.next());
 		}
@@ -61,9 +64,11 @@ export const milestone = createContentModelSchema({
 				modified: modifiedMeta,
 			},
 			refs: {
+				title: title?.tag('header'),
+				blurb,
 				body: bodyDiv,
 			},
-			children: [nameMeta, targetMeta, statusMeta, createdMeta, modifiedMeta, bodyDiv],
+			children: [nameMeta, targetMeta, statusMeta, createdMeta, modifiedMeta, ...(title ? [title.next()] : []), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

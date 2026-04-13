@@ -78,7 +78,7 @@ Also: `wontfix`, `duplicate`
 
 # Title
 
-> Brief summary of scope and purpose.
+Brief summary of scope and purpose.
 
 ## Section headings as needed
 Body content — prose, tables, code, diagrams. Freeform.

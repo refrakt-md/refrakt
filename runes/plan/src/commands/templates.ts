@@ -107,7 +107,7 @@ function specTemplate({ id, title, attrs }: TemplateOptions): string {
 
 # ${title}
 
-> Brief summary of scope and purpose.
+Brief summary of scope and purpose.
 
 ## Overview
 

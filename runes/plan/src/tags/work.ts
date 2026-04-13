@@ -74,14 +74,10 @@ export const work = createContentModelSchema({
 		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
 		const title = titleNodes.wrap('header');
-
-		const contentChildren: any[] = [];
-		if (descNodes.count() > 0) {
-			contentChildren.push(descNodes.wrap('div').next());
-		}
+		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
 
 		const sections = resolved.sections as any[];
-		contentChildren.push(...buildSections(sections, config));
+		const contentChildren = buildSections(sections, config);
 
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
@@ -101,9 +97,10 @@ export const work = createContentModelSchema({
 			},
 			refs: {
 				title: title.tag('header'),
+				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

@@ -2,7 +2,7 @@
 
 # Claude Code Skills and Hooks for Plan Workflow
 
-> Replace procedural CLAUDE.md instructions with Claude Code skills (custom slash commands) and hooks (automated enforcement) to make the plan workflow invocable, context-efficient, and enforceable.
+Replace procedural CLAUDE.md instructions with Claude Code skills (custom slash commands) and hooks (automated enforcement) to make the plan workflow invocable, context-efficient, and enforceable.
 
 ## Problem
 

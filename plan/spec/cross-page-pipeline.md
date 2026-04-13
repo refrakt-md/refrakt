@@ -2,8 +2,8 @@
 
 # Cross-Page Pipeline — Specification
 
-> Build pipeline phases, entity registry, content aggregation, post-processing hooks
-> Community Runes Specification, Storytelling Runes Specification
+Build pipeline phases, entity registry, content aggregation, post-processing hooks
+Community Runes Specification, Storytelling Runes Specification
 
 ---
 

@@ -164,7 +164,7 @@ Identical alignment in both browsers.
 {% spec id="SPEC-101" status="accepted" version="2.0" tags="tokens" %}
 # Design Token Architecture
 
-> Specification for the two-tier design token system: global tokens and component tokens.
+Specification for the two-tier design token system: global tokens and component tokens.
 
 ## Overview
 
@@ -178,7 +178,7 @@ All tokens use the `--rf-` prefix followed by category and name: `--rf-color-pri
 {% spec id="SPEC-102" status="review" tags="pipeline" %}
 # Cross-Package Entity References
 
-> Allow entities registered by one package to reference entities from another package.
+Allow entities registered by one package to reference entities from another package.
 
 ## Problem
 
@@ -192,7 +192,7 @@ Add a second pass in the pipeline's aggregate phase that resolves references acr
 {% spec id="SPEC-103" status="draft" tags="editor" %}
 # Block Editor Protocol
 
-> Define the protocol for structured editing of rune content in visual editors.
+Define the protocol for structured editing of rune content in visual editors.
 
 This specification is in early draft. It will define how editors discover rune schemas, present editing UI for rune attributes, and handle content model constraints.
 {% /spec %}

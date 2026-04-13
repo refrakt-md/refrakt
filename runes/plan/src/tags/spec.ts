@@ -19,7 +19,7 @@ export const spec = createContentModelSchema({
 		type: 'sequence',
 		fields: [
 			{ name: 'title', match: 'heading', optional: false },
-			{ name: 'summary', match: 'blockquote', optional: true },
+			{ name: 'summary', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'body', match: 'any', optional: true, greedy: true },
 		],
 	},
@@ -44,10 +44,8 @@ export const spec = createContentModelSchema({
 		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
 
 		const title = titleNodes.wrap('header');
+		const blurb = summaryNodes.count() > 0 ? summaryNodes.wrap('div').next() : undefined;
 		const contentChildren: any[] = [];
-		if (summaryNodes.count() > 0) {
-			contentChildren.push(summaryNodes.next());
-		}
 		if (bodyNodes.count() > 0) {
 			contentChildren.push(...bodyNodes.toArray());
 		}
@@ -66,9 +64,10 @@ export const spec = createContentModelSchema({
 			},
 			refs: {
 				title: title.tag('header'),
+				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, versionMeta, supersedesMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), bodyDiv],
+			children: [idMeta, statusMeta, versionMeta, supersedesMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

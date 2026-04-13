@@ -2,7 +2,7 @@
 
 # Plan Site via HTML Adapter
 
-> Refactor `plan serve` and `plan build` to render through `@refrakt-md/html` instead of a bespoke HTML pipeline, and introduce a `planLayout` in the transform layer.
+Refactor `plan serve` and `plan build` to render through `@refrakt-md/html` instead of a bespoke HTML pipeline, and introduce a `planLayout` in the transform layer.
 
 ## Problem
 

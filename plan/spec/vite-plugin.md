@@ -2,7 +2,7 @@
 
 # Vite Plugin — Framework-Agnostic Rune Integration
 
-> A standalone `@refrakt-md/vite` plugin that lets developers use refrakt runes in existing Vite-based projects without adopting the full refrakt site editor or routing system. Complements SPEC-030 (Framework Adapter System) by providing a lighter-weight, framework-agnostic entry point.
+A standalone `@refrakt-md/vite` plugin that lets developers use refrakt runes in existing Vite-based projects without adopting the full refrakt site editor or routing system. Complements SPEC-030 (Framework Adapter System) by providing a lighter-weight, framework-agnostic entry point.
 
 ## Problem
 

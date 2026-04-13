@@ -2,7 +2,7 @@
 
 # Plan Package Hardening
 
-> Fix bugs, close validation gaps, implement `knownSections` for plan runes, and add missing CLI capabilities — all before building the Claude Code plugin layer (SPEC-036).
+Fix bugs, close validation gaps, implement `knownSections` for plan runes, and add missing CLI capabilities — all before building the Claude Code plugin layer (SPEC-036).
 
 ## Problem
 

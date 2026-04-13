@@ -1,4 +1,26 @@
 /* Work */
+
+/* Primary badges: ID left, status right */
+.rf-work__header-primary {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+/* Preamble: title + optional blurb between badge groups */
+.rf-work__preamble {
+	margin-bottom: 0.75rem;
+}
+.rf-work__title h1,
+.rf-work__title h2,
+.rf-work__title h3 {
+	margin-top: 0;
+}
+
+/* Secondary badges: pill row below preamble */
+.rf-work__header-secondary {
+	margin-bottom: 1.5rem;
+}
+
 .rf-work__assignee-badge {
 	margin-left: auto;
 }
@@ -7,20 +29,12 @@
 	font-size: 0.925rem;
 	line-height: 1.65;
 }
-.rf-work__body > header {
-	margin-bottom: 0.75rem;
-}
-.rf-work__body > header h1,
-.rf-work__body > header h2,
-.rf-work__body > header h3 {
-	margin-top: 0;
-}
-.rf-work__body > div > section {
+.rf-work__body > section {
 	margin-top: 1rem;
 	padding-top: 0.75rem;
 	border-top: 1px solid var(--rf-color-border);
 }
-.rf-work__body > div > section:first-child {
+.rf-work__body > section:first-child {
 	margin-top: 0.75rem;
 }
 
@@ -28,8 +42,8 @@
 .rf-work__complexity-badge::after {
 	margin-left: 0.25rem;
 }
-[data-complexity="trivial"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●'; }
-[data-complexity="simple"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●'; }
-[data-complexity="moderate"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●●'; }
-[data-complexity="complex"] > .rf-work__header > .rf-work__complexity-badge::after { content: '●●●●'; }
-[data-complexity="unknown"] > .rf-work__header > .rf-work__complexity-badge::after { content: '?'; }
+[data-complexity="trivial"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●'; }
+[data-complexity="simple"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●'; }
+[data-complexity="moderate"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●'; }
+[data-complexity="complex"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●●'; }
+[data-complexity="unknown"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '?'; }

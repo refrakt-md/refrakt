@@ -2,7 +2,7 @@
 
 # Work Item Resolution Summaries
 
-> When a work item or bug is completed, append a structured Resolution section capturing what was done, linking to branches/PRs, and recording implementation notes. Designed for agent workflows where the completing agent's context is lost after the session ends.
+When a work item or bug is completed, append a structured Resolution section capturing what was done, linking to branches/PRs, and recording implementation notes. Designed for agent workflows where the completing agent's context is lost after the session ends.
 
 ## Problem
 
