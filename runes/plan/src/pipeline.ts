@@ -417,7 +417,7 @@ export const planPipelineHooks: PackagePipelineHooks = {
 		}
 	},
 
-	aggregate(registry) {
+	aggregate(registry, ctx) {
 		// Build bidirectional relationship index from ID references
 		const relationships = new Map<string, EntityRelationship[]>();
 
@@ -550,7 +550,7 @@ export const planPipelineHooks: PackagePipelineHooks = {
 		try {
 			const planDir = _planDir ?? 'plan';
 			const cache = readHistoryCache(planDir);
-			history = extractBatchHistory('.', planDir, { cache });
+			history = extractBatchHistory(planDir, '.', { cache });
 			writeHistoryCache(planDir, cache);
 
 			// Parse repository URL from git remote
@@ -569,8 +569,9 @@ export const planPipelineHooks: PackagePipelineHooks = {
 			} catch {
 				// No remote configured
 			}
-		} catch {
-			// Git not available or not a git repo
+		} catch (err) {
+			// Git not available or not a git repo — history will be empty
+			ctx.warn(`Could not extract git history: ${err instanceof Error ? err.message : String(err)}`);
 		}
 
 		return {

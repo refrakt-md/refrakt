@@ -263,7 +263,7 @@ export function runHistory(options: HistoryOptions): void {
 		// Global mode
 		const gitSince = since ? normalizeSince(since) : undefined;
 		const cache = readHistoryCache(dir);
-		const batchHistory = extractBatchHistory('.', dir, { since: gitSince, cache });
+		const batchHistory = extractBatchHistory(dir, '.', { since: gitSince, cache });
 		writeHistoryCache(dir, cache);
 
 		// Get entity metadata for ID resolution
