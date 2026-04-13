@@ -198,7 +198,20 @@
 			"dataRune": "breadcrumb",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"separator": {
+					"source": "meta",
+					"default": "/",
+					"dataAttribute": "data-separator"
+				}
+			},
+			"inlineStyles": {
+				"separator": {
+					"prop": "--separator",
+					"template": "\"{}\""
+				}
+			}
 		},
 		"BreadcrumbItem": {
 			"block": "breadcrumb-item",
