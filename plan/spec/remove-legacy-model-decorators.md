@@ -2,7 +2,7 @@
 
 # Remove Legacy Model Class and Decorators
 
-> Migrate all runes from the imperative Model + decorator pattern to `createContentModelSchema`, then remove the legacy API surface entirely.
+Migrate all runes from the imperative Model + decorator pattern to `createContentModelSchema`, then remove the legacy API surface entirely.
 
 ---
 

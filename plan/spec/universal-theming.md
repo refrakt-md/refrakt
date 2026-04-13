@@ -2,7 +2,7 @@
 
 # Universal Theming Dimensions
 
-> Cross-rune semantic data attributes — surface, density, section anatomy, interactive state, media slots, checklist, and sequential items — so themes can style every rune generically with ~54 CSS rules instead of per-rune overrides. Builds on the metadata system (SPEC-024) to complete the ten-dimension universal theming model.
+Cross-rune semantic data attributes — surface, density, section anatomy, interactive state, media slots, checklist, and sequential items — so themes can style every rune generically with ~54 CSS rules instead of per-rune overrides. Builds on the metadata system (SPEC-024) to complete the ten-dimension universal theming model.
 
 ---
 

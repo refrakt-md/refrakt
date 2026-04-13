@@ -2,7 +2,7 @@
 
 # Plan Runes
 
-> Runes for spec-driven project management in AI-native development workflows. Package: `@refrakt/plan`.
+Runes for spec-driven project management in AI-native development workflows. Package: `@refrakt/plan`.
 
 ## Problem
 

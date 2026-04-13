@@ -2,7 +2,7 @@
 
 # Rune Output Standards
 
-> Codify the structural patterns established by the recipe rune as the reference standard for all rune output — schema transforms, engine configs, and identity-transformed HTML.
+Codify the structural patterns established by the recipe rune as the reference standard for all rune output — schema transforms, engine configs, and identity-transformed HTML.
 
 ---
 

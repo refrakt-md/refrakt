@@ -20,7 +20,7 @@ A spec in accepted status with a version number and scope summary.
 {% spec id="SPEC-008" status="accepted" version="1.2" tags="tint,theming" %}
 # Tint Rune
 
-> Section-level colour context override via CSS custom properties.
+Section-level colour context override via CSS custom properties.
 
 ## Problem
 
@@ -42,7 +42,7 @@ A minimal spec in draft status.
 {% spec id="SPEC-012" status="draft" %}
 # Dependency Graph Visualisation
 
-> Render entity relationships as an interactive graph.
+Render entity relationships as an interactive graph.
 
 This spec is not yet written. It will cover the visual representation of cross-references between specs, work items, and decisions.
 {% /spec %}
@@ -58,7 +58,7 @@ A spec that has been replaced by a newer version.
 {% spec id="SPEC-003" status="superseded" version="1.0" supersedes="SPEC-001" %}
 # Original Token System
 
-> First-generation design token architecture.
+First-generation design token architecture.
 
 This specification has been superseded. See the current token system specification for the active design.
 {% /spec %}

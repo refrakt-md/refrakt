@@ -2,8 +2,8 @@
 
 # Layout System — Specification
 
-> Standardised layout attributes for grid and section runes, page-level breakout, showcase effects, background media
-> Tint Rune Specification, Community Runes Specification, Vite Plugin Specification
+Standardised layout attributes for grid and section runes, page-level breakout, showcase effects, background media
+Tint Rune Specification, Community Runes Specification, Vite Plugin Specification
 
 ---
 

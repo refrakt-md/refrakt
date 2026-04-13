@@ -2,7 +2,7 @@
 
 # Unbuilt Runes — High-Level Spec
 
-> Runes listed in `plan/spec/community-runes.md` that do not yet have schemas in `packages/runes/src/tags/`
+Runes listed in `plan/spec/community-runes.md` that do not yet have schemas in `packages/runes/src/tags/`
 
 ---
 

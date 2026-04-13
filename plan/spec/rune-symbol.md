@@ -2,7 +2,7 @@
 
 # Rune: `{% symbol %}` — High-Level Plan
 
-> @refrakt-md/runes — Data & Documentation Rune
+@refrakt-md/runes — Data & Documentation Rune
 
 ---
 

@@ -2,7 +2,7 @@
 
 # Lumina Theme — Reference Implementation
 
-> Lumina is the default theme and reference implementation of the universal theming dimensions (SPEC-024, SPEC-025). This spec documents Lumina's concrete choices for surface assignments, sentiment colours, density behaviour, media sizing, and per-rune overrides — proving the dimension model works end-to-end and serving as the template for community themes.
+Lumina is the default theme and reference implementation of the universal theming dimensions (SPEC-024, SPEC-025). This spec documents Lumina's concrete choices for surface assignments, sentiment colours, density behaviour, media sizing, and per-rune overrides — proving the dimension model works end-to-end and serving as the template for community themes.
 
 ---
 

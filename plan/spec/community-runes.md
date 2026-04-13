@@ -2,7 +2,7 @@
 
 # Community Runes — Specification
 
-> Package system, namespacing, rune extension, ecosystem architecture
+Package system, namespacing, rune extension, ecosystem architecture
 
 ---
 

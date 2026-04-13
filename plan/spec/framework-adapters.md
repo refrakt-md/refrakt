@@ -2,7 +2,7 @@
 
 # Framework Adapter System
 
-> Extend refrakt beyond SvelteKit to support Astro, Next.js, Eleventy, and Nuxt — four framework adapters built on the existing framework-agnostic core. This spec defines the shared prerequisites, per-adapter scope, and phased delivery plan derived from ADR-001 (Astro readiness) and ADR-002 (Next.js, Eleventy, Nuxt readiness).
+Extend refrakt beyond SvelteKit to support Astro, Next.js, Eleventy, and Nuxt — four framework adapters built on the existing framework-agnostic core. This spec defines the shared prerequisites, per-adapter scope, and phased delivery plan derived from ADR-001 (Astro readiness) and ADR-002 (Next.js, Eleventy, Nuxt readiness).
 
 ## Background
 

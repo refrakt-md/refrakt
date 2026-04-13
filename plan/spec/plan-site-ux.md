@@ -2,7 +2,7 @@
 
 # Plan Site UX at Scale
 
-> Future UX improvements for the plan site to handle large projects with many work items, specs, bugs, and decisions.
+Future UX improvements for the plan site to handle large projects with many work items, specs, bugs, and decisions.
 
 ## Problem
 

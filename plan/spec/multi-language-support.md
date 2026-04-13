@@ -2,7 +2,7 @@
 
 # Multi-Language Support
 
-> A locale-aware string resolution system enabling Refrakt sites to render UI text, labels, accessibility strings, and structural headings in any language.
+A locale-aware string resolution system enabling Refrakt sites to render UI text, labels, accessibility strings, and structural headings in any language.
 
 ## Motivation
 

@@ -2,7 +2,7 @@
 
 # Metadata System
 
-> Semantic metadata attributes on structure entries for consistent cross-rune badge styling. Extends the existing `StructureEntry` interface with three dimensions — type, sentiment, and rank — so themes can style every metadata badge generically.
+Semantic metadata attributes on structure entries for consistent cross-rune badge styling. Extends the existing `StructureEntry` interface with three dimensions — type, sentiment, and rank — so themes can style every metadata badge generically.
 
 ---
 

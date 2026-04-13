@@ -2,7 +2,7 @@
 
 # Theme Structural Template Language (Design Exploration)
 
-> A design exploration of a spatial template syntax for theme developers to express structural overrides — compiled to the declarative `RuneConfig` model defined in SPEC-033. **This is not a committed implementation.** It documents a possible future authoring surface so the idea is preserved and can be revisited if real theme development reveals the need.
+A design exploration of a spatial template syntax for theme developers to express structural overrides — compiled to the declarative `RuneConfig` model defined in SPEC-033. **This is not a committed implementation.** It documents a possible future authoring surface so the idea is preserved and can be revisited if real theme development reveals the need.
 
 ---
 

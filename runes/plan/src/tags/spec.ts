@@ -19,7 +19,7 @@ export const spec = createContentModelSchema({
 		type: 'sequence',
 		fields: [
 			{ name: 'title', match: 'heading', optional: false },
-			{ name: 'summary', match: 'blockquote', optional: true },
+			{ name: 'summary', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'body', match: 'any', optional: true, greedy: true },
 		],
 	},

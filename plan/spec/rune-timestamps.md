@@ -2,7 +2,7 @@
 
 # File-Derived Timestamps for Runes
 
-> Expose file-level `created` and `modified` timestamps as Markdoc variables so any rune can consume them as attribute defaults, with explicit attribute values taking precedence.
+Expose file-level `created` and `modified` timestamps as Markdoc variables so any rune can consume them as attribute defaults, with explicit attribute values taking precedence.
 
 ## Problem
 

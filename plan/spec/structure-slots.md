@@ -2,7 +2,7 @@
 
 # Structure Slots and Declarative Flexibility
 
-> Extend the identity transform's `StructureEntry` system with named slots, ordered placement, value mapping, repeated element generation, and element projection — giving theme developers structural creative freedom without resorting to `postTransform`.
+Extend the identity transform's `StructureEntry` system with named slots, ordered placement, value mapping, repeated element generation, and element projection — giving theme developers structural creative freedom without resorting to `postTransform`.
 
 ---
 

@@ -2,7 +2,7 @@
 
 # Git-Native Entity History
 
-> Derive structured lifecycle timelines for plan entities from git history — attribute transitions, criteria progress, and resolution events — surfaced through the CLI and as a site rune.
+Derive structured lifecycle timelines for plan entities from git history — attribute transitions, criteria progress, and resolution events — surfaced through the CLI and as a site rune.
 
 -----
 

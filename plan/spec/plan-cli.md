@@ -2,7 +2,7 @@
 
 # Plan CLI
 
-> Plan management subcommands for the refrakt CLI. Package: `@refrakt-md/plan`.
+Plan management subcommands for the refrakt CLI. Package: `@refrakt-md/plan`.
 
 ## Problem
 

@@ -2,8 +2,8 @@
 
 # Media Runes — Specification
 
-> Playlist, track, and audio rune content models, compact format, and player integration
-> Related: Unbuilt Runes Spec, Sandbox Futures (audio visualisation synergy)
+Playlist, track, and audio rune content models, compact format, and player integration
+Related: Unbuilt Runes Spec, Sandbox Futures (audio visualisation synergy)
 
 ---
 

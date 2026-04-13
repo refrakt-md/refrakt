@@ -2,7 +2,7 @@
 
 # Theme Studio — AI-Powered Theme Generator
 
-> `apps/theme-studio` — Dependencies: `@refrakt-md/transform`, `@refrakt-md/lumina`, `@refrakt-md/runes`, `@refrakt-md/svelte`, `@refrakt-md/ai`
+`apps/theme-studio` — Dependencies: `@refrakt-md/transform`, `@refrakt-md/lumina`, `@refrakt-md/runes`, `@refrakt-md/svelte`, `@refrakt-md/ai`
 
 ---
 

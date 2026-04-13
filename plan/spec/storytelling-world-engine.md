@@ -2,7 +2,7 @@
 
 # Storytelling World Engine
 
-> Cross-page pipeline hooks, entity graph, auto-linking, validation, and CLI tooling for the `@refrakt-md/storytelling` package — turning isolated rune pages into a navigable, interconnected world bible.
+Cross-page pipeline hooks, entity graph, auto-linking, validation, and CLI tooling for the `@refrakt-md/storytelling` package — turning isolated rune pages into a navigable, interconnected world bible.
 
 ## Problem
 

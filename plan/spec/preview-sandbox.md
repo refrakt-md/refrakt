@@ -2,7 +2,7 @@
 
 # Preview & Sandbox Runes — Specification
 
-> Internal spec addition
+Internal spec addition
 
 ---
 
