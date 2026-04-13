@@ -1,0 +1,326 @@
+{% spec id="SPEC-039" status="draft" version="1.0" tags="plan, cli, site, visualization, graph" %}
+
+# Dependency Graph Visualization
+
+> Render the plan system's relationship data as visual dependency graphs — static SVG on the site, tree and box-drawing output in the CLI, with DOT export for external tools.
+
+-----
+
+## Problem
+
+The plan system already builds a rich bidirectional relationship graph during the aggregate pipeline phase. Nine relationship kinds connect specs, work items, bugs, and decisions. The auto-relationships section on each entity page lists these connections as flat card groups. The `plan next` command uses dependency data to filter actionable items.
+
+But the graph is invisible. You can see that WORK-024 depends on WORK-076 and implements SPEC-008, but you can't see the shape of the graph — which items are bottlenecks with many dependents, which specs have all their work items done, where the critical path runs through a milestone, or whether two independent work streams have an unnoticed shared dependency.
+
+These are spatial questions. They need a spatial answer.
+
+Other project management tools handle this differently. Jira has a dependency view but it's limited to direct links — no transitive chains. Linear has no graph view at all. GitHub Projects has no dependency visualization. Graphical project planning tools (OmniPlan, MS Project) have Gantt charts but not dependency graphs. The plan system already has richer relationship data than most trackers; it just doesn't draw it.
+
+-----
+
+## Design Principles
+
+**The graph is derived, not authored.** Nobody writes graph definitions. The visualization reads the same relationship data that the auto-relationships section already uses. If you add a `{% ref %}` tag in a Dependencies section or set `source="SPEC-008"` on a work item, the graph updates automatically.
+
+**Static output, not an interactive app.** The site rune produces an SVG embedded in the page — no client-side JS, no canvas, no pan/zoom runtime. The CLI produces text. This matches the plan system's philosophy: build-time rendering, static output, works everywhere. For large graphs that benefit from interactivity, the DOT export lets users pipe to external tools.
+
+**Node styling encodes entity state.** Type, status, and priority are visible at a glance through shape, colour, and weight. A blocked work item looks different from a done one. A spec looks different from a bug. The graph is a status dashboard, not just a topology diagram.
+
+**Relationship kinds have visual semantics.** Different edge styles for different relationship kinds: solid arrows for hard dependencies (depends-on, blocks), dashed arrows for implementation links (implements, informs), dotted lines for soft references (related). The visual weight of an edge reflects how much it matters for planning.
+
+-----
+
+## Graph Data
+
+### Source
+
+All data comes from `PlanAggregatedData.relationships` — a `Map<string, EntityRelationship[]>` built by the aggregate hook in `runes/plan/src/pipeline.ts`. Each `EntityRelationship` has:
+
+- `fromId` / `fromType` — source entity
+- `toId` / `toType` — target entity
+- `kind` — one of 9 relationship kinds
+
+Entity metadata (status, priority, complexity, title, milestone, sourceUrl) is available from the entity arrays in the same aggregated data.
+
+### Relationship kinds and their graph semantics
+
+| Kind | Edge style | Direction meaning | Planning significance |
+|------|-----------|-------------------|----------------------|
+| `depends-on` | Solid arrow | A depends on B (A → B) | Hard blocker: A can't start until B is done |
+| `dependency-of` | (reverse of depends-on) | B is depended on by A | Same edge, opposite direction |
+| `blocks` | Solid arrow, red | A blocks B (A → B) | Active blocker: A's current state prevents B |
+| `blocked-by` | (reverse of blocks) | B is blocked by A | Same edge, opposite direction |
+| `implements` | Dashed arrow | Work/bug implements spec/decision | Traceability: implementation links to design |
+| `implemented-by` | (reverse of implements) | Spec/decision is implemented by work/bug | Same edge, opposite direction |
+| `informs` | Dashed arrow, lighter | Decision informs spec | Architectural influence |
+| `informed-by` | (reverse of informs) | Spec is informed by decision | Same edge, opposite direction |
+| `related` | Dotted line, no arrowhead | A and B reference each other | Informational, no planning effect |
+
+Since relationships are stored bidirectionally, each edge appears twice in the Map (once per direction). The renderer deduplicates by only drawing the canonical direction: `depends-on` not `dependency-of`, `blocks` not `blocked-by`, `implements` not `implemented-by`, `informs` not `informed-by`, `related` once (arbitrary direction).
+
+### Edge filtering defaults
+
+Not all relationship kinds are equally useful in a graph. The defaults:
+
+- **Always shown:** `depends-on`, `blocks` — these are the planning-critical edges
+- **Shown by default, hideable:** `implements`, `informs` — traceability links that give context
+- **Hidden by default, showable:** `related` — too many edges, clutters the graph
+
+The `show` attribute on the rune and `--show` flag on the CLI control which kinds are visible.
+
+-----
+
+## Node Styling
+
+### Shape by entity type
+
+| Type | Shape | Rationale |
+|------|-------|-----------|
+| `spec` | Rounded rectangle, double border | Specs are the source documents — visually heavier |
+| `work` | Rounded rectangle | Standard task node |
+| `bug` | Rounded rectangle with warning icon | Distinct from work items |
+| `decision` | Diamond / rotated square | ADRs are decision points in the graph |
+| `milestone` | Hexagon or pill | Milestones are aggregation points, not regular tasks |
+
+### Colour by status
+
+Uses the existing sentiment colour system from the plan package's config:
+
+| Sentiment | Statuses | Colour |
+|-----------|----------|--------|
+| Positive | `done`, `fixed`, `accepted`, `complete` | Green fill |
+| Caution | `review`, `confirmed`, `superseded` | Amber fill |
+| Negative | `blocked`, `deprecated` | Red fill |
+| Neutral | `draft`, `ready`, `in-progress`, `reported`, `proposed`, `planning` | Grey fill |
+
+Active work (`in-progress`) gets a subtle pulsing border or heavier stroke to draw the eye to what's currently happening.
+
+### Node content
+
+Each node displays:
+
+- Entity ID (e.g., `WORK-024`) — always visible
+- Status badge — colour-coded
+- Title — truncated to ~30 characters, full title in SVG `<title>` element (tooltip)
+- Priority indicator — only for `critical` and `high` (small icon or border weight)
+
+-----
+
+## Layout
+
+### Algorithm
+
+**dagre** (`@dagrejs/dagre`, ~150KB pure JS) computes the layout. It implements the Sugiyama layered layout algorithm, which is purpose-built for directed acyclic graphs:
+
+- Assigns nodes to horizontal layers (ranks) based on edge direction
+- Minimises edge crossings within layers
+- Routes edges with control points
+
+dagre runs in Node.js at build time with no browser dependency. Layout computation for 50–200 nodes takes <500ms. The output is (x, y) coordinates per node and control points per edge, which the renderer converts to SVG.
+
+### Direction
+
+Default: left-to-right (`rankdir: 'LR'`). Dependencies flow left → right, so the earliest dependencies are on the left and the final deliverables on the right. Top-to-bottom (`rankdir: 'TB'`) is available as an option for tall, narrow graphs.
+
+### Clustering
+
+When the graph is filtered to a milestone, nodes can optionally be clustered by status. dagre supports subgraph clustering, which visually groups done/in-progress/ready items. This turns the graph into both a dependency diagram and a status board.
+
+-----
+
+## Site Rune: `plan-graph`
+
+### Modes
+
+**Full graph:**
+```markdoc
+{% plan-graph /%}
+```
+
+Renders the complete dependency graph for all plan entities. For large projects, this may be too dense — the `filter`, `type`, and `milestone` attributes narrow the scope.
+
+**Entity-focused:**
+```markdoc
+{% plan-graph id="WORK-024" /%}
+{% plan-graph id="WORK-024" depth=2 /%}
+```
+
+Shows a subgraph centred on one entity: its direct dependencies, its dependents, and optionally their transitive connections up to `depth` levels. This is the "show me the neighbourhood" view.
+
+**Milestone-scoped:**
+```markdoc
+{% plan-graph milestone="v1.0.0" /%}
+```
+
+Shows all entities assigned to a milestone and their inter-dependencies. Entities outside the milestone that are depended on appear as ghost nodes (lighter styling, dashed border) to show external dependencies.
+
+### Attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `id` | String | — | Centre the graph on this entity. Omit for full/milestone graph. |
+| `depth` | Number | `1` | How many hops from the centre entity to include (entity-focused mode) |
+| `milestone` | String | — | Filter to entities in this milestone |
+| `filter` | String | `""` | Space-separated `field:value` pairs (same syntax as backlog) |
+| `type` | String | `"all"` | Entity type filter: `work`, `bug`, `spec`, `decision`, or comma-separated |
+| `show` | String | `"deps,blocks,impl"` | Relationship kinds to display: `deps`, `blocks`, `impl`, `informs`, `related`, or `all` |
+| `direction` | String | `"LR"` | Layout direction: `LR` (left-to-right) or `TB` (top-to-bottom) |
+| `cluster` | String | — | Cluster nodes by field: `status`, `milestone`, `type` |
+
+### Rendering
+
+The rune produces an inline `<svg>` element with:
+
+- `<rect>` / `<polygon>` elements for nodes, styled with BEM classes
+- `<text>` elements for labels
+- `<path>` elements for edges with marker arrowheads
+- `<title>` elements for tooltips (entity title, status, priority)
+- `<a>` wrappers on nodes linking to the entity page (when `sourceUrl` is available)
+
+BEM structure: `.rf-plan-graph`, `.rf-plan-graph__node`, `.rf-plan-graph__node--work`, `.rf-plan-graph__node--done`, `.rf-plan-graph__edge`, `.rf-plan-graph__edge--depends`, `.rf-plan-graph__edge--blocks`, `.rf-plan-graph__label`, `.rf-plan-graph__ghost`.
+
+The SVG uses the same design tokens as the rest of the plan theme (colours, border radius, font). Node dimensions are fixed (not based on text measurement) to keep the build-time renderer simple — a character-count heuristic sizes the width.
+
+### Implementation pattern
+
+Follows the self-closing aggregation rune pattern:
+
+1. **Tag definition** (`tags/plan-graph.ts`): `selfClosing: true`, stores parameters as meta tags, emits sentinel and placeholder
+2. **Aggregate hook**: Relationship data is already available in `PlanAggregatedData.relationships` — no additional extraction needed
+3. **PostProcess resolution**: Builds the dagre graph from entity and relationship data, runs layout, generates SVG string, replaces placeholder
+
+The dagre dependency is only imported in the plan package, not in core. It's a build-time dependency used during postProcess.
+
+### Auto-injection
+
+Unlike plan-history, the graph is NOT auto-injected into entity pages. The auto-relationships section already provides a textual listing. The graph is a dashboard-level view authored explicitly on overview pages or milestone pages.
+
+-----
+
+## CLI: `plan graph`
+
+### Tree-with-annotations mode (default)
+
+```bash
+npx refrakt plan graph WORK-024
+```
+
+Output:
+
+```
+WORK-024 [done] Add knownSections to content model framework
+├── depends-on:
+│   ├── SPEC-037 [accepted] Plan Package Hardening
+│   └── SPEC-003 [accepted] Declarative Content Model
+├── implements:
+│   ├── SPEC-003 [accepted] Declarative Content Model
+│   ├── SPEC-021 [draft] Plan Runes
+│   └── SPEC-037 [accepted] Plan Package Hardening
+└── dependency-of:
+    ├── WORK-129 [done] knownSections scanner integration
+    └── WORK-131 [done] Update site docs for plan hardening
+```
+
+This is a tree view rooted at the target entity, grouped by relationship kind. Status is colour-coded in terminal output (green for done, red for blocked, etc.). Entity IDs are the compact representation — no full graph layout needed.
+
+For the global view:
+
+```bash
+npx refrakt plan graph
+```
+
+Output shows all entities with unresolved dependencies as a forest of trees, highlighting the critical path (longest chain of unfinished dependencies).
+
+### Filters
+
+```bash
+# Milestone-scoped
+npx refrakt plan graph --milestone v1.0.0
+
+# Type filter
+npx refrakt plan graph --type work,bug
+
+# Show only blocking relationships
+npx refrakt plan graph --show deps,blocks
+
+# Depth control for entity-focused view
+npx refrakt plan graph WORK-024 --depth 2
+
+# Combine
+npx refrakt plan graph --milestone v1.0.0 --type work --show deps
+```
+
+### DOT export
+
+```bash
+npx refrakt plan graph --dot
+npx refrakt plan graph --dot --milestone v1.0.0
+npx refrakt plan graph --dot WORK-024 --depth 3
+```
+
+Outputs a Graphviz DOT definition that can be piped to external tools:
+
+```bash
+npx refrakt plan graph --dot | dot -Tsvg -o deps.svg
+npx refrakt plan graph --dot | dot -Tpng -o deps.png
+```
+
+The DOT output includes node attributes for styling (shape, colour, label) so it renders well with default Graphviz settings.
+
+### JSON export
+
+```bash
+npx refrakt plan graph --format json WORK-024
+```
+
+Outputs the graph as a JSON object with `nodes` and `edges` arrays, for programmatic consumption or piping to other visualization tools.
+
+-----
+
+## Phased Implementation
+
+### Phase 1: CLI tree view + DOT export
+
+- Tree-with-annotations renderer (~30 lines, no dependency)
+- DOT export (~50 lines, no dependency — just string concatenation)
+- Entity-focused and global modes
+- `--milestone`, `--type`, `--show`, `--depth` filters
+
+This is immediately useful with zero new dependencies.
+
+### Phase 2: Site SVG renderer
+
+- Add `@dagrejs/dagre` as a dependency of `@refrakt-md/plan`
+- Build the graph → dagre layout → SVG generation pipeline
+- `plan-graph` rune with all attributes
+- Node styling with shapes, colours, and links
+
+### Phase 3: CLI box-drawing renderer
+
+- Map dagre coordinates to terminal character grid
+- Box-drawing Unicode characters for nodes and edges
+- Only if the tree view from Phase 1 proves insufficient for users who want spatial layout in the terminal
+
+-----
+
+## Decisions
+
+### 1. dagre vs Graphviz
+
+dagre (`@dagrejs/dagre`, ~150KB pure JS) over Graphviz (`@hpcc-js/wasm-graphviz`, ~8MB WASM). dagre's layout quality is good enough for the expected scale (10–200 nodes) and it avoids a heavy WASM dependency in the plan package. If layout quality proves insufficient for large complex graphs, swapping dagre for Graphviz is straightforward — both take a graph definition and return coordinates.
+
+### 2. Static SVG vs interactive canvas
+
+Static inline SVG. No pan/zoom, no drag-to-rearrange, no client-side JS. This matches the plan system's static rendering philosophy and keeps the output portable (works in any browser, in print, in RSS readers). For graphs large enough to need interactivity, the DOT export provides an escape hatch to dedicated tools.
+
+Clickable nodes (via `<a>` wrappers in SVG) provide the one interaction that matters most: navigating to the entity page.
+
+### 3. Edge filtering defaults
+
+Show `depends-on`, `blocks`, and `implements`/`informs` by default. Hide `related`. The dependency and blocking edges are the ones with planning significance. Implementation edges provide traceability context. Related edges are numerous and noisy — they're the "mentioned in passing" references that don't represent meaningful graph structure.
+
+### 4. Ghost nodes for external dependencies
+
+When a milestone-scoped or filtered graph has edges pointing to entities outside the filter, those external entities appear as ghost nodes (lighter fill, dashed border, no link). This shows that a dependency exists without cluttering the graph with the full external subgraph. Ghost nodes are not laid out by dagre — they're appended at fixed positions relative to the edge endpoint.
+
+{% /spec %}
