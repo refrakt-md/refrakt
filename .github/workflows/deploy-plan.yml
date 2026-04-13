@@ -25,7 +25,8 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build
+      - name: Build required packages
+        run: npm run build -w packages/types -w packages/transform -w packages/behaviors -w packages/runes -w packages/highlight -w packages/html -w packages/content -w packages/cli -w runes/plan
 
       - name: Build plan site
         run: node packages/cli/dist/bin.js plan build --base-url / --theme lumina
