@@ -146,33 +146,15 @@ function resolvePackageThemeCss(packageName: string): string | undefined {
 }
 
 function resolveThemeCss(theme: string): string {
-	const __filename = fileURLToPath(import.meta.url);
-	const __dirname = path.dirname(__filename);
-	const stylesDir = path.resolve(__dirname, '../../styles');
-
-	// Minimal is self-contained — no shell or theme layering needed
-	if (theme === 'minimal') {
-		return inlineCssImports(fs.readFileSync(path.join(stylesDir, 'minimal.css'), 'utf-8'), stylesDir);
-	}
-
-	// Shell CSS (CLI layout: sidebar, dashboard, TOC, cross-refs, relationships)
-	// is appended to all non-minimal themes. Rune styling comes from the theme.
-	const shellCss = inlineCssImports(
-		fs.readFileSync(path.join(stylesDir, 'default.css'), 'utf-8'),
-		stylesDir,
-	);
-
-	// Resolve the theme CSS (rune styling + design tokens)
+	// All styles (layout chrome, rune styling, design tokens) come from the theme package.
 	let themeCss: string | undefined;
 
 	if (theme === 'default') {
-		// Default theme: use Lumina for rune styling
 		themeCss = resolvePackageThemeCss('@refrakt-md/lumina');
 		if (!themeCss) {
-			console.warn('[plan] Warning: @refrakt-md/lumina could not be resolved. Rune styling will be missing.');
+			console.warn('[plan] Warning: @refrakt-md/lumina could not be resolved. Styling will be missing.');
 		}
 	} else if (theme === 'auto') {
-		// Auto: read from refrakt.config.json, fall back to Lumina
 		const configTheme = readConfigTheme();
 		if (configTheme) {
 			themeCss = resolvePackageThemeCss(configTheme);
@@ -192,20 +174,18 @@ function resolveThemeCss(theme: string): string {
 				throw new Error(`Theme "${theme}" (${expanded}) could not be resolved. Is it installed?`);
 			}
 		} else if (theme.startsWith('@') || theme.includes('/')) {
-			// npm package name
 			themeCss = resolvePackageThemeCss(theme);
 			if (!themeCss) {
 				throw new Error(`Theme package "${theme}" could not be resolved. Is it installed?`);
 			}
 		} else if (fs.existsSync(theme)) {
-			// File path
 			themeCss = inlineCssImports(fs.readFileSync(theme, 'utf-8'), path.dirname(theme));
 		} else {
-			throw new Error(`Theme not found: "${theme}". Use "default", "minimal", a package name, or a path to a CSS file.`);
+			throw new Error(`Theme not found: "${theme}". Use "default", "auto", a package name, or a path to a CSS file.`);
 		}
 	}
 
-	return (themeCss ? themeCss + '\n' : '') + shellCss;
+	return themeCss ?? '';
 }
 
 function buildThemeConfig(): ThemeConfig {

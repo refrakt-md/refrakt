@@ -189,7 +189,7 @@ Desc.
 		}
 	});
 
-	it('--theme default and --theme minimal override config', async () => {
+	it('--theme default overrides config', async () => {
 		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Task
 Desc.
@@ -201,22 +201,6 @@ Desc.
 			theme: 'default',
 			baseUrl: '/',
 		});
-		expect(result.pages.filter(p => p.entityId).length).toBe(1);
-	});
-
-	it('works with minimal theme', async () => {
-		writeFile('work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
-# Task
-Desc.
-{% /work %}`);
-
-		// Should not throw
-		const result = await runPipeline({
-			dir: tmpDir,
-			theme: 'minimal',
-			baseUrl: '/',
-		});
-
 		expect(result.pages.filter(p => p.entityId).length).toBe(1);
 	});
 

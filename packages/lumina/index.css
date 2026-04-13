@@ -21,6 +21,7 @@
 @import './styles/layouts/search.css';
 @import './styles/layouts/version-switcher.css';
 @import './styles/layouts/split.css';
+@import './styles/layouts/plan.css';
 
 /* Universal Rune Attributes */
 @import './styles/base/attributes.css';
@@ -115,4 +116,6 @@
 @import './styles/runes/decision-log.css';
 @import './styles/runes/plan-progress.css';
 @import './styles/runes/plan-activity.css';
+@import './styles/runes/plan-ref.css';
+@import './styles/runes/plan-relationships.css';
 @import './styles/runes/plan-history.css';

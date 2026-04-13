@@ -1,0 +1,40 @@
+/* Plan relationships section */
+
+.rf-plan-relationships {
+	margin-top: 2rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rf-color-border, #dee2e6);
+}
+
+.rf-plan-relationships__heading {
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: var(--rf-color-text, #212529);
+	margin: 0 0 1rem;
+}
+
+.rf-plan-relationships__group {
+	margin-bottom: 1rem;
+}
+
+.rf-plan-relationships__group-title {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--rf-color-muted, #6c757d);
+	margin: 0 0 0.375rem;
+}
+
+.rf-plan-relationships__group[data-kind="blocked-by"] .rf-plan-relationships__group-title {
+	color: var(--rf-color-danger, #ff6b6b);
+}
+
+.rf-plan-relationships__group[data-kind="blocks"] .rf-plan-relationships__group-title {
+	color: var(--rf-color-warning, #f59f00);
+}
+
+.rf-plan-relationships__cards {
+	display: flex;
+	flex-direction: column;
+}

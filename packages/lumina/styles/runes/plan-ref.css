@@ -1,0 +1,26 @@
+/* Plan cross-reference links */
+
+.rf-plan-ref {
+	font-family: var(--rf-font-mono, ui-monospace, monospace);
+	font-size: 0.8125rem;
+	color: var(--rf-color-info, #339af0);
+	text-decoration: none;
+	border-bottom: 1px dashed var(--rf-color-info, #339af0);
+	padding-inline: 0.25rem;
+}
+
+.rf-plan-ref:hover {
+	background: var(--rf-color-info-bg, #e7f5ff);
+	border-radius: var(--rf-radius-sm, 0.25rem);
+	border-bottom-color: transparent;
+}
+
+.rf-plan-ref::before {
+	margin-inline-end: 0.25rem;
+}
+
+.rf-plan-ref[data-type="spec"]::before { content: '\1F4CB'; }
+.rf-plan-ref[data-type="work"]::before { content: '\1F527'; }
+.rf-plan-ref[data-type="bug"]::before { content: '\1F41B'; }
+.rf-plan-ref[data-type="decision"]::before { content: '\2696\FE0F'; }
+.rf-plan-ref[data-type="milestone"]::before { content: '\1F3AF'; }

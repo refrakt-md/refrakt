@@ -132,26 +132,6 @@ D.
 		expect(fs.existsSync(path.join(outDir, 'decision'))).toBe(true);
 	});
 
-	it('works with minimal theme', async () => {
-		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
-# Test
-Desc.
-{% /work %}`);
-
-		await runBuild({
-			dir: path.join(tmpDir, 'plan'),
-			out: outDir,
-			theme: 'minimal',
-			baseUrl: '/',
-		});
-
-		const indexHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8');
-		expect(indexHtml).toContain('<!DOCTYPE html>');
-		// Minimal theme tokens are in the separate CSS file
-		const themeCss = fs.readFileSync(path.join(outDir, 'theme.css'), 'utf-8');
-		expect(themeCss).toContain('--plan-font-sans');
-	});
-
 	it('includes copy-to-clipboard script', async () => {
 		writeFile('plan/work/w1.md', `{% work id="WORK-001" status="ready" priority="high" %}
 # Test
