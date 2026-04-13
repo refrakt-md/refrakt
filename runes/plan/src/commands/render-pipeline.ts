@@ -458,6 +458,21 @@ function buildNavRegion(groups: NavGroup[], baseUrl: string, activeUrl?: string,
 		],
 	} as unknown as RendererNode);
 
+	// Search input (hidden by default, toggled by search-trigger button)
+	children.push({
+		$$mdtype: 'Tag',
+		name: 'input',
+		attributes: {
+			class: 'rf-plan-sidebar__search',
+			type: 'search',
+			placeholder: 'Filter items\u2026',
+			'aria-label': 'Filter items',
+			'data-search-input': '',
+			hidden: '',
+		},
+		children: [],
+	} as unknown as RendererNode);
+
 	// Dashboard link
 	const dashActive = activeUrl === baseUrl || activeUrl === `${baseUrl}index.html`;
 	children.push({
