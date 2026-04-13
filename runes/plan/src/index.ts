@@ -1,5 +1,6 @@
 import type { RunePackage } from '@refrakt-md/types';
 import { tabsBehavior } from '@refrakt-md/behaviors';
+import { entityTabsBehavior } from './entity-tabs-behavior.js';
 import { spec } from './tags/spec.js';
 import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
@@ -144,6 +145,7 @@ Custom properties cascade naturally without JavaScript.
 	},
 	behaviors: {
 		'milestone-backlog': tabsBehavior,
+		'plan-entity-tabs': entityTabsBehavior,
 	},
 	pipeline: planPipelineHooks,
 };

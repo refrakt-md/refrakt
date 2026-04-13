@@ -1,0 +1,88 @@
+/* Plan Entity Tabs — page-level tab navigation for spec/work/bug/decision pages */
+
+.rf-plan-entity-tabs {
+	margin-block-start: var(--rf-spacing-lg, 1.5rem);
+}
+
+/* Tab bar — underline style matching the core tabs rune */
+.rf-plan-entity-tabs__tabs {
+	display: flex;
+	border-bottom: 1px solid var(--rf-color-border, #dee2e6);
+	gap: 0;
+}
+
+/* Tab buttons */
+.rf-plan-entity-tabs__tab {
+	flex: 0 0 auto;
+	padding: 0.625rem 1.25rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	font-family: inherit;
+	color: var(--rf-color-muted, #868e96);
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	transition: color 200ms ease, border-color 200ms ease;
+	white-space: nowrap;
+}
+
+.rf-plan-entity-tabs__tab:hover {
+	color: var(--rf-color-text, #212529);
+}
+
+.rf-plan-entity-tabs__tab--active,
+.rf-plan-entity-tabs__tab[data-state="active"] {
+	color: var(--rf-color-primary, #228be6);
+	border-bottom-color: var(--rf-color-primary, #228be6);
+	font-weight: 600;
+}
+
+/* Panels container */
+.rf-plan-entity-tabs__panels {
+	padding: 0;
+	margin: 0;
+}
+
+/* Individual panel */
+.rf-plan-entity-tabs__panel {
+	padding-block-start: var(--rf-spacing-lg, 1.5rem);
+}
+
+.rf-plan-entity-tabs__panel > *:first-child {
+	margin-top: 0;
+}
+
+.rf-plan-entity-tabs__panel > *:last-child {
+	margin-bottom: 0;
+}
+
+/* When inside entity tabs, relationships and history sections don't need
+   their own heading — the tab label provides the context */
+.rf-plan-entity-tabs__panel .rf-plan-relationships__heading,
+.rf-plan-entity-tabs__panel .rf-plan-history__heading {
+	display: none;
+}
+
+/* Remove top margin, padding, and border from relationships/history sections when inside a tab panel */
+.rf-plan-entity-tabs__panel .rf-plan-relationships,
+.rf-plan-entity-tabs__panel .rf-plan-history {
+	margin-block-start: 0;
+	padding-block-start: 0;
+	border-block-start: none;
+}
+
+/* ---- TOC dimming when non-Overview tab is active ---- */
+
+/* Desktop TOC: dim when a non-overview tab is active */
+:has([data-active-tab]:not([data-active-tab="overview"])) .rf-plan-toc {
+	opacity: 0.3;
+	pointer-events: none;
+	transition: opacity 200ms ease;
+}
+
+:has([data-active-tab="overview"]) .rf-plan-toc {
+	opacity: 1;
+	pointer-events: auto;
+	transition: opacity 200ms ease;
+}

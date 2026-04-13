@@ -637,28 +637,45 @@ export const planPipelineHooks: PackagePipelineHooks = {
 				}
 			}
 
-			// Inject relationships section + auto-history into entity rune tags
+			// Wrap entity content in tab-group with Overview / Relationships / History panels
 			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
 				const runeType = tag.attributes['data-rune'] as string;
 				const entityId = runeType === 'milestone'
 					? readField(tag, 'name')
 					: readField(tag, 'id');
 				if (entityId) {
-					const additions: any[] = [];
-
 					const rels = planData.relationships.get(entityId);
-					if (rels && rels.length > 0) {
-						const section = buildRelationshipsSection(rels, planData);
-						if (section) additions.push(section);
-					}
-
-					// Auto-inject history section for entities with >1 commit
+					const relationshipsSection = (rels && rels.length > 0)
+						? buildRelationshipsSection(rels, planData)
+						: null;
 					const historySection = buildAutoHistorySection(entityId, planData);
-					if (historySection) additions.push(historySection);
 
-					if (additions.length > 0) {
+					// Only add tabs if there is content for at least one extra panel
+					if (relationshipsSection || historySection) {
 						modified = true;
-						return new Tag(tag.name, tag.attributes, [...tag.children, ...additions]);
+
+						// Partition children: structural (header, meta fields) stay at top;
+						// body content goes into the Overview tab panel
+						const structural: any[] = [];
+						const bodyContent: any[] = [];
+						for (const child of tag.children) {
+							if (Markdoc.Tag.isTag(child) && (
+								child.attributes['data-field'] != null ||
+								child.attributes['data-name'] === 'header' ||
+								child.name === 'header'
+							)) {
+								structural.push(child);
+							} else {
+								bodyContent.push(child);
+							}
+						}
+
+						const tabWrapper = buildEntityTabGroup(
+							bodyContent,
+							relationshipsSection,
+							historySection,
+						);
+						return new Tag(tag.name, tag.attributes, [...structural, tabWrapper]);
 					}
 				}
 			}
@@ -1260,6 +1277,75 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 	newChildren.push(listContent);
 
 	return new Tag(tag.name, attrs, newChildren as any[]);
+}
+
+/**
+ * Build a tab-group wrapper for entity pages with Overview, Relationships, and History panels.
+ * Emits the same HTML contract that tabsBehavior expects.
+ */
+function buildEntityTabGroup(
+	bodyContent: any[],
+	relationshipsSection: InstanceType<typeof Tag> | null,
+	historySection: InstanceType<typeof Tag> | null,
+): InstanceType<typeof Tag> {
+	const tabButtons: any[] = [];
+	const tabPanels: any[] = [];
+
+	// Overview tab (always present)
+	tabButtons.push(new Tag('button', {
+		role: 'tab',
+		class: 'rf-plan-entity-tabs__tab',
+		'data-tab': 'overview',
+	}, ['Overview']));
+	tabPanels.push(new Tag('div', {
+		role: 'tabpanel',
+		class: 'rf-plan-entity-tabs__panel',
+		'data-tab': 'overview',
+	}, bodyContent));
+
+	// Relationships tab (only if there are relationships)
+	if (relationshipsSection) {
+		tabButtons.push(new Tag('button', {
+			role: 'tab',
+			class: 'rf-plan-entity-tabs__tab',
+			'data-tab': 'relationships',
+		}, ['Relationships']));
+		tabPanels.push(new Tag('div', {
+			role: 'tabpanel',
+			class: 'rf-plan-entity-tabs__panel',
+			'data-tab': 'relationships',
+		}, [relationshipsSection]));
+	}
+
+	// History tab (only if there is history)
+	if (historySection) {
+		tabButtons.push(new Tag('button', {
+			role: 'tab',
+			class: 'rf-plan-entity-tabs__tab',
+			'data-tab': 'history',
+		}, ['History']));
+		tabPanels.push(new Tag('div', {
+			role: 'tabpanel',
+			class: 'rf-plan-entity-tabs__panel',
+			'data-tab': 'history',
+		}, [historySection]));
+	}
+
+	const tabList = new Tag('div', {
+		'data-name': 'tabs',
+		role: 'tablist',
+		class: 'rf-plan-entity-tabs__tabs',
+	}, tabButtons);
+
+	const panels = new Tag('div', {
+		'data-name': 'panels',
+		class: 'rf-plan-entity-tabs__panels',
+	}, tabPanels);
+
+	return new Tag('div', {
+		class: 'rf-plan-entity-tabs',
+		'data-rune': 'plan-entity-tabs',
+	}, [tabList, panels]);
 }
 
 const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'depends-on': 2, 'dependency-of': 3, 'implements': 4, 'implemented-by': 5, 'informs': 6, 'informed-by': 7, 'related': 8 };
