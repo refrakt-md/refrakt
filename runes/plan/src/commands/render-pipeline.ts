@@ -722,12 +722,15 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	// Progress summary
 	md += `{% plan-progress /%}\n\n`;
 
-	// Active milestone(s)
+	// Recent activity (placed high for quick access)
+	md += `## Recent Activity\n\n`;
+	md += `{% plan-activity limit="10" /%}\n\n`;
+
+	// Active milestone(s) — rendered as a backlog, not the full milestone rune
 	for (const ms of activeMilestones) {
+		const name = ms.attributes.name;
 		md += `## Active Milestone\n\n`;
-		md += `{% milestone name="${ms.attributes.name}" status="${ms.attributes.status}" target="${ms.attributes.target || ''}" %}\n`;
-		md += `# ${ms.title || ms.attributes.name}\n`;
-		md += `{% /milestone %}\n\n`;
+		md += `{% backlog filter="milestone:${name}" sort="priority" group="status" /%}\n\n`;
 	}
 
 	// Blocked items callout
@@ -760,9 +763,6 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 
 	md += `## Recent Decisions\n\n`;
 	md += `{% decision-log sort="date" /%}\n\n`;
-
-	md += `## Recent Activity\n\n`;
-	md += `{% plan-activity limit="10" /%}\n`;
 
 	return md;
 }
