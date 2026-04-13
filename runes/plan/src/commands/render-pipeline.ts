@@ -722,6 +722,10 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	// Progress summary
 	md += `{% plan-progress /%}\n\n`;
 
+	// Recent activity (placed high for quick access)
+	md += `## Recent Activity\n\n`;
+	md += `{% plan-activity limit="10" /%}\n\n`;
+
 	// Active milestone(s)
 	for (const ms of activeMilestones) {
 		md += `## Active Milestone\n\n`;
@@ -760,9 +764,6 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 
 	md += `## Recent Decisions\n\n`;
 	md += `{% decision-log sort="date" /%}\n\n`;
-
-	md += `## Recent Activity\n\n`;
-	md += `{% plan-activity limit="10" /%}\n`;
 
 	return md;
 }
