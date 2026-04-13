@@ -722,9 +722,9 @@ function generateDashboardContent(entities: PlanEntity[]): string {
 	// Progress summary
 	md += `{% plan-progress /%}\n\n`;
 
-	// Recent activity (placed high for quick access)
-	md += `## Recent Activity\n\n`;
-	md += `{% plan-activity limit="10" /%}\n\n`;
+	// Recent history (git-derived activity feed)
+	md += `## Recent History\n\n`;
+	md += `{% plan-history limit="15" /%}\n\n`;
 
 	// Active milestone(s) — rendered as a backlog, not the full milestone rune
 	for (const ms of activeMilestones) {
