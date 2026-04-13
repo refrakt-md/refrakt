@@ -1,4 +1,4 @@
-{% work id="WORK-140" status="ready" priority="high" complexity="moderate" tags="plan, layout, tabs, behaviors" %}
+{% work id="WORK-140" status="done" priority="high" complexity="moderate" tags="plan, layout, tabs, behaviors" %}
 
 # Tab layout for plan entity pages
 
@@ -25,18 +25,18 @@ This coordinator lives in the plan package's `behaviors` map alongside the exist
 
 ## Acceptance Criteria
 
-- [ ] `postProcess` wraps entity content in a tab-group structure with Overview, Relationships, and History panels
-- [ ] Tab structure uses the same HTML contract as `tabsBehavior` (tablist buttons + tabpanel divs)
-- [ ] `tabsBehavior` is registered for plan entity tab groups in the plan package behaviors map
-- [ ] Tabs are omitted when the entity has no relationships and no meaningful history (single commit)
-- [ ] Overview panel contains the existing rune body content unchanged
-- [ ] Relationships panel contains the `buildRelationshipsSection` output (currently appended inline)
-- [ ] History panel contains the `buildAutoHistorySection` output (currently appended inline)
-- [ ] Plan-specific coordinator behavior activates the correct tab when navigating to an anchor inside an inactive panel
-- [ ] Desktop TOC sidebar dims or hides via CSS when a non-Overview tab is active (no changes to TOC component code)
-- [ ] Mobile section-nav dropdown entries for Relationships/History activate their respective tabs
-- [ ] CSS for tab bar styled consistently with existing plan page chrome
-- [ ] Existing plan pages without relationships or history render identically to before (no regressions)
+- [x] `postProcess` wraps entity content in a tab-group structure with Overview, Relationships, and History panels
+- [x] Tab structure uses the same HTML contract as `tabsBehavior` (tablist buttons + tabpanel divs)
+- [x] `tabsBehavior` is registered for plan entity tab groups in the plan package behaviors map
+- [x] Tabs are omitted when the entity has no relationships and no meaningful history (single commit)
+- [x] Overview panel contains the existing rune body content unchanged
+- [x] Relationships panel contains the `buildRelationshipsSection` output (currently appended inline)
+- [x] History panel contains the `buildAutoHistorySection` output (currently appended inline)
+- [x] Plan-specific coordinator behavior activates the correct tab when navigating to an anchor inside an inactive panel
+- [x] Desktop TOC sidebar dims or hides via CSS when a non-Overview tab is active (no changes to TOC component code)
+- [x] Mobile section-nav dropdown entries for Relationships/History activate their respective tabs
+- [x] CSS for tab bar styled consistently with existing plan page chrome
+- [x] Existing plan pages without relationships or history render identically to before (no regressions)
 
 ## Dependencies
 
@@ -85,5 +85,27 @@ Add a `PlanEntityTabs` rune config entry with `block: 'plan-entity-tabs'` for BE
 - `packages/behaviors/src/behaviors/scrollspy.ts` — TOC scrollspy (must not be modified)
 - `packages/behaviors/src/behaviors/section-nav.ts` — mobile section nav (must not be modified)
 - `runes/plan/src/config.ts` — plan rune configs
+
+## Resolution
+
+Completed: 2026-04-13
+
+Branch: `claude/work-item-tab-layout-dm34n`
+
+### What was done
+- `runes/plan/src/pipeline.ts` — Modified `postProcess` to partition entity children into structural (header, meta fields) and body content, wrapping the body in a tab-group with Overview/Relationships/History panels via new `buildEntityTabGroup` function. Tabs only emitted when at least one metadata panel has content.
+- `runes/plan/src/entity-tabs-behavior.ts` — New composite behavior wrapping `tabsBehavior` with: anchor navigation coordination (intercepts TOC/section-nav clicks and hashchange to activate the correct panel before scrolling), MutationObserver tracking `aria-selected` to expose `data-active-tab` attribute for CSS.
+- `runes/plan/src/config.ts` — Added `PlanEntityTabs` rune config (`block: 'plan-entity-tabs'`) for BEM class generation.
+- `runes/plan/src/index.ts` — Registered `entityTabsBehavior` for `plan-entity-tabs` in the package's behaviors map.
+- `runes/plan/src/commands/plan-behaviors.ts` — Registered `entityTabsBehavior` for client-side behavior initialization.
+- `packages/lumina/styles/runes/plan-entity-tabs.css` — Tab bar and panel styling (underline indicator, active state, consistent with core tabs rune), TOC dimming via `:has([data-active-tab])` when a non-Overview tab is active.
+- `packages/lumina/index.css` — Added CSS import for new file.
+- `runes/plan/tsconfig.json` — Added DOM lib for client-side behavior types.
+- `contracts/structures.json` — Regenerated with new rune config (117 runes).
+
+### Notes
+- The tabs rune itself cannot be used because relationship/history data is synthesized during postProcess (after schema transform). Instead, the pipeline emits the same HTML contract that tabsBehavior expects.
+- TOC and section-nav behaviors remain completely untouched — the coordinator behavior bridges them via document-level click/hashchange listeners scoped to the tab panels container.
+- All 2094 tests pass with no regressions.
 
 {% /work %}
