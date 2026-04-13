@@ -373,9 +373,10 @@ interface BatchCommitInfo {
  */
 export function getBatchCommits(planDir: string, cwd: string, since?: string): BatchCommitInfo[] {
 	try {
-		let cmd = `git log --format="%H %aI %aN%n%s" --name-only -- "${planDir}"`;
+		// Use %x00 as record separator to avoid ambiguity with blank lines in output
+		let cmd = `git log --format="%x00%H %aI %aN%n%s" --name-only -- "${planDir}"`;
 		if (since) {
-			cmd = `git log --since="${since}" --format="%H %aI %aN%n%s" --name-only -- "${planDir}"`;
+			cmd = `git log --since="${since}" --format="%x00%H %aI %aN%n%s" --name-only -- "${planDir}"`;
 		}
 
 		const output = execSync(cmd, {
@@ -386,7 +387,8 @@ export function getBatchCommits(planDir: string, cwd: string, since?: string): B
 		});
 
 		const commits: BatchCommitInfo[] = [];
-		const blocks = output.trim().split('\n\n');
+		// Split on the NUL byte record separator we injected
+		const blocks = output.split('\x00').filter(b => b.trim() !== '');
 
 		for (const block of blocks) {
 			const lines = block.split('\n').filter(l => l.trim() !== '');
