@@ -179,7 +179,35 @@ The rune produces an inline `<svg>` element with:
 
 BEM structure: `.rf-plan-graph`, `.rf-plan-graph__node`, `.rf-plan-graph__node--work`, `.rf-plan-graph__node--done`, `.rf-plan-graph__edge`, `.rf-plan-graph__edge--depends`, `.rf-plan-graph__edge--blocks`, `.rf-plan-graph__label`, `.rf-plan-graph__ghost`.
 
-The SVG uses the same design tokens as the rest of the plan theme (colours, border radius, font). Node dimensions are fixed (not based on text measurement) to keep the build-time renderer simple — a character-count heuristic sizes the width.
+#### Lumina token integration
+
+dagre is purely a layout engine — it computes (x, y) coordinates and edge control points but produces no visual output. The SVG renderer is ours, which means complete control over styling. Since the SVG is rendered inline in the HTML (not as an external `<img>`), CSS custom properties work directly inside it.
+
+The SVG elements reference Lumina design tokens via CSS custom properties:
+
+```css
+.rf-plan-graph__node rect {
+  fill: var(--rf-color-surface);
+  stroke: var(--rf-color-border);
+  rx: var(--rf-radius-md);          /* rounded corners */
+}
+.rf-plan-graph__node--done rect {
+  fill: var(--rf-color-success-subtle);
+  stroke: var(--rf-color-success);
+}
+.rf-plan-graph__label {
+  font-family: var(--rf-font-family);
+  font-size: var(--rf-font-size-sm);
+  fill: var(--rf-color-text);
+}
+.rf-plan-graph__edge--blocks path {
+  stroke: var(--rf-color-danger);
+}
+```
+
+This means the graph inherits whatever theme variant is active — light, dark, or custom. Node colours, border radii, fonts, and edge colours all come from the same tokens that style the rest of the plan site. No hard-coded values in the SVG.
+
+The one constraint is text measurement. dagre needs node dimensions upfront to compute layout. Since there's no browser at build time, a character-count heuristic sizes node width: `width = max(charCount * 7.5 + padding, minWidth)`. This is imprecise but consistent — the same approach most static SVG graph tools use. The `<text>` element is centred within the node rect, so minor width overestimates just add padding.
 
 ### Implementation pattern
 
@@ -193,7 +221,39 @@ The dagre dependency is only imported in the plan package, not in core. It's a b
 
 ### Auto-injection
 
-Unlike plan-history, the graph is NOT auto-injected into entity pages. The auto-relationships section already provides a textual listing. The graph is a dashboard-level view authored explicitly on overview pages or milestone pages.
+Unlike plan-history, the graph is NOT auto-injected into entity pages. The auto-relationships section already provides a textual listing of connections, and a one-hop entity-focused graph is just a star topology that adds little over the card layout. The graph is a dashboard-level view that answers structural questions about the project, not per-entity detail.
+
+-----
+
+## Site Placement
+
+The plan site auto-generates pages for the dashboard, entity detail, status filters, and view pages (by tag, assignee, milestone). Dependency graphs fit at three scopes within this architecture:
+
+### Dedicated view page
+
+The render pipeline auto-generates a `/view/dependencies.html` page when the project has dependency or blocking relationships. This page appears in the sidebar's Views section alongside tag/assignee/milestone views. It renders a full `{% plan-graph /%}` with default filters.
+
+This is the "understand the project structure" view — where you go to see how specs, work items, and decisions connect, identify bottlenecks, and spot isolated subgraphs.
+
+### Milestone pages
+
+Each milestone page already receives an auto-generated backlog grouped by status. When the milestone has 2+ entities with inter-dependencies, the render pipeline injects a milestone-scoped graph above the backlog:
+
+```markdoc
+{% plan-graph milestone="v1.0.0" cluster="status" /%}
+```
+
+This answers "what's the critical path for this release?" — which items must finish before others can start, and where the blocked chains are. The `cluster="status"` grouping turns it into both a dependency diagram and a visual status board for the milestone.
+
+### Dashboard critical-path section
+
+The dashboard (`index.html`) does not get a full graph — it would be too dense for an overview page. Instead, the render pipeline injects a focused subgraph showing only the **active blocking chains**: entities with status `blocked` or `in-progress` and their immediate dependencies/dependents. This is a small, purpose-built subgraph that highlights what's currently stuck or being worked on.
+
+If no blocking chains exist (all items are independent or done), this section is omitted.
+
+### Entity pages
+
+Entity pages do NOT get a graph. The auto-relationships card listing already shows direct connections. Users who want to see an entity's graph neighbourhood can navigate to the dedicated view page and use the `id` parameter, or the entity page could link to a pre-filtered view (`/view/dependencies.html?focus=WORK-024`) if client-side filtering is ever added.
 
 -----
 
