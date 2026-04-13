@@ -610,3 +610,213 @@
 		padding: var(--rf-spacing-md, 1rem);
 	}
 }
+
+/* --------------------------------------------------------------------------
+   Plan History — vertical timeline
+   -------------------------------------------------------------------------- */
+
+.rf-plan-history {
+	margin-block: var(--rf-spacing-lg, 1.5rem);
+}
+
+.rf-plan-history__events {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	border-inline-start: 2px solid var(--rf-color-border, #dee2e6);
+	padding-inline-start: var(--rf-spacing-lg, 1.5rem);
+	position: relative;
+}
+
+.rf-plan-history__event {
+	position: relative;
+	padding-block-end: var(--rf-spacing-lg, 1.5rem);
+}
+
+/* Circle markers on the timeline line */
+.rf-plan-history__event::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: calc(-1 * var(--rf-spacing-lg, 1.5rem) - 1px);
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 50%;
+	background: var(--rf-color-primary, #0969da);
+	border: 2px solid var(--rf-color-bg, #fff);
+	transform: translateX(-50%);
+}
+
+/* Open circle for creation events */
+.rf-plan-history__event[data-kind="created"]::before {
+	background: var(--rf-color-bg, #fff);
+	border-color: var(--rf-color-primary, #0969da);
+}
+
+/* Last event: no bottom padding or line extension */
+.rf-plan-history__event:last-child {
+	padding-block-end: 0;
+}
+
+.rf-plan-history__date {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--rf-color-text, #212529);
+	margin-inline-end: var(--rf-spacing-sm, 0.5rem);
+}
+
+.rf-plan-history__hash {
+	font-family: var(--rf-font-mono, ui-monospace, monospace);
+	font-size: 0.75rem;
+	color: var(--rf-color-text-muted, #6c757d);
+	text-decoration: none;
+}
+
+a.rf-plan-history__hash:hover {
+	color: var(--rf-color-primary, #0969da);
+	text-decoration: underline;
+}
+
+.rf-plan-history__changes {
+	margin-block-start: var(--rf-spacing-xs, 0.25rem);
+}
+
+.rf-plan-history__change {
+	display: flex;
+	align-items: center;
+	gap: var(--rf-spacing-xs, 0.25rem);
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.rf-plan-history__field {
+	font-weight: 500;
+	color: var(--rf-color-text, #212529);
+}
+
+.rf-plan-history__field::after {
+	content: ':';
+}
+
+.rf-plan-history__arrow {
+	color: var(--rf-color-text-muted, #6c757d);
+	margin-inline: 0.125rem;
+}
+
+.rf-plan-history__value {
+	font-size: 0.875rem;
+	padding: 0.0625rem 0.375rem;
+	border-radius: var(--rf-radius-sm, 0.25rem);
+}
+
+.rf-plan-history__value[data-type="add"] {
+	background: rgba(63, 185, 80, 0.15);
+	color: var(--rf-color-success, #1a7f37);
+}
+
+.rf-plan-history__value[data-type="remove"] {
+	background: rgba(248, 81, 73, 0.15);
+	color: var(--rf-color-danger, #cf222e);
+	text-decoration: line-through;
+}
+
+.rf-plan-history__created {
+	font-size: 0.875rem;
+	color: var(--rf-color-text-muted, #6c757d);
+}
+
+.rf-plan-history__resolution,
+.rf-plan-history__content-edit {
+	font-size: 0.875rem;
+	color: var(--rf-color-text-muted, #6c757d);
+	font-style: italic;
+}
+
+/* Criteria list */
+.rf-plan-history__criteria {
+	list-style: none;
+	padding: 0;
+	margin: var(--rf-spacing-xs, 0.25rem) 0 0;
+}
+
+.rf-plan-history__criteria li {
+	font-size: 0.8125rem;
+	line-height: 1.6;
+	color: var(--rf-color-text, #212529);
+}
+
+.rf-plan-history__criteria li[data-action="checked"] {
+	color: var(--rf-color-success, #1a7f37);
+}
+
+.rf-plan-history__criteria li[data-action="unchecked"] {
+	color: var(--rf-color-danger, #cf222e);
+}
+
+.rf-plan-history__criteria li[data-action="removed"] {
+	color: var(--rf-color-danger, #cf222e);
+	text-decoration: line-through;
+}
+
+.rf-plan-history__more {
+	color: var(--rf-color-text-muted, #6c757d);
+	font-style: italic;
+	cursor: pointer;
+}
+
+.rf-plan-history__empty {
+	color: var(--rf-color-text-muted, #6c757d);
+	font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   Plan History — global feed (commit-grouped)
+   -------------------------------------------------------------------------- */
+
+.rf-plan-history--global .rf-plan-history__commit-message {
+	display: block;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--rf-color-text, #212529);
+	margin-block-start: var(--rf-spacing-xs, 0.25rem);
+}
+
+.rf-plan-history--global .rf-plan-history__entity-summary {
+	display: flex;
+	align-items: baseline;
+	gap: var(--rf-spacing-sm, 0.5rem);
+	font-size: 0.8125rem;
+	line-height: 1.6;
+}
+
+.rf-plan-history--global .rf-plan-history__entity-id {
+	font-weight: 600;
+	font-family: var(--rf-font-mono, ui-monospace, monospace);
+	font-size: 0.75rem;
+	color: var(--rf-color-primary, #0969da);
+	white-space: nowrap;
+}
+
+.rf-plan-history--global .rf-plan-history__entity-changes {
+	color: var(--rf-color-text-muted, #6c757d);
+}
+
+/* --------------------------------------------------------------------------
+   Plan History — responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+	.rf-plan-history__events {
+		padding-inline-start: var(--rf-spacing-md, 1rem);
+	}
+
+	.rf-plan-history__event::before {
+		inset-inline-start: calc(-1 * var(--rf-spacing-md, 1rem) - 1px);
+		width: 0.625rem;
+		height: 0.625rem;
+	}
+
+	.rf-plan-history__change {
+		flex-wrap: wrap;
+	}
+}

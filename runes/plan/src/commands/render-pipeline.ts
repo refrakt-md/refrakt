@@ -12,7 +12,7 @@ import type { HtmlTheme, PageShellOptions } from '@refrakt-md/html';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
-import { planPipelineHooks, setScannerDependencies, type PlanAggregatedData } from '../pipeline.js';
+import { planPipelineHooks, setScannerDependencies, setPlanDir, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
 import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
@@ -1201,6 +1201,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		if (depRefs.length > 0) depMap.set(entityId, depRefs);
 	}
 	setScannerDependencies(depMap);
+	setPlanDir(dir);
 
 	const { registry } = createRegistry();
 	planPipelineHooks.register!(transformedPages, registry, ctx);

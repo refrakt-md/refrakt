@@ -189,4 +189,14 @@ export const config: Record<string, RuneConfig> = {
 			limit: { source: 'meta', noBemClass: true },
 		},
 	},
+	PlanHistory: {
+		block: 'plan-history',
+		modifiers: {
+			id: { source: 'meta', noBemClass: true },
+			limit: { source: 'meta', noBemClass: true },
+			type: { source: 'meta', noBemClass: true },
+			since: { source: 'meta', noBemClass: true },
+			group: { source: 'meta', noBemClass: true },
+		},
+	},
 };
