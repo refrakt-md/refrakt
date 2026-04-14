@@ -12,20 +12,20 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/src/transform.js",
-  "types": "dist/src/transform.d.ts",
+  "main": "dist/transform.js",
+  "types": "dist/transform.d.ts",
   "exports": {
     ".": "./index.css",
     "./base.css": "./base.css",
     "./transform": {
-      "types": "./dist/src/transform.d.ts",
-      "default": "./dist/src/transform.js"
+      "types": "./dist/transform.d.ts",
+      "default": "./dist/transform.js"
     },
     "./manifest": "./manifest.json",
     "./contracts": "./contracts/structures.json",
     "./layouts": {
-      "types": "./dist/layouts/index.d.ts",
-      "default": "./dist/layouts/index.js"
+      "types": "./dist/layouts.d.ts",
+      "default": "./dist/layouts.js"
     },
     "./styles/runes/*.css": "./styles/runes/*.css"
   },
