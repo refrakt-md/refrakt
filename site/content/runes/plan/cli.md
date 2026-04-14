@@ -149,7 +149,7 @@ refrakt plan create work --id WORK-042 --title "Add search indexing"
 | bug | `plan/work/` |
 | spec | `plan/spec/` |
 | decision | `plan/decision/` |
-| milestone | `plan/work/` |
+| milestone | `plan/milestone/` |
 
 ## refrakt plan next-id
 
@@ -209,11 +209,12 @@ refrakt plan validate --format json
 
 ## refrakt plan init
 
-Initialize the plan directory structure with example files and update `CLAUDE.md` with workflow instructions.
+Initialize the plan directory structure with example files, generate a workflow guide, and update your AI tool's instruction file.
 
 ```bash
 refrakt plan init
-refrakt plan init --dir planning
+refrakt plan init --agent cursor
+refrakt plan init --agent none --dir planning
 ```
 
 ### Options
@@ -221,7 +222,8 @@ refrakt plan init --dir planning
 | Flag | Description |
 |------|-------------|
 | `--dir <path>` | Plan directory (default: `plan/`) |
-| `--project-root <path>` | Project root for CLAUDE.md update (default: `.`) |
+| `--project-root <path>` | Project root for agent file detection (default: `.`) |
+| `--agent <tool>` | AI tool instruction file to update: `claude`, `cursor`, `copilot`, `windsurf`, `cline`, or `none`. Auto-detects when omitted. |
 | `--format json` | Output JSON instead of human-readable text |
 
 ### What it creates
@@ -229,9 +231,15 @@ refrakt plan init --dir planning
 - `plan/work/` — directory for work items and bugs
 - `plan/spec/` — directory for specifications
 - `plan/decision/` — directory for decision records
+- `plan/milestone/` — directory for milestones
 - `plan/index.md` — overview page with quick start
-- Example work item, spec, and decision files
-- Appends workflow instructions to `CLAUDE.md`
+- `plan/INSTRUCTIONS.md` — full workflow guide (tool-agnostic)
+- Example work item, spec, decision, and milestone files
+- Appends a plan reference to your AI tool's instruction file
+
+### Agent auto-detection
+
+When `--agent` is omitted, `plan init` checks the project root for known instruction files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`) and appends to all that exist. If none are found, it falls back to creating a `CLAUDE.md`.
 
 ## refrakt plan history
 
