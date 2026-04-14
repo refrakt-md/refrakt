@@ -136,6 +136,10 @@ export interface SeoToHtmlOptions {
 	siteName?: string;
 	/** Base URL for canonical links and og:url (e.g. "https://refrakt.md") */
 	baseUrl?: string;
+	/** Default og:image for pages without their own image (path relative to site root, e.g. "/og-image.png"). Recommended size: 1200x630px. */
+	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema (path relative to site root, e.g. "/favicon-192.png") */
+	logo?: string;
 }
 
 /**
@@ -157,10 +161,11 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 		parts.push(`<meta name="twitter:title" content="${escapeAttr(data.title)}">`);
 	}
 
-	if (data.ogImage) {
-		parts.push(`<meta property="og:image" content="${escapeAttr(data.ogImage)}">`);
+	const resolvedImage = data.ogImage ?? (options?.defaultImage ? (options.baseUrl ?? '') + options.defaultImage : undefined);
+	if (resolvedImage) {
+		parts.push(`<meta property="og:image" content="${escapeAttr(resolvedImage)}">`);
 		parts.push(`<meta name="twitter:card" content="summary_large_image">`);
-		parts.push(`<meta name="twitter:image" content="${escapeAttr(data.ogImage)}">`);
+		parts.push(`<meta name="twitter:image" content="${escapeAttr(resolvedImage)}">`);
 	} else {
 		parts.push(`<meta name="twitter:card" content="summary">`);
 	}
@@ -182,6 +187,26 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 	const jsonLdParts: string[] = [];
 	for (const schema of data.jsonLd) {
 		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(schema)}</script>`);
+	}
+
+	if (options?.baseUrl) {
+		const siteName = options.siteName ?? '';
+		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: siteName,
+			url: options.baseUrl,
+		})}</script>`);
+		const org: Record<string, string> = {
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name: siteName,
+			url: options.baseUrl,
+		};
+		if (options.logo) {
+			org.logo = options.baseUrl + options.logo;
+		}
+		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(org)}</script>`);
 	}
 
 	return {

@@ -4,6 +4,7 @@
 	"target": "svelte",
 	"baseUrl": "https://refrakt.md",
 	"siteName": "refrakt.md",
+	"logo": "/favicon-192.png",
 	"packages": [
 		"@refrakt-md/marketing",
 		"@refrakt-md/docs",
