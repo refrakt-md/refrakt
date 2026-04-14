@@ -119,10 +119,11 @@
 	{:else if page.description}
 		<meta name="description" content={page.description} />
 	{/if}
-	{#if page.seo?.og.image}
-		<meta property="og:image" content={page.seo.og.image} />
+	{@const ogImage = page.seo?.og.image ?? (theme.manifest.defaultImage ? (theme.manifest.baseUrl ?? '') + theme.manifest.defaultImage : undefined)}
+	{#if ogImage}
+		<meta property="og:image" content={ogImage} />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content={page.seo.og.image} />
+		<meta name="twitter:image" content={ogImage} />
 	{:else}
 		<meta name="twitter:card" content="summary" />
 	{/if}

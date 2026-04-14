@@ -191,5 +191,6 @@ function validateConfig(raw: unknown): RefraktConfig {
 		...(runes && { runes }),
 		...(typeof obj.baseUrl === 'string' && obj.baseUrl && { baseUrl: obj.baseUrl }),
 		...(typeof obj.siteName === 'string' && obj.siteName && { siteName: obj.siteName }),
+		...(typeof obj.defaultImage === 'string' && obj.defaultImage && { defaultImage: obj.defaultImage }),
 	};
 }

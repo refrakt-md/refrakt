@@ -66,6 +66,9 @@ export function loadVirtualModule(
 		if (config.siteName) {
 			lines.push(`\t\tsiteName: ${JSON.stringify(config.siteName)},`);
 		}
+		if (config.defaultImage) {
+			lines.push(`\t\tdefaultImage: ${JSON.stringify(config.defaultImage)},`);
+		}
 		lines.push('\t},');
 		lines.push('\tlayouts: _layouts,');
 
