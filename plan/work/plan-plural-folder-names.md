@@ -1,4 +1,4 @@
-{% work id="WORK-143" status="ready" priority="medium" complexity="simple" source="SPEC-039" tags="plan, cli, conventions" %}
+{% work id="WORK-143" status="done" priority="medium" complexity="simple" source="SPEC-039" tags="plan, cli, conventions" %}
 
 # Rename plan directories to plural form
 
@@ -6,18 +6,18 @@ Change the plan package's directory convention from singular to plural: `spec/` 
 
 ## Acceptance Criteria
 
-- [ ] `plan init` creates `specs/`, `work/`, `decisions/`, `milestones/` directories
-- [ ] `plan create` writes files to the correct plural directories
-- [ ] Status filter pages and type index pages use the new directory names
-- [ ] `TYPE_DIRS` mapping in `create.ts` updated
-- [ ] `STATUS_PAGES` in `templates.ts` updated with new `typeDir` values
-- [ ] `TYPE_TITLES` in `templates.ts` updated
-- [ ] `init.ts` directory list updated
-- [ ] `plan/INSTRUCTIONS.md` (or `plan/CLAUDE.md` until WORK-142 lands) documents the new structure
-- [ ] Root `CLAUDE.md` plan section updated to reflect new directory names
-- [ ] Our own `plan/` directory renamed manually (`spec/` to `specs/`, `decision/` to `decisions/`, `milestone/` to `milestones/`)
-- [ ] All internal links in existing plan content updated (e.g., index.md links to subdirectories)
-- [ ] Scanner still finds entities correctly after rename (it scans recursively, but verify)
+- [x] `plan init` creates `specs/`, `work/`, `decisions/`, `milestones/` directories
+- [x] `plan create` writes files to the correct plural directories
+- [x] Status filter pages and type index pages use the new directory names
+- [x] `TYPE_DIRS` mapping in `create.ts` updated
+- [x] `STATUS_PAGES` in `templates.ts` updated with new `typeDir` values
+- [x] `TYPE_TITLES` in `templates.ts` updated
+- [x] `init.ts` directory list updated
+- [x] `plan/INSTRUCTIONS.md` (or `plan/CLAUDE.md` until WORK-142 lands) documents the new structure
+- [x] Root `CLAUDE.md` plan section updated to reflect new directory names
+- [x] Our own `plan/` directory renamed manually (`spec/` to `specs/`, `decision/` to `decisions/`, `milestone/` to `milestones/`)
+- [x] All internal links in existing plan content updated (e.g., index.md links to subdirectories)
+- [x] Scanner still finds entities correctly after rename (it scans recursively, but verify)
 
 ## Approach
 
@@ -56,5 +56,26 @@ Then update links in `plan/index.md` and any status filter pages that reference 
 ## References
 
 - {% ref "SPEC-039" /%} — parent spec
+
+## Resolution
+
+Completed: 2026-04-14
+
+Branch: `claude/plan-package-review-Z4sJE`
+
+### What was done
+- Updated `init.ts`: directory list, example subDirs, index.md links, INSTRUCTIONS_CONTENT
+- Updated `create.ts`: TYPE_DIRS mapping (spec→specs, decision→decisions, milestone→milestones)
+- Updated `templates.ts`: STATUS_PAGES typeDir values and TYPE_TITLES keys
+- Updated `init.test.ts`: all directory path assertions
+- Renamed our own plan directories: spec/→specs/, decision/→decisions/, milestone/→milestones/
+- Updated site docs: index.md, cli.md, workflow.md directory references
+- Updated root CLAUDE.md and plan/INSTRUCTIONS.md
+- Scanner confirmed working (scans recursively, directory names don't matter)
+- 51 tests passing (init + create)
+
+### Notes
+- work/ stays singular — collective noun, "works" is awkward
+- No migration command needed since we're the only users
 
 {% /work %}
