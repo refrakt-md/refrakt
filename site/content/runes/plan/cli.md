@@ -147,9 +147,9 @@ refrakt plan create work --id WORK-042 --title "Add search indexing"
 |------|-----------|
 | work | `plan/work/` |
 | bug | `plan/work/` |
-| spec | `plan/spec/` |
-| decision | `plan/decision/` |
-| milestone | `plan/milestone/` |
+| spec | `plan/specs/` |
+| decision | `plan/decisions/` |
+| milestone | `plan/milestones/` |
 
 ## refrakt plan next-id
 
@@ -229,9 +229,9 @@ refrakt plan init --agent none --dir planning
 ### What it creates
 
 - `plan/work/` — directory for work items and bugs
-- `plan/spec/` — directory for specifications
-- `plan/decision/` — directory for decision records
-- `plan/milestone/` — directory for milestones
+- `plan/specs/` — directory for specifications
+- `plan/decisions/` — directory for decision records
+- `plan/milestones/` — directory for milestones
 - `plan/index.md` — overview page with quick start
 - `plan/INSTRUCTIONS.md` — full workflow guide (tool-agnostic)
 - Example work item, spec, decision, and milestone files

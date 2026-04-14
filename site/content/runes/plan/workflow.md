@@ -30,7 +30,7 @@ When no `--agent` flag is provided, `plan init` auto-detects which instruction f
 ### How it works with AI assistants
 
 1. **Discovery** — The assistant runs `refrakt plan next` to find the highest-priority actionable item
-2. **Context** — It reads the work item's file, follows references to specs in `plan/spec/`, and checks related decisions in `plan/decision/`
+2. **Context** — It reads the work item's file, follows references to specs in `plan/specs/`, and checks related decisions in `plan/decisions/`
 3. **Implementation** — It implements the changes, checking off acceptance criteria as each one is met
 4. **Completion** — When all criteria pass, it marks the item done and can move to the next
 
@@ -49,7 +49,7 @@ You can add plan-specific instructions to `plan/INSTRUCTIONS.md`. This file is g
 
 ### Spec-first development
 
-1. Write a spec in `plan/spec/` describing what to build
+1. Write a spec in `plan/specs/` describing what to build
 2. Get the spec reviewed and accepted (`refrakt plan update SPEC-001 --status accepted`)
 3. Break the spec into work items in `plan/work/`, each referencing the spec
 4. Assign milestones and priorities

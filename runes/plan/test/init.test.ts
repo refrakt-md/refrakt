@@ -19,20 +19,20 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		expect(existsSync(join(planDir, 'work'))).toBe(true);
-		expect(existsSync(join(planDir, 'spec'))).toBe(true);
-		expect(existsSync(join(planDir, 'decision'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestone'))).toBe(true);
+		expect(existsSync(join(planDir, 'specs'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones'))).toBe(true);
 	});
 
 	it('creates example files', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		expect(existsSync(join(planDir, 'spec', 'example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
 		// Work item is created via the template slug
 		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'decision', 'example-decision.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestone', 'first-release.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
 	});
 
 	it('creates index.md', () => {
@@ -179,7 +179,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const spec = readFileSync(join(planDir, 'spec', 'example-spec.md'), 'utf-8');
+		const spec = readFileSync(join(planDir, 'specs', 'example-spec.md'), 'utf-8');
 		expect(spec).toContain('{% spec');
 		expect(spec).toContain('{% /spec %}');
 	});
@@ -188,7 +188,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const decision = readFileSync(join(planDir, 'decision', 'example-decision.md'), 'utf-8');
+		const decision = readFileSync(join(planDir, 'decisions', 'example-decision.md'), 'utf-8');
 		expect(decision).toContain('{% decision');
 		expect(decision).toContain('{% /decision %}');
 	});
@@ -197,7 +197,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const milestone = readFileSync(join(planDir, 'milestone', 'first-release.md'), 'utf-8');
+		const milestone = readFileSync(join(planDir, 'milestones', 'first-release.md'), 'utf-8');
 		expect(milestone).toContain('{% milestone');
 		expect(milestone).toContain('name="v0.1.0"');
 		expect(milestone).toContain('{% /milestone %}');
@@ -221,7 +221,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['accepted', 'draft']) {
-			const filePath = join(planDir, 'spec', `${status}.md`);
+			const filePath = join(planDir, 'specs', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -233,7 +233,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['accepted', 'proposed']) {
-			const filePath = join(planDir, 'decision', `${status}.md`);
+			const filePath = join(planDir, 'decisions', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -245,7 +245,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['active', 'complete']) {
-			const filePath = join(planDir, 'milestone', `${status}.md`);
+			const filePath = join(planDir, 'milestones', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -256,7 +256,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		for (const typeDir of ['work', 'spec', 'decision', 'milestone']) {
+		for (const typeDir of ['work', 'specs', 'decisions', 'milestones']) {
 			const indexPath = join(planDir, typeDir, 'index.md');
 			expect(existsSync(indexPath)).toBe(true);
 			const content = readFileSync(indexPath, 'utf-8');
@@ -281,10 +281,10 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		const content = readFileSync(join(planDir, 'index.md'), 'utf-8');
-		expect(content).toContain('[Specifications](spec/)');
+		expect(content).toContain('[Specifications](specs/)');
 		expect(content).toContain('[Work Items](work/)');
-		expect(content).toContain('[Decisions](decision/)');
-		expect(content).toContain('[Milestones](milestone/)');
+		expect(content).toContain('[Decisions](decisions/)');
+		expect(content).toContain('[Milestones](milestones/)');
 	});
 
 	it('status filter pages are idempotent', () => {

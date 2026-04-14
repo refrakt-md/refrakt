@@ -85,10 +85,11 @@ All plan runes automatically receive `created` and `modified` dates from the con
 
 ```
 plan/
-  spec/      — Specifications (source of truth for what to build)
-  work/      — Work items and bugs (what to implement)
-  decision/  — Architecture decision records (why it's built this way)
-  index.md   — Overview page with progress and activity runes
+  specs/      — Specifications (source of truth for what to build)
+  work/       — Work items and bugs (what to implement)
+  decisions/  — Architecture decision records (why it's built this way)
+  milestones/ — Named release targets with scope and goals
+  index.md    — Overview page with progress and activity runes
 ```
 
 ## When to use

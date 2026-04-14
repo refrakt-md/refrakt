@@ -152,22 +152,22 @@ export const STATUS_PAGES: StatusPageDef[] = [
 	{ typeDir: 'work', status: 'blocked', title: 'Blocked', sort: 'priority', show: 'all' },
 	{ typeDir: 'work', status: 'done', title: 'Done', sort: 'priority', show: 'all' },
 	// Specs
-	{ typeDir: 'spec', status: 'accepted', title: 'Accepted', sort: 'id', show: 'spec' },
-	{ typeDir: 'spec', status: 'draft', title: 'Draft', sort: 'id', show: 'spec' },
+	{ typeDir: 'specs', status: 'accepted', title: 'Accepted', sort: 'id', show: 'spec' },
+	{ typeDir: 'specs', status: 'draft', title: 'Draft', sort: 'id', show: 'spec' },
 	// Decisions
-	{ typeDir: 'decision', status: 'accepted', title: 'Accepted', sort: 'id', show: 'decision' },
-	{ typeDir: 'decision', status: 'proposed', title: 'Proposed', sort: 'id', show: 'decision' },
+	{ typeDir: 'decisions', status: 'accepted', title: 'Accepted', sort: 'id', show: 'decision' },
+	{ typeDir: 'decisions', status: 'proposed', title: 'Proposed', sort: 'id', show: 'decision' },
 	// Milestones
-	{ typeDir: 'milestone', status: 'active', title: 'Active', sort: 'id', show: 'milestone' },
-	{ typeDir: 'milestone', status: 'complete', title: 'Complete', sort: 'id', show: 'milestone' },
+	{ typeDir: 'milestones', status: 'active', title: 'Active', sort: 'id', show: 'milestone' },
+	{ typeDir: 'milestones', status: 'complete', title: 'Complete', sort: 'id', show: 'milestone' },
 ];
 
 /** Human-readable labels for type directories. */
 const TYPE_TITLES: Record<string, string> = {
 	work: 'Work Items',
-	spec: 'Specifications',
-	decision: 'Decisions',
-	milestone: 'Milestones',
+	specs: 'Specifications',
+	decisions: 'Decisions',
+	milestones: 'Milestones',
 };
 
 /**
