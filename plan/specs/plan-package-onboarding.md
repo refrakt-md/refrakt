@@ -149,14 +149,17 @@ A more advanced version could detect common document patterns:
 
 This detection would be opt-in (`--detect-type`) and should err on the side of asking the user rather than guessing wrong.
 
-### Scope
+### Status: Deferred
 
-The initial version should be simple — take a type and a path, wrap content in rune tags, auto-assign IDs, and copy to the right directory. Pattern detection and format conversion can come later.
+This feature is deferred until real user demand clarifies what's needed. The existing CLI (`plan create`, `plan update`) is already a sufficient API for AI agents to perform migrations on behalf of users — an agent can read source documents and call the CLI in a loop, making judgment calls about type mapping and content structure that would be hard to codify in a rigid import command. Different users will have wildly different source formats (Notion exports, Jira dumps, plain markdown, GitHub issues), making a one-size-fits-all import tool likely to be either too generic or too opinionated.
 
-### Open questions
+Revisit if a clear pattern emerges from real adoption.
+
+### Open questions (for when this is revisited)
 
 - Should import modify files in place or always copy to the plan directory? Copying is safer but creates duplication.
 - Should it strip YAML frontmatter after extracting attributes, or preserve it as a comment?
 - Should there be a `--link` mode that creates plan items that reference external files rather than copying content?
+- Is a CLI command even the right shape, or is "ask your AI tool to migrate these" the better answer?
 
 {% /spec %}

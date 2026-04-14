@@ -350,6 +350,8 @@ function handleInit(args: string[]): void {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
 	let projectRoot = '.';
 	let formatJson = false;
+	let agent: string | undefined;
+	const validAgents = ['claude', 'cursor', 'copilot', 'windsurf', 'cline', 'none'];
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -357,30 +359,36 @@ function handleInit(args: string[]): void {
 			dir = args[++i];
 		} else if (arg === '--project-root' && args[i + 1]) {
 			projectRoot = args[++i];
+		} else if (arg === '--agent' && args[i + 1]) {
+			agent = args[++i];
+			if (!validAgents.includes(agent)) {
+				console.error(`Error: Invalid agent "${agent}". Valid agents: ${validAgents.join(', ')}`);
+				process.exit(1);
+			}
 		} else if (arg === '--format' && args[i + 1] === 'json') {
 			formatJson = true;
 			i++;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--format json]');
+			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--format json]');
 			process.exit(1);
 		}
 	}
 
-	const result = runInit({ dir, projectRoot });
+	const result = runInit({ dir, projectRoot, agent: agent as any });
 
 	if (formatJson) {
 		console.log(JSON.stringify(result, null, 2));
 	} else {
-		if (result.created.length === 0) {
+		if (result.created.length === 0 && result.agentFilesUpdated.length === 0) {
 			console.log('Plan structure already exists. No changes made.');
 		} else {
 			console.log(`Initialized plan in ${result.dir}/`);
 			for (const f of result.created) {
 				console.log(`  + ${f}`);
 			}
-			if (result.claudeMdUpdated) {
-				console.log('  + Updated CLAUDE.md with workflow section');
+			for (const f of result.agentFilesUpdated) {
+				console.log(`  + Updated ${f} with plan reference`);
 			}
 		}
 	}

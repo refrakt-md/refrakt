@@ -16,23 +16,23 @@ afterEach(() => {
 describe('plan init', () => {
 	it('creates plan directories', () => {
 		const planDir = join(TMP, 'plan');
-		const result = runInit({ dir: planDir, projectRoot: TMP });
+		runInit({ dir: planDir, projectRoot: TMP });
 
 		expect(existsSync(join(planDir, 'work'))).toBe(true);
-		expect(existsSync(join(planDir, 'spec'))).toBe(true);
-		expect(existsSync(join(planDir, 'decision'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestone'))).toBe(true);
+		expect(existsSync(join(planDir, 'specs'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones'))).toBe(true);
 	});
 
 	it('creates example files', () => {
 		const planDir = join(TMP, 'plan');
-		const result = runInit({ dir: planDir, projectRoot: TMP });
+		runInit({ dir: planDir, projectRoot: TMP });
 
-		expect(existsSync(join(planDir, 'spec', 'example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
 		// Work item is created via the template slug
 		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'decision', 'example-decision.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestone', 'first-release.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
 	});
 
 	it('creates index.md', () => {
@@ -44,16 +44,38 @@ describe('plan init', () => {
 		expect(index).toContain('refrakt plan next');
 	});
 
-	it('creates CLAUDE.md with workflow section when it does not exist', () => {
+	it('creates INSTRUCTIONS.md with workflow guide', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const instructions = readFileSync(join(planDir, 'INSTRUCTIONS.md'), 'utf-8');
+		expect(instructions).toContain('# Plan — Workflow Guide');
+		expect(instructions).toContain('refrakt plan next');
+		expect(instructions).toContain('refrakt plan update');
+		expect(instructions).toContain('ID Conventions');
+		expect(instructions).toContain('Valid Statuses');
+	});
+
+	it('INSTRUCTIONS.md contains no AI tool-specific references', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const instructions = readFileSync(join(planDir, 'INSTRUCTIONS.md'), 'utf-8');
+		expect(instructions).not.toContain('Claude');
+		expect(instructions).not.toContain('Cursor');
+		expect(instructions).not.toContain('Copilot');
+	});
+
+	it('creates CLAUDE.md with pointer when no agent files exist (fallback)', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
+		expect(claude).toContain('plan/INSTRUCTIONS.md');
 		expect(claude).toContain('refrakt plan next');
-		expect(claude).toContain('refrakt plan update');
 	});
 
-	it('appends workflow section to existing CLAUDE.md', () => {
+	it('appends pointer to existing CLAUDE.md', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# My Project\n\nExisting content.\n');
 		const planDir = join(TMP, 'plan');
 		const result = runInit({ dir: planDir, projectRoot: TMP });
@@ -61,29 +83,28 @@ describe('plan init', () => {
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
 		expect(claude).toContain('# My Project');
 		expect(claude).toContain('Existing content.');
-		expect(claude).toContain('refrakt plan next');
-		expect(result.claudeMdUpdated).toBe(true);
+		expect(claude).toContain('plan/INSTRUCTIONS.md');
+		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
 	});
 
-	it('does not duplicate workflow section in CLAUDE.md', () => {
+	it('does not duplicate pointer in agent files', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# Proj\n\nrefrakt plan next\n');
 		const planDir = join(TMP, 'plan');
 		const result = runInit({ dir: planDir, projectRoot: TMP });
 
-		expect(result.claudeMdUpdated).toBe(false);
+		expect(result.agentFilesUpdated).toHaveLength(0);
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
-		// Should appear exactly once
 		const matches = claude.match(/refrakt plan next/g);
 		expect(matches).toHaveLength(1);
 	});
 
 	it('is idempotent — running twice does not create duplicates', () => {
 		const planDir = join(TMP, 'plan');
-		const r1 = runInit({ dir: planDir, projectRoot: TMP });
+		runInit({ dir: planDir, projectRoot: TMP });
 		const r2 = runInit({ dir: planDir, projectRoot: TMP });
 
 		expect(r2.created).toHaveLength(0);
-		expect(r2.claudeMdUpdated).toBe(false);
+		expect(r2.agentFilesUpdated).toHaveLength(0);
 	});
 
 	it('reports created files', () => {
@@ -92,6 +113,56 @@ describe('plan init', () => {
 
 		expect(result.created.length).toBeGreaterThan(0);
 		expect(result.dir).toBe(planDir);
+	});
+
+	it('--agent claude appends to CLAUDE.md only', () => {
+		writeFileSync(join(TMP, '.cursorrules'), '# Cursor rules\n');
+		const planDir = join(TMP, 'plan');
+		const result = runInit({ dir: planDir, projectRoot: TMP, agent: 'claude' });
+
+		expect(result.agentFilesUpdated).toEqual(['CLAUDE.md']);
+		expect(existsSync(join(TMP, 'CLAUDE.md'))).toBe(true);
+		const cursor = readFileSync(join(TMP, '.cursorrules'), 'utf-8');
+		expect(cursor).not.toContain('plan/INSTRUCTIONS.md');
+	});
+
+	it('--agent cursor appends to .cursorrules', () => {
+		writeFileSync(join(TMP, '.cursorrules'), '# Cursor rules\n');
+		const planDir = join(TMP, 'plan');
+		const result = runInit({ dir: planDir, projectRoot: TMP, agent: 'cursor' });
+
+		expect(result.agentFilesUpdated).toEqual(['.cursorrules']);
+		const cursor = readFileSync(join(TMP, '.cursorrules'), 'utf-8');
+		expect(cursor).toContain('plan/INSTRUCTIONS.md');
+	});
+
+	it('--agent copilot creates .github/ directory if needed', () => {
+		const planDir = join(TMP, 'plan');
+		const result = runInit({ dir: planDir, projectRoot: TMP, agent: 'copilot' });
+
+		expect(result.agentFilesUpdated).toEqual(['.github/copilot-instructions.md']);
+		const content = readFileSync(join(TMP, '.github', 'copilot-instructions.md'), 'utf-8');
+		expect(content).toContain('plan/INSTRUCTIONS.md');
+	});
+
+	it('--agent none skips agent file updates', () => {
+		writeFileSync(join(TMP, 'CLAUDE.md'), '# Existing\n');
+		const planDir = join(TMP, 'plan');
+		const result = runInit({ dir: planDir, projectRoot: TMP, agent: 'none' });
+
+		expect(result.agentFilesUpdated).toHaveLength(0);
+		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
+		expect(claude).not.toContain('plan/INSTRUCTIONS.md');
+	});
+
+	it('auto-detect appends to all existing agent files', () => {
+		writeFileSync(join(TMP, 'CLAUDE.md'), '# Claude\n');
+		writeFileSync(join(TMP, '.cursorrules'), '# Cursor\n');
+		const planDir = join(TMP, 'plan');
+		const result = runInit({ dir: planDir, projectRoot: TMP });
+
+		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
+		expect(result.agentFilesUpdated).toContain('.cursorrules');
 	});
 
 	it('example work item is valid markdoc', () => {
@@ -108,7 +179,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const spec = readFileSync(join(planDir, 'spec', 'example-spec.md'), 'utf-8');
+		const spec = readFileSync(join(planDir, 'specs', 'example-spec.md'), 'utf-8');
 		expect(spec).toContain('{% spec');
 		expect(spec).toContain('{% /spec %}');
 	});
@@ -117,7 +188,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const decision = readFileSync(join(planDir, 'decision', 'example-decision.md'), 'utf-8');
+		const decision = readFileSync(join(planDir, 'decisions', 'example-decision.md'), 'utf-8');
 		expect(decision).toContain('{% decision');
 		expect(decision).toContain('{% /decision %}');
 	});
@@ -126,7 +197,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		const milestone = readFileSync(join(planDir, 'milestone', 'first-release.md'), 'utf-8');
+		const milestone = readFileSync(join(planDir, 'milestones', 'first-release.md'), 'utf-8');
 		expect(milestone).toContain('{% milestone');
 		expect(milestone).toContain('name="v0.1.0"');
 		expect(milestone).toContain('{% /milestone %}');
@@ -150,7 +221,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['accepted', 'draft']) {
-			const filePath = join(planDir, 'spec', `${status}.md`);
+			const filePath = join(planDir, 'specs', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -162,7 +233,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['accepted', 'proposed']) {
-			const filePath = join(planDir, 'decision', `${status}.md`);
+			const filePath = join(planDir, 'decisions', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -174,7 +245,7 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		for (const status of ['active', 'complete']) {
-			const filePath = join(planDir, 'milestone', `${status}.md`);
+			const filePath = join(planDir, 'milestones', `${status}.md`);
 			expect(existsSync(filePath)).toBe(true);
 			const content = readFileSync(filePath, 'utf-8');
 			expect(content).toContain(`filter="status:${status}"`);
@@ -185,7 +256,7 @@ describe('plan init', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
 
-		for (const typeDir of ['work', 'spec', 'decision', 'milestone']) {
+		for (const typeDir of ['work', 'specs', 'decisions', 'milestones']) {
 			const indexPath = join(planDir, typeDir, 'index.md');
 			expect(existsSync(indexPath)).toBe(true);
 			const content = readFileSync(indexPath, 'utf-8');
@@ -210,10 +281,10 @@ describe('plan init', () => {
 		runInit({ dir: planDir, projectRoot: TMP });
 
 		const content = readFileSync(join(planDir, 'index.md'), 'utf-8');
-		expect(content).toContain('[Specifications](spec/)');
+		expect(content).toContain('[Specifications](specs/)');
 		expect(content).toContain('[Work Items](work/)');
-		expect(content).toContain('[Decisions](decision/)');
-		expect(content).toContain('[Milestones](milestone/)');
+		expect(content).toContain('[Decisions](decisions/)');
+		expect(content).toContain('[Milestones](milestones/)');
 	});
 
 	it('status filter pages are idempotent', () => {

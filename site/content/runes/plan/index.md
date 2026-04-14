@@ -7,7 +7,7 @@ description: Spec-driven project planning with AI-native workflows and CLI tooli
 
 Spec-driven project planning with AI-native workflows. Write specs, track work items, record architectural decisions, and manage milestones — all in Markdown files that live alongside your code.
 
-Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/runes/plan/cli) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/runes/plan/workflow) for integrating with AI coding assistants like Claude Code.
+Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/runes/plan/cli) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/runes/plan/workflow) for integrating with AI coding assistants.
 
 ## Installation
 
@@ -27,7 +27,7 @@ Initialize a plan directory in your project:
 refrakt plan init
 ```
 
-This creates the `plan/` directory structure with example files and updates your `CLAUDE.md` with workflow instructions.
+This creates the `plan/` directory structure with example files, generates a `plan/INSTRUCTIONS.md` workflow guide, and appends a reference to your AI tool's instruction file (auto-detected or specified via `--agent`).
 
 ## What's included
 
@@ -85,10 +85,11 @@ All plan runes automatically receive `created` and `modified` dates from the con
 
 ```
 plan/
-  spec/      — Specifications (source of truth for what to build)
-  work/      — Work items and bugs (what to implement)
-  decision/  — Architecture decision records (why it's built this way)
-  index.md   — Overview page with progress and activity runes
+  specs/      — Specifications (source of truth for what to build)
+  work/       — Work items and bugs (what to implement)
+  decisions/  — Architecture decision records (why it's built this way)
+  milestones/ — Named release targets with scope and goals
+  index.md    — Overview page with progress and activity runes
 ```
 
 ## When to use

@@ -12,9 +12,9 @@ export const EXIT_DUPLICATE_ID = 3;
 const TYPE_DIRS: Record<PlanItemType, string> = {
 	work: 'work',
 	bug: 'work', // bugs live alongside work items
-	decision: 'decision',
-	spec: 'spec',
-	milestone: 'milestone',
+	decision: 'decisions',
+	spec: 'specs',
+	milestone: 'milestones',
 };
 
 export interface CreateOptions {
