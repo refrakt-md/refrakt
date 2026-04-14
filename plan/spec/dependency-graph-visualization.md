@@ -144,19 +144,18 @@ Left-to-right DAG layouts can easily exceed 1500px wide, making them unusable on
 
 The TB layout is naturally narrower (nodes stack vertically, edges run downward) and fits mobile viewports well. Both SVGs are in the DOM; only one renders. The payload doubles but individual milestone graphs are small.
 
-**Full project graph and dashboard critical-path** — on viewports below 48rem, hide the SVG entirely and show a fallback dependency list. This list uses the same HTML structure as the auto-relationships cards — a compact vertical listing of entities grouped by dependency chain. The graph adds value on desktop where there's spatial room; on mobile, the textual representation is more readable than a squished SVG.
+**Full project graph and dashboard critical-path** — hidden entirely on mobile. The graph's value is spatial — topology, clustering, critical path shape — and these don't reduce meaningfully to a list. The same data is already accessible through existing mobile-friendly views: sidebar status groups, backlog filters, and auto-relationships cards on entity pages. No fallback list is generated; there's no point duplicating what other runes already provide.
 
 ```css
-.rf-plan-graph__svg   { display: block; }
-.rf-plan-graph__list  { display: none; }
-
+.rf-plan-graph--full {
+  display: block;
+}
 @media (max-width: 48rem) {
-  .rf-plan-graph__svg   { display: none; }
-  .rf-plan-graph__list  { display: block; }
+  .rf-plan-graph--full {
+    display: none;
+  }
 }
 ```
-
-The postProcess resolver generates both the SVG and the fallback list for every `plan-graph` instance. The list is cheap — it's the same data, just rendered as nested `<ul>` elements instead of SVG geometry.
 
 -----
 
@@ -464,8 +463,8 @@ This is immediately useful with zero new dependencies. The insights algorithms (
 - Build the graph → dagre layout → SVG generation pipeline
 - `plan-graph` rune with all attributes
 - Node styling with shapes, colours, and links via Lumina tokens
-- Dual-layout generation (LR + TB) for mobile responsive toggle
-- Fallback dependency list for large graphs on narrow viewports
+- Dual-layout generation (LR + TB) for milestone/entity graphs on mobile
+- CSS hide for full project graphs on narrow viewports (no fallback — existing views cover it)
 
 ### Phase 3: CLI box-drawing renderer
 
@@ -495,9 +494,9 @@ Show `depends-on`, `blocks`, and `implements`/`informs` by default. Hide `relate
 
 When a milestone-scoped or filtered graph has edges pointing to entities outside the filter, those external entities appear as ghost nodes (lighter fill, dashed border, no link). This shows that a dependency exists without cluttering the graph with the full external subgraph. Ghost nodes are not laid out by dagre — they're appended at fixed positions relative to the edge endpoint.
 
-### 5. Mobile responsive: dual layout + list fallback
+### 5. Mobile responsive: dual layout + hide
 
-On viewports below 48rem, milestone and entity-focused graphs switch from LR to TB layout via CSS toggle (both SVGs are in the DOM, only one renders). Full project graphs and dashboard critical-path sections fall back to a dependency list on mobile — the textual representation is more readable than a scaled-down SVG for dense graphs. Both the alternate-direction SVG and the fallback list are generated at build time alongside the primary SVG.
+On viewports below 48rem, milestone and entity-focused graphs switch from LR to TB layout via CSS toggle (both SVGs are in the DOM, only one renders). Full project graphs and dashboard critical-path sections are hidden entirely on mobile — no fallback list. The graph's value is spatial and doesn't reduce to a list without duplicating what the backlog, sidebar, and relationship cards already show.
 
 ### 6. Graph insights as first-class output
 
