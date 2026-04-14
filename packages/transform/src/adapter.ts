@@ -136,8 +136,10 @@ export interface SeoToHtmlOptions {
 	siteName?: string;
 	/** Base URL for canonical links and og:url (e.g. "https://refrakt.md") */
 	baseUrl?: string;
-	/** Default og:image for pages without their own image (path relative to site root, e.g. "/favicon-192.png") */
+	/** Default og:image for pages without their own image (path relative to site root, e.g. "/og-image.png"). Recommended size: 1200x630px. */
 	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema (path relative to site root, e.g. "/favicon-192.png") */
+	logo?: string;
 }
 
 /**
@@ -201,8 +203,8 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 			name: siteName,
 			url: options.baseUrl,
 		};
-		if (options.defaultImage) {
-			org.logo = options.baseUrl + options.defaultImage;
+		if (options.logo) {
+			org.logo = options.baseUrl + options.logo;
 		}
 		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(org)}</script>`);
 	}

@@ -32,8 +32,10 @@ export interface RefraktConfig {
 	baseUrl?: string;
 	/** Human-readable site name for og:site_name meta tag */
 	siteName?: string;
-	/** Default og:image for pages without their own image (path relative to site root, e.g. "/favicon-192.png") */
+	/** Default og:image for pages without their own image (path relative to site root, e.g. "/og-image.png"). Recommended size: 1200x630px. */
 	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema (path relative to site root, e.g. "/favicon-192.png"). Google uses this for the site icon in search results. */
+	logo?: string;
 	/** Rune resolution configuration */
 	runes?: {
 		/** Resolve name collisions between community packages: rune name → preferred package name.
@@ -67,8 +69,10 @@ export interface ThemeManifest {
 	siteName?: string;
 	/** Base URL for canonical links and og:url (e.g. "https://refrakt.md") */
 	baseUrl?: string;
-	/** Default og:image for pages without their own image (path relative to site root, e.g. "/favicon-192.png") */
+	/** Default og:image for pages without their own image (path relative to site root, e.g. "/og-image.png"). Recommended size: 1200x630px. */
 	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema (path relative to site root, e.g. "/favicon-192.png") */
+	logo?: string;
 	/** Rune-to-component mappings keyed by typeof name */
 	components: Record<string, ComponentDefinition>;
 	/** Behavior when a rune has no matching component */

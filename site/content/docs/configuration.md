@@ -35,7 +35,7 @@ Every refrakt.md project has a `refrakt.config.json` file at its root. This file
 }
 ```
 
-The public base URL of your site. Used to generate absolute URLs for `<link rel="canonical">`, `og:url`, `og:image`, and other SEO meta tags. Also required for automatic WebSite and Organization JSON-LD generation (see `defaultImage`). Without this, canonical links and Open Graph URLs will use relative paths.
+The public base URL of your site. Used to generate absolute URLs for `<link rel="canonical">`, `og:url`, `og:image`, and other SEO meta tags. Also required for automatic WebSite and Organization JSON-LD generation (see `logo`). Without this, canonical links and Open Graph URLs will use relative paths.
 
 ### siteName
 
@@ -47,17 +47,29 @@ The public base URL of your site. Used to generate absolute URLs for `<link rel=
 
 Human-readable site name, used in the `og:site_name` meta tag and the auto-generated WebSite/Organization JSON-LD schemas. If omitted, defaults to `"refrakt.md"` in the Svelte adapter.
 
+### logo
+
+```json
+{
+  "logo": "/favicon-192.png"
+}
+```
+
+Site logo image used in the auto-generated [Organization](https://schema.org/Organization) JSON-LD schema. Google uses this to display your site's icon in search results and knowledge panels. The path is relative to the site root and is resolved to an absolute URL using `baseUrl`.
+
+When `baseUrl` is set, refrakt automatically emits [WebSite](https://schema.org/WebSite) and [Organization](https://schema.org/Organization) JSON-LD schemas. The Organization schema includes `logo` as its logo property.
+
 ### defaultImage
 
 ```json
 {
-  "defaultImage": "/favicon-192.png"
+  "defaultImage": "/og-image.png"
 }
 ```
 
-Default image for Open Graph and Twitter Card meta tags on pages that don't have their own image (from frontmatter or content). The path is relative to the site root and is resolved to an absolute URL using `baseUrl`.
+Default image for Open Graph and Twitter Card meta tags on pages that don't have their own image (from frontmatter or content). The path is relative to the site root and is resolved to an absolute URL using `baseUrl`. The recommended size is 1200x630px — this is the image shown when your pages are shared on social media (Twitter, Slack, Discord, LinkedIn, etc.).
 
-When both `baseUrl` and `defaultImage` are set, refrakt also emits [WebSite](https://schema.org/WebSite) and [Organization](https://schema.org/Organization) JSON-LD schemas automatically. The Organization schema includes the `defaultImage` as the `logo` property, which Google uses to display your site's logo in search results.
+This is separate from `logo`, which is used for structured data. Most sites can leave `defaultImage` unset and instead set `image` in frontmatter on pages that benefit from a social preview (blog posts, landing pages, etc.).
 
 ### packages
 
@@ -216,7 +228,7 @@ Configuration for the `{% sandbox %}` rune. The `examplesDir` field sets the dir
   "target": "svelte",
   "baseUrl": "https://example.com",
   "siteName": "My Documentation",
-  "defaultImage": "/og-image.png",
+  "logo": "/favicon-192.png",
   "packages": [
     "@refrakt-md/marketing",
     "@refrakt-md/docs",

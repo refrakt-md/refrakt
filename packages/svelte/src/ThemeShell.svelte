@@ -153,7 +153,7 @@
 			'@type': 'Organization',
 			name: theme.manifest.siteName ?? theme.manifest.name,
 			url: theme.manifest.baseUrl,
-			...(theme.manifest.defaultImage ? { logo: theme.manifest.baseUrl + theme.manifest.defaultImage } : {})
+			...(theme.manifest.logo ? { logo: theme.manifest.baseUrl + theme.manifest.logo } : {})
 		})}</script>`}
 	{/if}
 </svelte:head>
