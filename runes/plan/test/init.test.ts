@@ -44,6 +44,28 @@ describe('plan init', () => {
 		expect(index).toContain('refrakt plan next');
 	});
 
+	it('creates plan/CLAUDE.md reference guide', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const planClaude = readFileSync(join(planDir, 'CLAUDE.md'), 'utf-8');
+		expect(planClaude).toContain('# Plan — Claude Code Guide');
+		expect(planClaude).toContain('## Valid Statuses');
+		expect(planClaude).toContain('## Required Content Structure');
+		expect(planClaude).toContain('## ID Conventions');
+		expect(planClaude).toContain('Complexity guide');
+	});
+
+	it('does not overwrite existing plan/CLAUDE.md', () => {
+		const planDir = join(TMP, 'plan');
+		mkdirSync(planDir, { recursive: true });
+		writeFileSync(join(planDir, 'CLAUDE.md'), '# Custom Guide\n');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const planClaude = readFileSync(join(planDir, 'CLAUDE.md'), 'utf-8');
+		expect(planClaude).toBe('# Custom Guide\n');
+	});
+
 	it('creates CLAUDE.md with workflow section when it does not exist', () => {
 		const planDir = join(TMP, 'plan');
 		runInit({ dir: planDir, projectRoot: TMP });
@@ -51,6 +73,24 @@ describe('plan init', () => {
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
 		expect(claude).toContain('refrakt plan next');
 		expect(claude).toContain('refrakt plan update');
+	});
+
+	it('CLAUDE.md includes structure, rune syntax, and completion checklist', () => {
+		const planDir = join(TMP, 'plan');
+		runInit({ dir: planDir, projectRoot: TMP });
+
+		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
+		expect(claude).toContain('### Structure');
+		expect(claude).toContain('milestone/');
+		expect(claude).toContain('### Rune syntax');
+		expect(claude).toContain('{% spec');
+		expect(claude).toContain('{% work');
+		expect(claude).toContain('{% bug');
+		expect(claude).toContain('{% decision');
+		expect(claude).toContain('{% milestone');
+		expect(claude).toContain('MANDATORY: Work Item Completion Checklist');
+		expect(claude).toContain('### Creating plan content');
+		expect(claude).toContain('--resolve');
 	});
 
 	it('appends workflow section to existing CLAUDE.md', () => {

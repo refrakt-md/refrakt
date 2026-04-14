@@ -279,7 +279,7 @@ npx refrakt plan create decision --title "Decision title"
 npx refrakt plan init
 ```
 
-Creates `plan/work/`, `plan/spec/`, `plan/decision/` with example files and updates `CLAUDE.md` with workflow instructions.
+Creates `plan/work/`, `plan/spec/`, `plan/decision/`, `plan/milestone/` with example files, a `plan/CLAUDE.md` reference guide, and updates the root `CLAUDE.md` with workflow instructions.
 
 ### Complexity guide
 

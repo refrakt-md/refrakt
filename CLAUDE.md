@@ -222,6 +222,7 @@ plan/
   spec/      — Specifications (source of truth for what to build)
   work/      — Work items (what to implement)
   decision/  — Architecture decision records (why it's built this way)
+  milestone/ — Named release targets with scope and goals
 ```
 
 ### Rune syntax
