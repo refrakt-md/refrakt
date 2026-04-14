@@ -1,4 +1,4 @@
-# Plan — Claude Code Guide
+# Plan — Workflow Guide
 
 This directory contains project planning content using the `@refrakt-md/plan` runes package. All files are Markdoc (`.md` with `{% %}` tags).
 
@@ -12,10 +12,10 @@ The content pipeline escapes tags inside fences automatically (`escapeFenceTags`
 
 ```
 plan/
-  spec/      — Specifications (what to build)
-  work/      — Work items and bugs (how to build it)
-  decision/  — Architecture decision records (why it's built this way)
-  milestone/ — Named release targets with scope and goals
+  specs/      — Specifications (what to build)
+  work/       — Work items and bugs (how to build it)
+  decisions/  — Architecture decision records (why it's built this way)
+  milestones/ — Named release targets with scope and goals
 ```
 
 ## ID Conventions
@@ -279,7 +279,7 @@ npx refrakt plan create decision --title "Decision title"
 npx refrakt plan init
 ```
 
-Creates `plan/work/`, `plan/spec/`, `plan/decision/` with example files and updates `CLAUDE.md` with workflow instructions.
+Creates `plan/work/`, `plan/specs/`, `plan/decisions/`, `plan/milestones/` with example files and generates `plan/INSTRUCTIONS.md` with workflow guidance.
 
 ### Complexity guide
 

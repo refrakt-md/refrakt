@@ -219,9 +219,10 @@ Project planning content lives in `plan/` as Markdoc files using the `@refrakt-m
 
 ```
 plan/
-  spec/      — Specifications (source of truth for what to build)
-  work/      — Work items (what to implement)
-  decision/  — Architecture decision records (why it's built this way)
+  specs/      — Specifications (source of truth for what to build)
+  work/       — Work items (what to implement)
+  decisions/  — Architecture decision records (why it's built this way)
+  milestones/ — Named release targets
 ```
 
 ### Rune syntax
@@ -243,8 +244,8 @@ npx refrakt plan update <id> --status in-progress
 ```
 
 3. Before implementing, read:
-   - The work item's referenced specs in `plan/spec/` (follow ID references)
-   - Related decision records in `plan/decision/` (check tags)
+   - The work item's referenced specs in `plan/specs/` (follow ID references)
+   - Related decision records in `plan/decisions/` (check tags)
    - Any dependency work items (ensure they're done)
 
 ```bash
