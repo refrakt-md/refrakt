@@ -33,6 +33,9 @@ This is a straightforward find-and-replace across a small number of files. The s
 
 - `CLAUDE.md` (root) — directory layout section
 - `plan/CLAUDE.md` — directory layout section (or `plan/INSTRUCTIONS.md` if WORK-142 lands first)
+- `site/content/runes/plan/index.md` — directory structure references
+- `site/content/runes/plan/cli.md` — directory paths in command examples
+- `site/content/runes/plan/workflow.md` — directory layout references
 
 ### Manual migration of our own content
 

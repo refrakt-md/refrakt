@@ -16,6 +16,9 @@
 - [ ] Auto-detect falls back to `CLAUDE.md` when no known instruction files are found
 - [ ] The appended content is a short summary with a pointer to the full instructions file, not the full workflow docs
 - [ ] Existing `plan/CLAUDE.md` content is migrated to the new `plan/INSTRUCTIONS.md` with Claude-specific framing removed
+- [ ] `site/content/runes/plan/workflow.md` rewritten as general "AI assistant integration" guide (currently Claude Code-specific)
+- [ ] `site/content/runes/plan/index.md` references to `CLAUDE.md` updated
+- [ ] `site/content/runes/plan/cli.md` references to `CLAUDE.md` updated
 
 ## Approach
 
