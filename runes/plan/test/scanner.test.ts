@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { scanPlanFiles, parseFile } from '../src/scanner.js';
+import { scanPlanFiles, parseFile, parseFileContent, scanPlanSources } from '../src/scanner.js';
+import type { FileSource } from '../src/types.js';
 
 const TMP = join(import.meta.dirname, '.tmp-scanner-test');
 
@@ -501,5 +502,121 @@ describe('edge cases', () => {
 		expect(entities).toHaveLength(1);
 		expect(entities[0].type).toBe('work');
 		expect(entities[0].attributes.id).toBe('WORK-001');
+	});
+});
+
+describe('parseFileContent', () => {
+	it('should parse plan content from a string', () => {
+		const source = `{% work id="WORK-001" status="ready" priority="high" %}
+
+# Build the scanner
+
+## Acceptance Criteria
+- [ ] Scans directories
+- [x] Returns typed objects
+
+{% /work %}`;
+
+		const entity = parseFileContent(source, 'work/WORK-001.md');
+		expect(entity).not.toBeNull();
+		expect(entity!.type).toBe('work');
+		expect(entity!.attributes.id).toBe('WORK-001');
+		expect(entity!.attributes.status).toBe('ready');
+		expect(entity!.attributes.priority).toBe('high');
+		expect(entity!.title).toBe('Build the scanner');
+		expect(entity!.file).toBe('work/WORK-001.md');
+		expect(entity!.criteria).toHaveLength(2);
+		expect(entity!.criteria[0]).toEqual({ text: 'Scans directories', checked: false });
+		expect(entity!.criteria[1]).toEqual({ text: 'Returns typed objects', checked: true });
+	});
+
+	it('should return null for non-plan content', () => {
+		const entity = parseFileContent('# Just a heading\n\nSome text.', 'notes.md');
+		expect(entity).toBeNull();
+	});
+
+	it('should produce the same result as parseFile', () => {
+		const source = `{% spec id="SPEC-001" status="accepted" version="1.0" %}
+
+# Authentication System
+
+Token-based auth for the API.
+
+{% /spec %}`;
+
+		writeMd('spec/auth.md', source);
+
+		const fromContent = parseFileContent(source, 'spec/auth.md');
+		const fromFile = parseFile(join(TMP, 'spec/auth.md'), 'spec/auth.md');
+
+		expect(fromContent).toEqual(fromFile);
+	});
+});
+
+describe('scanPlanSources', () => {
+	it('should parse entities from FileSource array', () => {
+		const sources: FileSource[] = [
+			{
+				path: 'work/WORK-001.md',
+				content: `{% work id="WORK-001" status="in-progress" priority="high" %}
+
+# Implement auth
+
+## Acceptance Criteria
+- [x] Endpoint exists
+- [ ] Returns JWT
+
+{% /work %}`,
+				mtime: 1700000000000,
+			},
+			{
+				path: 'spec/SPEC-001.md',
+				content: `{% spec id="SPEC-001" status="accepted" %}
+
+# Auth Spec
+
+{% /spec %}`,
+				mtime: 1699000000000,
+			},
+		];
+
+		const entities = scanPlanSources(sources);
+		expect(entities).toHaveLength(2);
+
+		const work = entities.find(e => e.type === 'work')!;
+		expect(work.attributes.id).toBe('WORK-001');
+		expect(work.attributes.status).toBe('in-progress');
+		expect(work.mtime).toBe(1700000000000);
+		expect(work.criteria).toHaveLength(2);
+
+		const spec = entities.find(e => e.type === 'spec')!;
+		expect(spec.attributes.id).toBe('SPEC-001');
+		expect(spec.mtime).toBe(1699000000000);
+	});
+
+	it('should skip non-plan files', () => {
+		const sources: FileSource[] = [
+			{ path: 'README.md', content: '# Hello\n\nNot a plan file.' },
+			{ path: 'work/WORK-001.md', content: '{% work id="WORK-001" %}\n\n# Task\n\n{% /work %}' },
+		];
+
+		const entities = scanPlanSources(sources);
+		expect(entities).toHaveLength(1);
+		expect(entities[0].attributes.id).toBe('WORK-001');
+	});
+
+	it('should handle empty sources array', () => {
+		const entities = scanPlanSources([]);
+		expect(entities).toHaveLength(0);
+	});
+
+	it('should leave mtime undefined when not provided', () => {
+		const sources: FileSource[] = [
+			{ path: 'work/WORK-001.md', content: '{% work id="WORK-001" %}\n\n# Task\n\n{% /work %}' },
+		];
+
+		const entities = scanPlanSources(sources);
+		expect(entities).toHaveLength(1);
+		expect(entities[0].mtime).toBeUndefined();
 	});
 });
