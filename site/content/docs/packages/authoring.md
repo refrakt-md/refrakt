@@ -233,7 +233,7 @@ theme: {
 },
 ```
 
-The theme config uses the same `RuneConfig` format documented in the [Engine Config Pattern](/docs/themes/configuration).
+The theme config uses the same `RuneConfig` format documented in the [Theme Config API](/docs/themes/config-api).
 
 ## Referencing Your Package
 
