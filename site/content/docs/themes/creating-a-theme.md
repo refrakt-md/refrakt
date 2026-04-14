@@ -67,7 +67,7 @@ This guide walks through building a custom theme package from the ground up, usi
 
 - Familiarity with CSS and BEM naming
 - Basic knowledge of Node.js and npm
-- Understanding of the [theme overview](/docs/themes/overview) and [configuration reference](/docs/themes/configuration)
+- Understanding of the [theme overview](/docs/themes/overview) and [theme config API](/docs/themes/config-api)
 
 {% steps %}
 

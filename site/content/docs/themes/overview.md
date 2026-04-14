@@ -196,7 +196,7 @@ Your CSS targets these selectors:
 
 ## Next steps
 
-- [Configuration Reference](/docs/themes/configuration) — Complete reference for `ThemeConfig` and `RuneConfig`
+- [Theme Config API](/docs/themes/config-api) — Complete reference for `ThemeConfig` and `RuneConfig`
 - [Universal Theming Dimensions](/docs/themes/dimensions) — Ten semantic dimensions for generic cross-rune styling
 - [CSS Architecture](/docs/themes/css) — BEM conventions, design tokens, variant styling patterns
 - [Creating a Theme](/docs/themes/creating-a-theme) — Step-by-step guide to building a custom theme

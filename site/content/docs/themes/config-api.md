@@ -1,9 +1,9 @@
 ---
-title: Configuration Reference
+title: Theme Config API
 description: Complete reference for ThemeConfig, RuneConfig, and StructureEntry — the declarative API for theme development
 ---
 
-# Configuration Reference
+# Theme Config API
 
 Theme configuration is declarative. Instead of writing transform logic, you describe what each rune should produce — which BEM block it maps to, what modifiers it reads, what structural elements to inject — and the identity transform engine handles the rest.
 

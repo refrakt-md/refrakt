@@ -17,7 +17,7 @@
 ## Themes
 
 - overview
-- configuration
+- config-api
 - dimensions
 - css
 - creating-a-theme
