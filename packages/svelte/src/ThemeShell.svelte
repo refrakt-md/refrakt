@@ -141,6 +141,21 @@
 			{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
 		{/each}
 	{/if}
+	{#if theme.manifest.baseUrl}
+		{@html `<script type="application/ld+json">${JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: theme.manifest.siteName ?? theme.manifest.name,
+			url: theme.manifest.baseUrl
+		})}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name: theme.manifest.siteName ?? theme.manifest.name,
+			url: theme.manifest.baseUrl,
+			...(theme.manifest.defaultImage ? { logo: theme.manifest.baseUrl + theme.manifest.defaultImage } : {})
+		})}</script>`}
+	{/if}
 </svelte:head>
 
 {#key page.url}

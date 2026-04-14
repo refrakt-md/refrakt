@@ -187,6 +187,26 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(schema)}</script>`);
 	}
 
+	if (options?.baseUrl) {
+		const siteName = options.siteName ?? '';
+		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: siteName,
+			url: options.baseUrl,
+		})}</script>`);
+		const org: Record<string, string> = {
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name: siteName,
+			url: options.baseUrl,
+		};
+		if (options.defaultImage) {
+			org.logo = options.baseUrl + options.defaultImage;
+		}
+		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify(org)}</script>`);
+	}
+
 	return {
 		title: data.title,
 		metaTags: parts.join('\n'),

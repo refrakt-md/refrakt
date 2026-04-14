@@ -35,7 +35,7 @@ Every refrakt.md project has a `refrakt.config.json` file at its root. This file
 }
 ```
 
-The public base URL of your site. Used to generate absolute URLs for `<link rel="canonical">`, `og:url`, and other SEO meta tags. Without this, canonical links and Open Graph URLs will use relative paths.
+The public base URL of your site. Used to generate absolute URLs for `<link rel="canonical">`, `og:url`, `og:image`, and other SEO meta tags. Also required for automatic WebSite and Organization JSON-LD generation (see `defaultImage`). Without this, canonical links and Open Graph URLs will use relative paths.
 
 ### siteName
 
@@ -45,7 +45,19 @@ The public base URL of your site. Used to generate absolute URLs for `<link rel=
 }
 ```
 
-Human-readable site name, used in the `og:site_name` meta tag. If omitted, defaults to `"refrakt.md"` in the Svelte adapter.
+Human-readable site name, used in the `og:site_name` meta tag and the auto-generated WebSite/Organization JSON-LD schemas. If omitted, defaults to `"refrakt.md"` in the Svelte adapter.
+
+### defaultImage
+
+```json
+{
+  "defaultImage": "/favicon-192.png"
+}
+```
+
+Default image for Open Graph and Twitter Card meta tags on pages that don't have their own image (from frontmatter or content). The path is relative to the site root and is resolved to an absolute URL using `baseUrl`.
+
+When both `baseUrl` and `defaultImage` are set, refrakt also emits [WebSite](https://schema.org/WebSite) and [Organization](https://schema.org/Organization) JSON-LD schemas automatically. The Organization schema includes the `defaultImage` as the `logo` property, which Google uses to display your site's logo in search results.
 
 ### packages
 
@@ -204,6 +216,7 @@ Configuration for the `{% sandbox %}` rune. The `examplesDir` field sets the dir
   "target": "svelte",
   "baseUrl": "https://example.com",
   "siteName": "My Documentation",
+  "defaultImage": "/og-image.png",
   "packages": [
     "@refrakt-md/marketing",
     "@refrakt-md/docs",
