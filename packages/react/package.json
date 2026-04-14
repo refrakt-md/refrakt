@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/react",
   "description": "React renderer for refrakt.md content — ADR-008 component interface with props and named slots",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,8 +29,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/transform": "0.9.5",
-    "@refrakt-md/types": "0.9.5"
+    "@refrakt-md/transform": "0.9.6",
+    "@refrakt-md/types": "0.9.6"
   },
   "devDependencies": {
     "react": "^19.0.0",

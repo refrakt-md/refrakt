@@ -1,5 +1,14 @@
 # @refrakt-md/cli
 
+## 0.9.6
+
+### Patch Changes
+
+- @refrakt-md/editor@0.9.6
+- @refrakt-md/runes@0.9.6
+- @refrakt-md/transform@0.9.6
+- @refrakt-md/ai@0.9.6
+
 ## 0.9.5
 
 ### Patch Changes

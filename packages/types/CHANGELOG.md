@@ -1,5 +1,41 @@
 # @refrakt-md/types
 
+## 0.9.6
+
+### Patch Changes
+
+- Bug Fixes:
+
+  - Fix ThemeShell build failure ({@const} inside {#if} block)
+  - Fix lumina tsconfig to flatten dist output, restoring editor icons
+  - Fix tab partition and post-processing for split header/preamble slots
+  - Fix breadcrumb separator and preview rendering
+  - Fix codegroup title invisible due to generic section color override
+  - Fix embed rune inheriting browser default figure margin
+  - Fix visual block preview ignoring theme background color
+  - Fix sandbox dark mode on mobile browsers
+  - Fix missing functionality in Nuxt, Next.js, and Eleventy adapters
+  - Fix SEO meta tags not rendering
+  - Fix gallery responsive behavior
+  - Fix duplicate docs nav entry (themes/configuration renamed to config-api)
+  - Fix CI crash on undefined xref id and missing scopedRefs
+
+  Features:
+
+  - Add configurable defaultImage fallback for og:image meta tag
+  - Add WebSite/Organization JSON-LD for SEO
+  - Add baseUrl and siteName config fields
+  - Add filesystem-agnostic plan scanner API (parseFileContent, scanPlanSources)
+  - Add preamble slot with title and blurb extraction for plan entities
+  - Split plan entity header into primary and secondary badge groups
+  - Implement tab layout for plan entity pages
+  - Implement git-native entity history (plan-history rune)
+  - Implement mobile section nav and desktop TOC filtering
+  - Implement plan package hardening (knownSections, validation, cross-references)
+  - Add source attribute to work/bug/decision runes for spec traceability
+  - Simplify codegroup chrome: skip tabs for single fence without labels
+  - Move event register button from header to bottom of component
+
 ## 0.9.5
 
 ### Patch Changes
