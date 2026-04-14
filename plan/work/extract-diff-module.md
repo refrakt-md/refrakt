@@ -1,4 +1,4 @@
-{% work id="WORK-145" status="ready" priority="high" complexity="simple" source="SPEC-040" tags="plan, architecture, edge-runtime" %}
+{% work id="WORK-145" status="done" priority="high" complexity="simple" source="SPEC-040" tags="plan, architecture, edge-runtime" %}
 
 # Extract pure diffing functions into diff module
 
@@ -6,16 +6,16 @@ Extract the pure diffing and parsing functions from `history.ts` into a new `dif
 
 ## Acceptance Criteria
 
-- [ ] New file `runes/plan/src/diff.ts` exists and contains all pure diffing functions
-- [ ] `diff.ts` has zero imports from `node:fs`, `node:path`, or `node:child_process`
-- [ ] `diffAttributes(prev, curr)` is exported from `diff.ts` with `AttributeChange` type
-- [ ] `diffCriteria(prev, curr)` is exported from `diff.ts` with `CriteriaChange` type
-- [ ] `parseTagAttributes(line)` is exported from `diff.ts`
-- [ ] `parseCheckboxes(content)` is exported from `diff.ts` with `ParsedCheckbox` type
-- [ ] `hasResolutionSection(content)` is exported from `diff.ts`
-- [ ] `history.ts` imports from `diff.ts` and re-exports the types for backwards compatibility
-- [ ] All existing imports from `./history` continue to work (no breaking changes)
-- [ ] Existing history tests pass without modification
+- [x] New file `runes/plan/src/diff.ts` exists and contains all pure diffing functions
+- [x] `diff.ts` has zero imports from `node:fs`, `node:path`, or `node:child_process`
+- [x] `diffAttributes(prev, curr)` is exported from `diff.ts` with `AttributeChange` type
+- [x] `diffCriteria(prev, curr)` is exported from `diff.ts` with `CriteriaChange` type
+- [x] `parseTagAttributes(line)` is exported from `diff.ts`
+- [x] `parseCheckboxes(content)` is exported from `diff.ts` with `ParsedCheckbox` type
+- [x] `hasResolutionSection(content)` is exported from `diff.ts`
+- [x] `history.ts` imports from `diff.ts` and re-exports the types for backwards compatibility
+- [x] All existing imports from `./history` continue to work (no breaking changes)
+- [x] Existing history tests pass without modification
 
 ## Approach
 
@@ -32,5 +32,19 @@ None — independent of the scanner-core extraction.
 
 - {% ref "SPEC-040" /%} — Edge Runtime Compatibility for Plan Package
 - {% ref "SPEC-038" /%} — Git-Native Entity History
+
+## Resolution
+
+Completed: 2026-04-14
+
+Branch: `claude/edge-runtime-refactor-HOg8v`
+
+### What was done
+- Created `runes/plan/src/diff.ts` with all pure diffing functions (diffAttributes, diffCriteria, parseTagAttributes, parseCheckboxes, hasResolutionSection) and their types (AttributeChange, CriteriaChange, ParsedCheckbox)
+- Updated `runes/plan/src/history.ts` to import from diff.ts and re-export all functions and types for backwards compatibility
+
+### Notes
+- diff.ts has zero dependencies on Node.js APIs — only pure TypeScript
+- All 31 history tests pass without modification
 
 {% /work %}

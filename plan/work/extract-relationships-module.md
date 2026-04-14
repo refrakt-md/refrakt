@@ -1,4 +1,4 @@
-{% work id="WORK-146" status="ready" priority="high" complexity="moderate" source="SPEC-040" tags="plan, architecture, edge-runtime" %}
+{% work id="WORK-146" status="done" priority="high" complexity="moderate" source="SPEC-040" tags="plan, architecture, edge-runtime" %}
 
 # Extract relationship builder into relationships module
 
@@ -6,17 +6,17 @@ Extract the relationship graph construction logic (~120 lines) from `pipeline.ts
 
 ## Acceptance Criteria
 
-- [ ] New file `runes/plan/src/relationships.ts` exists
-- [ ] `relationships.ts` has zero imports from `node:fs`, `node:path`, or `node:child_process`
-- [ ] `buildRelationships()` function is exported and produces a `Map<string, EntityRelationship[]>`
-- [ ] `EntityRelationship` interface is exported with all relationship kinds: `blocks`, `blocked-by`, `depends-on`, `dependency-of`, `implements`, `implemented-by`, `informs`, `informed-by`, `related`
-- [ ] Source references produce `implements`/`implemented-by` edges (or `informs`/`informed-by` for decisions)
-- [ ] Scanner dependencies produce `depends-on`/`dependency-of` edges
-- [ ] ID references produce `related` edges (or `blocked-by`/`blocks` when entity status is `blocked`)
-- [ ] Duplicate edge suppression works: source-linked and dep-linked pairs are excluded from text-based ID reference edges
-- [ ] Pipeline's aggregate hook calls `buildRelationships()` instead of inlining the logic
-- [ ] All existing relationship behaviour is preserved — same edges, same directions, same deduplication
-- [ ] Existing tests pass without modification
+- [x] New file `runes/plan/src/relationships.ts` exists
+- [x] `relationships.ts` has zero imports from `node:fs`, `node:path`, or `node:child_process`
+- [x] `buildRelationships()` function is exported and produces a `Map<string, EntityRelationship[]>`
+- [x] `EntityRelationship` interface is exported with all relationship kinds: `blocks`, `blocked-by`, `depends-on`, `dependency-of`, `implements`, `implemented-by`, `informs`, `informed-by`, `related`
+- [x] Source references produce `implements`/`implemented-by` edges (or `informs`/`informed-by` for decisions)
+- [x] Scanner dependencies produce `depends-on`/`dependency-of` edges
+- [x] ID references produce `related` edges (or `blocked-by`/`blocks` when entity status is `blocked`)
+- [x] Duplicate edge suppression works: source-linked and dep-linked pairs are excluded from text-based ID reference edges
+- [x] Pipeline's aggregate hook calls `buildRelationships()` instead of inlining the logic
+- [x] All existing relationship behaviour is preserved — same edges, same directions, same deduplication
+- [x] Existing tests pass without modification
 
 ## Approach
 
@@ -33,5 +33,21 @@ None — independent of the scanner and diff extractions.
 ## References
 
 - {% ref "SPEC-040" /%} — Edge Runtime Compatibility for Plan Package
+
+## Resolution
+
+Completed: 2026-04-14
+
+Branch: `claude/edge-runtime-refactor-HOg8v`
+
+### What was done
+- Created `runes/plan/src/relationships.ts` with `buildRelationships()` function and `EntityRelationship` interface
+- Defined `RelationshipEntity` minimal interface so the module doesn't depend on @refrakt-md/types
+- Pipeline's aggregate hook now calls buildRelationships() with allEntities, _sourceReferences, _scannerDependencies, _idReferences
+- Removed inline EntityRelationship interface from pipeline.ts; re-exports from relationships.ts for backwards compatibility
+
+### Notes
+- relationships.ts has zero external dependencies — pure TypeScript only
+- All 10 relationship-related tests pass (implements, informed-by, blocks, deduplication)
 
 {% /work %}

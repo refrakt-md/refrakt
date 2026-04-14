@@ -1,4 +1,4 @@
-{% spec id="SPEC-040" status="draft" version="1.0" tags="plan, architecture, edge-runtime" %}
+{% spec id="SPEC-040" status="accepted" version="1.0" tags="plan, architecture, edge-runtime" %}
 
 # Edge Runtime Compatibility for Plan Package
 
