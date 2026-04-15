@@ -1,5 +1,13 @@
 # @refrakt-md/marketing
 
+## 0.9.8
+
+### Patch Changes
+
+- @refrakt-md/runes@0.9.8
+- @refrakt-md/transform@0.9.8
+- @refrakt-md/types@0.9.8
+
 ## 0.9.7
 
 ### Patch Changes

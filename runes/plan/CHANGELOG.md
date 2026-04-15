@@ -1,5 +1,18 @@
 # @refrakt-md/plan
 
+## 0.9.8
+
+### Patch Changes
+
+- Add edge-safe `./render` entry point for rendering plan entity Markdoc source to a serialized RendererNode. Works on Cloudflare Workers — no Node.js dependencies. Consumers apply their own theme's identity transform and render to HTML.
+  - @refrakt-md/behaviors@0.9.8
+  - @refrakt-md/content@0.9.8
+  - @refrakt-md/highlight@0.9.8
+  - @refrakt-md/html@0.9.8
+  - @refrakt-md/runes@0.9.8
+  - @refrakt-md/transform@0.9.8
+  - @refrakt-md/types@0.9.8
+
 ## 0.9.7
 
 ### Patch Changes

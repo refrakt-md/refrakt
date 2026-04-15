@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/marketing",
   "description": "Marketing runes for refrakt.md — hero, CTA, pricing, and more",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -21,9 +21,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.9.7",
-    "@refrakt-md/transform": "0.9.7",
-    "@refrakt-md/runes": "0.9.7",
+    "@refrakt-md/types": "0.9.8",
+    "@refrakt-md/transform": "0.9.8",
+    "@refrakt-md/runes": "0.9.8",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0"
   }

@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const docs: RunePackage = {
   name: 'docs',
   displayName: 'Documentation',
-  version: '0.9.7',
+  version: '0.9.8',
   runes: {
     'api': {
       transform: api,

@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/editor",
   "description": "Browser-based content editor for refrakt.md",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -52,11 +52,11 @@
   },
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
-    "@refrakt-md/content": "0.9.7",
-    "@refrakt-md/highlight": "0.9.7",
-    "@refrakt-md/runes": "0.9.7",
-    "@refrakt-md/transform": "0.9.7",
-    "@refrakt-md/types": "0.9.7"
+    "@refrakt-md/content": "0.9.8",
+    "@refrakt-md/highlight": "0.9.8",
+    "@refrakt-md/runes": "0.9.8",
+    "@refrakt-md/transform": "0.9.8",
+    "@refrakt-md/types": "0.9.8"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "^6.20.0",

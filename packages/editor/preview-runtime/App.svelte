@@ -3,6 +3,7 @@
 	import { theme as baseTheme } from 'virtual:refrakt-theme';
 
 	let pageData: any = $state.raw(null);
+	let renderKey = $state(0);
 
 	// Reactive copy so we can patch routeRules at runtime
 	let theme: typeof baseTheme = $state.raw({ ...baseTheme });
@@ -12,6 +13,7 @@
 		function onMessage(e: MessageEvent) {
 			if (e.data?.type === 'preview-update') {
 				pageData = e.data.page;
+				renderKey++;
 			} else if (e.data?.type === 'route-rules-update') {
 				theme = {
 					...theme,
@@ -43,7 +45,9 @@
 </script>
 
 {#if pageData}
-	<ThemeShell {theme} page={pageData} />
+	{#key renderKey}
+		<ThemeShell {theme} page={pageData} />
+	{/key}
 {:else}
 	<div class="preview-loading">Loading preview...</div>
 {/if}
