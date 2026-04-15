@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/html",
   "description": "Pure HTML renderer for refrakt.md content — no framework required",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -31,14 +31,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/transform": "0.9.6",
-    "@refrakt-md/types": "0.9.6"
+    "@refrakt-md/transform": "0.9.7",
+    "@refrakt-md/types": "0.9.7"
   },
   "devDependencies": {
-    "@refrakt-md/behaviors": "0.9.6"
+    "@refrakt-md/behaviors": "0.9.7"
   },
   "peerDependencies": {
-    "@refrakt-md/behaviors": "0.9.6"
+    "@refrakt-md/behaviors": "0.9.7"
   },
   "peerDependenciesMeta": {
     "@refrakt-md/behaviors": {

@@ -6,6 +6,10 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.9.7
+
+- Plan package improvements: tool-agnostic `plan init` with `--agent` flag for multi-editor support, renamed plan directories to plural form (specs/, decisions/, milestones/), and refactored internals for edge runtime compatibility with new entry points (./diff, ./relationships, ./cards)
+
 ## v0.9.6
 
 - Bug Fixes:

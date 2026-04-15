@@ -1,5 +1,12 @@
 # @refrakt-md/vue
 
+## 0.9.7
+
+### Patch Changes
+
+- @refrakt-md/transform@0.9.7
+- @refrakt-md/types@0.9.7
+
 ## 0.9.6
 
 ### Patch Changes

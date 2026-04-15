@@ -1,5 +1,18 @@
 # @refrakt-md/plan
 
+## 0.9.7
+
+### Patch Changes
+
+- Plan package improvements: tool-agnostic `plan init` with `--agent` flag for multi-editor support, renamed plan directories to plural form (specs/, decisions/, milestones/), and refactored internals for edge runtime compatibility with new entry points (./diff, ./relationships, ./cards)
+  - @refrakt-md/behaviors@0.9.7
+  - @refrakt-md/content@0.9.7
+  - @refrakt-md/highlight@0.9.7
+  - @refrakt-md/html@0.9.7
+  - @refrakt-md/runes@0.9.7
+  - @refrakt-md/transform@0.9.7
+  - @refrakt-md/types@0.9.7
+
 ## 0.9.6
 
 ### Patch Changes
