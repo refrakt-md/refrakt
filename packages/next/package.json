@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/next",
   "description": "Next.js adapter for refrakt.md — render Markdoc runes with React Server Components",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -33,10 +33,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/behaviors": "0.9.6",
-    "@refrakt-md/content": "0.9.6",
-    "@refrakt-md/transform": "0.9.6",
-    "@refrakt-md/types": "0.9.6"
+    "@refrakt-md/behaviors": "0.9.7",
+    "@refrakt-md/content": "0.9.7",
+    "@refrakt-md/transform": "0.9.7",
+    "@refrakt-md/types": "0.9.7"
   },
   "devDependencies": {
     "next": "^15.0.0",
