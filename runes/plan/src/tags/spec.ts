@@ -2,6 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { stripHorizontalRules } from '../util.js';
 
 const statusValues = ['draft', 'review', 'accepted', 'superseded', 'deprecated'] as const;
 
@@ -47,7 +48,7 @@ export const spec = createContentModelSchema({
 		const blurb = summaryNodes.count() > 0 ? summaryNodes.wrap('div').next() : undefined;
 		const contentChildren: any[] = [];
 		if (bodyNodes.count() > 0) {
-			contentChildren.push(...bodyNodes.toArray());
+			contentChildren.push(...stripHorizontalRules(bodyNodes.toArray()));
 		}
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
