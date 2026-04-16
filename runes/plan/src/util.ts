@@ -3,6 +3,13 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { asNodes } from '@refrakt-md/runes';
 
+/** Remove top-level `hr` elements from a renderable node array.
+ *  Plan content uses `---` as editorial separators in markdown source;
+ *  these don't serve a purpose in the rendered output. */
+export function stripHorizontalRules(nodes: RenderableTreeNode[]): RenderableTreeNode[] {
+	return nodes.filter(n => !(n instanceof Tag && n.name === 'hr'));
+}
+
 /** Convert heading text to a kebab-case data-name slug. */
 export function slugify(text: string): string {
 	return text
@@ -26,7 +33,9 @@ export function buildSections(sections: any[], config: any): any[] {
 		const canonicalName = section.$canonicalName as string | undefined;
 
 		const headingNode = section.$headingNode;
-		const bodyContent = Markdoc.transform(asNodes(section.body), config) as RenderableTreeNode[];
+		const bodyContent = stripHorizontalRules(
+			Markdoc.transform(asNodes(section.body), config) as RenderableTreeNode[],
+		);
 
 		const children: any[] = [];
 		if (headingNode) {
