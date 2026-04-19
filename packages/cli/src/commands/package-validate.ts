@@ -220,12 +220,12 @@ function validateRuneEntry(
 		}
 	}
 
-	// prompt validation
-	if (entry.prompt !== undefined) {
-		if (typeof entry.prompt !== 'string') {
-			errors.push({ path: `${prefix}.prompt`, message: 'Must be a string' });
-		} else if (entry.prompt.trim().length === 0) {
-			warnings.push({ path: `${prefix}.prompt`, message: 'Empty prompt string — remove or add content' });
+	// authoringHints validation
+	if (entry.authoringHints !== undefined) {
+		if (typeof entry.authoringHints !== 'string') {
+			errors.push({ path: `${prefix}.authoringHints`, message: 'Must be a string' });
+		} else if (entry.authoringHints.trim().length === 0) {
+			warnings.push({ path: `${prefix}.authoringHints`, message: 'Empty authoringHints string — remove or add content' });
 		}
 	}
 

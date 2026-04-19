@@ -17,8 +17,12 @@ export interface RunePackageEntry {
 	schema?: Record<string, RunePackageAttribute>;
 	/** Markdoc fixture string for the inspect command */
 	fixture?: string;
-	/** AI prompt extension (appended to rune description in prompts) */
-	prompt?: string;
+	/**
+	 * Authoring hints — a short note that reads naturally to both humans browsing
+	 * the reference and LLMs generating content. Rendered as an "Authoring notes"
+	 * block by `refrakt reference` and included in `refrakt write` prompts.
+	 */
+	authoringHints?: string;
 	/** Human-readable description of what this rune does */
 	description?: string;
 	/** Alternative tag names that resolve to this rune */

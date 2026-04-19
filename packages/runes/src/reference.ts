@@ -48,8 +48,12 @@ export interface RuneInfo {
 			description?: string;
 		}>;
 	};
-	/** AI prompt extension from community/official packages — additional context appended after description */
-	prompt?: string;
+	/**
+	 * Authoring hints — a short note that reads naturally to both humans browsing
+	 * the reference and LLMs generating content. Rendered as a dedicated section
+	 * in `describeRune` output and included in `refrakt write` prompts.
+	 */
+	authoringHints?: string;
 	/** Optional pre-serialized content model. When present, `describeRune` renders it instead of falling back to `reinterprets`. */
 	contentModel?: SerializedContentModel;
 	/** Named preset this rune inherits attributes from, if any (via `base:` in createContentModelSchema). */
@@ -193,8 +197,9 @@ export function describeRune(rune: RuneInfo): string {
 		lines.push(`Aliases: ${rune.aliases.join(', ')}`);
 	}
 
-	if (rune.prompt) {
-		lines.push(rune.prompt);
+	if (rune.authoringHints) {
+		lines.push('Authoring notes:');
+		lines.push(rune.authoringHints);
 	}
 
 	const attrs = rune.schema.attributes;

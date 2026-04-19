@@ -71,7 +71,7 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 			aliases: entry.aliases,
 			seoType: entry.seoType,
 			reinterprets: entry.reinterprets,
-			prompt: entry.prompt,
+			authoringHints: entry.authoringHints,
 		});
 		if (entry.fixture) {
 			fixtures[runeName] = entry.fixture;

@@ -25,8 +25,12 @@ export interface RuneDescriptor {
   /** Schema.org type for typeof attribute (e.g. 'FAQPage') */
   schemaOrgType?: string;
 
-  /** AI prompt extension — additional context appended to the rune description in AI prompts */
-  prompt?: string;
+  /**
+   * Authoring hints — a short note that reads naturally to both humans browsing
+   * the reference and LLMs generating content. Rendered as an "Authoring notes"
+   * block by `refrakt reference` and included in `refrakt write` prompts.
+   */
+  authoringHints?: string;
 
   /** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
   category?: string;
@@ -45,7 +49,7 @@ export class Rune {
   readonly seoType: string | undefined;
   readonly typeName: string | undefined;
   readonly schemaOrgType: string | undefined;
-  readonly prompt: string | undefined;
+  readonly authoringHints: string | undefined;
   readonly category: string | undefined;
   readonly snippet: string[] | undefined;
 
@@ -58,7 +62,7 @@ export class Rune {
     this.seoType = descriptor.seoType;
     this.typeName = descriptor.typeName;
     this.schemaOrgType = descriptor.schemaOrgType;
-    this.prompt = descriptor.prompt;
+    this.authoringHints = descriptor.authoringHints;
     this.category = descriptor.category;
     this.snippet = descriptor.snippet;
   }
