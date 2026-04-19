@@ -1,8 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { generateSystemPrompt, writePrompt } from '@refrakt-md/ai';
 import { runes as coreRunes } from '@refrakt-md/runes';
-import type { AIProvider, Message, RuneInfo } from '@refrakt-md/ai';
+import { loadAI, type AIProvider, type Message, type RuneInfo } from '../lib/lazy-ai.js';
 
 export interface WriteOptions {
 	prompt: string;
@@ -65,7 +64,8 @@ export async function writeCommand(options: WriteOptions): Promise<void> {
 
 	const multiFile = !!outputDir;
 	const allRunes = options.runes ?? coreRunes;
-	const systemPrompt = generateSystemPrompt(allRunes) + writePrompt({ multiFile });
+	const ai = await loadAI();
+	const systemPrompt = ai.generateSystemPrompt(allRunes) + ai.writePrompt({ multiFile });
 
 	const messages: Message[] = [
 		{ role: 'system', content: systemPrompt },

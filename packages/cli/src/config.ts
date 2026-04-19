@@ -1,5 +1,4 @@
-import type { AIProvider } from '@refrakt-md/ai';
-import { createAnthropicProvider, createGeminiProvider, createOllamaProvider } from '@refrakt-md/ai';
+import { loadAI, type AIProvider } from './lib/lazy-ai.js';
 
 export type ProviderName = 'anthropic' | 'gemini' | 'ollama';
 
@@ -15,17 +14,19 @@ const DEFAULT_MODELS: Record<ProviderName, string> = {
 	ollama: 'llama3.2',
 };
 
-export function detectProvider(explicit?: string): ResolvedProvider {
+export async function detectProvider(explicit?: string): Promise<ResolvedProvider> {
 	if (explicit) {
 		return createProviderByName(explicit as ProviderName);
 	}
+
+	const ai = await loadAI();
 
 	const anthropicKey = process.env.ANTHROPIC_API_KEY;
 	if (anthropicKey) {
 		return {
 			name: 'anthropic',
 			defaultModel: DEFAULT_MODELS.anthropic,
-			provider: createAnthropicProvider({ apiKey: anthropicKey }),
+			provider: ai.createAnthropicProvider({ apiKey: anthropicKey }),
 		};
 	}
 
@@ -34,7 +35,7 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 		return {
 			name: 'gemini',
 			defaultModel: DEFAULT_MODELS.gemini,
-			provider: createGeminiProvider({ apiKey: googleKey }),
+			provider: ai.createGeminiProvider({ apiKey: googleKey }),
 		};
 	}
 
@@ -42,11 +43,12 @@ export function detectProvider(explicit?: string): ResolvedProvider {
 	return {
 		name: 'ollama',
 		defaultModel: DEFAULT_MODELS.ollama,
-		provider: createOllamaProvider(ollamaHost ? { host: ollamaHost } : undefined),
+		provider: ai.createOllamaProvider(ollamaHost ? { host: ollamaHost } : undefined),
 	};
 }
 
-function createProviderByName(name: ProviderName): ResolvedProvider {
+async function createProviderByName(name: ProviderName): Promise<ResolvedProvider> {
+	const ai = await loadAI();
 	switch (name) {
 		case 'anthropic': {
 			const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -58,7 +60,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			return {
 				name: 'anthropic',
 				defaultModel: DEFAULT_MODELS.anthropic,
-				provider: createAnthropicProvider({ apiKey }),
+				provider: ai.createAnthropicProvider({ apiKey }),
 			};
 		}
 		case 'gemini': {
@@ -71,7 +73,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			return {
 				name: 'gemini',
 				defaultModel: DEFAULT_MODELS.gemini,
-				provider: createGeminiProvider({ apiKey }),
+				provider: ai.createGeminiProvider({ apiKey }),
 			};
 		}
 		case 'ollama': {
@@ -79,7 +81,7 @@ function createProviderByName(name: ProviderName): ResolvedProvider {
 			return {
 				name: 'ollama',
 				defaultModel: DEFAULT_MODELS.ollama,
-				provider: createOllamaProvider(host ? { host } : undefined),
+				provider: ai.createOllamaProvider(host ? { host } : undefined),
 			};
 		}
 		default:

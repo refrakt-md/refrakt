@@ -3,7 +3,7 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "test -d node_modules || npm ci 2>&1 | tail -5; npm run build -w packages/types -w packages/transform -w packages/behaviors -w packages/runes -w packages/highlight -w packages/html -w packages/content -w packages/ai -w packages/editor -w runes/plan -w packages/cli 2>&1 | tail -5",
+        "command": "test -d node_modules || npm ci 2>&1 | tail -5; npm run build -w packages/types -w packages/transform -w packages/behaviors -w packages/runes -w packages/highlight -w packages/html -w packages/content -w runes/plan -w packages/cli 2>&1 | tail -5",
         "timeout": 300000
       }
     ]

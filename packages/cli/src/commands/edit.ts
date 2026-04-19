@@ -155,8 +155,10 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	const staticPath = resolve(configDir, 'static');
 	const staticDir = existsSync(staticPath) ? staticPath : undefined;
 
-	// Start editor
-	const { startEditor } = await import('@refrakt-md/editor');
+	// Start editor — dynamic import via variable-held module ID so tsc
+	// does not require @refrakt-md/editor to be built at CLI build time.
+	const editorModuleId: string = '@refrakt-md/editor';
+	const { startEditor } = await import(editorModuleId);
 
 	await startEditor({
 		contentDir,
