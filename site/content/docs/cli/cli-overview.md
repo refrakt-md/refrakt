@@ -18,6 +18,7 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | Command | Purpose |
 |---------|---------|
 | [inspect](/docs/cli/inspect) | Preview identity transform output and audit CSS coverage |
+| [reference](/docs/cli/reference) | Emit rune syntax reference for human contributors and AI agents |
 | [write](/docs/cli/write) | Generate Markdown content using AI |
 | [extract](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
 | [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
@@ -32,6 +33,9 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 ```shell
 # Preview the HTML output for a rune
 refrakt inspect hint --type=warning
+
+# Dump a full rune reference into AGENTS.md
+refrakt reference dump
 
 # Generate a docs site with AI
 refrakt write -d content/ "Set up a docs site with guides and a blog"

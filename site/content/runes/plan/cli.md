@@ -209,11 +209,13 @@ refrakt plan validate --format json
 
 ## refrakt plan init
 
-Initialize the plan directory structure with example files, generate a workflow guide, and update your AI tool's instruction file.
+Wire `@refrakt-md/plan` into a host project. `plan init` does several things at once so that running `refrakt plan next` works immediately — it scaffolds the plan directory, writes the canonical `AGENTS.md` with the full workflow guide, wires `@refrakt-md/cli` and `@refrakt-md/plan` into your `package.json`, and (for Claude users) installs a `SessionStart` hook that runs `install` if the CLI isn't resolvable yet. Each side effect has an opt-out flag.
 
 ```bash
-refrakt plan init
-refrakt plan init --agent cursor
+refrakt plan init                     # full setup with agent auto-detection
+refrakt plan init --agent cursor      # target a specific AI tool
+refrakt plan init --minimal           # plan/ + AGENTS.md only
+refrakt plan init --no-hooks          # skip .claude/settings.json
 refrakt plan init --agent none --dir planning
 ```
 
@@ -222,24 +224,44 @@ refrakt plan init --agent none --dir planning
 | Flag | Description |
 |------|-------------|
 | `--dir <path>` | Plan directory (default: `plan/`) |
-| `--project-root <path>` | Project root for agent file detection (default: `.`) |
+| `--project-root <path>` | Project root for agent file detection, `package.json` wiring, and hook/wrapper placement (default: `.`) |
 | `--agent <tool>` | AI tool instruction file to update: `claude`, `cursor`, `copilot`, `windsurf`, `cline`, or `none`. Auto-detects when omitted. |
+| `--no-package-json` | Skip modifying the host `package.json` |
+| `--no-hooks` | Skip writing `.claude/settings.json` `SessionStart` hook |
+| `--no-wrapper` | Skip writing `./plan.sh` wrapper script |
+| `--minimal` | Equivalent to `--no-package-json --no-hooks --no-wrapper` — only scaffolds `plan/` content and agent files |
 | `--format json` | Output JSON instead of human-readable text |
 
 ### What it creates
 
-- `plan/work/` — directory for work items and bugs
-- `plan/specs/` — directory for specifications
-- `plan/decisions/` — directory for decision records
-- `plan/milestones/` — directory for milestones
+**Plan content** (always):
+- `plan/specs/`, `plan/work/`, `plan/decisions/`, `plan/milestones/` — directories for each entity type
 - `plan/index.md` — overview page with quick start
-- `plan/INSTRUCTIONS.md` — full workflow guide (tool-agnostic)
+- `plan/INSTRUCTIONS.md` — full workflow guide (tool-agnostic; kept in-tree for convenience)
 - Example work item, spec, decision, and milestone files
-- Appends a plan reference to your AI tool's instruction file
+
+**Agent instruction files** (always):
+- `AGENTS.md` — canonical agent-facing workflow at the project root, following the [AGENTS.md convention](https://agent-rules.org). Contains the full plan workflow guide.
+- Tool-specific file (e.g. `CLAUDE.md`, `.cursorrules`) — gets a single-line pointer back to `AGENTS.md`. Auto-detected or specified via `--agent`. See [Agent auto-detection](#agent-auto-detection).
+
+**Host project wiring** (unless `--no-package-json` or `--minimal`):
+- Adds `@refrakt-md/cli` and `@refrakt-md/plan` to `devDependencies`, pinned to the version of `@refrakt-md/plan` running the command
+- Adds a `plan` script that runs `refrakt plan`
+- Never clobbers existing keys. Walks up to the install root, preferring workspace roots (`npm`/`yarn` workspaces, `pnpm-workspace.yaml`, `lerna.json`).
+
+**Claude SessionStart hook** (when Claude is targeted and `--no-hooks`/`--minimal` are not set):
+- `.claude/settings.json` gets a `SessionStart` hook that runs `install` if `node_modules/.bin/refrakt` isn't present. The hook detects the package manager at execution time by reading lockfiles (`bun.lockb`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`), so switching package managers later just works. Existing `settings.json` files are merged into, not replaced.
+
+**Wrapper script** (unless `--no-wrapper` or `--minimal`):
+- `./plan.sh` — POSIX shell wrapper for environments where hooks aren't available. Installs dependencies on first run, then defers to `npx refrakt plan`. Uses the `.sh` suffix because the content directory is also called `plan/`.
 
 ### Agent auto-detection
 
-When `--agent` is omitted, `plan init` checks the project root for known instruction files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`) and appends to all that exist. If none are found, it falls back to creating a `CLAUDE.md`.
+When `--agent` is omitted, `plan init` checks the project root for known instruction files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`) and appends a pointer to `AGENTS.md` in each that exists. If none are found, it falls back to creating a `CLAUDE.md` pointer file and targeting Claude for the `SessionStart` hook.
+
+### Idempotent re-runs
+
+Every side effect is safe to repeat. Existing keys in `package.json`, existing hook commands in `.claude/settings.json`, and existing pointer markers in agent instruction files are detected and left alone. Running `plan init` on an already-initialized project prints `Plan structure already exists. No changes made.` and exits successfully.
 
 ## refrakt plan history
 
