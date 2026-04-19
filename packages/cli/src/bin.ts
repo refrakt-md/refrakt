@@ -433,7 +433,7 @@ function runWrite(writeArgs: string[]): void {
 	]).then(async ([{ detectProvider }, { writeCommand }, runesModule]) => {
 		let resolved;
 		try {
-			resolved = detectProvider(providerName);
+			resolved = await detectProvider(providerName);
 		} catch (err) {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
