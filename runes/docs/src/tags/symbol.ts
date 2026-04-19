@@ -42,7 +42,7 @@ export const symbolGroup = createContentModelSchema({
 	attributes: {},
 	contentModel: {
 		type: 'custom',
-		description: 'Converts headings at h4 level to symbol-member tags',
+		description: 'A level-3 (###) heading becomes the group label. Each level-4 (####) heading starts a new symbol-member entry — the heading text is the member name, and content between headings (paragraphs, fences, lists) becomes that member\'s body.',
 		processChildren(nodes) {
 			const level = 4;
 			const converted = headingsToList({ level })(nodes as Node[]);
@@ -96,7 +96,7 @@ export const symbol = createContentModelSchema({
 		if (GROUP_KINDS.includes(attrs.kind as string)) {
 			return {
 				type: 'custom' as const,
-				description: 'Converts headings to symbol-group tags for group-kind symbols',
+				description: 'For class, interface, and module kinds: any content before the first level-3 (###) heading becomes the symbol header. Each level-3 heading starts a new symbol-group, which may contain nested level-4 (####) symbol members.',
 				processChildren(nodes: unknown[]) {
 					const converted = headingsToList({ level: 3 })(nodes as Node[]);
 					const n = converted.length - 1;

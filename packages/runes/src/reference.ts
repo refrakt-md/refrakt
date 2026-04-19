@@ -34,7 +34,12 @@ export interface RuneInfo {
 	name: string;
 	aliases: string[];
 	description: string;
-	reinterprets: Record<string, string>;
+	/**
+	 * Legacy mapping from Markdown primitive to its reinterpretation in this rune.
+	 * Superseded by `contentModel`; kept for backwards compatibility and as a
+	 * fallback when `contentModel` isn't populated. Will be removed in WORK-154.
+	 */
+	reinterprets?: Record<string, string>;
 	schema: {
 		attributes?: Record<string, {
 			type?: unknown;
@@ -240,7 +245,7 @@ export function describeRune(rune: RuneInfo): string {
 	// Content model — prefer structured rendering over the legacy reinterprets map.
 	if (rune.contentModel) {
 		lines.push(renderContentModel(rune.contentModel));
-	} else {
+	} else if (rune.reinterprets) {
 		const reinterprets = Object.entries(rune.reinterprets);
 		if (reinterprets.length > 0) {
 			lines.push('Content interpretation:');
