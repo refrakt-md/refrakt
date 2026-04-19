@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { findInstallRoot, detectPackageManager, installCommand } from '../src/commands/project-setup.js';
@@ -109,11 +109,53 @@ describe('detectPackageManager', () => {
 		expect(detectPackageManager(TMP)).toBe('bun');
 	});
 
-	it('prefers bun over other PMs when both lockfiles exist', () => {
-		writeFileSync(join(TMP, 'bun.lockb'), '');
-		writeFileSync(join(TMP, 'yarn.lock'), '');
+	it('detects npm from package-lock.json', () => {
+		writeFileSync(join(TMP, 'package-lock.json'), '{}');
+		expect(detectPackageManager(TMP)).toBe('npm');
+	});
+
+	it('prefers the packageManager field in package.json over lockfiles', () => {
+		// pnpm lockfile present, but packageManager says npm — corepack wins.
+		writeFileSync(join(TMP, 'package.json'), JSON.stringify({ packageManager: 'npm@10.0.0' }));
 		writeFileSync(join(TMP, 'pnpm-lock.yaml'), '');
-		expect(detectPackageManager(TMP)).toBe('bun');
+		expect(detectPackageManager(TMP)).toBe('npm');
+	});
+
+	it('accepts packageManager values for each supported PM', () => {
+		for (const pm of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+			writeFileSync(join(TMP, 'package.json'), JSON.stringify({ packageManager: `${pm}@1.0.0` }));
+			expect(detectPackageManager(TMP)).toBe(pm);
+		}
+	});
+
+	it('ignores a malformed packageManager value and falls back to lockfile', () => {
+		writeFileSync(join(TMP, 'package.json'), JSON.stringify({ packageManager: 'pip@1.0.0' }));
+		writeFileSync(join(TMP, 'pnpm-lock.yaml'), '');
+		expect(detectPackageManager(TMP)).toBe('pnpm');
+	});
+
+	it('picks the newest lockfile by mtime when multiple exist (stale pnpm-lock case)', () => {
+		// Simulate the bug: a repo with npm-workspaces picked up a stale
+		// pnpm-lock.yaml. The fresh package-lock.json should win.
+		const pnpmLock = join(TMP, 'pnpm-lock.yaml');
+		const npmLock = join(TMP, 'package-lock.json');
+		writeFileSync(pnpmLock, '');
+		writeFileSync(npmLock, '{}');
+		// Age the pnpm lockfile.
+		const old = new Date('2023-01-01T00:00:00Z');
+		utimesSync(pnpmLock, old, old);
+		expect(detectPackageManager(TMP)).toBe('npm');
+	});
+
+	it('picks pnpm when pnpm-lock.yaml is newer than package-lock.json', () => {
+		const pnpmLock = join(TMP, 'pnpm-lock.yaml');
+		const npmLock = join(TMP, 'package-lock.json');
+		writeFileSync(npmLock, '{}');
+		writeFileSync(pnpmLock, '');
+		// Age the npm lockfile.
+		const old = new Date('2023-01-01T00:00:00Z');
+		utimesSync(npmLock, old, old);
+		expect(detectPackageManager(TMP)).toBe('pnpm');
 	});
 });
 

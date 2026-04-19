@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, statSync } from 'fs';
+import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, statSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { runInit, type InitOptions } from '../src/commands/init.js';
@@ -91,6 +91,45 @@ describe('plan init — scaffolding', () => {
 
 		expect(r2.created).toHaveLength(0);
 		expect(r2.agentFilesUpdated).toHaveLength(0);
+	});
+
+	it('does not crash when seed IDs already exist in other files', () => {
+		// Simulate an existing project where the user already has WORK-001,
+		// SPEC-001, ADR-001, v0.1.0 under different slugs. init used to call
+		// runCreate() blindly and throw EXIT_DUPLICATE_ID.
+		const planDir = join(TMP, 'plan');
+		mkdirSync(join(planDir, 'work'), { recursive: true });
+		mkdirSync(join(planDir, 'specs'), { recursive: true });
+		mkdirSync(join(planDir, 'decisions'), { recursive: true });
+		mkdirSync(join(planDir, 'milestones'), { recursive: true });
+		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
+		writeFileSync(join(planDir, 'specs', 'my-spec.md'), '{% spec id="SPEC-001" status="draft" %}\n# Mine\n{% /spec %}\n');
+		writeFileSync(join(planDir, 'decisions', 'my-decision.md'), '{% decision id="ADR-001" status="proposed" %}\n# Mine\n{% /decision %}\n');
+		writeFileSync(join(planDir, 'milestones', 'mine.md'), '{% milestone name="v0.1.0" status="planning" %}\n# Mine\n{% /milestone %}\n');
+
+		expect(() => safeInit({ dir: planDir, projectRoot: TMP })).not.toThrow();
+
+		// Example files should be skipped — user's own content is preserved untouched.
+		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(false);
+		expect(readFileSync(join(planDir, 'work', 'my-task.md'), 'utf-8')).toContain('# Mine');
+	});
+
+	it('creates only the examples whose IDs are still free', () => {
+		// Partial collision: user has WORK-001 but not the others. init should
+		// scaffold the non-colliding examples and skip just the WORK one.
+		const planDir = join(TMP, 'plan');
+		mkdirSync(join(planDir, 'work'), { recursive: true });
+		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
+
+		safeInit({ dir: planDir, projectRoot: TMP });
+
+		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
 	});
 
 	it('reports created files', () => {
@@ -370,6 +409,11 @@ describe('plan init — Claude SessionStart hook', () => {
 		expect(cmd).toContain('yarn install');
 		expect(cmd).toContain('bun install');
 		expect(cmd).toContain('npm install');
+		// Detection should honour corepack packageManager and pick the newest
+		// lockfile rather than a hardcoded order — guard against the old
+		// bun > pnpm > yarn > npm heuristic coming back.
+		expect(cmd).toContain('packageManager');
+		expect(cmd).toContain('-nt');
 	});
 
 	it('auto-detect writes hook when CLAUDE.md exists', () => {
@@ -488,6 +532,61 @@ describe('plan init — ./plan.sh wrapper script', () => {
 		expect(script).toContain('node_modules/.bin/refrakt');
 		expect(script).toContain('pnpm install');
 		expect(script).toContain('exec npx refrakt plan');
+		expect(script).toContain('packageManager');
+		expect(script).toContain('-nt');
+	});
+
+	/**
+	 * Extract the detect_pm function from the wrapper script and drop it into a
+	 * standalone probe. Avoids executing the install-gated block below it.
+	 */
+	function buildDetectPmProbe(script: string): string {
+		const match = script.match(/detect_pm\(\)\s*\{[\s\S]*?\n\}/);
+		if (!match) throw new Error('could not find detect_pm in wrapper script');
+		return `#!/usr/bin/env sh\nset -e\n${match[0]}\ndetect_pm\n`;
+	}
+
+	it('plan.sh resolves to the newest lockfile, not a hardcoded order', async () => {
+		// Bake the wrapper script into a tempdir and run detect_pm against
+		// a directory containing both package-lock.json (fresh) and
+		// pnpm-lock.yaml (stale). npm should win.
+		const { execSync } = await import('child_process');
+		runInit({
+			dir: join(TMP, 'plan'),
+			projectRoot: TMP,
+			noPackageJson: true,
+			noHooks: true,
+		});
+
+		writeFileSync(join(TMP, 'pnpm-lock.yaml'), '');
+		writeFileSync(join(TMP, 'package-lock.json'), '{}');
+		const old = new Date('2023-01-01T00:00:00Z');
+		utimesSync(join(TMP, 'pnpm-lock.yaml'), old, old);
+
+		const script = readFileSync(join(TMP, 'plan.sh'), 'utf-8');
+		const probePath = join(TMP, '.detect.sh');
+		writeFileSync(probePath, buildDetectPmProbe(script));
+		const out = execSync('sh .detect.sh', { cwd: TMP }).toString().trim();
+		expect(out).toBe('npm');
+	});
+
+	it('plan.sh honours the packageManager field over lockfiles', async () => {
+		const { execSync } = await import('child_process');
+		runInit({
+			dir: join(TMP, 'plan'),
+			projectRoot: TMP,
+			noPackageJson: true,
+			noHooks: true,
+		});
+
+		writeFileSync(join(TMP, 'package.json'), JSON.stringify({ packageManager: 'pnpm@9.0.0' }));
+		writeFileSync(join(TMP, 'package-lock.json'), '{}');
+
+		const script = readFileSync(join(TMP, 'plan.sh'), 'utf-8');
+		const probePath = join(TMP, '.detect.sh');
+		writeFileSync(probePath, buildDetectPmProbe(script));
+		const out = execSync('sh .detect.sh', { cwd: TMP }).toString().trim();
+		expect(out).toBe('pnpm');
 	});
 
 	it('plan.sh is executable', () => {
