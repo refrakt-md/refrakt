@@ -78,20 +78,23 @@ A landing page hero section with headline, supporting copy, and primary actions.
 Aliases: landing-hero
 
 Attributes:
-  - align: "left" | "center" | "right" (optional)
-  - eyebrow: string (optional)
-  - background: string (optional)
+  - align: "left" | "center" | "right" (optional) — Horizontal alignment of headline and body text
+
+Inherits split layout attributes (layout, ratio, valign, gap, collapse).
+Inherits universal attributes (tint, tint-mode, bg, width, spacing, inset).
 
 Content structure (delimited by `---`):
-  Zone 1 — content (required):
-    - heading → headline
-    - paragraph → blurb (repeats)
-    - list → action buttons (optional)
-  Zone 2 — media (optional):
-    - image → hero media
+  Zone 1 — content (sequence, required):
+    - eyebrow — paragraph (optional)
+    - headline — heading (required)
+    - blurb — paragraph (optional)
+    - actions — list or fenced code blocks (optional, repeats)
+  Zone 2 — media (sequence, optional):
+    - media — any node (optional, repeats)
 
 Example:
-{% hero align="center" %}
+{% hero align="center" layout="split" %}
+Coming soon
 # Build sites with Markdown that means something
 Refrakt turns Markdown into a structured document model.
 - [Get started](/docs)
@@ -110,9 +113,20 @@ Refrakt turns Markdown into a structured document model.
   "aliases": ["landing-hero"],
   "description": "A landing page hero section...",
   "attributes": {
-    "align": { "type": "string", "matches": ["left", "center", "right"], "required": false },
-    "eyebrow": { "type": "string", "required": false },
-    "background": { "type": "string", "required": false }
+    "own": {
+      "align": { "type": "string", "matches": ["left", "center", "right"], "required": false, "description": "Horizontal alignment of headline and body text" }
+    },
+    "base": {
+      "name": "splitLayoutAttributes",
+      "attributes": {
+        "layout": { "type": "string", "matches": ["stacked", "split", "split-reverse"], "required": false },
+        "ratio": { "type": "string", "required": false },
+        "valign": { "type": "string", "matches": ["top", "center", "bottom"], "required": false },
+        "gap": { "type": "string", "matches": ["none", "tight", "default", "loose"], "required": false },
+        "collapse": { "type": "string", "matches": ["sm", "md", "lg", "never"], "required": false }
+      }
+    },
+    "universal": true
   },
   "contentModel": {
     "pattern": "delimited",
@@ -120,18 +134,21 @@ Refrakt turns Markdown into a structured document model.
     "zones": [
       {
         "name": "content",
+        "pattern": "sequence",
         "required": true,
         "fields": [
-          { "node": "heading", "role": "headline", "repeats": false },
-          { "node": "paragraph", "role": "blurb", "repeats": true },
-          { "node": "list", "role": "action buttons", "required": false }
+          { "name": "eyebrow", "match": "paragraph", "optional": true },
+          { "name": "headline", "match": "heading", "optional": false },
+          { "name": "blurb", "match": "paragraph", "optional": true },
+          { "name": "actions", "match": "list|fence", "optional": true, "greedy": true }
         ]
       },
       {
         "name": "media",
+        "pattern": "sequence",
         "required": false,
         "fields": [
-          { "node": "image", "role": "hero media" }
+          { "name": "media", "match": "any", "optional": true, "greedy": true }
         ]
       }
     ]
@@ -291,6 +308,70 @@ The per-rune `refrakt runes <name>` command remains useful for cases the dump do
 
 -----
 
+## Attribute Tiers
+
+Every rune built via `createContentModelSchema` ends up with attributes from three distinct sources, merged in `packages/runes/src/lib/index.ts:161-176`:
+
+| Tier         | Source                                                   | Example (hero)                                        | Where it's declared                              |
+|--------------|----------------------------------------------------------|-------------------------------------------------------|--------------------------------------------------|
+| **Own**      | The rune's own `attributes:` block                       | `align`                                               | `runes/marketing/src/tags/hero.ts:9-11`          |
+| **Base**     | A shared preset passed as `base:` — another rune can pick the same preset to inherit the same attributes | `layout`, `ratio`, `valign`, `gap`, `collapse` (via `SplitLayoutModel`) | `packages/runes/src/tags/common.ts:10-16`        |
+| **Universal**| `universalAttributes`, auto-merged into every schema     | `tint`, `tint-mode`, `bg`, `width`, `spacing`, `inset`| `packages/runes/src/lib/index.ts:37-44`          |
+
+Today's `describeRune()` in `packages/ai/src/prompt.ts:92-101` prints all attributes as a single flat list. For a rune like `hero` that's **11 attributes inline** — which buries the one attribute (`align`) the author likely wants to set.
+
+### How the reference surfaces tiers
+
+**Per-rune output** (both `refrakt runes <name>` and `refrakt runes dump`) lists **own** attributes inline with descriptions. Base and universal tiers are summarised as one-line references:
+
+```
+Attributes:
+  - align: "left" | "center" | "right" (optional) — Horizontal alignment...
+
+Inherits split layout attributes (layout, ratio, valign, gap, collapse).
+Inherits universal attributes (tint, tint-mode, bg, width, spacing, inset).
+```
+
+**Dump output** additionally emits one section at the top of the generated `AGENTS.md` that documents every universal attribute and every known base preset in full. Per-rune sections then reference that section by name rather than repeating the same attribute definitions 85 times.
+
+```markdown
+## Universal Attributes
+
+These are available on every rune:
+
+- tint — color tint preset applied to this block
+- bg — background preset applied to this block
+- width — "compact" | "narrow" | "content" | "wide" | "full"
+- ...
+
+## Attribute Presets
+
+Runes can opt into shared attribute sets via `base:`. This section lists
+each preset once; per-rune documentation below says which presets it inherits.
+
+### splitLayoutAttributes
+Used by: hero, feature, cta, bento, ...
+
+- layout — "stacked" | "split" | "split-reverse"
+- ratio — Column width ratio in split layout (e.g. "2 1")
+- valign — "top" | "center" | "bottom"
+- gap — "none" | "tight" | "default" | "loose"
+- collapse — "sm" | "md" | "lg" | "never"
+```
+
+This is a meaningful size reduction: ~6 universal attributes × 85 runes = 510 repeated attribute lines eliminated from the dump.
+
+### Detecting the base preset
+
+`createContentModelSchema` takes `base: Record<string, SchemaAttribute>` — a plain attribute record with no name. After merging, there's no way to recover which preset was used. Two paths:
+
+1. **Reference identity.** Export presets as singletons (`splitLayoutAttributes`, `mediaBlockAttributes`, etc.) and keep a `Map<object, string>` registry. The reference tool checks whether the rune's attribute object shares keys with a registered preset.
+2. **Subtraction only.** Don't name the base tier at all. Remove universal attributes from the attribute list; show the remainder inline as "Attributes". Authors lose the "inherits split layout" affordance but the implementation is trivial.
+
+Recommend (1). It's ~30 lines of bookkeeping and gives agents a meaningful shorthand. Details left for the implementation work item.
+
+-----
+
 ## Content-Model-Derived Descriptions
 
 Today's `RuneInfo.reinterprets` is a hand-written, flat map: `{ heading: 'headline', paragraph: 'blurb' }`. It captures *semantic role* but not *structure* — an agent reading it cannot tell:
@@ -384,6 +465,7 @@ packages/cli/src/commands/edit.ts           ← imports from runes/reference
 5. **Editor integration overlap.** SPEC-012 (Rune Inspector) ships a VS Code tree view that already shows pipeline output. Could that extension expose the syntax reference too, replacing the need for a CLI dump? Probably not — agents need text output, not a VS Code panel.
 6. **`custom` content model pattern.** ~5% of runes use `custom` with a hand-written description string. The renderer uses that string verbatim, which puts a quality burden on rune authors. Should we lint that the description is non-trivial, or accept that custom is a rare escape hatch?
 7. **`reinterprets` deprecation timing.** Once the model-derived renderer ships, `reinterprets` becomes redundant for ~95% of runes. Do we deprecate the field immediately (and migrate the legacy holdouts to content models), or leave it as a permanent fallback?
+8. **Base preset naming.** Path (1) above needs presets to be named. `splitLayoutAttributes` is already exported by name — but if we want to surface the preset to agents, it needs a human-meaningful short name ("split layout") rather than a variable name. Is this metadata a new `describe` field on the preset, a separate registry, or inferred from the identifier?
 
 -----
 
