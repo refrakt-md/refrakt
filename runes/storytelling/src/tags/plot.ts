@@ -3,6 +3,7 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
+import { taxonomyAttributes } from './common.js';
 
 // Map marker characters to status strings
 const MARKER_TO_STATUS: Record<string, string> = {
@@ -68,11 +69,11 @@ const plotType = ['arc', 'quest', 'subplot', 'campaign', 'episode', 'act', 'chap
 const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
 
 export const plot = createContentModelSchema({
+	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this plot line.' },
 		type: { type: String, required: false, matches: plotType.slice(), description: 'Narrative scope: arc, quest, subplot, campaign, episode, act, or chapter.' },
 		structure: { type: String, required: false, matches: structureType.slice(), description: 'How beats connect: linear (sequential), parallel, branching, or web.' },
-		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: {
 		type: 'sequence' as const,

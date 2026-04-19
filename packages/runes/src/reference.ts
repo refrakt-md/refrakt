@@ -7,10 +7,24 @@
 
 import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
+import { UNIVERSAL_ATTRIBUTE_NAMES } from './attribute-presets.js';
 
 // ---------------------------------------------------------------------------
 // Rune info shape
 // ---------------------------------------------------------------------------
+
+/**
+ * Information about an attribute preset inherited by a rune — the set of
+ * attribute names contributed by the preset, plus metadata for display.
+ */
+export interface RuneBasePresetInfo {
+	/** Short, human-readable preset name (matches `AttributePresetMetadata.name`). */
+	name: string;
+	/** One-sentence description of the preset. */
+	description: string;
+	/** Names of the attributes contributed by this preset. */
+	attributes: string[];
+}
 
 /**
  * Rune metadata interface — structurally compatible with Rune from @refrakt-md/runes
@@ -26,12 +40,15 @@ export interface RuneInfo {
 			type?: unknown;
 			required?: boolean;
 			matches?: unknown;
+			description?: string;
 		}>;
 	};
 	/** AI prompt extension from community/official packages — additional context appended after description */
 	prompt?: string;
 	/** Optional pre-serialized content model. When present, `describeRune` renders it instead of falling back to `reinterprets`. */
 	contentModel?: SerializedContentModel;
+	/** Named preset this rune inherits attributes from, if any (via `base:` in createContentModelSchema). */
+	basePreset?: RuneBasePresetInfo;
 }
 
 /** Runes that are internal or child-only — excluded from generated reference docs */
@@ -181,9 +198,41 @@ export function describeRune(rune: RuneInfo): string {
 			([name]) => !HIDDEN_ATTRIBUTES.has(`${rune.name}.${name}`),
 		);
 		if (entries.length > 0) {
-			lines.push('Attributes:');
-			for (const [attrName, attrDef] of entries) {
-				lines.push(describeAttribute(attrName, attrDef));
+			const preset = rune.basePreset;
+			const presetSet = preset ? new Set(preset.attributes) : undefined;
+
+			const own: [string, typeof entries[number][1]][] = [];
+			const fromPreset: [string, typeof entries[number][1]][] = [];
+			const universal: [string, typeof entries[number][1]][] = [];
+
+			for (const entry of entries) {
+				const [attrName] = entry;
+				if (UNIVERSAL_ATTRIBUTE_NAMES.has(attrName)) {
+					universal.push(entry);
+				} else if (presetSet?.has(attrName)) {
+					fromPreset.push(entry);
+				} else {
+					own.push(entry);
+				}
+			}
+
+			if (own.length > 0) {
+				lines.push('Attributes:');
+				for (const [attrName, attrDef] of own) {
+					lines.push(describeAttribute(attrName, attrDef));
+				}
+			}
+
+			if (preset && fromPreset.length > 0) {
+				lines.push(`Inherited from the \`${preset.name}\` preset — ${preset.description}`);
+				for (const [attrName, attrDef] of fromPreset) {
+					lines.push(describeAttribute(attrName, attrDef));
+				}
+			}
+
+			if (universal.length > 0) {
+				const names = Array.from(UNIVERSAL_ATTRIBUTE_NAMES).join(', ');
+				lines.push(`Universal attributes (available on every rune): ${names}.`);
 			}
 		}
 	}

@@ -6,6 +6,13 @@ import {
 	type RuneInfo,
 	type SerializedContentModel,
 } from '../src/reference.js';
+import {
+	registerAttributePreset,
+	lookupAttributePreset,
+	schemaBasePresets,
+} from '../src/attribute-presets.js';
+import { createContentModelSchema } from '../src/lib/index.js';
+import type { SchemaAttribute } from '@markdoc/markdoc';
 import type { ContentModel } from '@refrakt-md/types';
 
 // -----------------------------------------------------------------------------
@@ -267,6 +274,81 @@ describe('serializeContentModel', () => {
 // -----------------------------------------------------------------------------
 // describeRune integration
 // -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Attribute preset registry + describeRune tier classification
+// -----------------------------------------------------------------------------
+
+describe('attribute preset registry', () => {
+	it('registers and looks up preset metadata by record reference', () => {
+		const record: Record<string, SchemaAttribute> = {
+			flavor: { type: String, required: false },
+		};
+		registerAttributePreset(record, { name: 'test preset', description: 'A preset for testing.' });
+		expect(lookupAttributePreset(record)).toEqual({ name: 'test preset', description: 'A preset for testing.' });
+	});
+
+	it('populates schemaBasePresets when a schema is built with base:', () => {
+		const preset: Record<string, SchemaAttribute> = {
+			shared: { type: String, required: false },
+		};
+		const schema = createContentModelSchema({
+			base: preset,
+			attributes: { own: { type: String, required: false } },
+			contentModel: { type: 'sequence', fields: [] },
+			transform: () => 'x',
+		});
+		expect(schemaBasePresets.get(schema)).toBe(preset);
+	});
+});
+
+describe('describeRune — attribute tiers', () => {
+	it('separates own, preset-inherited, and universal attributes', () => {
+		const rune: RuneInfo = {
+			name: 'hero',
+			aliases: [],
+			description: 'Page intro.',
+			reinterprets: {},
+			schema: {
+				attributes: {
+					align: { type: String, required: false, matches: ['left', 'right'] },
+					layout: { type: String, required: false, matches: ['stacked', 'split'] },
+					ratio: { type: String, required: false },
+					tint: { type: String, required: false },
+					bg: { type: String, required: false },
+					width: { type: String, required: false },
+				},
+			},
+			basePreset: {
+				name: 'split layout',
+				description: 'Layout controls for runes that can render stacked or split.',
+				attributes: ['layout', 'ratio', 'valign', 'gap', 'collapse'],
+			},
+		};
+		const out = describeRune(rune);
+		expect(out).toContain('Attributes:\n  - align: "left" | "right" (optional)');
+		expect(out).toContain('Inherited from the `split layout` preset — Layout controls for runes that can render stacked or split.');
+		expect(out).toContain('  - layout: "stacked" | "split" (optional)');
+		expect(out).toContain('  - ratio: string (optional)');
+		expect(out).toContain('Universal attributes (available on every rune): tint, tint-mode, bg, width, spacing, inset.');
+		// Universal attrs should not be listed under Attributes:
+		expect(out).not.toMatch(/Attributes:[\s\S]*- tint:/);
+	});
+
+	it('omits the preset section when no preset-inherited attributes are present', () => {
+		const rune: RuneInfo = {
+			name: 'simple',
+			aliases: [],
+			description: 'x',
+			reinterprets: {},
+			schema: { attributes: { name: { type: String, required: true } } },
+		};
+		const out = describeRune(rune);
+		expect(out).toContain('Attributes:\n  - name: string (required)');
+		expect(out).not.toContain('Inherited from');
+		expect(out).not.toContain('Universal attributes');
+	});
+});
 
 describe('describeRune', () => {
 	it('uses the content-model renderer when rune.contentModel is present', () => {

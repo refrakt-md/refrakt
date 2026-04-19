@@ -2,6 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Tag, Node, RenderableTreeNode, SchemaAttribute } from '@markdoc/markdoc';
 import { createContentModelSchema } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
+import { registerAttributePreset } from '../attribute-presets.js';
 
 /** @deprecated Split layout attributes are now provided by splitLayoutAttributes */
 export const SplitablePageSectionModel = undefined;
@@ -14,6 +15,11 @@ export const splitLayoutAttributes: Record<string, SchemaAttribute> = {
   gap: { type: String, required: false, matches: ['none', 'tight', 'default', 'loose'], description: 'Space between columns in split layout' },
   collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which split layout collapses to stacked' },
 };
+
+registerAttributePreset(splitLayoutAttributes, {
+  name: 'split layout',
+  description: 'Layout controls for runes that can render stacked vertically or split into side-by-side columns.',
+});
 
 /**
  * @deprecated Use `splitLayoutAttributes` instead.

@@ -1,7 +1,24 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode, SchemaAttribute } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { asNodes, RenderableNodeCursor, extractMediaImage } from '@refrakt-md/runes';
+import { asNodes, RenderableNodeCursor, extractMediaImage, registerAttributePreset } from '@refrakt-md/runes';
+
+/**
+ * Shared taxonomy attributes for storytelling runes that participate in
+ * cross-referencing (character, realm, faction, lore, plot).
+ *
+ * Registered as a named preset so `refrakt reference` output can label
+ * these attributes as inherited from the storytelling taxonomy tier
+ * rather than listing them as each rune's own.
+ */
+export const taxonomyAttributes: Record<string, SchemaAttribute> = {
+	tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
+};
+
+registerAttributePreset(taxonomyAttributes, {
+	name: 'storytelling taxonomy',
+	description: 'Shared taxonomy attributes (tags) used by storytelling entities for filtering and cross-referencing.',
+});
 
 /**
  * Shared scene-image extraction for storytelling runes (realm, faction).

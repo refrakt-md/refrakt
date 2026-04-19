@@ -61,6 +61,7 @@ export { RUNE_EXAMPLES } from './examples.js';
 export { describeRune, renderContentModel, serializeContentModel, stripContentModel, EXCLUDED_RUNES, HIDDEN_ATTRIBUTES } from './reference.js';
 export type {
 	RuneInfo,
+	RuneBasePresetInfo,
 	SerializedContentModel,
 	SerializedSequenceModel,
 	SerializedSectionsModel,
@@ -71,6 +72,13 @@ export type {
 	SerializedHeadingExtractField,
 	SerializedKnownSection,
 } from './reference.js';
+export {
+	registerAttributePreset,
+	lookupAttributePreset,
+	schemaBasePresets,
+	UNIVERSAL_ATTRIBUTE_NAMES,
+} from './attribute-presets.js';
+export type { AttributePresetMetadata } from './attribute-presets.js';
 export { loadRunePackage, mergePackages, applyAliases, loadLocalRunes, discoverPackageFixtures } from './packages.js';
 export type { LoadedPackage, MergedPackageResult } from './packages.js';
 export { coreConfig, baseConfig, corePipelineHooks, type PageTreeNode } from './config.js';
