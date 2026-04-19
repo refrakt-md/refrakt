@@ -17,7 +17,7 @@ import { planPipelineHooks } from './pipeline.js';
 export const plan: RunePackage = {
 	name: 'plan',
 	displayName: 'Plan',
-	version: '0.9.8',
+	version: '0.9.9',
 	runes: {
 		'spec': {
 			transform: spec,
