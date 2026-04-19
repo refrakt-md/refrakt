@@ -68,7 +68,7 @@ refrakt runes recipe --format json
 | `--config`       | (cwd)         | Path to project root containing `refrakt.config.json`                    |
 | `--no-example`   | `false`       | Omit the example block (useful when the agent has its own example pool)  |
 
-**Markdown output** (mirrors `describeRune` from `packages/ai/src/prompt.ts`):
+**Markdown output** (extends `describeRune` from `packages/ai/src/prompt.ts` with content-model details — see [Content-Model-Derived Descriptions](#content-model-derived-descriptions) below):
 
 ```markdown
 ### hero
@@ -82,11 +82,13 @@ Attributes:
   - eyebrow: string (optional)
   - background: string (optional)
 
-Content interpretation:
-  - heading → headline
-  - paragraph → blurb
-  - list → action buttons
-  - image → background or media slot
+Content structure (delimited by `---`):
+  Zone 1 — content (required):
+    - heading → headline
+    - paragraph → blurb (repeats)
+    - list → action buttons (optional)
+  Zone 2 — media (optional):
+    - image → hero media
 
 Example:
 {% hero align="center" %}
@@ -94,6 +96,8 @@ Example:
 Refrakt turns Markdown into a structured document model.
 - [Get started](/docs)
 - [See examples](/showcase)
+---
+![Hero illustration](/img/hero.png)
 {% /hero %}
 ```
 
@@ -110,11 +114,27 @@ Refrakt turns Markdown into a structured document model.
     "eyebrow": { "type": "string", "required": false },
     "background": { "type": "string", "required": false }
   },
-  "reinterprets": {
-    "heading": "headline",
-    "paragraph": "blurb",
-    "list": "action buttons",
-    "image": "background or media slot"
+  "contentModel": {
+    "pattern": "delimited",
+    "delimiter": "hr",
+    "zones": [
+      {
+        "name": "content",
+        "required": true,
+        "fields": [
+          { "node": "heading", "role": "headline", "repeats": false },
+          { "node": "paragraph", "role": "blurb", "repeats": true },
+          { "node": "list", "role": "action buttons", "required": false }
+        ]
+      },
+      {
+        "name": "media",
+        "required": false,
+        "fields": [
+          { "node": "image", "role": "hero media" }
+        ]
+      }
+    ]
   },
   "example": "{% hero align=\"center\" %}..."
 }
@@ -271,33 +291,86 @@ The per-rune `refrakt runes <name>` command remains useful for cases the dump do
 
 -----
 
+## Content-Model-Derived Descriptions
+
+Today's `RuneInfo.reinterprets` is a hand-written, flat map: `{ heading: 'headline', paragraph: 'blurb' }`. It captures *semantic role* but not *structure* — an agent reading it cannot tell:
+
+- Whether the heading is required or optional
+- Whether paragraphs may repeat
+- That a `hr` separates the content zone from the media zone (delimited pattern)
+- That children are split by H2 headings into named sections (sections pattern)
+- That fields are matched in **order** (sequence pattern)
+- That a heading like `"9:00 AM — Location"` is parsed into time + location fields (`headingExtract`)
+
+The richer source already exists. ~80 of ~85 runes use `createContentModelSchema({ contentModel, transform })` (`packages/runes/src/lib/index.ts:123-150`), and the model is registered in a `WeakMap` (`schemaContentModels`) for introspection. The four patterns are defined in `packages/types/src/content-model.ts`:
+
+| Pattern    | Captures                                                              | Example rune                              |
+|------------|-----------------------------------------------------------------------|-------------------------------------------|
+| `sequence` | Children matched in order by node type                                | `palette` (`runes/design/src/tags/palette.ts:81`) |
+| `sections` | Children split by headings into named sections, optional `headingExtract` | `character` (`runes/storytelling/src/tags/character.ts`), `changelog` (`runes/docs/src/tags/changelog.ts`) |
+| `delimited`| Children split by delimiter (typically `hr`) into named zones, supports `dynamicZones` | `hero` (`runes/marketing/src/tags/hero.ts`), `recipe` (`runes/learning/src/tags/recipe.ts`), `itinerary` (`runes/places/src/tags/itinerary.ts`) |
+| `custom`   | Escape hatch with `processChildren` + a hand-written description string | rare, <5%                                 |
+
+Two existing serializers already strip the model's function-valued fields (`processChildren`, `headingExtract`, etc.) for JSON transport over wire/IPC:
+
+- `serializeContentModel()` / `stripContentModel()` — `packages/editor/src/server.ts:261-307` (used by the editor UI)
+- `serializeContentModelForEditor()` — `packages/cli/src/commands/edit.ts:181-216` (used when loading community packages for the editor)
+
+What's missing is a **markdown renderer** that walks the serialised model and produces prose like the `hero` example above. That renderer is the new code this spec adds.
+
+### Renderer responsibilities
+
+For each pattern, the renderer emits structured prose:
+
+- **sequence:** numbered list, "matched in order"
+- **sections:** named sections list with required/optional + nested field tables; surfaces `headingExtract` shape ("heading text is parsed as `<time> — <location>`")
+- **delimited:** zones list with the delimiter shown, fields nested under each zone
+- **custom:** falls back to the description string declared in the model
+
+Where the rune has both a model **and** a hand-written `reinterprets` map, the model wins for structure and `reinterprets` is dropped from output (it would be redundant). For the handful of legacy Model-class runes without a content model, fall back to today's flat `reinterprets` rendering.
+
+### Migration
+
+`reinterprets` stays in `RuneDescriptor` for backward compatibility but becomes optional. The reference renderer prefers the content model when present. New runes should not need to populate `reinterprets` at all once the renderer ships.
+
+-----
+
 ## Implementation
 
 ### Reuse existing infrastructure
 
 The work is largely a **promotion** of code that already exists:
 
-| Source                                          | What it provides                              | Reuse for                          |
-|-------------------------------------------------|-----------------------------------------------|------------------------------------|
-| `packages/ai/src/prompt.ts` `RuneInfo`          | Type for serialisable rune metadata           | JSON output type                   |
-| `packages/ai/src/prompt.ts` `describeRune()`    | Renders a `RuneInfo` to markdown              | Markdown output for `<name>` and `dump` |
-| `packages/ai/src/prompt.ts` `EXCLUDED_RUNES`    | Filters child-only / internal runes           | Same filter applies                |
-| `packages/runes` `RUNE_EXAMPLES`                | Per-rune minimal examples                     | Example block                      |
-| `packages/runes/src/packages.ts` `mergePackages` | Loads + merges packages from config           | Config-aware rune discovery        |
-| `packages/cli/src/lib/lazy-ai.ts`               | Already wires merged runes into `RuneInfo[]`  | Drop the AI dependency for this command |
+| Source                                                                | What it provides                                                  | Reuse for                                       |
+|-----------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------|
+| `packages/ai/src/prompt.ts` `RuneInfo`                                | Type for serialisable rune metadata                               | JSON output type                                |
+| `packages/ai/src/prompt.ts` `describeRune()`                          | Renders a `RuneInfo` to markdown                                  | Starting point for markdown output              |
+| `packages/ai/src/prompt.ts` `EXCLUDED_RUNES`                          | Filters child-only / internal runes                               | Same filter applies                             |
+| `packages/runes/src/lib/index.ts` `schemaContentModels` WeakMap       | Lookup of content model by registered schema                      | Source of model data for renderer               |
+| `packages/types/src/content-model.ts`                                 | Pattern type definitions (`SequenceModel`, `SectionsModel`, etc.) | Renderer dispatch                               |
+| `packages/editor/src/server.ts` `serializeContentModel()`             | Strips function-valued fields → JSON-safe model                   | JSON output + input to markdown renderer        |
+| `packages/runes` `RUNE_EXAMPLES`                                      | Per-rune minimal examples                                         | Example block                                   |
+| `packages/runes/src/packages.ts` `mergePackages`                      | Loads + merges packages from config                               | Config-aware rune discovery                     |
+| `packages/cli/src/lib/lazy-ai.ts`                                     | Already wires merged runes into `RuneInfo[]`                      | Drop the AI dependency for this command         |
 
-The new code is mostly a CLI command shell that calls these utilities and formats output. No new schema introspection logic.
+The genuinely new code is the **content-model renderer** that walks a serialised model and emits markdown / structured JSON. Everything else is plumbing.
 
 ### Package placement
 
-Add as commands to `packages/cli/src/commands/runes.ts`. Wire into the CLI entry point alongside `inspect`, `contracts`, `validate`, etc. The command does not require `@refrakt-md/ai` (split `describeRune`/`RuneInfo` out of `packages/ai/src/prompt.ts` into a shared util in `packages/runes/src/reference.ts` so both `write` and `runes` import from there).
+Add as commands to `packages/cli/src/commands/runes.ts`. Wire into the CLI entry point alongside `inspect`, `contracts`, `validate`, etc. The command does not require `@refrakt-md/ai` — split `describeRune`/`RuneInfo` out of `packages/ai/src/prompt.ts` into a shared util in `packages/runes/src/reference.ts` so both `write` and `runes` import from there. The shared util also owns the new content-model renderer.
+
+Promote `serializeContentModel()` from `packages/editor/src/server.ts` to `packages/runes/src/reference.ts` and have the editor re-import it (avoids duplication with `serializeContentModelForEditor()` in `packages/cli/src/commands/edit.ts` — that function becomes a thin wrapper too).
 
 ### Suggested file layout
 
 ```
 packages/cli/src/commands/runes.ts          ← command handlers (name, list, dump)
 packages/runes/src/reference.ts             ← shared describeRune + RuneInfo extraction
+                                              + serializeContentModel (promoted)
+                                              + renderContentModel (new)
 packages/ai/src/prompt.ts                   ← refactored to import from runes/reference
+packages/editor/src/server.ts               ← imports serializeContentModel from runes/reference
+packages/cli/src/commands/edit.ts           ← imports from runes/reference
 ```
 
 -----
@@ -309,6 +382,8 @@ packages/ai/src/prompt.ts                   ← refactored to import from runes/
 3. **Per-rune `prompt` extension scope.** The `RunePackage.prompt` field today appends LLM instructions. Should the reference output include these (useful authoring hints) or hide them (they read awkwardly out of LLM context)?
 4. **Layout-aware filtering.** Some runes only make sense in certain layouts (e.g., `hero` in landing layouts, not in `docsLayout`). Should `list` filter by layout, or is package-level filtering enough?
 5. **Editor integration overlap.** SPEC-012 (Rune Inspector) ships a VS Code tree view that already shows pipeline output. Could that extension expose the syntax reference too, replacing the need for a CLI dump? Probably not — agents need text output, not a VS Code panel.
+6. **`custom` content model pattern.** ~5% of runes use `custom` with a hand-written description string. The renderer uses that string verbatim, which puts a quality burden on rune authors. Should we lint that the description is non-trivial, or accept that custom is a rare escape hatch?
+7. **`reinterprets` deprecation timing.** Once the model-derived renderer ships, `reinterprets` becomes redundant for ~95% of runes. Do we deprecate the field immediately (and migrate the legacy holdouts to content models), or leave it as a permanent fallback?
 
 -----
 
@@ -324,6 +399,7 @@ packages/ai/src/prompt.ts                   ← refactored to import from runes/
 
 - {% ref "SPEC-022" /%} — Plan CLI (the pattern this command follows: namespaced subcommands, `--format json` for agents, `init`-style scaffolding)
 - {% ref "SPEC-001" /%} — Community Runes (the package system this command queries)
+- {% ref "SPEC-003" /%} — Declarative Content Model (the system whose richness this spec surfaces to agents)
 - {% ref "SPEC-012" /%} — Rune Inspector (sibling tool: input syntax here, pipeline output there)
 - {% ref "SPEC-039" /%} — Plan Package Onboarding (similar agent-onboarding workflow for plan content)
 
