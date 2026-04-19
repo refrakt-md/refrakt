@@ -351,6 +351,9 @@ function handleInit(args: string[]): void {
 	let projectRoot = '.';
 	let formatJson = false;
 	let agent: string | undefined;
+	let noPackageJson = false;
+	let noHooks = false;
+	let noWrapper = false;
 	const validAgents = ['claude', 'cursor', 'copilot', 'windsurf', 'cline', 'none'];
 
 	for (let i = 0; i < args.length; i++) {
@@ -368,29 +371,68 @@ function handleInit(args: string[]): void {
 		} else if (arg === '--format' && args[i + 1] === 'json') {
 			formatJson = true;
 			i++;
+		} else if (arg === '--no-package-json') {
+			noPackageJson = true;
+		} else if (arg === '--no-hooks') {
+			noHooks = true;
+		} else if (arg === '--no-wrapper') {
+			noWrapper = true;
+		} else if (arg === '--minimal') {
+			noPackageJson = true;
+			noHooks = true;
+			noWrapper = true;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--format json]');
+			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-wrapper] [--minimal] [--format json]');
 			process.exit(1);
 		}
 	}
 
-	const result = runInit({ dir, projectRoot, agent: agent as any });
+	const result = runInit({
+		dir,
+		projectRoot,
+		agent: agent as any,
+		noPackageJson,
+		noHooks,
+		noWrapper,
+	});
 
 	if (formatJson) {
 		console.log(JSON.stringify(result, null, 2));
-	} else {
-		if (result.created.length === 0 && result.agentFilesUpdated.length === 0) {
-			console.log('Plan structure already exists. No changes made.');
-		} else {
-			console.log(`Initialized plan in ${result.dir}/`);
-			for (const f of result.created) {
-				console.log(`  + ${f}`);
-			}
-			for (const f of result.agentFilesUpdated) {
-				console.log(`  + Updated ${f} with plan reference`);
-			}
-		}
+		return;
+	}
+
+	const didNothing =
+		result.created.length === 0 &&
+		result.agentFilesUpdated.length === 0 &&
+		!result.packageJsonUpdated &&
+		!result.hookWritten &&
+		!result.wrapperWritten;
+
+	if (didNothing) {
+		console.log('Plan structure already exists. No changes made.');
+		return;
+	}
+
+	console.log(`Initialized plan in ${result.dir}/`);
+	for (const f of result.created) {
+		console.log(`  + ${f}`);
+	}
+	for (const f of result.agentFilesUpdated) {
+		console.log(`  + Updated ${f}`);
+	}
+	if (result.packageJsonUpdated && result.installRoot) {
+		console.log(`  + Wired package.json at ${result.installRoot}`);
+	}
+	if (result.hookWritten) {
+		console.log(`  + Added Claude SessionStart hook (.claude/settings.json)`);
+	}
+	if (result.wrapperWritten) {
+		console.log(`  + Wrote ./plan.sh wrapper script`);
+	}
+	if (result.packageManager && result.packageJsonUpdated) {
+		console.log();
+		console.log(`Next: run \`${result.packageManager} install\` to pull in @refrakt-md/cli + @refrakt-md/plan.`);
 	}
 }
 
