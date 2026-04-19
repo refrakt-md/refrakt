@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync, chm
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
+import { idExists } from './next-id.js';
 import { STATUS_PAGES, renderStatusPage, renderTypeIndexPage } from './templates.js';
 import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
 
@@ -487,10 +488,13 @@ export function runInit(options: InitOptions): InitResult {
 
 	for (const ex of examples) {
 		const filePath = join(dir, ex.subDir, ex.slug);
-		if (!existsSync(filePath)) {
-			runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
-			created.push(filePath);
-		}
+		if (existsSync(filePath)) continue;
+		// Existing projects commonly already use the IDs we seed (SPEC-001, WORK-001,
+		// ADR-001, v0.1.0). Skip the example silently instead of crashing — the
+		// user has their own content, they don't need placeholders.
+		if (idExists(dir, ex.id)) continue;
+		runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
+		created.push(filePath);
 	}
 
 	for (const def of STATUS_PAGES) {

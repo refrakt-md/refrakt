@@ -93,6 +93,45 @@ describe('plan init — scaffolding', () => {
 		expect(r2.agentFilesUpdated).toHaveLength(0);
 	});
 
+	it('does not crash when seed IDs already exist in other files', () => {
+		// Simulate an existing project where the user already has WORK-001,
+		// SPEC-001, ADR-001, v0.1.0 under different slugs. init used to call
+		// runCreate() blindly and throw EXIT_DUPLICATE_ID.
+		const planDir = join(TMP, 'plan');
+		mkdirSync(join(planDir, 'work'), { recursive: true });
+		mkdirSync(join(planDir, 'specs'), { recursive: true });
+		mkdirSync(join(planDir, 'decisions'), { recursive: true });
+		mkdirSync(join(planDir, 'milestones'), { recursive: true });
+		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
+		writeFileSync(join(planDir, 'specs', 'my-spec.md'), '{% spec id="SPEC-001" status="draft" %}\n# Mine\n{% /spec %}\n');
+		writeFileSync(join(planDir, 'decisions', 'my-decision.md'), '{% decision id="ADR-001" status="proposed" %}\n# Mine\n{% /decision %}\n');
+		writeFileSync(join(planDir, 'milestones', 'mine.md'), '{% milestone name="v0.1.0" status="planning" %}\n# Mine\n{% /milestone %}\n');
+
+		expect(() => safeInit({ dir: planDir, projectRoot: TMP })).not.toThrow();
+
+		// Example files should be skipped — user's own content is preserved untouched.
+		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(false);
+		expect(readFileSync(join(planDir, 'work', 'my-task.md'), 'utf-8')).toContain('# Mine');
+	});
+
+	it('creates only the examples whose IDs are still free', () => {
+		// Partial collision: user has WORK-001 but not the others. init should
+		// scaffold the non-colliding examples and skip just the WORK one.
+		const planDir = join(TMP, 'plan');
+		mkdirSync(join(planDir, 'work'), { recursive: true });
+		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
+
+		safeInit({ dir: planDir, projectRoot: TMP });
+
+		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
+	});
+
 	it('reports created files', () => {
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
