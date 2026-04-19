@@ -212,27 +212,58 @@ All commands support \`--format json\` for machine-readable output. This is usef
 
 /**
  * Shell command written into .claude/settings.json SessionStart hook.
- * Detects the package manager at execution time from lockfiles, so users can
- * switch package managers without re-running init.
+ *
+ * Detection order mirrors detectPackageManager in project-setup.ts:
+ *   1. Corepack `packageManager` field in package.json (authoritative)
+ *   2. The most recently modified lockfile (newest mtime wins — handles stale
+ *      pnpm-lock.yaml / yarn.lock leftovers in an npm-workspaces repo)
+ *   3. Default to npm
  */
-const HOOK_COMMAND = `[ -x node_modules/.bin/refrakt ] || { if [ -f bun.lockb ] || [ -f bun.lock ]; then bun install; elif [ -f pnpm-lock.yaml ]; then pnpm install; elif [ -f yarn.lock ]; then yarn install; else npm install; fi; }`;
+const HOOK_COMMAND = `[ -x node_modules/.bin/refrakt ] || { pm=""; if [ -f package.json ]; then pm=$(sed -n 's/.*"packageManager"[[:space:]]*:[[:space:]]*"\\([a-z]*\\)@.*/\\1/p' package.json | head -n1); fi; case "$pm" in npm|pnpm|yarn|bun) ;; *) pm="" ;; esac; if [ -z "$pm" ]; then newest=""; for f in bun.lockb bun.lock pnpm-lock.yaml yarn.lock package-lock.json; do [ -f "$f" ] || continue; if [ -z "$newest" ] || [ "$f" -nt "$newest" ]; then newest=$f; fi; done; case "$newest" in bun.lock*) pm=bun ;; pnpm-lock.yaml) pm=pnpm ;; yarn.lock) pm=yarn ;; *) pm=npm ;; esac; fi; case "$pm" in bun) bun install ;; pnpm) pnpm install ;; yarn) yarn install ;; *) npm install ;; esac; }`;
 
 /**
- * Wrapper script body. Works under any POSIX shell; installs deps on first
- * run using the detected package manager, then defers to `npx refrakt plan`.
+ * Wrapper script body. Works under any POSIX shell with `-nt` support
+ * (dash, bash, ksh, zsh, busybox sh). Installs deps on first run using the
+ * detected package manager, then defers to `npx refrakt plan`.
  */
 const WRAPPER_SCRIPT = `#!/usr/bin/env sh
 set -e
-if [ ! -x node_modules/.bin/refrakt ]; then
-  if [ -f bun.lockb ] || [ -f bun.lock ]; then
-    bun install
-  elif [ -f pnpm-lock.yaml ]; then
-    pnpm install
-  elif [ -f yarn.lock ]; then
-    yarn install
-  else
-    npm install
+
+# Detection order:
+#   1. Corepack packageManager field in package.json (authoritative)
+#   2. Newest lockfile by mtime (so a stale pnpm-lock.yaml next to a fresh
+#      package-lock.json correctly resolves to npm)
+#   3. Default to npm
+detect_pm() {
+  pm=""
+  if [ -f package.json ]; then
+    pm=$(sed -n 's/.*"packageManager"[[:space:]]*:[[:space:]]*"\\([a-z]*\\)@.*/\\1/p' package.json | head -n1)
   fi
+  case "$pm" in
+    npm|pnpm|yarn|bun) echo "$pm"; return ;;
+  esac
+  newest=""
+  for f in bun.lockb bun.lock pnpm-lock.yaml yarn.lock package-lock.json; do
+    [ -f "$f" ] || continue
+    if [ -z "$newest" ] || [ "$f" -nt "$newest" ]; then
+      newest=$f
+    fi
+  done
+  case "$newest" in
+    bun.lock*) echo bun ;;
+    pnpm-lock.yaml) echo pnpm ;;
+    yarn.lock) echo yarn ;;
+    *) echo npm ;;
+  esac
+}
+
+if [ ! -x node_modules/.bin/refrakt ]; then
+  case "$(detect_pm)" in
+    bun) bun install ;;
+    pnpm) pnpm install ;;
+    yarn) yarn install ;;
+    *) npm install ;;
+  esac
 fi
 exec npx refrakt plan "$@"
 `;

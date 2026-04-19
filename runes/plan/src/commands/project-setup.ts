@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, statSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
@@ -62,21 +62,63 @@ function detectWorkspaceRoot(dir: string, pkgPath: string): boolean {
 	return false;
 }
 
+const LOCKFILES: { file: string; pm: PackageManager }[] = [
+	{ file: 'bun.lockb', pm: 'bun' },
+	{ file: 'bun.lock', pm: 'bun' },
+	{ file: 'pnpm-lock.yaml', pm: 'pnpm' },
+	{ file: 'yarn.lock', pm: 'yarn' },
+	{ file: 'package-lock.json', pm: 'npm' },
+];
+
+const VALID_PMS: PackageManager[] = ['npm', 'pnpm', 'yarn', 'bun'];
+
 /**
- * Detect the package manager for a project by looking at lockfiles in
- * `rootDir`. Returns 'npm' as the default when no lockfile is present.
+ * Read the corepack `packageManager` field from package.json. Returns the
+ * bare name (e.g. "pnpm") when valid, otherwise null.
+ */
+function readPackageManagerField(rootDir: string): PackageManager | null {
+	const pkgPath = join(rootDir, 'package.json');
+	if (!existsSync(pkgPath)) return null;
+	try {
+		const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+		const field = typeof pkg.packageManager === 'string' ? pkg.packageManager : '';
+		const name = field.split('@')[0].trim().toLowerCase();
+		if ((VALID_PMS as string[]).includes(name)) return name as PackageManager;
+	} catch {
+		// Malformed package.json — treat as unset.
+	}
+	return null;
+}
+
+/**
+ * Detect the package manager for a project. Order of precedence:
+ *
+ *   1. The corepack `packageManager` field in package.json (authoritative).
+ *   2. The most recently modified lockfile. Repositories sometimes accumulate
+ *      stale lockfiles (e.g. an old pnpm-lock.yaml left behind after a switch
+ *      to npm), and the newest mtime is the best heuristic for which PM is
+ *      currently active.
+ *   3. Defaults to npm when no lockfile is present.
  */
 export function detectPackageManager(rootDir: string): PackageManager {
-	if (existsSync(join(rootDir, 'bun.lockb')) || existsSync(join(rootDir, 'bun.lock'))) {
-		return 'bun';
+	const fromField = readPackageManagerField(rootDir);
+	if (fromField) return fromField;
+
+	let newest: { pm: PackageManager; mtime: number } | null = null;
+	for (const { file, pm } of LOCKFILES) {
+		const path = join(rootDir, file);
+		if (!existsSync(path)) continue;
+		let mtime: number;
+		try {
+			mtime = statSync(path).mtimeMs;
+		} catch {
+			continue;
+		}
+		if (!newest || mtime > newest.mtime) {
+			newest = { pm, mtime };
+		}
 	}
-	if (existsSync(join(rootDir, 'pnpm-lock.yaml'))) {
-		return 'pnpm';
-	}
-	if (existsSync(join(rootDir, 'yarn.lock'))) {
-		return 'yarn';
-	}
-	return 'npm';
+	return newest ? newest.pm : 'npm';
 }
 
 /** Shell command that installs dependencies for the given package manager. */
