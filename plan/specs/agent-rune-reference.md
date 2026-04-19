@@ -469,26 +469,32 @@ packages/cli/src/commands/edit.ts           ← imports from runes/reference
    - Migrate every legacy Model-class rune to `createContentModelSchema` (estimated 4-8 runes; all `custom` pattern is acceptable)
    - Drop `reinterprets` from the type and from `describeRune` rendering as a single follow-up commit
 5. **`custom` content model descriptions get an audit pass.** As part of the migration above, every `custom`-pattern rune's `description` string gets reviewed for clarity (it's now load-bearing for agent docs, not just a schema curiosity). Tracked as an acceptance criterion on the migration work item rather than as a separate work item.
-
------
-
-## Open Questions
-
-1. **`prompt` field rename and scope.** `RuneInfo.prompt` (`packages/ai/src/prompt.ts:18`) is currently optional LLM instructions appended to the rune description in `refrakt write` prompts. The text is often imperative ("when generating this rune, prefer..."), which reads awkwardly in plain reference docs. Two paths:
-   - **Include and rebrand.** Rename to `authoringHints`, document as dual-purpose, audit existing values to read naturally for both human and LLM readers. The hints carry useful authoring context an agent shouldn't miss.
-   - **Hide from reference, keep for `write`.** Treat `prompt` as a `write`-only field; reference output excludes it. Simpler but loses useful per-rune context (e.g., "use this rune for landing pages, not for in-page sections").
-   - Recommendation: include and rebrand. Audit is cheap (~5 runes today set this field) and the dual purpose matches how the field is already being used.
-2. **Editor integration.** SPEC-012 (Rune Inspector) ships a VS Code tree view that shows pipeline output. The reference renderer in this spec is reusable — the editor could display "syntax reference" alongside "pipeline output" via the same `serializeContentModel` + `renderContentModel` pair. Worth doing as a follow-on (no work needed in this spec), but should we mention it in SPEC-012 to flag the integration point?
-3. **Base preset registration API.** Recommend a simple registry pattern:
+6. **Rebrand `RuneInfo.prompt` → `authoringHints` and include in reference output.** The field at `packages/ai/src/prompt.ts:18` is currently optional LLM instructions appended in `refrakt write` prompts. The renamed `authoringHints` field is included in `refrakt reference` output as a dedicated "Authoring notes" block. Migration:
+   - Rename the field on `RuneInfo` and on `RunePackage`
+   - Audit the ~5 runes that currently set it, rephrasing imperative LLM-only prose ("when generating this rune…") to neutral guidance that reads for both human and LLM readers
+   - `refrakt write` continues to use the same field — same content, broader audience
+7. **Editor reuse is documented in SPEC-012.** The reference renderer (`renderContentModel` over a serialized model) is reusable: the VS Code Rune Inspector could surface "syntax reference" as a sibling tree node to the existing pipeline output, sharing the same serializer. SPEC-041 doesn't ship that integration; SPEC-012 gets a forward-reference note so the integration point is recorded for whoever picks up the inspector work.
+8. **Base presets are registered via API and exportable from any package.** Presets are plain `Record<string, SchemaAttribute>` records (today's shape). Packages register metadata via `registerAttributePreset()`:
    ```ts
+   // Core preset
    // packages/runes/src/attribute-presets.ts
    export const splitLayoutAttributes: Record<string, SchemaAttribute> = { /* ... */ };
    registerAttributePreset(splitLayoutAttributes, {
      name: 'split layout',
      description: 'Stacked or split column layouts with optional collapse breakpoint',
    });
+
+   // Community-package preset
+   // runes/learning/src/attribute-presets.ts
+   export const stepLayoutAttributes: Record<string, SchemaAttribute> = { /* ... */ };
+   registerAttributePreset(stepLayoutAttributes, {
+     name: 'step layout',
+     description: 'Numbered step blocks with optional connector lines',
+   });
    ```
-   The reference renderer looks up the rune's base record by reference identity. Unregistered bases fall back to subtraction (show non-universal attrs inline without a tier label). Open: should presets live in `packages/runes` (centralised) or be exportable from any package (so community packages can publish their own shared presets)?
+   Registration happens at module load. The `RunePackage` type does **not** need a new field — packages just call `registerAttributePreset` from their entry point alongside their `defineRune` calls. The reference renderer resolves the rune's base record by reference identity against the global registry. Unregistered bases fall back to subtraction (show non-universal attrs inline without a tier label).
+
+   Why no new `RunePackage` field? Module-level registration is simpler, requires no plumbing through `mergePackages`, and matches how rune packages already register schemas. The downside (presets only appear once their package is imported) is non-issue because the package is always imported when its runes are in use.
 
 -----
 

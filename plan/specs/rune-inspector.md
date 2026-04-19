@@ -194,4 +194,10 @@ Tree items have:
 7. Move cursor outside any rune — tree shows "No rune at cursor"
 8. Test with no `refrakt.config.json` — Stage 4 shows "Theme not found" gracefully
 
+---
+
+## Related Work
+
+{% ref "SPEC-041" /%} (Agent Rune Reference) builds a content-model renderer (`renderContentModel`) on top of the same `serializeContentModel` infrastructure this inspector relies on. Once both ship, the Rune Inspector tree view could expose a fifth sibling node — "Syntax Reference" — that displays the rune's input syntax (attributes, content structure, example) alongside the four pipeline stages already shown. Same serializer, different presentation. No work in this spec; flagged here so the integration point is recorded.
+
 {% /spec %}
