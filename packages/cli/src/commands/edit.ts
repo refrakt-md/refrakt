@@ -75,7 +75,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 
 	if (projectConfig?.packages?.length) {
 		try {
-			const { loadRunePackage, mergePackages, runes: coreRuneMap, schemaContentModels } = await import('@refrakt-md/runes');
+			const { loadRunePackage, mergePackages, runes: coreRuneMap, schemaContentModels, serializeContentModel } = await import('@refrakt-md/runes');
 
 			const loaded = await Promise.all(
 				projectConfig.packages.map((name: string) => loadRunePackage(name))
@@ -133,7 +133,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 
 				// Look up content model from WeakMap
 				const rawModel = schemaContentModels.get(rune.schema);
-				const contentModel = rawModel ? serializeContentModelForEditor(rawModel) : undefined;
+				const contentModel = rawModel ? serializeContentModel(rawModel) : undefined;
 
 				communityRuneEntries.push({
 					name,
@@ -175,44 +175,6 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		extraTags,
 		communityRunes: communityRuneEntries,
 	});
-}
-
-/** Serialize a content model for JSON transport to the editor client */
-function serializeContentModelForEditor(
-	model: import('@refrakt-md/types').ContentModel | ((attrs: Record<string, any>) => import('@refrakt-md/types').ContentModel),
-): object | undefined {
-	const resolved = typeof model === 'function' ? model({}) : model;
-	return stripModel(resolved);
-}
-
-function stripModel(model: import('@refrakt-md/types').ContentModel): object | undefined {
-	if ('when' in model) return stripModel(model.default);
-	if (model.type === 'custom') return { type: 'custom', description: model.description };
-	if (model.type === 'sequence') return { type: 'sequence', fields: model.fields.map(stripFieldDef) };
-	if (model.type === 'delimited') {
-		return {
-			type: 'delimited', delimiter: model.delimiter,
-			zones: model.zones?.map(z => ({ name: z.name, type: 'sequence' as const, fields: z.fields.map(stripFieldDef) })),
-			dynamicZones: model.dynamicZones,
-			zoneModel: model.zoneModel ? { type: 'sequence' as const, fields: model.zoneModel.fields.map(stripFieldDef) } : undefined,
-		};
-	}
-	if (model.type === 'sections') {
-		return {
-			type: 'sections', sectionHeading: model.sectionHeading,
-			fields: model.fields?.map(stripFieldDef),
-			sectionModel: stripModel(model.sectionModel),
-			emitTag: model.emitTag,
-		};
-	}
-	return undefined;
-}
-
-function stripFieldDef(f: import('@refrakt-md/types').ContentFieldDefinition): object {
-	return {
-		name: f.name, match: f.match, optional: f.optional,
-		greedy: f.greedy, template: f.template, description: f.description, emitTag: f.emitTag,
-	};
 }
 
 interface ResolvedTheme {
