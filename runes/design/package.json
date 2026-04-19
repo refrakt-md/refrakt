@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/design",
   "description": "Design system runes for refrakt.md — palettes, typography, spacing, and previews",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -21,9 +21,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.9.8",
-    "@refrakt-md/transform": "0.9.8",
-    "@refrakt-md/runes": "0.9.8",
+    "@refrakt-md/types": "0.9.9",
+    "@refrakt-md/transform": "0.9.9",
+    "@refrakt-md/runes": "0.9.9",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0"
   }

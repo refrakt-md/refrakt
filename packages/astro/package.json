@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/astro",
   "description": "Astro integration for refrakt.md — render Markdoc runes in Astro projects",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -33,10 +33,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/behaviors": "0.9.8",
-    "@refrakt-md/content": "0.9.8",
-    "@refrakt-md/transform": "0.9.8",
-    "@refrakt-md/types": "0.9.8"
+    "@refrakt-md/behaviors": "0.9.9",
+    "@refrakt-md/content": "0.9.9",
+    "@refrakt-md/transform": "0.9.9",
+    "@refrakt-md/types": "0.9.9"
   },
   "devDependencies": {
     "astro": "^5.0.0"

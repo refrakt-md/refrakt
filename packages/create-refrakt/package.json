@@ -1,7 +1,7 @@
 {
   "name": "create-refrakt",
   "description": "Scaffold a new refrakt.md project",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.2.0",
-    "@refrakt-md/runes": "0.9.8",
-    "@refrakt-md/transform": "0.9.8"
+    "@refrakt-md/runes": "0.9.9",
+    "@refrakt-md/transform": "0.9.9"
   }
 }

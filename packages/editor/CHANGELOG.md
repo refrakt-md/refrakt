@@ -1,5 +1,15 @@
 # @refrakt-md/editor
 
+## 0.9.9
+
+### Patch Changes
+
+- @refrakt-md/content@0.9.9
+- @refrakt-md/highlight@0.9.9
+- @refrakt-md/runes@0.9.9
+- @refrakt-md/transform@0.9.9
+- @refrakt-md/types@0.9.9
+
 ## 0.9.8
 
 ### Patch Changes
