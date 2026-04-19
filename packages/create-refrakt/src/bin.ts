@@ -158,7 +158,7 @@ async function run(): Promise<void> {
 		if (type === 'theme') {
 			scaffoldTheme({ themeName: projectName!, targetDir, scope });
 		} else {
-			scaffold({ projectName: projectName!, targetDir, theme, target });
+			await scaffold({ projectName: projectName!, targetDir, theme, target });
 		}
 	} catch (err) {
 		console.error(`\nError: ${(err as Error).message}`);

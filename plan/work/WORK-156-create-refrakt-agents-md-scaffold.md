@@ -1,4 +1,4 @@
-{% work id="WORK-156" status="ready" priority="medium" complexity="simple" tags="cli, scaffolding, ai-workflow, onboarding" source="SPEC-041" %}
+{% work id="WORK-156" status="done" priority="medium" complexity="simple" tags="cli, scaffolding, ai-workflow, onboarding" source="SPEC-041" %}
 
 # Generate AGENTS.md during create-refrakt scaffolding
 
@@ -10,13 +10,13 @@ A new project scaffolded via `npm create refrakt` should ship with a complete, a
 
 ## Acceptance Criteria
 
-- [ ] `create-refrakt` template invokes `refrakt reference dump --output AGENTS.md` (or equivalent in-process call to the same machinery) as a final step after the config and content tree are written
-- [ ] The generated `AGENTS.md` has a clear header explaining how to regenerate it (`refrakt reference dump`) and when (config or package version changes)
-- [ ] The header includes a brief explanation of what runes are and how to use them, so an agent reading AGENTS.md alone has enough context to author content
-- [ ] If the user opts into a different package set during scaffolding (e.g., docs vs landing), the generated `AGENTS.md` reflects only the runes available in that selection
-- [ ] A short note in the generated project's README points new contributors at `AGENTS.md` for rune syntax
-- [ ] `RELEASING.md` (or contributor docs) document the recommended `refrakt reference dump --check` CI step so projects can detect drift between their dependencies and the checked-in `AGENTS.md`
-- [ ] Manual smoke test: scaffold a fresh project, verify `AGENTS.md` is present and lists the expected runes
+- [x] `create-refrakt` template invokes `refrakt reference dump --output AGENTS.md` (or equivalent in-process call to the same machinery) as a final step after the config and content tree are written
+- [x] The generated `AGENTS.md` has a clear header explaining how to regenerate it (`refrakt reference dump`) and when (config or package version changes)
+- [x] The header includes a brief explanation of what runes are and how to use them, so an agent reading AGENTS.md alone has enough context to author content
+- [x] If the user opts into a different package set during scaffolding (e.g., docs vs landing), the generated `AGENTS.md` reflects only the runes available in that selection
+- [x] A short note in the generated project's README points new contributors at `AGENTS.md` for rune syntax
+- [x] `RELEASING.md` (or contributor docs) document the recommended `refrakt reference dump --check` CI step so projects can detect drift between their dependencies and the checked-in `AGENTS.md`
+- [x] Manual smoke test: scaffold a fresh project, verify `AGENTS.md` is present and lists the expected runes
 
 ## Approach
 
@@ -32,5 +32,27 @@ A new project scaffolded via `npm create refrakt` should ship with a complete, a
 ## References
 
 - {% ref "SPEC-041" /%} — Scaffold Integration
+
+## Resolution
+
+Completed: 2026-04-19
+
+Branch: `claude/scaffold-landing-docs-cli-DB31i`
+
+### What was done
+
+- `packages/create-refrakt/package.json` — added runtime deps on `@refrakt-md/runes` and `@refrakt-md/transform` so AGENTS.md can be rendered in-process during scaffolding.
+- `packages/create-refrakt/src/agents-md.ts` — new module exposing `PREAMBLE` (three-paragraph "what is a rune" header that orients coding agents) + `buildScaffoldReferenceContext(packages)` + `renderScaffoldAgentsMd(packages)` which calls `renderReferenceMarkdown` from `@refrakt-md/runes`.
+- `packages/create-refrakt/src/scaffold.ts` — made the public `scaffold()` function and all six per-target scaffolders (`scaffoldSvelteKitSite`, `scaffoldHtmlSite`, `scaffoldAstroSite`, `scaffoldNuxtSite`, `scaffoldNextSite`, `scaffoldEleventySite`) async. Added `DEFAULT_SCAFFOLDED_PACKAGES = ['@refrakt-md/marketing']` and `writeAgentsMd()` helper that each scaffolder now invokes after writing `refrakt.config.json`. Updated `generateReadme` with an "Authoring content" section that points at AGENTS.md and documents the regen command + optional `--check` CI step.
+- `packages/create-refrakt/src/bin.ts` — `await` the now-async `scaffold(...)` call.
+- `packages/create-refrakt/test/scaffold.test.ts` — converted every `it(...)` callback to async, added `await` to all `scaffold(...)` invocations, migrated the two "throws when target directory already exists" tests from `expect(() => ...).toThrow(...)` to `await expect(...).rejects.toThrow(...)`. Added `expect(existsSync('AGENTS.md')).toBe(true)` assertions per target, plus a dedicated test that verifies the scaffolded AGENTS.md contains the `refrakt reference dump` regen line, the `## Universal Attributes` section, a core rune heading (`### hint`), and a marketing package rune heading (`### hero`).
+- `RELEASING.md` — added a "Keeping AGENTS.md in sync" section documenting `npx refrakt reference dump --check` as the recommended CI pattern, plus a new pre-release checklist item for the scaffold AGENTS.md smoke test.
+
+### Notes
+
+- Package boundary chosen: pure rendering logic lives in `@refrakt-md/runes` (already a runtime dep of scaffolded sites) rather than `@refrakt-md/cli`. This keeps `create-refrakt` lean — it pulls in `runes` + `transform` rather than the whole CLI.
+- Package set: scaffolded projects default to `@refrakt-md/marketing` (matching the existing `generateRefraktConfig` default). Swapping the default package set — or exposing a CLI flag — now just changes the `DEFAULT_SCAFFOLDED_PACKAGES` constant and flows through `renderScaffoldAgentsMd`.
+- Smoke-tested by running `node packages/create-refrakt/dist/bin.js smoke-site --target sveltekit` in a clean tmp dir: resulting `smoke-site/AGENTS.md` is 1049 lines, starts with the preamble, lists `@refrakt-md/runes (core)` (36 runes) and `@refrakt-md/marketing` (9 runes) groups, and the project's README has the "Authoring content" pointer.
+- Full suite: all 2142 tests across 181 files pass.
 
 {% /work %}
