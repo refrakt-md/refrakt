@@ -58,10 +58,30 @@ export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
 export { serialize, serializeTree } from './serialize.js';
 export { RUNE_EXAMPLES } from './examples.js';
-export { describeRune, renderContentModel, serializeContentModel, stripContentModel, EXCLUDED_RUNES, HIDDEN_ATTRIBUTES } from './reference.js';
+export {
+	describeRune,
+	renderContentModel,
+	serializeContentModel,
+	stripContentModel,
+	hydrateRuneInfo,
+	hydrateAllRuneInfos,
+	hydrateRuneByName,
+	serializeRune,
+	groupReferenceInfos,
+	renderReferenceMarkdown,
+	EXCLUDED_RUNES,
+	HIDDEN_ATTRIBUTES,
+} from './reference.js';
 export type {
 	RuneInfo,
 	RuneBasePresetInfo,
+	RuneLike,
+	HydrateOptions,
+	ReferenceContext,
+	ReferenceGroup,
+	RenderReferenceOptions,
+	SerializedAttribute,
+	SerializedRune,
 	SerializedContentModel,
 	SerializedSequenceModel,
 	SerializedSectionsModel,

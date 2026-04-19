@@ -1,4 +1,4 @@
-{% work id="WORK-155" status="ready" priority="high" complexity="moderate" tags="cli, runes, ai-workflow" source="SPEC-041" %}
+{% work id="WORK-155" status="done" priority="high" complexity="moderate" tags="cli, runes, ai-workflow" source="SPEC-041" %}
 
 # Build refrakt reference CLI commands
 
@@ -14,17 +14,17 @@ The user-facing surface of SPEC-041: three subcommands under `refrakt reference`
 
 ## Acceptance Criteria
 
-- [ ] `packages/cli/src/commands/reference.ts` exists, exporting the three subcommand handlers
-- [ ] Wired into the CLI entry point alongside `inspect`, `contracts`, `validate`
-- [ ] `refrakt reference <name>` prints markdown by default; `--format json` emits the structured `RuneInfo` shape with `attributes.own`, `attributes.base`, `attributes.universal`, `contentModel`, `authoringHints`, `example`
-- [ ] `refrakt reference <name>` exits 1 with a clear message when the rune isn't recognised in the merged config; exits 2 on invalid args / missing config
-- [ ] `refrakt reference list` groups runes by source package; supports `--package <name>` filter; supports `--format json`
-- [ ] `refrakt reference dump` writes a complete reference document to `--output` (default `AGENTS.md`); supports `--format markdown` (default) and `--format json`
-- [ ] `refrakt reference dump --check` exits 1 if the output file is out of date relative to the current config (CI gate)
-- [ ] Dump output hoists universal attributes and registered presets into dedicated top-level sections so per-rune blocks reference them by name instead of repeating definitions
-- [ ] Dump preserves any `--section`-named block in an existing file rather than clobbering it (so users can interleave human notes)
-- [ ] All commands respect `--config <path>` to locate `refrakt.config.json`; defaults to cwd
-- [ ] Tests cover each subcommand: golden-file tests for markdown output, structural assertions for JSON output, exit-code tests for error paths
+- [x] `packages/cli/src/commands/reference.ts` exists, exporting the three subcommand handlers
+- [x] Wired into the CLI entry point alongside `inspect`, `contracts`, `validate`
+- [x] `refrakt reference <name>` prints markdown by default; `--format json` emits the structured `RuneInfo` shape with `attributes.own`, `attributes.base`, `attributes.universal`, `contentModel`, `authoringHints`, `example`
+- [x] `refrakt reference <name>` exits 1 with a clear message when the rune isn't recognised in the merged config; exits 2 on invalid args / missing config
+- [x] `refrakt reference list` groups runes by source package; supports `--package <name>` filter; supports `--format json`
+- [x] `refrakt reference dump` writes a complete reference document to `--output` (default `AGENTS.md`); supports `--format markdown` (default) and `--format json`
+- [x] `refrakt reference dump --check` exits 1 if the output file is out of date relative to the current config (CI gate)
+- [x] Dump output hoists universal attributes and registered presets into dedicated top-level sections so per-rune blocks reference them by name instead of repeating definitions
+- [x] Dump preserves any `--section`-named block in an existing file rather than clobbering it (so users can interleave human notes)
+- [x] All commands respect `--config <path>` to locate `refrakt.config.json`; defaults to cwd
+- [x] Tests cover each subcommand: golden-file tests for markdown output, structural assertions for JSON output, exit-code tests for error paths
 
 ## Approach
 
@@ -46,5 +46,31 @@ The user-facing surface of SPEC-041: three subcommands under `refrakt reference`
 
 - {% ref "SPEC-041" /%} — Commands section
 - {% ref "SPEC-022" /%} — Plan CLI (pattern for namespaced subcommands and `--format json`)
+
+## Resolution
+
+Completed: 2026-04-19
+
+Branch: `claude/scaffold-landing-docs-cli-DB31i`
+
+### What was done
+
+- `packages/runes/src/reference.ts` — promoted the full reference-rendering pipeline into `@refrakt-md/runes` so both the CLI and `create-refrakt` can share it. Added:
+  - `ReferenceContext` interface (runes + fixtures + per-rune source map)
+  - `hydrateRuneInfo` / `hydrateAllRuneInfos` / `hydrateRuneByName` — resolve `RuneLike` objects into full `RuneInfo` with content model + base preset
+  - `SerializedAttribute` / `SerializedRune` / `serializeRune` — JSON shape used by both `reference <name> --format json` and `reference dump --format json`
+  - `ReferenceGroup` / `groupReferenceInfos` — core-first then alphabetical package grouping
+  - `RenderReferenceOptions` / `renderReferenceMarkdown` — full dump renderer with TOC, Universal Attributes, Attribute Presets, per-package rune blocks
+  - Example blocks in `describeRune` are now wrapped in ` ```markdoc ` fences so raw `#` headings inside examples don't pollute the document heading structure
+- `packages/runes/src/index.ts` — exports all the new reference symbols
+- `packages/cli/src/commands/reference.ts` — three thin handlers (`referenceNameCommand`, `referenceListCommand`, `referenceDumpCommand`) that delegate to the runes package. Keeps only CLI-specific concerns: file IO, `--check` comparison, `--section` replacement. A fence-aware `findNextHeading` ensures section replacement doesn't get confused by `#` headings inside fenced example blocks.
+- `packages/cli/src/bin.ts` — `reference` dispatcher, unified `parseReferenceArgs`, and `buildReferenceContext` that loads refrakt.config.json, merges packages, assembles theme config (so attribute presets register), applies aliases, and loads local runes. Exit codes: 0 success, 1 unknown rune / check failure, 2 invalid args.
+- `packages/cli/test/reference.test.ts` — 20 tests covering markdown + JSON output for all three subcommands, alias resolution, universal-attribute categorization, child-rune exclusion, `--check` behavior across up-to-date/stale/missing file cases, section preservation, determinism, and custom preambles.
+
+### Notes
+
+- Shared logic lives in `@refrakt-md/runes` (not `@refrakt-md/cli`) so the upcoming `create-refrakt` integration (WORK-156) can render AGENTS.md without shelling out or depending on the CLI package.
+- `describeRune` example blocks are now fenced as ` ```markdoc ` — a semantic improvement that also fixes an edge case where raw H1/H2 text in an example (e.g. the form rune's `# Contact Us`) would leak into the document's heading structure and break `--section` replacement.
+- `findNextHeading` walks lines with a fence-state toggle so it won't match headings inside code fences — belt-and-suspenders on top of the fencing change above.
 
 {% /work %}

@@ -5,9 +5,11 @@
  * use it without pulling in the AI or editor packages.
  */
 
+import type { Schema } from '@markdoc/markdoc';
 import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
-import { UNIVERSAL_ATTRIBUTE_NAMES } from './attribute-presets.js';
+import { UNIVERSAL_ATTRIBUTE_NAMES, lookupAttributePreset, schemaBasePresets } from './attribute-presets.js';
+import { schemaContentModels } from './lib/index.js';
 
 // ---------------------------------------------------------------------------
 // Rune info shape
@@ -52,6 +54,10 @@ export interface RuneInfo {
 	contentModel?: SerializedContentModel;
 	/** Named preset this rune inherits attributes from, if any (via `base:` in createContentModelSchema). */
 	basePreset?: RuneBasePresetInfo;
+	/** Example Markdoc snippet, falling back to `RUNE_EXAMPLES[name]` when omitted. */
+	example?: string;
+	/** Short source identifier (e.g. `"core"`, `"@refrakt-md/marketing"`) for grouping output. */
+	package?: string;
 }
 
 /** Runes that are internal or child-only — excluded from generated reference docs */
@@ -245,10 +251,12 @@ export function describeRune(rune: RuneInfo): string {
 		lines.push(renderContentModel(rune.contentModel));
 	}
 
-	const example = RUNE_EXAMPLES[rune.name];
+	const example = rune.example ?? RUNE_EXAMPLES[rune.name];
 	if (example) {
 		lines.push('Example:');
+		lines.push('```markdoc');
 		lines.push(example);
+		lines.push('```');
 	}
 
 	return lines.join('\n');
@@ -456,4 +464,340 @@ function describeInner(model: SerializedContentModel | undefined): string {
 	if (model.type === 'delimited') return `zones split by \`${model.delimiter}\``;
 	if (model.type === 'custom') return model.description;
 	return 'any content';
+}
+
+// ---------------------------------------------------------------------------
+// RuneInfo hydration
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal structural shape of a Rune-like object that `hydrateRuneInfo` accepts.
+ * Matches both the `Rune` class and loose objects like the ones produced by
+ * `defineRune()`.
+ */
+export interface RuneLike {
+	name: string;
+	aliases: string[];
+	description: string;
+	schema: Schema;
+	authoringHints?: string;
+}
+
+export interface HydrateOptions {
+	/** Identifier for the source (e.g. `"core"`, `"@refrakt-md/marketing"`). */
+	packageName?: string;
+	/** Optional per-rune fixture string, overriding `RUNE_EXAMPLES[name]`. */
+	example?: string;
+}
+
+/**
+ * Hydrate a `Rune`-like object into a fully-populated `RuneInfo` for the
+ * reference surface. Resolves the content model via the shared
+ * `schemaContentModels` WeakMap and the base preset via
+ * `schemaBasePresets` + `lookupAttributePreset`.
+ */
+export function hydrateRuneInfo(rune: RuneLike, options: HydrateOptions = {}): RuneInfo {
+	const rawModel = schemaContentModels.get(rune.schema);
+	const contentModel = rawModel ? serializeContentModel(rawModel) : undefined;
+
+	const baseRecord = schemaBasePresets.get(rune.schema);
+	const presetMeta = baseRecord ? lookupAttributePreset(baseRecord) : undefined;
+	const basePreset: RuneBasePresetInfo | undefined = presetMeta
+		? {
+			name: presetMeta.name,
+			description: presetMeta.description,
+			attributes: Object.keys(baseRecord!),
+		}
+		: undefined;
+
+	return {
+		name: rune.name,
+		aliases: rune.aliases,
+		description: rune.description,
+		schema: rune.schema as RuneInfo['schema'],
+		authoringHints: rune.authoringHints,
+		contentModel,
+		basePreset,
+		example: options.example,
+		package: options.packageName,
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Reference context + bulk hydration
+// ---------------------------------------------------------------------------
+
+/** Minimal source view for reference rendering — the merged rune set + metadata. */
+export interface ReferenceContext {
+	/** All Rune-like objects keyed by primary name. */
+	runes: Record<string, RuneLike>;
+	/** Package fixtures (keyed by rune name). Falls back to `RUNE_EXAMPLES[name]`. */
+	fixtures: Record<string, string>;
+	/** Per-rune source identifier (e.g. `"core"` or `"@refrakt-md/marketing"`). */
+	source: Record<string, string>;
+}
+
+/** Hydrate every non-excluded rune in a context, sorted alphabetically by name. */
+export function hydrateAllRuneInfos(ctx: ReferenceContext): RuneInfo[] {
+	return Object.values(ctx.runes)
+		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
+		.map(rune => hydrateRuneInfo(rune, {
+			packageName: ctx.source[rune.name] ?? 'core',
+			example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
+		}))
+		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Hydrate a single rune by primary name or alias. Returns `undefined` if absent. */
+export function hydrateRuneByName(ctx: ReferenceContext, name: string): RuneInfo | undefined {
+	const direct = ctx.runes[name];
+	if (direct) {
+		return hydrateRuneInfo(direct, {
+			packageName: ctx.source[name] ?? 'core',
+			example: ctx.fixtures[name] ?? RUNE_EXAMPLES[name],
+		});
+	}
+	for (const rune of Object.values(ctx.runes)) {
+		if (rune.aliases.includes(name)) {
+			return hydrateRuneInfo(rune, {
+				packageName: ctx.source[rune.name] ?? 'core',
+				example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
+			});
+		}
+	}
+	return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Serialized JSON shape
+// ---------------------------------------------------------------------------
+
+export interface SerializedAttribute {
+	type: string;
+	required: boolean;
+	matches?: string[];
+	description?: string;
+}
+
+export interface SerializedRune {
+	name: string;
+	package: string;
+	aliases: string[];
+	description: string;
+	authoringHints?: string;
+	attributes: {
+		own: Record<string, SerializedAttribute>;
+		base?: { name: string; description: string; attributes: Record<string, SerializedAttribute> };
+		universal: string[];
+	};
+	contentModel?: SerializedContentModel;
+	example?: string;
+}
+
+function toSerializedAttribute(attr: {
+	type?: unknown;
+	required?: boolean;
+	matches?: unknown;
+	description?: string;
+}): SerializedAttribute {
+	const matches = Array.isArray(attr.matches)
+		? attr.matches.filter((m): m is string => typeof m === 'string')
+		: undefined;
+	return {
+		type: attributeTypeName(attr.type),
+		required: attr.required ?? false,
+		...(matches && matches.length > 0 ? { matches } : {}),
+		...(attr.description ? { description: attr.description } : {}),
+	};
+}
+
+/** Serialize a hydrated RuneInfo into the stable JSON shape used by the reference command. */
+export function serializeRune(info: RuneInfo, packageName?: string): SerializedRune {
+	const attrs = info.schema.attributes ?? {};
+	const presetAttrs = info.basePreset ? new Set(info.basePreset.attributes) : undefined;
+
+	const own: Record<string, SerializedAttribute> = {};
+	const baseAttrs: Record<string, SerializedAttribute> = {};
+	const universal: string[] = [];
+
+	for (const [attrName, attrDef] of Object.entries(attrs)) {
+		if (HIDDEN_ATTRIBUTES.has(`${info.name}.${attrName}`)) continue;
+		if (UNIVERSAL_ATTRIBUTE_NAMES.has(attrName)) {
+			universal.push(attrName);
+		} else if (presetAttrs?.has(attrName)) {
+			baseAttrs[attrName] = toSerializedAttribute(attrDef);
+		} else {
+			own[attrName] = toSerializedAttribute(attrDef);
+		}
+	}
+
+	return {
+		name: info.name,
+		package: packageName ?? info.package ?? 'core',
+		aliases: info.aliases,
+		description: info.description,
+		...(info.authoringHints ? { authoringHints: info.authoringHints } : {}),
+		attributes: {
+			own,
+			...(info.basePreset && Object.keys(baseAttrs).length > 0
+				? {
+					base: {
+						name: info.basePreset.name,
+						description: info.basePreset.description,
+						attributes: baseAttrs,
+					},
+				}
+				: {}),
+			universal,
+		},
+		...(info.contentModel ? { contentModel: info.contentModel } : {}),
+		...(info.example ? { example: info.example } : {}),
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Grouping + full markdown render
+// ---------------------------------------------------------------------------
+
+export interface ReferenceGroup {
+	/** Package short identifier (`"core"`, `"@refrakt-md/marketing"`, …). */
+	packageName: string;
+	/** Human-readable label used as the group heading in rendered output. */
+	label: string;
+	/** Sorted list of rune summaries. */
+	runes: Array<{ name: string; description: string; aliases: string[] }>;
+}
+
+/** Group hydrated rune infos by source package, core first then alphabetical. */
+export function groupReferenceInfos(infos: RuneInfo[]): ReferenceGroup[] {
+	const labelOf = (pkg: string): string => pkg === 'core' ? '@refrakt-md/runes (core)' : pkg;
+	const groups = new Map<string, ReferenceGroup>();
+	for (const info of infos) {
+		const pkg = info.package ?? 'core';
+		let group = groups.get(pkg);
+		if (!group) {
+			group = { packageName: pkg, label: labelOf(pkg), runes: [] };
+			groups.set(pkg, group);
+		}
+		group.runes.push({ name: info.name, description: info.description, aliases: info.aliases });
+	}
+	const sorted = Array.from(groups.values()).sort((a, b) => {
+		if (a.packageName === 'core') return -1;
+		if (b.packageName === 'core') return 1;
+		return a.packageName.localeCompare(b.packageName);
+	});
+	for (const group of sorted) {
+		group.runes.sort((a, b) => a.name.localeCompare(b.name));
+	}
+	return sorted;
+}
+
+function sectionSlug(name: string): string {
+	return name
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+export interface RenderReferenceOptions {
+	/** Optional preamble inserted between the `# Available Runes` heading and the TOC. */
+	preamble?: string;
+}
+
+/**
+ * Render the full reference document as markdown. Pure — rerunning on the same
+ * context produces byte-identical output, so callers can diff it against a
+ * checked-in AGENTS.md to detect drift.
+ */
+export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderReferenceOptions = {}): string {
+	const infos = hydrateAllRuneInfos(ctx);
+	const groups = groupReferenceInfos(infos);
+
+	const lines: string[] = [];
+	lines.push('<!-- Generated by `refrakt reference dump` — do not edit by hand. -->');
+	lines.push('<!-- Re-run when refrakt.config.json changes or packages upgrade. -->');
+	lines.push('');
+	lines.push('# Available Runes');
+	lines.push('');
+
+	if (options.preamble) {
+		lines.push(options.preamble.trimEnd());
+		lines.push('');
+	} else {
+		lines.push('This site has the following runes available. Authors and AI agents can use any of these tags inside `.md` content files.');
+		lines.push('');
+	}
+
+	lines.push('## Table of Contents');
+	lines.push('');
+	lines.push('- [Universal Attributes](#universal-attributes)');
+	lines.push('- [Attribute Presets](#attribute-presets)');
+	for (const group of groups) {
+		lines.push(`- [${group.label}](#${sectionSlug(group.label)})`);
+		for (const rune of group.runes) {
+			lines.push(`  - [${rune.name}](#${sectionSlug(rune.name)})`);
+		}
+	}
+	lines.push('');
+
+	lines.push('## Universal Attributes');
+	lines.push('');
+	lines.push('These attributes are available on every rune:');
+	lines.push('');
+	for (const attr of UNIVERSAL_ATTRIBUTE_NAMES) {
+		lines.push(`- \`${attr}\``);
+	}
+	lines.push('');
+
+	const presetUsage = new Map<string, { description: string; attributes: string[]; users: string[] }>();
+	for (const info of infos) {
+		if (!info.basePreset) continue;
+		const existing = presetUsage.get(info.basePreset.name);
+		if (existing) {
+			existing.users.push(info.name);
+		} else {
+			presetUsage.set(info.basePreset.name, {
+				description: info.basePreset.description,
+				attributes: info.basePreset.attributes,
+				users: [info.name],
+			});
+		}
+	}
+
+	lines.push('## Attribute Presets');
+	lines.push('');
+	if (presetUsage.size === 0) {
+		lines.push('_No attribute presets are used by the runes in this project._');
+		lines.push('');
+	} else {
+		lines.push('Runes opt into shared attribute sets via `base:`. Each preset is listed here once; per-rune sections below note which preset they inherit.');
+		lines.push('');
+		const sortedPresets = Array.from(presetUsage.entries()).sort(([a], [b]) => a.localeCompare(b));
+		for (const [name, usage] of sortedPresets) {
+			lines.push(`### ${name}`);
+			lines.push('');
+			lines.push(usage.description);
+			lines.push('');
+			lines.push(`Used by: ${usage.users.slice().sort().join(', ')}`);
+			lines.push('');
+			lines.push('Attributes:');
+			for (const attr of usage.attributes) {
+				lines.push(`  - ${attr}`);
+			}
+			lines.push('');
+		}
+	}
+
+	for (const group of groups) {
+		lines.push(`## ${group.label}`);
+		lines.push('');
+		for (const rune of group.runes) {
+			const info = infos.find(i => i.name === rune.name);
+			if (!info) continue;
+			lines.push(describeRune(info));
+			lines.push('');
+		}
+	}
+
+	return lines.join('\n').trimEnd() + '\n';
 }
