@@ -1,14 +1,19 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync, chmodSync } from 'fs';
 import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { STATUS_PAGES, renderStatusPage, renderTypeIndexPage } from './templates.js';
+import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
 
 export type AgentTarget = 'claude' | 'cursor' | 'copilot' | 'windsurf' | 'cline' | 'none';
 
-/** Map of agent tool names to their instruction file paths (relative to project root). */
+/**
+ * Tool-specific agent instruction files. These get a short pointer to AGENTS.md.
+ * AGENTS.md itself is the canonical file — full workflow content lives there.
+ */
 export const AGENT_FILES: Record<string, string> = {
 	claude: 'CLAUDE.md',
 	cursor: '.cursorrules',
@@ -17,30 +22,126 @@ export const AGENT_FILES: Record<string, string> = {
 	cline: '.clinerules',
 };
 
+/** Absolute-ish path to the canonical agent instructions file. */
+export const AGENTS_FILE = 'AGENTS.md';
+
 export interface InitOptions {
 	dir: string;
-	/** Path to the project root (for agent instruction files). Defaults to '.' */
+	/** Path to the project root (for agent files + hooks + wrapper). Defaults to '.' */
 	projectRoot?: string;
 	/** Which AI tool instruction file(s) to update. Auto-detects when omitted. */
 	agent?: AgentTarget;
+	/** Skip modifying host package.json. */
+	noPackageJson?: boolean;
+	/** Skip writing .claude/settings.json SessionStart hook. */
+	noHooks?: boolean;
+	/** Skip writing ./plan wrapper script. */
+	noWrapper?: boolean;
+	/** Override package versions pinned into devDependencies. Defaults to this plan package's own version. */
+	versions?: { cli: string; plan: string };
 }
 
 export interface InitResult {
 	dir: string;
 	created: string[];
 	agentFilesUpdated: string[];
+	packageJsonUpdated: boolean;
+	hookWritten: boolean;
+	wrapperWritten: boolean;
+	installRoot: string | null;
+	packageManager: PackageManager | null;
 }
 
-/** Short pointer appended to agent instruction files. */
-const POINTER_SECTION = `
-## Plan
+/** Single pointer line written into tool-specific instruction files. */
+const POINTER_LINE = `\n\nSee [AGENTS.md](./AGENTS.md) for agent instructions, including the plan workflow.\n`;
 
-Project planning content lives in \`plan/\` using \`@refrakt-md/plan\`. See \`plan/INSTRUCTIONS.md\` for the full workflow guide.
+/** Marker used to detect that a tool-specific file already contains our pointer. */
+const POINTER_MARKER = 'See [AGENTS.md]';
 
-Quick start: \`refrakt plan next\` | \`refrakt plan status\` | \`refrakt plan create work --title "..."\`
+/** Legacy marker (pre-AGENTS.md migration) — still recognised to avoid duplicate appends. */
+const LEGACY_POINTER_MARKERS = ['plan/INSTRUCTIONS.md', 'refrakt plan next'];
+
+/** Full agent-facing workflow written to AGENTS.md. */
+const AGENTS_MD_CONTENT = `# Agent Instructions
+
+This file is the canonical reference for AI coding agents working in this repository. It is read by Claude Code, Cursor, Aider, Codex, Continue, Zed, and other tools that follow the AGENTS.md convention. Tool-specific files (\`CLAUDE.md\`, \`.cursorrules\`, etc.) should be short pointers back here.
+
+## Before you start
+
+Run \`npm run plan -- status\` (or \`./plan status\` if the wrapper script is present). If it fails with "command not found" or a module resolution error, run your package manager's install command (\`npm install\`, \`pnpm install\`, \`yarn\`, or \`bun install\`) and retry.
+
+**Never edit files under \`plan/\` by hand.** Always use \`refrakt plan\` commands — they keep IDs, statuses, and cross-references consistent. Manual edits will be silently overwritten by later commands.
+
+## Plan — Workflow Guide
+
+Project planning content lives in \`plan/\` as Markdoc files using the \`@refrakt-md/plan\` runes package.
+
+### Directory Layout
+
+\`\`\`
+plan/
+  specs/      — Specifications (what to build)
+  work/       — Work items and bugs (how to build it)
+  decisions/  — Architecture decision records (why it's built this way)
+  milestones/ — Named release targets with scope and goals
+\`\`\`
+
+### Workflow
+
+1. Find next work item: \`refrakt plan next\`
+2. Start working: \`refrakt plan update <id> --status in-progress\`
+3. Read referenced specs and decisions before implementing
+4. Check off criteria: \`refrakt plan update <id> --check "criterion text"\`
+5. Mark complete with resolution: \`refrakt plan update <id> --status done --resolve "summary of what was done"\`
+6. Check project status: \`refrakt plan status\`
+
+When marking a work item done, always provide a \`--resolve\` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
+
+### ID Conventions
+
+| Type | Prefix | Example |
+|------|--------|---------|
+| Spec | \`SPEC-\` | \`SPEC-023\` |
+| Work | \`WORK-\` | \`WORK-051\` |
+| Decision | \`ADR-\` | \`ADR-005\` |
+| Bug | \`BUG-\` | \`BUG-001\` |
+| Milestone | \`v\`+semver | \`v1.0.0\` |
+
+IDs are auto-assigned when you omit \`--id\` from \`refrakt plan create\`.
+
+### Valid Statuses
+
+- **spec**: \`draft\` → \`review\` → \`accepted\` → \`superseded\` | \`deprecated\`
+- **work**: \`draft\` → \`ready\` → \`in-progress\` → \`review\` → \`done\` (also: \`blocked\`)
+- **bug**: \`reported\` → \`confirmed\` → \`in-progress\` → \`fixed\` (also: \`wontfix\`, \`duplicate\`)
+- **decision**: \`proposed\` → \`accepted\` → \`superseded\` | \`deprecated\`
+- **milestone**: \`planning\` → \`active\` → \`complete\`
+
+### Creating Items
+
+\`\`\`bash
+refrakt plan create work --title "Description"
+refrakt plan create bug --title "Description"
+refrakt plan create spec --title "Description"
+refrakt plan create decision --title "Description"
+refrakt plan create milestone --id v1.0 --title "Description"
+\`\`\`
+
+### When to Create Each Type
+
+- **Spec**: A new feature idea, design proposal, or system description. Source of truth for *what* to build.
+- **Work item**: A discrete, implementable piece of work with acceptance criteria.
+- **Bug**: A defect report. Use instead of a work item when something is broken rather than missing.
+- **Decision**: An architectural choice that needs to be recorded for future reference.
+
+### JSON Output
+
+All commands support \`--format json\` for machine-readable output. This is useful for scripting, CI pipelines, and programmatic integration.
+
+See \`plan/INSTRUCTIONS.md\` for an in-tree copy of this workflow, kept alongside the content for convenience.
 `;
 
-/** Full tool-agnostic workflow guide written to plan/INSTRUCTIONS.md. */
+/** Full tool-agnostic workflow guide written to plan/INSTRUCTIONS.md (kept for reference inside plan/). */
 const INSTRUCTIONS_CONTENT = `# Plan — Workflow Guide
 
 This directory contains project planning content using the \`@refrakt-md/plan\` runes package. All files are Markdoc (\`.md\` with \`{% %}\` tags).
@@ -109,9 +210,58 @@ All commands support \`--format json\` for machine-readable output. This is usef
 `;
 
 /**
- * Detect which agent instruction files already exist in the project root.
- * Returns the relative file paths of existing files.
+ * Shell command written into .claude/settings.json SessionStart hook.
+ * Detects the package manager at execution time from lockfiles, so users can
+ * switch package managers without re-running init.
  */
+const HOOK_COMMAND = `[ -x node_modules/.bin/refrakt ] || { if [ -f bun.lockb ] || [ -f bun.lock ]; then bun install; elif [ -f pnpm-lock.yaml ]; then pnpm install; elif [ -f yarn.lock ]; then yarn install; else npm install; fi; }`;
+
+/**
+ * Wrapper script body. Works under any POSIX shell; installs deps on first
+ * run using the detected package manager, then defers to `npx refrakt plan`.
+ */
+const WRAPPER_SCRIPT = `#!/usr/bin/env sh
+set -e
+if [ ! -x node_modules/.bin/refrakt ]; then
+  if [ -f bun.lockb ] || [ -f bun.lock ]; then
+    bun install
+  elif [ -f pnpm-lock.yaml ]; then
+    pnpm install
+  elif [ -f yarn.lock ]; then
+    yarn install
+  else
+    npm install
+  fi
+fi
+exec npx refrakt plan "$@"
+`;
+
+/**
+ * Read this plan package's own version so we can pin host devDependencies
+ * to a range compatible with the CLI that's running init.
+ */
+function getOwnVersion(): string {
+	const here = dirname(fileURLToPath(import.meta.url));
+	// Built: dist/commands/init.js → ../../package.json
+	// Source (vitest via tsx): src/commands/init.ts → ../../package.json
+	const candidates = [
+		join(here, '..', '..', 'package.json'),
+		join(here, '..', '..', '..', 'package.json'),
+	];
+	for (const p of candidates) {
+		try {
+			const pkg = JSON.parse(readFileSync(p, 'utf-8'));
+			if (pkg && pkg.name === '@refrakt-md/plan' && typeof pkg.version === 'string') {
+				return pkg.version;
+			}
+		} catch {
+			// try next candidate
+		}
+	}
+	return '*';
+}
+
+/** Detect which agent instruction files already exist in the project root. */
 function detectAgentFiles(projectRoot: string): string[] {
 	const found: string[] = [];
 	for (const relPath of Object.values(AGENT_FILES)) {
@@ -122,8 +272,13 @@ function detectAgentFiles(projectRoot: string): string[] {
 	return found;
 }
 
+function hasPointerMarker(content: string): boolean {
+	if (content.includes(POINTER_MARKER)) return true;
+	return LEGACY_POINTER_MARKERS.some(m => content.includes(m));
+}
+
 /**
- * Append the plan pointer section to an agent instruction file.
+ * Append the plan pointer section to a tool-specific agent instruction file.
  * Creates the file (and parent directories) if it doesn't exist.
  * Returns true if the file was updated.
  */
@@ -131,28 +286,189 @@ function appendPointer(projectRoot: string, relPath: string): boolean {
 	const filePath = join(projectRoot, relPath);
 	if (existsSync(filePath)) {
 		const content = readFileSync(filePath, 'utf-8');
-		if (content.includes('plan/INSTRUCTIONS.md') || content.includes('refrakt plan next')) {
+		if (hasPointerMarker(content)) {
 			return false;
 		}
-		appendFileSync(filePath, POINTER_SECTION);
+		appendFileSync(filePath, POINTER_LINE);
 		return true;
 	}
 	const dir = dirname(filePath);
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true });
 	}
-	writeFileSync(filePath, POINTER_SECTION.trimStart());
+	writeFileSync(filePath, POINTER_LINE.trimStart());
 	return true;
 }
 
 /**
- * Initialize a plan directory structure with example files.
+ * Write AGENTS.md if it doesn't exist; if it exists but lacks our plan
+ * workflow section, append it. Returns true if the file was created or
+ * modified.
+ */
+function writeAgentsFile(projectRoot: string): boolean {
+	const filePath = join(projectRoot, AGENTS_FILE);
+	if (!existsSync(filePath)) {
+		writeFileSync(filePath, AGENTS_MD_CONTENT);
+		return true;
+	}
+	const content = readFileSync(filePath, 'utf-8');
+	if (content.includes('## Plan — Workflow Guide') || content.includes('refrakt plan next')) {
+		return false;
+	}
+	// Append plan section to existing AGENTS.md (preserve user content above).
+	const planSectionStart = AGENTS_MD_CONTENT.indexOf('## Plan — Workflow Guide');
+	const planSection = planSectionStart >= 0 ? AGENTS_MD_CONTENT.slice(planSectionStart) : AGENTS_MD_CONTENT;
+	const separator = content.endsWith('\n') ? '\n' : '\n\n';
+	appendFileSync(filePath, separator + planSection);
+	return true;
+}
+
+/**
+ * Merge plan-related entries into an existing package.json or create one.
+ * Never overwrites existing keys. Returns true if the file was modified.
+ */
+function updateHostPackageJson(pkgJsonPath: string, versions: { cli: string; plan: string }): boolean {
+	let pkg: Record<string, any> = {};
+	try {
+		pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+	} catch {
+		return false;
+	}
+
+	let changed = false;
+
+	if (!pkg.scripts || typeof pkg.scripts !== 'object') {
+		pkg.scripts = {};
+	}
+	if (!pkg.scripts.plan) {
+		pkg.scripts.plan = 'refrakt plan';
+		changed = true;
+	}
+
+	if (!pkg.devDependencies || typeof pkg.devDependencies !== 'object') {
+		pkg.devDependencies = {};
+	}
+	const deps = pkg.devDependencies as Record<string, string>;
+	const alreadyInDeps = (name: string) =>
+		(pkg.dependencies && pkg.dependencies[name]) ||
+		(pkg.devDependencies && pkg.devDependencies[name]);
+
+	if (!alreadyInDeps('@refrakt-md/cli')) {
+		deps['@refrakt-md/cli'] = `^${versions.cli}`;
+		changed = true;
+	}
+	if (!alreadyInDeps('@refrakt-md/plan')) {
+		deps['@refrakt-md/plan'] = `^${versions.plan}`;
+		changed = true;
+	}
+
+	if (changed) {
+		writeFileSync(pkgJsonPath, JSON.stringify(pkg, null, 2) + '\n');
+	}
+	return changed;
+}
+
+interface ClaudeSettingsHook {
+	type: string;
+	command: string;
+}
+
+interface ClaudeSettingsBlock {
+	hooks?: ClaudeSettingsHook[];
+}
+
+interface ClaudeSettings {
+	hooks?: {
+		SessionStart?: ClaudeSettingsBlock[];
+		[key: string]: ClaudeSettingsBlock[] | undefined;
+	};
+	[key: string]: any;
+}
+
+/**
+ * Write (or merge into) .claude/settings.json with a SessionStart hook that
+ * installs dependencies if `refrakt` isn't resolvable. If the file already
+ * contains our hook command, leave it alone.
+ */
+function writeClaudeHook(projectRoot: string): boolean {
+	const settingsDir = join(projectRoot, '.claude');
+	const settingsPath = join(settingsDir, 'settings.json');
+
+	let settings: ClaudeSettings = {};
+	if (existsSync(settingsPath)) {
+		try {
+			settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+		} catch {
+			return false;
+		}
+	}
+
+	if (!settings.hooks) settings.hooks = {};
+	if (!Array.isArray(settings.hooks.SessionStart)) settings.hooks.SessionStart = [];
+
+	for (const block of settings.hooks.SessionStart) {
+		if (!block.hooks) continue;
+		if (block.hooks.some(h => h.command === HOOK_COMMAND)) {
+			return false;
+		}
+	}
+
+	settings.hooks.SessionStart.push({
+		hooks: [{ type: 'command', command: HOOK_COMMAND }],
+	});
+
+	if (!existsSync(settingsDir)) {
+		mkdirSync(settingsDir, { recursive: true });
+	}
+	writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+	return true;
+}
+
+/**
+ * Write a ./plan.sh wrapper script and mark it executable. We use `.sh`
+ * because the default content directory is also called `plan/` and a file
+ * named `plan` can't coexist with a directory of the same name in a single
+ * parent. Users run `./plan.sh next` (or just `npm run plan -- next`).
+ */
+function writeWrapperScript(projectRoot: string): boolean {
+	const scriptPath = join(projectRoot, 'plan.sh');
+	if (existsSync(scriptPath)) {
+		const existing = readFileSync(scriptPath, 'utf-8');
+		if (existing === WRAPPER_SCRIPT) return false;
+		// A different file already exists at ./plan.sh — don't clobber it.
+		return false;
+	}
+	writeFileSync(scriptPath, WRAPPER_SCRIPT);
+	try {
+		chmodSync(scriptPath, 0o755);
+	} catch {
+		// Best-effort on platforms without POSIX perms (Windows).
+	}
+	return true;
+}
+
+/**
+ * Initialize a plan directory structure, wire the host project for agent use,
+ * and (optionally) install a Claude SessionStart hook + ./plan wrapper.
  */
 export function runInit(options: InitOptions): InitResult {
-	const { dir, projectRoot = '.', agent } = options;
+	const {
+		dir,
+		projectRoot = '.',
+		agent,
+		noPackageJson = false,
+		noHooks = false,
+		noWrapper = false,
+	} = options;
+
+	const versions = options.versions ?? (() => {
+		const v = getOwnVersion();
+		return { cli: v, plan: v };
+	})();
+
 	const created: string[] = [];
 
-	// Create directories
+	// --- 1. plan/ scaffolding ------------------------------------------------
 	const dirs = ['work', 'specs', 'decisions', 'milestones'];
 	for (const sub of dirs) {
 		const path = join(dir, sub);
@@ -162,7 +478,6 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	// Create example files — use runCreate which generates slug-based filenames
 	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; subDir: string; slug: string; attrs?: Record<string, string> }[] = [
 		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec', subDir: 'specs', slug: 'example-spec.md' },
 		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', subDir: 'work', slug: 'example-work-item.md', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
@@ -178,7 +493,6 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	// Create status filter pages for each type
 	for (const def of STATUS_PAGES) {
 		const slug = `${def.status}.md`;
 		const filePath = join(dir, def.typeDir, slug);
@@ -188,7 +502,6 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	// Create type-level index pages with links to status filter pages
 	const typeDirs = [...new Set(STATUS_PAGES.map(p => p.typeDir))];
 	for (const typeDir of typeDirs) {
 		const filePath = join(dir, typeDir, 'index.md');
@@ -198,7 +511,6 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	// Create index.md
 	const indexFile = join(dir, 'index.md');
 	if (!existsSync(indexFile)) {
 		writeFileSync(indexFile, `# Project Plan
@@ -223,39 +535,80 @@ refrakt plan create work --id WORK-002 --title "My task"
 		created.push(indexFile);
 	}
 
-	// Create INSTRUCTIONS.md
 	const instructionsFile = join(dir, 'INSTRUCTIONS.md');
 	if (!existsSync(instructionsFile)) {
 		writeFileSync(instructionsFile, INSTRUCTIONS_CONTENT);
 		created.push(instructionsFile);
 	}
 
-	// Update agent instruction files
+	// --- 2. AGENTS.md + tool-specific pointers ------------------------------
 	const agentFilesUpdated: string[] = [];
 
-	if (agent === 'none') {
-		// Skip — user explicitly opted out
-	} else if (agent) {
-		// Specific agent requested
-		const relPath = AGENT_FILES[agent];
-		if (relPath && appendPointer(projectRoot, relPath)) {
-			agentFilesUpdated.push(relPath);
+	if (agent !== 'none') {
+		if (writeAgentsFile(projectRoot)) {
+			agentFilesUpdated.push(AGENTS_FILE);
 		}
-	} else {
-		// Auto-detect: append to all existing agent files, fallback to CLAUDE.md
-		const existing = detectAgentFiles(projectRoot);
-		if (existing.length > 0) {
-			for (const relPath of existing) {
-				if (appendPointer(projectRoot, relPath)) {
-					agentFilesUpdated.push(relPath);
-				}
+
+		const writePointer = (relPath: string) => {
+			if (appendPointer(projectRoot, relPath)) {
+				agentFilesUpdated.push(relPath);
 			}
+		};
+
+		if (agent) {
+			const relPath = AGENT_FILES[agent];
+			if (relPath) writePointer(relPath);
 		} else {
-			if (appendPointer(projectRoot, AGENT_FILES.claude)) {
-				agentFilesUpdated.push(AGENT_FILES.claude);
+			const existing = detectAgentFiles(projectRoot);
+			if (existing.length > 0) {
+				for (const relPath of existing) writePointer(relPath);
+			} else {
+				// Fallback: ensure Claude Code has a pointer since it's our primary audience.
+				writePointer(AGENT_FILES.claude);
 			}
 		}
 	}
 
-	return { dir, created, agentFilesUpdated };
+	// --- 3. Host package.json wiring ---------------------------------------
+	const installRootInfo = findInstallRoot(projectRoot);
+	const packageManager = installRootInfo ? detectPackageManager(installRootInfo.rootDir) : null;
+
+	let packageJsonUpdated = false;
+	if (!noPackageJson && installRootInfo) {
+		packageJsonUpdated = updateHostPackageJson(installRootInfo.packageJsonPath, versions);
+	}
+
+	// --- 4. Claude SessionStart hook (gated) -------------------------------
+	let hookWritten = false;
+	const shouldWriteHook = (() => {
+		if (noHooks) return false;
+		if (agent === 'none') return false;
+		if (agent === 'claude') return true;
+		if (agent) return false; // explicit non-claude agent
+		// auto-detect: write if CLAUDE.md exists or was just created
+		return existsSync(join(projectRoot, AGENT_FILES.claude));
+	})();
+	if (shouldWriteHook) {
+		hookWritten = writeClaudeHook(projectRoot);
+	}
+
+	// --- 5. ./plan.sh wrapper script ---------------------------------------
+	let wrapperWritten = false;
+	if (!noWrapper && agent !== 'none') {
+		wrapperWritten = writeWrapperScript(projectRoot);
+	}
+
+	return {
+		dir,
+		created,
+		agentFilesUpdated,
+		packageJsonUpdated,
+		hookWritten,
+		wrapperWritten,
+		installRoot: installRootInfo ? installRootInfo.rootDir : null,
+		packageManager,
+	};
 }
+
+// Re-export for consumers that want to introspect the install command logic.
+export { installCommand };
