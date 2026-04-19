@@ -22,11 +22,11 @@ afterEach(() => {
 });
 
 describe('scaffold', () => {
-	it('creates target directory with all expected files', () => {
+	it('creates target directory with all expected files', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		// Static template files
 		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(true);
@@ -47,6 +47,7 @@ describe('scaffold', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -58,11 +59,11 @@ describe('scaffold', () => {
 		expect(existsSync(join(targetDir, '_npmrc'))).toBe(false);
 	});
 
-	it('generates package.json with correct project name and theme', () => {
+	it('generates package.json with correct project name and theme', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'test-project', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'test-project', targetDir, theme: '@refrakt-md/lumina' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('test-project');
@@ -74,11 +75,11 @@ describe('scaffold', () => {
 		expect(pkg.devDependencies.svelte).toBeDefined();
 	});
 
-	it('generates refrakt.config.json with specified theme', () => {
+	it('generates refrakt.config.json with specified theme', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.theme).toBe('@my-org/theme-custom');
@@ -86,11 +87,11 @@ describe('scaffold', () => {
 		expect(config.target).toBe('svelte');
 	});
 
-	it('generates dependency versions matching the package version', () => {
+	it('generates dependency versions matching the package version', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -106,42 +107,42 @@ describe('scaffold', () => {
 		expect(pkg.dependencies['@markdoc/markdoc']).toBe('^0.4.0');
 	});
 
-	it('adds custom theme to package.json dependencies', () => {
+	it('adds custom theme to package.json dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.dependencies['@my-org/theme-custom']).toBeDefined();
 	});
 
-	it('throws when target directory already exists', () => {
+	it('throws when target directory already exists', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
-		expect(() =>
+		await expect(
 			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' })
-		).toThrow('already exists');
+		).rejects.toThrow('already exists');
 	});
 
-	it('generates README with project name', () => {
+	it('generates README with project name', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'cool-docs', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'cool-docs', targetDir, theme: '@refrakt-md/lumina' });
 
 		const readme = readFileSync(join(targetDir, 'README.md'), 'utf-8');
 		expect(readme).toContain('# cool-docs');
 	});
 
-	it('template files have correct content', () => {
+	it('template files have correct content', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		const viteConfig = readFileSync(join(targetDir, 'vite.config.ts'), 'utf-8');
 		expect(viteConfig).toContain('refrakt()');
@@ -157,11 +158,11 @@ describe('scaffold', () => {
 		expect(page).toContain('virtual:refrakt/theme');
 	});
 
-	it('defaults to sveltekit target when target is not specified', () => {
+	it('defaults to sveltekit target when target is not specified', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		// Should produce SvelteKit files
 		expect(existsSync(join(targetDir, 'svelte.config.js'))).toBe(true);
@@ -170,14 +171,29 @@ describe('scaffold', () => {
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('svelte');
 	});
-});
 
-describe('scaffold (html target)', () => {
-	it('creates target directory with HTML template files', () => {
+	it('generates AGENTS.md with rune reference', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
+
+		const agents = readFileSync(join(targetDir, 'AGENTS.md'), 'utf-8');
+		expect(agents).toContain('refrakt reference dump');
+		expect(agents).toContain('## Universal Attributes');
+		// Core runes should be present
+		expect(agents).toContain('### hint');
+		// Marketing package rune should be present (default scaffolded package)
+		expect(agents).toContain('### hero');
+	});
+});
+
+describe('scaffold (html target)', () => {
+	it('creates target directory with HTML template files', async () => {
+		const targetDir = tmpTarget();
+		cleanupDirs.push(join(targetDir, '..'));
+
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
 		expect(existsSync(join(targetDir, 'build.ts'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -185,6 +201,7 @@ describe('scaffold (html target)', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -200,11 +217,11 @@ describe('scaffold (html target)', () => {
 		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
 	});
 
-	it('generates package.json with HTML adapter dependencies', () => {
+	it('generates package.json with HTML adapter dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -225,11 +242,11 @@ describe('scaffold (html target)', () => {
 		expect(pkg.devDependencies?.['@sveltejs/kit']).toBeUndefined();
 	});
 
-	it('generates refrakt.config.json with html target', () => {
+	it('generates refrakt.config.json with html target', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('html');
@@ -237,11 +254,11 @@ describe('scaffold (html target)', () => {
 		expect(config.contentDir).toBe('./content');
 	});
 
-	it('generates dependency versions matching the package version', () => {
+	it('generates dependency versions matching the package version', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -253,24 +270,24 @@ describe('scaffold (html target)', () => {
 		expect(pkg.dependencies['@refrakt-md/lumina']).toBe(expected);
 	});
 
-	it('throws when target directory already exists', () => {
+	it('throws when target directory already exists', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
-		expect(() =>
+		await expect(
 			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' })
-		).toThrow('already exists');
+		).rejects.toThrow('already exists');
 	});
 });
 
 describe('scaffold (astro target)', () => {
-	it('creates target directory with Astro template files', () => {
+	it('creates target directory with Astro template files', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
 
 		expect(existsSync(join(targetDir, 'astro.config.mjs'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -279,6 +296,7 @@ describe('scaffold (astro target)', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -289,11 +307,11 @@ describe('scaffold (astro target)', () => {
 		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
 	});
 
-	it('generates package.json with Astro dependencies', () => {
+	it('generates package.json with Astro dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -308,11 +326,11 @@ describe('scaffold (astro target)', () => {
 		expect(pkg.dependencies['@refrakt-md/svelte']).toBeUndefined();
 	});
 
-	it('generates refrakt.config.json with astro target', () => {
+	it('generates refrakt.config.json with astro target', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('astro');
@@ -321,11 +339,11 @@ describe('scaffold (astro target)', () => {
 });
 
 describe('scaffold (nuxt target)', () => {
-	it('creates target directory with Nuxt template files', () => {
+	it('creates target directory with Nuxt template files', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
 
 		expect(existsSync(join(targetDir, 'nuxt.config.ts'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -334,6 +352,7 @@ describe('scaffold (nuxt target)', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -342,11 +361,11 @@ describe('scaffold (nuxt target)', () => {
 		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
 	});
 
-	it('generates package.json with Nuxt dependencies', () => {
+	it('generates package.json with Nuxt dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -359,11 +378,11 @@ describe('scaffold (nuxt target)', () => {
 		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeUndefined();
 	});
 
-	it('generates refrakt.config.json with nuxt target', () => {
+	it('generates refrakt.config.json with nuxt target', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('nuxt');
@@ -371,11 +390,11 @@ describe('scaffold (nuxt target)', () => {
 });
 
 describe('scaffold (next target)', () => {
-	it('creates target directory with Next.js template files', () => {
+	it('creates target directory with Next.js template files', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
 
 		expect(existsSync(join(targetDir, 'next.config.mjs'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -385,6 +404,7 @@ describe('scaffold (next target)', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -393,11 +413,11 @@ describe('scaffold (next target)', () => {
 		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
 	});
 
-	it('generates package.json with Next.js dependencies', () => {
+	it('generates package.json with Next.js dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -411,11 +431,11 @@ describe('scaffold (next target)', () => {
 		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeUndefined();
 	});
 
-	it('generates refrakt.config.json with next target', () => {
+	it('generates refrakt.config.json with next target', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('next');
@@ -423,11 +443,11 @@ describe('scaffold (next target)', () => {
 });
 
 describe('scaffold (eleventy target)', () => {
-	it('creates target directory with Eleventy template files', () => {
+	it('creates target directory with Eleventy template files', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
 
 		expect(existsSync(join(targetDir, 'eleventy.config.js'))).toBe(true);
 		expect(existsSync(join(targetDir, '.gitignore'))).toBe(true);
@@ -437,6 +457,7 @@ describe('scaffold (eleventy target)', () => {
 		expect(existsSync(join(targetDir, 'package.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'refrakt.config.json'))).toBe(true);
 		expect(existsSync(join(targetDir, 'README.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
 
 		// Starter content
 		expect(existsSync(join(targetDir, 'content', '_layout.md'))).toBe(true);
@@ -445,11 +466,11 @@ describe('scaffold (eleventy target)', () => {
 		expect(existsSync(join(targetDir, '_gitignore'))).toBe(false);
 	});
 
-	it('generates package.json with Eleventy dependencies', () => {
+	it('generates package.json with Eleventy dependencies', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -462,11 +483,11 @@ describe('scaffold (eleventy target)', () => {
 		expect(pkg.dependencies['@refrakt-md/sveltekit']).toBeUndefined();
 	});
 
-	it('generates refrakt.config.json with eleventy target', () => {
+	it('generates refrakt.config.json with eleventy target', async () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.target).toBe('eleventy');

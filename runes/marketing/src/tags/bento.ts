@@ -24,7 +24,7 @@ export const bentoCell = createContentModelSchema({
 	contentModel: {
 		type: 'custom',
 		processChildren: splitBentoCellChildren,
-		description: 'Passes children through for icon/body splitting in transform.',
+		description: 'A bento cell: optional leading image, icon rune, or emoji-only paragraph becomes the cell\'s visual element. Remaining content (headings, paragraphs, lists) becomes the cell body, rendered below or beside the visual depending on the cell\'s size.',
 	},
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);

@@ -91,7 +91,7 @@ export const nav = createContentModelSchema({
   contentModel: {
     type: 'custom',
     processChildren: (nodes) => headingsToList({ level: 1 })(nodes as Node[]),
-    description: 'Converts headings into a nested list structure for navigation groups and items.',
+    description: 'Top-level (#) headings become nav groups; the list directly under each heading becomes the group\'s items. Items are page slugs — wrap in markdown links to set custom labels, or use plain text to resolve the page title. Without headings, a single list becomes a flat nav.',
   },
   transform(resolved, attrs, config) {
     if (attrs.auto) {

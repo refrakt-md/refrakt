@@ -66,7 +66,7 @@ export const gameSystem: RunePackage = {
 				rarity: { type: 'string', matches: ['common', 'uncommon', 'rare', 'legendary'] },
 			},
 			fixture: '{% item name="Sword of Truth" rarity="rare" %}\nA legendary blade.\n{% /item %}',
-			prompt: 'Use this rune for RPG game items with rarity levels. Supports equipment, consumables, and quest items.',
+			authoringHints: 'Used for RPG game items with rarity levels — equipment, consumables, and quest items all fit. Set the rarity attribute to control the item tier.',
 			description: 'Game item with name and rarity',
 		},
 		'spell': {

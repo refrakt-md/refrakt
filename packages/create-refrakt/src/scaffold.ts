@@ -1,6 +1,7 @@
 import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderScaffoldAgentsMd } from './agents-md.js';
 
 function getRefraktVersion(): string {
 	const pkgPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
@@ -17,8 +18,8 @@ export interface ScaffoldOptions {
 	target?: ScaffoldTarget;
 }
 
-export function scaffold(options: ScaffoldOptions): void {
-	const { projectName, targetDir, theme, target = 'sveltekit' } = options;
+export async function scaffold(options: ScaffoldOptions): Promise<void> {
+	const { targetDir, target = 'sveltekit' } = options;
 
 	if (existsSync(targetDir)) {
 		throw new Error(`Directory "${targetDir}" already exists`);
@@ -26,7 +27,7 @@ export function scaffold(options: ScaffoldOptions): void {
 
 	mkdirSync(targetDir, { recursive: true });
 
-	const scaffolders: Record<ScaffoldTarget, (opts: ScaffoldOptions) => void> = {
+	const scaffolders: Record<ScaffoldTarget, (opts: ScaffoldOptions) => Promise<void>> = {
 		sveltekit: scaffoldSvelteKitSite,
 		html: scaffoldHtmlSite,
 		astro: scaffoldAstroSite,
@@ -35,10 +36,21 @@ export function scaffold(options: ScaffoldOptions): void {
 		eleventy: scaffoldEleventySite,
 	};
 
-	scaffolders[target](options);
+	await scaffolders[target](options);
 }
 
-function scaffoldSvelteKitSite(options: ScaffoldOptions): void {
+/** Default set of community packages scaffolded projects ship with. Kept in sync
+ *  with `generateRefraktConfig`. */
+const DEFAULT_SCAFFOLDED_PACKAGES = ['@refrakt-md/marketing'];
+
+/** Generate and write AGENTS.md to the scaffolded project's root. Runs after the
+ *  config file has been written so the reference reflects the chosen package set. */
+async function writeAgentsMd(targetDir: string, packages: string[]): Promise<void> {
+	const content = await renderScaffoldAgentsMd(packages);
+	writeFileSync(path.join(targetDir, 'AGENTS.md'), content);
+}
+
+async function scaffoldSvelteKitSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	// Copy template directory recursively
@@ -61,9 +73,10 @@ function scaffoldSvelteKitSite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generatePackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
-function scaffoldHtmlSite(options: ScaffoldOptions): void {
+async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	const templateDir = path.resolve(
@@ -85,6 +98,7 @@ function scaffoldHtmlSite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generateHtmlPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'html'));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
 function generatePackageJson(projectName: string, theme: string): string {
@@ -171,7 +185,7 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 	return JSON.stringify(pkg, null, '\t') + '\n';
 }
 
-function scaffoldAstroSite(options: ScaffoldOptions): void {
+async function scaffoldAstroSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	const templateDir = path.resolve(
@@ -193,9 +207,10 @@ function scaffoldAstroSite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generateAstroPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'astro'));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
-function scaffoldNuxtSite(options: ScaffoldOptions): void {
+async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	const templateDir = path.resolve(
@@ -217,9 +232,10 @@ function scaffoldNuxtSite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generateNuxtPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'nuxt'));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
-function scaffoldNextSite(options: ScaffoldOptions): void {
+async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	const templateDir = path.resolve(
@@ -241,9 +257,10 @@ function scaffoldNextSite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generateNextPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'next'));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
-function scaffoldEleventySite(options: ScaffoldOptions): void {
+async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	const templateDir = path.resolve(
@@ -265,6 +282,7 @@ function scaffoldEleventySite(options: ScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'package.json'), generateEleventyPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
 
 function renameDotfiles(targetDir: string): void {
@@ -422,6 +440,18 @@ npm run dev
 npm run build
 npm run preview
 \`\`\`
+
+## Authoring content
+
+Content lives in \`./content\` as \`.md\` files. Runes — the Markdoc tags like \`{% hint %}\` and \`{% hero %}\` that give this site its rich structure — are documented in [\`AGENTS.md\`](./AGENTS.md). That file is the canonical rune reference for both human contributors and coding agents (Claude Code, Cursor, Aider, GitHub Copilot).
+
+When you add or remove packages in \`refrakt.config.json\`, regenerate \`AGENTS.md\`:
+
+\`\`\`sh
+npx refrakt reference dump
+\`\`\`
+
+Consider adding \`npx refrakt reference dump --check\` to CI so stale rune references fail the build.
 `;
 }
 

@@ -42,12 +42,6 @@ describe('generateSystemPrompt', () => {
 		expect(prompt).toContain('columns: number (optional)');
 	});
 
-	it('includes reinterprets', () => {
-		expect(prompt).toContain('paragraph → message body');
-		expect(prompt).toContain('fence → tab content');
-		expect(prompt).toContain('hr → grid cell delimiter');
-	});
-
 	it('includes examples with rune syntax', () => {
 		expect(prompt).toContain('{% hint type="note" %}');
 		expect(prompt).toContain('{% grid %}');
@@ -120,80 +114,79 @@ describe('mode guidance', () => {
 	});
 });
 
-describe('AI prompt extensions from packages', () => {
-	it('includes prompt extension text in rune description', () => {
-		const runesWithPrompt: Record<string, any> = {
+describe('authoring hints from packages', () => {
+	it('renders authoring hints under an "Authoring notes" heading', () => {
+		const runesWithHints: Record<string, any> = {
 			'custom-widget': {
 				name: 'custom-widget',
 				aliases: [],
 				description: 'A custom widget for dashboards',
-				reinterprets: {},
 				schema: { attributes: {} },
-				prompt: 'Use this rune to create dashboard widgets with real-time data. Best for metrics displays.',
+				authoringHints: 'Best for dashboard widgets that display real-time metrics. Pair with a refresh interval when the data changes often.',
 			},
 		};
 
-		const prompt = generateSystemPrompt(runesWithPrompt);
+		const prompt = generateSystemPrompt(runesWithHints);
 		expect(prompt).toContain('### custom-widget');
 		expect(prompt).toContain('A custom widget for dashboards');
-		expect(prompt).toContain('Use this rune to create dashboard widgets with real-time data');
+		expect(prompt).toContain('Authoring notes:');
+		expect(prompt).toContain('Best for dashboard widgets that display real-time metrics');
 	});
 
-	it('omits prompt section when not provided', () => {
-		const runesWithoutPrompt: Record<string, any> = {
+	it('omits the authoring notes section when not provided', () => {
+		const runesWithoutHints: Record<string, any> = {
 			'simple-rune': {
 				name: 'simple-rune',
 				aliases: [],
 				description: 'A simple rune',
-				reinterprets: {},
 				schema: { attributes: {} },
 			},
 		};
 
-		const prompt = generateSystemPrompt(runesWithoutPrompt);
+		const prompt = generateSystemPrompt(runesWithoutHints);
 		expect(prompt).toContain('### simple-rune');
 		expect(prompt).toContain('A simple rune');
+		expect(prompt).not.toContain('Authoring notes:');
 	});
 
-	it('includes prompt extensions alongside other metadata', () => {
+	it('includes authoring hints alongside other metadata', () => {
 		const runesWithAll: Record<string, any> = {
 			'full-rune': {
 				name: 'full-rune',
 				aliases: ['fr'],
 				description: 'A fully-configured rune',
-				reinterprets: { heading: 'title', paragraph: 'body' },
 				schema: {
 					attributes: {
 						variant: { type: String, matches: ['a', 'b', 'c'] },
 					},
 				},
-				prompt: 'This rune supports dynamic data binding and auto-refresh intervals.',
+				authoringHints: 'Supports dynamic data binding and auto-refresh intervals — set the refresh attribute in seconds.',
 			},
 		};
 
 		const prompt = generateSystemPrompt(runesWithAll);
 		expect(prompt).toContain('### full-rune');
 		expect(prompt).toContain('Aliases: fr');
-		expect(prompt).toContain('This rune supports dynamic data binding');
+		expect(prompt).toContain('Authoring notes:');
+		expect(prompt).toContain('Supports dynamic data binding and auto-refresh intervals');
 		expect(prompt).toContain('"a" | "b" | "c"');
-		expect(prompt).toContain('heading → title');
 	});
 
-	it('handles empty prompt string gracefully', () => {
-		const runesWithEmptyPrompt: Record<string, any> = {
-			'empty-prompt-rune': {
-				name: 'empty-prompt-rune',
+	it('handles empty authoring hints gracefully', () => {
+		const runesWithEmptyHints: Record<string, any> = {
+			'empty-hints-rune': {
+				name: 'empty-hints-rune',
 				aliases: [],
-				description: 'A rune with empty prompt',
-				reinterprets: {},
+				description: 'A rune with empty authoring hints',
 				schema: { attributes: {} },
-				prompt: '',
+				authoringHints: '',
 			},
 		};
 
-		// Should not throw
-		const prompt = generateSystemPrompt(runesWithEmptyPrompt);
-		expect(prompt).toContain('### empty-prompt-rune');
+		// Should not throw, and should skip the Authoring notes section
+		const prompt = generateSystemPrompt(runesWithEmptyHints);
+		expect(prompt).toContain('### empty-hints-rune');
+		expect(prompt).not.toContain('Authoring notes:');
 	});
 });
 

@@ -6,8 +6,7 @@ import { exec } from 'node:child_process';
 import { ContentTree, loadContent } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import type { HookSet } from '@refrakt-md/content';
-import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks, schemaContentModels } from '@refrakt-md/runes';
-import type { ContentModel } from '@refrakt-md/types';
+import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks, schemaContentModels, serializeContentModel } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import type { RouteRule, RunePackage, AggregatedData } from '@refrakt-md/types';
 import { createTransform } from '@refrakt-md/transform';
@@ -841,66 +840,6 @@ function deriveChildRunes(config?: ThemeConfig): Set<string> {
 		if (runeConfig.parent) children.add(runeConfig.block);
 	}
 	return children;
-}
-
-/**
- * Serialize a content model for JSON transport.
- * Strips non-serializable fields (functions in `custom` models, RegExp in headingExtract).
- * For function-based conditional models, evaluates with empty attrs to get the default.
- */
-function serializeContentModel(
-	model: ContentModel | ((attrs: Record<string, any>) => ContentModel),
-): object | undefined {
-	const resolved = typeof model === 'function' ? model({}) : model;
-	return stripContentModel(resolved);
-}
-
-function stripContentModel(model: ContentModel): object | undefined {
-	if ('when' in model) {
-		// Conditional model — serialize the default branch
-		return stripContentModel(model.default);
-	}
-	if (model.type === 'custom') {
-		return { type: 'custom', description: model.description };
-	}
-	if (model.type === 'sequence') {
-		return { type: 'sequence', fields: model.fields.map(stripField) };
-	}
-	if (model.type === 'delimited') {
-		return {
-			type: 'delimited',
-			delimiter: model.delimiter,
-			zones: model.zones?.map(z => ({
-				name: z.name,
-				type: 'sequence' as const,
-				fields: z.fields.map(stripField),
-			})),
-			dynamicZones: model.dynamicZones,
-			zoneModel: model.zoneModel ? { type: 'sequence' as const, fields: model.zoneModel.fields.map(stripField) } : undefined,
-		};
-	}
-	if (model.type === 'sections') {
-		return {
-			type: 'sections',
-			sectionHeading: model.sectionHeading,
-			fields: model.fields?.map(stripField),
-			sectionModel: stripContentModel(model.sectionModel),
-			emitTag: model.emitTag,
-		};
-	}
-	return undefined;
-}
-
-function stripField(f: import('@refrakt-md/types').ContentFieldDefinition): object {
-	return {
-		name: f.name,
-		match: f.match,
-		optional: f.optional,
-		greedy: f.greedy,
-		template: f.template,
-		description: f.description,
-		emitTag: f.emitTag,
-	};
 }
 
 let cachedRuneData: unknown[] | null = null;

@@ -22,7 +22,6 @@ export const plan: RunePackage = {
 		'spec': {
 			transform: spec,
 			description: 'Specification document with status tracking, versioning, and entity registry integration',
-			reinterprets: { heading: 'spec title', blockquote: 'scope summary', paragraph: 'specification content' },
 			fixture: `{% spec id="SPEC-001" status="accepted" version="1.0" %}
 # Authentication System
 
@@ -36,7 +35,6 @@ Tokens expire after 24 hours and can be refreshed.
 			transform: work,
 			aliases: ['task'],
 			description: 'Work item with acceptance criteria, references, and implementation tracking',
-			reinterprets: { heading: 'work item title or section heading', paragraph: 'description', list: 'acceptance criteria or references' },
 			fixture: `{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" %}
 # Implement dark mode support
 
@@ -54,7 +52,6 @@ Use CSS custom properties with media query swapping.
 		'bug': {
 			transform: bug,
 			description: 'Bug report with structured reproduction steps and severity tracking',
-			reinterprets: { heading: 'bug title or section heading', list: 'reproduction steps or environment details', paragraph: 'expected/actual behaviour' },
 			fixture: `{% bug id="RF-201" status="confirmed" severity="major" %}
 # Showcase bleed breaks with overflow:hidden parent
 
@@ -74,7 +71,6 @@ Showcase is clipped at the section edge.
 			transform: decision,
 			aliases: ['adr'],
 			description: 'Architecture decision record capturing context, options, decision, rationale, and consequences',
-			reinterprets: { heading: 'decision title or section heading', paragraph: 'context, rationale, or consequences', list: 'options considered' },
 			fixture: `{% decision id="ADR-007" status="accepted" date="2026-03-11" %}
 # Use CSS custom properties for token injection
 
@@ -100,7 +96,6 @@ Custom properties cascade naturally without JavaScript.
 		'milestone': {
 			transform: milestone,
 			description: 'Named release target with scope, goals, and status tracking',
-			reinterprets: { heading: 'milestone title', list: 'goals' },
 			fixture: `{% milestone name="v0.5.0" target="2026-03-29" status="active" %}
 # v0.5.0 — Layout & Tint
 
@@ -112,31 +107,26 @@ Custom properties cascade naturally without JavaScript.
 		'backlog': {
 			transform: backlog,
 			description: 'Aggregation view of work items and bugs with filtering, sorting, and grouping',
-			reinterprets: {},
 			fixture: `{% backlog filter="status:ready" sort="priority" group="status" /%}`,
 		},
 		'decision-log': {
 			transform: decisionLog,
 			description: 'Chronological view of architecture decision records',
-			reinterprets: {},
 			fixture: `{% decision-log sort="date" /%}`,
 		},
 		'plan-progress': {
 			transform: planProgress,
 			description: 'Progress summary showing status counts per entity type',
-			reinterprets: {},
 			fixture: `{% plan-progress /%}`,
 		},
 		'plan-activity': {
 			transform: planActivity,
 			description: 'Recent activity feed sorted by file modification time',
-			reinterprets: {},
 			fixture: `{% plan-activity limit="10" /%}`,
 		},
 		'plan-history': {
 			transform: planHistory,
 			description: 'Git-native entity history timeline showing attribute transitions, criteria progress, and lifecycle events',
-			reinterprets: {},
 			fixture: `{% plan-history limit="20" /%}`,
 		},
 	},

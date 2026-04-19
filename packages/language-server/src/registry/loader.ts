@@ -14,8 +14,6 @@ export interface RuneInfo {
   allNames: string[];
   /** Human-readable description */
   description: string;
-  /** How this rune reinterprets Markdown primitives */
-  reinterprets: Record<string, string>;
   /** Schema.org SEO type, if any */
   seoType: string | undefined;
   /** Attribute definitions from the schema */
@@ -55,7 +53,6 @@ function indexRunes(runeList: Rune[]) {
       name: rune.name,
       allNames: rune.names,
       description: rune.description,
-      reinterprets: rune.reinterprets,
       seoType: rune.seoType,
       attributes: (rune.schema.attributes ?? {}) as Record<string, SchemaAttribute>,
       category: rune.category,
@@ -79,7 +76,6 @@ interface RunePackageLike {
     description?: string;
     aliases?: string[];
     seoType?: string;
-    reinterprets?: Record<string, string>;
     fixture?: string;
     category?: string;
     snippet?: string[];
@@ -126,7 +122,6 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPack
       description: entry.description ?? `Community rune from ${pkgExport.displayName ?? pkgExport.name}`,
       aliases: entry.aliases,
       seoType: entry.seoType,
-      reinterprets: entry.reinterprets,
       category: entry.category,
     });
     if (entry.fixture) {

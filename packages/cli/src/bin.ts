@@ -29,6 +29,8 @@ if (command === 'write') {
 	runEdit(args.slice(1));
 } else if (command === 'package') {
 	runPackage(args.slice(1));
+} else if (command === 'reference') {
+	runReference(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -51,6 +53,7 @@ Commands:
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
   package <subcommand> Manage rune packages (validate)
+  reference <subcommand>  Emit rune syntax reference for authors and AI agents
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -133,6 +136,20 @@ Edit Options:
   --content-dir <dir>      Content directory (default: from refrakt.config.json)
   --dev-server <url>       URL of running dev server for live preview
   --no-open                Don't auto-open browser
+
+Reference Subcommands:
+  reference <name>             Print syntax reference for a single rune
+  reference list               Enumerate available runes, grouped by package
+  reference dump               Write a full reference to a file (default AGENTS.md)
+
+Reference Options:
+  --format <fmt>           Output format: markdown (default), json
+  --config <dir>           Project root containing refrakt.config.json
+  --no-example             Omit the example block (reference <name>)
+  --package <name>         Filter by package (reference list)
+  --output, -o <path>      Output file (reference dump; default: AGENTS.md)
+  --section <heading>      Heading to replace in existing file (reference dump)
+  --check                  Exit 1 if output file is out of date (reference dump)
 `);
 }
 
@@ -752,4 +769,269 @@ function runEdit(editArgs: string[]): void {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
 	});
+}
+
+function runReference(refArgs: string[]): void {
+	const subcommand = refArgs[0];
+
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`
+Usage: refrakt reference <subcommand> [options]
+
+Subcommands:
+  <name>          Print syntax reference for a single rune
+  list            Enumerate available runes, grouped by package
+  dump            Write a full reference to a file (default AGENTS.md)
+
+Name Options (refrakt reference <name>):
+  --format <fmt>      Output format: markdown (default), json
+  --no-example        Omit the example block
+  --config <dir>      Project root containing refrakt.config.json
+
+List Options (refrakt reference list):
+  --package <name>    Filter runes by source package
+  --format <fmt>      Output format: markdown (default), json
+  --config <dir>      Project root containing refrakt.config.json
+
+Dump Options (refrakt reference dump):
+  --output, -o <path> Output file (default: AGENTS.md)
+  --format <fmt>      Output format: markdown (default), json
+  --section <heading> Heading to replace in existing markdown file
+                      (default: "# Available Runes")
+  --check             Exit 1 if output file is out of date
+  --config <dir>      Project root containing refrakt.config.json
+
+Examples:
+  refrakt reference hero
+  refrakt reference recipe --format json
+  refrakt reference list
+  refrakt reference list --package @refrakt-md/marketing
+  refrakt reference dump
+  refrakt reference dump --output AGENTS.md --check
+`);
+		process.exit(subcommand ? 0 : 1);
+	}
+
+	// `list` and `dump` are fixed subcommand keywords; anything else is treated
+	// as a rune name.
+	if (subcommand === 'list') {
+		runReferenceList(refArgs.slice(1));
+	} else if (subcommand === 'dump') {
+		runReferenceDump(refArgs.slice(1));
+	} else if (subcommand.startsWith('-')) {
+		console.error(`Error: Unknown flag "${subcommand}"\n`);
+		process.exit(2);
+	} else {
+		runReferenceName(subcommand, refArgs.slice(1));
+	}
+}
+
+function parseReferenceArgs(remaining: string[], accept: Set<string>): {
+	format: 'markdown' | 'json';
+	configDir?: string;
+	noExample: boolean;
+	packageFilter?: string;
+	output?: string;
+	section?: string;
+	check: boolean;
+} {
+	let format: 'markdown' | 'json' = 'markdown';
+	let configDir: string | undefined;
+	let noExample = false;
+	let packageFilter: string | undefined;
+	let output: string | undefined;
+	let section: string | undefined;
+	let check = false;
+
+	const requireValue = (flag: string, value: string | undefined): string => {
+		if (!value) {
+			console.error(`Error: ${flag} requires a value`);
+			process.exit(2);
+		}
+		return value;
+	};
+
+	for (let i = 0; i < remaining.length; i++) {
+		const arg = remaining[i];
+		if (arg === '--format') {
+			const v = requireValue('--format', remaining[++i]);
+			if (v !== 'markdown' && v !== 'json') {
+				console.error(`Error: --format must be "markdown" or "json" (got "${v}")`);
+				process.exit(2);
+			}
+			format = v;
+		} else if (arg === '--config') {
+			configDir = requireValue('--config', remaining[++i]);
+		} else if (arg === '--no-example' && accept.has('--no-example')) {
+			noExample = true;
+		} else if (arg === '--package' && accept.has('--package')) {
+			packageFilter = requireValue('--package', remaining[++i]);
+		} else if ((arg === '--output' || arg === '-o') && accept.has('--output')) {
+			output = requireValue('--output', remaining[++i]);
+		} else if (arg === '--section' && accept.has('--section')) {
+			section = requireValue('--section', remaining[++i]);
+		} else if (arg === '--check' && accept.has('--check')) {
+			check = true;
+		} else if (arg === '--help' || arg === '-h') {
+			runReference(['--help']);
+			process.exit(0);
+		} else {
+			console.error(`Error: Unknown or unsupported flag "${arg}"`);
+			process.exit(2);
+		}
+	}
+
+	return { format, configDir, noExample, packageFilter, output, section, check };
+}
+
+function runReferenceName(name: string, remaining: string[]): void {
+	const { format, configDir, noExample } = parseReferenceArgs(
+		remaining,
+		new Set(['--no-example']),
+	);
+
+	Promise.all([
+		import('./commands/reference.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+	]).then(async ([{ referenceNameCommand }, runesModule, { assembleThemeConfig }]) => {
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const result = referenceNameCommand(ctx, { name, format, noExample });
+		if (result.exitCode === 0) {
+			console.log(result.output);
+		} else {
+			console.error(result.output);
+		}
+		process.exit(result.exitCode);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(2);
+	});
+}
+
+function runReferenceList(remaining: string[]): void {
+	const { format, configDir, packageFilter } = parseReferenceArgs(
+		remaining,
+		new Set(['--package']),
+	);
+
+	Promise.all([
+		import('./commands/reference.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+	]).then(async ([{ referenceListCommand }, runesModule, { assembleThemeConfig }]) => {
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const result = referenceListCommand(ctx, { packageFilter, format });
+		if (result.exitCode === 0) {
+			console.log(result.output);
+		} else {
+			console.error(result.output);
+		}
+		process.exit(result.exitCode);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(2);
+	});
+}
+
+function runReferenceDump(remaining: string[]): void {
+	const { format, configDir, output, section, check } = parseReferenceArgs(
+		remaining,
+		new Set(['--output', '--section', '--check']),
+	);
+
+	Promise.all([
+		import('./commands/reference.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+	]).then(async ([{ referenceDumpCommand }, runesModule, { assembleThemeConfig }]) => {
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const result = referenceDumpCommand(ctx, {
+			output: output ?? 'AGENTS.md',
+			format,
+			section: section ?? '# Available Runes',
+			check,
+		});
+		if (result.exitCode !== 0) {
+			console.error(result.message);
+			process.exit(result.exitCode);
+		}
+		if (result.wrote) {
+			console.log(`Wrote reference to ${output ?? 'AGENTS.md'}`);
+		}
+		process.exit(0);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(2);
+	});
+}
+
+/** Build a ReferenceContext from the merged config, matching `loadMergedConfig` but
+ *  also exposing the per-rune source-package identifier. */
+async function buildReferenceContext(
+	runesModule: typeof import('@refrakt-md/runes'),
+	assembleThemeConfig: typeof import('@refrakt-md/transform').assembleThemeConfig,
+	configDir?: string,
+): Promise<import('@refrakt-md/runes').ReferenceContext> {
+	const { runes: coreRunes, loadRunePackage, mergePackages, applyAliases, loadLocalRunes } = runesModule;
+
+	const allRunes: Record<string, any> = { ...coreRunes };
+	let fixtures: Record<string, string> = {};
+	const source: Record<string, string> = {};
+
+	for (const name of Object.keys(coreRunes)) {
+		source[name] = 'core';
+	}
+
+	try {
+		const { loadRefraktConfigFile } = await import('./config-file.js');
+		const { config } = loadRefraktConfigFile(configDir);
+		const coreRuneNames = new Set(Object.keys(coreRunes));
+
+		if (config.packages && config.packages.length > 0) {
+			const loadedPackages = await Promise.all(
+				config.packages.map((name: string) => loadRunePackage(name))
+			);
+			const merged = mergePackages(loadedPackages, coreRuneNames, config.runes?.prefer);
+
+			const runeToNpm: Record<string, string> = {};
+			for (const loaded of loadedPackages) {
+				for (const name of Object.keys(loaded.runes)) {
+					runeToNpm[name] = loaded.npmName;
+				}
+			}
+
+			for (const [name, rune] of Object.entries(merged.runes)) {
+				allRunes[name] = rune;
+				source[name] = runeToNpm[name] ?? 'package';
+			}
+			fixtures = { ...fixtures, ...merged.fixtures };
+
+			// Assemble theme config so imports register their attribute presets.
+			assembleThemeConfig({
+				coreConfig: runesModule.baseConfig,
+				packageRunes: merged.themeRunes,
+				packageIcons: merged.themeIcons,
+				packageBackgrounds: merged.themeBackgrounds,
+				provenance: merged.provenance,
+			});
+
+			if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
+				const tags = runesModule.runeTagMap(allRunes);
+				applyAliases(allRunes, tags, config.runes.aliases, merged.provenance);
+			}
+		}
+
+		if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
+			const local = await loadLocalRunes(config.runes.local, process.cwd());
+			for (const [name, rune] of Object.entries(local.runes)) {
+				allRunes[name] = rune;
+				source[name] = 'local';
+			}
+		}
+	} catch {
+		// No config or no packages — fall back to core-only
+	}
+
+	return { runes: allRunes, fixtures, source };
 }

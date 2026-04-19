@@ -55,11 +55,6 @@ export const myPackage: RunePackage = {
       description: 'A magical item with rarity and properties',
       aliases: ['item', 'magic-item'],
       seoType: 'Product',
-      reinterprets: {
-        'heading': 'item name',
-        'list': 'item properties',
-        'blockquote': 'lore text',
-      },
       fixture: `{% game-item rarity="rare" %}
 ## Cloak of Elvenkind
 
@@ -68,7 +63,7 @@ export const myPackage: RunePackage = {
 
 > Woven from shadowy threads, this cloak renders the wearer nearly invisible.
 {% /game-item %}`,
-      prompt: 'Use for magical items. The rarity attribute sets item tier.',
+      authoringHints: 'Used for magical items — the rarity attribute sets the item tier (common through legendary).',
       schema: {
         rarity: {
           type: 'string',
@@ -89,9 +84,8 @@ export const myPackage: RunePackage = {
 | `description` | Recommended | Human-readable description shown in the rune catalog |
 | `aliases` | No | Alternative tag names that resolve to this rune |
 | `seoType` | No | Schema.org type for automatic JSON-LD generation |
-| `reinterprets` | No | Documents how Markdown primitives are reinterpreted |
 | `fixture` | Recommended | Example Markdoc string for `refrakt inspect` |
-| `prompt` | No | Appended to AI prompt descriptions for `refrakt write` |
+| `authoringHints` | No | Short note shown under "Authoring notes" in `refrakt reference` and included in `refrakt write` prompts |
 | `schema` | Recommended | Attribute definitions for tooling and validation |
 
 ## Writing the Rune Schema

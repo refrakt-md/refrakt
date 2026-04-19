@@ -48,15 +48,6 @@ describe('rune name hover', () => {
     expect(result).not.toBeNull();
   });
 
-  it('shows reinterprets in hover', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('hint') + 2;
-    const result = hover(text, offset);
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('Reinterprets');
-    expect(value).toContain('paragraph');
-  });
-
   it('shows SEO type in hover', () => {
     const text = '{% accordion %}';
     const offset = text.indexOf('accordion') + 2;

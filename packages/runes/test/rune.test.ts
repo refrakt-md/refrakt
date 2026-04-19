@@ -45,14 +45,6 @@ describe('Rune abstraction', () => {
     }
   });
 
-  it('runes with reinterprets describe their markdown reinterpretation', () => {
-    const hintRune = runes.hint;
-    expect(hintRune.reinterprets.paragraph).toBe('message body');
-
-    const gridRune = runes.grid;
-    expect(gridRune.reinterprets.hr).toBe('grid cell delimiter');
-  });
-
   it('runes with seoType declare their schema.org type', () => {
     expect(runes.accordion.seoType).toBe('FAQPage');
     expect(runes.datatable.seoType).toBe('Dataset');

@@ -14,7 +14,7 @@ function makeLoadedPackage(pkg: RunePackage, npmName: string): LoadedPackage {
 			name,
 			schema: entry.transform as any,
 			description: entry.description ?? `Community rune from ${pkg.name}`,
-			prompt: entry.prompt,
+			authoringHints: entry.authoringHints,
 		});
 		if (entry.fixture) {
 			fixtures[name] = entry.fixture;
@@ -32,7 +32,7 @@ const gameSystemPkg: RunePackage = {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
 			fixture: '{% item name="Sword" %}content{% /item %}',
-			prompt: 'Use for RPG items with rarity.',
+			authoringHints: 'Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.',
 			description: 'Game item with name and rarity',
 		},
 		'spell': {
@@ -320,13 +320,13 @@ describe('mergePackages', () => {
 		expect(result.fixtures['spell']).toContain('{% spell');
 	});
 
-	it('propagates prompt field on runes', () => {
+	it('propagates authoringHints field on runes', () => {
 		const loaded = [makeLoadedPackage(gameSystemPkg, '@refrakt-community/game-system')];
 		const result = mergePackages(loaded, coreRuneNames);
 
-		// item has prompt, spell does not
-		expect(result.runes['item'].prompt).toBe('Use for RPG items with rarity.');
-		expect(result.runes['spell'].prompt).toBeUndefined();
+		// item has authoring hints, spell does not
+		expect(result.runes['item'].authoringHints).toBe('Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.');
+		expect(result.runes['spell'].authoringHints).toBeUndefined();
 	});
 
 	it('merges extensions from multiple packages', () => {

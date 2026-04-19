@@ -13,7 +13,6 @@ export const learning: RunePackage = {
       aliases: ['how-to'],
       description: 'Step-by-step how-to guide with tools/materials list and instructions',
       seoType: 'HowTo',
-      reinterprets: { 'ordered list': 'steps', list: 'tools/materials', heading: 'title' },
       category: 'Semantic',
       snippet: ['{% howto difficulty="${1|easy,medium,hard|}" %}', '# ${2:How to Do Something}', '', '- ${3:Tool or material needed}', '', '1. ${4:First step}', '2. ${5:Second step}', '{% /howto %}'],
       fixture: `{% howto estimatedTime="PT45M" difficulty="easy" %}
@@ -34,7 +33,6 @@ export const learning: RunePackage = {
       transform: recipe,
       description: 'Recipe with ingredients, steps, and chef tips. Supports split layout with media zone. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
       seoType: 'Recipe',
-      reinterprets: { list: 'ingredients', 'ordered list': 'steps', blockquote: 'chef tips', image: 'recipe photo', heading: 'recipe name', 'horizontal rule': 'content/media separator' },
       category: 'Semantic',
       snippet: ['{% recipe prepTime="${1:15m}" cookTime="${2:30m}" servings=${3:4} difficulty="${4|easy,medium,hard|}" %}', '# ${5:Recipe Name}', '', '- ${6:Ingredient one}', '- ${7:Ingredient two}', '', '1. ${8:Step one}', '2. ${9:Step two}', '{% /recipe %}'],
       fixture: `{% recipe prepTime="PT15M" cookTime="PT30M" servings="4" difficulty="medium" layout="split" %}

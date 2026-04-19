@@ -70,8 +70,7 @@ export async function loadRunePackage(npmPackageName: string): Promise<LoadedPac
 			description: entry.description ?? `Community rune from ${pkg.displayName ?? pkg.name}`,
 			aliases: entry.aliases,
 			seoType: entry.seoType,
-			reinterprets: entry.reinterprets,
-			prompt: entry.prompt,
+			authoringHints: entry.authoringHints,
 		});
 		if (entry.fixture) {
 			fixtures[runeName] = entry.fixture;

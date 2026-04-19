@@ -12,7 +12,6 @@ export const media: RunePackage = {
     'playlist': {
       transform: playlist,
       description: 'Playlist with track listing — albums, podcasts, audiobooks, mixes',
-      reinterprets: { heading: 'playlist name', list: 'track listing', image: 'cover art' },
       seoType: 'MusicPlaylist',
       category: 'Semantic',
       snippet: ['{% playlist type="${1|album,podcast,audiobook,series,mix|}" artist="${2:Artist}" %}', '# ${3:Playlist Name}', '', '- **${4:Track One}** (${5:3:45})', '- **${6:Track Two}** (${7:4:20})', '{% /playlist %}'],

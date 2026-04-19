@@ -2,13 +2,14 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { taxonomyAttributes } from './common.js';
 
 export const lore = createContentModelSchema({
+	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this lore entry.' },
 		category: { type: String, required: false, description: 'Grouping label used to organize lore entries (e.g. history, magic, culture).' },
 		spoiler: { type: Boolean, required: false, description: 'Enable/disable spoiler protection that hides content until revealed.' },
-		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: {
 		type: 'sequence',

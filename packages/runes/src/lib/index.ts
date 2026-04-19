@@ -3,6 +3,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, RenderableTreeNodes, Schema, SchemaAttribute, Tag, ValidationError } from '@markdoc/markdoc';
 
 import { resolveContentModel } from './resolver.js';
+import { schemaBasePresets } from '../attribute-presets.js';
 
 export { createComponentRenderable } from './component.js';
 export type { InlineTransformResult } from './component.js';
@@ -260,6 +261,12 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
   // Register content model for introspection by editor / language server
   schemaContentModels.set(schema, options.contentModel);
+
+  // Record the base record reference so reference output can identify
+  // attributes inherited from a registered preset.
+  if (options.base) {
+    schemaBasePresets.set(schema, options.base);
+  }
 
   return schema;
 }

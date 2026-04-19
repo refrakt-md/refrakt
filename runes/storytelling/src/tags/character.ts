@@ -2,6 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { taxonomyAttributes } from './common.js';
 
 export const characterSection = createContentModelSchema({
 	attributes: {
@@ -31,12 +32,12 @@ const roleType = ['protagonist', 'antagonist', 'supporting', 'minor'] as const;
 const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
 
 export const character = createContentModelSchema({
+	base: taxonomyAttributes,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the character header.' },
 		role: { type: String, required: false, matches: roleType.slice(), description: 'Narrative importance: protagonist, antagonist, supporting, or minor.' },
 		status: { type: String, required: false, matches: statusType.slice(), description: 'Whether the character is alive, dead, unknown, or missing.' },
 		aliases: { type: String, required: false, description: 'Comma-separated alternate names or titles for this character.' },
-		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
