@@ -27,7 +27,7 @@ Initialize a plan directory in your project:
 refrakt plan init
 ```
 
-This creates the `plan/` directory structure with example files, generates a `plan/INSTRUCTIONS.md` workflow guide, and appends a reference to your AI tool's instruction file (auto-detected or specified via `--agent`).
+This wires the host project end-to-end: it scaffolds the `plan/` directory with example files, writes the canonical `AGENTS.md` with the full workflow guide, adds `@refrakt-md/cli` + `@refrakt-md/plan` to `devDependencies` with a `plan` script, and (for Claude users) installs a `SessionStart` hook that auto-runs `install` on first use. See [`refrakt plan init`](/runes/plan/cli#refrakt-plan-init) for the complete list of side effects and opt-out flags (`--minimal`, `--no-hooks`, etc.).
 
 ## What's included
 

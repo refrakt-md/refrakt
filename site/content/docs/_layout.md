@@ -11,6 +11,7 @@
 
 - cli-overview
 - inspect
+- reference
 - write
 - theme-tools
 
