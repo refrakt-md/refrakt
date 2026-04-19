@@ -253,19 +253,6 @@ function validateRuneEntry(
 	if (entry.description !== undefined && typeof entry.description !== 'string') {
 		errors.push({ path: `${prefix}.description`, message: 'Must be a string' });
 	}
-
-	// reinterprets
-	if (entry.reinterprets !== undefined) {
-		if (typeof entry.reinterprets !== 'object' || entry.reinterprets === null) {
-			errors.push({ path: `${prefix}.reinterprets`, message: 'Must be an object' });
-		} else {
-			for (const [key, value] of Object.entries(entry.reinterprets)) {
-				if (typeof value !== 'string') {
-					errors.push({ path: `${prefix}.reinterprets.${key}`, message: 'Must be a string' });
-				}
-			}
-		}
-	}
 }
 
 function validatePackageAttribute(

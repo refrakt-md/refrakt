@@ -43,12 +43,6 @@ describe('registry loader', () => {
     expect(hint!.attributes.type.matches).toContain('warning');
   });
 
-  it('provides reinterprets metadata', () => {
-    const hint = getRune('hint');
-    expect(hint).toBeDefined();
-    expect(hint!.reinterprets.paragraph).toBeDefined();
-  });
-
   it('provides seoType when available', () => {
     const accordion = getRune('accordion');
     expect(accordion!.seoType).toBe('FAQPage');

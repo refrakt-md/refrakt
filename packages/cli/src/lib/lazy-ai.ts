@@ -21,14 +21,13 @@ export interface RuneInfo {
 	name: string;
 	aliases: string[];
 	description: string;
-	reinterprets: Record<string, string>;
 	schema: {
 		attributes?: Record<
 			string,
 			{ type?: unknown; required?: boolean; matches?: unknown }
 		>;
 	};
-	prompt?: string;
+	authoringHints?: string;
 }
 
 interface AIModule {

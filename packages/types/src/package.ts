@@ -29,8 +29,6 @@ export interface RunePackageEntry {
 	aliases?: string[];
 	/** Schema.org type for SEO extraction (e.g., 'Product', 'Event') */
 	seoType?: string;
-	/** Describes how Markdown primitives are reinterpreted inside this rune */
-	reinterprets?: Record<string, string>;
 	/** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
 	category?: string;
 	/** VSCode snippet body lines (array of strings with VSCode placeholder syntax).

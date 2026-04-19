@@ -205,14 +205,6 @@ import type { RuneInfo } from '../registry/loader.js';
 function buildRuneDocumentation(rune: RuneInfo): string {
   const parts: string[] = [rune.description];
 
-  if (Object.keys(rune.reinterprets).length > 0) {
-    parts.push('');
-    parts.push('**Reinterprets:**');
-    for (const [element, meaning] of Object.entries(rune.reinterprets)) {
-      parts.push(`- ${element} → ${meaning}`);
-    }
-  }
-
   if (rune.seoType) {
     parts.push('');
     parts.push(`**SEO:** ${rune.seoType}`);

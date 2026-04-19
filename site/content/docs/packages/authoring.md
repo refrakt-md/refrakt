@@ -55,11 +55,6 @@ export const myPackage: RunePackage = {
       description: 'A magical item with rarity and properties',
       aliases: ['item', 'magic-item'],
       seoType: 'Product',
-      reinterprets: {
-        'heading': 'item name',
-        'list': 'item properties',
-        'blockquote': 'lore text',
-      },
       fixture: `{% game-item rarity="rare" %}
 ## Cloak of Elvenkind
 
@@ -89,7 +84,6 @@ export const myPackage: RunePackage = {
 | `description` | Recommended | Human-readable description shown in the rune catalog |
 | `aliases` | No | Alternative tag names that resolve to this rune |
 | `seoType` | No | Schema.org type for automatic JSON-LD generation |
-| `reinterprets` | No | Documents how Markdown primitives are reinterpreted |
 | `fixture` | Recommended | Example Markdoc string for `refrakt inspect` |
 | `authoringHints` | No | Short note shown under "Authoring notes" in `refrakt reference` and included in `refrakt write` prompts |
 | `schema` | Recommended | Attribute definitions for tooling and validation |

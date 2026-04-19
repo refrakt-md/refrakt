@@ -42,12 +42,6 @@ describe('generateSystemPrompt', () => {
 		expect(prompt).toContain('columns: number (optional)');
 	});
 
-	it('includes reinterprets', () => {
-		expect(prompt).toContain('paragraph → message body');
-		expect(prompt).toContain('fence → tab content');
-		expect(prompt).toContain('hr → grid cell delimiter');
-	});
-
 	it('includes examples with rune syntax', () => {
 		expect(prompt).toContain('{% hint type="note" %}');
 		expect(prompt).toContain('{% grid %}');
@@ -127,7 +121,6 @@ describe('authoring hints from packages', () => {
 				name: 'custom-widget',
 				aliases: [],
 				description: 'A custom widget for dashboards',
-				reinterprets: {},
 				schema: { attributes: {} },
 				authoringHints: 'Best for dashboard widgets that display real-time metrics. Pair with a refresh interval when the data changes often.',
 			},
@@ -146,7 +139,6 @@ describe('authoring hints from packages', () => {
 				name: 'simple-rune',
 				aliases: [],
 				description: 'A simple rune',
-				reinterprets: {},
 				schema: { attributes: {} },
 			},
 		};
@@ -163,7 +155,6 @@ describe('authoring hints from packages', () => {
 				name: 'full-rune',
 				aliases: ['fr'],
 				description: 'A fully-configured rune',
-				reinterprets: { heading: 'title', paragraph: 'body' },
 				schema: {
 					attributes: {
 						variant: { type: String, matches: ['a', 'b', 'c'] },
@@ -179,7 +170,6 @@ describe('authoring hints from packages', () => {
 		expect(prompt).toContain('Authoring notes:');
 		expect(prompt).toContain('Supports dynamic data binding and auto-refresh intervals');
 		expect(prompt).toContain('"a" | "b" | "c"');
-		expect(prompt).toContain('heading → title');
 	});
 
 	it('handles empty authoring hints gracefully', () => {
@@ -188,7 +178,6 @@ describe('authoring hints from packages', () => {
 				name: 'empty-hints-rune',
 				aliases: [],
 				description: 'A rune with empty authoring hints',
-				reinterprets: {},
 				schema: { attributes: {} },
 				authoringHints: '',
 			},

@@ -34,12 +34,6 @@ export interface RuneInfo {
 	name: string;
 	aliases: string[];
 	description: string;
-	/**
-	 * Legacy mapping from Markdown primitive to its reinterpretation in this rune.
-	 * Superseded by `contentModel`; kept for backwards compatibility and as a
-	 * fallback when `contentModel` isn't populated. Will be removed in WORK-154.
-	 */
-	reinterprets?: Record<string, string>;
 	schema: {
 		attributes?: Record<string, {
 			type?: unknown;
@@ -54,7 +48,7 @@ export interface RuneInfo {
 	 * in `describeRune` output and included in `refrakt write` prompts.
 	 */
 	authoringHints?: string;
-	/** Optional pre-serialized content model. When present, `describeRune` renders it instead of falling back to `reinterprets`. */
+	/** Pre-serialized content model; rendered into the reference output by `describeRune`. */
 	contentModel?: SerializedContentModel;
 	/** Named preset this rune inherits attributes from, if any (via `base:` in createContentModelSchema). */
 	basePreset?: RuneBasePresetInfo;
@@ -247,17 +241,8 @@ export function describeRune(rune: RuneInfo): string {
 		}
 	}
 
-	// Content model — prefer structured rendering over the legacy reinterprets map.
 	if (rune.contentModel) {
 		lines.push(renderContentModel(rune.contentModel));
-	} else if (rune.reinterprets) {
-		const reinterprets = Object.entries(rune.reinterprets);
-		if (reinterprets.length > 0) {
-			lines.push('Content interpretation:');
-			for (const [element, meaning] of reinterprets) {
-				lines.push(`  - ${element} → ${meaning}`);
-			}
-		}
 	}
 
 	const example = RUNE_EXAMPLES[rune.name];

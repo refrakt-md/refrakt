@@ -99,14 +99,6 @@ function buildRuneHover(tagName: string): Hover | null {
   lines.push('');
   lines.push(rune.description);
 
-  if (Object.keys(rune.reinterprets).length > 0) {
-    lines.push('');
-    lines.push('**Reinterprets:**');
-    for (const [element, meaning] of Object.entries(rune.reinterprets)) {
-      lines.push(`- ${element} → ${meaning}`);
-    }
-  }
-
   if (rune.seoType) {
     lines.push('');
     lines.push(`**SEO type:** \`${rune.seoType}\``);

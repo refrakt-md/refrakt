@@ -110,8 +110,8 @@ export async function editCommand(options: EditOptions): Promise<void> {
 			for (const [name, rune] of Object.entries(merged.runes)) {
 				const srcPkg = loaded.find(p => p.runes[name]);
 				const entry = srcPkg ? srcPkg.pkg.runes[name] : undefined;
-				// Skip child runes (no reinterprets and no fixture)
-				if (entry && !entry.reinterprets && !entry.fixture) continue;
+				// Skip child-only runes — a fixture is how packages signal a top-level rune belongs in the palette
+				if (entry && !entry.fixture) continue;
 
 				const attrs: Record<string, { type: string; required: boolean; values?: string[] }> = {};
 				if (rune.schema.attributes) {

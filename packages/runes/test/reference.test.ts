@@ -308,7 +308,6 @@ describe('describeRune — attribute tiers', () => {
 			name: 'hero',
 			aliases: [],
 			description: 'Page intro.',
-			reinterprets: {},
 			schema: {
 				attributes: {
 					align: { type: String, required: false, matches: ['left', 'right'] },
@@ -340,7 +339,6 @@ describe('describeRune — attribute tiers', () => {
 			name: 'simple',
 			aliases: [],
 			description: 'x',
-			reinterprets: {},
 			schema: { attributes: { name: { type: String, required: true } } },
 		};
 		const out = describeRune(rune);
@@ -351,12 +349,11 @@ describe('describeRune — attribute tiers', () => {
 });
 
 describe('describeRune', () => {
-	it('uses the content-model renderer when rune.contentModel is present', () => {
+	it('renders the content-model when rune.contentModel is present', () => {
 		const rune: RuneInfo = {
 			name: 'hero',
 			aliases: [],
 			description: 'Page intro with headline, blurb, and call-to-action.',
-			reinterprets: { heading: 'headline', paragraph: 'blurb' },
 			schema: { attributes: {} },
 			contentModel: {
 				type: 'delimited',
@@ -369,20 +366,5 @@ describe('describeRune', () => {
 		};
 		const out = describeRune(rune);
 		expect(out).toContain('Content is split by `---` into zones.');
-		expect(out).not.toContain('Content interpretation:');
-	});
-
-	it('falls back to reinterprets when no contentModel is present', () => {
-		const rune: RuneInfo = {
-			name: 'legacy',
-			aliases: [],
-			description: 'Legacy rune.',
-			reinterprets: { heading: 'headline', paragraph: 'blurb' },
-			schema: { attributes: {} },
-		};
-		const out = describeRune(rune);
-		expect(out).toContain('Content interpretation:');
-		expect(out).toContain('heading → headline');
-		expect(out).toContain('paragraph → blurb');
 	});
 });

@@ -19,7 +19,6 @@ export const storytelling: RunePackage = {
       aliases: ['npc', 'pc'],
       description: 'Character profile with portrait, role, status, and sectioned details. Headings become sections.',
       seoType: 'Person',
-      reinterprets: { heading: 'character detail section', paragraph: 'description', image: 'portrait', list: 'traits or inventory' },
       category: 'Semantic',
       snippet: ['{% character name="${1:Name}" role="${2|protagonist,antagonist,supporting,minor|}" status="${3|alive,dead,unknown,missing|}" %}', '## Backstory', '', '${4:Character background.}', '', '## Abilities', '', '- ${5:Ability one}', '{% /character %}'],
       fixture: `{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
@@ -43,7 +42,6 @@ Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necroman
       aliases: ['location', 'place'],
       description: 'Location or realm description with scene image, scale, and sectioned details. Headings become sections.',
       seoType: 'Place',
-      reinterprets: { heading: 'realm detail section', paragraph: 'description', image: 'scene image', list: 'features or inhabitants' },
       category: 'Semantic',
       snippet: ['{% realm name="${1:Name}" type="${2:sanctuary}" %}', '${3:Description of the location.}', '{% /realm %}'],
       fixture: `{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
@@ -71,7 +69,6 @@ A hidden valley in the foothills of the Misty Mountains.
       aliases: ['guild', 'order'],
       description: 'Faction or organization within a story world with alignment, size, and sectioned details.',
       seoType: 'Organization',
-      reinterprets: { heading: 'faction detail section', paragraph: 'description', list: 'members or resources' },
       category: 'Semantic',
       snippet: ['{% faction name="${1:Name}" type="${2:guild}" %}', '${3:Faction description.}', '{% /faction %}'],
       fixture: `{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
@@ -98,7 +95,6 @@ Their fortress overlooks the capital city from the northern cliffs.
       aliases: ['legend', 'myth'],
       description: 'Lore entry for world-building details, legends, or historical records. Supports spoiler mode.',
       seoType: 'Article',
-      reinterprets: { heading: 'lore title', paragraph: 'content', blockquote: 'in-world quote' },
       category: 'Semantic',
       snippet: ['{% lore title="${1:Title}" category="${2:history}" %}', '${3:Lore content.}', '{% /lore %}'],
       fixture: `{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
@@ -115,7 +111,6 @@ The prophecy has been interpreted differently by various factions throughout his
       aliases: ['storyline', 'arc'],
       description: 'Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints.',
       seoType: 'CreativeWork',
-      reinterprets: { heading: 'plot title', paragraph: 'summary', list: 'beat checkpoints (with status markers)' },
       category: 'Semantic',
       snippet: ['{% plot title="${1:Arc Title}" %}', '${2:Plot summary.}', '', '- [ ] **${3:Beat One}** \\u2014 ${4:Description}', '- [ ] **${5:Beat Two}** \\u2014 ${6:Description}', '{% /plot %}'],
       fixture: `{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
@@ -136,7 +131,6 @@ The heroes must recover the lost crown before the solstice.
       transform: bond,
       aliases: ['relationship'],
       description: 'Relationship between two named entities with type, status, and directional indicator.',
-      reinterprets: { paragraph: 'relationship description' },
       category: 'Semantic',
       snippet: ['{% bond from="${1:Entity A}" to="${2:Entity B}" type="${3:alliance}" %}', '${4:Relationship description.}', '{% /bond %}'],
       fixture: `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
@@ -149,7 +143,6 @@ a deep mutual respect.
       transform: storyboard,
       aliases: ['comic'],
       description: 'Comic/storyboard layout where images become panels and paragraphs become captions',
-      reinterprets: { image: 'panel visual', paragraph: 'caption/dialogue' },
       category: 'Semantic',
       snippet: ['{% storyboard %}', '![${1:Panel 1}](${2:/path/to/image1.png})', '', '${3:Caption for panel 1}', '', '![${4:Panel 2}](${5:/path/to/image2.png})', '', '${6:Caption for panel 2}', '{% /storyboard %}'],
       fixture: `{% storyboard variant="clean" columns="3" %}

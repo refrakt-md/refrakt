@@ -161,7 +161,6 @@ hint: defineRune({
   name: 'hint',
   schema: hint,
   description: 'Callouts and admonitions for supplementary information',
-  reinterprets: { paragraph: 'callout body' },
   type: schema.Hint,
 }),
 ```

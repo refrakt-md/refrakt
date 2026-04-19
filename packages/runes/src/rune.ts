@@ -13,9 +13,6 @@ export interface RuneDescriptor {
   /** Human-readable description for docs and AI theme generation */
   description?: string;
 
-  /** How this rune reinterprets standard Markdown primitives */
-  reinterprets?: Record<string, string>;
-
   /** Schema.org type for SEO JSON-LD generation */
   seoType?: string;
 
@@ -45,7 +42,6 @@ export class Rune {
   readonly aliases: string[];
   readonly schema: Schema;
   readonly description: string;
-  readonly reinterprets: Record<string, string>;
   readonly seoType: string | undefined;
   readonly typeName: string | undefined;
   readonly schemaOrgType: string | undefined;
@@ -58,7 +54,6 @@ export class Rune {
     this.aliases = descriptor.aliases ?? [];
     this.schema = descriptor.schema;
     this.description = descriptor.description ?? '';
-    this.reinterprets = descriptor.reinterprets ?? {};
     this.seoType = descriptor.seoType;
     this.typeName = descriptor.typeName;
     this.schemaOrgType = descriptor.schemaOrgType;
