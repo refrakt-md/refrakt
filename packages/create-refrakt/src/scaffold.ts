@@ -1,6 +1,7 @@
 import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runInit } from '@refrakt-md/plan/init';
 import { renderScaffoldAgentsMd } from './agents-md.js';
 
 function getRefraktVersion(): string {
@@ -1011,5 +1012,65 @@ function generateThemeBaseCss(): string {
 
 function generateThemeTokensBridge(): string {
 	return `@import '../index.css';
+`;
+}
+
+// ─── Plan scaffolding ────────────────────────────────────────────────
+
+export interface PlanScaffoldOptions {
+	projectName: string;
+	targetDir: string;
+}
+
+/**
+ * Scaffold a planning-only project: minimal package.json + .gitignore,
+ * then delegate the plan/ tree to @refrakt-md/plan's runInit.
+ */
+export function scaffoldPlan(options: PlanScaffoldOptions): void {
+	const { projectName, targetDir } = options;
+
+	if (existsSync(targetDir)) {
+		throw new Error(`Directory "${targetDir}" already exists`);
+	}
+
+	mkdirSync(targetDir, { recursive: true });
+
+	writeFileSync(path.join(targetDir, 'package.json'), generatePlanPackageJson(projectName));
+	writeFileSync(path.join(targetDir, '.gitignore'), generatePlanGitignore());
+
+	runInit({
+		dir: path.join(targetDir, 'plan'),
+		projectRoot: targetDir,
+		noPackageJson: true,
+	});
+}
+
+function generatePlanPackageJson(projectName: string): string {
+	const v = `~${getRefraktVersion()}`;
+	const pkg = {
+		name: projectName,
+		private: true,
+		version: '0.0.1',
+		type: 'module',
+		scripts: {
+			plan: 'refrakt plan',
+			'plan:next': 'refrakt plan next',
+			'plan:status': 'refrakt plan status',
+			'plan:validate': 'refrakt plan validate',
+		},
+		devDependencies: {
+			'@refrakt-md/cli': v,
+			'@refrakt-md/plan': v,
+		},
+	};
+	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+function generatePlanGitignore(): string {
+	return `node_modules/
+.DS_Store
+*.log
+.plan-cache.json
+.plan-history-cache.json
 `;
 }
