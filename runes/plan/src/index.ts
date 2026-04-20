@@ -25,7 +25,7 @@ export const plan: RunePackage = {
 			fixture: `{% spec id="SPEC-001" status="accepted" version="1.0" %}
 # Authentication System
 
-> Token-based authentication for the API layer.
+Token-based authentication for the API layer.
 
 Users authenticate via JWT tokens issued by the auth endpoint.
 Tokens expire after 24 hours and can be refreshed.
