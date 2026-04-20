@@ -126,6 +126,10 @@ my-plan/
 
 Dependency versions are derived from `create-refrakt`'s own `package.json` at runtime (same pattern used for site scaffolds today — see `packages/create-refrakt/src/scaffold.ts`).
 
+### No top-level README
+
+The scaffold does not create a `README.md` at the project root. `refrakt plan init` already writes `plan/INSTRUCTIONS.md` (human-facing workflow guide) and `plan/AGENTS.md` (agent-facing instructions) inside the plan directory that owns all the real content. A second doc file at the repo root would duplicate that and read awkwardly next to a `plan/` folder that isn't the repo itself. Users who want a root README can add one manually — the scaffold shouldn't impose one.
+
 ### Scripts rationale
 
 The `npm run plan*` aliases give users a discoverable verb surface without requiring them to remember `npx refrakt plan ...`. Agents invoking the CLI directly can still use `npx refrakt plan ...`.
@@ -192,7 +196,6 @@ Documentation: https://refrakt.md/docs/plan
 ## Open Questions
 
 - Should `create-refrakt --type plan` install `@refrakt-md/plan` as a `devDependency` or a regular `dependency`? The CLI package is always a devDependency; plan is similar in that it's only used at author time. Leaning devDependency for consistency.
-- Should the scaffold include a `README.md` template specific to planning projects? (The site scaffold does include one.) Probably yes — a short README pointing at `plan/INSTRUCTIONS.md` and the upstream docs.
 - Should the scaffold initialize a git repo? The existing site scaffolds do not. Match existing behavior — leave git init to the user.
 - Does SPEC-039 ("Plan Package Onboarding & Conventions Review") overlap with this? It covers init-time UX inside the plan package itself (tool-agnostic instruction files, folder naming, import). This spec is purely about the `create-refrakt` entry point delegating to that init. The two are complementary: improvements to `plan init` flow through automatically to `create-refrakt --type plan`.
 
