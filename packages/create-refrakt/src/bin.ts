@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldTheme } from './scaffold.js';
+import { scaffold, scaffoldPlan, scaffoldTheme } from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -17,9 +17,12 @@ const TARGET_LABELS: Record<ScaffoldTarget, string> = {
 	html: 'Static HTML',
 };
 
+type ProjectType = 'site' | 'theme' | 'plan';
+
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
-let type: 'site' | 'theme' = 'site';
+let type: ProjectType = 'site';
+let typeExplicit = false;
 let target: ScaffoldTarget | undefined;
 let targetExplicit = false;
 let scope: string | undefined;
@@ -34,11 +37,12 @@ for (let i = 0; i < args.length; i++) {
 		}
 	} else if (arg === '--type') {
 		const val = args[++i];
-		if (val !== 'site' && val !== 'theme') {
-			console.error('Error: --type must be "site" or "theme"');
+		if (val !== 'site' && val !== 'theme' && val !== 'plan') {
+			console.error('Error: --type must be "site", "theme", or "plan"');
 			process.exit(1);
 		}
 		type = val;
+		typeExplicit = true;
 	} else if (arg === '--target') {
 		const val = args[++i] as ScaffoldTarget;
 		if (!VALID_TARGETS.includes(val)) {
@@ -72,12 +76,22 @@ for (let i = 0; i < args.length; i++) {
 	}
 }
 
+// Infer type from other flags so users who pass --target/--theme don't get
+// prompted for a project type they've already implicitly chosen.
+if (!typeExplicit && (targetExplicit || theme !== '@refrakt-md/lumina')) {
+	typeExplicit = true;
+}
+if (!typeExplicit && scope) {
+	type = 'theme';
+	typeExplicit = true;
+}
+
 function printUsage(): void {
 	console.log(`
 Usage: create-refrakt [name] [options]
 
 Options:
-  --type <site|theme>          What to create (default: site)
+  --type <site|theme|plan>     What to create (default: site)
   --target <target>            Adapter target (sites only, default: sveltekit)
                                Targets: ${VALID_TARGETS.join(', ')}
   --theme, -t <package>        Theme package to use (sites only, default: @refrakt-md/lumina)
@@ -94,11 +108,38 @@ Examples:
   npx create-refrakt my-site --theme @refrakt-md/aurora
   npx create-refrakt my-theme --type theme
   npx create-refrakt my-theme --type theme --scope @my-org
+  npx create-refrakt my-plan --type plan
 `);
 }
 
+function validateFlagCombos(): void {
+	if (type === 'plan') {
+		const rejected: string[] = [];
+		if (targetExplicit) rejected.push('--target');
+		if (theme !== '@refrakt-md/lumina') rejected.push('--theme');
+		if (scope) rejected.push('--scope');
+		if (rejected.length > 0) {
+			console.error(
+				`Error: ${rejected.join(', ')} cannot be used with --type plan\n`
+			);
+			process.exit(1);
+		}
+	}
+	if (type === 'theme' && targetExplicit) {
+		console.error('Error: --target cannot be used with --type theme\n');
+		process.exit(1);
+	}
+	if (type !== 'theme' && scope) {
+		console.error('Error: --scope can only be used with --type theme\n');
+		process.exit(1);
+	}
+}
+
 async function run(): Promise<void> {
-	const needsPrompt = !projectName || (type === 'site' && !targetExplicit);
+	validateFlagCombos();
+
+	const needsPrompt =
+		!projectName || !typeExplicit || (type === 'site' && !targetExplicit);
 
 	if (needsPrompt && process.stdout.isTTY) {
 		const { intro, text, select, isCancel, cancel, outro } = await import('@clack/prompts');
@@ -123,6 +164,25 @@ async function run(): Promise<void> {
 			projectName = name;
 		}
 
+		if (!typeExplicit) {
+			const selected = await select({
+				message: 'What do you want to create?',
+				options: [
+					{ value: 'site', label: 'Site', hint: 'full refrakt.md site with a framework adapter' },
+					{ value: 'theme', label: 'Theme', hint: 'publishable theme package' },
+					{ value: 'plan', label: 'Planning only', hint: 'specs, work items, decisions, milestones' },
+				],
+			});
+
+			if (isCancel(selected)) {
+				cancel('Cancelled.');
+				process.exit(0);
+			}
+
+			type = selected as ProjectType;
+			typeExplicit = true;
+		}
+
 		if (type === 'site' && !targetExplicit) {
 			const selected = await select({
 				message: 'Which framework?',
@@ -140,15 +200,21 @@ async function run(): Promise<void> {
 			target = selected as ScaffoldTarget;
 		}
 
-		outro(`Creating ${type === 'theme' ? 'theme' : `${TARGET_LABELS[target!]} site`}: ${projectName}`);
+		const label =
+			type === 'theme'
+				? 'theme'
+				: type === 'plan'
+					? 'planning project'
+					: `${TARGET_LABELS[target!]} site`;
+		outro(`Creating ${label}: ${projectName}`);
 	} else if (!projectName) {
 		console.error('Error: Missing project name\n');
 		printUsage();
 		process.exit(1);
 	}
 
-	// Default target if still unset (non-interactive or theme)
-	if (!target) {
+	// Default target for sites when still unset (non-interactive).
+	if (type === 'site' && !target) {
 		target = 'sveltekit';
 	}
 
@@ -157,6 +223,8 @@ async function run(): Promise<void> {
 	try {
 		if (type === 'theme') {
 			scaffoldTheme({ themeName: projectName!, targetDir, scope });
+		} else if (type === 'plan') {
+			scaffoldPlan({ projectName: projectName!, targetDir });
 		} else {
 			await scaffold({ projectName: projectName!, targetDir, theme, target });
 		}
@@ -184,6 +252,25 @@ Then use it in a site:
 
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
+	} else if (type === 'plan') {
+		console.log(`
+Done! Your refrakt.md planning project is ready.
+
+Next steps:
+
+  cd ${projectName}
+  npm install
+  npx refrakt plan next
+
+Useful commands:
+
+  npm run plan:status     Overview of all plan items
+  npm run plan:next       Find the next ready work item
+  npx refrakt plan create work --title "..."
+  npx refrakt plan update <id> --status in-progress
+
+Documentation: https://refrakt.md/docs/plan
+`);
 	} else {
 		const devCommands: Record<ScaffoldTarget, string> = {
 			sveltekit: `  cd ${projectName}\n  npm install\n  npm run dev`,
@@ -199,7 +286,7 @@ Done! Your refrakt.md site is ready (target: ${target}).
 
 Next steps:
 
-${devCommands[target]}
+${devCommands[target!]}
 `);
 	}
 }
