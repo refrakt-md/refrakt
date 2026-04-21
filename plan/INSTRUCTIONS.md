@@ -43,6 +43,32 @@ refrakt plan create work --title "My Task"
 refrakt plan create work --id WORK-080 --title "My Task"
 ```
 
+## Filename Convention
+
+Plan files use `{ID}-{slug}.md` for every auto-ID type (work, bug, spec, decision). Milestones keep their semver names (`v1.0.0.md`).
+
+| Type | Filename example |
+|------|------------------|
+| Spec | `plan/specs/SPEC-023-auth-system.md` |
+| Work | `plan/work/WORK-051-plan-validate-command.md` |
+| Decision | `plan/decisions/ADR-005-review-schema-model.md` |
+| Bug | `plan/work/BUG-001-crash-on-load.md` |
+| Milestone | `plan/milestones/v1.0.0.md` |
+
+The ID prefix makes files grep-friendly (`rg WORK-051`) and gives unambiguous references in commits, PRs, and chat. `refrakt plan create` emits this format automatically.
+
+**Migrating an existing project.** If a project still has legacy slug-only filenames, run:
+
+```bash
+# Preview renames (default)
+refrakt plan migrate filenames
+
+# Apply them; use --git to preserve history via `git mv`
+refrakt plan migrate filenames --apply --git
+```
+
+`refrakt plan validate` warns (not errors) when a file's name doesn't match its frontmatter ID, pointing at the migrate command as the fix.
+
 ## Valid Statuses
 
 ### spec

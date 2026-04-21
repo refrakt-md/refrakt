@@ -47,9 +47,9 @@ describe('plan init — scaffolding', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
 	});
 
@@ -110,9 +110,9 @@ describe('plan init — scaffolding', () => {
 		expect(() => safeInit({ dir: planDir, projectRoot: TMP })).not.toThrow();
 
 		// Example files should be skipped — user's own content is preserved untouched.
-		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
-		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(false);
-		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(false);
 		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(false);
 		expect(readFileSync(join(planDir, 'work', 'my-task.md'), 'utf-8')).toContain('# Mine');
 	});
@@ -126,9 +126,9 @@ describe('plan init — scaffolding', () => {
 
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		expect(existsSync(join(planDir, 'work', 'example-work-item.md'))).toBe(false);
-		expect(existsSync(join(planDir, 'specs', 'example-spec.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'decisions', 'example-decision.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
 	});
 
@@ -659,7 +659,7 @@ describe('plan init — example file content', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const work = readFileSync(join(planDir, 'work', 'example-work-item.md'), 'utf-8');
+		const work = readFileSync(join(planDir, 'work', 'WORK-001-example-work-item.md'), 'utf-8');
 		expect(work).toContain('{% work');
 		expect(work).toContain('id="WORK-001"');
 		expect(work).toContain('{% /work %}');
@@ -669,7 +669,7 @@ describe('plan init — example file content', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const spec = readFileSync(join(planDir, 'specs', 'example-spec.md'), 'utf-8');
+		const spec = readFileSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'), 'utf-8');
 		expect(spec).toContain('{% spec');
 		expect(spec).toContain('{% /spec %}');
 	});
@@ -678,7 +678,7 @@ describe('plan init — example file content', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const decision = readFileSync(join(planDir, 'decisions', 'example-decision.md'), 'utf-8');
+		const decision = readFileSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'), 'utf-8');
 		expect(decision).toContain('{% decision');
 		expect(decision).toContain('{% /decision %}');
 	});

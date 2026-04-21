@@ -510,22 +510,20 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; subDir: string; slug: string; attrs?: Record<string, string> }[] = [
-		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec', subDir: 'specs', slug: 'example-spec.md' },
-		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', subDir: 'work', slug: 'example-work-item.md', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
-		{ type: 'decision', id: 'ADR-001', title: 'Example Decision', subDir: 'decisions', slug: 'example-decision.md' },
-		{ type: 'milestone', id: 'v0.1.0', title: 'First Release', subDir: 'milestones', slug: 'first-release.md' },
+	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; attrs?: Record<string, string> }[] = [
+		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec' },
+		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
+		{ type: 'decision', id: 'ADR-001', title: 'Example Decision' },
+		{ type: 'milestone', id: 'v0.1.0', title: 'First Release' },
 	];
 
 	for (const ex of examples) {
-		const filePath = join(dir, ex.subDir, ex.slug);
-		if (existsSync(filePath)) continue;
 		// Existing projects commonly already use the IDs we seed (SPEC-001, WORK-001,
 		// ADR-001, v0.1.0). Skip the example silently instead of crashing — the
 		// user has their own content, they don't need placeholders.
 		if (idExists(dir, ex.id)) continue;
-		runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
-		created.push(filePath);
+		const result = runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
+		created.push(result.file);
 	}
 
 	for (const def of STATUS_PAGES) {
