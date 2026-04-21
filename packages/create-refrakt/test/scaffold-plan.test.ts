@@ -37,7 +37,6 @@ describe('scaffoldPlan', () => {
 		expect(existsSync(join(targetDir, 'plan', 'work'))).toBe(true);
 		expect(existsSync(join(targetDir, 'plan', 'decisions'))).toBe(true);
 		expect(existsSync(join(targetDir, 'plan', 'milestones'))).toBe(true);
-		expect(existsSync(join(targetDir, 'plan', 'index.md'))).toBe(true);
 		expect(existsSync(join(targetDir, 'plan', 'INSTRUCTIONS.md'))).toBe(true);
 
 		// Example items from runInit

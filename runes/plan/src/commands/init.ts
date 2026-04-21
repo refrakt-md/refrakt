@@ -3,7 +3,6 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { idExists } from './next-id.js';
-import { STATUS_PAGES, renderStatusPage, renderTypeIndexPage } from './templates.js';
 import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
 
 export const EXIT_SUCCESS = 0;
@@ -524,48 +523,6 @@ export function runInit(options: InitOptions): InitResult {
 		if (idExists(dir, ex.id)) continue;
 		const result = runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
 		created.push(result.file);
-	}
-
-	for (const def of STATUS_PAGES) {
-		const slug = `${def.status}.md`;
-		const filePath = join(dir, def.typeDir, slug);
-		if (!existsSync(filePath)) {
-			writeFileSync(filePath, renderStatusPage(def));
-			created.push(filePath);
-		}
-	}
-
-	const typeDirs = [...new Set(STATUS_PAGES.map(p => p.typeDir))];
-	for (const typeDir of typeDirs) {
-		const filePath = join(dir, typeDir, 'index.md');
-		if (!existsSync(filePath)) {
-			writeFileSync(filePath, renderTypeIndexPage(typeDir));
-			created.push(filePath);
-		}
-	}
-
-	const indexFile = join(dir, 'index.md');
-	if (!existsSync(indexFile)) {
-		writeFileSync(indexFile, `# Project Plan
-
-This directory contains project planning content.
-
-## Structure
-
-- [Specifications](specs/) — What to build
-- [Work Items](work/) — How to build it
-- [Decisions](decisions/) — Why it's built this way
-- [Milestones](milestones/) — Named release targets
-
-## Quick Start
-
-\`\`\`bash
-refrakt plan next          # Find next work item
-refrakt plan status        # Project overview
-refrakt plan create work --id WORK-002 --title "My task"
-\`\`\`
-`);
-		created.push(indexFile);
 	}
 
 	const instructionsFile = join(dir, 'INSTRUCTIONS.md');
