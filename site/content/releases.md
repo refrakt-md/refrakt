@@ -6,6 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v1.0.0
+
+- Adopt `{ID}-{slug}.md` as the canonical filename for plan items. `refrakt plan create` now emits e.g. `WORK-058-my-task.md` instead of `my-task.md` for every auto-ID type (work, bug, spec, decision). Milestones still use their semver names (`v1.0.0.md`).
+- **New command.** `refrakt plan migrate filenames` renames legacy slug-only files in existing projects:
+- ```bash # Preview renames (default) refrakt plan migrate filenames
+- # Apply them; --git uses `git mv` to preserve history refrakt plan migrate filenames --apply --git ```
+- The command skips milestones, skips files that already match, reports missing frontmatter IDs, and detects collisions before touching the filesystem.
+- **Validator warning.** `refrakt plan validate` now emits a `filename-missing-id` / `filename-id-mismatch` warning when a file's name doesn't match its frontmatter `id`. The message points at the migrate command as the one-line fix. Adoption is voluntary — the check is a warning, not an error, so existing projects keep building until they choose to migrate.
+- `refrakt plan init` no longer scaffolds the root `index.md`, type-level `index.md` pages (`work/index.md`, `specs/index.md`, etc.), or status filter pages (`work/ready.md`, `work/in-progress.md`, `specs/accepted.md`, etc.). The plan site already synthesises these dynamically during `refrakt plan serve` / `refrakt plan build`: `generateStatusFilterPages` emits one page per actually-existing status (strictly better than the hardcoded subset init used to seed), and the dashboard falls back to an auto-generated overview when `index.md` is absent. The scaffolded placeholders added noise without adding value.
+- If you want a custom dashboard, drop your own `plan/index.md` — the site will use it instead of the auto-generated one.
+
 ## v0.9.9 - April 19, 2026
 
 - Expand `refrakt plan init` to fully wire the host project for agent use:
@@ -66,7 +77,7 @@ description: Release history for refrakt.md
 - Improve SEO and AI discoverability
 - - Fix annotate rune: margin notes invisible, inline notes not inline
 
-## v0.9.4 - April 9, 2026
+## v0.9.4
 
 - Fix Vite dev server warnings: deprecated svelte:component, dynamic imports, void elements
 - Fix gallery responsive behavior: reset margin, columns, and gap at breakpoints
@@ -81,7 +92,7 @@ description: Release history for refrakt.md
 - Align mark.svg dark mode color with Lumina palette
 - Add SVG favicon using existing mark.svg logo
 
-## v0.9.3 - April 9, 2026
+## v0.9.3
 
 - Bug fixes, rune restyling, and new features since v0.9.2.
 - Add `createRefraktLoader` and `virtual:refrakt/content` to eliminate content loading boilerplate
