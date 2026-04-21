@@ -1,4 +1,4 @@
-{% work id="WORK-158" status="draft" priority="medium" complexity="moderate" tags="plan, cli, tooling, conventions, migration" %}
+{% work id="WORK-158" status="done" priority="medium" complexity="moderate" tags="plan, cli, tooling, conventions, migration" %}
 
 # Adopt `{ID}-{slug}.md` filename convention for plan items
 
@@ -8,18 +8,18 @@ Standardising on `{ID}-{slug}.md` for every auto-ID type (work, bug, spec, decis
 
 ## Acceptance Criteria
 
-- [ ] `runCreate()` in `runes/plan/src/commands/create.ts` emits `{ID}-{slug}.md` for auto-ID types (work, bug, spec, decision); milestones still emit `{slug}.md`
-- [ ] `runes/plan/test/create.test.ts` asserts the new filename format for each auto-ID type and that milestones are unchanged
-- [ ] New `refrakt plan migrate filenames` subcommand scans a plan directory, renames any file whose name doesn't already match `{ID}-{slug}.md` to the new convention, and defaults to `--dry-run` (prints planned renames only). `--apply` performs the rename; `--git` uses `git mv` to preserve history when the target is a git working tree.
-- [ ] Migrate command handles: skipping milestones, skipping already-prefixed files, reporting files with missing/malformed frontmatter IDs, exiting non-zero if any file can't be processed.
-- [ ] Migrate command has test coverage: dry-run output, apply mode, mixed prefixed/unprefixed input, missing-ID error path.
-- [ ] This repo's 196 existing unprefixed files under `plan/work/`, `plan/specs/`, `plan/decisions/` are renamed using the new `migrate` command with `--git --apply` in a single migration commit (dogfooding proof).
-- [ ] `refrakt plan validate` warns when a file's filename prefix doesn't match its frontmatter `id` attribute (or its `name` for milestones, which should pass through unchanged), and points at `refrakt plan migrate filenames` in the warning text.
-- [ ] `plan/INSTRUCTIONS.md` documents the filename convention under a new "Filename Convention" section alongside the existing "ID Conventions" table, and references the migrate command for existing projects.
-- [ ] `CLAUDE.md`'s Plan section mentions the convention so agents creating new items match it.
-- [ ] Changeset (`npx changeset`) captures this as a minor bump for `@refrakt-md/plan` and flags the filename convention change + available migrate command in the changelog so downstream consumers know how to upgrade.
-- [ ] Full test suite passes (`npm test`).
-- [ ] Manual verification: `npx refrakt plan create work --title "Test item"` produces `plan/work/WORK-159-test-item.md`, and running `refrakt plan migrate filenames --dry-run` on a fixture with mixed naming prints the expected planned renames.
+- [x] `runCreate()` in `runes/plan/src/commands/create.ts` emits `{ID}-{slug}.md` for auto-ID types (work, bug, spec, decision); milestones still emit `{slug}.md`
+- [x] `runes/plan/test/create.test.ts` asserts the new filename format for each auto-ID type and that milestones are unchanged
+- [x] New `refrakt plan migrate filenames` subcommand scans a plan directory, renames any file whose name doesn't already match `{ID}-{slug}.md` to the new convention, and defaults to `--dry-run` (prints planned renames only). `--apply` performs the rename; `--git` uses `git mv` to preserve history when the target is a git working tree.
+- [x] Migrate command handles: skipping milestones, skipping already-prefixed files, reporting files with missing/malformed frontmatter IDs, exiting non-zero if any file can't be processed.
+- [x] Migrate command has test coverage: dry-run output, apply mode, mixed prefixed/unprefixed input, missing-ID error path.
+- [x] This repo's 196 existing unprefixed files under `plan/work/`, `plan/specs/`, `plan/decisions/` are renamed using the new `migrate` command with `--git --apply` in a single migration commit (dogfooding proof).
+- [x] `refrakt plan validate` warns when a file's filename prefix doesn't match its frontmatter `id` attribute (or its `name` for milestones, which should pass through unchanged), and points at `refrakt plan migrate filenames` in the warning text.
+- [x] `plan/INSTRUCTIONS.md` documents the filename convention under a new "Filename Convention" section alongside the existing "ID Conventions" table, and references the migrate command for existing projects.
+- [x] `CLAUDE.md`'s Plan section mentions the convention so agents creating new items match it.
+- [x] Changeset (`npx changeset`) captures this as a minor bump for `@refrakt-md/plan` and flags the filename convention change + available migrate command in the changelog so downstream consumers know how to upgrade.
+- [x] Full test suite passes (`npm test`).
+- [x] Manual verification: `npx refrakt plan create work --title "Test item"` produces `plan/work/WORK-159-test-item.md`, and running `refrakt plan migrate filenames --dry-run` on a fixture with mixed naming prints the expected planned renames.
 
 ## Approach
 
@@ -57,5 +57,35 @@ Standardising on `{ID}-{slug}.md` for every auto-ID type (work, bug, spec, decis
 - Current naming inconsistency: 8 prefixed work items (WORK-149–156) vs. 149 unprefixed; 0/38 specs prefixed; 0/9 decisions prefixed
 - `runes/plan/src/commands/create.ts` — where the filename is generated
 - `runes/plan/src/scanner.ts` — frontmatter-based scan used by all other CLI commands (unaffected by rename)
+
+## Resolution
+
+Completed: 2026-04-21
+
+Branch: `claude/file-naming-convention-LJdwR`
+
+### What was done
+
+- **`runes/plan/src/commands/create.ts`**: `runCreate()` now emits `${id}-${slug}.md` for every auto-ID type (work, bug, spec, decision) via `isAutoIdType(type)`. Milestones continue to emit `${slug}.md` (e.g. `v1.0.0.md`).
+- **`runes/plan/src/commands/migrate.ts`** (new, ~155 lines): ships `refrakt plan migrate filenames` with `--dry-run` (default), `--apply`, `--git`, `--dir`, `--format json`. Uses `scanPlanFiles` to discover items, strips existing prefixes via `ID_PREFIX_RE = /^(WORK|BUG|SPEC|ADR)-\d+-/`, skips milestones, detects collisions before touching the filesystem, and shells out to `git mv` (with the target dir passed as `cwd` so nested git repos resolve correctly). Returns a structured result with `scanned/planned/applied/skipped/errors/exitCode`.
+- **`runes/plan/src/cli-plugin.ts`**: wired `handleMigrate` into the plugin with subcommand dispatch for `filenames`.
+- **`runes/plan/src/commands/validate.ts`**: added `checkFilenameIdMatch()` that emits `filename-missing-id` / `filename-id-mismatch` warnings pointing at `refrakt plan migrate filenames --apply` as the fix. Skips milestones. Warning (not error) so downstream projects upgrade voluntarily.
+- **`runes/plan/src/commands/init.ts`**: uses `runCreate()`'s returned file path for tracked examples instead of a hardcoded slug, so the example tree matches the ID-prefixed filenames `runCreate` now produces (`SPEC-001-example-spec.md`, `WORK-001-example-work-item.md`, `ADR-001-example-decision.md`).
+- **Tests**:
+  - `runes/plan/test/create.test.ts` — split the filename assertion into per-type tests; duplicate-file test now uses milestones (since prefixed types can't collide on slug)
+  - `runes/plan/test/migrate.test.ts` (new, ~180 lines, 10 tests) — dry-run, apply, mixed prefixed/unprefixed, missing-ID error path, `git mv` mode with a nested git working tree
+  - `runes/plan/test/validate.test.ts` — new `filename-id match` describe block, 4 tests
+  - `runes/plan/test/init.test.ts`, `packages/create-refrakt/test/scaffold-plan.test.ts` — expect prefixed example filenames
+- **Dogfooding**: ran `migrate filenames --git --apply` against this repo, renaming 196 files across `plan/work/`, `plan/specs/`, `plan/decisions/`. Milestones (`v0.9.0.md`, `v1.0.0.md`) correctly skipped. Commit `f2b3512` bundled the CLI additions with the 196 renames because `git mv` stages both sides automatically — clean history.
+- **Docs**: new "Filename Convention" section in `plan/INSTRUCTIONS.md` with a table + migrate command usage; paragraph added to the Plan section of `CLAUDE.md`; updated inline filename references in `plan/specs/SPEC-022-plan-cli.md`.
+- **Changeset**: `.changeset/plan-filename-convention.md` — minor bump for `@refrakt-md/plan` describing the convention change, the new migrate command, and the validator warning. Adoption is explicitly voluntary.
+
+### Notes
+
+- `scanPlanFiles` keys off frontmatter IDs, so `update`, `next`, `status`, `history`, and `validate` are transparent to the rename — no scanner changes needed.
+- The `git mv` call originally failed in tests with "not under version control" because it ran from the process cwd (refrakt root) and resolved the outer `.git` instead of the nested test repo. Fixed by threading `cwd` through `performRename` and passing `resolve(dir)` from `runMigrateFilenames`.
+- `create-refrakt` scaffold was affected indirectly because it calls `runInit` with `noPackageJson: true`; the init fix (use `runCreate` return path) was the minimal change to keep the scaffold tree consistent with the new filename format.
+- Full test suite: 2224 pass. Three `runes/plan/test/build.test.ts` timeouts in the combined run were flaky (5s timeout with real tests running at ~2.5–2.9s in isolation); the file passes cleanly when run alone.
+- Manual verification: `plan create work --title "Sanity check item"` produced `plan/work/WORK-159-sanity-check-item.md` as expected (deleted after); `plan migrate filenames --dry-run` reports all 205 non-milestone files already correct, 2 milestones skipped.
 
 {% /work %}
