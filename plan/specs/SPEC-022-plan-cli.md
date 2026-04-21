@@ -619,7 +619,7 @@ refrakt plan update WORK-026 --status done --format json
 ```json
 {
   "id": "WORK-026",
-  "file": "plan/work/build-video-rune.md",
+  "file": "plan/work/WORK-018-build-video-rune.md",
   "changes": [
     { "field": "status", "from": "ready", "to": "in-progress" }
   ]
@@ -670,7 +670,7 @@ refrakt plan next [options]
 Next item:
 
   WORK-020  Build gallery rune          high    moderate
-  plan/work/build-gallery-rune.md
+  plan/work/WORK-004-build-gallery-rune.md
 
   Specs:    SPEC-008
   Depends:  (none)
@@ -697,7 +697,7 @@ refrakt plan next --format json
       "status": "ready",
       "priority": "high",
       "complexity": "moderate",
-      "file": "plan/work/build-gallery-rune.md",
+      "file": "plan/work/WORK-004-build-gallery-rune.md",
       "milestone": "v0.5.0",
       "specs": ["SPEC-008"],
       "dependencies": [],
@@ -765,7 +765,7 @@ refrakt plan next --format json
 refrakt plan update WORK-020 --status in-progress --assignee claude
 
 # 3. Agent reads the file for full context
-cat plan/work/build-gallery-rune.md
+cat plan/work/WORK-004-build-gallery-rune.md
 
 # 4. Agent implements the changes (reads referenced specs, writes code)
 

@@ -3,7 +3,6 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { idExists } from './next-id.js';
-import { STATUS_PAGES, renderStatusPage, renderTypeIndexPage } from './templates.js';
 import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
 
 export const EXIT_SUCCESS = 0;
@@ -510,64 +509,20 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; subDir: string; slug: string; attrs?: Record<string, string> }[] = [
-		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec', subDir: 'specs', slug: 'example-spec.md' },
-		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', subDir: 'work', slug: 'example-work-item.md', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
-		{ type: 'decision', id: 'ADR-001', title: 'Example Decision', subDir: 'decisions', slug: 'example-decision.md' },
-		{ type: 'milestone', id: 'v0.1.0', title: 'First Release', subDir: 'milestones', slug: 'first-release.md' },
+	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; attrs?: Record<string, string> }[] = [
+		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec' },
+		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
+		{ type: 'decision', id: 'ADR-001', title: 'Example Decision' },
+		{ type: 'milestone', id: 'v0.1.0', title: 'First Release' },
 	];
 
 	for (const ex of examples) {
-		const filePath = join(dir, ex.subDir, ex.slug);
-		if (existsSync(filePath)) continue;
 		// Existing projects commonly already use the IDs we seed (SPEC-001, WORK-001,
 		// ADR-001, v0.1.0). Skip the example silently instead of crashing — the
 		// user has their own content, they don't need placeholders.
 		if (idExists(dir, ex.id)) continue;
-		runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
-		created.push(filePath);
-	}
-
-	for (const def of STATUS_PAGES) {
-		const slug = `${def.status}.md`;
-		const filePath = join(dir, def.typeDir, slug);
-		if (!existsSync(filePath)) {
-			writeFileSync(filePath, renderStatusPage(def));
-			created.push(filePath);
-		}
-	}
-
-	const typeDirs = [...new Set(STATUS_PAGES.map(p => p.typeDir))];
-	for (const typeDir of typeDirs) {
-		const filePath = join(dir, typeDir, 'index.md');
-		if (!existsSync(filePath)) {
-			writeFileSync(filePath, renderTypeIndexPage(typeDir));
-			created.push(filePath);
-		}
-	}
-
-	const indexFile = join(dir, 'index.md');
-	if (!existsSync(indexFile)) {
-		writeFileSync(indexFile, `# Project Plan
-
-This directory contains project planning content.
-
-## Structure
-
-- [Specifications](specs/) — What to build
-- [Work Items](work/) — How to build it
-- [Decisions](decisions/) — Why it's built this way
-- [Milestones](milestones/) — Named release targets
-
-## Quick Start
-
-\`\`\`bash
-refrakt plan next          # Find next work item
-refrakt plan status        # Project overview
-refrakt plan create work --id WORK-002 --title "My task"
-\`\`\`
-`);
-		created.push(indexFile);
+		const result = runCreate({ dir, type: ex.type, id: ex.id, title: ex.title, attrs: ex.attrs });
+		created.push(result.file);
 	}
 
 	const instructionsFile = join(dir, 'INSTRUCTIONS.md');

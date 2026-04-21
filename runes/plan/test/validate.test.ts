@@ -349,6 +349,40 @@ describe('validate — required sections', () => {
 	});
 });
 
+describe('validate — filename-id match', () => {
+	it('warns when a work file lacks the ID prefix', () => {
+		writeMd('work/no-prefix.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'filename-missing-id');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+		expect(issues[0].message).toContain('refrakt plan migrate filenames --apply');
+	});
+
+	it('warns when a file has a mismatched ID prefix', () => {
+		writeMd('work/WORK-999-foo.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'filename-id-mismatch');
+		expect(issues).toHaveLength(1);
+		expect(issues[0].severity).toBe('warning');
+		expect(issues[0].message).toContain('WORK-999');
+	});
+
+	it('passes when filename matches the ID', () => {
+		writeMd('work/WORK-001-ok.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'filename-missing-id' || i.type === 'filename-id-mismatch');
+		expect(issues).toHaveLength(0);
+	});
+
+	it('does not flag milestones (they use semver names)', () => {
+		writeMd('v1.0.0.md', '{% milestone name="v1.0.0" status="active" %}\n# v1\n{% /milestone %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'filename-missing-id' || i.type === 'filename-id-mismatch');
+		expect(issues).toHaveLength(0);
+	});
+});
+
 describe('validate — strict mode', () => {
 	it('promotes warnings to errors in strict mode', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n{% /work %}');
