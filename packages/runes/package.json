@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/runes",
   "description": "Semantic Markdoc runes for refrakt.md",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,8 +29,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.9.9",
-    "@refrakt-md/transform": "0.9.9",
+    "@refrakt-md/types": "1.0.0",
+    "@refrakt-md/transform": "1.0.0",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0",
     "fast-xml-parser": "4.5.1",

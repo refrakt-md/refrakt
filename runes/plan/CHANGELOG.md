@@ -1,5 +1,39 @@
 # @refrakt-md/plan
 
+## 1.0.0
+
+### Minor Changes
+
+- 9fe5a54: Adopt `{ID}-{slug}.md` as the canonical filename for plan items. `refrakt plan create` now emits e.g. `WORK-058-my-task.md` instead of `my-task.md` for every auto-ID type (work, bug, spec, decision). Milestones still use their semver names (`v1.0.0.md`).
+
+  **New command.** `refrakt plan migrate filenames` renames legacy slug-only files in existing projects:
+
+  ```bash
+  # Preview renames (default)
+  refrakt plan migrate filenames
+
+  # Apply them; --git uses `git mv` to preserve history
+  refrakt plan migrate filenames --apply --git
+  ```
+
+  The command skips milestones, skips files that already match, reports missing frontmatter IDs, and detects collisions before touching the filesystem.
+
+  **Validator warning.** `refrakt plan validate` now emits a `filename-missing-id` / `filename-id-mismatch` warning when a file's name doesn't match its frontmatter `id`. The message points at the migrate command as the one-line fix. Adoption is voluntary — the check is a warning, not an error, so existing projects keep building until they choose to migrate.
+
+### Patch Changes
+
+- 61e57a7: `refrakt plan init` no longer scaffolds the root `index.md`, type-level `index.md` pages (`work/index.md`, `specs/index.md`, etc.), or status filter pages (`work/ready.md`, `work/in-progress.md`, `specs/accepted.md`, etc.). The plan site already synthesises these dynamically during `refrakt plan serve` / `refrakt plan build`: `generateStatusFilterPages` emits one page per actually-existing status (strictly better than the hardcoded subset init used to seed), and the dashboard falls back to an auto-generated overview when `index.md` is absent. The scaffolded placeholders added noise without adding value.
+
+  If you want a custom dashboard, drop your own `plan/index.md` — the site will use it instead of the auto-generated one.
+
+  - @refrakt-md/behaviors@1.0.0
+  - @refrakt-md/content@1.0.0
+  - @refrakt-md/highlight@1.0.0
+  - @refrakt-md/html@1.0.0
+  - @refrakt-md/runes@1.0.0
+  - @refrakt-md/transform@1.0.0
+  - @refrakt-md/types@1.0.0
+
 ## 0.9.9
 
 ### Patch Changes

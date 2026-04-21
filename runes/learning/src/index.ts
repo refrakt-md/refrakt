@@ -6,7 +6,7 @@ import { config } from './config.js';
 export const learning: RunePackage = {
   name: 'learning',
   displayName: 'Learning',
-  version: '0.9.9',
+  version: '1.0.0',
   runes: {
     'howto': {
       transform: howto,

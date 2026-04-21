@@ -1,5 +1,7 @@
 # @refrakt-md/behaviors
 
+## 1.0.0
+
 ## 0.9.9
 
 ## 0.9.8
