@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
 
@@ -403,6 +403,43 @@ function checkOrphanedWorkItems(entities: PlanEntity[]): ValidationIssue[] {
 	return issues;
 }
 
+/** Matches the canonical `{PREFIX}-{digits}-` filename prefix. */
+const FILENAME_ID_PREFIX_RE = /^(WORK|BUG|SPEC|ADR)-\d+-/;
+
+function checkFilenameIdMatch(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		if (e.type === 'milestone') continue;
+		const id = e.attributes.id;
+		if (!id) continue;
+
+		const fileName = basename(e.file);
+		const expectedPrefix = `${id}-`;
+		if (fileName.startsWith(expectedPrefix)) continue;
+
+		const source = e.attributes.id || e.file;
+		if (FILENAME_ID_PREFIX_RE.test(fileName)) {
+			const actualPrefix = fileName.match(FILENAME_ID_PREFIX_RE)![0].replace(/-$/, '');
+			issues.push({
+				severity: 'warning',
+				type: 'filename-id-mismatch',
+				source,
+				file: e.file,
+				message: `${id} filename starts with ${actualPrefix} — run \`refrakt plan migrate filenames --apply\` to fix`,
+			});
+		} else {
+			issues.push({
+				severity: 'warning',
+				type: 'filename-missing-id',
+				source,
+				file: e.file,
+				message: `${id} filename lacks ID prefix — run \`refrakt plan migrate filenames --apply\` to fix`,
+			});
+		}
+	}
+	return issues;
+}
+
 function checkCompletedMilestones(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	const milestones = entities.filter(e => e.type === 'milestone' && e.attributes.status === 'complete');
@@ -449,6 +486,7 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkOrphanedWorkItems(entities),
 		...checkCompletedMilestones(entities),
 		...checkResolutions(entities, dir),
+		...checkFilenameIdMatch(entities),
 	];
 
 	let errors = 0;

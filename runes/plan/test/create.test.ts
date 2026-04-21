@@ -65,10 +65,16 @@ describe('plan create', () => {
 		expect(existsSync(join(dir, 'work'))).toBe(true);
 	});
 
-	it('throws on duplicate file', () => {
-		runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Same Title' });
-		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-002', title: 'Same Title' }))
+	it('throws on duplicate file for non-prefixed types (milestone)', () => {
+		runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'Same Title' });
+		expect(() => runCreate({ dir: TMP, type: 'milestone', id: 'v2.0', title: 'Same Title' }))
 			.toThrow('already exists');
+	});
+
+	it('allows same-title entries across different IDs for prefixed types', () => {
+		runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Same Title' });
+		const second = runCreate({ dir: TMP, type: 'work', id: 'WORK-002', title: 'Same Title' });
+		expect(second.file).toMatch(/WORK-002-same-title\.md$/);
 	});
 
 	it('throws on missing id for milestone', () => {
@@ -96,9 +102,30 @@ describe('plan create', () => {
 		expect(content).toContain('tags="cli"');
 	});
 
-	it('generates slug-based filenames', () => {
+	it('generates {ID}-{slug}.md filenames for work items', () => {
 		const result = runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'My Cool Feature' });
-		expect(result.file).toContain('my-cool-feature.md');
+		expect(result.file).toMatch(/WORK-001-my-cool-feature\.md$/);
+	});
+
+	it('prefixes bug filenames with BUG ID', () => {
+		const result = runCreate({ dir: TMP, type: 'bug', id: 'BUG-042', title: 'Crash on Load' });
+		expect(result.file).toMatch(/BUG-042-crash-on-load\.md$/);
+	});
+
+	it('prefixes spec filenames with SPEC ID', () => {
+		const result = runCreate({ dir: TMP, type: 'spec', id: 'SPEC-007', title: 'Auth System' });
+		expect(result.file).toMatch(/SPEC-007-auth-system\.md$/);
+	});
+
+	it('prefixes decision filenames with ADR ID', () => {
+		const result = runCreate({ dir: TMP, type: 'decision', id: 'ADR-003', title: 'Use SQLite' });
+		expect(result.file).toMatch(/ADR-003-use-sqlite\.md$/);
+	});
+
+	it('does not prefix milestone filenames (they use slug only)', () => {
+		const result = runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'First Release' });
+		expect(result.file).toMatch(/first-release\.md$/);
+		expect(result.file).not.toMatch(/v1\.0-first-release/);
 	});
 
 	it('throws on duplicate ID', () => {

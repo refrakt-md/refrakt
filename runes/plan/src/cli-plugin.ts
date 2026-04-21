@@ -8,6 +8,7 @@ import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './comma
 import { runServe } from './commands/serve.js';
 import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
+import { runMigrateFilenames, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 
 interface CliPluginCommand {
@@ -618,6 +619,88 @@ function handleHistory(args: string[]): void {
 	runHistory({ dir, id, limit, since, type, author, status, all, formatJson });
 }
 
+function handleMigrate(args: string[]): void {
+	const sub = args[0];
+	if (sub !== 'filenames') {
+		console.error('Usage: refrakt plan migrate filenames [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
+		console.error('Subcommands: filenames');
+		process.exit(MIGRATE_INVALID_ARGS);
+	}
+
+	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let apply = false;
+	let dryRun = false;
+	let useGit = false;
+	let formatJson = false;
+
+	for (let i = 1; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--dir' && args[i + 1]) {
+			dir = args[++i];
+		} else if (arg === '--apply') {
+			apply = true;
+		} else if (arg === '--dry-run') {
+			dryRun = true;
+		} else if (arg === '--git') {
+			useGit = true;
+		} else if (arg === '--format' && args[i + 1] === 'json') {
+			formatJson = true;
+			i++;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"`);
+			process.exit(MIGRATE_INVALID_ARGS);
+		}
+	}
+
+	if (apply && dryRun) {
+		console.error('Error: --apply and --dry-run are mutually exclusive');
+		process.exit(MIGRATE_INVALID_ARGS);
+	}
+
+	const result = runMigrateFilenames({ dir, apply, useGit });
+
+	if (formatJson) {
+		console.log(JSON.stringify(result, null, 2));
+		process.exit(result.exitCode);
+		return;
+	}
+
+	console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
+	console.log(`  Milestones skipped: ${result.skipped.milestones}`);
+	console.log(`  Already correct:    ${result.skipped.alreadyCorrect}`);
+	console.log();
+
+	if (result.planned.length === 0 && result.errors.length === 0) {
+		console.log('Nothing to rename.');
+		process.exit(result.exitCode);
+		return;
+	}
+
+	if (result.planned.length > 0) {
+		const verb = apply ? 'Renamed' : 'Would rename';
+		console.log(`${verb} ${result.planned.length} files:`);
+		for (const r of result.planned) {
+			console.log(`  ${r.from}  →  ${r.to}`);
+		}
+		console.log();
+	}
+
+	if (result.errors.length > 0) {
+		console.log(`${result.errors.length} errors:`);
+		for (const e of result.errors) {
+			console.log(`  ✗ ${e.file}: ${e.reason}`);
+		}
+		console.log();
+	}
+
+	if (!apply && result.planned.length > 0) {
+		const gitHint = useGit ? '' : ' (add --git to preserve history via `git mv`)';
+		console.log(`Dry run. Re-run with --apply to perform the rename${gitHint}.`);
+	}
+
+	process.exit(result.exitCode);
+}
+
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
@@ -631,6 +714,7 @@ const plugin: CliPlugin = {
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
 		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
 		{ name: 'history', description: 'View entity and project history', handler: handleHistory },
+		{ name: 'migrate', description: 'Migrate plan file conventions', handler: handleMigrate },
 	],
 };
 
