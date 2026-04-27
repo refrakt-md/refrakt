@@ -199,7 +199,7 @@ without interrupting the main flow of the text.
 **Send Message**
 {% /form %}`,
 
-	budget: `{% budget title="Tokyo Trip" currency="JPY" travelers=2 duration="5 days" %}
+	budget: `{% budget title="Tokyo Trip" currency="JPY" duration="5 days" %}
 ## Accommodation
 
 - Hotel in Shinjuku: ¥15000

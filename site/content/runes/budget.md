@@ -1,6 +1,6 @@
 ---
 title: Budget
-description: Travel and project budgets with categories, line items, and totals
+description: Structured budgets with categories, line items, and totals
 ---
 
 # Budget
@@ -13,7 +13,7 @@ Use headings for categories and list items with amounts for line items.
 
 {% preview source=true %}
 
-{% budget currency="JPY" travelers=2 duration="5 days" %}
+{% budget currency="JPY" duration="5 days" %}
 Spring 2026
 
 # Tokyo Trip
@@ -45,7 +45,7 @@ Use `variant="summary"` to show only category totals without individual line ite
 
 {% preview source=true %}
 
-{% budget currency="JPY" travelers=2 duration="5 days" variant="summary" %}
+{% budget currency="JPY" duration="5 days" variant="summary" %}
 Spring 2026
 
 # Tokyo Trip
@@ -102,9 +102,7 @@ Budget supports an optional eyebrow, headline, and blurb above the categories. P
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `currency` | `string` | `USD` | Currency code |
-| `travelers` | `number` | `1` | Number of travelers for per-person calculations |
-| `duration` | `string` | — | Trip or project duration |
-| `showPerPerson` | `boolean` | `true` | Display per-person cost breakdowns |
+| `duration` | `string` | — | Budget duration (e.g. trip length, project span, fiscal period) |
 | `showPerDay` | `boolean` | `true` | Display per-day cost breakdowns |
 | `variant` | `string` | `detailed` | Display variant: `detailed` or `summary` |
 

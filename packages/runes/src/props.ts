@@ -79,9 +79,7 @@ export interface BudgetCategoryProps<R = unknown> extends BaseComponentProps<R> 
 export interface BudgetProps<R = unknown> extends BaseComponentProps<R> {
 	title?: string;
 	currency?: string;
-	travelers?: string;
 	duration?: string;
-	showPerPerson?: string;
 	showPerDay?: string;
 	variant?: string;
 	category?: string;

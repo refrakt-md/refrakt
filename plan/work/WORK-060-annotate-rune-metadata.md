@@ -12,7 +12,7 @@ Once the identity transform supports metadata dimensions (WORK-059), annotate al
 
 ## Acceptance Criteria
 
-- [x] Core rune configs annotated: Budget (currency, travelers, duration)
+- [x] Core rune configs annotated: Budget (currency, duration)
 - [x] Docs package configs annotated: Api (method, path, auth), Symbol (kind, lang, since, deprecated)
 - [x] Learning package configs annotated: HowTo (estimatedTime, difficulty), Recipe (prepTime, cookTime, servings, difficulty)
 - [x] Storytelling package configs annotated: Character (role, status), Realm (realmType, scale), Lore (category), Faction (factionType, alignment, size), Plot (plotType, structure), Bond (bondType, status)
