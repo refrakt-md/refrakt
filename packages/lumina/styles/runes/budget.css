@@ -127,18 +127,15 @@
 	color: var(--rf-color-text);
 	font-variant-numeric: tabular-nums;
 }
-.rf-budget__per-person,
 .rf-budget__per-day {
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
 }
-.rf-budget__per-person-label,
 .rf-budget__per-day-label {
 	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
 }
-.rf-budget__per-person-amount,
 .rf-budget__per-day-amount {
 	font-size: 0.9375rem;
 	font-weight: 500;

@@ -217,22 +217,19 @@ export const coreConfig: ThemeConfig = {
 			editHints: { headline: 'inline', meta: 'none', 'meta-item': 'none' },
 			modifiers: {
 				currency: { source: 'meta', default: 'USD' },
-				travelers: { source: 'meta', default: '1' },
 				duration: { source: 'meta' },
-				showPerPerson: { source: 'meta', default: 'true' },
 				showPerDay: { source: 'meta', default: 'true' },
 				variant: { source: 'meta', default: 'detailed' },
 			},
 			structure: {
 				header: {
 					tag: 'div', before: true,
-					conditionAny: ['currency', 'travelers', 'duration'],
+					conditionAny: ['currency', 'duration'],
 					children: [
 						{
 							tag: 'div', ref: 'meta',
 							children: [
 								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency', metaType: 'category', metaRank: 'primary' },
-								{ tag: 'span', ref: 'meta-item', metaText: 'travelers', label: 'Travelers:', condition: 'travelers', metaType: 'quantity', metaRank: 'primary' },
 								{ tag: 'span', ref: 'meta-item', metaText: 'duration', label: 'Duration:', condition: 'duration', metaType: 'temporal', metaRank: 'secondary' },
 							],
 						},
@@ -245,10 +242,7 @@ export const coreConfig: ThemeConfig = {
 
 				// Read from data-* attributes (set by engine after consuming meta tags)
 				const currency = node.attributes['data-currency'] || 'USD';
-				const travelersStr = node.attributes['data-travelers'] || '1';
-				const travelers = parseInt(travelersStr) || 1;
 				const duration = node.attributes['data-duration'] || '';
-				const showPerPerson = node.attributes['data-show-per-person'] !== 'false';
 				const showPerDay = node.attributes['data-show-per-day'] !== 'false';
 
 				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
@@ -279,16 +273,6 @@ export const coreConfig: ThemeConfig = {
 						makeTag('span', { class: `${block}__total-amount` }, [formatBudgetAmount(grandTotal, symbol)]),
 					]),
 				];
-
-				if (travelers > 1 && showPerPerson) {
-					const perPerson = grandTotal / travelers;
-					footerChildren.push(
-						makeTag('div', { class: `${block}__per-person` }, [
-							makeTag('span', { class: `${block}__per-person-label` }, ['Per person']),
-							makeTag('span', { class: `${block}__per-person-amount` }, [formatBudgetAmount(perPerson, symbol)]),
-						])
-					);
-				}
 
 				if (duration && showPerDay) {
 					const days = parseBudgetDays(duration);

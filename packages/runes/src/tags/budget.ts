@@ -215,9 +215,7 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 export const budget = createContentModelSchema({
 	attributes: {
 		currency: { type: String, required: false, description: 'Currency symbol or code (e.g. USD, EUR)' },
-		travelers: { type: Number, required: false, description: 'Number of travelers for per-person calculations' },
-		duration: { type: String, required: false, description: 'Trip duration for per-day calculations' },
-		showPerPerson: { type: Boolean, required: false, description: 'Show per-person cost breakdown' },
+		duration: { type: String, required: false, description: 'Budget duration for per-day calculations (e.g. "5 days", "1 month")' },
 		showPerDay: { type: Boolean, required: false, description: 'Show per-day cost breakdown' },
 		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: detailed line items or summary' },
 	},
@@ -251,9 +249,7 @@ export const budget = createContentModelSchema({
 		const sectionProps = pageSectionProperties(header);
 
 		const currencyMeta = new Tag('meta', { content: attrs.currency ?? 'USD' });
-		const travelersMeta = new Tag('meta', { content: String(attrs.travelers ?? 1) });
 		const durationMeta = new Tag('meta', { content: attrs.duration ?? '' });
-		const showPerPersonMeta = new Tag('meta', { content: String(attrs.showPerPerson ?? true) });
 		const showPerDayMeta = new Tag('meta', { content: String(attrs.showPerDay ?? true) });
 		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'detailed' });
 
@@ -264,8 +260,8 @@ export const budget = createContentModelSchema({
 		const preambleTag = hasPreamble ? new Tag('header', {}, header.toArray()) : undefined;
 
 		const children: any[] = [
-			currencyMeta, travelersMeta, durationMeta,
-			showPerPersonMeta, showPerDayMeta, variantMeta,
+			currencyMeta, durationMeta,
+			showPerDayMeta, variantMeta,
 			...(preambleTag ? [preambleTag] : []),
 			categoriesDiv,
 		];
@@ -275,9 +271,7 @@ export const budget = createContentModelSchema({
 			property: 'contentSection',
 			properties: {
 				currency: currencyMeta,
-				travelers: travelersMeta,
 				duration: durationMeta,
-				showPerPerson: showPerPersonMeta,
 				showPerDay: showPerDayMeta,
 				variant: variantMeta,
 				category: categories,

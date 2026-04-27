@@ -117,10 +117,8 @@ Example for a German site:
   locale: 'de',
   strings: {
     // Zone 1 — structure labels
-    'core.budget.travelers': 'Reisende:',
     'core.budget.duration': 'Dauer:',
     'core.budget.total': 'Gesamt',
-    'core.budget.perPerson': 'Pro Person',
     'core.budget.perDay': 'Pro Tag',
 
     // Zone 3 — layout chrome
@@ -183,7 +181,7 @@ const labelText = entry.label;
 const labelText = resolveString(config, entry.labelKey ?? '', entry.label ?? '');
 ```
 
-The `labelKey` is derived automatically from the rune config context: `{packageScope}.{block}.{ref}` — e.g., `core.budget.travelers` for the Budget rune's travelers label. Config authors don't need to set `labelKey` manually; the engine derives it from the structure path.
+The `labelKey` is derived automatically from the rune config context: `{packageScope}.{block}.{ref}` — e.g., `core.budget.duration` for the Budget rune's duration label. Config authors don't need to set `labelKey` manually; the engine derives it from the structure path.
 
 **Zone 2 — postTransform text**: `postTransform` hooks receive the config via a new `config` field on the context object, enabling `resolveString()` calls in programmatic code.
 

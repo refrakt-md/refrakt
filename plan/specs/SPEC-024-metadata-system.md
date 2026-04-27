@@ -692,7 +692,6 @@ The table below maps every rune field that appears as a metadata badge (emitted 
 | Package | Rune | Field | metaType | metaRank | sentimentMap |
 |---------|------|-------|----------|----------|--------------|
 | **core** | Budget | currency | `category` | `primary` | — |
-| **core** | Budget | travelers | `quantity` | `primary` | — |
 | **core** | Budget | duration | `temporal` | `secondary` | — |
 | **docs** | Api | method | `category` | `primary` | `GET: positive, POST: neutral, PUT: neutral, PATCH: caution, DELETE: negative` |
 | **docs** | Api | path | `id` | `primary` | — |

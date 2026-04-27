@@ -302,22 +302,10 @@
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-currency"
 				},
-				"travelers": {
-					"source": "meta",
-					"default": "1",
-					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-travelers"
-				},
 				"duration": {
 					"source": "meta",
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-duration"
-				},
-				"showPerPerson": {
-					"source": "meta",
-					"default": "true",
-					"classPattern": ".rf-budget--{value}",
-					"dataAttribute": "data-show-per-person"
 				},
 				"showPerDay": {
 					"source": "meta",
@@ -339,7 +327,6 @@
 					"source": "structure",
 					"conditionAny": [
 						"currency",
-						"travelers",
 						"duration"
 					]
 				},
