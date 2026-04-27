@@ -115,6 +115,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
+	gap: 1rem;
 }
 .rf-budget__total-label {
 	font-size: 1rem;
@@ -125,21 +126,25 @@
 	font-size: 1.25rem;
 	font-weight: 700;
 	color: var(--rf-color-text);
+	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
 .rf-budget__per-day {
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
+	gap: 1rem;
 }
 .rf-budget__per-day-label {
 	font-size: 0.8125rem;
 	color: var(--rf-color-muted);
+	min-width: 0;
 }
 .rf-budget__per-day-amount {
 	font-size: 0.9375rem;
 	font-weight: 500;
 	color: var(--rf-color-muted);
+	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
 
