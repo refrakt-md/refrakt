@@ -1,5 +1,11 @@
 # @refrakt-md/language-server
 
+## 0.10.0
+
+### Patch Changes
+
+- Version bump for coordinated release
+
 ## 0.9.9
 
 ### Patch Changes

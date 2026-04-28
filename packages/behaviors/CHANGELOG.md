@@ -1,5 +1,11 @@
 # @refrakt-md/behaviors
 
+## 0.10.0
+
+### Patch Changes
+
+- Version bump for coordinated release
+
 ## 0.9.9
 
 ## 0.9.8

@@ -6,6 +6,14 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.10.0
+
+- Version bump for coordinated release
+- Adopt `{ID}-{slug}.md` as the canonical filename for plan items. `refrakt plan create` now emits e.g. `WORK-058-my-task.md` instead of `my-task.md` for every auto-ID type (work, bug, spec, decision). Milestones still use their semver names (`v1.0.0.md`).
+- New command: `refrakt plan migrate filenames` renames legacy slug-only files in existing projects. Use `--apply --git` to apply with `git mv`.
+- `refrakt plan validate` now emits `filename-missing-id` / `filename-id-mismatch` warnings when a file's name doesn't match its frontmatter `id`.
+- `refrakt plan init` no longer scaffolds the root `index.md`, type-level `index.md` pages, or status filter pages. The plan site synthesises these dynamically.
+
 ## v0.9.9 - April 19, 2026
 
 - Expand `refrakt plan init` to fully wire the host project for agent use:
