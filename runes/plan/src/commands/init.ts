@@ -134,6 +134,20 @@ refrakt plan create milestone --id v1.0 --title "Description"
 - **Bug**: A defect report. Use instead of a work item when something is broken rather than missing.
 - **Decision**: An architectural choice that needs to be recorded for future reference.
 
+### Runes in Prose
+
+Plan content is text-first, but a curated set of runes may be used inside entity bodies (specs, work items, bugs, decisions, milestones) when they genuinely clarify the prose.
+
+- **\`sandbox\`** — embed a small runnable component or layout preview
+- **\`diagram\`** — render a structured diagram (architecture, sequence, state)
+- **\`chart\`** — render a chart from inline data
+- **\`datatable\`** — render a structured data table with search/filter/sort
+- **\`budget\`** — structured monetary budget block (costs, spend allocations)
+
+Run \`refrakt reference <name>\` to get the exact Markdoc syntax for any rune (e.g. \`refrakt reference sandbox\`).
+
+Prefer prose over runes by default — reach for a rune only when it is meaningfully clearer than plain text or a Markdown table.
+
 ### JSON Output
 
 All commands support \`--format json\` for machine-readable output. This is useful for scripting, CI pipelines, and programmatic integration.
@@ -203,6 +217,20 @@ refrakt plan create milestone --id v1.0 --title "Description"
 - **Work item**: A discrete, implementable piece of work with acceptance criteria.
 - **Bug**: A defect report. Use instead of a work item when something is broken rather than missing.
 - **Decision**: An architectural choice that needs to be recorded for future reference.
+
+## Runes in Prose
+
+Plan content is text-first, but a curated set of runes may be used inside entity bodies (specs, work items, bugs, decisions, milestones) when they genuinely clarify the prose.
+
+- **\`sandbox\`** — embed a small runnable component or layout preview
+- **\`diagram\`** — render a structured diagram (architecture, sequence, state)
+- **\`chart\`** — render a chart from inline data
+- **\`datatable\`** — render a structured data table with search/filter/sort
+- **\`budget\`** — structured monetary budget block (costs, spend allocations)
+
+Run \`refrakt reference <name>\` to get the exact Markdoc syntax for any rune (e.g. \`refrakt reference sandbox\`).
+
+Prefer prose over runes by default — reach for a rune only when it is meaningfully clearer than plain text or a Markdown table.
 
 ## JSON Output
 
