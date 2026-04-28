@@ -72,7 +72,8 @@ This directory contains project planning content using the \`@refrakt-md/plan\` 
 \`\`\`
 plan/
   specs/      — Specifications (what to build)
-  work/       — Work items and bugs (how to build it)
+  work/       — Work items (how to build it)
+  bugs/       — Bug reports (what is broken)
   decisions/  — Architecture decision records (why it's built this way)
   milestones/ — Named release targets with scope and goals
 \`\`\`
@@ -411,7 +412,7 @@ export function runInit(options: InitOptions): InitResult {
 	const created: string[] = [];
 
 	// --- 1. plan/ scaffolding ------------------------------------------------
-	const dirs = ['work', 'specs', 'decisions', 'milestones'];
+	const dirs = ['work', 'bugs', 'specs', 'decisions', 'milestones'];
 	for (const sub of dirs) {
 		const path = join(dir, sub);
 		if (!existsSync(path)) {

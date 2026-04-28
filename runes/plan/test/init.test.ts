@@ -38,6 +38,7 @@ describe('plan init — scaffolding', () => {
 		safeInit({ dir: planDir, projectRoot: TMP });
 
 		expect(existsSync(join(planDir, 'work'))).toBe(true);
+		expect(existsSync(join(planDir, 'bugs'))).toBe(true);
 		expect(existsSync(join(planDir, 'specs'))).toBe(true);
 		expect(existsSync(join(planDir, 'decisions'))).toBe(true);
 		expect(existsSync(join(planDir, 'milestones'))).toBe(true);

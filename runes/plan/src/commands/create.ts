@@ -11,7 +11,7 @@ export const EXIT_DUPLICATE_ID = 3;
 /** Directory name for each type */
 const TYPE_DIRS: Record<PlanItemType, string> = {
 	work: 'work',
-	bug: 'work', // bugs live alongside work items
+	bug: 'bugs',
 	decision: 'decisions',
 	spec: 'specs',
 	milestone: 'milestones',
