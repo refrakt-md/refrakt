@@ -3,6 +3,7 @@ dist/
 *.js.map
 *.d.ts.map
 plans/
+plan-site/
 .svelte-kit/
 .preview-cache/
 .community-tags-cache/
