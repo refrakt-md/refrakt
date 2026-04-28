@@ -139,29 +139,26 @@ describe('plan init — scaffolding', () => {
 	});
 });
 
-describe('plan init — AGENTS.md as canonical', () => {
-	it('creates AGENTS.md with full workflow content', () => {
+describe('plan init — agent file plan summary', () => {
+	it('creates CLAUDE.md with plan summary as fallback when no agent files exist', () => {
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
 
-		const agents = readFileSync(join(TMP, 'AGENTS.md'), 'utf-8');
-		expect(agents).toContain('# Agent Instructions');
-		expect(agents).toContain('## Plan — Workflow Guide');
-		expect(agents).toContain('refrakt plan next');
-		expect(agents).toContain('Before you start');
-		expect(result.agentFilesUpdated).toContain('AGENTS.md');
+		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
+		expect(claude).toContain('## Plan');
+		expect(claude).toContain('plan/INSTRUCTIONS.md');
+		expect(claude).toContain('refrakt plan next');
+		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
 	});
 
-	it('creates CLAUDE.md as a pointer to AGENTS.md (fallback)', () => {
+	it('does not create AGENTS.md when no agent files exist', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
-		expect(claude).toContain('See [AGENTS.md]');
-		expect(claude).not.toContain('## Plan — Workflow Guide');
+		expect(existsSync(join(TMP, 'AGENTS.md'))).toBe(false);
 	});
 
-	it('appends pointer to existing CLAUDE.md without clobbering', () => {
+	it('appends plan summary to existing CLAUDE.md without clobbering', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# My Project\n\nExisting content.\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
@@ -169,22 +166,28 @@ describe('plan init — AGENTS.md as canonical', () => {
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
 		expect(claude).toContain('# My Project');
 		expect(claude).toContain('Existing content.');
-		expect(claude).toContain('See [AGENTS.md]');
+		expect(claude).toContain('## Plan');
+		expect(claude).toContain('plan/INSTRUCTIONS.md');
 		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
 	});
 
-	it('does not duplicate pointer when AGENTS.md marker already present', () => {
+	it('does not duplicate summary when plan marker already present', () => {
+		writeFileSync(join(TMP, 'CLAUDE.md'), '# Proj\n\nSee plan/INSTRUCTIONS.md for details.\n');
+		const planDir = join(TMP, 'plan');
+		const result = safeInit({ dir: planDir, projectRoot: TMP });
+
+		expect(result.agentFilesUpdated).not.toContain('CLAUDE.md');
+	});
+
+	it('recognises the legacy AGENTS.md marker to avoid duplication', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# Proj\n\nSee [AGENTS.md](./AGENTS.md) for ...\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
 
 		expect(result.agentFilesUpdated).not.toContain('CLAUDE.md');
-		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
-		const matches = claude.match(/See \[AGENTS\.md\]/g);
-		expect(matches).toHaveLength(1);
 	});
 
-	it('recognises the legacy pointer marker to avoid duplication', () => {
+	it('recognises the refrakt plan next marker to avoid duplication', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# Proj\n\nrefrakt plan next — old pointer\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
@@ -192,7 +195,7 @@ describe('plan init — AGENTS.md as canonical', () => {
 		expect(result.agentFilesUpdated).not.toContain('CLAUDE.md');
 	});
 
-	it('appends Plan section to existing AGENTS.md without overwriting', () => {
+	it('appends plan summary to existing AGENTS.md without overwriting', () => {
 		writeFileSync(join(TMP, 'AGENTS.md'), '# My existing agent file\n\nSome rules here.\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
@@ -200,37 +203,38 @@ describe('plan init — AGENTS.md as canonical', () => {
 		const agents = readFileSync(join(TMP, 'AGENTS.md'), 'utf-8');
 		expect(agents).toContain('# My existing agent file');
 		expect(agents).toContain('Some rules here.');
-		expect(agents).toContain('## Plan — Workflow Guide');
+		expect(agents).toContain('## Plan');
+		expect(agents).toContain('plan/INSTRUCTIONS.md');
 		expect(result.agentFilesUpdated).toContain('AGENTS.md');
 	});
 
-	it('does not re-append Plan section if AGENTS.md already has it', () => {
+	it('is idempotent — does not re-append on second run', () => {
+		writeFileSync(join(TMP, 'CLAUDE.md'), '# Claude\n');
 		safeInit({ dir: join(TMP, 'plan'), projectRoot: TMP });
 		const r2 = safeInit({ dir: join(TMP, 'plan'), projectRoot: TMP });
-		expect(r2.agentFilesUpdated).not.toContain('AGENTS.md');
+		expect(r2.agentFilesUpdated).toHaveLength(0);
 	});
 
-	it('--agent claude creates AGENTS.md + CLAUDE.md pointer only', () => {
+	it('--agent claude updates only CLAUDE.md', () => {
 		writeFileSync(join(TMP, '.cursorrules'), '# Cursor rules\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP, agent: 'claude' });
 
-		expect(result.agentFilesUpdated).toContain('AGENTS.md');
 		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
+		expect(result.agentFilesUpdated).not.toContain('.cursorrules');
 		const cursor = readFileSync(join(TMP, '.cursorrules'), 'utf-8');
-		expect(cursor).not.toContain('AGENTS.md');
+		expect(cursor).not.toContain('Plan');
 	});
 
-	it('--agent cursor creates AGENTS.md + .cursorrules pointer', () => {
+	it('--agent cursor updates only .cursorrules', () => {
 		writeFileSync(join(TMP, '.cursorrules'), '# Cursor rules\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP, agent: 'cursor' });
 
-		expect(result.agentFilesUpdated).toContain('AGENTS.md');
 		expect(result.agentFilesUpdated).toContain('.cursorrules');
 		expect(existsSync(join(TMP, 'CLAUDE.md'))).toBe(false);
 		const cursor = readFileSync(join(TMP, '.cursorrules'), 'utf-8');
-		expect(cursor).toContain('See [AGENTS.md]');
+		expect(cursor).toContain('plan/INSTRUCTIONS.md');
 	});
 
 	it('--agent copilot creates .github/ directory if needed', () => {
@@ -239,27 +243,25 @@ describe('plan init — AGENTS.md as canonical', () => {
 
 		expect(result.agentFilesUpdated).toContain('.github/copilot-instructions.md');
 		const content = readFileSync(join(TMP, '.github', 'copilot-instructions.md'), 'utf-8');
-		expect(content).toContain('See [AGENTS.md]');
+		expect(content).toContain('plan/INSTRUCTIONS.md');
 	});
 
-	it('--agent none skips all agent file updates including AGENTS.md', () => {
+	it('--agent none skips all agent file updates', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# Existing\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP, agent: 'none' });
 
 		expect(result.agentFilesUpdated).toHaveLength(0);
-		expect(existsSync(join(TMP, 'AGENTS.md'))).toBe(false);
 		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
-		expect(claude).not.toContain('AGENTS.md');
+		expect(claude).not.toContain('Plan');
 	});
 
-	it('auto-detect appends to all existing agent files plus AGENTS.md', () => {
+	it('auto-detect appends to all existing agent files', () => {
 		writeFileSync(join(TMP, 'CLAUDE.md'), '# Claude\n');
 		writeFileSync(join(TMP, '.cursorrules'), '# Cursor\n');
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
 
-		expect(result.agentFilesUpdated).toContain('AGENTS.md');
 		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
 		expect(result.agentFilesUpdated).toContain('.cursorrules');
 	});

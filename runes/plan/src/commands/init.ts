@@ -11,8 +11,8 @@ export const EXIT_ALREADY_EXISTS = 1;
 export type AgentTarget = 'claude' | 'cursor' | 'copilot' | 'windsurf' | 'cline' | 'none';
 
 /**
- * Tool-specific agent instruction files. These get a short pointer to AGENTS.md.
- * AGENTS.md itself is the canonical file — full workflow content lives there.
+ * Tool-specific agent instruction files that get a brief plan summary
+ * appended, pointing to plan/INSTRUCTIONS.md for the full reference.
  */
 export const AGENT_FILES: Record<string, string> = {
 	claude: 'CLAUDE.md',
@@ -20,10 +20,8 @@ export const AGENT_FILES: Record<string, string> = {
 	copilot: '.github/copilot-instructions.md',
 	windsurf: '.windsurfrules',
 	cline: '.clinerules',
+	agents: 'AGENTS.md',
 };
-
-/** Absolute-ish path to the canonical agent instructions file. */
-export const AGENTS_FILE = 'AGENTS.md';
 
 export interface InitOptions {
 	dir: string;
@@ -52,108 +50,17 @@ export interface InitResult {
 	packageManager: PackageManager | null;
 }
 
-/** Single pointer line written into tool-specific instruction files. */
-const POINTER_LINE = `\n\nSee [AGENTS.md](./AGENTS.md) for agent instructions, including the plan workflow.\n`;
+/**
+ * Brief plan summary appended to agent instruction files.
+ * Points to plan/INSTRUCTIONS.md for the full reference.
+ */
+const PLAN_SUMMARY = `\n\n## Plan
 
-/** Marker used to detect that a tool-specific file already contains our pointer. */
-const POINTER_MARKER = 'See [AGENTS.md]';
-
-/** Legacy marker (pre-AGENTS.md migration) — still recognised to avoid duplicate appends. */
-const LEGACY_POINTER_MARKERS = ['plan/INSTRUCTIONS.md', 'refrakt plan next'];
-
-/** Full agent-facing workflow written to AGENTS.md. */
-const AGENTS_MD_CONTENT = `# Agent Instructions
-
-This file is the canonical reference for AI coding agents working in this repository. It is read by Claude Code, Cursor, Aider, Codex, Continue, Zed, and other tools that follow the AGENTS.md convention. Tool-specific files (\`CLAUDE.md\`, \`.cursorrules\`, etc.) should be short pointers back here.
-
-## Before you start
-
-Run \`npm run plan -- status\` (or \`./plan status\` if the wrapper script is present). If it fails with "command not found" or a module resolution error, run your package manager's install command (\`npm install\`, \`pnpm install\`, \`yarn\`, or \`bun install\`) and retry.
-
-**Never edit files under \`plan/\` by hand.** Always use \`refrakt plan\` commands — they keep IDs, statuses, and cross-references consistent. Manual edits will be silently overwritten by later commands.
-
-## Plan — Workflow Guide
-
-Project planning content lives in \`plan/\` as Markdoc files using the \`@refrakt-md/plan\` runes package.
-
-### Directory Layout
-
-\`\`\`
-plan/
-  specs/      — Specifications (what to build)
-  work/       — Work items and bugs (how to build it)
-  decisions/  — Architecture decision records (why it's built this way)
-  milestones/ — Named release targets with scope and goals
-\`\`\`
-
-### Workflow
-
-1. Find next work item: \`refrakt plan next\`
-2. Start working: \`refrakt plan update <id> --status in-progress\`
-3. Read referenced specs and decisions before implementing
-4. Check off criteria: \`refrakt plan update <id> --check "criterion text"\`
-5. Mark complete with resolution: \`refrakt plan update <id> --status done --resolve "summary of what was done"\`
-6. Check project status: \`refrakt plan status\`
-
-When marking a work item done, always provide a \`--resolve\` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
-
-### ID Conventions
-
-| Type | Prefix | Example |
-|------|--------|---------|
-| Spec | \`SPEC-\` | \`SPEC-023\` |
-| Work | \`WORK-\` | \`WORK-051\` |
-| Decision | \`ADR-\` | \`ADR-005\` |
-| Bug | \`BUG-\` | \`BUG-001\` |
-| Milestone | \`v\`+semver | \`v1.0.0\` |
-
-IDs are auto-assigned when you omit \`--id\` from \`refrakt plan create\`.
-
-### Valid Statuses
-
-- **spec**: \`draft\` → \`review\` → \`accepted\` → \`superseded\` | \`deprecated\`
-- **work**: \`draft\` → \`ready\` → \`in-progress\` → \`review\` → \`done\` (also: \`blocked\`)
-- **bug**: \`reported\` → \`confirmed\` → \`in-progress\` → \`fixed\` (also: \`wontfix\`, \`duplicate\`)
-- **decision**: \`proposed\` → \`accepted\` → \`superseded\` | \`deprecated\`
-- **milestone**: \`planning\` → \`active\` → \`complete\`
-
-### Creating Items
-
-\`\`\`bash
-refrakt plan create work --title "Description"
-refrakt plan create bug --title "Description"
-refrakt plan create spec --title "Description"
-refrakt plan create decision --title "Description"
-refrakt plan create milestone --id v1.0 --title "Description"
-\`\`\`
-
-### When to Create Each Type
-
-- **Spec**: A new feature idea, design proposal, or system description. Source of truth for *what* to build.
-- **Work item**: A discrete, implementable piece of work with acceptance criteria.
-- **Bug**: A defect report. Use instead of a work item when something is broken rather than missing.
-- **Decision**: An architectural choice that needs to be recorded for future reference.
-
-### Runes in Prose
-
-Plan content is text-first, but a curated set of runes may be used inside entity bodies (specs, work items, bugs, decisions, milestones) when they genuinely clarify the prose.
-
-- **\`sandbox\`** — embed a small runnable component or layout preview
-- **\`diagram\`** — render a structured diagram (architecture, sequence, state)
-- **\`chart\`** — render a chart from inline data
-- **\`datatable\`** — render a structured data table with search/filter/sort
-- **\`budget\`** — structured monetary budget block (costs, spend allocations)
-
-Run \`refrakt reference <name>\` to get the exact Markdoc syntax for any rune (e.g. \`refrakt reference sandbox\`).
-
-Prefer prose over runes by default — reach for a rune only when it is meaningfully clearer than plain text or a Markdown table.
-
-### JSON Output
-
-All commands support \`--format json\` for machine-readable output. This is useful for scripting, CI pipelines, and programmatic integration.
-
-See \`plan/INSTRUCTIONS.md\` for an in-tree copy of this workflow, kept alongside the content for convenience.
+Project planning lives in \`plan/\` as Markdoc files. Use \`refrakt plan\` commands to manage items — never edit plan files by hand. Run \`refrakt plan next\` to find work. See [plan/INSTRUCTIONS.md](plan/INSTRUCTIONS.md) for the full workflow reference.
 `;
+
+/** Markers used to detect that a file already contains our plan section. */
+const PLAN_MARKERS = ['plan/INSTRUCTIONS.md', 'refrakt plan next', 'See [AGENTS.md]'];
 
 /** Full tool-agnostic workflow guide written to plan/INSTRUCTIONS.md (kept for reference inside plan/). */
 const INSTRUCTIONS_CONTENT = `# Plan — Workflow Guide
@@ -331,54 +238,30 @@ function detectAgentFiles(projectRoot: string): string[] {
 	return found;
 }
 
-function hasPointerMarker(content: string): boolean {
-	if (content.includes(POINTER_MARKER)) return true;
-	return LEGACY_POINTER_MARKERS.some(m => content.includes(m));
+function hasPlanMarker(content: string): boolean {
+	return PLAN_MARKERS.some(m => content.includes(m));
 }
 
 /**
- * Append the plan pointer section to a tool-specific agent instruction file.
+ * Append the brief plan summary to an agent instruction file.
  * Creates the file (and parent directories) if it doesn't exist.
  * Returns true if the file was updated.
  */
-function appendPointer(projectRoot: string, relPath: string): boolean {
+function appendPlanSummary(projectRoot: string, relPath: string): boolean {
 	const filePath = join(projectRoot, relPath);
 	if (existsSync(filePath)) {
 		const content = readFileSync(filePath, 'utf-8');
-		if (hasPointerMarker(content)) {
+		if (hasPlanMarker(content)) {
 			return false;
 		}
-		appendFileSync(filePath, POINTER_LINE);
+		appendFileSync(filePath, PLAN_SUMMARY);
 		return true;
 	}
 	const dir = dirname(filePath);
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true });
 	}
-	writeFileSync(filePath, POINTER_LINE.trimStart());
-	return true;
-}
-
-/**
- * Write AGENTS.md if it doesn't exist; if it exists but lacks our plan
- * workflow section, append it. Returns true if the file was created or
- * modified.
- */
-function writeAgentsFile(projectRoot: string): boolean {
-	const filePath = join(projectRoot, AGENTS_FILE);
-	if (!existsSync(filePath)) {
-		writeFileSync(filePath, AGENTS_MD_CONTENT);
-		return true;
-	}
-	const content = readFileSync(filePath, 'utf-8');
-	if (content.includes('## Plan — Workflow Guide') || content.includes('refrakt plan next')) {
-		return false;
-	}
-	// Append plan section to existing AGENTS.md (preserve user content above).
-	const planSectionStart = AGENTS_MD_CONTENT.indexOf('## Plan — Workflow Guide');
-	const planSection = planSectionStart >= 0 ? AGENTS_MD_CONTENT.slice(planSectionStart) : AGENTS_MD_CONTENT;
-	const separator = content.endsWith('\n') ? '\n' : '\n\n';
-	appendFileSync(filePath, separator + planSection);
+	writeFileSync(filePath, PLAN_SUMMARY.trimStart());
 	return true;
 }
 
@@ -559,30 +442,26 @@ export function runInit(options: InitOptions): InitResult {
 		created.push(instructionsFile);
 	}
 
-	// --- 2. AGENTS.md + tool-specific pointers ------------------------------
+	// --- 2. Append plan summary to agent instruction files ------------------
 	const agentFilesUpdated: string[] = [];
 
 	if (agent !== 'none') {
-		if (writeAgentsFile(projectRoot)) {
-			agentFilesUpdated.push(AGENTS_FILE);
-		}
-
-		const writePointer = (relPath: string) => {
-			if (appendPointer(projectRoot, relPath)) {
+		const update = (relPath: string) => {
+			if (appendPlanSummary(projectRoot, relPath)) {
 				agentFilesUpdated.push(relPath);
 			}
 		};
 
 		if (agent) {
 			const relPath = AGENT_FILES[agent];
-			if (relPath) writePointer(relPath);
+			if (relPath) update(relPath);
 		} else {
 			const existing = detectAgentFiles(projectRoot);
 			if (existing.length > 0) {
-				for (const relPath of existing) writePointer(relPath);
+				for (const relPath of existing) update(relPath);
 			} else {
-				// Fallback: ensure Claude Code has a pointer since it's our primary audience.
-				writePointer(AGENT_FILES.claude);
+				// Fallback: ensure Claude Code has a summary since it's our primary audience.
+				update(AGENT_FILES.claude);
 			}
 		}
 	}
