@@ -108,15 +108,14 @@ describe('scaffoldPlan', () => {
 		expect(pkg.devDependencies['@refrakt-md/plan']).toBe(expected);
 	});
 
-	it('writes AGENTS.md at project root via runInit', () => {
+	it('does not create agent files when none exist', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
 		scaffoldPlan({ projectName: 'my-plan', targetDir });
 
-		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(true);
-		const agents = readFileSync(join(targetDir, 'AGENTS.md'), 'utf-8');
-		expect(agents).toContain('refrakt plan next');
+		expect(existsSync(join(targetDir, 'CLAUDE.md'))).toBe(false);
+		expect(existsSync(join(targetDir, 'AGENTS.md'))).toBe(false);
 	});
 
 	it('does not mutate its own package.json during plan/ init', () => {

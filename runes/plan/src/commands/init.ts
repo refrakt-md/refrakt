@@ -458,12 +458,7 @@ export function runInit(options: InitOptions): InitResult {
 			if (relPath) update(relPath);
 		} else {
 			const existing = detectAgentFiles(projectRoot);
-			if (existing.length > 0) {
-				for (const relPath of existing) update(relPath);
-			} else {
-				// Fallback: ensure Claude Code has a summary since it's our primary audience.
-				update(AGENT_FILES.claude);
-			}
+			for (const relPath of existing) update(relPath);
 		}
 	}
 
