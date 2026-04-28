@@ -141,22 +141,13 @@ describe('plan init — scaffolding', () => {
 });
 
 describe('plan init — agent file plan summary', () => {
-	it('creates CLAUDE.md with plan summary as fallback when no agent files exist', () => {
+	it('does not create any agent files when none exist', () => {
 		const planDir = join(TMP, 'plan');
 		const result = safeInit({ dir: planDir, projectRoot: TMP });
 
-		const claude = readFileSync(join(TMP, 'CLAUDE.md'), 'utf-8');
-		expect(claude).toContain('## Plan');
-		expect(claude).toContain('plan/INSTRUCTIONS.md');
-		expect(claude).toContain('refrakt plan next');
-		expect(result.agentFilesUpdated).toContain('CLAUDE.md');
-	});
-
-	it('does not create AGENTS.md when no agent files exist', () => {
-		const planDir = join(TMP, 'plan');
-		safeInit({ dir: planDir, projectRoot: TMP });
-
+		expect(existsSync(join(TMP, 'CLAUDE.md'))).toBe(false);
 		expect(existsSync(join(TMP, 'AGENTS.md'))).toBe(false);
+		expect(result.agentFilesUpdated).toEqual([]);
 	});
 
 	it('appends plan summary to existing CLAUDE.md without clobbering', () => {
