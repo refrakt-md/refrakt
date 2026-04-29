@@ -403,19 +403,26 @@ export const coreConfig: ThemeConfig = {
 					return true;
 				});
 
-				// Add slug text as visible fallback content (replaced by web component at runtime)
 				if (slug) {
+					// Slug-based item: add slug text as visible fallback (replaced by web component at runtime)
 					children.unshift(slug);
+					return {
+						...node,
+						attributes: { ...node.attributes, 'data-slug': slug },
+						children,
+					};
 				}
 
-				return {
-					...node,
-					attributes: {
-						...node.attributes,
-						...(slug ? { 'data-slug': slug } : {}),
-					},
-					children,
-				};
+				// Explicit link item: add nav-item__link class to <a> tags for styling
+				const styledChildren = children.map(child => {
+					if (isTag(child) && child.name === 'a') {
+						const existing = child.attributes.class || '';
+						return { ...child, attributes: { ...child.attributes, class: ['rf-nav-item__link', existing].filter(Boolean).join(' ') } };
+					}
+					return child;
+				});
+
+				return { ...node, children: styledChildren };
 			},
 		},
 		Diff: {

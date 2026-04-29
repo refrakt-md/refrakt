@@ -13,6 +13,16 @@
 .rf-nav-group {
 	margin-bottom: 1.75rem;
 }
+/* Top-level items — product switcher links above groups */
+.rf-nav__top-level {
+	padding-bottom: 1.25rem;
+	margin-bottom: 1.25rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+.rf-nav__top-level .rf-nav-item__link {
+	font-weight: 600;
+	font-size: 0.9rem;
+}
 .rf-nav-group h2,
 .rf-nav-group h3 {
 	font-size: 0.7rem;

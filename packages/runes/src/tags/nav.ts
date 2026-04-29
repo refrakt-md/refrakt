@@ -30,8 +30,18 @@ const navItem = createContentModelSchema({
       }) as RenderableTreeNode[],
     );
 
+    const links = children.tag('a');
     const slug = children.tag('span');
     const nestedItems = children.tag('ul');
+
+    // Explicit links (e.g., [Label](/path)) pass through as-is — no slug resolution needed
+    if (links.count() > 0) {
+      return createComponentRenderable({ rune: 'nav-item',
+        tag: 'li',
+        properties: {},
+        children: links.toArray(),
+      });
+    }
 
     const itemChildren = nestedItems.count() > 0
       ? [...slug.toArray(), ...nestedItems.toArray()]
@@ -50,7 +60,8 @@ const navItem = createContentModelSchema({
   },
 });
 
-function buildGroups(allNodes: RenderableTreeNode[]): Tag<'section'>[] {
+function buildGroups(allNodes: RenderableTreeNode[]): { topLevel: Tag[], groups: Tag<'section'>[] } {
+  const topLevel: Tag[] = [];
   const groups: Tag<'section'>[] = [];
   let currentHeading: Tag | null = null;
   let currentItems: Tag[] = [];
@@ -75,12 +86,17 @@ function buildGroups(allNodes: RenderableTreeNode[]): Tag<'section'>[] {
       currentHeading = node;
       currentItems = [];
     } else if (node instanceof Markdoc.Tag && node.name === 'ul') {
-      currentItems.push(node);
+      if (!currentHeading) {
+        // Items before the first heading become top-level items
+        topLevel.push(...node.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'));
+      } else {
+        currentItems.push(node);
+      }
     }
   }
 
   flush();
-  return groups;
+  return { topLevel, groups };
 }
 
 export const nav = createContentModelSchema({
@@ -127,19 +143,25 @@ export const nav = createContentModelSchema({
     const hasGroups = children.headings().count() > 0;
 
     if (hasGroups) {
-      const groups = buildGroups(children.toArray());
+      const { topLevel, groups } = buildGroups(children.toArray());
+
+      const topLevelContainer = topLevel.length > 0
+        ? new Markdoc.Tag('div', { 'data-name': 'top-level' }, [new Markdoc.Tag('ul', {}, topLevel)])
+        : null;
+
+      const allGroupItems = groups.flatMap(g =>
+        g.children.filter((c): c is Tag => Markdoc.Tag.isTag(c) && c.name === 'ul')
+          .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'))
+      );
 
       return createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         class: attrs.ordered ? 'ordered' : undefined,
         properties: {
           group: groups,
-          item: groups.flatMap(g =>
-            g.children.filter((c): c is Tag => Markdoc.Tag.isTag(c) && c.name === 'ul')
-              .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'))
-          ),
+          item: [...topLevel, ...allGroupItems],
         },
-        children: groups,
+        children: topLevelContainer ? [topLevelContainer, ...groups] : groups,
       });
     }
 

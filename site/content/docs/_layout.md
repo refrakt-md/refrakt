@@ -1,6 +1,9 @@
 {% layout %}
 {% region name="nav" %}
 {% nav %}
+- [Documentation](/docs/getting-started)
+- [Planning](/plan)
+
 ## Guide
 
 - getting-started

@@ -48,6 +48,43 @@ describe('nav tag', () => {
     expect(nav!.attributes.class).toBe('ordered');
   });
 
+  it('should support top-level items before groups', () => {
+    const result = parse(`{% nav %}
+- [Documentation](/docs)
+- [Planning](/plan)
+
+## Guide
+
+- getting-started
+- configuration
+{% /nav %}`);
+
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
+    expect(nav).toBeDefined();
+
+    const topLevel = findTag(nav!, t => t.attributes['data-name'] === 'top-level');
+    expect(topLevel).toBeDefined();
+    expect(topLevel!.name).toBe('div');
+
+    const groups = findAllTags(nav!, t => t.attributes['data-rune'] === 'nav-group');
+    expect(groups.length).toBe(1);
+  });
+
+  it('should not create top-level container when no pre-heading items', () => {
+    const result = parse(`{% nav %}
+## Guide
+
+- getting-started
+- configuration
+{% /nav %}`);
+
+    const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
+    expect(nav).toBeDefined();
+
+    const topLevel = findTag(nav!, t => t.attributes['data-name'] === 'top-level');
+    expect(topLevel).toBeUndefined();
+  });
+
   it('should produce nav items with slug spans', () => {
     const result = parse(`{% nav %}
 - getting-started

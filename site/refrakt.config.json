@@ -17,6 +17,7 @@
 		"@refrakt-md/plan"
 	],
 	"routeRules": [
+		{ "pattern": "plan/docs/**", "layout": "docs" },
 		{ "pattern": "docs/**", "layout": "docs" },
 		{ "pattern": "runes/**", "layout": "docs" },
 		{ "pattern": "blog/*", "layout": "blog-article" },
