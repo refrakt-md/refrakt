@@ -9,7 +9,7 @@ Each entity type has its own status progression, attributes, and conventional se
 
 ## Spec
 
-Specifications are source-of-truth design documents. They describe *what* to build and *why*.
+Specs are source-of-truth design documents. They describe *what* to build and *why*.
 
 **Statuses:** `draft` → `review` → `accepted` → `superseded` | `deprecated`
 

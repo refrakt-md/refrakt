@@ -42,14 +42,24 @@ npx refrakt plan create <type> --title "Description"
 | `--id <id>` | Explicit ID (auto-assigned if omitted; required for milestones) |
 | `--title "..."` | Entity title (required) |
 | `--dir <path>` | Plan directory (default: `plan/`) |
-| `--<attr> <value>` | Set any initial attribute (e.g., `--priority high`, `--status ready`) |
+| `--<attr> <value>` | Set any initial attribute (see table below) |
+
+**Attributes by entity type:**
+
+| Type | Attributes |
+|------|------------|
+| `spec` | `status`, `version`, `supersedes`, `tags` |
+| `work` | `status`, `priority`, `complexity`, `assignee`, `milestone`, `source`, `tags` |
+| `bug` | `status`, `severity`, `assignee`, `milestone`, `source`, `tags` |
+| `decision` | `status`, `date`, `supersedes`, `source`, `tags` |
+| `milestone` | `status`, `target` |
 
 ```shell
 # Auto-assigned ID
-npx refrakt plan create work --title "Add search" --priority high
+npx refrakt plan create work --title "Add search" --priority high --complexity moderate
 
 # Explicit ID
-npx refrakt plan create milestone --id v2.0.0 --title "Next major release"
+npx refrakt plan create milestone --id v2.0.0 --title "Next major release" --target 2026-09-01
 ```
 
 ## next
@@ -194,11 +204,16 @@ npx refrakt plan build
 
 ## migrate
 
-Convert legacy filenames to the ID-based convention.
+Convert legacy filenames to the `{ID}-{slug}.md` naming convention. Use this when you have plan files that were created manually or with an older version of the CLI that used a different naming scheme.
+
+By default, `migrate` runs in dry-run mode and shows what would change without modifying any files.
 
 ```shell
-# Preview changes
+# Preview changes (dry-run)
 npx refrakt plan migrate filenames
+
+# Apply renames
+npx refrakt plan migrate filenames --apply
 
 # Apply with git history preservation
 npx refrakt plan migrate filenames --apply --git
@@ -209,3 +224,37 @@ npx refrakt plan migrate filenames --apply --git
 | `--apply` | Perform renames (default is dry-run) |
 | `--git` | Use `git mv` to preserve history |
 | `--dir <path>` | Plan directory |
+
+## JSON output
+
+All commands support `--format json` for machine-readable output. This is useful for scripting, CI pipelines, and integration with other tools.
+
+```shell
+npx refrakt plan next --format json
+```
+
+```json
+{
+  "id": "WORK-042",
+  "title": "Implement login flow",
+  "status": "ready",
+  "priority": "high",
+  "complexity": "moderate",
+  "milestone": "v1.0.0",
+  "source": "SPEC-001",
+  "assignee": null,
+  "tags": ["auth"],
+  "criteria": {
+    "total": 4,
+    "checked": 0
+  },
+  "file": "plan/work/WORK-042-implement-login-flow.md"
+}
+```
+
+The exact shape varies by command — `plan status` returns aggregate counts, `plan validate` returns an array of diagnostics, etc. Pipe through `jq` for further processing:
+
+```shell
+# Get IDs of all ready work items
+npx refrakt plan next --count 100 --format json | jq -r '.[].id'
+```
