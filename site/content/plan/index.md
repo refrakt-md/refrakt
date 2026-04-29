@@ -22,9 +22,13 @@ npm create refrakt my-plan --type plan
 
 ## Create a plan
 
-Scaffold a planning project or add planning to an existing repo. Your `plan/` directory becomes the single source of truth.
+Start a new standalone planning project, or add planning to an existing repo. Either way, your `plan/` directory becomes the single source of truth.
 
 ```shell
+# New project
+npm create refrakt my-plan --type plan
+
+# Existing repo
 npx refrakt plan init
 ```
 
@@ -57,56 +61,26 @@ Issue trackers live outside your code. Boards go stale. Status updates get lost 
 
 - {% icon name="git-commit" /%} **Every change is a commit**
 
-  Status transitions, criterion check-offs, and resolutions are tracked in git history, not a proprietary database.
+  Status transitions, criterion check-offs, and resolutions are tracked in git history — not a proprietary database.
 
-- {% icon name="brain" /%} **AI agents can read and update it**
+- {% icon name="brain" /%} **AI-agent friendly**
 
-  Structured Markdoc files are first-class input for coding agents like Claude, Cursor, and Copilot.
+  Structured Markdoc files are first-class input for coding agents. Wire up Claude, Cursor, or Copilot with `plan init --agent`.
 
-- {% icon name="wifi-off" /%} **Works offline**
+- {% icon name="terminal" /%} **CLI-driven workflow**
 
-  No network required for `plan next`, `plan update`, or `plan status`.
+  Find the next task, update status, check off criteria, validate cross-references — all without leaving the terminal.
 
-- {% icon name="unlock" /%} **Zero lock-in**
+- {% icon name="link" /%} **Dependency and cross-reference tracking**
 
-  Your plan is plain text in your repo. Stop using the CLI and the files are still useful.
+  Work items declare dependencies. Specs link to decisions. `plan next` respects blockers, `plan validate` catches broken references.
+
+- {% icon name="globe" /%} **PlanHub dashboard**
+
+  Push to GitHub, visit `plan.refrakt.md/{owner}/{repo}`. An interactive web view of your plan — no build step, no hosting.
+
+- {% icon name="wifi-off" /%} **Works offline, zero lock-in**
+
+  No network needed for the CLI. Your plan is plain text in your repo — stop using the tools and the files are still useful.
 
 {% /feature %}
-
-{% feature-grid columns="3" %}
-
-## Version-controlled
-
-Every status change, criterion check-off, and resolution is a git commit. Your project history is your changelog.
-
----
-
-## AI-agent friendly
-
-Structured Markdoc files are easy for coding agents to read and update. Wire up Claude, Cursor, or Copilot with `plan init --agent`.
-
----
-
-## CLI-driven workflow
-
-Find the next task, update status, check off criteria, validate cross-references — all without leaving the terminal.
-
----
-
-## Dependency tracking
-
-Work items declare dependencies. `plan next` only surfaces items whose blockers are resolved.
-
----
-
-## Cross-references
-
-Link specs to work items, decisions to specs. `plan validate` catches broken references before they become problems.
-
----
-
-## PlanHub dashboard
-
-An interactive web view of your plan — no build step, no hosting. Just push to GitHub and browse.
-
-{% /feature-grid %}
