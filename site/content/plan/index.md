@@ -49,14 +49,29 @@ Push to GitHub, visit `plan.refrakt.md/{owner}/{repo}`. No deploy step, no confi
 
 {% /steps %}
 
-## Why Plan?
+{% feature align="left" spacing="loose" %}
+Why Plan?
+## Your project plan belongs in the repo
 
-Issue trackers live outside your repo. Boards go stale. Status updates get lost in chat. Plan puts your project plan where it belongs — in version control, next to the code it describes.
+Issue trackers live outside your code. Boards go stale. Status updates get lost in chat. Plan puts your project plan where it belongs — in version control, next to the code it describes.
 
-- **Every change is a commit** — status transitions, criterion check-offs, and resolutions are tracked in git history, not a proprietary database
-- **AI agents can read and update it** — structured Markdoc files are first-class input for coding agents like Claude, Cursor, and Copilot
-- **Works offline** — no network required for `plan next`, `plan update`, or `plan status`
-- **Zero lock-in** — your plan is plain text in your repo; stop using the CLI and the files are still useful
+- {% icon name="git-commit" /%} **Every change is a commit**
+
+  Status transitions, criterion check-offs, and resolutions are tracked in git history, not a proprietary database.
+
+- {% icon name="brain" /%} **AI agents can read and update it**
+
+  Structured Markdoc files are first-class input for coding agents like Claude, Cursor, and Copilot.
+
+- {% icon name="wifi-off" /%} **Works offline**
+
+  No network required for `plan next`, `plan update`, or `plan status`.
+
+- {% icon name="unlock" /%} **Zero lock-in**
+
+  Your plan is plain text in your repo. Stop using the CLI and the files are still useful.
+
+{% /feature %}
 
 {% feature-grid columns="3" %}
 
