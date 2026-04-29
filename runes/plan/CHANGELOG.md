@@ -1,5 +1,18 @@
 # @refrakt-md/plan
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [b04d001]
+  - @refrakt-md/runes@0.10.1
+  - @refrakt-md/content@0.10.1
+  - @refrakt-md/behaviors@0.10.1
+  - @refrakt-md/highlight@0.10.1
+  - @refrakt-md/html@0.10.1
+  - @refrakt-md/transform@0.10.1
+  - @refrakt-md/types@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
