@@ -82,6 +82,24 @@ These are universal primitives that belong in the built-in core, not in a packag
 
 **Identity transform:** Mostly declarative — modifiers for `trend`, structure injection for value/label/change display. No JS needed.
 
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<div class="flex items-center gap-5 p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 max-w-sm font-sans">
+  <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h2l3-9 6 18 3-9h4"/></svg>
+  </div>
+  <div>
+    <div class="text-3xl font-bold text-gray-900 dark:text-white leading-none">99.9%</div>
+    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">Uptime</div>
+    <div class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+      +0.1% vs last quarter
+    </div>
+  </div>
+</div>
+{% /sandbox %}
+
 ---
 
 ### `math`
@@ -143,6 +161,33 @@ Educational and instructional content. These compose within a lesson page: objec
 - Refs: `definition` (dd), `examples` (div), `related` (ul of links)
 
 **Glossary integration:** The `glossary` rune (below) collects all `concept` definitions and the build pipeline auto-links term occurrences across the site.
+
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<article class="p-6 bg-white dark:bg-gray-900 border-l-4 border-purple-500 rounded-r-xl shadow-sm max-w-2xl font-sans">
+  <header class="flex items-baseline gap-3 mb-3">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-white m-0">Identity Transform</h3>
+    <span class="text-xs font-mono text-gray-400 dark:text-gray-500">#identity-transform</span>
+  </header>
+  <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 m-0">A framework-agnostic transformation that walks a Markdoc tree and applies BEM classes, modifiers, and structural elements without changing the underlying semantics.</p>
+  <section class="mb-4">
+    <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 m-0">Examples</h4>
+    <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside m-0">
+      <li>Adding <code class="px-1 bg-gray-100 dark:bg-gray-800 rounded text-xs">.rf-hint</code> classes to a hint rune</li>
+      <li>Injecting an icon span into a <code class="px-1 bg-gray-100 dark:bg-gray-800 rounded text-xs">stat</code> rune</li>
+    </ul>
+  </section>
+  <section>
+    <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 m-0">Related</h4>
+    <ul class="flex flex-wrap gap-2 list-none p-0 m-0">
+      <li><span class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded">BEM naming</span></li>
+      <li><span class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded">Markdoc tag</span></li>
+      <li><span class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 rounded">Renderable</span></li>
+    </ul>
+  </section>
+</article>
+{% /sandbox %}
 
 ---
 
@@ -229,6 +274,37 @@ Example:
 - Refs: `questions` (ol), each containing `prompt`, `options` (ul of radio/checkbox inputs), `explanation` (blockquote)
 
 **Behavior:** Interactive form with score calculation, answer checking, and result display. Significant JS — likely a web component or full behavior.
+
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<form class="p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-2xl font-sans">
+  <header class="mb-5 pb-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white m-0">Module 1 Assessment</h2>
+    <span class="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded font-medium">Pass: 70%</span>
+  </header>
+  <ol class="space-y-6 list-decimal list-inside m-0 p-0">
+    <li>
+      <span class="font-medium text-gray-900 dark:text-white">What does the identity transform produce?</span>
+      <ul class="mt-3 ml-6 space-y-2 list-none p-0">
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q1" class="accent-purple-600"/> React components</li>
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q1" class="accent-purple-600" checked/> BEM-classed HTML elements</li>
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q1" class="accent-purple-600"/> Raw Markdown</li>
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q1" class="accent-purple-600"/> JSON data</li>
+      </ul>
+      <blockquote class="mt-3 ml-6 pl-3 border-l-2 border-purple-300 dark:border-purple-700 text-xs text-gray-600 dark:text-gray-400 italic m-0">The identity transform adds BEM classes, data attributes, and structural elements to produce framework-agnostic HTML.</blockquote>
+    </li>
+    <li>
+      <span class="font-medium text-gray-900 dark:text-white">True or false: Runes modify the Markdoc parser.</span>
+      <ul class="mt-3 ml-6 space-y-2 list-none p-0">
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q2" class="accent-purple-600"/> True</li>
+        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><input type="radio" name="q2" class="accent-purple-600" checked/> False</li>
+      </ul>
+    </li>
+  </ol>
+  <button type="submit" class="mt-6 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg border-0 cursor-pointer">Submit answers</button>
+</form>
+{% /sandbox %}
 
 ---
 
@@ -324,6 +400,27 @@ After completing this lesson, you will be able to:
 
 **Identity transform:** Declarative — block, optional icon injection (target/goal icon), content wrapper.
 
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<aside class="p-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex gap-4 max-w-2xl font-sans">
+  <svg class="flex-shrink-0 w-6 h-6 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/>
+    <circle cx="12" cy="12" r="6"/>
+    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+  </svg>
+  <div>
+    <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-2 m-0">Learning objectives</h3>
+    <p class="text-sm text-amber-800 dark:text-amber-200 mb-2 m-0">After completing this lesson, you will be able to:</p>
+    <ul class="text-sm text-amber-900 dark:text-amber-100 space-y-1 list-disc list-inside m-0">
+      <li>Explain the difference between core and community runes</li>
+      <li>Install and configure a community rune package</li>
+      <li>Write a custom local rune for your project</li>
+    </ul>
+  </div>
+</aside>
+{% /sandbox %}
+
 ---
 
 ## @refrakt-md/business (2)
@@ -367,6 +464,24 @@ Example:
 - Properties: `eyebrow`, `headline`, `blurb`, `layout`, `columns`, `grayscale`
 - Refs: `logos` (ul of li elements, each containing an img or a>img)
 
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<section class="p-8 bg-white dark:bg-gray-900 max-w-3xl font-sans">
+  <header class="text-center mb-8">
+    <p class="text-xs uppercase tracking-widest text-purple-600 dark:text-purple-400 mb-2 font-semibold m-0">Trusted by</p>
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white m-0">Our partners</h2>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 m-0">Teams using refrakt to ship documentation faster.</p>
+  </header>
+  <ul class="grid grid-cols-2 sm:grid-cols-4 gap-8 items-center list-none p-0 m-0">
+    <li class="flex items-center justify-center text-2xl font-black text-gray-400 dark:text-gray-500 grayscale hover:grayscale-0 hover:text-gray-900 dark:hover:text-white transition tracking-tight">ACME</li>
+    <li class="flex items-center justify-center text-2xl font-black italic text-gray-400 dark:text-gray-500 grayscale hover:grayscale-0 hover:text-gray-900 dark:hover:text-white transition">Globex</li>
+    <li class="flex items-center justify-center text-2xl font-black tracking-tight text-gray-400 dark:text-gray-500 grayscale hover:grayscale-0 hover:text-gray-900 dark:hover:text-white transition">INITECH</li>
+    <li class="flex items-center justify-center text-2xl font-black text-gray-400 dark:text-gray-500 grayscale hover:grayscale-0 hover:text-gray-900 dark:hover:text-white transition">Hooli<span class="text-purple-500">·</span></li>
+  </ul>
+</section>
+{% /sandbox %}
+
 ---
 
 ### `job`
@@ -403,6 +518,46 @@ Example:
 - Refs: `description` (div), `responsibilities` (ul), `requirements` (ul), `preferred` (ul), `benefits` (ul), `applyButton` (a)
 
 **SEO extractor:** Generates `schema.org/JobPosting` with `title`, `datePosted`, `employmentType`, `jobLocation`, `baseSalary`, `description`.
+
+**Visual sketch:** Approximate target — final BEM markup is determined by the rune config.
+
+{% sandbox framework="tailwind" %}
+<article class="p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-2xl font-sans">
+  <header class="mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+    <div class="flex items-start justify-between gap-4 mb-3">
+      <div>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white m-0">Senior Frontend Engineer</h2>
+        <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">Engineering · San Francisco / Remote</div>
+      </div>
+      <a class="flex-shrink-0 inline-block px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg no-underline">Apply</a>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded">Full-time</span>
+      <span class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded font-medium">$160k–$220k</span>
+      <span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded">Posted Apr 28, 2026</span>
+    </div>
+  </header>
+  <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 m-0">Build the next generation of authoring tools used by thousands of developers daily. You will lead the design and implementation of accessible, performant UI used across the refrakt ecosystem.</p>
+  <div class="grid sm:grid-cols-2 gap-5 text-sm">
+    <section>
+      <h3 class="font-semibold text-gray-900 dark:text-white mb-2 m-0">Responsibilities</h3>
+      <ul class="text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside m-0">
+        <li>Design accessible UI components</li>
+        <li>Collaborate with design and PM</li>
+        <li>Mentor mid-level engineers</li>
+      </ul>
+    </section>
+    <section>
+      <h3 class="font-semibold text-gray-900 dark:text-white mb-2 m-0">Requirements</h3>
+      <ul class="text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside m-0">
+        <li>5+ years frontend experience</li>
+        <li>Deep TypeScript knowledge</li>
+        <li>Strong product sensibility</li>
+      </ul>
+    </section>
+  </div>
+</article>
+{% /sandbox %}
 
 ---
 
