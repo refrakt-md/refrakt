@@ -29,7 +29,8 @@ Start a new standalone planning project, or add planning to an existing repo. Ei
 npm create refrakt my-plan --type plan
 
 # Existing repo
-npx refrakt plan init
+npx refrakt plan init  # adds @refrakt-md/cli + @refrakt-md/plan to package.json
+npm install
 ```
 
 ---
