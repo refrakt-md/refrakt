@@ -49,7 +49,7 @@ npx refrakt plan update WORK-042 --status done --resolve "Implemented in PR #42"
 
 ## Browse on PlanHub
 
-Push to GitHub, visit `plan.refrakt.md/{owner}/{repo}`. No deploy step, no config. Your plan is rendered as an interactive dashboard with search, filtering, and cross-references.
+Push your `plan/` directory to GitHub, then visit [plan.refrakt.md](https://plan.refrakt.md) and connect your repository. Your plan is rendered as an interactive dashboard with search, filtering, and cross-references.
 
 {% /steps %}
 
