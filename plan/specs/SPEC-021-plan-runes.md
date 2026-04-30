@@ -1,4 +1,4 @@
-{% spec id="SPEC-021" status="draft" version="1.0" tags="plan,runes" %}
+{% spec id="SPEC-021" status="accepted" version="1.0" tags="plan,runes" %}
 
 # Plan Runes
 
