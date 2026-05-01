@@ -58,8 +58,7 @@ Promote `refrakt.config.json` to be the project-level config, with explicit `plu
     "@refrakt-md/docs"
   ],
   "plan": {
-    "dir": "plan",
-    "specsDir": "plan/specs"
+    "dir": "plan"
   },
   "site": {
     "contentDir": "./content",

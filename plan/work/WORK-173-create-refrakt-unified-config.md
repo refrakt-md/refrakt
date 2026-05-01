@@ -29,7 +29,7 @@
 
 ## Dependencies
 
-- {% ref "WORK-159" /%}, {% ref "WORK-166" /%}, {% ref "WORK-168" /%} — config shape, SvelteKit plugin option, plan init scaffolding
+- {% ref "WORK-159" /%}, {% ref "WORK-166" /%}, {% ref "WORK-168" /%} — config shape, framework adapter `site` option, plan init scaffolding
 
 ## References
 

@@ -8,7 +8,7 @@ Move `site/refrakt.config.json` to a unified `refrakt.config.json` at the repo r
 
 - [ ] New `refrakt.config.json` at repo root with `plugins`, `plan`, and `sites.main` sections
 - [ ] `sites.main` carries everything currently in `site/refrakt.config.json` (`contentDir`, `theme`, `target`, `packages`, `routeRules`, `icons`, `backgrounds`, `siteName`, `logo`, `baseUrl`)
-- [ ] `plan.dir = "plan"`, `plan.specsDir = "plan/specs"`
+- [ ] `plan.dir = "plan"`
 - [ ] `plugins` lists the actually-installed plugin-bearing packages (`@refrakt-md/plan` at minimum; review whether others should be listed)
 - [ ] `site/vite.config.ts` updated to pass `site: 'main'` to the SvelteKit plugin
 - [ ] Old `site/refrakt.config.json` removed

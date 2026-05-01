@@ -9,7 +9,7 @@ Document the unified `refrakt.config.json` at `site/content/docs/configuration/`
 - [ ] New `site/content/docs/configuration/` directory with at least these pages:
   - `overview.md` — what `refrakt.config.json` is, when to create one, the optional-by-default principle
   - `plugins.md` — declaring `plugins`, the difference between `plugins` and `site.packages`, fallback to dependency scanning
-  - `plan.md` — `plan.dir`, `plan.specsDir`, interaction with `plan init`
+  - `plan.md` — `plan.dir` and interaction with `plan init`
   - `sites.md` — single-site (`site`) vs multi-site (`sites`), the `--site` flag, picking sites in `vite.config.ts`
   - `migration.md` — moving from flat shape to nested, using `refrakt config migrate`
   - `schema.md` — pointer to the JSON Schema, editor setup

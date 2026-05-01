@@ -56,7 +56,7 @@ The detection result is reported through a `refrakt://detect` resource so the ag
   "cwd": "/home/user/project",
   "context": {
     "site": { "config": "refrakt.config.json", "packages": ["@refrakt-md/marketing", "@refrakt-md/plan"] },
-    "plan": { "dir": "plan", "specsDir": "plan/specs", "fileCount": 42 }
+    "plan": { "dir": "plan", "fileCount": 42 }
   },
   "tools": ["refrakt.inspect", "refrakt.contracts", "plan.next", "plan.update", "..."]
 }
