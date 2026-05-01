@@ -10,10 +10,22 @@ import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
 import { runMigrateFilenames, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
+import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
+import {
+	nextSchema, nextMcpHandler,
+	updateSchema, updateMcpHandler,
+	createSchema, createMcpHandler,
+	statusSchema, statusMcpHandler,
+	validateSchema, validateMcpHandler,
+	nextIdSchema, nextIdMcpHandler,
+	initSchema, initMcpHandler,
+	historySchema, historyMcpHandler,
+	migrateSchema, migrateMcpHandler,
+} from './mcp-bindings.js';
 import type { CliPlugin } from '@refrakt-md/types';
 
 async function handleServe(args: string[]): Promise<void> {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let specsDir: string | undefined;
 	let port = 3000;
 	let theme = 'auto';
@@ -56,7 +68,7 @@ async function handleServe(args: string[]): Promise<void> {
 }
 
 async function handleBuild(args: string[]): Promise<void> {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let specsDir: string | undefined;
 	let out = './plan-site';
 	let theme = 'auto';
@@ -106,7 +118,7 @@ function handleUpdate(args: string[]): void {
 		process.exit(1);
 	}
 
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 	let check: string | undefined;
 	let uncheck: string | undefined;
@@ -173,7 +185,7 @@ function handleUpdate(args: string[]): void {
 }
 
 function handleNext(args: string[]): void {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 	let milestone: string | undefined;
 	let tag: string | undefined;
@@ -255,7 +267,7 @@ function handleCreate(args: string[]): void {
 		process.exit(CREATE_INVALID_ARGS);
 	}
 
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let id: string | undefined;
 	let title = '';
 	let formatJson = false;
@@ -308,7 +320,7 @@ function handleNextId(args: string[]): void {
 		process.exit(EXIT_INVALID_ARGS);
 	}
 
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 
 	for (let i = 1; i < args.length; i++) {
@@ -338,13 +350,14 @@ function handleNextId(args: string[]): void {
 }
 
 function handleInit(args: string[]): void {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let projectRoot = '.';
 	let formatJson = false;
 	let agent: string | undefined;
 	let noPackageJson = false;
 	let noHooks = false;
 	let noWrapper = false;
+	let noConfig = false;
 	const validAgents = ['claude', 'cursor', 'copilot', 'windsurf', 'cline', 'none'];
 
 	for (let i = 0; i < args.length; i++) {
@@ -368,13 +381,15 @@ function handleInit(args: string[]): void {
 			noHooks = true;
 		} else if (arg === '--no-wrapper') {
 			noWrapper = true;
+		} else if (arg === '--no-config') {
+			noConfig = true;
 		} else if (arg === '--minimal') {
 			noPackageJson = true;
 			noHooks = true;
 			noWrapper = true;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-wrapper] [--minimal] [--format json]');
+			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-wrapper] [--no-config] [--minimal] [--format json]');
 			process.exit(1);
 		}
 	}
@@ -386,6 +401,7 @@ function handleInit(args: string[]): void {
 		noPackageJson,
 		noHooks,
 		noWrapper,
+		noConfig,
 	});
 
 	if (formatJson) {
@@ -398,7 +414,8 @@ function handleInit(args: string[]): void {
 		result.agentFilesUpdated.length === 0 &&
 		!result.packageJsonUpdated &&
 		!result.hookWritten &&
-		!result.wrapperWritten;
+		!result.wrapperWritten &&
+		(!result.refraktConfig || result.refraktConfig.action === 'preserved');
 
 	if (didNothing) {
 		console.log('Plan structure already exists. No changes made.');
@@ -421,6 +438,10 @@ function handleInit(args: string[]): void {
 	if (result.wrapperWritten) {
 		console.log(`  + Wrote ./plan.sh wrapper script`);
 	}
+	if (result.refraktConfig) {
+		const symbol = result.refraktConfig.action === 'preserved' ? '·' : '+';
+		console.log(`  ${symbol} ${result.refraktConfig.message}`);
+	}
 	if (result.packageManager && result.packageJsonUpdated) {
 		console.log();
 		console.log(`Next: run \`${result.packageManager} install\` to pull in @refrakt-md/cli + @refrakt-md/plan.`);
@@ -428,7 +449,7 @@ function handleInit(args: string[]): void {
 }
 
 function handleValidate(args: string[]): void {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 	let strict = false;
 
@@ -474,7 +495,7 @@ function handleValidate(args: string[]): void {
 }
 
 function handleStatus(args: string[]): void {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 	let milestone: string | undefined;
 
@@ -564,7 +585,7 @@ function handleStatus(args: string[]): void {
 }
 
 function handleHistory(args: string[]): void {
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let id: string | undefined;
 	let limit = 20;
 	let since: string | undefined;
@@ -617,7 +638,7 @@ function handleMigrate(args: string[]): void {
 		process.exit(MIGRATE_INVALID_ARGS);
 	}
 
-	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';
+	let dir = resolvePlanDir().dir;
 	let apply = false;
 	let dryRun = false;
 	let useGit = false;
@@ -694,17 +715,73 @@ function handleMigrate(args: string[]): void {
 const plugin: CliPlugin = {
 	namespace: 'plan',
 	commands: [
-		{ name: 'status', description: 'Terminal status summary', handler: handleStatus },
-		{ name: 'next', description: 'Find next work item', handler: handleNext },
-		{ name: 'update', description: 'Update plan item attributes', handler: handleUpdate },
-		{ name: 'validate', description: 'Validate plan structure', handler: handleValidate },
-		{ name: 'create', description: 'Scaffold new plan items', handler: handleCreate },
-		{ name: 'next-id', description: 'Show next available ID for a type', handler: handleNextId },
-		{ name: 'init', description: 'Scaffold plan structure', handler: handleInit },
+		{
+			name: 'status',
+			description: 'Terminal status summary',
+			handler: handleStatus,
+			inputSchema: statusSchema,
+			mcpHandler: statusMcpHandler,
+		},
+		{
+			name: 'next',
+			description: 'Find next work item',
+			handler: handleNext,
+			inputSchema: nextSchema,
+			mcpHandler: nextMcpHandler,
+		},
+		{
+			name: 'update',
+			description: 'Update plan item attributes',
+			handler: handleUpdate,
+			inputSchema: updateSchema,
+			mcpHandler: updateMcpHandler,
+		},
+		{
+			name: 'validate',
+			description: 'Validate plan structure',
+			handler: handleValidate,
+			inputSchema: validateSchema,
+			mcpHandler: validateMcpHandler,
+		},
+		{
+			name: 'create',
+			description: 'Scaffold new plan items',
+			handler: handleCreate,
+			inputSchema: createSchema,
+			mcpHandler: createMcpHandler,
+		},
+		{
+			name: 'next-id',
+			description: 'Show next available ID for a type',
+			handler: handleNextId,
+			inputSchema: nextIdSchema,
+			mcpHandler: nextIdMcpHandler,
+		},
+		{
+			name: 'init',
+			description: 'Scaffold plan structure',
+			handler: handleInit,
+			inputSchema: initSchema,
+			mcpHandler: initMcpHandler,
+		},
+		// serve and build are intentionally not exposed via MCP — long-running
+		// servers / file generation don't fit MCP's request/response model.
 		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
 		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
-		{ name: 'history', description: 'View entity and project history', handler: handleHistory },
-		{ name: 'migrate', description: 'Migrate plan file conventions', handler: handleMigrate },
+		{
+			name: 'history',
+			description: 'View entity and project history',
+			handler: handleHistory,
+			inputSchema: historySchema,
+			mcpHandler: historyMcpHandler,
+		},
+		{
+			name: 'migrate',
+			description: 'Migrate plan file conventions',
+			handler: handleMigrate,
+			inputSchema: migrateSchema,
+			mcpHandler: migrateMcpHandler,
+		},
 	],
 };
 

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { idExists } from './next-id.js';
 import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
+import { scaffoldRefraktConfigForPlan } from '../plan-config.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
@@ -35,6 +36,8 @@ export interface InitOptions {
 	noHooks?: boolean;
 	/** Skip writing ./plan wrapper script. */
 	noWrapper?: boolean;
+	/** Skip creating/updating refrakt.config.json. */
+	noConfig?: boolean;
 	/** Override package versions pinned into devDependencies. Defaults to this plan package's own version. */
 	versions?: { cli: string; plan: string };
 }
@@ -48,6 +51,8 @@ export interface InitResult {
 	wrapperWritten: boolean;
 	installRoot: string | null;
 	packageManager: PackageManager | null;
+	/** What happened to refrakt.config.json — `null` when scaffolding was skipped (e.g., --no-config). */
+	refraktConfig: { action: 'created' | 'extended' | 'preserved' | 'skipped'; path: string; message: string } | null;
 }
 
 /**
@@ -402,6 +407,7 @@ export function runInit(options: InitOptions): InitResult {
 		noPackageJson = false,
 		noHooks = false,
 		noWrapper = false,
+		noConfig = false,
 	} = options;
 
 	const versions = options.versions ?? (() => {
@@ -491,6 +497,12 @@ export function runInit(options: InitOptions): InitResult {
 		wrapperWritten = writeWrapperScript(projectRoot);
 	}
 
+	// --- 6. refrakt.config.json (gated) ------------------------------------
+	let refraktConfig: InitResult['refraktConfig'] = null;
+	if (!noConfig) {
+		refraktConfig = scaffoldRefraktConfigForPlan({ projectRoot, planDir: dir });
+	}
+
 	return {
 		dir,
 		created,
@@ -500,6 +512,7 @@ export function runInit(options: InitOptions): InitResult {
 		wrapperWritten,
 		installRoot: installRootInfo ? installRootInfo.rootDir : null,
 		packageManager,
+		refraktConfig,
 	};
 }
 
