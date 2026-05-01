@@ -151,14 +151,15 @@ export interface DiscoverOptions {
 export function discoverPlugins(opts?: DiscoverOptions): Promise<DiscoveredPlugin[]>;
 ```
 
-**Resolution algorithm:**
+**Resolution algorithm** (informed by {% ref "ADR-010" /%}):
 
-1. Read the nearest `package.json` walking up from `cwd`.
-2. Filter `dependencies` + `devDependencies` to entries matching `@refrakt-md/*` (excluding the meta packages `@refrakt-md/cli`, `@refrakt-md/types`, `@refrakt-md/transform`, etc. that aren't expected to ship a plugin).
-3. For each candidate, attempt `import('<pkg>/cli-plugin')`. Skip silently if the export is missing — not every refrakt package ships CLI commands.
-4. Validate the loaded module exposes a `{ namespace, commands }` shape; warn (not throw) on malformed plugins so a single bad package doesn't break discovery.
-5. Detect duplicate namespaces and surface them as warnings; first-wins for resolution.
-6. Return the result sorted by namespace.
+1. Load `refrakt.config.json` from `cwd` if present.
+2. If `config.plugins` is declared, treat that array as authoritative and skip dependency scanning for plugin enumeration.
+3. Otherwise, read the nearest `package.json` walking up from `cwd` and filter `dependencies` + `devDependencies` to entries matching `@refrakt-md/*` (excluding meta packages — `@refrakt-md/cli`, `@refrakt-md/types`, `@refrakt-md/transform`, etc. — that aren't expected to ship a plugin).
+4. For each candidate, attempt `import('<pkg>/cli-plugin')`. Skip silently if the export is missing — not every refrakt package ships CLI commands.
+5. Validate the loaded module exposes a `{ namespace, commands }` shape; warn (not throw) on malformed plugins so a single bad package doesn't break discovery.
+6. Detect duplicate namespaces and surface them as warnings; first-wins for resolution.
+7. Return the result sorted by namespace, each entry tagging its `source` as `config` or `dependency-scan`.
 
 The helper is intentionally side-effect-free — it doesn't execute commands, doesn't write to disk, and caches nothing. Callers wrap it with their own caching if needed.
 
