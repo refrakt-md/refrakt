@@ -48,7 +48,7 @@ Add a fresh root file (`refrakt.json` or similar) that holds plugins/plan/site r
 
 Promote `refrakt.config.json` to be the project-level config, with explicit `plugins`, `plan`, and `site` sections. Keep the file optional so autodetection remains the fallback for zero-config repos. The current flat shape (`contentDir`, `theme`, `target`, `packages`, …) continues to work but is treated as shorthand for the `site.*` namespace.
 
-**Proposed shape:**
+**Proposed shape (single site, common case):**
 
 ```json
 {
@@ -72,26 +72,55 @@ Promote `refrakt.config.json` to be the project-level config, with explicit `plu
 }
 ```
 
+**Proposed shape (multiple sites in one repo):**
+
+```json
+{
+  "plugins": ["@refrakt-md/plan", "@refrakt-md/marketing"],
+  "plan": { "dir": "plan" },
+  "sites": {
+    "main": {
+      "contentDir": "./site/content",
+      "theme": "@refrakt-md/lumina",
+      "target": "svelte",
+      "packages": ["@refrakt-md/marketing"]
+    },
+    "blog": {
+      "contentDir": "./blog/content",
+      "theme": "@refrakt-md/lumina",
+      "target": "svelte",
+      "packages": ["@refrakt-md/marketing"]
+    }
+  }
+}
+```
+
+`site` (singular) and `sites` (plural map) are mutually exclusive. The loader normalizes both into a single internal `sites: Record<string, SiteConfig>` shape — `site` becomes `sites.default`. Downstream consumers (SvelteKit plugin, MCP server, CLI commands) only ever see the normalized form.
+
 **Resolution rules:**
 
 - File absent → autodetect everything (current behavior preserved for planning-only repos).
 - File present, only `plan` section → behaves like a planning-only project; site tools are unavailable.
-- File present, only `site` section (or flat shorthand) → behaves like today's site config.
-- File present, both → both contexts active; MCP exposes both tool groups.
+- File present, only `site` (or flat shorthand) → single-site project; normalizes to `sites.default`.
+- File present, only `sites` → multi-site project; CLI and SvelteKit plugin require a site identifier (or pick the only entry when there is exactly one).
+- File present, both `site` and `sites` → configuration error; loader rejects with a clear message.
+- File present, plan + site(s) → both contexts active; MCP exposes both tool groups.
 - `plugins` is the canonical plugin list. If absent, fall back to scanning dependencies as today. If present, it is authoritative — the scanner does not look at `package.json`.
-- `site.packages` and the top-level `plugins` array overlap intentionally: `site.packages` controls which rune packages are merged into the site's `ThemeConfig` (a SvelteKit-plugin concern); `plugins` controls which packages contribute CLI commands and MCP tools. Most users will list a package in both, but the split lets a CLI-only plugin (no runes) skip site merging.
+- `site(s).*.packages` and the top-level `plugins` array overlap intentionally: `packages` per site controls which rune packages are merged into that site's `ThemeConfig` (a SvelteKit-plugin concern); `plugins` controls which packages contribute CLI commands and MCP tools. Most users will list a package in both, but the split lets a CLI-only plugin (no runes) skip site merging, and lets two sites in the same repo merge different package subsets.
 
 **Pros:**
 - One file, one mental model. "Where do I tell refrakt about my plan?" has one answer.
 - Plugin discovery becomes "read the array" for projects that opt in, eliminating heuristic ambiguity.
 - Path overrides have a home — no more `--dir` on every plan invocation.
+- Multi-site monorepos (docs + marketing, project + plan dashboard, multi-tenant) get a first-class story instead of needing separate repos or out-of-band orchestration.
 - Backwards compatible via the flat-shape shorthand; no forced migration for existing sites.
 - Sets up future sections (`docs`, `editor`, etc.) without further format churn.
 
 **Cons:**
 - Slight config tax for repos that want explicit control (mitigated: file is optional).
-- Two ways to write site config (flat vs nested under `site.*`) during the transition window.
-- The dual `plugins` / `site.packages` distinction needs documentation.
+- Three ways to write site config (flat / `site` singular / `sites` plural) during the transition window — all collapse to the same normalized shape internally.
+- The dual `plugins` / `site(s).packages` distinction needs documentation.
+- Multi-site repos require a `--site <name>` flag on site-targeted CLI commands and a way for the SvelteKit plugin to be told which site it is building.
 
 ### 4. Autodetection-only, no config at all
 
@@ -107,21 +136,28 @@ Remove `refrakt.config.json` and infer everything from `package.json` and direct
 
 ## Decision
 
-Adopt option 3. `refrakt.config.json` becomes the unified root config with optional `plugins`, `plan`, and `site` sections. The file remains optional. The current flat site shape continues to be valid as shorthand for `site.*`, so existing projects keep working without changes.
+Adopt option 3. `refrakt.config.json` becomes the unified root config with optional `plugins`, `plan`, and `site`/`sites` sections. The file remains optional. The current flat site shape and the new singular `site` form are both valid shorthands for `sites.default`; multi-site repos use the `sites` map. Existing projects keep working without changes.
 
 ## Consequences
 
 **For SPEC-043 (MCP server):**
 
 - `discoverPlugins()` reads `config.plugins` first and only falls back to dependency scanning when the field is absent.
-- Autodetection still applies when no config exists, but consults the config when one is present (e.g., `plan.dir` overrides the default `plan/` lookup; `site.contentDir` confirms a site context without sniffing the file system).
-- `refrakt://detect` reports both the detected context and the config source (`config-file` vs `autodetect`) so the agent knows whether values are explicit or inferred.
+- Autodetection still applies when no config exists, but consults the config when one is present (e.g., `plan.dir` overrides the default `plan/` lookup; declared sites confirm site context without sniffing the file system).
+- `refrakt://detect` reports detected context, config source (`config-file` vs `autodetect`), and the list of sites (with names) so the agent knows whether the project is single- or multi-site.
+- Site-scoped MCP tools (`refrakt.inspect`, `refrakt.contracts`, `refrakt.validate`) accept an optional `site` input. When the project has exactly one site, the field is optional; when there are multiple, it is required and the tool's input schema reflects that.
 
 **For the CLI:**
 
-- `loadRefraktConfigFile()` in `packages/cli/src/config-file.ts` gains a normalization layer that accepts both the flat shape and the new nested shape and returns a normalized `RefraktConfig` object with `plugins`, `plan`, and `site` always populated (with autodetected or default values when not declared).
-- `RefraktConfig` in `packages/types` grows the `plugins`, `plan`, and `site` fields. The flat fields stay on the type for backwards compatibility but are marked deprecated in JSDoc and documented as shorthand.
+- `loadRefraktConfigFile()` in `packages/cli/src/config-file.ts` gains a normalization layer that accepts the flat, singular-`site`, and plural-`sites` shapes and returns a normalized `RefraktConfig` with `plugins`, `plan`, and `sites: Record<string, SiteConfig>` always populated.
+- `RefraktConfig` in `packages/types` grows the `plugins`, `plan`, `site`, and `sites` fields. The flat fields and singular `site` stay on the type for backwards compatibility but are marked deprecated in JSDoc as shorthand for `sites.default`.
+- Site-targeted commands (`inspect`, `contracts`, `validate`, etc.) gain a `--site <name>` flag. When the project has exactly one site, the flag is optional and the lone site is selected automatically; when multiple sites are declared and no flag is passed, the command errors with the available names.
 - `refrakt plugins list` (proposed in SPEC-043) shows the resolution source per plugin — `from refrakt.config.json` vs `discovered in package.json`.
+
+**For the SvelteKit plugin:**
+
+- The plugin accepts a `site` option naming which entry from the config to build. When omitted, it errors at config-load time for multi-site repos and selects the lone site for single-site repos.
+- A monorepo wiring two SvelteKit apps to the same `refrakt.config.json` passes a different `site` name in each app's `vite.config.ts`. Content roots, themes, and package merges resolve from the chosen site's section.
 
 **For users:**
 
@@ -129,15 +165,16 @@ Adopt option 3. `refrakt.config.json` becomes the unified root config with optio
 - Existing planning-only users: zero changes required. Autodetection still runs.
 - New users wanting both contexts in one repo: one file declares everything.
 - Users wanting explicit plugin control: list packages under `plugins` and the heuristic scan is bypassed.
+- Multi-site monorepos: declare each site under `sites.<name>` and pick the right one per app or per CLI invocation.
 
 **For migration:**
 
-- A `refrakt config migrate` command (small follow-up work item, not part of this ADR) can rewrite a flat site config into the nested shape on demand. Not required — the flat shape stays valid indefinitely.
-- The SvelteKit plugin's `loadContent()` reads from `site.*` (preferring nested, falling back to flat) so the runtime contract is unchanged.
+- A `refrakt config migrate` command (small follow-up work item, not part of this ADR) can rewrite a flat site config into the nested shape on demand, and convert a singular `site` into `sites.default` when adding a second site. Not required — the flat and singular shapes stay valid indefinitely.
+- The SvelteKit plugin's `loadContent()` reads from the normalized `sites[name]` entry so the runtime contract is unchanged for single-site users (they hit `sites.default` transparently).
 
 **Open follow-up:**
 
-- A separate spec should formalize the config schema (TypeScript interface, JSON Schema for editor tooling, validation rules). This ADR records the decision; the spec records the shape in detail.
-- SPEC-043's "Plugin Discovery" section should be updated after this ADR is accepted to reference `config.plugins` as the primary source, with dependency scanning as fallback.
+- A separate spec should formalize the config schema (TypeScript interface, JSON Schema for editor tooling, validation rules, multi-site selection semantics). This ADR records the decision; the spec records the shape in detail.
+- SPEC-043's "Plugin Discovery" section should be updated after this ADR is accepted to reference `config.plugins` as the primary source, with dependency scanning as fallback. The MCP tool input schemas for site-scoped tools should also be updated to include the `site` parameter for multi-site repos.
 
 {% /decision %}
