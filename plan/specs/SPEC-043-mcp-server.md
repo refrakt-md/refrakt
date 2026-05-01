@@ -128,20 +128,56 @@ Resources mirror tool functionality where the operation is read-only. The duplic
 
 ## Plugin Discovery
 
-The MCP server reuses the CLI's plugin discovery. Today, a package exports a `cli-plugin` entry like:
+Today the CLI's plugin loading is lazy — `runPlugin(namespace, args)` in `packages/cli/src/bin.ts` only attempts to import `@refrakt-md/<namespace>/cli-plugin` when the user types that namespace. There is no enumeration step the MCP server (or anything else) can lean on to ask "what plugins are installed?". This spec promotes plugin discovery to a first-class CLI capability with three direct consumers.
+
+### CLI-Level Discovery API
+
+Add a `discoverPlugins()` helper to `@refrakt-md/cli` (exported from a new `packages/cli/src/lib/plugins.ts`):
 
 ```typescript
-// @refrakt-md/plan/cli-plugin.ts
-export const commands = {
-  namespace: 'plan',
-  commands: [
-    { name: 'next', handler: nextHandler, description: 'Find next work item' },
-    // …
-  ],
-};
+export interface DiscoveredPlugin {
+  namespace: string;
+  packageName: string;             // e.g. "@refrakt-md/plan"
+  packageVersion: string;          // from the package's package.json
+  commands: CliPluginCommand[];    // resolved cli-plugin export
+  source: 'project' | 'global';    // where it was resolved from
+}
+
+export interface DiscoverOptions {
+  cwd?: string;                    // defaults to process.cwd()
+  includeGlobal?: boolean;         // also scan global node_modules; default false
+}
+
+export function discoverPlugins(opts?: DiscoverOptions): Promise<DiscoveredPlugin[]>;
 ```
 
-The MCP server scans installed packages, loads their `cli-plugin` exports, and registers each command as an MCP tool under `<namespace>.<name>`. To produce JSON Schemas for the tool inputs, the plugin contract is extended with an optional `inputSchema` field per command:
+**Resolution algorithm:**
+
+1. Read the nearest `package.json` walking up from `cwd`.
+2. Filter `dependencies` + `devDependencies` to entries matching `@refrakt-md/*` (excluding the meta packages `@refrakt-md/cli`, `@refrakt-md/types`, `@refrakt-md/transform`, etc. that aren't expected to ship a plugin).
+3. For each candidate, attempt `import('<pkg>/cli-plugin')`. Skip silently if the export is missing — not every refrakt package ships CLI commands.
+4. Validate the loaded module exposes a `{ namespace, commands }` shape; warn (not throw) on malformed plugins so a single bad package doesn't break discovery.
+5. Detect duplicate namespaces and surface them as warnings; first-wins for resolution.
+6. Return the result sorted by namespace.
+
+The helper is intentionally side-effect-free — it doesn't execute commands, doesn't write to disk, and caches nothing. Callers wrap it with their own caching if needed.
+
+### Consumers
+
+This single helper replaces ad-hoc behavior across three call sites:
+
+| Consumer | Use |
+|----------|-----|
+| `refrakt` CLI dispatch | Replace `runPlugin`'s blind import with `discoverPlugins()` lookup — produces a friendlier "did you mean?" error when the namespace is misspelled, since we know the full set. |
+| `refrakt --help` | List installed plugins and their commands inline instead of only documenting core commands. |
+| `refrakt package validate` | Lint the discovered `cli-plugin` shape (namespace conflicts, missing descriptions, malformed `inputSchema`). |
+| `@refrakt-md/mcp` | Enumerate at startup to produce the MCP tool list and resource set. |
+
+The MCP server therefore does not implement its own discovery — it imports `discoverPlugins` and translates each `DiscoveredPlugin` into MCP tools under `<namespace>.<name>`.
+
+### Plugin Contract Extension
+
+The `cli-plugin` export shape stays the same; only the per-command interface gains optional fields:
 
 ```typescript
 interface CliPluginCommand {
@@ -158,6 +194,26 @@ When `mcpHandler` is present, the MCP server calls it directly with the parsed i
 
 The schema fields are **purely additive**. Plugins that do not adopt them still work — the MCP server falls back to a generic `{ args: string[] }` schema and surfaces the command's `description`. This means `@refrakt-md/plan` automatically appears under MCP the day this server ships, with progressively richer schemas as the plan plugin opts in.
 
+### Example: `refrakt plugins list`
+
+A new tiny command exposes the discovery output to humans, useful for both debugging and documentation:
+
+```
+$ refrakt plugins list
+
+  Installed refrakt plugins:
+
+  plan        @refrakt-md/plan@0.10.1     8 commands
+              next, update, create, status, validate, next-id, history, init
+
+  docs        @refrakt-md/docs@0.10.1     1 command
+              extract
+
+  Run `refrakt <namespace> --help` for command details.
+```
+
+`refrakt plugins list --format json` emits the same data as `discoverPlugins()` returns, making it the canonical way for external tools (including MCP clients debugging their setup) to ask refrakt what's installed.
+
 -----
 
 ## Package Structure
@@ -167,7 +223,7 @@ The schema fields are **purely additive**. Plugins that do not adopt them still 
 ├── bin.ts                      ← stdio entry point: `npx @refrakt-md/mcp`
 ├── server.ts                   ← MCP server setup, transport wiring
 ├── detect.ts                   ← auto-detection (plan dir, refrakt.config.json)
-├── plugins.ts                  ← discovers cli-plugin exports from installed packages
+├── plugins.ts                  ← thin wrapper around @refrakt-md/cli's discoverPlugins()
 ├── tools/
 │   ├── core.ts                 ← inspect, contracts, validate, reference, package
 │   └── plan-fallback.ts        ← argv-shim for plugins without mcpHandler
@@ -253,7 +309,12 @@ Error codes mirror the CLI's exit codes where they exist (`NOT_FOUND`, `VALIDATI
 - [ ] `refrakt://detect` resource reports detected context and tool list
 - [ ] All core CLI commands except the excluded set are wrapped as MCP tools
 - [ ] All `@refrakt-md/plan` commands except `serve`/`build` are wrapped as MCP tools
-- [ ] Plugin discovery loads `cli-plugin` exports from any installed `@refrakt-md/*` package automatically
+- [ ] `discoverPlugins()` helper added to `@refrakt-md/cli` and exported for reuse
+- [ ] `runPlugin` dispatch in `packages/cli/src/bin.ts` switched to `discoverPlugins()` lookup with "did you mean?" suggestions on namespace typos
+- [ ] `refrakt --help` lists installed plugins and their commands using `discoverPlugins()`
+- [ ] `refrakt plugins list` command added with `text` and `json` formats
+- [ ] `refrakt package validate` lints the `cli-plugin` export shape (namespace conflicts, missing descriptions, malformed schemas)
+- [ ] `@refrakt-md/mcp` consumes `discoverPlugins()` rather than re-implementing scanning
 - [ ] `CliPluginCommand` interface extended with optional `inputSchema`, `outputSchema`, `mcpHandler` fields without breaking existing plugins
 - [ ] `@refrakt-md/plan` updated to provide `inputSchema` and `mcpHandler` for `next`, `update`, `create`, `status`, `validate`, `next-id`, `history`, `init`
 - [ ] Read-only operations also exposed as MCP resources (`refrakt://reference`, `refrakt://contracts`, `refrakt://rune/<name>`, `refrakt://plan/*`)
