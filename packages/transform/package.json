@@ -27,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "refrakt.config.schema.json"
   ],
   "scripts": {
     "build": "tsc"

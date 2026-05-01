@@ -1,7 +1,8 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { resolve, join, relative } from 'path';
-import type { RunePackage, RunePackageEntry } from '@refrakt-md/types';
+import { resolve, join, relative, dirname } from 'path';
+import type { CliPlugin, RunePackage, RunePackageEntry } from '@refrakt-md/types';
 import { validateThemeConfig, type ValidationResult, type ValidationError, type ValidationWarning } from '@refrakt-md/transform';
+import { discoverPlugins } from '../lib/plugins.js';
 
 export interface PackageValidateOptions {
 	/** Path to the package directory (default: cwd) */
@@ -189,7 +190,157 @@ async function validatePackage(packageDir: string): Promise<PackageValidationRes
 		});
 	}
 
+	// Step 10: Validate the cli-plugin export shape if the package contributes one.
+	const cliPluginResult = await validateCliPlugin(packageDir, pkgJson, npmName);
+	errors.push(...cliPluginResult.errors);
+	warnings.push(...cliPluginResult.warnings);
+
 	return { valid: errors.length === 0, packageName: npmName, errors, warnings };
+}
+
+/** Validate a package's `cli-plugin` export when present.
+ *
+ *  Skipped silently when the package does not declare a cli-plugin export —
+ *  most rune packages don't ship CLI commands. When the export exists, this
+ *  checks structural integrity (namespace, commands, schemas) and warns when
+ *  optional MCP-friendly fields are missing.
+ */
+async function validateCliPlugin(
+	packageDir: string,
+	pkgJson: Record<string, unknown>,
+	npmName: string,
+): Promise<{ errors: ValidationError[]; warnings: ValidationWarning[] }> {
+	const errors: ValidationError[] = [];
+	const warnings: ValidationWarning[] = [];
+
+	const exports = pkgJson.exports as Record<string, unknown> | undefined;
+	const cliPluginExport = exports?.['./cli-plugin'];
+	if (!cliPluginExport) {
+		// No cli-plugin contribution — nothing to lint.
+		return { errors, warnings };
+	}
+
+	const candidates = [
+		join(packageDir, 'dist', 'cli-plugin.js'),
+		join(packageDir, 'src', 'cli-plugin.js'),
+		join(packageDir, 'src', 'cli-plugin.ts'),
+		join(packageDir, 'cli-plugin.js'),
+	];
+	let plugin: CliPlugin | null = null;
+	let importError: string | undefined;
+	for (const path of candidates) {
+		if (!existsSync(path)) continue;
+		try {
+			const mod = await import(path);
+			const candidate = (mod as { default?: unknown }).default ?? mod;
+			if (isPluginLike(candidate)) {
+				plugin = candidate as CliPlugin;
+				break;
+			}
+		} catch (err) {
+			importError = (err as Error).message;
+		}
+	}
+
+	if (!plugin) {
+		errors.push({
+			path: 'cli-plugin',
+			message: importError
+				? `Could not load cli-plugin export: ${importError}`
+				: 'Could not find a valid CliPlugin export in dist/cli-plugin.js or src/cli-plugin.ts',
+		});
+		return { errors, warnings };
+	}
+
+	if (typeof plugin.namespace !== 'string' || plugin.namespace.length === 0) {
+		errors.push({ path: 'cli-plugin.namespace', message: 'Required and must be a non-empty string' });
+	}
+	if (!Array.isArray(plugin.commands)) {
+		errors.push({ path: 'cli-plugin.commands', message: 'Required and must be an array' });
+		return { errors, warnings };
+	}
+	if (plugin.commands.length === 0) {
+		warnings.push({ path: 'cli-plugin.commands', message: 'No commands declared — the plugin contributes nothing' });
+	}
+
+	for (let i = 0; i < plugin.commands.length; i++) {
+		const rawCmd: unknown = plugin.commands[i];
+		const cmd = rawCmd as Record<string, unknown> | undefined;
+		const prefix = `cli-plugin.commands[${i}]`;
+		if (!cmd || typeof cmd !== 'object') {
+			errors.push({ path: prefix, message: 'Must be an object' });
+			continue;
+		}
+		if (typeof cmd.name !== 'string' || cmd.name.length === 0) {
+			errors.push({ path: `${prefix}.name`, message: 'Required and must be a non-empty string' });
+		}
+		if (typeof cmd.description !== 'string') {
+			errors.push({ path: `${prefix}.description`, message: 'Required and must be a string' });
+		} else if (cmd.description.length === 0) {
+			warnings.push({ path: `${prefix}.description`, message: 'Empty description — used in --help output and as MCP tool fallback' });
+		}
+		if (typeof cmd.handler !== 'function') {
+			errors.push({ path: `${prefix}.handler`, message: 'Required and must be a function' });
+		}
+
+		if (cmd.inputSchema !== undefined && !isPlausibleJsonSchema(cmd.inputSchema)) {
+			errors.push({ path: `${prefix}.inputSchema`, message: 'Must be a JSON Schema object' });
+		}
+		if (cmd.outputSchema !== undefined && !isPlausibleJsonSchema(cmd.outputSchema)) {
+			errors.push({ path: `${prefix}.outputSchema`, message: 'Must be a JSON Schema object' });
+		}
+		if (cmd.mcpHandler !== undefined && typeof cmd.mcpHandler !== 'function') {
+			errors.push({ path: `${prefix}.mcpHandler`, message: 'Must be a function' });
+		}
+
+		const cmdName = typeof cmd.name === 'string' ? cmd.name : `[${i}]`;
+		if (cmd.inputSchema === undefined) {
+			warnings.push({
+				path: `${prefix}`,
+				message: `Command "${cmdName}" has no inputSchema — recommended so the command surfaces as a typed MCP tool`,
+			});
+		}
+		if (cmd.mcpHandler === undefined && cmd.inputSchema !== undefined) {
+			warnings.push({
+				path: `${prefix}`,
+				message: `Command "${cmdName}" declares inputSchema but no mcpHandler — MCP will fall back to argv-shimming, losing structured I/O`,
+			});
+		}
+	}
+
+	// Namespace-clash check against other plugins discovered in the same project.
+	try {
+		// Discover from the parent of the package directory (so its node_modules
+		// includes peer packages); falling back to packageDir is fine when the
+		// package is published rather than in a workspace.
+		const discoveryRoot = dirname(packageDir);
+		const others = await discoverPlugins({ cwd: discoveryRoot, warn: false });
+		for (const other of others) {
+			if (other.packageName === npmName) continue;
+			if (other.namespace === plugin.namespace) {
+				warnings.push({
+					path: 'cli-plugin.namespace',
+					message: `Namespace "${plugin.namespace}" is already provided by ${other.packageName} in this project`,
+				});
+			}
+		}
+	} catch {
+		// Discovery failures are non-blocking — the lint is best-effort.
+	}
+
+	return { errors, warnings };
+}
+
+function isPluginLike(value: unknown): value is CliPlugin {
+	if (!value || typeof value !== 'object') return false;
+	const obj = value as Record<string, unknown>;
+	return (
+		typeof obj.namespace === 'string' && Array.isArray(obj.commands)
+	);
+}
+
+function isPlausibleJsonSchema(value: unknown): boolean {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function validateRuneEntry(

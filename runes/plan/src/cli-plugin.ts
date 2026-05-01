@@ -10,17 +10,7 @@ import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
 import { runMigrateFilenames, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
-
-interface CliPluginCommand {
-	name: string;
-	description: string;
-	handler: (args: string[]) => void | Promise<void>;
-}
-
-interface CliPlugin {
-	namespace: string;
-	commands: CliPluginCommand[];
-}
+import type { CliPlugin } from '@refrakt-md/types';
 
 async function handleServe(args: string[]): Promise<void> {
 	let dir = process.env.REFRAKT_PLAN_DIR || 'plan';

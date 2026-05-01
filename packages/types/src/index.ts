@@ -11,6 +11,8 @@ export type { DesignTokens } from './tokens.js';
 // Theme system types
 export type {
   RefraktConfig,
+  SiteConfig,
+  PlanConfig,
   ThemeManifest,
   LayoutDefinition,
   RouteRule,
@@ -71,3 +73,10 @@ export type {
 	PipelineWarning,
 	PackagePipelineHooks,
 } from './pipeline.js';
+
+// CLI plugin contract
+export type {
+	CliPlugin,
+	CliPluginCommand,
+	JSONSchema7,
+} from './cli-plugin.js';

@@ -312,6 +312,178 @@ describe('package-validate', () => {
 		logMock.mockRestore();
 	});
 
+	describe('cli-plugin lint', () => {
+		function setupPluginPackage(pluginSource: string): void {
+			writePkgJson(tempDir, {
+				name: '@test/plugin-pkg',
+				version: '1.0.0',
+				main: 'src/index.js',
+				exports: {
+					'.': './src/index.js',
+					'./cli-plugin': './src/cli-plugin.js',
+				},
+			});
+			writeModule(tempDir, 'src/index.js', `
+				export default {
+					name: 'plugin-pkg',
+					version: '1.0.0',
+					runes: {
+						'widget': {
+							transform: { attributes: {} },
+							description: 'A widget',
+						},
+					},
+				};
+			`);
+			writeModule(tempDir, 'src/cli-plugin.js', pluginSource);
+		}
+
+		async function runValidate(): Promise<{ output: string; exited: boolean }> {
+			const { packageValidateCommand } = await import('../src/commands/package-validate.js');
+			const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => {
+				throw new Error('process.exit called');
+			});
+			const logs: string[] = [];
+			const logMock = vi.spyOn(console, 'log').mockImplementation((...args) => {
+				logs.push(args.join(' '));
+			});
+			let exited = false;
+			try {
+				await packageValidateCommand({ packageDir: tempDir });
+			} catch {
+				exited = true;
+			}
+			exitMock.mockRestore();
+			logMock.mockRestore();
+			return { output: logs.join('\n'), exited };
+		}
+
+		it('skips lint when the package has no cli-plugin export', async () => {
+			writePkgJson(tempDir, {
+				name: '@test/no-plugin',
+				version: '1.0.0',
+				main: 'src/index.js',
+			});
+			writeModule(tempDir, 'src/index.js', `
+				export default {
+					name: 'no-plugin',
+					version: '1.0.0',
+					runes: { widget: { transform: { attributes: {} } } },
+				};
+			`);
+			const { output } = await runValidate();
+			// Should pass with no cli-plugin warnings/errors.
+			expect(output).not.toContain('cli-plugin');
+		});
+
+		it('warns when commands are missing inputSchema (recommended for MCP)', async () => {
+			setupPluginPackage(`
+				export default {
+					namespace: 'tp',
+					commands: [
+						{
+							name: 'hello',
+							description: 'Say hi',
+							handler: () => {},
+						},
+					],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(false);
+			expect(output).toContain('Command "hello" has no inputSchema');
+		});
+
+		it('errors when a cli-plugin export is missing required fields', async () => {
+			setupPluginPackage(`
+				export default {
+					// missing namespace
+					commands: [],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(true);
+			expect(output).toContain('Could not find a valid CliPlugin export');
+		});
+
+		it('errors when a command is missing handler', async () => {
+			setupPluginPackage(`
+				export default {
+					namespace: 'tp',
+					commands: [
+						{ name: 'broken', description: 'no handler' },
+					],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(true);
+			expect(output).toContain('handler');
+		});
+
+		it('errors when inputSchema is not an object', async () => {
+			setupPluginPackage(`
+				export default {
+					namespace: 'tp',
+					commands: [
+						{
+							name: 'bad',
+							description: 'bad schema',
+							handler: () => {},
+							inputSchema: 'not a schema',
+						},
+					],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(true);
+			expect(output).toContain('inputSchema');
+			expect(output).toContain('JSON Schema object');
+		});
+
+		it('warns when inputSchema is present but mcpHandler is missing', async () => {
+			setupPluginPackage(`
+				export default {
+					namespace: 'tp',
+					commands: [
+						{
+							name: 'partial',
+							description: 'has schema but no handler',
+							handler: () => {},
+							inputSchema: { type: 'object' },
+						},
+					],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(false);
+			expect(output).toContain('mcpHandler');
+			expect(output).toContain('argv-shimming');
+		});
+
+		it('passes cleanly when a command declares everything', async () => {
+			setupPluginPackage(`
+				export default {
+					namespace: 'tp',
+					commands: [
+						{
+							name: 'good',
+							description: 'fully wired',
+							handler: () => {},
+							inputSchema: { type: 'object', properties: { x: { type: 'string' } } },
+							outputSchema: { type: 'object' },
+							mcpHandler: async () => ({}),
+						},
+					],
+				};
+			`);
+			const { output, exited } = await runValidate();
+			expect(exited).toBe(false);
+			// No inputSchema/mcpHandler warnings should appear for this command.
+			expect(output).not.toContain('Command "good" has no inputSchema');
+			expect(output).not.toContain('declares inputSchema but no mcpHandler');
+		});
+	});
+
 	it('JSON output mode produces valid JSON', async () => {
 		writePkgJson(tempDir, {
 			name: '@test/json-output',

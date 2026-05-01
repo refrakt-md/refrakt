@@ -1,0 +1,131 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://refrakt.md/refrakt.config.schema.json",
+	"title": "RefraktConfig",
+	"description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy), singular `site`, plural `sites` — all collapse to a canonical normalized form internally.",
+	"type": "object",
+	"properties": {
+		"$schema": { "type": "string" },
+		"plugins": {
+			"type": "array",
+			"description": "Plugin packages contributing CLI commands and MCP tools. When set, this is authoritative; when absent, plugin discovery falls back to scanning package.json for @refrakt-md/* dependencies.",
+			"items": { "type": "string" }
+		},
+		"plan": {
+			"$ref": "#/definitions/PlanConfig"
+		},
+		"site": {
+			"$ref": "#/definitions/SiteConfig",
+			"description": "Singular-site declaration. Mutually exclusive with `sites`."
+		},
+		"sites": {
+			"type": "object",
+			"description": "Multi-site declaration keyed by site name. Mutually exclusive with `site`.",
+			"minProperties": 1,
+			"additionalProperties": { "$ref": "#/definitions/SiteConfig" }
+		},
+		"contentDir": { "type": "string", "description": "Legacy shorthand for sites.default.contentDir" },
+		"theme": { "type": "string", "description": "Legacy shorthand for sites.default.theme" },
+		"target": { "type": "string", "description": "Legacy shorthand for sites.default.target" },
+		"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
+		"routeRules": {
+			"type": "array",
+			"items": { "$ref": "#/definitions/RouteRule" }
+		},
+		"highlight": { "$ref": "#/definitions/HighlightConfig" },
+		"icons": { "type": "object", "additionalProperties": { "type": "string" } },
+		"packages": { "type": "array", "items": { "type": "string" } },
+		"tints": { "type": "object", "additionalProperties": { "type": "object" } },
+		"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
+		"sandbox": {
+			"type": "object",
+			"properties": { "examplesDir": { "type": "string" } },
+			"additionalProperties": false
+		},
+		"baseUrl": { "type": "string" },
+		"siteName": { "type": "string" },
+		"defaultImage": { "type": "string" },
+		"logo": { "type": "string" },
+		"runes": { "$ref": "#/definitions/RunesConfig" }
+	},
+	"not": {
+		"required": ["site", "sites"]
+	},
+	"definitions": {
+		"PlanConfig": {
+			"type": "object",
+			"description": "Plan-management configuration.",
+			"properties": {
+				"dir": {
+					"type": "string",
+					"description": "Plan directory, relative to project root. Default: 'plan'"
+				}
+			},
+			"additionalProperties": false
+		},
+		"SiteConfig": {
+			"type": "object",
+			"required": ["contentDir", "theme", "target"],
+			"properties": {
+				"contentDir": { "type": "string" },
+				"theme": { "type": "string" },
+				"target": { "type": "string" },
+				"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
+				"routeRules": { "type": "array", "items": { "$ref": "#/definitions/RouteRule" } },
+				"highlight": { "$ref": "#/definitions/HighlightConfig" },
+				"icons": { "type": "object", "additionalProperties": { "type": "string" } },
+				"packages": { "type": "array", "items": { "type": "string" } },
+				"tints": { "type": "object", "additionalProperties": { "type": "object" } },
+				"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
+				"sandbox": {
+					"type": "object",
+					"properties": { "examplesDir": { "type": "string" } },
+					"additionalProperties": false
+				},
+				"baseUrl": { "type": "string" },
+				"siteName": { "type": "string" },
+				"defaultImage": { "type": "string" },
+				"logo": { "type": "string" },
+				"runes": { "$ref": "#/definitions/RunesConfig" }
+			}
+		},
+		"RouteRule": {
+			"type": "object",
+			"required": ["pattern", "layout"],
+			"properties": {
+				"pattern": { "type": "string" },
+				"layout": { "type": "string" }
+			},
+			"additionalProperties": false
+		},
+		"HighlightConfig": {
+			"type": "object",
+			"properties": {
+				"theme": {
+					"oneOf": [
+						{ "type": "string" },
+						{
+							"type": "object",
+							"required": ["light", "dark"],
+							"properties": {
+								"light": { "type": "string" },
+								"dark": { "type": "string" }
+							},
+							"additionalProperties": false
+						}
+					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"RunesConfig": {
+			"type": "object",
+			"properties": {
+				"prefer": { "type": "object", "additionalProperties": { "type": "string" } },
+				"aliases": { "type": "object", "additionalProperties": { "type": "string" } },
+				"local": { "type": "object", "additionalProperties": { "type": "string" } }
+			},
+			"additionalProperties": false
+		}
+	}
+}

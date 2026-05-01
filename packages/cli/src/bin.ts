@@ -6,10 +6,9 @@ const command = args[0];
 
 if (!command || command === '--help' || command === '-h') {
 	printUsage();
-	process.exit(command ? 0 : 1);
-}
-
-if (command === 'write') {
+	// Append the installed-plugin section asynchronously, then exit.
+	appendPluginsToHelp().finally(() => process.exit(command ? 0 : 1));
+} else if (command === 'write') {
 	runWrite(args.slice(1));
 } else if (command === 'inspect') {
 	runInspect(args.slice(1));
@@ -21,6 +20,8 @@ if (command === 'write') {
 	runValidate(args.slice(1));
 } else if (command === 'theme') {
 	runTheme(args.slice(1));
+} else if (command === 'plugins') {
+	runPluginsCommand(args.slice(1));
 } else if (command === 'extract') {
 	// Deprecated: extract has moved to the docs rune package
 	console.error('Warning: `refrakt extract` is deprecated. Use `refrakt docs extract` instead.\n');
@@ -54,6 +55,7 @@ Commands:
   edit                 Launch the browser-based content editor
   package <subcommand> Manage rune packages (validate)
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
+  plugins <subcommand> List installed plugins (list)
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -155,36 +157,49 @@ Reference Options:
 
 // --- Plugin system ---
 
-interface CliPluginCommand {
-	name: string;
-	description: string;
-	handler: (args: string[]) => void | Promise<void>;
-}
+import { discoverPlugins, type DiscoveredPlugin } from './lib/plugins.js';
+import { closestMatch } from './lib/levenshtein.js';
+import { runPluginsCommand, appendPluginsToHelp } from './commands/plugins.js';
 
-interface CliPlugin {
-	namespace: string;
-	commands: CliPluginCommand[];
+/** Cached discovery for the lifetime of the CLI invocation. Implemented as a
+ *  function declaration with a property cache so the symbol is fully hoisted —
+ *  important because the dispatch code at the top of this file runs before
+ *  any non-function-declaration bindings are initialized (TDZ). */
+function getPlugins(): Promise<DiscoveredPlugin[]> {
+	const self = getPlugins as { _cache?: Promise<DiscoveredPlugin[]> };
+	if (!self._cache) {
+		self._cache = discoverPlugins();
+	}
+	return self._cache;
 }
 
 async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void> {
 	const subcommand = pluginArgs[0];
-	const packageName = `@refrakt-md/${namespace}`;
-	const pluginEntry = `${packageName}/cli-plugin`;
+	const plugins = await getPlugins();
+	const plugin = plugins.find((p) => p.namespace === namespace);
 
-	let plugin: CliPlugin;
-	try {
-		const mod = await import(pluginEntry);
-		plugin = mod.default ?? mod;
-	} catch {
-		console.error(`\n  The "${namespace}" commands require ${packageName}.`);
-		console.error(`  Install it: npm install ${packageName}\n`);
+	if (!plugin) {
+		const namespaces = plugins.map((p) => p.namespace);
+		const suggestion = closestMatch(namespace, namespaces);
+		const packageName = `@refrakt-md/${namespace}`;
+
+		console.error(`\n  Unknown command "${namespace}".`);
+		if (suggestion) {
+			console.error(`  Did you mean "${suggestion}"?\n`);
+		} else if (namespaces.length === 0) {
+			console.error(`\n  No refrakt plugins are installed in this project.`);
+			console.error(`  Install one to enable namespaced commands, e.g.: npm install ${packageName}\n`);
+		} else {
+			console.error(`\n  Installed plugins: ${namespaces.map((n) => `"${n}"`).join(', ')}`);
+			console.error(`  Or install a new one: npm install ${packageName}\n`);
+		}
 		process.exit(1);
 	}
 
 	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
 		console.log(`\nUsage: refrakt ${namespace} <command> [options]\n`);
 		console.log('Commands:');
-		const maxLen = Math.max(...plugin.commands.map(c => c.name.length));
+		const maxLen = Math.max(...plugin.commands.map((c) => c.name.length));
 		for (const cmd of plugin.commands) {
 			console.log(`  ${cmd.name.padEnd(maxLen + 2)} ${cmd.description}`);
 		}
@@ -192,10 +207,16 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 		process.exit(0);
 	}
 
-	const cmd = plugin.commands.find(c => c.name === subcommand);
+	const cmd = plugin.commands.find((c) => c.name === subcommand);
 	if (!cmd) {
-		console.error(`Error: Unknown ${namespace} command "${subcommand}"\n`);
-		console.log('Available commands:');
+		const subNames = plugin.commands.map((c) => c.name);
+		const subSuggestion = closestMatch(subcommand, subNames);
+
+		console.error(`Error: Unknown ${namespace} command "${subcommand}"`);
+		if (subSuggestion) {
+			console.error(`  Did you mean "${subSuggestion}"?`);
+		}
+		console.log('\nAvailable commands:');
 		for (const c of plugin.commands) {
 			console.log(`  refrakt ${namespace} ${c.name}  — ${c.description}`);
 		}
