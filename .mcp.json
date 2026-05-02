@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"refrakt": {
+			"command": "npx",
+			"args": ["@refrakt-md/mcp"]
+		}
+	}
+}
