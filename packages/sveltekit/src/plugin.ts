@@ -38,7 +38,11 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 		config(_, env): Partial<UserConfig> {
 			isBuild = env.command === 'build';
 			const rawConfig = loadRefraktConfig(configPath);
-			const normalizedConfig = normalizeRefraktConfig(rawConfig);
+			// configDir is the directory containing refrakt.config.json — used by
+			// the normalizer to absolutize nested-shape relative paths so adapters
+			// see file-relative semantics rather than cwd-relative.
+			const configDir = dirname(resolve(configPath));
+			const normalizedConfig = normalizeRefraktConfig(rawConfig, { configDir });
 			const resolved = resolveSite(normalizedConfig, options.site);
 			activeSite = resolved.site;
 			activeSiteName = resolved.name;

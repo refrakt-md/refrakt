@@ -7,7 +7,7 @@ import {
 
 describe('normalizeRefraktConfig', () => {
 	describe('flat shape (legacy)', () => {
-		it('collapses flat fields into sites.default', () => {
+		it('collapses flat fields into sites.main', () => {
 			const raw = {
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
@@ -15,7 +15,7 @@ describe('normalizeRefraktConfig', () => {
 				packages: ['@refrakt-md/marketing'],
 			};
 			const result = normalizeRefraktConfig(raw);
-			expect(result.sites.default).toEqual({
+			expect(result.sites.main).toEqual({
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
@@ -39,7 +39,7 @@ describe('normalizeRefraktConfig', () => {
 	});
 
 	describe('singular site shape', () => {
-		it('promotes site to sites.default', () => {
+		it('promotes site to sites.main', () => {
 			const raw = {
 				site: {
 					contentDir: './content',
@@ -49,7 +49,7 @@ describe('normalizeRefraktConfig', () => {
 			};
 			const result = normalizeRefraktConfig(raw);
 			expect(result.sites).toEqual({
-				default: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
+				main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
 			});
 		});
 
@@ -137,6 +137,86 @@ describe('normalizeRefraktConfig', () => {
 		});
 	});
 
+	describe('path resolution (configDir option)', () => {
+		const configDir = '/repo/root';
+
+		it('absolutizes nested-shape contentDir against configDir', () => {
+			const result = normalizeRefraktConfig(
+				{ site: { contentDir: './content', theme: 't', target: 'svelte' } },
+				{ configDir },
+			);
+			expect(result.sites.main!.contentDir).toBe('/repo/root/content');
+			// Top-level mirror also reflects the absolutized path
+			expect(result.contentDir).toBe('/repo/root/content');
+		});
+
+		it('absolutizes plural-shape paths per-site', () => {
+			const result = normalizeRefraktConfig(
+				{
+					sites: {
+						main: { contentDir: './site/content', theme: 't', target: 'svelte' },
+						blog: { contentDir: '../blog/content', theme: 't', target: 'svelte' },
+					},
+				},
+				{ configDir },
+			);
+			expect(result.sites.main!.contentDir).toBe('/repo/root/site/content');
+			expect(result.sites.blog!.contentDir).toBe('/repo/blog/content');
+		});
+
+		it('leaves flat-shape paths as-is for legacy cwd-relative behavior', () => {
+			const result = normalizeRefraktConfig(
+				{ contentDir: './content', theme: 't', target: 'svelte' },
+				{ configDir },
+			);
+			expect(result.sites.main!.contentDir).toBe('./content');
+			expect(result.contentDir).toBe('./content');
+		});
+
+		it('passes through package names unchanged', () => {
+			const result = normalizeRefraktConfig(
+				{ site: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' } },
+				{ configDir },
+			);
+			expect(result.sites.main!.theme).toBe('@refrakt-md/lumina');
+		});
+
+		it('passes through absolute paths unchanged', () => {
+			const result = normalizeRefraktConfig(
+				{ site: { contentDir: '/abs/content', theme: 't', target: 'svelte' } },
+				{ configDir },
+			);
+			expect(result.sites.main!.contentDir).toBe('/abs/content');
+		});
+
+		it('absolutizes sandbox.examplesDir, runes.local, and overrides values', () => {
+			const result = normalizeRefraktConfig(
+				{
+					site: {
+						contentDir: './content',
+						theme: 't',
+						target: 'svelte',
+						sandbox: { examplesDir: './examples' },
+						overrides: { Hero: './components/MyHero.svelte' },
+						runes: { local: { 'my-rune': './runes/my-rune.ts' } },
+					},
+				},
+				{ configDir },
+			);
+			expect(result.sites.main!.sandbox?.examplesDir).toBe('/repo/root/examples');
+			expect(result.sites.main!.overrides?.Hero).toBe('/repo/root/components/MyHero.svelte');
+			expect(result.sites.main!.runes?.local?.['my-rune']).toBe('/repo/root/runes/my-rune.ts');
+		});
+
+		it('skips path resolution entirely when configDir is omitted', () => {
+			const result = normalizeRefraktConfig({
+				site: { contentDir: './content', theme: 't', target: 'svelte' },
+			});
+			// Without configDir, paths stay as-is (existing tests cover this)
+			expect(result.sites.main!.contentDir).toBe('./content');
+		});
+	});
+
 	describe('plan + sites combined', () => {
 		it('normalizes both sections together', () => {
 			const result = normalizeRefraktConfig({
@@ -169,7 +249,7 @@ describe('resolveSite', () => {
 
 	it('returns the only site when there is exactly one', () => {
 		const { name, site } = resolveSite(single);
-		expect(name).toBe('default');
+		expect(name).toBe('main');
 		expect(site.contentDir).toBe('./content');
 	});
 

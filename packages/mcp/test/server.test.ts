@@ -22,7 +22,9 @@ describe('detect', () => {
 		expect(result.plan!.fileCount).toBeGreaterThan(0);
 		expect(result.site).not.toBeNull();
 		expect(result.site!.sites).toContain('main');
-		expect(result.site!.plugins).toContain('@refrakt-md/plan');
+		// `result.site!.plugins` reflects the config's explicit `plugins` list
+		// (empty when the field is omitted and discovery handles it). The
+		// auto-discovered set is on the top-level `plugins` field below.
 		const namespaces = result.plugins.map((p) => p.namespace);
 		expect(namespaces).toContain('plan');
 	});

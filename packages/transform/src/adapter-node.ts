@@ -1,6 +1,6 @@
 import type { RefraktConfig } from '@refrakt-md/types';
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import {
 	normalizeRefraktConfig,
 	type NormalizedRefraktConfig,
@@ -10,14 +10,17 @@ export {
 	normalizeRefraktConfig,
 	resolveSite,
 	resolvePlanConfig,
+	DEFAULT_SITE_NAME,
 } from './config-normalize.js';
-export type { NormalizedRefraktConfig } from './config-normalize.js';
+export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normalize.js';
 
 /**
  * Load and normalize a refrakt.config.json file.
  *
- * Returns the normalized config (where `sites` is always populated and the
- * legacy flat fields mirror the single site for backwards compatibility).
+ * Returns the normalized config. Paths in nested-shape (`site` / `sites`)
+ * inputs are absolutized against the config file's directory so adapters see
+ * file-relative semantics. Flat-shape paths are left as-is for legacy
+ * cwd-relative resolution.
  *
  * Node.js only — not safe for browser bundles.
  */
@@ -35,7 +38,7 @@ export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
 	} catch (err) {
 		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(err as Error).message}`);
 	}
-	return normalizeRefraktConfig(raw);
+	return normalizeRefraktConfig(raw, { configDir: dirname(absPath) });
 }
 
 /**
@@ -47,6 +50,7 @@ export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
 export function loadRefraktConfigWithRaw(configPath: string): {
 	raw: RefraktConfig;
 	normalized: NormalizedRefraktConfig;
+	configDir: string;
 } {
 	const absPath = resolve(configPath);
 	if (!existsSync(absPath)) {
@@ -61,5 +65,10 @@ export function loadRefraktConfigWithRaw(configPath: string): {
 	} catch (err) {
 		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(err as Error).message}`);
 	}
-	return { raw: raw as RefraktConfig, normalized: normalizeRefraktConfig(raw) };
+	const configDir = dirname(absPath);
+	return {
+		raw: raw as RefraktConfig,
+		normalized: normalizeRefraktConfig(raw, { configDir }),
+		configDir,
+	};
 }

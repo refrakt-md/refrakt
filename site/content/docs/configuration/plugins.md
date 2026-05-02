@@ -35,11 +35,13 @@ When set:
 
 ## Why declare it explicitly?
 
-Three reasons:
+For most single-purpose projects you **don't need to declare `plugins`** — auto-discovery picks up every `@refrakt-md/*` package installed in `node_modules` that ships a `cli-plugin` export, which covers the common case. Reach for an explicit `plugins` array only when one of these applies:
 
-1. **Determinism.** Dependency scanning is heuristic. Adding any `@refrakt-md/*` package to `dependencies` could surface new commands you didn't intend.
-2. **Multi-context projects.** A monorepo where one workspace uses `@refrakt-md/plan` and another doesn't would otherwise see the plugin discovered everywhere.
-3. **Documentation.** The `plugins` field is a one-glance summary of what your project's `refrakt` CLI namespace actually does.
+1. **Determinism.** Dependency scanning is heuristic. If a transitive dep happens to be a refrakt plugin you don't want surfaced, an explicit list filters it out.
+2. **Multi-context monorepos.** When one workspace uses `@refrakt-md/plan` and another doesn't, declaring per-project keeps each one's CLI namespace clean.
+3. **Documentation.** The `plugins` field doubles as a one-glance summary of which namespaces your project's CLI is meant to support.
+
+The auto-discovery path is good enough for the refrakt repo itself — no `plugins` field declared, and `refrakt plan ...` still works because the package is installed.
 
 ## Difference from `site.packages`
 

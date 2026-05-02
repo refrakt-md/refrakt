@@ -1,12 +1,11 @@
 {
 	"$schema": "./refrakt.config.schema.json",
-	"plugins": ["@refrakt-md/plan"],
 	"plan": {
 		"dir": "plan"
 	},
 	"sites": {
 		"main": {
-			"contentDir": "./content",
+			"contentDir": "./site/content",
 			"theme": "@refrakt-md/lumina",
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",

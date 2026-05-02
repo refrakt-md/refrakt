@@ -2,23 +2,44 @@
  * Normalization for refrakt.config.json.
  *
  * Three valid input shapes — all collapse to the same canonical form:
- * - **Flat** (legacy): top-level `contentDir`, `theme`, `target`, …
- * - **Singular**: `{ "site": { contentDir, theme, target, … } }`
- * - **Plural**: `{ "sites": { "main": { … }, "blog": { … } } }`
+ * - **Flat** (legacy): top-level `contentDir`, `theme`, `target`, … Paths
+ *   are interpreted relative to the consumer's working directory (vite's
+ *   resolvedRoot for adapters), preserving pre-v0.11.0 behavior.
+ * - **Singular**: `{ "site": { contentDir, theme, target, … } }`. Paths are
+ *   absolutized against the config file's directory at normalization time,
+ *   so adapters always see file-relative semantics.
+ * - **Plural**: `{ "sites": { "main": { … }, "blog": { … } } }`. Same
+ *   path semantics as singular.
  *
- * Flat and singular shapes both produce `sites.default`. Plural shapes pass
- * through unchanged. The `site` and `sites` keys are mutually exclusive.
+ * Flat and singular shapes both produce `sites.main` (the canonical default
+ * site name, matching what `create-refrakt` scaffolds). Plural shapes pass
+ * through with their declared names. The `site` and `sites` keys are
+ * mutually exclusive.
  */
 
+import { dirname, isAbsolute, resolve } from 'node:path';
 import type { PlanConfig, RefraktConfig, SiteConfig } from '@refrakt-md/types';
 
+/** Default site name used when promoting flat / singular configs to the
+ *  canonical `sites` map. Matches `create-refrakt` scaffold output. */
+export const DEFAULT_SITE_NAME = 'main';
+
 /** A normalized refrakt config — `sites` is always populated, and the legacy
- *  flat fields mirror `sites.default` when there is exactly one site so existing
+ *  flat fields mirror the lone site when there is exactly one so existing
  *  adapter code continues to work without changes. */
 export interface NormalizedRefraktConfig extends RefraktConfig {
-	/** Always populated, keyed by site name. Single-site projects use the key
-	 *  `default`. Multi-site projects use whatever names appear under `sites`. */
+	/** Always populated, keyed by site name. Single-site projects (flat or
+	 *  singular shape) use the key `main` (matching scaffolds). Multi-site
+	 *  projects use whatever names appear under `sites`. */
 	sites: Record<string, SiteConfig>;
+}
+
+export interface NormalizeOptions {
+	/** Path to the config file's directory. When provided, relative paths in
+	 *  nested-shape (`site` / `sites`) inputs are absolutized against it so
+	 *  they're interpreted file-relative rather than cwd-relative. Flat-shape
+	 *  paths are left as-is for legacy cwd-relative behavior. */
+	configDir?: string;
 }
 
 /** Site fields that mirror to the top level of the config when there is exactly
@@ -49,7 +70,10 @@ const SITE_FIELDS = [
  * Does not perform deep validation of individual fields — that responsibility
  * stays with the adapter or CLI consumer that knows what fields it requires.
  */
-export function normalizeRefraktConfig(raw: unknown): NormalizedRefraktConfig {
+export function normalizeRefraktConfig(
+	raw: unknown,
+	options: NormalizeOptions = {},
+): NormalizedRefraktConfig {
 	if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
 		throw new Error('refrakt.config.json must be a JSON object');
 	}
@@ -58,6 +82,7 @@ export function normalizeRefraktConfig(raw: unknown): NormalizedRefraktConfig {
 
 	const hasSingular = input.site !== undefined;
 	const hasPlural = input.sites !== undefined;
+	const configDir = options.configDir;
 
 	if (hasSingular && hasPlural) {
 		throw new Error(
@@ -79,12 +104,18 @@ export function normalizeRefraktConfig(raw: unknown): NormalizedRefraktConfig {
 		}
 		sites = {};
 		for (const [name, site] of entries) {
-			sites[name] = site as SiteConfig;
+			// Nested-shape paths are file-relative — absolutize against configDir
+			// when we have one so adapters see absolute paths and don't have to
+			// guess the anchor.
+			sites[name] = configDir ? absolutizeSitePaths(site as SiteConfig, configDir) : (site as SiteConfig);
 		}
 	} else if (hasSingular) {
-		sites = { default: input.site as SiteConfig };
+		const site = configDir ? absolutizeSitePaths(input.site as SiteConfig, configDir) : (input.site as SiteConfig);
+		sites = { [DEFAULT_SITE_NAME]: site };
 	} else if (hasFlatSiteFields(input)) {
-		sites = { default: extractFlatSite(input) };
+		// Flat shape — leave paths as-is so legacy cwd-relative resolution
+		// continues to work in adapters.
+		sites = { [DEFAULT_SITE_NAME]: extractFlatSite(input) };
 	} else {
 		// Plan-only or empty config — sites map is empty but still defined.
 		sites = {};
@@ -104,7 +135,7 @@ export function normalizeRefraktConfig(raw: unknown): NormalizedRefraktConfig {
 	}
 
 	// Clean up: drop the singular `site` field on the normalized output since
-	// `sites.default` is the canonical home.
+	// `sites.main` is the canonical home for promoted single-site configs.
 	delete (normalized as { site?: unknown }).site;
 
 	return normalized;
@@ -113,6 +144,50 @@ export function normalizeRefraktConfig(raw: unknown): NormalizedRefraktConfig {
 /** True if any flat-shape site field is present at the top level. */
 function hasFlatSiteFields(input: RefraktConfig): boolean {
 	return SITE_FIELDS.some((field) => input[field] !== undefined);
+}
+
+/** Resolve site-scoped path fields against the config file's directory.
+ *
+ *  Applies to: `contentDir`, `sandbox.examplesDir`, `theme` (when relative),
+ *  `overrides` values, `runes.local` values. Package names (e.g.,
+ *  `@refrakt-md/lumina`) and absolute paths are passed through unchanged. */
+function absolutizeSitePaths(site: SiteConfig, configDir: string): SiteConfig {
+	const result: SiteConfig = { ...site };
+	result.contentDir = absolutizeIfRelative(site.contentDir, configDir);
+	if (typeof site.theme === 'string') {
+		result.theme = absolutizeIfRelative(site.theme, configDir);
+	}
+	if (site.sandbox?.examplesDir) {
+		result.sandbox = {
+			...site.sandbox,
+			examplesDir: absolutizeIfRelative(site.sandbox.examplesDir, configDir),
+		};
+	}
+	if (site.overrides) {
+		const overrides: Record<string, string> = {};
+		for (const [key, value] of Object.entries(site.overrides)) {
+			overrides[key] = absolutizeIfRelative(value, configDir);
+		}
+		result.overrides = overrides;
+	}
+	if (site.runes?.local) {
+		const local: Record<string, string> = {};
+		for (const [key, value] of Object.entries(site.runes.local)) {
+			local[key] = absolutizeIfRelative(value, configDir);
+		}
+		result.runes = { ...site.runes, local };
+	}
+	return result;
+}
+
+/** Absolutize a path string against a base directory if it's relative AND
+ *  starts with `./` or `../` (i.e., looks like a file path rather than a
+ *  package name like `@refrakt-md/lumina`). Already-absolute paths pass
+ *  through unchanged. */
+function absolutizeIfRelative(value: string, base: string): string {
+	if (isAbsolute(value)) return value;
+	if (!value.startsWith('./') && !value.startsWith('../')) return value;
+	return resolve(base, value);
 }
 
 /** Pull the flat-shape fields off the top level into a SiteConfig. */

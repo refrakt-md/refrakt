@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import type { RunePackage, SiteConfig } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { createSiteLoader, type SiteLoader } from './loader.js';
@@ -31,7 +31,9 @@ export interface RefraktLoader {
 export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoader {
 	const configPath = resolve(options?.configPath ?? './refrakt.config.json');
 	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
-	const normalized = normalizeRefraktConfig(rawConfig);
+	// Pass the config file's directory so nested-shape paths absolutize
+	// file-relative (matches the SvelteKit plugin's behavior).
+	const normalized = normalizeRefraktConfig(rawConfig, { configDir: dirname(configPath) });
 	const { site }: { site: SiteConfig } = resolveSite(normalized, options?.site);
 	const contentDir = resolve(site.contentDir);
 
