@@ -30,22 +30,29 @@ npx refrakt config migrate
 npx refrakt config migrate --apply
 ```
 
-The diff output is line-based — short JSON files render fine:
+The migrate command rewrites the flat shape into the singular `site` form — here's what a typical flat → nested migration looks like:
 
-```diff
-- 	"contentDir": "./content",
-+ 	"site": {
-- 	"theme": "@refrakt-md/lumina",
-+ 		"contentDir": "./content",
-- 	"target": "svelte",
-+ 		"theme": "@refrakt-md/lumina",
-- 	"packages": ["@refrakt-md/marketing"]
-+ 		"target": "svelte",
-- }
-+ 		"packages": ["@refrakt-md/marketing"]
-+ 	}
-+ }
+{% diff mode="split" language="json" %}
+```json
+{
+	"contentDir": "./content",
+	"theme": "@refrakt-md/lumina",
+	"target": "svelte",
+	"packages": ["@refrakt-md/marketing"]
+}
 ```
+
+```json
+{
+	"site": {
+		"contentDir": "./content",
+		"theme": "@refrakt-md/lumina",
+		"target": "svelte",
+		"packages": ["@refrakt-md/marketing"]
+	}
+}
+```
+{% /diff %}
 
 JSON indent style is sniffed from the original file before re-serializing, so tab-indented configs stay tab-indented.
 
