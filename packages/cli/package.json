@@ -17,6 +17,16 @@
   "bin": {
     "refrakt": "./dist/bin.js"
   },
+  "exports": {
+    "./lib/plugins.js": {
+      "types": "./dist/lib/plugins.d.ts",
+      "default": "./dist/lib/plugins.js"
+    },
+    "./lib/levenshtein.js": {
+      "types": "./dist/lib/levenshtein.d.ts",
+      "default": "./dist/lib/levenshtein.js"
+    }
+  },
   "files": [
     "dist"
   ],

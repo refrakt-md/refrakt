@@ -10,4 +10,7 @@ export type NuxtTheme = AdapterTheme;
 
 export interface RefraktNuxtOptions {
 	configPath?: string;
+	/** Which site to use from the config. Required when the config declares
+	 *  multiple `sites.*`; optional (and resolves to the lone site) otherwise. */
+	site?: string;
 }

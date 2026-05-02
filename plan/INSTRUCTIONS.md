@@ -227,6 +227,17 @@ Optional notes or context.
 
 ## Working with Plan Content
 
+### MCP tool preference (when available)
+
+If `@refrakt-md/mcp` is registered with your MCP client (e.g., Claude Code via `.mcp.json` at the repo root), prefer MCP tools over the CLI for plan operations:
+
+- `mcp__refrakt__plan.next` instead of `npx refrakt plan next`
+- `mcp__refrakt__plan.update` instead of `npx refrakt plan update`
+- `mcp__refrakt__plan.create` instead of `npx refrakt plan create`
+- `mcp__refrakt__plan.status` / `plan.validate` / `plan.next-id` / `plan.history`
+
+The MCP path gives you typed inputs (status enum, priority enum, etc.) and structured outputs without text parsing. The CLI examples below remain canonical and keep working when MCP isn't registered.
+
 ### Implementing a work item
 
 ```bash

@@ -73,6 +73,7 @@ async function scaffoldSvelteKitSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generatePackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -98,6 +99,7 @@ async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateHtmlPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'html'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -143,15 +145,37 @@ function generatePackageJson(projectName: string, theme: string): string {
 	return JSON.stringify(pkg, null, '\t') + '\n';
 }
 
+/** Project-scoped MCP server registration. Read by Claude Code, Cursor, and
+ *  other MCP-aware clients via `.mcp.json` at the project root. */
+function generateMcpConfig(): string {
+	return JSON.stringify(
+		{
+			mcpServers: {
+				refrakt: {
+					command: 'npx',
+					args: ['@refrakt-md/mcp'],
+				},
+			},
+		},
+		null,
+		'\t',
+	) + '\n';
+}
+
 function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
 	const config = {
-		contentDir: './content',
-		theme,
-		target,
-		packages: ['@refrakt-md/marketing'],
-		routeRules: [
-			{ pattern: '**', layout: 'default' },
-		],
+		$schema: 'https://refrakt.md/refrakt.config.schema.json',
+		sites: {
+			main: {
+				contentDir: './content',
+				theme,
+				target,
+				packages: ['@refrakt-md/marketing'],
+				routeRules: [
+					{ pattern: '**', layout: 'default' },
+				],
+			},
+		},
 	};
 	return JSON.stringify(config, null, '\t') + '\n';
 }
@@ -207,6 +231,7 @@ async function scaffoldAstroSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateAstroPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'astro'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -232,6 +257,7 @@ async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateNuxtPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'nuxt'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -257,6 +283,7 @@ async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateNextPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'next'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -282,6 +309,7 @@ async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateEleventyPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -446,7 +474,11 @@ npm run preview
 
 Content lives in \`./content\` as \`.md\` files. Runes — the Markdoc tags like \`{% hint %}\` and \`{% hero %}\` that give this site its rich structure — are documented in [\`AGENTS.md\`](./AGENTS.md). That file is the canonical rune reference for both human contributors and coding agents (Claude Code, Cursor, Aider, GitHub Copilot).
 
-When you add or remove packages in \`refrakt.config.json\`, regenerate \`AGENTS.md\`:
+## Configuration
+
+Site settings live under \`sites.main\` in \`refrakt.config.json\`. To add a second site (e.g., a blog or docs subsite) declare another entry under \`sites\`, then pass \`site: '<name>'\` to the SvelteKit plugin in the corresponding \`vite.config.ts\`.
+
+When you add or remove packages in \`sites.main.packages\`, regenerate \`AGENTS.md\`:
 
 \`\`\`sh
 npx refrakt reference dump

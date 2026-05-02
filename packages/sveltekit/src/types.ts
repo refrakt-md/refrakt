@@ -2,6 +2,9 @@
 export interface RefractPluginOptions {
 	/** Path to refrakt.config.json (default: './refrakt.config.json') */
 	configPath?: string;
+	/** Which site to use from the config. Required when the config declares
+	 *  multiple `sites.*`; optional (and resolves to the lone site) otherwise. */
+	site?: string;
 	/** Additional packages to add to ssr.noExternal */
 	noExternal?: string[];
 	/**

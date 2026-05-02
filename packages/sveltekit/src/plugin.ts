@@ -2,10 +2,11 @@ import { existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin, UserConfig } from 'vite';
-import type { RefraktConfig, RunePackage, PipelineWarning } from '@refrakt-md/types';
+import type { RunePackage, SiteConfig, PipelineWarning } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
+import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { resolveVirtualId, loadVirtualModule, type BuildContext } from './virtual-modules.js';
 import { setupContentHmr } from './content-hmr.js';
 
@@ -21,7 +22,8 @@ const CORE_NO_EXTERNAL = [
 
 export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	const configPath = options.configPath ?? './refrakt.config.json';
-	let refraktConfig: RefraktConfig;
+	let activeSite: SiteConfig;
+	let activeSiteName: string;
 	let isBuild = false;
 	let resolvedRoot = '';
 	let usedCssBlocks: Set<string> | undefined;
@@ -35,12 +37,20 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 		config(_, env): Partial<UserConfig> {
 			isBuild = env.command === 'build';
-			refraktConfig = loadRefraktConfig(configPath);
+			const rawConfig = loadRefraktConfig(configPath);
+			// configDir is the directory containing refrakt.config.json — used by
+			// the normalizer to absolutize nested-shape relative paths so adapters
+			// see file-relative semantics rather than cwd-relative.
+			const configDir = dirname(resolve(configPath));
+			const normalizedConfig = normalizeRefraktConfig(rawConfig, { configDir });
+			const resolved = resolveSite(normalizedConfig, options.site);
+			activeSite = resolved.site;
+			activeSiteName = resolved.name;
 
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
-				refraktConfig.theme,
-				...(refraktConfig.packages ?? []),
+				activeSite.theme,
+				...(activeSite.packages ?? []),
 				...(options.noExternal ?? []),
 			];
 
@@ -60,9 +70,9 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 		async buildStart() {
 			// Load community/official packages and local runes if configured
-			const hasPackages = refraktConfig.packages && refraktConfig.packages.length > 0;
-			const hasLocal = refraktConfig.runes?.local && Object.keys(refraktConfig.runes.local).length > 0;
-			const hasAliases = refraktConfig.runes?.aliases && Object.keys(refraktConfig.runes.aliases).length > 0;
+			const hasPackages = activeSite.packages && activeSite.packages.length > 0;
+			const hasLocal = activeSite.runes?.local && Object.keys(activeSite.runes.local).length > 0;
+			const hasAliases = activeSite.runes?.aliases && Object.keys(activeSite.runes.aliases).length > 0;
 
 			if (hasPackages || hasLocal || hasAliases) {
 				try {
@@ -77,9 +87,9 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					// Load installed packages
 					if (hasPackages) {
 						const loaded = await Promise.all(
-							refraktConfig.packages!.map((name: string) => loadRunePackage(name))
+							activeSite.packages!.map((name: string) => loadRunePackage(name))
 						);
-						merged = mergePackages(loaded, coreRuneNames, refraktConfig.runes?.prefer);
+						merged = mergePackages(loaded, coreRuneNames, activeSite.runes?.prefer);
 						mergedRunes = { ...coreRunes, ...merged.runes };
 						mergedTags = merged.tags;
 						mergedPackages = merged.packages;
@@ -87,7 +97,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 					// Load local runes (highest priority)
 					if (hasLocal) {
-						const local = await loadLocalRunes(refraktConfig.runes!.local!, resolvedRoot);
+						const local = await loadLocalRunes(activeSite.runes!.local!, resolvedRoot);
 						mergedRunes = { ...mergedRunes, ...local.runes };
 						mergedTags = { ...mergedTags, ...runeTagMap(local.runes) };
 					}
@@ -97,7 +107,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 						const aliased = applyAliases(
 							mergedRunes,
 							mergedTags,
-							refraktConfig.runes!.aliases!,
+							activeSite.runes!.aliases!,
 							merged.provenance,
 						);
 						mergedTags = aliased.tags;
@@ -129,11 +139,11 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			try {
 				const contentPkg = '@refrakt-md/content';
 				const { loadContent, analyzeRuneUsage } = await import(contentPkg);
-				const sandboxExamplesDir = refraktConfig.sandbox?.examplesDir
-					? resolve(resolvedRoot, refraktConfig.sandbox.examplesDir)
+				const sandboxExamplesDir = activeSite.sandbox?.examplesDir
+					? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
 					: undefined;
 				const site = await loadContent(
-					resolve(resolvedRoot, refraktConfig.contentDir),
+					resolve(resolvedRoot, activeSite.contentDir),
 					'/',
 					undefined,
 					communityTags,
@@ -160,14 +170,14 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 				const report = analyzeRuneUsage(site.pages);
 
-				const themeTransform = await import(`${refraktConfig.theme}/transform`);
+				const themeTransform = await import(`${activeSite.theme}/transform`);
 				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
 				const effectiveConfig = assembledResult?.config ?? themeConfig;
 
 				usedCssBlocks = new Set<string>();
 
 				// Resolve the theme's root export (index.css) to find the package directory
-				const themeEntryUrl = import.meta.resolve(refraktConfig.theme);
+				const themeEntryUrl = import.meta.resolve(activeSite.theme);
 				const themeDir = dirname(fileURLToPath(themeEntryUrl));
 				const stylesDir = join(themeDir, 'styles', 'runes');
 
@@ -207,15 +217,17 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 				usedCssBlocks,
 				resolvedRoot,
 				variables: options.variables,
+				configPath,
+				siteName: activeSiteName,
 			};
-			return loadVirtualModule(id, refraktConfig, buildCtx);
+			return loadVirtualModule(id, activeSite, buildCtx);
 		},
 
 		configureServer(server) {
-			const examplesDir = refraktConfig.sandbox?.examplesDir
-				? resolve(resolvedRoot, refraktConfig.sandbox.examplesDir)
+			const examplesDir = activeSite.sandbox?.examplesDir
+				? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
 				: undefined;
-			setupContentHmr(server, refraktConfig.contentDir, examplesDir);
+			setupContentHmr(server, activeSite.contentDir, examplesDir);
 		},
 	};
 }

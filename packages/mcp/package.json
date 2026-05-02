@@ -1,0 +1,41 @@
+{
+	"name": "@refrakt-md/mcp",
+	"description": "Model Context Protocol server wrapping the refrakt CLI",
+	"version": "0.10.1",
+	"type": "module",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/refrakt-md/refrakt.git",
+		"directory": "packages/mcp"
+	},
+	"bugs": "https://github.com/refrakt-md/refrakt/issues",
+	"homepage": "https://github.com/refrakt-md/refrakt",
+	"publishConfig": {
+		"access": "public"
+	},
+	"bin": {
+		"refrakt-mcp": "./dist/bin.js"
+	},
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@refrakt-md/cli": "0.10.1",
+		"@refrakt-md/runes": "0.10.1",
+		"@refrakt-md/transform": "0.10.1",
+		"@refrakt-md/types": "0.10.1"
+	}
+}

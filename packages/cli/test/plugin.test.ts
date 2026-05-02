@@ -51,8 +51,22 @@ describe('plugin discovery', () => {
 	it('should report install instructions for missing plugin packages', () => {
 		const { stdout, exitCode } = run('fakepkg');
 		expect(exitCode).toBe(1);
-		expect(stdout).toContain('@refrakt-md/fakepkg');
-		expect(stdout).toContain('npm install');
+		expect(stdout).toContain('Unknown command "fakepkg"');
+		expect(stdout).toMatch(/Installed plugins:|No refrakt plugins/);
+	});
+
+	it('should suggest "did you mean?" for misspelled namespaces', () => {
+		const { stdout, exitCode } = run('pln');
+		expect(exitCode).toBe(1);
+		expect(stdout).toContain('Unknown command "pln"');
+		expect(stdout).toContain('Did you mean "plan"?');
+	});
+
+	it('should suggest "did you mean?" for misspelled subcommands', () => {
+		const { stdout, exitCode } = run('plan', 'creat');
+		expect(exitCode).toBe(1);
+		expect(stdout).toContain('Unknown plan command "creat"');
+		expect(stdout).toContain('Did you mean "create"?');
 	});
 
 	it('should not break existing commands', () => {

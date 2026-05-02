@@ -1,4 +1,4 @@
-import type { RefraktConfig } from '@refrakt-md/types';
+import type { SiteConfig } from '@refrakt-md/types';
 
 const VIRTUAL_PREFIX = 'virtual:refrakt/';
 const RESOLVED_PREFIX = '\0virtual:refrakt/';
@@ -25,11 +25,18 @@ export interface BuildContext {
 	resolvedRoot: string;
 	/** Raw JS expressions for Markdoc variables (e.g., { version: '__REFRAKT_VERSION__' }) */
 	variables?: Record<string, string>;
+	/** Path to refrakt.config.json relative to vite's resolvedRoot. Defaults
+	 *  to `refrakt.config.json` (next to vite.config.ts). Used at runtime by
+	 *  the virtual content module's `createRefraktLoader`. */
+	configPath?: string;
+	/** Site name to load from a multi-site config; passed to the runtime
+	 *  loader so server-side rendering picks the same site as the plugin. */
+	siteName?: string;
 }
 
 export function loadVirtualModule(
 	id: string,
-	config: RefraktConfig,
+	config: SiteConfig,
 	buildCtx: BuildContext = { isBuild: false, resolvedRoot: '' },
 ): string | undefined {
 	const theme = config.theme;
@@ -115,10 +122,11 @@ export function loadVirtualModule(
 	return undefined;
 }
 
-function generateContentModule(config: RefraktConfig, buildCtx: BuildContext): string {
+function generateContentModule(config: SiteConfig, buildCtx: BuildContext): string {
+	const relativeConfig = buildCtx.configPath ?? 'refrakt.config.json';
 	const configPath = buildCtx.resolvedRoot
-		? JSON.stringify(buildCtx.resolvedRoot + '/refrakt.config.json')
-		: JSON.stringify('./refrakt.config.json');
+		? JSON.stringify(resolvePath(buildCtx.resolvedRoot, relativeConfig))
+		: JSON.stringify(relativeConfig);
 
 	// Build variables object as a raw JS expression
 	let variablesExpr = 'undefined';
@@ -129,11 +137,14 @@ function generateContentModule(config: RefraktConfig, buildCtx: BuildContext): s
 		variablesExpr = `{\n${entries}\n\t}`;
 	}
 
+	const siteName = buildCtx.siteName ? JSON.stringify(buildCtx.siteName) : 'undefined';
+
 	return [
 		`import { createRefraktLoader } from '@refrakt-md/content';`,
 		``,
 		`const _loader = createRefraktLoader({`,
 		`\tconfigPath: ${configPath},`,
+		`\tsite: ${siteName},`,
 		`\tvariables: ${variablesExpr},`,
 		`\tdev: import.meta.env.DEV,`,
 		`});`,
@@ -143,4 +154,20 @@ function generateContentModule(config: RefraktConfig, buildCtx: BuildContext): s
 		`export const getHighlightTransform = () => _loader.getHighlightTransform();`,
 		`export const invalidateSite = () => _loader.invalidateSite();`,
 	].join('\n');
+}
+
+function resolvePath(root: string, relative: string): string {
+	if (relative.startsWith('/')) return relative;
+	// Use POSIX semantics for the embedded string regardless of host OS.
+	const parts = (root + '/' + relative).split('/');
+	const stack: string[] = [];
+	for (const part of parts) {
+		if (part === '' || part === '.') continue;
+		if (part === '..') {
+			stack.pop();
+			continue;
+		}
+		stack.push(part);
+	}
+	return '/' + stack.join('/');
 }

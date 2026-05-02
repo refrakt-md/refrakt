@@ -1,4 +1,4 @@
-{% work id="WORK-175" status="draft" priority="medium" complexity="moderate" tags="docs, mcp, plugins" source="SPEC-043" milestone="v0.11.0" %}
+{% work id="WORK-175" status="done" priority="medium" complexity="moderate" tags="docs, mcp, plugins" source="SPEC-043" milestone="v0.11.0" %}
 
 # Site docs — MCP + plugin authoring update + CLAUDE.md pointer
 
@@ -6,16 +6,16 @@ Document the new `@refrakt-md/mcp` server (registration, tool reference, resourc
 
 ## Acceptance Criteria
 
-- [ ] New `site/content/docs/mcp/` directory with:
+- [x] New `site/content/docs/mcp/` directory with:
   - `overview.md` — what the MCP server is, when to use it, the auto-detection model
   - `installation.md` — registering with Claude Desktop, Claude Code, and other MCP clients
   - `tools.md` — full tool reference (core + plan), generated or hand-written
   - `resources.md` — full resource reference (`refrakt://detect`, `refrakt://reference`, `refrakt://contracts`, `refrakt://rune/*`, `refrakt://plan/*`)
   - `errors.md` — error envelope shape, error codes, how agents should react
-- [ ] `site/content/docs/packages/authoring.md` (or wherever package authoring lives) updated with a "Making your commands MCP-friendly" section covering `inputSchema`, `outputSchema`, `mcpHandler`
-- [ ] Root `CLAUDE.md` gets a short paragraph (≤5 lines) under a new `## MCP Server` heading explaining that `@refrakt-md/mcp` exists, what it exposes, and how to know if it's available
-- [ ] Cross-references between MCP docs and the configuration docs (WORK-174) for `--cwd` and detection behavior
-- [ ] Docs site builds cleanly
+- [x] `site/content/docs/packages/authoring.md` (or wherever package authoring lives) updated with a "Making your commands MCP-friendly" section covering `inputSchema`, `outputSchema`, `mcpHandler`
+- [x] Root `CLAUDE.md` gets a short paragraph (≤5 lines) under a new `## MCP Server` heading explaining that `@refrakt-md/mcp` exists, what it exposes, and how to know if it's available
+- [x] Cross-references between MCP docs and the configuration docs (WORK-174) for `--cwd` and detection behavior
+- [x] Docs site builds cleanly
 
 ## Approach
 
@@ -36,5 +36,29 @@ Document the new `@refrakt-md/mcp` server (registration, tool reference, resourc
 - {% ref "SPEC-043" /%} — Refrakt MCP Server (full surface)
 - `CLAUDE.md` — root-level instructions to extend
 - `site/content/docs/packages/authoring.md` — plugin authoring guide
+
+## Resolution
+
+Completed: 2026-05-02
+
+Branch: `claude/v0.11.0-config-foundation`
+
+### What was done
+
+- `site/content/docs/mcp/` (new) — 5 pages covering the MCP server end-to-end:
+  - `overview.md` — what the server provides, auto-detection (plan / sites / both / neither), excluded commands, why use it over plain CLI invocation.
+  - `installation.md` — Claude Desktop, Claude Code, Cursor registration; `--cwd` for clients that launch from outside the project; verification via JSON-RPC handshake; troubleshooting.
+  - `tools.md` — full reference for the 6 core tools (refrakt.detect, refrakt.plugins_list, refrakt.reference, refrakt.contracts, refrakt.inspect, refrakt.inspect_list) plus the plugin-tool registration mechanism, mcpHandler vs argv-shimming, site-scoped tool inputs.
+  - `resources.md` — static + templated URI scheme (refrakt://detect, refrakt://reference, refrakt://contracts, refrakt://rune/<name>, refrakt://plan/index, refrakt://plan/<type>/<id>, refrakt://plan/status), conditional exposure, multi-site disambiguation, tools-vs-resources guidance.
+  - `errors.md` — tool error envelope shape with errorCode + hint, resource error format, full error code table, multi-site ambiguity and unknown-site patterns, agent recovery patterns starting with refrakt.detect.
+- `site/content/docs/packages/authoring.md` — Added "Adding CLI Commands and MCP Tools" section covering: minimal cli-plugin export, MCP-friendly extensions (inputSchema, outputSchema, mcpHandler), example showing argv handler + mcpHandler sharing a runX(opts) function, linting via `refrakt package validate`, exclusion patterns for commands that don't fit MCP.
+- `CLAUDE.md` (root) — Added a 3-line "## MCP Server" section near the top explaining the package exists, pointing at `refrakt.detect` / `refrakt.plugins_list` for inspection, and linking to `site/content/docs/mcp/` for the full reference.
+- `site/content/docs/_layout.md` — Added an "MCP Server" section to the docs nav listing all 5 new pages.
+
+### Notes
+
+- All internal links between MCP and configuration docs use `/docs/<section>/<slug>` paths and were verified by a clean site prerender (153 pages, no broken-link errors — was 148 before, +5 MCP pages on top of WORK-174's +5 configuration pages).
+- The MCP overview cross-references the configuration docs for `--cwd` and auto-detection behavior; the configuration docs already point at MCP via the schema page.
+- All 2318 tests pass.
 
 {% /work %}

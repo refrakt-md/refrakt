@@ -7,7 +7,12 @@
 ## Guide
 
 - getting-started
-- configuration
+- overview
+- plugins
+- plan
+- sites
+- migration
+- schema
 - content
 
 ## CLI
@@ -53,6 +58,14 @@
 - authoring
 - pipeline
 - extending-core
+
+## MCP Server
+
+- overview
+- installation
+- tools
+- resources
+- errors
 
 {% /nav %}
 {% /region %}

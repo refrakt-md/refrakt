@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { idExists } from './next-id.js';
 import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
+import { scaffoldRefraktConfigForPlan } from '../plan-config.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
@@ -33,8 +34,12 @@ export interface InitOptions {
 	noPackageJson?: boolean;
 	/** Skip writing .claude/settings.json SessionStart hook. */
 	noHooks?: boolean;
+	/** Skip writing .mcp.json (project-scoped MCP server registration). */
+	noMcp?: boolean;
 	/** Skip writing ./plan wrapper script. */
 	noWrapper?: boolean;
+	/** Skip creating/updating refrakt.config.json. */
+	noConfig?: boolean;
 	/** Override package versions pinned into devDependencies. Defaults to this plan package's own version. */
 	versions?: { cli: string; plan: string };
 }
@@ -45,9 +50,12 @@ export interface InitResult {
 	agentFilesUpdated: string[];
 	packageJsonUpdated: boolean;
 	hookWritten: boolean;
+	mcpWritten: boolean;
 	wrapperWritten: boolean;
 	installRoot: string | null;
 	packageManager: PackageManager | null;
+	/** What happened to refrakt.config.json — `null` when scaffolding was skipped (e.g., --no-config). */
+	refraktConfig: { action: 'created' | 'extended' | 'preserved' | 'skipped'; path: string; message: string } | null;
 }
 
 /**
@@ -79,6 +87,8 @@ plan/
 \`\`\`
 
 ## Workflow
+
+If your MCP-aware editor or AI tool is registered with \`@refrakt-md/mcp\` (a project-scoped \`.mcp.json\` is included for clients that read it), prefer the MCP tools — \`plan.next\`, \`plan.update\`, \`plan.create\`, \`plan.status\`, etc. — over the CLI examples below. They accept structured inputs (status enum, priority enum) and return structured outputs without text parsing. The CLI examples remain canonical for environments without MCP.
 
 1. Find next work item: \`refrakt plan next\`
 2. Start working: \`refrakt plan update <id> --status in-progress\`
@@ -368,6 +378,36 @@ function writeClaudeHook(projectRoot: string): boolean {
 }
 
 /**
+ * Write `.mcp.json` at the project root so MCP-aware clients (Claude Code,
+ * Cursor, Claude Desktop via project scope) auto-register the
+ * `@refrakt-md/mcp` server. Idempotent: when the file already exists with a
+ * `refrakt` server entry, leave it alone. When it exists without one, add the
+ * entry alongside the existing servers.
+ */
+function writeMcpConfig(projectRoot: string): boolean {
+	const mcpPath = join(projectRoot, '.mcp.json');
+	let config: { mcpServers?: Record<string, { command: string; args?: string[] }> } = {};
+	if (existsSync(mcpPath)) {
+		try {
+			config = JSON.parse(readFileSync(mcpPath, 'utf-8'));
+		} catch {
+			return false;
+		}
+	}
+	if (!config.mcpServers) config.mcpServers = {};
+	if (config.mcpServers.refrakt) {
+		// Already registered; nothing to do.
+		return false;
+	}
+	config.mcpServers.refrakt = {
+		command: 'npx',
+		args: ['@refrakt-md/mcp'],
+	};
+	writeFileSync(mcpPath, JSON.stringify(config, null, '\t') + '\n');
+	return true;
+}
+
+/**
  * Write a ./plan.sh wrapper script and mark it executable. We use `.sh`
  * because the default content directory is also called `plan/` and a file
  * named `plan` can't coexist with a directory of the same name in a single
@@ -401,7 +441,9 @@ export function runInit(options: InitOptions): InitResult {
 		agent,
 		noPackageJson = false,
 		noHooks = false,
+		noMcp = false,
 		noWrapper = false,
+		noConfig = false,
 	} = options;
 
 	const versions = options.versions ?? (() => {
@@ -485,10 +527,32 @@ export function runInit(options: InitOptions): InitResult {
 		hookWritten = writeClaudeHook(projectRoot);
 	}
 
+	// --- 4b. .mcp.json (gated like the hook — write when an MCP-aware client
+	// is plausible) ---------------------------------------------------------
+	let mcpWritten = false;
+	const shouldWriteMcp = (() => {
+		if (noMcp) return false;
+		if (agent === 'none') return false;
+		if (agent === 'claude') return true;
+		if (agent === 'cursor') return true;
+		if (agent) return false; // explicit non-MCP agent
+		// auto-detect: write if CLAUDE.md exists or was just created
+		return existsSync(join(projectRoot, AGENT_FILES.claude));
+	})();
+	if (shouldWriteMcp) {
+		mcpWritten = writeMcpConfig(projectRoot);
+	}
+
 	// --- 5. ./plan.sh wrapper script ---------------------------------------
 	let wrapperWritten = false;
 	if (!noWrapper && agent !== 'none') {
 		wrapperWritten = writeWrapperScript(projectRoot);
+	}
+
+	// --- 6. refrakt.config.json (gated) ------------------------------------
+	let refraktConfig: InitResult['refraktConfig'] = null;
+	if (!noConfig) {
+		refraktConfig = scaffoldRefraktConfigForPlan({ projectRoot, planDir: dir });
 	}
 
 	return {
@@ -497,9 +561,11 @@ export function runInit(options: InitOptions): InitResult {
 		agentFilesUpdated,
 		packageJsonUpdated,
 		hookWritten,
+		mcpWritten,
 		wrapperWritten,
 		installRoot: installRootInfo ? installRootInfo.rootDir : null,
 		packageManager,
+		refraktConfig,
 	};
 }
 

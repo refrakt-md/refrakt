@@ -6,10 +6,9 @@ const command = args[0];
 
 if (!command || command === '--help' || command === '-h') {
 	printUsage();
-	process.exit(command ? 0 : 1);
-}
-
-if (command === 'write') {
+	// Append the installed-plugin section asynchronously, then exit.
+	appendPluginsToHelp().finally(() => process.exit(command ? 0 : 1));
+} else if (command === 'write') {
 	runWrite(args.slice(1));
 } else if (command === 'inspect') {
 	runInspect(args.slice(1));
@@ -21,6 +20,10 @@ if (command === 'write') {
 	runValidate(args.slice(1));
 } else if (command === 'theme') {
 	runTheme(args.slice(1));
+} else if (command === 'plugins') {
+	runPluginsCommand(args.slice(1));
+} else if (command === 'config') {
+	runConfigCommand(args.slice(1));
 } else if (command === 'extract') {
 	// Deprecated: extract has moved to the docs rune package
 	console.error('Warning: `refrakt extract` is deprecated. Use `refrakt docs extract` instead.\n');
@@ -54,6 +57,8 @@ Commands:
   edit                 Launch the browser-based content editor
   package <subcommand> Manage rune packages (validate)
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
+  plugins <subcommand> List installed plugins (list)
+  config <subcommand>  Manage refrakt.config.json (migrate)
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -71,6 +76,7 @@ Inspect Options:
   --css <dir>              CSS directory for audit (auto-detected by default)
   --theme <name>           Theme to use (default: base)
   --items <n>              Number of repeated children (default: 3)
+  --site <name>            Site to use from refrakt.config.json (multi-site projects)
   --<attr>=<value>         Set a rune attribute (e.g., --type=warning)
   --<attr>=all             Expand all variants for that attribute
 
@@ -84,6 +90,7 @@ Contracts Options:
   --output, -o <path>      Write contracts to a file (default: stdout)
   --check                  Validate existing file is up to date (exit 1 if stale)
   --config <dir>           Directory containing refrakt.config.json (default: cwd)
+  --site <name>            Site to use from refrakt.config.json (multi-site projects)
 
 Scaffold-CSS Options:
   --output-dir, -d <dir>   Output directory (default: ./styles/runes)
@@ -155,36 +162,50 @@ Reference Options:
 
 // --- Plugin system ---
 
-interface CliPluginCommand {
-	name: string;
-	description: string;
-	handler: (args: string[]) => void | Promise<void>;
-}
+import { discoverPlugins, type DiscoveredPlugin } from './lib/plugins.js';
+import { closestMatch } from './lib/levenshtein.js';
+import { runPluginsCommand, appendPluginsToHelp } from './commands/plugins.js';
+import { runConfigCommand } from './commands/config.js';
 
-interface CliPlugin {
-	namespace: string;
-	commands: CliPluginCommand[];
+/** Cached discovery for the lifetime of the CLI invocation. Implemented as a
+ *  function declaration with a property cache so the symbol is fully hoisted —
+ *  important because the dispatch code at the top of this file runs before
+ *  any non-function-declaration bindings are initialized (TDZ). */
+function getPlugins(): Promise<DiscoveredPlugin[]> {
+	const self = getPlugins as { _cache?: Promise<DiscoveredPlugin[]> };
+	if (!self._cache) {
+		self._cache = discoverPlugins();
+	}
+	return self._cache;
 }
 
 async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void> {
 	const subcommand = pluginArgs[0];
-	const packageName = `@refrakt-md/${namespace}`;
-	const pluginEntry = `${packageName}/cli-plugin`;
+	const plugins = await getPlugins();
+	const plugin = plugins.find((p) => p.namespace === namespace);
 
-	let plugin: CliPlugin;
-	try {
-		const mod = await import(pluginEntry);
-		plugin = mod.default ?? mod;
-	} catch {
-		console.error(`\n  The "${namespace}" commands require ${packageName}.`);
-		console.error(`  Install it: npm install ${packageName}\n`);
+	if (!plugin) {
+		const namespaces = plugins.map((p) => p.namespace);
+		const suggestion = closestMatch(namespace, namespaces);
+		const packageName = `@refrakt-md/${namespace}`;
+
+		console.error(`\n  Unknown command "${namespace}".`);
+		if (suggestion) {
+			console.error(`  Did you mean "${suggestion}"?\n`);
+		} else if (namespaces.length === 0) {
+			console.error(`\n  No refrakt plugins are installed in this project.`);
+			console.error(`  Install one to enable namespaced commands, e.g.: npm install ${packageName}\n`);
+		} else {
+			console.error(`\n  Installed plugins: ${namespaces.map((n) => `"${n}"`).join(', ')}`);
+			console.error(`  Or install a new one: npm install ${packageName}\n`);
+		}
 		process.exit(1);
 	}
 
 	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
 		console.log(`\nUsage: refrakt ${namespace} <command> [options]\n`);
 		console.log('Commands:');
-		const maxLen = Math.max(...plugin.commands.map(c => c.name.length));
+		const maxLen = Math.max(...plugin.commands.map((c) => c.name.length));
 		for (const cmd of plugin.commands) {
 			console.log(`  ${cmd.name.padEnd(maxLen + 2)} ${cmd.description}`);
 		}
@@ -192,10 +213,16 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 		process.exit(0);
 	}
 
-	const cmd = plugin.commands.find(c => c.name === subcommand);
+	const cmd = plugin.commands.find((c) => c.name === subcommand);
 	if (!cmd) {
-		console.error(`Error: Unknown ${namespace} command "${subcommand}"\n`);
-		console.log('Available commands:');
+		const subNames = plugin.commands.map((c) => c.name);
+		const subSuggestion = closestMatch(subcommand, subNames);
+
+		console.error(`Error: Unknown ${namespace} command "${subcommand}"`);
+		if (subSuggestion) {
+			console.error(`  Did you mean "${subSuggestion}"?`);
+		}
+		console.log('\nAvailable commands:');
 		for (const c of plugin.commands) {
 			console.log(`  refrakt ${namespace} ${c.name}  — ${c.description}`);
 		}
@@ -212,11 +239,16 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 }
 
 /** Load community packages from refrakt.config.json and assemble a merged ThemeConfig.
- *  Falls back to baseConfig if no config file or packages are found. */
+ *  Falls back to baseConfig if no config file or packages are found.
+ *
+ *  When `site` is provided, the named entry is read from `config.sites`; when
+ *  omitted, single-site projects pick the lone site automatically and multi-site
+ *  projects throw with the available site names. */
 async function loadMergedConfig(
 	runesModule: typeof import('@refrakt-md/runes'),
 	assembleThemeConfig: typeof import('@refrakt-md/transform').assembleThemeConfig,
 	configDir?: string,
+	site?: string,
 ): Promise<{
 	config: import('@refrakt-md/transform').ThemeConfig;
 	runes: Record<string, any>;
@@ -230,32 +262,59 @@ async function loadMergedConfig(
 	let mergedConfig = baseConfig;
 	let packageFixtures: Record<string, string> = {};
 
+	let configResult;
 	try {
 		const { loadRefraktConfigFile } = await import('./config-file.js');
-		const { config } = loadRefraktConfigFile(configDir);
+		configResult = loadRefraktConfigFile(configDir);
+	} catch {
+		// No refrakt.config.json — fall back to core runes only.
+		return { config: mergedConfig, runes: mergedRunes, tags: mergedTags, fixtures: packageFixtures };
+	}
+
+	try {
+		const { config } = configResult;
+
+		// Resolve which site's settings to use. For backwards compat with
+		// flat-shape configs (and single-site nested), this falls back to the
+		// top-level (mirrored) fields when no explicit site is declared.
+		let siteScoped: {
+			packages?: string[];
+			runes?: import('@refrakt-md/types').SiteConfig['runes'];
+		} = config;
+		const hasSites = Object.keys(config.sites).length > 0;
+		if (hasSites || site !== undefined) {
+			const { resolveSite } = await import('@refrakt-md/transform/node');
+			// resolveSite throws structured errors for unknown / ambiguous site
+			// names and for the "no sites declared but --site requested" case.
+			// Let them bubble up so the user sees them instead of a silent
+			// fallback.
+			const resolved = resolveSite(config, site);
+			siteScoped = resolved.site;
+		}
+
 		const coreRuneNames = new Set(Object.keys(runes));
 		let merged;
 
-		if (config.packages && config.packages.length > 0) {
+		if (siteScoped.packages && siteScoped.packages.length > 0) {
 			const loaded = await Promise.all(
-				config.packages.map((name: string) => loadRunePackage(name))
+				siteScoped.packages.map((name: string) => loadRunePackage(name))
 			);
-			merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+			merged = mergePackages(loaded, coreRuneNames, siteScoped.runes?.prefer);
 			mergedRunes = { ...runes, ...merged.runes };
 			mergedTags = { ...tags, ...merged.tags };
 			packageFixtures = merged.fixtures;
 		}
 
-		if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
-			const local = await loadLocalRunes(config.runes.local, process.cwd());
+		if (siteScoped.runes?.local && Object.keys(siteScoped.runes.local).length > 0) {
+			const local = await loadLocalRunes(siteScoped.runes.local, process.cwd());
 			mergedRunes = { ...mergedRunes, ...local.runes };
 			const localTags = runesModule.runeTagMap(local.runes);
 			mergedTags = { ...mergedTags, ...localTags };
 		}
 
-		if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
+		if (siteScoped.runes?.aliases && Object.keys(siteScoped.runes.aliases).length > 0) {
 			const provenance = merged?.provenance ?? {};
-			const aliased = applyAliases(mergedRunes, mergedTags, config.runes.aliases, provenance);
+			const aliased = applyAliases(mergedRunes, mergedTags, siteScoped.runes.aliases, provenance);
 			mergedTags = aliased.tags;
 		}
 
@@ -269,8 +328,11 @@ async function loadMergedConfig(
 			});
 			mergedConfig = assembled.config;
 		}
-	} catch {
-		// No config file or community packages — use core runes only
+	} catch (err) {
+		// Site-resolution and package-load errors should surface to the user
+		// rather than fall back silently — this is the "config exists but is
+		// invalid" path. The "no config" case was handled above.
+		throw err;
 	}
 
 	return { config: mergedConfig, runes: mergedRunes, tags: mergedTags, fixtures: packageFixtures };
@@ -288,6 +350,7 @@ function runInspect(inspectArgs: string[]): void {
 	let cssDir: string | undefined;
 	let theme = 'base';
 	let items = 3;
+	let site: string | undefined;
 	const flags: Record<string, string> = {};
 
 	for (let i = 0; i < inspectArgs.length; i++) {
@@ -317,6 +380,12 @@ function runInspect(inspectArgs: string[]): void {
 			theme = inspectArgs[++i];
 			if (!theme) {
 				console.error('Error: --theme requires a value');
+				process.exit(1);
+			}
+		} else if (arg === '--site') {
+			site = inspectArgs[++i];
+			if (!site) {
+				console.error('Error: --site requires a name');
 				process.exit(1);
 			}
 		} else if (arg === '--items') {
@@ -368,7 +437,7 @@ function runInspect(inspectArgs: string[]): void {
 		const { nodes, serializeTree, extractHeadings } = runesModule;
 		const Markdoc = markdocModule.default ?? markdocModule;
 
-		const merged = await loadMergedConfig(runesModule, assembleThemeConfig);
+		const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
 
 		return inspectCommand(
 			{ runeName, list, json, audit, auditMeta, auditDimensions, showInterface, all, cssDir, theme, items, flags },
@@ -485,6 +554,7 @@ function runContracts(contractsArgs: string[]): void {
 	let output: string | undefined;
 	let check = false;
 	let configDir: string | undefined;
+	let site: string | undefined;
 
 	for (let i = 0; i < contractsArgs.length; i++) {
 		const arg = contractsArgs[i];
@@ -501,6 +571,12 @@ function runContracts(contractsArgs: string[]): void {
 			configDir = contractsArgs[++i];
 			if (!configDir) {
 				console.error('Error: --config requires a directory path');
+				process.exit(1);
+			}
+		} else if (arg === '--site') {
+			site = contractsArgs[++i];
+			if (!site) {
+				console.error('Error: --site requires a name');
 				process.exit(1);
 			}
 		} else if (arg === '--help' || arg === '-h') {
@@ -526,7 +602,7 @@ function runContracts(contractsArgs: string[]): void {
 		runesModule,
 		{ assembleThemeConfig },
 	]) => {
-		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir);
+		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
 		contractsCommand({ output, check, config });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
@@ -549,6 +625,10 @@ function runScaffoldCss(scaffoldArgs: string[]): void {
 			}
 		} else if (arg === '--force') {
 			force = true;
+		} else if (arg === '--site') {
+			// Accepted for forward compatibility; scaffold-css currently uses
+			// baseConfig directly and is not yet site-scoped.
+			scaffoldArgs[++i];
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -590,6 +670,10 @@ function runValidate(validateArgs: string[]): void {
 				console.error('Error: --manifest requires a file path');
 				process.exit(1);
 			}
+		} else if (arg === '--site') {
+			// Accepted for forward compatibility; theme/manifest validation
+			// operates on explicit paths and is not yet site-scoped.
+			validateArgs[++i];
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -690,6 +774,10 @@ Examples:
 
 			if (arg === '--json') {
 				json = true;
+			} else if (arg === '--site') {
+				// Accepted for forward compatibility; package validate operates
+				// on a single package directory and is not yet site-scoped.
+				packageArgs[++i];
 			} else if (arg === '--help' || arg === '-h') {
 				printUsage();
 				process.exit(0);

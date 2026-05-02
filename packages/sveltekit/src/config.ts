@@ -31,14 +31,21 @@ function validateConfig(raw: unknown): RefraktConfig {
 
 	const obj = raw as Record<string, unknown>;
 
-	if (typeof obj.contentDir !== 'string' || !obj.contentDir) {
-		throw new Error('refrakt.config.json: "contentDir" is required and must be a non-empty string');
-	}
-	if (typeof obj.theme !== 'string' || !obj.theme) {
-		throw new Error('refrakt.config.json: "theme" is required and must be a non-empty string');
-	}
-	if (typeof obj.target !== 'string' || !obj.target) {
-		throw new Error('refrakt.config.json: "target" is required and must be a non-empty string');
+	// For nested-shape configs (site or sites), defer site-field validation to
+	// the per-site contract. This validator only enforces flat-shape rules so
+	// existing flat-shape consumers keep their helpful error messages.
+	const isNestedShape = obj.site !== undefined || obj.sites !== undefined;
+
+	if (!isNestedShape) {
+		if (typeof obj.contentDir !== 'string' || !obj.contentDir) {
+			throw new Error('refrakt.config.json: "contentDir" is required and must be a non-empty string');
+		}
+		if (typeof obj.theme !== 'string' || !obj.theme) {
+			throw new Error('refrakt.config.json: "theme" is required and must be a non-empty string');
+		}
+		if (typeof obj.target !== 'string' || !obj.target) {
+			throw new Error('refrakt.config.json: "target" is required and must be a non-empty string');
+		}
 	}
 
 	let overrides: Record<string, string> | undefined;
@@ -178,10 +185,17 @@ function validateConfig(raw: unknown): RefraktConfig {
 		backgrounds = obj.backgrounds as Record<string, Record<string, unknown>>;
 	}
 
+	// Nested-shape configs pass through with their structural fields. The
+	// per-site validation runs after site resolution in the plugin. Top-level
+	// `site`/`sites`/`plugins`/`plan` are preserved verbatim.
+	if (isNestedShape) {
+		return obj as unknown as RefraktConfig;
+	}
+
 	return {
-		contentDir: obj.contentDir,
-		theme: obj.theme,
-		target: obj.target,
+		contentDir: obj.contentDir as string,
+		theme: obj.theme as string,
+		target: obj.target as string,
 		...(overrides && { overrides }),
 		...(routeRules && { routeRules }),
 		...(highlight && { highlight }),

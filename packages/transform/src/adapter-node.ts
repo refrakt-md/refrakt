@@ -1,19 +1,74 @@
 import type { RefraktConfig } from '@refrakt-md/types';
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import {
+	normalizeRefraktConfig,
+	type NormalizedRefraktConfig,
+} from './config-normalize.js';
+
+export {
+	normalizeRefraktConfig,
+	resolveSite,
+	resolvePlanConfig,
+	DEFAULT_SITE_NAME,
+} from './config-normalize.js';
+export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normalize.js';
 
 /**
- * Load and parse a refrakt.config.json file.
+ * Load and normalize a refrakt.config.json file.
+ *
+ * Returns the normalized config. Paths in nested-shape (`site` / `sites`)
+ * inputs are absolutized against the config file's directory so adapters see
+ * file-relative semantics. Flat-shape paths are left as-is for legacy
+ * cwd-relative resolution.
  *
  * Node.js only — not safe for browser bundles.
  */
-export function loadRefraktConfig(configPath: string): RefraktConfig {
+export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
 	const absPath = resolve(configPath);
 	if (!existsSync(absPath)) {
 		throw new Error(
 			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one or pass --config to specify the path.`
+				`Create one or pass --config to specify the path.`,
 		);
 	}
-	return JSON.parse(readFileSync(absPath, 'utf-8'));
+	let raw: unknown;
+	try {
+		raw = JSON.parse(readFileSync(absPath, 'utf-8'));
+	} catch (err) {
+		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(err as Error).message}`);
+	}
+	return normalizeRefraktConfig(raw, { configDir: dirname(absPath) });
+}
+
+/**
+ * Load a refrakt.config.json file and return both the raw input and the
+ * normalized form. Useful for tools (like the migration command) that need to
+ * preserve the original shape on disk while still consulting the normalized
+ * fields for logic.
+ */
+export function loadRefraktConfigWithRaw(configPath: string): {
+	raw: RefraktConfig;
+	normalized: NormalizedRefraktConfig;
+	configDir: string;
+} {
+	const absPath = resolve(configPath);
+	if (!existsSync(absPath)) {
+		throw new Error(
+			`refrakt.config.json not found at ${absPath}. ` +
+				`Create one or pass --config to specify the path.`,
+		);
+	}
+	let raw: unknown;
+	try {
+		raw = JSON.parse(readFileSync(absPath, 'utf-8'));
+	} catch (err) {
+		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(err as Error).message}`);
+	}
+	const configDir = dirname(absPath);
+	return {
+		raw: raw as RefraktConfig,
+		normalized: normalizeRefraktConfig(raw, { configDir }),
+		configDir,
+	};
 }
