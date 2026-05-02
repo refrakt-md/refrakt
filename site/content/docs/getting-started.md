@@ -28,7 +28,7 @@ npx create-refrakt my-site --target html
 
 See the [Adapters](/docs/adapters/adapters-overview) section for details on each option.
 
-Every scaffolded site ships with an `AGENTS.md` at the project root containing the full rune reference for the selected packages. It's the canonical authoring reference for both human contributors and AI coding tools (Claude Code, Cursor, Aider, Codex). Regenerate it with [`refrakt reference dump`](/docs/cli/reference) after adding or removing entries in `refrakt.config.json` `packages[]`, or after upgrading a `@refrakt-md/*` package.
+Every scaffolded site ships with an `AGENTS.md` at the project root containing the full rune reference for the selected packages. It's the canonical authoring reference for both human contributors and AI coding tools (Claude Code, Cursor, Aider, Codex). Regenerate it with [`refrakt reference dump`](/docs/cli/reference) after adding or removing entries in `sites.<name>.packages` (or the legacy top-level `packages` array), or after upgrading a `@refrakt-md/*` package.
 
 ## Installation
 

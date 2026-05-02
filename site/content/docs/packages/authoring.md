@@ -290,3 +290,119 @@ Use `"__core__"` to force the built-in core rune to win over any package:
 ## Adding Cross-Page Pipeline Hooks
 
 If your runes need to build site-wide indexes or cross-link content, add a `pipeline` field. See [Cross-Page Pipeline](pipeline) for details.
+
+## Adding CLI Commands and MCP Tools
+
+A package can contribute CLI commands and MCP tools by exporting a `cli-plugin` entry point alongside its main `RunePackage` export. The refrakt CLI dispatches `refrakt <namespace> <command>` to the matching plugin, and the MCP server (`@refrakt-md/mcp`) registers each command as a tool under `<namespace>.<name>`.
+
+### Minimal `cli-plugin` export
+
+```ts
+// src/cli-plugin.ts
+import type { CliPlugin } from '@refrakt-md/types';
+
+const plugin: CliPlugin = {
+  namespace: 'mypkg',
+  commands: [
+    {
+      name: 'hello',
+      description: 'Say hi',
+      handler: (args) => {
+        console.log('hello', args);
+      },
+    },
+  ],
+};
+
+export default plugin;
+```
+
+Add the export to the package's `package.json`:
+
+```json
+{
+  "exports": {
+    ".": "./dist/index.js",
+    "./cli-plugin": "./dist/cli-plugin.js"
+  }
+}
+```
+
+That's the minimum for legacy plugins. The `handler` receives the argv tail (everything after `refrakt mypkg hello`) and is responsible for parsing and printing.
+
+### Making your commands MCP-friendly
+
+To get clean structured I/O when the command runs through `@refrakt-md/mcp`, declare three additional fields on each `CliPluginCommand`:
+
+```ts
+interface CliPluginCommand {
+  name: string;
+  description: string;
+  handler: (args: string[]) => void | Promise<void>;
+  inputSchema?: JSONSchema7;            // NEW — used by MCP for input validation
+  outputSchema?: JSONSchema7;           // NEW — optional, for structured output declaration
+  mcpHandler?: (input: unknown) => Promise<unknown>;  // NEW — bypasses argv parsing
+}
+```
+
+#### `inputSchema`
+
+A JSON Schema describing the structured input shape. Tools without one fall back to `{ type: 'object', additionalProperties: true }` and surface only the command's `description`. Schemas with `enum` values, `required` fields, and per-field descriptions give MCP clients autocomplete and inline validation.
+
+```ts
+{
+  name: 'create',
+  description: 'Scaffold a new entity',
+  handler: createArgvHandler,
+  inputSchema: {
+    type: 'object',
+    required: ['type', 'title'],
+    properties: {
+      type: { type: 'string', enum: ['work', 'spec', 'bug'] },
+      title: { type: 'string' },
+      id: { type: 'string', description: 'Override the auto-assigned ID.' },
+    },
+    additionalProperties: false,
+  },
+}
+```
+
+#### `mcpHandler`
+
+A function that accepts the structured input directly and returns the result. When MCP invokes a tool with an `mcpHandler`, it bypasses argv serialization entirely — the cleanest path. Without an `mcpHandler`, MCP falls back to **argv-shimming**: it serializes the input object into argv strings, calls the legacy `handler`, captures stdout, and tries to parse it as JSON. This works but loses structured I/O.
+
+```ts
+{
+  name: 'create',
+  // ... same as above
+  mcpHandler: async (input) => {
+    const opts = input as { type: string; title: string; id?: string };
+    return runCreate(opts);  // returns { id, file, type } directly
+  },
+}
+```
+
+The argv `handler` and `mcpHandler` should call the same underlying logic — typically a `runX(opts)` function that takes a typed options object — so behavior is consistent across both surfaces.
+
+#### `outputSchema`
+
+Optional. JSON Schema describing the tool's structured output. Most plugins omit this and let MCP clients infer the shape from the handler's return value, but it's useful for clients that want to validate or unpack results programmatically.
+
+### Linting your plugin export
+
+`refrakt package validate` includes a `cli-plugin` lint pass that catches structural issues before publish:
+
+- **Errors**: missing `namespace`, missing `commands` array, command without `name`/`description`/`handler`, invalid `inputSchema` (must be a JSON Schema object).
+- **Warnings**: missing `inputSchema` (recommended for MCP exposure), `inputSchema` without `mcpHandler` (MCP will fall back to argv-shimming), namespace clashes with another installed plugin.
+
+Run it from your package directory:
+
+```bash
+npx refrakt package validate
+```
+
+### Excluding commands from MCP
+
+Some commands don't fit MCP's request/response model — long-running servers, multi-file generators, interactive UIs. The MCP server has a built-in exclusion list for known cases (`plan.serve`, `plan.build`). External plugins can effectively opt out of MCP exposure by omitting `inputSchema` and `mcpHandler` — those commands appear with the generic schema and run via argv-shim, which works for some but is fragile for long-running ones.
+
+For commands that should never appear as MCP tools, future versions may add an explicit `mcpExposed: false` flag. For now, file an issue if your plugin needs the exclusion machinery.

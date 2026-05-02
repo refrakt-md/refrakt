@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## MCP Server
+
+This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps the refrakt CLI. When registered with Claude Code or another MCP client, agents can call refrakt operations (inspect, contracts, plan management, etc.) through typed tools and addressable resources instead of shelling out and parsing text. Inspect what's available with `refrakt.detect` (returns the project context — plan dir, sites, plugins) or `refrakt.plugins_list` (returns each plugin's commands with MCP-readiness flags). See `site/content/docs/mcp/` for the full reference.
+
 ## Build & Test
 
 ```bash
