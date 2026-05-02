@@ -145,13 +145,18 @@ function generatePackageJson(projectName: string, theme: string): string {
 
 function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
 	const config = {
-		contentDir: './content',
-		theme,
-		target,
-		packages: ['@refrakt-md/marketing'],
-		routeRules: [
-			{ pattern: '**', layout: 'default' },
-		],
+		$schema: 'https://refrakt.md/refrakt.config.schema.json',
+		sites: {
+			main: {
+				contentDir: './content',
+				theme,
+				target,
+				packages: ['@refrakt-md/marketing'],
+				routeRules: [
+					{ pattern: '**', layout: 'default' },
+				],
+			},
+		},
 	};
 	return JSON.stringify(config, null, '\t') + '\n';
 }
@@ -446,7 +451,11 @@ npm run preview
 
 Content lives in \`./content\` as \`.md\` files. Runes — the Markdoc tags like \`{% hint %}\` and \`{% hero %}\` that give this site its rich structure — are documented in [\`AGENTS.md\`](./AGENTS.md). That file is the canonical rune reference for both human contributors and coding agents (Claude Code, Cursor, Aider, GitHub Copilot).
 
-When you add or remove packages in \`refrakt.config.json\`, regenerate \`AGENTS.md\`:
+## Configuration
+
+Site settings live under \`sites.main\` in \`refrakt.config.json\`. To add a second site (e.g., a blog or docs subsite) declare another entry under \`sites\`, then pass \`site: '<name>'\` to the SvelteKit plugin in the corresponding \`vite.config.ts\`.
+
+When you add or remove packages in \`sites.main.packages\`, regenerate \`AGENTS.md\`:
 
 \`\`\`sh
 npx refrakt reference dump

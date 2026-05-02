@@ -82,9 +82,11 @@ describe('scaffold', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@my-org/theme-custom' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.theme).toBe('@my-org/theme-custom');
-		expect(config.contentDir).toBe('./content');
-		expect(config.target).toBe('svelte');
+		// New unified shape: site config lives under sites.main
+		expect(config.sites.main.theme).toBe('@my-org/theme-custom');
+		expect(config.sites.main.contentDir).toBe('./content');
+		expect(config.sites.main.target).toBe('svelte');
+		expect(config.$schema).toBeDefined();
 	});
 
 	it('generates dependency versions matching the package version', async () => {
@@ -145,7 +147,7 @@ describe('scaffold', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		const viteConfig = readFileSync(join(targetDir, 'vite.config.ts'), 'utf-8');
-		expect(viteConfig).toContain('refrakt()');
+		expect(viteConfig).toContain("refrakt({ site: 'main' })");
 		expect(viteConfig).toContain('sveltekit()');
 
 		const appDts = readFileSync(join(targetDir, 'src', 'app.d.ts'), 'utf-8');
@@ -169,7 +171,7 @@ describe('scaffold', () => {
 		expect(existsSync(join(targetDir, 'src', 'routes', '+layout.svelte'))).toBe(true);
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('svelte');
+		expect(config.sites.main.target).toBe('svelte');
 	});
 
 	it('generates AGENTS.md with rune reference', async () => {
@@ -249,9 +251,9 @@ describe('scaffold (html target)', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('html');
-		expect(config.theme).toBe('@refrakt-md/lumina');
-		expect(config.contentDir).toBe('./content');
+		expect(config.sites.main.target).toBe('html');
+		expect(config.sites.main.theme).toBe('@refrakt-md/lumina');
+		expect(config.sites.main.contentDir).toBe('./content');
 	});
 
 	it('generates dependency versions matching the package version', async () => {
@@ -333,8 +335,8 @@ describe('scaffold (astro target)', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('astro');
-		expect(config.theme).toBe('@refrakt-md/lumina');
+		expect(config.sites.main.target).toBe('astro');
+		expect(config.sites.main.theme).toBe('@refrakt-md/lumina');
 	});
 });
 
@@ -385,7 +387,7 @@ describe('scaffold (nuxt target)', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('nuxt');
+		expect(config.sites.main.target).toBe('nuxt');
 	});
 });
 
@@ -438,7 +440,7 @@ describe('scaffold (next target)', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('next');
+		expect(config.sites.main.target).toBe('next');
 	});
 });
 
@@ -490,6 +492,6 @@ describe('scaffold (eleventy target)', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
-		expect(config.target).toBe('eleventy');
+		expect(config.sites.main.target).toBe('eleventy');
 	});
 });

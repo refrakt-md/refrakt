@@ -127,4 +127,74 @@ describe('refrakt plugin', () => {
 
 		rmSync(dir, { recursive: true });
 	});
+
+	it('uses the singular `site` shape and resolves to default', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			site: {
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'svelte',
+			},
+		}));
+
+		const plugin = refrakt({ configPath });
+		(plugin.config as Function)({}, { command: 'serve' });
+
+		const result = (plugin.load as Function)('\0virtual:refrakt/theme');
+		expect(result).toContain("import _manifest from '@refrakt-md/lumina/manifest'");
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('selects a named site from a multi-site config when site option is given', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			sites: {
+				main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
+				blog: { contentDir: './blog', theme: '@refrakt-md/lumina', target: 'svelte' },
+			},
+		}));
+
+		const plugin = refrakt({ configPath, site: 'blog' });
+		// Should not throw despite multiple sites
+		expect(() => (plugin.config as Function)({}, { command: 'serve' })).not.toThrow();
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws when a multi-site config is loaded without a site option', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			sites: {
+				main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
+				blog: { contentDir: './blog', theme: '@refrakt-md/lumina', target: 'svelte' },
+			},
+		}));
+
+		const plugin = refrakt({ configPath });
+		expect(() => (plugin.config as Function)({}, { command: 'serve' }))
+			.toThrow(/multiple sites/);
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('throws with did-you-mean when site name is unknown', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			sites: {
+				main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
+			},
+		}));
+
+		const plugin = refrakt({ configPath, site: 'maim' });
+		expect(() => (plugin.config as Function)({}, { command: 'serve' }))
+			.toThrow(/Did you mean "main"/);
+
+		rmSync(dir, { recursive: true });
+	});
 });
