@@ -4,7 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## MCP Server
 
-This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps the refrakt CLI. When registered with Claude Code or another MCP client, agents can call refrakt operations (inspect, contracts, plan management, etc.) through typed tools and addressable resources instead of shelling out and parsing text. Inspect what's available with `refrakt.detect` (returns the project context — plan dir, sites, plugins) or `refrakt.plugins_list` (returns each plugin's commands with MCP-readiness flags). See `site/content/docs/mcp/` for the full reference.
+This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps the refrakt CLI. It's registered automatically via `.mcp.json` at the repo root, so any Claude Code session opened here gets the server pre-configured.
+
+**Prefer MCP tools over the CLI when both are available.** The MCP surface gives you typed inputs, structured outputs, and addressable resources without parsing CLI text. Common substitutions:
+
+| Instead of shell | Use MCP tool |
+|------------------|--------------|
+| `npx refrakt plan next` | `mcp__refrakt__plan.next` |
+| `npx refrakt plan update <id> --status in-progress` | `mcp__refrakt__plan.update` |
+| `npx refrakt plan update <id> --check "..."` | `mcp__refrakt__plan.update` (with `check` arg) |
+| `npx refrakt plan status` | `mcp__refrakt__plan.status` |
+| `npx refrakt plan validate` | `mcp__refrakt__plan.validate` |
+| `npx refrakt plan create ...` | `mcp__refrakt__plan.create` |
+| `npx refrakt plan next-id <type>` | `mcp__refrakt__plan.next-id` |
+| `npx refrakt inspect <rune>` | `mcp__refrakt__refrakt.inspect` |
+| `npx refrakt contracts ...` | `mcp__refrakt__refrakt.contracts` |
+| `npx refrakt plugins list` | `mcp__refrakt__refrakt.plugins_list` |
+
+**Read project state via MCP resources** when you need to inspect plan content without invoking a tool:
+
+- `refrakt://detect` — project context (plan dir, sites, plugins).
+- `refrakt://plan/index` — list of all plan entities.
+- `refrakt://plan/<type>/<id>` — Markdoc source for a single entity (e.g., `refrakt://plan/work/WORK-159`).
+- `refrakt://plan/status` — plan health summary.
+
+**Fall back to the CLI** for things MCP intentionally doesn't expose: long-running commands (`refrakt plan serve`, `refrakt plan build`), `refrakt write`, `refrakt edit`. The shell examples below remain canonical for those, and the CLI keeps working when MCP isn't registered (e.g., outside Claude Code).
+
+If MCP appears unavailable in your session, run `mcp__refrakt__refrakt.detect` first to confirm the server is connected and surfaces the expected tools.
 
 ## Build & Test
 
