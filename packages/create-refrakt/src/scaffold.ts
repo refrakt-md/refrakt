@@ -73,6 +73,7 @@ async function scaffoldSvelteKitSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generatePackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -98,6 +99,7 @@ async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateHtmlPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'html'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -141,6 +143,23 @@ function generatePackageJson(projectName: string, theme: string): string {
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+/** Project-scoped MCP server registration. Read by Claude Code, Cursor, and
+ *  other MCP-aware clients via `.mcp.json` at the project root. */
+function generateMcpConfig(): string {
+	return JSON.stringify(
+		{
+			mcpServers: {
+				refrakt: {
+					command: 'npx',
+					args: ['@refrakt-md/mcp'],
+				},
+			},
+		},
+		null,
+		'\t',
+	) + '\n';
 }
 
 function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
@@ -212,6 +231,7 @@ async function scaffoldAstroSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateAstroPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'astro'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -237,6 +257,7 @@ async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateNuxtPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'nuxt'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -262,6 +283,7 @@ async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateNextPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'next'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }
@@ -287,6 +309,7 @@ async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 
 	writeFileSync(path.join(targetDir, 'package.json'), generateEleventyPackageJson(projectName, theme));
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
+	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
 }

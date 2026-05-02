@@ -356,6 +356,7 @@ function handleInit(args: string[]): void {
 	let agent: string | undefined;
 	let noPackageJson = false;
 	let noHooks = false;
+	let noMcp = false;
 	let noWrapper = false;
 	let noConfig = false;
 	const validAgents = ['claude', 'cursor', 'copilot', 'windsurf', 'cline', 'none'];
@@ -379,6 +380,8 @@ function handleInit(args: string[]): void {
 			noPackageJson = true;
 		} else if (arg === '--no-hooks') {
 			noHooks = true;
+		} else if (arg === '--no-mcp') {
+			noMcp = true;
 		} else if (arg === '--no-wrapper') {
 			noWrapper = true;
 		} else if (arg === '--no-config') {
@@ -386,10 +389,11 @@ function handleInit(args: string[]): void {
 		} else if (arg === '--minimal') {
 			noPackageJson = true;
 			noHooks = true;
+			noMcp = true;
 			noWrapper = true;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-wrapper] [--no-config] [--minimal] [--format json]');
+			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-mcp] [--no-wrapper] [--no-config] [--minimal] [--format json]');
 			process.exit(1);
 		}
 	}
@@ -400,6 +404,7 @@ function handleInit(args: string[]): void {
 		agent: agent as any,
 		noPackageJson,
 		noHooks,
+		noMcp,
 		noWrapper,
 		noConfig,
 	});
@@ -414,6 +419,7 @@ function handleInit(args: string[]): void {
 		result.agentFilesUpdated.length === 0 &&
 		!result.packageJsonUpdated &&
 		!result.hookWritten &&
+		!result.mcpWritten &&
 		!result.wrapperWritten &&
 		(!result.refraktConfig || result.refraktConfig.action === 'preserved');
 
@@ -434,6 +440,9 @@ function handleInit(args: string[]): void {
 	}
 	if (result.hookWritten) {
 		console.log(`  + Added Claude SessionStart hook (.claude/settings.json)`);
+	}
+	if (result.mcpWritten) {
+		console.log(`  + Registered @refrakt-md/mcp server (.mcp.json)`);
 	}
 	if (result.wrapperWritten) {
 		console.log(`  + Wrote ./plan.sh wrapper script`);
