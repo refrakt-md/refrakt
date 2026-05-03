@@ -1,4 +1,9 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__refrakt__*"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
