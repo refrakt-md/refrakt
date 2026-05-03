@@ -3,6 +3,7 @@
 	"plan": {
 		"dir": "plan"
 	},
+	"plugins": ["@refrakt-md/plan"],
 	"sites": {
 		"main": {
 			"contentDir": "./site/content",

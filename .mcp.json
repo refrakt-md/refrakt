@@ -1,8 +1,8 @@
 {
 	"mcpServers": {
 		"refrakt": {
-			"command": "npx",
-			"args": ["-y", "@refrakt-md/mcp@0.11.2"]
+			"command": "bash",
+			"args": ["scripts/start-mcp.sh"]
 		}
 	}
 }
