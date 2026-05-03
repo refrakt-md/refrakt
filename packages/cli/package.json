@@ -18,6 +18,7 @@
     "refrakt": "./dist/bin.js"
   },
   "exports": {
+    "./package.json": "./package.json",
     "./lib/plugins.js": {
       "types": "./dist/lib/plugins.d.ts",
       "default": "./dist/lib/plugins.js"

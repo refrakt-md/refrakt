@@ -9,11 +9,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import { createRequire } from 'node:module';
 import type { JSONSchema7 } from '@refrakt-md/types';
-
-const require_ = createRequire(import.meta.url);
+import { resolveCliBin } from '../cli-bin.js';
 
 /** Shared shape exported by the MCP server for each registered tool. */
 export interface McpTool {
@@ -205,19 +202,6 @@ function invokeCli(args: string[], cwd: string): string {
 		const wrapped = new Error(`refrakt ${args[0]} failed: ${message.trim()}`);
 		(wrapped as { errorCode?: string }).errorCode = 'CLI_INVOCATION_FAILED';
 		throw wrapped;
-	}
-}
-
-function resolveCliBin(): string {
-	// Resolve via package.json bin entry. Fall back to direct dist path for
-	// monorepo workspace setups where the package may not be globally linked.
-	try {
-		const pkgJsonPath = require_.resolve('@refrakt-md/cli/package.json');
-		const pkgDir = pkgJsonPath.replace(/[\/\\]package\.json$/, '');
-		return resolve(pkgDir, 'dist', 'bin.js');
-	} catch {
-		// Last-resort: assume the bin is on PATH (works in installed projects).
-		return 'refrakt';
 	}
 }
 

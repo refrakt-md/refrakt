@@ -266,15 +266,8 @@ async function invokeCli(args: string[], cwd: string): Promise<unknown> {
 /** CLI invocation that returns raw stdout text. */
 async function invokeCliText(args: string[], cwd: string): Promise<string> {
 	const { execFileSync } = await import('node:child_process');
-	const { createRequire } = await import('node:module');
-	const require_ = createRequire(import.meta.url);
-	let bin: string;
-	try {
-		const pkgJsonPath = require_.resolve('@refrakt-md/cli/package.json');
-		bin = pkgJsonPath.replace(/[\/\\]package\.json$/, '/dist/bin.js');
-	} catch {
-		bin = 'refrakt';
-	}
+	const { resolveCliBin } = await import('./cli-bin.js');
+	const bin = resolveCliBin();
 	try {
 		return execFileSync('node', [bin, ...args], {
 			encoding: 'utf-8',
