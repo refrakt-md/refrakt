@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/content",
   "description": "Content loading and transformation pipeline",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,10 +29,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/highlight": "0.11.0",
-    "@refrakt-md/runes": "0.11.0",
-    "@refrakt-md/transform": "0.11.0",
-    "@refrakt-md/types": "0.11.0",
+    "@refrakt-md/highlight": "0.11.1",
+    "@refrakt-md/runes": "0.11.1",
+    "@refrakt-md/transform": "0.11.1",
+    "@refrakt-md/types": "0.11.1",
     "@markdoc/markdoc": "0.4.0",
     "yaml": "^2.4.0"
   }

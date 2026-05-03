@@ -1,5 +1,14 @@
 # @refrakt-md/next
 
+## 0.11.1
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.11.1
+- @refrakt-md/content@0.11.1
+- @refrakt-md/transform@0.11.1
+- @refrakt-md/types@0.11.1
+
 ## 0.11.0
 
 ### Minor Changes
