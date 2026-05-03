@@ -78,5 +78,6 @@ export type {
 export type {
 	CliPlugin,
 	CliPluginCommand,
+	McpHandlerContext,
 	JSONSchema7,
 } from './cli-plugin.js';

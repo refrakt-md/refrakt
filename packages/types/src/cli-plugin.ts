@@ -33,8 +33,22 @@ export interface CliPluginCommand {
 	 *  server has this, it calls it directly with the parsed input object.
 	 *  When absent, the MCP server falls back to argv-shimming via `handler`.
 	 *
+	 *  The optional `ctx` argument carries the MCP server's resolved project
+	 *  cwd. Handlers should use `ctx.cwd` when resolving relative paths or
+	 *  reading project config — `process.cwd()` is unreliable because the
+	 *  server process may have been launched from elsewhere.
+	 *
 	 *  New plugin commands should provide this for clean structured I/O. */
-	mcpHandler?: (input: unknown) => Promise<unknown>;
+	mcpHandler?: (input: unknown, ctx?: McpHandlerContext) => Promise<unknown>;
+}
+
+/**
+ * Context passed to `mcpHandler` calls by the MCP server. The `cwd` is the
+ * project root the server was bound to (via `--cwd` or `process.cwd()` at
+ * startup), which may differ from `process.cwd()` at call time.
+ */
+export interface McpHandlerContext {
+	cwd: string;
 }
 
 /**

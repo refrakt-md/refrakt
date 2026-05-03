@@ -12,7 +12,8 @@
  * options objects, so wiring is straightforward.
  */
 
-import type { JSONSchema7 } from '@refrakt-md/types';
+import { resolve } from 'node:path';
+import type { JSONSchema7, McpHandlerContext } from '@refrakt-md/types';
 import { runUpdate, type UpdateOptions } from './commands/update.js';
 import { runNext, type NextOptions } from './commands/next.js';
 import { runCreate, type CreateOptions } from './commands/create.js';
@@ -43,10 +44,15 @@ const SEVERITY_VALUES = ['critical', 'major', 'minor', 'trivial'] as const;
 const TYPE_VALUES = [...VALID_TYPES] as readonly string[];
 
 /** Normalize the `dir` field on incoming MCP input — falling back to the same
- *  resolution the argv handlers use. */
-function resolveDir(input: { dir?: unknown }): string {
+ *  resolution the argv handlers use, then absolutizing against the server's
+ *  project cwd. The MCP server's `process.cwd()` may not be the project root
+ *  (the launcher script `cd`s out of the workspace before exec), so without an
+ *  explicit cwd a relative `dir` would be resolved against the wrong base. */
+function resolveDir(input: { dir?: unknown }, ctx?: McpHandlerContext): string {
+	const cwd = ctx?.cwd ?? process.cwd();
 	const dir = typeof input.dir === 'string' && input.dir.length > 0 ? input.dir : undefined;
-	return resolvePlanDir(dir).dir;
+	const resolved = resolvePlanDir(dir, cwd).dir;
+	return resolve(cwd, resolved);
 }
 
 // --- next ----------------------------------------------------------------
@@ -64,10 +70,10 @@ export const nextSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function nextMcpHandler(input: unknown): Promise<unknown> {
+export async function nextMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Partial<NextOptions> & { dir?: string };
 	return runNext({
-		dir: resolveDir(o),
+		dir: resolveDir(o, ctx),
 		milestone: o.milestone,
 		tag: o.tag,
 		assignee: o.assignee,
@@ -103,7 +109,7 @@ export const updateSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function updateMcpHandler(input: unknown): Promise<unknown> {
+export async function updateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	const attrs: Record<string, string> = { ...((o.attrs as Record<string, string>) ?? {}) };
 	for (const key of ['status', 'priority', 'severity', 'assignee', 'milestone']) {
@@ -111,7 +117,7 @@ export async function updateMcpHandler(input: unknown): Promise<unknown> {
 	}
 	const opts: UpdateOptions = {
 		id: String(o.id),
-		dir: resolveDir(o as { dir?: unknown }),
+		dir: resolveDir(o as { dir?: unknown }, ctx),
 		attrs,
 		check: typeof o.check === 'string' ? o.check : undefined,
 		uncheck: typeof o.uncheck === 'string' ? o.uncheck : undefined,
@@ -141,10 +147,10 @@ export const createSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function createMcpHandler(input: unknown): Promise<unknown> {
+export async function createMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	const opts: CreateOptions = {
-		dir: resolveDir(o as { dir?: unknown }),
+		dir: resolveDir(o as { dir?: unknown }, ctx),
 		type: o.type as PlanItemType,
 		title: String(o.title),
 		id: typeof o.id === 'string' ? o.id : undefined,
@@ -164,10 +170,10 @@ export const statusSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function statusMcpHandler(input: unknown): Promise<unknown> {
+export async function statusMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Partial<StatusOptions> & { dir?: string };
 	return runStatus({
-		dir: resolveDir(o),
+		dir: resolveDir(o, ctx),
 		milestone: o.milestone,
 		formatJson: false,
 	});
@@ -184,10 +190,10 @@ export const validateSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function validateMcpHandler(input: unknown): Promise<unknown> {
+export async function validateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Partial<ValidateOptions> & { dir?: string };
 	return runValidate({
-		dir: resolveDir(o),
+		dir: resolveDir(o, ctx),
 		strict: o.strict,
 		formatJson: false,
 	});
@@ -205,12 +211,12 @@ export const nextIdSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function nextIdMcpHandler(input: unknown): Promise<unknown> {
+export async function nextIdMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as { type: string; dir?: string };
 	if (!isAutoIdType(o.type)) {
 		throw new Error(`Invalid type "${o.type}" for next-id. Valid: work, bug, spec, decision.`);
 	}
-	return runNextId(resolveDir(o), o.type as AutoIdType);
+	return runNextId(resolveDir(o, ctx), o.type as AutoIdType);
 }
 
 // --- init ----------------------------------------------------------------
@@ -229,11 +235,11 @@ export const initSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function initMcpHandler(input: unknown): Promise<unknown> {
+export async function initMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	return runInit({
-		dir: resolveDir(o as { dir?: unknown }),
-		projectRoot: typeof o.projectRoot === 'string' ? o.projectRoot : '.',
+		dir: resolveDir(o as { dir?: unknown }, ctx),
+		projectRoot: typeof o.projectRoot === 'string' ? o.projectRoot : (ctx?.cwd ?? '.'),
 		agent: o.agent as 'claude' | 'cursor' | 'copilot' | 'windsurf' | 'cline' | 'none' | undefined,
 		noPackageJson: Boolean(o.noPackageJson),
 		noHooks: Boolean(o.noHooks),
@@ -257,10 +263,10 @@ export const historySchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function historyMcpHandler(input: unknown): Promise<unknown> {
+export async function historyMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Partial<HistoryOptions> & { dir?: string };
 	return runHistory({
-		dir: resolveDir(o),
+		dir: resolveDir(o, ctx),
 		id: o.id,
 		limit: o.limit ?? (o.id ? 20 : 50),
 		since: o.since,
@@ -287,13 +293,13 @@ export const migrateSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function migrateMcpHandler(input: unknown): Promise<unknown> {
+export async function migrateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	if (o.subcommand !== 'filenames') {
 		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames.`);
 	}
 	return runMigrateFilenames({
-		dir: resolveDir(o as { dir?: unknown }),
+		dir: resolveDir(o as { dir?: unknown }, ctx),
 		apply: Boolean(o.apply),
 		useGit: Boolean(o.useGit),
 	});
