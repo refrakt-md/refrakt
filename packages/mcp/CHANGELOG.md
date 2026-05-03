@@ -1,5 +1,15 @@
 # @refrakt-md/mcp
 
+## 0.11.1
+
+### Patch Changes
+
+- c9f572c: Include `packages/mcp` in the root build chain so the published tarball contains `dist/`. Previously the package was added to the workspace but never built during `npm run release`, causing `npx -y @refrakt-md/mcp` to fail because `bin: ./dist/bin.js` was missing from the npm artifact (only `package.json` shipped).
+  - @refrakt-md/cli@0.11.1
+  - @refrakt-md/runes@0.11.1
+  - @refrakt-md/transform@0.11.1
+  - @refrakt-md/types@0.11.1
+
 ## 0.11.0
 
 ### Minor Changes
