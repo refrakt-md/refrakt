@@ -1,5 +1,14 @@
 # @refrakt-md/html
 
+## 0.11.3
+
+### Patch Changes
+
+- Updated dependencies [8cf7caf]
+  - @refrakt-md/types@0.11.3
+  - @refrakt-md/transform@0.11.3
+  - @refrakt-md/behaviors@0.11.3
+
 ## 0.11.2
 
 ### Patch Changes
