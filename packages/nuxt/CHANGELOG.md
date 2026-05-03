@@ -1,5 +1,14 @@
 # @refrakt-md/nuxt
 
+## 0.11.2
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.11.2
+- @refrakt-md/content@0.11.2
+- @refrakt-md/transform@0.11.2
+- @refrakt-md/types@0.11.2
+
 ## 0.11.1
 
 ### Patch Changes
