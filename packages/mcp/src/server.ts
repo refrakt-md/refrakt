@@ -7,6 +7,9 @@
  * the project root.
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -19,6 +22,8 @@ import { CORE_TOOLS, type McpTool } from './tools/core.js';
 import { loadPluginTools } from './tools/plugins.js';
 import { listResources, readResource } from './resources.js';
 import { detect, type DetectionResult } from './detect.js';
+
+const PACKAGE_VERSION = readPackageVersion();
 
 export interface CreateServerOptions {
 	cwd?: string;
@@ -37,7 +42,7 @@ export async function createServer(options: CreateServerOptions = {}) {
 	const server = new Server(
 		{
 			name: '@refrakt-md/mcp',
-			version: '0.10.1',
+			version: PACKAGE_VERSION,
 		},
 		{
 			capabilities: {
@@ -74,6 +79,10 @@ export async function createServer(options: CreateServerOptions = {}) {
 
 		try {
 			const result = await tool.handler(request.params.arguments ?? {}, { cwd });
+			// The MCP SDK requires `structuredContent` to be a plain object;
+			// arrays/strings/null fail validation. Wrap arrays under `items`
+			// and skip the field entirely for non-record results.
+			const structured = toStructuredContent(result);
 			return {
 				content: [
 					{
@@ -81,7 +90,7 @@ export async function createServer(options: CreateServerOptions = {}) {
 						text: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
 					},
 				],
-				structuredContent: result as Record<string, unknown> | undefined,
+				...(structured ? { structuredContent: structured } : {}),
 			};
 		} catch (err: unknown) {
 			const error = err as { message?: string; errorCode?: string; hint?: string };
@@ -125,4 +134,23 @@ export async function runStdioServer(options: CreateServerOptions = {}): Promise
 	const server = await createServer(options);
 	const transport = new StdioServerTransport();
 	await server.connect(transport);
+}
+
+function toStructuredContent(result: unknown): Record<string, unknown> | undefined {
+	if (Array.isArray(result)) return { items: result };
+	if (result !== null && typeof result === 'object') return result as Record<string, unknown>;
+	return undefined;
+}
+
+function readPackageVersion(): string {
+	try {
+		const here = dirname(fileURLToPath(import.meta.url));
+		const pkg = JSON.parse(readFileSync(resolve(here, '..', 'package.json'), 'utf-8')) as {
+			version?: string;
+		};
+		if (typeof pkg.version === 'string') return pkg.version;
+	} catch {
+		// fall through
+	}
+	return '0.0.0';
 }
