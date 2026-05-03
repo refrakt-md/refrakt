@@ -29,21 +29,11 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@refrakt-md/highlight": "0.10.1",
     "@refrakt-md/runes": "0.10.1",
+    "@refrakt-md/transform": "0.10.1",
     "@refrakt-md/types": "0.10.1",
     "@markdoc/markdoc": "0.4.0",
     "yaml": "^2.4.0"
-  },
-  "peerDependencies": {
-    "@refrakt-md/transform": ">=0.10.1",
-    "@refrakt-md/highlight": ">=0.10.1"
-  },
-  "peerDependenciesMeta": {
-    "@refrakt-md/transform": {
-      "optional": true
-    },
-    "@refrakt-md/highlight": {
-      "optional": true
-    }
   }
 }
