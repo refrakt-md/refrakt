@@ -135,3 +135,54 @@ describe('plan command mcpHandlers', () => {
 		await expect(migrateMcpHandler({ subcommand: 'unknown', dir: tempDir })).rejects.toThrow();
 	});
 });
+
+describe('plan command mcpHandlers — ctx.cwd resolution', () => {
+	// Regression: when an MCP client calls a plan tool without `dir`, the
+	// fallback chain (REFRAKT_PLAN_DIR → refrakt.config.json → "plan") must
+	// resolve against `ctx.cwd`, not `process.cwd()`. The MCP server is
+	// frequently launched from outside the project directory (e.g. /tmp),
+	// so process.cwd() is the wrong base.
+	let cwdRoot: string;
+	let savedEnv: string | undefined;
+	let originalCwd: string;
+
+	beforeEach(() => {
+		// Pin process.cwd() to a directory with no `plan/` subdir so the
+		// regression test fails loudly if the resolver ever falls back to
+		// process.cwd() instead of using ctx.cwd.
+		originalCwd = process.cwd();
+		process.chdir(tmpdir());
+		cwdRoot = mkdtempSync(join(tmpdir(), 'refrakt-plan-mcp-cwd-'));
+		mkdirSync(join(cwdRoot, 'plan/work'), { recursive: true });
+		mkdirSync(join(cwdRoot, 'plan/specs'), { recursive: true });
+		mkdirSync(join(cwdRoot, 'plan/milestones'), { recursive: true });
+		writeFileSync(
+			join(cwdRoot, 'plan/work/WORK-001-example.md'),
+			`{% work id="WORK-001" status="ready" priority="medium" complexity="simple" %}\n\n# Example\n\nDescription.\n\n## Acceptance Criteria\n\n- [ ] Criterion one\n\n{% /work %}\n`,
+		);
+		writeFileSync(
+			join(cwdRoot, 'refrakt.config.json'),
+			JSON.stringify({ plan: { dir: 'plan' } }),
+		);
+		savedEnv = process.env.REFRAKT_PLAN_DIR;
+		delete process.env.REFRAKT_PLAN_DIR;
+	});
+
+	afterEach(() => {
+		process.chdir(originalCwd);
+		rmSync(cwdRoot, { recursive: true, force: true });
+		if (savedEnv === undefined) delete process.env.REFRAKT_PLAN_DIR;
+		else process.env.REFRAKT_PLAN_DIR = savedEnv;
+	});
+
+	it('resolves plan.dir from refrakt.config.json relative to ctx.cwd', async () => {
+		const result = (await nextMcpHandler({}, { cwd: cwdRoot })) as { items: any[] };
+		expect(result.items).toHaveLength(1);
+		expect(result.items[0].id).toBe('WORK-001');
+	});
+
+	it('resolves a relative dir argument against ctx.cwd', async () => {
+		const result = (await statusMcpHandler({ dir: 'plan' }, { cwd: cwdRoot })) as Record<string, unknown>;
+		expect((result.counts as any).work.byStatus.ready).toBe(1);
+	});
+});

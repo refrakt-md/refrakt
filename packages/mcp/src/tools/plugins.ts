@@ -45,12 +45,15 @@ function buildPluginTool(name: string, command: CliPluginCommand): McpTool {
 		name,
 		description: command.description,
 		inputSchema,
-		handler: async (input) => {
+		handler: async (input, ctx) => {
 			if (command.mcpHandler) {
-				return command.mcpHandler(input);
+				return command.mcpHandler(input, ctx);
 			}
 			// Fallback: serialize the input as argv and invoke the legacy
-			// handler. Captures stdout via a simple buffer hack.
+			// handler. Captures stdout via a simple buffer hack. Note: argv
+			// handlers read process.cwd() directly, so they may misbehave when
+			// the server's logical cwd differs from process.cwd(). Plugins
+			// that need project-cwd awareness should provide an `mcpHandler`.
 			const args = inputToArgv(input);
 			const captured = await captureStdout(() => command.handler(args));
 			return tryParseJson(captured);
