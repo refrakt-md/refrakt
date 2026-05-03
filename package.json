@@ -15,12 +15,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "changeset": "changeset",
-    "version-packages": "changeset version && node scripts/sync-rune-versions.mjs && node scripts/generate-changelog.mjs",
+    "version-packages": "changeset version && node scripts/sync-rune-versions.mjs && node scripts/generate-changelog.mjs && npm install --package-lock-only",
     "release": "npm run build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
-    "@refrakt-md/planhub": "^0.6.0",
     "@types/node": "^25.2.3",
     "jsdom": "^25.0.1",
     "typescript": "^5.4.0",
