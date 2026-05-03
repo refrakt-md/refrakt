@@ -2,10 +2,7 @@
 	"mcpServers": {
 		"refrakt": {
 			"command": "bash",
-			"args": [
-				"-c",
-				"PROJECT_DIR=\"$PWD\" && cd /tmp && exec npx -y @refrakt-md/mcp@0.11.2 --cwd \"$PROJECT_DIR\""
-			]
+			"args": ["scripts/start-mcp.sh"]
 		}
 	}
 }
