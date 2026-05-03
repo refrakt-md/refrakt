@@ -57,9 +57,9 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 
   Every rune can emit Schema.org JSON-LD and Open Graph metadata automatically. Recipes get Recipe schema, events get Event schema, FAQs get FAQ schema — no manual wiring.
 
-- {% icon name="brain" /%} **AI-powered authoring**
+- {% icon name="brain" /%} **First-class for AI coding agents**
 
-  Generate full pages with `refrakt write`. The CLI knows every rune and produces valid Markdown with proper rune structure. Supports Claude and local models via Ollama.
+  refrakt projects ship an MCP server out of the box. Agents like Claude Code get typed tools for every CLI command and live resources for your plan and rune contracts — so they can scaffold pages, inspect output, and update work items without parsing text or asking for an API key.
 
 - {% icon name="layers" /%} **Layout inheritance**
 
