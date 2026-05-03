@@ -1,7 +1,7 @@
 {
 	"name": "@refrakt-md/mcp",
 	"description": "Model Context Protocol server wrapping the refrakt CLI",
-	"version": "0.11.1",
+	"version": "0.11.2",
 	"type": "module",
 	"license": "MIT",
 	"repository": {
@@ -33,9 +33,9 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
-		"@refrakt-md/cli": "0.11.1",
-		"@refrakt-md/runes": "0.11.1",
-		"@refrakt-md/transform": "0.11.1",
-		"@refrakt-md/types": "0.11.1"
+		"@refrakt-md/cli": "0.11.2",
+		"@refrakt-md/runes": "0.11.2",
+		"@refrakt-md/transform": "0.11.2",
+		"@refrakt-md/types": "0.11.2"
 	}
 }
