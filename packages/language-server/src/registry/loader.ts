@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 import { runes, tags, nodes, mergePackages, defineRune, runeTagMap } from '@refrakt-md/runes';
 import type { Rune, LoadedPackage } from '@refrakt-md/runes';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import type { SchemaAttribute, Schema } from '@markdoc/markdoc';
 import Markdoc from '@markdoc/markdoc';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join, dirname, isAbsolute } from 'node:path';
 import { createRequire } from 'node:module';
 
 export interface RuneInfo {
@@ -171,17 +172,29 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
     const configPath = findConfigFile(workspaceRoot);
     if (!configPath) return;
 
-    const configText = readFileSync(configPath, 'utf8');
-    const config = JSON.parse(configText);
-
     const configDir = dirname(configPath);
+    const normalized = loadRefraktConfig(configPath);
 
-    // Scan _partials/ directory
-    const contentDir = config.contentDir ?? 'content';
-    const resolvedPartialsDir = join(configDir, contentDir, '_partials');
+    // Pick a site. The language server has no UX for choosing one, so when a
+    // config declares multiple sites we fall back to the first entry rather
+    // than throw — completion/validation against any declared site is better
+    // than nothing.
+    const siteEntries = Object.entries(normalized.sites);
+    if (siteEntries.length === 0) return;
+    const site = siteEntries.length === 1
+      ? resolveSite(normalized).site
+      : siteEntries[0]![1];
+
+    // Scan _partials/. The normalizer absolutizes site.contentDir for nested
+    // `site` / `sites` shapes; flat-shape configs leave it as a cwd-relative
+    // string, so handle both.
+    const contentDir = site.contentDir ?? 'content';
+    const resolvedPartialsDir = isAbsolute(contentDir)
+      ? join(contentDir, '_partials')
+      : join(configDir, contentDir, '_partials');
     scanPartialsDir(resolvedPartialsDir);
 
-    const packageNames: string[] = config.packages ?? [];
+    const packageNames: string[] = site.packages ?? [];
     if (packageNames.length === 0) return;
 
     // Use createRequire rooted at the config's directory so packages resolve
@@ -200,7 +213,7 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
     if (loaded.length === 0) return;
 
     const coreRuneNames = new Set(Object.keys(runes));
-    const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+    const merged = mergePackages(loaded, coreRuneNames, site.runes?.prefer);
 
     // Index community runes
     indexRunes(Object.values(merged.runes) as Rune[]);
