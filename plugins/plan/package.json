@@ -1,0 +1,85 @@
+{
+  "name": "@refrakt-md/plan",
+  "description": "Planning runes for refrakt.md — specs, work items, bugs, decisions, and milestones",
+  "version": "0.11.3",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "plugins/plan"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli-plugin": {
+      "types": "./dist/cli-plugin.d.ts",
+      "default": "./dist/cli-plugin.js"
+    },
+    "./init": {
+      "types": "./dist/commands/init.d.ts",
+      "default": "./dist/commands/init.js"
+    },
+    "./scanner": {
+      "types": "./dist/scanner.d.ts",
+      "default": "./dist/scanner.js"
+    },
+    "./diff": {
+      "types": "./dist/diff.d.ts",
+      "default": "./dist/diff.js"
+    },
+    "./filter": {
+      "types": "./dist/filter.d.ts",
+      "default": "./dist/filter.js"
+    },
+    "./relationships": {
+      "types": "./dist/relationships.d.ts",
+      "default": "./dist/relationships.js"
+    },
+    "./cards": {
+      "types": "./dist/cards.d.ts",
+      "default": "./dist/cards.js"
+    },
+    "./render": {
+      "types": "./dist/render.d.ts",
+      "default": "./dist/render.js"
+    }
+  },
+  "files": [
+    "dist",
+    "styles"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@markdoc/markdoc": "0.4.0",
+    "@refrakt-md/behaviors": "0.11.3",
+    "@refrakt-md/content": "0.11.3",
+    "@refrakt-md/highlight": "0.11.3",
+    "@refrakt-md/html": "0.11.3",
+    "@refrakt-md/runes": "0.11.3",
+    "@refrakt-md/transform": "0.11.3",
+    "@refrakt-md/types": "0.11.3",
+    "reflect-metadata": "^0.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.4",
+    "pagefind": "^1.3.0"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.27.0"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    }
+  }
+}

@@ -34,14 +34,14 @@ export function referenceNameCommand(
 			output: `Error: Unknown rune "${options.name}". Run \`refrakt reference list\` to see available runes.`,
 		};
 	}
-	const packageName = info.package ?? 'core';
+	const pluginName = info.plugin ?? 'core';
 
 	// Empty-string `example` suppresses both the caller-provided fixture and the
 	// `RUNE_EXAMPLES[name]` fallback inside `describeRune`.
 	const finalInfo: RuneInfo = options.noExample ? { ...info, example: '' } : info;
 
 	if (options.format === 'json') {
-		const serialized = serializeRune(finalInfo, packageName);
+		const serialized = serializeRune(finalInfo, pluginName);
 		if (options.noExample) delete serialized.example;
 		return { exitCode: 0, output: JSON.stringify(serialized, null, 2) };
 	}
@@ -64,7 +64,7 @@ export function referenceListCommand(
 ): { exitCode: number; output: string } {
 	const all = hydrateAllRuneInfos(ctx);
 	const filtered = options.packageFilter
-		? all.filter(info => info.package === options.packageFilter)
+		? all.filter(info => info.plugin === options.packageFilter)
 		: all;
 
 	if (options.packageFilter && filtered.length === 0) {
@@ -78,7 +78,7 @@ export function referenceListCommand(
 
 	if (options.format === 'json') {
 		const payload = groups.map(group => ({
-			package: group.packageName,
+			plugin: group.pluginName,
 			label: group.label,
 			runes: group.runes,
 		}));
@@ -177,7 +177,7 @@ export function referenceDumpCommand(
 	let rendered: string;
 	if (options.format === 'json') {
 		const infos = hydrateAllRuneInfos(ctx);
-		const payload = infos.map(info => serializeRune(info, info.package ?? 'core'));
+		const payload = infos.map(info => serializeRune(info, info.plugin ?? 'core'));
 		rendered = JSON.stringify(payload, null, 2) + '\n';
 	} else {
 		rendered = renderReferenceMarkdown(ctx, { preamble: options.preamble });

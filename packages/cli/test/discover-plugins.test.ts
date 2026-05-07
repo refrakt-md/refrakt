@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { discoverPlugins } from '../src/lib/plugins.js';
 
 const REPO_ROOT = resolve(import.meta.dirname, '../../..');
-const PLAN_PKG = resolve(REPO_ROOT, 'runes/plan');
+const PLAN_PKG = resolve(REPO_ROOT, 'plugins/plan');
 
 let tempDir: string;
 
@@ -60,7 +60,7 @@ describe('discoverPlugins', () => {
 		expect(plugins).toHaveLength(1);
 		const plan = plugins[0]!;
 		expect(plan.namespace).toBe('plan');
-		expect(plan.packageName).toBe('@refrakt-md/plan');
+		expect(plan.pluginName).toBe('@refrakt-md/plan');
 		expect(plan.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
 		expect(plan.source).toBe('dependency-scan');
 		expect(plan.commands.length).toBeGreaterThan(0);

@@ -57,7 +57,7 @@ export interface RuneInfo {
 	/** Example Markdoc snippet, falling back to `RUNE_EXAMPLES[name]` when omitted. */
 	example?: string;
 	/** Short source identifier (e.g. `"core"`, `"@refrakt-md/marketing"`) for grouping output. */
-	package?: string;
+	plugin?: string;
 }
 
 /** Runes that are internal or child-only — excluded from generated reference docs */
@@ -485,7 +485,7 @@ export interface RuneLike {
 
 export interface HydrateOptions {
 	/** Identifier for the source (e.g. `"core"`, `"@refrakt-md/marketing"`). */
-	packageName?: string;
+	pluginName?: string;
 	/** Optional per-rune fixture string, overriding `RUNE_EXAMPLES[name]`. */
 	example?: string;
 }
@@ -519,7 +519,7 @@ export function hydrateRuneInfo(rune: RuneLike, options: HydrateOptions = {}): R
 		contentModel,
 		basePreset,
 		example: options.example,
-		package: options.packageName,
+		plugin: options.pluginName,
 	};
 }
 
@@ -531,7 +531,7 @@ export function hydrateRuneInfo(rune: RuneLike, options: HydrateOptions = {}): R
 export interface ReferenceContext {
 	/** All Rune-like objects keyed by primary name. */
 	runes: Record<string, RuneLike>;
-	/** Package fixtures (keyed by rune name). Falls back to `RUNE_EXAMPLES[name]`. */
+	/** Plugin fixtures (keyed by rune name). Falls back to `RUNE_EXAMPLES[name]`. */
 	fixtures: Record<string, string>;
 	/** Per-rune source identifier (e.g. `"core"` or `"@refrakt-md/marketing"`). */
 	source: Record<string, string>;
@@ -542,7 +542,7 @@ export function hydrateAllRuneInfos(ctx: ReferenceContext): RuneInfo[] {
 	return Object.values(ctx.runes)
 		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
 		.map(rune => hydrateRuneInfo(rune, {
-			packageName: ctx.source[rune.name] ?? 'core',
+			pluginName: ctx.source[rune.name] ?? 'core',
 			example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
 		}))
 		.sort((a, b) => a.name.localeCompare(b.name));
@@ -553,14 +553,14 @@ export function hydrateRuneByName(ctx: ReferenceContext, name: string): RuneInfo
 	const direct = ctx.runes[name];
 	if (direct) {
 		return hydrateRuneInfo(direct, {
-			packageName: ctx.source[name] ?? 'core',
+			pluginName: ctx.source[name] ?? 'core',
 			example: ctx.fixtures[name] ?? RUNE_EXAMPLES[name],
 		});
 	}
 	for (const rune of Object.values(ctx.runes)) {
 		if (rune.aliases.includes(name)) {
 			return hydrateRuneInfo(rune, {
-				packageName: ctx.source[rune.name] ?? 'core',
+				pluginName: ctx.source[rune.name] ?? 'core',
 				example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
 			});
 		}
@@ -581,7 +581,7 @@ export interface SerializedAttribute {
 
 export interface SerializedRune {
 	name: string;
-	package: string;
+	plugin: string;
 	aliases: string[];
 	description: string;
 	authoringHints?: string;
@@ -612,7 +612,7 @@ function toSerializedAttribute(attr: {
 }
 
 /** Serialize a hydrated RuneInfo into the stable JSON shape used by the reference command. */
-export function serializeRune(info: RuneInfo, packageName?: string): SerializedRune {
+export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRune {
 	const attrs = info.schema.attributes ?? {};
 	const presetAttrs = info.basePreset ? new Set(info.basePreset.attributes) : undefined;
 
@@ -633,7 +633,7 @@ export function serializeRune(info: RuneInfo, packageName?: string): SerializedR
 
 	return {
 		name: info.name,
-		package: packageName ?? info.package ?? 'core',
+		plugin: pluginName ?? info.plugin ?? 'core',
 		aliases: info.aliases,
 		description: info.description,
 		...(info.authoringHints ? { authoringHints: info.authoringHints } : {}),
@@ -660,31 +660,31 @@ export function serializeRune(info: RuneInfo, packageName?: string): SerializedR
 // ---------------------------------------------------------------------------
 
 export interface ReferenceGroup {
-	/** Package short identifier (`"core"`, `"@refrakt-md/marketing"`, …). */
-	packageName: string;
+	/** Plugin short identifier (`"core"`, `"@refrakt-md/marketing"`, …). */
+	pluginName: string;
 	/** Human-readable label used as the group heading in rendered output. */
 	label: string;
 	/** Sorted list of rune summaries. */
 	runes: Array<{ name: string; description: string; aliases: string[] }>;
 }
 
-/** Group hydrated rune infos by source package, core first then alphabetical. */
+/** Group hydrated rune infos by source plugin, core first then alphabetical. */
 export function groupReferenceInfos(infos: RuneInfo[]): ReferenceGroup[] {
 	const labelOf = (pkg: string): string => pkg === 'core' ? '@refrakt-md/runes (core)' : pkg;
 	const groups = new Map<string, ReferenceGroup>();
 	for (const info of infos) {
-		const pkg = info.package ?? 'core';
+		const pkg = info.plugin ?? 'core';
 		let group = groups.get(pkg);
 		if (!group) {
-			group = { packageName: pkg, label: labelOf(pkg), runes: [] };
+			group = { pluginName: pkg, label: labelOf(pkg), runes: [] };
 			groups.set(pkg, group);
 		}
 		group.runes.push({ name: info.name, description: info.description, aliases: info.aliases });
 	}
 	const sorted = Array.from(groups.values()).sort((a, b) => {
-		if (a.packageName === 'core') return -1;
-		if (b.packageName === 'core') return 1;
-		return a.packageName.localeCompare(b.packageName);
+		if (a.pluginName === 'core') return -1;
+		if (b.pluginName === 'core') return 1;
+		return a.pluginName.localeCompare(b.pluginName);
 	});
 	for (const group of sorted) {
 		group.runes.sort((a, b) => a.name.localeCompare(b.name));

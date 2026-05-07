@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import type { LayoutPageData } from '@refrakt-md/transform';
 import { renderPage, extractSeoData, seoToHtml } from '@refrakt-md/transform';
-import type { RunePackage } from '@refrakt-md/types';
+import type { Plugin } from '@refrakt-md/types';
 import type { EleventyTheme } from './types.js';
 import { hasInteractiveRunes } from './behaviors.js';
 
@@ -39,8 +39,8 @@ export function createDataFile(config: {
 	theme: EleventyTheme;
 	contentDir?: string;
 	basePath?: string;
-	/** Community rune packages to include in the content pipeline */
-	packages?: RunePackage[];
+	/** Plugins to include in the content pipeline */
+	plugins?: Plugin[];
 }): () => Promise<EleventyPageData[]> {
 	const {
 		theme,
@@ -57,7 +57,7 @@ export function createDataFile(config: {
 			basePath,
 			undefined, // icons
 			undefined, // additionalTags
-			config.packages,
+			config.plugins,
 		);
 
 		// Build the pages list for LayoutPageData and RfContext

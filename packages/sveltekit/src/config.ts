@@ -104,17 +104,17 @@ function validateConfig(raw: unknown): RefraktConfig {
 		}
 	}
 
-	let packages: string[] | undefined;
-	if (obj.packages !== undefined) {
-		if (!Array.isArray(obj.packages)) {
-			throw new Error('refrakt.config.json: "packages" must be an array of package name strings');
+	let plugins: string[] | undefined;
+	if (obj.plugins !== undefined) {
+		if (!Array.isArray(obj.plugins)) {
+			throw new Error('refrakt.config.json: "plugins" must be an array of plugin name strings');
 		}
-		for (let i = 0; i < obj.packages.length; i++) {
-			if (typeof obj.packages[i] !== 'string' || !obj.packages[i]) {
-				throw new Error(`refrakt.config.json: packages[${i}] must be a non-empty string`);
+		for (let i = 0; i < obj.plugins.length; i++) {
+			if (typeof obj.plugins[i] !== 'string' || !obj.plugins[i]) {
+				throw new Error(`refrakt.config.json: plugins[${i}] must be a non-empty string`);
 			}
 		}
-		packages = obj.packages as string[];
+		plugins = obj.plugins as string[];
 	}
 
 	let runes: RefraktConfig['runes'];
@@ -126,7 +126,7 @@ function validateConfig(raw: unknown): RefraktConfig {
 		let prefer: Record<string, string> | undefined;
 		if (runesObj.prefer !== undefined) {
 			if (typeof runesObj.prefer !== 'object' || runesObj.prefer === null || Array.isArray(runesObj.prefer)) {
-				throw new Error('refrakt.config.json: "runes.prefer" must be an object mapping rune names to package names');
+				throw new Error('refrakt.config.json: "runes.prefer" must be an object mapping rune names to plugin names');
 			}
 			const preferObj = runesObj.prefer as Record<string, unknown>;
 			for (const [key, value] of Object.entries(preferObj)) {
@@ -199,7 +199,7 @@ function validateConfig(raw: unknown): RefraktConfig {
 		...(overrides && { overrides }),
 		...(routeRules && { routeRules }),
 		...(highlight && { highlight }),
-		...(packages && { packages }),
+		...(plugins && { plugins }),
 		...(tints && { tints }),
 		...(backgrounds && { backgrounds }),
 		...(runes && { runes }),

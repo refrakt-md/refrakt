@@ -512,7 +512,7 @@ The dimension layer handles the generic baseline. Per-rune CSS files only need t
 
 ## Community package benefits
 
-A community package author declares dimensions on their rune config and gets themed automatically:
+A plugin author declares dimensions on their rune config and gets themed automatically:
 
 ```typescript
 // @refrakt-community/wine

@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Plugin, UserConfig } from 'vite';
-import type { RunePackage, SiteConfig, PipelineWarning } from '@refrakt-md/types';
+import type { Plugin as VitePlugin, UserConfig } from 'vite';
+import type { Plugin, SiteConfig, PipelineWarning } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
@@ -20,7 +20,7 @@ const CORE_NO_EXTERNAL = [
 	'@refrakt-md/highlight',
 ];
 
-export function refrakt(options: RefractPluginOptions = {}): Plugin {
+export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 	const configPath = options.configPath ?? './refrakt.config.json';
 	let activeSite: SiteConfig;
 	let activeSiteName: string;
@@ -29,7 +29,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 	let usedCssBlocks: Set<string> | undefined;
 	let communityTags: Record<string, Schema> | undefined;
 	let assembledResult: { config: Record<string, any>; provenance: Record<string, any> } | undefined;
-	let mergedPackages: RunePackage[] | undefined;
+	let mergedPackages: Plugin[] | undefined;
 	let contentLoaded = false;
 
 	return {
@@ -50,7 +50,7 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
 				activeSite.theme,
-				...(activeSite.packages ?? []),
+				...(activeSite.plugins ?? []),
 				...(options.noExternal ?? []),
 			];
 
@@ -70,14 +70,14 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 
 		async buildStart() {
 			// Load community/official packages and local runes if configured
-			const hasPackages = activeSite.packages && activeSite.packages.length > 0;
+			const hasPackages = activeSite.plugins && activeSite.plugins.length > 0;
 			const hasLocal = activeSite.runes?.local && Object.keys(activeSite.runes.local).length > 0;
 			const hasAliases = activeSite.runes?.aliases && Object.keys(activeSite.runes.aliases).length > 0;
 
 			if (hasPackages || hasLocal || hasAliases) {
 				try {
 					const runesPkg = '@refrakt-md/runes';
-					const { loadRunePackage, mergePackages, applyAliases, loadLocalRunes, runes: coreRunes, runeTagMap } = await import(runesPkg);
+					const { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, runes: coreRunes, runeTagMap } = await import(runesPkg);
 					const coreRuneNames = new Set(Object.keys(coreRunes));
 
 					let mergedRunes = { ...coreRunes };
@@ -87,12 +87,12 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 					// Load installed packages
 					if (hasPackages) {
 						const loaded = await Promise.all(
-							activeSite.packages!.map((name: string) => loadRunePackage(name))
+							activeSite.plugins!.map((name: string) => loadPlugin(name))
 						);
-						merged = mergePackages(loaded, coreRuneNames, activeSite.runes?.prefer);
+						merged = mergePlugins(loaded, coreRuneNames, activeSite.runes?.prefer);
 						mergedRunes = { ...coreRunes, ...merged.runes };
 						mergedTags = merged.tags;
-						mergedPackages = merged.packages;
+						mergedPackages = merged.plugins;
 					}
 
 					// Load local runes (highest priority)
@@ -121,9 +121,9 @@ export function refrakt(options: RefractPluginOptions = {}): Plugin {
 						const { baseConfig } = await import(runesPkg);
 						assembledResult = assembleThemeConfig({
 							coreConfig: baseConfig,
-							packageRunes: merged.themeRunes,
-							packageIcons: merged.themeIcons,
-							packageBackgrounds: merged.themeBackgrounds,
+							pluginRunes: merged.themeRunes,
+							pluginIcons: merged.themeIcons,
+							pluginBackgrounds: merged.themeBackgrounds,
 							provenance: merged.provenance,
 						});
 					}

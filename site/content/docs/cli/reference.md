@@ -7,7 +7,7 @@ description: Emit rune syntax reference for human contributors and AI coding age
 
 Emits a syntax reference for every rune available in the current project — attributes, content model, and example usage — derived from the same schemas the transform engine uses. The reference is intended for both human contributors learning the runes and AI coding agents authoring `.md` content.
 
-The command reads `refrakt.config.json` to determine which community packages are installed, so output always matches what the site actually supports.
+The command reads `refrakt.config.json` to determine which plugins are installed, so output always matches what the site actually supports.
 
 ## Subcommands
 
@@ -39,7 +39,7 @@ Exits with status `1` when the rune name is unknown. Use `refrakt reference list
 
 ## refrakt reference list
 
-List every rune the project has access to, grouped by its source package (core or a community package).
+List every rune the project has access to, grouped by its source package (core or a plugin).
 
 ```shell
 refrakt reference list

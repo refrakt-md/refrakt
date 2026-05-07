@@ -49,7 +49,7 @@ describe('referenceNameCommand', () => {
 		expect(result.exitCode).toBe(0);
 		const parsed = JSON.parse(result.output);
 		expect(parsed.name).toBe('hint');
-		expect(parsed.package).toBe('core');
+		expect(parsed.plugin).toBe('core');
 		expect(parsed.aliases).toContain('callout');
 		expect(parsed.attributes).toBeDefined();
 		expect(parsed.attributes.own).toBeDefined();
@@ -104,7 +104,7 @@ describe('referenceListCommand', () => {
 		expect(result.exitCode).toBe(0);
 		const parsed = JSON.parse(result.output);
 		expect(Array.isArray(parsed)).toBe(true);
-		expect(parsed[0].package).toBe('core');
+		expect(parsed[0].plugin).toBe('core');
 		expect(parsed[0].runes).toBeInstanceOf(Array);
 		const names = parsed[0].runes.map((r: { name: string }) => r.name);
 		expect(names).toContain('hint');
@@ -121,7 +121,7 @@ describe('referenceListCommand', () => {
 		expect(result.exitCode).toBe(0);
 		const parsed = JSON.parse(result.output);
 		expect(parsed).toHaveLength(1);
-		expect(parsed[0].package).toBe('core');
+		expect(parsed[0].plugin).toBe('core');
 	});
 });
 
@@ -214,7 +214,7 @@ describe('referenceDumpCommand', () => {
 		expect(Array.isArray(parsed)).toBe(true);
 		const hint = parsed.find((r: { name: string }) => r.name === 'hint');
 		expect(hint).toBeDefined();
-		expect(hint.package).toBe('core');
+		expect(hint.plugin).toBe('core');
 	});
 
 	it('applies a custom preamble when provided', () => {

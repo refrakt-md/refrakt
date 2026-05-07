@@ -1,6 +1,6 @@
 import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
-import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import type { RefraktConfig } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
@@ -39,22 +39,22 @@ async function init() {
 
 	let transformConfig = themeConfig;
 
-	const packageNames = config.packages ?? [];
-	if (packageNames.length > 0) {
+	const pluginNames = config.plugins ?? [];
+	if (pluginNames.length > 0) {
 		const loaded = await Promise.all(
-			packageNames.map((name: string) => loadRunePackage(name))
+			pluginNames.map((name: string) => loadPlugin(name))
 		);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
 
 		_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 		_packages = loaded.map((l: any) => l.pkg);
 
 		const { config: assembledConfig } = assembleThemeConfig({
 			coreConfig: themeConfig,
-			packageRunes: merged.themeRunes,
-			packageIcons: merged.themeIcons,
-			packageBackgrounds: merged.themeBackgrounds,
+			pluginRunes: merged.themeRunes,
+			pluginIcons: merged.themeIcons,
+			pluginBackgrounds: merged.themeBackgrounds,
 			extensions: merged.extensions as any,
 			provenance: merged.provenance,
 		});

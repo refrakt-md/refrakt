@@ -10,7 +10,7 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 This guide covers how to write runes — the schema code that interprets content, the type definitions that enforce contracts, and the engine configuration that produces styled output.
 
 {% hint type="note" %}
-New runes almost always belong in a **community package** (`runes/{your-package}/`), not in the core rune library. The core library is for universal, domain-neutral runes that every project might use. Domain-specific runes (marketing, storytelling, API docs, etc.) belong in packages. See the [community package rune checklist](#community-package-rune) below, and [Building a Custom Package](/docs/packages/authoring) for the full guide.
+New runes almost always belong in a **plugin** (`runes/{your-package}/`), not in the core rune library. The core library is for universal, domain-neutral runes that every project might use. Domain-specific runes (marketing, storytelling, API docs, etc.) belong in packages. See the [plugin rune checklist](#plugin-rune) below, and [Building a Custom Plugin](/docs/plugins/authoring) for the full guide.
 {% /hint %}
 
 ## The pipeline
@@ -195,14 +195,14 @@ If the rune needs JavaScript interactivity:
 
 ### Community package rune
 
-For domain-specific runes (marketing, storytelling, API docs, games, etc.) that live in a community package under `runes/{package}/`:
+For domain-specific runes (marketing, storytelling, API docs, games, etc.) that live in a plugin under `runes/{package}/`:
 
 | File | Purpose |
 |------|---------|
 | `runes/{package}/src/{name}.ts` | Schema — `createContentModelSchema()` with `transform()`, same API as core |
-| `runes/{package}/src/index.ts` | Add the rune to the package's `RunePackage.runes` map |
+| `runes/{package}/src/index.ts` | Add the rune to the package's `Plugin.runes` map |
 | `runes/{package}/styles/{block}.css` | CSS for the identity transform output |
 | `runes/{package}/test/{name}.test.ts` | Tests — output structure verification |
 | `site/content/runes/{name}.md` | User docs — usage guide with preview examples |
 
-Theme config (BEM blocks, structure, icons) lives in the `RunePackage.theme.runes` field rather than in a separate config file. See [Building a Custom Package](/docs/packages/authoring) for the full authoring guide.
+Theme config (BEM blocks, structure, icons) lives in the `Plugin.theme.runes` field rather than in a separate config file. See [Building a Custom Plugin](/docs/plugins/authoring) for the full authoring guide.

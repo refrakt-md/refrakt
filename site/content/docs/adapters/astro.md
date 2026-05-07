@@ -107,7 +107,7 @@ The `src/setup.ts` module reads `refrakt.config.json` and initializes the theme,
 ```typescript
 import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
-import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import type { RefraktConfig } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
@@ -147,13 +147,13 @@ async function init() {
 
   let transformConfig = themeConfig;
 
-  const packageNames = config.packages ?? [];
+  const packageNames = config.plugins ?? [];
   if (packageNames.length > 0) {
     const loaded = await Promise.all(
-      packageNames.map((name: string) => loadRunePackage(name))
+      packageNames.map((name: string) => loadPlugin(name))
     );
     const coreRuneNames = new Set(Object.keys(coreRunes));
-    const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+    const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
 
     _communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
     _packages = loaded.map((l: any) => l.pkg);
@@ -195,12 +195,12 @@ The key details:
 
 - `config.theme` (e.g. `"@refrakt-md/lumina"`) drives the dynamic imports — switching themes in `refrakt.config.json` is all you need
 - The manifest is loaded via `createRequire().resolve()` + `readFileSync` because it's a JSON file (dynamic `import()` without a type attribute fails in Node ESM for JSON)
-- Community packages listed in `config.packages` are loaded, merged, and their `RunePackage` objects are passed to `loadContent()` so pipeline hooks (register, aggregate, post-process) run correctly
+- Community packages listed in `config.plugins` are loaded, merged, and their `Plugin` objects are passed to `loadContent()` so pipeline hooks (register, aggregate, post-process) run correctly
 - `getHighlightTransform()` lazily initializes `@refrakt-md/highlight` for syntax highlighting — the highlight transform runs after the identity transform
 
 ## Content Loading
 
-Use Astro's `getStaticPaths()` to generate pages from your content directory. The setup module handles config loading, community package merging, theme assembly, and caching automatically:
+Use Astro's `getStaticPaths()` to generate pages from your content directory. The setup module handles config loading, plugin merging, theme assembly, and caching automatically:
 
 {% codegroup labels="src/pages/[...slug].astro" %}
 

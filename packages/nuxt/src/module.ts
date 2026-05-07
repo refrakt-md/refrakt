@@ -22,7 +22,7 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 			'@refrakt-md/nuxt',
 			site.theme,
 			`${site.theme}/nuxt`,
-			...(site.packages ?? []),
+			...(site.plugins ?? []),
 		];
 		nuxt.options.build.transpile.push(...transpile);
 

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { runes } from '@refrakt-md/runes';
 import type { Rune } from '@refrakt-md/runes';
 
-// Community packages
+// Plugins
 import { marketing } from '@refrakt-md/marketing';
 import { docs } from '@refrakt-md/docs';
 import { storytelling } from '@refrakt-md/storytelling';
@@ -25,7 +25,7 @@ import { design } from '@refrakt-md/design';
 import { learning } from '@refrakt-md/learning';
 import { media } from '@refrakt-md/media';
 
-import type { RunePackage } from '@refrakt-md/types';
+import type { Plugin } from '@refrakt-md/types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outputPath = resolve(__dirname, '..', 'snippets', 'runes.json');
@@ -143,8 +143,8 @@ for (const rune of Object.values(runes) as Rune[]) {
 	snippets[displayName(rune.name)] = entry;
 }
 
-// Community packages
-const packages: RunePackage[] = [marketing, docs, storytelling, places, business, design, learning, media];
+// Plugins
+const packages: Plugin[] = [marketing, docs, storytelling, places, business, design, learning, media];
 
 for (const pkg of packages) {
 	for (const [name, runeEntry] of Object.entries(pkg.runes)) {

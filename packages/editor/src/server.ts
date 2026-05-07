@@ -8,7 +8,7 @@ import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import type { HookSet } from '@refrakt-md/content';
 import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks, schemaContentModels, serializeContentModel } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
-import type { RouteRule, RunePackage, AggregatedData } from '@refrakt-md/types';
+import type { RouteRule, Plugin, AggregatedData } from '@refrakt-md/types';
 import { createTransform } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent, type PreviewPipelineOptions } from './preview.js';
@@ -38,11 +38,11 @@ export interface EditorOptions {
 	configPath?: string;
 	/** Route rules from refrakt.config.json */
 	routeRules?: RouteRule[];
-	/** npm package names of community rune packages (used to build client-side tags bundle) */
-	packageNames?: string[];
-	/** Community rune packages (for cross-page pipeline hooks) */
-	packages?: RunePackage[];
-	/** Extra Markdoc tags from community packages (merged into preview pipeline) */
+	/** npm package names of plugins (used to build client-side tags bundle) */
+	pluginNames?: string[];
+	/** Plugins (for cross-page pipeline hooks) */
+	plugins?: Plugin[];
+	/** Extra Markdoc tags from plugins (merged into preview pipeline) */
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>;
 	/** Absolute path to sandbox examples directory */
 	sandboxExamplesDir?: string;
@@ -163,8 +163,8 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 	// Build community tags bundle for client-side block preview
 	let communityTagsBundlePath: string | null = null;
-	if (options.packageNames && options.packageNames.length > 0) {
-		const result = await buildCommunityTagsBundle(options.packageNames, process.cwd());
+	if (options.pluginNames && options.pluginNames.length > 0) {
+		const result = await buildCommunityTagsBundle(options.pluginNames, process.cwd());
 		if (result.success) {
 			communityTagsBundlePath = result.outputPath;
 			console.log('  Community tags: bundled \u2713');
@@ -184,16 +184,16 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 	let cachedAggregated: AggregatedData = {};
 
 	function buildHookSets(): HookSet[] {
-		const sets: HookSet[] = [{ packageName: '__core__', hooks: corePipelineHooks }];
-		for (const pkg of options.packages ?? []) {
-			if (pkg.pipeline) sets.push({ packageName: pkg.name, hooks: pkg.pipeline });
+		const sets: HookSet[] = [{ pluginName: '__core__', hooks: corePipelineHooks }];
+		for (const pkg of options.plugins ?? []) {
+			if (pkg.pipeline) sets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
 		}
 		return sets;
 	}
 
 	async function refreshPipelineCache(): Promise<void> {
 		try {
-			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.packages, options.sandboxExamplesDir);
+			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.plugins, options.sandboxExamplesDir);
 			cachedAggregated = site.aggregated;
 			layoutResolver.setAggregated(site.aggregated, buildHookSets());
 		} catch {

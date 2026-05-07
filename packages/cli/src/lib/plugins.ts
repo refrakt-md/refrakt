@@ -34,7 +34,7 @@ export interface DiscoveredPlugin {
 	/** The namespace this plugin claims (e.g. `plan`). */
 	namespace: string;
 	/** The npm package name (e.g. `@refrakt-md/plan`). */
-	packageName: string;
+	pluginName: string;
 	/** The package's installed version, read from its `package.json`. */
 	packageVersion: string;
 	/** Commands contributed by the plugin. */
@@ -88,11 +88,11 @@ export async function discoverPlugins(opts: DiscoverOptions = {}): Promise<Disco
 	const seen = new Set<string>();
 	const result: DiscoveredPlugin[] = [];
 
-	for (const { packageName, source } of candidates) {
-		if (seen.has(packageName)) continue;
-		seen.add(packageName);
+	for (const { pluginName, source } of candidates) {
+		if (seen.has(pluginName)) continue;
+		seen.add(pluginName);
 
-		const loaded = await loadPlugin(packageName, cwd, warn);
+		const loaded = await loadPlugin(pluginName, cwd, warn);
 		if (!loaded) continue;
 
 		const existing = result.find((p) => p.namespace === loaded.plugin.namespace);
@@ -100,7 +100,7 @@ export async function discoverPlugins(opts: DiscoverOptions = {}): Promise<Disco
 			if (warn) {
 				console.warn(
 					`Warning: namespace "${loaded.plugin.namespace}" is provided by both ` +
-						`${existing.packageName} and ${packageName}. Using the first one (${existing.packageName}).`,
+						`${existing.pluginName} and ${pluginName}. Using the first one (${existing.pluginName}).`,
 				);
 			}
 			continue;
@@ -108,7 +108,7 @@ export async function discoverPlugins(opts: DiscoverOptions = {}): Promise<Disco
 
 		result.push({
 			namespace: loaded.plugin.namespace,
-			packageName,
+			pluginName,
 			packageVersion: loaded.version,
 			commands: loaded.plugin.commands,
 			source,
@@ -120,30 +120,41 @@ export async function discoverPlugins(opts: DiscoverOptions = {}): Promise<Disco
 	return result;
 }
 
-/** Return the list of `{ packageName, source }` candidates to attempt. */
-function resolveCandidates(cwd: string): Array<{ packageName: string; source: 'config' | 'dependency-scan' }> {
+/** Return the list of `{ pluginName, source }` candidates to attempt. */
+function resolveCandidates(cwd: string): Array<{ pluginName: string; source: 'config' | 'dependency-scan' }> {
 	const configCandidates = candidatesFromConfig(cwd);
 	if (configCandidates) return configCandidates;
 	return candidatesFromPackageJson(cwd);
 }
 
-/** When `refrakt.config.json` declares `plugins`, return those names. */
+/** When `refrakt.config.json` declares `plugins` (top-level or under any site),
+ *  return those names. Multi-site configs union plugins across sites. */
 function candidatesFromConfig(
 	cwd: string,
-): Array<{ packageName: string; source: 'config' }> | undefined {
+): Array<{ pluginName: string; source: 'config' }> | undefined {
 	const configPath = resolve(cwd, 'refrakt.config.json');
 	if (!existsSync(configPath)) return undefined;
-	let raw: unknown;
+	let normalized: { plugins?: unknown; sites?: Record<string, { plugins?: unknown }> };
 	try {
-		raw = loadRefraktConfigWithRaw(configPath).raw;
+		normalized = loadRefraktConfigWithRaw(configPath).normalized;
 	} catch {
 		return undefined;
 	}
-	const plugins = (raw as { plugins?: unknown }).plugins;
-	if (!Array.isArray(plugins)) return undefined;
-	const valid = plugins.filter((p): p is string => typeof p === 'string' && p.length > 0);
-	if (valid.length === 0) return undefined;
-	return valid.map((packageName) => ({ packageName, source: 'config' as const }));
+	const collected = new Set<string>();
+	const collect = (value: unknown) => {
+		if (!Array.isArray(value)) return;
+		for (const entry of value) {
+			if (typeof entry === 'string' && entry.length > 0) collected.add(entry);
+		}
+	};
+	collect(normalized.plugins);
+	if (normalized.sites) {
+		for (const site of Object.values(normalized.sites)) {
+			collect(site?.plugins);
+		}
+	}
+	if (collected.size === 0) return undefined;
+	return [...collected].map((pluginName) => ({ pluginName, source: 'config' as const }));
 }
 
 /** Walk up from `cwd` to find candidate plugin packages, sourced from:
@@ -155,7 +166,7 @@ function candidatesFromConfig(
  *  scan finds plugins under both normal install and workspace setups. */
 function candidatesFromPackageJson(
 	cwd: string,
-): Array<{ packageName: string; source: 'dependency-scan' }> {
+): Array<{ pluginName: string; source: 'dependency-scan' }> {
 	const names = new Set<string>();
 
 	const pkgPath = findUp('package.json', cwd);
@@ -192,7 +203,7 @@ function candidatesFromPackageJson(
 		}
 	}
 
-	return [...names].map((packageName) => ({ packageName, source: 'dependency-scan' as const }));
+	return [...names].map((pluginName) => ({ pluginName, source: 'dependency-scan' as const }));
 }
 
 function safeIsDirectory(path: string): boolean {
@@ -206,11 +217,11 @@ function safeIsDirectory(path: string): boolean {
 /** Attempt to load a single plugin's `cli-plugin` export. Returns undefined
  *  when the export is missing (silently skipped) or malformed (warned). */
 async function loadPlugin(
-	packageName: string,
+	pluginName: string,
 	cwd: string,
 	warn: boolean,
 ): Promise<{ plugin: CliPlugin; version: string } | undefined> {
-	const pluginEntry = `${packageName}/cli-plugin`;
+	const pluginEntry = `${pluginName}/cli-plugin`;
 	let mod: unknown;
 	try {
 		mod = await importFrom(pluginEntry, cwd);
@@ -224,13 +235,13 @@ async function loadPlugin(
 	if (!isValidPlugin(candidate)) {
 		if (warn) {
 			console.warn(
-				`Warning: ${packageName} exports an invalid cli-plugin (missing namespace or commands). Skipping.`,
+				`Warning: ${pluginName} exports an invalid cli-plugin (missing namespace or commands). Skipping.`,
 			);
 		}
 		return undefined;
 	}
 
-	const version = readPackageVersion(packageName, cwd) ?? '0.0.0';
+	const version = readPackageVersion(pluginName, cwd) ?? '0.0.0';
 	return { plugin: candidate, version };
 }
 
@@ -249,12 +260,12 @@ function isValidPlugin(candidate: unknown): candidate is CliPlugin {
 	return true;
 }
 
-function readPackageVersion(packageName: string, cwd: string): string | undefined {
-	// Walk up from cwd looking at node_modules/<packageName>/package.json. We
+function readPackageVersion(pluginName: string, cwd: string): string | undefined {
+	// Walk up from cwd looking at node_modules/<pluginName>/package.json. We
 	// avoid require.resolve('<pkg>/package.json') because modern packages with
 	// an "exports" map block that subpath.
 	for (const nm of modulePaths(cwd)) {
-		const candidate = resolve(nm, packageName, 'package.json');
+		const candidate = resolve(nm, pluginName, 'package.json');
 		if (!existsSync(candidate)) continue;
 		try {
 			const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: unknown };

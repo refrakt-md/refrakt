@@ -104,7 +104,7 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `packages` | `string[]` | Community rune packages to merge into this site's `ThemeConfig`. |
+| `plugins` | `string[]` | Plugins to merge into this site's `ThemeConfig`. |
 | `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). |
 | `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
 | `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
@@ -125,7 +125,7 @@ A `SiteConfig` accepts these fields. Required fields are bold.
     "baseUrl": "https://example.com",
     "siteName": "My Documentation",
     "logo": "/favicon-192.png",
-    "packages": ["@refrakt-md/marketing", "@refrakt-md/docs"],
+    "plugins": ["@refrakt-md/marketing", "@refrakt-md/docs"],
     "routeRules": [
       { "pattern": "blog/**", "layout": "blogArticleLayout" },
       { "pattern": "docs/**", "layout": "docsLayout" },

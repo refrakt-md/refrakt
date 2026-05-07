@@ -21,7 +21,7 @@ describe('runPipeline', () => {
 		const events: string[] = [];
 
 		const hooks: HookSet = {
-			packageName: 'test',
+			pluginName: 'test',
 			hooks: {
 				register(pages, registry, ctx) {
 					events.push('register');
@@ -51,7 +51,7 @@ describe('runPipeline', () => {
 
 	it('catches register hook errors and continues', async () => {
 		const hooks: HookSet = {
-			packageName: 'bad-register',
+			pluginName: 'bad-register',
 			hooks: {
 				register() {
 					throw new Error('register failed');
@@ -71,7 +71,7 @@ describe('runPipeline', () => {
 
 	it('catches aggregate hook errors and continues', async () => {
 		const hooks: HookSet = {
-			packageName: 'bad-agg',
+			pluginName: 'bad-agg',
 			hooks: {
 				aggregate() {
 					throw new Error('aggregate failed');
@@ -89,7 +89,7 @@ describe('runPipeline', () => {
 
 	it('catches postProcess hook errors per-page and continues', async () => {
 		const hooks: HookSet = {
-			packageName: 'bad-post',
+			pluginName: 'bad-post',
 			hooks: {
 				postProcess(page) {
 					if (page.url === '/b/') throw new Error('post failed');
@@ -109,7 +109,7 @@ describe('runPipeline', () => {
 
 	it('packages can emit warnings via ctx', async () => {
 		const hooks: HookSet = {
-			packageName: 'warning-pkg',
+			pluginName: 'warning-pkg',
 			hooks: {
 				register(pages, registry, ctx) {
 					ctx.warn('something suspicious');
@@ -129,7 +129,7 @@ describe('runPipeline', () => {
 		const order: string[] = [];
 
 		const makeHookSet = (name: string): HookSet => ({
-			packageName: name,
+			pluginName: name,
 			hooks: {
 				register() { order.push(`register:${name}`); },
 				aggregate() { order.push(`aggregate:${name}`); return {}; },
@@ -151,13 +151,13 @@ describe('runPipeline', () => {
 
 		const hookSets: HookSet[] = [
 			{
-				packageName: 'producer',
+				pluginName: 'producer',
 				hooks: {
 					aggregate() { return { value: 42 }; },
 				},
 			},
 			{
-				packageName: 'consumer',
+				pluginName: 'consumer',
 				hooks: {
 					postProcess(page, aggregated) {
 						receivedAggregated = aggregated;

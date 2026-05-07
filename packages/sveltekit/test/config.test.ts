@@ -160,50 +160,50 @@ describe('loadRefraktConfig', () => {
 		rmSync(dir, { recursive: true });
 	});
 
-	it('loads config with packages array', () => {
+	it('loads config with plugins array', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
-			packages: ['@refrakt-community/dnd-5e', '@refrakt-community/screenplay'],
+			plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/screenplay'],
 		}));
 
 		const config = loadRefraktConfig(configPath);
-		expect(config.packages).toEqual(['@refrakt-community/dnd-5e', '@refrakt-community/screenplay']);
+		expect(config.plugins).toEqual(['@refrakt-community/dnd-5e', '@refrakt-community/screenplay']);
 
 		rmSync(dir, { recursive: true });
 	});
 
-	it('throws when packages is not an array', () => {
+	it('throws when plugins is not an array', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
-			packages: 'not-an-array',
+			plugins: 'not-an-array',
 		}));
 
 		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"packages" must be an array');
+			.toThrow('"plugins" must be an array');
 
 		rmSync(dir, { recursive: true });
 	});
 
-	it('throws when packages entry is not a string', () => {
+	it('throws when plugins entry is not a string', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
-			packages: [123],
+			plugins: [123],
 		}));
 
 		expect(() => loadRefraktConfig(configPath))
-			.toThrow('packages[0] must be a non-empty string');
+			.toThrow('plugins[0] must be a non-empty string');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -215,7 +215,7 @@ describe('loadRefraktConfig', () => {
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
 			target: 'sveltekit',
-			packages: ['@refrakt-community/dnd-5e', '@refrakt-community/pathfinder-2e'],
+			plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/pathfinder-2e'],
 			runes: { prefer: { item: 'dnd-5e', spell: 'dnd-5e' } },
 		}));
 

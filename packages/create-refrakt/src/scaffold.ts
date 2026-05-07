@@ -40,14 +40,14 @@ export async function scaffold(options: ScaffoldOptions): Promise<void> {
 	await scaffolders[target](options);
 }
 
-/** Default set of community packages scaffolded projects ship with. Kept in sync
+/** Default set of plugins scaffolded projects ship with. Kept in sync
  *  with `generateRefraktConfig`. */
-const DEFAULT_SCAFFOLDED_PACKAGES = ['@refrakt-md/marketing'];
+const DEFAULT_SCAFFOLDED_PLUGINS = ['@refrakt-md/marketing'];
 
 /** Generate and write AGENTS.md to the scaffolded project's root. Runs after the
- *  config file has been written so the reference reflects the chosen package set. */
-async function writeAgentsMd(targetDir: string, packages: string[]): Promise<void> {
-	const content = await renderScaffoldAgentsMd(packages);
+ *  config file has been written so the reference reflects the chosen plugin set. */
+async function writeAgentsMd(targetDir: string, plugins: string[]): Promise<void> {
+	const content = await renderScaffoldAgentsMd(plugins);
 	writeFileSync(path.join(targetDir, 'AGENTS.md'), content);
 }
 
@@ -75,7 +75,7 @@ async function scaffoldSvelteKitSite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
@@ -101,7 +101,7 @@ async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'html'));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 function generatePackageJson(projectName: string, theme: string): string {
@@ -170,7 +170,7 @@ function generateRefraktConfig(theme: string, target: string = 'svelte'): string
 				contentDir: './content',
 				theme,
 				target,
-				packages: ['@refrakt-md/marketing'],
+				plugins: ['@refrakt-md/marketing'],
 				routeRules: [
 					{ pattern: '**', layout: 'default' },
 				],
@@ -233,7 +233,7 @@ async function scaffoldAstroSite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'astro'));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
@@ -259,7 +259,7 @@ async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'nuxt'));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
@@ -285,7 +285,7 @@ async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'next'));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
@@ -311,7 +311,7 @@ async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
-	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PACKAGES);
+	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
 }
 
 function renameDotfiles(targetDir: string): void {
@@ -478,7 +478,7 @@ Content lives in \`./content\` as \`.md\` files. Runes — the Markdoc tags like
 
 Site settings live under \`sites.main\` in \`refrakt.config.json\`. To add a second site (e.g., a blog or docs subsite) declare another entry under \`sites\`, then pass \`site: '<name>'\` to the SvelteKit plugin in the corresponding \`vite.config.ts\`.
 
-When you add or remove packages in \`sites.main.packages\`, regenerate \`AGENTS.md\`:
+When you add or remove plugins in \`sites.main.plugins\`, regenerate \`AGENTS.md\`:
 
 \`\`\`sh
 npx refrakt reference dump
@@ -503,7 +503,7 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 		throw new Error(`Directory "${targetDir}" already exists`);
 	}
 
-	const packageName = scope ? `${scope}/${themeName}` : themeName;
+	const pluginName = scope ? `${scope}/${themeName}` : themeName;
 
 	mkdirSync(path.join(targetDir, 'src'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'svelte', 'layouts'), { recursive: true });
@@ -514,7 +514,7 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 
 	writeFileSync(
 		path.join(targetDir, 'package.json'),
-		generateThemePackageJson(packageName),
+		generateThemePackageJson(pluginName),
 	);
 
 	writeFileSync(
@@ -529,7 +529,7 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 
 	writeFileSync(
 		path.join(targetDir, 'manifest.json'),
-		generateThemeManifest(packageName),
+		generateThemeManifest(pluginName),
 	);
 
 	writeFileSync(
@@ -583,9 +583,9 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 	);
 }
 
-function generateThemePackageJson(packageName: string): string {
+function generateThemePackageJson(pluginName: string): string {
 	const pkg = {
-		name: packageName,
+		name: pluginName,
 		version: '0.1.0',
 		type: 'module',
 		main: 'dist/config.js',
@@ -675,9 +675,9 @@ export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 `;
 }
 
-function generateThemeManifest(packageName: string): string {
+function generateThemeManifest(pluginName: string): string {
 	const manifest = {
-		name: packageName,
+		name: pluginName,
 		version: '0.1.0',
 		target: 'svelte',
 		designTokens: './tokens/base.css',

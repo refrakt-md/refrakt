@@ -13,7 +13,7 @@ import design from '@refrakt-md/design';
 import learning from '@refrakt-md/learning';
 import media from '@refrakt-md/media';
 
-// ─── Assemble full config (core + all rune packages) ───
+// ─── Assemble full config (core + all plugins) ───
 
 const fullRunes: Record<string, RuneConfig> = {
 	...baseConfig.runes,

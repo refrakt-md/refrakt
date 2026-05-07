@@ -48,7 +48,7 @@ export default defineNuxtConfig({
 
 The module reads `refrakt.config.json` from the project root (configurable via the `configPath` option) and:
 
-- Adds core refrakt packages plus your theme and rune packages to `build.transpile`
+- Adds core refrakt packages plus your theme and plugins to `build.transpile`
 - Configures the Vue compiler to treat `rf-*` tags as custom elements
 - Watches the content directory for HMR during development
 
@@ -107,7 +107,7 @@ my-site/
 
 ### Server Utility
 
-Create a server utility using `createRefraktLoader` — it handles config loading, community package merging, theme assembly, and caching automatically:
+Create a server utility using `createRefraktLoader` — it handles config loading, plugin merging, theme assembly, and caching automatically:
 
 {% codegroup labels="server/utils/refrakt.ts" %}
 

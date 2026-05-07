@@ -25,13 +25,11 @@ if (!command || command === '--help' || command === '-h') {
 } else if (command === 'config') {
 	runConfigCommand(args.slice(1));
 } else if (command === 'extract') {
-	// Deprecated: extract has moved to the docs rune package
+	// Deprecated: extract has moved to the docs plugin
 	console.error('Warning: `refrakt extract` is deprecated. Use `refrakt docs extract` instead.\n');
 	runPlugin('docs', ['extract', ...args.slice(1)]);
 } else if (command === 'edit') {
 	runEdit(args.slice(1));
-} else if (command === 'package') {
-	runPackage(args.slice(1));
 } else if (command === 'reference') {
 	runReference(args.slice(1));
 } else if (command.startsWith('-')) {
@@ -55,9 +53,8 @@ Commands:
   validate             Validate theme config and manifest
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
-  package <subcommand> Manage rune packages (validate)
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
-  plugins <subcommand> List installed plugins (list)
+  plugins <subcommand> Manage installed plugins (list, validate)
   config <subcommand>  Manage refrakt.config.json (migrate)
 
 Write Options:
@@ -124,19 +121,12 @@ Examples:
   refrakt extract ./src -o ./content/api
   refrakt extract ./src -o ./content/api --source-url https://github.com/my/repo/blob/main/src
   refrakt extract ./src -o ./content/api --validate
-  refrakt package validate
-  refrakt package validate ./runes/marketing
-  refrakt package validate --json
+  refrakt plugins validate
+  refrakt plugins validate ./plugins/marketing
+  refrakt plugins validate --json
   refrakt edit
   refrakt edit --port 3000 --content-dir ./content
   refrakt edit --dev-server http://localhost:5173
-
-Package Subcommands:
-  package validate [dir]   Validate a rune package before publishing
-
-Package Validate Options:
-  --json                   Output as JSON
-  <dir>                    Package directory (default: current directory)
 
 Edit Options:
   --port, -p <number>      Editor port (default: 4800)
@@ -146,14 +136,14 @@ Edit Options:
 
 Reference Subcommands:
   reference <name>             Print syntax reference for a single rune
-  reference list               Enumerate available runes, grouped by package
+  reference list               Enumerate available runes, grouped by plugin
   reference dump               Write a full reference to a file (default AGENTS.md)
 
 Reference Options:
   --format <fmt>           Output format: markdown (default), json
   --config <dir>           Project root containing refrakt.config.json
   --no-example             Omit the example block (reference <name>)
-  --package <name>         Filter by package (reference list)
+  --plugin <name>          Filter by plugin (reference list)
   --output, -o <path>      Output file (reference dump; default: AGENTS.md)
   --section <heading>      Heading to replace in existing file (reference dump)
   --check                  Exit 1 if output file is out of date (reference dump)
@@ -187,17 +177,17 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 	if (!plugin) {
 		const namespaces = plugins.map((p) => p.namespace);
 		const suggestion = closestMatch(namespace, namespaces);
-		const packageName = `@refrakt-md/${namespace}`;
+		const pluginName = `@refrakt-md/${namespace}`;
 
 		console.error(`\n  Unknown command "${namespace}".`);
 		if (suggestion) {
 			console.error(`  Did you mean "${suggestion}"?\n`);
 		} else if (namespaces.length === 0) {
 			console.error(`\n  No refrakt plugins are installed in this project.`);
-			console.error(`  Install one to enable namespaced commands, e.g.: npm install ${packageName}\n`);
+			console.error(`  Install one to enable namespaced commands, e.g.: npm install ${pluginName}\n`);
 		} else {
 			console.error(`\n  Installed plugins: ${namespaces.map((n) => `"${n}"`).join(', ')}`);
-			console.error(`  Or install a new one: npm install ${packageName}\n`);
+			console.error(`  Or install a new one: npm install ${pluginName}\n`);
 		}
 		process.exit(1);
 	}
@@ -238,7 +228,7 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 	}
 }
 
-/** Load community packages from refrakt.config.json and assemble a merged ThemeConfig.
+/** Load plugins from refrakt.config.json and assemble a merged ThemeConfig.
  *  Falls back to baseConfig if no config file or packages are found.
  *
  *  When `site` is provided, the named entry is read from `config.sites`; when
@@ -255,7 +245,7 @@ async function loadMergedConfig(
 	tags: Record<string, any>;
 	fixtures: Record<string, string>;
 }> {
-	const { runes, tags, loadRunePackage, mergePackages, applyAliases, loadLocalRunes, baseConfig } = runesModule;
+	const { runes, tags, loadPlugin, mergePlugins, applyAliases, loadLocalRunes, baseConfig } = runesModule;
 
 	let mergedRunes = runes;
 	let mergedTags: Record<string, any> = tags;
@@ -278,7 +268,7 @@ async function loadMergedConfig(
 		// flat-shape configs (and single-site nested), this falls back to the
 		// top-level (mirrored) fields when no explicit site is declared.
 		let siteScoped: {
-			packages?: string[];
+			plugins?: string[];
 			runes?: import('@refrakt-md/types').SiteConfig['runes'];
 		} = config;
 		const hasSites = Object.keys(config.sites).length > 0;
@@ -295,11 +285,11 @@ async function loadMergedConfig(
 		const coreRuneNames = new Set(Object.keys(runes));
 		let merged;
 
-		if (siteScoped.packages && siteScoped.packages.length > 0) {
+		if (siteScoped.plugins && siteScoped.plugins.length > 0) {
 			const loaded = await Promise.all(
-				siteScoped.packages.map((name: string) => loadRunePackage(name))
+				siteScoped.plugins.map((name: string) => loadPlugin(name))
 			);
-			merged = mergePackages(loaded, coreRuneNames, siteScoped.runes?.prefer);
+			merged = mergePlugins(loaded, coreRuneNames, siteScoped.runes?.prefer);
 			mergedRunes = { ...runes, ...merged.runes };
 			mergedTags = { ...tags, ...merged.tags };
 			packageFixtures = merged.fixtures;
@@ -321,9 +311,9 @@ async function loadMergedConfig(
 		if (merged) {
 			const assembled = assembleThemeConfig({
 				coreConfig: baseConfig,
-				packageRunes: merged.themeRunes,
-				packageIcons: merged.themeIcons,
-				packageBackgrounds: merged.themeBackgrounds,
+				pluginRunes: merged.themeRunes,
+				pluginIcons: merged.themeIcons,
+				pluginBackgrounds: merged.themeBackgrounds,
 				provenance: merged.provenance,
 			});
 			mergedConfig = assembled.config;
@@ -525,17 +515,17 @@ function runWrite(writeArgs: string[]): void {
 			process.exit(1);
 		}
 
-		// Load community packages to include in AI prompt
+		// Load plugins to include in AI prompt
 		const { runes } = runesModule;
 		let mergedRunes: Record<string, any> = runes;
 		try {
 			const { loadRefraktConfigFile } = await import('./config-file.js');
 			const { config } = loadRefraktConfigFile();
-			if (config.packages && config.packages.length > 0) {
+			if (config.plugins && config.plugins.length > 0) {
 				const loaded = await Promise.all(
-					config.packages.map((name: string) => runesModule.loadRunePackage(name))
+					config.plugins.map((name: string) => runesModule.loadPlugin(name))
 				);
-				const merged = runesModule.mergePackages(loaded, new Set(Object.keys(runes)), config.runes?.prefer);
+				const merged = runesModule.mergePlugins(loaded, new Set(Object.keys(runes)), config.runes?.prefer);
 				mergedRunes = { ...runes, ...merged.runes };
 			}
 		} catch {
@@ -743,70 +733,6 @@ Examples:
 	}
 }
 
-function runPackage(packageArgs: string[]): void {
-	const subcommand = packageArgs[0];
-
-	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
-		console.log(`
-Usage: refrakt package <subcommand> [options]
-
-Subcommands:
-  validate [dir]   Validate a rune package before publishing
-
-Validate Options:
-  --json           Output as JSON
-  <dir>            Package directory (default: current directory)
-
-Examples:
-  refrakt package validate
-  refrakt package validate ./runes/marketing
-  refrakt package validate --json
-`);
-		process.exit(subcommand ? 0 : 1);
-	}
-
-	if (subcommand === 'validate') {
-		let packageDir: string | undefined;
-		let json = false;
-
-		for (let i = 1; i < packageArgs.length; i++) {
-			const arg = packageArgs[i];
-
-			if (arg === '--json') {
-				json = true;
-			} else if (arg === '--site') {
-				// Accepted for forward compatibility; package validate operates
-				// on a single package directory and is not yet site-scoped.
-				packageArgs[++i];
-			} else if (arg === '--help' || arg === '-h') {
-				printUsage();
-				process.exit(0);
-			} else if (arg.startsWith('-')) {
-				console.error(`Error: Unknown flag "${arg}"\n`);
-				printUsage();
-				process.exit(1);
-			} else if (!packageDir) {
-				packageDir = arg;
-			} else {
-				console.error(`Error: Unexpected argument "${arg}"\n`);
-				printUsage();
-				process.exit(1);
-			}
-		}
-
-		import('./commands/package-validate.js').then(({ packageValidateCommand }) => {
-			return packageValidateCommand({ packageDir, json });
-		}).catch((err) => {
-			console.error(`\nError: ${(err as Error).message}`);
-			process.exit(1);
-		});
-	} else {
-		console.error(`Error: Unknown package subcommand "${subcommand}"\n`);
-		console.error('Available subcommands: validate');
-		process.exit(1);
-	}
-}
-
 function runEdit(editArgs: string[]): void {
 	let port: number | undefined;
 	let contentDir: string | undefined;
@@ -868,7 +794,7 @@ Usage: refrakt reference <subcommand> [options]
 
 Subcommands:
   <name>          Print syntax reference for a single rune
-  list            Enumerate available runes, grouped by package
+  list            Enumerate available runes, grouped by plugin
   dump            Write a full reference to a file (default AGENTS.md)
 
 Name Options (refrakt reference <name>):
@@ -877,7 +803,7 @@ Name Options (refrakt reference <name>):
   --config <dir>      Project root containing refrakt.config.json
 
 List Options (refrakt reference list):
-  --package <name>    Filter runes by source package
+  --plugin <name>     Filter runes by source plugin
   --format <fmt>      Output format: markdown (default), json
   --config <dir>      Project root containing refrakt.config.json
 
@@ -893,7 +819,7 @@ Examples:
   refrakt reference hero
   refrakt reference recipe --format json
   refrakt reference list
-  refrakt reference list --package @refrakt-md/marketing
+  refrakt reference list --plugin @refrakt-md/marketing
   refrakt reference dump
   refrakt reference dump --output AGENTS.md --check
 `);
@@ -952,8 +878,8 @@ function parseReferenceArgs(remaining: string[], accept: Set<string>): {
 			configDir = requireValue('--config', remaining[++i]);
 		} else if (arg === '--no-example' && accept.has('--no-example')) {
 			noExample = true;
-		} else if (arg === '--package' && accept.has('--package')) {
-			packageFilter = requireValue('--package', remaining[++i]);
+		} else if ((arg === '--plugin' || arg === '--package') && accept.has('--plugin')) {
+			packageFilter = requireValue(arg as string, remaining[++i]);
 		} else if ((arg === '--output' || arg === '-o') && accept.has('--output')) {
 			output = requireValue('--output', remaining[++i]);
 		} else if (arg === '--section' && accept.has('--section')) {
@@ -1000,7 +926,7 @@ function runReferenceName(name: string, remaining: string[]): void {
 function runReferenceList(remaining: string[]): void {
 	const { format, configDir, packageFilter } = parseReferenceArgs(
 		remaining,
-		new Set(['--package']),
+		new Set(['--plugin']),
 	);
 
 	Promise.all([
@@ -1061,7 +987,7 @@ async function buildReferenceContext(
 	assembleThemeConfig: typeof import('@refrakt-md/transform').assembleThemeConfig,
 	configDir?: string,
 ): Promise<import('@refrakt-md/runes').ReferenceContext> {
-	const { runes: coreRunes, loadRunePackage, mergePackages, applyAliases, loadLocalRunes } = runesModule;
+	const { runes: coreRunes, loadPlugin, mergePlugins, applyAliases, loadLocalRunes } = runesModule;
 
 	const allRunes: Record<string, any> = { ...coreRunes };
 	let fixtures: Record<string, string> = {};
@@ -1076,11 +1002,11 @@ async function buildReferenceContext(
 		const { config } = loadRefraktConfigFile(configDir);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
 
-		if (config.packages && config.packages.length > 0) {
+		if (config.plugins && config.plugins.length > 0) {
 			const loadedPackages = await Promise.all(
-				config.packages.map((name: string) => loadRunePackage(name))
+				config.plugins.map((name: string) => loadPlugin(name))
 			);
-			const merged = mergePackages(loadedPackages, coreRuneNames, config.runes?.prefer);
+			const merged = mergePlugins(loadedPackages, coreRuneNames, config.runes?.prefer);
 
 			const runeToNpm: Record<string, string> = {};
 			for (const loaded of loadedPackages) {
@@ -1098,9 +1024,9 @@ async function buildReferenceContext(
 			// Assemble theme config so imports register their attribute presets.
 			assembleThemeConfig({
 				coreConfig: runesModule.baseConfig,
-				packageRunes: merged.themeRunes,
-				packageIcons: merged.themeIcons,
-				packageBackgrounds: merged.themeBackgrounds,
+				pluginRunes: merged.themeRunes,
+				pluginIcons: merged.themeIcons,
+				pluginBackgrounds: merged.themeBackgrounds,
 				provenance: merged.provenance,
 			});
 

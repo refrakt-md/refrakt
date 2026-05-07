@@ -60,7 +60,7 @@ The Vite plugin provides three virtual modules that decouple your application fr
 |---------------|----------|
 | `virtual:refrakt/theme` | The resolved theme object (component registry, layouts, manifest). Supports component overrides from `refrakt.config.json` |
 | `virtual:refrakt/tokens` | CSS import for the theme's design tokens. In production, includes only CSS for runes actually used |
-| `virtual:refrakt/content` | Content loading functions (`getSite`, `getTransform`, `getHighlightTransform`, `invalidateSite`). Handles config reading, community package loading, theme assembly, and caching automatically |
+| `virtual:refrakt/content` | Content loading functions (`getSite`, `getTransform`, `getHighlightTransform`, `invalidateSite`). Handles config reading, plugin loading, theme assembly, and caching automatically |
 | `virtual:refrakt/config` | The project configuration as a JSON module |
 
 ## SvelteTheme Interface
@@ -146,7 +146,7 @@ export async function entries() {
 }
 ```
 
-The virtual module handles all config loading, community package merging, theme assembly, and caching internally — no boilerplate needed.
+The virtual module handles all config loading, plugin merging, theme assembly, and caching internally — no boilerplate needed.
 
 ## Renderer Component
 

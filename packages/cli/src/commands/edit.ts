@@ -63,7 +63,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		themeConfig = { ...themeConfig, backgrounds: { ...themeConfig.backgrounds, ...projectConfig.backgrounds } as any };
 	}
 
-	// Load community packages for editor palette + preview
+	// Load plugins for editor palette + preview
 	let extraTags: Record<string, import('@markdoc/markdoc').Schema> | undefined;
 	let communityRuneEntries: Array<{
 		name: string; aliases: string[]; description: string;
@@ -73,15 +73,15 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		contentModel?: object;
 	}> | undefined;
 
-	if (projectConfig?.packages?.length) {
+	if (projectConfig?.plugins?.length) {
 		try {
-			const { loadRunePackage, mergePackages, runes: coreRuneMap, schemaContentModels, serializeContentModel } = await import('@refrakt-md/runes');
+			const { loadPlugin, mergePlugins, runes: coreRuneMap, schemaContentModels, serializeContentModel } = await import('@refrakt-md/runes');
 
 			const loaded = await Promise.all(
-				projectConfig.packages.map((name: string) => loadRunePackage(name))
+				projectConfig.plugins.map((name: string) => loadPlugin(name))
 			);
 
-			const merged = mergePackages(
+			const merged = mergePlugins(
 				loaded,
 				new Set(Object.keys(coreRuneMap)),
 				projectConfig.runes?.prefer,
@@ -147,7 +147,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 				});
 			}
 		} catch (err) {
-			console.warn('Warning: Could not load community packages:', (err as Error).message);
+			console.warn('Warning: Could not load plugins:', (err as Error).message);
 		}
 	}
 
@@ -171,7 +171,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		open: !options.noOpen,
 		configPath: projectConfigPath,
 		routeRules: projectConfig?.routeRules,
-		packageNames: projectConfig?.packages ?? [],
+		pluginNames: projectConfig?.plugins ?? [],
 		extraTags,
 		communityRunes: communityRuneEntries,
 	});

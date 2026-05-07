@@ -11,19 +11,19 @@ export interface AssembleInput {
 	/** Theme-level overrides (e.g., Lumina adding icons, prefix changes) */
 	themeOverrides?: ThemeConfigOverrides;
 
-	/** Package-contributed rune configs (keyed by typeof name) */
-	packageRunes?: Record<string, RuneConfig>;
+	/** Plugin-contributed rune configs (keyed by typeof name) */
+	pluginRunes?: Record<string, RuneConfig>;
 
-	/** Package-contributed icons */
-	packageIcons?: Record<string, Record<string, string>>;
+	/** Plugin-contributed icons */
+	pluginIcons?: Record<string, Record<string, string>>;
 
-	/** Package-contributed background presets */
-	packageBackgrounds?: Record<string, Record<string, unknown>>;
+	/** Plugin-contributed background presets */
+	pluginBackgrounds?: Record<string, Record<string, unknown>>;
 
-	/** Package-contributed extensions to core rune configs */
+	/** Plugin-contributed extensions to core rune configs */
 	extensions?: Record<string, RuneConfigExtension>;
 
-	/** Source provenance from mergePackages (pass-through, enriched with core entries) */
+	/** Source provenance from mergePlugins (pass-through, enriched with core entries) */
 	provenance?: Record<string, RuneProvenance>;
 }
 
@@ -37,55 +37,50 @@ export interface AssembleResult {
 }
 
 /**
- * Assemble a complete ThemeConfig from core + packages + theme overrides.
+ * Assemble a complete ThemeConfig from core + plugins + theme overrides.
  *
  * Merge order (last wins for rune configs):
  *   1. Core config (coreConfig)
- *   2. Package-contributed rune configs (packageRunes)
+ *   2. Plugin-contributed rune configs (pluginRunes)
  *   3. Theme-level overrides (themeOverrides)
- *   4. Package extensions (additive — modifiers and structure are appended, not replaced)
+ *   4. Plugin extensions (additive — modifiers and structure are appended, not replaced)
  *
- * This is a pure, synchronous function. All async work (package loading,
+ * This is a pure, synchronous function. All async work (plugin loading,
  * module resolution) must happen before calling this.
  */
 export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 	const {
 		coreConfig,
 		themeOverrides,
-		packageRunes,
-		packageIcons,
-		packageBackgrounds,
+		pluginRunes,
+		pluginIcons,
+		pluginBackgrounds,
 		extensions,
 		provenance: inputProvenance = {},
 	} = input;
 
-	// Step 1: Start with core config
 	let config = coreConfig;
 
-	// Step 2: Merge package-contributed rune configs, icons, and backgrounds
-	const hasPackageRunes = packageRunes && Object.keys(packageRunes).length > 0;
-	const hasPackageIcons = packageIcons && Object.keys(packageIcons).length > 0;
-	const hasPackageBgs = packageBackgrounds && Object.keys(packageBackgrounds).length > 0;
+	const hasPluginRunes = pluginRunes && Object.keys(pluginRunes).length > 0;
+	const hasPluginIcons = pluginIcons && Object.keys(pluginIcons).length > 0;
+	const hasPluginBgs = pluginBackgrounds && Object.keys(pluginBackgrounds).length > 0;
 
-	if (hasPackageRunes || hasPackageIcons || hasPackageBgs) {
-		const packageOverrides: ThemeConfigOverrides = {};
-		if (hasPackageRunes) packageOverrides.runes = packageRunes;
-		if (hasPackageIcons) packageOverrides.icons = packageIcons;
-		if (hasPackageBgs) packageOverrides.backgrounds = packageBackgrounds as Record<string, any>;
-		config = mergeThemeConfig(config, packageOverrides);
+	if (hasPluginRunes || hasPluginIcons || hasPluginBgs) {
+		const pluginOverrides: ThemeConfigOverrides = {};
+		if (hasPluginRunes) pluginOverrides.runes = pluginRunes;
+		if (hasPluginIcons) pluginOverrides.icons = pluginIcons;
+		if (hasPluginBgs) pluginOverrides.backgrounds = pluginBackgrounds as Record<string, any>;
+		config = mergeThemeConfig(config, pluginOverrides);
 	}
 
-	// Step 3: Apply theme overrides (highest non-extension priority)
 	if (themeOverrides) {
 		config = mergeThemeConfig(config, themeOverrides);
 	}
 
-	// Step 4: Apply package extensions (additive — merges modifiers and structure entries)
 	if (extensions && Object.keys(extensions).length > 0) {
 		config = applyRuneExtensions(config, extensions);
 	}
 
-	// Step 5: Build complete provenance (add core runes not already tracked)
 	const fullProvenance: Record<string, RuneProvenance> = { ...inputProvenance };
 	for (const typeofName of Object.keys(config.runes)) {
 		if (!fullProvenance[typeofName]) {

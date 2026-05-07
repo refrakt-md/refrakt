@@ -28,7 +28,7 @@ export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverri
 	};
 }
 
-/** Extension data for a single rune from a community package */
+/** Extension data for a single rune from a plugin */
 export interface RuneConfigExtension {
 	/** Additional modifier definitions to merge */
 	modifiers?: Record<string, { source: 'meta' | 'attribute'; default?: string }>;
@@ -37,7 +37,7 @@ export interface RuneConfigExtension {
 }
 
 /**
- * Apply community package extensions to core rune configs.
+ * Apply plugin extensions to core rune configs.
  *
  * Extensions are additive — community modifiers and structure entries are
  * appended to existing config, never replacing core definitions.

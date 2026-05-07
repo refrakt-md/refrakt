@@ -18,7 +18,7 @@ const SITE_FIELDS = [
 	'routeRules',
 	'highlight',
 	'icons',
-	'packages',
+	'plugins',
 	'tints',
 	'backgrounds',
 	'sandbox',
@@ -78,14 +78,15 @@ async function runConfigMigrate(args: string[]): Promise<void> {
 
 	let migrated = migrate(raw, opts);
 
-	// On flat → nested migration, populate `plugins` from installed packages
-	// if absent. Gives users a working config plugin list immediately without
+	// On flat → nested migration, populate `site.plugins` from installed plugins
+	// if absent. Gives users a working plugin list immediately without
 	// having to remember to declare each plugin manually.
-	if (opts.to === 'nested' && migrated.plugins === undefined) {
+	if (opts.to === 'nested' && migrated.site && (migrated.site as { plugins?: unknown }).plugins === undefined) {
 		try {
 			const discovered = await discoverPlugins({ cwd: process.cwd(), warn: false });
 			if (discovered.length > 0) {
-				migrated = { ...migrated, plugins: discovered.map((p) => p.packageName) };
+				const site = migrated.site as unknown as Record<string, unknown>;
+				migrated = { ...migrated, site: { ...site, plugins: discovered.map((p) => p.pluginName) } as unknown as typeof migrated.site };
 			}
 		} catch {
 			// Discovery failure is non-blocking — the migration still applies.
@@ -146,8 +147,8 @@ function migrateFlatToNested(raw: RefraktConfig): RefraktConfig {
 		return raw;
 	}
 
-	// Promote to singular `site`. Preserve `plugins`, `plan`, and any other
-	// project-level fields.
+	// Promote site fields to singular `site`. Preserve `plan` and any other
+	// project-level fields at the top level.
 	const result: Record<string, unknown> = { ...rest, site: siteFields };
 	return result as unknown as RefraktConfig;
 }

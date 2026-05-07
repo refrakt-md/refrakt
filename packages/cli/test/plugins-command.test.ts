@@ -35,7 +35,7 @@ describe('refrakt plugins list', () => {
 		expect(Array.isArray(parsed)).toBe(true);
 		const plan = parsed.find((p: any) => p.namespace === 'plan');
 		expect(plan).toBeDefined();
-		expect(plan.packageName).toBe('@refrakt-md/plan');
+		expect(plan.pluginName).toBe('@refrakt-md/plan');
 		expect(plan.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
 		expect(Array.isArray(plan.commands)).toBe(true);
 		expect(plan.commands[0]).toHaveProperty('name');

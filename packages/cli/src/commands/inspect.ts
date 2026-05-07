@@ -44,7 +44,7 @@ export interface InspectDeps {
 	renderToHtml: (node: any, options?: { pretty?: boolean }) => string;
 	extractSelectors: (node: any, prefix: string) => string[];
 	baseConfig: ThemeConfig;
-	/** Fixture strings from community packages (keyed by rune name) */
+	/** Fixture strings from plugins (keyed by rune name) */
 	packageFixtures?: Record<string, string>;
 }
 

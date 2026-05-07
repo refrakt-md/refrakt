@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { runes, tags, nodes, mergePackages, defineRune, runeTagMap } from '@refrakt-md/runes';
-import type { Rune, LoadedPackage } from '@refrakt-md/runes';
+import { runes, tags, nodes, mergePlugins, defineRune, runeTagMap } from '@refrakt-md/runes';
+import type { Rune, LoadedPlugin } from '@refrakt-md/runes';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import type { SchemaAttribute, Schema } from '@markdoc/markdoc';
 import Markdoc from '@markdoc/markdoc';
@@ -67,8 +67,8 @@ function indexRunes(runeList: Rune[]) {
   }
 }
 
-/** Shape of a community RunePackage export */
-interface RunePackageLike {
+/** Shape of a community Plugin export */
+interface PluginLike {
   name: string;
   displayName?: string;
   version: string;
@@ -84,34 +84,34 @@ interface RunePackageLike {
   theme?: Record<string, unknown>;
 }
 
-/** Type guard for RunePackage shape */
-function isRunePackage(value: unknown): value is RunePackageLike {
+/** Type guard for Plugin shape */
+function isPlugin(value: unknown): value is PluginLike {
   if (typeof value !== 'object' || value === null) return false;
   const obj = value as Record<string, unknown>;
   return typeof obj.name === 'string' && typeof obj.version === 'string' && typeof obj.runes === 'object' && obj.runes !== null;
 }
 
-/** Find the RunePackage export from a required module */
-function findRunePackageExport(mod: Record<string, unknown>, npmName: string): RunePackageLike {
-  if (mod.default && isRunePackage(mod.default)) {
+/** Find the Plugin export from a required module */
+function findPluginExport(mod: Record<string, unknown>, npmName: string): PluginLike {
+  if (mod.default && isPlugin(mod.default)) {
     return mod.default;
   }
   for (const value of Object.values(mod)) {
-    if (isRunePackage(value)) {
+    if (isPlugin(value)) {
       return value;
     }
   }
-  throw new Error(`Package "${npmName}" does not export a valid RunePackage object.`);
+  throw new Error(`Package "${npmName}" does not export a valid Plugin object.`);
 }
 
 /**
- * Load a community package using createRequire rooted at the workspace.
+ * Load a plugin using createRequire rooted at the workspace.
  * This is necessary because the language server is bundled by esbuild,
  * so bare import() resolves from the bundle's location, not the user's workspace.
  */
-function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPackage {
+function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPlugin {
   const mod = req(npmName) as Record<string, unknown>;
-  const pkgExport = findRunePackageExport(mod, npmName);
+  const pkgExport = findPluginExport(mod, npmName);
 
   const runeInstances: Record<string, Rune> = {};
   const fixtures: Record<string, string> = {};
@@ -130,8 +130,8 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPack
     }
   }
 
-  // Cast to LoadedPackage — the pkg field expects RunePackage from @refrakt-md/types
-  // but our RunePackageLike has the same shape
+  // Cast to LoadedPlugin — the pkg field expects Plugin from @refrakt-md/types
+  // but our PluginLike has the same shape
   return { pkg: pkgExport as any, npmName, runes: runeInstances, fixtures };
 }
 
@@ -161,8 +161,8 @@ function findConfigFile(workspaceRoot: string): string | null {
 }
 
 /**
- * Initialize the registry with community packages from the workspace.
- * Core runes are already indexed; this adds community package runes
+ * Initialize the registry with plugins from the workspace.
+ * Core runes are already indexed; this adds plugin runes
  * by reading refrakt.config.json and loading configured packages.
  */
 export async function initializeRegistry(workspaceRoot?: string): Promise<void> {
@@ -194,15 +194,15 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
       : join(configDir, contentDir, '_partials');
     scanPartialsDir(resolvedPartialsDir);
 
-    const packageNames: string[] = site.packages ?? [];
-    if (packageNames.length === 0) return;
+    const pluginNames: string[] = site.plugins ?? [];
+    if (pluginNames.length === 0) return;
 
     // Use createRequire rooted at the config's directory so packages resolve
     // from the project's node_modules, not the bundled server's location
     const req = createRequire(join(configDir, 'package.json'));
 
-    const loaded: LoadedPackage[] = [];
-    for (const name of packageNames) {
+    const loaded: LoadedPlugin[] = [];
+    for (const name of pluginNames) {
       try {
         loaded.push(loadPackageFromWorkspace(req, name));
       } catch (err: any) {
@@ -213,7 +213,7 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
     if (loaded.length === 0) return;
 
     const coreRuneNames = new Set(Object.keys(runes));
-    const merged = mergePackages(loaded, coreRuneNames, site.runes?.prefer);
+    const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
     // Index community runes
     indexRunes(Object.values(merged.runes) as Rune[]);
@@ -221,7 +221,7 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
     // Rebuild merged tags map
     mergedTags = { ...runeTagMap(runes), ...merged.tags, ...Markdoc.tags };
   } catch (err: any) {
-    console.warn('[refrakt] Community package loading failed:', err?.message ?? err);
+    console.warn('[refrakt] Plugin loading failed:', err?.message ?? err);
   }
 }
 
@@ -268,7 +268,7 @@ export async function reinitialize(workspaceRoot?: string): Promise<void> {
   // Re-index core runes
   indexRunes(Object.values(runes) as Rune[]);
 
-  // Load community packages
+  // Load plugins
   await initializeRegistry(workspaceRoot);
 }
 

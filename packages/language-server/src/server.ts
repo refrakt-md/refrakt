@@ -42,7 +42,7 @@ connection.onInitialize((params): InitializeResult => {
   };
 });
 
-// After handshake, load community packages asynchronously
+// After handshake, load plugins asynchronously
 connection.onInitialized(async () => {
   await initializeRegistry(workspaceRoot);
 
