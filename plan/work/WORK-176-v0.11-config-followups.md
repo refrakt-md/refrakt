@@ -1,4 +1,4 @@
-{% work id="WORK-176" status="in-progress" priority="medium" complexity="moderate" tags="config, schema, types, docs" source="ADR-010" milestone="v0.12.0" %}
+{% work id="WORK-176" status="done" priority="medium" complexity="moderate" tags="config, schema, types, docs" source="ADR-010" milestone="v0.12.0" %}
 
 # v0.11.0 config follow-ups
 
@@ -49,5 +49,58 @@ These can be addressed independently and don't block each other. Suggested order
 - `packages/types/src/theme.ts` — `RefraktConfig` legacy fields.
 - `packages/transform/refrakt.config.schema.json` — the schema file to version.
 - `packages/cli/src/commands/config.ts` — the migrate command to update.
+
+## Resolution
+
+Completed: 2026-05-09
+
+Branch: `claude/update-milestones-work-176-DgWfz`
+
+### What was done
+
+**Schema URL versioning**
+
+- `packages/transform/refrakt.config.schema.json` — `$id` updated to `https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`; description notes the unversioned URL as a "latest" alias.
+- `packages/transform/package.json` — added `./refrakt.config.schema.json` export so consumers can import it directly.
+- `site/src/routes/refrakt.config.schema.json/+server.ts` and `site/src/routes/schemas/v0.11/refrakt.config.schema.json/+server.ts` — prerendered SvelteKit endpoints serving the schema body at both URLs (verified in `site/build/`).
+- `packages/create-refrakt/src/scaffold.ts` — added `getRefraktSchemaVersion()` deriving `vMAJOR.MINOR` from the package version and using it in `generateRefraktConfig()`.
+- `packages/create-refrakt/test/scaffold.test.ts` — assertion strengthened from "defined" to a regex matching `https://refrakt.md/schemas/vX.Y/refrakt.config.schema.json`.
+- `site/content/docs/configuration/schema.md` — documented versioned vs unversioned policy, "which one should I reference?" guidance, and how `$id` interacts with editor caching.
+
+**Mirroring footgun (optional types + adapter audit)**
+
+- `packages/types/src/theme.ts` — `RefraktConfig.contentDir`, `theme`, `target` now optional with JSDoc pointing to `resolveSite()`. `SiteConfig.target` is now optional too (documentation-only, slated for removal).
+- `packages/sveltekit/src/config.ts` — flat-shape validator no longer requires `target` (validates type when present), the spread that builds the returned config conditionally includes `target`, and the "create one with at minimum" error message dropped the `target` key.
+- `packages/cli/src/commands/edit.ts` — switched from `config.contentDir`/`config.theme` to `resolveSite(config).site.*`; renamed local `projectConfig` → `projectSite` so all later reads pull site-scoped fields. Multi-site projects now get a clear "pass --content-dir or pick a site" error instead of a silent undefined.
+- `packages/cli/src/commands/theme.ts` — `theme install` rejects multi-site configs with a clear message; `theme install`/`info` use new `readThemeFromConfig`/`writeThemeIntoConfig` helpers that prefer `site.theme` / `sites[only].theme` over the legacy top-level field.
+- `packages/create-refrakt/template-astro/src/setup.ts`, `template-html/build.ts`, `template/src/routes/+layout.server.ts` — all three templates now use `loadRefraktConfig` + `resolveSite` from `@refrakt-md/transform/node`, then read `site.contentDir`/`site.theme`/`site.plugins`/`site.runes`/`site.highlight`/etc. instead of top-level mirrors. Matches the multi-site `sites.main` shape that `create-refrakt` actually scaffolds.
+
+**Three input shapes — deprecation timeline**
+
+- `packages/transform/src/config-normalize.ts` — added `flatShapeWarningEmitted` flag, `__resetFlatShapeWarningForTests`, and a one-time `console.warn` in the flat-shape branch citing v0.12 deprecation and v1.0 removal. New `suppressFlatShapeWarning` option on `NormalizeOptions` lets tooling and tests opt out.
+- `packages/transform/src/adapter-node.ts` — `loadRefraktConfig`/`loadRefraktConfigWithRaw` accept and forward the `suppressFlatShapeWarning` option.
+- `packages/cli/src/config-file.ts` — `loadRefraktConfigFile` accepts the option and forwards it.
+- `packages/cli/src/commands/config.ts` — `refrakt config migrate` detects flat-shape inputs via new `isFlatShape()` helper, prints "Upgraded from legacy flat shape" + v1.0-removal note after a successful flat → nested migration, and `--help` text now includes the deprecation note.
+- `packages/transform/test/config-normalize.test.ts` — added a "flat-shape deprecation warning" describe block (3 tests: emits once, does not warn for nested, respects suppress option). Existing flat-shape tests now use a `normalizeFlat()` helper that suppresses the warning.
+- `packages/sveltekit/test/config.test.ts` — `throws when target is missing` test replaced by `accepts a config without target` + `rejects a target that is present but empty`.
+- Docs: `site/content/docs/configuration/overview.md` removed the flat-shape JSON example from the recommended shapes section, demoted to a `{% hint type="note" %}` callout. `migration.md` replaced the indefinite "continues to work" wording with a v1.0-removal `{% hint type="warning" %}`. `sites.md`, `plugins.md`, and `schema.md` all flag flat shape as deprecated.
+
+**`target` field review**
+
+- Confirmed via grep that no adapter (`packages/{astro,nuxt,next,eleventy,html}/src/`) reads `site.target`. Only `packages/sveltekit/src/config.ts` referenced it (validation only, not behavior).
+- Decision: keep the field as a documentation hint, mark it deprecated. `SiteConfig.target` is optional. Schema marks it `"deprecated": true` with description noting v1.0 removal. Sveltekit validator no longer requires it. Scaffolds still write `target: 'svelte'` etc. so users see which adapter the scaffold was built for; can remove in v1.0.
+
+**Plan and changeset**
+
+- `.changeset/work-176-config-followups.md` — minor bump for `@refrakt-md/types`, `@refrakt-md/transform`, `@refrakt-md/sveltekit`, `@refrakt-md/cli`, `create-refrakt` summarizing the four buckets above.
+- `plan/milestones/v0.11.0.md` — status `complete`.
+- `plan/milestones/v0.12.0.md` — status `active`.
+
+### Notes
+
+- The site build verifies the schema endpoints — `/refrakt.config.schema.json` and `/schemas/v0.11/refrakt.config.schema.json` are byte-identical and prerender to static JSON files in `site/build/`.
+- The flat-shape warning is once-per-process via a module-level boolean. Tests reset it with `__resetFlatShapeWarningForTests()` and the rest of the test suite uses the `suppressFlatShapeWarning` option to keep test output clean while still verifying the warning machinery in the dedicated tests.
+- All 2331 tests in the monorepo pass after the changes.
+- `target` field decision lands somewhere between "deprecate entirely" and "repurpose": kept as an optional documentation hint for v0.12 (no removal), schema-marked deprecated, scheduled for removal in v1.0 alongside the flat shape. This avoids a breaking change in v0.12 while signaling the direction.
 
 {% /work %}
