@@ -62,7 +62,7 @@ The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the 
 
 ## Content Loading
 
-Load content using `createRefraktLoader` from `@refrakt-md/content` in a Server Component. It handles config loading, community package merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
+Load content using `createRefraktLoader` from `@refrakt-md/content` in a Server Component. It handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
 
 {% codegroup labels="app/[[...slug]]/page.tsx" %}
 

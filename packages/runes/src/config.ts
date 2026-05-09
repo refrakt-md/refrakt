@@ -1,6 +1,6 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
-import type { PackagePipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
+import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
@@ -1228,11 +1228,11 @@ function resolveBlogPosts(
 
 /**
  * Core cross-page pipeline hooks.
- * Run for every site, before any community package hooks.
+ * Run for every site, before any plugin hooks.
  * Registers page and heading entities, aggregates the page tree and breadcrumb paths,
  * and resolves blog post listings.
  */
-export const corePipelineHooks: PackagePipelineHooks = {
+export const corePipelineHooks: PluginPipelineHooks = {
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {
 			const parentUrl = deriveParentUrl(page.url);

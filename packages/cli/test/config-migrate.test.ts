@@ -41,7 +41,7 @@ describe('refrakt config migrate', () => {
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
-				packages: ['@refrakt-md/marketing'],
+				plugins: ['@refrakt-md/marketing'],
 			}, null, '\t'),
 		);
 		const before = readConfig();
@@ -59,8 +59,7 @@ describe('refrakt config migrate', () => {
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
-				packages: ['@refrakt-md/marketing'],
-				plugins: ['@refrakt-md/plan'],
+				plugins: ['@refrakt-md/marketing', '@refrakt-md/plan'],
 			}, null, '\t'),
 		);
 		const { stdout, exitCode } = run('config', 'migrate', '--apply');
@@ -71,10 +70,9 @@ describe('refrakt config migrate', () => {
 			contentDir: './content',
 			theme: '@refrakt-md/lumina',
 			target: 'svelte',
-			packages: ['@refrakt-md/marketing'],
+			plugins: ['@refrakt-md/marketing', '@refrakt-md/plan'],
 		});
 		expect(after.contentDir).toBeUndefined();
-		expect(after.plugins).toEqual(['@refrakt-md/plan']); // top-level fields preserved
 	});
 
 	it('singular → multi-site requires --name', () => {

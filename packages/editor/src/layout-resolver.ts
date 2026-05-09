@@ -240,9 +240,9 @@ export class LayoutResolver {
 			headings: [],
 		};
 		const warnings: PipelineWarning[] = [];
-		for (const { packageName, hooks } of this.hookSets) {
+		for (const { pluginName, hooks } of this.hookSets) {
 			if (!hooks.postProcess) continue;
-			const ctx = makeEditorContext(warnings, packageName, url);
+			const ctx = makeEditorContext(warnings, pluginName, url);
 			try {
 				page = hooks.postProcess(page, this.aggregated, ctx) as TransformedPage;
 			} catch {
@@ -255,12 +255,12 @@ export class LayoutResolver {
 
 function makeEditorContext(
 	warnings: PipelineWarning[],
-	packageName: string,
+	pluginName: string,
 	url: string,
 ): PipelineContext {
 	return {
-		info(message, infoUrl) { warnings.push({ severity: 'info', phase: 'postProcess', packageName, url: infoUrl ?? url, message }); },
-		warn(message, warnUrl) { warnings.push({ severity: 'warning', phase: 'postProcess', packageName, url: warnUrl ?? url, message }); },
-		error(message, errUrl) { warnings.push({ severity: 'error', phase: 'postProcess', packageName, url: errUrl ?? url, message }); },
+		info(message, infoUrl) { warnings.push({ severity: 'info', phase: 'postProcess', pluginName, url: infoUrl ?? url, message }); },
+		warn(message, warnUrl) { warnings.push({ severity: 'warning', phase: 'postProcess', pluginName, url: warnUrl ?? url, message }); },
+		error(message, errUrl) { warnings.push({ severity: 'error', phase: 'postProcess', pluginName, url: errUrl ?? url, message }); },
 	};
 }

@@ -10,7 +10,7 @@ const outPath = join(root, 'site', 'content', 'releases.md');
 // Collect CHANGELOG.md files from all workspace packages
 const dirs = [
   ...glob('packages'),
-  ...glob('runes'),
+  ...glob('plugins'),
   ...glob('themes'),
 ];
 

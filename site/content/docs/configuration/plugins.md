@@ -1,18 +1,27 @@
 ---
 title: Plugins
-description: How refrakt discovers plugins and how `config.plugins` overrides dependency scanning.
+description: How refrakt discovers plugins and how `plugins` arrays in config override dependency scanning.
 ---
 
 # Plugins
 
-A **plugin** is a package that contributes CLI commands and MCP tools by exporting a `cli-plugin` entry point. The most common one is `@refrakt-md/plan`, which adds the `refrakt plan ...` command set.
+A **plugin** is an npm package that extends refrakt. A single plugin can contribute any combination of:
+
+- **Runes** — Markdoc tags that reinterpret Markdown content
+- **Layouts** — page templates and structural conventions
+- **Theme config** — BEM blocks, icons, background presets, design tokens
+- **Pipeline hooks** — cross-page registration, aggregation, and post-processing
+- **Behaviors** — progressive-enhancement JS for interactive runes
+- **CLI commands and MCP tools** — via a `cli-plugin` entry point
+
+The official `@refrakt-md/marketing` plugin contributes runes and theme config. `@refrakt-md/plan` contributes runes *and* CLI commands. There is no separate "rune package" vs. "CLI plugin" split — a plugin is a plugin.
 
 ## Discovery order
 
 When the refrakt CLI looks up a namespace (e.g., `refrakt plan next`), it consults two sources in order:
 
-1. **`config.plugins`** — when `refrakt.config.json` declares a `plugins` array, that list is authoritative. No dependency scanning happens.
-2. **`package.json` + `node_modules/@refrakt-md/`** — when no `plugins` field is set, refrakt scans the project's `dependencies` + `devDependencies` for `@refrakt-md/*` entries (also checking `node_modules/@refrakt-md/` directly to catch workspace-linked packages). Meta packages like `@refrakt-md/cli`, `@refrakt-md/types`, `@refrakt-md/transform` are excluded — they don't ship CLI commands.
+1. **`plugins` declared in `refrakt.config.json`** — when set (top-level or under any site), that list is authoritative. No dependency scanning happens.
+2. **`package.json` + `node_modules/@refrakt-md/`** — when no `plugins` field is set anywhere, refrakt scans the project's `dependencies` + `devDependencies` for `@refrakt-md/*` entries (also checking `node_modules/@refrakt-md/` directly to catch workspace-linked packages). Meta packages like `@refrakt-md/cli`, `@refrakt-md/types`, `@refrakt-md/transform` are excluded — they don't contribute commands.
 
 Either source produces the same kind of result: a list of `DiscoveredPlugin` objects, each tagged with the source that found it.
 
@@ -20,53 +29,35 @@ Either source produces the same kind of result: a list of `DiscoveredPlugin` obj
 
 ```json
 {
-  "plugins": [
-    "@refrakt-md/plan",
-    "@my-org/custom-plan-extension"
-  ]
-}
-```
-
-When set:
-
-- The CLI dispatches `refrakt <namespace>` to one of these packages.
-- The MCP server (`@refrakt-md/mcp`) registers each plugin's commands as tools under `<namespace>.<name>`.
-- The list is unambiguous — transitive deps and runes-only packages don't accidentally show up.
-
-## Why declare it explicitly?
-
-For most single-purpose projects you **don't need to declare `plugins`** — auto-discovery picks up every `@refrakt-md/*` package installed in `node_modules` that ships a `cli-plugin` export, which covers the common case. Reach for an explicit `plugins` array only when one of these applies:
-
-1. **Determinism.** Dependency scanning is heuristic. If a transitive dep happens to be a refrakt plugin you don't want surfaced, an explicit list filters it out.
-2. **Multi-context monorepos.** When one workspace uses `@refrakt-md/plan` and another doesn't, declaring per-project keeps each one's CLI namespace clean.
-3. **Documentation.** The `plugins` field doubles as a one-glance summary of which namespaces your project's CLI is meant to support.
-
-The auto-discovery path is good enough for the refrakt repo itself — no `plugins` field declared, and `refrakt plan ...` still works because the package is installed.
-
-## Difference from `site.packages`
-
-`config.plugins` and `site(s).<name>.packages` are **separate** fields with separate purposes:
-
-| Field | Purpose |
-|-------|---------|
-| `plugins` (top-level) | Packages contributing CLI commands and MCP tools |
-| `site.packages` (per-site) | Rune packages merged into a site's `ThemeConfig` for content rendering |
-
-Most packages appear in both — `@refrakt-md/plan` registers CLI commands and rune schemas. But the split lets a CLI-only plugin (no runes) skip site merging, and lets two sites in the same repo merge different package subsets.
-
-```json
-{
-  "plugins": ["@refrakt-md/plan"],
   "sites": {
     "main": {
       "contentDir": "./content",
       "theme": "@refrakt-md/lumina",
       "target": "svelte",
-      "packages": ["@refrakt-md/marketing", "@refrakt-md/docs", "@refrakt-md/plan"]
+      "plugins": ["@refrakt-md/marketing", "@refrakt-md/docs", "@refrakt-md/plan"]
     }
   }
 }
 ```
+
+When set:
+
+- The site's content pipeline merges each plugin's runes, layouts, theme config, and hooks into the site's `ThemeConfig`.
+- The CLI dispatches `refrakt <namespace>` to any plugin in the union of all sites' lists that ships a `cli-plugin` export.
+- The MCP server (`@refrakt-md/mcp`) registers each plugin's commands as tools under `<namespace>.<name>`.
+- The list is unambiguous — transitive deps don't accidentally show up.
+
+The flat (legacy) shape supports `plugins` at the top level; the normalizer mirrors it into `sites.main.plugins`.
+
+## Why declare `plugins` explicitly?
+
+For most single-purpose projects you **don't need to declare `plugins`** — auto-discovery picks up every `@refrakt-md/*` package installed in `node_modules`, which covers the common case. Reach for an explicit `plugins` array only when one of these applies:
+
+1. **Determinism.** Dependency scanning is heuristic. If a transitive dep happens to be a refrakt plugin you don't want surfaced, an explicit list filters it out.
+2. **Multi-site monorepos.** When two sites in the same repo need different plugin subsets (one site uses `@refrakt-md/storytelling`, the other uses `@refrakt-md/business`), declaring per-site keeps each site's content scope clean.
+3. **Documentation.** The `plugins` field doubles as a one-glance summary of which extensions a project depends on.
+
+The auto-discovery path is good enough for the refrakt repo itself — no `plugins` field declared, and the CLI namespaces still work because the packages are installed.
 
 ## Inspecting installed plugins
 
@@ -84,4 +75,4 @@ The output includes the discovery `source` for each plugin (`"config"` or `"depe
 
 ## Auto-population during migration
 
-The `refrakt config migrate` command auto-populates `plugins` from the project's installed `@refrakt-md/*` packages on first migration if the field is absent. Discovery failures are non-blocking — the migration still applies the shape change.
+The `refrakt config migrate` command auto-populates `site.plugins` from the project's installed `@refrakt-md/*` packages on first migration if the field is absent. Discovery failures are non-blocking — the migration still applies the shape change.

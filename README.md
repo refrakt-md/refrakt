@@ -57,12 +57,12 @@ npm create refrakt my-site -- --target html
 | `create-refrakt` | Project scaffolding |
 | `refrakt-md` (VS Code) | Syntax highlighting, snippets, and rune inspector |
 
-### Community Packages
+### Plugins
 
-Nine official packages add domain-specific runes — install only what you need.
+Nine official plugins add domain-specific runes, layouts, and CLI commands — install only what you need.
 
-| Package | Runes |
-|---------|-------|
+| Plugin | Runes |
+|--------|-------|
 | `@refrakt-md/marketing` | hero, cta, feature, pricing, testimonial, bento, steps, comparison |
 | `@refrakt-md/docs` | api, symbol, changelog |
 | `@refrakt-md/design` | swatch, palette, typography, spacing, preview, mockup |
@@ -82,7 +82,7 @@ Full documentation is available at **[refrakt.md](https://refrakt.md)**.
 - [Theme Development](https://refrakt.md/docs/themes) — Create custom themes with design tokens and CSS
 - [CLI Tools](https://refrakt.md/docs/cli) — Inspect runes, generate content with AI, audit CSS coverage
 - [Adapters](https://refrakt.md/docs/adapters) — SvelteKit, Astro, Next.js, Nuxt, Eleventy, and plain HTML
-- [Community Packages](https://refrakt.md/docs/packages) — Install, create, and extend rune packages
+- [Plugins](https://refrakt.md/docs/plugins) — Install, create, and extend plugins
 
 ## Contributing
 

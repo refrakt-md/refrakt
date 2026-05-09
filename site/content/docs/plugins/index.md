@@ -1,0 +1,120 @@
+---
+title: Plugins
+description: Installing and configuring official and custom plugins
+---
+
+# Plugins
+
+refrakt.md separates its rune library into focused packages. Core runes (grid, hint, tabs, nav, datatable, etc.) are available in every project without any additional installation. Domain-specific runes — marketing, storytelling, API documentation, and more — are distributed as plugins that you install as needed.
+
+## Official Packages
+
+| Package | Purpose | Features |
+|---------|---------|----------|
+| [`@refrakt-md/marketing`](/runes/marketing) | Landing pages and conversion content | 8 runes |
+| [`@refrakt-md/docs`](/runes/docs) | Technical API documentation | 3 runes |
+| [`@refrakt-md/design`](/runes/design) | Design system documentation | 7 runes, cross-page token pipeline |
+| [`@refrakt-md/learning`](/runes/learning) | Educational and instructional content | 2 runes, SEO rich snippets |
+| [`@refrakt-md/storytelling`](/runes/storytelling) | Fiction, world-building, and narrative | 7 runes |
+| [`@refrakt-md/business`](/runes/business) | Organizational and team content | 3 runes |
+| [`@refrakt-md/places`](/runes/places) | Events, maps, and travel | 3 runes |
+| [`@refrakt-md/media`](/runes/media) | Music and audio content | 3 runes |
+| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [8 CLI commands](/runes/plan/cli), cross-page pipeline |
+
+## Installing Packages
+
+Install one or more packages with npm:
+
+```bash
+npm install @refrakt-md/marketing @refrakt-md/docs
+```
+
+Then register them in `refrakt.config.json`:
+
+```json
+{
+  "contentDir": "./content",
+  "theme": "@refrakt-md/lumina",
+  "target": "svelte",
+  "plugins": [
+    "@refrakt-md/marketing",
+    "@refrakt-md/docs"
+  ]
+}
+```
+
+That's it. The Vite plugin loads the packages at build time, merges their rune schemas and theme configs, and makes their tags available in all your content files.
+
+## Configuration Options
+
+### `packages`
+
+An array of npm package names to load. Packages are loaded in order; later entries take precedence when resolving name conflicts (see `prefer` below).
+
+```json
+{
+  "plugins": ["@refrakt-md/marketing", "@refrakt-md/storytelling"]
+}
+```
+
+### `runes.prefer`
+
+When two packages define a rune with the same name, use `prefer` to specify which package wins. Use `"__core__"` to force the built-in core rune to take precedence.
+
+```json
+{
+  "plugins": ["@my-org/custom", "@refrakt-md/marketing"],
+  "runes": {
+    "prefer": {
+      "hero": "@my-org/custom",
+      "hint": "__core__"
+    }
+  }
+}
+```
+
+### `runes.aliases`
+
+Create additional tag names that resolve to an existing rune. Useful for site-specific shorthand or migrating from a previous tag name.
+
+```json
+{
+  "runes": {
+    "aliases": {
+      "callout": "hint",
+      "note": "hint"
+    }
+  }
+}
+```
+
+### `runes.local`
+
+Load rune implementations from local files without publishing to npm. Paths are resolved relative to `refrakt.config.json`.
+
+```json
+{
+  "runes": {
+    "local": {
+      "game-item": "./src/runes/game-item.ts",
+      "game-spell": "./src/runes/game-spell.ts"
+    }
+  }
+}
+```
+
+Local runes take highest priority over any installed package runes of the same name. They are ideal for project-specific runes or runes under active development.
+
+## How Packages Work
+
+Each plugin exports a `Plugin` object containing:
+
+- **Rune schemas** — Markdoc transforms that define how the tag is parsed and what it outputs
+- **Theme config** — BEM block names, modifiers, and structural config for the identity transform
+- **Icons** — SVG icon groups used by the package's runes
+- **Pipeline hooks** _(optional)_ — Build-time hooks for cross-page indexing and enrichment
+- **CLI plugins** _(optional)_ — Additional CLI commands (e.g., `refrakt plan` from `@refrakt-md/plan`)
+
+The Vite plugin merges all packages together before each build, resolving collisions and assembling the final rune set that the content pipeline uses. Packages that provide CLI commands register them automatically when the package is installed.
+
+See [Building a Custom Plugin](/docs/plugins/authoring) for details on authoring your own packages, and [Cross-Page Pipeline](/docs/plugins/pipeline) for packages that need to build site-wide indexes.

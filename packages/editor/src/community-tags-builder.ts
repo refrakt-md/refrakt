@@ -12,27 +12,27 @@ export interface CommunityTagsBuildResult {
  * and postTransform functions.
  *
  * Uses esbuild (available via Vite in SvelteKit projects) to bundle all configured
- * community package schemas into a single self-contained file.
+ * plugin schemas into a single self-contained file.
  * Falls back gracefully if esbuild is not available.
  * Caches by package name hash — repeat editor starts are instant.
  */
 export async function buildCommunityTagsBundle(
-	packageNames: string[],
+	pluginNames: string[],
 	projectRoot: string,
 ): Promise<CommunityTagsBuildResult> {
-	if (packageNames.length === 0) return { outputPath: '', success: false };
+	if (pluginNames.length === 0) return { outputPath: '', success: false };
 
 	const cacheDir = resolve(import.meta.dirname, '..', '.community-tags-cache');
-	const hash = createHash('md5').update(packageNames.slice().sort().join(',')).digest('hex').slice(0, 8);
+	const hash = createHash('md5').update(pluginNames.slice().sort().join(',')).digest('hex').slice(0, 8);
 	const outputPath = resolve(cacheDir, `${hash}.js`);
 
 	if (existsSync(outputPath)) return { outputPath, success: true };
 
 	// Generate entry: import each package, collect rune schemas and postTransforms
-	const imports = packageNames
+	const imports = pluginNames
 		.map((name, i) => `import pkg${i} from ${JSON.stringify(name)};`)
 		.join('\n');
-	const pkgArray = packageNames.map((_, i) => `pkg${i}`).join(', ');
+	const pkgArray = pluginNames.map((_, i) => `pkg${i}`).join(', ');
 	const entryCode = `
 ${imports}
 

@@ -1,5 +1,5 @@
 import type { Schema } from '@markdoc/markdoc';
-import type { RunePackage } from '@refrakt-md/types';
+import type { Plugin } from '@refrakt-md/types';
 import { loadContent, type Site } from './site.js';
 
 export interface SiteLoaderOptions {
@@ -7,7 +7,7 @@ export interface SiteLoaderOptions {
 	basePath?: string;
 	icons?: Record<string, Record<string, string>>;
 	additionalTags?: Record<string, Schema>;
-	packages?: RunePackage[];
+	plugins?: Plugin[];
 	sandboxExamplesDir?: string;
 	/** Site-wide Markdoc variables available in content via {% $name %} syntax. */
 	variables?: Record<string, unknown>;
@@ -33,7 +33,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.basePath,
 				options.icons,
 				options.additionalTags,
-				options.packages,
+				options.plugins,
 				options.sandboxExamplesDir,
 				options.variables,
 			);

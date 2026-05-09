@@ -12,14 +12,14 @@ describe('normalizeRefraktConfig', () => {
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
-				packages: ['@refrakt-md/marketing'],
+				plugins: ['@refrakt-md/marketing'],
 			};
 			const result = normalizeRefraktConfig(raw);
 			expect(result.sites.main).toEqual({
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
-				packages: ['@refrakt-md/marketing'],
+				plugins: ['@refrakt-md/marketing'],
 			});
 			expect(result.contentDir).toBe('./content');
 			expect(result.theme).toBe('@refrakt-md/lumina');
@@ -59,13 +59,13 @@ describe('normalizeRefraktConfig', () => {
 					contentDir: './content',
 					theme: '@refrakt-md/lumina',
 					target: 'svelte',
-					packages: ['@refrakt-md/docs'],
+					plugins: ['@refrakt-md/docs'],
 				},
 			};
 			const result = normalizeRefraktConfig(raw);
 			expect(result.contentDir).toBe('./content');
 			expect(result.theme).toBe('@refrakt-md/lumina');
-			expect(result.packages).toEqual(['@refrakt-md/docs']);
+			expect(result.plugins).toEqual(['@refrakt-md/docs']);
 		});
 
 		it('drops the canonical site key from the normalized output', () => {

@@ -2,7 +2,7 @@
 import '@refrakt-md/lumina';
 import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
-import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
@@ -23,21 +23,21 @@ const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? theme
 let transformConfig = themeConfig;
 let communityTags: Record<string, Schema> | undefined;
 
-const packageNames = config.packages ?? [];
+const packageNames = config.plugins ?? [];
 if (packageNames.length > 0) {
 	const loaded = await Promise.all(
-		packageNames.map((name: string) => loadRunePackage(name))
+		packageNames.map((name: string) => loadPlugin(name))
 	);
 	const coreRuneNames = new Set(Object.keys(coreRunes));
-	const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+	const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
 
 	communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 
 	const { config: assembledConfig } = assembleThemeConfig({
 		coreConfig: themeConfig,
-		packageRunes: merged.themeRunes,
-		packageIcons: merged.themeIcons,
-		packageBackgrounds: merged.themeBackgrounds,
+		pluginRunes: merged.themeRunes,
+		pluginIcons: merged.themeIcons,
+		pluginBackgrounds: merged.themeBackgrounds,
 		extensions: merged.extensions as any,
 		provenance: merged.provenance,
 	});

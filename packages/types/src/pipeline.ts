@@ -59,7 +59,7 @@ export interface EntityRegistry {
 
 /**
  * Cross-page data produced by aggregate hooks (Phase 3).
- * Keyed by package name to prevent collisions between packages.
+ * Keyed by plugin name to prevent collisions between plugins.
  */
 export type AggregatedData = Record<string, unknown>;
 
@@ -74,18 +74,18 @@ export interface PipelineContext {
 export interface PipelineWarning {
 	severity: 'info' | 'warning' | 'error';
 	phase: 'register' | 'aggregate' | 'postProcess';
-	packageName: string;
+	pluginName: string;
 	/** Page URL that triggered the warning, if applicable */
 	url?: string;
 	message: string;
 }
 
 /**
- * Build-time cross-page pipeline hooks a RunePackage can provide.
- * All three hooks are optional — packages that don't need cross-page
+ * Build-time cross-page pipeline hooks a Plugin can provide.
+ * All three hooks are optional — plugins that don't need cross-page
  * awareness omit this field entirely.
  */
-export interface PackagePipelineHooks {
+export interface PluginPipelineHooks {
 	/**
 	 * Phase 2 — Register.
 	 * Scan all transformed pages and register named entities in the site-wide registry.
@@ -101,7 +101,7 @@ export interface PackagePipelineHooks {
 	 * Phase 3 — Aggregate.
 	 * Build cross-page indexes, graphs, or collections from the full registry.
 	 * Called once after all register hooks have run.
-	 * Return value is stored as aggregated[packageName].
+	 * Return value is stored as aggregated[pluginName].
 	 */
 	aggregate?: (
 		registry: Readonly<EntityRegistry>,
@@ -111,7 +111,7 @@ export interface PackagePipelineHooks {
 	/**
 	 * Phase 4 — Post-process.
 	 * Enrich a page's renderable tree using cross-page data from aggregated.
-	 * Called once per page, in package registration order.
+	 * Called once per page, in plugin registration order.
 	 * Return the modified page (or the original if no changes needed).
 	 */
 	postProcess?: (

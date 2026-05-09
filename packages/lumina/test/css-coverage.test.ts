@@ -181,7 +181,7 @@ function expectedSelectors(prefix: string, config: RuneConfig): string[] {
 	return [...new Set(selectors)].sort();
 }
 
-// ─── Assemble full config (core + all rune packages) ───
+// ─── Assemble full config (core + all plugins) ───
 
 const fullRunes: Record<string, RuneConfig> = {
 	...baseConfig.runes,

@@ -26,7 +26,8 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
 | [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes and show theme info |
 | edit | Launch the browser-based content editor |
-| package validate | Validate a rune package before publishing |
+| plugins list | List installed plugins and their commands |
+| plugins validate | Validate a plugin before publishing |
 
 ## Quick examples
 
@@ -55,16 +56,16 @@ refrakt contracts -o contracts/structures.json --config .
 # Launch the content editor
 refrakt edit
 
-# Validate a rune package before publishing
-refrakt package validate ./my-package
+# Validate a plugin before publishing
+refrakt plugins validate ./my-plugin
 ```
 
-## Package commands
+## Plugin commands
 
-Community packages can extend the CLI with additional subcommands. These are available when the package is installed.
+Plugins can extend the CLI with additional subcommands. These are available when the plugin is installed.
 
-| Package | Command | Purpose |
-|---------|---------|---------|
+| Plugin | Command | Purpose |
+|--------|---------|---------|
 | [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
 | [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
 

@@ -1,6 +1,6 @@
 import { discoverPlugins, type DiscoveredPlugin } from '../lib/plugins.js';
 
-const SUBCOMMANDS = ['list'] as const;
+const SUBCOMMANDS = ['list', 'validate'] as const;
 
 /** Entry point for `refrakt plugins ...`. */
 export async function runPluginsCommand(args: string[]): Promise<void> {
@@ -16,9 +16,45 @@ export async function runPluginsCommand(args: string[]): Promise<void> {
 		return;
 	}
 
+	if (sub === 'validate') {
+		await runPluginsValidate(args.slice(1));
+		return;
+	}
+
 	console.error(`Error: Unknown plugins subcommand "${sub}"\n`);
 	printPluginsUsage();
 	process.exit(1);
+}
+
+/** `refrakt plugins validate [dir]` — pre-publish lint for a plugin. */
+async function runPluginsValidate(args: string[]): Promise<void> {
+	let pluginDir: string | undefined;
+	let json = false;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--json') {
+			json = true;
+		} else if (arg === '--site') {
+			args[++i];
+		} else if (arg === '--help' || arg === '-h') {
+			printPluginsUsage();
+			process.exit(0);
+		} else if (arg!.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printPluginsUsage();
+			process.exit(1);
+		} else if (!pluginDir) {
+			pluginDir = arg;
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printPluginsUsage();
+			process.exit(1);
+		}
+	}
+
+	const { pluginValidateCommand } = await import('./plugin-validate.js');
+	await pluginValidateCommand({ pluginDir, json });
 }
 
 /** `refrakt plugins list` — text or JSON output. */
@@ -39,10 +75,10 @@ async function runPluginsList(args: string[]): Promise<void> {
 
 	console.log('\nInstalled refrakt plugins:\n');
 	const nsWidth = Math.max(...plugins.map((p) => p.namespace.length), 8);
-	const pkgWidth = Math.max(...plugins.map((p) => `${p.packageName}@${p.packageVersion}`.length), 12);
+	const pkgWidth = Math.max(...plugins.map((p) => `${p.pluginName}@${p.packageVersion}`.length), 12);
 	for (const plugin of plugins) {
 		const ns = plugin.namespace.padEnd(nsWidth);
-		const pkg = `${plugin.packageName}@${plugin.packageVersion}`.padEnd(pkgWidth);
+		const pkg = `${plugin.pluginName}@${plugin.packageVersion}`.padEnd(pkgWidth);
 		const count = `${plugin.commands.length} ${plugin.commands.length === 1 ? 'command' : 'commands'}`;
 		console.log(`  ${ns}  ${pkg}  ${count}`);
 		const cmdNames = plugin.commands.map((c) => c.name).join(', ');
@@ -71,7 +107,7 @@ function parseFormat(args: string[]): 'text' | 'json' {
 function toJson(plugin: DiscoveredPlugin): Record<string, unknown> {
 	return {
 		namespace: plugin.namespace,
-		packageName: plugin.packageName,
+		pluginName: plugin.pluginName,
 		packageVersion: plugin.packageVersion,
 		source: plugin.source,
 		description: plugin.description,
@@ -91,14 +127,19 @@ Usage: refrakt plugins <subcommand> [options]
 
 Subcommands:
   list                 List installed plugins and their commands
+  validate [dir]       Validate a plugin before publishing
 
 Options:
-  --format <fmt>       Output format: text (default) or json
-  --json               Shorthand for --format=json (list)
+  --format <fmt>       Output format: text (default) or json (list)
+  --json               Shorthand for --format=json (list, validate)
+  <dir>                Plugin directory (validate; default: current directory)
 
 Examples:
   refrakt plugins list
   refrakt plugins list --format json
+  refrakt plugins validate
+  refrakt plugins validate ./plugins/marketing
+  refrakt plugins validate --json
 `);
 	void SUBCOMMANDS;
 }
@@ -116,7 +157,7 @@ export async function appendPluginsToHelp(): Promise<void> {
 	console.log(`Installed plugins:`);
 	const width = Math.max(...plugins.map((p) => p.namespace.length));
 	for (const plugin of plugins) {
-		const desc = plugin.description ?? plugin.packageName;
+		const desc = plugin.description ?? plugin.pluginName;
 		console.log(`  ${plugin.namespace.padEnd(width + 2)} ${desc}`);
 	}
 	console.log();

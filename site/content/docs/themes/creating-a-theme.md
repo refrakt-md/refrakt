@@ -156,7 +156,7 @@ The base config defines all core rune configurations. Your config only needs to 
 - **Icons** for runes that display them (currently just Hint)
 - **Overrides** for runes where you want different defaults or behavior
 
-Community packages (e.g., `@refrakt-md/marketing`, `@refrakt-md/docs`) contribute their own theme config entries alongside their rune schemas. These are merged in automatically by `mergePackages()` when packages are loaded — you don't need to add config entries for community package runes in your theme.
+Community packages (e.g., `@refrakt-md/marketing`, `@refrakt-md/docs`) contribute their own theme config entries alongside their rune schemas. These are merged in automatically by `mergePlugins()` when packages are loaded — you don't need to add config entries for plugin runes in your theme.
 
 {% hint type="note" %}
 If you change the `prefix` (e.g., from `'rf'` to `'mt'`), all your CSS selectors must use the new prefix: `.mt-hint` instead of `.rf-hint`. Most themes keep `'rf'` for compatibility.

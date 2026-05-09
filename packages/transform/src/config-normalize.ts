@@ -52,7 +52,7 @@ const SITE_FIELDS = [
 	'routeRules',
 	'highlight',
 	'icons',
-	'packages',
+	'plugins',
 	'tints',
 	'backgrounds',
 	'sandbox',

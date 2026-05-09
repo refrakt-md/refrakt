@@ -109,7 +109,7 @@ export interface RuneConfig {
 	mediaSlots?: Record<string, 'portrait' | 'cover' | 'thumbnail' | 'hero' | 'icon'>;
 
 	/** Density imposed on child runes when this rune is the parent context.
-	 *  Replaces hardcoded density context sets — community packages can declare
+	 *  Replaces hardcoded density context sets — plugins can declare
 	 *  their own density behavior without modifying the engine. */
 	childDensity?: 'compact' | 'minimal';
 

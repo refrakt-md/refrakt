@@ -1,0 +1,503 @@
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { resolve, join, relative, dirname } from 'path';
+import type { CliPlugin, Plugin, PluginRune } from '@refrakt-md/types';
+import { validateThemeConfig, type ValidationResult, type ValidationError, type ValidationWarning } from '@refrakt-md/transform';
+import { discoverPlugins } from '../lib/plugins.js';
+
+export interface PluginValidateOptions {
+	/** Path to the plugin directory (default: cwd) */
+	pluginDir?: string;
+	/** Whether to output JSON */
+	json?: boolean;
+}
+
+interface PluginValidationResult {
+	valid: boolean;
+	pluginName: string;
+	errors: ValidationError[];
+	warnings: ValidationWarning[];
+}
+
+/**
+ * Validate a plugin before publishing.
+ *
+ * Checks:
+ * 1. package.json exists and has required fields
+ * 2. Plugin module exports a valid Plugin object
+ * 3. Each rune has a valid transform (Markdoc Schema)
+ * 4. Fixture strings are non-empty if provided
+ * 5. Attribute schemas are well-formed if provided
+ * 6. Theme config (RuneConfig entries) validates if provided
+ * 7. Fixture files exist for runes that declare them
+ */
+export async function pluginValidateCommand(opts: PluginValidateOptions): Promise<void> {
+	const pluginDir = resolve(opts.pluginDir ?? process.cwd());
+
+	const result = await validatePlugin(pluginDir);
+
+	if (opts.json) {
+		console.log(JSON.stringify(result, null, 2));
+	} else {
+		printValidationResult(result);
+	}
+
+	if (!result.valid) {
+		process.exit(1);
+	}
+}
+
+async function validatePlugin(pluginDir: string): Promise<PluginValidationResult> {
+	const errors: ValidationError[] = [];
+	const warnings: ValidationWarning[] = [];
+
+	// Step 1: Check package.json
+	const pkgJsonPath = join(pluginDir, 'package.json');
+	if (!existsSync(pkgJsonPath)) {
+		errors.push({ path: 'package.json', message: 'File not found' });
+		return { valid: false, pluginName: '<unknown>', errors, warnings };
+	}
+
+	let pkgJson: Record<string, unknown>;
+	try {
+		pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+	} catch (err) {
+		errors.push({ path: 'package.json', message: `Invalid JSON: ${(err as Error).message}` });
+		return { valid: false, pluginName: '<unknown>', errors, warnings };
+	}
+
+	const npmName = typeof pkgJson.name === 'string' ? pkgJson.name : '<unknown>';
+
+	if (!pkgJson.name || typeof pkgJson.name !== 'string') {
+		errors.push({ path: 'package.json.name', message: 'Required and must be a non-empty string' });
+	}
+	if (!pkgJson.version || typeof pkgJson.version !== 'string') {
+		errors.push({ path: 'package.json.version', message: 'Required and must be a non-empty string' });
+	}
+
+	// Check main/exports entry point
+	const mainEntry = pkgJson.main ?? (pkgJson.exports as Record<string, unknown>)?.['.' as keyof typeof pkgJson.exports];
+	if (!mainEntry) {
+		warnings.push({ path: 'package.json', message: 'No "main" or "exports" entry point defined' });
+	}
+
+	// Step 2: Try to load the package module
+	let pkg: Plugin | null = null;
+	const entryPoints = [
+		join(pluginDir, 'dist', 'index.js'),
+		join(pluginDir, 'src', 'index.ts'),
+		join(pluginDir, 'src', 'index.js'),
+		join(pluginDir, 'index.js'),
+	];
+
+	for (const entry of entryPoints) {
+		if (existsSync(entry)) {
+			try {
+				const mod = await import(entry);
+				pkg = findPluginExport(mod);
+				break;
+			} catch (err) {
+				// Try next entry point
+				warnings.push({ path: relative(pluginDir, entry), message: `Import failed: ${(err as Error).message}` });
+			}
+		}
+	}
+
+	if (!pkg) {
+		errors.push({ path: 'exports', message: 'Could not find a valid Plugin export. Build the package first (npm run build) or ensure src/index.ts exports a Plugin object.' });
+		return { valid: false, pluginName: npmName, errors, warnings };
+	}
+
+	// Step 3: Validate Plugin structure
+	if (!pkg.name || typeof pkg.name !== 'string') {
+		errors.push({ path: 'Plugin.name', message: 'Required and must be a non-empty string' });
+	}
+	if (!pkg.version || typeof pkg.version !== 'string') {
+		errors.push({ path: 'Plugin.version', message: 'Required and must be a non-empty string' });
+	}
+	if (!pkg.runes || typeof pkg.runes !== 'object' || Object.keys(pkg.runes).length === 0) {
+		errors.push({ path: 'Plugin.runes', message: 'Must define at least one rune' });
+		return { valid: false, pluginName: npmName, errors, warnings };
+	}
+
+	// Step 4: Validate each rune entry
+	for (const [runeName, entry] of Object.entries(pkg.runes)) {
+		validateRuneEntry(runeName, entry, errors, warnings);
+	}
+
+	// Step 5: Validate theme config if provided
+	if (pkg.theme?.runes) {
+		for (const [typeofName, config] of Object.entries(pkg.theme.runes)) {
+			if (typeof config !== 'object' || config === null) {
+				errors.push({ path: `theme.runes.${typeofName}`, message: 'Must be a RuneConfig object' });
+				continue;
+			}
+			const rc = config as Record<string, unknown>;
+			if (!rc.block || typeof rc.block !== 'string') {
+				errors.push({ path: `theme.runes.${typeofName}.block`, message: 'Required and must be a non-empty string' });
+			}
+		}
+	}
+
+	// Step 6: Validate icons if provided
+	if (pkg.theme?.icons) {
+		for (const [group, variants] of Object.entries(pkg.theme.icons)) {
+			if (typeof variants !== 'object' || variants === null) {
+				errors.push({ path: `theme.icons.${group}`, message: 'Must be an object mapping variant names to SVG strings' });
+			} else {
+				for (const [variant, svg] of Object.entries(variants)) {
+					if (typeof svg !== 'string') {
+						errors.push({ path: `theme.icons.${group}.${variant}`, message: 'Must be an SVG string' });
+					}
+				}
+			}
+		}
+	}
+
+	// Step 7: Validate extensions if provided
+	if (pkg.extends) {
+		for (const [runeName, ext] of Object.entries(pkg.extends)) {
+			if (ext.schema) {
+				for (const [attrName, attrDef] of Object.entries(ext.schema)) {
+					validatePluginAttribute(attrName, attrDef, `extends.${runeName}.schema`, errors);
+				}
+			}
+		}
+	}
+
+	// Step 8: Check fixture coverage
+	const runesWithFixtures = Object.entries(pkg.runes)
+		.filter(([, entry]) => entry.fixture)
+		.map(([name]) => name);
+	const runesWithoutFixtures = Object.entries(pkg.runes)
+		.filter(([, entry]) => !entry.fixture && !isChildRune(entry))
+		.map(([name]) => name);
+
+	if (runesWithoutFixtures.length > 0) {
+		warnings.push({
+			path: 'fixtures',
+			message: `${runesWithoutFixtures.length} non-child rune(s) without fixtures: ${runesWithoutFixtures.join(', ')}. Fixtures improve the inspect command experience.`,
+		});
+	}
+
+	// Step 9: Check for descriptions (helpful for AI integration)
+	const runesWithoutDescription = Object.entries(pkg.runes)
+		.filter(([, entry]) => !entry.description && !isChildRune(entry))
+		.map(([name]) => name);
+	if (runesWithoutDescription.length > 0) {
+		warnings.push({
+			path: 'descriptions',
+			message: `${runesWithoutDescription.length} rune(s) without descriptions: ${runesWithoutDescription.join(', ')}. Descriptions improve AI prompt generation.`,
+		});
+	}
+
+	// Step 10: Validate the cli-plugin export shape if the package contributes one.
+	const cliPluginResult = await validateCliPlugin(pluginDir, pkgJson, npmName);
+	errors.push(...cliPluginResult.errors);
+	warnings.push(...cliPluginResult.warnings);
+
+	return { valid: errors.length === 0, pluginName: npmName, errors, warnings };
+}
+
+/** Validate a package's `cli-plugin` export when present.
+ *
+ *  Skipped silently when the package does not declare a cli-plugin export —
+ *  most plugins don't ship CLI commands. When the export exists, this
+ *  checks structural integrity (namespace, commands, schemas) and warns when
+ *  optional MCP-friendly fields are missing.
+ */
+async function validateCliPlugin(
+	pluginDir: string,
+	pkgJson: Record<string, unknown>,
+	npmName: string,
+): Promise<{ errors: ValidationError[]; warnings: ValidationWarning[] }> {
+	const errors: ValidationError[] = [];
+	const warnings: ValidationWarning[] = [];
+
+	const exports = pkgJson.exports as Record<string, unknown> | undefined;
+	const cliPluginExport = exports?.['./cli-plugin'];
+	if (!cliPluginExport) {
+		// No cli-plugin contribution — nothing to lint.
+		return { errors, warnings };
+	}
+
+	const candidates = [
+		join(pluginDir, 'dist', 'cli-plugin.js'),
+		join(pluginDir, 'src', 'cli-plugin.js'),
+		join(pluginDir, 'src', 'cli-plugin.ts'),
+		join(pluginDir, 'cli-plugin.js'),
+	];
+	let plugin: CliPlugin | null = null;
+	let importError: string | undefined;
+	for (const path of candidates) {
+		if (!existsSync(path)) continue;
+		try {
+			const mod = await import(path);
+			const candidate = (mod as { default?: unknown }).default ?? mod;
+			if (isPluginLike(candidate)) {
+				plugin = candidate as CliPlugin;
+				break;
+			}
+		} catch (err) {
+			importError = (err as Error).message;
+		}
+	}
+
+	if (!plugin) {
+		errors.push({
+			path: 'cli-plugin',
+			message: importError
+				? `Could not load cli-plugin export: ${importError}`
+				: 'Could not find a valid CliPlugin export in dist/cli-plugin.js or src/cli-plugin.ts',
+		});
+		return { errors, warnings };
+	}
+
+	if (typeof plugin.namespace !== 'string' || plugin.namespace.length === 0) {
+		errors.push({ path: 'cli-plugin.namespace', message: 'Required and must be a non-empty string' });
+	}
+	if (!Array.isArray(plugin.commands)) {
+		errors.push({ path: 'cli-plugin.commands', message: 'Required and must be an array' });
+		return { errors, warnings };
+	}
+	if (plugin.commands.length === 0) {
+		warnings.push({ path: 'cli-plugin.commands', message: 'No commands declared — the plugin contributes nothing' });
+	}
+
+	for (let i = 0; i < plugin.commands.length; i++) {
+		const rawCmd: unknown = plugin.commands[i];
+		const cmd = rawCmd as Record<string, unknown> | undefined;
+		const prefix = `cli-plugin.commands[${i}]`;
+		if (!cmd || typeof cmd !== 'object') {
+			errors.push({ path: prefix, message: 'Must be an object' });
+			continue;
+		}
+		if (typeof cmd.name !== 'string' || cmd.name.length === 0) {
+			errors.push({ path: `${prefix}.name`, message: 'Required and must be a non-empty string' });
+		}
+		if (typeof cmd.description !== 'string') {
+			errors.push({ path: `${prefix}.description`, message: 'Required and must be a string' });
+		} else if (cmd.description.length === 0) {
+			warnings.push({ path: `${prefix}.description`, message: 'Empty description — used in --help output and as MCP tool fallback' });
+		}
+		if (typeof cmd.handler !== 'function') {
+			errors.push({ path: `${prefix}.handler`, message: 'Required and must be a function' });
+		}
+
+		if (cmd.inputSchema !== undefined && !isPlausibleJsonSchema(cmd.inputSchema)) {
+			errors.push({ path: `${prefix}.inputSchema`, message: 'Must be a JSON Schema object' });
+		}
+		if (cmd.outputSchema !== undefined && !isPlausibleJsonSchema(cmd.outputSchema)) {
+			errors.push({ path: `${prefix}.outputSchema`, message: 'Must be a JSON Schema object' });
+		}
+		if (cmd.mcpHandler !== undefined && typeof cmd.mcpHandler !== 'function') {
+			errors.push({ path: `${prefix}.mcpHandler`, message: 'Must be a function' });
+		}
+
+		const cmdName = typeof cmd.name === 'string' ? cmd.name : `[${i}]`;
+		if (cmd.inputSchema === undefined) {
+			warnings.push({
+				path: `${prefix}`,
+				message: `Command "${cmdName}" has no inputSchema — recommended so the command surfaces as a typed MCP tool`,
+			});
+		}
+		if (cmd.mcpHandler === undefined && cmd.inputSchema !== undefined) {
+			warnings.push({
+				path: `${prefix}`,
+				message: `Command "${cmdName}" declares inputSchema but no mcpHandler — MCP will fall back to argv-shimming, losing structured I/O`,
+			});
+		}
+	}
+
+	// Namespace-clash check against other plugins discovered in the same project.
+	try {
+		// Discover from the parent of the package directory (so its node_modules
+		// includes peer packages); falling back to pluginDir is fine when the
+		// package is published rather than in a workspace.
+		const discoveryRoot = dirname(pluginDir);
+		const others = await discoverPlugins({ cwd: discoveryRoot, warn: false });
+		for (const other of others) {
+			if (other.pluginName === npmName) continue;
+			if (other.namespace === plugin.namespace) {
+				warnings.push({
+					path: 'cli-plugin.namespace',
+					message: `Namespace "${plugin.namespace}" is already provided by ${other.pluginName} in this project`,
+				});
+			}
+		}
+	} catch {
+		// Discovery failures are non-blocking — the lint is best-effort.
+	}
+
+	return { errors, warnings };
+}
+
+function isPluginLike(value: unknown): value is CliPlugin {
+	if (!value || typeof value !== 'object') return false;
+	const obj = value as Record<string, unknown>;
+	return (
+		typeof obj.namespace === 'string' && Array.isArray(obj.commands)
+	);
+}
+
+function isPlausibleJsonSchema(value: unknown): boolean {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function validateRuneEntry(
+	runeName: string,
+	entry: PluginRune,
+	errors: ValidationError[],
+	warnings: ValidationWarning[],
+): void {
+	const prefix = `runes.${runeName}`;
+
+	// transform is required
+	if (!entry.transform || typeof entry.transform !== 'object') {
+		errors.push({ path: `${prefix}.transform`, message: 'Required and must be a Markdoc Schema object' });
+	}
+
+	// fixture validation
+	if (entry.fixture !== undefined) {
+		if (typeof entry.fixture !== 'string') {
+			errors.push({ path: `${prefix}.fixture`, message: 'Must be a string' });
+		} else if (entry.fixture.trim().length === 0) {
+			errors.push({ path: `${prefix}.fixture`, message: 'Must be non-empty' });
+		} else {
+			// Check that fixture uses the rune's tag name
+			const tagPattern = new RegExp(`\\{%\\s*${escapeRegex(runeName)}[\\s%]`);
+			if (!tagPattern.test(entry.fixture)) {
+				warnings.push({ path: `${prefix}.fixture`, message: `Fixture does not appear to use the {% ${runeName} %} tag` });
+			}
+		}
+	}
+
+	// authoringHints validation
+	if (entry.authoringHints !== undefined) {
+		if (typeof entry.authoringHints !== 'string') {
+			errors.push({ path: `${prefix}.authoringHints`, message: 'Must be a string' });
+		} else if (entry.authoringHints.trim().length === 0) {
+			warnings.push({ path: `${prefix}.authoringHints`, message: 'Empty authoringHints string — remove or add content' });
+		}
+	}
+
+	// schema validation
+	if (entry.schema) {
+		for (const [attrName, attrDef] of Object.entries(entry.schema)) {
+			validatePluginAttribute(attrName, attrDef, `${prefix}.schema`, errors);
+		}
+	}
+
+	// aliases validation
+	if (entry.aliases) {
+		if (!Array.isArray(entry.aliases)) {
+			errors.push({ path: `${prefix}.aliases`, message: 'Must be an array of strings' });
+		} else {
+			for (const alias of entry.aliases) {
+				if (typeof alias !== 'string' || !alias) {
+					errors.push({ path: `${prefix}.aliases`, message: 'Each alias must be a non-empty string' });
+				}
+			}
+		}
+	}
+
+	// description
+	if (entry.description !== undefined && typeof entry.description !== 'string') {
+		errors.push({ path: `${prefix}.description`, message: 'Must be a string' });
+	}
+}
+
+function validatePluginAttribute(
+	attrName: string,
+	attrDef: unknown,
+	parentPath: string,
+	errors: ValidationError[],
+): void {
+	const path = `${parentPath}.${attrName}`;
+
+	if (typeof attrDef !== 'object' || attrDef === null) {
+		errors.push({ path, message: 'Must be an object' });
+		return;
+	}
+
+	const attr = attrDef as Record<string, unknown>;
+
+	if (attr.type !== undefined) {
+		const validTypes = ['string', 'number', 'boolean'];
+		if (!validTypes.includes(attr.type as string)) {
+			errors.push({ path: `${path}.type`, message: `Must be one of: ${validTypes.join(', ')}` });
+		}
+	}
+
+	if (attr.matches !== undefined) {
+		if (!Array.isArray(attr.matches)) {
+			errors.push({ path: `${path}.matches`, message: 'Must be an array' });
+		}
+	}
+}
+
+/** Check if a rune entry is likely a child/internal rune (no need for fixture) */
+function isChildRune(entry: PluginRune): boolean {
+	// Heuristic: child runes typically have no description or a brief one,
+	// and their transform schema has a parent relationship
+	if (!entry.transform || typeof entry.transform !== 'object') return false;
+	const schema = entry.transform as Record<string, unknown>;
+	return schema.selfClosing === true || schema.inline === true;
+}
+
+function findPluginExport(mod: Record<string, unknown>): Plugin | null {
+	// Check default export
+	if (mod.default && isPlugin(mod.default)) {
+		return mod.default as Plugin;
+	}
+
+	// Check named exports
+	for (const value of Object.values(mod)) {
+		if (isPlugin(value)) {
+			return value as Plugin;
+		}
+	}
+
+	return null;
+}
+
+function isPlugin(value: unknown): value is Plugin {
+	if (typeof value !== 'object' || value === null) return false;
+	const obj = value as Record<string, unknown>;
+	return typeof obj.name === 'string' && typeof obj.version === 'string' && typeof obj.runes === 'object' && obj.runes !== null;
+}
+
+function escapeRegex(s: string): string {
+	return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function printValidationResult(result: PluginValidationResult): void {
+	console.log(`Validating plugin: ${result.pluginName}\n`);
+
+	if (result.valid && result.warnings.length === 0) {
+		console.log('  Package: OK');
+		console.log('\nAll checks passed.');
+		return;
+	}
+
+	if (result.errors.length > 0) {
+		console.log(`  FAIL — ${result.errors.length} error${result.errors.length === 1 ? '' : 's'}`);
+		for (const err of result.errors) {
+			console.log(`    ERROR ${err.path}: ${err.message}`);
+		}
+	} else {
+		console.log('  Package: OK');
+	}
+
+	if (result.warnings.length > 0) {
+		console.log(`\n  ${result.warnings.length} warning${result.warnings.length === 1 ? '' : 's'}:`);
+		for (const warn of result.warnings) {
+			console.log(`    WARN ${warn.path}: ${warn.message}`);
+		}
+	}
+
+	if (result.valid) {
+		console.log('\nPackage is valid (with warnings).');
+	} else {
+		console.log('\nPackage validation failed.');
+	}
+}

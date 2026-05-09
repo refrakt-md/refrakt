@@ -22,7 +22,7 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 
 	// 1. Determine source type and package name
 	const absSource = isAbsolute(source) ? source : resolve(cwd, source);
-	let packageName: string;
+	let pluginName: string;
 	let installSource: string;
 
 	if (existsSync(absSource)) {
@@ -33,8 +33,8 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 
 		if (pkgJsonPath && existsSync(pkgJsonPath)) {
 			const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
-			packageName = pkg.name;
-			if (!packageName) {
+			pluginName = pkg.name;
+			if (!pluginName) {
 				console.error('Error: Theme package.json is missing a "name" field');
 				process.exit(1);
 			}
@@ -42,14 +42,14 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 		} else if (source.endsWith('.tgz')) {
 			// For tarballs, install first then read name from node_modules
 			installSource = absSource;
-			packageName = ''; // resolved after install
+			pluginName = ''; // resolved after install
 		} else {
 			console.error(`Error: No package.json found in ${absSource}`);
 			process.exit(1);
 		}
 	} else {
 		// npm package name
-		packageName = source;
+		pluginName = source;
 		installSource = source;
 	}
 
@@ -67,7 +67,7 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 	}
 
 	// 4. For tarballs, resolve package name from the install output
-	if (!packageName) {
+	if (!pluginName) {
 		// After npm install of a tarball, the package is in node_modules
 		// We need to search for it — check recent additions
 		console.error('Error: Could not determine package name from tarball.');
@@ -87,13 +87,13 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 	}
 
 	const previousTheme = configData.config.theme;
-	configData.config.theme = packageName;
+	configData.config.theme = pluginName;
 	writeRefraktConfigFile(configData.path, configData.config);
 
 	// 6. Validate the installed theme
 	const warnings: string[] = [];
 	try {
-		const themeDir = resolve(cwd, 'node_modules', packageName);
+		const themeDir = resolve(cwd, 'node_modules', pluginName);
 		if (!existsSync(themeDir)) {
 			warnings.push('Theme directory not found in node_modules — install may have failed');
 		} else {
@@ -112,9 +112,9 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 
 	// 7. Output results
 	console.log('');
-	console.log(`Theme "${packageName}" installed successfully.`);
-	if (previousTheme !== packageName) {
-		console.log(`  Updated refrakt.config.json: "${previousTheme}" → "${packageName}"`);
+	console.log(`Theme "${pluginName}" installed successfully.`);
+	if (previousTheme !== pluginName) {
+		console.log(`  Updated refrakt.config.json: "${previousTheme}" → "${pluginName}"`);
 	}
 	if (warnings.length > 0) {
 		console.log('');

@@ -25,7 +25,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 					...CORE_PACKAGES,
 					'@refrakt-md/astro',
 					site.theme,
-					...(site.packages ?? []),
+					...(site.plugins ?? []),
 				];
 
 				updateConfig({

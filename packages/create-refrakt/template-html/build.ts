@@ -3,7 +3,7 @@ import { renderFullPage } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { createHighlightTransform } from '@refrakt-md/highlight';
-import { loadRunePackage, mergePackages, runes as coreRunes } from '@refrakt-md/runes';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync, mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
@@ -45,25 +45,25 @@ async function build() {
 		global: { ...(themeConfig.icons?.global ?? {}), ...(config.icons ?? {}) },
 	};
 
-	// Load community packages
-	const packageNames = config.packages ?? [];
+	// Load plugins
+	const pluginNames = config.plugins ?? [];
 	let communityTags: Record<string, Schema> | undefined;
 	let finalConfig = themeConfig;
 
-	if (packageNames.length > 0) {
+	if (pluginNames.length > 0) {
 		const loaded = await Promise.all(
-			packageNames.map((name: string) => loadRunePackage(name))
+			pluginNames.map((name: string) => loadPlugin(name))
 		);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePackages(loaded, coreRuneNames, config.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
 
 		communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 
 		const { config: assembledConfig } = assembleThemeConfig({
 			coreConfig: themeConfig,
-			packageRunes: merged.themeRunes,
-			packageIcons: merged.themeIcons,
-			packageBackgrounds: merged.themeBackgrounds,
+			pluginRunes: merged.themeRunes,
+			pluginIcons: merged.themeIcons,
+			pluginBackgrounds: merged.themeBackgrounds,
 			extensions: merged.extensions as any,
 			provenance: merged.provenance,
 		});

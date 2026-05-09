@@ -28,36 +28,36 @@ describe('assembleThemeConfig', () => {
 	});
 
 	it('merges package rune configs', () => {
-		const packageRunes: Record<string, RuneConfig> = {
+		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },
 		};
 
-		const result = assembleThemeConfig({ coreConfig, packageRunes });
+		const result = assembleThemeConfig({ coreConfig, pluginRunes });
 
 		expect(result.config.runes['Hero']).toEqual({ block: 'hero' });
 		expect(result.config.runes['Hint']).toEqual(coreConfig.runes['Hint']); // core untouched
 	});
 
 	it('merges package icons', () => {
-		const packageIcons = {
+		const pluginIcons = {
 			hero: { default: '<svg>hero</svg>' },
 		};
 
-		const result = assembleThemeConfig({ coreConfig, packageIcons });
+		const result = assembleThemeConfig({ coreConfig, pluginIcons });
 
 		expect(result.config.icons['hero']).toEqual({ default: '<svg>hero</svg>' });
 		expect(result.config.icons['hint']).toEqual(coreConfig.icons['hint']); // core untouched
 	});
 
 	it('applies theme overrides on top of packages', () => {
-		const packageRunes: Record<string, RuneConfig> = {
+		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },
 		};
 		const themeOverrides = {
 			icons: { hint: { note: '<svg>themed-note</svg>' } },
 		};
 
-		const result = assembleThemeConfig({ coreConfig, packageRunes, themeOverrides });
+		const result = assembleThemeConfig({ coreConfig, pluginRunes, themeOverrides });
 
 		expect(result.config.runes['Hero']).toEqual({ block: 'hero' });
 		expect(result.config.icons['hint']).toEqual({ note: '<svg>themed-note</svg>' });
@@ -80,15 +80,15 @@ describe('assembleThemeConfig', () => {
 
 	it('preserves and enriches provenance from packages', () => {
 		const packageProvenance: Record<string, RuneProvenance> = {
-			Hero: { qualifiedId: 'marketing:Hero', source: 'package', packageName: 'marketing', origin: '@refrakt-md/marketing' },
+			Hero: { qualifiedId: 'marketing:Hero', source: 'plugin', pluginName: 'marketing', origin: '@refrakt-md/marketing' },
 		};
-		const packageRunes: Record<string, RuneConfig> = {
+		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },
 		};
 
 		const result = assembleThemeConfig({
 			coreConfig,
-			packageRunes,
+			pluginRunes,
 			provenance: packageProvenance,
 		});
 
@@ -99,11 +99,11 @@ describe('assembleThemeConfig', () => {
 	});
 
 	it('handles full three-layer merge correctly', () => {
-		const packageRunes: Record<string, RuneConfig> = {
+		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },
 			Cta: { block: 'cta' },
 		};
-		const packageIcons = {
+		const pluginIcons = {
 			hero: { default: '<svg>pkg-hero</svg>' },
 		};
 		const themeOverrides = {
@@ -116,8 +116,8 @@ describe('assembleThemeConfig', () => {
 
 		const result = assembleThemeConfig({
 			coreConfig,
-			packageRunes,
-			packageIcons,
+			pluginRunes,
+			pluginIcons,
 			themeOverrides,
 			extensions,
 		});
@@ -134,8 +134,8 @@ describe('assembleThemeConfig', () => {
 	it('handles empty optional inputs', () => {
 		const result = assembleThemeConfig({
 			coreConfig,
-			packageRunes: {},
-			packageIcons: {},
+			pluginRunes: {},
+			pluginIcons: {},
 			extensions: {},
 			provenance: {},
 		});

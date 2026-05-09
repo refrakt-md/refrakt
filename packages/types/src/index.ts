@@ -19,13 +19,13 @@ export type {
   ComponentDefinition,
 } from './theme.js';
 
-// Community rune package types
+// Plugin types
 export type {
-  RunePackage,
-  RunePackageEntry,
-  RunePackageAttribute,
+  Plugin,
+  PluginRune,
+  PluginAttribute,
   RuneExtension,
-  RunePackageThemeConfig,
+  PluginThemeConfig,
 } from './package.js';
 
 // Serialized tree types
@@ -71,7 +71,7 @@ export type {
 	AggregatedData,
 	PipelineContext,
 	PipelineWarning,
-	PackagePipelineHooks,
+	PluginPipelineHooks,
 } from './pipeline.js';
 
 // CLI plugin contract

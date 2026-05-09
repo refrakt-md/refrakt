@@ -4,7 +4,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { RunePackage, PipelineWarning, AggregatedData } from '@refrakt-md/types';
+import type { Plugin, PipelineWarning, AggregatedData } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
@@ -96,7 +96,7 @@ export async function loadContent(
   basePath: string = '/',
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
-  packages?: RunePackage[],
+  packages?: Plugin[],
   sandboxExamplesDir?: string,
   variables?: Record<string, unknown>,
 ): Promise<Site> {
@@ -151,11 +151,11 @@ export async function loadContent(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
   }
 
-  // Build hook sets: core always runs first, then community packages in config order
-  const hookSets: HookSet[] = [{ packageName: '__core__', hooks: corePipelineHooks }];
+  // Build hook sets: core always runs first, then plugins in config order
+  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: corePipelineHooks }];
   for (const pkg of packages ?? []) {
     if (pkg.pipeline) {
-      hookSets.push({ packageName: pkg.name, hooks: pkg.pipeline });
+      hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
     }
   }
 

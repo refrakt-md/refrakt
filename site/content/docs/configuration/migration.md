@@ -38,7 +38,7 @@ The migrate command rewrites the flat shape into the singular `site` form — he
 	"contentDir": "./content",
 	"theme": "@refrakt-md/lumina",
 	"target": "svelte",
-	"packages": ["@refrakt-md/marketing"]
+	"plugins": ["@refrakt-md/marketing"]
 }
 ```
 
@@ -48,7 +48,7 @@ The migrate command rewrites the flat shape into the singular `site` form — he
 		"contentDir": "./content",
 		"theme": "@refrakt-md/lumina",
 		"target": "svelte",
-		"packages": ["@refrakt-md/marketing"]
+		"plugins": ["@refrakt-md/marketing"]
 	}
 }
 ```

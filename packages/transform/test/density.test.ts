@@ -149,7 +149,7 @@ describe('density dimension', () => {
 		expect(nestedCard.attributes['data-density']).toBe('compact');
 	});
 
-	it('childDensity: minimal works for community package runes', () => {
+	it('childDensity: minimal works for plugin runes', () => {
 		const config = baseConfig({
 			TaskList: { block: 'task-list', childDensity: 'minimal' },
 			Task: { block: 'task', defaultDensity: 'full' },

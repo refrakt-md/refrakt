@@ -1,5 +1,5 @@
 import type {
-	PackagePipelineHooks,
+	PluginPipelineHooks,
 	TransformedPage,
 	EntityRegistry,
 	AggregatedData,
@@ -11,8 +11,8 @@ import { EntityRegistryImpl } from './registry.js';
 
 /** A package and its pipeline hooks, ready to run */
 export interface HookSet {
-	packageName: string;
-	hooks: PackagePipelineHooks;
+	pluginName: string;
+	hooks: PluginPipelineHooks;
 }
 
 /** Build-phase statistics from the pipeline run */
@@ -59,9 +59,9 @@ export async function runPipeline(
 	const transformedPages: TransformedPage[] = pages.map(pageToTransformed);
 
 	// ─── Phase 2: Register ───
-	for (const { packageName, hooks } of hookSets) {
+	for (const { pluginName, hooks } of hookSets) {
 		if (!hooks.register) continue;
-		const ctx = makeContext(warnings, 'register', packageName);
+		const ctx = makeContext(warnings, 'register', pluginName);
 		try {
 			hooks.register(transformedPages, registry, ctx);
 		} catch (err) {
@@ -72,11 +72,11 @@ export async function runPipeline(
 	// ─── Phase 3: Aggregate ───
 	const aggregated: AggregatedData = {};
 	const frozenRegistry = registry as Readonly<EntityRegistry>;
-	for (const { packageName, hooks } of hookSets) {
+	for (const { pluginName, hooks } of hookSets) {
 		if (!hooks.aggregate) continue;
-		const ctx = makeContext(warnings, 'aggregate', packageName);
+		const ctx = makeContext(warnings, 'aggregate', pluginName);
 		try {
-			aggregated[packageName] = hooks.aggregate(frozenRegistry, ctx);
+			aggregated[pluginName] = hooks.aggregate(frozenRegistry, ctx);
 		} catch (err) {
 			ctx.error((err as Error).message);
 		}
@@ -84,10 +84,10 @@ export async function runPipeline(
 
 	// ─── Phase 4: Post-process ───
 	let working = [...transformedPages];
-	for (const { packageName, hooks } of hookSets) {
+	for (const { pluginName, hooks } of hookSets) {
 		if (!hooks.postProcess) continue;
 		working = working.map((page, i) => {
-			const ctx = makeContext(warnings, 'postProcess', packageName, page.url);
+			const ctx = makeContext(warnings, 'postProcess', pluginName, page.url);
 			try {
 				return hooks.postProcess!(page, aggregated, ctx);
 			} catch (err) {
@@ -135,18 +135,18 @@ function pageToTransformed(page: SitePage): TransformedPage {
 function makeContext(
 	warnings: PipelineWarning[],
 	phase: PipelineWarning['phase'],
-	packageName: string,
+	pluginName: string,
 	url?: string,
 ): PipelineContext {
 	return {
 		info(message, infoUrl) {
-			warnings.push({ severity: 'info', phase, packageName, url: infoUrl ?? url, message });
+			warnings.push({ severity: 'info', phase, pluginName, url: infoUrl ?? url, message });
 		},
 		warn(message, warnUrl) {
-			warnings.push({ severity: 'warning', phase, packageName, url: warnUrl ?? url, message });
+			warnings.push({ severity: 'warning', phase, pluginName, url: warnUrl ?? url, message });
 		},
 		error(message, errUrl) {
-			warnings.push({ severity: 'error', phase, packageName, url: errUrl ?? url, message });
+			warnings.push({ severity: 'error', phase, pluginName, url: errUrl ?? url, message });
 		},
 	};
 }

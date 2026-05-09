@@ -133,12 +133,12 @@ function runPreviewPostProcess(
 		headings: [],
 	};
 	const warnings: PipelineWarning[] = [];
-	for (const { packageName, hooks } of hookSets) {
+	for (const { pluginName, hooks } of hookSets) {
 		if (!hooks.postProcess) continue;
 		const ctx: PipelineContext = {
-			info(message, u) { warnings.push({ severity: 'info', phase: 'postProcess', packageName, url: u ?? url, message }); },
-			warn(message, u) { warnings.push({ severity: 'warning', phase: 'postProcess', packageName, url: u ?? url, message }); },
-			error(message, u) { warnings.push({ severity: 'error', phase: 'postProcess', packageName, url: u ?? url, message }); },
+			info(message, u) { warnings.push({ severity: 'info', phase: 'postProcess', pluginName, url: u ?? url, message }); },
+			warn(message, u) { warnings.push({ severity: 'warning', phase: 'postProcess', pluginName, url: u ?? url, message }); },
+			error(message, u) { warnings.push({ severity: 'error', phase: 'postProcess', pluginName, url: u ?? url, message }); },
 		};
 		try {
 			page = hooks.postProcess(page, aggregated, ctx) as TransformedPage;

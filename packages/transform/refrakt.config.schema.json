@@ -8,7 +8,7 @@
 		"$schema": { "type": "string" },
 		"plugins": {
 			"type": "array",
-			"description": "Plugin packages contributing CLI commands and MCP tools. When set, this is authoritative; when absent, plugin discovery falls back to scanning package.json for @refrakt-md/* dependencies.",
+			"description": "Plugins for this project — npm packages that contribute runes, layouts, pipeline hooks, behaviors, and/or CLI commands and MCP tools. When set, this is authoritative; when absent, plugin discovery falls back to scanning package.json for @refrakt-md/* dependencies.",
 			"items": { "type": "string" }
 		},
 		"plan": {
@@ -34,7 +34,6 @@
 		},
 		"highlight": { "$ref": "#/definitions/HighlightConfig" },
 		"icons": { "type": "object", "additionalProperties": { "type": "string" } },
-		"packages": { "type": "array", "items": { "type": "string" } },
 		"tints": { "type": "object", "additionalProperties": { "type": "object" } },
 		"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
 		"sandbox": {
@@ -74,7 +73,11 @@
 				"routeRules": { "type": "array", "items": { "$ref": "#/definitions/RouteRule" } },
 				"highlight": { "$ref": "#/definitions/HighlightConfig" },
 				"icons": { "type": "object", "additionalProperties": { "type": "string" } },
-				"packages": { "type": "array", "items": { "type": "string" } },
+				"plugins": {
+					"type": "array",
+					"description": "Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.).",
+					"items": { "type": "string" }
+				},
 				"tints": { "type": "object", "additionalProperties": { "type": "object" } },
 				"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
 				"sandbox": {

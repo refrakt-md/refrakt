@@ -99,8 +99,8 @@ export {
 	UNIVERSAL_ATTRIBUTE_NAMES,
 } from './attribute-presets.js';
 export type { AttributePresetMetadata } from './attribute-presets.js';
-export { loadRunePackage, mergePackages, applyAliases, loadLocalRunes, discoverPackageFixtures } from './packages.js';
-export type { LoadedPackage, MergedPackageResult } from './packages.js';
+export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures } from './plugins.js';
+export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, type PageTreeNode } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';

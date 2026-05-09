@@ -1,0 +1,30 @@
+{
+  "name": "@refrakt-md/business",
+  "description": "Business runes for refrakt.md — team pages, organizations, and timelines",
+  "version": "0.11.3",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "plugins/business"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@refrakt-md/types": "0.11.3",
+    "@refrakt-md/transform": "0.11.3",
+    "@refrakt-md/runes": "0.11.3",
+    "@markdoc/markdoc": "0.4.0",
+    "reflect-metadata": "^0.2.0"
+  }
+}

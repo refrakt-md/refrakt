@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { RunePackage, SiteConfig } from '@refrakt-md/types';
+import type { Plugin, SiteConfig } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { createSiteLoader, type SiteLoader } from './loader.js';
 import type { Site } from './site.js';
@@ -40,7 +40,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
 	let _communityTags: Record<string, any> | undefined;
-	let _communityPackages: RunePackage[] | undefined;
+	let _communityPackages: Plugin[] | undefined;
 	let _loader: SiteLoader | null = null;
 	let _hl: { (tree: any): any; css: string } | null = null;
 
@@ -57,26 +57,26 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 			};
 
 			const { assembleThemeConfig, createTransform } = await import('@refrakt-md/transform');
-			const packageNames = site.packages ?? [];
+			const pluginNames = site.plugins ?? [];
 
-			if (packageNames.length === 0) {
+			if (pluginNames.length === 0) {
 				_transform = createTransform(themeConfig);
 			} else {
-				const { loadRunePackage, mergePackages, runes: coreRunes } = await import('@refrakt-md/runes');
+				const { loadPlugin, mergePlugins, runes: coreRunes } = await import('@refrakt-md/runes');
 				const loaded = await Promise.all(
-					packageNames.map((name: string) => loadRunePackage(name))
+					pluginNames.map((name: string) => loadPlugin(name))
 				);
 				const coreRuneNames = new Set(Object.keys(coreRunes));
-				const merged = mergePackages(loaded, coreRuneNames, site.runes?.prefer);
+				const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
 				_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
-				_communityPackages = merged.packages;
+				_communityPackages = merged.plugins;
 
 				const { config: assembledConfig } = assembleThemeConfig({
 					coreConfig: themeConfig,
-					packageRunes: merged.themeRunes,
-					packageIcons: merged.themeIcons,
-					packageBackgrounds: merged.themeBackgrounds,
+					pluginRunes: merged.themeRunes,
+					pluginIcons: merged.themeIcons,
+					pluginBackgrounds: merged.themeBackgrounds,
 					extensions: merged.extensions as any,
 					provenance: merged.provenance,
 				});
@@ -96,7 +96,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				basePath: '/',
 				icons,
 				additionalTags: _communityTags,
-				packages: _communityPackages,
+				plugins: _communityPackages,
 				variables: options?.variables,
 				dev: options?.dev ?? false,
 			});

@@ -132,7 +132,7 @@ export default createDataFile({
 | `theme` | `EleventyTheme` | — | Theme definition (required) |
 | `contentDir` | `string` | `'./content'` | Path to the content directory |
 | `basePath` | `string` | `'/'` | Base URL path for all generated pages |
-| `packages` | `RunePackage[]` | — | Community rune packages to include in the content pipeline |
+| `packages` | `Plugin[]` | — | Plugins to include in the content pipeline |
 
 ### EleventyPageData
 
@@ -240,7 +240,7 @@ This copies `index.css` to `_site/css/index.css`. Reference it in your template 
 <link rel="stylesheet" href="/css/index.css">
 ```
 
-For community package CSS, add their stylesheets to the `cssFiles` array:
+For plugin CSS, add their stylesheets to the `cssFiles` array:
 
 ```javascript
 cssFiles: [

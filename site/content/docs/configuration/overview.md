@@ -55,11 +55,11 @@ The flat shape and singular `site` are equivalent — both produce `sites.defaul
 
 | Section | Purpose | Required |
 |---------|---------|----------|
-| `plugins` | Packages contributing CLI commands and MCP tools | No (auto-discovered if absent) |
+| `plugins` | Plugins contributing runes, layouts, hooks, CLI commands, and MCP tools | No (auto-discovered if absent) |
 | `plan` | Plan-management directory configuration | No |
 | `site` / `sites` | Per-site settings | No (planning-only repos can omit) |
 
-Site-scoped fields (`contentDir`, `theme`, `target`, `packages`, `routeRules`, `icons`, `backgrounds`, `tints`, `runes`, `highlight`, `baseUrl`, `siteName`, `logo`, `defaultImage`, `sandbox`, `overrides`) live inside a site entry. See [Sites](/docs/configuration/sites).
+Site-scoped fields (`contentDir`, `theme`, `target`, `plugins`, `routeRules`, `icons`, `backgrounds`, `tints`, `runes`, `highlight`, `baseUrl`, `siteName`, `logo`, `defaultImage`, `sandbox`, `overrides`) live inside a site entry. See [Sites](/docs/configuration/sites).
 
 ## When you need a config file
 
@@ -67,7 +67,7 @@ You **don't need a config file** if all of these are true:
 
 - Your project is planning-only (`plan/` directory, no site).
 - You're happy with the default plan directory (`./plan`).
-- You're not using any community plugin packages.
+- You're not using any plugins.
 
 You **do need a config file** when:
 

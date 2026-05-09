@@ -18,8 +18,8 @@ export interface SiteConfig {
 	};
 	/** Custom icon SVGs — merged into the theme's global icon group */
 	icons?: Record<string, string>;
-	/** Community rune packages to merge into this site's ThemeConfig */
-	packages?: string[];
+	/** Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.) */
+	plugins?: string[];
 	/** Project-level tint presets — merged after theme tints (last wins) */
 	tints?: Record<string, Record<string, unknown>>;
 	/** Project-level background presets — merged after theme backgrounds (last wins) */
@@ -61,7 +61,8 @@ export interface PlanConfig {
  *  Flat and singular shapes both collapse to `sites.default`. Plural projects
  *  must reference sites by name in CLI commands and adapter options. */
 export interface RefraktConfig {
-	/** Plugin packages contributing CLI commands and MCP tools.
+	/** Plugins for this project — npm packages that contribute runes, layouts,
+	 *  pipeline hooks, behaviors, and/or CLI commands and MCP tools.
 	 *  When set, this is authoritative; when absent, plugin discovery falls back
 	 *  to scanning `package.json` for `@refrakt-md/*` dependencies. */
 	plugins?: string[];
@@ -99,8 +100,6 @@ export interface RefraktConfig {
 	};
 	/** @deprecated Shorthand for `sites.default.icons` */
 	icons?: Record<string, string>;
-	/** @deprecated Shorthand for `sites.default.packages` */
-	packages?: string[];
 	/** @deprecated Shorthand for `sites.default.tints` */
 	tints?: Record<string, Record<string, unknown>>;
 	/** @deprecated Shorthand for `sites.default.backgrounds` */
