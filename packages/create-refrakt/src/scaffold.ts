@@ -10,6 +10,17 @@ function getRefraktVersion(): string {
 	return pkg.version;
 }
 
+/** Major.minor of the refrakt package, used to pin scaffolded `$schema` URLs.
+ *  New projects reference the versioned schema (`https://refrakt.md/schemas/vX.Y/...`)
+ *  so they don't get false validation errors when later refrakt versions add
+ *  fields. The unversioned URL stays valid as a "latest" alias for users who
+ *  want to track current main. */
+function getRefraktSchemaVersion(): string {
+	const version = getRefraktVersion();
+	const [major, minor] = version.split('.');
+	return `v${major}.${minor}`;
+}
+
 export type ScaffoldTarget = 'sveltekit' | 'html' | 'astro' | 'nuxt' | 'next' | 'eleventy';
 
 export interface ScaffoldOptions {
@@ -164,7 +175,7 @@ function generateMcpConfig(): string {
 
 function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
 	const config = {
-		$schema: 'https://refrakt.md/refrakt.config.schema.json',
+		$schema: `https://refrakt.md/schemas/${getRefraktSchemaVersion()}/refrakt.config.schema.json`,
 		sites: {
 			main: {
 				contentDir: './content',

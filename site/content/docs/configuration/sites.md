@@ -13,7 +13,7 @@ Most projects have one site:
 
 ```json
 {
-  "$schema": "https://refrakt.md/refrakt.config.schema.json",
+  "$schema": "https://refrakt.md/schemas/v0.11/refrakt.config.schema.json",
   "site": {
     "contentDir": "./content",
     "theme": "@refrakt-md/lumina",
@@ -22,7 +22,7 @@ Most projects have one site:
 }
 ```
 
-The legacy flat shape is equivalent — both produce `sites.default` after normalization, and adapters like the SvelteKit plugin pick the lone site automatically.
+The SvelteKit plugin (and other adapters) picks the lone site automatically, so single-site projects don't need to pass a `site` option. The legacy flat shape (without the `site` wrapper) still loads but is **deprecated in v0.12.0** and slated for removal in v1.0 — see [Migration](/docs/configuration/migration).
 
 ## Multi-site
 
@@ -30,7 +30,7 @@ Multi-site repos declare named entries under `sites`:
 
 ```json
 {
-  "$schema": "https://refrakt.md/refrakt.config.schema.json",
+  "$schema": "https://refrakt.md/schemas/v0.11/refrakt.config.schema.json",
   "sites": {
     "main": {
       "contentDir": "./site/content",

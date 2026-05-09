@@ -8,7 +8,7 @@ export function loadRefraktConfig(configPath: string): RefraktConfig {
 	if (!existsSync(absPath)) {
 		throw new Error(
 			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one with at minimum: { "contentDir": "./content", "theme": "<package-name>", "target": "svelte" }`
+			`Create one with at minimum: { "site": { "contentDir": "./content", "theme": "<package-name>" } }`
 		);
 	}
 
@@ -43,8 +43,10 @@ function validateConfig(raw: unknown): RefraktConfig {
 		if (typeof obj.theme !== 'string' || !obj.theme) {
 			throw new Error('refrakt.config.json: "theme" is required and must be a non-empty string');
 		}
-		if (typeof obj.target !== 'string' || !obj.target) {
-			throw new Error('refrakt.config.json: "target" is required and must be a non-empty string');
+		// `target` is documentation-only — no adapter consumes it. Validate the
+		// type when present so typos are still caught, but don't require it.
+		if (obj.target !== undefined && (typeof obj.target !== 'string' || !obj.target)) {
+			throw new Error('refrakt.config.json: "target" must be a non-empty string when present');
 		}
 	}
 
@@ -195,7 +197,7 @@ function validateConfig(raw: unknown): RefraktConfig {
 	return {
 		contentDir: obj.contentDir as string,
 		theme: obj.theme as string,
-		target: obj.target as string,
+		...(typeof obj.target === 'string' && obj.target && { target: obj.target }),
 		...(overrides && { overrides }),
 		...(routeRules && { routeRules }),
 		...(highlight && { highlight }),

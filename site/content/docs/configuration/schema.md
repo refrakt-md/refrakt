@@ -11,7 +11,7 @@ refrakt publishes a JSON Schema describing every valid `refrakt.config.json` sha
 
 ```json
 {
-  "$schema": "https://refrakt.md/refrakt.config.schema.json",
+  "$schema": "https://refrakt.md/schemas/v0.11/refrakt.config.schema.json",
   "site": {
     "contentDir": "./content",
     "theme": "@refrakt-md/lumina",
@@ -45,7 +45,7 @@ A symlink at the repo root (`refrakt.config.schema.json` → `packages/transform
 
 ## What the schema covers
 
-- **All three shapes** — flat, singular `site`, plural `sites` — with `oneOf` enforcing mutual exclusivity between `site` and `sites`.
+- **All three shapes** — flat (legacy, deprecated in v0.12), singular `site`, plural `sites` — with `oneOf` enforcing mutual exclusivity between `site` and `sites`.
 - **Top-level sections** — `plugins`, `plan`, `site`/`sites`.
 - **`SiteConfig` definition** — every site-scoped field with its type, description, and required-ness.
 - **`PlanConfig` definition** — `plan.dir`.
@@ -57,4 +57,22 @@ When working inside the refrakt monorepo itself, the root `refrakt.config.json` 
 
 ## Versioning
 
-The schema is versioned alongside `@refrakt-md/transform`. Major-version bumps may add new fields or rename existing ones; the published URL always serves the latest. Pin a specific version via npm if you want stable validation behavior across upgrades.
+The schema is published at two URL forms:
+
+| URL | Purpose |
+|-----|---------|
+| `https://refrakt.md/schemas/vX.Y/refrakt.config.schema.json` | **Versioned** — frozen for that minor release line. Pin one version per project for stable validation. |
+| `https://refrakt.md/refrakt.config.schema.json` | **Latest alias** — always serves the most recently published schema. Tracks current main; may add fields between releases. |
+
+The schema is versioned alongside `@refrakt-md/transform`. New fields can land in any minor release, so the unversioned URL may show false errors on a project pinned to an older refrakt version once the schema gains fields you don't have. The versioned URL avoids that drift.
+
+### Which one should I reference?
+
+- **Pin to a version** (`schemas/v0.11/...`) when you want validation that matches the refrakt version your project depends on. Bump the URL when you upgrade refrakt. `create-refrakt` scaffolds the URL for the version it was released with, so new projects start in this mode by default.
+- **Use the unversioned alias** (`refrakt.config.schema.json`) when you're tracking the latest refrakt release and want validation to follow along automatically.
+
+Both URLs serve identical content today; the difference shows up across releases.
+
+### Schema's own `$id`
+
+The schema body declares its canonical identity via `$id`, which always points at the versioned URL for the release that published it (currently `https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`). Editors that key off `$id` rather than fetch URL still resolve definitions correctly when you reference the unversioned alias.

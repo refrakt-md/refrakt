@@ -1,8 +1,8 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://refrakt.md/refrakt.config.schema.json",
+	"$id": "https://refrakt.md/schemas/v0.11/refrakt.config.schema.json",
 	"title": "RefraktConfig",
-	"description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy), singular `site`, plural `sites` — all collapse to a canonical normalized form internally.",
+	"description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy, deprecated in v0.12, slated for removal in v1.0), singular `site`, plural `sites` — all collapse to a canonical normalized form internally. The unversioned URL https://refrakt.md/refrakt.config.schema.json is a 'latest' alias that always serves the most recently published schema.",
 	"type": "object",
 	"properties": {
 		"$schema": { "type": "string" },
@@ -26,7 +26,7 @@
 		},
 		"contentDir": { "type": "string", "description": "Legacy shorthand for sites.default.contentDir" },
 		"theme": { "type": "string", "description": "Legacy shorthand for sites.default.theme" },
-		"target": { "type": "string", "description": "Legacy shorthand for sites.default.target" },
+		"target": { "type": "string", "description": "Legacy shorthand for sites.default.target. Documentation-only — no adapter consumes this field. Slated for removal in v1.0.", "deprecated": true },
 		"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
 		"routeRules": {
 			"type": "array",
@@ -64,11 +64,15 @@
 		},
 		"SiteConfig": {
 			"type": "object",
-			"required": ["contentDir", "theme", "target"],
+			"required": ["contentDir", "theme"],
 			"properties": {
 				"contentDir": { "type": "string" },
 				"theme": { "type": "string" },
-				"target": { "type": "string" },
+				"target": {
+					"type": "string",
+					"description": "Documentation-only adapter hint (svelte, astro, next, nuxt, eleventy, html). No adapter validates or reads this field today; it serves as an in-config record of the intended adapter. Slated for removal in v1.0.",
+					"deprecated": true
+				},
 				"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
 				"routeRules": { "type": "array", "items": { "$ref": "#/definitions/RouteRule" } },
 				"highlight": { "$ref": "#/definitions/HighlightConfig" },

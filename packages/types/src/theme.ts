@@ -1,13 +1,15 @@
 /** Per-site configuration. A project may declare a single site (via `site`) or
  *  multiple named sites (via `sites: { name: SiteConfig }`).
- *  All fields except `contentDir`, `theme`, and `target` are optional. */
+ *  Only `contentDir` and `theme` are strictly required for the site to load. */
 export interface SiteConfig {
 	/** Path to content directory, relative to project root */
 	contentDir: string;
 	/** Active theme — package name or relative path */
 	theme: string;
-	/** Target framework identifier */
-	target: string;
+	/** Documentation-only adapter hint (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`).
+	 *  No adapter reads or validates this field today; it serves as an in-config record of
+	 *  which adapter the site is intended for. Slated for removal in v1.0. */
+	target?: string;
 	/** Component overrides — maps typeof names to relative paths of replacement components */
 	overrides?: Record<string, string>;
 	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
@@ -79,17 +81,18 @@ export interface RefraktConfig {
 	// --- Legacy flat-shape fields (backwards compatible) ---
 	// These are shorthand for `sites.default.*`. The normalizer mirrors them
 	// into a `sites.default` entry and exposes them at the top level for
-	// existing adapter code that reads them directly. For single-site configs
-	// (the only shape pre-v0.11.0 adapters support), these are guaranteed to
-	// be populated after normalization. Multi-site repos must read from
-	// `sites[name]` directly.
+	// existing adapter code that reads them directly. They are populated for
+	// single-site configs (flat or singular shape) after normalization but
+	// undefined for multi-site repos, where each site lives under `sites[name]`.
+	// Adapter code reading these directly should null-check or migrate to
+	// `resolveSite(config).site.contentDir`.
 
-	/** @deprecated Shorthand for `sites.default.contentDir` */
-	contentDir: string;
-	/** @deprecated Shorthand for `sites.default.theme` */
-	theme: string;
-	/** @deprecated Shorthand for `sites.default.target` */
-	target: string;
+	/** @deprecated Shorthand for `sites.default.contentDir`. Undefined for multi-site configs — use `resolveSite(config).site.contentDir`. */
+	contentDir?: string;
+	/** @deprecated Shorthand for `sites.default.theme`. Undefined for multi-site configs — use `resolveSite(config).site.theme`. */
+	theme?: string;
+	/** @deprecated Shorthand for `sites.default.target`. Undefined for multi-site configs — use `resolveSite(config).site.target`. The field itself is also under review (v0.11.0 follow-up): adapters do not validate it and it is increasingly vestigial; treat it as documentation-only for now. */
+	target?: string;
 	/** @deprecated Shorthand for `sites.default.overrides` */
 	overrides?: Record<string, string>;
 	/** @deprecated Shorthand for `sites.default.routeRules` */

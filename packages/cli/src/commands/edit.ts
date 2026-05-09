@@ -1,6 +1,7 @@
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
-import type { RefraktConfig } from '@refrakt-md/types';
+import type { SiteConfig } from '@refrakt-md/types';
+import { resolveSite } from '@refrakt-md/transform/node';
 import { loadRefraktConfigFile } from '../config-file.js';
 
 export interface EditOptions {
@@ -17,7 +18,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	let contentDir = options.contentDir;
 	let themeName: string | undefined;
 	let configDir = cwd;
-	let projectConfig: RefraktConfig | undefined;
+	let projectSite: SiteConfig | undefined;
 	let projectConfigPath: string | undefined;
 
 	if (!contentDir) {
@@ -25,10 +26,20 @@ export async function editCommand(options: EditOptions): Promise<void> {
 			const { path: cfgPath, config } = loadRefraktConfigFile(cwd);
 			projectConfigPath = cfgPath;
 			configDir = dirname(cfgPath);
-			contentDir = resolve(configDir, config.contentDir);
-			themeName = config.theme;
-			projectConfig = config;
-		} catch {
+			// Use resolveSite so multi-site configs work too — picks the lone
+			// site when there's exactly one, throws with available names when
+			// multiple are declared and no --site flag is set.
+			const { site } = resolveSite(config);
+			contentDir = resolve(configDir, site.contentDir);
+			themeName = site.theme;
+			projectSite = site;
+		} catch (err) {
+			const message = (err as Error).message;
+			if (/multiple sites/.test(message)) {
+				console.error(`Error: ${message}`);
+				console.error('Pass --content-dir to bypass site resolution, or pick a site explicitly.');
+				process.exit(1);
+			}
 			console.error('Error: No refrakt.config.json found. Specify --content-dir or run from a refrakt.md project.');
 			process.exit(1);
 		}
@@ -45,22 +56,22 @@ export async function editCommand(options: EditOptions): Promise<void> {
 	let { themeConfig, themeCssPath, themeSveltePath } = await resolveTheme(themeName, configDir);
 
 	// Merge project-level custom icons into the theme's global icon group
-	if (projectConfig?.icons && Object.keys(projectConfig.icons).length > 0) {
+	if (projectSite?.icons && Object.keys(projectSite.icons).length > 0) {
 		themeConfig = {
 			...themeConfig,
 			icons: {
 				...themeConfig.icons,
-				global: { ...themeConfig.icons.global, ...projectConfig.icons },
+				global: { ...themeConfig.icons.global, ...projectSite.icons },
 			},
 		};
 	}
 
 	// Merge project-level tint and background presets
-	if (projectConfig?.tints) {
-		themeConfig = { ...themeConfig, tints: { ...themeConfig.tints, ...projectConfig.tints } as any };
+	if (projectSite?.tints) {
+		themeConfig = { ...themeConfig, tints: { ...themeConfig.tints, ...projectSite.tints } as any };
 	}
-	if (projectConfig?.backgrounds) {
-		themeConfig = { ...themeConfig, backgrounds: { ...themeConfig.backgrounds, ...projectConfig.backgrounds } as any };
+	if (projectSite?.backgrounds) {
+		themeConfig = { ...themeConfig, backgrounds: { ...themeConfig.backgrounds, ...projectSite.backgrounds } as any };
 	}
 
 	// Load plugins for editor palette + preview
@@ -73,18 +84,18 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		contentModel?: object;
 	}> | undefined;
 
-	if (projectConfig?.plugins?.length) {
+	if (projectSite?.plugins?.length) {
 		try {
 			const { loadPlugin, mergePlugins, runes: coreRuneMap, schemaContentModels, serializeContentModel } = await import('@refrakt-md/runes');
 
 			const loaded = await Promise.all(
-				projectConfig.plugins.map((name: string) => loadPlugin(name))
+				projectSite.plugins.map((name: string) => loadPlugin(name))
 			);
 
 			const merged = mergePlugins(
 				loaded,
 				new Set(Object.keys(coreRuneMap)),
-				projectConfig.runes?.prefer,
+				projectSite.runes?.prefer,
 			);
 
 			extraTags = merged.tags;
@@ -170,8 +181,8 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		devServer: options.devServer,
 		open: !options.noOpen,
 		configPath: projectConfigPath,
-		routeRules: projectConfig?.routeRules,
-		pluginNames: projectConfig?.plugins ?? [],
+		routeRules: projectSite?.routeRules,
+		pluginNames: projectSite?.plugins ?? [],
 		extraTags,
 		communityRunes: communityRuneEntries,
 	});

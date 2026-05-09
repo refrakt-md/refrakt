@@ -24,7 +24,8 @@
     "./node": {
       "types": "./dist/adapter-node.d.ts",
       "default": "./dist/adapter-node.js"
-    }
+    },
+    "./refrakt.config.schema.json": "./refrakt.config.schema.json"
   },
   "files": [
     "dist",

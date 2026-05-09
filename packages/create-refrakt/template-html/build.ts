@@ -2,17 +2,19 @@ import { loadContent } from '@refrakt-md/content';
 import { renderFullPage } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
-import { readFileSync, mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
 import * as path from 'node:path';
 
 // --- Configuration -------------------------------------------------------
 
-const config = JSON.parse(readFileSync('refrakt.config.json', 'utf-8'));
-const contentDir = path.resolve(config.contentDir);
+const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const { site } = resolveSite(config);
+const contentDir = path.resolve(site.contentDir);
 const outDir = 'build';
 
 // --- Helpers --------------------------------------------------------------
@@ -37,16 +39,16 @@ function serialize(node: any): any {
 
 async function build() {
 	// Load theme config — replace this import if using a custom theme
-	const themeModule = await import(config.theme + '/transform');
+	const themeModule = await import(site.theme + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
 	const icons = {
 		...themeConfig.icons,
-		global: { ...(themeConfig.icons?.global ?? {}), ...(config.icons ?? {}) },
+		global: { ...(themeConfig.icons?.global ?? {}), ...(site.icons ?? {}) },
 	};
 
-	// Load plugins
-	const pluginNames = config.plugins ?? [];
+	// Load plugins — site-scoped first, top-level fallback for legacy configs
+	const pluginNames = site.plugins ?? config.plugins ?? [];
 	let communityTags: Record<string, Schema> | undefined;
 	let finalConfig = themeConfig;
 
@@ -55,7 +57,7 @@ async function build() {
 			pluginNames.map((name: string) => loadPlugin(name))
 		);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
 		communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 
@@ -68,11 +70,11 @@ async function build() {
 			provenance: merged.provenance,
 		});
 
-		if (config.tints) {
-			assembledConfig.tints = { ...assembledConfig.tints, ...config.tints };
+		if (site.tints) {
+			assembledConfig.tints = { ...assembledConfig.tints, ...site.tints };
 		}
-		if (config.backgrounds) {
-			assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...config.backgrounds };
+		if (site.backgrounds) {
+			assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...site.backgrounds };
 		}
 
 		finalConfig = assembledConfig;
@@ -82,16 +84,16 @@ async function build() {
 	const transform = createTransform(finalConfig);
 
 	// Create highlight transform
-	const hl = await createHighlightTransform(config.highlight);
+	const hl = await createHighlightTransform(site.highlight);
 
 	// Build theme object for HTML adapter
-	const themeManifestModule = await import(config.theme + '/manifest', { with: { type: 'json' } });
+	const themeManifestModule = await import(site.theme + '/manifest', { with: { type: 'json' } });
 	const manifest = themeManifestModule.default;
 
 	const theme: HtmlTheme = {
 		manifest: {
 			...manifest,
-			routeRules: config.routeRules ?? manifest.routeRules ?? [],
+			routeRules: site.routeRules ?? manifest.routeRules ?? [],
 		},
 		layouts: {
 			default: defaultLayout,
@@ -161,7 +163,7 @@ async function build() {
 
 	// Copy theme CSS to build directory
 	try {
-		const themePkg = config.theme;
+		const themePkg = site.theme;
 		const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
 		const cssPath = path.join(themeDir, 'index.css');
 		if (existsSync(cssPath)) {

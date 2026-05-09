@@ -1,15 +1,16 @@
 import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
-import type { RefraktConfig } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
-const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
-const contentDir = path.resolve(config.contentDir);
+const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const { site } = resolveSite(config);
+const contentDir = path.resolve(site.contentDir);
 
-const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+const routeRules = site.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
 let _transform: ((tree: any) => any) | null = null;
 let _hl: { (tree: any): any; css: string } | null = null;
@@ -21,13 +22,13 @@ async function init() {
 	if (_transform) return;
 
 	const [themeModule, layoutsModule] = await Promise.all([
-		import(config.theme + '/transform'),
-		import(config.theme + '/layouts'),
+		import(site.theme + '/transform'),
+		import(site.theme + '/layouts'),
 	]);
 
 	// Manifest is a JSON file — resolve its path and read directly
 	const { createRequire: cr } = await import('node:module');
-	const manifestPath = cr(import.meta.url).resolve(config.theme + '/manifest');
+	const manifestPath = cr(import.meta.url).resolve(site.theme + '/manifest');
 	const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
 	_theme = {
@@ -39,13 +40,13 @@ async function init() {
 
 	let transformConfig = themeConfig;
 
-	const pluginNames = config.plugins ?? [];
+	const pluginNames = site.plugins ?? config.plugins ?? [];
 	if (pluginNames.length > 0) {
 		const loaded = await Promise.all(
 			pluginNames.map((name: string) => loadPlugin(name))
 		);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
 		_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 		_packages = loaded.map((l: any) => l.pkg);
@@ -78,7 +79,7 @@ export async function getTheme() {
 export async function getHighlightTransform() {
 	if (_hl) return _hl;
 	const { createHighlightTransform } = await import('@refrakt-md/highlight');
-	_hl = await createHighlightTransform((config as any).highlight);
+	_hl = await createHighlightTransform(site.highlight);
 	return _hl;
 }
 

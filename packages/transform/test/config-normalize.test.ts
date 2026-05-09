@@ -1,9 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
 	normalizeRefraktConfig,
 	resolveSite,
 	resolvePlanConfig,
+	__resetFlatShapeWarningForTests,
 } from '../src/config-normalize.js';
+
+/** Test helper: silence the once-per-process flat-shape deprecation warning so
+ *  flat-shape fixtures don't pollute test output. */
+function normalizeFlat(raw: unknown, options: Parameters<typeof normalizeRefraktConfig>[1] = {}) {
+	return normalizeRefraktConfig(raw, { ...options, suppressFlatShapeWarning: true });
+}
 
 describe('normalizeRefraktConfig', () => {
 	describe('flat shape (legacy)', () => {
@@ -14,7 +21,7 @@ describe('normalizeRefraktConfig', () => {
 				target: 'svelte',
 				plugins: ['@refrakt-md/marketing'],
 			};
-			const result = normalizeRefraktConfig(raw);
+			const result = normalizeFlat(raw);
 			expect(result.sites.main).toEqual({
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
@@ -32,9 +39,47 @@ describe('normalizeRefraktConfig', () => {
 				target: 'svelte',
 				icons: { foo: '<svg/>' },
 			};
-			const result = normalizeRefraktConfig(raw);
+			const result = normalizeFlat(raw);
 			expect(result.contentDir).toBe('./content');
 			expect(result.icons).toEqual({ foo: '<svg/>' });
+		});
+	});
+
+	describe('flat-shape deprecation warning', () => {
+		beforeEach(() => {
+			__resetFlatShapeWarningForTests();
+		});
+
+		it('emits a one-time console warning when a flat-shape config is loaded', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			normalizeRefraktConfig({ contentDir: './content', theme: 't', target: 'svelte' });
+			normalizeRefraktConfig({ contentDir: './other', theme: 't', target: 'svelte' });
+			expect(warnSpy).toHaveBeenCalledTimes(1);
+			expect(warnSpy.mock.calls[0]![0]).toMatch(/legacy flat shape/);
+			expect(warnSpy.mock.calls[0]![0]).toMatch(/v1\.0/);
+			warnSpy.mockRestore();
+		});
+
+		it('does not warn for nested-shape configs', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			normalizeRefraktConfig({
+				site: { contentDir: './content', theme: 't', target: 'svelte' },
+			});
+			normalizeRefraktConfig({
+				sites: { main: { contentDir: './content', theme: 't', target: 'svelte' } },
+			});
+			expect(warnSpy).not.toHaveBeenCalled();
+			warnSpy.mockRestore();
+		});
+
+		it('respects the suppressFlatShapeWarning option', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			normalizeRefraktConfig(
+				{ contentDir: './content', theme: 't', target: 'svelte' },
+				{ suppressFlatShapeWarning: true },
+			);
+			expect(warnSpy).not.toHaveBeenCalled();
+			warnSpy.mockRestore();
 		});
 	});
 
@@ -165,7 +210,7 @@ describe('normalizeRefraktConfig', () => {
 		});
 
 		it('leaves flat-shape paths as-is for legacy cwd-relative behavior', () => {
-			const result = normalizeRefraktConfig(
+			const result = normalizeFlat(
 				{ contentDir: './content', theme: 't', target: 'svelte' },
 				{ configDir },
 			);

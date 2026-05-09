@@ -47,7 +47,7 @@ When set:
 - The MCP server (`@refrakt-md/mcp`) registers each plugin's commands as tools under `<namespace>.<name>`.
 - The list is unambiguous — transitive deps don't accidentally show up.
 
-The flat (legacy) shape supports `plugins` at the top level; the normalizer mirrors it into `sites.main.plugins`.
+The flat (legacy, deprecated in v0.12) shape supports `plugins` at the top level; the normalizer mirrors it into `sites.main.plugins`. New projects should put `plugins` inside the `site` (or `sites.<name>`) entry directly.
 
 ## Why declare `plugins` explicitly?
 

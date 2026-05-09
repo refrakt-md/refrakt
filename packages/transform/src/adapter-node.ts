@@ -24,7 +24,10 @@ export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normali
  *
  * Node.js only — not safe for browser bundles.
  */
-export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
+export function loadRefraktConfig(
+	configPath: string,
+	options: { suppressFlatShapeWarning?: boolean } = {},
+): NormalizedRefraktConfig {
 	const absPath = resolve(configPath);
 	if (!existsSync(absPath)) {
 		throw new Error(
@@ -38,7 +41,10 @@ export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
 	} catch (err) {
 		throw new Error(`Failed to parse refrakt.config.json at ${absPath}: ${(err as Error).message}`);
 	}
-	return normalizeRefraktConfig(raw, { configDir: dirname(absPath) });
+	return normalizeRefraktConfig(raw, {
+		configDir: dirname(absPath),
+		suppressFlatShapeWarning: options.suppressFlatShapeWarning,
+	});
 }
 
 /**
@@ -47,7 +53,10 @@ export function loadRefraktConfig(configPath: string): NormalizedRefraktConfig {
  * preserve the original shape on disk while still consulting the normalized
  * fields for logic.
  */
-export function loadRefraktConfigWithRaw(configPath: string): {
+export function loadRefraktConfigWithRaw(
+	configPath: string,
+	options: { suppressFlatShapeWarning?: boolean } = {},
+): {
 	raw: RefraktConfig;
 	normalized: NormalizedRefraktConfig;
 	configDir: string;
@@ -68,7 +77,10 @@ export function loadRefraktConfigWithRaw(configPath: string): {
 	const configDir = dirname(absPath);
 	return {
 		raw: raw as RefraktConfig,
-		normalized: normalizeRefraktConfig(raw, { configDir }),
+		normalized: normalizeRefraktConfig(raw, {
+			configDir,
+			suppressFlatShapeWarning: options.suppressFlatShapeWarning,
+		}),
 		configDir,
 	};
 }

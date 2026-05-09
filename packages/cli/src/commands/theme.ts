@@ -86,9 +86,19 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 		process.exit(1);
 	}
 
-	const previousTheme = configData.config.theme;
-	configData.config.theme = pluginName;
-	writeRefraktConfigFile(configData.path, configData.config);
+	// `theme install` only knows how to update one site's theme. For multi-site
+	// configs the user has to pick which site explicitly — out of scope for this
+	// command today.
+	const rawSites = (configData.raw.sites ?? {}) as Record<string, unknown>;
+	const siteNames = Object.keys(rawSites);
+	if (siteNames.length > 1) {
+		console.error(`Error: refrakt.config.json declares multiple sites (${siteNames.map((n) => `"${n}"`).join(', ')}).`);
+		console.error('`theme install` cannot pick a target automatically. Update the relevant site\'s "theme" field manually.');
+		process.exit(1);
+	}
+
+	const previousTheme = writeThemeIntoConfig(configData.raw, pluginName);
+	writeRefraktConfigFile(configData.path, configData.raw);
 
 	// 6. Validate the installed theme
 	const warnings: string[] = [];
@@ -139,7 +149,11 @@ export async function themeInfoCommand(_options: ThemeInfoOptions): Promise<void
 		process.exit(1);
 	}
 
-	const themeName = configData.config.theme;
+	const themeName = readThemeFromConfig(configData.raw);
+	if (!themeName) {
+		console.error('Error: refrakt.config.json does not declare a theme. Add one under "site.theme" or pick a site to inspect with --site.');
+		process.exit(1);
+	}
 	console.log(`Current theme: ${themeName}`);
 
 	// Try to resolve and show details
@@ -169,4 +183,43 @@ export async function themeInfoCommand(_options: ThemeInfoOptions): Promise<void
 	} catch {
 		// Best-effort info display
 	}
+}
+
+/** Read the theme name from a raw config, preferring the modern `site.theme`
+ *  / `sites[only].theme` over the legacy flat top-level `theme` field. */
+function readThemeFromConfig(raw: import('@refrakt-md/types').RefraktConfig): string | undefined {
+	if (raw.site?.theme) return raw.site.theme;
+	if (raw.sites) {
+		const entries = Object.entries(raw.sites);
+		if (entries.length === 1) {
+			return entries[0]![1].theme;
+		}
+		return undefined;
+	}
+	return raw.theme;
+}
+
+/** Mutate the raw config to set the theme on whichever shape it was authored
+ *  in. Returns the previous theme value. */
+function writeThemeIntoConfig(
+	raw: import('@refrakt-md/types').RefraktConfig,
+	pluginName: string,
+): string | undefined {
+	if (raw.site) {
+		const previous = raw.site.theme;
+		raw.site.theme = pluginName;
+		return previous;
+	}
+	if (raw.sites) {
+		const entries = Object.entries(raw.sites);
+		if (entries.length === 1) {
+			const [, site] = entries[0]!;
+			const previous = site.theme;
+			site.theme = pluginName;
+			return previous;
+		}
+	}
+	const previous = raw.theme;
+	raw.theme = pluginName;
+	return previous;
 }
