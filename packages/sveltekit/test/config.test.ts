@@ -74,7 +74,7 @@ describe('loadRefraktConfig', () => {
 		rmSync(dir, { recursive: true });
 	});
 
-	it('throws when target is missing', () => {
+	it('accepts a config without target (target is documentation-only as of v0.12)', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, JSON.stringify({
@@ -82,8 +82,25 @@ describe('loadRefraktConfig', () => {
 			theme: '@refrakt-md/lumina',
 		}));
 
+		const config = loadRefraktConfig(configPath);
+		expect(config.contentDir).toBe('./content');
+		expect(config.theme).toBe('@refrakt-md/lumina');
+		expect(config.target).toBeUndefined();
+
+		rmSync(dir, { recursive: true });
+	});
+
+	it('rejects a target that is present but empty', () => {
+		const dir = tmpDir();
+		const configPath = join(dir, 'refrakt.config.json');
+		writeFileSync(configPath, JSON.stringify({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			target: '',
+		}));
+
 		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"target" is required');
+			.toThrow('"target" must be a non-empty string when present');
 
 		rmSync(dir, { recursive: true });
 	});

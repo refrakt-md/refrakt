@@ -76,6 +76,7 @@ async function runConfigMigrate(args: string[]): Promise<void> {
 		process.exit(1);
 	}
 
+	const wasFlatShape = isFlatShape(raw);
 	let migrated = migrate(raw, opts);
 
 	// On flat → nested migration, populate `site.plugins` from installed plugins
@@ -97,6 +98,12 @@ async function runConfigMigrate(args: string[]): Promise<void> {
 
 	if (wasIdempotent) {
 		console.log(`No changes needed — ${opts.configPath} is already in the requested shape.`);
+		if (wasFlatShape) {
+			console.log(
+				'\nNote: this config still uses the legacy flat shape. Pass `--to nested` to upgrade.\n' +
+					'Flat shape is deprecated in v0.12 and will be removed in v1.0.',
+			);
+		}
 		return;
 	}
 
@@ -106,12 +113,33 @@ async function runConfigMigrate(args: string[]): Promise<void> {
 	if (opts.apply) {
 		writeFileSync(opts.configPath, newText);
 		console.log(`Updated ${opts.configPath}`);
+		if (wasFlatShape && opts.to === 'nested') {
+			console.log(
+				'\nUpgraded from legacy flat shape. The flat shape is deprecated in v0.12 and ' +
+					'will be removed in v1.0 — once this change is committed, the deprecation ' +
+					'warning will stop appearing in builds.',
+			);
+		}
 		return;
 	}
 
 	// Dry run — print a unified-style diff.
 	console.log(formatDiff(original, newText, opts.configPath));
 	console.log('\n(Dry run — pass --apply to write changes.)');
+	if (wasFlatShape && opts.to === 'nested') {
+		console.log(
+			'\nNote: the flat shape is deprecated in v0.12 and will be removed in v1.0. ' +
+				'Migrating now silences the deprecation warning emitted on each build.',
+		);
+	}
+}
+
+/** Heuristic: does this raw config use the legacy flat shape (top-level
+ *  `contentDir`/`theme`/`target`/etc. without a `site` or `sites` wrapper)? */
+function isFlatShape(raw: RefraktConfig): boolean {
+	if (raw.site !== undefined || raw.sites !== undefined) return false;
+	const r = raw as unknown as Record<string, unknown>;
+	return SITE_FIELDS.some((field) => r[field] !== undefined);
 }
 
 /** Apply the requested migration to the raw config. */
@@ -236,6 +264,11 @@ Examples:
   refrakt config migrate                                # Preview flat → singular
   refrakt config migrate --apply                        # Write the migration
   refrakt config migrate --to multi-site --name main --apply
+
+Note:
+  The legacy flat shape (top-level contentDir/theme/target without a "site"
+  wrapper) is deprecated in v0.12 and slated for removal in v1.0. Run
+  \`refrakt config migrate --apply\` to upgrade.
 `);
 }
 

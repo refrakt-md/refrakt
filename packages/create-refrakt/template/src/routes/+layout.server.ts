@@ -1,10 +1,10 @@
 import { loadContent } from '@refrakt-md/content';
-import { readFileSync } from 'node:fs';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import * as path from 'node:path';
-import type { RefraktConfig } from '@refrakt-md/types';
 
-const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
-const contentDir = path.resolve(config.contentDir);
+const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const { site } = resolveSite(config);
+const contentDir = path.resolve(site.contentDir);
 
 export async function load() {
 	const site = await loadContent(contentDir);

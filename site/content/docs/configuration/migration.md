@@ -7,16 +7,20 @@ description: Moving from the legacy flat-shape config to the unified nested form
 
 Pre-v0.11.0 projects used a flat-shape `refrakt.config.json` with site fields at the top level. v0.11.0 introduced a nested form (`site` or `sites`) that supports multi-site repos and centralizes plugins/plan/site configuration.
 
-**The flat shape continues to work indefinitely.** You don't have to migrate. The unified loader normalizes flat configs to `sites.default` internally, mirroring the top-level fields for backwards compatibility. Existing single-site projects keep building without changes.
+{% hint type="warning" %}
+**The flat shape is deprecated in v0.12.0 and slated for removal in v1.0.** It still loads, but the loader prints a one-time deprecation warning per process. Migrate before v1.0 to avoid a hard break.
+{% /hint %}
+
+The unified loader normalizes flat configs to `sites.main` internally, mirroring the top-level fields for backwards compatibility. Existing single-site projects keep building without changes — the warning is the only visible difference until v1.0 lands.
 
 ## When to migrate
 
-You should migrate when one of these is true:
+You should migrate as soon as practical. Migration is mechanical (`refrakt config migrate --apply`), the deprecation warning will keep nudging you on every build, and you definitely need to migrate when:
 
 - You want to add a second site to your repo (multi-site requires the `sites` form).
 - You want to declare an explicit `plugins` array.
 - You want a `plan` section alongside your site config.
-- You prefer the cleaner nested shape for new projects.
+- You're approaching the v1.0 release where flat shape will be removed entirely.
 
 ## The migrate command
 

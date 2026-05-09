@@ -48,7 +48,10 @@ export function detectPackageManager(cwd: string = process.cwd()): PackageManage
  *  Delegates to `@refrakt-md/transform/node` so the CLI and framework adapters
  *  share one normalization path. Returns both the raw input (for tools that
  *  need to round-trip the original shape) and the normalized form. */
-export function loadRefraktConfigFile(cwd: string = process.cwd()): {
+export function loadRefraktConfigFile(
+	cwd: string = process.cwd(),
+	options: { suppressFlatShapeWarning?: boolean } = {},
+): {
 	path: string;
 	config: NormalizedRefraktConfig;
 	raw: RefraktConfig;
@@ -57,7 +60,9 @@ export function loadRefraktConfigFile(cwd: string = process.cwd()): {
 	if (!existsSync(configPath)) {
 		throw new Error(`No refrakt.config.json found in ${cwd}`);
 	}
-	const { raw, normalized } = loadRefraktConfigWithRaw(configPath);
+	const { raw, normalized } = loadRefraktConfigWithRaw(configPath, {
+		suppressFlatShapeWarning: options.suppressFlatShapeWarning,
+	});
 	return { path: configPath, config: normalized, raw };
 }
 

@@ -24,6 +24,16 @@ import type { PlanConfig, RefraktConfig, SiteConfig } from '@refrakt-md/types';
  *  canonical `sites` map. Matches `create-refrakt` scaffold output. */
 export const DEFAULT_SITE_NAME = 'main';
 
+/** Tracks whether the flat-shape deprecation warning has already been emitted
+ *  for this process, so we only nag the user once even if the loader runs
+ *  many times during a build. */
+let flatShapeWarningEmitted = false;
+
+/** Reset the once-per-process flag — only useful for tests. */
+export function __resetFlatShapeWarningForTests(): void {
+	flatShapeWarningEmitted = false;
+}
+
 /** A normalized refrakt config — `sites` is always populated, and the legacy
  *  flat fields mirror the lone site when there is exactly one so existing
  *  adapter code continues to work without changes. */
@@ -40,6 +50,11 @@ export interface NormalizeOptions {
 	 *  they're interpreted file-relative rather than cwd-relative. Flat-shape
 	 *  paths are left as-is for legacy cwd-relative behavior. */
 	configDir?: string;
+	/** Suppress the once-per-process flat-shape deprecation warning. Used by
+	 *  tooling that intentionally inspects flat-shape configs (e.g., the
+	 *  migration command itself) so it doesn't double-warn on top of its own
+	 *  output. */
+	suppressFlatShapeWarning?: boolean;
 }
 
 /** Site fields that mirror to the top level of the config when there is exactly
@@ -114,7 +129,18 @@ export function normalizeRefraktConfig(
 		sites = { [DEFAULT_SITE_NAME]: site };
 	} else if (hasFlatSiteFields(input)) {
 		// Flat shape — leave paths as-is so legacy cwd-relative resolution
-		// continues to work in adapters.
+		// continues to work in adapters. Deprecated in v0.12.0; will be
+		// removed in v1.0. Emit a one-time warning to nudge migration.
+		if (!flatShapeWarningEmitted && !options.suppressFlatShapeWarning) {
+			flatShapeWarningEmitted = true;
+			const where = options.configDir ? ` (${options.configDir}/refrakt.config.json)` : '';
+			// eslint-disable-next-line no-console
+			console.warn(
+				`[refrakt] refrakt.config.json uses the legacy flat shape${where}. ` +
+					`Run \`refrakt config migrate\` to upgrade to the nested form. ` +
+					`Flat shape is deprecated in v0.12 and will be removed in v1.0.`,
+			);
+		}
 		sites = { [DEFAULT_SITE_NAME]: extractFlatSite(input) };
 	} else {
 		// Plan-only or empty config — sites map is empty but still defined.

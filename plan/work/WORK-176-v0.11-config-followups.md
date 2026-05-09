@@ -1,4 +1,4 @@
-{% work id="WORK-176" status="ready" priority="medium" complexity="moderate" tags="config, schema, types, docs" source="ADR-010" milestone="v0.12.0" %}
+{% work id="WORK-176" status="in-progress" priority="medium" complexity="moderate" tags="config, schema, types, docs" source="ADR-010" milestone="v0.12.0" %}
 
 # v0.11.0 config follow-ups
 
@@ -8,26 +8,26 @@ A handful of concerns surfaced during the v0.11.0 design review that we delibera
 
 ### Schema URL versioning
 
-- [ ] Publish the JSON Schema at a versioned URL: `https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`. Keep the unversioned `https://refrakt.md/refrakt.config.schema.json` as a "latest" alias.
-- [ ] `create-refrakt` scaffolds reference the versioned URL matching the package version at scaffold time, so old projects don't get false errors when the schema gains fields.
-- [ ] Document the versioning policy in `site/content/docs/configuration/schema.md`: pin a specific version for stable validation, or use the unversioned alias to track latest.
+- [x] Publish the JSON Schema at a versioned URL: `https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`. Keep the unversioned `https://refrakt.md/refrakt.config.schema.json` as a "latest" alias.
+- [x] `create-refrakt` scaffolds reference the versioned URL matching the package version at scaffold time, so old projects don't get false errors when the schema gains fields.
+- [x] Document the versioning policy in `site/content/docs/configuration/schema.md`: pin a specific version for stable validation, or use the unversioned alias to track latest.
 
 ### Mirroring footgun (legacy top-level field types)
 
-- [ ] Mark `contentDir`, `theme`, `target` on `RefraktConfig` as optional in `@refrakt-md/types`. They're only required for flat-shape and single-site configs, and currently they're typed as required strings — which papers over the multi-site case where they're undefined.
-- [ ] Audit adapter code that reads `config.contentDir` etc. and either add null checks or migrate to `resolveSite(config).site.contentDir` per WORK-166's pattern.
-- [ ] Update tests that asserted these fields as definite to handle the optional case.
+- [x] Mark `contentDir`, `theme`, `target` on `RefraktConfig` as optional in `@refrakt-md/types`. They're only required for flat-shape and single-site configs, and currently they're typed as required strings — which papers over the multi-site case where they're undefined.
+- [x] Audit adapter code that reads `config.contentDir` etc. and either add null checks or migrate to `resolveSite(config).site.contentDir` per WORK-166's pattern.
+- [x] Update tests that asserted these fields as definite to handle the optional case.
 
 ### Three input shapes — deprecation timeline
 
-- [ ] Decide on a deprecation path for the flat shape. Suggested: deprecate in v0.12 release notes (no removal), pull flat-shape examples out of new docs (overview keeps a "legacy" callout), aim for removal in v1.0.
-- [ ] Add a runtime warning (one-time per process) when the loader sees a flat-shape config: "refrakt.config.json uses the legacy flat shape. Run `refrakt config migrate` to upgrade. Flat shape will be removed in v1.0."
-- [ ] Update the migration command's output to mention the planned removal.
+- [x] Decide on a deprecation path for the flat shape. Suggested: deprecate in v0.12 release notes (no removal), pull flat-shape examples out of new docs (overview keeps a "legacy" callout), aim for removal in v1.0.
+- [x] Add a runtime warning (one-time per process) when the loader sees a flat-shape config: "refrakt.config.json uses the legacy flat shape. Run `refrakt config migrate` to upgrade. Flat shape will be removed in v1.0."
+- [x] Update the migration command's output to mention the planned removal.
 
 ### `target` field review
 
-- [ ] Audit which adapters actually validate or use `site.target`. Current finding: SvelteKit doesn't validate it; Astro/Nuxt/Next/Eleventy don't either. The field is increasingly vestigial.
-- [ ] Decide: deprecate the field entirely, or repurpose it as a documentation hint (which adapter this site is meant for). If deprecated, follow the same v0.12 → v1.0 timeline as the flat shape.
+- [x] Audit which adapters actually validate or use `site.target`. Current finding: SvelteKit doesn't validate it; Astro/Nuxt/Next/Eleventy don't either. The field is increasingly vestigial.
+- [x] Decide: deprecate the field entirely, or repurpose it as a documentation hint (which adapter this site is meant for). If deprecated, follow the same v0.12 → v1.0 timeline as the flat shape.
 
 ## Approach
 

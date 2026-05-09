@@ -86,7 +86,7 @@ describe('scaffold', () => {
 		expect(config.sites.main.theme).toBe('@my-org/theme-custom');
 		expect(config.sites.main.contentDir).toBe('./content');
 		expect(config.sites.main.target).toBe('svelte');
-		expect(config.$schema).toBeDefined();
+		expect(config.$schema).toMatch(/^https:\/\/refrakt\.md\/schemas\/v\d+\.\d+\/refrakt\.config\.schema\.json$/);
 	});
 
 	it('generates dependency versions matching the package version', async () => {
