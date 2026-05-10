@@ -4,7 +4,8 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { Plugin, PipelineWarning, AggregatedData } from '@refrakt-md/types';
+import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
+import { resolveSecurityPolicy } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
@@ -90,6 +91,10 @@ function transformContent(
  *
  * When `sandboxExamplesDir` is provided, sandbox runes with `src` attributes
  * can load code from external files in that directory.
+ *
+ * `securityPolicy` controls how runes treat untrusted author content. Defaults
+ * to `'trusted'` (current behaviour). Set `'strict'` for hosted-product use
+ * to strip scripts and harden the sandbox iframe.
  */
 export async function loadContent(
   dirPath: string,
@@ -99,7 +104,9 @@ export async function loadContent(
   packages?: Plugin[],
   sandboxExamplesDir?: string,
   variables?: Record<string, unknown>,
+  securityPolicy?: SecurityPolicy,
 ): Promise<Site> {
+  const resolvedSecurity = resolveSecurityPolicy(securityPolicy);
   const tree = await ContentTree.fromDirectory(dirPath);
   const router = new Router(basePath);
   const pages: SitePage[] = [];
@@ -144,6 +151,7 @@ export async function loadContent(
       __sandboxListDir: sandboxListDir,
       __sandboxDirExists: sandboxDirExists,
       __sandboxExamplesDir: resolvedExamplesDir,
+      __securityPolicy: resolvedSecurity,
     };
     const { renderable, headings } = transformContent(content, route.url, icons, additionalTags, contentVariables, parsedPartials);
     const seo = extractSeo(renderable, frontmatter, route.url);

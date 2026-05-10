@@ -149,6 +149,8 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					communityTags,
 					mergedPackages,
 					sandboxExamplesDir,
+					undefined,
+					options.security,
 				);
 
 				const { pipelineStats: stats } = site;

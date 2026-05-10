@@ -736,6 +736,9 @@ export const coreConfig: ThemeConfig = {
 				const label = readMeta(node, 'label') || '';
 				const height = readMeta(node, 'height') || 'auto';
 				const designTokens = readMeta(node, 'design-tokens') || '';
+				const securityMode = readMeta(node, 'security-mode') || 'trusted';
+				const allowJs = readMeta(node, 'allow-js') || 'true';
+				const sandboxOrigin = readMeta(node, 'sandbox-origin') || '';
 
 				// Keep non-meta children (fallback pre) and extract source panels
 				const fallbackChildren: typeof node.children = [];
@@ -776,6 +779,9 @@ export const coreConfig: ThemeConfig = {
 						'data-height': height,
 						...(designTokens ? { 'data-design-tokens': designTokens } : {}),
 						...(sourcePanelOrigins.length > 0 ? { 'data-source-origins': sourcePanelOrigins.join('\n') } : {}),
+						'data-security-mode': securityMode,
+						'data-allow-js': allowJs,
+						...(sandboxOrigin ? { 'data-sandbox-origin': sandboxOrigin } : {}),
 					},
 					children,
 				};

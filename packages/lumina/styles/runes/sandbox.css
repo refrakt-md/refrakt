@@ -20,3 +20,20 @@
 	margin: 0;
 	border-radius: 0;
 }
+
+/* Untrusted-mode affordance: persistent banner the iframe can't suppress.
+   Rendered by the RfSandbox custom element when `data-security-mode="untrusted"`. */
+.rf-sandbox[data-security-mode="untrusted"] {
+	border: 1px solid var(--rf-color-warning, #b45309);
+}
+
+.rf-sandbox__untrusted-banner {
+	display: block;
+	padding: 0.5rem 0.75rem;
+	font-size: 0.8125rem;
+	line-height: 1.25rem;
+	font-weight: 600;
+	color: var(--rf-color-warning-fg, #78350f);
+	background: var(--rf-color-warning-bg, #fef3c7);
+	border-bottom: 1px solid var(--rf-color-warning, #b45309);
+}
