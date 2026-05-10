@@ -1,7 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema } from '../lib/index.js';
+import type { ResolvedSecurityPolicy } from '@refrakt-md/types';
+import { createComponentRenderable, createContentModelSchema, sanitizeSandboxContent } from '../lib/index.js';
 import { assembleFromDirectory, mergeContent, type SandboxSourcePanel } from '../sandbox-sources.js';
 
 /** Strip common leading whitespace from all lines. */
@@ -113,16 +114,29 @@ export const sandbox = createContentModelSchema({
 			sourcePanels = extractDataSourcePanels(rawContent);
 		}
 
-		const contentMeta = new Tag('meta', { content: rawContent });
+		// Apply security policy: in `untrusted` + `allowJs:false` mode, strip
+		// scripts/event-handlers/javascript-urls/dangerous-tags from rawContent
+		// before it ships to the iframe. Source panels keep the original code
+		// (visible code panels are inert) — the sanitised version is what runs.
+		const policy = (config.variables?.__securityPolicy as ResolvedSecurityPolicy | undefined)
+			?? { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
+		const sanitisedContent = sanitizeSandboxContent(rawContent, policy);
+
+		const contentMeta = new Tag('meta', { content: sanitisedContent });
+		const securityModeMeta = new Tag('meta', { content: policy.trust });
+		const allowJsMeta = new Tag('meta', { content: policy.allowJs ? 'true' : 'false' });
+		const sandboxOriginMeta = policy.sandboxOrigin ? new Tag('meta', { content: policy.sandboxOrigin }) : undefined;
 		const frameworkMeta = new Tag('meta', { content: framework });
 		const dependenciesMeta = new Tag('meta', { content: dependencies });
 		const labelMeta = label ? new Tag('meta', { content: label }) : undefined;
 		const heightMeta = new Tag('meta', { content: height != null ? String(height) : 'auto' });
 		const contextMeta = new Tag('meta', { content: context });
 
-		// Static fallback: render content as a pre/code block for SSR
-		const fallbackPre = rawContent ? new Tag('pre', { 'data-language': 'html' }, [
-			new Tag('code', { 'data-language': 'html' }, [rawContent])
+		// Static fallback: render content as a pre/code block for SSR.
+		// Use the sanitised form so the SSR fallback never serializes
+		// would-be-executable content into the page.
+		const fallbackPre = sanitisedContent ? new Tag('pre', { 'data-language': 'html' }, [
+			new Tag('code', { 'data-language': 'html' }, [sanitisedContent])
 		]) : undefined;
 
 		// Source panels for server-side syntax highlighting
@@ -144,6 +158,9 @@ export const sandbox = createContentModelSchema({
 			...(labelMeta ? [labelMeta] : []),
 			heightMeta,
 			contextMeta,
+			securityModeMeta,
+			allowJsMeta,
+			...(sandboxOriginMeta ? [sandboxOriginMeta] : []),
 			...(fallbackPre ? [fallbackPre] : []),
 			...panelNodes,
 		];
@@ -157,6 +174,9 @@ export const sandbox = createContentModelSchema({
 				...(labelMeta ? { label: labelMeta } : {}),
 				height: heightMeta,
 				context: contextMeta,
+				securityMode: securityModeMeta,
+				allowJs: allowJsMeta,
+				...(sandboxOriginMeta ? { sandboxOrigin: sandboxOriginMeta } : {}),
 			},
 			children: childNodes,
 		});

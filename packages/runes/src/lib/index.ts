@@ -8,6 +8,7 @@ import { schemaBasePresets } from '../attribute-presets.js';
 export { createComponentRenderable } from './component.js';
 export type { InlineTransformResult } from './component.js';
 export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './resolver.js';
+export { sanitizeSandboxContent } from './sanitize.js';
 
 /**
  * Maps a Markdoc Schema to its content model declaration.

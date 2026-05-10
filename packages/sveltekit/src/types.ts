@@ -1,3 +1,5 @@
+import type { SecurityPolicy } from '@refrakt-md/types';
+
 /** Options passed to the refrakt() plugin factory */
 export interface RefractPluginOptions {
 	/** Path to refrakt.config.json (default: './refrakt.config.json') */
@@ -13,4 +15,9 @@ export interface RefractPluginOptions {
 	 * Use Vite `define` globals (e.g., `__REFRAKT_VERSION__`) as values.
 	 */
 	variables?: Record<string, string>;
+	/** Security policy for untrusted author content. Defaults to `'trusted'`
+	 *  (current behaviour — no sanitisation). Set `'strict'` for hosted-product
+	 *  use to strip author scripts and harden the sandbox iframe. See the
+	 *  `SecurityPolicy` type for the full shape. */
+	security?: SecurityPolicy;
 }

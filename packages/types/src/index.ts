@@ -81,3 +81,7 @@ export type {
 	McpHandlerContext,
 	JSONSchema7,
 } from './cli-plugin.js';
+
+// Security policy
+export type { SecurityPolicy, ResolvedSecurityPolicy } from './security.js';
+export { resolveSecurityPolicy } from './security.js';

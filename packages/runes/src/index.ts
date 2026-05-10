@@ -47,7 +47,7 @@ import { defineRune, runeTagMap } from './rune.js';
 export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
 export { RenderableNodeCursor } from './lib/renderable.js';
-export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels } from './lib/index.js';
+export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels, sanitizeSandboxContent } from './lib/index.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';

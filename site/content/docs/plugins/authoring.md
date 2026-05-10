@@ -192,6 +192,35 @@ transform(resolved, attrs, config) {
 }
 ```
 
+### Honouring the security policy
+
+Plugins that surface raw author HTML/CSS/JS to the client (custom-element runes, embed-style runes, anything that ends up inside an `iframe[srcdoc]` or `{@html}`) MUST consult the security policy before shipping content downstream. Read it from `config.variables.__securityPolicy`:
+
+```typescript
+import { sanitizeSandboxContent } from '@refrakt-md/runes';
+import type { ResolvedSecurityPolicy } from '@refrakt-md/types';
+
+transform(resolved, attrs, config) {
+  const policy = (config.variables?.__securityPolicy as ResolvedSecurityPolicy | undefined)
+    ?? { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
+
+  const safe = sanitizeSandboxContent(rawAuthorHtml, policy);
+  // ...emit `safe` on a meta tag instead of rawAuthorHtml; emit a
+  // `securityMode` meta so your postTransform / client element can flip
+  // the iframe sandbox attribute or restrict CSP accordingly.
+}
+```
+
+`ResolvedSecurityPolicy` (exported from `@refrakt-md/types`) has the canonical shape:
+
+```typescript
+{ trust: 'trusted' | 'untrusted'; allowJs: boolean; sandboxOrigin: string | undefined }
+```
+
+Treat `trusted` as the default when the variable is absent. In `untrusted` mode with `allowJs: false`, run the shared `sanitizeSandboxContent` helper — it strips `<script>`, on-handlers, `javascript:` URLs, and `<iframe>`/`<object>`/`<embed>`. When `allowJs` is true the host has accepted residual risk and your rune should still propagate `securityMode`/`sandboxOrigin` so the client element can drop `allow-same-origin`, inject meta-CSP, or load from a separate origin.
+
+The policy flows through the same `config.variables` slot as `__sandboxReadFile`/`__sandboxExamplesDir` — there is no new core hook. See `site/content/docs/security/` for the full threat model and tier breakdown.
+
 ## Theme Config
 
 The `theme` field contributes identity transform config and icons for your runes:
