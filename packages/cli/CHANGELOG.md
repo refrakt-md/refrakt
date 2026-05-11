@@ -1,5 +1,55 @@
 # @refrakt-md/cli
 
+## 0.12.0
+
+### Minor Changes
+
+- 7471ad8: Rename "rune packages" to "plugins" and unify with CLI plugins. Plugins now contribute runes, layouts, theme config, pipeline hooks, behaviors, **and** CLI commands through a single npm package.
+
+  **Breaking changes:**
+
+  - `RunePackage` interface → `Plugin`
+  - `RunePackageEntry` → `PluginRune`
+  - `RunePackageAttribute` → `PluginAttribute`
+  - `RunePackageThemeConfig` → `PluginThemeConfig`
+  - `PackagePipelineHooks` → `PluginPipelineHooks`
+  - `loadRunePackage()` → `loadPlugin()`
+  - `mergePackages()` → `mergePlugins()`
+  - `discoverPackageFixtures()` → `discoverPluginFixtures()`
+  - `LoadedPackage` → `LoadedPlugin`, `MergedPackageResult` → `MergedPluginResult`
+  - `RuneProvenance.packageName` → `pluginName`; `source: 'package'` → `source: 'plugin'`
+  - `RuneInfo.package` → `RuneInfo.plugin`; `SerializedRune.package` → `plugin`
+  - Config field `site.packages[]` → `site.plugins[]`. The deprecated top-level shorthand `config.packages[]` is removed; use the existing `config.plugins[]` (which now covers both rune contributions and CLI commands).
+  - `assembleThemeConfig` inputs renamed: `packageRunes` → `pluginRunes`, `packageIcons` → `pluginIcons`, `packageBackgrounds` → `pluginBackgrounds`.
+  - `MergedPluginResult.packages` → `MergedPluginResult.plugins`
+  - CLI: `refrakt package validate` removed; use `refrakt plugins validate` instead.
+  - CLI: `refrakt reference list --package` flag is now `--plugin` (the old name still works as an alias).
+  - Repo layout: `runes/{marketing,docs,…,plan}/` workspace globs moved to `plugins/{…}/`. npm package names (`@refrakt-md/marketing` etc.) are unchanged.
+
+  **Migration:**
+
+  - Rename `RunePackage` to `Plugin` and `loadRunePackage`/`mergePackages` to `loadPlugin`/`mergePlugins` in your code.
+  - In `refrakt.config.json`, rename per-site `"packages": [...]` to `"plugins": [...]`. If you had a top-level `"packages"` shorthand under flat shape, move it to `"plugins"`.
+  - Replace any calls to `refrakt package validate` with `refrakt plugins validate`.
+
+- 7537459: v0.11.0 config follow-ups (WORK-176):
+
+  - **Schema URL versioning.** The JSON Schema is now published at a versioned URL (`https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`) with the unversioned URL kept as a "latest" alias. `create-refrakt` scaffolds derive the versioned URL from the package version at scaffold time so old projects don't get false validation errors when later releases add fields. Versioning policy documented in `site/content/docs/configuration/schema.md`.
+  - **Optional mirrored fields.** `RefraktConfig.contentDir`, `theme`, and `target` are now typed as optional (`?:`) — they were strictly required strings before, which papered over the multi-site case where they're undefined. Adapter code that read these directly (`refrakt theme install`/`info`, `refrakt edit`, the Astro/HTML/SvelteKit scaffold templates) now goes through `resolveSite(config).site.contentDir` and friends.
+  - **Flat-shape deprecation.** Loading a flat-shape `refrakt.config.json` (top-level `contentDir`/`theme`/`target` without a `site` wrapper) now emits a one-time deprecation warning per process. `refrakt config migrate` mentions the v1.0 removal target in its output. Docs (`overview.md`, `migration.md`, `sites.md`, `plugins.md`) replace flat-shape examples with the nested form and add `v0.12 → v1.0` deprecation callouts.
+  - **`target` field downgraded to documentation-only.** No adapter actually validates or consumes `site.target`, so `SiteConfig.target` is now optional and the SvelteKit validator no longer requires it on flat-shape configs. The schema marks `target` `deprecated: true` with a note that it's slated for removal in v1.0.
+
+### Patch Changes
+
+- Updated dependencies [799583f]
+- Updated dependencies [7471ad8]
+- Updated dependencies [7537459]
+- Updated dependencies [a733ec6]
+  - @refrakt-md/transform@0.12.0
+  - @refrakt-md/runes@0.12.0
+  - @refrakt-md/editor@0.12.0
+  - @refrakt-md/ai@0.12.0
+
 ## 0.11.3
 
 ### Patch Changes
