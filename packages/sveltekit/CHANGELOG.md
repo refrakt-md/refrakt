@@ -1,5 +1,73 @@
 # @refrakt-md/sveltekit
 
+## 0.12.0
+
+### Minor Changes
+
+- 7471ad8: Rename "rune packages" to "plugins" and unify with CLI plugins. Plugins now contribute runes, layouts, theme config, pipeline hooks, behaviors, **and** CLI commands through a single npm package.
+
+  **Breaking changes:**
+
+  - `RunePackage` interface → `Plugin`
+  - `RunePackageEntry` → `PluginRune`
+  - `RunePackageAttribute` → `PluginAttribute`
+  - `RunePackageThemeConfig` → `PluginThemeConfig`
+  - `PackagePipelineHooks` → `PluginPipelineHooks`
+  - `loadRunePackage()` → `loadPlugin()`
+  - `mergePackages()` → `mergePlugins()`
+  - `discoverPackageFixtures()` → `discoverPluginFixtures()`
+  - `LoadedPackage` → `LoadedPlugin`, `MergedPackageResult` → `MergedPluginResult`
+  - `RuneProvenance.packageName` → `pluginName`; `source: 'package'` → `source: 'plugin'`
+  - `RuneInfo.package` → `RuneInfo.plugin`; `SerializedRune.package` → `plugin`
+  - Config field `site.packages[]` → `site.plugins[]`. The deprecated top-level shorthand `config.packages[]` is removed; use the existing `config.plugins[]` (which now covers both rune contributions and CLI commands).
+  - `assembleThemeConfig` inputs renamed: `packageRunes` → `pluginRunes`, `packageIcons` → `pluginIcons`, `packageBackgrounds` → `pluginBackgrounds`.
+  - `MergedPluginResult.packages` → `MergedPluginResult.plugins`
+  - CLI: `refrakt package validate` removed; use `refrakt plugins validate` instead.
+  - CLI: `refrakt reference list --package` flag is now `--plugin` (the old name still works as an alias).
+  - Repo layout: `runes/{marketing,docs,…,plan}/` workspace globs moved to `plugins/{…}/`. npm package names (`@refrakt-md/marketing` etc.) are unchanged.
+
+  **Migration:**
+
+  - Rename `RunePackage` to `Plugin` and `loadRunePackage`/`mergePackages` to `loadPlugin`/`mergePlugins` in your code.
+  - In `refrakt.config.json`, rename per-site `"packages": [...]` to `"plugins": [...]`. If you had a top-level `"packages"` shorthand under flat shape, move it to `"plugins"`.
+  - Replace any calls to `refrakt package validate` with `refrakt plugins validate`.
+
+- 7537459: v0.11.0 config follow-ups (WORK-176):
+
+  - **Schema URL versioning.** The JSON Schema is now published at a versioned URL (`https://refrakt.md/schemas/v0.11/refrakt.config.schema.json`) with the unversioned URL kept as a "latest" alias. `create-refrakt` scaffolds derive the versioned URL from the package version at scaffold time so old projects don't get false validation errors when later releases add fields. Versioning policy documented in `site/content/docs/configuration/schema.md`.
+  - **Optional mirrored fields.** `RefraktConfig.contentDir`, `theme`, and `target` are now typed as optional (`?:`) — they were strictly required strings before, which papered over the multi-site case where they're undefined. Adapter code that read these directly (`refrakt theme install`/`info`, `refrakt edit`, the Astro/HTML/SvelteKit scaffold templates) now goes through `resolveSite(config).site.contentDir` and friends.
+  - **Flat-shape deprecation.** Loading a flat-shape `refrakt.config.json` (top-level `contentDir`/`theme`/`target` without a `site` wrapper) now emits a one-time deprecation warning per process. `refrakt config migrate` mentions the v1.0 removal target in its output. Docs (`overview.md`, `migration.md`, `sites.md`, `plugins.md`) replace flat-shape examples with the nested form and add `v0.12 → v1.0` deprecation callouts.
+  - **`target` field downgraded to documentation-only.** No adapter actually validates or consumes `site.target`, so `SiteConfig.target` is now optional and the SvelteKit validator no longer requires it on flat-shape configs. The schema marks `target` `deprecated: true` with a note that it's slated for removal in v1.0.
+
+- a733ec6: Add an opt-in `SecurityPolicy` for the transform pipeline so hosted products can render untrusted author content with layered defences (WORK-177).
+
+  The policy ships with three tiers, each adding a layer on top of the previous one:
+
+  - **Tier 1 — `'strict'`**: in-package, no JS. The schema transform runs the new `sanitizeSandboxContent` helper which strips `<script>` blocks, `on*` event handlers, `javascript:` URLs, and `<iframe>`/`<object>`/`<embed>` tags. The client iframe is built with `sandbox="allow-scripts"` only (drops `allow-same-origin`), and a non-removable visual banner is rendered above the iframe. Only tier with a hard guarantee from the package alone.
+  - **Tier 2 — `{ trust: 'untrusted', allowJs: true }`**: srcdoc + meta-CSP. Author scripts run, but the iframe gets a unique opaque origin and the srcdoc head is prefixed with a meta-CSP that closes `connect-src`, `form-action`, `img-src` (data + permitted CDN origins only), and gates `script-src`/`style-src` to `'unsafe-inline'` plus the framework preset and declared dependency origins. Closes data exfiltration, off-site form posts, tracking pixels, and external script loads. Does not close fingerprinting, cryptojacking, or browser-exploit chains.
+  - **Tier 3 — `{ ..., sandboxOrigin: 'https://sandbox.example.com' }`**: separate-origin escape hatch. The iframe loads from the host endpoint instead of `srcdoc`, content is delivered via `postMessage` after a `rf-sandbox-ready` handshake, and the host serves real CSP response headers. Required if you need `frame-ancestors` / `report-uri`. Endpoint contract documented in `site/content/docs/security/`.
+
+  The default remains `'trusted'` — no behaviour change for self-hosted users. The policy flows through `config.variables.__securityPolicy` so plugins authoring risky runes can honour it from their own schema transforms; see the new "Honouring the security policy" section in `site/content/docs/plugins/authoring.md` for the contract.
+
+  API:
+
+  ```ts
+  import type { SecurityPolicy } from "@refrakt-md/types";
+
+  // SvelteKit Vite plugin
+  refrakt({ security: "strict" });
+
+  // loadContent() positional arg
+  loadContent(dir, "/", icons, tags, plugins, sandboxDir, vars, "strict");
+  ```
+
+### Patch Changes
+
+- Updated dependencies [7471ad8]
+- Updated dependencies [7537459]
+- Updated dependencies [a733ec6]
+  - @refrakt-md/types@0.12.0
+
 ## 0.11.3
 
 ### Patch Changes
