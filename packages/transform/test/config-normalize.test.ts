@@ -83,6 +83,116 @@ describe('normalizeRefraktConfig', () => {
 		});
 	});
 
+	describe('legacy `packages` field migration (v0.12)', () => {
+		beforeEach(() => {
+			__resetFlatShapeWarningForTests();
+		});
+
+		it('rewrites site.packages → site.plugins', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const result = normalizeRefraktConfig({
+				sites: {
+					main: {
+						contentDir: './content',
+						theme: 't',
+						target: 'svelte',
+						packages: ['@refrakt-md/marketing', '@refrakt-md/docs'],
+					},
+				},
+			});
+			expect(result.sites.main!.plugins).toEqual(['@refrakt-md/marketing', '@refrakt-md/docs']);
+			expect((result.sites.main as unknown as { packages?: unknown }).packages).toBeUndefined();
+			expect(warnSpy).toHaveBeenCalledTimes(1);
+			expect(warnSpy.mock.calls[0]![0]).toMatch(/legacy `packages` field/);
+			warnSpy.mockRestore();
+		});
+
+		it('rewrites singular site.packages → site.plugins', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const result = normalizeRefraktConfig({
+				site: {
+					contentDir: './content',
+					theme: 't',
+					target: 'svelte',
+					packages: ['@refrakt-md/marketing'],
+				},
+			});
+			expect(result.sites.main!.plugins).toEqual(['@refrakt-md/marketing']);
+			expect(warnSpy).toHaveBeenCalled();
+			warnSpy.mockRestore();
+		});
+
+		it('rewrites top-level packages (flat shape) → plugins', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const result = normalizeRefraktConfig(
+				{
+					contentDir: './content',
+					theme: 't',
+					target: 'svelte',
+					packages: ['@refrakt-md/marketing'],
+				},
+				{ suppressFlatShapeWarning: true },
+			);
+			expect(result.sites.main!.plugins).toEqual(['@refrakt-md/marketing']);
+			expect(warnSpy).toHaveBeenCalledTimes(1);
+			expect(warnSpy.mock.calls[0]![0]).toMatch(/legacy `packages` field/);
+			warnSpy.mockRestore();
+		});
+
+		it('unions packages and plugins when both are set (plugins entries first)', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const result = normalizeRefraktConfig({
+				sites: {
+					main: {
+						contentDir: './content',
+						theme: 't',
+						target: 'svelte',
+						plugins: ['@refrakt-md/plan'],
+						packages: ['@refrakt-md/marketing', '@refrakt-md/plan'],
+					},
+				},
+			});
+			expect(result.sites.main!.plugins).toEqual(['@refrakt-md/plan', '@refrakt-md/marketing']);
+			expect(warnSpy).toHaveBeenCalled();
+			warnSpy.mockRestore();
+		});
+
+		it('does not warn or migrate when no packages field is present', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			normalizeRefraktConfig({
+				sites: {
+					main: {
+						contentDir: './content',
+						theme: 't',
+						target: 'svelte',
+						plugins: ['@refrakt-md/marketing'],
+					},
+				},
+			});
+			expect(warnSpy).not.toHaveBeenCalled();
+			warnSpy.mockRestore();
+		});
+
+		it('respects suppressLegacyPackagesWarning', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			normalizeRefraktConfig(
+				{
+					sites: {
+						main: {
+							contentDir: './content',
+							theme: 't',
+							target: 'svelte',
+							packages: ['@refrakt-md/marketing'],
+						},
+					},
+				},
+				{ suppressLegacyPackagesWarning: true },
+			);
+			expect(warnSpy).not.toHaveBeenCalled();
+			warnSpy.mockRestore();
+		});
+	});
+
 	describe('singular site shape', () => {
 		it('promotes site to sites.main', () => {
 			const raw = {

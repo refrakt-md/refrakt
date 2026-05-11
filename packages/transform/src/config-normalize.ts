@@ -29,9 +29,15 @@ export const DEFAULT_SITE_NAME = 'main';
  *  many times during a build. */
 let flatShapeWarningEmitted = false;
 
-/** Reset the once-per-process flag — only useful for tests. */
+/** Tracks whether the legacy `packages` field deprecation warning has already
+ *  been emitted for this process. Renamed to `plugins` in v0.12.0; the old
+ *  field is auto-migrated with a warning until v1.0. */
+let legacyPackagesWarningEmitted = false;
+
+/** Reset the once-per-process flags — only useful for tests. */
 export function __resetFlatShapeWarningForTests(): void {
 	flatShapeWarningEmitted = false;
+	legacyPackagesWarningEmitted = false;
 }
 
 /** A normalized refrakt config — `sites` is always populated, and the legacy
@@ -55,6 +61,8 @@ export interface NormalizeOptions {
 	 *  migration command itself) so it doesn't double-warn on top of its own
 	 *  output. */
 	suppressFlatShapeWarning?: boolean;
+	/** Suppress the once-per-process legacy-`packages`-field deprecation warning. */
+	suppressLegacyPackagesWarning?: boolean;
 }
 
 /** Site fields that mirror to the top level of the config when there is exactly
@@ -91,6 +99,21 @@ export function normalizeRefraktConfig(
 ): NormalizedRefraktConfig {
 	if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
 		throw new Error('refrakt.config.json must be a JSON object');
+	}
+
+	// Auto-migrate the legacy `packages` field (renamed to `plugins` in v0.12.0).
+	// Handles top-level (flat shape) and per-site occurrences. Emits a one-time
+	// deprecation warning so users learn to rename, but keeps the site building.
+	const migratedFromLegacyPackages = renameLegacyPackagesField(raw as Record<string, unknown>);
+	if (migratedFromLegacyPackages && !legacyPackagesWarningEmitted && !options.suppressLegacyPackagesWarning) {
+		legacyPackagesWarningEmitted = true;
+		const where = options.configDir ? ` (${options.configDir}/refrakt.config.json)` : '';
+		// eslint-disable-next-line no-console
+		console.warn(
+			`[refrakt] refrakt.config.json uses the legacy \`packages\` field${where}. ` +
+				`Rename to \`plugins\` — the field was renamed in v0.12.0 when rune packages and ` +
+				`CLI plugins were unified. The legacy field will be removed in v1.0.`,
+		);
 	}
 
 	const input = raw as RefraktConfig;
@@ -170,6 +193,50 @@ export function normalizeRefraktConfig(
 /** True if any flat-shape site field is present at the top level. */
 function hasFlatSiteFields(input: RefraktConfig): boolean {
 	return SITE_FIELDS.some((field) => input[field] !== undefined);
+}
+
+/** Rewrite legacy `packages` fields to `plugins` in-place across every level
+ *  where they can appear (top-level, `site.*`, `sites.X.*`). Returns true if
+ *  any rewrite happened, so the caller can warn the user.
+ *
+ *  When both `packages` and `plugins` are set on the same object, the values
+ *  are unioned (plugins entries first, then any packages entries not already
+ *  present) and the legacy field is dropped. */
+function renameLegacyPackagesField(raw: Record<string, unknown>): boolean {
+	let migrated = false;
+
+	const rewriteOne = (obj: Record<string, unknown>): void => {
+		if (!Array.isArray(obj.packages)) return;
+		const legacy = obj.packages as unknown[];
+		const existing = Array.isArray(obj.plugins) ? (obj.plugins as unknown[]) : [];
+		const seen = new Set(existing);
+		const merged = [...existing];
+		for (const entry of legacy) {
+			if (!seen.has(entry)) {
+				seen.add(entry);
+				merged.push(entry);
+			}
+		}
+		obj.plugins = merged;
+		delete obj.packages;
+		migrated = true;
+	};
+
+	rewriteOne(raw);
+
+	if (raw.site && typeof raw.site === 'object' && !Array.isArray(raw.site)) {
+		rewriteOne(raw.site as Record<string, unknown>);
+	}
+
+	if (raw.sites && typeof raw.sites === 'object' && !Array.isArray(raw.sites)) {
+		for (const site of Object.values(raw.sites as Record<string, unknown>)) {
+			if (site && typeof site === 'object' && !Array.isArray(site)) {
+				rewriteOne(site as Record<string, unknown>);
+			}
+		}
+	}
+
+	return migrated;
 }
 
 /** Resolve site-scoped path fields against the config file's directory.

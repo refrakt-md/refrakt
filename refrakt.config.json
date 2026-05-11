@@ -3,7 +3,6 @@
 	"plan": {
 		"dir": "plan"
 	},
-	"plugins": ["@refrakt-md/plan"],
 	"sites": {
 		"main": {
 			"contentDir": "./site/content",
@@ -12,7 +11,7 @@
 			"baseUrl": "https://refrakt.md",
 			"siteName": "refrakt.md",
 			"logo": "/favicon-192.png",
-			"packages": [
+			"plugins": [
 				"@refrakt-md/marketing",
 				"@refrakt-md/docs",
 				"@refrakt-md/storytelling",
