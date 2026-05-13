@@ -3,11 +3,11 @@ export { parseFrontmatter, serializeFrontmatter, type Frontmatter } from './fron
 export { Router, type Route } from './router.js';
 export { resolveLayouts, type ResolvedLayout, type Region } from './layout.js';
 export { buildNavigation, type NavTree, type NavGroup, type NavItem } from './navigation.js';
-export { loadContent, type Site, type SitePage } from './site.js';
-export { createSiteLoader, type SiteLoader, type SiteLoaderOptions } from './loader.js';
+export { loadContent, loadContentFromTree, type Site, type SitePage, type LoadContentFromTreeOptions, type VirtualReader } from './site.js';
+export { createSiteLoader, createVirtualSiteLoader, type SiteLoader, type SiteLoaderOptions, type VirtualSiteLoaderOptions } from './loader.js';
 export { generateSitemap, type SitemapEntry } from './sitemap.js';
 export { collectRuneTypes, analyzeRuneUsage, type RuneUsageReport } from './analyze.js';
 export { getGitTimestamps, getStatTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 export { EntityRegistryImpl } from './registry.js';
-export { createRefraktLoader, type RefraktLoader, type RefraktLoaderOptions } from './refract-loader.js';
+export { createRefraktLoader, createVirtualRefraktLoader, type RefraktLoader, type RefraktLoaderOptions, type VirtualRefraktLoaderOptions } from './refract-loader.js';
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';
