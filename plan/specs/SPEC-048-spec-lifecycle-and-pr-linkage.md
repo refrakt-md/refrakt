@@ -71,6 +71,24 @@ The `--resolve` HEREDOC example keeps `Branch:` / `PR:` lines for narrative cont
 
 -----
 
+## Migration
+
+The 175 legacy `done` work items without a `pr` attribute are largely recoverable from git history: every status flip went through a commit, and most of those commits sit under a merge commit whose subject reads `Merge pull request #NNN from <branch>`. A one-shot migration tool walks the history once and backfills the attribute, so the validate-warn lands against an already-clean repo.
+
+**Tool**: `refrakt plan migrate pr-attrs [--apply] [--git]`, modeled on the existing `refrakt plan migrate filenames` command.
+
+**Algorithm**:
+1. For each `work` with `status="done"` (or `bug` with `status="fixed"`) lacking a `pr` attribute, find the commit that introduced that status — `git log -G '^status\s*=\s*"(done|fixed)"' -- <file>` is a reasonable proxy.
+2. Walk forward from that commit to the first reachable merge commit on the default branch. If its subject matches `Merge pull request #(\d+)`, capture the PR number; the repo slug comes from `origin`.
+3. Write the resolved `pr="<org>/<repo>#<num>"` back to the work item file.
+4. Emit a report: items resolved, items skipped (multiple plausible merge commits), items unresolved (direct commit to main, force-push rewrites, lost history).
+
+**Residuals**: items the tool can't resolve are listed but not modified. The maintainer either fills them in by hand or accepts the validate-warn going forward — no `pr-exempt` opt-out attribute, because a permanently-silenceable warning becomes invisible. Better to keep the residual count small and visible.
+
+**Sequencing**: validate-warn for missing `pr` ships in the same release as the migration tool. The release notes / CLAUDE.md recommend running `refrakt plan migrate pr-attrs --apply --git` before upgrading, so the warning lands against a backfilled repo rather than against 175 fresh warnings.
+
+-----
+
 ## Acceptance Criteria
 
 - [ ] `work` and `bug` runes accept an optional, multi-valued `pr` attribute matching `<org>/<repo>#<number>`
@@ -85,6 +103,7 @@ The `--resolve` HEREDOC example keeps `Branch:` / `PR:` lines for narrative cont
 - [ ] CLAUDE.md completion checklist gains a standalone, imperative bullet for setting the `pr` attribute, distinct from the `--resolve` example
 - [ ] Documentation page under `site/content/docs/plan/` describes the new statuses, the `pr` attribute, and the happy-path lifecycle
 - [ ] Existing work items that carry `PR:` in the resolution body are not broken; the parser continues to read that line for backward compat
+- [ ] `refrakt plan migrate pr-attrs` (CLI + MCP) backfills `pr` on legacy `done` work / `fixed` bug items from git merge-commit history, supports `--apply --git`, and reports unresolved items without modifying them
 
 -----
 
@@ -98,6 +117,6 @@ The `--resolve` HEREDOC example keeps `Branch:` / `PR:` lines for narrative cont
 
 **Agent session breadcrumb.** Out of scope for this spec, but related: an optional `Session:` line in the resolution body could record the agent run that produced the work item. Owner-only by virtue of Claude Code session URLs being private; useful as an audit bookmark even if not as shared provenance. Track separately.
 
-**Migration of existing items.** 175 of 177 work items have no `pr` attribute. Don't backfill — the data isn't recoverable without manual lookup. Validate-warn surfaces the gap going forward; legacy items stay as-is unless someone wants to fill them in.
+**Migration false positives.** The forward-walk-to-merge-commit heuristic can attribute a work item to the wrong PR if its status flip landed in a squash-merge alongside unrelated changes, or if the resolve commit was rebased on top of an unrelated merge. Mitigation: when multiple plausible PRs reach the resolve commit, skip the item and list it as unresolved rather than guessing. Accept some manual cleanup over silent misattribution.
 
 {% /spec %}
