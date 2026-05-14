@@ -1,4 +1,4 @@
-{% spec id="SPEC-048" status="draft" tags="theme, tokens, config, lumina, dark-mode, syntax-highlighting" %}
+{% spec id="SPEC-048" status="accepted" tags="theme, tokens, config, lumina, dark-mode, syntax-highlighting" %}
 
 # Design tokens contract & config
 
@@ -272,7 +272,7 @@ Presets that only customize one mode (a "dark-only" preset) leave `tokens` empty
 
 ### Lumina migration
 
-`packages/lumina/tokens/dark.css` is regenerated from `packages/lumina/src/tokens.ts` where Lumina's values include a `modes.dark` overlay. The CSS file becomes a build artifact (or stays hand-written and is covered by the same parity test as `base.css` — same open question as for base).
+`packages/lumina/tokens/dark.css` becomes a build artifact, regenerated from `packages/lumina/src/tokens.ts` where Lumina's values include a `modes.dark` overlay. Same generator that produces `base.css` produces `dark.css` — one script, one source of truth, two output files. Both stay committed so downstream consumers (CSS imports in user sites) work without running a build.
 
 -----
 
@@ -294,7 +294,7 @@ The 11 syntax tokens above are the contract. A future highlighter swap means rew
 
 - `packages/types/src/tokens.ts` — `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, `tokenContract` const. Zero runtime deps. Re-exported from `packages/types/src/index.ts`.
 - `packages/transform/src/tokens.ts` — `tokensToCss(config: ThemeTokensConfig): string`, `mergeTokens(...layers: ThemeTokensConfig[]): ThemeTokensConfig`, `validateTokens(config): { ok: boolean; warnings: string[]; errors: string[] }`. All three operate on full `ThemeTokensConfig` (base + modes) uniformly.
-- `packages/lumina/src/tokens.ts` — Lumina's values typed against `ThemeTokensConfig`. Single source of truth for both `base.css` and `dark.css` (both generated from this file at build time, or covered by a parity test if generation is deferred — see Open Questions).
+- `packages/lumina/src/tokens.ts` — Lumina's values typed against `ThemeTokensConfig`. Single source of truth: both `tokens/base.css` and `tokens/dark.css` are generated from this file by `packages/lumina/scripts/build-tokens.ts`, which runs as a `prebuild` step. The generated CSS files are committed to the repo (so installing `@refrakt-md/lumina` doesn't require running a build) and CI asserts that re-running the generator produces no diff against `HEAD` — that's how drift is caught.
 - `packages/lumina/presets/` — `ThemeTokensConfig` objects exported per preset (e.g. `warm.ts`, `slate.ts`). Each preset can contribute to base and/or to any mode. Importable as `@refrakt-md/lumina/presets/warm`.
 - `packages/sveltekit/` — the Vite plugin reads `refrakt.config.json`, calls `mergeTokens(theme.base, ...presets, { tokens: theme.tokens, modes: theme.modes, colorScheme: theme.colorScheme })`, runs `tokensToCss()`, and exposes the result as a virtual module (e.g. `virtual:refrakt-tokens.css`) injected into the document head before user CSS. When the merged `colorScheme` is `'light'`, `'dark'`, or a custom mode name, the integration also writes `data-theme="<value>"` onto the `<html>` element of every SSR response (via SvelteKit's `transformPageChunk` hook in a server `handle`). For `'auto'` (or unset), no attribute is emitted — the media query in the dark-mode block decides at the browser. HMR re-runs on config change.
 
@@ -354,7 +354,10 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - [ ] All references to `--shiki-*` in `packages/lumina/styles/` updated to `--rf-syntax-*` (`grep -r '\-\-shiki' packages/lumina/styles/` returns nothing)
 - [ ] Shiki integration configured so the rendered code-block HTML and any CSS it emits use `--rf-syntax-*` names (not `--shiki-*`)
 - [ ] Deprecation aliases (`--shiki-* : var(--rf-syntax-*)`) shipped in `base.css` for one minor version with a `/* deprecated, remove in vX.Y.Z */` comment
-- [ ] `packages/lumina/src/tokens.ts` exports Lumina's values typed against `ThemeTokensConfig` including a `modes.dark` overlay; both `base.css` and `dark.css` are either generated from it at build time, or a vitest parity test asserts the three (ts file + both CSS files) are in sync
+- [ ] `packages/lumina/src/tokens.ts` exports Lumina's values typed against `ThemeTokensConfig` including a `modes.dark` overlay
+- [ ] `packages/lumina/scripts/build-tokens.ts` generates `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` from `src/tokens.ts`, runs as a `prebuild` npm script, and produces byte-identical output across runs
+- [ ] Generated `base.css` and `dark.css` files are committed to the repo (so consumers don't need to run a build step to import them)
+- [ ] CI runs the generator and fails if `git diff --exit-code packages/lumina/tokens/` shows any change — catches commits that hand-edited the CSS without updating `src/tokens.ts`
 - [ ] At least one preset besides default ships under `packages/lumina/presets/` (e.g. `warm.ts`) and is importable as `@refrakt-md/lumina/presets/warm`; the preset includes both base and `modes.dark` values
 - [ ] `refrakt.config.json` accepts `theme.tokens: PartialTokenContract`, `theme.modes: Record<string, PartialTokenContract>`, `theme.colorScheme: 'auto' | 'light' | 'dark' | string`, and `theme.presets: string[]` fields; all optional
 - [ ] `theme.colorScheme` defaults to `'auto'` when unset; `mergeTokens` treats `colorScheme` as a scalar (last layer wins) rather than deep-merging it
@@ -386,22 +389,24 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 
 -----
 
-## Open Questions
+## Decisions
 
-**Where do `tokensToCss` and the validator live — `transform` or a new `@refrakt-md/tokens` package?** Bias toward `transform` since it already owns CSS-adjacent merge logic (`mergeThemeConfig`) and avoids a new package. A separate package only pays off if non-transform code paths (e.g. the AI package or a future CLI-only tool) need token utilities without pulling transform.
+Decisions made during spec drafting, recorded here for future reference. Each entry is a closed question — implementation follows the resolution.
 
-**Generate `base.css` and `dark.css` from `tokens.ts`, or keep them hand-written + parity test?** Generation is cleaner long-term (one source of truth) but means the CSS files become build artifacts, complicating `npm run build` ordering and IDE navigation. A parity test (vitest snapshot) is cheaper for v1; promote to generation in a follow-up if drift becomes a real cost. The argument for generation is stronger now that dark mode is in the contract — three files to keep in sync instead of two.
+**`tokensToCss` and validator live in `@refrakt-md/transform`.** Transform already owns CSS-adjacent merge logic (`mergeThemeConfig`) and is the natural home. A separate `@refrakt-md/tokens` package only pays off if non-transform code paths need token utilities without pulling transform; not the case today.
 
-**Preset distribution — Lumina-only, or a shared `@refrakt-md/presets` package?** Lumina-only is simpler and matches how the design plugin packages today. A shared package only makes sense if multiple themes ship and want a common set. Defer until that's real.
+**CSS files are generated from `tokens.ts`, not hand-written + parity-tested.** With dark mode in the contract there are three files to keep in sync; a parity test catches drift after it happens, whereas a generator prevents it. `packages/lumina/scripts/build-tokens.ts` produces `base.css` and `dark.css` deterministically, runs as a `prebuild` step, and CI fails if re-running the generator changes anything tracked in git. Generated files stay committed so consumers don't need a build step on install.
 
-**Should the syntax contract mirror Shiki's full token catalog, or stay at the 11 names Lumina uses today?** The 11 names cover what current rune CSS reads. Mirroring Shiki's full catalog (~30+ token classes) gives finer control but bloats the contract for runes that never reference the extras. Recommend: start with the 11; add more if a real use case appears.
+**Presets ship from Lumina, not a shared package.** Same model as today's design plugins. A shared `@refrakt-md/presets` package only makes sense once multiple themes ship and want a common set — defer until that's real.
 
-**JSON Schema generation — runtime or build-time?** Generating at build time (committed to the repo) is simpler for consumers and CI; generating at runtime would let downstream themes contribute to the schema. Start build-time, revisit if themes ship contract extensions.
+**Syntax contract starts at the 11 names Lumina uses today.** Covers what current rune CSS reads. Mirroring Shiki's full ~30+ token catalog bloats the contract for runes that never reference the extras. Add tokens to the syntax group only when a real use case appears.
 
-**`extra` key prefix — require `--rf-*`, or just `--`?** Requiring `--rf-*` keeps the namespace consistent and avoids collision with user-authored CSS variables. Just `--` is more flexible but invites accidental shadowing. Recommend `--rf-*` only, enforced by validation.
+**JSON Schema is generated at build time, committed to the repo.** Simpler for consumers, CI, and editor integration. Runtime generation would let downstream themes contribute to the schema; revisit if themes start shipping contract extensions.
 
-**Mode selector pattern — fixed `[data-theme="<name>"]` or configurable?** This spec hard-codes the data-attribute pattern to match Lumina's existing `dark.css`. Some themes / sites prefer Tailwind-style `.dark` class selectors, or a custom attribute name. Making it configurable adds a `theme.modeSelector: '[data-theme="{mode}"]' | '.{mode}' | string` knob; not configurable means downstream themes that disagree have to author their own CSS file. Lean toward hard-coding for v1 with the option to widen later — a single convention is worth more than flexibility no one's asked for yet.
+**`extra` keys must begin with `--rf-*`.** Enforced by `validateTokens`. Keeps the namespace consistent, avoids collision with user-authored CSS variables, and means a hosted UI can safely emit `extra` keys knowing they won't shadow anything outside the refrakt surface.
 
-**Should `validateTokens` errors fail the build, or just warn loudly?** Failing fast is better for hosted environments (catch bad input before deploying) but worse for local dev (surprise build break from a typo). Recommend: warn locally during dev, fail in CI / production builds. The validator returns both lists; the integration layer decides which is fatal based on `process.env.NODE_ENV` or an explicit flag.
+**Mode selector pattern is hard-coded to `[data-theme="<name>"]`.** Matches Lumina's existing `dark.css`. Themes that want Tailwind-style `.dark` classes or a different attribute can author their own CSS file. A `theme.modeSelector` knob can be added later if multiple themes need it — a single convention is worth more than flexibility no one's asked for yet.
+
+**`validateTokens` warns in dev, fails in CI / production builds.** The validator returns both lists; the SvelteKit integration treats `errors` as fatal when `process.env.NODE_ENV === 'production'` or when an explicit `RF_STRICT_TOKENS=1` is set. In local dev, errors print loudly but don't break HMR — a typo in `refrakt.config.json` shouldn't take down the dev server.
 
 {% /spec %}
