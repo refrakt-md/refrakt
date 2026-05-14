@@ -14,8 +14,6 @@ Today the chain *spec → work → implementation* exists in the data (work item
 
 **Specs have no terminal state.** Spec statuses today are `draft | review | accepted | superseded | deprecated`. `accepted` answers "we agreed to do this," not "it's built" or "users can install it." For a project that publishes to npm via Changesets, the gap between *merged* and *available* is real — and specs (the closest thing to a user-facing "what was promised" surface) have nowhere to record it.
 
-**`plan validate` is silent on missing PRs.** A work item can flip to `status="done"` with no `pr` attribute and no PR reference in the resolution, and the validator says nothing. The same is true of bugs.
-
 -----
 
 ## Design Principles
@@ -24,7 +22,9 @@ Today the chain *spec → work → implementation* exists in the data (work item
 
 **Separate "built" from "shipped".** The two questions deserve two states. `implemented` reflects engineering reality (code in main); `shipped` reflects user reality (released to npm). Conflating them either lies to users or under-reports progress to maintainers.
 
-**Manual transitions, machine-checkable invariants.** Don't auto-flip `shipped` from milestone state or git tags in v1 — the coupling is brittle and the manual flip aligns naturally with the existing `npm run release` step. But *do* let `plan validate` warn when invariants are broken (e.g. a `done` work item with no `pr`).
+**Manual transitions over coupled automation.** Don't auto-flip `shipped` from milestone state or git tags in v1 — the coupling is brittle and the manual flip aligns naturally with the existing `npm run release` step. `plan status` can *suggest* transitions ("all linked work is done — consider marking implemented") without forcing them.
+
+**Carrot before stick on `pr`.** v1 does **not** enforce a "must have `pr` when done" warning. Direct-to-main commits are a legitimate workflow for human contributors, and CLAUDE.md is the right lever for agent-authored items where the convention applies. Instead, lean on positive surfaces: `plan status` rollups make missing PRs visible structurally (a spec with five `done` work items but three PRs makes the gap obvious), without per-item warnings that either nag legitimate cases or invite an opt-out attribute zoo.
 
 **The instruction has to be loud.** A line of guidance inside an example block has a 1% hit rate in practice. The completion checklist already uses imperative voice and "MANDATORY" framing — PR linkage belongs there.
 
@@ -34,11 +34,13 @@ Today the chain *spec → work → implementation* exists in the data (work item
 
 ### New attributes
 
-| Rune | Attribute | Cardinality | Format | Required when |
-|---|---|---|---|---|
-| `work` | `pr` | multi-valued, comma-separated | `<org>/<repo>#<number>` | `status="done"` (warn) |
-| `bug` | `pr` | multi-valued, comma-separated | `<org>/<repo>#<number>` | `status="fixed"` (warn) |
-| `spec` | `released-in` | single-valued | semver (e.g. `v0.11.4`) | `status="shipped"` (error) |
+| Rune | Attribute | Cardinality | Format |
+|---|---|---|---|
+| `work` | `pr` | multi-valued, comma-separated | `<org>/<repo>#<number>` |
+| `bug` | `pr` | multi-valued, comma-separated | `<org>/<repo>#<number>` |
+| `spec` | `released-in` | single-valued | semver (e.g. `v0.11.4`) |
+
+`released-in` is **required when** a spec is `status="shipped"` (validator errors otherwise). `pr` is **optional and unvalidated for absence** in v1 — the format of values *is* validated when set (malformed refs error), but a missing `pr` does not trigger a warning. See Open Questions for the future-enforcement discussion.
 
 ### New spec statuses
 
@@ -54,7 +56,7 @@ Existing statuses (`draft | review | accepted | superseded | deprecated`) are un
 | Surface | Change |
 |---|---|
 | `plan.update` / `refrakt plan update` | Accept `pr` and `released-in` as known attributes; existing `--resolve` flow unchanged |
-| `plan.validate` / `refrakt plan validate` | Warn on `done` work / `fixed` bug with no `pr`; error on `shipped` spec with no `released-in`; error on malformed PR refs |
+| `plan.validate` / `refrakt plan validate` | Error on malformed `pr` values; error on `shipped` spec with no `released-in`. No warning on missing `pr` in v1. |
 | `plan.status` / `refrakt plan status` | Roll up PRs per spec; suggest `implemented` flip when all linked work is done |
 | Resolution parser (`plugins/plan/src/scanner-core.ts`) | Continue parsing `PR:` line for legacy items, but the attribute takes precedence |
 
@@ -73,7 +75,7 @@ The `--resolve` HEREDOC example keeps `Branch:` / `PR:` lines for narrative cont
 
 ## Migration
 
-The 175 legacy `done` work items without a `pr` attribute are largely recoverable from git history: every status flip went through a commit, and most of those commits sit under a merge commit whose subject reads `Merge pull request #NNN from <branch>`. A one-shot migration tool walks the history once and backfills the attribute, so the validate-warn lands against an already-clean repo.
+The 175 legacy `done` work items without a `pr` attribute are largely recoverable from git history: every status flip went through a commit, and most of those commits sit under a merge commit whose subject reads `Merge pull request #NNN from <branch>`. A one-shot migration tool walks the history once and backfills the attribute, so `plan status` rollups are rich from day one rather than skeletal.
 
 **Tool**: `refrakt plan migrate pr-attrs [--apply] [--git]`, modeled on the existing `refrakt plan migrate filenames` command.
 
@@ -83,9 +85,9 @@ The 175 legacy `done` work items without a `pr` attribute are largely recoverabl
 3. Write the resolved `pr="<org>/<repo>#<num>"` back to the work item file.
 4. Emit a report: items resolved, items skipped (multiple plausible merge commits), items unresolved (direct commit to main, force-push rewrites, lost history).
 
-**Residuals**: items the tool can't resolve are listed but not modified. The maintainer either fills them in by hand or accepts the validate-warn going forward — no `pr-exempt` opt-out attribute, because a permanently-silenceable warning becomes invisible. Better to keep the residual count small and visible.
+**Residuals**: items the tool can't resolve are listed but not modified. The maintainer can fill them in by hand if a PR exists, or leave them alone — since v1 doesn't warn on missing `pr`, unresolved residuals incur no ongoing cost beyond a slightly less complete rollup in `plan status`.
 
-**Sequencing**: validate-warn for missing `pr` ships in the same release as the migration tool. The release notes / CLAUDE.md recommend running `refrakt plan migrate pr-attrs --apply --git` before upgrading, so the warning lands against a backfilled repo rather than against 175 fresh warnings.
+**Sequencing**: run `refrakt plan migrate pr-attrs --apply --git` once before the first release that surfaces PR rollups in `plan status`, so the rollup is meaningful out of the gate. There's no validate-warn pressure on the timing.
 
 -----
 
@@ -96,7 +98,7 @@ The 175 legacy `done` work items without a `pr` attribute are largely recoverabl
 - [ ] `spec` runes accept an optional `released-in` attribute (semver format)
 - [ ] `plan validate` errors on malformed `pr` values (anything not matching `<org>/<repo>#<number>`)
 - [ ] `plan validate` errors on `status="shipped"` specs that lack `released-in`
-- [ ] `plan validate` warns on `status="done"` work items and `status="fixed"` bugs that lack `pr`
+- [ ] `plan validate` does **not** warn on missing `pr` in v1 (deliberate — see Open Questions)
 - [ ] `plan status` includes a "PRs" rollup per spec, listing the unique PRs across its `implemented-by` work
 - [ ] `plan status` suggests the `implemented` flip when every `implemented-by` work item of an `accepted` spec is `done`
 - [ ] `plan.update` MCP tool exposes `pr` and `released-in` in its input schema with the same validation
@@ -109,7 +111,7 @@ The 175 legacy `done` work items without a `pr` attribute are largely recoverabl
 
 ## Open Questions
 
-**Should `plan validate` ever *error* on missing `pr`, or only warn?** Erroring blocks `--status done` for docs-only items resolved by direct commit (no PR). Warning is safer; a separate `--strict` mode could promote it. Recommend: warn only, in v1.
+**Future: stricter enforcement of `pr`.** v1 deliberately omits any warning for missing `pr`, on the grounds that direct-to-main commits are a legitimate workflow for human contributors and CLAUDE.md is the right lever for agents. If the convention stabilizes and `plan status` rollups show gaps the checklist isn't closing, revisit — likely as a `--strict` validate flag or a per-repo config opt-in (e.g. `plan.requirePr: true`) rather than an unconditional warning. Adding it later is strictly cheaper than removing a noisy warning that contributors have learned to ignore.
 
 **Multi-PR work items vs. multi-work PRs.** A work item that took two PRs needs `pr="x,y"`. A PR that closes three work items means the same PR ref appears on three items — fine, but it means the "PRs per spec" rollup should dedupe. Recommend: multi-valued attribute, dedupe in rollups, no constraint on multiplicity.
 
