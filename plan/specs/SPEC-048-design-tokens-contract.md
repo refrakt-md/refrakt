@@ -174,6 +174,34 @@ export const tokenContract = {
 
 Emitted in deterministic key order. Empty partial → empty `:root` block (suppressed). Keys under `extra` are emitted verbatim — they must begin with `--` or `rf-` and contain only `[a-zA-Z0-9-]`; otherwise validation rejects them at config-load time.
 
+### Composing presets
+
+Presets are partials all the way down — `ThemeTokensConfig.tokens` is `PartialTokenContract`, both `tokens` and `modes` are optional, and each can write only the keys it cares about. That's the point: a preset can scope itself to one concern (color, type, shape, dark-mode tone), and authors stack several to assemble a look.
+
+```json
+"theme": {
+  "package": "@refrakt-md/lumina",
+  "presets": [
+    "@refrakt-md/lumina/presets/warm",      // sets color.primary + warm surface tones
+    "@refrakt-md/lumina/presets/serif",     // sets font.sans, font.mono
+    "@my-org/presets/brand-radii"           // sets radius.* only
+  ],
+  "tokens": {
+    "color": { "primary": "#7c3aed" }       // last word: site override beats every preset
+  }
+}
+```
+
+Each preset only touches its keys; the rest cascades through from the prior layer (theme base → preset 1 → preset 2 → preset 3 → site `tokens`). Last write wins per key.
+
+This makes presets composable in the way design systems usually want them:
+
+- A "color theme" preset and a "typography" preset can be authored independently and combined without coordination.
+- A dark-only preset (writes only `modes.dark`) layers cleanly on top of any base preset that doesn't customize dark.
+- Site authors can pull a third-party preset for one concern (e.g. brand radii) without inheriting opinions on color or type.
+
+The cost of partial presets is debuggability — when three presets all touch `color.primary`, "why is my primary purple?" becomes a layered question. `refrakt inspect --tokens` (see Tooling) annotates each resolved value with its source layer for exactly this reason.
+
 -----
 
 ## Modes & Dark Mode
