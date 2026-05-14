@@ -140,6 +140,18 @@ export interface ThemeTokensConfig {
   modes?: Record<string, PartialTokenContract>;
   colorScheme?: 'auto' | 'light' | 'dark' | (string & {});
 }
+
+export interface Preset extends ThemeTokensConfig {
+  meta: {
+    id: string;          // 'warm' — stable identifier referenced from theme.presets
+    name: string;        // 'Warm Tones' — human-readable label for pickers
+    description: string; // one-line summary
+    tags?: string[];     // optional faceting: ['color'], ['typography', 'serif']
+    preview?: {
+      colors?: string[]; // 1–6 hex strings for swatch hints in a picker UI
+    };
+  };
+}
 ```
 
 `ThemeTokensConfig` is the shape shared by `theme` in `refrakt.config.json`, by every preset, and by what a theme package exports as its base. Same shape, different layer in the merge order. `colorScheme` is the only field that doesn't merge as a deep partial — it's a scalar; the last layer to declare it wins (typically the site config).
@@ -182,12 +194,12 @@ Presets are partials all the way down — `ThemeTokensConfig.tokens` is `Partial
 "theme": {
   "package": "@refrakt-md/lumina",
   "presets": [
-    "@refrakt-md/lumina/presets/warm",      // sets color.primary + warm surface tones
-    "@refrakt-md/lumina/presets/serif",     // sets font.sans, font.mono
-    "@my-org/presets/brand-radii"           // sets radius.* only
+    "warm",                                  // bare id — looked up in @refrakt-md/lumina's manifest
+    "serif",                                 // bare id — same theme registry
+    "@my-org/presets/brand-radii"            // contains '/' — loaded as a module path
   ],
   "tokens": {
-    "color": { "primary": "#7c3aed" }       // last word: site override beats every preset
+    "color": { "primary": "#7c3aed" }        // last word: site override beats every preset
   }
 }
 ```
@@ -201,6 +213,50 @@ This makes presets composable in the way design systems usually want them:
 - Site authors can pull a third-party preset for one concern (e.g. brand radii) without inheriting opinions on color or type.
 
 The cost of partial presets is debuggability — when three presets all touch `color.primary`, "why is my primary purple?" becomes a layered question. `refrakt inspect --tokens` (see Tooling) annotates each resolved value with its source layer for exactly this reason.
+
+### Discoverable presets
+
+For hosted environments (and any UI that wants a preset picker), the active theme exposes its preset registry through its **manifest** — the same surface that already advertises the theme's name, version, and layout regions today. No new export path: the manifest is the canonical "what does this theme offer?" file, and presets are part of that.
+
+```ts
+// extension to packages/lumina/manifest.json
+{
+  "name": "Lumina",
+  "version": "0.3.0",
+  // ...existing fields
+  "presets": [
+    {
+      "meta": {
+        "id": "warm",
+        "name": "Warm Tones",
+        "description": "Amber primary with warm cream surfaces",
+        "tags": ["color", "warm"],
+        "preview": { "colors": ["#d97706", "#fbbf24", "#fef3c7"] }
+      },
+      "tokens": { "color": { "primary": "#d97706" /* ... */ } },
+      "modes": { "dark": { "color": { "primary": "#fbbf24" /* ... */ } } }
+    }
+    // ...
+  ]
+}
+```
+
+A hosted UI does:
+
+```ts
+import manifest from '@refrakt-md/lumina/manifest';
+// manifest.presets is Preset[] — render names, descriptions, color swatches
+// On user selection, write back theme.presets: ['warm', 'serif'] in refrakt.config.json
+```
+
+`theme.presets` resolution rule:
+
+- Entry **without** a `/` (e.g. `'warm'`) — look up `meta.id === 'warm'` in the active theme's `manifest.presets`. Validator errors if no match.
+- Entry **with** a `/` (e.g. `'@my-org/presets/brand-radii'`) — load as a module specifier, expect the default export to be a `Preset`. Same as today's intuition for module paths.
+
+Preset ids are part of the theme's public API — renaming `warm` → `amber` is a breaking change, same discipline as plugin names. The `tags` and `preview.colors` fields are advisory only; absent them, a UI can still render id + name + description.
+
+Custom themes that want preset discoverability follow the same pattern: ship a `manifest.json` (or whatever JSON the theme already publishes) with a `presets` array typed as `Preset[]`. Themes without presets simply omit the field; existing themes don't break.
 
 -----
 
@@ -323,7 +379,7 @@ The 11 syntax tokens above are the contract. A future highlighter swap means rew
 - `packages/types/src/tokens.ts` — `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, `tokenContract` const. Zero runtime deps. Re-exported from `packages/types/src/index.ts`.
 - `packages/transform/src/tokens.ts` — `tokensToCss(config: ThemeTokensConfig): string`, `mergeTokens(...layers: ThemeTokensConfig[]): ThemeTokensConfig`, `validateTokens(config): { ok: boolean; warnings: string[]; errors: string[] }`. All three operate on full `ThemeTokensConfig` (base + modes) uniformly.
 - `packages/lumina/src/tokens.ts` — Lumina's values typed against `ThemeTokensConfig`. Single source of truth: both `tokens/base.css` and `tokens/dark.css` are generated from this file by `packages/lumina/scripts/build-tokens.ts`, which runs as a `prebuild` step. The generated CSS files are committed to the repo (so installing `@refrakt-md/lumina` doesn't require running a build) and CI asserts that re-running the generator produces no diff against `HEAD` — that's how drift is caught.
-- `packages/lumina/presets/` — `ThemeTokensConfig` objects exported per preset (e.g. `warm.ts`, `slate.ts`). Each preset can contribute to base and/or to any mode. Importable as `@refrakt-md/lumina/presets/warm`.
+- `packages/lumina/src/presets/` — `Preset` objects exported per preset (e.g. `warm.ts`, `slate.ts`). Each preset can contribute to base and/or to any mode and carries a `meta` block. The build-tokens script also re-emits these into `packages/lumina/manifest.json`'s `presets` field so they're discoverable via `@refrakt-md/lumina/manifest` without a separate import path. Direct import (`@refrakt-md/lumina/presets/warm`) keeps working as a module specifier for users who prefer that form.
 - `packages/sveltekit/` — the Vite plugin reads `refrakt.config.json`, calls `mergeTokens(theme.base, ...presets, { tokens: theme.tokens, modes: theme.modes, colorScheme: theme.colorScheme })`, runs `tokensToCss()`, and exposes the result as a virtual module (e.g. `virtual:refrakt-tokens.css`) injected into the document head before user CSS. When the merged `colorScheme` is `'light'`, `'dark'`, or a custom mode name, the integration also writes `data-theme="<value>"` onto the `<html>` element of every SSR response (via SvelteKit's `transformPageChunk` hook in a server `handle`). For `'auto'` (or unset), no attribute is emitted — the media query in the dark-mode block decides at the browser. HMR re-runs on config change.
 
 -----
@@ -366,7 +422,7 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 
 ## Acceptance Criteria
 
-- [ ] `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, and `tokenContract` const defined in `packages/types/src/tokens.ts` and re-exported from the package index
+- [ ] `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, `Preset`, and `tokenContract` const defined in `packages/types/src/tokens.ts` and re-exported from the package index
 - [ ] `tokenContract` enumerates every `--rf-*` variable currently defined in `packages/lumina/tokens/base.css` (~71 entries, post-rename)
 - [ ] `extra: Record<string, string>` field present on `TokenContract` for theme-specific tokens outside the universal surface
 - [ ] `ThemeTokensConfig` is the shape shared by `theme` in `refrakt.config.json`, presets, and theme package base exports — with `tokens?: PartialTokenContract` and `modes?: Record<string, PartialTokenContract>` fields
@@ -386,7 +442,12 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - [ ] `packages/lumina/scripts/build-tokens.ts` generates `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` from `src/tokens.ts`, runs as a `prebuild` npm script, and produces byte-identical output across runs
 - [ ] Generated `base.css` and `dark.css` files are committed to the repo (so consumers don't need to run a build step to import them)
 - [ ] CI runs the generator and fails if `git diff --exit-code packages/lumina/tokens/` shows any change — catches commits that hand-edited the CSS without updating `src/tokens.ts`
-- [ ] At least one preset besides default ships under `packages/lumina/presets/` (e.g. `warm.ts`) and is importable as `@refrakt-md/lumina/presets/warm`; the preset includes both base and `modes.dark` values
+- [ ] At least one preset besides default ships under `packages/lumina/src/presets/` (e.g. `warm.ts`) as a `Preset` (with `meta` and at least `tokens`); the preset includes both base and `modes.dark` values
+- [ ] `packages/lumina/manifest.json` extended with a `presets: Preset[]` field, populated by the build-tokens script from `src/presets/`
+- [ ] Hosted UIs can read all available presets via `import manifest from '@refrakt-md/lumina/manifest'` without a separate sub-path import
+- [ ] `theme.presets` config field accepts both bare ids (resolved against the active theme manifest's `presets[].meta.id`) and module specifiers containing `/` (loaded as before)
+- [ ] Validator errors when a bare-id `theme.presets` entry doesn't match any `meta.id` in the active theme's manifest (with the list of available ids in the error message)
+- [ ] `Preset.meta.id`, `name`, and `description` are required; `tags` and `preview.colors` are optional and treated as advisory by validators and tooling
 - [ ] `refrakt.config.json` accepts `theme.tokens: PartialTokenContract`, `theme.modes: Record<string, PartialTokenContract>`, `theme.colorScheme: 'auto' | 'light' | 'dark' | string`, and `theme.presets: string[]` fields; all optional
 - [ ] `theme.colorScheme` defaults to `'auto'` when unset; `mergeTokens` treats `colorScheme` as a scalar (last layer wins) rather than deep-merging it
 - [ ] Validator errors when `theme.colorScheme` is set to a value that is neither `'auto'`, `'light'`, `'dark'`, nor a key present under `theme.modes`
@@ -426,6 +487,8 @@ Decisions made during spec drafting, recorded here for future reference. Each en
 **CSS files are generated from `tokens.ts`, not hand-written + parity-tested.** With dark mode in the contract there are three files to keep in sync; a parity test catches drift after it happens, whereas a generator prevents it. `packages/lumina/scripts/build-tokens.ts` produces `base.css` and `dark.css` deterministically, runs as a `prebuild` step, and CI fails if re-running the generator changes anything tracked in git. Generated files stay committed so consumers don't need a build step on install.
 
 **Presets ship from Lumina, not a shared package.** Same model as today's design plugins. A shared `@refrakt-md/presets` package only makes sense once multiple themes ship and want a common set — defer until that's real.
+
+**Preset discoverability lives on the theme manifest.** Hosted UIs and pickers read available presets via `@refrakt-md/lumina/manifest`'s new `presets: Preset[]` field — the same surface that already advertises the theme's name, version, and layout regions. No new export path, no separate registry file. `theme.presets` accepts bare ids (looked up against the manifest) for ergonomics and module specifiers with `/` for third-party presets.
 
 **Syntax contract starts at the 11 names Lumina uses today.** Covers what current rune CSS reads. Mirroring Shiki's full ~30+ token catalog bloats the contract for runes that never reference the extras. Add tokens to the syntax group only when a real use case appears.
 
