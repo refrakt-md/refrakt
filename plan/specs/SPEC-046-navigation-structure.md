@@ -41,7 +41,7 @@ A single `layout` attribute selects rendering. All three values accept the same 
 {% nav collapsible %}        # vertical, groups collapse, current section auto-opens
 {% nav layout="menubar" %}   # horizontal bar; groups → desktop dropdowns / mobile accordion
 {% nav layout="columns" %}   # column grid; groups → column titles (footer pattern)
-{% nav layout="cards" %}     # card grid; items enriched with title / summary / icon from frontmatter
+{% nav layout="cards" %}     # card grid; items enriched with title / description / icon from frontmatter
 ```
 
 ### Header (menubar)
@@ -133,7 +133,15 @@ Or grouped:
 {% /nav %}
 ```
 
-Each item renders as a card. The current `nav` slug-resolution path already maps slugs to page titles via the registry — the cards layout extends this to also pull `summary` (frontmatter `summary` or `description`) and `icon` (frontmatter `icon`) from each linked page. Group headings become section titles above each card grid. Explicit links (`[Label](/url)`) still work but only get a title and link — no enrichment, since there's no page to read frontmatter from.
+Each item renders as a card. The current `nav` slug-resolution path already maps slugs to page titles via the registry — the cards layout extends this to also pull `description` and `icon` from each linked page's frontmatter. Group headings become section titles above each card grid. Explicit links (`[Label](/url)`) still work but only get a title and link — no enrichment, since there's no page to read frontmatter from.
+
+The frontmatter shape this depends on:
+
+- `title: string` — already in the `Frontmatter` interface (`packages/content/src/frontmatter.ts`).
+- `description: string` — already in the interface; used today for SEO. The cards layout reuses it as the card body.
+- `icon: string` — **not currently defined**. This spec adds an optional `icon?: string` field to the `Frontmatter` interface, holding an icon name resolvable by the existing `{% icon %}` rune (e.g. `icon: rocket`). Pages without `icon` render iconless cards.
+
+`image` is already in the interface but is left out of the default card on purpose — image-heavy cards are a richer visual that themes can opt into via an additional registry lookup. Keeps the default contract minimal.
 
 For "list every child of this section" without naming each one, combine with auto mode: `{% nav layout="cards" auto %}`.
 
@@ -199,8 +207,9 @@ Lumina ships reference styles for all three; downstream themes can override.
 - [ ] `NavGroup` emits `data-collapsed="auto|true|false"` when the parent nav is collapsible
 - [ ] Core `postProcess` hook resolves `data-collapsed="auto"` based on current page URL — the group containing the current page becomes `"false"`, others become `"true"`
 - [ ] Top-level items (before first `##`) continue to render in the existing `data-name="top-level"` container in all four layouts
-- [ ] Cards layout enriches each `NavItem` with `title`, `summary`, and `icon` properties resolved from the linked page's frontmatter via the entity registry during postProcess
-- [ ] Cards layout falls back gracefully when an item points at an external URL or a page without `summary` / `icon` frontmatter — title-only card with link
+- [ ] `Frontmatter` interface in `packages/content/src/frontmatter.ts` extended with optional `icon?: string` field
+- [ ] Cards layout enriches each `NavItem` with `title`, `description`, and `icon` properties resolved from the linked page's frontmatter via the entity registry during postProcess
+- [ ] Cards layout falls back gracefully when an item points at an external URL or a page missing `description` / `icon` — title-only card with link, no broken layout
 - [ ] `nav layout="cards" auto` lists the current page's children (existing `auto` mechanism, now combined with the cards layout)
 - [ ] Lumina ships CSS for all four layouts plus mobile breakpoints (menubar → hamburger, columns → stacked, cards → single column)
 - [ ] `@refrakt-md/behaviors` ships a `nav-collapsible` behavior that toggles `data-collapsed` on group header click
@@ -233,7 +242,9 @@ Lumina ships reference styles for all three; downstream themes can override.
 
 **Naming: `layout` vs `variant` vs `as`.** `layout` collides slightly with the layout-cascade concept; `variant` is generic; `as` is short but cryptic. Bias toward `layout` since "layout of the nav" is precise, and the existing `layout` cascade lives in a different scope (regions / pages, not rune attributes).
 
-**Cards: which frontmatter fields?** Defaulting to `summary` (with fallback to `description`) and `icon`. Could also surface `cover` / `image` for a richer card. Lean toward shipping a minimal set (title + summary + icon) and letting themes opt into richer cards via additional registry lookups — keeps the contract small.
+**Cards: minimal vs rich default.** Defaulting to `title` + `description` + `icon`. The first two already exist on the `Frontmatter` interface; this spec adds `icon`. The interface also has `image` (used elsewhere for hero / OG images) which could power a richer card — but image-heavy cards have layout consequences (aspect ratio, lazy loading, breakpoint behaviour) that go well beyond a navigation primitive. Recommend keeping `image` out of the default card and letting themes opt in via additional registry lookups if they want it.
+
+**Should `icon` accept anything beyond a name?** Refrakt's `{% icon %}` rune accepts a `name` plus optional `set` / `size`. Frontmatter is a simpler authoring surface — `icon: rocket` is what an author wants to write. If a page needs more control, it can override the card via custom frontmatter the theme reads. Recommend keeping `icon: string` as a name only.
 
 **Cards vs `bento` / `feature`.** Both marketing-plugin runes render card-shaped output but require hand-authored content. The cards layout's value is registry enrichment — pull data from the pages themselves. Different use cases; no need to unify.
 
