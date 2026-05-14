@@ -34,6 +34,8 @@ Today the design token surface is defined entirely as CSS custom properties in `
 
 **Modes are partials over the base, not parallel contracts.** Dark mode (and any future mode — high-contrast, sepia, print) is a `PartialTokenContract` overlay applied to a scoped CSS selector. Modes never have their own contract shape — they reuse `TokenContract` so the type system and validator work uniformly. Authors only specify the tokens that differ from the base; everything else inherits via CSS variable cascade.
 
+**The site's initial mode is configurable, not hard-coded.** Today refrakt sites have no way to express "this is a dark-only site" or "default to light, ignore the user's system preference" — the OS preference always wins (via the `prefers-color-scheme` media query) unless the author writes their own script to set `data-theme` on `<html>`. A `theme.colorScheme` field on the config picks the initial state explicitly. The toggle UI itself (a button users click to switch at runtime) remains out of scope; this controls only the SSR-emitted attribute on `<html>`.
+
 -----
 
 ## Authoring Surface
@@ -47,6 +49,7 @@ Today the design token surface is defined entirely as CSS custom properties in `
   "theme": {
     "package": "@refrakt-md/lumina",
     "presets": ["@refrakt-md/lumina/presets/warm"],
+    "colorScheme": "auto",
     "tokens": {
       "color": {
         "primary": "#7c3aed",
@@ -135,10 +138,11 @@ export type PartialTokenContract = DeepPartial<TokenContract>;
 export interface ThemeTokensConfig {
   tokens?: PartialTokenContract;
   modes?: Record<string, PartialTokenContract>;
+  colorScheme?: 'auto' | 'light' | 'dark' | (string & {});
 }
 ```
 
-`ThemeTokensConfig` is the shape shared by `theme` in `refrakt.config.json`, by every preset, and by what a theme package exports as its base. Same shape, different layer in the merge order.
+`ThemeTokensConfig` is the shape shared by `theme` in `refrakt.config.json`, by every preset, and by what a theme package exports as its base. Same shape, different layer in the merge order. `colorScheme` is the only field that doesn't merge as a deep partial — it's a scalar; the last layer to declare it wins (typically the site config).
 
 A companion runtime const `tokenContract` enumerates each leaf path and its CSS variable name, so `tokensToCss()` and validators don't need TypeScript reflection:
 
@@ -185,6 +189,19 @@ The contract reserves three conventional mode names:
 - Any other key (e.g. `high-contrast`, `sepia`, `print`) — emits only the data-attribute selector `[data-theme="<name>"]`. Custom modes get no system-pref hookup; that's an opt-in future feature.
 
 For `print`, themes that want `@media print` instead of a data attribute can author a CSS file alongside — out of scope for the generator. Modes in the contract are about **theme variants** the user can toggle, not media-type variants.
+
+### Picking the initial mode (`theme.colorScheme`)
+
+`theme.colorScheme` controls what `data-theme` value (if any) the SvelteKit integration writes onto the `<html>` element at SSR time. It does not generate any CSS — it's purely about which of the already-emitted selector blocks wins on first paint.
+
+- `'auto'` (default) — emit no `data-theme` attribute. The `prefers-color-scheme` media query in the dark-mode block decides; light is the fallback. Equivalent to today's behavior.
+- `'light'` — set `data-theme="light"` on `<html>`. The dark-mode media query is gated by `:root:not([data-theme="light"])`, so this disables system-preference dark mode entirely.
+- `'dark'` — set `data-theme="dark"` on `<html>`. Forces dark mode for every visitor regardless of OS preference.
+- A custom mode name (e.g. `'high-contrast'`) — set `data-theme="<name>"` on `<html>`. Only valid if the same key exists under `theme.modes`; validator rejects unknown values.
+
+The integration writes the attribute by transforming the SvelteKit response (e.g. via the adapter's HTML transform). No client-side JavaScript runs to pick the mode — it's baked into the SSR output, so there's no flash-of-wrong-theme.
+
+A future runtime toggle (out of scope here) would: (a) read this initial value from `<html data-theme>` on hydration, (b) flip the attribute on user click, (c) optionally persist to `localStorage`. The contract gives the toggle a stable starting point; the toggle itself is separate.
 
 ### `tokensToCss` mode output
 
@@ -279,7 +296,7 @@ The 11 syntax tokens above are the contract. A future highlighter swap means rew
 - `packages/transform/src/tokens.ts` — `tokensToCss(config: ThemeTokensConfig): string`, `mergeTokens(...layers: ThemeTokensConfig[]): ThemeTokensConfig`, `validateTokens(config): { ok: boolean; warnings: string[]; errors: string[] }`. All three operate on full `ThemeTokensConfig` (base + modes) uniformly.
 - `packages/lumina/src/tokens.ts` — Lumina's values typed against `ThemeTokensConfig`. Single source of truth for both `base.css` and `dark.css` (both generated from this file at build time, or covered by a parity test if generation is deferred — see Open Questions).
 - `packages/lumina/presets/` — `ThemeTokensConfig` objects exported per preset (e.g. `warm.ts`, `slate.ts`). Each preset can contribute to base and/or to any mode. Importable as `@refrakt-md/lumina/presets/warm`.
-- `packages/sveltekit/` — the Vite plugin reads `refrakt.config.json`, calls `mergeTokens(theme.base, ...presets, { tokens: theme.tokens, modes: theme.modes })`, runs `tokensToCss()`, and exposes the result as a virtual module (e.g. `virtual:refrakt-tokens.css`) injected into the document head before user CSS. HMR re-runs on config change.
+- `packages/sveltekit/` — the Vite plugin reads `refrakt.config.json`, calls `mergeTokens(theme.base, ...presets, { tokens: theme.tokens, modes: theme.modes, colorScheme: theme.colorScheme })`, runs `tokensToCss()`, and exposes the result as a virtual module (e.g. `virtual:refrakt-tokens.css`) injected into the document head before user CSS. When the merged `colorScheme` is `'light'`, `'dark'`, or a custom mode name, the integration also writes `data-theme="<value>"` onto the `<html>` element of every SSR response (via SvelteKit's `transformPageChunk` hook in a server `handle`). For `'auto'` (or unset), no attribute is emitted — the media query in the dark-mode block decides at the browser. HMR re-runs on config change.
 
 -----
 
@@ -294,6 +311,7 @@ Errors (build fails) for:
 
 - Non-string leaf values.
 - Malformed `extra` keys (containing characters outside `[a-zA-Z0-9-]`, or `--rf-*` names that collide with the contract).
+- `colorScheme` set to a value that isn't `'auto'`, `'light'`, `'dark'`, or a key declared under `theme.modes`. Forcing a mode that has no token overlay would set `data-theme="<name>"` against an empty selector block, silently doing nothing — better to fail loudly.
 
 Warnings surface in the build log and in `refrakt inspect --tokens` (see below). Failing fast on errors keeps hosted UIs honest.
 
@@ -338,14 +356,18 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - [ ] Deprecation aliases (`--shiki-* : var(--rf-syntax-*)`) shipped in `base.css` for one minor version with a `/* deprecated, remove in vX.Y.Z */` comment
 - [ ] `packages/lumina/src/tokens.ts` exports Lumina's values typed against `ThemeTokensConfig` including a `modes.dark` overlay; both `base.css` and `dark.css` are either generated from it at build time, or a vitest parity test asserts the three (ts file + both CSS files) are in sync
 - [ ] At least one preset besides default ships under `packages/lumina/presets/` (e.g. `warm.ts`) and is importable as `@refrakt-md/lumina/presets/warm`; the preset includes both base and `modes.dark` values
-- [ ] `refrakt.config.json` accepts `theme.tokens: PartialTokenContract`, `theme.modes: Record<string, PartialTokenContract>`, and `theme.presets: string[]` fields; all optional
+- [ ] `refrakt.config.json` accepts `theme.tokens: PartialTokenContract`, `theme.modes: Record<string, PartialTokenContract>`, `theme.colorScheme: 'auto' | 'light' | 'dark' | string`, and `theme.presets: string[]` fields; all optional
+- [ ] `theme.colorScheme` defaults to `'auto'` when unset; `mergeTokens` treats `colorScheme` as a scalar (last layer wins) rather than deep-merging it
+- [ ] Validator errors when `theme.colorScheme` is set to a value that is neither `'auto'`, `'light'`, `'dark'`, nor a key present under `theme.modes`
+- [ ] SvelteKit integration writes `data-theme="<value>"` onto the `<html>` element of every SSR response when `colorScheme` is `'light'`, `'dark'`, or a custom mode name; emits no attribute when `'auto'`
+- [ ] No client-side script is required for the initial mode to apply — the SSR-emitted attribute is sufficient (no flash-of-wrong-theme)
 - [ ] SvelteKit Vite plugin in `packages/sveltekit/` reads `theme.tokens`, `theme.modes`, and `theme.presets`, merges them via `mergeTokens`, generates a stylesheet via `tokensToCss`, and exposes it as a virtual module injected after theme base CSS and before user CSS
 - [ ] Config changes trigger HMR re-render of the generated token stylesheet during `npm run dev`
 - [ ] `refrakt inspect --tokens` command prints the resolved token set (base + every mode) with source-of-value annotations; supports `--json` and an optional `--mode <name>` filter
 - [ ] `refrakt contracts --tokens` emits the token contract as JSON (paths + CSS var names) for CI snapshot use
-- [ ] JSON Schema for `refrakt.config.json` updated to include `theme.tokens`, `theme.modes`, and `theme.presets` with autocomplete-friendly key suggestions
+- [ ] JSON Schema for `refrakt.config.json` updated to include `theme.tokens`, `theme.modes`, `theme.colorScheme`, and `theme.presets` with autocomplete-friendly key suggestions
 - [ ] CSS coverage tests updated for renamed syntax tokens
-- [ ] Theming docs at `site/content/docs/themes/configuration.md` updated to cover `theme.tokens`, `theme.modes`, `theme.presets`, the layering order, and the conventional mode-name semantics (`dark` / `light` / custom)
+- [ ] Theming docs at `site/content/docs/themes/configuration.md` updated to cover `theme.tokens`, `theme.modes`, `theme.colorScheme`, `theme.presets`, the layering order, and the conventional mode-name semantics (`dark` / `light` / custom)
 - [ ] Theming docs at `site/content/docs/themes/css.md` updated to point at `--rf-syntax-*` (not `--shiki-*`)
 - [ ] Changeset entry documents the `--shiki-* → --rf-syntax-*` rename with the full mapping table and the deprecation timeline
 
@@ -355,7 +377,7 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 
 - **Derived / computed tokens in config.** No `color-mix()`, no token references (`"primary-hover": "{color.primary} darken 10%"`). Power users drop a CSS file for this. Config stays a static value map. (This is also why writing to `tokens.color.X` doesn't auto-derive `modes.dark.color.X` — there's no derivation engine.)
 - **Mode-aware media queries beyond dark.** Only `modes.dark` gets the `@media (prefers-color-scheme)` hookup. `print`, `reduced-motion`, `high-contrast` system-pref bindings are deferred; they need their own opt-in mechanism rather than overloading the mode key.
-- **Runtime mode toggling UI.** The contract emits the right CSS selectors (`[data-theme="dark"]`); shipping a toggle button / theme-switcher behavior is a separate concern, likely a `@refrakt-md/behaviors` addition.
+- **Runtime mode toggling UI.** This spec covers the SSR-emitted *initial* `data-theme` (via `theme.colorScheme`) and the CSS selectors modes resolve to. A user-clickable toggle button — flipping `data-theme` on the fly, persisting to `localStorage`, syncing across tabs — is a separate concern, likely a `@refrakt-md/behaviors` addition that builds on this foundation.
 - **Per-page or per-route token overrides.** Scoped CSS injection is a different mechanism; out of scope here.
 - **A hosted UI for token customization.** This spec enables one by giving it a contract to render against. Building the UI itself is separate.
 - **Runtime theme switching.** Build-time output only. Runtime switching is achievable via standard CSS techniques on top of this work.
