@@ -2,7 +2,7 @@
 
 # Navigation structure
 
-Extend the `nav` rune so a single content model expresses sidebar, header, and footer navigation — with collapsible groups in the sidebar and dropdown / column treatments in the header and footer. One authoring vocabulary, three contextual renderings.
+Extend the `nav` rune so a single content model expresses sidebar, header, footer, and section-landing navigation — with collapsible groups in the sidebar, dropdown menus in the header, column grids in the footer, and card grids on landing pages. One authoring vocabulary, four contextual renderings.
 
 ## Problem
 
@@ -14,13 +14,15 @@ Refrakt has a sidebar `nav` rune today (`packages/runes/src/tags/nav.ts`) that i
 
 **No footer navigation primitive.** The `footer` region exists but has no rune designed for it. Sites that want a multi-column "Product / Resources / Legal / Social" footer either inline plain markdown (no structure, no theming) or build a one-off component.
 
-**Three separate runes would fragment the model.** Inventing `menubar`, `nav`, and `footer-cols` runes would mean three schemas, three Markdoc grammars, three CSS surfaces — for content that's structurally identical (named groups containing links).
+**Section landing pages have no card grid.** When a section index wants to show its child pages as cards with title and summary instead of a bare link list, there's no rune for it. `{% nav auto %}` gives a flat link list; the only card-shaped primitives (`bento`, `feature`) live in the marketing plugin and don't read from the registry. Authors fall back to writing card markup by hand on every section landing page.
+
+**Four separate runes would fragment the model.** Inventing `menubar`, `nav`, `footer-cols`, and `card-grid` runes would mean four schemas, four Markdoc grammars, four CSS surfaces — for content that's structurally identical (named groups containing links).
 
 -----
 
 ## Design Principles
 
-**One primitive, contextual rendering.** Sidebar, header menubar, and footer columns are the same content shape: groups of links with an optional top-level row. The `nav` rune already models this. Add a `layout` attribute (`vertical | menubar | columns`) that selects the presentation; keep the content model identical across all three. This matches refrakt's "same primitive, different meaning by context" philosophy — a heading inside `{% nav %}` is already a group title, not a heading, regardless of where the nav lives.
+**One primitive, contextual rendering.** Sidebar, header menubar, footer columns, and section-landing cards are the same content shape: groups of links with an optional top-level row. The `nav` rune already models this. Add a `layout` attribute (`vertical | menubar | columns | cards`) that selects the presentation; keep the content model identical across all four. This matches refrakt's "same primitive, different meaning by context" philosophy — a heading inside `{% nav %}` is already a group title, not a heading, regardless of where the nav lives.
 
 **Theme owns presentation, not authoring.** Authors don't write "open by default" markers, dropdown CSS, or breakpoint logic. They write structure. The theme decides that on desktop, `menubar` groups are dropdowns and on mobile they're accordion sections — that's a CSS / behaviors concern, not a content concern.
 
@@ -39,6 +41,7 @@ A single `layout` attribute selects rendering. All three values accept the same 
 {% nav collapsible %}        # vertical, groups collapse, current section auto-opens
 {% nav layout="menubar" %}   # horizontal bar; groups → desktop dropdowns / mobile accordion
 {% nav layout="columns" %}   # column grid; groups → column titles (footer pattern)
+{% nav layout="cards" %}     # card grid; items enriched with title / summary / icon from frontmatter
 ```
 
 ### Header (menubar)
@@ -104,6 +107,36 @@ Default behavior: the group containing the current URL is expanded; all others a
 
 Groups render as columns on desktop, stacked sections on mobile. The "small print" row (copyright, social) is a separate concern — plain markdown beneath the nav, or a future `colophon` rune. Out of scope here.
 
+### Section landing (cards)
+
+```markdoc
+{% nav layout="cards" %}
+- getting-started
+- runes
+- layouts
+- theming
+{% /nav %}
+```
+
+Or grouped:
+
+```markdoc
+{% nav layout="cards" %}
+## Core concepts
+- pages
+- runes
+- layouts
+
+## Advanced
+- plugins
+- theming
+{% /nav %}
+```
+
+Each item renders as a card. The current `nav` slug-resolution path already maps slugs to page titles via the registry — the cards layout extends this to also pull `summary` (frontmatter `summary` or `description`) and `icon` (frontmatter `icon`) from each linked page. Group headings become section titles above each card grid. Explicit links (`[Label](/url)`) still work but only get a title and link — no enrichment, since there's no page to read frontmatter from.
+
+For "list every child of this section" without naming each one, combine with auto mode: `{% nav layout="cards" auto %}`.
+
 -----
 
 ## Engine Config Changes
@@ -115,7 +148,7 @@ Nav: {
   block: 'rf-nav',
   tag: 'nav',
   modifiers: {
-    layout: { source: 'attr', default: 'vertical' },  // vertical | menubar | columns
+    layout: { source: 'attr', default: 'vertical' },  // vertical | menubar | columns | cards
     collapsible: { source: 'attr', default: 'false' },
     ordered: { source: 'attr', default: 'false' },    // existing
   },
@@ -125,9 +158,9 @@ Nav: {
 
 Produces:
 - `.rf-nav` (block)
-- `.rf-nav--menubar`, `.rf-nav--columns`, `.rf-nav--vertical` (layout modifier)
+- `.rf-nav--menubar`, `.rf-nav--columns`, `.rf-nav--cards`, `.rf-nav--vertical` (layout modifier)
 - `.rf-nav--collapsible` (collapsible modifier; vertical only)
-- `data-layout="menubar|columns|vertical"` for variant CSS selectors
+- `data-layout="menubar|columns|cards|vertical"` for variant CSS selectors
 
 `NavGroup` config stays unchanged — same `rf-nav-group` block, same `title` + `items` — but the theme styles `.rf-nav--menubar .rf-nav-group` very differently from `.rf-nav--columns .rf-nav-group`.
 
@@ -159,21 +192,25 @@ Lumina ships reference styles for all three; downstream themes can override.
 
 ## Acceptance Criteria
 
-- [ ] `nav` rune accepts a `layout` attribute with values `vertical` (default), `menubar`, `columns`
+- [ ] `nav` rune accepts a `layout` attribute with values `vertical` (default), `menubar`, `columns`, `cards`
 - [ ] `nav` rune accepts a `collapsible` boolean attribute (only meaningful for `vertical`)
 - [ ] `nav` rune accepts a `defaultOpen` attribute (comma-separated group titles) overriding auto-open
 - [ ] Identity transform emits `.rf-nav--{layout}` and `.rf-nav--collapsible` modifiers and `data-layout` attribute
 - [ ] `NavGroup` emits `data-collapsed="auto|true|false"` when the parent nav is collapsible
 - [ ] Core `postProcess` hook resolves `data-collapsed="auto"` based on current page URL — the group containing the current page becomes `"false"`, others become `"true"`
-- [ ] Top-level items (before first `##`) continue to render in the existing `data-name="top-level"` container in all three layouts
-- [ ] Lumina ships CSS for all three layouts plus mobile breakpoints (menubar → hamburger, columns → stacked)
+- [ ] Top-level items (before first `##`) continue to render in the existing `data-name="top-level"` container in all four layouts
+- [ ] Cards layout enriches each `NavItem` with `title`, `summary`, and `icon` properties resolved from the linked page's frontmatter via the entity registry during postProcess
+- [ ] Cards layout falls back gracefully when an item points at an external URL or a page without `summary` / `icon` frontmatter — title-only card with link
+- [ ] `nav layout="cards" auto` lists the current page's children (existing `auto` mechanism, now combined with the cards layout)
+- [ ] Lumina ships CSS for all four layouts plus mobile breakpoints (menubar → hamburger, columns → stacked, cards → single column)
 - [ ] `@refrakt-md/behaviors` ships a `nav-collapsible` behavior that toggles `data-collapsed` on group header click
 - [ ] `@refrakt-md/behaviors` ships a `nav-menubar` behavior for desktop dropdown open/close and mobile hamburger toggle
 - [ ] `site/content/_layout.md` updated to use `{% nav layout="menubar" %}` in `header` region and `{% nav layout="columns" %}` in `footer` region
+- [ ] At least one section landing page in `site/content/` updated to demonstrate `{% nav layout="cards" %}`
 - [ ] Existing sidebar nav (`{% nav %}` with no `layout`) renders identically to today — no behavior change for callers that don't opt in
-- [ ] `npx refrakt inspect nav --layout=menubar` (and `columns`, `vertical`) shows expected HTML output
+- [ ] `npx refrakt inspect nav --layout=menubar` (and `columns`, `vertical`, `cards`) shows expected HTML output
 - [ ] CSS coverage tests updated for the new selectors
-- [ ] Authoring docs (`site/content/docs/authoring/`) updated with header / footer / collapsible examples
+- [ ] Authoring docs (`site/content/docs/authoring/`) updated with header / footer / collapsible / cards examples
 
 -----
 
@@ -195,5 +232,9 @@ Lumina ships reference styles for all three; downstream themes can override.
 **Mobile hamburger placement.** Themes may want the hamburger button to live outside the nav (e.g. top-right of the page header). Should the rune emit the trigger button itself, or leave it to the layout? Lean toward "rune emits the trigger inside `data-name='trigger'`" so theme CSS can position it absolutely — cheaper than a separate `nav-toggle` rune.
 
 **Naming: `layout` vs `variant` vs `as`.** `layout` collides slightly with the layout-cascade concept; `variant` is generic; `as` is short but cryptic. Bias toward `layout` since "layout of the nav" is precise, and the existing `layout` cascade lives in a different scope (regions / pages, not rune attributes).
+
+**Cards: which frontmatter fields?** Defaulting to `summary` (with fallback to `description`) and `icon`. Could also surface `cover` / `image` for a richer card. Lean toward shipping a minimal set (title + summary + icon) and letting themes opt into richer cards via additional registry lookups — keeps the contract small.
+
+**Cards vs `bento` / `feature`.** Both marketing-plugin runes render card-shaped output but require hand-authored content. The cards layout's value is registry enrichment — pull data from the pages themselves. Different use cases; no need to unify.
 
 {% /spec %}
