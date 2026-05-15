@@ -62,6 +62,129 @@ The `primary-scale` (50→950) follows the same warm-neutral axis — a ramp fro
 
 -----
 
+## The Syntax Highlighting Palette
+
+With the rest of the theme intentionally monochromatic, code blocks become the one place chromatic colour appears in body content. That's a deliberate move — syntax roles carry real cognitive information (keywords vs functions vs types is structural, not decorative), so functional colour use is justified there. It's also where refrakt's "refraction" metaphor can show up subtly: five hues that walk quietly across the spectrum, hinting at light being split without literally drawing a rainbow.
+
+The proposed palette uses five "meaning-bearing" hues plus muted tones. Roles like `variable`, `operator`, `punctuation`, and ordinary identifiers stay tonal (text-coloured or muted) — the eye gets fatigued when every token is doing something different.
+
+| Role | Light (`#f6f4ef` bg) | Dark (`#1c1a17` bg) | Hue |
+|---|---|---|---|
+| `syntax.keyword` | `#2a5c63` | `#7eb6bc` | deep teal |
+| `syntax.function` | `#4a3b6e` | `#a89bc7` | slate violet |
+| `syntax.string` | `#8a3a3a` | `#c79a9a` | warm rust |
+| `syntax.number` | `#876327` | `#d4b07e` | antique ochre |
+| `syntax.type` | `#3a5c2a` | `#94b385` | sage moss |
+| `syntax.comment` | `#8a857d` *(italic)* | `#6b6661` *(italic)* | warm muted |
+| `syntax.punctuation` | `color.muted` | `color.muted` | tonal |
+| `syntax.variable` | `color.text` | `color.text` | tonal |
+
+The five chromatic hues walk teal → violet → rust → ochre → sage around the wheel — cool, cool, warm, warm, cool/warm. Spectrum-adjacent without being on the nose. All five sit comfortably on the warm-neutral surface: warm-leaning hues (rust, ochre) are deep enough not to wash out into the bg; cool-leaning hues (teal, violet, sage) provide the contrast that gives the highlighter its read.
+
+A live preview of the palette on the proposed neutral default, light then dark:
+
+{% sandbox height=420 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #f6f4ef;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: 32px;
+    box-sizing: border-box;
+    color: #1c1a17;
+  }
+  pre {
+    background: #efece5;
+    padding: 22px 26px;
+    border-radius: 8px;
+    margin: 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    border: 1px solid #e8e5df;
+  }
+  code { color: #1c1a17; }
+  .kw  { color: #2a5c63; }
+  .fn  { color: #4a3b6e; }
+  .str { color: #8a3a3a; }
+  .num { color: #876327; }
+  .typ { color: #3a5c2a; }
+  .com { color: #8a857d; font-style: italic; }
+  .pun { color: #6b6661; }
+</style>
+<pre><code><span class="com">// A small plugin defining one rune</span>
+<span class="kw">import</span> { createContentModelSchema } <span class="kw">from</span> <span class="str">'@refrakt-md/runes'</span><span class="pun">;</span>
+<span class="kw">import type</span> { <span class="typ">Plugin</span> } <span class="kw">from</span> <span class="str">'@refrakt-md/types'</span><span class="pun">;</span>
+
+<span class="kw">const</span> recipeRune <span class="pun">=</span> <span class="fn">createContentModelSchema</span>({
+  contentModel<span class="pun">:</span> { type<span class="pun">:</span> <span class="str">'sections'</span> }<span class="pun">,</span>
+  <span class="fn">transform</span>(resolved<span class="pun">,</span> attrs<span class="pun">:</span> { servings<span class="pun">:</span> <span class="typ">number</span> }) {
+    <span class="kw">const</span> total <span class="pun">=</span> attrs.servings <span class="pun">*</span> <span class="num">5</span><span class="pun">;</span>
+    <span class="kw">return</span> { title<span class="pun">:</span> resolved.title ?? <span class="str">'Untitled'</span><span class="pun">,</span> total }<span class="pun">;</span>
+  }<span class="pun">,</span>
+})<span class="pun">;</span>
+
+<span class="kw">export const</span> plugin<span class="pun">:</span> <span class="typ">Plugin</span> <span class="pun">=</span> {
+  name<span class="pun">:</span> <span class="str">'@example/cookbook'</span><span class="pun">,</span>
+  theme<span class="pun">:</span> { runes<span class="pun">:</span> { recipe<span class="pun">:</span> recipeRune } }<span class="pun">,</span>
+}<span class="pun">;</span></code></pre>
+{% /sandbox %}
+
+{% sandbox height=420 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #1c1a17;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: 32px;
+    box-sizing: border-box;
+    color: #f6f4ef;
+  }
+  pre {
+    background: #232017;
+    padding: 22px 26px;
+    border-radius: 8px;
+    margin: 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    border: 1px solid #2d2926;
+  }
+  code { color: #f6f4ef; }
+  .kw  { color: #7eb6bc; }
+  .fn  { color: #a89bc7; }
+  .str { color: #c79a9a; }
+  .num { color: #d4b07e; }
+  .typ { color: #94b385; }
+  .com { color: #6b6661; font-style: italic; }
+  .pun { color: #94908a; }
+</style>
+<pre><code><span class="com">// A small plugin defining one rune</span>
+<span class="kw">import</span> { createContentModelSchema } <span class="kw">from</span> <span class="str">'@refrakt-md/runes'</span><span class="pun">;</span>
+<span class="kw">import type</span> { <span class="typ">Plugin</span> } <span class="kw">from</span> <span class="str">'@refrakt-md/types'</span><span class="pun">;</span>
+
+<span class="kw">const</span> recipeRune <span class="pun">=</span> <span class="fn">createContentModelSchema</span>({
+  contentModel<span class="pun">:</span> { type<span class="pun">:</span> <span class="str">'sections'</span> }<span class="pun">,</span>
+  <span class="fn">transform</span>(resolved<span class="pun">,</span> attrs<span class="pun">:</span> { servings<span class="pun">:</span> <span class="typ">number</span> }) {
+    <span class="kw">const</span> total <span class="pun">=</span> attrs.servings <span class="pun">*</span> <span class="num">5</span><span class="pun">;</span>
+    <span class="kw">return</span> { title<span class="pun">:</span> resolved.title ?? <span class="str">'Untitled'</span><span class="pun">,</span> total }<span class="pun">;</span>
+  }<span class="pun">,</span>
+})<span class="pun">;</span>
+
+<span class="kw">export const</span> plugin<span class="pun">:</span> <span class="typ">Plugin</span> <span class="pun">=</span> {
+  name<span class="pun">:</span> <span class="str">'@example/cookbook'</span><span class="pun">,</span>
+  theme<span class="pun">:</span> { runes<span class="pun">:</span> { recipe<span class="pun">:</span> recipeRune } }<span class="pun">,</span>
+}<span class="pun">;</span></code></pre>
+{% /sandbox %}
+
+A few notes on the choices:
+
+- **Teal over blue for keywords.** Blue is the universal default in syntax highlighting (every editor since Borland Turbo Pascal has done blue keywords). Teal sits in the same cool family but reads as deliberate rather than default. Swappable for a conventional ink-blue (`#2c4a6e` / `#9bb4c7`) if "deliberate" feels too try-hard once we see it in real docs.
+- **Light mode is mid-saturation; dark mode is lifted and slightly desaturated.** Pure inversions of the light hues read as too saturated against the warm-dark surface — the dark variants pull a step toward muted to keep code visually calm in dark mode.
+- **Verify against real code, not single tokens.** A palette that's beautifully balanced on a hand-curated snippet can read as noisy when half the screen is strings or half is comments. Implementation should include a visual pass on at least one substantial block per popular language (TS, Python, Markdown, JSON, HTML, Bash) before locking exact values.
+
+-----
+
 ## The Seaside Preset
 
 Everything currently in `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` becomes the content of a new preset module:
@@ -131,7 +254,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 ## Acceptance Criteria
 
 - [ ] SPEC-048 is implemented and merged
-- [ ] Lumina's default token values shift to the neutral palette described above (light + dark)
+- [ ] Lumina's default token values shift to the neutral palette described above (light + dark), including the five-hue syntax highlighting palette
 - [ ] `packages/lumina/presets/seaside/` exists, exports a `ThemeTokensConfig`, and contains verbatim values from the previous Lumina defaults
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/seaside"]` renders pixel-identical to the previous Lumina default (visual regression test, or curated diff review)
 - [ ] The refrakt documentation site renders against the neutral default (no implicit `seaside` opt-in)
@@ -154,6 +277,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 ## Open Questions
 
 - **Exact hues for status colours** (`info`, `warning`, `danger`, `success`) in the neutral default. The principle is "muted, functionally readable, never garish" — actual values are an implementation-time decision once the rest of the palette is rendered.
+- **Final syntax palette values.** The proposed teal / violet / rust / ochre / sage walk is a starting point; the implementation step needs a visual pass on real code in multiple languages before locking. Teal vs. conventional ink-blue for keywords is the most likely place to revisit.
 - **`primary-scale` ramp values.** Eleven stops along the warm-neutral axis from near-bg to near-text. Generated mathematically or hand-picked? Lean hand-picked for visual rightness; tooling can verify monotonicity.
 - **Should marketing pages on the refrakt site opt into `seaside` as an example?** Lean no for message coherence. But it's a defensible choice if we feel the homepage needs more visual distinctiveness — would need to be deliberate, framed as "here's a preset in action," with a way for visitors to see the neutral default too.
 - **Preset naming convention going forward.** `seaside` is geographic/atmospheric. Future presets follow the same naming axis (`midnight`, `tideline`, `mendocino`) or open it up to anything (`graphite`, `inkwell`)? Worth deciding before the second preset lands so the catalog doesn't feel haphazard.
