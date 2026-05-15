@@ -15,8 +15,8 @@ Add `layout="cards"` to the `nav` rune for section landing pages. Each item rend
 - [ ] `{% nav layout="cards" auto %}` continues to work: the existing `auto` mechanism lists the current page's children, and each is then enriched as above
 - [ ] Lumina ships CSS for `.rf-nav--cards` with a responsive grid (multi-column on desktop, single-column on mobile) and per-card styling for title / description / icon
 - [ ] CSS coverage tests updated for the new selectors
-- [ ] At least one section landing page in `site/content/` updated to demonstrate `{% nav layout="cards" %}` — the docs index or runes index is a natural target
-- [ ] Authoring docs include a cards-layout example and document the `icon` frontmatter field
+
+Reference doc page (`site/content/runes/nav.md`) updates and adopting cards on a real section landing are owned by {% ref "WORK-183" /%} and {% ref "WORK-184" /%} respectively.
 
 ## Approach
 

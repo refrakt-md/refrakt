@@ -19,7 +19,8 @@ Add a `collapsible` modifier to the `nav` rune that turns each `NavGroup` into a
 - [ ] Lumina CSS styles `[data-collapsed="true"]` to hide the items list and `[data-collapsed="false"]` to show it, with a chevron / indicator on the group header that reflects state
 - [ ] Existing non-collapsible nav (`{% nav %}` without the modifier) renders byte-identical output to today
 - [ ] `npx refrakt inspect nav --collapsible` shows expected output including `data-collapsed` sentinel attributes
-- [ ] Authoring docs include a collapsible sidebar example
+
+Reference doc page (`site/content/runes/nav.md`) updates and enabling `collapsible` on the live refrakt.md sidebars are owned by {% ref "WORK-183" /%} and {% ref "WORK-184" /%} respectively.
 
 ## Approach
 

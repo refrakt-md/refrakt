@@ -16,10 +16,10 @@ Add a `pagination` rune for prev/next links in sequential reading flows — tuto
 - [ ] `scope="section"` widens the candidate set beyond direct siblings to all pages in the current top-level section; `scope="siblings"` (default) uses direct page-tree siblings only
 - [ ] When the current page has children but no siblings of its own kind (i.e. it's a section index), auto mode renders nothing — verify against real site content during implementation; if the heuristic is wrong, add a `skip-empty` attribute instead
 - [ ] Lumina ships CSS for `.rf-pagination`, `.rf-pagination__prev`, `.rf-pagination__next` with sensible defaults and a `[data-direction]` selector for the arrow / marker
-- [ ] At least one docs section in `site/content/` uses `{% pagination auto /%}` via `_layout.md` so the feature is exercised end-to-end on the production site
 - [ ] `npx refrakt inspect pagination --auto` shows the sentinel output; `npx refrakt inspect pagination --prev=foo --next=bar` shows resolved links
 - [ ] CSS coverage tests updated for the new selectors
-- [ ] Authoring docs (`site/content/docs/authoring/`) cover both auto and explicit forms with examples
+
+A dedicated reference doc page (`site/content/runes/pagination.md`) and adoption on the refrakt.md docs / runes layouts are owned by {% ref "WORK-183" /%} and {% ref "WORK-184" /%} respectively.
 
 ## Approach
 

@@ -16,7 +16,8 @@ Layer interaction on top of the static menubar layout from {% ref "WORK-178" /%}
 - [ ] Lumina ships CSS for the desktop dropdown styles, mobile hamburger button, and the mobile expanded panel — all keyed off `[data-open]` and the existing layout modifier
 - [ ] The trigger button is emitted by the nav rune itself when `layout="menubar"` (inside a `data-name="trigger"` element); themes position it via CSS without needing a separate `nav-toggle` rune
 - [ ] CSS coverage tests updated for the new selectors
-- [ ] Authoring docs note that menubars include keyboard / mobile affordances out of the box — no additional authoring required
+
+Reference doc page (`site/content/runes/nav.md`) updates noting the built-in keyboard / mobile affordances are owned by {% ref "WORK-183" /%}.
 
 ## Approach
 

@@ -12,10 +12,10 @@ Add a `layout` attribute to the `nav` rune with values `vertical` (default, toda
 - [ ] Top-level items (before the first `##`) continue to render inside the existing `data-name="top-level"` container regardless of layout value
 - [ ] `{% nav %}` with no `layout` attribute renders byte-identical output to today — no behaviour change for existing callers
 - [ ] Lumina ships static CSS for `menubar` (horizontal bar, groups laid out as inline trigger + adjacent submenu, no interactive open/close yet) and `columns` (CSS Grid columns layout, group headings as column titles, stacked single-column on mobile)
-- [ ] `site/content/_layout.md` updated: header region uses `{% nav layout="menubar" %}` with `Product` and `Resources` groups; footer region uses `{% nav layout="columns" %}` with `Product`, `Resources`, `Legal` groups
 - [ ] `npx refrakt inspect nav --layout=menubar` and `--layout=columns` show the expected HTML output
 - [ ] CSS coverage tests updated for the new selectors (`.rf-nav--menubar`, `.rf-nav--columns` plus their elements)
-- [ ] Authoring docs (`site/content/docs/authoring/` or wherever `nav` is documented) cover the `layout` attribute with header and footer examples
+
+Reference doc page (`site/content/runes/nav.md`) updates and site-wide adoption are owned by {% ref "WORK-183" /%} and {% ref "WORK-184" /%} respectively.
 
 ## Approach
 
