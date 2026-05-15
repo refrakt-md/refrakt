@@ -1,8 +1,8 @@
-{% spec id="SPEC-048" status="draft" tags="plan, traceability, ai-workflow" %}
+{% spec id="SPEC-049" status="draft" tags="plan, traceability, ai-workflow" %}
 
 # Spec lifecycle and PR linkage
 
-Close the loop between a spec, the work that implements it, and the PRs that ship it — so a reader can answer "is this built, and is it available to users?" without grepping prose.
+Close the loop between a spec, the work that implements it, and the PRs that ship it — so a reader can answer "is this built, and is it available to users?" without grepping prose. Also tidies up an unrelated lifecycle gap in ADRs while we're in the neighborhood.
 
 ## Problem
 
@@ -42,6 +42,8 @@ Today the chain *spec → work → implementation* exists in the data (work item
 
 `released-in` is **required when** a spec is `status="shipped"` (validator errors otherwise). `pr` is **optional and unvalidated for absence** in v1 — the format of values *is* validated when set (malformed refs error), but a missing `pr` does not trigger a warning. See Open Questions for the future-enforcement discussion.
 
+ADRs (`decision` runes) are **intentionally excluded** from `pr` and `released-in`: they record reasoning, not units of work, so traceability flows through the work items that `source` them. Their own lifecycle gets a separate touch-up below.
+
 ### New spec statuses
 
 | Status | Meaning | Transition trigger |
@@ -50,6 +52,16 @@ Today the chain *spec → work → implementation* exists in the data (work item
 | `shipped` | Released to users in an npm version. | Manual flip after `npm run release`, paired with `released-in="vX.Y.Z"`. |
 
 Existing statuses (`draft | review | accepted | superseded | deprecated`) are unchanged. `accepted → implemented → shipped` is the new happy path; `accepted → superseded` and `accepted → deprecated` remain valid.
+
+### New ADR status
+
+| Status | Meaning | Transition trigger |
+|---|---|---|
+| `rejected` | The decision was considered and explicitly declined. The ADR body should record the reasoning. | Manual flip from `proposed`. |
+
+Existing ADR statuses (`proposed | accepted | superseded | deprecated`) are unchanged. `rejected` is a terminal state alongside `superseded` and `deprecated` but distinct in meaning: a rejected ADR was *never* accepted, where `deprecated` and `superseded` describe ADRs that were once accepted and have since aged out or been replaced. Today there's no honest way to record "we considered this and decided against it" — the file either gets deleted (losing the reasoning trail) or mismarked. Rejected decisions are arguably the most valuable kind to preserve, since they pre-empt future contributors re-proposing paths the team has already weighed.
+
+This is the *only* ADR change in this spec. ADRs deliberately don't gain `implemented`/`shipped` analogues — the implementation reality of a decision lives in the work items that `source` it, not in the ADR itself.
 
 ### CLI / MCP changes
 
@@ -96,6 +108,7 @@ The 175 legacy `done` work items without a `pr` attribute are largely recoverabl
 - [ ] `work` and `bug` runes accept an optional, multi-valued `pr` attribute matching `<org>/<repo>#<number>`
 - [ ] `spec` runes accept `implemented` and `shipped` status values
 - [ ] `spec` runes accept an optional `released-in` attribute (semver format)
+- [ ] `decision` runes accept a `rejected` status value (in addition to existing `proposed | accepted | superseded | deprecated`); status badge sentiment map is updated to render `rejected` appropriately
 - [ ] `plan validate` errors on malformed `pr` values (anything not matching `<org>/<repo>#<number>`)
 - [ ] `plan validate` errors on `status="shipped"` specs that lack `released-in`
 - [ ] `plan validate` does **not** warn on missing `pr` in v1 (deliberate — see Open Questions)
@@ -103,7 +116,7 @@ The 175 legacy `done` work items without a `pr` attribute are largely recoverabl
 - [ ] `plan status` suggests the `implemented` flip when every `implemented-by` work item of an `accepted` spec is `done`
 - [ ] `plan.update` MCP tool exposes `pr` and `released-in` in its input schema with the same validation
 - [ ] CLAUDE.md completion checklist gains a standalone, imperative bullet for setting the `pr` attribute, distinct from the `--resolve` example
-- [ ] Documentation page under `site/content/docs/plan/` describes the new statuses, the `pr` attribute, and the happy-path lifecycle
+- [ ] Documentation page under `site/content/docs/plan/` describes the new spec statuses (`implemented`, `shipped`), the new ADR `rejected` status, the `pr` attribute, and the happy-path lifecycle
 - [ ] Existing work items that carry `PR:` in the resolution body are not broken; the parser continues to read that line for backward compat
 - [ ] `refrakt plan migrate pr-attrs` (CLI + MCP) backfills `pr` on legacy `done` work / `fixed` bug items from git merge-commit history, supports `--apply --git`, and reports unresolved items without modifying them
 
