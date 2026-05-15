@@ -90,11 +90,11 @@ Cuts spaced 8 units apart along the top edge. All four strokes share the same we
 
 -----
 
-## Variant 2 — Open Prism with Bottom Fill
+## Variant 2 — Filled Apex
 
-The outline is intentionally incomplete: only the **top and right** edges are drawn, leaving the left side open. Inside, two horizontal lines run parallel to the top edge — shorter than it, inset from where the left side would have been. Below the second line, a small triangular space is filled solid, anchoring the mark.
+Identical construction to Variant 1, but the top-right region — the triangle beyond the third cut — is filled solid instead of left as negative space. The three thin slices remain on the left; the right side becomes a saturated apex.
 
-Reads as light entering from the upper-left through the open edge, refracting downward, and concentrating into the saturated bottom point.
+Reads as light entering through the cuts and accumulating into a brighter region on the right — same prism, with weight redistributed.
 
 {% sandbox height=320 %}
 <style>
@@ -111,34 +111,37 @@ Reads as light entering from the upper-left through the open edge, refracting do
   }
   svg {
     stroke: #ffffff;
+    fill: none;
     stroke-width: 3;
     stroke-linecap: round;
     stroke-linejoin: round;
     overflow: visible;
   }
-  svg .stroke { fill: none; }
   svg .fill { fill: #ffffff; stroke: none; }
   .lg { width: 200px; height: 200px; }
   .md { width: 96px; height: 96px; }
   .sm { width: 32px; height: 32px; }
 </style>
 <svg class="lg" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, large">
-  <path class="stroke" d="M 10 16 L 90 16 L 50 86" />
-  <line class="stroke" x1="30" y1="37" x2="78" y2="37" />
-  <line class="stroke" x1="40" y1="58" x2="66" y2="58" />
-  <path class="fill" d="M 40 58 L 66 58 L 50 86 Z" />
+  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path d="M 10 16 L 90 16 L 50 86 Z" />
+  <line x1="18" y1="16" x2="54" y2="79" />
+  <line x1="26" y1="16" x2="58" y2="72" />
+  <line x1="34" y1="16" x2="62" y2="65" />
 </svg>
 <svg class="md" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, medium">
-  <path class="stroke" d="M 10 16 L 90 16 L 50 86" />
-  <line class="stroke" x1="30" y1="37" x2="78" y2="37" />
-  <line class="stroke" x1="40" y1="58" x2="66" y2="58" />
-  <path class="fill" d="M 40 58 L 66 58 L 50 86 Z" />
+  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path d="M 10 16 L 90 16 L 50 86 Z" />
+  <line x1="18" y1="16" x2="54" y2="79" />
+  <line x1="26" y1="16" x2="58" y2="72" />
+  <line x1="34" y1="16" x2="62" y2="65" />
 </svg>
 <svg class="sm" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, favicon">
-  <path class="stroke" d="M 10 16 L 90 16 L 50 86" />
-  <line class="stroke" x1="30" y1="37" x2="78" y2="37" />
-  <line class="stroke" x1="40" y1="58" x2="66" y2="58" />
-  <path class="fill" d="M 40 58 L 66 58 L 50 86 Z" />
+  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path d="M 10 16 L 90 16 L 50 86 Z" />
+  <line x1="18" y1="16" x2="54" y2="79" />
+  <line x1="26" y1="16" x2="58" y2="72" />
+  <line x1="34" y1="16" x2="62" y2="65" />
 </svg>
 {% /sandbox %}
 
@@ -146,29 +149,29 @@ Reads as light entering from the upper-left through the open edge, refracting do
 
 | Element | Coordinates |
 |---|---|
-| Open outline | `(10, 16) → (90, 16) → (50, 86)` (no closing segment) |
-| Inner line 1 | `(30, 37) → (78, 37)` — at one-third depth, right end on right edge |
-| Inner line 2 | `(40, 58) → (66, 58)` — at two-thirds depth, right end on right edge |
-| Bottom fill | `(40, 58) → (66, 58) → (50, 86) → close` |
+| Outline | `(10, 16) → (90, 16) → (50, 86) → close` |
+| Cut 1 | `(18, 16) → (54, 79)` |
+| Cut 2 | `(26, 16) → (58, 72)` |
+| Cut 3 | `(34, 16) → (62, 65)` |
+| Apex fill | `(34, 16) → (90, 16) → (62, 65) → close` |
 
-The right end of each inner line sits exactly on the right edge of the triangle. Left ends are inset from the conceptual (undrawn) left edge by ~8 units. The filled triangle's top edge coincides with inner line 2 — the line and fill visually merge into one tapered, weight-shifting form.
+The fill triangle's vertices are exactly Cut 3's top endpoint, the outer triangle's top-right vertex, and Cut 3's bottom endpoint. The strokes bounding the filled region (top edge, right edge, Cut 3) are visually absorbed into the fill since both are white — no special handling needed.
 
 ### Notes
 
-- The missing left edge is the whole point — light has somewhere to enter
-- Line + fill weight progression (thin line, thicker line, solid fill) mimics increasing refraction toward the apex
-- At 32px the open edge may not register; what survives is "two strokes plus a downward triangle pointing." That may actually still work
-- More directional than Variant 1 — has an obvious top-left "in" and bottom "out"
+- The thin-slice rhythm on the left is preserved, so the mark still reads as "ordered cuts" not just "triangle with corner filled"
+- Mass shifts to the right, giving the mark more visual weight than V1 at the same size — useful when the logo sits next to a heavy wordmark
+- At favicon scale, the fill survives even if the cuts merge; V1 risks reading as a single triangle, while V2 still has an unambiguous bright/dark asymmetry
 
 -----
 
 ## Decision Criteria
 
-When picking between them, prioritise in this order:
+Both variants share the same construction — V2 just adds a fill in the top-right region. Pick on visual weight:
 
-1. **Recognizability at 16–32px.** Whichever survives the favicon sandbox above wins. If both survive, continue.
-2. **Brand fit.** Variant 1 is structural, ordered, neutral. Variant 2 is kinetic, directional, more "refraction-y." Refrakt the product is closer to the latter, but the mark doesn't need to over-explain.
-3. **Wordmark pairing.** A symmetric mark (V1) sits more comfortably to the left of a wordmark; an asymmetric mark (V2) needs more breathing room.
+1. **Recognizability at 16–32px.** V2 holds together better at the favicon end because the fill remains unambiguous even when the cut strokes merge.
+2. **Visual weight.** V1 is all linework — lighter, more delicate, reads as a diagram. V2 has a solid mass — heavier, more present, reads as a mark. Pick to match the rest of the v1.0 visual system.
+3. **Wordmark pairing.** V1's lighter weight balances better next to a regular-weight wordmark; V2's heavier weight pairs better with a bold or display wordmark.
 
 ## Open Questions
 
