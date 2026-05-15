@@ -374,6 +374,48 @@ The 11 syntax tokens above are the contract. A future highlighter swap means rew
 
 -----
 
+## Relationship to Tint Presets
+
+Refrakt already has a parallel preset concept — **tint presets** — and the two systems should be understood side-by-side without being confused. This section documents the relationship and the alignments that should happen as follow-up work.
+
+### What tints are
+
+Tints are *block-scoped* color overlays applied to a subtree of a page. An author writes `{% hint tint="warm" %}…{% /hint %}` (or `{% tint %}` directly) and the engine emits `data-tint` plus `--tint-*` custom properties on that element; the CSS bridge in `packages/lumina/styles/runes/tint.css` maps those into the local `--rf-color-*` scope. Six tokens are overridable: `background`, `surface`, `primary`, `secondary`, `accent`, `border`. Each preset declares a `light` and `dark` value set; presets live in `theme.tints` on `ThemeConfig` and can be overridden site-side via `tints` in `RefraktConfig`.
+
+The mechanism is intentionally different from site-wide tokens: tints exist precisely *because* the global contract is page-wide. "I want this card to use warm tones" is a per-block question that token overrides at `:root` can't answer.
+
+### Same shape, different scope
+
+Conceptually tints and the SPEC-048 token presets are the same machine:
+
+|                | Tint preset                                  | Token preset (SPEC-048)                          |
+|----------------|----------------------------------------------|--------------------------------------------------|
+| Scope          | Subtree (`[data-tint]`)                      | Site (`:root` + `[data-theme="<mode>"]`)         |
+| Tokens         | 6 names                                      | Full `TokenContract` (~71)                       |
+| Light / dark   | `{ light, dark, mode? }`                     | `{ tokens, modes, colorScheme? }`                |
+| Site override  | Shallow merge by preset name                 | Deep merge via `mergeTokens`                     |
+| Discoverable   | No                                           | `manifest.presets[].meta`                        |
+
+Both are named bundles of token overrides with a light/dark split, produced as CSS custom properties at runtime. The shape differences are mostly historical — tints predate the typed contract.
+
+### Follow-up alignments (out of scope here, recorded as future work)
+
+Three non-breaking changes would let tints and tokens share more of the same mental model and tooling. None of these belong in SPEC-048; they are recorded here so a future spec has a starting point.
+
+1. **Shape vocabulary.** Rename tint's `light` → `tokens` and `dark` → `modes.dark` (with backwards-compatible reading of the old names for one minor version). After: a `Tint` extends `ThemeTokensConfig` exactly like `Preset` does, and the validator / merge utilities work uniformly across both. The `mode: 'dark' | 'light'` field on tints becomes `colorScheme` for consistency.
+
+2. **Discoverable tints via the manifest.** Add `manifest.tints: Tint[]` populated from `packages/lumina/src/tints/` (mirroring the preset layout). Each tint gets a `meta: { id, name, description, tags?, preview? }` block. Hosted UIs render a tint picker the same way they render a token-preset picker.
+
+3. **Deep-merge site tint overrides.** Replace the current shallow `{ ...base.tints, ...overrides.tints }` with `mergeTokens`-style deep merge so a site can tweak one color of an existing tint preset without redefining the whole thing.
+
+### Explicitly deferred
+
+**Tint token namespace unification** is *not* a follow-up — it's a much larger discussion. Tint's `primary` bridges to `--rf-color-text` (foreground), while the contract's `color.primary` is the brand accent. Renaming tint tokens to align with the contract is a breaking change for every existing `{% tint %}` block on every site. Any future "tint v2" that exposes the full token surface would need an aliasing layer to keep the terse 6-name authoring form working.
+
+**The CSS bridge itself** stays untouched. The `@property` registrations, `--cs-*` intermediaries, and ancestor-vs-same-element selectors in `tint.css` are the rune's plumbing, not a tokens-contract concern.
+
+-----
+
 ## Package Layout & Helpers
 
 - `packages/types/src/tokens.ts` — `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, `tokenContract` const. Zero runtime deps. Re-exported from `packages/types/src/index.ts`.
