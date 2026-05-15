@@ -377,7 +377,7 @@ The 11 syntax tokens above are the contract. A future highlighter swap means rew
 ## Package Layout & Helpers
 
 - `packages/types/src/tokens.ts` — `TokenContract`, `PartialTokenContract`, `ThemeTokensConfig`, `tokenContract` const. Zero runtime deps. Re-exported from `packages/types/src/index.ts`.
-- `packages/transform/src/tokens.ts` — `tokensToCss(config: ThemeTokensConfig): string`, `mergeTokens(...layers: ThemeTokensConfig[]): ThemeTokensConfig`, `validateTokens(config): { ok: boolean; warnings: string[]; errors: string[] }`. All three operate on full `ThemeTokensConfig` (base + modes) uniformly.
+- `packages/transform/src/tokens.ts` — `tokensToCss(config: ThemeTokensConfig): string`, `mergeTokens(...layers: ThemeTokensConfig[]): ThemeTokensConfig`, `validateTokens(config): { ok: boolean; warnings: string[]; errors: string[] }`, `applyTokens(config: ThemeTokensConfig, target?: HTMLElement): void`. All four are pure data utilities with no Node-only dependencies — `tokensToCss`, `mergeTokens`, and `validateTokens` work identically in the browser; `applyTokens` is browser-only (writes inline `style.setProperty` calls onto `target ?? document.documentElement`, defaults included). All operate on full `ThemeTokensConfig` (base + modes) uniformly.
 - `packages/lumina/src/tokens.ts` — Lumina's values typed against `ThemeTokensConfig`. Single source of truth: both `tokens/base.css` and `tokens/dark.css` are generated from this file by `packages/lumina/scripts/build-tokens.ts`, which runs as a `prebuild` step. The generated CSS files are committed to the repo (so installing `@refrakt-md/lumina` doesn't require running a build) and CI asserts that re-running the generator produces no diff against `HEAD` — that's how drift is caught.
 - `packages/lumina/src/presets/` — `Preset` objects exported per preset (e.g. `warm.ts`, `slate.ts`). Each preset can contribute to base and/or to any mode and carries a `meta` block. The build-tokens script also re-emits these into `packages/lumina/manifest.json`'s `presets` field so they're discoverable via `@refrakt-md/lumina/manifest` without a separate import path. Direct import (`@refrakt-md/lumina/presets/warm`) keeps working as a module specifier for users who prefer that form.
 - `packages/sveltekit/` — the Vite plugin reads `refrakt.config.json`, calls `mergeTokens(theme.base, ...presets, { tokens: theme.tokens, modes: theme.modes, colorScheme: theme.colorScheme })`, runs `tokensToCss()`, and exposes the result as a virtual module (e.g. `virtual:refrakt-tokens.css`) injected into the document head before user CSS. When the merged `colorScheme` is `'light'`, `'dark'`, or a custom mode name, the integration also writes `data-theme="<value>"` onto the `<html>` element of every SSR response (via SvelteKit's `transformPageChunk` hook in a server `handle`). For `'auto'` (or unset), no attribute is emitted — the media query in the dark-mode block decides at the browser. HMR re-runs on config change.
@@ -409,6 +409,53 @@ Warnings surface in the build log and in `refrakt inspect --tokens` (see below).
 
 -----
 
+## Runtime Use for Live Editors
+
+The build-time CSS generation produces a `:root { --rf-* }` stylesheet for *persisted* output, but the underlying substrate — CSS custom properties — is fully runtime-mutable. Hosted theme editors, brand-picker panels, and "preview your changes live" UIs work against the same contract without rebuilding anything: a `setProperty` call on `<html>` re-paints every rune that reads via `var(--rf-*)`.
+
+This is an intentional outcome of the design, not an afterthought. To make the runtime story first-class, the three pure utilities in `packages/transform/src/tokens.ts` (`tokensToCss`, `mergeTokens`, `validateTokens`) ship without Node-only imports and are safe to call in the browser. A fourth helper, `applyTokens`, exists specifically for the runtime case.
+
+### `applyTokens(config, target?)`
+
+```ts
+import { applyTokens, mergeTokens } from '@refrakt-md/transform/tokens';
+
+// User drags the primary color picker:
+applyTokens({
+  tokens: { color: { primary: '#7c3aed' } }
+});
+// Every rune referencing var(--rf-color-primary) re-paints instantly.
+
+// Compose a preview state from current site config + user's pending edits:
+const preview = mergeTokens(currentSiteConfig, pendingEdits);
+applyTokens(preview);
+```
+
+`applyTokens` writes one `style.setProperty('--rf-color-primary', '#7c3aed')` per leaf value onto `target ?? document.documentElement`. For `modes`, the helper inspects the current `data-theme` attribute and applies the matching mode overlay on top of the base — so a dark-mode preview stays dark while the user tweaks. To preview a different mode, set `data-theme="dark"` on the target before calling.
+
+To roll back a preview, the editor either re-applies the persisted config or calls `target.removeAttribute('style')` if no other inline styles need to survive. No memoization, no diffing — the helper is intentionally trivial; if a hosted product needs cleverer reconciliation, it composes its own on top of `mergeTokens` + `setProperty`.
+
+### Whole-stylesheet swap
+
+For larger changes (preset swap, multi-token overhaul), some editors prefer replacing a `<style>` block rather than calling `setProperty` per token. `tokensToCss(config)` runs identically in the browser:
+
+```ts
+const css = tokensToCss(preview);
+document.querySelector('#rf-preview-tokens')!.textContent = css;
+```
+
+A `<style id="rf-preview-tokens">` placed after the build-time stylesheet wins by source-order. Same effect as `applyTokens`, different mechanism — pick whichever fits the editor's reconciliation model.
+
+### Validating user input
+
+`validateTokens(config)` runs the same in the browser as in the build. Editors should call it on every keystroke (or debounced) to surface the same warnings/errors a user would see at build time — typo'd token names, malformed `extra` keys, invalid `colorScheme` values. The shape of the result (`{ warnings, errors }`) is uniform across environments.
+
+### Persisting changes
+
+Live preview is one half; persisting is the other. When the user clicks "save," the hosted product POSTs the merged `ThemeTokensConfig` (or just the user's partial) to its backend, which writes `refrakt.config.json` and queues a regular build. Everything between "live preview" and "deployed CSS" is identical because the runtime helpers and the build-time generator share the same data shape and merge rules.
+
+-----
+
 ## Migration
 
 Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-syntax-*`. This is the only breaking change in this spec.
@@ -427,6 +474,10 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - [ ] `extra: Record<string, string>` field present on `TokenContract` for theme-specific tokens outside the universal surface
 - [ ] `ThemeTokensConfig` is the shape shared by `theme` in `refrakt.config.json`, presets, and theme package base exports — with `tokens?: PartialTokenContract` and `modes?: Record<string, PartialTokenContract>` fields
 - [ ] `tokensToCss(config)` in `packages/transform/src/tokens.ts` emits a deterministic stylesheet from a `ThemeTokensConfig`: `:root { ... }` for base, plus a block per mode
+- [ ] `tokensToCss`, `mergeTokens`, and `validateTokens` are browser-safe: no Node-only imports, no `process`/`fs`/`path` references. A vitest case under `@vitest-environment jsdom` exercises each in a DOM environment to lock the guarantee.
+- [ ] `applyTokens(config, target?)` in `packages/transform/src/tokens.ts` writes one `style.setProperty(--rf-*, value)` per leaf value onto `target ?? document.documentElement`
+- [ ] `applyTokens` consults `target`'s `data-theme` attribute and layers the matching `modes[<value>]` overlay onto the base when writing
+- [ ] `applyTokens` is tested in jsdom: writes the expected inline custom properties for a base-only config, for a config with `modes.dark` when `data-theme="dark"` is set, and is a no-op for an empty `ThemeTokensConfig`
 - [ ] `tokensToCss` emits `[data-theme="dark"] { ... }` and `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }` blocks when `modes.dark` is present
 - [ ] `tokensToCss` emits only `[data-theme="<name>"] { ... }` for non-conventional mode names (no media query)
 - [ ] `tokensToCss` emits `[data-theme="light"] { ... }` for `modes.light` (no media query — light is the base)
@@ -460,6 +511,7 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - [ ] JSON Schema for `refrakt.config.json` updated to include `theme.tokens`, `theme.modes`, `theme.colorScheme`, and `theme.presets` with autocomplete-friendly key suggestions
 - [ ] CSS coverage tests updated for renamed syntax tokens
 - [ ] Theming docs at `site/content/docs/themes/configuration.md` updated to cover `theme.tokens`, `theme.modes`, `theme.colorScheme`, `theme.presets`, the layering order, and the conventional mode-name semantics (`dark` / `light` / custom)
+- [ ] A new doc page at `site/content/docs/themes/live-editing.md` (or equivalent under themes/) documents the runtime helpers (`applyTokens`, browser-safe `tokensToCss` / `validateTokens`) and the live-editor pattern for hosted products
 - [ ] Theming docs at `site/content/docs/themes/css.md` updated to point at `--rf-syntax-*` (not `--shiki-*`)
 - [ ] Changeset entry documents the `--shiki-* → --rf-syntax-*` rename with the full mapping table and the deprecation timeline
 
@@ -471,7 +523,7 @@ Existing sites consuming `--shiki-*` in custom CSS need to rename to `--rf-synta
 - **Mode-aware media queries beyond dark.** Only `modes.dark` gets the `@media (prefers-color-scheme)` hookup. `print`, `reduced-motion`, `high-contrast` system-pref bindings are deferred; they need their own opt-in mechanism rather than overloading the mode key.
 - **Runtime mode toggling UI.** This spec covers the SSR-emitted *initial* `data-theme` (via `theme.colorScheme`) and the CSS selectors modes resolve to. A user-clickable toggle button — flipping `data-theme` on the fly, persisting to `localStorage`, syncing across tabs — is a separate concern, likely a `@refrakt-md/behaviors` addition that builds on this foundation.
 - **Per-page or per-route token overrides.** Scoped CSS injection is a different mechanism; out of scope here.
-- **A hosted UI for token customization.** This spec enables one by giving it a contract to render against. Building the UI itself is separate.
+- **A hosted UI for token customization.** This spec enables one by giving it a contract, browser-safe utilities (`tokensToCss`, `mergeTokens`, `validateTokens`, `applyTokens`), and a manifest-based preset registry. Actually building the panel — auth, storage, deployment — is separate product work.
 - **Runtime theme switching.** Build-time output only. Runtime switching is achievable via standard CSS techniques on top of this work.
 - **Token naming overhaul.** Names (`primary`, `surface.raised`, `spacing.section.tight`) are preserved as-is from current Lumina CSS, modulo the `--shiki-* → --rf-syntax-*` rename. Reorganizing the namespace is its own spec.
 - **Plugin-contributed tokens.** Plugins can read tokens via CSS today; whether they can *contribute* to the contract is a follow-up question once we see what plugins actually need.
