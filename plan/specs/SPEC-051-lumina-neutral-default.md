@@ -50,8 +50,8 @@ Light surface anchors at `#f6f4ef` (warm off-white, ~OKLCH L 0.967 C 0.005 H 80)
 | `color.surface.active` | `#e8e5df` | `#3a342d` |
 | `color.primary` | `#1c1a17` | `#f6f4ef` |
 | `color.primary-hover` | `#3a342d` | `#d4cfc5` |
-| `color.code.bg` | `#efece5` | `#232017` |
-| `color.code.inline-bg` | `#e8e5df` | `#2d2926` |
+| `color.code.bg` | `#ebeae8` | `#222220` |
+| `color.code.inline-bg` | `#e6e5e3` | `#2b2b29` |
 | `color.code.text` | `#1c1a17` | `#f6f4ef` |
 
 Status colours (`info`, `warning`, `danger`, `success`) stay independent of brand — they communicate function, not personality. Lean muted: a slightly desaturated blue for info, an unsaturated amber for warning, a brick-red rather than fire-engine red for danger, an unsaturated forest green for success. Exact hues nailed down during implementation; the principle is "functionally readable, never garish."
@@ -94,14 +94,14 @@ A live preview of the palette on the proposed neutral default, light then dark:
     color: #1c1a17;
   }
   pre {
-    background: #efece5;
+    background: #ebeae8;
     padding: 22px 26px;
     border-radius: 8px;
     margin: 0;
     overflow-x: auto;
     font-size: 13px;
     line-height: 1.65;
-    border: 1px solid #e8e5df;
+    border: 1px solid #e2e1df;
   }
   code { color: #1c1a17; }
   .kw  { color: #2a5c63; }
@@ -141,14 +141,14 @@ A live preview of the palette on the proposed neutral default, light then dark:
     color: #f6f4ef;
   }
   pre {
-    background: #232017;
+    background: #222220;
     padding: 22px 26px;
     border-radius: 8px;
     margin: 0;
     overflow-x: auto;
     font-size: 13px;
     line-height: 1.65;
-    border: 1px solid #2d2926;
+    border: 1px solid #2c2c2a;
   }
   code { color: #f6f4ef; }
   .kw  { color: #7eb6bc; }
@@ -179,6 +179,7 @@ A live preview of the palette on the proposed neutral default, light then dark:
 
 A few notes on the choices:
 
+- **Code surfaces step down chroma, not just lightness.** The page bg is deliberately warm — it's the "paper" character of the theme. But code blocks are a different material, and stacking a warm-equal surface on a warm surface compounds visually into "brown." So `code.bg` keeps roughly the same lightness as a one-step-deeper surface would, but drops chroma to about a third of the page bg's. The result reads as an architectural inset rather than more paper. Same principle in dark mode (less warmth in the code surface, more neutral grey).
 - **Teal over blue for keywords.** Blue is the universal default in syntax highlighting (every editor since Borland Turbo Pascal has done blue keywords). Teal sits in the same cool family but reads as deliberate rather than default. Swappable for a conventional ink-blue (`#2c4a6e` / `#9bb4c7`) if "deliberate" feels too try-hard once we see it in real docs.
 - **Light mode is mid-saturation; dark mode is lifted and slightly desaturated.** Pure inversions of the light hues read as too saturated against the warm-dark surface — the dark variants pull a step toward muted to keep code visually calm in dark mode.
 - **Verify against real code, not single tokens.** A palette that's beautifully balanced on a hand-curated snippet can read as noisy when half the screen is strings or half is comments. Implementation should include a visual pass on at least one substantial block per popular language (TS, Python, Markdown, JSON, HTML, Bash) before locking exact values.
