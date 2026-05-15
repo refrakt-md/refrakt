@@ -356,6 +356,192 @@ And the same icon set on the lumina light background (`--rf-color-bg` = `#faf5eb
 </div>
 {% /sandbox %}
 
+A forward look at how the mark would read against the slight-warm neutral palette being considered as lumina's new default (the subject of a follow-up spec, SPEC-051). Light surface `#f6f4ef`, mark `#1c1a17`; same SVG, just the colors flipped from "branded warm" to "calm warm neutral." Inverted in the dark example below.
+
+{% sandbox height=160 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #f6f4ef;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 24px;
+    box-sizing: border-box;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(28, 26, 23, 0.5);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  svg {
+    stroke: #1c1a17;
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+    display: block;
+  }
+  svg .fill { fill: #1c1a17; stroke: none; }
+  .s16 { width: 16px; height: 16px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s48 { width: 48px; height: 48px; }
+  .s64 { width: 64px; height: 64px; }
+</style>
+<div class="item">
+  <svg class="s16" viewBox="0 0 100 100" aria-label="V2 warm-neutral light at 16px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>16</span>
+</div>
+<div class="item">
+  <svg class="s24" viewBox="0 0 100 100" aria-label="V2 warm-neutral light at 24px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>24</span>
+</div>
+<div class="item">
+  <svg class="s32" viewBox="0 0 100 100" aria-label="V2 warm-neutral light at 32px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>32</span>
+</div>
+<div class="item">
+  <svg class="s48" viewBox="0 0 100 100" aria-label="V2 warm-neutral light at 48px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>48</span>
+</div>
+<div class="item">
+  <svg class="s64" viewBox="0 0 100 100" aria-label="V2 warm-neutral light at 64px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>64</span>
+</div>
+{% /sandbox %}
+
+And the inverse — warm near-black surface `#1c1a17`, mark `#f6f4ef`. Reads as "calm office" rather than "branded dark mode," which is closer to what neutral-default dark should feel like.
+
+{% sandbox height=160 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #1c1a17;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 24px;
+    box-sizing: border-box;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(246, 244, 239, 0.45);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  svg {
+    stroke: #f6f4ef;
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+    display: block;
+  }
+  svg .fill { fill: #f6f4ef; stroke: none; }
+  .s16 { width: 16px; height: 16px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s48 { width: 48px; height: 48px; }
+  .s64 { width: 64px; height: 64px; }
+</style>
+<div class="item">
+  <svg class="s16" viewBox="0 0 100 100" aria-label="V2 warm-neutral dark at 16px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>16</span>
+</div>
+<div class="item">
+  <svg class="s24" viewBox="0 0 100 100" aria-label="V2 warm-neutral dark at 24px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>24</span>
+</div>
+<div class="item">
+  <svg class="s32" viewBox="0 0 100 100" aria-label="V2 warm-neutral dark at 32px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>32</span>
+</div>
+<div class="item">
+  <svg class="s48" viewBox="0 0 100 100" aria-label="V2 warm-neutral dark at 48px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>48</span>
+</div>
+<div class="item">
+  <svg class="s64" viewBox="0 0 100 100" aria-label="V2 warm-neutral dark at 64px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>64</span>
+</div>
+{% /sandbox %}
+
 If the 16px result reads as "blob with a brighter corner" rather than as a structured prism, we have two options: ship a favicon-specific variant with thicker strokes (e.g. `stroke-width: 5` and dropped cuts entirely, just outline + fill), or accept that 16px is a brand impression, not a brand readout. Worth deciding once the rendered preview is in front of us.
 
 -----
