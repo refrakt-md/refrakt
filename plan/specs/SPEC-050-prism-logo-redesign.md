@@ -18,6 +18,8 @@ The brand metaphor we keep coming back to is a **prism**: refrakt takes one inpu
 
 Both variants share the same outer triangle so they're visually comparable. ViewBox is `0 0 100 100`; vertices are `(10, 16)`, `(90, 16)`, `(50, 86)` — side length 80, height 70, near-equilateral (true equilateral height for side 80 is 69.28, so we're 0.7 units off — visually indistinguishable, mathematically convenient).
 
+The three cuts are evenly spaced along the top edge and positioned so the smaller apex triangle — the region beyond Cut 3 — has side length `80/φ ≈ 49.44` (golden ratio of the outer side). Cuts land at top-x `20.19`, `30.37`, `40.56`. Cut endpoints fall out from the parallel-to-left-edge constraint and land exactly on the right edge.
+
 -----
 
 ## Variant 1 — Parallel Cuts
@@ -53,21 +55,21 @@ Reads as ordered, structural — input on the left being progressively organised
 </style>
 <svg class="lg" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 1, large">
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 <svg class="md" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 1, medium">
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 <svg class="sm" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 1, favicon">
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 {% /sandbox %}
 
@@ -76,11 +78,11 @@ Reads as ordered, structural — input on the left being progressively organised
 | Element | Coordinates |
 |---|---|
 | Outline | `(10, 16) → (90, 16) → (50, 86) → close` |
-| Cut 1 | `(18, 16) → (54, 79)` |
-| Cut 2 | `(26, 16) → (58, 72)` |
-| Cut 3 | `(34, 16) → (62, 65)` |
+| Cut 1 | `(20.19, 16) → (55.09, 77.09)` |
+| Cut 2 | `(30.37, 16) → (60.19, 68.18)` |
+| Cut 3 | `(40.56, 16) → (65.28, 59.26)` |
 
-Cuts spaced 8 units apart along the top edge. All four strokes share the same weight (3 in viewBox units, ≈3% of width).
+Cuts spaced `10.19` units apart along the top edge, positioned so the apex triangle's side is `80/φ ≈ 49.44`. All four strokes share the same weight (3 in viewBox units, ≈3% of width).
 
 ### Notes
 
@@ -123,25 +125,25 @@ Reads as light entering through the cuts and accumulating into a brighter region
   .sm { width: 32px; height: 32px; }
 </style>
 <svg class="lg" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, large">
-  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 <svg class="md" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, medium">
-  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 <svg class="sm" viewBox="0 0 100 100" aria-label="Refrakt logo, variant 2, favicon">
-  <path class="fill" d="M 34 16 L 90 16 L 62 65 Z" />
+  <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
   <path d="M 10 16 L 90 16 L 50 86 Z" />
-  <line x1="18" y1="16" x2="54" y2="79" />
-  <line x1="26" y1="16" x2="58" y2="72" />
-  <line x1="34" y1="16" x2="62" y2="65" />
+  <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+  <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+  <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
 </svg>
 {% /sandbox %}
 
@@ -150,10 +152,10 @@ Reads as light entering through the cuts and accumulating into a brighter region
 | Element | Coordinates |
 |---|---|
 | Outline | `(10, 16) → (90, 16) → (50, 86) → close` |
-| Cut 1 | `(18, 16) → (54, 79)` |
-| Cut 2 | `(26, 16) → (58, 72)` |
-| Cut 3 | `(34, 16) → (62, 65)` |
-| Apex fill | `(34, 16) → (90, 16) → (62, 65) → close` |
+| Cut 1 | `(20.19, 16) → (55.09, 77.09)` |
+| Cut 2 | `(30.37, 16) → (60.19, 68.18)` |
+| Cut 3 | `(40.56, 16) → (65.28, 59.26)` |
+| Apex fill | `(40.56, 16) → (90, 16) → (65.28, 59.26) → close` |
 
 The fill triangle's vertices are exactly Cut 3's top endpoint, the outer triangle's top-right vertex, and Cut 3's bottom endpoint. The strokes bounding the filled region (top edge, right edge, Cut 3) are visually absorbed into the fill since both are white — no special handling needed.
 
@@ -162,6 +164,106 @@ The fill triangle's vertices are exactly Cut 3's top endpoint, the outer triangl
 - The thin-slice rhythm on the left is preserved, so the mark still reads as "ordered cuts" not just "triangle with corner filled"
 - Mass shifts to the right, giving the mark more visual weight than V1 at the same size — useful when the logo sits next to a heavy wordmark
 - At favicon scale, the fill survives even if the cuts merge; V1 risks reading as a single triangle, while V2 still has an unambiguous bright/dark asymmetry
+
+### Icon-scale preview
+
+V2 at the sizes the mark will actually appear in operating system chrome — 16px (favicon), 24px (toolbar), 32px (app icon @1x), 48px and 64px (app icon @2x and Retina favicon). Same SVG at every size, no per-size variant. Watch for two things:
+
+1. **Cut legibility** — at 16/24px, the three cut strokes render sub-pixel (`3% × 16px ≈ 0.5px`). Browsers anti-alias them but they go from "three lines" to "three soft edges of brightness." The mark's asymmetry survives via the fill; the linework recedes.
+2. **Edge crispness** — the right edge of the apex fill and the outer triangle outline stay sharp at every size because they're solid boundaries, not thin strokes.
+
+{% sandbox height=160 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #152238;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 24px;
+    box-sizing: border-box;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  svg {
+    stroke: #ffffff;
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+    display: block;
+  }
+  svg .fill { fill: #ffffff; stroke: none; }
+  .s16 { width: 16px; height: 16px; }
+  .s24 { width: 24px; height: 24px; }
+  .s32 { width: 32px; height: 32px; }
+  .s48 { width: 48px; height: 48px; }
+  .s64 { width: 64px; height: 64px; }
+</style>
+<div class="item">
+  <svg class="s16" viewBox="0 0 100 100" aria-label="V2 at 16px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>16</span>
+</div>
+<div class="item">
+  <svg class="s24" viewBox="0 0 100 100" aria-label="V2 at 24px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>24</span>
+</div>
+<div class="item">
+  <svg class="s32" viewBox="0 0 100 100" aria-label="V2 at 32px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>32</span>
+</div>
+<div class="item">
+  <svg class="s48" viewBox="0 0 100 100" aria-label="V2 at 48px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>48</span>
+</div>
+<div class="item">
+  <svg class="s64" viewBox="0 0 100 100" aria-label="V2 at 64px">
+    <path class="fill" d="M 40.56 16 L 90 16 L 65.28 59.26 Z" />
+    <path d="M 10 16 L 90 16 L 50 86 Z" />
+    <line x1="20.19" y1="16" x2="55.09" y2="77.09" />
+    <line x1="30.37" y1="16" x2="60.19" y2="68.18" />
+    <line x1="40.56" y1="16" x2="65.28" y2="59.26" />
+  </svg>
+  <span>64</span>
+</div>
+{% /sandbox %}
+
+If the 16px result reads as "blob with a brighter corner" rather than as a structured prism, we have two options: ship a favicon-specific variant with thicker strokes (e.g. `stroke-width: 5` and dropped cuts entirely, just outline + fill), or accept that 16px is a brand impression, not a brand readout. Worth deciding once the rendered preview is in front of us.
 
 -----
 
