@@ -325,6 +325,150 @@ Naming: `tideline` evokes the boundary where land meets water — which is exact
 
 -----
 
+## The Niwa Preset *(candidate, not committed to v1 launch)*
+
+A second preset proposal — a Japanese-garden-inspired palette that demonstrates what an opinionated preset earning its name actually looks like. Where tideline is calm and maritime, niwa is seasonal and botanical, built around six elements that each map to a structural role in code:
+
+| Element | Japanese | Syntax role | Why |
+|---|---|---|---|
+| Pine | *matsu* | `keyword` | year-round structural backbone of the garden |
+| Cherry blossom | *sakura* | `function` | eye-catching, the moment you act |
+| Maple leaf | *momiji* | `string` | warm seasonal content |
+| Young leaf | *wakaba* | `type` | fresh growth, generative |
+| Amber / dried bamboo | *kuri* | `number` | earthy, plain, weight-bearing |
+| Stone | *ishi* | `comment`, muted | quiet background presence |
+
+The colour-to-role assignments aren't decorative — pine as keyword maps the most stable garden element to the most structural code element; sakura as function maps the eye-catching seasonal moment to the eye-catching call-to-action. The metaphor does real work.
+
+Naming: `niwa` (Japanese for "garden") covers the full palette including both spring (pink) and autumn (orange) elements. Alternatives considered: `hanami` (cherry-blossom viewing, more spring-leaning), `momiji` (autumn maple, more orange-leaning), `kyoto` (geographic). Niwa wins on breadth — it's the palette of a *garden*, not a single season.
+
+### Palette
+
+Light surface is a warm washi-paper tone (`#f5efe6`, slightly warmer than the neutral default — more parchment, less raw paper). Dark surface is deep sumi ink (`#1c1815`).
+
+| Token | Light | Dark |
+|---|---|---|
+| `color.bg` | `#f5efe6` | `#1c1815` |
+| `color.text` | `#2b2620` | `#ede5d6` |
+| `color.muted` | `#7d7062` | `#9c9082` |
+| `color.border` | `#d9d0c2` | `#2d2924` |
+| `color.code.bg` | `#ebe5dc` | `#222018` |
+| `color.primary` | `#2d5230` *(pine)* | `#8ab589` |
+| `syntax.keyword` | `#2d5230` *matsu* | `#8ab589` |
+| `syntax.function` | `#b35070` *sakura* | `#e89db0` |
+| `syntax.string` | `#c4501c` *momiji* | `#e87a3a` |
+| `syntax.number` | `#9c721a` *kuri* | `#d4a85a` |
+| `syntax.type` | `#6b8a35` *wakaba* | `#b4c97a` |
+| `syntax.comment` | `#7d7062` *(italic)* | `#7d7062` *(italic)* |
+| `syntax.punctuation` | `#8a7c6e` | `#7d7062` |
+
+Status tokens (`info`, `warning`, `danger`, `success`) intentionally inherit from Lumina's defaults — they communicate function across all presets and don't need to re-express the niwa identity. Sites can override them separately if they want a fully thematic palette (e.g., danger as deeper momiji, success as deeper matsu).
+
+### Live preview
+
+{% sandbox height=420 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #f5efe6;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: 32px;
+    box-sizing: border-box;
+    color: #2b2620;
+  }
+  pre {
+    background: #ebe5dc;
+    padding: 22px 26px;
+    border-radius: 8px;
+    margin: 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    border: 1px solid #d9d0c2;
+  }
+  code { color: #2b2620; }
+  .kw  { color: #2d5230; }
+  .fn  { color: #b35070; }
+  .str { color: #c4501c; }
+  .num { color: #9c721a; }
+  .typ { color: #6b8a35; }
+  .com { color: #7d7062; font-style: italic; }
+  .pun { color: #8a7c6e; }
+</style>
+<pre><code><span class="com">// A small plugin defining one rune</span>
+<span class="kw">import</span> { createContentModelSchema } <span class="kw">from</span> <span class="str">'@refrakt-md/runes'</span><span class="pun">;</span>
+<span class="kw">import type</span> { <span class="typ">Plugin</span> } <span class="kw">from</span> <span class="str">'@refrakt-md/types'</span><span class="pun">;</span>
+
+<span class="kw">const</span> recipeRune <span class="pun">=</span> <span class="fn">createContentModelSchema</span>({
+  contentModel<span class="pun">:</span> { type<span class="pun">:</span> <span class="str">'sections'</span> }<span class="pun">,</span>
+  <span class="fn">transform</span>(resolved<span class="pun">,</span> attrs<span class="pun">:</span> { servings<span class="pun">:</span> <span class="typ">number</span> }) {
+    <span class="kw">const</span> total <span class="pun">=</span> attrs.servings <span class="pun">*</span> <span class="num">5</span><span class="pun">;</span>
+    <span class="kw">return</span> { title<span class="pun">:</span> resolved.title ?? <span class="str">'Untitled'</span><span class="pun">,</span> total }<span class="pun">;</span>
+  }<span class="pun">,</span>
+})<span class="pun">;</span>
+
+<span class="kw">export const</span> plugin<span class="pun">:</span> <span class="typ">Plugin</span> <span class="pun">=</span> {
+  name<span class="pun">:</span> <span class="str">'@example/cookbook'</span><span class="pun">,</span>
+  theme<span class="pun">:</span> { runes<span class="pun">:</span> { recipe<span class="pun">:</span> recipeRune } }<span class="pun">,</span>
+}<span class="pun">;</span></code></pre>
+{% /sandbox %}
+
+{% sandbox height=420 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #1c1815;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    padding: 32px;
+    box-sizing: border-box;
+    color: #ede5d6;
+  }
+  pre {
+    background: #222018;
+    padding: 22px 26px;
+    border-radius: 8px;
+    margin: 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    border: 1px solid #2d2924;
+  }
+  code { color: #ede5d6; }
+  .kw  { color: #8ab589; }
+  .fn  { color: #e89db0; }
+  .str { color: #e87a3a; }
+  .num { color: #d4a85a; }
+  .typ { color: #b4c97a; }
+  .com { color: #7d7062; font-style: italic; }
+  .pun { color: #7d7062; }
+</style>
+<pre><code><span class="com">// A small plugin defining one rune</span>
+<span class="kw">import</span> { createContentModelSchema } <span class="kw">from</span> <span class="str">'@refrakt-md/runes'</span><span class="pun">;</span>
+<span class="kw">import type</span> { <span class="typ">Plugin</span> } <span class="kw">from</span> <span class="str">'@refrakt-md/types'</span><span class="pun">;</span>
+
+<span class="kw">const</span> recipeRune <span class="pun">=</span> <span class="fn">createContentModelSchema</span>({
+  contentModel<span class="pun">:</span> { type<span class="pun">:</span> <span class="str">'sections'</span> }<span class="pun">,</span>
+  <span class="fn">transform</span>(resolved<span class="pun">,</span> attrs<span class="pun">:</span> { servings<span class="pun">:</span> <span class="typ">number</span> }) {
+    <span class="kw">const</span> total <span class="pun">=</span> attrs.servings <span class="pun">*</span> <span class="num">5</span><span class="pun">;</span>
+    <span class="kw">return</span> { title<span class="pun">:</span> resolved.title ?? <span class="str">'Untitled'</span><span class="pun">,</span> total }<span class="pun">;</span>
+  }<span class="pun">,</span>
+})<span class="pun">;</span>
+
+<span class="kw">export const</span> plugin<span class="pun">:</span> <span class="typ">Plugin</span> <span class="pun">=</span> {
+  name<span class="pun">:</span> <span class="str">'@example/cookbook'</span><span class="pun">,</span>
+  theme<span class="pun">:</span> { runes<span class="pun">:</span> { recipe<span class="pun">:</span> recipeRune } }<span class="pun">,</span>
+}<span class="pun">;</span></code></pre>
+{% /sandbox %}
+
+### Notes
+
+- **Sakura is deliberately more saturated than literal cherry blossom.** Real sakura is `#ffd1dc`-pale — beautiful in a garden, unreadable in code. The preset's `#b35070` is closer to a "depicted sakura" — what an ink painter would paint to *suggest* sakura, not what a camera would capture. Same instinct applies to momiji and the other elements: stylised for readability, not literal.
+- **Pine and wakaba differentiate generations.** Mature deep pine for structural elements (keywords); brighter young-leaf green for fresh entities (types). The age difference reads visually and conceptually — static framework vs. generative declaration.
+- **Page surface is warmer than the neutral default.** Niwa explicitly leans into warmth (`#f5efe6` washi paper vs. neutral's `#f6f4ef`); the chroma-step-down rule for code surfaces relaxes here because the whole palette is warm by design. The "too brown" complaint that motivated the neutral default's code surface adjustment doesn't apply when the user has explicitly opted into a warm-paper aesthetic.
+- **Cultural sensitivity.** Naming a preset after a non-Western aesthetic warrants intentionality. Using Japanese terms (*niwa*, *matsu*, *sakura*) rather than translated descriptors reads as homage rather than exoticism, but the preset's README should briefly credit the visual tradition it draws from.
+
+-----
+
 ## Site & Scaffold Implications
 
 **The refrakt documentation site** rebuilds against the neutral default. Most pages need no content changes — runes restyle automatically since their CSS reads token variables. Screenshots in docs that show "what a refrakt page looks like" need re-shooting against the neutral palette. Marketing pages (the landing page, blog, about) can either render neutral (consistent message: "this is what refrakt looks like by default") or opt into `tideline` (the original, more visually distinctive presentation, framed as "an example preset"). I lean **neutral throughout** for message coherence — the homepage shouldn't quietly use a different palette than the docs.
@@ -391,6 +535,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 
 - **Final syntax palette values.** The proposed teal / violet / rust / ochre / sage walk is a starting point; the implementation step needs a visual pass on real code in multiple languages before locking. Teal vs. conventional ink-blue for keywords is the most likely place to revisit.
 - **Status palette saturation check at scale.** The proposed values look calm in isolation but need verification on a page with multiple stacked callouts, on a form with several validation states visible at once, and at small sizes (toast notifications, inline badges). If any of the four bgs feel too saturated when several are visible together, dial the bg tints down further; the `base` and `border` values are more stable.
+- **Ship niwa at v1, or hold for v1.1?** The "one preset at launch" Design Principle was deliberate. Adding niwa alongside tideline gives the preset architecture a more credible v1 demo (two presets across two genuinely different aesthetics) but adds maintenance surface. Worth a deliberate yes/no rather than drifting into either outcome.
 - **`primary-scale` ramp values.** Eleven stops along the warm-neutral axis from near-bg to near-text. Generated mathematically or hand-picked? Lean hand-picked for visual rightness; tooling can verify monotonicity.
 - **Should marketing pages on the refrakt site opt into `tideline` as an example?** Lean no for message coherence. But it's a defensible choice if we feel the homepage needs more visual distinctiveness — would need to be deliberate, framed as "here's a preset in action," with a way for visitors to see the neutral default too.
 - **Preset naming convention going forward.** `tideline` is geographic/atmospheric. Future presets follow the same axis (`midnight`, `mendocino`, `driftwood`) or open it up to anything (`graphite`, `inkwell`)? Worth deciding before the second preset lands so the catalog doesn't feel haphazard.
