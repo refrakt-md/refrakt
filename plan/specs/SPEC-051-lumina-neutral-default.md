@@ -30,6 +30,8 @@ This is primarily a positioning decision. SPEC-048 already designed the preset m
 
 **One preset at launch.** Ship `tideline` (the current cream-and-navy palette, named) and nothing else at v1. Demonstrates the architecture with a real example, doesn't commit refrakt to maintaining a preset catalog before there's user signal for which palettes matter. Additional presets (`midnight`, `slate`, etc.) are explicitly future work — out of scope here, in scope for community contribution.
 
+**Presets can be scoped, not all-or-nothing.** A preset is just a `ThemeTokensConfig` — and that config can override any subset of tokens. *Full* presets (like tideline) override body, chrome, syntax, and primary for a complete identity overhaul. *Syntax* presets (like the niwa proposal) override only the syntax palette, leaving chrome to inherit. *Chrome* presets are also conceivable (body + status only). Users compose by layering — `presets: ["tideline", "niwa"]` gives tideline chrome with niwa code blocks; `presets: ["niwa"]` against the neutral default gives Japanese garden code against neutral chrome. The mechanism doesn't enforce scope; preset authors choose it based on what the preset is *for*.
+
 **`create-refrakt` defaults match the site.** Scaffolded projects get the neutral default. Users who want the cream-and-navy starter add `"presets": ["@refrakt-md/lumina/presets/tideline"]` to their `refrakt.config.json`, or pick it from a prompt during scaffolding. Either way, the *default* impression of refrakt — both on its docs site and in every new project — is the neutral palette.
 
 -----
@@ -325,9 +327,11 @@ Naming: `tideline` evokes the boundary where land meets water — which is exact
 
 -----
 
-## The Niwa Preset *(candidate, not committed to v1 launch)*
+## The Niwa Preset *(candidate, syntax-only, not committed to v1 launch)*
 
-A second preset proposal — a Japanese-garden-inspired palette that demonstrates what an opinionated preset earning its name actually looks like. Where tideline is calm and maritime, niwa is seasonal and botanical, built around six elements that each map to a structural role in code:
+A second preset proposal — a Japanese-garden-inspired *syntax* palette. Where tideline is a full identity overhaul (body, chrome, syntax, primary), niwa is deliberately scoped to syntax tokens only. It overrides how code blocks render and nothing else, letting page chrome inherit from whichever theme or preset is layered above. The result composes: `presets: ["niwa"]` gives Japanese garden code against neutral chrome; `presets: ["tideline", "niwa"]` gives tideline chrome with niwa code. The preset demonstrates that opinionated identity doesn't require overhauling the whole surface — sometimes the strongest move is to do one thing very well.
+
+The six elements each map to a structural role in code:
 
 | Element | Japanese | Syntax role | Why |
 |---|---|---|---|
@@ -344,16 +348,10 @@ Naming: `niwa` (Japanese for "garden") covers the full palette including both sp
 
 ### Palette
 
-Light surface is a warm washi-paper tone (`#f5efe6`, slightly warmer than the neutral default — more parchment, less raw paper). Dark surface is deep sumi ink (`#1c1815`).
+Niwa overrides *only* the syntax tokens. Body, chrome, surfaces, primary, status — all inherit from whichever theme or preset sits beneath it. Used on its own against the neutral default, the Japanese garden colours read against a calm neutral chrome (the colours pop more this way — no warm-paper surface competing for the eye).
 
 | Token | Light | Dark |
 |---|---|---|
-| `color.bg` | `#f5efe6` | `#1c1815` |
-| `color.text` | `#2b2620` | `#ede5d6` |
-| `color.muted` | `#7d7062` | `#9c9082` |
-| `color.border` | `#d9d0c2` | `#2d2924` |
-| `color.code.bg` | `#ebe5dc` | `#222018` |
-| `color.primary` | `#2d5230` *(pine)* | `#8ab589` |
 | `syntax.keyword` | `#2d5230` *matsu* | `#8ab589` |
 | `syntax.function` | `#b35070` *sakura* | `#e89db0` |
 | `syntax.string` | `#c4501c` *momiji* | `#e87a3a` |
@@ -362,7 +360,7 @@ Light surface is a warm washi-paper tone (`#f5efe6`, slightly warmer than the ne
 | `syntax.comment` | `#7d7062` *(italic)* | `#7d7062` *(italic)* |
 | `syntax.punctuation` | `#8a7c6e` | `#7d7062` |
 
-Status tokens (`info`, `warning`, `danger`, `success`) intentionally inherit from Lumina's defaults — they communicate function across all presets and don't need to re-express the niwa identity. Sites can override them separately if they want a fully thematic palette (e.g., danger as deeper momiji, success as deeper matsu).
+That's it. Seven tokens (six chromatic plus punctuation), light and dark variants, nothing else. Everything outside code blocks looks exactly like the layer beneath — the neutral default if used alone, tideline if layered as `["tideline", "niwa"]`.
 
 ### Live preview
 
@@ -370,23 +368,23 @@ Status tokens (`info`, `warning`, `danger`, `success`) intentionally inherit fro
 <style>
   html, body { margin: 0; padding: 0; height: 100%; }
   body {
-    background: #f5efe6;
+    background: #f6f4ef;
     font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     padding: 32px;
     box-sizing: border-box;
-    color: #2b2620;
+    color: #1c1a17;
   }
   pre {
-    background: #ebe5dc;
+    background: #ebeae8;
     padding: 22px 26px;
     border-radius: 8px;
     margin: 0;
     overflow-x: auto;
     font-size: 13px;
     line-height: 1.65;
-    border: 1px solid #d9d0c2;
+    border: 1px solid #e2e1df;
   }
-  code { color: #2b2620; }
+  code { color: #1c1a17; }
   .kw  { color: #2d5230; }
   .fn  { color: #b35070; }
   .str { color: #c4501c; }
@@ -417,23 +415,23 @@ Status tokens (`info`, `warning`, `danger`, `success`) intentionally inherit fro
 <style>
   html, body { margin: 0; padding: 0; height: 100%; }
   body {
-    background: #1c1815;
+    background: #1c1a17;
     font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     padding: 32px;
     box-sizing: border-box;
-    color: #ede5d6;
+    color: #f6f4ef;
   }
   pre {
-    background: #222018;
+    background: #222220;
     padding: 22px 26px;
     border-radius: 8px;
     margin: 0;
     overflow-x: auto;
     font-size: 13px;
     line-height: 1.65;
-    border: 1px solid #2d2924;
+    border: 1px solid #2c2c2a;
   }
-  code { color: #ede5d6; }
+  code { color: #f6f4ef; }
   .kw  { color: #8ab589; }
   .fn  { color: #e89db0; }
   .str { color: #e87a3a; }
@@ -462,9 +460,10 @@ Status tokens (`info`, `warning`, `danger`, `success`) intentionally inherit fro
 
 ### Notes
 
+- **Why syntax-only.** The neutral default's chrome is already calm, deliberate, and pleasant to read against. A "full Japanese garden" preset would override good chrome with merely-different chrome, dilute the focus, and lock users into an all-or-nothing choice. Scoping niwa to syntax keeps the strongest part of the metaphor (the colours on code) and lets users compose freely — niwa on neutral, niwa on tideline, niwa on a future custom theme. The preset earns its name through what it commits to most clearly: the code surface.
 - **Sakura is deliberately more saturated than literal cherry blossom.** Real sakura is `#ffd1dc`-pale — beautiful in a garden, unreadable in code. The preset's `#b35070` is closer to a "depicted sakura" — what an ink painter would paint to *suggest* sakura, not what a camera would capture. Same instinct applies to momiji and the other elements: stylised for readability, not literal.
 - **Pine and wakaba differentiate generations.** Mature deep pine for structural elements (keywords); brighter young-leaf green for fresh entities (types). The age difference reads visually and conceptually — static framework vs. generative declaration.
-- **Page surface is warmer than the neutral default.** Niwa explicitly leans into warmth (`#f5efe6` washi paper vs. neutral's `#f6f4ef`); the chroma-step-down rule for code surfaces relaxes here because the whole palette is warm by design. The "too brown" complaint that motivated the neutral default's code surface adjustment doesn't apply when the user has explicitly opted into a warm-paper aesthetic.
+- **The colours pop more against neutral than they would against warm paper.** The previous draft put niwa code on a `#ebe5dc` warm code surface; the result felt "brown" and competed with the syntax colours. With the code surface inheriting the neutral default's `#ebeae8`, the garden palette has the chromatic stage to itself — pine reads as pine, sakura reads as sakura, without the warm bg pulling them toward "all earth tones."
 - **Cultural sensitivity.** Naming a preset after a non-Western aesthetic warrants intentionality. Using Japanese terms (*niwa*, *matsu*, *sakura*) rather than translated descriptors reads as homage rather than exoticism, but the preset's README should briefly credit the visual tradition it draws from.
 
 -----
