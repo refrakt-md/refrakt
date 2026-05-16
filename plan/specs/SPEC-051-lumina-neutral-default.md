@@ -474,6 +474,8 @@ That's it. Seven tokens (six chromatic plus punctuation), light and dark variant
 
 **Signal what the site is using.** A small "this site uses the niwaki preset" note in the footer, a theme indicator in the docs sidebar, or a deliberate mention on the homepage — something to help visitors mentally separate "default refrakt" (the chrome they're seeing) from "this site's choice" (the syntax they're seeing). The signal doesn't need to be loud, just present. Otherwise visitors may attribute the garden code colours to the default and feel surprised when their own scaffolded project renders neutral syntax.
 
+**Preset documentation pages use design-plugin runes.** Each of the neutral default, `tideline`, and `niwaki` gets a dedicated docs page (`/docs/themes/lumina/neutral-default`, `/docs/themes/lumina/presets/tideline`, `/docs/themes/lumina/presets/niwaki`). These pages use runes from `@refrakt-md/design` — `palette`, `swatch`, `typography`, `spacing` — to render token values visually rather than describing them in prose. Combined with `preview` and `sandbox` runes for live composition examples, the result is a closed self-demonstration loop: the niwaki page's `palette` rune shows the seven syntax colours via swatches; the code blocks elsewhere on the same page already render with niwaki syntax (because the site uses it); the colours match exactly. It also gives the `@refrakt-md/design` plugin its canonical use case — refrakt's own theme docs become the reference example of what design runes are *for*.
+
 **`create-refrakt` scaffolding** defaults to the neutral palette. Two options for how to surface presets during scaffolding:
 
 1. **Neutral always, prompt to add a preset.** `npm create refrakt` produces a neutral project; the post-init message mentions `lumina/presets/tideline` and other future presets as one-line opt-ins.
@@ -493,8 +495,9 @@ Option 2 is slightly more discoverable but adds prompt friction. Recommend optio
 4. **Author `packages/lumina/presets/niwaki/`** as a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark). Write the README crediting the Japanese visual tradition the palette draws from.
 5. **Update the refrakt site config** to use `presets: ["niwaki"]` against the neutral default — neutral chrome, niwaki syntax. Add the visible "this site uses niwaki" signal to footer/sidebar/homepage.
 6. **Update `create-refrakt` template** so `refrakt.config.json` ships without a `presets` array, and update the post-init message to surface both `tideline` and `niwaki` with config snippets.
-7. **Re-shoot site screenshots** against the new appearance (neutral chrome + niwaki syntax).
-8. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back.
+7. **Author preset documentation pages** at `/docs/themes/lumina/neutral-default`, `/docs/themes/lumina/presets/tideline`, and `/docs/themes/lumina/presets/niwaki`, using design-plugin runes (`palette`, `swatch`, `typography`, `spacing`) for visual token rendering and `preview` / `sandbox` runes for live composition examples.
+8. **Re-shoot site screenshots** against the new appearance (neutral chrome + niwaki syntax).
+9. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back.
 
 -----
 
@@ -520,6 +523,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/niwaki"]` renders neutral chrome with niwaki syntax colours; layering as `presets: ["tideline", "niwaki"]` produces tideline chrome with niwaki syntax (composition test)
 - [ ] The refrakt documentation site renders with `presets: ["niwaki"]` against the neutral default chrome
 - [ ] The refrakt site has visible signal of which preset(s) it uses (footer note, theme indicator, or homepage mention)
+- [ ] Each of `neutral-default`, `tideline`, and `niwaki` has a dedicated documentation page on the refrakt site that uses design-plugin runes (`palette`, `swatch`, `typography`, `spacing`) for visual token rendering, paired with `preview` / `sandbox` runes for live composition examples
 - [ ] `create-refrakt` scaffolds projects with no `presets` array, producing the neutral default appearance out of the box
 - [ ] `create-refrakt` post-init message surfaces both `tideline` and `niwaki` as one-line opt-ins with config snippets
 - [ ] v1.0 release notes include the one-line migration snippet for existing sites that want the old look
