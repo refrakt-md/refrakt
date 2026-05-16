@@ -186,6 +186,118 @@ A few notes on the choices:
 
 -----
 
+## The Status Palette
+
+The four sentiment colours (`info`, `warning`, `danger`, `success`) are the other chromatic surface in the theme — used for callouts, hint runes, form validation messages, banner notifications. Like syntax highlighting, their colour is functional (it communicates state), so colour is earned. Unlike syntax highlighting, they appear in chrome and content equally, so they need to read clearly at a glance without competing with surrounding text.
+
+The four hues are tuned to a single saturation/lightness band so they form a visual family — none more aggressive than another. Each sentiment uses three tokens per SPEC-048's contract: `base` (text and accent line), `bg` (filled surface), `border`.
+
+| Token | Light | Dark |
+|---|---|---|
+| `info.base` | `#34547a` | `#9bb4c7` |
+| `info.bg` | `#e8edf4` | `#1f2530` |
+| `info.border` | `#c5d2e0` | `#3d4655` |
+| `warning.base` | `#9c5a18` | `#d4a868` |
+| `warning.bg` | `#f5ebd9` | `#2a2519` |
+| `warning.border` | `#e0c9a3` | `#4a3f2a` |
+| `danger.base` | `#a83232` | `#d48888` |
+| `danger.bg` | `#f5e0e0` | `#2a1818` |
+| `danger.border` | `#e0b8b8` | `#4a2a2a` |
+| `success.base` | `#2d6a3e` | `#7eb398` |
+| `success.bg` | `#e0eee4` | `#1a2a1f` |
+| `success.border` | `#b8d4be` | `#2a4a35` |
+
+Hue map: info is **deep ink blue** (cool, structural), warning is **deep amber** (orange-leaning so it doesn't collide with `syntax.number` ochre), danger is **brick red** (saturated enough to read as alert without going fire-engine), success is **forest green** (saturated enough to be distinct from `syntax.type` sage). Across all four, the *light* bases sit at roughly the same darkness as body text; the dark bases sit at roughly the same lightness. Bg tints are very pale washes of the same hue; borders are one step deeper than the bg.
+
+Light theme:
+
+{% sandbox height=360 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #f6f4ef;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    padding: 28px;
+    box-sizing: border-box;
+    color: #1c1a17;
+    line-height: 1.55;
+  }
+  .stack { display: flex; flex-direction: column; gap: 12px; max-width: 580px; margin: 0 auto; }
+  .callout {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid;
+    border-left-width: 4px;
+    font-size: 14px;
+  }
+  .callout strong { display: block; margin-bottom: 3px; font-weight: 600; letter-spacing: 0.01em; }
+  .callout p { margin: 0; color: #1c1a17; }
+  .info { background: #e8edf4; border-color: #c5d2e0; border-left-color: #34547a; }
+  .info strong { color: #34547a; }
+  .warning { background: #f5ebd9; border-color: #e0c9a3; border-left-color: #9c5a18; }
+  .warning strong { color: #9c5a18; }
+  .danger { background: #f5e0e0; border-color: #e0b8b8; border-left-color: #a83232; }
+  .danger strong { color: #a83232; }
+  .success { background: #e0eee4; border-color: #b8d4be; border-left-color: #2d6a3e; }
+  .success strong { color: #2d6a3e; }
+</style>
+<div class="stack">
+  <div class="callout info"><strong>Info</strong><p>Refrakt sites are statically generated; content updates require a rebuild.</p></div>
+  <div class="callout warning"><strong>Warning</strong><p>The legacy adapter package is deprecated and will be removed in v1.1.</p></div>
+  <div class="callout danger"><strong>Danger</strong><p>Running this command will overwrite existing token values in your config file.</p></div>
+  <div class="callout success"><strong>Success</strong><p>Your refrakt site built successfully — 47 pages emitted in 2.1 seconds.</p></div>
+</div>
+{% /sandbox %}
+
+Dark theme:
+
+{% sandbox height=360 %}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: #1c1a17;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    padding: 28px;
+    box-sizing: border-box;
+    color: #f6f4ef;
+    line-height: 1.55;
+  }
+  .stack { display: flex; flex-direction: column; gap: 12px; max-width: 580px; margin: 0 auto; }
+  .callout {
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid;
+    border-left-width: 4px;
+    font-size: 14px;
+  }
+  .callout strong { display: block; margin-bottom: 3px; font-weight: 600; letter-spacing: 0.01em; }
+  .callout p { margin: 0; color: #f6f4ef; }
+  .info { background: #1f2530; border-color: #3d4655; border-left-color: #9bb4c7; }
+  .info strong { color: #9bb4c7; }
+  .warning { background: #2a2519; border-color: #4a3f2a; border-left-color: #d4a868; }
+  .warning strong { color: #d4a868; }
+  .danger { background: #2a1818; border-color: #4a2a2a; border-left-color: #d48888; }
+  .danger strong { color: #d48888; }
+  .success { background: #1a2a1f; border-color: #2a4a35; border-left-color: #7eb398; }
+  .success strong { color: #7eb398; }
+</style>
+<div class="stack">
+  <div class="callout info"><strong>Info</strong><p>Refrakt sites are statically generated; content updates require a rebuild.</p></div>
+  <div class="callout warning"><strong>Warning</strong><p>The legacy adapter package is deprecated and will be removed in v1.1.</p></div>
+  <div class="callout danger"><strong>Danger</strong><p>Running this command will overwrite existing token values in your config file.</p></div>
+  <div class="callout success"><strong>Success</strong><p>Your refrakt site built successfully — 47 pages emitted in 2.1 seconds.</p></div>
+</div>
+{% /sandbox %}
+
+A few notes on the choices:
+
+- **All four hues sit at the same saturation/lightness band.** This is the "family" property — no single sentiment should look more aggressive than another. If `danger` ever needs to feel more alarming, the move is to *animate* it (pulse the border), not to push its red louder. The base palette stays calm.
+- **The bg tints are very pale.** Around 4–6% saturation of the base hue. Strong enough to identify the sentiment at a glance, weak enough that body text on top reads in `color.text` without needing colour adjustment. Same in reverse for dark mode.
+- **Deliberate distance from syntax colours.** `warning` is orange-amber, not yellow-ochre (vs. `syntax.number`). `danger` is fuller red, not warm rust (vs. `syntax.string`). `success` is fuller green, not sage moss (vs. `syntax.type`). The two palettes coexist in the same docs page without anyone reading a callout as code or vice versa.
+- **No "neutral" or "tip" sentiment in the contract.** SPEC-048's contract is exactly these four. A "tip" or "note" hint without sentiment colour falls back to a neutral chrome (default `border`, `surface.base`, body text) — no chromatic accent. That's intentional: if it doesn't communicate state, it doesn't need colour.
+
+-----
+
 ## The Seaside Preset
 
 Everything currently in `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` becomes the content of a new preset module:
@@ -255,7 +367,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 ## Acceptance Criteria
 
 - [ ] SPEC-048 is implemented and merged
-- [ ] Lumina's default token values shift to the neutral palette described above (light + dark), including the five-hue syntax highlighting palette
+- [ ] Lumina's default token values shift to the neutral palette described above (light + dark), including the five-hue syntax highlighting palette and the four-sentiment status palette
 - [ ] `packages/lumina/presets/seaside/` exists, exports a `ThemeTokensConfig`, and contains verbatim values from the previous Lumina defaults
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/seaside"]` renders pixel-identical to the previous Lumina default (visual regression test, or curated diff review)
 - [ ] The refrakt documentation site renders against the neutral default (no implicit `seaside` opt-in)
@@ -277,8 +389,8 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 
 ## Open Questions
 
-- **Exact hues for status colours** (`info`, `warning`, `danger`, `success`) in the neutral default. The principle is "muted, functionally readable, never garish" — actual values are an implementation-time decision once the rest of the palette is rendered.
 - **Final syntax palette values.** The proposed teal / violet / rust / ochre / sage walk is a starting point; the implementation step needs a visual pass on real code in multiple languages before locking. Teal vs. conventional ink-blue for keywords is the most likely place to revisit.
+- **Status palette saturation check at scale.** The proposed values look calm in isolation but need verification on a page with multiple stacked callouts, on a form with several validation states visible at once, and at small sizes (toast notifications, inline badges). If any of the four bgs feel too saturated when several are visible together, dial the bg tints down further; the `base` and `border` values are more stable.
 - **`primary-scale` ramp values.** Eleven stops along the warm-neutral axis from near-bg to near-text. Generated mathematically or hand-picked? Lean hand-picked for visual rightness; tooling can verify monotonicity.
 - **Should marketing pages on the refrakt site opt into `seaside` as an example?** Lean no for message coherence. But it's a defensible choice if we feel the homepage needs more visual distinctiveness — would need to be deliberate, framed as "here's a preset in action," with a way for visitors to see the neutral default too.
 - **Preset naming convention going forward.** `seaside` is geographic/atmospheric. Future presets follow the same naming axis (`midnight`, `tideline`, `mendocino`) or open it up to anything (`graphite`, `inkwell`)? Worth deciding before the second preset lands so the catalog doesn't feel haphazard.
