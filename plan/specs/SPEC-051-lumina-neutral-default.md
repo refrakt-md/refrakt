@@ -62,6 +62,8 @@ The `primary` colour is intentionally monochromatic — it shadows `text`. Butto
 
 The `primary-scale` (50→950) follows the same warm-neutral axis — a ramp from near-bg to near-text in eleven stops. Used for hover/active layering and for runes that need internal contrast steps without introducing a hue.
 
+**Typography.** `font.sans` is **Inter**, `font.mono` is **JetBrains Mono** — the de facto modern-neutral pair, both free and available via Google Fonts or self-hosting. Used widely enough that visitors don't register them as deliberate choices, which is what neutral wants: the typography disappears the same way the palette does. Outfit (the previous Lumina default) gets retired in this change — it's serviceable but has acquired a "startup-of-the-mid-2020s" feel that ages less gracefully than Inter. Existing sites that specifically depended on Outfit can pin it back via `theme.tokens.font.sans`.
+
 -----
 
 ## The Syntax Highlighting Palette
@@ -321,7 +323,9 @@ Opt-in:
 }
 ```
 
-That single line restores today's appearance exactly — same cream, same navy, same primary-700, same surface colours, same dark-mode treatment. The preset is a verbatim transcription of the current values into SPEC-048's `ThemeTokensConfig` shape; no design decisions are re-opened during migration.
+That single line restores today's *colour* appearance exactly — same cream, same navy, same primary-700, same surface colours, same dark-mode treatment. Colour values are a verbatim transcription of the previous Lumina defaults into SPEC-048's `ThemeTokensConfig` shape.
+
+**Typography is upgraded as part of the tideline bundle.** Tideline ships `font.sans` = **IBM Plex Sans** and `font.mono` = **IBM Plex Mono**, rather than the previous Outfit. Plex Sans is humanist and slightly warm — pairs more naturally with the cream-paper / maritime-navy palette than Outfit's geometric leanings did — and the matching Plex Mono gives tideline a cohesive Plex-family identity (Sans + Mono designed to work together). Both are free, open-source, and available via Google Fonts or self-hosting. Sites that depended specifically on Outfit can pin it back via `theme.tokens.font.sans` after applying the tideline preset.
 
 Naming: `tideline` evokes the boundary where land meets water — which is exactly the warm/cool boundary the palette walks (sand-cream paper against deep maritime navy). Alternatives considered: `seaside`, `marin`, `mendocino`, `cove`. `Tideline` wins on poetic specificity — it names a *line*, not a place, which fits the palette's two-element character.
 
@@ -329,7 +333,7 @@ Naming: `tideline` evokes the boundary where land meets water — which is exact
 
 ## The Niwaki Preset *(syntax-only, committed to v1 launch)*
 
-The second of two v1 presets — a Japanese-garden-inspired *syntax* palette. Where tideline is a full identity overhaul (body, chrome, syntax, primary), niwaki is deliberately scoped to syntax tokens only. It overrides how code blocks render and nothing else, letting page chrome inherit from whichever theme or preset is layered above. The result composes: `presets: ["niwaki"]` gives Japanese garden code against neutral chrome; `presets: ["tideline", "niwaki"]` gives tideline chrome with niwaki code. The preset demonstrates that opinionated identity doesn't require overhauling the whole surface — sometimes the strongest move is to do one thing very well. The refrakt site itself uses `presets: ["niwaki"]` (see Site & Scaffold Implications).
+The second of two v1 presets — a Japanese-garden-inspired *syntax* palette. Where tideline is a full identity overhaul (body, chrome, syntax, primary, typography), niwaki is deliberately scoped to syntax tokens only. It overrides how code blocks render and nothing else, letting page chrome — and fonts — inherit from whichever theme or preset is layered above. The result composes: `presets: ["niwaki"]` gives Japanese garden code against neutral chrome in JetBrains Mono; `presets: ["tideline", "niwaki"]` gives tideline chrome in Plex Sans with niwaki-coloured code in Plex Mono. The preset demonstrates that opinionated identity doesn't require overhauling the whole surface — sometimes the strongest move is to do one thing very well. The refrakt site itself uses `presets: ["niwaki"]` (see Site & Scaffold Implications).
 
 The six elements each map to a structural role in code:
 
@@ -490,14 +494,15 @@ Option 2 is slightly more discoverable but adds prompt friction. Recommend optio
 ## Implementation
 
 1. **Implement SPEC-048 first.** This spec depends on the typed token contract, the preset merge order, and the `ThemeTokensConfig` shape landed there. If SPEC-048 isn't merged, this spec is blocked.
-2. **Write the neutral default palette** into `packages/lumina/tokens/base.css` (or wherever SPEC-048's implementation parks the theme's base values). Cover both light and dark modes, including the five-hue syntax palette and the four-sentiment status palette.
-3. **Extract the current values into `packages/lumina/presets/tideline/`** as a `ThemeTokensConfig` module exporting base and dark mode overlays. Verify against a visual diff that a site with `presets: ["@refrakt-md/lumina/presets/tideline"]` renders pixel-identical to today's Lumina.
-4. **Author `packages/lumina/presets/niwaki/`** as a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark). Write the README crediting the Japanese visual tradition the palette draws from.
-5. **Update the refrakt site config** to use `presets: ["niwaki"]` against the neutral default — neutral chrome, niwaki syntax. Add the visible "this site uses niwaki" signal to footer/sidebar/homepage.
-6. **Update `create-refrakt` template** so `refrakt.config.json` ships without a `presets` array, and update the post-init message to surface both `tideline` and `niwaki` with config snippets.
-7. **Author preset documentation pages** at `/docs/themes/lumina/neutral-default`, `/docs/themes/lumina/presets/tideline`, and `/docs/themes/lumina/presets/niwaki`, using design-plugin runes (`palette`, `swatch`, `typography`, `spacing`) for visual token rendering and `preview` / `sandbox` runes for live composition examples.
-8. **Re-shoot site screenshots** against the new appearance (neutral chrome + niwaki syntax).
-9. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back.
+2. **Write the neutral default palette** into `packages/lumina/tokens/base.css` (or wherever SPEC-048's implementation parks the theme's base values). Cover both light and dark modes, including the five-hue syntax palette, the four-sentiment status palette, and the typography pair (`font.sans` = Inter, `font.mono` = JetBrains Mono) with appropriate fallback stacks.
+3. **Extract the current colour values into `packages/lumina/presets/tideline/`** as a `ThemeTokensConfig` module exporting base and dark mode overlays. Add tideline's typography overrides (`font.sans` = IBM Plex Sans, `font.mono` = IBM Plex Mono) with fallback stacks. Verify against a visual diff that a site with `presets: ["@refrakt-md/lumina/presets/tideline"]` renders colour-identical to today's Lumina (font change is expected and documented).
+4. **Author `packages/lumina/presets/niwaki/`** as a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark). Niwaki does not touch `font.*`. Write the README crediting the Japanese visual tradition the palette draws from.
+5. **Configure font loading** — Lumina ships with the typography assets needed (Inter, JetBrains Mono, Plex Sans, Plex Mono) either via a `<link>` to Google Fonts in the document head, self-hosted in `packages/lumina/assets/fonts/`, or both with an opt-out. Decide during implementation; the spec is agnostic between approaches.
+6. **Update the refrakt site config** to use `presets: ["niwaki"]` against the neutral default — neutral chrome, niwaki syntax. Add the visible "this site uses niwaki" signal to footer/sidebar/homepage.
+7. **Update `create-refrakt` template** so `refrakt.config.json` ships without a `presets` array, and update the post-init message to surface both `tideline` and `niwaki` with config snippets.
+8. **Author preset documentation pages** at `/docs/themes/lumina/neutral-default`, `/docs/themes/lumina/presets/tideline`, and `/docs/themes/lumina/presets/niwaki`, using design-plugin runes (`palette`, `swatch`, `typography`, `spacing`) for visual token rendering and `preview` / `sandbox` runes for live composition examples.
+9. **Re-shoot site screenshots** against the new appearance (neutral chrome + niwaki syntax).
+10. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back, including the font pin if needed.
 
 -----
 
@@ -518,7 +523,8 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 - [ ] SPEC-048 is implemented and merged
 - [ ] Lumina's default token values shift to the neutral palette described above (light + dark), including the five-hue syntax highlighting palette and the four-sentiment status palette
 - [ ] `packages/lumina/presets/tideline/` exists, exports a `ThemeTokensConfig`, and contains verbatim values from the previous Lumina defaults
-- [ ] `packages/lumina/presets/niwaki/` exists, exports a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark), and inherits everything else
+- [ ] `packages/lumina/presets/niwaki/` exists, exports a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark), inherits everything else (including fonts)
+- [ ] Fonts ship with Lumina — Inter and JetBrains Mono for the neutral default, IBM Plex Sans and IBM Plex Mono for the tideline preset — with fallback stacks and a documented loading approach (Google Fonts link, self-host, or both)
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/tideline"]` renders pixel-identical to the previous Lumina default (visual regression test, or curated diff review)
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/niwaki"]` renders neutral chrome with niwaki syntax colours; layering as `presets: ["tideline", "niwaki"]` produces tideline chrome with niwaki syntax (composition test)
 - [ ] The refrakt documentation site renders with `presets: ["niwaki"]` against the neutral default chrome
@@ -546,6 +552,8 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 - **Final syntax palette values.** The proposed teal / violet / rust / ochre / sage walk is a starting point; the implementation step needs a visual pass on real code in multiple languages before locking. Teal vs. conventional ink-blue for keywords is the most likely place to revisit.
 - **Status palette saturation check at scale.** The proposed values look calm in isolation but need verification on a page with multiple stacked callouts, on a form with several validation states visible at once, and at small sizes (toast notifications, inline badges). If any of the four bgs feel too saturated when several are visible together, dial the bg tints down further; the `base` and `border` values are more stable.
 - **Final syntax-palette tuning for niwaki.** The proposed values look right in the spec's sandbox, but need a multi-language visual pass (TS, Python, Markdown, JSON, HTML, Bash) before locking — same standard as the neutral default's syntax palette. Sakura saturation against the neutral surface is the most likely place to tweak.
+- **`font.serif` slot in SPEC-048.** The token contract currently has `font.sans` and `font.mono` only. A future editorial-leaning preset (Plex Serif or Newsreader body) would need a `font.serif` slot in the contract. This is a SPEC-048 amendment, not a SPEC-051 decision, but flagging it here so it doesn't get lost — and so we don't have to fudge the `sans` slot to hold a serif value when the time comes.
+- **Font loading strategy.** Self-hosted vs. Google Fonts link vs. both-with-opt-out is an implementation choice with real perf and privacy implications. Self-hosted is more private and avoids a CDN dependency; Google Fonts is one line and gets cache benefits. Decide once the rest is in place; mention the tradeoff in the lumina docs either way.
 - **`primary-scale` ramp values.** Eleven stops along the warm-neutral axis from near-bg to near-text. Generated mathematically or hand-picked? Lean hand-picked for visual rightness; tooling can verify monotonicity.
 - **Should marketing pages on the refrakt site opt into `tideline` as an example?** Lean no for message coherence. But it's a defensible choice if we feel the homepage needs more visual distinctiveness — would need to be deliberate, framed as "here's a preset in action," with a way for visitors to see the neutral default too.
 - **Preset naming convention going forward.** `tideline` is geographic/atmospheric. Future presets follow the same axis (`midnight`, `mendocino`, `driftwood`) or open it up to anything (`graphite`, `inkwell`)? Worth deciding before the second preset lands so the catalog doesn't feel haphazard.
