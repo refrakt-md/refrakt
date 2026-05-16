@@ -28,11 +28,11 @@ This is primarily a positioning decision. SPEC-048 already designed the preset m
 
 **Brand identity lives in chrome and in the prism.** With the palette doing less brand work, the new prism logo (SPEC-050) and the site's typographic chrome carry refrakt's identity. The body content area renders neutral; the header, footer, navigation, and marketing surfaces can still feel distinctly refrakt-shaped. This is the same split Vercel, Stripe, and Linear use.
 
-**One preset at launch.** Ship `tideline` (the current cream-and-navy palette, named) and nothing else at v1. Demonstrates the architecture with a real example, doesn't commit refrakt to maintaining a preset catalog before there's user signal for which palettes matter. Additional presets (`midnight`, `slate`, etc.) are explicitly future work — out of scope here, in scope for community contribution.
+**Two presets at launch — one full, one scoped.** Ship `tideline` (full preset, the current cream-and-navy palette named) and `niwaki` (syntax-only preset, the Japanese garden code palette). The pair demonstrates both preset patterns the architecture supports — full identity overhaul and scoped layered override — at modest maintenance cost (niwaki is only seven tokens). Together they make the "presets are real product surface, composable, not all-or-nothing" story land at v1 rather than asking users to take it on faith. Additional presets (`midnight`, `slate`, etc.) remain explicit future work — out of scope here, in scope for community contribution.
 
 **Presets can be scoped, not all-or-nothing.** A preset is just a `ThemeTokensConfig` — and that config can override any subset of tokens. *Full* presets (like tideline) override body, chrome, syntax, and primary for a complete identity overhaul. *Syntax* presets (like the niwaki proposal) override only the syntax palette, leaving chrome to inherit. *Chrome* presets are also conceivable (body + status only). Users compose by layering — `presets: ["tideline", "niwaki"]` gives tideline chrome with niwaki code blocks; `presets: ["niwaki"]` against the neutral default gives Japanese garden code against neutral chrome. The mechanism doesn't enforce scope; preset authors choose it based on what the preset is *for*.
 
-**`create-refrakt` defaults match the site.** Scaffolded projects get the neutral default. Users who want the cream-and-navy starter add `"presets": ["@refrakt-md/lumina/presets/tideline"]` to their `refrakt.config.json`, or pick it from a prompt during scaffolding. Either way, the *default* impression of refrakt — both on its docs site and in every new project — is the neutral palette.
+**`create-refrakt` shows the unopinionated baseline.** Scaffolded projects get the pure neutral default — no presets array, no syntax theme, just Lumina's base values. The refrakt site itself diverges by one layer (it adds `niwaki` for syntax), and that divergence is intentional: fresh projects represent "what defaults look like" so users see an honest baseline before opting into any preset. The post-init message surfaces both `tideline` and `niwaki` as one-line opt-ins for users who want a starting point, with a pointer to the site for live examples of each.
 
 -----
 
@@ -327,9 +327,9 @@ Naming: `tideline` evokes the boundary where land meets water — which is exact
 
 -----
 
-## The Niwaki Preset *(candidate, syntax-only, not committed to v1 launch)*
+## The Niwaki Preset *(syntax-only, committed to v1 launch)*
 
-A second preset proposal — a Japanese-garden-inspired *syntax* palette. Where tideline is a full identity overhaul (body, chrome, syntax, primary), niwaki is deliberately scoped to syntax tokens only. It overrides how code blocks render and nothing else, letting page chrome inherit from whichever theme or preset is layered above. The result composes: `presets: ["niwaki"]` gives Japanese garden code against neutral chrome; `presets: ["tideline", "niwaki"]` gives tideline chrome with niwaki code. The preset demonstrates that opinionated identity doesn't require overhauling the whole surface — sometimes the strongest move is to do one thing very well.
+The second of two v1 presets — a Japanese-garden-inspired *syntax* palette. Where tideline is a full identity overhaul (body, chrome, syntax, primary), niwaki is deliberately scoped to syntax tokens only. It overrides how code blocks render and nothing else, letting page chrome inherit from whichever theme or preset is layered above. The result composes: `presets: ["niwaki"]` gives Japanese garden code against neutral chrome; `presets: ["tideline", "niwaki"]` gives tideline chrome with niwaki code. The preset demonstrates that opinionated identity doesn't require overhauling the whole surface — sometimes the strongest move is to do one thing very well. The refrakt site itself uses `presets: ["niwaki"]` (see Site & Scaffold Implications).
 
 The six elements each map to a structural role in code:
 
@@ -488,12 +488,13 @@ Option 2 is slightly more discoverable but adds prompt friction. Recommend optio
 ## Implementation
 
 1. **Implement SPEC-048 first.** This spec depends on the typed token contract, the preset merge order, and the `ThemeTokensConfig` shape landed there. If SPEC-048 isn't merged, this spec is blocked.
-2. **Write the neutral default palette** into `packages/lumina/tokens/base.css` (or wherever SPEC-048's implementation parks the theme's base values). Cover both light and dark modes.
+2. **Write the neutral default palette** into `packages/lumina/tokens/base.css` (or wherever SPEC-048's implementation parks the theme's base values). Cover both light and dark modes, including the five-hue syntax palette and the four-sentiment status palette.
 3. **Extract the current values into `packages/lumina/presets/tideline/`** as a `ThemeTokensConfig` module exporting base and dark mode overlays. Verify against a visual diff that a site with `presets: ["@refrakt-md/lumina/presets/tideline"]` renders pixel-identical to today's Lumina.
-4. **Update the refrakt site config** to drop any implicit reliance on the old defaults (it should be using base Lumina with no explicit preset, which now means neutral).
-5. **Update `create-refrakt` template** so `refrakt.config.json` ships without a `presets` array — the user gets neutral by default and adds presets explicitly.
-6. **Re-shoot site screenshots** that show Lumina rendering, against the neutral default.
-7. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back.
+4. **Author `packages/lumina/presets/niwaki/`** as a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark). Write the README crediting the Japanese visual tradition the palette draws from.
+5. **Update the refrakt site config** to use `presets: ["niwaki"]` against the neutral default — neutral chrome, niwaki syntax. Add the visible "this site uses niwaki" signal to footer/sidebar/homepage.
+6. **Update `create-refrakt` template** so `refrakt.config.json` ships without a `presets` array, and update the post-init message to surface both `tideline` and `niwaki` with config snippets.
+7. **Re-shoot site screenshots** against the new appearance (neutral chrome + niwaki syntax).
+8. **Write the v1.0 migration note**: a one-line config snippet for users who want the old look back.
 
 -----
 
@@ -501,9 +502,9 @@ Option 2 is slightly more discoverable but adds prompt friction. Recommend optio
 
 This shift gives refrakt a stronger story to tell:
 
-> Lumina is refrakt's flagship theme. It ships with a quiet warm-neutral palette so your content is what your readers see — not refrakt's brand sitting on top of it. Want a starting palette? Lumina ships `tideline` (cream and deep maritime navy) as a named preset you can opt into in one line of config. Want your own? Override the tokens. Want to build your own theme on top of the same contract? Go.
+> Lumina is refrakt's flagship theme. It ships with a quiet warm-neutral palette so your content is what your readers see — not refrakt's brand sitting on top of it. Two presets demonstrate the architecture: `tideline` (a full preset — cream and deep maritime navy across chrome, syntax, and primary) and `niwaki` (a syntax-only preset that overlays Japanese garden colours on code blocks without touching chrome). Compose them — `presets: ["tideline", "niwaki"]` gives tideline chrome with niwaki code. Layer your own on top, or override tokens directly. The refrakt site itself uses `niwaki` on the neutral default, so what you read here is the architecture doing real work.
 
-This story sells SPEC-048's architecture in the same breath as it sells Lumina. The current palette doesn't disappear — it gets a name, becomes shareable, and demonstrates that presets are real product surface, not a hypothetical extension point.
+This story sells SPEC-048's architecture in the same breath as it sells Lumina. The current palette doesn't disappear — it gets a name, becomes shareable, and joins niwaki to demonstrate the two preset patterns the system supports (full and scoped) at the moment refrakt v1.0 ships.
 
 It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the theme. "Content pipeline + flagship theme with optional presets" implies you adopt the pipeline and dress it however you want. The second framing is closer to refrakt's actual shape.
 
@@ -514,11 +515,15 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 - [ ] SPEC-048 is implemented and merged
 - [ ] Lumina's default token values shift to the neutral palette described above (light + dark), including the five-hue syntax highlighting palette and the four-sentiment status palette
 - [ ] `packages/lumina/presets/tideline/` exists, exports a `ThemeTokensConfig`, and contains verbatim values from the previous Lumina defaults
+- [ ] `packages/lumina/presets/niwaki/` exists, exports a `ThemeTokensConfig` overriding only the seven syntax tokens (light + dark), and inherits everything else
 - [ ] A test site with `presets: ["@refrakt-md/lumina/presets/tideline"]` renders pixel-identical to the previous Lumina default (visual regression test, or curated diff review)
-- [ ] The refrakt documentation site renders against the neutral default (no implicit `tideline` opt-in)
+- [ ] A test site with `presets: ["@refrakt-md/lumina/presets/niwaki"]` renders neutral chrome with niwaki syntax colours; layering as `presets: ["tideline", "niwaki"]` produces tideline chrome with niwaki syntax (composition test)
+- [ ] The refrakt documentation site renders with `presets: ["niwaki"]` against the neutral default chrome
+- [ ] The refrakt site has visible signal of which preset(s) it uses (footer note, theme indicator, or homepage mention)
 - [ ] `create-refrakt` scaffolds projects with no `presets` array, producing the neutral default appearance out of the box
+- [ ] `create-refrakt` post-init message surfaces both `tideline` and `niwaki` as one-line opt-ins with config snippets
 - [ ] v1.0 release notes include the one-line migration snippet for existing sites that want the old look
-- [ ] The `tideline` preset has a README explaining what it is and when to use it
+- [ ] Both `tideline` and `niwaki` presets have READMEs explaining what they are and when to use them; niwaki's README credits the Japanese visual tradition it draws from
 
 -----
 
@@ -536,7 +541,7 @@ It also subtly reframes refrakt's category. "Themed SSG" implies you adopt the t
 
 - **Final syntax palette values.** The proposed teal / violet / rust / ochre / sage walk is a starting point; the implementation step needs a visual pass on real code in multiple languages before locking. Teal vs. conventional ink-blue for keywords is the most likely place to revisit.
 - **Status palette saturation check at scale.** The proposed values look calm in isolation but need verification on a page with multiple stacked callouts, on a form with several validation states visible at once, and at small sizes (toast notifications, inline badges). If any of the four bgs feel too saturated when several are visible together, dial the bg tints down further; the `base` and `border` values are more stable.
-- **Ship niwaki at v1, or hold for v1.1?** The "one preset at launch" Design Principle was deliberate. Adding niwaki alongside tideline gives the preset architecture a more credible v1 demo (one full preset + one scoped preset, covering both patterns) at modest maintenance cost — niwaki is only seven syntax tokens. The refrakt site itself uses `base + niwaki` (see Site & Scaffold Implications), so niwaki effectively *needs* to ship for the site to ship; the question is more about whether to also surface and document it as a public preset or keep it internal-only.
+- **Final syntax-palette tuning for niwaki.** The proposed values look right in the spec's sandbox, but need a multi-language visual pass (TS, Python, Markdown, JSON, HTML, Bash) before locking — same standard as the neutral default's syntax palette. Sakura saturation against the neutral surface is the most likely place to tweak.
 - **`primary-scale` ramp values.** Eleven stops along the warm-neutral axis from near-bg to near-text. Generated mathematically or hand-picked? Lean hand-picked for visual rightness; tooling can verify monotonicity.
 - **Should marketing pages on the refrakt site opt into `tideline` as an example?** Lean no for message coherence. But it's a defensible choice if we feel the homepage needs more visual distinctiveness — would need to be deliberate, framed as "here's a preset in action," with a way for visitors to see the neutral default too.
 - **Preset naming convention going forward.** `tideline` is geographic/atmospheric. Future presets follow the same axis (`midnight`, `mendocino`, `driftwood`) or open it up to anything (`graphite`, `inkwell`)? Worth deciding before the second preset lands so the catalog doesn't feel haphazard.
