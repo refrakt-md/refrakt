@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Plugin, SiteConfig } from '@refrakt-md/types';
+import { getThemePackage } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import {
 	createSiteLoader,
@@ -44,7 +45,8 @@ interface AssembledSiteContext {
  *  Shared between the FS loader and the virtual loader so both produce
  *  byte-identical transforms from the same SiteConfig. */
 async function assembleSiteContext(site: SiteConfig): Promise<AssembledSiteContext> {
-	const themeModule = await import(/* @vite-ignore */ site.theme + '/transform');
+	const themePackage = getThemePackage(site.theme);
+	const themeModule = await import(/* @vite-ignore */ themePackage + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
 	const icons = {

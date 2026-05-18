@@ -2,12 +2,14 @@ import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { getThemePackage } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
 const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
 const { site } = resolveSite(config);
+const themePackage = getThemePackage(site.theme);
 const contentDir = path.resolve(site.contentDir);
 
 const routeRules = site.routeRules ?? [{ pattern: '**', layout: 'default' }];
@@ -22,13 +24,13 @@ async function init() {
 	if (_transform) return;
 
 	const [themeModule, layoutsModule] = await Promise.all([
-		import(site.theme + '/transform'),
-		import(site.theme + '/layouts'),
+		import(themePackage + '/transform'),
+		import(themePackage + '/layouts'),
 	]);
 
 	// Manifest is a JSON file — resolve its path and read directly
 	const { createRequire: cr } = await import('node:module');
-	const manifestPath = cr(import.meta.url).resolve(site.theme + '/manifest');
+	const manifestPath = cr(import.meta.url).resolve(themePackage + '/manifest');
 	const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
 	_theme = {

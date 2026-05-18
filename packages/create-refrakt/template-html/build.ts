@@ -5,6 +5,7 @@ import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { createHighlightTransform } from '@refrakt-md/highlight';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { getThemePackage } from '@refrakt-md/types';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
@@ -38,8 +39,9 @@ function serialize(node: any): any {
 // --- Build ----------------------------------------------------------------
 
 async function build() {
+	const themePackage = getThemePackage(site.theme);
 	// Load theme config — replace this import if using a custom theme
-	const themeModule = await import(site.theme + '/transform');
+	const themeModule = await import(themePackage + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
 	const icons = {
@@ -87,7 +89,7 @@ async function build() {
 	const hl = await createHighlightTransform(site.highlight);
 
 	// Build theme object for HTML adapter
-	const themeManifestModule = await import(site.theme + '/manifest', { with: { type: 'json' } });
+	const themeManifestModule = await import(themePackage + '/manifest', { with: { type: 'json' } });
 	const manifest = themeManifestModule.default;
 
 	const theme: HtmlTheme = {
@@ -163,7 +165,7 @@ async function build() {
 
 	// Copy theme CSS to build directory
 	try {
-		const themePkg = site.theme;
+		const themePkg = themePackage;
 		const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
 		const cssPath = path.join(themeDir, 'index.css');
 		if (existsSync(cssPath)) {
