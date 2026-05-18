@@ -13,6 +13,7 @@ export type {
   TokenContract,
   PartialTokenContract,
   ThemeTokensConfig,
+  ThemeTokensModeOverlay,
   SentimentTokens,
   PrimaryScale,
   SyntaxTokens,
