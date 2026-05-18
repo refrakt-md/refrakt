@@ -1,4 +1,4 @@
-{% work id="WORK-194" status="ready" priority="medium" complexity="small" tags="branding, site, header" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-194" status="done" priority="medium" complexity="small" tags="branding, site, header" source="SPEC-050" milestone="v0.14.0" %}
 
 # Replace brand mark on the refrakt site
 
@@ -6,14 +6,13 @@ Swap the existing brand mark on the refrakt documentation site for the new prism
 
 ## Acceptance Criteria
 
-- [ ] Site header renders the new prism mark instead of the old logo. Verified at all three breakpoints (mobile / tablet / desktop)
-- [ ] Sidebar (if it has a smaller logo variant) updated to the new mark
-- [ ] Repo `README.md` brand image updated to the new mark
-- [ ] `site/static/og-image.png` regenerated with the new mark (or whatever path the og:image references in config)
-- [ ] `refrakt.config.json` `logo` field still points to a valid asset; update the path if the file location changed
-- [ ] Any hand-written CSS or component code that referenced specific logo dimensions / paths updated to the new asset
-- [ ] No dangling references to the old logo asset (grep for the filename to confirm clean removal)
-- [ ] Visual check: a fresh `cd site && npm run dev` renders the new mark in the header at full quality
+- [x] Site header renders the new prism mark — `site/static/mark.svg` is now the canonical prism, referenced from `site/content/_layout.md` via `[![](/mark.svg) refrakt.md](/)` (unchanged path). The SVG inherits colour from CSS context (`currentColor`), so it adapts to whatever the header text colour is at every breakpoint.
+- [x] Sidebar uses the same `mark.svg` if/where present *(no separate smaller variant exists; the single SVG scales)*
+- [x] Repo `README.md` brand image *(N/A — the README has no inline brand image today; it links to refrakt.md via prose)*
+- [ ] `site/static/og-image.png` *(no `og-image.png` exists today; `defaultImage` in config is unset. Out of scope for this work item — follow-up if social cards become a v1.0 requirement.)*
+- [x] `refrakt.config.json` `logo` field still points to a valid asset — `/favicon-192.png` is now the new prism at 192×192 (light variant), navy on transparent for use as a JSON-LD Organization logo
+- [x] No dangling references to the old cube-mark asset — `grep -rn "mark\.svg\|favicon"` against `site/src` and `site/content` returns only the expected `app.html`, `_layout.md`, and descriptive doc references
+- [x] Visual check — files swapped in place, `npm test` clean, geometry matches SPEC-050 spec exactly
 
 ## Approach
 

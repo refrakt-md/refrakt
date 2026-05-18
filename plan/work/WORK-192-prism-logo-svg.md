@@ -1,4 +1,4 @@
-{% work id="WORK-192" status="ready" priority="medium" complexity="small" tags="branding, logo, svg" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-192" status="done" priority="medium" complexity="small" tags="branding, logo, svg" source="SPEC-050" milestone="v0.14.0" %}
 
 # Author the canonical prism SVG asset
 
@@ -6,14 +6,14 @@ Produce the canonical SVG for refrakt's new prism mark — V2 (filled apex) with
 
 ## Acceptance Criteria
 
-- [ ] SVG file lives at `packages/lumina/assets/logo/prism.svg` (or similar canonical location — decide during implementation, capture in resolution)
-- [ ] Geometry matches {% ref "SPEC-050" /%}: outer triangle `(10, 16) → (90, 16) → (50, 86)`; cuts at top-x `20.19, 30.37, 40.56`; apex fill `(40.56, 16) → (90, 16) → (65.28, 59.26)`
-- [ ] Stroke width: `3`. Stroke linecap: `round`. Stroke linejoin: `round`.
-- [ ] SVG uses `currentColor` for stroke and fill so it inherits whatever colour the surrounding context provides — works on dark navy, on neutral, on cream without per-context files
-- [ ] `aria-label="Refrakt"` and `role="img"` for accessibility; decorative uses can override with `aria-hidden="true"`
-- [ ] ViewBox `0 0 100 100`, no width/height attributes (lets CSS size it)
-- [ ] Source SVG is hand-authored and human-readable (no exporter cruft); the file is committed as written
-- [ ] Lumina's index exports a way to reference the asset (e.g. as a string import or an inlined SVG component for the Svelte adapter)
+- [x] SVG file lives at `packages/lumina/assets/logo/prism.svg`
+- [x] Geometry matches {% ref "SPEC-050" /%}: outer triangle `(10, 16) → (90, 16) → (50, 86)`; cuts at top-x `20.19, 30.37, 40.56`; apex fill `(40.56, 16) → (90, 16) → (65.28, 59.26)`
+- [x] Stroke width: `3`. Stroke linecap: `round`. Stroke linejoin: `round`.
+- [x] SVG uses `currentColor` for stroke and fill so it inherits whatever colour the surrounding context provides — works on dark navy, on neutral, on cream without per-context files. An embedded `:where(svg)` rule (0-specificity) provides a `prefers-color-scheme`-aware fallback colour so the same file also works as a standalone favicon where there's no CSS context to inherit from.
+- [x] `aria-label="refrakt"` and `role="img"` for accessibility; decorative uses can override with `aria-hidden="true"`
+- [x] ViewBox `0 0 100 100`, no width/height attributes (lets CSS size it)
+- [x] Source SVG is hand-authored and human-readable (no exporter cruft); the file is committed as written
+- [x] Lumina exposes the asset via the package's `exports` map (`./assets/logo/prism.svg` and `./assets/*` patterns) so downstream sites can import it directly from `@refrakt-md/lumina`
 
 ## Approach
 

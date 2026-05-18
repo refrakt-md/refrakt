@@ -27,7 +27,9 @@
       "types": "./dist/layouts.d.ts",
       "default": "./dist/layouts.js"
     },
-    "./styles/runes/*.css": "./styles/runes/*.css"
+    "./styles/runes/*.css": "./styles/runes/*.css",
+    "./assets/logo/prism.svg": "./assets/logo/prism.svg",
+    "./assets/*": "./assets/*"
   },
   "files": [
     "dist",
@@ -38,7 +40,8 @@
     "contracts",
     "manifest.json",
     "layouts",
-    "svelte"
+    "svelte",
+    "assets"
   ],
   "scripts": {
     "build": "tsc"
