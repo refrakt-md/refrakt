@@ -143,6 +143,14 @@
 	margin-inline: auto;
 }
 
+/* Pagination wrapper sits outside the article grid, so it gets its own
+   horizontal padding so prev/next don't run to the viewport edges on
+   narrow viewports. Uses the same `--rf-content-padding` token the
+   article grid uses for its gutter columns. */
+.rf-docs-content__pagination {
+	padding-inline: var(--rf-content-padding, 2.5rem);
+}
+
 /* ---- "On this page" sidebar ---- */
 .rf-docs-toc {
 	width: 220px;

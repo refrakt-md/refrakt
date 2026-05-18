@@ -59,11 +59,13 @@
 	display: none;
 }
 /* Panel items — top-level links and group items render uniformly. The
-   double selector lets these declarations beat the menubar's own mobile
-   rules (in nav.css) which target `.rf-nav-item__link` with higher
-   specificity than a bare `.rf-mobile-panel__nav a` would carry. */
+   four-class selectors below carry specificity (0,4,0), beating the
+   menubar's mobile rules in nav.css ((0,3,0)) on equal source position
+   so the panel's typography always wins (nav.css is imported later than
+   mobile.css in index.css). */
 .rf-mobile-panel__nav a,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-item__link {
+.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
 	display: block;
 	padding: 0.5rem 0;
 	font-size: 1.5rem;
@@ -74,7 +76,8 @@
 	border: 0;
 }
 .rf-mobile-panel__nav a:hover,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-item__link:hover {
+.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link:hover,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link:hover {
 	color: var(--rf-color-primary, var(--rf-color-text));
 	background: transparent;
 	text-decoration: none;
