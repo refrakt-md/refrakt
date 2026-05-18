@@ -83,4 +83,17 @@
 	.rf-mobile-menu-btn {
 		display: block;
 	}
+	/* The inline menubar collapses behind the hamburger on mobile — the
+	   .rf-mobile-panel duplicates the same nav and styles it as a flat
+	   vertical list (see nav.css's rf-nav--menubar mobile rules). */
+	.rf-header__inner > rf-nav,
+	.rf-docs-header__inner > rf-nav,
+	.rf-blog-header__inner > rf-nav {
+		display: none;
+	}
+	/* Hide the duplicated brand line inside the mobile panel — the panel
+	   already has its own "Menu" title. */
+	.rf-mobile-panel__nav > p:first-child {
+		display: none;
+	}
 }

@@ -17,7 +17,7 @@
 	order: 1;
 }
 .rf-header__inner > rf-nav {
-	order: 2;
+	order: 3;
 }
 .rf-header__inner p ~ p {
 	order: 1;
@@ -55,10 +55,12 @@
 .rf-header img,
 .rf-header p:first-child a > .rf-icon {
 	height: 2rem;
+	width: 2rem;
+}
+.rf-header img {
 	width: auto;
 }
 .rf-header p:first-child a > .rf-icon {
-	width: 2rem;
 	display: inline-block;
 	vertical-align: middle;
 	color: currentColor;
@@ -218,16 +220,6 @@
 }
 
 @media (max-width: 768px) {
-	/* On mobile the header isn't sticky — the nav renders as a flat side-nav
-	   below the logo (see nav.css) and a sticky header would dominate the
-	   viewport. */
-	.rf-header {
-		position: static;
-	}
-	.rf-header__inner {
-		flex-direction: column;
-		align-items: stretch;
-	}
 	.rf-header__inner p ~ p {
 		display: none;
 	}
