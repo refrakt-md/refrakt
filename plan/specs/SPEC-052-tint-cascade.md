@@ -88,23 +88,53 @@ Overrides page for this rune only. Already works today; this spec doesn't change
 
 ```
 site/content/
-  _layout.md                 # implicit tint-mode: auto (or explicit if you want)
-  index.md                   # marketing-style homepage — could lock here
-  marketing/
-    _layout.md               # tint-mode: dark, tint-lock: true
-    features.md              # inherits → locked dark
-    pricing.md               # inherits → locked dark
-    launch-2026.md           # tint: brand-warm (overrides → dark + brand-warm tint, still locked)
-  docs/
-    _layout.md               # tint-mode: auto (explicit for clarity)
-    getting-started.md       # respects user preference + system pref
-    themes/
-      _layout.md             # could set tint-mode: light if we wanted docs light-only
-      lumina.md              # would inherit layout's choice
+  _layout.md                 # tint-mode: dark, tint-lock: true  (marketing default)
+  index.md                   # → locked dark
+  about.md                   # → locked dark
   blog/
-    _layout.md               # tint-mode: auto
-    announcement.md          # tint-mode: dark, tint-lock: true (this single post)
+    _layout.md               # (inherits — locked dark)
+    announcement.md          # → locked dark
+  docs/
+    _layout.md               # tint-mode: auto, tint-lock: false  (override the lock)
+    getting-started.md       # → auto, respects user preference
+  runes/
+    _layout.md               # tint-mode: auto, tint-lock: false
+    hint.md                  # → auto
+  plan/
+    docs/
+      _layout.md             # tint-mode: auto, tint-lock: false
+      overview.md            # → auto
 ```
+
+The root `_layout.md` sets a dark-locked default; documentation subtrees (`docs/`, `runes/`, `plan/docs/`) explicitly unlock and switch to auto. Individual pages can still override either way.
+
+-----
+
+## Refrakt Site Adoption
+
+The refrakt site itself adopts this cascade as part of this spec. The structure above isn't hypothetical — it's the configuration the refrakt site ships with at v1.0.
+
+**Rationale.** Marketing surfaces (`/`, `/about`, `/blog/*`) are brand statements — they should look the same to every visitor regardless of system preference, the way Linear's homepage and Stripe's product pages do. Documentation surfaces (`/docs/*`, `/runes/*`, `/plan/docs/*`) are reading-for-hours surfaces — the user's eyes win over the brand's preference, the way Linear's and Vercel's docs do. The cascade lets us express both stances declaratively without per-page repetition.
+
+**Configuration:**
+
+| Subtree | `tint-mode` | `tint-lock` | Rationale |
+|---|---|---|---|
+| `/` (root, default) | `dark` | `true` | Marketing default — homepage, about, anything not under a docs subtree |
+| `/blog/*` | inherited | inherited | Inherits root → locked dark; blog reads as marketing-adjacent for refrakt |
+| `/docs/*` | `auto` | `false` | Reading surface — respect user/system preference |
+| `/runes/*` | `auto` | `false` | Rune reference docs — same treatment as docs |
+| `/plan/docs/*` | `auto` | `false` | Plan documentation surface — same treatment as docs |
+
+`tint-mode: auto` is the documented value for "follow the user's saved preference, falling back to system `prefers-color-scheme`" — semantically what every reading surface wants by default.
+
+**Layout files affected:** `site/content/_layout.md`, `site/content/docs/_layout.md`, `site/content/runes/_layout.md`, `site/content/plan/docs/_layout.md` all gain the relevant frontmatter. `site/content/blog/_layout.md` doesn't need a tint change (inherits the root). Existing layout settings (region definitions, etc.) are unchanged.
+
+**Edge cases worth flagging during implementation:**
+
+- **Plan content outside `/plan/docs/`** (`/plan/specs/*`, `/plan/work/*` if those are exposed on the site) inherits the root → locked dark. If they're meant to read as docs surfaces, they need their own layout overrides; if they're internal-only or marketing-adjacent, the inheritance is correct. Decide deliberately when implementing.
+- **The toggle UI behaviour matters more now** — on locked pages it should hide entirely (per spec); on auto pages it should be visible and functional. Verify Lumina's toggle implementation honours the contract before committing to this configuration site-wide.
+- **Pre-paint script must read the resolved tuple correctly** for the locked-vs-unlocked distinction. A flash of light content on a dark-locked marketing page would be visible and embarrassing; worth a dedicated visual test before launch.
 
 -----
 
@@ -163,7 +193,8 @@ When a user is on a saved-light preference and navigates from an unlocked docs p
 3. **Renderer integration.** Surface the resolved tuple to whichever component renders `<html>` (currently in `@refrakt-md/svelte` ThemeShell). Emit `data-*` attributes and `<meta name="color-scheme">` accordingly.
 4. **Inline pre-paint script.** Add the standard "read user preference from localStorage, apply data-theme before first paint" snippet. Skip if `data-tint-lock="true"`.
 5. **Toggle component contract.** Lumina's theme toggle (or whatever the host theme uses) inspects `data-tint-lock` and hides itself when locked. Document the contract for theme authors.
-6. **Documentation page.** `/docs/themes/tint-cascade` with worked examples, the precedence table, and the locked-vs-preferred distinction explained. Use the design plugin's `palette` / `swatch` runes where relevant to show tints visually.
+6. **Adopt the cascade on the refrakt site.** Add `tint-mode: dark, tint-lock: true` to `site/content/_layout.md`. Add `tint-mode: auto, tint-lock: false` to `site/content/docs/_layout.md`, `site/content/runes/_layout.md`, and `site/content/plan/docs/_layout.md`. Verify rendering across one page in each subtree.
+7. **Documentation page.** `/docs/themes/tint-cascade` with worked examples, the precedence table, and the locked-vs-preferred distinction explained. Use the design plugin's `palette` / `swatch` runes where relevant to show tints visually. Use the refrakt site's own configuration as the canonical example.
 
 -----
 
@@ -176,7 +207,9 @@ When a user is on a saved-light preference and navigates from an unlocked docs p
 - [ ] Inline pre-paint script applies saved user preference on unlocked pages, no-ops on locked pages
 - [ ] Theme toggle hides on locked pages (Lumina's implementation; theme authors document the same contract)
 - [ ] A test site demonstrates: marketing subtree locked dark, docs subtree auto, individual blog post locked dark, named tint applied to a single page, rune-level override beating page-level
-- [ ] `/docs/themes/tint-cascade` exists and documents the cascade with worked examples
+- [ ] The refrakt site itself adopts the cascade per the *Refrakt Site Adoption* section: root layout locked dark; `docs/`, `runes/`, and `plan/docs/` layouts switched to `auto` + `tint-lock: false`
+- [ ] Visual regression / SSR snapshot confirms no flash of incorrect theme on locked marketing pages
+- [ ] `/docs/themes/tint-cascade` exists and documents the cascade with worked examples, using the refrakt site's own configuration as the canonical example
 
 -----
 
