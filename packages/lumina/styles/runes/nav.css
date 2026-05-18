@@ -59,6 +59,46 @@
 	color: var(--rf-color-muted);
 }
 
+/* ─── Collapsible groups (vertical sidebar) ───────────────────────────── */
+
+.rf-nav--collapsible .rf-nav-group h2,
+.rf-nav--collapsible .rf-nav-group h3 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	user-select: none;
+	border-radius: var(--rf-radius-sm);
+}
+.rf-nav--collapsible .rf-nav-group h2:hover,
+.rf-nav--collapsible .rf-nav-group h3:hover {
+	color: var(--rf-color-text);
+}
+.rf-nav--collapsible .rf-nav-group h2:focus-visible,
+.rf-nav--collapsible .rf-nav-group h3:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+.rf-nav--collapsible .rf-nav-group h2::after,
+.rf-nav--collapsible .rf-nav-group h3::after {
+	content: '';
+	width: 0.5rem;
+	height: 0.5rem;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	transform: rotate(45deg);
+	transition: transform 150ms ease;
+	margin-right: 0.25rem;
+}
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ol {
+	display: none;
+}
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h2::after,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h3::after {
+	transform: rotate(-45deg);
+}
+
 /* ─── Menubar layout (header) ─────────────────────────────────────────── */
 
 .rf-nav--menubar {

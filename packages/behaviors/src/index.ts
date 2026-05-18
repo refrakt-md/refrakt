@@ -14,6 +14,7 @@ import { searchBehavior } from './behaviors/search.js';
 import { sectionNavBehavior } from './behaviors/section-nav.js';
 import { galleryBehavior } from './behaviors/gallery.js';
 import { juxtaposeBehavior } from './behaviors/juxtapose.js';
+import { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
 
 /** Map of rune type → behavior function (mutable — packages can register additional behaviors) */
 const behaviors: Record<string, BehaviorFn> = {
@@ -27,6 +28,7 @@ const behaviors: Record<string, BehaviorFn> = {
 	preview: previewBehavior,
 	gallery: galleryBehavior,
 	juxtapose: juxtaposeBehavior,
+	nav: navCollapsibleBehavior,
 };
 
 /**
@@ -157,6 +159,7 @@ export { sectionNavBehavior } from './behaviors/section-nav.js';
 export { searchBehavior } from './behaviors/search.js';
 export { galleryBehavior } from './behaviors/gallery.js';
 export { juxtaposeBehavior } from './behaviors/juxtapose.js';
+export { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
 
 // Web component elements — framework-neutral custom elements for interactive runes

@@ -5,7 +5,7 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
 import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
-import { NAV_AUTO_SENTINEL } from './tags/nav.js';
+import { NAV_AUTO_SENTINEL, NAV_COLLAPSED_AUTO } from './tags/nav.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 
@@ -1049,6 +1049,163 @@ function buildAutoNav(
 	});
 }
 
+// ─── Collapsible nav auto-open ───
+
+function sharedPrefixLength(a: string, b: string): number {
+	let i = 0;
+	while (i < a.length && i < b.length && a[i] === b[i]) i++;
+	return i;
+}
+
+/** Resolve a slug-only nav item to a page URL using the pagesByUrl registry.
+ *  Mirrors the runtime resolution in @refrakt-md/behaviors RfNav. */
+function resolveSlugToUrl(
+	slug: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	currentUrl: string,
+): string | null {
+	const candidates = Array.from(pagesByUrl.values()).filter(
+		p => p.url.endsWith('/' + slug) || p.url === '/' + slug,
+	);
+	if (candidates.length === 0) return null;
+	if (candidates.length === 1) return candidates[0].url;
+	return candidates
+		.slice()
+		.sort((a, b) => sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl))[0]
+		.url;
+}
+
+/** Collect URLs covered by a NavGroup's items: explicit hrefs + resolved slugs. */
+function collectGroupItemUrls(
+	group: any,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	currentUrl: string,
+): string[] {
+	const urls: string[] = [];
+	const walk = (node: unknown): void => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) node.forEach(walk);
+			return;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-rune'] === 'nav-item') {
+			const slug = t.attributes?.['data-slug'];
+			if (slug) {
+				const resolved = resolveSlugToUrl(String(slug), pagesByUrl, currentUrl);
+				if (resolved) urls.push(resolved);
+			}
+		}
+		if (t.name === 'a' && t.attributes?.href) {
+			urls.push(String(t.attributes.href));
+		}
+		(t.children ?? []).forEach(walk);
+	};
+	(group.children ?? []).forEach(walk);
+	return urls;
+}
+
+function extractGroupTitle(group: any): string {
+	const findText = (node: unknown): string | null => {
+		if (typeof node === 'string') return node;
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const found = findText(c);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-field'] === 'title') {
+			const parts: string[] = [];
+			for (const c of t.children ?? []) {
+				if (typeof c === 'string') parts.push(c);
+			}
+			if (parts.length > 0) return parts.join('').trim();
+		}
+		for (const c of t.children ?? []) {
+			const found = findText(c);
+			if (found) return found;
+		}
+		return null;
+	};
+	return findText(group) ?? '';
+}
+
+function urlMatchesGroup(currentUrl: string, itemUrls: string[]): boolean {
+	for (const url of itemUrls) {
+		if (!url) continue;
+		if (currentUrl === url) return true;
+		const prefix = url.endsWith('/') ? url : url + '/';
+		if (currentUrl.startsWith(prefix)) return true;
+	}
+	return false;
+}
+
+/** Walk a renderable tree, resolving data-collapsed="auto" on NavGroup tags
+ *  inside collapsible Nav containers. */
+function resolveCollapsibleNavs(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	if (
+		tag.attributes?.['data-rune'] === 'nav' &&
+		tag.attributes?.['data-collapsible'] === 'true'
+	) {
+		const defaultOpenRaw = String(tag.attributes?.['data-default-open'] ?? '');
+		const defaultOpen = defaultOpenRaw
+			? defaultOpenRaw.split(',').map(s => s.trim()).filter(Boolean)
+			: [];
+
+		const groups: any[] = [];
+		const findGroups = (node: unknown): void => {
+			if (!Tag.isTag(node as any)) return;
+			const t = node as any;
+			if (t.attributes?.['data-rune'] === 'nav-group') {
+				groups.push(t);
+			}
+			(t.children ?? []).forEach(findGroups);
+		};
+		(tag.children ?? []).forEach(findGroups);
+
+		for (const group of groups) {
+			if (group.attributes?.['data-collapsed'] !== NAV_COLLAPSED_AUTO) continue;
+			const title = extractGroupTitle(group);
+			const inDefault = title && defaultOpen.includes(title);
+			const itemUrls = collectGroupItemUrls(group, pagesByUrl, pageUrl);
+			const matches = urlMatchesGroup(pageUrl, itemUrls);
+			group.attributes['data-collapsed'] = (inDefault || matches) ? 'false' : 'true';
+		}
+
+		const newChildren = (tag.children ?? []).map((c: unknown) =>
+			resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+		);
+		if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+		return { ...tag, children: newChildren };
+	}
+
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
 // ─── Blog pipeline helpers ───
 
 interface BlogPostData {
@@ -1348,6 +1505,12 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			page.url,
 			coreData.pagesByUrl,
 			ctx,
+		);
+
+		renderable = resolveCollapsibleNavs(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
 		);
 
 		renderable = resolveBlogPosts(
