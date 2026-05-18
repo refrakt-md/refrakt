@@ -112,7 +112,10 @@ describe('generateThemeStylesheet', () => {
 		const css = generateThemeStylesheet(config);
 		expect(css).toContain(':root {');
 		expect(css).toContain('--rf-color-text: #1c1a17;');
-		expect(css).toContain('[data-theme="dark"] {');
+		// Explicit block targets both `data-theme` (page toggle) and
+		// `data-color-scheme` (subtree forced to a scheme — preview canvas,
+		// sandbox iframes, juxtapose panels).
+		expect(css).toContain('[data-theme="dark"], [data-color-scheme="dark"] {');
 		expect(css).toContain('@media (prefers-color-scheme: dark)');
 		// Uses :root:not([data-theme="light"]) — matches Lumina's hand-authored
 		// dark.css pattern so generated overrides compose at equal specificity.
@@ -124,7 +127,7 @@ describe('generateThemeStylesheet', () => {
 			modes: { 'high-contrast': { color: { border: '#000' } } },
 		};
 		const css = generateThemeStylesheet(config);
-		expect(css).toContain('[data-theme="high-contrast"] {');
+		expect(css).toContain('[data-theme="high-contrast"], [data-color-scheme="high-contrast"] {');
 		expect(css).not.toContain('@media (prefers-color-scheme: high-contrast)');
 	});
 

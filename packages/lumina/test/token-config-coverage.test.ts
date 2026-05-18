@@ -46,7 +46,12 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 	const darkCss = readFileSync(darkCssPath, 'utf-8');
 
 	const generatedBaseBlock = extractBlock(generated, /:root\s*\{/);
-	const generatedDarkBlock = extractBlock(generated, /\[data-theme="dark"\]\s*\{/);
+	// Generator emits combined `[data-theme="dark"], [data-color-scheme="dark"]`
+	// so per-mode overrides apply to subtrees forced to a scheme too.
+	const generatedDarkBlock = extractBlock(
+		generated,
+		/\[data-theme="dark"\](?:,\s*\[data-color-scheme="dark"\])?\s*\{/,
+	);
 	const generatedBaseDecls = extractDeclarations(generatedBaseBlock);
 	const generatedDarkDecls = extractDeclarations(generatedDarkBlock);
 
@@ -78,7 +83,9 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 	});
 
 	it('emits both [data-theme="dark"] and @media (prefers-color-scheme: dark) blocks', () => {
-		expect(generated).toContain('[data-theme="dark"] {');
+		// Combined selector lets per-mode overrides apply to subtrees forced
+		// to a scheme via data-color-scheme (preview canvas, sandboxes).
+		expect(generated).toContain('[data-theme="dark"], [data-color-scheme="dark"] {');
 		expect(generated).toContain('@media (prefers-color-scheme: dark)');
 		// Matches Lumina's hand-authored dark.css selector — same specificity
 		// so source order resolves preset overrides correctly.

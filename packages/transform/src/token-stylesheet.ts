@@ -75,17 +75,24 @@ export function generateTokenStylesheet(
 
 /**
  * Generate the full theme stylesheet from a {@link ThemeTokensConfig} —
- * base tokens at `:root`, plus one block per mode under both the explicit
- * `[data-theme="<mode>"]` selector (for user toggles) and the
- * `@media (prefers-color-scheme: <mode>)` block (for system preference,
- * scoped to `:root:not([data-theme="<opposite>"])` so the explicit
- * opposite-mode toggle wins but a same-mode toggle composes via source
- * order). The "opposite" form matches the selector Lumina's hand-authored
- * `dark.css` uses, so generated overrides (e.g. preset CSS) compose with
- * Lumina's base at equal specificity.
+ * base tokens at `:root`, plus one block per mode under three selectors:
+ *
+ *   - `[data-theme="<mode>"]` (page-level user toggle)
+ *   - `[data-color-scheme="<mode>"]` (subtree forced to a scheme — e.g.
+ *     the preview rune's canvas when the user clicks light/dark; sandbox
+ *     iframes; juxtapose panels). Without this, per-mode overrides from
+ *     `theme.modes.<mode>` would only apply at page level, and a site
+ *     with a custom dark primary would see Lumina's default primary
+ *     inside any forced-scheme subtree.
+ *   - `@media (prefers-color-scheme: <mode>)` (system preference, scoped
+ *     to `:root:not([data-theme="<opposite>"])` so the explicit
+ *     opposite-mode toggle wins but a same-mode toggle composes via
+ *     source order). The "opposite" form matches the selector Lumina's
+ *     hand-authored `dark.css` uses, so generated overrides compose with
+ *     Lumina's base at equal specificity.
  *
  * Top-level `extra` attaches to the `:root` base block. Per-mode `extra`
- * (inside each {@link ThemeTokensModeOverlay}) attaches to that mode's
+ * (inside each {@link ThemeTokensModeOverlay}) attaches to the explicit
  * selector block — useful when a Shiki-style alias needs different values
  * in light vs dark.
  */
@@ -103,7 +110,7 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 			} & PartialTokenContract;
 
 			const explicit = generateTokenStylesheet(modeTokens, {
-				selector: `[data-theme="${name}"]`,
+				selector: `[data-theme="${name}"], [data-color-scheme="${name}"]`,
 				extra: modeExtra,
 			});
 			if (explicit) blocks.push(explicit);
