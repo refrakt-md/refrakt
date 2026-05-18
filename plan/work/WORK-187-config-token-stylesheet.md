@@ -1,4 +1,4 @@
-{% work id="WORK-187" status="ready" priority="high" complexity="medium" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-187" status="in-progress" priority="high" complexity="medium" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
 
 # Config-driven token stylesheet generation
 
@@ -6,13 +6,13 @@ Make `refrakt.config.json` → `theme.tokens` the canonical authoring surface fo
 
 ## Acceptance Criteria
 
-- [ ] `theme.tokens` field in `refrakt.config.json` validated against `ThemeTokensConfig` at build time
-- [ ] Validation errors surface clear messages (path + invalid value + valid options where applicable), not opaque schema errors
-- [ ] Build pipeline emits a generated `:root { --rf-* }` stylesheet matching the validated config
-- [ ] Generated stylesheet injected into the rendered page after the theme package's CSS and before any user CSS files
-- [ ] `extra: Record<string, string>` escape hatch passes through to the generated stylesheet as `:root { --<key>: <value>; }` declarations
-- [ ] A site with `theme.tokens.color.text = "#ff0000"` in config renders body text as red without any custom CSS
-- [ ] Unit tests cover: validation passes for valid configs, validation fails with clear messages for invalid configs, generated stylesheet matches expected output
+- [x] `theme.tokens` field in `refrakt.config.json` validated against `ThemeTokensConfig` at build time — `validateThemeTokensConfig` exported from `@refrakt-md/transform` walks the contract tree and rejects unknown keys, non-string leaves, and bad shapes
+- [x] Validation errors surface clear messages (path + invalid value + valid options where applicable), not opaque schema errors — `TokenValidationError` carries dot-path + human-readable message; `formatTokenValidationErrors` produces multi-line output for adapters to throw or log
+- [x] Build pipeline emits a generated `:root { --rf-* }` stylesheet matching the validated config — `generateTokenStylesheet` and `generateThemeStylesheet` exported from `@refrakt-md/transform`
+- [ ] Generated stylesheet injected into the rendered page after the theme package's CSS and before any user CSS files *(deferred to Chunk 3 — adapter integration lands with the Lumina migration in {% ref "WORK-191" /%}, where the pipeline can be verified against a real config-driven theme)*
+- [x] `extra: Record<string, string>` escape hatch passes through to the generated stylesheet as `:root { --<key>: <value>; }` declarations
+- [ ] A site with `theme.tokens.color.text = "#ff0000"` in config renders body text as red without any custom CSS *(deferred to Chunk 3 with adapter integration)*
+- [x] Unit tests cover: validation passes for valid configs, validation fails with clear messages for invalid configs, generated stylesheet matches expected output — 35 new tests across `token-merge.test.ts`, `token-stylesheet.test.ts`, `token-validate.test.ts`
 
 ## Approach
 

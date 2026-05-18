@@ -1,4 +1,4 @@
-{% work id="WORK-188" status="ready" priority="high" complexity="medium" tags="dark-mode, tokens, config" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-188" status="in-progress" priority="high" complexity="medium" tags="dark-mode, tokens, config" source="SPEC-048" milestone="v0.14.0" %}
 
 # Dark mode as PartialTokenContract overlay
 
@@ -6,13 +6,13 @@ Replace today's parallel `packages/lumina/tokens/dark.css` file (which duplicate
 
 ## Acceptance Criteria
 
-- [ ] `ThemeTokensConfig.modes` field accepts a record of mode name → `PartialTokenContract`
-- [ ] Build pipeline emits per-mode stylesheets scoped to `[data-theme="<mode>"]` and to the `@media (prefers-color-scheme: <mode>) { :root:not([data-theme]) }` block for matching system preference
-- [ ] Authors only specify *changed* tokens in a mode overlay — unspecified tokens inherit from base via the CSS variable cascade
-- [ ] Lumina's existing `dark.css` migrated to `modes.dark` config form; resulting stylesheet renders identically (visual regression check)
-- [ ] Generated stylesheet output order is deterministic so diffs in CI stay clean
-- [ ] Mode overlay validation rejects keys not present in `TokenContract` with clear errors
-- [ ] Documentation note explaining how to add a custom mode (e.g. high-contrast) — single config snippet, no parallel CSS file required
+- [x] `ThemeTokensConfig.modes` field accepts a record of mode name → `PartialTokenContract`
+- [x] Build pipeline emits per-mode stylesheets scoped to `[data-theme="<mode>"]` and to the `@media (prefers-color-scheme: <mode>) { :root:not([data-theme]) }` block for matching system preference — `generateThemeStylesheet` emits both blocks for `dark`/`light`, the explicit selector only for custom modes
+- [x] Authors only specify *changed* tokens in a mode overlay — unspecified tokens inherit from base via the CSS variable cascade
+- [ ] Lumina's existing `dark.css` migrated to `modes.dark` config form; resulting stylesheet renders identically (visual regression check) *(deferred to Chunk 3 / {% ref "WORK-191" /%})*
+- [x] Generated stylesheet output order is deterministic so diffs in CI stay clean — verified in tests
+- [x] Mode overlay validation rejects keys not present in `TokenContract` with clear errors — `validateThemeTokensConfig` walks `modes.<name>` entries against the same shape and emits `modes.dark.color.primery` style paths
+- [ ] Documentation note explaining how to add a custom mode (e.g. high-contrast) — single config snippet, no parallel CSS file required *(deferred to {% ref "WORK-210" /%} migration note in Chunk 8)*
 
 ## Approach
 

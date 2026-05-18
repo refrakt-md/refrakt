@@ -14,6 +14,10 @@ export {
 } from './config-normalize.js';
 export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normalize.js';
 
+// Token preset loader (SPEC-048) — Node-only because it uses dynamic import
+// and require.resolve to find packaged preset modules.
+export { loadPreset, loadPresets } from './preset-loader.js';
+
 /**
  * Load and normalize a refrakt.config.json file.
  *

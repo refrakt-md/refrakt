@@ -37,6 +37,21 @@ export { extractSelectors } from './selectors.js';
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
+// Token contract merging (SPEC-048) — deep-merge PartialTokenContract / ThemeTokensConfig
+export { mergeTokenContracts, mergeThemeTokensConfigs } from './token-merge.js';
+
+// Token stylesheet generation (SPEC-048) — emit :root + mode CSS from a config
+export {
+	generateTokenStylesheet,
+	generateThemeStylesheet,
+	tokenPathToCssVar,
+} from './token-stylesheet.js';
+export type { GenerateStylesheetOptions } from './token-stylesheet.js';
+
+// Token config validation (SPEC-048) — runtime checks against the contract shape
+export { validateThemeTokensConfig, formatTokenValidationErrors } from './token-validate.js';
+export type { TokenValidationError, TokenValidationResult } from './token-validate.js';
+
 // Layout configs
 export { defaultLayout, docsLayout, blogArticleLayout, planLayout } from './layouts.js';
 
