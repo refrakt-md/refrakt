@@ -39,6 +39,15 @@ tint-lock: false
 - creating-a-theme
 - components
 - layouts
+- tooling
+- tint-cascade
+
+## Lumina
+
+- lumina
+- neutral-default
+- tideline
+- niwaki
 
 ## Adapters
 
