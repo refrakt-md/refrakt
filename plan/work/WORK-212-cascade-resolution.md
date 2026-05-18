@@ -1,4 +1,4 @@
-{% work id="WORK-212" status="ready" priority="high" complexity="medium" tags="cascade, content, tint" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-212" status="done" priority="high" complexity="medium" tags="cascade, content, tint" source="SPEC-052" milestone="v0.14.0" %}
 
 # Cascade resolution function in @refrakt-md/content
 
@@ -6,15 +6,15 @@ Implement the pure resolution function that, given a page path, walks up the `_l
 
 ## Acceptance Criteria
 
-- [ ] `resolveTintCascade(pagePath, config)` (or similar) exported from `packages/content/`
-- [ ] Function walks the layout chain from outermost (`_layout.md` at site root) to innermost (page frontmatter), accumulating each level's `tint` / `tint-mode` / `tint-lock` values
-- [ ] Last-write-wins per field — a page-level setting overrides the layout, a layout setting overrides outer layouts, an outer layout setting overrides the root config
-- [ ] Missing fields at any level mean inherit-from-next-outer — confirmed in tests
-- [ ] Explicit `null` in frontmatter resets the inherited value to "no override" (e.g., `tint: null` removes an inherited named tint without applying a new one)
-- [ ] Fallback to `theme.colorScheme` at the root if no `_layout.md` sets `tint-mode`
-- [ ] Returns the tuple deterministically — same inputs produce same outputs; no runtime state
-- [ ] Unit tests cover: simple cascade (root → leaf), per-level override, null reset, missing-field inheritance, deeply nested layouts (3+ levels), tint name + tint-mode combinations
-- [ ] Edge case: a page with no `_layout.md` chain above it (orphan page) returns root config + page frontmatter resolution
+- [x] `resolveTintCascade(pagePath, config)` (or similar) exported from `packages/content/`
+- [x] Function walks the layout chain from outermost (`_layout.md` at site root) to innermost (page frontmatter), accumulating each level's `tint` / `tint-mode` / `tint-lock` values
+- [x] Last-write-wins per field — a page-level setting overrides the layout, a layout setting overrides outer layouts, an outer layout setting overrides the root config
+- [x] Missing fields at any level mean inherit-from-next-outer — confirmed in tests
+- [x] Explicit `null` in frontmatter resets the inherited value to "no override" (e.g., `tint: null` removes an inherited named tint without applying a new one)
+- [x] Fallback to `theme.colorScheme` at the root if no `_layout.md` sets `tint-mode`
+- [x] Returns the tuple deterministically — same inputs produce same outputs; no runtime state
+- [x] Unit tests cover: simple cascade (root → leaf), per-level override, null reset, missing-field inheritance, deeply nested layouts (3+ levels), tint name + tint-mode combinations
+- [x] Edge case: a page with no `_layout.md` chain above it (orphan page) returns root config + page frontmatter resolution
 
 ## Approach
 

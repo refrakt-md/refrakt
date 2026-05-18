@@ -2,6 +2,12 @@ export { ContentTree, type ContentNode, type ContentPage, type ContentDirectory,
 export { parseFrontmatter, serializeFrontmatter, type Frontmatter } from './frontmatter.js';
 export { Router, type Route } from './router.js';
 export { resolveLayouts, type ResolvedLayout, type Region } from './layout.js';
+export {
+  resolveTintCascade,
+  type ResolvedTintCascade,
+  type CascadeRootDefaults,
+} from './tint-cascade.js';
+export { htmlTintAttributes, colorSchemeMetaContent, prePaintScript } from './tint-ssr.js';
 export { buildNavigation, type NavTree, type NavGroup, type NavItem } from './navigation.js';
 export { loadContent, loadContentFromTree, type Site, type SitePage, type LoadContentFromTreeOptions, type VirtualReader } from './site.js';
 export { createSiteLoader, createVirtualSiteLoader, type SiteLoader, type SiteLoaderOptions, type VirtualSiteLoaderOptions } from './loader.js';

@@ -1,4 +1,4 @@
-{% work id="WORK-213" status="ready" priority="high" complexity="small" tags="frontmatter, schema, validation, tint" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-213" status="done" priority="high" complexity="small" tags="frontmatter, schema, validation, tint" source="SPEC-052" milestone="v0.14.0" %}
 
 # Frontmatter schema extension (tint, tint-mode, tint-lock)
 
@@ -6,13 +6,13 @@ Add the three cascade fields — `tint`, `tint-mode`, `tint-lock` — to the val
 
 ## Acceptance Criteria
 
-- [ ] `tint?: string | null` accepted in layout and page frontmatter; named tints validated against the configured tint registry where possible (warn rather than fail if an unknown tint is referenced, since tints may be added/removed at runtime)
-- [ ] `tint-mode?: 'auto' | 'light' | 'dark'` accepted; invalid values produce a clear error (`"tint-mode must be one of: auto, light, dark"`)
-- [ ] `tint-lock?: boolean` accepted; non-boolean values rejected with a clear error
-- [ ] YAML `null` (`tint: ~` or `tint: null` in YAML) is preserved as JS `null` through parsing — distinguishable from missing
-- [ ] Missing fields don't appear in the parsed frontmatter object (or are explicitly `undefined`) — distinguishable from `null`
-- [ ] Validation errors include the source file path and line number when possible
-- [ ] Unit tests cover: each valid value, each invalid value type, null vs missing distinction, validation failure messages
+- [x] `tint?: string | null` accepted in layout and page frontmatter; named tints validated against the configured tint registry where possible (warn rather than fail if an unknown tint is referenced, since tints may be added/removed at runtime)
+- [x] `tint-mode?: 'auto' | 'light' | 'dark'` accepted; invalid values produce a clear error (`"tint-mode must be one of: auto, light, dark"`)
+- [x] `tint-lock?: boolean` accepted; non-boolean values rejected with a clear error
+- [x] YAML `null` (`tint: ~` or `tint: null` in YAML) is preserved as JS `null` through parsing — distinguishable from missing
+- [x] Missing fields don't appear in the parsed frontmatter object (or are explicitly `undefined`) — distinguishable from `null`
+- [x] Validation errors include the source file path and line number when possible
+- [x] Unit tests cover: each valid value, each invalid value type, null vs missing distinction, validation failure messages
 
 ## Approach
 
