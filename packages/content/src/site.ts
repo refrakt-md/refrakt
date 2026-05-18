@@ -11,6 +11,7 @@ import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
 import { resolveLayouts, ResolvedLayout } from './layout.js';
+import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js';
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
@@ -44,6 +45,10 @@ export interface SitePage {
   headings: HeadingInfo[];
   layout: ResolvedLayout;
   seo: PageSeo;
+  /** Per-page tint cascade resolved from the layout chain + page frontmatter
+   *  (SPEC-052). Adapters emit this as `data-theme` / `data-tint` /
+   *  `data-tint-lock` attributes on `<html>` at SSR time. */
+  tintCascade: ResolvedTintCascade;
 }
 
 /** Synchronous file reader that returns null on failure. */
@@ -108,6 +113,8 @@ interface ProcessContentTreeOptions {
   gitTimestamps?: Map<string, FileTimestamps>;
   sandbox?: SandboxHooks;
   sandboxExamplesDir?: string;
+  /** Site-wide colour-scheme default seeding the per-page tint cascade. */
+  colorScheme?: 'auto' | 'light' | 'dark';
 }
 
 async function processContentTree(
@@ -164,7 +171,11 @@ async function processContentTree(
     );
     const seo = extractSeo(renderable, frontmatter, route.url);
 
-    pages.push({ route, frontmatter, content, renderable, headings, layout, seo });
+    const tintCascade = resolveTintCascade(page, tree.root, {
+      colorScheme: opts.colorScheme,
+    });
+
+    pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
   // Build hook sets: core always runs first, then plugins in config order
@@ -291,6 +302,10 @@ export interface LoadContentFromTreeOptions {
   variables?: Record<string, unknown>;
   /** Security policy for sandbox runes. Default: `'trusted'`. */
   securityPolicy?: SecurityPolicy;
+  /** Site-wide `theme.colorScheme` default — seeds the per-page tint cascade.
+   *  Defaults to `'auto'`. Adapters typically read this from
+   *  `refrakt.config.json` site.theme.colorScheme. See SPEC-052. */
+  colorScheme?: 'auto' | 'light' | 'dark';
   /** Optional reader for ad-hoc lookups in virtual environments.
    *
    *  Reserved for future asynchronous resolution paths (e.g., on-demand sandbox
@@ -331,5 +346,6 @@ export async function loadContentFromTree(
     plugins: options.plugins,
     variables: options.variables,
     securityPolicy: options.securityPolicy,
+    colorScheme: options.colorScheme,
   });
 }

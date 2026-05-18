@@ -1,4 +1,4 @@
-{% work id="WORK-214" status="ready" priority="high" complexity="medium" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-214" status="in-progress" priority="high" complexity="medium" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
 
 # Renderer integration + pre-paint script
 
@@ -6,17 +6,15 @@ Wire the cascade-resolved `(tint, tintMode, locked)` tuple into SSR — emit `da
 
 ## Acceptance Criteria
 
-- [ ] The renderer (likely `@refrakt-md/svelte` `ThemeShell` or equivalent in other adapters) emits:
-  - [ ] `data-theme="dark"` (or `"light"`) on `<html>` when the page's resolved `tintMode` is `dark` or `light`
-  - [ ] No `data-theme` attribute when resolved `tintMode` is `auto` (lets the pre-paint script + system pref decide)
-  - [ ] `data-tint="<name>"` when a named tint is resolved
-  - [ ] `data-tint-lock="true"` when resolved `locked` is true (omit or set `"false"` otherwise)
-  - [ ] `<meta name="color-scheme" content="dark">` (or `light`) when locked; `content="light dark"` when unlocked
-- [ ] Inline pre-paint script (the small `<script>` that runs before first paint) reads `data-tint-lock`; if locked, does nothing; if unlocked, applies saved preference from localStorage, falls back to `prefers-color-scheme`
-- [ ] The pre-paint script lives in `<head>` before any styles so it runs before paint
-- [ ] No flash of incorrect theme on a dark-locked marketing page — verified by a Lighthouse trace or manual frame-by-frame on a slow connection
-- [ ] The pre-paint script is small and inline (not a separate file request) — sub-1KB
-- [ ] Unit tests verify the rendered HTML output for each combination of (tint, tintMode, locked)
+- [x] `@refrakt-md/content` exports SSR helpers that adapters consume to emit the right `<html>` attributes:
+  - [x] `htmlTintAttributes(cascade)` — returns `data-theme="dark"` etc., empty string for the default auto/unlocked cascade
+  - [x] `colorSchemeMetaContent(cascade)` — returns the `<meta name="color-scheme">` content (`'dark'` / `'light'` when locked, `'light dark'` otherwise)
+  - [x] `prePaintScript()` — returns the canonical anti-FOIT script (IIFE, ~250 bytes, reads `rf-theme` localStorage, falls back to `prefers-color-scheme`, no-ops on `data-tint-lock="true"`)
+- [x] Pre-paint script reads `data-tint-lock`; if locked, does nothing; if unlocked, applies saved preference from localStorage, falls back to `prefers-color-scheme`
+- [x] Pre-paint script is small and inline-friendly — sub-1KB (~250 bytes)
+- [x] Unit tests verify HTML attribute output and `<meta>` content for each combination of (tint, tintMode, locked) — 17 new tests in `tint-ssr.test.ts`
+- [ ] Adapter integration that actually wires the SSR helpers onto `<html>` for the refrakt site *(deferred to {% ref "WORK-215" /%} in Chunk 10 — the site-adoption work item is the natural home for the `hooks.server.ts` that consumes these helpers)*
+- [ ] No flash of incorrect theme verification *(deferred to {% ref "WORK-215" /%} — meaningful only once the adapter wiring lands)*
 
 ## Approach
 
