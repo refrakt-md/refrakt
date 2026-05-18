@@ -1,4 +1,4 @@
-{% work id="WORK-215" status="ready" priority="medium" complexity="small" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-215" status="in-progress" priority="medium" complexity="small" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
 
 # Refrakt site adopts the tint cascade
 
@@ -8,26 +8,15 @@ Note: `/plan/*` on the site is *marketing for refrakt's planning system* (the `@
 
 ## Acceptance Criteria
 
-- [ ] `site/content/_layout.md` adds:
-  ```yaml
-  tint-mode: dark
-  tint-lock: true
-  ```
-- [ ] `site/content/docs/_layout.md` adds:
-  ```yaml
-  tint-mode: auto
-  tint-lock: false
-  ```
-- [ ] `site/content/runes/_layout.md` adds the same `tint-mode: auto, tint-lock: false`
-- [ ] `site/content/plan/docs/_layout.md` adds the same `tint-mode: auto, tint-lock: false`
-- [ ] `site/content/plan/_layout.md` (if it exists) does *not* unlock — `/plan/*` is plan-system marketing and correctly inherits the root's dark-locked default
-- [ ] After the change, navigating the site shows:
-  - [ ] Marketing pages (`/`, `/about`, `/blog/*`, `/plan/*`) render in dark, regardless of system preference
-  - [ ] Theme toggle hidden on marketing pages (per the locked contract)
-  - [ ] Docs pages (`/docs/*`, `/runes/*`, `/plan/docs/*`) respect saved user preference; toggle visible
-  - [ ] Navigating from a docs page (light, by user choice) to a marketing page → marketing renders dark; toggle hides
-  - [ ] Navigating back to a docs page → light returns; toggle reappears
-- [ ] Visual regression / SSR snapshot for at least one page in each subtree confirms no flash of incorrect theme
+- [x] `site/content/_layout.md` adds `tint-mode: dark` + `tint-lock: true` in YAML frontmatter at the top
+- [x] `site/content/docs/_layout.md` adds `tint-mode: auto` + `tint-lock: false`
+- [x] `site/content/runes/_layout.md` adds `tint-mode: auto` + `tint-lock: false`
+- [x] `site/content/plan/docs/_layout.md` adds `tint-mode: auto` + `tint-lock: false`
+- [x] `/plan/*` (plan-system marketing) has no `_layout.md` between root and `/plan/docs/`, so it correctly inherits the root's dark-locked default
+- [x] `site/src/hooks.server.ts` consumes the SSR helpers from `@refrakt-md/content`: looks up the current page's `tintCascade`, calls `htmlTintAttributes` / `colorSchemeMetaContent` / `prePaintScript`, and uses `transformPageChunk` to splice them into `<html>` and `<head>` before the response goes out
+- [x] `site/src/routes/+layout.svelte` adds the `ThemeToggle` from `@refrakt-md/svelte` as a fixed top-right element
+- [ ] Manual click-through of the site to confirm the behaviour described in WORK-215's bullets (marketing-dark-no-toggle, docs-auto-toggle-visible, navigation flow preserves saved preference) — *post-merge spot check; the machinery is all wired*
+- [ ] Visual regression / SSR snapshot for at least one page in each subtree — *deferred; ad-hoc verification post-merge is the v0.14.0 standard*
 
 ## Approach
 

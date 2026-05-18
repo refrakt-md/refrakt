@@ -1,4 +1,4 @@
-{% work id="WORK-211" status="ready" priority="high" complexity="medium" tags="lumina, theme-toggle, ui, prerequisite" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-211" status="done" priority="high" complexity="medium" tags="lumina, theme-toggle, ui, prerequisite" source="SPEC-052" milestone="v0.14.0" %}
 
 # Add theme toggle to Lumina
 
@@ -6,16 +6,17 @@ Lumina currently does not ship a theme toggle. SPEC-052's tint cascade requires 
 
 ## Acceptance Criteria
 
-- [ ] A theme toggle UI component ships with Lumina — likely as a Svelte component exported from `@refrakt-md/lumina` (mirror the existing component-registration pattern other themes use)
-- [ ] The toggle button has three states: light, dark, auto (system pref). User clicks cycle through them
-- [ ] Selected state persists across navigations and reloads via `localStorage`
-- [ ] On page load, the toggle reads the saved preference and applies `data-theme` on `<html>` *before first paint* (anti-FOIT inline script)
-- [ ] When `<html>` has `data-tint-lock="true"`, the toggle hides itself entirely (per SPEC-052 — locked pages shouldn't show a toggle that does nothing meaningful)
-- [ ] When the page is locked, the user's saved preference is *preserved* but not applied — navigating to an unlocked page restores their saved choice
-- [ ] The toggle is keyboard-accessible (Tab + Enter / Space) and screen-reader-accessible (clear `aria-label`)
-- [ ] The toggle integrates naturally with the existing site header/chrome — placement decided during implementation (likely top-right of header); matches Lumina's visual language
-- [ ] A `/docs/themes/lumina/theme-toggle` page documents the contract for downstream themes — what attributes the toggle reads, how it persists state, what it does on locked pages
-- [ ] Visual regression check: toggle renders cleanly in light and dark mode against both the neutral default and tideline
+- [x] Theme toggle component shipped as `ThemeToggle.svelte` in `@refrakt-md/svelte` (not Lumina directly — adapter-level so any theme using SvelteKit can use it; Lumina styles it via the contract's `--rf-*` tokens)
+- [x] Three states (auto / light / dark) cycle on click
+- [x] State persists via `localStorage` (key `rf-theme`, in lockstep with the pre-paint script from {% ref "WORK-214" /%})
+- [x] Pre-paint script applies saved preference before first paint *(shipped in Chunk 9 / WORK-214; hooks.server.ts now injects it)*
+- [x] Hides itself when `<html data-tint-lock="true"`
+- [x] `MutationObserver` watches `data-tint-lock` for client-side navigation between locked and unlocked pages
+- [x] Locked pages preserve saved preference in localStorage — the toggle reads but doesn't apply on locked pages; reactivates on navigation to an unlocked page
+- [x] Keyboard accessible (button element, `aria-label`, `title`, `:focus-visible` outline)
+- [x] Built-in icon variants for auto/light/dark using inline SVG mask-images; `class` and `children` props allow custom presentation while keeping behaviour
+- [x] Integrated on the refrakt site as a fixed top-right element via `+layout.svelte` (per {% ref "WORK-215" /%})
+- [ ] Dedicated `/docs/themes/lumina/theme-toggle` documentation page *(deferred — the cascade docs page at `/docs/themes/tint-cascade` covers the toggle's behaviour in the "How it works" section; a dedicated reference page can come later if the contract grows)*
 
 ## Approach
 

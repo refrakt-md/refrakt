@@ -1,3 +1,9 @@
+---
+# Docs is a reading surface — user/system preference wins. The toggle is
+# visible here so visitors can pick their preferred mode for long sessions.
+tint-mode: auto
+tint-lock: false
+---
 {% layout %}
 {% region name="nav" %}
 {% nav collapsible=true %}

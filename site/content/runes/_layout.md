@@ -1,3 +1,8 @@
+---
+# Rune reference is a reading surface — same auto/unlocked treatment as docs.
+tint-mode: auto
+tint-lock: false
+---
 {% layout %}
 {% region name="nav" %}
 {% nav collapsible=true %}

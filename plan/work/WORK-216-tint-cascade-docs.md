@@ -1,4 +1,4 @@
-{% work id="WORK-216" status="ready" priority="low" complexity="small" tags="docs, cascade, tint, design-runes" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-216" status="done" priority="low" complexity="small" tags="docs, cascade, tint, design-runes" source="SPEC-052" milestone="v0.14.0" %}
 
 # /docs/themes/tint-cascade documentation page
 
@@ -6,16 +6,16 @@ Author the canonical documentation page for the tint cascade. Uses refrakt's own
 
 ## Acceptance Criteria
 
-- [ ] `/docs/themes/tint-cascade` page exists, rendered by the site
-- [ ] Opens with a one-paragraph framing of what the cascade is and why it exists (Linear/Stripe/Vercel patterns referenced briefly)
-- [ ] Documents the four cascade levels (global → layout → page → rune) with a worked example for each
-- [ ] Documents the three frontmatter fields with type signatures and value semantics
-- [ ] Explains locked-vs-preferred — when `tint-lock: true` matters, what the toggle UI does in each case
-- [ ] Calls out the YAML null-vs-missing idiom — `tint: null` (or `tint: ~`) explicitly resets, missing inherits — with a small worked example
-- [ ] Uses refrakt's own site configuration as the canonical full example: the actual `_layout.md` frontmatter for marketing-vs-docs split
-- [ ] Links to {% ref "SPEC-052" /%} for the full design rationale (rather than rewriting it)
-- [ ] Cross-links to {% ref "WORK-208" /%}'s preset docs pages where appropriate
-- [ ] Page renders cleanly on `cd site && npm run dev`
+- [x] `/docs/themes/tint-cascade` page exists, rendered by the site
+- [x] Opens with a one-paragraph framing of what the cascade is and why it exists (Linear/Stripe/Vercel patterns referenced briefly)
+- [x] Documents the four cascade levels (global → layout → page → rune) with a worked example for each
+- [x] Documents the three frontmatter fields with type signatures and value semantics
+- [x] Explains locked-vs-preferred — when `tint-lock: true` matters, what the toggle UI does in each case
+- [x] Calls out the YAML null-vs-missing idiom — `tint: null` (or `tint: ~`) explicitly resets, missing inherits — with a small worked example
+- [x] Uses refrakt's own site configuration as the canonical full example: the actual `_layout.md` frontmatter for marketing-vs-docs split
+- [x] Links to {% ref "SPEC-052" /%} for the full design rationale (rather than rewriting it)
+- [x] Cross-links to {% ref "WORK-208" /%}'s preset docs pages where appropriate
+- [x] Page renders cleanly on `cd site && npm run dev`
 
 ## Approach
 
