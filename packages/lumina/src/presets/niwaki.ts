@@ -45,13 +45,16 @@ const niwaki: ThemeTokensConfig = {
 				variable: '#f6f4ef',    // = neutral default's dark text
 			},
 
-			// Dark-mode Shiki aliases — literal hex matching syntax.*.
+			// Dark-mode Shiki aliases — literal hex. token-string brightens past
+			// syntax.string for pop on dark bg; token-string-expression diverges
+			// to lime for template-literal contrast; token-constant aligns with
+			// type rather than number.
 			extra: {
 				'rf-syntax-token-keyword': '#8ab589',
 				'rf-syntax-token-function': '#e89db0',
-				'rf-syntax-token-string': '#e87a3a',
-				'rf-syntax-token-string-expression': '#e87a3a',
-				'rf-syntax-token-constant': '#d4a85a',
+				'rf-syntax-token-string': '#ff965a',
+				'rf-syntax-token-string-expression': '#ceed7b',
+				'rf-syntax-token-constant': '#b4c97a',
 				'rf-syntax-token-comment': '#7d7062',
 				'rf-syntax-token-parameter': '#f6f4ef',
 				'rf-syntax-token-punctuation': '#7d7062',
@@ -63,12 +66,15 @@ const niwaki: ThemeTokensConfig = {
 	// Shiki aliases — literal hex so the preset works against any chrome
 	// theme (neutral default, tideline, future themes) without needing
 	// var() indirection. Per SPEC-051's "scoped preset" pattern.
+	// token-string-expression diverges to a brighter wakaba for template
+	// literals; token-constant aligns with type (wakaba) instead of number
+	// (kuri), mirroring the dark-mode shift.
 	extra: {
 		'rf-syntax-token-keyword': '#2d5230',
 		'rf-syntax-token-function': '#b35070',
 		'rf-syntax-token-string': '#c4501c',
-		'rf-syntax-token-string-expression': '#c4501c',
-		'rf-syntax-token-constant': '#9c721a',
+		'rf-syntax-token-string-expression': '#8aa035',
+		'rf-syntax-token-constant': '#6b8a35',
 		'rf-syntax-token-comment': '#7d7062',
 		'rf-syntax-token-parameter': '#1c1a17',
 		'rf-syntax-token-punctuation': '#8a7c6e',
