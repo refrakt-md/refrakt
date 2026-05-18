@@ -12,11 +12,11 @@
 	--rf-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
 
 	/* Primary scale — warm-neutral axis, near-bg → near-text */
-	--rf-color-primary-50: #fcfaf6;
-	--rf-color-primary-100: #f6f4ef;
-	--rf-color-primary-200: #efece5;
-	--rf-color-primary-300: #e8e5df;
-	--rf-color-primary-400: #c2bdb3;
+	--rf-color-primary-50: #fbfaf7;
+	--rf-color-primary-100: #f5f4f1;
+	--rf-color-primary-200: #ecebe8;
+	--rf-color-primary-300: #e2e0dd;
+	--rf-color-primary-400: #bfbab2;
 	--rf-color-primary-500: #94908a;
 	--rf-color-primary-600: #76716a;
 	--rf-color-primary-700: #5a564f;
@@ -27,15 +27,15 @@
 	/* Core palette */
 	--rf-color-text: #1c1a17;
 	--rf-color-muted: #6b6661;
-	--rf-color-border: #e8e5df;
-	--rf-color-bg: #f6f4ef;
+	--rf-color-border: #e2e0dd;
+	--rf-color-bg: #f5f4f1;
 	--rf-color-primary: #1c1a17;
 	--rf-color-primary-hover: #3a342d;
 
 	/* Surfaces */
-	--rf-color-surface: #fcfaf6;
-	--rf-color-surface-hover: #efece5;
-	--rf-color-surface-active: #e8e5df;
+	--rf-color-surface: #fbfaf7;
+	--rf-color-surface-hover: #ecebe8;
+	--rf-color-surface-active: #e2e0dd;
 	--rf-color-surface-raised: #ffffff;
 
 	/* Semantic — muted earthy band per SPEC-051 */

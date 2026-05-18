@@ -114,7 +114,9 @@ describe('generateThemeStylesheet', () => {
 		expect(css).toContain('--rf-color-text: #1c1a17;');
 		expect(css).toContain('[data-theme="dark"] {');
 		expect(css).toContain('@media (prefers-color-scheme: dark)');
-		expect(css).toContain(':root:not([data-theme])');
+		// Uses :root:not([data-theme="light"]) — matches Lumina's hand-authored
+		// dark.css pattern so generated overrides compose at equal specificity.
+		expect(css).toContain(':root:not([data-theme="light"])');
 	});
 
 	it('does not emit a media-query block for non-light/dark modes', () => {

@@ -8,7 +8,21 @@
 			"contentDir": "./site/content",
 			"theme": {
 				"package": "@refrakt-md/lumina",
-				"presets": ["@refrakt-md/lumina/presets/niwaki"]
+				"presets": ["@refrakt-md/lumina/presets/niwaki"],
+				"tokens": {
+					"color": {
+						"primary": "#e15f80",
+						"primary-hover": "#c84a6c"
+					}
+				},
+				"modes": {
+					"dark": {
+						"color": {
+							"primary": "#e8788f",
+							"primary-hover": "#ef91a3"
+						}
+					}
+				}
 			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",

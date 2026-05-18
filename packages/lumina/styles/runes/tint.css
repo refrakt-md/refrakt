@@ -16,12 +16,12 @@
 @property --rf-color-bg {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #f6f4ef;
+	initial-value: #f5f4f1;
 }
 @property --rf-color-surface {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #fcfaf6;
+	initial-value: #fbfaf7;
 }
 @property --rf-color-text {
 	syntax: '<color>';
@@ -41,7 +41,7 @@
 @property --rf-color-border {
 	syntax: '<color>';
 	inherits: true;
-	initial-value: #e8e5df;
+	initial-value: #e2e0dd;
 }
 
 /* ── 1. Colour scheme override ──────────────────────────────────────────────
@@ -55,12 +55,12 @@
 	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
-	--cs-bg: #1c1a17;
-	--cs-surface: #232017;
+	--cs-bg: #1a1a17;
+	--cs-surface: #211f1c;
 	--cs-text: #f6f4ef;
 	--cs-muted: #94908a;
 	--cs-accent: #f6f4ef;
-	--cs-border: #2d2926;
+	--cs-border: #2a2825;
 
 	--rf-color-bg: var(--cs-bg);
 	--rf-color-surface: var(--cs-surface);
@@ -70,9 +70,9 @@
 	--rf-color-border: var(--cs-border);
 
 	--rf-color-primary-hover: #d4cfc5;
-	--rf-color-surface-hover: #2d2926;
-	--rf-color-surface-active: #3a342d;
-	--rf-color-surface-raised: #2a2622;
+	--rf-color-surface-hover: #2a2825;
+	--rf-color-surface-active: #353330;
+	--rf-color-surface-raised: #292723;
 
 	--rf-color-info: #9bb4c7;
 	--rf-color-info-bg: #1f2530;
@@ -104,12 +104,12 @@
 	color: var(--rf-color-text);
 	background-color: var(--rf-color-bg);
 
-	--cs-bg: #f6f4ef;
-	--cs-surface: #fcfaf6;
+	--cs-bg: #f5f4f1;
+	--cs-surface: #fbfaf7;
 	--cs-text: #1c1a17;
 	--cs-muted: #6b6661;
 	--cs-accent: #1c1a17;
-	--cs-border: #e8e5df;
+	--cs-border: #e2e0dd;
 
 	--rf-color-bg: var(--cs-bg);
 	--rf-color-surface: var(--cs-surface);
@@ -119,8 +119,8 @@
 	--rf-color-border: var(--cs-border);
 
 	--rf-color-primary-hover: #3a342d;
-	--rf-color-surface-hover: #efece5;
-	--rf-color-surface-active: #e8e5df;
+	--rf-color-surface-hover: #ecebe8;
+	--rf-color-surface-active: #e2e0dd;
 	--rf-color-surface-raised: #ffffff;
 
 	--rf-color-info: #34547a;
