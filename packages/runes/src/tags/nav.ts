@@ -103,6 +103,7 @@ export const nav = createContentModelSchema({
   attributes: {
     ordered: { type: Boolean, required: false, description: 'Use numbered list for navigation items' },
     auto: { type: Boolean, required: false, description: 'Automatically generate from child pages' },
+    layout: { type: String, required: false, matches: ['vertical', 'menubar', 'columns', 'cards'], description: 'Presentation layout: sidebar (vertical), horizontal menubar (header), column grid (footer), or cards (section landing). Defaults to vertical.' },
   },
   contentModel: {
     type: 'custom',
@@ -110,19 +111,24 @@ export const nav = createContentModelSchema({
     description: 'Top-level (#) headings become nav groups; the list directly under each heading becomes the group\'s items. Items are page slugs — wrap in markdown links to set custom labels, or use plain text to resolve the page title. Without headings, a single list becomes a flat nav.',
   },
   transform(resolved, attrs, config) {
+    const forwardLayout = (tag: Tag): Tag => {
+      if (attrs.layout) tag.attributes.layout = attrs.layout;
+      return tag;
+    };
+
     if (attrs.auto) {
       // Emit a placeholder with an empty nav and a sentinel meta tag.
       // The core post-process hook will replace this with resolved child page items.
       const sentinelMeta = new Markdoc.Tag('meta', { 'data-field': NAV_AUTO_SENTINEL, content: 'true' });
 
-      return createComponentRenderable({ rune: 'nav',
+      return forwardLayout(createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         properties: {
           group: [],
           item: [],
         },
         children: [sentinelMeta],
-      });
+      }));
     }
 
     const children = new RenderableNodeCursor(
@@ -154,7 +160,7 @@ export const nav = createContentModelSchema({
           .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'))
       );
 
-      return createComponentRenderable({ rune: 'nav',
+      return forwardLayout(createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         class: attrs.ordered ? 'ordered' : undefined,
         properties: {
@@ -162,13 +168,13 @@ export const nav = createContentModelSchema({
           item: [...topLevel, ...allGroupItems],
         },
         children: topLevelContainer ? [topLevelContainer, ...groups] : groups,
-      });
+      }));
     }
 
     // Flat list (no groups)
     const allItems = children.flatten().tag('li');
 
-    return createComponentRenderable({ rune: 'nav',
+    return forwardLayout(createComponentRenderable({ rune: 'nav',
       tag: 'nav',
       class: attrs.ordered ? 'ordered' : undefined,
       properties: {
@@ -176,6 +182,6 @@ export const nav = createContentModelSchema({
         item: allItems,
       },
       children: children.toArray(),
-    });
+    }));
   },
 });

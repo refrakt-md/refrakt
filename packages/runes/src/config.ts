@@ -383,6 +383,9 @@ export const coreConfig: ThemeConfig = {
 		Nav: {
 			block: 'nav',
 			defaultDensity: 'compact',
+			modifiers: {
+				layout: { source: 'attribute' },
+			},
 			postTransform(node) {
 				return { ...node, name: 'rf-nav' };
 			},

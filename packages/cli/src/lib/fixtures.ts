@@ -114,6 +114,19 @@ const config = {
 
 **Submit**
 {% /form %}`,
+
+	nav: `{% nav %}
+- [Docs](/docs)
+- [Blog](/blog)
+
+## Product
+- pricing
+- features
+
+## Resources
+- about
+- changelog
+{% /nav %}`,
 };
 
 /** Get a fixture for a rune, with optional attribute overrides applied to the source */

@@ -572,7 +572,14 @@
 			"dataRune": "nav",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"layout": {
+					"source": "attribute",
+					"classPattern": ".rf-nav--{value}",
+					"dataAttribute": "data-layout"
+				}
+			}
 		},
 		"NavGroup": {
 			"block": "nav-group",

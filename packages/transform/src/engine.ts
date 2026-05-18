@@ -83,8 +83,10 @@ function transformRune(
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
 	const mappedValues: Record<string, string> = {};
+	const attrModifierNames: string[] = [];
 	if (config.modifiers) {
 		for (const [name, mod] of Object.entries(config.modifiers)) {
+			if (mod.source === 'attribute') attrModifierNames.push(name);
 			const value = mod.source === 'meta'
 				? readMeta(tag, name, mod.default)
 				: tag.attributes[name] ?? mod.default;
@@ -435,7 +437,11 @@ function transformRune(
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...passAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...rawPassAttrs } = tag.attributes;
+	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
+	const passAttrs = attrModifierNames.length > 0
+		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
+		: rawPassAttrs;
 
 	const result: SerializedTag = {
 		...tag,
