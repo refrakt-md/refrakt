@@ -58,17 +58,32 @@
 .rf-mobile-panel__nav img {
 	display: none;
 }
-.rf-mobile-panel__nav a {
+/* Panel items — top-level links and group items render uniformly. The
+   double selector lets these declarations beat the menubar's own mobile
+   rules (in nav.css) which target `.rf-nav-item__link` with higher
+   specificity than a bare `.rf-mobile-panel__nav a` would carry. */
+.rf-mobile-panel__nav a,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-item__link {
 	display: block;
-	padding: 0.75rem 0;
-	font-size: 1.1rem;
+	padding: 0.5rem 0;
+	font-size: 1.5rem;
+	font-weight: 700;
 	color: var(--rf-color-text);
 	text-decoration: none;
-	border-bottom: 1px solid var(--rf-color-border);
+	background: transparent;
+	border: 0;
 }
-.rf-mobile-panel__nav a:hover {
+.rf-mobile-panel__nav a:hover,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-item__link:hover {
 	color: var(--rf-color-primary, var(--rf-color-text));
+	background: transparent;
 	text-decoration: none;
+}
+/* Group headings inside the panel — flush with items (no horizontal
+   padding) and breathing room above so each group reads as a section. */
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group h2,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group h3 {
+	padding: 1.5rem 0 0.25rem;
 }
 .rf-mobile-panel__body {
 	padding: 1rem 1.5rem;
