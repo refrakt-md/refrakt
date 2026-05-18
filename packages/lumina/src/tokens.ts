@@ -1,70 +1,75 @@
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 /**
- * Lumina's design tokens, expressed against the typed {@link TokenContract}
- * from SPEC-048. This is the *source of truth* for Lumina's runtime CSS
- * values — every `--rf-*` custom property in `packages/lumina/tokens/base.css`
- * has a corresponding entry here, and dark-mode overrides live under
- * `modes.dark`.
+ * Lumina's design tokens — the new **neutral default** palette landing in
+ * v0.14.0 per SPEC-051. Warm-neutral surface, monochrome primary, the
+ * "quiet spectrum walk" syntax palette (teal / violet / rust / ochre /
+ * sage), and the four muted-earthy status colours.
  *
- * The hand-authored `tokens/base.css` and `tokens/dark.css` files continue
- * to ship for the v0.14.0 window so consumers see no behavioural change.
- * A coverage test in `test/token-config-coverage.test.ts` keeps the two in
- * lockstep — if either drifts, the test fails.
+ * This is the *source of truth* for Lumina's runtime CSS values; the
+ * hand-authored `tokens/base.css` and `tokens/dark.css` mirror it
+ * verbatim and a coverage test keeps the two in lockstep.
  *
- * Adapters that consume site-level `theme.tokens` / `theme.presets` /
- * `theme.modes` overrides merge those layers on top of this base before
- * emitting CSS. See `@refrakt-md/transform`'s `mergeThemeTokensConfigs`
- * and `generateThemeStylesheet`.
+ * Sites that want the previous cream-and-navy appearance opt into the
+ * `tideline` preset shipping alongside this default (see
+ * `@refrakt-md/lumina/presets/tideline` once Chunk 7 lands).
+ *
+ * Sites that want Japanese-garden syntax colours on top of this neutral
+ * chrome opt into the `niwaki` preset (Chunk 7).
  */
 export const luminaTokens: ThemeTokensConfig = {
 	font: {
-		sans: "'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-		mono: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+		sans: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+		mono: "'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace",
 	},
 
 	color: {
-		text: '#1d3557',
-		muted: '#5a7a90',
-		border: '#d8e4de',
-		bg: '#faf5eb',
-		primary: '#457b9d',
-		'primary-hover': '#376585',
+		text: '#1c1a17',
+		muted: '#6b6661',
+		border: '#e8e5df',
+		bg: '#f6f4ef',
+		primary: '#1c1a17',
+		'primary-hover': '#3a342d',
 
+		// Warm-neutral axis from near-bg to near-text, eleven hand-picked stops.
+		// Several stops intentionally overlap with semantic tokens (surface.base,
+		// border, primary-hover, text) — that's normal; palette steps double as
+		// the implementations of the named tokens at their lightness level.
 		'primary-scale': {
-			'50': '#f0f6f9',
-			'100': '#dcebf0',
-			'200': '#b8d6e2',
-			'300': '#a8dadc',
-			'400': '#70b4c0',
-			'500': '#457b9d',
-			'600': '#376585',
-			'700': '#1d3557',
-			'800': '#182c4a',
-			'900': '#12213a',
-			'950': '#0c162a',
+			'50': '#fcfaf6',
+			'100': '#f6f4ef',
+			'200': '#efece5',
+			'300': '#e8e5df',
+			'400': '#c2bdb3',
+			'500': '#94908a',
+			'600': '#76716a',
+			'700': '#5a564f',
+			'800': '#3a342d',
+			'900': '#2a2622',
+			'950': '#1c1a17',
 		},
 
 		surface: {
-			base: '#fffbf2',
-			hover: '#fdf0d5',
-			active: '#f9ebcc',
+			base: '#fcfaf6',
+			hover: '#efece5',
+			active: '#e8e5df',
 			raised: '#ffffff',
 		},
 
-		info: { base: '#457b9d', bg: '#edf4f8', border: '#a8dadc' },
-		warning: { base: '#c8900a', bg: '#fdf5e4', border: '#edd49a' },
-		danger: { base: '#e63946', bg: '#fdeced', border: '#f0b0b5' },
-		success: { base: '#3d8f65', bg: '#ecf5ef', border: '#a8d4b8' },
+		// Muted earthy status colours — same saturation/lightness band across all
+		// four so no sentiment is more aggressive than another. Per SPEC-051.
+		info: { base: '#34547a', bg: '#e8edf4', border: '#c5d2e0' },
+		warning: { base: '#9c5a18', bg: '#f5ebd9', border: '#e0c9a3' },
+		danger: { base: '#a83232', bg: '#f5e0e0', border: '#e0b8b8' },
+		success: { base: '#2d6a3e', bg: '#e0eee4', border: '#b8d4be' },
 
 		code: {
-			bg: '#1d3557',
-			text: '#f1faee',
-			// Maps to --rf-color-code-inline-bg per the contract; the legacy
-			// `--rf-color-inline-code-bg` variable name continues to be emitted
-			// as an alias from the Lumina CSS for backwards compatibility with
-			// any downstream CSS that reads it. See WORK-191 for the full rename.
-			'inline-bg': '#f9ebcc',
+			bg: '#ebeae8',
+			text: '#1c1a17',
+			// Mapped to --rf-color-code-inline-bg per the contract.
+			// `--rf-color-inline-code-bg` (legacy variable name) is emitted as an
+			// alias via `extra` below for downstream CSS that still reads it.
+			'inline-bg': '#e6e5e3',
 		},
 	},
 
@@ -104,47 +109,45 @@ export const luminaTokens: ThemeTokensConfig = {
 		lg: '0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)',
 	},
 
-	// Syntax palette — emitted as `--rf-syntax-keyword` etc. Lumina's CSS
-	// additionally publishes `--rf-syntax-token-*` aliases that Shiki's
-	// CSS-variables theme consumes; those aliases live in `extra` below so
-	// the contract surface stays clean.
+	// The "quiet spectrum walk": teal → violet → rust → ochre → sage — cool,
+	// cool, warm, warm, cool/warm. Spectrum-adjacent without shouting.
 	syntax: {
-		keyword: '#f2cc8f',
-		function: '#70b4c0',
-		string: '#a8dadc',
-		number: '#e8c07a',
-		type: '#70b4c0',
-		comment: '#5a7a90',
-		punctuation: '#a8dadc',
-		variable: '#b8d6e2',
+		keyword: '#2a5c63',     // deep teal
+		function: '#4a3b6e',    // slate violet
+		string: '#8a3a3a',      // warm rust
+		number: '#876327',      // antique ochre
+		type: '#3a5c2a',        // sage moss
+		comment: '#8a857d',     // warm muted (italic via rune CSS)
+		punctuation: '#6b6661', // tonal — same as color.muted
+		variable: '#1c1a17',    // tonal — same as color.text
 	},
 
 	modes: {
 		dark: {
 			color: {
-				text: '#f1faee',
-				muted: '#a8dadc',
-				border: 'rgba(168, 218, 220, 0.15)',
-				bg: '#152238',
-				primary: '#70b4c0',
-				'primary-hover': '#a8dadc',
+				text: '#f6f4ef',
+				muted: '#94908a',
+				border: '#2d2926',
+				bg: '#1c1a17',
+				primary: '#f6f4ef',
+				'primary-hover': '#d4cfc5',
 
 				surface: {
-					base: '#1a2940',
-					hover: '#203048',
-					active: '#263850',
-					raised: '#1a2940',
+					base: '#232017',
+					hover: '#2d2926',
+					active: '#3a342d',
+					raised: '#2a2622',
 				},
 
-				info: { base: '#a8dadc', bg: 'rgba(69, 123, 157, 0.12)', border: 'rgba(69, 123, 157, 0.3)' },
-				warning: { base: '#e8c07a', bg: 'rgba(200, 144, 10, 0.12)', border: 'rgba(200, 144, 10, 0.3)' },
-				danger: { base: '#f07078', bg: 'rgba(230, 57, 70, 0.12)', border: 'rgba(230, 57, 70, 0.3)' },
-				success: { base: '#72c098', bg: 'rgba(61, 143, 101, 0.12)', border: 'rgba(61, 143, 101, 0.3)' },
+				info: { base: '#9bb4c7', bg: '#1f2530', border: '#3d4655' },
+				warning: { base: '#d4a868', bg: '#2a2519', border: '#4a3f2a' },
+				danger: { base: '#d48888', bg: '#2a1818', border: '#4a2a2a' },
+				success: { base: '#7eb398', bg: '#1a2a1f', border: '#2a4a35' },
 
 				code: {
-					bg: '#152238',
-					text: '#f1faee',
-					'inline-bg': 'rgba(168, 218, 220, 0.08)',
+					bg: '#222220',
+					text: '#f6f4ef',
+					'inline-bg': '#2b2b29',
 				},
 			},
 
@@ -155,37 +158,34 @@ export const luminaTokens: ThemeTokensConfig = {
 				lg: '0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)',
 			},
 
-			// Dark-mode syntax — most colours stay the same, but function shifts
-			// and the syntax background uses an even-deeper navy than code.bg.
+			// Dark-mode syntax — lifted and slightly desaturated from light values
+			// so they read against the warm-near-black surface without shouting.
 			syntax: {
-				keyword: '#f2cc8f',
-				function: '#a8dadc',
-				string: '#a8dadc',
-				number: '#e8c07a',
-				type: '#a8dadc',
-				comment: '#5a7a90',
-				punctuation: '#70b4c0',
-				variable: '#b8d6e2',
+				keyword: '#7eb6bc',     // light teal
+				function: '#a89bc7',    // light slate violet
+				string: '#c79a9a',      // light rust
+				number: '#d4b07e',      // light antique ochre
+				type: '#94b385',        // light sage
+				comment: '#6b6661',     // warm muted (italic)
+				punctuation: '#94908a', // = dark color.muted
+				variable: '#f6f4ef',    // = dark color.text
 			},
 
-			// Dark-mode Shiki aliases — literal hex values matching the existing
-			// dark.css. Kept as literals (not var() references) so per-mode
-			// inheritance doesn't accidentally pick up the light-mode `syntax.*`
-			// values. The contract surface stays clean; these are the bridge
-			// to Shiki's hardcoded `--rf-syntax-token-*` consumption.
+			// Dark-mode Shiki aliases + legacy inline-code-bg name. Literal hex so
+			// each mode controls its own Shiki rendering independently.
 			extra: {
-				'rf-color-inline-code-bg': 'rgba(168, 218, 220, 0.08)',
-				'rf-syntax-foreground': '#f1faee',
-				'rf-syntax-background': '#0c162a',
-				'rf-syntax-token-keyword': '#f2cc8f',
-				'rf-syntax-token-function': '#a8dadc',
-				'rf-syntax-token-string': '#a8dadc',
-				'rf-syntax-token-string-expression': '#a8dadc',
-				'rf-syntax-token-constant': '#e8c07a',
-				'rf-syntax-token-comment': '#5a7a90',
-				'rf-syntax-token-parameter': '#b8d6e2',
-				'rf-syntax-token-punctuation': '#70b4c0',
-				'rf-syntax-token-link': '#a8dadc',
+				'rf-color-inline-code-bg': '#2b2b29',
+				'rf-syntax-foreground': '#f6f4ef',
+				'rf-syntax-background': '#222220',
+				'rf-syntax-token-keyword': '#7eb6bc',
+				'rf-syntax-token-function': '#a89bc7',
+				'rf-syntax-token-string': '#c79a9a',
+				'rf-syntax-token-string-expression': '#c79a9a',
+				'rf-syntax-token-constant': '#d4b07e',
+				'rf-syntax-token-comment': '#6b6661',
+				'rf-syntax-token-parameter': '#f6f4ef',
+				'rf-syntax-token-punctuation': '#94908a',
+				'rf-syntax-token-link': '#a89bc7',
 			},
 		},
 	},
@@ -194,27 +194,26 @@ export const luminaTokens: ThemeTokensConfig = {
 	 *
 	 *  - `rf-color-inline-code-bg` is the legacy variable name for what the
 	 *    contract calls `color.code.inline-bg` (→ `--rf-color-code-inline-bg`).
-	 *    Aliased here as a literal hex so downstream CSS that reads the old
-	 *    name keeps working through v0.14.0; rename target is a future cleanup.
+	 *    Aliased here so downstream CSS that reads the old name keeps working
+	 *    through v0.14.0; rename target is a future cleanup.
 	 *  - `rf-syntax-foreground`/`background` and `rf-syntax-token-*` are the
 	 *    custom property names Shiki's CSS-variables theme actually emits
-	 *    (`createCssVariablesTheme({ variablePrefix: '--rf-syntax-' })` produces
-	 *    `--rf-syntax-token-keyword` etc., with `token-` hardcoded inside
-	 *    Shiki). Emitted as literal hex values so each mode controls its own
-	 *    Shiki rendering independently — dark mode supplies its own overrides
-	 *    via `modes.dark.extra`. */
+	 *    (`token-` is hardcoded inside Shiki's `createCssVariablesTheme`).
+	 *    Emitted as literal hex values so each mode controls its own Shiki
+	 *    rendering independently — dark mode supplies its own overrides via
+	 *    `modes.dark.extra`. */
 	extra: {
-		'rf-color-inline-code-bg': '#f9ebcc',
-		'rf-syntax-foreground': '#f1faee',
-		'rf-syntax-background': '#1d3557',
-		'rf-syntax-token-keyword': '#f2cc8f',
-		'rf-syntax-token-function': '#70b4c0',
-		'rf-syntax-token-string': '#a8dadc',
-		'rf-syntax-token-string-expression': '#a8dadc',
-		'rf-syntax-token-constant': '#e8c07a',
-		'rf-syntax-token-comment': '#5a7a90',
-		'rf-syntax-token-parameter': '#b8d6e2',
-		'rf-syntax-token-punctuation': '#a8dadc',
-		'rf-syntax-token-link': '#70b4c0',
+		'rf-color-inline-code-bg': '#e6e5e3',
+		'rf-syntax-foreground': '#1c1a17',
+		'rf-syntax-background': '#ebeae8',
+		'rf-syntax-token-keyword': '#2a5c63',
+		'rf-syntax-token-function': '#4a3b6e',
+		'rf-syntax-token-string': '#8a3a3a',
+		'rf-syntax-token-string-expression': '#8a3a3a',
+		'rf-syntax-token-constant': '#876327',
+		'rf-syntax-token-comment': '#8a857d',
+		'rf-syntax-token-parameter': '#1c1a17',
+		'rf-syntax-token-punctuation': '#6b6661',
+		'rf-syntax-token-link': '#4a3b6e',
 	},
 };

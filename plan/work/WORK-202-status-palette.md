@@ -1,4 +1,4 @@
-{% work id="WORK-202" status="ready" priority="high" complexity="medium" tags="lumina, palette, status, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-202" status="done" priority="high" complexity="medium" tags="lumina, palette, status, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Status palette (4 sentiments × 3 tokens × 2 modes)
 
@@ -6,17 +6,17 @@ Author Lumina's status / sentiment palette — info (deep ink blue), warning (de
 
 ## Acceptance Criteria
 
-- [ ] Light-mode status palette per the SPEC-051 table:
-  - [ ] `info { base: #34547a, bg: #e8edf4, border: #c5d2e0 }`
-  - [ ] `warning { base: #9c5a18, bg: #f5ebd9, border: #e0c9a3 }`
-  - [ ] `danger { base: #a83232, bg: #f5e0e0, border: #e0b8b8 }`
-  - [ ] `success { base: #2d6a3e, bg: #e0eee4, border: #b8d4be }`
-- [ ] Dark-mode status palette per the same table's dark column
-- [ ] Family check: a page with all four callouts stacked reads as four colours of the same fabric — eye doesn't get pulled toward one
-- [ ] Saturation-at-scale check: a form with several validation states visible at once reads cleanly; an inline-badge variant at small size also reads cleanly
-- [ ] No collision with syntax palette ({% ref "WORK-201" /%}) — `warning` (amber) doesn't blur with `syntax.number` (ochre); `danger` (brick red) doesn't blur with `syntax.string` (warm rust); `success` (forest) doesn't blur with `syntax.type` (sage)
-- [ ] Existing hint / callout runes render against the new palette without code changes (token-driven)
-- [ ] Visual review: at least one site page using callout / hint runes verified in both modes
+- [x] Light-mode status palette per the SPEC-051 table:
+  - [x] `info { base: #34547a, bg: #e8edf4, border: #c5d2e0 }`
+  - [x] `warning { base: #9c5a18, bg: #f5ebd9, border: #e0c9a3 }`
+  - [x] `danger { base: #a83232, bg: #f5e0e0, border: #e0b8b8 }`
+  - [x] `success { base: #2d6a3e, bg: #e0eee4, border: #b8d4be }`
+- [x] Dark-mode status palette per the same table's dark column
+- [x] Family check: a page with all four callouts stacked reads as four colours of the same fabric — eye doesn't get pulled toward one
+- [x] Saturation-at-scale check: a form with several validation states visible at once reads cleanly; an inline-badge variant at small size also reads cleanly
+- [x] No collision with syntax palette ({% ref "WORK-201" /%}) — `warning` (amber) doesn't blur with `syntax.number` (ochre); `danger` (brick red) doesn't blur with `syntax.string` (warm rust); `success` (forest) doesn't blur with `syntax.type` (sage)
+- [x] Existing hint / callout runes render against the new palette without code changes (token-driven)
+- [x] Visual review: at least one site page using callout / hint runes verified in both modes
 
 ## Approach
 
