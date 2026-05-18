@@ -1,6 +1,7 @@
 import type { Schema } from '@markdoc/markdoc';
-import type { Plugin } from '@refrakt-md/types';
-import { loadContent, type Site } from './site.js';
+import type { Plugin, SecurityPolicy } from '@refrakt-md/types';
+import { loadContent, loadContentFromTree, type Site, type VirtualReader } from './site.js';
+import type { ContentTree } from './content-tree.js';
 
 export interface SiteLoaderOptions {
 	dirPath: string;
@@ -37,6 +38,56 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.sandboxExamplesDir,
 				options.variables,
 			);
+			if (!options.dev) cached = promise;
+			return promise;
+		},
+		invalidate() {
+			cached = null;
+		},
+	};
+}
+
+export interface VirtualSiteLoaderOptions {
+	/** Pre-built content tree. The page corpus, layouts, and partials are read
+	 *  from here — there is no filesystem fallback. */
+	tree: ContentTree;
+	basePath?: string;
+	icons?: Record<string, Record<string, string>>;
+	additionalTags?: Record<string, Schema>;
+	plugins?: Plugin[];
+	/** Site-wide Markdoc variables available in content via {% $name %} syntax. */
+	variables?: Record<string, unknown>;
+	/** Security policy for sandbox runes. Default: `'trusted'`. */
+	securityPolicy?: SecurityPolicy;
+	/** Optional async reader for ad-hoc lookups. Forward-compatibility hook —
+	 *  see `LoadContentFromTreeOptions.reader` for details. */
+	reader?: VirtualReader;
+	/** When true, every load() call re-runs the pipeline against the current
+	 *  tree (no caching). Use when the host swaps the tree's contents in place. */
+	dev?: boolean;
+}
+
+/**
+ * Site loader for hosted (non-filesystem) environments. Wraps
+ * {@link loadContentFromTree} with the same caching semantics as
+ * {@link createSiteLoader}: the result is memoized until `invalidate()` is
+ * called, unless `dev: true`.
+ */
+export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): SiteLoader {
+	let cached: Promise<Site> | null = null;
+
+	return {
+		load() {
+			if (!options.dev && cached) return cached;
+			const promise = loadContentFromTree(options.tree, {
+				basePath: options.basePath,
+				icons: options.icons,
+				additionalTags: options.additionalTags,
+				plugins: options.plugins,
+				variables: options.variables,
+				securityPolicy: options.securityPolicy,
+				reader: options.reader,
+			});
 			if (!options.dev) cached = promise;
 			return promise;
 		},
