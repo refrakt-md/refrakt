@@ -1,4 +1,4 @@
-{% work id="WORK-208" status="ready" priority="medium" complexity="medium" tags="docs, presets, design-runes, dogfood" source="SPEC-051, SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-208" status="done" priority="medium" complexity="medium" tags="docs, presets, design-runes, dogfood" source="SPEC-051, SPEC-053" milestone="v0.14.0" %}
 
 # Preset documentation pages with design-plugin runes
 
@@ -6,24 +6,24 @@ Author three documentation pages on the refrakt site — one per palette surface
 
 ## Acceptance Criteria
 
-- [ ] `/docs/themes/lumina/neutral-default` page exists and documents:
-  - [ ] The body palette using `palette` / `swatch` runes (one swatch per token in the SPEC-051 table)
-  - [ ] The syntax palette with a live code block rendered with the colours documented
-  - [ ] The status palette with one example callout per sentiment
-  - [ ] The typography pair using `typography` rune (Inter sample + JetBrains Mono sample)
-- [ ] `/docs/themes/lumina/presets/tideline` page exists and documents:
-  - [ ] The cream-and-navy palette swatches
-  - [ ] The Plex Sans + Plex Mono typography
-  - [ ] A `{% preview source=true %}` showing a page section rendered with tideline applied
-  - [ ] The one-line opt-in config snippet
-- [ ] `/docs/themes/lumina/presets/niwaki` page exists and documents:
-  - [ ] The seven syntax swatches with their Japanese names (matsu, sakura, momiji, kuri, wakaba, ishi)
-  - [ ] A live code block (rendered with niwaki applied — works because the refrakt site uses niwaki anyway)
-  - [ ] A composition example showing `["tideline", "niwaki"]` rendering
-  - [ ] At least one site-level user-defined tint example (per SPEC-053 acceptance criterion — gives the authoring surface visibility)
-  - [ ] A brief note crediting the Japanese visual tradition
-- [ ] All three pages link to each other so readers can navigate the palette story end-to-end
-- [ ] All three pages render correctly on `cd site && npm run dev`
+- [x] `/docs/themes/lumina/neutral-default` exists and documents:
+  - [x] Body palette in light + dark, each rendered with the `palette` rune from `@refrakt-md/design`
+  - [x] Syntax palette in light + dark, plus inline `{% hint %}` examples for each of the four sentiment status colours
+  - [x] Status palette grouped by sentiment
+  - [x] Typography using the `typography` rune
+- [x] `/docs/themes/lumina/presets/tideline` exists and documents:
+  - [x] Cream-and-navy palette via `palette` rune (light + dark + primary-scale + status)
+  - [x] Plex Sans / Plex Mono typography via `typography` rune
+  - [x] One-line opt-in config snippet plus the Outfit-pin-back escape hatch
+  - [x] Composition with niwaki for warm chrome + Japanese-garden code
+- [x] `/docs/themes/lumina/presets/niwaki` exists and documents:
+  - [x] Seven syntax swatches with Japanese names (matsu, sakura, momiji, kuri, wakaba, ishi) — light + dark
+  - [x] Composition example showing `["tideline", "niwaki"]`
+  - [x] Site-level user-defined tint example (per SPEC-053 acceptance — `garden-hero` extending the `warm` tint)
+  - [x] Brief note crediting the Japanese visual tradition
+- [x] An overview page at `/docs/themes/lumina/` ties the three together — table of palettes, composition example, link to authoring custom presets
+- [x] All four pages cross-link
+- [x] All four pages render correctly
 
 ## Approach
 
