@@ -161,10 +161,11 @@
 	color: var(--rf-color-text);
 }
 .rf-nav--menubar .rf-nav-group ul {
-	display: none;
+	display: block;
 	position: absolute;
 	top: 100%;
-	left: 0;
+	right: 0;
+	left: auto;
 	min-width: 12rem;
 	padding: 0.5rem;
 	background: var(--rf-color-bg);
@@ -172,9 +173,19 @@
 	border-radius: var(--rf-radius-md);
 	box-shadow: var(--rf-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
 	z-index: 50;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translateY(-4px);
+	transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
 }
+.rf-nav--menubar .rf-nav-group:hover > ul,
+.rf-nav--menubar .rf-nav-group:focus-within > ul,
 .rf-nav--menubar .rf-nav-group[data-open="true"] > ul {
-	display: block;
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	transform: translateY(0);
 }
 .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
 	font-size: 0.85rem;
@@ -218,6 +229,15 @@
 		box-shadow: none;
 		border: 0;
 		padding: 0 0 0 0.75rem;
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transform: none;
+	}
+	/* Inside the mobile panel, the data-open=true on the group still drives
+	   accordion expansion; non-open groups stay collapsed without fade. */
+	.rf-nav--menubar[data-open="true"] .rf-nav-group:not([data-open="true"]) ul {
+		display: none;
 	}
 }
 
