@@ -6,7 +6,10 @@
 	"sites": {
 		"main": {
 			"contentDir": "./site/content",
-			"theme": "@refrakt-md/lumina",
+			"theme": {
+				"package": "@refrakt-md/lumina",
+				"presets": ["@refrakt-md/lumina/presets/niwaki"]
+			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",
 			"siteName": "refrakt.md",

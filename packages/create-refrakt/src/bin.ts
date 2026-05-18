@@ -287,6 +287,24 @@ Done! Your refrakt.md site is ready (target: ${target}).
 Next steps:
 
 ${devCommands[target!]}
+
+Your site renders Lumina's neutral default — a quiet warm-neutral
+palette designed to disappear behind your content. Two presets are
+available if you want a starting palette:
+
+  // Full warm-paper + maritime navy
+  "theme": {
+    "package": "@refrakt-md/lumina",
+    "presets": ["@refrakt-md/lumina/presets/tideline"]
+  }
+
+  // Japanese-garden syntax highlighting (syntax-only, composes)
+  "theme": {
+    "package": "@refrakt-md/lumina",
+    "presets": ["@refrakt-md/lumina/presets/niwaki"]
+  }
+
+See refrakt.md/docs/themes/lumina for live previews of both presets.
 `);
 	}
 }
