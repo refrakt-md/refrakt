@@ -185,41 +185,50 @@ export async function themeInfoCommand(_options: ThemeInfoOptions): Promise<void
 	}
 }
 
-/** Read the theme name from a raw config, preferring the modern `site.theme`
- *  / `sites[only].theme` over the legacy flat top-level `theme` field. */
+/** Read the theme package name from a raw config, preferring the modern
+ *  `site.theme` / `sites[only].theme` over the legacy flat top-level `theme`
+ *  field. Accepts both the string shorthand and the new object form
+ *  (`{ package, presets, ... }`). */
 function readThemeFromConfig(raw: import('@refrakt-md/types').RefraktConfig): string | undefined {
-	if (raw.site?.theme) return raw.site.theme;
-	if (raw.sites) {
-		const entries = Object.entries(raw.sites);
-		if (entries.length === 1) {
-			return entries[0]![1].theme;
-		}
-		return undefined;
-	}
-	return raw.theme;
+	const value = raw.site?.theme
+		?? (raw.sites && Object.entries(raw.sites).length === 1
+			? Object.entries(raw.sites)[0]![1].theme
+			: undefined)
+		?? raw.theme;
+	if (value === undefined) return undefined;
+	return typeof value === 'string' ? value : value.package;
 }
 
-/** Mutate the raw config to set the theme on whichever shape it was authored
- *  in. Returns the previous theme value. */
+/** Mutate the raw config to set the theme package on whichever shape it was
+ *  authored in. If the existing theme was the new object form, preserves
+ *  `presets`, `tokens`, `modes`, and `colorScheme` and only swaps `package`.
+ *  Returns the previous package name. */
 function writeThemeIntoConfig(
 	raw: import('@refrakt-md/types').RefraktConfig,
 	pluginName: string,
 ): string | undefined {
+	const swap = (current: string | import('@refrakt-md/types').SiteThemeConfig | undefined) => {
+		if (current === undefined || typeof current === 'string') {
+			return { previous: typeof current === 'string' ? current : undefined, next: pluginName };
+		}
+		return { previous: current.package, next: { ...current, package: pluginName } };
+	};
+
 	if (raw.site) {
-		const previous = raw.site.theme;
-		raw.site.theme = pluginName;
+		const { previous, next } = swap(raw.site.theme);
+		raw.site.theme = next;
 		return previous;
 	}
 	if (raw.sites) {
 		const entries = Object.entries(raw.sites);
 		if (entries.length === 1) {
 			const [, site] = entries[0]!;
-			const previous = site.theme;
-			site.theme = pluginName;
+			const { previous, next } = swap(site.theme);
+			site.theme = next;
 			return previous;
 		}
 	}
-	const previous = raw.theme;
-	raw.theme = pluginName;
+	const { previous, next } = swap(raw.theme);
+	raw.theme = next;
 	return previous;
 }

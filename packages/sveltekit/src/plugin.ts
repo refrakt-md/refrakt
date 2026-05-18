@@ -3,6 +3,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin as VitePlugin, UserConfig } from 'vite';
 import type { Plugin, SiteConfig, PipelineWarning } from '@refrakt-md/types';
+import { getThemePackage } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
@@ -49,7 +50,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
-				activeSite.theme,
+				getThemePackage(activeSite.theme),
 				...(activeSite.plugins ?? []),
 				...(options.noExternal ?? []),
 			];
@@ -172,14 +173,15 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 
 				const report = analyzeRuneUsage(site.pages);
 
-				const themeTransform = await import(`${activeSite.theme}/transform`);
+				const themePackage = getThemePackage(activeSite.theme);
+				const themeTransform = await import(`${themePackage}/transform`);
 				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
 				const effectiveConfig = assembledResult?.config ?? themeConfig;
 
 				usedCssBlocks = new Set<string>();
 
 				// Resolve the theme's root export (index.css) to find the package directory
-				const themeEntryUrl = import.meta.resolve(activeSite.theme);
+				const themeEntryUrl = import.meta.resolve(themePackage);
 				const themeDir = dirname(fileURLToPath(themeEntryUrl));
 				const stylesDir = join(themeDir, 'styles', 'runes');
 

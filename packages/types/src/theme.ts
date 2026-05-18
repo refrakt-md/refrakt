@@ -1,3 +1,11 @@
+/** Extract the theme package identifier from a `SiteConfig.theme` value.
+ *  Accepts either the legacy string form or the new {@link SiteThemeConfig}
+ *  object form (where the identifier lives in `package`). Useful at call sites
+ *  that need the package name for dynamic import or noExternal lists. */
+export function getThemePackage(theme: string | SiteThemeConfig): string {
+	return typeof theme === 'string' ? theme : theme.package;
+}
+
 /** Per-site theme configuration. May be supplied as a string (legacy shorthand
  *  for `{ package: <string> }`) or as a full object with token overrides,
  *  presets, modes, and colour-scheme behaviour.
@@ -119,8 +127,8 @@ export interface RefraktConfig {
 
 	/** @deprecated Shorthand for `sites.default.contentDir`. Undefined for multi-site configs — use `resolveSite(config).site.contentDir`. */
 	contentDir?: string;
-	/** @deprecated Shorthand for `sites.default.theme`. Undefined for multi-site configs — use `resolveSite(config).site.theme`. */
-	theme?: string;
+	/** @deprecated Shorthand for `sites.default.theme`. Undefined for multi-site configs — use `resolveSite(config).site.theme`. Accepts the same `string | SiteThemeConfig` shape as the per-site field. */
+	theme?: string | SiteThemeConfig;
 	/** @deprecated Shorthand for `sites.default.target`. Undefined for multi-site configs — use `resolveSite(config).site.target`. The field itself is also under review (v0.11.0 follow-up): adapters do not validate it and it is increasingly vestigial; treat it as documentation-only for now. */
 	target?: string;
 	/** @deprecated Shorthand for `sites.default.overrides` */

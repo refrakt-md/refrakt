@@ -40,8 +40,17 @@ function validateConfig(raw: unknown): RefraktConfig {
 		if (typeof obj.contentDir !== 'string' || !obj.contentDir) {
 			throw new Error('refrakt.config.json: "contentDir" is required and must be a non-empty string');
 		}
-		if (typeof obj.theme !== 'string' || !obj.theme) {
-			throw new Error('refrakt.config.json: "theme" is required and must be a non-empty string');
+		if (typeof obj.theme === 'string') {
+			if (!obj.theme) {
+				throw new Error('refrakt.config.json: "theme" string must be non-empty');
+			}
+		} else if (typeof obj.theme === 'object' && obj.theme !== null) {
+			const t = obj.theme as Record<string, unknown>;
+			if (typeof t.package !== 'string' || !t.package) {
+				throw new Error('refrakt.config.json: "theme.package" is required and must be a non-empty string');
+			}
+		} else {
+			throw new Error('refrakt.config.json: "theme" is required (string package name or { package, ... } object)');
 		}
 		// `target` is documentation-only — no adapter consumes it. Validate the
 		// type when present so typos are still caught, but don't require it.
@@ -196,7 +205,7 @@ function validateConfig(raw: unknown): RefraktConfig {
 
 	return {
 		contentDir: obj.contentDir as string,
-		theme: obj.theme as string,
+		theme: obj.theme as RefraktConfig['theme'],
 		...(typeof obj.target === 'string' && obj.target && { target: obj.target }),
 		...(overrides && { overrides }),
 		...(routeRules && { routeRules }),

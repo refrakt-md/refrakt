@@ -30,6 +30,7 @@ export type {
   RouteRule,
   ComponentDefinition,
 } from './theme.js';
+export { getThemePackage } from './theme.js';
 
 // Plugin types
 export type {
