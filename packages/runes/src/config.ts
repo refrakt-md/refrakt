@@ -1206,6 +1206,138 @@ function resolveCollapsibleNavs(
 	return { ...tag, children: newChildren };
 }
 
+// ─── Cards layout enrichment ───
+
+interface PageMetadata {
+	url: string;
+	title: string;
+	description?: string;
+	icon?: string;
+}
+
+function enrichNavItemAsCard(
+	item: any,
+	pageMeta: PageMetadata | null,
+	itemUrl: string | null,
+): any {
+	const titleText = pageMeta?.title ?? itemUrl ?? '';
+	const description = pageMeta?.description;
+	const icon = pageMeta?.icon;
+	const href = pageMeta?.url ?? itemUrl ?? '';
+
+	const linkChildren: any[] = [];
+	if (icon) {
+		linkChildren.push(
+			new Tag('rf-icon', { name: icon, 'data-name': 'icon', class: 'rf-nav-item__icon' }, []),
+		);
+	}
+	linkChildren.push(
+		new Tag('span', { 'data-name': 'title', class: 'rf-nav-item__title' }, [titleText]),
+	);
+	if (description) {
+		linkChildren.push(
+			new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [description]),
+		);
+	}
+
+	const link = href
+		? new Tag('a', { href, class: 'rf-nav-item__link' }, linkChildren)
+		: new Tag('span', { class: 'rf-nav-item__link' }, linkChildren);
+
+	return { ...item, children: [link] };
+}
+
+function getNavItemUrl(
+	item: any,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+	currentUrl: string,
+): { url: string; isExternal: boolean } | null {
+	const slug = item.attributes?.['data-slug'];
+	if (slug) {
+		const resolved = resolveSlugToUrl(String(slug), pagesByUrl, currentUrl);
+		return resolved ? { url: resolved, isExternal: false } : null;
+	}
+	// Walk children for an <a href>
+	const findHref = (node: unknown): string | null => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const found = findHref(c);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.name === 'a' && t.attributes?.href) return String(t.attributes.href);
+		for (const c of t.children ?? []) {
+			const found = findHref(c);
+			if (found) return found;
+		}
+		return null;
+	};
+	const href = findHref(item);
+	if (!href) return null;
+	const isExternal = /^[a-z]+:\/\//i.test(href);
+	return { url: href, isExternal };
+}
+
+function resolveCardsNavs(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveCardsNavs(c, pageUrl, pagesByUrl)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	if (
+		tag.attributes?.['data-rune'] === 'nav' &&
+		tag.attributes?.['data-layout'] === 'cards'
+	) {
+		const enrichItem = (node: unknown): unknown => {
+			if (!Tag.isTag(node as any)) {
+				if (Array.isArray(node)) return node.map(enrichItem);
+				return node;
+			}
+			const t = node as any;
+			if (t.attributes?.['data-rune'] === 'nav-item') {
+				const ref = getNavItemUrl(t, pagesByUrl, pageUrl);
+				if (!ref) return t;
+				if (ref.isExternal) {
+					// External link — title only, no enrichment
+					return enrichNavItemAsCard(t, null, ref.url);
+				}
+				const page = pagesByUrl.get(ref.url);
+				const meta: PageMetadata | null = page
+					? { url: page.url, title: page.title, description: page.description, icon: page.icon }
+					: null;
+				return enrichNavItemAsCard(t, meta, ref.url);
+			}
+			const newChildren = (t.children ?? []).map(enrichItem);
+			if (newChildren.every((c: unknown, i: number) => c === t.children[i])) return t;
+			return { ...t, children: newChildren };
+		};
+		const newChildren = (tag.children ?? []).map(enrichItem);
+		return { ...tag, children: newChildren };
+	}
+
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveCardsNavs(c, pageUrl, pagesByUrl)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
 // ─── Blog pipeline helpers ───
 
 interface BlogPostData {
@@ -1423,6 +1555,7 @@ export const corePipelineHooks: PluginPipelineHooks = {
 					description: page.frontmatter.description,
 					date: page.frontmatter.date,
 					order: page.frontmatter.order,
+					icon: page.frontmatter.icon,
 				},
 			});
 
@@ -1448,13 +1581,16 @@ export const corePipelineHooks: PluginPipelineHooks = {
 	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
 		const pageEntities = registry.getAll('page') as unknown as Array<{
 			id: string;
-			data: { url: string; title: string; parentUrl: string };
+			data: { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number };
 		}>;
 
 		const pages = pageEntities.map(e => ({
 			url: e.data.url,
 			title: e.data.title,
 			parentUrl: e.data.parentUrl,
+			description: e.data.description,
+			icon: e.data.icon,
+			order: e.data.order,
 		}));
 
 		const pageTree = buildPageTree(pages);
@@ -1508,6 +1644,12 @@ export const corePipelineHooks: PluginPipelineHooks = {
 		);
 
 		renderable = resolveCollapsibleNavs(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
+		);
+
+		renderable = resolveCardsNavs(
 			renderable,
 			page.url,
 			coreData.pagesByUrl,

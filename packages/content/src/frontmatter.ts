@@ -11,6 +11,9 @@ export interface Frontmatter {
   author?: string;
   tags?: string[];
   image?: string;
+  /** Icon name resolvable by the `{% icon %}` rune. Used by `nav layout="cards"`
+   *  to render an icon on each child page card. */
+  icon?: string;
   [key: string]: unknown;
 }
 
