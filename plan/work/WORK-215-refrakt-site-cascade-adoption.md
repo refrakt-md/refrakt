@@ -2,7 +2,9 @@
 
 # Refrakt site adopts the tint cascade
 
-Update the refrakt site's layout files so the cascade actually does something visible: root locked to dark; `docs/`, `runes/`, `plan/` (all of it, including `specs/`, `work/`, `decisions/`, `milestones/`) explicitly unlocked and set to auto. The site becomes a live demo of the SPEC-052 cascade pattern.
+Update the refrakt site's layout files so the cascade actually does something visible: root locked to dark; `docs/`, `runes/`, and `plan/docs/` explicitly unlocked and set to auto. The site becomes a live demo of the SPEC-052 cascade pattern.
+
+Note: `/plan/*` on the site is *marketing for refrakt's planning system* (the `@refrakt-md/plan` plugin and CLI), so it correctly inherits the root's locked-dark default. Only `/plan/docs/*` (the plan system's documentation) flips to auto. The repo-root `plan/` directory is dev-only and isn't rendered on the site at all — no concern there.
 
 ## Acceptance Criteria
 
@@ -18,20 +20,20 @@ Update the refrakt site's layout files so the cascade actually does something vi
   ```
 - [ ] `site/content/runes/_layout.md` adds the same `tint-mode: auto, tint-lock: false`
 - [ ] `site/content/plan/docs/_layout.md` adds the same `tint-mode: auto, tint-lock: false`
-- [ ] Plan content outside `/plan/docs/` — `plan/specs/`, `plan/work/`, `plan/decisions/`, `plan/milestones/` if any are publicly routed — also gets `tint-mode: auto, tint-lock: false`. Audit during implementation and either add layouts for each subdirectory or add at `site/content/plan/_layout.md` covering all of `/plan/**`. Capture the decision in the resolution
+- [ ] `site/content/plan/_layout.md` (if it exists) does *not* unlock — `/plan/*` is plan-system marketing and correctly inherits the root's dark-locked default
 - [ ] After the change, navigating the site shows:
-  - [ ] Marketing pages (`/`, `/about`, `/blog/*`) render in dark, regardless of system preference
+  - [ ] Marketing pages (`/`, `/about`, `/blog/*`, `/plan/*`) render in dark, regardless of system preference
   - [ ] Theme toggle hidden on marketing pages (per the locked contract)
-  - [ ] Docs pages (`/docs/*`, `/runes/*`, `/plan/**`) respect saved user preference; toggle visible
+  - [ ] Docs pages (`/docs/*`, `/runes/*`, `/plan/docs/*`) respect saved user preference; toggle visible
   - [ ] Navigating from a docs page (light, by user choice) to a marketing page → marketing renders dark; toggle hides
   - [ ] Navigating back to a docs page → light returns; toggle reappears
 - [ ] Visual regression / SSR snapshot for at least one page in each subtree confirms no flash of incorrect theme
 
 ## Approach
 
-This is a small content edit (frontmatter updates on five-or-so layout files) that puts the whole SPEC-052 machinery on stage.
+This is a small content edit (frontmatter updates on four layout files) that puts the whole SPEC-052 machinery on stage.
 
-The plan content question is the one judgement call: `/plan/docs/` is specified, but `/plan/specs/`, `/plan/work/` etc. are not. If they're publicly routed on the site (which they appear to be), they're reading surfaces that want auto. Simplest implementation: add `tint-mode: auto, tint-lock: false` to a single `site/content/plan/_layout.md` so every plan subroute inherits it. If `/plan/docs/_layout.md` was already created in {% ref "SPEC-052" /%}'s spec text, it just inherits and the dedicated entry there becomes redundant — pick one.
+The `/plan/*` routes are *marketing pages for refrakt's planning system* (the `@refrakt-md/plan` plugin and CLI), not the repo-root `plan/` directory — that's dev-only and never rendered on the site. So `/plan/*` correctly inherits the root's dark-locked default with no special handling needed; only `/plan/docs/_layout.md` flips to auto.
 
 Manual smoke test pass after deploying to dev server: click through every section of the site, confirm the toggle visibility flips at the expected boundaries, confirm no FOIT.
 

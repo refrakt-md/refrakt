@@ -132,7 +132,7 @@ The refrakt site itself adopts this cascade as part of this spec. The structure 
 
 **Edge cases worth flagging during implementation:**
 
-- **Plan content outside `/plan/docs/`** (`/plan/specs/*`, `/plan/work/*` if those are exposed on the site) inherits the root → locked dark. If they're meant to read as docs surfaces, they need their own layout overrides; if they're internal-only or marketing-adjacent, the inheritance is correct. Decide deliberately when implementing.
+- **`/plan/*` is marketing for refrakt's planning system** (the `@refrakt-md/plan` plugin and CLI), not the repo's own dev-time `plan/` directory. So `/plan/*` correctly inherits the root's locked dark; only `/plan/docs/*` (the plan system's documentation) flips to auto. The repo-root `plan/` content is dev-only and never rendered on the site.
 - **The toggle UI behaviour matters more now** — on locked pages it should hide entirely (per spec); on auto pages it should be visible and functional. Verify Lumina's toggle implementation honours the contract before committing to this configuration site-wide.
 - **Pre-paint script must read the resolved tuple correctly** for the locked-vs-unlocked distinction. A flash of light content on a dark-locked marketing page would be visible and embarrassing; worth a dedicated visual test before launch.
 
