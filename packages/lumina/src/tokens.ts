@@ -26,8 +26,8 @@ export const luminaTokens: ThemeTokensConfig = {
 	color: {
 		text: '#1c1a17',
 		muted: '#6b6661',
-		border: '#e8e5df',
-		bg: '#f6f4ef',
+		border: '#e2e0dd',
+		bg: '#f5f4f1',
 		primary: '#1c1a17',
 		'primary-hover': '#3a342d',
 
@@ -36,11 +36,11 @@ export const luminaTokens: ThemeTokensConfig = {
 		// border, primary-hover, text) — that's normal; palette steps double as
 		// the implementations of the named tokens at their lightness level.
 		'primary-scale': {
-			'50': '#fcfaf6',
-			'100': '#f6f4ef',
-			'200': '#efece5',
-			'300': '#e8e5df',
-			'400': '#c2bdb3',
+			'50': '#fbfaf7',
+			'100': '#f5f4f1',
+			'200': '#ecebe8',
+			'300': '#e2e0dd',
+			'400': '#bfbab2',
 			'500': '#94908a',
 			'600': '#76716a',
 			'700': '#5a564f',
@@ -50,9 +50,9 @@ export const luminaTokens: ThemeTokensConfig = {
 		},
 
 		surface: {
-			base: '#fcfaf6',
-			hover: '#efece5',
-			active: '#e8e5df',
+			base: '#fbfaf7',
+			hover: '#ecebe8',
+			active: '#e2e0dd',
 			raised: '#ffffff',
 		},
 
@@ -127,16 +127,16 @@ export const luminaTokens: ThemeTokensConfig = {
 			color: {
 				text: '#f6f4ef',
 				muted: '#94908a',
-				border: '#2d2926',
-				bg: '#1c1a17',
+				border: '#2a2825',
+				bg: '#1a1a17',
 				primary: '#f6f4ef',
 				'primary-hover': '#d4cfc5',
 
 				surface: {
-					base: '#232017',
-					hover: '#2d2926',
-					active: '#3a342d',
-					raised: '#2a2622',
+					base: '#211f1c',
+					hover: '#2a2825',
+					active: '#353330',
+					raised: '#292723',
 				},
 
 				info: { base: '#9bb4c7', bg: '#1f2530', border: '#3d4655' },

@@ -9,15 +9,15 @@
 [data-theme="dark"] {
 	--rf-color-text: #f6f4ef;
 	--rf-color-muted: #94908a;
-	--rf-color-border: #2d2926;
-	--rf-color-bg: #1c1a17;
+	--rf-color-border: #2a2825;
+	--rf-color-bg: #1a1a17;
 	--rf-color-primary: #f6f4ef;
 	--rf-color-primary-hover: #d4cfc5;
 
-	--rf-color-surface: #232017;
-	--rf-color-surface-hover: #2d2926;
-	--rf-color-surface-active: #3a342d;
-	--rf-color-surface-raised: #2a2622;
+	--rf-color-surface: #211f1c;
+	--rf-color-surface-hover: #2a2825;
+	--rf-color-surface-active: #353330;
+	--rf-color-surface-raised: #292723;
 
 	--rf-color-info: #9bb4c7;
 	--rf-color-info-bg: #1f2530;
@@ -69,15 +69,15 @@
 	:root:not([data-theme="light"]) {
 		--rf-color-text: #f6f4ef;
 		--rf-color-muted: #94908a;
-		--rf-color-border: #2d2926;
-		--rf-color-bg: #1c1a17;
+		--rf-color-border: #2a2825;
+		--rf-color-bg: #1a1a17;
 		--rf-color-primary: #f6f4ef;
 		--rf-color-primary-hover: #d4cfc5;
 
-		--rf-color-surface: #232017;
-		--rf-color-surface-hover: #2d2926;
-		--rf-color-surface-active: #3a342d;
-		--rf-color-surface-raised: #2a2622;
+		--rf-color-surface: #211f1c;
+		--rf-color-surface-hover: #2a2825;
+		--rf-color-surface-active: #353330;
+		--rf-color-surface-raised: #292723;
 
 		--rf-color-info: #9bb4c7;
 		--rf-color-info-bg: #1f2530;

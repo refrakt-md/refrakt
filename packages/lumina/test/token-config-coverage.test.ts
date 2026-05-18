@@ -80,7 +80,9 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 	it('emits both [data-theme="dark"] and @media (prefers-color-scheme: dark) blocks', () => {
 		expect(generated).toContain('[data-theme="dark"] {');
 		expect(generated).toContain('@media (prefers-color-scheme: dark)');
-		expect(generated).toContain(':root:not([data-theme])');
+		// Matches Lumina's hand-authored dark.css selector — same specificity
+		// so source order resolves preset overrides correctly.
+		expect(generated).toContain(':root:not([data-theme="light"])');
 	});
 
 	it('emits font, scale, radius, spacing, inset, shadow, and code tokens in the base block', () => {

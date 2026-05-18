@@ -78,7 +78,11 @@ export function generateTokenStylesheet(
  * base tokens at `:root`, plus one block per mode under both the explicit
  * `[data-theme="<mode>"]` selector (for user toggles) and the
  * `@media (prefers-color-scheme: <mode>)` block (for system preference,
- * scoped to `:root:not([data-theme])` so the explicit toggle wins).
+ * scoped to `:root:not([data-theme="<opposite>"])` so the explicit
+ * opposite-mode toggle wins but a same-mode toggle composes via source
+ * order). The "opposite" form matches the selector Lumina's hand-authored
+ * `dark.css` uses, so generated overrides (e.g. preset CSS) compose with
+ * Lumina's base at equal specificity.
  *
  * Top-level `extra` attaches to the `:root` base block. Per-mode `extra`
  * (inside each {@link ThemeTokensModeOverlay}) attaches to that mode's
@@ -108,8 +112,9 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 			// `prefers-color-scheme` understands). Custom modes (e.g. `high-contrast`)
 			// fall through to the explicit selector only.
 			if (name === 'dark' || name === 'light') {
+				const opposite = name === 'dark' ? 'light' : 'dark';
 				const system = generateTokenStylesheet(modeTokens, {
-					selector: `@media (prefers-color-scheme: ${name}) {\n\t:root:not([data-theme])`,
+					selector: `@media (prefers-color-scheme: ${name}) {\n\t:root:not([data-theme="${opposite}"])`,
 					extra: modeExtra,
 				});
 				if (system) {
