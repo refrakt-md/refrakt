@@ -1,4 +1,4 @@
-{% work id="WORK-201" status="ready" priority="high" complexity="medium" tags="lumina, palette, syntax-highlighting, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-201" status="done" priority="high" complexity="medium" tags="lumina, palette, syntax-highlighting, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Syntax highlighting palette (five hues + comment + punctuation)
 
@@ -6,20 +6,20 @@ Author Lumina's default syntax highlighting palette — the "quiet spectrum walk
 
 ## Acceptance Criteria
 
-- [ ] Light-mode syntax palette per the SPEC-051 table:
-  - [ ] `syntax.keyword = #2a5c63` (deep teal)
-  - [ ] `syntax.function = #4a3b6e` (slate violet)
-  - [ ] `syntax.string = #8a3a3a` (warm rust)
-  - [ ] `syntax.number = #876327` (antique ochre)
-  - [ ] `syntax.type = #3a5c2a` (sage moss)
-  - [ ] `syntax.comment = #8a857d` (warm muted, italic)
-  - [ ] `syntax.punctuation = color.muted` (tonal)
-  - [ ] `syntax.variable = color.text` (tonal, default identifier)
-- [ ] Dark-mode syntax palette per the same table's dark column
-- [ ] Comment renders italic per the spec note
-- [ ] Visual pass on real code in at least six languages: TypeScript, Python, Markdown, JSON, HTML, Bash — palette doesn't fall apart under any of them
-- [ ] No syntax colour clashes with the status palette ({% ref "WORK-202" /%}) — sentiment callouts containing inline code don't get visually confused between code colours and sentiment accents
-- [ ] CSS coverage tests pass
+- [x] Light-mode syntax palette per the SPEC-051 table:
+  - [x] `syntax.keyword = #2a5c63` (deep teal)
+  - [x] `syntax.function = #4a3b6e` (slate violet)
+  - [x] `syntax.string = #8a3a3a` (warm rust)
+  - [x] `syntax.number = #876327` (antique ochre)
+  - [x] `syntax.type = #3a5c2a` (sage moss)
+  - [x] `syntax.comment = #8a857d` (warm muted, italic)
+  - [x] `syntax.punctuation = color.muted` (tonal)
+  - [x] `syntax.variable = color.text` (tonal, default identifier)
+- [x] Dark-mode syntax palette per the same table's dark column
+- [x] Comment renders italic per the spec note
+- [x] Visual pass on real code in at least six languages: TypeScript, Python, Markdown, JSON, HTML, Bash — palette doesn't fall apart under any of them
+- [x] No syntax colour clashes with the status palette ({% ref "WORK-202" /%}) — sentiment callouts containing inline code don't get visually confused between code colours and sentiment accents
+- [x] CSS coverage tests pass
 
 ## Approach
 

@@ -1,4 +1,4 @@
-{% work id="WORK-200" status="ready" priority="high" complexity="medium" tags="lumina, palette, tokens, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-200" status="done" priority="high" complexity="medium" tags="lumina, palette, tokens, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Neutral default body palette (light + dark)
 
@@ -6,25 +6,25 @@ Author Lumina's new default body palette — the warm-neutral surface, monochrom
 
 ## Acceptance Criteria
 
-- [ ] Light-mode body palette implemented per the SPEC-051 token table:
-  - [ ] `color.bg = #f6f4ef`
-  - [ ] `color.text = #1c1a17`
-  - [ ] `color.muted = #6b6661`
-  - [ ] `color.border = #e8e5df`
-  - [ ] `color.surface.base = #fcfaf6`
-  - [ ] `color.surface.raised = #ffffff`
-  - [ ] `color.surface.hover = #efece5`
-  - [ ] `color.surface.active = #e8e5df`
-  - [ ] `color.primary = #1c1a17`
-  - [ ] `color.primary-hover = #3a342d`
-  - [ ] `color.code.bg = #ebeae8`
-  - [ ] `color.code.inline-bg = #e6e5e3`
-  - [ ] `color.code.text = #1c1a17`
-- [ ] Dark-mode body palette implemented per the SPEC-051 token table (values from the table's "Dark" column)
-- [ ] `color.primary-scale` (50→950) ramp implemented along the warm-neutral axis — eleven stops from near-bg to near-text. Hand-pick values; tooling verifies monotonicity
-- [ ] Code surface (`code.bg`, `code.inline-bg`) uses lower chroma than the page bg per the SPEC-051 "chroma step-down" principle — verified visually that code blocks don't read as brown
-- [ ] CSS coverage tests pass against the new palette
-- [ ] Visual review: at least one page of refrakt content (a docs page with body, code, headings, callouts) renders against the new palette and reads as "calm warm neutral" rather than "cream" or "grey"
+- [x] Light-mode body palette implemented per the SPEC-051 token table:
+  - [x] `color.bg = #f6f4ef`
+  - [x] `color.text = #1c1a17`
+  - [x] `color.muted = #6b6661`
+  - [x] `color.border = #e8e5df`
+  - [x] `color.surface.base = #fcfaf6`
+  - [x] `color.surface.raised = #ffffff`
+  - [x] `color.surface.hover = #efece5`
+  - [x] `color.surface.active = #e8e5df`
+  - [x] `color.primary = #1c1a17`
+  - [x] `color.primary-hover = #3a342d`
+  - [x] `color.code.bg = #ebeae8`
+  - [x] `color.code.inline-bg = #e6e5e3`
+  - [x] `color.code.text = #1c1a17`
+- [x] Dark-mode body palette implemented per the SPEC-051 token table (values from the table's "Dark" column)
+- [x] `color.primary-scale` (50→950) ramp implemented along the warm-neutral axis — eleven stops from near-bg to near-text. Hand-pick values; tooling verifies monotonicity
+- [x] Code surface (`code.bg`, `code.inline-bg`) uses lower chroma than the page bg per the SPEC-051 "chroma step-down" principle — verified visually that code blocks don't read as brown
+- [x] CSS coverage tests pass against the new palette
+- [x] Visual review: at least one page of refrakt content (a docs page with body, code, headings, callouts) renders against the new palette and reads as "calm warm neutral" rather than "cream" or "grey"
 
 ## Approach
 

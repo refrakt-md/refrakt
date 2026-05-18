@@ -1,50 +1,56 @@
-/* Lumina Theme — Design Tokens (Light Mode) */
+/* Lumina Theme — Design Tokens (Light Mode)
+ *
+ * Source of truth: packages/lumina/src/tokens.ts (`luminaTokens` export).
+ * This file mirrors that export verbatim — a coverage test in
+ * `packages/lumina/test/token-config-coverage.test.ts` keeps them in
+ * lockstep; drift fails CI. Edit `tokens.ts` and update both, or run
+ * a future build script that regenerates this file. */
 
 :root {
 	/* Typography */
-	--rf-font-sans: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-	--rf-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+	--rf-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--rf-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
 
-	/* Primary scale (cerulean → frosted blue) */
-	--rf-color-primary-50: #f0f6f9;
-	--rf-color-primary-100: #dcebf0;
-	--rf-color-primary-200: #b8d6e2;
-	--rf-color-primary-300: #a8dadc;
-	--rf-color-primary-400: #70b4c0;
-	--rf-color-primary-500: #457b9d;
-	--rf-color-primary-600: #376585;
-	--rf-color-primary-700: #1d3557;
-	--rf-color-primary-800: #182c4a;
-	--rf-color-primary-900: #12213a;
-	--rf-color-primary-950: #0c162a;
+	/* Primary scale — warm-neutral axis, near-bg → near-text */
+	--rf-color-primary-50: #fcfaf6;
+	--rf-color-primary-100: #f6f4ef;
+	--rf-color-primary-200: #efece5;
+	--rf-color-primary-300: #e8e5df;
+	--rf-color-primary-400: #c2bdb3;
+	--rf-color-primary-500: #94908a;
+	--rf-color-primary-600: #76716a;
+	--rf-color-primary-700: #5a564f;
+	--rf-color-primary-800: #3a342d;
+	--rf-color-primary-900: #2a2622;
+	--rf-color-primary-950: #1c1a17;
 
 	/* Core palette */
-	--rf-color-text: #1d3557;
-	--rf-color-muted: #5a7a90;
-	--rf-color-border: #d8e4de;
-	--rf-color-bg: #faf5eb;
-	--rf-color-primary: #457b9d;
-	--rf-color-primary-hover: #376585;
+	--rf-color-text: #1c1a17;
+	--rf-color-muted: #6b6661;
+	--rf-color-border: #e8e5df;
+	--rf-color-bg: #f6f4ef;
+	--rf-color-primary: #1c1a17;
+	--rf-color-primary-hover: #3a342d;
 
-	/* Surfaces — lighter than background */
-	--rf-color-surface: #fffbf2;
-	--rf-color-surface-hover: #fdf0d5;
-	--rf-color-surface-active: #f9ebcc;
+	/* Surfaces */
+	--rf-color-surface: #fcfaf6;
+	--rf-color-surface-hover: #efece5;
+	--rf-color-surface-active: #e8e5df;
 	--rf-color-surface-raised: #ffffff;
 
-	/* Semantic */
-	--rf-color-info: #457b9d;
-	--rf-color-info-bg: #edf4f8;
-	--rf-color-info-border: #a8dadc;
-	--rf-color-warning: #c8900a;
-	--rf-color-warning-bg: #fdf5e4;
-	--rf-color-warning-border: #edd49a;
-	--rf-color-danger: #e63946;
-	--rf-color-danger-bg: #fdeced;
-	--rf-color-danger-border: #f0b0b5;
-	--rf-color-success: #3d8f65;
-	--rf-color-success-bg: #ecf5ef;
-	--rf-color-success-border: #a8d4b8;
+	/* Semantic — muted earthy band per SPEC-051 */
+	--rf-color-info: #34547a;
+	--rf-color-info-bg: #e8edf4;
+	--rf-color-info-border: #c5d2e0;
+	--rf-color-warning: #9c5a18;
+	--rf-color-warning-bg: #f5ebd9;
+	--rf-color-warning-border: #e0c9a3;
+	--rf-color-danger: #a83232;
+	--rf-color-danger-bg: #f5e0e0;
+	--rf-color-danger-border: #e0b8b8;
+	--rf-color-success: #2d6a3e;
+	--rf-color-success-bg: #e0eee4;
+	--rf-color-success-border: #b8d4be;
 
 	/* Radii */
 	--rf-radius-sm: 6px;
@@ -79,20 +85,36 @@
 	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
 
 	/* Code block */
-	--rf-color-code-bg: #1d3557;
-	--rf-color-code-text: #f1faee;
-	--rf-color-inline-code-bg: #f9ebcc;
+	--rf-color-code-bg: #ebeae8;
+	--rf-color-code-text: #1c1a17;
+	--rf-color-code-inline-bg: #e6e5e3;
+	/* Legacy alias — same value, kept for downstream CSS that reads the
+	 * older variable name. Will be removed once the rename is documented
+	 * widely enough that it's safe to drop. */
+	--rf-color-inline-code-bg: #e6e5e3;
 
-	/* Syntax highlighting (Shiki CSS variables) */
-	--rf-syntax-foreground: #f1faee;
-	--rf-syntax-background: #1d3557;
-	--rf-syntax-token-keyword: #f2cc8f;
-	--rf-syntax-token-string: #a8dadc;
-	--rf-syntax-token-string-expression: #a8dadc;
-	--rf-syntax-token-constant: #e8c07a;
-	--rf-syntax-token-comment: #5a7a90;
-	--rf-syntax-token-function: #70b4c0;
-	--rf-syntax-token-parameter: #b8d6e2;
-	--rf-syntax-token-punctuation: #a8dadc;
-	--rf-syntax-token-link: #70b4c0;
+	/* Syntax — the quiet spectrum walk */
+	--rf-syntax-keyword: #2a5c63;
+	--rf-syntax-function: #4a3b6e;
+	--rf-syntax-string: #8a3a3a;
+	--rf-syntax-number: #876327;
+	--rf-syntax-type: #3a5c2a;
+	--rf-syntax-comment: #8a857d;
+	--rf-syntax-punctuation: #6b6661;
+	--rf-syntax-variable: #1c1a17;
+
+	/* Shiki aliases — Shiki's CSS-variables theme emits `--rf-syntax-token-*`
+	 * with `token-` hardcoded inside its theme builder. We bridge by emitting
+	 * literal hex values matching the contract surface above. */
+	--rf-syntax-foreground: #1c1a17;
+	--rf-syntax-background: #ebeae8;
+	--rf-syntax-token-keyword: #2a5c63;
+	--rf-syntax-token-string: #8a3a3a;
+	--rf-syntax-token-string-expression: #8a3a3a;
+	--rf-syntax-token-constant: #876327;
+	--rf-syntax-token-comment: #8a857d;
+	--rf-syntax-token-function: #4a3b6e;
+	--rf-syntax-token-parameter: #1c1a17;
+	--rf-syntax-token-punctuation: #6b6661;
+	--rf-syntax-token-link: #4a3b6e;
 }

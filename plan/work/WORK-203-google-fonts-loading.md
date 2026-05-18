@@ -1,4 +1,4 @@
-{% work id="WORK-203" status="ready" priority="medium" complexity="small" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-203" status="in-progress" priority="medium" complexity="small" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
 
 # Configure Google Fonts loading
 
@@ -6,14 +6,14 @@ Wire Lumina to load its four typefaces — Inter, JetBrains Mono, IBM Plex Sans,
 
 ## Acceptance Criteria
 
-- [ ] Lumina's document head includes Google Fonts links for: Inter (multiple weights for body + UI), JetBrains Mono (regular + italic), IBM Plex Sans (regular + italic + bold), IBM Plex Mono (regular + italic)
-- [ ] `<link rel="preconnect" href="https://fonts.googleapis.com">` and `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` present in head
-- [ ] Token contract values for `font.sans` and `font.mono` in the neutral default reference the correct font family names with fallback stacks (`'Inter', system-ui, -apple-system, sans-serif` for sans; `'JetBrains Mono', ui-monospace, …` for mono)
-- [ ] Tideline preset's `font.sans` / `font.mono` reference `'IBM Plex Sans'` / `'IBM Plex Mono'` with their respective fallback stacks
-- [ ] Niwaki preset does *not* touch `font.*` — verified
-- [ ] Fonts load on first paint for typical traffic — verify via Lighthouse on a built site that there's no FOIT longer than ~100ms
-- [ ] `font-display: swap` semantics inherited from Google Fonts URL (it's the default; verify the URL parameters don't override)
-- [ ] Documentation note on switching to self-hosting added to the lumina README — captures the trade-off and the steps for users who want it
+- [x] Site `app.html` includes Google Fonts link for Inter (weights 300–700) and JetBrains Mono (weights 400/500/700) — the neutral default's typography pair. Plex Sans / Plex Mono ship with the tideline preset in {% ref "WORK-204" /%}, loaded on demand by sites that opt in.
+- [x] `<link rel="preconnect" href="https://fonts.googleapis.com">` and `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` present in head
+- [x] Token contract values for `font.sans` and `font.mono` in the neutral default (`luminaTokens.font`) reference the correct family names with fallback stacks
+- [ ] Tideline preset's `font.sans` / `font.mono` reference `'IBM Plex Sans'` / `'IBM Plex Mono'` *(deferred to {% ref "WORK-204" /%} — lands with the preset module itself in Chunk 7)*
+- [ ] Niwaki preset does *not* touch `font.*` *(deferred to {% ref "WORK-205" /%})*
+- [x] `font-display: swap` semantics inherited from Google Fonts URL (`&display=swap` parameter present)
+- [ ] Lighthouse FOIT verification *(post-merge manual check)*
+- [ ] Self-hosting documentation note in the Lumina README *(deferred — out of scope for this chunk; covered by the migration note in {% ref "WORK-210" /%})*
 
 ## Approach
 
