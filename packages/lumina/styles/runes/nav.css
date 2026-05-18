@@ -103,6 +103,7 @@
 
 .rf-nav--menubar {
 	padding: 0;
+	margin: 0;
 }
 .rf-nav--menubar > .rf-nav__top-level {
 	padding: 0;
@@ -115,12 +116,23 @@
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	align-items: center;
+	margin: 0;
+}
+.rf-nav--menubar > .rf-nav__top-level li {
+	padding: 0;
 }
 .rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
 	display: inline-block;
 	padding: 0.375rem 0.75rem;
 	font-weight: 500;
 	font-size: 0.9rem;
+	border-radius: var(--rf-radius-sm);
+	color: var(--rf-color-muted);
+	transition: background-color 150ms ease, color 150ms ease;
+}
+.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link:hover {
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
 }
 .rf-nav--menubar .rf-nav-group {
 	margin: 0;
@@ -135,9 +147,18 @@
 	font-weight: 500;
 	text-transform: none;
 	letter-spacing: normal;
-	color: var(--rf-color-text);
+	color: var(--rf-color-muted);
 	cursor: pointer;
 	user-select: none;
+	border-radius: var(--rf-radius-sm);
+	transition: background-color 150ms ease, color 150ms ease;
+}
+.rf-nav--menubar .rf-nav-group h2:hover,
+.rf-nav--menubar .rf-nav-group h3:hover,
+.rf-nav--menubar .rf-nav-group[data-open="true"] h2,
+.rf-nav--menubar .rf-nav-group[data-open="true"] h3 {
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
 }
 .rf-nav--menubar .rf-nav-group ul {
 	display: none;
