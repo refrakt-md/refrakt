@@ -17,7 +17,7 @@
 	order: 1;
 }
 .rf-header__inner > rf-nav {
-	order: 2;
+	order: 3;
 }
 .rf-header__inner p ~ p {
 	order: 1;
@@ -52,9 +52,18 @@
 	font-size: 1.2rem;
 	letter-spacing: -0.02em;
 }
-.rf-header img {
+.rf-header img,
+.rf-header p:first-child a > .rf-icon {
 	height: 2rem;
+	width: 2rem;
+}
+.rf-header img {
 	width: auto;
+}
+.rf-header p:first-child a > .rf-icon {
+	display: inline-block;
+	vertical-align: middle;
+	color: currentColor;
 }
 .rf-header__inner p ~ p {
 	font-size: 0.85rem;

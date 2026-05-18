@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
      fill="none" stroke="currentColor"
-     stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-     role="img" aria-label="refrakt"><title>refrakt</title><style>:where(svg){color:#1d3557}@media (prefers-color-scheme:dark){:where(svg){color:#fff}}</style><path d="M 40.56 16 L 90 16 L 65.28 59.26 Z" fill="currentColor" stroke="none"/><path d="M 10 16 L 90 16 L 50 86 Z"/><line x1="20.19" y1="16" x2="55.09" y2="77.09"/><line x1="30.37" y1="16" x2="60.19" y2="68.18"/><line x1="40.56" y1="16" x2="65.28" y2="59.26"/></svg>
+     stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+     role="img" aria-label="refrakt"><title>refrakt</title><style>:where(svg){color:#1c1a17}@media (prefers-color-scheme:dark){:where(svg){color:#fff}}</style><path d="M 40.56 16 L 90 16 L 65.28 59.26 Z" fill="currentColor" stroke="none"/><path d="M 10 16 L 90 16 L 50 86 Z"/><line x1="20.19" y1="16" x2="55.09" y2="77.09"/><line x1="30.37" y1="16" x2="60.19" y2="68.18"/><line x1="40.56" y1="16" x2="65.28" y2="59.26"/></svg>

@@ -203,41 +203,66 @@
 }
 
 @media (max-width: 768px) {
+	/* Mobile: render the menubar as a flat vertical side-nav. No hamburger
+	   trigger, no click-to-expand groups — category headings render as plain
+	   headings with their items always visible. */
 	.rf-nav--menubar [data-name="trigger"] {
-		display: inline-flex;
-		padding: 0.5rem;
-		background: transparent;
-		border: 1px solid var(--rf-color-border);
-		border-radius: var(--rf-radius-sm);
-		cursor: pointer;
-	}
-	.rf-nav--menubar:not([data-open="true"]) > .rf-nav__top-level,
-	.rf-nav--menubar:not([data-open="true"]) > .rf-nav-group {
 		display: none;
 	}
-	.rf-nav--menubar[data-open="true"] {
+	.rf-nav--menubar {
 		flex-direction: column;
 		align-items: stretch;
+		gap: 0;
 	}
-	.rf-nav--menubar[data-open="true"] .rf-nav-group {
+	.rf-nav--menubar > .rf-nav__top-level,
+	.rf-nav--menubar > .rf-nav-group {
 		display: block;
 		width: 100%;
 	}
-	.rf-nav--menubar[data-open="true"] .rf-nav-group ul {
+	.rf-nav--menubar > .rf-nav__top-level > ul {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0;
+	}
+	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
+		display: block;
+		padding: 0.5rem 0.75rem;
+	}
+	.rf-nav--menubar .rf-nav-group {
 		position: static;
+		display: block;
+		margin: 1rem 0 0;
+	}
+	.rf-nav--menubar .rf-nav-group h2,
+	.rf-nav--menubar .rf-nav-group h3 {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--rf-color-muted);
+		background: transparent;
+		cursor: default;
+		padding: 0.5rem 0.75rem 0.25rem;
+		font-weight: 600;
+	}
+	.rf-nav--menubar .rf-nav-group h2:hover,
+	.rf-nav--menubar .rf-nav-group h3:hover,
+	.rf-nav--menubar .rf-nav-group[data-open="true"] h2,
+	.rf-nav--menubar .rf-nav-group[data-open="true"] h3 {
+		background: transparent;
+		color: var(--rf-color-muted);
+	}
+	.rf-nav--menubar .rf-nav-group ul {
+		position: static;
+		display: block;
 		min-width: 0;
-		box-shadow: none;
+		padding: 0;
+		background: transparent;
 		border: 0;
-		padding: 0 0 0 0.75rem;
+		box-shadow: none;
 		opacity: 1;
 		visibility: visible;
 		pointer-events: auto;
 		transform: none;
-	}
-	/* Inside the mobile panel, the data-open=true on the group still drives
-	   accordion expansion; non-open groups stay collapsed without fade. */
-	.rf-nav--menubar[data-open="true"] .rf-nav-group:not([data-open="true"]) ul {
-		display: none;
 	}
 }
 

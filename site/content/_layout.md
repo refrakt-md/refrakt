@@ -8,7 +8,7 @@ tint-lock: true
 ---
 {% layout %}
 {% region name="header" %}
-[![](/mark.svg) refrakt.md](/)
+[{% icon name="mark" /%} refrakt.md](/)
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)

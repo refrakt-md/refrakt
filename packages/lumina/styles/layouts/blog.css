@@ -39,9 +39,15 @@
 	font-size: 1.2rem;
 	letter-spacing: -0.02em;
 }
-.rf-blog-header img {
+.rf-blog-header img,
+.rf-blog-header p:first-child a > .rf-icon {
 	height: 2rem;
-	width: auto;
+	width: 2rem;
+}
+.rf-blog-header p:first-child a > .rf-icon {
+	display: inline-block;
+	vertical-align: middle;
+	color: currentColor;
 }
 .rf-blog-header__inner p ~ p {
 	font-size: 0.85rem;

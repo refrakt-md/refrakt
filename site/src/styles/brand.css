@@ -1,5 +1,52 @@
 /* Site Brand Palette Override
  *
- * Currently using Lumina defaults — no overrides needed.
- * To customize, add :root { ... } with token overrides here.
+ * Site-only customisations layered on top of Lumina + the Niwaki preset.
+ * The token cascade (theme.tokens + theme.modes) lives in refrakt.config.json;
+ * everything below is plain CSS for things that don't fit the token contract.
  */
+
+/* ── Code blocks always render in dark mode ─────────────────────────────────
+ * Site decision: fenced code blocks stay dark even when the page is in
+ * light mode. Sets the code-related tokens to their dark-mode values on
+ * `pre` / `pre[data-language]` so the Shiki spans (which reference the
+ * `--rf-syntax-token-*` vars inline) pick up dark colours via the cascade.
+ *
+ * Niwaki's dark syntax values are used so the look matches what you'd get
+ * by toggling the whole page to dark. Scoping these declarations to `pre`
+ * (specificity 0,1,0 from the type + the implicit nesting inside the page)
+ * is enough to beat the `:root` / `[data-theme]` rules that set the same
+ * vars at lower specificity. */
+
+pre,
+pre[data-language] {
+	background-color: #222220;
+	color: #f6f4ef;
+	border-color: #2a2825;
+	--rf-color-code-bg: #222220;
+	--rf-color-code-text: #f6f4ef;
+	--rf-syntax-foreground: #f6f4ef;
+	--rf-syntax-background: #222220;
+	--rf-syntax-keyword: #8ab589;
+	--rf-syntax-function: #e89db0;
+	--rf-syntax-string: #e87a3a;
+	--rf-syntax-number: #d4a85a;
+	--rf-syntax-type: #b4c97a;
+	--rf-syntax-comment: #7d7062;
+	--rf-syntax-punctuation: #7d7062;
+	--rf-syntax-variable: #f6f4ef;
+	--rf-syntax-token-keyword: #8ab589;
+	--rf-syntax-token-function: #e89db0;
+	--rf-syntax-token-string: #e87a3a;
+	--rf-syntax-token-string-expression: #e87a3a;
+	--rf-syntax-token-constant: #d4a85a;
+	--rf-syntax-token-comment: #7d7062;
+	--rf-syntax-token-parameter: #f6f4ef;
+	--rf-syntax-token-punctuation: #7d7062;
+	--rf-syntax-token-link: #e89db0;
+}
+
+/* The copy button sits over the dark pre background regardless of page mode,
+   so force its colour to the dark code text colour. */
+.rf-codeblock__copy {
+	color: #f6f4ef;
+}
