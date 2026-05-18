@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/marketing"
 description: Landing page and conversion runes for marketing sites and product pages
+icon: rocket
 ---
 
 # @refrakt-md/marketing

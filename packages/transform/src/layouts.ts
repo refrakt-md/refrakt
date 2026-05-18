@@ -115,6 +115,12 @@ export const defaultLayout: LayoutConfig = {
 			source: 'content',
 			attrs: { 'data-pagefind-body': '' },
 		},
+		footer: {
+			tag: 'footer',
+			class: 'rf-footer',
+			conditionalRegion: 'footer',
+			source: 'region:footer',
+		},
 	},
 };
 
@@ -253,6 +259,12 @@ export const docsLayout: LayoutConfig = {
 							tag: 'div',
 							source: 'content',
 						},
+						{
+							tag: 'div',
+							class: 'rf-docs-content__pagination',
+							source: 'region:pagination',
+							conditional: true,
+						},
 					],
 				},
 				{
@@ -262,6 +274,12 @@ export const docsLayout: LayoutConfig = {
 					conditional: true,
 				},
 			],
+		},
+		footer: {
+			tag: 'footer',
+			class: 'rf-footer',
+			conditionalRegion: 'footer',
+			source: 'region:footer',
 		},
 	},
 };

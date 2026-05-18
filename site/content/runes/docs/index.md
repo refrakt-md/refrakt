@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/docs"
 description: Technical documentation runes for API references, code symbols, and changelogs
+icon: file-text
 ---
 
 # @refrakt-md/docs

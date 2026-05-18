@@ -10,11 +10,11 @@ Sequential prev/next links for ordered reading flows — tutorials, ordered docs
 
 ## Basic usage
 
-Place `{% pagination auto /%}` in a `_layout.md` and every page in the cascade gets prev / next links derived from the active sidebar nav order. No per-page authoring needed.
+Place `{% pagination auto=true /%}` in a `_layout.md` and every page in the cascade gets prev / next links derived from the active sidebar nav order. No per-page authoring needed.
 
 ```markdoc
 {% region name="pagination" %}
-{% pagination auto /%}
+{% pagination auto=true /%}
 {% /region %}
 ```
 
@@ -45,7 +45,7 @@ The first source that produces a definite position wins.
 By default, auto-mode picks from the page's direct siblings — pages sharing the same parent URL. For tutorials that span nested subdirectories that should still be read in sequence, widen the candidate set with `scope="section"`:
 
 ```markdoc
-{% pagination auto scope="section" /%}
+{% pagination auto=true scope="section" /%}
 ```
 
 `scope="section"` includes every page under the current top-level section (any page whose URL starts with the section root).

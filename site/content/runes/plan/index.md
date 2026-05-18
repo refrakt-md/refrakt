@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/plan"
 description: Spec-driven project planning with AI-native workflows and CLI tooling
+icon: clipboard-list
 ---
 
 # @refrakt-md/plan

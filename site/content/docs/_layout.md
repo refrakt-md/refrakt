@@ -1,6 +1,6 @@
 {% layout %}
 {% region name="nav" %}
-{% nav %}
+{% nav collapsible=true %}
 - [Documentation](/docs/getting-started)
 - [Planning](/plan)
 
@@ -68,5 +68,9 @@
 - errors
 
 {% /nav %}
+{% /region %}
+
+{% region name="pagination" %}
+{% pagination auto=true /%}
 {% /region %}
 {% /layout %}

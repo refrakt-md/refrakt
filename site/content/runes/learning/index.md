@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/learning"
 description: Educational runes for tutorials, recipes, and instructional content
+icon: book-open
 ---
 
 # @refrakt-md/learning

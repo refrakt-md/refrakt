@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/storytelling"
 description: Worldbuilding and narrative runes for fiction, games, and creative writing
+icon: sparkles
 ---
 
 # @refrakt-md/storytelling

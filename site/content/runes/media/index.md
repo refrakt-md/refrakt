@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/media"
 description: Audio and music runes for playlists, tracks, and audio players
+icon: video
 ---
 
 # @refrakt-md/media

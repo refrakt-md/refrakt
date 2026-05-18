@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/business"
 description: Organizational runes for team directories, company profiles, and timelines
+icon: briefcase
 ---
 
 # @refrakt-md/business

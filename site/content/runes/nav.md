@@ -109,7 +109,7 @@ Card grid for section landing pages. Each item is enriched at build time with th
 Combine with `auto` to list the current page's children without naming each one:
 
 ```markdoc
-{% nav layout="cards" auto /%}
+{% nav layout="cards" auto=true /%}
 ```
 
 External-URL items render as title-only cards with no enrichment.
@@ -119,7 +119,7 @@ External-URL items render as title-only cards with no enrichment.
 Add the `collapsible` modifier on a vertical nav to turn each group into a disclosure. The group containing the current page automatically expands on page load; all others start collapsed. Click a group title to toggle.
 
 ```markdoc
-{% nav collapsible %}
+{% nav collapsible=true %}
 ## Getting Started
 - getting-started
 - install
@@ -134,7 +134,7 @@ Add the `collapsible` modifier on a vertical nav to turn each group into a discl
 For the rare case where multiple groups should open by default, pass `defaultOpen` with a comma-separated list of group titles:
 
 ```markdoc
-{% nav collapsible defaultOpen="Getting Started, Reference" %}
+{% nav collapsible=true defaultOpen="Getting Started, Reference" %}
 ```
 
 The keyboard model and ARIA wiring (`role="button"`, `aria-expanded`, `aria-controls`, focus ring) ship in `@refrakt-md/behaviors`.

@@ -1083,6 +1083,38 @@ function resolveSlugToUrl(
 		.url;
 }
 
+/** Read a NavItem's slug from either `data-slug` (post-engine) or a nested
+ *  `<span data-field="slug">` (pre-engine, e.g. layout regions). */
+function readNavItemSlug(item: any): string | null {
+	const direct = item.attributes?.['data-slug'];
+	if (direct) return String(direct);
+	const findSpan = (node: unknown): string | null => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const f = findSpan(c);
+					if (f) return f;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.name === 'span' && t.attributes?.['data-field'] === 'slug') {
+			const parts: string[] = [];
+			for (const c of t.children ?? []) {
+				if (typeof c === 'string') parts.push(c);
+			}
+			return parts.join('').trim() || null;
+		}
+		for (const c of t.children ?? []) {
+			const f = findSpan(c);
+			if (f) return f;
+		}
+		return null;
+	};
+	return findSpan(item);
+}
+
 /** Collect URLs covered by a NavGroup's items: explicit hrefs + resolved slugs. */
 function collectGroupItemUrls(
 	group: any,
@@ -1097,14 +1129,16 @@ function collectGroupItemUrls(
 		}
 		const t = node as any;
 		if (t.attributes?.['data-rune'] === 'nav-item') {
-			const slug = t.attributes?.['data-slug'];
-			if (slug) {
-				const resolved = resolveSlugToUrl(String(slug), pagesByUrl, currentUrl);
-				if (resolved) urls.push(resolved);
+			const href = findNavItemHref(t);
+			if (href) {
+				urls.push(href);
+			} else {
+				const slug = readNavItemSlug(t);
+				if (slug) {
+					const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+					if (resolved) urls.push(resolved);
+				}
 			}
-		}
-		if (t.name === 'a' && t.attributes?.href) {
-			urls.push(String(t.attributes.href));
 		}
 		(t.children ?? []).forEach(walk);
 	};
@@ -1255,22 +1289,12 @@ function enrichNavItemAsCard(
 	return { ...item, children: [link] };
 }
 
-function getNavItemUrl(
-	item: any,
-	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
-	currentUrl: string,
-): { url: string; isExternal: boolean } | null {
-	const slug = item.attributes?.['data-slug'];
-	if (slug) {
-		const resolved = resolveSlugToUrl(String(slug), pagesByUrl, currentUrl);
-		return resolved ? { url: resolved, isExternal: false } : null;
-	}
-	// Walk children for an <a href>
-	const findHref = (node: unknown): string | null => {
+function findNavItemHref(item: any): string | null {
+	const walk = (node: unknown): string | null => {
 		if (!Tag.isTag(node as any)) {
 			if (Array.isArray(node)) {
 				for (const c of node) {
-					const found = findHref(c);
+					const found = walk(c);
 					if (found) return found;
 				}
 			}
@@ -1279,15 +1303,32 @@ function getNavItemUrl(
 		const t = node as any;
 		if (t.name === 'a' && t.attributes?.href) return String(t.attributes.href);
 		for (const c of t.children ?? []) {
-			const found = findHref(c);
+			const found = walk(c);
 			if (found) return found;
 		}
 		return null;
 	};
-	const href = findHref(item);
-	if (!href) return null;
-	const isExternal = /^[a-z]+:\/\//i.test(href);
-	return { url: href, isExternal };
+	return walk(item);
+}
+
+function getNavItemUrl(
+	item: any,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+	currentUrl: string,
+): { url: string; isExternal: boolean } | null {
+	// Prefer an explicit <a href> — covers `[Label](/url)` items whose link text
+	// is wrapped in a slug span by the nav item transform.
+	const href = findNavItemHref(item);
+	if (href) {
+		const isExternal = /^[a-z]+:\/\//i.test(href);
+		return { url: href, isExternal };
+	}
+	const slug = readNavItemSlug(item);
+	if (slug) {
+		const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+		return resolved ? { url: resolved, isExternal: false } : null;
+	}
+	return null;
 }
 
 function resolveCardsNavs(
@@ -1310,7 +1351,7 @@ function resolveCardsNavs(
 
 	if (
 		tag.attributes?.['data-rune'] === 'nav' &&
-		tag.attributes?.['data-layout'] === 'cards'
+		(tag.attributes?.['data-layout'] === 'cards' || tag.attributes?.['layout'] === 'cards')
 	) {
 		const enrichItem = (node: unknown): unknown => {
 			if (!Tag.isTag(node as any)) {
@@ -1353,7 +1394,9 @@ interface SiblingEntry {
 	title: string;
 }
 
-/** Walk a renderable tree collecting all nav-rune tags and their item URLs in order. */
+/** Walk a renderable tree collecting all nav-rune tags and their item URLs in order.
+ *  Skips navs with non-sequential layouts (menubar / columns / cards) — those
+ *  aren't reading sequences. */
 function collectNavSequences(
 	renderable: unknown,
 	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
@@ -1367,45 +1410,81 @@ function collectNavSequences(
 		}
 		const t = node as any;
 		if (t.attributes?.['data-rune'] === 'nav') {
-			const items: string[] = [];
-			const collectItems = (n: unknown): void => {
+			const layout = t.attributes?.['layout'] ?? t.attributes?.['data-layout'];
+			if (layout && layout !== 'vertical') {
+				// Non-sequential layouts (menubar / columns / cards) — skip but recurse
+				(t.children ?? []).forEach(walk);
+				return;
+			}
+			// Each NavGroup is its own reading sequence. Top-level items (before
+			// the first group) are cross-section links and not a reading order,
+			// so we don't include them in any sequence.
+			const groups: any[] = [];
+			const findGroupsLocal = (n: unknown): void => {
 				if (!Tag.isTag(n as any)) {
-					if (Array.isArray(n)) n.forEach(collectItems);
+					if (Array.isArray(n)) n.forEach(findGroupsLocal);
 					return;
 				}
 				const node = n as any;
-				if (node.attributes?.['data-rune'] === 'nav-item') {
-					const slug = node.attributes?.['data-slug'];
-					if (slug) {
-						const resolved = resolveSlugToUrl(String(slug), pagesByUrl, currentUrl);
-						if (resolved) items.push(resolved);
-					} else {
-						const findHref = (m: unknown): string | null => {
-							if (!Tag.isTag(m as any)) {
-								if (Array.isArray(m)) {
-									for (const c of m) {
-										const f = findHref(c);
-										if (f) return f;
-									}
-								}
-								return null;
-							}
-							const tt = m as any;
-							if (tt.name === 'a' && tt.attributes?.href) return String(tt.attributes.href);
-							for (const c of tt.children ?? []) {
-								const f = findHref(c);
-								if (f) return f;
-							}
-							return null;
-						};
-						const href = findHref(node);
-						if (href && !/^[a-z]+:\/\//i.test(href)) items.push(href);
-					}
+				if (node.attributes?.['data-rune'] === 'nav-group') {
+					groups.push(node);
 				}
-				(node.children ?? []).forEach(collectItems);
+				(node.children ?? []).forEach(findGroupsLocal);
 			};
-			(t.children ?? []).forEach(collectItems);
-			if (items.length > 0) sequences.push(items);
+			(t.children ?? []).forEach(findGroupsLocal);
+
+			if (groups.length === 0) {
+				// Flat nav (no headings) — collect all items as one sequence
+				const items: string[] = [];
+				const collectFlat = (n: unknown): void => {
+					if (!Tag.isTag(n as any)) {
+						if (Array.isArray(n)) n.forEach(collectFlat);
+						return;
+					}
+					const node = n as any;
+					if (node.attributes?.['data-rune'] === 'nav-item') {
+						const href = findNavItemHref(node);
+						if (href) {
+							if (!/^[a-z]+:\/\//i.test(href)) items.push(href);
+						} else {
+							const slug = readNavItemSlug(node);
+							if (slug) {
+								const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+								if (resolved) items.push(resolved);
+							}
+						}
+					}
+					(node.children ?? []).forEach(collectFlat);
+				};
+				(t.children ?? []).forEach(collectFlat);
+				if (items.length > 0) sequences.push(items);
+			} else {
+				for (const group of groups) {
+					const items: string[] = [];
+					const collectGroup = (n: unknown): void => {
+						if (!Tag.isTag(n as any)) {
+							if (Array.isArray(n)) n.forEach(collectGroup);
+							return;
+						}
+						const node = n as any;
+						if (node.attributes?.['data-rune'] === 'nav-item') {
+							const href = findNavItemHref(node);
+							if (href) {
+								if (!/^[a-z]+:\/\//i.test(href)) items.push(href);
+							} else {
+								const slug = readNavItemSlug(node);
+								if (slug) {
+									const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+									if (resolved) items.push(resolved);
+								}
+							}
+						}
+						(node.children ?? []).forEach(collectGroup);
+					};
+					(group.children ?? []).forEach(collectGroup);
+					if (items.length > 0) sequences.push(items);
+				}
+			}
 		}
 		(t.children ?? []).forEach(walk);
 	};
@@ -1522,7 +1601,13 @@ function resolveAutoPagination(
 			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === PAGINATION_AUTO_SENTINEL,
 		);
 		if (hasSentinel) {
-			const scope = (tag.attributes?.['data-scope'] === 'section' ? 'section' : 'siblings') as 'siblings' | 'section';
+			const scopeMeta = (tag.children ?? []).find(
+				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'scope',
+			);
+			const scopeValue = scopeMeta
+				? String((scopeMeta as any).attributes?.content ?? '')
+				: String(tag.attributes?.['data-scope'] ?? '');
+			const scope = (scopeValue === 'section' ? 'section' : 'siblings') as 'siblings' | 'section';
 			const prevLabelMeta = (tag.children ?? []).find(
 				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'prev-label',
 			);
@@ -1794,6 +1879,43 @@ function resolveBlogPosts(
 	});
 
 	return modified ? result : renderable;
+}
+
+/**
+ * Apply core auto-resolutions (breadcrumb, nav, collapsible, cards, pagination,
+ * blog, xref) to an arbitrary renderable tree using the same aggregated data
+ * the pipeline produces.
+ *
+ * Used by callers that need to resolve sentinels in renderables outside the
+ * per-page pipeline — most notably layout regions, which are parsed once but
+ * need per-page URL context for auto-open and auto-pagination.
+ */
+export function resolveCoreSentinels(
+	renderable: unknown,
+	pageUrl: string,
+	coreData: {
+		breadcrumbPaths: Map<string, string[]>;
+		pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>;
+		allPosts: BlogPostData[];
+		registry: Readonly<EntityRegistry>;
+	},
+	ctx: PipelineContext,
+	/** Extra trees (e.g. layout regions + page content) to scan when looking
+	 *  for nav sequences during auto-pagination. Required when calling against
+	 *  a layout region where the sidebar nav lives in a different region. */
+	navSearchScope?: unknown[],
+): unknown {
+	let result = resolveAutoBreadcrumbs(renderable, pageUrl, coreData.breadcrumbPaths, coreData.pagesByUrl, ctx);
+	result = resolveAutoNavs(result, pageUrl, coreData.pagesByUrl, ctx);
+	result = resolveCollapsibleNavs(result, pageUrl, coreData.pagesByUrl);
+	result = resolveCardsNavs(result, pageUrl, coreData.pagesByUrl);
+	const searchRoot = navSearchScope && navSearchScope.length > 0
+		? [result, ...navSearchScope]
+		: result;
+	result = resolveAutoPagination(result, pageUrl, coreData.pagesByUrl, searchRoot);
+	result = resolveBlogPosts(result, coreData.allPosts, ctx, pageUrl);
+	result = resolveXrefs(result, pageUrl, coreData.registry, ctx);
+	return result;
 }
 
 /**

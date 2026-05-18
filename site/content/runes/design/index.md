@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/design"
 description: Design system runes for color palettes, typography specimens, and token visualization
+icon: palette
 ---
 
 # @refrakt-md/design

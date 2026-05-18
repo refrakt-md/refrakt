@@ -68,6 +68,18 @@ These runes are available out of the box — no extra installation needed. They 
 
 Official rune packages are maintained by the refrakt team and styled by the Lumina theme. Install the packages you need and add them to your config. Each package page includes installation instructions, a full rune reference, and documentation for any additional features like CLI commands or pipeline hooks.
 
+{% nav layout="cards" %}
+- [@refrakt-md/marketing](/runes/marketing)
+- [@refrakt-md/docs](/runes/docs)
+- [@refrakt-md/design](/runes/design)
+- [@refrakt-md/learning](/runes/learning)
+- [@refrakt-md/storytelling](/runes/storytelling)
+- [@refrakt-md/business](/runes/business)
+- [@refrakt-md/places](/runes/places)
+- [@refrakt-md/media](/runes/media)
+- [@refrakt-md/plan](/runes/plan)
+{% /nav %}
+
 ### [@refrakt-md/marketing](/runes/marketing)
 
 Landing page and conversion runes for marketing sites and product pages.
