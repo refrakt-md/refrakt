@@ -31,17 +31,17 @@
 	--rf-color-inline-code-bg: rgba(168, 218, 220, 0.08);
 
 	/* Syntax highlighting (Shiki CSS variables) */
-	--shiki-foreground: #f1faee;
-	--shiki-background: #0c162a;
-	--shiki-token-keyword: #f2cc8f;
-	--shiki-token-string: #a8dadc;
-	--shiki-token-string-expression: #a8dadc;
-	--shiki-token-constant: #e8c07a;
-	--shiki-token-comment: #5a7a90;
-	--shiki-token-function: #a8dadc;
-	--shiki-token-parameter: #b8d6e2;
-	--shiki-token-punctuation: #70b4c0;
-	--shiki-token-link: #a8dadc;
+	--rf-syntax-foreground: #f1faee;
+	--rf-syntax-background: #0c162a;
+	--rf-syntax-token-keyword: #f2cc8f;
+	--rf-syntax-token-string: #a8dadc;
+	--rf-syntax-token-string-expression: #a8dadc;
+	--rf-syntax-token-constant: #e8c07a;
+	--rf-syntax-token-comment: #5a7a90;
+	--rf-syntax-token-function: #a8dadc;
+	--rf-syntax-token-parameter: #b8d6e2;
+	--rf-syntax-token-punctuation: #70b4c0;
+	--rf-syntax-token-link: #a8dadc;
 
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
@@ -82,17 +82,17 @@
 		--rf-color-inline-code-bg: rgba(168, 218, 220, 0.08);
 
 		/* Syntax highlighting (Shiki CSS variables) */
-		--shiki-foreground: #f1faee;
-		--shiki-background: #0c162a;
-		--shiki-token-keyword: #f2cc8f;
-		--shiki-token-string: #a8dadc;
-		--shiki-token-string-expression: #a8dadc;
-		--shiki-token-constant: #e8c07a;
-		--shiki-token-comment: #5a7a90;
-		--shiki-token-function: #a8dadc;
-		--shiki-token-parameter: #b8d6e2;
-		--shiki-token-punctuation: #70b4c0;
-		--shiki-token-link: #a8dadc;
+		--rf-syntax-foreground: #f1faee;
+		--rf-syntax-background: #0c162a;
+		--rf-syntax-token-keyword: #f2cc8f;
+		--rf-syntax-token-string: #a8dadc;
+		--rf-syntax-token-string-expression: #a8dadc;
+		--rf-syntax-token-constant: #e8c07a;
+		--rf-syntax-token-comment: #5a7a90;
+		--rf-syntax-token-function: #a8dadc;
+		--rf-syntax-token-parameter: #b8d6e2;
+		--rf-syntax-token-punctuation: #70b4c0;
+		--rf-syntax-token-link: #a8dadc;
 
 		--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
 		--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);

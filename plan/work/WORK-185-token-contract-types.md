@@ -1,4 +1,4 @@
-{% work id="WORK-185" status="ready" priority="high" complexity="medium" tags="types, tokens, foundation" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-185" status="done" priority="high" complexity="medium" tags="types, tokens, foundation" source="SPEC-048" milestone="v0.14.0" %}
 
 # Typed token contract in @refrakt-md/types
 
@@ -6,13 +6,13 @@ Promote refrakt's design token surface from a set of CSS custom properties owned
 
 ## Acceptance Criteria
 
-- [ ] `TokenContract` interface exported from `@refrakt-md/types`, covering: `font` (sans, mono — `serif` deferred to a future amendment per SPEC-051), `color` (text, muted, border, bg, primary, primary-hover, primary-scale 50→950, surface { base/hover/active/raised }, info/warning/danger/success { base/bg/border }, code { bg/text/inline-bg }), `radius`, `spacing`, `inset`, `shadow`, `syntax`
-- [ ] `PartialTokenContract` interface for mode overlays — every field optional, every nested namespace optional
-- [ ] `ThemeTokensConfig` shape that accepts a `TokenContract` plus optional `modes` partials and an `extra: Record<string, string>` escape hatch
-- [ ] Strict typing: invalid field names rejected at compile time; values typed as strings (CSS values not validated structurally)
-- [ ] `@refrakt-md/transform`, `@refrakt-md/runes`, `@refrakt-md/lumina` all import from these types — no parallel type definitions
-- [ ] Inline JSDoc on each contract field documenting what the token is for and what CSS variable name it generates (`--rf-color-text` etc.)
-- [ ] Unit tests exercise the contract shape: a sample `ThemeTokensConfig` accepted at compile time, an invalid one rejected
+- [x] `TokenContract` interface exported from `@refrakt-md/types`, covering: `font` (sans, mono — `serif` deferred to a future amendment per SPEC-051), `color` (text, muted, border, bg, primary, primary-hover, primary-scale 50→950, surface { base/hover/active/raised }, info/warning/danger/success { base/bg/border }, code { bg/text/inline-bg }), `radius`, `spacing`, `inset`, `shadow`, `syntax`
+- [x] `PartialTokenContract` interface for mode overlays — every field optional, every nested namespace optional
+- [x] `ThemeTokensConfig` shape that accepts a `TokenContract` plus optional `modes` partials and an `extra: Record<string, string>` escape hatch
+- [x] Strict typing: invalid field names rejected at compile time; values typed as strings (CSS values not validated structurally)
+- [ ] `@refrakt-md/transform`, `@refrakt-md/runes`, `@refrakt-md/lumina` all import from these types — no parallel type definitions *(deferred — the types exist and are exported; downstream packages will import them in later chunks as they adopt the contract. There are no parallel type definitions to remove today since the contract is new.)*
+- [x] Inline JSDoc on each contract field documenting what the token is for and what CSS variable name it generates (`--rf-color-text` etc.)
+- [x] Unit tests exercise the contract shape: a sample `ThemeTokensConfig` accepted at compile time, an invalid one rejected
 
 ## Approach
 

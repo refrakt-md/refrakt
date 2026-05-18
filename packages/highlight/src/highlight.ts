@@ -4,7 +4,12 @@ import { isTag } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 import { markdocLanguage } from './langs/markdoc.js';
 
-const cssVarsTheme = createCssVariablesTheme();
+/** The CSS-variables theme uses `--rf-syntax-*` instead of Shiki's default
+ *  `--shiki-*` prefix, so the highlighter is invisible to themes that only
+ *  see the `--rf-syntax-*` contract surface (SPEC-048). Swapping Shiki for
+ *  Prism, Starry Night, or a server-side alternative becomes an internal
+ *  change rather than a breaking change for every downstream theme. */
+const cssVarsTheme = createCssVariablesTheme({ variablePrefix: '--rf-syntax-' });
 
 export interface HighlightOptions {
 	/** Languages to pre-load when using the default Shiki highlighter.
@@ -14,7 +19,8 @@ export interface HighlightOptions {
 	 *  Default: Shiki with css-variables theme. */
 	highlight?: (code: string, lang: string) => string;
 	/** Shiki theme — a built-in theme name, or { light, dark } pair for dual themes.
-	 *  Default: CSS variables theme (--shiki-token-* custom properties). */
+	 *  Default: CSS variables theme emitting `--rf-syntax-*` custom properties
+	 *  (see SPEC-048 — the contract surface that hides the highlighter from themes). */
 	theme?: string | { light: string; dark: string };
 }
 

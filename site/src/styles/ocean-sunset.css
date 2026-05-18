@@ -55,17 +55,17 @@
 	--rf-color-inline-code-bg: #ede9e0;
 
 	/* Syntax highlighting (Shiki) */
-	--shiki-foreground: #e9d8a6;
-	--shiki-background: #001219;
-	--shiki-token-keyword: #ee9b00;
-	--shiki-token-string: #94d2bd;
-	--shiki-token-string-expression: #94d2bd;
-	--shiki-token-constant: #e9d8a6;
-	--shiki-token-comment: #5f6d6e;
-	--shiki-token-function: #0a9396;
-	--shiki-token-parameter: #b0dfda;
-	--shiki-token-punctuation: #94d2bd;
-	--shiki-token-link: #0a9396;
+	--rf-syntax-foreground: #e9d8a6;
+	--rf-syntax-background: #001219;
+	--rf-syntax-token-keyword: #ee9b00;
+	--rf-syntax-token-string: #94d2bd;
+	--rf-syntax-token-string-expression: #94d2bd;
+	--rf-syntax-token-constant: #e9d8a6;
+	--rf-syntax-token-comment: #5f6d6e;
+	--rf-syntax-token-function: #0a9396;
+	--rf-syntax-token-parameter: #b0dfda;
+	--rf-syntax-token-punctuation: #94d2bd;
+	--rf-syntax-token-link: #0a9396;
 }
 
 /* Color scheme overrides (preview canvas, tint containers) */
@@ -168,17 +168,17 @@
 	--rf-color-code-text: #e9d8a6;
 	--rf-color-inline-code-bg: rgba(148, 210, 189, 0.08);
 
-	--shiki-foreground: #e9d8a6;
-	--shiki-background: #001219;
-	--shiki-token-keyword: #ee9b00;
-	--shiki-token-string: #94d2bd;
-	--shiki-token-string-expression: #94d2bd;
-	--shiki-token-constant: #e9d8a6;
-	--shiki-token-comment: #5f6d6e;
-	--shiki-token-function: #4db8a8;
-	--shiki-token-parameter: #b0dfda;
-	--shiki-token-punctuation: #94d2bd;
-	--shiki-token-link: #94d2bd;
+	--rf-syntax-foreground: #e9d8a6;
+	--rf-syntax-background: #001219;
+	--rf-syntax-token-keyword: #ee9b00;
+	--rf-syntax-token-string: #94d2bd;
+	--rf-syntax-token-string-expression: #94d2bd;
+	--rf-syntax-token-constant: #e9d8a6;
+	--rf-syntax-token-comment: #5f6d6e;
+	--rf-syntax-token-function: #4db8a8;
+	--rf-syntax-token-parameter: #b0dfda;
+	--rf-syntax-token-punctuation: #94d2bd;
+	--rf-syntax-token-link: #94d2bd;
 
 	--rf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
 	--rf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -218,17 +218,17 @@
 		--rf-color-code-text: #e9d8a6;
 		--rf-color-inline-code-bg: rgba(148, 210, 189, 0.08);
 
-		--shiki-foreground: #e9d8a6;
-		--shiki-background: #001219;
-		--shiki-token-keyword: #ee9b00;
-		--shiki-token-string: #94d2bd;
-		--shiki-token-string-expression: #94d2bd;
-		--shiki-token-constant: #e9d8a6;
-		--shiki-token-comment: #5f6d6e;
-		--shiki-token-function: #4db8a8;
-		--shiki-token-parameter: #b0dfda;
-		--shiki-token-punctuation: #94d2bd;
-		--shiki-token-link: #94d2bd;
+		--rf-syntax-foreground: #e9d8a6;
+		--rf-syntax-background: #001219;
+		--rf-syntax-token-keyword: #ee9b00;
+		--rf-syntax-token-string: #94d2bd;
+		--rf-syntax-token-string-expression: #94d2bd;
+		--rf-syntax-token-constant: #e9d8a6;
+		--rf-syntax-token-comment: #5f6d6e;
+		--rf-syntax-token-function: #4db8a8;
+		--rf-syntax-token-parameter: #b0dfda;
+		--rf-syntax-token-punctuation: #94d2bd;
+		--rf-syntax-token-link: #94d2bd;
 
 		--rf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
 		--rf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);

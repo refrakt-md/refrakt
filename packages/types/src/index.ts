@@ -8,10 +8,22 @@ export {
 // Design tokens (standalone interface, not tied to a rune schema)
 export type { DesignTokens } from './tokens.js';
 
+// Token contract (SPEC-048) — the universal theme-token surface
+export type {
+  TokenContract,
+  PartialTokenContract,
+  ThemeTokensConfig,
+  SentimentTokens,
+  PrimaryScale,
+  SyntaxTokens,
+  DeepPartial,
+} from './token-contract.js';
+
 // Theme system types
 export type {
   RefraktConfig,
   SiteConfig,
+  SiteThemeConfig,
   PlanConfig,
   ThemeManifest,
   LayoutDefinition,

@@ -1,11 +1,41 @@
+/** Per-site theme configuration. May be supplied as a string (legacy shorthand
+ *  for `{ package: <string> }`) or as a full object with token overrides,
+ *  presets, modes, and colour-scheme behaviour.
+ *
+ *  Per SPEC-048: the contract is universal, values are themed; presets are
+ *  plain data merged in declared order. Per SPEC-052: `colorScheme` is the
+ *  *site-wide* root of the per-page tint cascade — every page inherits from
+ *  this unless its layout or own frontmatter overrides. */
+export interface SiteThemeConfig {
+	/** Active theme — package name or relative path. */
+	package: string;
+	/** Preset modules to merge into the theme, in declared order (last wins
+	 *  per token). Each entry is a module identifier (npm package + export
+	 *  path) that resolves to a `ThemeTokensConfig`. */
+	presets?: string[];
+	/** Initial colour scheme behaviour for the rendered site.
+	 *  - `'auto'` (default): respect user preference (saved or system).
+	 *  - `'light'` / `'dark'`: force this scheme regardless of user preference.
+	 *    The pre-paint client script no-ops and does not apply saved preference. */
+	colorScheme?: 'auto' | 'light' | 'dark';
+	/** Site-level token overrides applied on top of the theme's base values and
+	 *  any presets. Validated against the typed `TokenContract`. */
+	tokens?: import('./token-contract.js').ThemeTokensConfig;
+	/** Site-level per-mode overlays (e.g. `dark`). Layer on top of the theme's
+	 *  modes and any preset modes. */
+	modes?: Record<string, import('./token-contract.js').PartialTokenContract>;
+}
+
 /** Per-site configuration. A project may declare a single site (via `site`) or
  *  multiple named sites (via `sites: { name: SiteConfig }`).
  *  Only `contentDir` and `theme` are strictly required for the site to load. */
 export interface SiteConfig {
 	/** Path to content directory, relative to project root */
 	contentDir: string;
-	/** Active theme — package name or relative path */
-	theme: string;
+	/** Active theme — accepts either a package name string (legacy shorthand)
+	 *  or a full {@link SiteThemeConfig} with presets, token overrides, mode
+	 *  overlays, and `colorScheme`. */
+	theme: string | SiteThemeConfig;
 	/** Documentation-only adapter hint (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`).
 	 *  No adapter reads or validates this field today; it serves as an in-config record of
 	 *  which adapter the site is intended for. Slated for removal in v1.0. */
