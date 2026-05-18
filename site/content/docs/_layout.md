@@ -8,6 +8,7 @@ tint-lock: false
 {% region name="nav" %}
 {% nav collapsible=true %}
 - [Documentation](/docs/getting-started)
+  - [Runes](/runes/rune-catalog)
 - [Planning](/plan)
 
 ## Guide

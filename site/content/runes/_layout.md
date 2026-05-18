@@ -6,6 +6,10 @@ tint-lock: false
 {% layout %}
 {% region name="nav" %}
 {% nav collapsible=true %}
+- [Documentation](/docs/getting-started)
+  - [Runes](/runes/rune-catalog)
+- [Planning](/plan)
+
 ## Rune Catalog
 
 - rune-catalog
