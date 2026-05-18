@@ -84,15 +84,15 @@
 	--rf-color-inline-code-bg: #f9ebcc;
 
 	/* Syntax highlighting (Shiki CSS variables) */
-	--shiki-foreground: #f1faee;
-	--shiki-background: #1d3557;
-	--shiki-token-keyword: #f2cc8f;
-	--shiki-token-string: #a8dadc;
-	--shiki-token-string-expression: #a8dadc;
-	--shiki-token-constant: #e8c07a;
-	--shiki-token-comment: #5a7a90;
-	--shiki-token-function: #70b4c0;
-	--shiki-token-parameter: #b8d6e2;
-	--shiki-token-punctuation: #a8dadc;
-	--shiki-token-link: #70b4c0;
+	--rf-syntax-foreground: #f1faee;
+	--rf-syntax-background: #1d3557;
+	--rf-syntax-token-keyword: #f2cc8f;
+	--rf-syntax-token-string: #a8dadc;
+	--rf-syntax-token-string-expression: #a8dadc;
+	--rf-syntax-token-constant: #e8c07a;
+	--rf-syntax-token-comment: #5a7a90;
+	--rf-syntax-token-function: #70b4c0;
+	--rf-syntax-token-parameter: #b8d6e2;
+	--rf-syntax-token-punctuation: #a8dadc;
+	--rf-syntax-token-link: #70b4c0;
 }

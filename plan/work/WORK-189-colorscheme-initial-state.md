@@ -1,4 +1,4 @@
-{% work id="WORK-189" status="ready" priority="medium" complexity="small" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-189" status="in-progress" priority="medium" complexity="small" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
 
 # theme.colorScheme initial state field
 
@@ -6,12 +6,14 @@ Add a `theme.colorScheme: 'auto' | 'light' | 'dark'` field to `refrakt.config.js
 
 ## Acceptance Criteria
 
-- [ ] `theme.colorScheme` field added to `SiteConfig` types and validated at config load
-- [ ] When set to `'light'` or `'dark'`, SSR emits `<html data-theme="<value>">` and `<meta name="color-scheme" content="<value>">`, and the pre-paint script does *not* apply saved user preference (the page is locked)
-- [ ] When set to `'auto'` (the default), SSR emits no `data-theme` attribute; the pre-paint script applies saved user preference or falls back to system `prefers-color-scheme`
-- [ ] Behaviour is purely SSR/initial-state — the runtime theme toggle (a separate concern; see {% ref "WORK-211" /%}) is not introduced here
-- [ ] Documentation in the SPEC-048 reference page explains the three values and what they emit
-- [ ] Unit tests verify the SSR output for each value
+- [x] `theme.colorScheme` field added to `SiteConfig` types *(type is in place via the new `SiteThemeConfig` interface; config-load validation lands with the broader theme-config validation in {% ref "WORK-187" /%})*
+- [ ] When set to `'light'` or `'dark'`, SSR emits `<html data-theme="<value>">` and `<meta name="color-scheme" content="<value>">`, and the pre-paint script does *not* apply saved user preference (the page is locked) *(deferred to {% ref "WORK-214" /%} — the SSR / pre-paint pipeline is built once for both the site-wide colorScheme and the per-page cascade)*
+- [ ] When set to `'auto'` (the default), SSR emits no `data-theme` attribute; the pre-paint script applies saved user preference or falls back to system `prefers-color-scheme` *(deferred to {% ref "WORK-214" /%})*
+- [ ] Behaviour is purely SSR/initial-state — the runtime theme toggle (a separate concern; see {% ref "WORK-211" /%}) is not introduced here *(deferred)*
+- [ ] Documentation in the SPEC-048 reference page explains the three values and what they emit *(deferred — page doesn't exist yet)*
+- [ ] Unit tests verify the SSR output for each value *(deferred to {% ref "WORK-214" /%})*
+
+**Scope split.** This work item ships only the *type* portion in Chunk 1 (SPEC-048 foundation). The SSR emission and pre-paint script overlap heavily with {% ref "WORK-214" /%} (renderer integration for the SPEC-052 cascade), so they're consolidated there to avoid building the SSR pipeline twice. The type addition is enough to unblock {% ref "WORK-187" /%} (config validation) which can then accept and validate the field.
 
 ## Approach
 

@@ -1,6 +1,7 @@
 import { resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import type { SiteConfig } from '@refrakt-md/types';
+import { getThemePackage } from '@refrakt-md/types';
 import { resolveSite } from '@refrakt-md/transform/node';
 import { loadRefraktConfigFile } from '../config-file.js';
 
@@ -31,7 +32,7 @@ export async function editCommand(options: EditOptions): Promise<void> {
 			// multiple are declared and no --site flag is set.
 			const { site } = resolveSite(config);
 			contentDir = resolve(configDir, site.contentDir);
-			themeName = site.theme;
+			themeName = getThemePackage(site.theme);
 			projectSite = site;
 		} catch (err) {
 			const message = (err as Error).message;

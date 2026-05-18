@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import type { AstroIntegration } from 'astro';
 import { CORE_PACKAGES } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { getThemePackage } from '@refrakt-md/types';
 import type { RefraktAstroOptions } from './types.js';
 
 /**
@@ -21,10 +22,11 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				const refraktConfig = loadRefraktConfig(configPath);
 				const { site } = resolveSite(refraktConfig, options.site);
 
+				const themePackage = getThemePackage(site.theme);
 				const noExternal = [
 					...CORE_PACKAGES,
 					'@refrakt-md/astro',
-					site.theme,
+					themePackage,
 					...(site.plugins ?? []),
 				];
 
@@ -40,7 +42,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				});
 
 				// Inject theme CSS so page templates don't hardcode a theme package
-				injectScript('page-ssr', `import '${site.theme}';`);
+				injectScript('page-ssr', `import '${themePackage}';`);
 
 				// Watch content directory for changes in dev mode
 				const contentDir = resolve(config.root.pathname, site.contentDir);

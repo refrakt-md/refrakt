@@ -1,4 +1,5 @@
 import type { SiteConfig } from '@refrakt-md/types';
+import { getThemePackage } from '@refrakt-md/types';
 
 const VIRTUAL_PREFIX = 'virtual:refrakt/';
 const RESOLVED_PREFIX = '\0virtual:refrakt/';
@@ -39,7 +40,7 @@ export function loadVirtualModule(
 	config: SiteConfig,
 	buildCtx: BuildContext = { isBuild: false, resolvedRoot: '' },
 ): string | undefined {
-	const theme = config.theme;
+	const theme = getThemePackage(config.theme);
 
 	if (id === `${RESOLVED_PREFIX}theme`) {
 		const overrides = config.overrides;

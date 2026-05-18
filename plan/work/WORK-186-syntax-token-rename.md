@@ -1,4 +1,4 @@
-{% work id="WORK-186" status="ready" priority="high" complexity="small" tags="syntax-highlighting, tokens, shiki, breaking-change" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-186" status="done" priority="high" complexity="small" tags="syntax-highlighting, tokens, shiki, breaking-change" source="SPEC-048" milestone="v0.14.0" %}
 
 # Highlighter token rename: --shiki-* → --rf-syntax-*
 
@@ -6,12 +6,12 @@ Stop leaking the underlying highlighter into the public token surface. Today ele
 
 ## Acceptance Criteria
 
-- [ ] All `--shiki-*` custom properties in `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` renamed to `--rf-syntax-*` equivalents
-- [ ] Shiki integration in `packages/lumina` (or wherever it lives) configured to emit `--rf-syntax-*` via `cssVariablePrefix` or themed-tokens mapping
-- [ ] All per-rune CSS in `packages/lumina/styles/runes/` that reads syntax tokens updated to `--rf-syntax-*`
-- [ ] `TokenContract.syntax` namespace in {% ref "WORK-185" /%} types reflects the new vocabulary
-- [ ] CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` updated to expect `--rf-syntax-*` selectors
-- [ ] A documentation note (in the SPEC-048 docs page or migration guide) explains that the highlighter is now an implementation detail behind a stable contract — themes only see `--rf-syntax-*`
+- [x] All `--shiki-*` custom properties in `packages/lumina/tokens/base.css` and `packages/lumina/tokens/dark.css` renamed to `--rf-syntax-*` equivalents
+- [x] Shiki integration in `packages/highlight` configured to emit `--rf-syntax-*` via `createCssVariablesTheme({ variablePrefix: '--rf-syntax-' })`
+- [x] All per-rune CSS in `packages/lumina/styles/runes/` that reads syntax tokens updated to `--rf-syntax-*` *(audit found no per-rune CSS reading `--shiki-*` directly; only the central token files needed renames)*
+- [x] `TokenContract.syntax` namespace in {% ref "WORK-185" /%} types reflects the new vocabulary
+- [x] CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` updated to expect `--rf-syntax-*` selectors *(no existing syntax-token coverage references to update; tests pass)*
+- [ ] A documentation note (in the SPEC-048 docs page or migration guide) explains that the highlighter is now an implementation detail behind a stable contract — themes only see `--rf-syntax-*` *(deferred — SPEC-048 reference page doesn't exist yet; migration note rolls up with {% ref "WORK-210" /%} in Chunk 8)*
 
 ## Approach
 

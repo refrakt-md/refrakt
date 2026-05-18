@@ -187,8 +187,17 @@ function loadThemeTransform(workspaceRoot: string): { transform: ((tree: any) =>
       return { transform: null, error: 'No "theme" field in refrakt.config.json' };
     }
 
+    const themePackage = typeof config.theme === 'string'
+      ? config.theme
+      : (typeof config.theme === 'object' && config.theme !== null && typeof config.theme.package === 'string'
+          ? config.theme.package
+          : null);
+    if (!themePackage) {
+      return { transform: null, error: '"theme" must be a string package name or { package, ... } object' };
+    }
+
     const req = createRequire(join(workspaceRoot, 'package.json'));
-    const themeTransform = req(`${config.theme}/transform`);
+    const themeTransform = req(`${themePackage}/transform`);
     const themeConfig = themeTransform.luminaConfig ?? themeTransform.default;
 
     if (!themeConfig) {
