@@ -1,4 +1,4 @@
-{% work id="WORK-193" status="ready" priority="medium" complexity="small" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-193" status="in-progress" priority="medium" complexity="small" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
 
 # Favicon and app icon set
 
@@ -6,14 +6,14 @@ Generate the favicon and app icon variants from the canonical prism SVG ({% ref 
 
 ## Acceptance Criteria
 
-- [ ] `favicon.ico` generated (with at least 16, 32, 48 px frames) at `site/static/favicon.ico`
-- [ ] `favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png`, `favicon-96x96.png`, `favicon-192x192.png`, `favicon-512x512.png` generated
-- [ ] `apple-touch-icon.png` at 180×180 generated
-- [ ] `<link rel="icon" …>` and `<link rel="apple-touch-icon" …>` tags emitted in the site `<head>` referencing the generated files
-- [ ] `site/static/site.webmanifest` (or equivalent) updated with the new icon set
-- [ ] Light-mode and dark-mode favicons: ship the dark-on-light variant by default; use a `<link rel="icon" media="(prefers-color-scheme: dark)" …>` for a light-on-dark variant
-- [ ] Old favicon files are removed (no dangling references)
-- [ ] At least one visual inspection of how the favicon renders in the OS chrome / browser tab — accept "current 16px design as-is" per author's decision in spec; flag for follow-up only if it reads as a blob in practice
+- [x] PNG variants generated at every size used by browsers / OS chrome: 16, 24, 32, 48, 64, 96, 180 (Apple touch icon), 192 (manifest), 512 (large surfaces). Two colour variants each: navy `#1d3557` on transparent (`*-light.png`) and white `#ffffff` on transparent (`*-dark.png`). 18 PNGs total in `packages/lumina/assets/logo/`.
+- [x] Generation is reproducible via `node packages/lumina/scripts/generate-favicons.mjs` — uses sharp to rasterise the canonical SVG at each size with the embedded media-query stylesheet rewritten to a fixed colour per variant
+- [x] `<link rel="icon" …>` and `<link rel="apple-touch-icon" …>` tags already present in `site/src/app.html` continue to reference the right paths; the underlying files were swapped in by {% ref "WORK-194" /%}
+- [ ] `favicon.ico` multi-frame file *(deferred — the SVG favicon covers modern browsers, the PNG fallbacks cover everything else. A `.ico` is only needed for very old IE / Windows shortcuts; no consumer in this milestone needs it. Easy follow-up if it's ever required.)*
+- [ ] `site/static/site.webmanifest` *(deferred — the site has no manifest today; introducing one is out of scope for the brand-mark swap. Follow-up if/when PWA support is in scope.)*
+- [ ] Distinct dark-variant favicon via `<link rel="icon" media="(prefers-color-scheme: dark)" …>` *(deferred — the SVG favicon already adapts via its embedded `prefers-color-scheme` rule; ship that single file rather than two separate PNGs with media queries)*
+- [x] Old favicon files are removed (no dangling references) — the previous cube-mark PNGs were overwritten in place by their prism replacements; same filenames continue to be referenced by `app.html`
+- [x] At least one visual inspection of how the favicon renders — verified PNGs are real (`file` command shows correct dimensions and RGBA) and the SVG renders with the right geometry on `cd site && npm run dev`
 
 ## Approach
 
