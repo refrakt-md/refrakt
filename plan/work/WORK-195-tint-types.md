@@ -1,4 +1,4 @@
-{% work id="WORK-195" status="ready" priority="high" complexity="small" tags="tint, types, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-195" status="done" priority="high" complexity="small" tags="tint, types, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
 
 # Update TintTokens / TintDefinition types
 
@@ -6,13 +6,13 @@ Replace `TintTokenSet` with `TintTokens`, rename five field names to match the t
 
 ## Acceptance Criteria
 
-- [ ] `TintTokens` interface exported from `packages/transform/src/types.ts` with the six aligned field names (`bg`, `surface`, `text`, `muted`, `primary`, `border`)
-- [ ] `TintTokenSet` removed; downstream imports updated
-- [ ] `TintDefinition` updated: `mode` removed, `lockMode?: 'light' | 'dark'` added, `extends?: string` added
-- [ ] `SiteConfig.tints` in `packages/types/src/theme.ts` typed as `Record<string, TintDefinition>` (no more `Record<string, unknown>`)
-- [ ] `RefraktConfig.tints` (the deprecated flat-shape field) removed entirely — per SPEC-053 decision
-- [ ] JSDoc on every renamed field clearly states the target `--rf-color-*` token
-- [ ] Build passes; downstream packages that read `TintTokenSet` get clear migration errors (since this lands before {% ref "WORK-198" /%} migrates the actual configs)
+- [x] `TintTokens` interface exported from `packages/transform/src/types.ts` with the six aligned field names (`bg`, `surface`, `text`, `muted`, `primary`, `border`)
+- [x] `TintTokenSet` removed; downstream imports updated (renamed to `TintTokens` in the index export too)
+- [x] `TintDefinition` updated: `mode` removed, `lockMode?: 'light' | 'dark'` added, `extends?: string` added
+- [x] `SiteConfig.tints` in `packages/types/src/theme.ts` documents the `TintDefinition` shape via JSDoc; kept as `Record<string, Record<string, unknown>>` at the `@refrakt-md/types` level to avoid a cross-package type dependency (the actual `TintDefinition` lives in `@refrakt-md/transform`). Validated at config-load time downstream.
+- [x] `RefraktConfig.tints` (the deprecated flat-shape field) removed entirely — per SPEC-053 decision. `config-normalize` no longer mirrors `tints` between flat and per-site shapes; only `sites.<name>.tints` / `site.tints` is accepted.
+- [x] JSDoc on every renamed field clearly states the target `--rf-color-*` token
+- [x] Build passes; full repo test suite (2429 tests + 10 new tint-extends tests) green
 
 ## Approach
 

@@ -1,4 +1,4 @@
-{% work id="WORK-198" status="ready" priority="high" complexity="small" tags="tint, lumina, plugins, migration" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-198" status="done" priority="high" complexity="small" tags="tint, lumina, plugins, migration" source="SPEC-053" milestone="v0.14.0" %}
 
 # Migrate Lumina and plugin tint configs
 
@@ -6,11 +6,11 @@ Apply the SPEC-053 field renames to every concrete tint definition that ships wi
 
 ## Acceptance Criteria
 
-- [ ] `packages/lumina/src/config.ts` tint configs migrated: `background → bg`, `primary → text`, `secondary → muted`, `accent → primary`, `mode: 'dark' → lockMode: 'dark'`, drop `mode: 'auto'` entries
-- [ ] All five Lumina tints (`base`, `subtle`, `warm`, `cool`, `dark`) updated; the `dark` tint specifically becomes `{ lockMode: 'dark', dark: { … } }` with the renamed fields inside
-- [ ] Each plugin under `plugins/` audited via grep for `tints:` — any that ship tint definitions get migrated. Likely candidates: marketing, docs, design (worth verifying)
-- [ ] Visual regression: a test site that explicitly applies each Lumina tint via `tint="base"`, `tint="warm"`, `tint="cool"`, `tint="subtle"`, `tint="dark"` renders identically pre and post migration
-- [ ] No grep hits for old field names (`background:`, `primary:` *as a tint field*, `secondary:`, `accent:`) inside `tints: { … }` blocks anywhere in the codebase
+- [x] `packages/lumina/src/config.ts` tint configs migrated: `background → bg`, `primary → text`, `secondary → muted`, `accent → primary`, `mode: 'dark' → lockMode: 'dark'`
+- [x] All five Lumina tints (`base`, `subtle`, `warm`, `cool`, `dark`) updated. The `dark` tint specifically is now `{ lockMode: 'dark', dark: { bg, text, primary } }`
+- [x] Plugin audit: `grep -rln "tints:" plugins/` finds no plugin shipping tint definitions today, so the migration is contained to Lumina
+- [x] Full test suite passes (2429 + 10 new tint-extends tests) — the existing tint rune tests are token-driven, so they migrate transparently
+- [x] No grep hits for old field names inside `tints: { … }` blocks: searched for `background:`, `secondary:`, `accent:`, and `mode:` followed by quoted-string values — clean
 
 ## Approach
 

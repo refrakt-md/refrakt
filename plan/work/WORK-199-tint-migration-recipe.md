@@ -1,4 +1,4 @@
-{% work id="WORK-199" status="ready" priority="low" complexity="small" tags="tint, docs, migration" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-199" status="done" priority="low" complexity="small" tags="tint, docs, migration" source="SPEC-053" milestone="v0.14.0" %}
 
 # Document the tint migration recipe
 
@@ -6,12 +6,14 @@ Write the v1.0 migration guide entry for SPEC-053's tint field renames. Per the 
 
 ## Acceptance Criteria
 
-- [ ] A "Tint shape changes" section exists in the v1.0 migration guide (location: wherever the migration guide lives — `site/content/docs/migration/` or `MIGRATION.md` at the repo root; check during implementation)
-- [ ] The section documents the five field renames (`background → bg`, `primary → text`, `secondary → muted`, `accent → primary`, plus `mode → lockMode` with the semantics change from three-value to present-or-absent)
-- [ ] At least one before/after example showing a real tint migration (use Lumina's `warm` tint as the canonical example)
-- [ ] A copy-pasteable `sed` (or equivalent regex) snippet that handles the renames for users who have written their own tint configs
-- [ ] The section explicitly notes that the user-facing `tint=""` rune attribute and `data-tint` HTML attribute are *unchanged* — only the *authoring* surface for new tint definitions moves
-- [ ] A note that the deprecated top-level `tints` field in `refrakt.config.json` is removed; users on the flat-shape config need to migrate to `sites.<name>.tints`
+- [x] A "Tint shape changes" section exists at `site/content/docs/migration/v0.14.0.md` — the v0.14.0 migration guide that {% ref "WORK-210" /%} will also extend with palette and font notes
+- [x] The section documents the five field renames (`background → bg`, `primary → text`, `secondary → muted`, `accent → primary`, plus `mode → lockMode` with the semantics change from three-value to present-or-absent) — both as a table and as before/after code samples
+- [x] At least one before/after example showing a real tint migration — uses Lumina's `warm` tint as the canonical case, plus the `mode: 'dark'` lockMode example
+- [x] A copy-pasteable `sed` recipe handles the renames, with an explicit note that `primary → text` must run before `accent → primary` to avoid overwriting the new `primary` field
+- [x] The section explicitly notes that the `tint=""` rune attribute, `data-tint` HTML attribute, and `tint-mode` rune attribute all continue to work — only the authoring shape for new tint definitions has moved
+- [x] A note that the deprecated top-level `tints` field in `refrakt.config.json` is removed; users on the flat-shape config need to migrate to `site.tints` (singular) or `sites.<name>.tints` (multi-site)
+- [x] An `extends` section showing the new variant-derivation mechanism (the canonical override path per SPEC-053's "one preset" → "scoped overlay" design principle)
+- [x] A small Shiki rename note for any custom CSS that still reads `--shiki-*` directly (cross-references Chunk 1's SPEC-048 rename)
 
 ## Approach
 

@@ -76,7 +76,9 @@ const SITE_FIELDS = [
 	'highlight',
 	'icons',
 	'plugins',
-	'tints',
+	// `tints` is intentionally NOT mirrored to the top level — the deprecated
+	// `RefraktConfig.tints` flat-shape field was dropped in SPEC-053. Use
+	// `sites.<name>.tints` (or the singular `site.tints`) instead.
 	'backgrounds',
 	'sandbox',
 	'baseUrl',

@@ -119,24 +119,24 @@ This applies the theme's standard dark mode styles without any custom colour tok
 
 ## Token set
 
-The tint rune operates on six colour tokens, namespaced as `--tint-*`:
+The tint rune operates on six colour tokens, namespaced as `--tint-*`. Field names align with the design token contract (SPEC-053) — each tint token maps to its `--rf-color-*` counterpart:
 
-| Token | CSS Property | Purpose |
-|-------|-------------|---------|
-| `background` | `--tint-background` | Section background colour |
-| `surface` | `--tint-surface` | Raised surface colour (cards, panels) |
-| `primary` | `--tint-primary` | Primary text colour |
-| `secondary` | `--tint-secondary` | Secondary/muted text colour |
-| `accent` | `--tint-accent` | Accent colour (links, highlights) |
-| `border` | `--tint-border` | Border and divider colour |
+| Token | CSS Property | Maps to | Purpose |
+|-------|-------------|---------|---------|
+| `bg` | `--tint-bg` | `--rf-color-bg` | Section background colour |
+| `surface` | `--tint-surface` | `--rf-color-surface` | Raised surface colour (cards, panels) |
+| `text` | `--tint-text` | `--rf-color-text` | Body text colour |
+| `muted` | `--tint-muted` | `--rf-color-muted` | Secondary / muted text colour |
+| `primary` | `--tint-primary` | `--rf-color-primary` | Interactive primary colour (links, accents) |
+| `border` | `--tint-border` | `--rf-color-border` | Border and divider colour |
 
 Tokens are namespaced as `--tint-*` rather than directly overriding theme tokens. The theme's CSS bridges the two with fallbacks:
 
 ```css
 [data-tint] {
-  --rf-color-bg: var(--tint-background, var(--rf-color-bg));
-  --rf-color-text: var(--tint-primary, var(--rf-color-text));
-  --rf-color-primary: var(--tint-accent, var(--rf-color-primary));
+  --rf-color-bg: var(--tint-bg, var(--rf-color-bg));
+  --rf-color-text: var(--tint-text, var(--rf-color-text));
+  --rf-color-primary: var(--tint-primary, var(--rf-color-primary));
   /* ... */
 }
 ```
@@ -166,8 +166,8 @@ The tint rune adds attributes and inline styles to the parent rune's root elemen
 | `data-tint` | Named or inline tint | `data-tint="warm"` or `data-tint="custom"` |
 | `data-color-scheme` | Mode is not `auto` | `data-color-scheme="dark"` |
 | `data-tint-dark` | Dark tokens provided | `data-tint-dark` |
-| `--tint-*` styles | Light tokens | `style="--tint-background: #fdf6e3"` |
-| `--tint-dark-*` styles | Dark tokens | `style="--tint-dark-background: #2a2118"` |
+| `--tint-*` styles | Light tokens | `style="--tint-bg: #fdf6e3"` |
+| `--tint-dark-*` styles | Dark tokens | `style="--tint-dark-bg: #2a2118"` |
 | `--tinted` modifier | Tokens present | `.rf-hint--tinted` |
 
 ## Nesting

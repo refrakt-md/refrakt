@@ -3,7 +3,11 @@ import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetD
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
-const TINT_TOKENS = ['background', 'surface', 'primary', 'secondary', 'accent', 'border'] as const;
+/** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
+ *  matching `--rf-color-*` token via the same dot-to-dash rule the token
+ *  contract uses. See `TintTokens` in `./types.ts` for the field-to-token
+ *  mapping table. */
+const TINT_TOKENS = ['bg', 'surface', 'text', 'muted', 'primary', 'border'] as const;
 
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
@@ -146,8 +150,8 @@ function transformRune(
 					if (v) darkTokens[k] = v;
 				}
 			}
-			if (!resolvedMode && def.mode && def.mode !== 'auto') {
-				resolvedMode = def.mode;
+			if (!resolvedMode && def.lockMode) {
+				resolvedMode = def.lockMode;
 			}
 		}
 
