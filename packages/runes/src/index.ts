@@ -18,6 +18,7 @@ import { accordion, accordionItem } from './tags/accordion.js';
 import { toc } from './tags/toc.js';
 import { embed } from './tags/embed.js';
 import { breadcrumb } from './tags/breadcrumb.js';
+import { pagination } from './tags/pagination.js';
 import { budget, budgetCategory, budgetLineItem } from './tags/budget.js';
 import { compare } from './tags/compare.js';
 import { datatable } from './tags/datatable.js';
@@ -104,6 +105,7 @@ export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, type PageTreeNode } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
+export { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 export { TINT_TOKENS } from './tags/tint.js';
 export type { TintToken } from './tags/tint.js';
 export { XREF_RUNE_MARKER } from './tags/xref.js';
@@ -286,6 +288,14 @@ export const runes = {
     typeName: 'Breadcrumb', schemaOrgType: 'BreadcrumbList',
     category: 'Site',
     snippet: ['{% breadcrumb /%}'],
+  }),
+  pagination: defineRune({
+    name: 'pagination',
+    schema: pagination,
+    description: 'Sequential prev/next links for ordered docs and tutorials',
+    typeName: 'Pagination',
+    category: 'Site',
+    snippet: ['{% pagination auto /%}'],
   }),
   budget: defineRune({
     name: 'budget',

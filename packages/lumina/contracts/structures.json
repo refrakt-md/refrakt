@@ -590,6 +590,21 @@
 				"{content}"
 			]
 		},
+		"Pagination": {
+			"block": "pagination",
+			"root": ".rf-pagination",
+			"dataRune": "pagination",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"scope": {
+					"source": "meta",
+					"default": "siblings",
+					"dataAttribute": "data-scope"
+				}
+			}
+		},
 		"NavItem": {
 			"block": "nav-item",
 			"root": ".rf-nav-item",

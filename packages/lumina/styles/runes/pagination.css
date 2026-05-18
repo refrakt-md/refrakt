@@ -1,0 +1,65 @@
+/* Pagination — prev/next links at the foot of sequential pages. */
+
+.rf-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 3rem 0 1.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--rf-color-border);
+}
+
+.rf-pagination__prev,
+.rf-pagination__next {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.625rem 0.875rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	color: var(--rf-color-text);
+	text-decoration: none;
+	font-size: 0.9rem;
+	transition: border-color 150ms ease, background-color 150ms ease;
+	max-width: 48%;
+}
+
+.rf-pagination__prev:hover,
+.rf-pagination__next:hover {
+	border-color: var(--rf-color-primary);
+	background: var(--rf-color-surface, var(--rf-color-bg));
+	text-decoration: none;
+}
+
+.rf-pagination__next {
+	margin-left: auto;
+	text-align: right;
+}
+
+.rf-pagination [data-name="marker"] {
+	color: var(--rf-color-muted);
+	font-weight: 400;
+}
+
+.rf-pagination [data-name="label"] {
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rf-pagination [data-direction="prev"] [data-name="marker"] {
+	order: -1;
+}
+
+@media (max-width: 480px) {
+	.rf-pagination {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-pagination__prev,
+	.rf-pagination__next {
+		max-width: none;
+	}
+}
