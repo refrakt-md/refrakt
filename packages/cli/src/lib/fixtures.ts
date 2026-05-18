@@ -114,6 +114,21 @@ const config = {
 
 **Submit**
 {% /form %}`,
+
+	nav: `{% nav %}
+- [Docs](/docs)
+- [Blog](/blog)
+
+## Product
+- pricing
+- features
+
+## Resources
+- about
+- changelog
+{% /nav %}`,
+
+	pagination: `{% pagination prev="install" next="configuration" /%}`,
 };
 
 /** Get a fixture for a rune, with optional attribute overrides applied to the source */
@@ -135,12 +150,14 @@ export function getFixture(runeName: string, attrOverrides?: Record<string, stri
 
 /** Replace or add attributes in the opening tag of a fixture */
 function applyOverrides(source: string, tagName: string, overrides: Record<string, string>): string {
-	// Match the opening tag: {% tagName ... %}
-	const openTagPattern = new RegExp(`(\\{%\\s*${escapeRegex(tagName)})([^%]*?)(%\\})`);
+	// Match the opening tag: {% tagName ... %} or {% tagName ... /%}
+	const openTagPattern = new RegExp(`(\\{%\\s*${escapeRegex(tagName)})([^%]*?)(/?%\\})`);
 	const match = source.match(openTagPattern);
 	if (!match) return source;
 
-	let attrString = match[2];
+	// Strip any trailing slash from the attr capture so we don't put attributes after it
+	let attrString = match[2].replace(/\s*\/\s*$/, ' ');
+	const closing = match[3];
 
 	for (const [key, value] of Object.entries(overrides)) {
 		// Try to replace existing attribute
@@ -153,7 +170,7 @@ function applyOverrides(source: string, tagName: string, overrides: Record<strin
 		}
 	}
 
-	return source.replace(openTagPattern, `${match[1]}${attrString}${match[3]}`);
+	return source.replace(openTagPattern, `${match[1]}${attrString}${closing}`);
 }
 
 function escapeRegex(s: string): string {

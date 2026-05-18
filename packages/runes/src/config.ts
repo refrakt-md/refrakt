@@ -5,7 +5,8 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
 import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
-import { NAV_AUTO_SENTINEL } from './tags/nav.js';
+import { NAV_AUTO_SENTINEL, NAV_COLLAPSED_AUTO } from './tags/nav.js';
+import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 
@@ -383,11 +384,21 @@ export const coreConfig: ThemeConfig = {
 		Nav: {
 			block: 'nav',
 			defaultDensity: 'compact',
+			modifiers: {
+				layout: { source: 'attribute' },
+			},
 			postTransform(node) {
 				return { ...node, name: 'rf-nav' };
 			},
 		},
 		NavGroup: { block: 'nav-group', parent: 'Nav' },
+		Pagination: {
+			block: 'pagination',
+			defaultDensity: 'compact',
+			modifiers: {
+				scope: { source: 'meta', default: 'siblings', noBemClass: true },
+			},
+		},
 		NavItem: {
 			block: 'nav-item',
 			parent: 'Nav',
@@ -1046,6 +1057,644 @@ function buildAutoNav(
 	});
 }
 
+// ─── Collapsible nav auto-open ───
+
+function sharedPrefixLength(a: string, b: string): number {
+	let i = 0;
+	while (i < a.length && i < b.length && a[i] === b[i]) i++;
+	return i;
+}
+
+/** Resolve a slug-only nav item to a page URL using the pagesByUrl registry.
+ *  Mirrors the runtime resolution in @refrakt-md/behaviors RfNav. */
+function resolveSlugToUrl(
+	slug: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	currentUrl: string,
+): string | null {
+	const candidates = Array.from(pagesByUrl.values()).filter(
+		p => p.url.endsWith('/' + slug) || p.url === '/' + slug,
+	);
+	if (candidates.length === 0) return null;
+	if (candidates.length === 1) return candidates[0].url;
+	return candidates
+		.slice()
+		.sort((a, b) => sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl))[0]
+		.url;
+}
+
+/** Read a NavItem's slug from either `data-slug` (post-engine) or a nested
+ *  `<span data-field="slug">` (pre-engine, e.g. layout regions). */
+function readNavItemSlug(item: any): string | null {
+	const direct = item.attributes?.['data-slug'];
+	if (direct) return String(direct);
+	const findSpan = (node: unknown): string | null => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const f = findSpan(c);
+					if (f) return f;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.name === 'span' && t.attributes?.['data-field'] === 'slug') {
+			const parts: string[] = [];
+			for (const c of t.children ?? []) {
+				if (typeof c === 'string') parts.push(c);
+			}
+			return parts.join('').trim() || null;
+		}
+		for (const c of t.children ?? []) {
+			const f = findSpan(c);
+			if (f) return f;
+		}
+		return null;
+	};
+	return findSpan(item);
+}
+
+/** Collect URLs covered by a NavGroup's items: explicit hrefs + resolved slugs. */
+function collectGroupItemUrls(
+	group: any,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	currentUrl: string,
+): string[] {
+	const urls: string[] = [];
+	const walk = (node: unknown): void => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) node.forEach(walk);
+			return;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-rune'] === 'nav-item') {
+			const href = findNavItemHref(t);
+			if (href) {
+				urls.push(href);
+			} else {
+				const slug = readNavItemSlug(t);
+				if (slug) {
+					const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+					if (resolved) urls.push(resolved);
+				}
+			}
+		}
+		(t.children ?? []).forEach(walk);
+	};
+	(group.children ?? []).forEach(walk);
+	return urls;
+}
+
+function extractGroupTitle(group: any): string {
+	const findText = (node: unknown): string | null => {
+		if (typeof node === 'string') return node;
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const found = findText(c);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-field'] === 'title') {
+			const parts: string[] = [];
+			for (const c of t.children ?? []) {
+				if (typeof c === 'string') parts.push(c);
+			}
+			if (parts.length > 0) return parts.join('').trim();
+		}
+		for (const c of t.children ?? []) {
+			const found = findText(c);
+			if (found) return found;
+		}
+		return null;
+	};
+	return findText(group) ?? '';
+}
+
+function urlMatchesGroup(currentUrl: string, itemUrls: string[]): boolean {
+	for (const url of itemUrls) {
+		if (!url) continue;
+		if (currentUrl === url) return true;
+		const prefix = url.endsWith('/') ? url : url + '/';
+		if (currentUrl.startsWith(prefix)) return true;
+	}
+	return false;
+}
+
+/** Walk a renderable tree, resolving data-collapsed="auto" on NavGroup tags
+ *  inside collapsible Nav containers. */
+function resolveCollapsibleNavs(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	if (
+		tag.attributes?.['data-rune'] === 'nav' &&
+		tag.attributes?.['data-collapsible'] === 'true'
+	) {
+		const defaultOpenRaw = String(tag.attributes?.['data-default-open'] ?? '');
+		const defaultOpen = defaultOpenRaw
+			? defaultOpenRaw.split(',').map(s => s.trim()).filter(Boolean)
+			: [];
+
+		const groups: any[] = [];
+		const findGroups = (node: unknown): void => {
+			if (!Tag.isTag(node as any)) return;
+			const t = node as any;
+			if (t.attributes?.['data-rune'] === 'nav-group') {
+				groups.push(t);
+			}
+			(t.children ?? []).forEach(findGroups);
+		};
+		(tag.children ?? []).forEach(findGroups);
+
+		for (const group of groups) {
+			if (group.attributes?.['data-collapsed'] !== NAV_COLLAPSED_AUTO) continue;
+			const title = extractGroupTitle(group);
+			const inDefault = title && defaultOpen.includes(title);
+			const itemUrls = collectGroupItemUrls(group, pagesByUrl, pageUrl);
+			const matches = urlMatchesGroup(pageUrl, itemUrls);
+			group.attributes['data-collapsed'] = (inDefault || matches) ? 'false' : 'true';
+		}
+
+		const newChildren = (tag.children ?? []).map((c: unknown) =>
+			resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+		);
+		if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+		return { ...tag, children: newChildren };
+	}
+
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
+// ─── Cards layout enrichment ───
+
+interface PageMetadata {
+	url: string;
+	title: string;
+	description?: string;
+	icon?: string;
+}
+
+function enrichNavItemAsCard(
+	item: any,
+	pageMeta: PageMetadata | null,
+	itemUrl: string | null,
+): any {
+	const titleText = pageMeta?.title ?? itemUrl ?? '';
+	const description = pageMeta?.description;
+	const icon = pageMeta?.icon;
+	const href = pageMeta?.url ?? itemUrl ?? '';
+
+	const linkChildren: any[] = [];
+	if (icon) {
+		linkChildren.push(
+			new Tag('rf-icon', { name: icon, 'data-name': 'icon', class: 'rf-nav-item__icon' }, []),
+		);
+	}
+	linkChildren.push(
+		new Tag('span', { 'data-name': 'title', class: 'rf-nav-item__title' }, [titleText]),
+	);
+	if (description) {
+		linkChildren.push(
+			new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [description]),
+		);
+	}
+
+	const link = href
+		? new Tag('a', { href, class: 'rf-nav-item__link' }, linkChildren)
+		: new Tag('span', { class: 'rf-nav-item__link' }, linkChildren);
+
+	return { ...item, children: [link] };
+}
+
+function findNavItemHref(item: any): string | null {
+	const walk = (node: unknown): string | null => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				for (const c of node) {
+					const found = walk(c);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+		const t = node as any;
+		if (t.name === 'a' && t.attributes?.href) return String(t.attributes.href);
+		for (const c of t.children ?? []) {
+			const found = walk(c);
+			if (found) return found;
+		}
+		return null;
+	};
+	return walk(item);
+}
+
+function getNavItemUrl(
+	item: any,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+	currentUrl: string,
+): { url: string; isExternal: boolean } | null {
+	// Prefer an explicit <a href> — covers `[Label](/url)` items whose link text
+	// is wrapped in a slug span by the nav item transform.
+	const href = findNavItemHref(item);
+	if (href) {
+		const isExternal = /^[a-z]+:\/\//i.test(href);
+		return { url: href, isExternal };
+	}
+	const slug = readNavItemSlug(item);
+	if (slug) {
+		const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+		return resolved ? { url: resolved, isExternal: false } : null;
+	}
+	return null;
+}
+
+function resolveCardsNavs(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveCardsNavs(c, pageUrl, pagesByUrl)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	if (
+		tag.attributes?.['data-rune'] === 'nav' &&
+		(tag.attributes?.['data-layout'] === 'cards' || tag.attributes?.['layout'] === 'cards')
+	) {
+		const enrichItem = (node: unknown): unknown => {
+			if (!Tag.isTag(node as any)) {
+				if (Array.isArray(node)) return node.map(enrichItem);
+				return node;
+			}
+			const t = node as any;
+			if (t.attributes?.['data-rune'] === 'nav-item') {
+				const ref = getNavItemUrl(t, pagesByUrl, pageUrl);
+				if (!ref) return t;
+				if (ref.isExternal) {
+					// External link — title only, no enrichment
+					return enrichNavItemAsCard(t, null, ref.url);
+				}
+				const page = pagesByUrl.get(ref.url);
+				const meta: PageMetadata | null = page
+					? { url: page.url, title: page.title, description: page.description, icon: page.icon }
+					: null;
+				return enrichNavItemAsCard(t, meta, ref.url);
+			}
+			const newChildren = (t.children ?? []).map(enrichItem);
+			if (newChildren.every((c: unknown, i: number) => c === t.children[i])) return t;
+			return { ...t, children: newChildren };
+		};
+		const newChildren = (tag.children ?? []).map(enrichItem);
+		return { ...tag, children: newChildren };
+	}
+
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveCardsNavs(c, pageUrl, pagesByUrl)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
+// ─── Pagination auto resolution ───
+
+interface SiblingEntry {
+	url: string;
+	title: string;
+}
+
+/** Walk a renderable tree collecting all nav-rune tags and their item URLs in order.
+ *  Skips navs with non-sequential layouts (menubar / columns / cards) — those
+ *  aren't reading sequences. */
+function collectNavSequences(
+	renderable: unknown,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+	currentUrl: string,
+): string[][] {
+	const sequences: string[][] = [];
+	const walk = (node: unknown): void => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) node.forEach(walk);
+			return;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-rune'] === 'nav') {
+			const layout = t.attributes?.['layout'] ?? t.attributes?.['data-layout'];
+			if (layout && layout !== 'vertical') {
+				// Non-sequential layouts (menubar / columns / cards) — skip but recurse
+				(t.children ?? []).forEach(walk);
+				return;
+			}
+			// Each NavGroup is its own reading sequence. Top-level items (before
+			// the first group) are cross-section links and not a reading order,
+			// so we don't include them in any sequence.
+			const groups: any[] = [];
+			const findGroupsLocal = (n: unknown): void => {
+				if (!Tag.isTag(n as any)) {
+					if (Array.isArray(n)) n.forEach(findGroupsLocal);
+					return;
+				}
+				const node = n as any;
+				if (node.attributes?.['data-rune'] === 'nav-group') {
+					groups.push(node);
+				}
+				(node.children ?? []).forEach(findGroupsLocal);
+			};
+			(t.children ?? []).forEach(findGroupsLocal);
+
+			if (groups.length === 0) {
+				// Flat nav (no headings) — collect all items as one sequence
+				const items: string[] = [];
+				const collectFlat = (n: unknown): void => {
+					if (!Tag.isTag(n as any)) {
+						if (Array.isArray(n)) n.forEach(collectFlat);
+						return;
+					}
+					const node = n as any;
+					if (node.attributes?.['data-rune'] === 'nav-item') {
+						const href = findNavItemHref(node);
+						if (href) {
+							if (!/^[a-z]+:\/\//i.test(href)) items.push(href);
+						} else {
+							const slug = readNavItemSlug(node);
+							if (slug) {
+								const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+								if (resolved) items.push(resolved);
+							}
+						}
+					}
+					(node.children ?? []).forEach(collectFlat);
+				};
+				(t.children ?? []).forEach(collectFlat);
+				if (items.length > 0) sequences.push(items);
+			} else {
+				for (const group of groups) {
+					const items: string[] = [];
+					const collectGroup = (n: unknown): void => {
+						if (!Tag.isTag(n as any)) {
+							if (Array.isArray(n)) n.forEach(collectGroup);
+							return;
+						}
+						const node = n as any;
+						if (node.attributes?.['data-rune'] === 'nav-item') {
+							const href = findNavItemHref(node);
+							if (href) {
+								if (!/^[a-z]+:\/\//i.test(href)) items.push(href);
+							} else {
+								const slug = readNavItemSlug(node);
+								if (slug) {
+									const resolved = resolveSlugToUrl(slug, pagesByUrl, currentUrl);
+									if (resolved) items.push(resolved);
+								}
+							}
+						}
+						(node.children ?? []).forEach(collectGroup);
+					};
+					(group.children ?? []).forEach(collectGroup);
+					if (items.length > 0) sequences.push(items);
+				}
+			}
+		}
+		(t.children ?? []).forEach(walk);
+	};
+	walk(renderable);
+	return sequences;
+}
+
+/** Get siblings: pages sharing the same parentUrl, optionally widened to the whole section. */
+function getSiblingPages(
+	currentUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; order?: number }>,
+	scope: 'siblings' | 'section',
+): SiblingEntry[] {
+	const current = pagesByUrl.get(currentUrl);
+	if (!current) return [];
+
+	const pages = Array.from(pagesByUrl.values());
+	let candidates: typeof pages;
+
+	if (scope === 'section') {
+		// Find the top-level section URL: walk up from current to a page whose parent is '/' or itself.
+		let sectionRoot = currentUrl;
+		let cursor: typeof current | undefined = current;
+		while (cursor && cursor.parentUrl && cursor.parentUrl !== '/') {
+			const parent = pagesByUrl.get(cursor.parentUrl);
+			if (!parent) break;
+			sectionRoot = parent.url;
+			cursor = parent;
+		}
+		const prefix = sectionRoot.endsWith('/') ? sectionRoot : sectionRoot + '/';
+		candidates = pages.filter(
+			p => p.url === sectionRoot || p.url.startsWith(prefix),
+		);
+	} else {
+		candidates = pages.filter(p => p.parentUrl === current.parentUrl);
+	}
+
+	// Sort by frontmatter order (asc, missing → end), tie-break by URL.
+	candidates.sort((a, b) => {
+		const ao = a.order ?? Number.POSITIVE_INFINITY;
+		const bo = b.order ?? Number.POSITIVE_INFINITY;
+		if (ao !== bo) return ao - bo;
+		return a.url.localeCompare(b.url);
+	});
+
+	return candidates.map(p => ({ url: p.url, title: p.title }));
+}
+
+function pickPrevNextFromSequence(
+	sequence: string[],
+	currentUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
+): { prev: SiblingEntry | null; next: SiblingEntry | null } {
+	const idx = sequence.indexOf(currentUrl);
+	if (idx === -1) return { prev: null, next: null };
+	const prevUrl = idx > 0 ? sequence[idx - 1] : null;
+	const nextUrl = idx < sequence.length - 1 ? sequence[idx + 1] : null;
+	const lookup = (u: string | null): SiblingEntry | null => {
+		if (!u) return null;
+		const page = pagesByUrl.get(u);
+		return page ? { url: page.url, title: page.title } : { url: u, title: u };
+	};
+	return { prev: lookup(prevUrl), next: lookup(nextUrl) };
+}
+
+function buildPaginationLink(
+	target: SiblingEntry,
+	direction: 'prev' | 'next',
+	label?: string,
+): any {
+	const marker = direction === 'prev' ? '←' : '→';
+	const linkText = label ?? target.title;
+	const linkChildren = direction === 'prev'
+		? [
+			new Tag('span', { 'data-name': 'marker' }, [marker]),
+			new Tag('span', { 'data-name': 'label' }, [linkText]),
+		]
+		: [
+			new Tag('span', { 'data-name': 'label' }, [linkText]),
+			new Tag('span', { 'data-name': 'marker' }, [marker]),
+		];
+	return new Tag(
+		'a',
+		{
+			href: target.url,
+			'data-direction': direction,
+			'data-name': direction,
+		},
+		linkChildren,
+	);
+}
+
+function resolveAutoPagination(
+	renderable: unknown,
+	pageUrl: string,
+	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>,
+	rootRenderable: unknown,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const newChildren = (renderable as unknown[]).map(c =>
+				resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable)
+			);
+			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
+			return newChildren;
+		}
+		return renderable;
+	}
+
+	const tag = renderable as any;
+
+	if (tag.attributes?.['data-rune'] === 'pagination') {
+		const hasSentinel = (tag.children ?? []).some(
+			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === PAGINATION_AUTO_SENTINEL,
+		);
+		if (hasSentinel) {
+			const scopeMeta = (tag.children ?? []).find(
+				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'scope',
+			);
+			const scopeValue = scopeMeta
+				? String((scopeMeta as any).attributes?.content ?? '')
+				: String(tag.attributes?.['data-scope'] ?? '');
+			const scope = (scopeValue === 'section' ? 'section' : 'siblings') as 'siblings' | 'section';
+			const prevLabelMeta = (tag.children ?? []).find(
+				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'prev-label',
+			);
+			const nextLabelMeta = (tag.children ?? []).find(
+				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'next-label',
+			);
+			const prevLabel = prevLabelMeta ? String((prevLabelMeta as any).attributes.content ?? '') : undefined;
+			const nextLabel = nextLabelMeta ? String((nextLabelMeta as any).attributes.content ?? '') : undefined;
+
+			// Skip when current page is a section index (has children)
+			const hasChildren = Array.from(pagesByUrl.values()).some(p => p.parentUrl === pageUrl && p.url !== pageUrl);
+			if (hasChildren) {
+				return { ...tag, children: [] };
+			}
+
+			// 1. Explicit nav order from the layout cascade
+			let sequence: string[] | null = null;
+			const sequences = collectNavSequences(rootRenderable, pagesByUrl, pageUrl);
+			for (const seq of sequences) {
+				if (seq.includes(pageUrl)) {
+					sequence = seq;
+					break;
+				}
+			}
+
+			let prev: SiblingEntry | null = null;
+			let next: SiblingEntry | null = null;
+			if (sequence) {
+				({ prev, next } = pickPrevNextFromSequence(sequence, pageUrl, pagesByUrl));
+			} else {
+				// 2. Sibling pages by frontmatter order → directory order
+				const siblings = getSiblingPages(pageUrl, pagesByUrl, scope);
+				const idx = siblings.findIndex(s => s.url === pageUrl);
+				if (idx !== -1) {
+					prev = idx > 0 ? siblings[idx - 1] : null;
+					next = idx < siblings.length - 1 ? siblings[idx + 1] : null;
+				}
+			}
+
+			const links: any[] = [];
+			if (prev) links.push(buildPaginationLink(prev, 'prev', prevLabel));
+			if (next) links.push(buildPaginationLink(next, 'next', nextLabel));
+
+			// Preserve any non-sentinel/non-label meta children (none expected, but defensive)
+			const consumed = new Set([PAGINATION_AUTO_SENTINEL, 'prev-label', 'next-label', 'scope']);
+			const remaining = (tag.children ?? []).filter((c: any) => {
+				if (!Tag.isTag(c)) return true;
+				if (c.name !== 'meta') return true;
+				const field = c.attributes?.['data-field'];
+				return !consumed.has(field);
+			});
+			return { ...tag, children: [...remaining, ...links] };
+		}
+		// Explicit prev/next mode — resolve any __slug:foo hrefs through pagesByUrl
+		const newChildren = (tag.children ?? []).map((c: any) => {
+			if (!Tag.isTag(c)) return c;
+			if (c.name === 'a' && typeof c.attributes?.href === 'string' && c.attributes.href.startsWith('__slug:')) {
+				const slug = c.attributes.href.slice('__slug:'.length);
+				const resolvedUrl = resolveSlugToUrl(slug, pagesByUrl, pageUrl);
+				if (resolvedUrl) {
+					const page = pagesByUrl.get(resolvedUrl);
+					const newLabel = page?.title ?? slug;
+					// Replace label text if user didn't override (label child has same text as slug)
+					const newChildren = (c.children ?? []).map((child: any) => {
+						if (Tag.isTag(child) && child.attributes?.['data-name'] === 'label') {
+							const currentLabel = (child.children ?? []).filter((x: any) => typeof x === 'string').join('');
+							if (currentLabel === slug) {
+								return { ...child, children: [newLabel] };
+							}
+						}
+						return child;
+					});
+					return { ...c, attributes: { ...c.attributes, href: resolvedUrl }, children: newChildren };
+				}
+			}
+			return c;
+		});
+		return { ...tag, children: newChildren };
+	}
+
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
 // ─── Blog pipeline helpers ───
 
 interface BlogPostData {
@@ -1233,6 +1882,43 @@ function resolveBlogPosts(
 }
 
 /**
+ * Apply core auto-resolutions (breadcrumb, nav, collapsible, cards, pagination,
+ * blog, xref) to an arbitrary renderable tree using the same aggregated data
+ * the pipeline produces.
+ *
+ * Used by callers that need to resolve sentinels in renderables outside the
+ * per-page pipeline — most notably layout regions, which are parsed once but
+ * need per-page URL context for auto-open and auto-pagination.
+ */
+export function resolveCoreSentinels(
+	renderable: unknown,
+	pageUrl: string,
+	coreData: {
+		breadcrumbPaths: Map<string, string[]>;
+		pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>;
+		allPosts: BlogPostData[];
+		registry: Readonly<EntityRegistry>;
+	},
+	ctx: PipelineContext,
+	/** Extra trees (e.g. layout regions + page content) to scan when looking
+	 *  for nav sequences during auto-pagination. Required when calling against
+	 *  a layout region where the sidebar nav lives in a different region. */
+	navSearchScope?: unknown[],
+): unknown {
+	let result = resolveAutoBreadcrumbs(renderable, pageUrl, coreData.breadcrumbPaths, coreData.pagesByUrl, ctx);
+	result = resolveAutoNavs(result, pageUrl, coreData.pagesByUrl, ctx);
+	result = resolveCollapsibleNavs(result, pageUrl, coreData.pagesByUrl);
+	result = resolveCardsNavs(result, pageUrl, coreData.pagesByUrl);
+	const searchRoot = navSearchScope && navSearchScope.length > 0
+		? [result, ...navSearchScope]
+		: result;
+	result = resolveAutoPagination(result, pageUrl, coreData.pagesByUrl, searchRoot);
+	result = resolveBlogPosts(result, coreData.allPosts, ctx, pageUrl);
+	result = resolveXrefs(result, pageUrl, coreData.registry, ctx);
+	return result;
+}
+
+/**
  * Core cross-page pipeline hooks.
  * Run for every site, before any plugin hooks.
  * Registers page and heading entities, aggregates the page tree and breadcrumb paths,
@@ -1263,6 +1949,7 @@ export const corePipelineHooks: PluginPipelineHooks = {
 					description: page.frontmatter.description,
 					date: page.frontmatter.date,
 					order: page.frontmatter.order,
+					icon: page.frontmatter.icon,
 				},
 			});
 
@@ -1288,13 +1975,16 @@ export const corePipelineHooks: PluginPipelineHooks = {
 	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
 		const pageEntities = registry.getAll('page') as unknown as Array<{
 			id: string;
-			data: { url: string; title: string; parentUrl: string };
+			data: { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number };
 		}>;
 
 		const pages = pageEntities.map(e => ({
 			url: e.data.url,
 			title: e.data.title,
 			parentUrl: e.data.parentUrl,
+			description: e.data.description,
+			icon: e.data.icon,
+			order: e.data.order,
 		}));
 
 		const pageTree = buildPageTree(pages);
@@ -1345,6 +2035,25 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			page.url,
 			coreData.pagesByUrl,
 			ctx,
+		);
+
+		renderable = resolveCollapsibleNavs(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
+		);
+
+		renderable = resolveCardsNavs(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
+		);
+
+		renderable = resolveAutoPagination(
+			renderable,
+			page.url,
+			coreData.pagesByUrl,
+			renderable,
 		);
 
 		renderable = resolveBlogPosts(

@@ -572,7 +572,14 @@
 			"dataRune": "nav",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"layout": {
+					"source": "attribute",
+					"classPattern": ".rf-nav--{value}",
+					"dataAttribute": "data-layout"
+				}
+			}
 		},
 		"NavGroup": {
 			"block": "nav-group",
@@ -582,6 +589,21 @@
 			"childOrder": [
 				"{content}"
 			]
+		},
+		"Pagination": {
+			"block": "pagination",
+			"root": ".rf-pagination",
+			"dataRune": "pagination",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"scope": {
+					"source": "meta",
+					"default": "siblings",
+					"dataAttribute": "data-scope"
+				}
+			}
 		},
 		"NavItem": {
 			"block": "nav-item",

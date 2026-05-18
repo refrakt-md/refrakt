@@ -1,6 +1,6 @@
 {% layout %}
 {% region name="nav" %}
-{% nav %}
+{% nav collapsible=true %}
 ## Rune Catalog
 
 - rune-catalog
@@ -48,6 +48,7 @@
 
 - layout
 - nav
+- pagination
 - toc
 - breadcrumb
 - blog
@@ -137,5 +138,9 @@
 - plan-activity
 
 {% /nav %}
+{% /region %}
+
+{% region name="pagination" %}
+{% pagination auto=true /%}
 {% /region %}
 {% /layout %}

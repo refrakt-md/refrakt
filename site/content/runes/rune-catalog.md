@@ -58,7 +58,8 @@ These runes are available out of the box — no extra installation needed. They 
 | Rune | Description |
 |------|-------------|
 | [layout](/runes/layout) | Structural runes for defining page layouts and named content regions (includes `{% region %}`) |
-| [nav](/runes/nav) | Navigation structure for sidebar and site navigation |
+| [nav](/runes/nav) | One primitive for sidebars, header menubars, footer columns, and section landings |
+| [pagination](/runes/pagination) | Sequential prev/next links for ordered docs and tutorials |
 | [toc](/runes/toc) | Auto-generated table of contents from page headings |
 | [breadcrumb](/runes/breadcrumb) | Navigation breadcrumbs showing page hierarchy |
 | error | Internal rune — displays validation errors as table rows (not used directly in content) |
@@ -66,6 +67,18 @@ These runes are available out of the box — no extra installation needed. They 
 ## Official Packages
 
 Official rune packages are maintained by the refrakt team and styled by the Lumina theme. Install the packages you need and add them to your config. Each package page includes installation instructions, a full rune reference, and documentation for any additional features like CLI commands or pipeline hooks.
+
+{% nav layout="cards" %}
+- [@refrakt-md/marketing](/runes/marketing)
+- [@refrakt-md/docs](/runes/docs)
+- [@refrakt-md/design](/runes/design)
+- [@refrakt-md/learning](/runes/learning)
+- [@refrakt-md/storytelling](/runes/storytelling)
+- [@refrakt-md/business](/runes/business)
+- [@refrakt-md/places](/runes/places)
+- [@refrakt-md/media](/runes/media)
+- [@refrakt-md/plan](/runes/plan)
+{% /nav %}
 
 ### [@refrakt-md/marketing](/runes/marketing)
 

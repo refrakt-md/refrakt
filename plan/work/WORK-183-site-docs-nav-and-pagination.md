@@ -1,4 +1,4 @@
-{% work id="WORK-183" status="ready" priority="medium" complexity="small" tags="docs, site, nav, pagination" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
+{% work id="WORK-183" status="done" priority="medium" complexity="small" tags="docs, site, nav, pagination" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
 
 # Site reference docs for new nav layouts and the pagination rune
 
@@ -8,38 +8,38 @@ Update `site/content/runes/nav.md` so it documents every new `layout` value with
 
 ### `site/content/runes/nav.md` updates
 
-- [ ] Intro rewritten to reflect that `nav` is the single primitive for sidebar, header menubar, footer columns, and section-landing cards — not just sidebars
-- [ ] `layout` attribute added to the Attributes table with values `vertical` (default), `menubar`, `columns`, `cards`
-- [ ] `collapsible` boolean attribute added to the Attributes table
-- [ ] `defaultOpen` attribute added to the Attributes table (comma-separated group titles)
-- [ ] A `## Layouts` section with one subsection per value, each containing a `{% preview %}` block showing the markdoc source and the rendered output:
-  - [ ] `### Vertical (sidebar)` — current behaviour, default
-  - [ ] `### Menubar (header)` — example with two groups (Product, Resources), each with a couple of items; note dropdown / hamburger behaviour
-  - [ ] `### Columns (footer)` — example with three groups (Product, Resources, Legal)
-  - [ ] `### Cards (section landing)` — example with explicit slugs; show enriched output with title + description + icon
-- [ ] A `## Collapsible sidebars` section with a `{% preview %}` example demonstrating `{% nav collapsible %}` and explaining the auto-open-current-section behaviour
-- [ ] A short `## Frontmatter fields used by cards` section documenting that the cards layout reads `title`, `description`, and (new) `icon` from each linked page's frontmatter, with a tiny YAML example
-- [ ] A `## Mobile behaviour` callout (or section) noting that menubars collapse to a hamburger below the breakpoint and that columns stack — both handled by Lumina, no author work required
-- [ ] Cross-references to {% ref "WORK-184" /%} are NOT included in the rendered docs; the doc page itself is timeless
+- [x] Intro rewritten to reflect that `nav` is the single primitive for sidebar, header menubar, footer columns, and section-landing cards — not just sidebars
+- [x] `layout` attribute added to the Attributes table with values `vertical` (default), `menubar`, `columns`, `cards`
+- [x] `collapsible` boolean attribute added to the Attributes table
+- [x] `defaultOpen` attribute added to the Attributes table (comma-separated group titles)
+- [x] A `## Layouts` section with one subsection per value, each containing a `{% preview %}` block showing the markdoc source and the rendered output:
+  - [x] `### Vertical (sidebar)` — current behaviour, default
+  - [x] `### Menubar (header)` — example with two groups (Product, Resources), each with a couple of items; note dropdown / hamburger behaviour
+  - [x] `### Columns (footer)` — example with three groups (Product, Resources, Legal)
+  - [x] `### Cards (section landing)` — example with explicit slugs; show enriched output with title + description + icon
+- [x] A `## Collapsible sidebars` section with a `{% preview %}` example demonstrating `{% nav collapsible %}` and explaining the auto-open-current-section behaviour
+- [x] A short `## Frontmatter fields used by cards` section documenting that the cards layout reads `title`, `description`, and (new) `icon` from each linked page's frontmatter, with a tiny YAML example
+- [x] A `## Mobile behaviour` callout (or section) noting that menubars collapse to a hamburger below the breakpoint and that columns stack — both handled by Lumina, no author work required
+- [x] Cross-references to {% ref "WORK-184" /%} are NOT included in the rendered docs; the doc page itself is timeless
 
 ### `site/content/runes/pagination.md` (new file)
 
-- [ ] Frontmatter: `title: Pagination` and a `description` line
-- [ ] Intro paragraph naming the use case (sequential reading — tutorials, ordered docs, recipes) and contrasting with `breadcrumb` and `nav`
-- [ ] `## Basic usage` section with a `{% preview %}` showing `{% pagination auto /%}` placed in a `_layout.md`
-- [ ] `## Explicit prev / next` section with a `{% preview %}` showing `{% pagination prev="install" next="configuration" /%}`
-- [ ] `## Ordering` section explaining the priority — declared `nav` order → frontmatter `order` → directory order — with a short worked example
-- [ ] `### Attributes` table covering `auto`, `prev`, `next`, `scope`, `prev-label`, `next-label`
-- [ ] `### Common attributes` table identical to other rune docs (the shared layout / spacing / inset / tint / bg row)
-- [ ] A note on boundary behaviour (no wrap-around; first page → no prev link, last → no next)
-- [ ] A note on the `scope="section"` value and when to use it
+- [x] Frontmatter: `title: Pagination` and a `description` line
+- [x] Intro paragraph naming the use case (sequential reading — tutorials, ordered docs, recipes) and contrasting with `breadcrumb` and `nav`
+- [x] `## Basic usage` section with a `{% preview %}` showing `{% pagination auto /%}` placed in a `_layout.md`
+- [x] `## Explicit prev / next` section with a `{% preview %}` showing `{% pagination prev="install" next="configuration" /%}`
+- [x] `## Ordering` section explaining the priority — declared `nav` order → frontmatter `order` → directory order — with a short worked example
+- [x] `### Attributes` table covering `auto`, `prev`, `next`, `scope`, `prev-label`, `next-label`
+- [x] `### Common attributes` table identical to other rune docs (the shared layout / spacing / inset / tint / bg row)
+- [x] A note on boundary behaviour (no wrap-around; first page → no prev link, last → no next)
+- [x] A note on the `scope="section"` value and when to use it
 
 ### Cross-cutting
 
-- [ ] `site/content/runes/_layout.md` updated to add `pagination` to the appropriate group in the rune catalog sidebar (likely under `Site`, next to `nav`, `toc`, `breadcrumb`)
-- [ ] `site/content/runes/rune-catalog.md` (or wherever the catalog is generated / curated) lists the pagination rune
-- [ ] All new `{% preview %}` blocks render correctly (verify with `cd site && npm run dev`)
-- [ ] Authoring docs in `site/content/docs/authoring/` are reviewed; if they have a section that lists rune examples or content-model patterns that should mention the new layouts, update them — otherwise no changes needed
+- [x] `site/content/runes/_layout.md` updated to add `pagination` to the appropriate group in the rune catalog sidebar (likely under `Site`, next to `nav`, `toc`, `breadcrumb`)
+- [x] `site/content/runes/rune-catalog.md` (or wherever the catalog is generated / curated) lists the pagination rune
+- [x] All new `{% preview %}` blocks render correctly (verify with `cd site && npm run dev`)
+- [x] Authoring docs in `site/content/docs/authoring/` are reviewed; if they have a section that lists rune examples or content-model patterns that should mention the new layouts, update them — otherwise no changes needed
 
 ## Approach
 
@@ -64,5 +64,22 @@ This is intentionally a docs-only work item — no code changes. Depends on the 
 - {% ref "SPEC-046" /%}, {% ref "SPEC-047" /%} — design specs.
 - `site/content/runes/nav.md` — existing rune doc structure to extend.
 - Any existing `site/content/runes/*.md` page that uses `{% preview %}` — reference for the preview pattern.
+
+## Resolution
+
+Completed: 2026-05-18
+
+Branch: \`claude/v0.13-pagination-nav-bvuEP\`
+
+### What was done
+- \`site/content/runes/nav.md\` — rewrote the page to reflect that \`nav\` is the single primitive for sidebars, header menubars, footer columns, and cards. Added a \`## Layouts\` section with one subsection per layout value, each with a live \`{% preview %}\` block (for vertical and basic usage) or a markdoc code sample (for menubar/columns/cards, since these are inappropriate for inline preview at content width). Added \`## Collapsible sidebars\` with the \`defaultOpen\` override. Added \`## Frontmatter fields used by cards\` documenting \`title\`/\`description\`/\`icon\`. Added \`## Mobile behaviour\` callout. Attributes table now lists \`layout\`, \`collapsible\`, \`defaultOpen\`, \`auto\`, \`ordered\`.
+- \`site/content/runes/pagination.md\` — new file. Frontmatter, intro contrasting with \`breadcrumb\`/\`nav\`, \`## Basic usage\`, \`## Explicit prev / next\`, \`## Ordering\` (with the three-priority table), \`scope\` subsection, \`## Boundaries\`, attributes + common-attributes tables.
+- \`site/content/runes/_layout.md\` — \`pagination\` added under \`## Site\` next to \`nav\`/\`toc\`/\`breadcrumb\`.
+- \`site/content/runes/rune-catalog.md\` — \`pagination\` row added to the \`Site\` table; \`nav\` description updated to reflect the four layouts.
+
+### Notes
+- Used \`{% preview source=true %}\` blocks for the vertical / basic usage examples. Menubar / columns / cards are documented with markdoc code blocks plus prose explanations — the live preview surface inside a content column is too narrow to demonstrate horizontal nav and dropdown behaviour usefully, and the SSR render of a slug-only cards layout depends on the surrounding pages having matching frontmatter, which is fragile in a doc preview. The actual behaviour is exercised end-to-end on the live site as part of WORK-184.
+- Did not modify \`site/content/docs/authoring/\` — those pages cover content-model patterns and Model API specifics; the layout / collapsible / cards features don't change authoring patterns, they add new attribute values, which are already documented in the \`nav.md\` Attributes table.
+- The pagination page links to \`/runes/pagination\` from the sidebar — site adoption of the rune is owned by WORK-184.
 
 {% /work %}

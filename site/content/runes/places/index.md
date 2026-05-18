@@ -1,6 +1,7 @@
 ---
 title: "@refrakt-md/places"
 description: Event planning and location runes for travel guides and venue pages
+icon: map-pin
 ---
 
 # @refrakt-md/places

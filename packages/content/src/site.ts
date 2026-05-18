@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
@@ -177,6 +177,41 @@ async function processContentTree(
 
   const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
 
+  // Apply auto-resolutions to layout regions per page. Layouts are parsed once
+  // and shared across pages, but the auto-open / auto-pagination sentinels need
+  // per-page context (current URL, sibling order). The pipeline already wired
+  // core hooks against each page's renderable; here we apply the same resolvers
+  // to every region's content with the same aggregated data.
+  const coreData = aggregated['__core__'] as Parameters<typeof resolveCoreSentinels>[2] | undefined;
+  if (coreData) {
+    for (const page of enrichedPages) {
+      if (page.layout.regions.size === 0) continue;
+      const ctx = makeContextForRegions(warnings, page.route.url);
+      // Build the global search scope: page.renderable + every region's content.
+      // This gives auto-pagination visibility into navs that live in other
+      // regions (e.g. the sidebar nav in the `nav` region) so prev/next can
+      // follow the declared reading order.
+      const navSearchScope: unknown[] = [page.renderable];
+      for (const region of page.layout.regions.values()) {
+        navSearchScope.push(region.content);
+      }
+      const resolvedRegions = new Map<string, ReturnType<typeof Map.prototype.get>>();
+      let mutated = false;
+      for (const [name, region] of page.layout.regions) {
+        const resolved = resolveCoreSentinels(region.content, page.route.url, coreData, ctx, navSearchScope) as typeof region.content;
+        if (resolved !== region.content) {
+          mutated = true;
+          resolvedRegions.set(name, { ...region, content: resolved });
+        } else {
+          resolvedRegions.set(name, region);
+        }
+      }
+      if (mutated) {
+        (page.layout as { regions: typeof page.layout.regions }).regions = resolvedRegions as typeof page.layout.regions;
+      }
+    }
+  }
+
   return {
     tree,
     pages: enrichedPages,
@@ -185,6 +220,14 @@ async function processContentTree(
     pipelineStats: stats,
     aggregated,
     partials: partialFiles,
+  };
+}
+
+function makeContextForRegions(warnings: PipelineWarning[], url: string) {
+  return {
+    info(message: string, infoUrl?: string) { warnings.push({ severity: 'info', phase: 'postProcess', pluginName: '__core__/regions', url: infoUrl ?? url, message }); },
+    warn(message: string, warnUrl?: string) { warnings.push({ severity: 'warning', phase: 'postProcess', pluginName: '__core__/regions', url: warnUrl ?? url, message }); },
+    error(message: string, errUrl?: string) { warnings.push({ severity: 'error', phase: 'postProcess', pluginName: '__core__/regions', url: errUrl ?? url, message }); },
   };
 }
 

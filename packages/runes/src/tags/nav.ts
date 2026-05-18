@@ -8,6 +8,9 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 /** Sentinel meta property written by nav auto mode; consumed by corePipelineHooks.postProcess */
 export const NAV_AUTO_SENTINEL = '__nav-auto';
 
+/** Marker attribute placed on each NavGroup of a collapsible nav; resolved during postProcess */
+export const NAV_COLLAPSED_AUTO = 'auto';
+
 const navItem = createContentModelSchema({
   contentModel: {
     type: 'sequence',
@@ -103,6 +106,9 @@ export const nav = createContentModelSchema({
   attributes: {
     ordered: { type: Boolean, required: false, description: 'Use numbered list for navigation items' },
     auto: { type: Boolean, required: false, description: 'Automatically generate from child pages' },
+    layout: { type: String, required: false, matches: ['vertical', 'menubar', 'columns', 'cards'], description: 'Presentation layout: sidebar (vertical), horizontal menubar (header), column grid (footer), or cards (section landing). Defaults to vertical.' },
+    collapsible: { type: Boolean, required: false, description: 'Make each group collapsible. The group containing the current page auto-expands; others start collapsed. Only meaningful for vertical layout.' },
+    defaultOpen: { type: String, required: false, description: 'Comma-separated group titles to expand by default, overriding the URL-driven auto-open behaviour.' },
   },
   contentModel: {
     type: 'custom',
@@ -110,19 +116,47 @@ export const nav = createContentModelSchema({
     description: 'Top-level (#) headings become nav groups; the list directly under each heading becomes the group\'s items. Items are page slugs — wrap in markdown links to set custom labels, or use plain text to resolve the page title. Without headings, a single list becomes a flat nav.',
   },
   transform(resolved, attrs, config) {
+    const collapsible = Boolean(attrs.collapsible);
+
+    const forwardLayout = (tag: Tag): Tag => {
+      if (attrs.layout) tag.attributes.layout = attrs.layout;
+      if (collapsible) {
+        tag.attributes['data-collapsible'] = 'true';
+        const existing = (tag.attributes.class as string | undefined) ?? '';
+        tag.attributes.class = [existing, 'rf-nav--collapsible'].filter(Boolean).join(' ');
+        if (typeof attrs.defaultOpen === 'string' && attrs.defaultOpen.trim()) {
+          tag.attributes['data-default-open'] = attrs.defaultOpen.trim();
+        }
+      }
+      return tag;
+    };
+
+    const maybeWithTrigger = (children: RenderableTreeNode[]): RenderableTreeNode[] => {
+      if (attrs.layout === 'menubar') {
+        const trigger = new Markdoc.Tag('button', {
+          'data-name': 'trigger',
+          type: 'button',
+          'aria-label': 'Toggle navigation',
+          'aria-expanded': 'false',
+        }, []);
+        return [trigger, ...children];
+      }
+      return children;
+    };
+
     if (attrs.auto) {
       // Emit a placeholder with an empty nav and a sentinel meta tag.
       // The core post-process hook will replace this with resolved child page items.
       const sentinelMeta = new Markdoc.Tag('meta', { 'data-field': NAV_AUTO_SENTINEL, content: 'true' });
 
-      return createComponentRenderable({ rune: 'nav',
+      return forwardLayout(createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         properties: {
           group: [],
           item: [],
         },
-        children: [sentinelMeta],
-      });
+        children: maybeWithTrigger([sentinelMeta]),
+      }));
     }
 
     const children = new RenderableNodeCursor(
@@ -145,6 +179,12 @@ export const nav = createContentModelSchema({
     if (hasGroups) {
       const { topLevel, groups } = buildGroups(children.toArray());
 
+      if (collapsible) {
+        for (const group of groups) {
+          group.attributes['data-collapsed'] = NAV_COLLAPSED_AUTO;
+        }
+      }
+
       const topLevelContainer = topLevel.length > 0
         ? new Markdoc.Tag('div', { 'data-name': 'top-level' }, [new Markdoc.Tag('ul', {}, topLevel)])
         : null;
@@ -154,28 +194,28 @@ export const nav = createContentModelSchema({
           .flatMap(ul => ul.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'))
       );
 
-      return createComponentRenderable({ rune: 'nav',
+      return forwardLayout(createComponentRenderable({ rune: 'nav',
         tag: 'nav',
         class: attrs.ordered ? 'ordered' : undefined,
         properties: {
           group: groups,
           item: [...topLevel, ...allGroupItems],
         },
-        children: topLevelContainer ? [topLevelContainer, ...groups] : groups,
-      });
+        children: maybeWithTrigger(topLevelContainer ? [topLevelContainer, ...groups] : groups),
+      }));
     }
 
     // Flat list (no groups)
     const allItems = children.flatten().tag('li');
 
-    return createComponentRenderable({ rune: 'nav',
+    return forwardLayout(createComponentRenderable({ rune: 'nav',
       tag: 'nav',
       class: attrs.ordered ? 'ordered' : undefined,
       properties: {
         group: [],
         item: allItems,
       },
-      children: children.toArray(),
-    });
+      children: maybeWithTrigger(children.toArray()),
+    }));
   },
 });

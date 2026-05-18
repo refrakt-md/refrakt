@@ -211,3 +211,21 @@
 		display: none;
 	}
 }
+
+/* Site footer */
+.rf-footer {
+	padding: 2.5rem 1.5rem 2rem;
+	border-top: 1px solid var(--rf-color-border);
+	background: var(--rf-color-bg);
+	color: var(--rf-color-muted);
+	font-size: 0.875rem;
+}
+.rf-footer > * {
+	max-width: var(--rf-content-max, 80rem);
+	margin-inline: auto;
+}
+.rf-footer p {
+	margin: 1.5rem 0 0;
+	font-size: 0.8rem;
+	color: var(--rf-color-muted);
+}
