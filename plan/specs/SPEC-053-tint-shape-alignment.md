@@ -252,7 +252,7 @@ The transform engine (`packages/transform/src/engine.ts`) emits these properties
 
 This is a v1.0 breaking change. Migration is mechanical:
 
-1. **Codemod for tint configs.** Rename five field names (`background → bg`, `primary → text`, `secondary → muted`, `accent → primary`) and one top-level field (`mode → lockMode`). Drop `mode: 'auto'` entries (now expressed as absence). A simple AST or regex codemod against `.ts` / `.json` config files handles it.
+1. **Migration recipe in the docs.** Rename five field names (`background → bg`, `primary → text`, `secondary → muted`, `accent → primary`) and one top-level field (`mode → lockMode`). Drop `mode: 'auto'` entries (now expressed as absence). A documented set of regex/`sed` rules in the migration guide handles it — given the small in-the-wild surface (essentially lumina and any plugin that ships tints; no end users have written their own), a dedicated `refrakt migrate tints` CLI command isn't worth the permanent surface.
 2. **Codemod for CSS that reads `--tint-*` properties.** Only sites that have hand-written CSS reaching into the tint custom properties need adjustment — most users don't. Documented in the migration note.
 3. **v1.0 release notes.** Document the renames in the migration guide with a before/after example. Note that the `tint=""` rune attribute and `data-tint` HTML attribute are unchanged — only the *internal* token names move.
 
@@ -269,8 +269,9 @@ The user-facing surface — `tint="warm"` on a rune, `tint: warm` in frontmatter
 5. **Update lumina's tint configs** in `packages/lumina/src/config.ts` — apply the renames to `base`, `subtle`, `warm`, `cool`, `dark`.
 6. **Type `SiteConfig.tints`** in `packages/types/src/theme.ts` as `Record<string, TintDefinition>`. Add the import.
 7. **Update plugin tints.** Any plugins that ship their own tint definitions get the rename. (Likely scope: `packages/runes` and any plugin under `plugins/` that defines tints — a small audit pass.)
-8. **Write the codemod** as a one-off migration script in `packages/cli/` or as a documented set of `sed`-style rules in the migration guide.
-9. **Update tests.** The CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` and any tint-specific unit tests get renamed selectors.
+8. **Document the migration recipe** in the v1.0 migration guide — a small set of regex/`sed` rules covering the five field renames and the `mode → lockMode` swap. No dedicated CLI command.
+9. **Drop the deprecated `RefraktConfig.tints` flat-shape field** in `packages/types/src/theme.ts`. Already marked `@deprecated`; v1.0 is the moment to remove rather than continue carrying it.
+10. **Update tests.** The CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` and any tint-specific unit tests get renamed selectors.
 
 -----
 
@@ -283,7 +284,8 @@ The user-facing surface — `tint="warm"` on a rune, `tint: warm` in frontmatter
 - [ ] `tint.css` updated with the new property names; CSS cascade behaviour identical to before (verified by visual diff against a baseline)
 - [ ] Lumina's five built-in tints (`base`, `subtle`, `warm`, `cool`, `dark`) migrated to the new shape and render identically to before
 - [ ] Every plugin under `plugins/` that ships tint definitions is migrated
-- [ ] A codemod or documented migration recipe exists for user config files
+- [ ] A documented migration recipe exists in the v1.0 migration guide (regex/`sed` rules; no CLI command)
+- [ ] The deprecated `RefraktConfig.tints` flat-shape field is removed
 - [ ] v1.0 migration guide documents the field renames with before/after examples
 - [ ] Tint runtime tests pass with the new shape; CSS coverage tests updated
 - [ ] At least one *site-level* user-defined tint example exists in the design-rune docs pages (per SPEC-051's acceptance criteria for `/docs/themes/lumina/presets/*`) — gives the site-author authoring surface visibility now that SPEC-052 makes it relevant
@@ -297,15 +299,9 @@ The user-facing surface — `tint="warm"` on a rune, `tint: warm` in frontmatter
 - **Background preset alignment** — `BgPresetDefinition` is a CSS style bag, not a token override, so it doesn't have the same vocabulary issue. Out of scope here.
 - **Per-tint typography** — tints stay colour-only. Fonts belong to theme presets (SPEC-051).
 - **Runtime support for both old and new field names** — explicit hard break; no migration shim.
-
------
-
-## Open Questions
-
-- **Should `extends` support arrays for multi-extend?** Probably not — composition through frontmatter `presets: []` covers multi-source merging at a different level. Single-extend keeps the tint definition simple. Worth confirming.
-- **Should `TintTokens.surface` map to `color.surface.base` or expose all four surface elevations?** Today's flat `surface` maps to `--rf-color-surface` (which is `color.surface.base` post-SPEC-048). Lean: keep flat, document the mapping. If a tint really needs to vary hover/active/raised surfaces, that's probably a sign it should be a fuller preset.
-- **Codemod authoring location.** Could live in `packages/cli` as `refrakt migrate tints`, or as a one-off script shipped in the migration guide, or simply documented as `sed` rules. Lean toward CLI command since refrakt already has a `plan migrate filenames` precedent — but this is a v1.0 *one-time* migration, so it might not justify permanent CLI surface. Worth deciding during implementation.
-- **What about `RefraktConfig.tints` at the deprecated flat-shape top level?** It's already marked `@deprecated`. Should this spec also drop it, or leave the deprecation on its existing schedule? Lean drop-with-v1.0, since we're already breaking the tint surface.
-- **Should the per-tint merge be deepened?** Today's `mergeThemeConfig` does `{ ...base.tints, ...overrides.tints }` — a same-name tint *replaces* its base entirely. With `extends` present, deepening the implicit merge becomes less urgent (users have an explicit override path). But there's a reasonable argument for deep-merging same-name tints automatically — site-level `tints: { warm: { light: { primary: '#x' } } }` could just-work without requiring `extends: 'warm'`. Lean: keep shallow merge + push `extends` as the idiom. Deep-merge feels nice but introduces implicit behaviour that hides what's actually being overridden. Worth confirming during implementation.
+- **Multi-source `extends`** — `extends` accepts a single tint name, not an array. Composition across multiple tints belongs at a different level (frontmatter `presets: []` per SPEC-052); single-extend keeps the tint definition shape simple.
+- **Per-elevation surface tokens in tints** — `TintTokens.surface` stays flat (single field, maps to `color.surface.base`). If a tint needs to vary hover/active/raised surfaces, that's a signal it should be a fuller preset, not a tint.
+- **Deep-merging same-name tints** — `mergeThemeConfig` keeps the existing shallow merge: a site-level tint with a name that matches a theme tint *replaces* it. The `extends` field is *the* way to derive a variant. Deep-merging would feel ergonomic but hides what's actually being overridden; explicit `extends` keeps overrides legible.
+- **A dedicated CLI migration command** — no `refrakt migrate tints`. The migration surface is small enough (lumina + plugins that ship tints; no end users in practice) that a documented regex/`sed` recipe in the v1.0 migration guide is the right weight. CLI surface is permanent; this migration is a one-time event.
 
 {% /spec %}
