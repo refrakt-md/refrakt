@@ -131,6 +131,19 @@ export const nav = createContentModelSchema({
       return tag;
     };
 
+    const maybeWithTrigger = (children: RenderableTreeNode[]): RenderableTreeNode[] => {
+      if (attrs.layout === 'menubar') {
+        const trigger = new Markdoc.Tag('button', {
+          'data-name': 'trigger',
+          type: 'button',
+          'aria-label': 'Toggle navigation',
+          'aria-expanded': 'false',
+        }, []);
+        return [trigger, ...children];
+      }
+      return children;
+    };
+
     if (attrs.auto) {
       // Emit a placeholder with an empty nav and a sentinel meta tag.
       // The core post-process hook will replace this with resolved child page items.
@@ -142,7 +155,7 @@ export const nav = createContentModelSchema({
           group: [],
           item: [],
         },
-        children: [sentinelMeta],
+        children: maybeWithTrigger([sentinelMeta]),
       }));
     }
 
@@ -188,7 +201,7 @@ export const nav = createContentModelSchema({
           group: groups,
           item: [...topLevel, ...allGroupItems],
         },
-        children: topLevelContainer ? [topLevelContainer, ...groups] : groups,
+        children: maybeWithTrigger(topLevelContainer ? [topLevelContainer, ...groups] : groups),
       }));
     }
 
@@ -202,7 +215,7 @@ export const nav = createContentModelSchema({
         group: [],
         item: allItems,
       },
-      children: children.toArray(),
+      children: maybeWithTrigger(children.toArray()),
     }));
   },
 });

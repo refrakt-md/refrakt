@@ -15,6 +15,17 @@ import { sectionNavBehavior } from './behaviors/section-nav.js';
 import { galleryBehavior } from './behaviors/gallery.js';
 import { juxtaposeBehavior } from './behaviors/juxtapose.js';
 import { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
+import { navMenubarBehavior } from './behaviors/nav-menubar.js';
+import type { CleanupFn } from './types.js';
+
+function navBehavior(el: HTMLElement): CleanupFn {
+	const cleanups: CleanupFn[] = [];
+	const collapsible = navCollapsibleBehavior(el);
+	if (collapsible) cleanups.push(collapsible);
+	const menubar = navMenubarBehavior(el);
+	if (menubar) cleanups.push(menubar);
+	return () => cleanups.forEach((fn) => fn?.());
+}
 
 /** Map of rune type → behavior function (mutable — packages can register additional behaviors) */
 const behaviors: Record<string, BehaviorFn> = {
@@ -28,7 +39,7 @@ const behaviors: Record<string, BehaviorFn> = {
 	preview: previewBehavior,
 	gallery: galleryBehavior,
 	juxtapose: juxtaposeBehavior,
-	nav: navCollapsibleBehavior,
+	nav: navBehavior,
 };
 
 /**
@@ -160,6 +171,7 @@ export { searchBehavior } from './behaviors/search.js';
 export { galleryBehavior } from './behaviors/gallery.js';
 export { juxtaposeBehavior } from './behaviors/juxtapose.js';
 export { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
+export { navMenubarBehavior } from './behaviors/nav-menubar.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
 
 // Web component elements — framework-neutral custom elements for interactive runes
