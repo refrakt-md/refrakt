@@ -48,6 +48,7 @@
 
 - layout
 - nav
+- pagination
 - toc
 - breadcrumb
 - blog

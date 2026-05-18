@@ -58,7 +58,8 @@ These runes are available out of the box — no extra installation needed. They 
 | Rune | Description |
 |------|-------------|
 | [layout](/runes/layout) | Structural runes for defining page layouts and named content regions (includes `{% region %}`) |
-| [nav](/runes/nav) | Navigation structure for sidebar and site navigation |
+| [nav](/runes/nav) | One primitive for sidebars, header menubars, footer columns, and section landings |
+| [pagination](/runes/pagination) | Sequential prev/next links for ordered docs and tutorials |
 | [toc](/runes/toc) | Auto-generated table of contents from page headings |
 | [breadcrumb](/runes/breadcrumb) | Navigation breadcrumbs showing page hierarchy |
 | error | Internal rune — displays validation errors as table rows (not used directly in content) |
