@@ -1,11 +1,10 @@
 /* Hint */
 .rf-hint {
 	--hint-color: var(--rf-color-info);
-	--hint-bg: var(--rf-color-info-bg);
-	border-left: 3px solid var(--hint-color);
 	padding: 0.875rem 1.25rem;
-	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
-	background: var(--hint-bg);
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
 }
 .rf-hint__header {
 	margin-bottom: 0.375rem;
@@ -56,21 +55,19 @@
 .rf-hint__body p:last-child {
 	margin-bottom: 0;
 }
+/* Per-variant colour drives the icon and title only — surface stays
+   neutral so the hint reads as a quiet panel, not a saturated banner. */
 .rf-hint--note {
 	--hint-color: var(--rf-color-info);
-	--hint-bg: var(--rf-color-info-bg);
 }
 .rf-hint--warning {
 	--hint-color: var(--rf-color-warning);
-	--hint-bg: var(--rf-color-warning-bg);
 }
 .rf-hint--caution {
 	--hint-color: var(--rf-color-danger);
-	--hint-bg: var(--rf-color-danger-bg);
 }
 .rf-hint--check {
 	--hint-color: var(--rf-color-success);
-	--hint-bg: var(--rf-color-success-bg);
 }
 
 /* Context-aware: compact hint when nested inside a hero */
@@ -88,6 +85,5 @@
 .rf-hint--in-feature {
 	margin: 0.75rem 0 0;
 	padding: 0.5rem 0.875rem;
-	border-left-width: 2px;
 	font-size: 0.85rem;
 }
