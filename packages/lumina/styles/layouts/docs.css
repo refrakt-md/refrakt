@@ -14,16 +14,20 @@
 	display: flex;
 	align-items: center;
 	gap: 1rem;
-	padding: 1.125rem 1.5rem;
+	padding: 0.625rem 1.5rem;
 }
 .rf-docs-header__inner .rf-search-trigger {
 	margin-left: auto;
+	order: 1;
+}
+.rf-docs-header__inner > rf-nav {
+	order: 2;
 }
 .rf-docs-header__inner p ~ p {
 	order: 1;
 }
 .rf-docs-header__inner .rf-mobile-menu-btn {
-	order: 2;
+	order: 3;
 }
 .rf-docs-header p {
 	margin: 0;
@@ -69,7 +73,7 @@
 .rf-docs-sidebar {
 	position: fixed;
 	left: 0;
-	top: 4.125rem;
+	top: 3.125rem;
 	bottom: 0;
 	width: 240px;
 	overflow-y: auto;
@@ -84,7 +88,7 @@
 
 /* ---- Content area ---- */
 .rf-docs-content {
-	padding-top: 5.75rem;
+	padding-top: 4.75rem;
 	padding-bottom: 4rem;
 	container-type: inline-size;
 }
