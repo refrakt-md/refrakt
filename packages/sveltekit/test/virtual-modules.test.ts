@@ -63,7 +63,10 @@ describe('loadVirtualModule', () => {
 
 	it('generates tokens CSS import from theme root export', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/tokens', config);
-		expect(result).toBe("import '@refrakt-md/lumina';");
+		expect(result).toContain("import '@refrakt-md/lumina';");
+		// Site-level token overrides (SPEC-048) are always wired through the
+		// virtual `site-tokens.css` module — empty if no overrides configured.
+		expect(result).toContain("import 'virtual:refrakt/site-tokens.css';");
 	});
 
 	it('generates config export', () => {
@@ -85,6 +88,6 @@ describe('loadVirtualModule', () => {
 		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
 			.toContain("import { layouts as _layouts } from '@refrakt-md/aurora/layouts';");
 		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig))
-			.toBe("import '@refrakt-md/aurora';");
+			.toContain("import '@refrakt-md/aurora';");
 	});
 });

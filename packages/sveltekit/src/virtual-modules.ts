@@ -101,15 +101,20 @@ export function loadVirtualModule(
 	}
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {
+		const lines: string[] = [];
 		if (buildCtx.isBuild && buildCtx.usedCssBlocks) {
-			const lines = [`import '${theme}/base.css';`];
+			lines.push(`import '${theme}/base.css';`);
 			for (const block of [...buildCtx.usedCssBlocks].sort()) {
 				lines.push(`import '${theme}/styles/runes/${block}.css';`);
 			}
-			return lines.join('\n');
+		} else {
+			// Dev mode: import the full CSS barrel via the package's root export
+			lines.push(`import '${theme}';`);
 		}
-		// Dev mode: import the full CSS barrel via the package's root export
-		return `import '${theme}';`;
+		// Site-level token overrides (SPEC-048 presets + theme.tokens + modes).
+		// Empty when the site has no overrides; harmless to import either way.
+		lines.push(`import 'virtual:refrakt/site-tokens.css';`);
+		return lines.join('\n');
 	}
 
 	if (id === `${RESOLVED_PREFIX}config`) {

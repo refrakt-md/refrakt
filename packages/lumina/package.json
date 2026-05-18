@@ -27,6 +27,14 @@
       "types": "./dist/layouts.d.ts",
       "default": "./dist/layouts.js"
     },
+    "./presets/tideline": {
+      "types": "./dist/presets/tideline.d.ts",
+      "default": "./dist/presets/tideline.js"
+    },
+    "./presets/niwaki": {
+      "types": "./dist/presets/niwaki.d.ts",
+      "default": "./dist/presets/niwaki.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"

@@ -2,12 +2,22 @@ import { existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin as VitePlugin, UserConfig } from 'vite';
-import type { Plugin, SiteConfig, PipelineWarning } from '@refrakt-md/types';
+import type { Plugin, SiteConfig, PipelineWarning, ThemeTokensConfig } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import type { RefractPluginOptions } from './types.js';
 import { loadRefraktConfig } from './config.js';
-import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import {
+	normalizeRefraktConfig,
+	resolveSite,
+	loadPresets,
+} from '@refrakt-md/transform/node';
+import {
+	mergeThemeTokensConfigs,
+	generateThemeStylesheet,
+	validateThemeTokensConfig,
+	formatTokenValidationErrors,
+} from '@refrakt-md/transform';
 import { resolveVirtualId, loadVirtualModule, type BuildContext } from './virtual-modules.js';
 import { setupContentHmr } from './content-hmr.js';
 
@@ -32,6 +42,12 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 	let assembledResult: { config: Record<string, any>; provenance: Record<string, any> } | undefined;
 	let mergedPackages: Plugin[] | undefined;
 	let contentLoaded = false;
+	let activeConfigDir = '';
+	/** Generated CSS for site-level token overrides (presets + theme.tokens +
+	 *  theme.modes), or empty string if no overrides are configured. Computed
+	 *  asynchronously in `buildStart` and consumed by the
+	 *  `virtual:refrakt/site-tokens.css` virtual module. */
+	let siteTokensCss = '';
 
 	return {
 		name: 'refrakt-md',
@@ -47,6 +63,10 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			const resolved = resolveSite(normalizedConfig, options.site);
 			activeSite = resolved.site;
 			activeSiteName = resolved.name;
+			// Stash configDir for `buildStart` — that's where we run the async
+			// preset loading so this hook stays synchronous (avoids cascading
+			// `await` changes through the rest of the plugin lifecycle / tests).
+			activeConfigDir = configDir;
 
 			const noExternal = [
 				...CORE_NO_EXTERNAL,
@@ -70,6 +90,13 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 		},
 
 		async buildStart() {
+			// Compute site-level token overrides per SPEC-048 / SPEC-051.
+			// When `site.theme` is the object form with presets / tokens / modes,
+			// load presets, merge with site overrides, validate, and generate
+			// CSS. Empty string if `theme` is the legacy string shorthand or
+			// declares no overrides.
+			siteTokensCss = await composeSiteTokensCss(activeSite, activeConfigDir);
+
 			// Load community/official packages and local runes if configured
 			const hasPackages = activeSite.plugins && activeSite.plugins.length > 0;
 			const hasLocal = activeSite.runes?.local && Object.keys(activeSite.runes.local).length > 0;
@@ -212,10 +239,16 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 		},
 
 		resolveId(id: string) {
+			if (id === 'virtual:refrakt/site-tokens.css') {
+				return '\0virtual:refrakt/site-tokens.css';
+			}
 			return resolveVirtualId(id);
 		},
 
 		load(id: string) {
+			if (id === '\0virtual:refrakt/site-tokens.css') {
+				return siteTokensCss;
+			}
 			const buildCtx: BuildContext = {
 				isBuild,
 				usedCssBlocks,
@@ -234,4 +267,53 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			setupContentHmr(server, activeSite.contentDir, examplesDir);
 		},
 	};
+}
+
+/**
+ * Compose site-level token overrides into a single CSS string.
+ *
+ * Reads `site.theme.presets`, `site.theme.tokens`, and `site.theme.modes` (the
+ * SPEC-048 object form of `SiteConfig.theme`). Returns empty string when the
+ * site uses the legacy string-theme form or declares no overrides.
+ *
+ * Presets are loaded in declared order and merged left-to-right; site-level
+ * `tokens` and `modes` layer last. The merged result is validated against the
+ * token contract; validation errors throw so misconfigured sites fail at
+ * adapter startup rather than producing broken CSS silently.
+ *
+ * The generated CSS is intended to *layer on top of* the theme package's
+ * own CSS — it carries only the override deltas, which cascade through
+ * `--rf-*` variables (last-write-wins).
+ */
+async function composeSiteTokensCss(site: SiteConfig, configDir: string): Promise<string> {
+	const themeField = site.theme;
+	if (typeof themeField === 'string' || !themeField) return '';
+
+	const presetSpecs = themeField.presets ?? [];
+	const inlineTokens = (themeField.tokens ?? {}) as ThemeTokensConfig;
+	const inlineModes = themeField.modes as Record<string, unknown> | undefined;
+
+	// Fast path: no overrides anywhere, no CSS to emit.
+	const hasInline =
+		Object.keys(inlineTokens).length > 0 || (inlineModes && Object.keys(inlineModes).length > 0);
+	if (presetSpecs.length === 0 && !hasInline) return '';
+
+	const presetConfigs = presetSpecs.length > 0
+		? await loadPresets(presetSpecs, { from: configDir })
+		: [];
+
+	const siteLayer: ThemeTokensConfig = { ...inlineTokens };
+	if (inlineModes) {
+		siteLayer.modes = inlineModes as ThemeTokensConfig['modes'];
+	}
+
+	const merged = mergeThemeTokensConfigs(...presetConfigs, siteLayer);
+
+	// Validate the merged result; misconfigurations should surface at startup.
+	const validation = validateThemeTokensConfig(merged);
+	if (!validation.valid) {
+		throw new Error(formatTokenValidationErrors(validation));
+	}
+
+	return generateThemeStylesheet(merged);
 }
