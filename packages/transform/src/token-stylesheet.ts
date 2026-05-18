@@ -75,7 +75,8 @@ export function generateTokenStylesheet(
 
 /**
  * Generate the full theme stylesheet from a {@link ThemeTokensConfig} —
- * base tokens at `:root`, plus one block per mode under three selectors:
+ * base tokens at `:root, [data-color-scheme="light"]`, plus one block
+ * per mode under three selectors:
  *
  *   - `[data-theme="<mode>"]` (page-level user toggle)
  *   - `[data-color-scheme="<mode>"]` (subtree forced to a scheme — e.g.
@@ -91,16 +92,26 @@ export function generateTokenStylesheet(
  *     hand-authored `dark.css` uses, so generated overrides compose with
  *     Lumina's base at equal specificity.
  *
- * Top-level `extra` attaches to the `:root` base block. Per-mode `extra`
- * (inside each {@link ThemeTokensModeOverlay}) attaches to the explicit
- * selector block — useful when a Shiki-style alias needs different values
- * in light vs dark.
+ * The base block additionally targets `[data-color-scheme="light"]` so a
+ * subtree forced to light inherits the site's base tokens (which are the
+ * implicit light values when a dark mode is also defined). Without this,
+ * Lumina's tint.css hardcodes its tonal `--rf-color-primary` inside
+ * `[data-color-scheme="light"]` and beats `:root` for elements with that
+ * attribute, hiding the site's customised primary.
+ *
+ * Top-level `extra` attaches to the base block. Per-mode `extra` (inside
+ * each {@link ThemeTokensModeOverlay}) attaches to the explicit selector
+ * block — useful when a Shiki-style alias needs different values in
+ * light vs dark.
  */
 export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	const { modes, extra, ...base } = config;
 	const blocks: string[] = [];
 
-	const baseBlock = generateTokenStylesheet(base as PartialTokenContract, { extra });
+	const baseBlock = generateTokenStylesheet(base as PartialTokenContract, {
+		selector: ':root, [data-color-scheme="light"]',
+		extra,
+	});
 	if (baseBlock) blocks.push(baseBlock);
 
 	if (modes) {

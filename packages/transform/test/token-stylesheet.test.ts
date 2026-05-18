@@ -99,7 +99,9 @@ describe('generateThemeStylesheet', () => {
 	it('emits base block when only base tokens present', () => {
 		const config: ThemeTokensConfig = { color: { text: '#000' } };
 		const css = generateThemeStylesheet(config);
-		expect(css).toContain(':root {');
+		// Base block targets `:root` plus `[data-color-scheme="light"]` so
+		// subtrees forced to light pick up the site's base values.
+		expect(css).toContain(':root, [data-color-scheme="light"] {');
 		expect(css).toContain('--rf-color-text: #000;');
 		expect(css).not.toContain('[data-theme=');
 	});
@@ -110,7 +112,7 @@ describe('generateThemeStylesheet', () => {
 			modes: { dark: { color: { text: '#f6f4ef' } } },
 		};
 		const css = generateThemeStylesheet(config);
-		expect(css).toContain(':root {');
+		expect(css).toContain(':root, [data-color-scheme="light"] {');
 		expect(css).toContain('--rf-color-text: #1c1a17;');
 		// Explicit block targets both `data-theme` (page toggle) and
 		// `data-color-scheme` (subtree forced to a scheme — preview canvas,
@@ -131,12 +133,12 @@ describe('generateThemeStylesheet', () => {
 		expect(css).not.toContain('@media (prefers-color-scheme: high-contrast)');
 	});
 
-	it('attaches extras to the base :root block', () => {
+	it('attaches extras to the base block', () => {
 		const config: ThemeTokensConfig = {
 			extra: { 'rf-hero-overlay': 'rgba(0,0,0,0.5)' },
 		};
 		const css = generateThemeStylesheet(config);
-		expect(css).toContain(':root {');
+		expect(css).toContain(':root, [data-color-scheme="light"] {');
 		expect(css).toContain('--rf-hero-overlay: rgba(0,0,0,0.5);');
 	});
 

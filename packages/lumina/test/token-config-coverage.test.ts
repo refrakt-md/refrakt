@@ -45,7 +45,12 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 	const baseCss = readFileSync(baseCssPath, 'utf-8');
 	const darkCss = readFileSync(darkCssPath, 'utf-8');
 
-	const generatedBaseBlock = extractBlock(generated, /:root\s*\{/);
+	// Generator emits combined `:root, [data-color-scheme="light"]` so base
+	// tokens also apply to subtrees forced to light scheme.
+	const generatedBaseBlock = extractBlock(
+		generated,
+		/:root(?:,\s*\[data-color-scheme="light"\])?\s*\{/,
+	);
 	// Generator emits combined `[data-theme="dark"], [data-color-scheme="dark"]`
 	// so per-mode overrides apply to subtrees forced to a scheme too.
 	const generatedDarkBlock = extractBlock(
