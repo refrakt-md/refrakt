@@ -201,7 +201,7 @@ function loadThemeTransform(workspaceRoot: string): { transform: ((tree: any) =>
     const themeConfig = themeTransform.luminaConfig ?? themeTransform.default;
 
     if (!themeConfig) {
-      return { transform: null, error: `Theme "${config.theme}" does not export a config` };
+      return { transform: null, error: `Theme "${themePackage}" does not export a config` };
     }
 
     return { transform: createTransform(themeConfig) };

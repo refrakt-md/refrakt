@@ -2,6 +2,7 @@ import { defineNuxtModule } from 'nuxt/kit';
 import { resolve } from 'node:path';
 import { CORE_PACKAGES } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { getThemePackage } from '@refrakt-md/types';
 import type { RefraktNuxtOptions } from './types.js';
 
 export default defineNuxtModule<RefraktNuxtOptions>({
@@ -15,13 +16,14 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 	setup(options: RefraktNuxtOptions, nuxt: any) {
 		const refraktConfig = loadRefraktConfig(options.configPath!);
 		const { site } = resolveSite(refraktConfig, options.site);
+		const themePackage = getThemePackage(site.theme);
 
 		// Add packages to transpile list
 		const transpile = [
 			...CORE_PACKAGES,
 			'@refrakt-md/nuxt',
-			site.theme,
-			`${site.theme}/nuxt`,
+			themePackage,
+			`${themePackage}/nuxt`,
 			...(site.plugins ?? []),
 		];
 		nuxt.options.build.transpile.push(...transpile);
