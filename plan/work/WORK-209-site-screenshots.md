@@ -1,4 +1,4 @@
-{% work id="WORK-209" status="ready" priority="low" complexity="small" tags="docs, screenshots, marketing" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-209" status="done" priority="low" complexity="small" tags="docs, screenshots, marketing" source="SPEC-051" milestone="v0.14.0" %}
 
 # Site screenshots refreshed against new appearance
 
@@ -6,13 +6,12 @@ Re-shoot any committed screenshots of refrakt rendering that currently show the 
 
 ## Acceptance Criteria
 
-- [ ] Inventory of screenshots produced first: grep for committed PNG/JPG/WebP assets and identify which depict rendered refrakt pages
-- [ ] Every rendered-page screenshot re-captured against the post-{% ref "WORK-206" /%} site (neutral chrome + niwaki syntax)
-- [ ] Social card / og:image regenerated against the new appearance — the file referenced by `site.defaultImage` in config
-- [ ] README inline screenshots (if any) updated
-- [ ] Marketing pages with screenshot sections updated — the homepage hero shot if there is one
-- [ ] No dangling references to deleted screenshot files
-- [ ] Screenshots show *both* light and dark mode where applicable — refrakt's docs are auto so visitors will see whichever matches their system
+- [x] **Inventory complete** — `grep -rEn '!\[.*\]\(/' site/content README.md` and `find site/static -name "*.png" -o -name "*.jpg" -o -name "*.webp"` together turn up **zero rendered-page screenshots** in the repo. The only image assets are brand-mark PNGs (`favicon-*.png`, `apple-touch-icon.png`) which were already swapped to the new prism mark in {% ref "WORK-194" /%}. The only content-side image reference is `[![](/mark.svg) refrakt.md](/)` in `site/content/_layout.md`, which points to the new prism SVG.
+- [x] **No rendered-page screenshots to update** — the site renders content live via SvelteKit; there are no committed PNGs of docs pages, runes in action, or example layouts to replace.
+- [x] `og-image.png` / `defaultImage` — not configured in `refrakt.config.json`; site has no social card. Out of scope for this work item; would land with a future "marketing surface" pass.
+- [x] README has no inline brand images — `head README.md` shows prose-only intro with text links.
+- [x] No dangling references — `grep` for old logo filename returns nothing.
+- [x] Closed as effectively no-op for v0.14.0 — the work item was a precaution against a likely-stale screenshot pile, which the inventory shows doesn't exist.
 
 ## Approach
 

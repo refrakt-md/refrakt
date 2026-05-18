@@ -1,4 +1,4 @@
-{% work id="WORK-210" status="ready" priority="low" complexity="small" tags="docs, migration, presets" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-210" status="done" priority="low" complexity="small" tags="docs, migration, presets" source="SPEC-051" milestone="v0.14.0" %}
 
 # v0.14.0 migration note for palette and fonts
 
@@ -6,10 +6,10 @@ Write the v0.14.0 migration guide entry for SPEC-051's palette and typography ch
 
 ## Acceptance Criteria
 
-- [ ] A "Palette and typography" section exists in the v0.14.0 migration guide (same destination page as {% ref "WORK-199" /%} — coordinate locations during implementation)
-- [ ] The section opens with the user-facing change: "Lumina ships with a new neutral default palette in v0.14.0. The previous cream-and-navy palette is preserved as the `tideline` preset."
-- [ ] The one-line config snippet for restoring the old colour appearance is shown verbatim
-- [ ] The font change is documented: tideline switches `font.sans` to IBM Plex Sans (from Outfit). The escape hatch for pinning Outfit is shown:
+- [x] A "Palette and typography" section exists in the v0.14.0 migration guide (same destination page as {% ref "WORK-199" /%} — coordinate locations during implementation)
+- [x] The section opens with the user-facing change: "Lumina ships with a new neutral default palette in v0.14.0. The previous cream-and-navy palette is preserved as the `tideline` preset."
+- [x] The one-line config snippet for restoring the old colour appearance is shown verbatim
+- [x] The font change is documented: tideline switches `font.sans` to IBM Plex Sans (from Outfit). The escape hatch for pinning Outfit is shown:
   ```json
   {
     "theme": {
@@ -20,8 +20,8 @@ Write the v0.14.0 migration guide entry for SPEC-051's palette and typography ch
     }
   }
   ```
-- [ ] A note explaining the rationale (one or two sentences linking to {% ref "SPEC-051" /%} for the full story)
-- [ ] Cross-references to {% ref "WORK-199" /%} (tint shape migration) — both pieces are part of the same v0.14.0 upgrade story
+- [x] A note explaining the rationale (one or two sentences linking to {% ref "SPEC-051" /%} for the full story)
+- [x] Cross-references to {% ref "WORK-199" /%} (tint shape migration) — both pieces are part of the same v0.14.0 upgrade story
 
 ## Approach
 
