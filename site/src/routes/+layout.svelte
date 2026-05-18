@@ -4,7 +4,7 @@
 	import { ThemeToggle } from '@refrakt-md/svelte';
 	import { onMount } from 'svelte';
 
-	let { children } = $props();
+	let { data, children } = $props();
 	let toggleHost: HTMLDivElement | undefined = $state();
 
 	onMount(() => {
@@ -17,6 +17,47 @@
 		);
 		if (target && toggleHost) {
 			target.appendChild(toggleHost);
+		}
+	});
+
+	// Apply the route's tint cascade to <html> on every navigation. SSR
+	// splices these attributes via hooks.server.ts, but SvelteKit reuses the
+	// same <html> element across client-side nav — so without this a
+	// `data-theme="light"` written by the toggle on an unlocked docs page
+	// would leak across into a locked marketing page on the next navigation.
+	//
+	// Locked pages get the SSR-equivalent attrs (data-theme + data-tint-lock);
+	// unlocked pages clear the lock and restore the user's saved preference
+	// (or system preference) from localStorage. Mirrors htmlTintAttributes
+	// and prePaintScript from @refrakt-md/content.
+	$effect(() => {
+		const cascade = data.tintCascade;
+		const html = document.documentElement;
+
+		if (cascade.locked && (cascade.tintMode === 'light' || cascade.tintMode === 'dark')) {
+			html.setAttribute('data-theme', cascade.tintMode);
+			html.setAttribute('data-tint-lock', 'true');
+		} else {
+			html.removeAttribute('data-tint-lock');
+			let saved: string | null = null;
+			try {
+				saved = localStorage.getItem('rf-theme');
+			} catch (_) {
+				// localStorage may be unavailable (private mode, file://).
+			}
+			const mode =
+				saved === 'light' || saved === 'dark'
+					? saved
+					: matchMedia('(prefers-color-scheme: dark)').matches
+						? 'dark'
+						: 'light';
+			html.setAttribute('data-theme', mode);
+		}
+
+		if (cascade.tint !== null && cascade.tint !== undefined) {
+			html.setAttribute('data-tint', String(cascade.tint));
+		} else {
+			html.removeAttribute('data-tint');
 		}
 	});
 </script>
