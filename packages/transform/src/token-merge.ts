@@ -40,7 +40,8 @@ export function mergeThemeTokensConfigs(
 	...layers: (ThemeTokensConfig | undefined)[]
 ): ThemeTokensConfig {
 	const baseLayers: (PartialTokenContract | undefined)[] = [];
-	const modeMap: Record<string, (PartialTokenContract | undefined)[]> = {};
+	const modeBaseMap: Record<string, (PartialTokenContract | undefined)[]> = {};
+	const modeExtrasMap: Record<string, (Record<string, string> | undefined)[]> = {};
 	const extras: (Record<string, string> | undefined)[] = [];
 
 	for (const layer of layers) {
@@ -49,17 +50,28 @@ export function mergeThemeTokensConfigs(
 		baseLayers.push(base as PartialTokenContract);
 		if (extra) extras.push(extra);
 		if (modes) {
-			for (const [name, modeLayer] of Object.entries(modes)) {
-				(modeMap[name] ??= []).push(modeLayer);
+			for (const [name, modeOverlay] of Object.entries(modes)) {
+				const { extra: modeExtra, ...modeBase } = modeOverlay as {
+					extra?: Record<string, string>;
+				} & PartialTokenContract;
+				(modeBaseMap[name] ??= []).push(modeBase);
+				if (modeExtra) (modeExtrasMap[name] ??= []).push(modeExtra);
 			}
 		}
 	}
 
 	const result: ThemeTokensConfig = mergeTokenContracts(...baseLayers);
 
-	const mergedModes: Record<string, PartialTokenContract> = {};
-	for (const [name, modeLayers] of Object.entries(modeMap)) {
-		mergedModes[name] = mergeTokenContracts(...modeLayers);
+	const mergedModes: Record<string, PartialTokenContract & { extra?: Record<string, string> }> = {};
+	for (const [name, modeLayers] of Object.entries(modeBaseMap)) {
+		const merged = mergeTokenContracts(...modeLayers) as PartialTokenContract & {
+			extra?: Record<string, string>;
+		};
+		const modeExtras = modeExtrasMap[name];
+		if (modeExtras && modeExtras.length > 0) {
+			merged.extra = Object.assign({}, ...modeExtras);
+		}
+		mergedModes[name] = merged;
 	}
 	if (Object.keys(mergedModes).length > 0) result.modes = mergedModes;
 

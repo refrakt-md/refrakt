@@ -32,6 +32,12 @@ describe('tokenPathToCssVar', () => {
 	it('handles syntax tokens', () => {
 		expect(tokenPathToCssVar(['syntax', 'keyword'])).toBe('--rf-syntax-keyword');
 	});
+
+	it('strips -scale suffix from segments (palette-step convention)', () => {
+		expect(tokenPathToCssVar(['color', 'primary-scale', '500'])).toBe('--rf-color-primary-500');
+		expect(tokenPathToCssVar(['color', 'primary-scale', '50'])).toBe('--rf-color-primary-50');
+		expect(tokenPathToCssVar(['color', 'primary-scale', '950'])).toBe('--rf-color-primary-950');
+	});
 });
 
 describe('generateTokenStylesheet', () => {

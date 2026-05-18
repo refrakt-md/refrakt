@@ -3,25 +3,38 @@ import type { PartialTokenContract, ThemeTokensConfig } from '@refrakt-md/types'
 /**
  * Map a token-contract path to its `--rf-*` CSS variable name.
  *
- * Rule: join the path with `-`, prefix with `--rf-`. As a convenience, when
- * a path segment is exactly `base`, it is dropped from the variable name —
- * so `color.surface.base → --rf-color-surface`, preserving the existing
- * variable names Lumina has shipped.
+ * Rule: join the path with `-`, prefix with `--rf-`. Two conveniences applied
+ * before the join:
+ *
+ *   1. Path segments equal to `base` are dropped — so `color.surface.base`
+ *      becomes `--rf-color-surface` (not `--rf-color-surface-base`),
+ *      preserving the existing variable names Lumina has shipped.
+ *
+ *   2. Path segments ending in `-scale` have the `-scale` suffix stripped —
+ *      so `color.primary-scale.500` becomes `--rf-color-primary-500`,
+ *      matching the convention of palette-step variables in Lumina (and
+ *      most CSS design systems). The `-scale` segment exists in the JS
+ *      contract shape only to namespace the scale's step keys (`50`, `100`,
+ *      …) away from the sibling singular fields (`primary`, `primary-hover`).
  *
  * Examples:
- *   ['color', 'text']                  → '--rf-color-text'
- *   ['color', 'surface', 'base']       → '--rf-color-surface'
- *   ['color', 'surface', 'hover']      → '--rf-color-surface-hover'
- *   ['color', 'info', 'base']          → '--rf-color-info'
- *   ['color', 'info', 'bg']            → '--rf-color-info-bg'
- *   ['radius', 'md']                   → '--rf-radius-md'
- *   ['syntax', 'keyword']              → '--rf-syntax-keyword'
- *   ['spacing', 'section', 'base']     → '--rf-spacing-section'
- *   ['spacing', 'section', 'tight']    → '--rf-spacing-section-tight'
+ *   ['color', 'text']                       → '--rf-color-text'
+ *   ['color', 'surface', 'base']            → '--rf-color-surface'
+ *   ['color', 'surface', 'hover']           → '--rf-color-surface-hover'
+ *   ['color', 'info', 'base']               → '--rf-color-info'
+ *   ['color', 'info', 'bg']                 → '--rf-color-info-bg'
+ *   ['color', 'primary-scale', '500']       → '--rf-color-primary-500'
+ *   ['color', 'primary-scale', '950']       → '--rf-color-primary-950'
+ *   ['radius', 'md']                        → '--rf-radius-md'
+ *   ['syntax', 'keyword']                   → '--rf-syntax-keyword'
+ *   ['spacing', 'section', 'base']          → '--rf-spacing-section'
+ *   ['spacing', 'section', 'tight']         → '--rf-spacing-section-tight'
  */
 export function tokenPathToCssVar(path: readonly string[]): string {
-	const filtered = path.filter(seg => seg !== 'base');
-	return `--rf-${filtered.join('-')}`;
+	const segments = path
+		.filter(seg => seg !== 'base')
+		.map(seg => (seg.endsWith('-scale') ? seg.slice(0, -'-scale'.length) : seg));
+	return `--rf-${segments.join('-')}`;
 }
 
 export interface GenerateStylesheetOptions {
@@ -67,7 +80,10 @@ export function generateTokenStylesheet(
  * `@media (prefers-color-scheme: <mode>)` block (for system preference,
  * scoped to `:root:not([data-theme])` so the explicit toggle wins).
  *
- * `extra` declarations attach to the `:root` base block.
+ * Top-level `extra` attaches to the `:root` base block. Per-mode `extra`
+ * (inside each {@link ThemeTokensModeOverlay}) attaches to that mode's
+ * selector block — useful when a Shiki-style alias needs different values
+ * in light vs dark.
  */
 export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	const { modes, extra, ...base } = config;
@@ -77,9 +93,14 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	if (baseBlock) blocks.push(baseBlock);
 
 	if (modes) {
-		for (const [name, modeTokens] of Object.entries(modes)) {
+		for (const [name, modeOverlay] of Object.entries(modes)) {
+			const { extra: modeExtra, ...modeTokens } = modeOverlay as {
+				extra?: Record<string, string>;
+			} & PartialTokenContract;
+
 			const explicit = generateTokenStylesheet(modeTokens, {
 				selector: `[data-theme="${name}"]`,
+				extra: modeExtra,
 			});
 			if (explicit) blocks.push(explicit);
 
@@ -89,6 +110,7 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 			if (name === 'dark' || name === 'light') {
 				const system = generateTokenStylesheet(modeTokens, {
 					selector: `@media (prefers-color-scheme: ${name}) {\n\t:root:not([data-theme])`,
+					extra: modeExtra,
 				});
 				if (system) {
 					// Close the @media wrapper we opened in the selector.

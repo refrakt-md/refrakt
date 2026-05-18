@@ -1,4 +1,4 @@
-{% work id="WORK-191" status="ready" priority="high" complexity="medium" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-191" status="in-progress" priority="high" complexity="medium" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
 
 # Migrate existing Lumina tokens to the new contract
 
@@ -8,13 +8,15 @@ This is the *migration* step — it preserves the current cream-and-navy appeara
 
 ## Acceptance Criteria
 
-- [ ] Every `--rf-*: value;` declaration in `packages/lumina/tokens/base.css` has a corresponding entry in the new `ThemeTokensConfig`
-- [ ] Every dark-mode declaration in `packages/lumina/tokens/dark.css` migrated to `modes.dark` per {% ref "WORK-188" /%}
-- [ ] `packages/lumina/tokens/base.css` and `dark.css` deleted; the generated stylesheet from the config replaces them in the published package
-- [ ] CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` pass against the generated output
-- [ ] Visual regression: a baseline screenshot of the refrakt site rendered against today's Lumina matches the same site rendered against the new config-driven Lumina, pixel for pixel
-- [ ] The published `@refrakt-md/lumina` package's runtime output (CSS file, types) preserves the current `--rf-*` custom property names
-- [ ] No site or plugin needs to change anything to render identically — Lumina remains a drop-in for what existed before
+- [x] Every `--rf-*: value;` declaration in `packages/lumina/tokens/base.css` has a corresponding entry in the new `ThemeTokensConfig` — `luminaTokens` exported from `@refrakt-md/lumina/transform` covers all 60+ declarations
+- [x] Every dark-mode declaration in `packages/lumina/tokens/dark.css` migrated to `modes.dark` per {% ref "WORK-188" /%}
+- [ ] `packages/lumina/tokens/base.css` and `dark.css` deleted; the generated stylesheet from the config replaces them in the published package *(deferred — hand-authored CSS continues to ship through the v0.14.0 window so consumers see no behavioural change. A follow-up replaces it with build-time generation once the SvelteKit adapter integration lands.)*
+- [x] CSS coverage tests in `packages/lumina/test/token-config-coverage.test.ts` pass against the generated output — every declaration in the hand-authored CSS is present in the generated CSS with the same value, scoped to the right block (`:root` for base, `[data-theme="dark"]` for dark)
+- [ ] Visual regression: a baseline screenshot of the refrakt site rendered against today's Lumina matches the same site rendered against the new config-driven Lumina, pixel for pixel *(deferred to follow-up — meaningful once generation replaces hand-authored CSS at build time)*
+- [x] The published `@refrakt-md/lumina` package's runtime output (CSS file, types) preserves the current `--rf-*` custom property names — the hand-authored CSS continues to ship; the new `luminaTokens` export is purely additive
+- [x] No site or plugin needs to change anything to render identically — Lumina remains a drop-in for what existed before
+
+**Scope split.** This work item ships the *source-of-truth migration* — Lumina now exports `luminaTokens` as a typed `ThemeTokensConfig` that adapters and downstream tooling can consume. The hand-authored `tokens/base.css` and `tokens/dark.css` continue to ship alongside; a coverage test keeps the two in lockstep, so any drift fails CI. Replacing the hand-authored CSS with build-time generation is deferred to a follow-up PR alongside the SvelteKit adapter integration — both are needed for the runtime injection of site-level token overrides, which is the user-visible feature.
 
 ## Approach
 

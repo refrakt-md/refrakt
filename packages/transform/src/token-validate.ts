@@ -111,22 +111,42 @@ export function validateThemeTokensConfig(input: unknown): TokenValidationResult
 
 	if (modes !== undefined) {
 		if (!isPlainObject(modes)) {
-			errors.push({ path: 'modes', message: 'modes must be a plain object of <name> → PartialTokenContract' });
+			errors.push({ path: 'modes', message: 'modes must be a plain object of <name> → ThemeTokensModeOverlay' });
 		} else {
-			for (const [modeName, modeTokens] of Object.entries(modes)) {
-				if (!isPlainObject(modeTokens)) {
+			for (const [modeName, modeOverlay] of Object.entries(modes)) {
+				if (!isPlainObject(modeOverlay)) {
 					errors.push({
 						path: `modes.${modeName}`,
 						message: `modes.${modeName} must be a plain object`,
 					});
 					continue;
 				}
+				const { extra: modeExtra, ...modeTokens } = modeOverlay as Record<string, unknown> & {
+					extra?: unknown;
+				};
 				walkConfig(
-					modeTokens as Record<string, unknown>,
+					modeTokens,
 					`modes.${modeName}`,
 					TOKEN_CONTRACT_SHAPE,
 					errors,
 				);
+				if (modeExtra !== undefined) {
+					if (!isPlainObject(modeExtra)) {
+						errors.push({
+							path: `modes.${modeName}.extra`,
+							message: `modes.${modeName}.extra must be a plain object of string keys to string values`,
+						});
+					} else {
+						for (const [k, v] of Object.entries(modeExtra)) {
+							if (typeof v !== 'string') {
+								errors.push({
+									path: `modes.${modeName}.extra.${k}`,
+									message: `modes.${modeName}.extra.${k} must be a string`,
+								});
+							}
+						}
+					}
+				}
 			}
 		}
 	}

@@ -178,6 +178,15 @@ export type DeepPartial<T> = T extends object
  *  inherits from the next-outer layer via CSS variable cascade. */
 export type PartialTokenContract = DeepPartial<TokenContract>;
 
+/** A per-mode overlay — a {@link PartialTokenContract} plus its own optional
+ *  {@link ThemeTokensConfig.extra} escape hatch for mode-specific theme tokens.
+ *  Useful when a Shiki-style alias has different values in light vs dark. */
+export type ThemeTokensModeOverlay = PartialTokenContract & {
+	/** Mode-specific theme tokens outside the universal contract. Emitted into
+	 *  the same selector as the rest of the mode overlay. */
+	extra?: Record<string, string>;
+};
+
 /** The authoring-side shape — what preset modules export and what users
  *  author in `refrakt.config.json` → `theme.tokens`.
  *
@@ -189,7 +198,7 @@ export interface ThemeTokensConfig extends PartialTokenContract {
 	/** Per-mode token overlays applied via `[data-theme="<mode>"]` and the
 	 *  matching `prefers-color-scheme` media query. Mode `dark` is conventional;
 	 *  any name is valid (e.g. `high-contrast`, `sepia`, `print`). */
-	modes?: Record<string, PartialTokenContract>;
+	modes?: Record<string, ThemeTokensModeOverlay>;
 
 	/** Theme-specific tokens that don't fit the universal contract. Emitted as
 	 *  `:root { --<key>: <value> }`. Use sparingly — adding to the contract is
