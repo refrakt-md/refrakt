@@ -1,9 +1,24 @@
 import { getSite } from '$lib/content';
+import type { ResolvedTintCascade } from '@refrakt-md/content';
 
-export async function load() {
+const DEFAULT_CASCADE: ResolvedTintCascade = {
+	tint: null,
+	tintMode: 'auto',
+	locked: false,
+};
+
+export async function load({ url }) {
 	const site = await getSite();
+	const currentPage = site.pages.find(p => p.route.url === url.pathname);
+	// Per-route cascade ships to the client so +layout.svelte can re-apply
+	// the SSR-equivalent <html> attributes on client-side navigation —
+	// SvelteKit reuses the same <html> across nav so attrs set by the
+	// ThemeToggle on an unlocked page would otherwise leak into the next
+	// locked page.
+	const tintCascade: ResolvedTintCascade = currentPage?.tintCascade ?? DEFAULT_CASCADE;
 
 	return {
+		tintCascade,
 		pages: site.pages.map(p => ({
 			url: p.route.url,
 			title: p.frontmatter.title ?? '',
