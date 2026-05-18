@@ -213,24 +213,44 @@ export interface StructureEntry {
 
 // ─── Tint Types ──────────────────────────────────────────────────────
 
-/** Set of colour tokens that a tint can override */
-export interface TintTokenSet {
-	background?: string;
+/** Set of colour tokens a tint can override. Field names align with the
+ *  token contract (SPEC-053): each field maps to a `--rf-color-*` token via
+ *  the same dot-to-dash rule used by the contract generator.
+ *
+ *  | Field | Target token |
+ *  |---|---|
+ *  | `bg`      | `color.bg`            → `--rf-color-bg` |
+ *  | `surface` | `color.surface.base`  → `--rf-color-surface` |
+ *  | `text`    | `color.text`          → `--rf-color-text` |
+ *  | `muted`   | `color.muted`         → `--rf-color-muted` |
+ *  | `primary` | `color.primary`       → `--rf-color-primary` |
+ *  | `border`  | `color.border`        → `--rf-color-border` |
+ */
+export interface TintTokens {
+	bg?: string;
 	surface?: string;
+	text?: string;
+	muted?: string;
 	primary?: string;
-	secondary?: string;
-	accent?: string;
 	border?: string;
 }
 
-/** Named tint definition in theme config */
+/** Named tint definition in theme config. */
 export interface TintDefinition {
-	/** Colour scheme override: 'auto' follows page, 'dark'/'light' forces scheme */
-	mode?: 'auto' | 'dark' | 'light';
-	/** Light-mode token values */
-	light?: TintTokenSet;
-	/** Dark-mode token values */
-	dark?: TintTokenSet;
+	/** Force a colour scheme on the tinted subtree, regardless of page mode.
+	 *  Present (`'light'` or `'dark'`) = lock to that scheme; absent = inherit
+	 *  the page's current mode. Replaces the previous three-valued `mode`
+	 *  field per SPEC-053 — `'auto'` is now the absence of `lockMode`. */
+	lockMode?: 'light' | 'dark';
+	/** Light-mode token values. */
+	light?: TintTokens;
+	/** Dark-mode token values. */
+	dark?: TintTokens;
+	/** Extend another named tint, layering this tint's overrides on top. The
+	 *  base tint is fully expanded first (recursively, if it also `extends`),
+	 *  then `light` / `dark` / `lockMode` from this tint override per leaf.
+	 *  Circular chains are rejected at merge time. */
+	extends?: string;
 }
 
 // ─── Background Preset Types ─────────────────────────────────────────

@@ -1,4 +1,4 @@
-{% work id="WORK-196" status="ready" priority="high" complexity="small" tags="tint, merge, config" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-196" status="done" priority="high" complexity="small" tags="tint, merge, config" source="SPEC-053" milestone="v0.14.0" %}
 
 # mergeThemeConfig extends support + remove deprecated RefraktConfig.tints
 
@@ -6,12 +6,12 @@ Extend `mergeThemeConfig` (`packages/transform/src/merge.ts`) so tint definition
 
 ## Acceptance Criteria
 
-- [ ] `mergeThemeConfig` walks each tint definition, resolves `extends` recursively, and produces a fully-expanded final tint config
-- [ ] Circular `extends` chains rejected at merge time with a clear error: `"Circular tint extends chain: warm → tideline-warm → warm"`
-- [ ] References to non-existent tint names rejected with: `"Tint 'tideline-warm' extends unknown tint 'unknown-tint'"`
-- [ ] Per-name overrides remain *shallow* (same name in two layers replaces the earlier one entirely) — `extends` is the explicit deep-override path
-- [ ] Unit tests cover: single-level extends, multi-level chain, circular detection, unknown base, normal shallow merge still works
-- [ ] `RefraktConfig.tints` removed from `packages/types/src/theme.ts` per the SPEC-053 decision to drop the deprecated flat-shape field — any references in adapter or normalisation code surface as build errors and get migrated to `sites.default.tints`
+- [x] `mergeThemeConfig` walks each tint definition, resolves `extends` recursively via `resolveTintExtends`, and produces a fully-expanded final tint config
+- [x] Circular `extends` chains rejected at merge time with a chain trace: `"Circular tint extends chain: a → b → c → a"`
+- [x] References to non-existent tint names rejected with: `"Tint 'X' extends unknown tint"`
+- [x] Per-name overrides remain *shallow* (same name in two layers replaces the earlier one entirely) — `extends` is the explicit deep-override path
+- [x] Unit tests cover: single-level extends, multi-level chain, circular detection (including direct self-reference), unknown base, lockMode inheritance and override, diamond chains (no infinite recursion) — 10 new tests in `tint-extends.test.ts`
+- [x] `RefraktConfig.tints` removed from `packages/types/src/theme.ts`; `config-normalize` no longer mirrors `tints` between flat and per-site shapes
 
 ## Approach
 

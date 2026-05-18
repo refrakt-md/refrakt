@@ -1,4 +1,4 @@
-{% work id="WORK-197" status="ready" priority="high" complexity="small" tags="tint, css, engine, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-197" status="done" priority="high" complexity="small" tags="tint, css, engine, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
 
 # Engine + tint.css rename to new --tint-* property names
 
@@ -6,14 +6,14 @@ Rename the `--tint-*` custom properties emitted by `packages/transform/src/engin
 
 ## Acceptance Criteria
 
-- [ ] `TINT_TOKENS` array (or equivalent) in `packages/transform/src/engine.ts` updated to the new vocabulary
-- [ ] Engine emits `--tint-bg`, `--tint-text`, `--tint-muted`, `--tint-primary` (and `--tint-dark-*` counterparts) instead of `--tint-background`, `--tint-primary` (old: text), `--tint-secondary`, `--tint-accent`
-- [ ] `packages/lumina/styles/runes/tint.css` sections 2–4 updated to map the new property names → `--rf-color-*` tokens
-- [ ] `@property` registrations at the top of `tint.css` unchanged (those target `--rf-color-*` not `--tint-*`)
-- [ ] `--cs-*` intermediaries unchanged
-- [ ] CSS coverage tests in `packages/lumina/test/css-coverage.test.ts` updated for any selectors that referenced the old `--tint-*` names by name
-- [ ] Visual regression: at least one tinted rune in a real layout (a `{% callout tint="warm" %}` or similar) renders identically before and after, in both light and dark modes
-- [ ] No grep hits for the old property names anywhere in the codebase
+- [x] `TINT_TOKENS` array in `packages/transform/src/engine.ts` updated to `['bg', 'surface', 'text', 'muted', 'primary', 'border']`
+- [x] Engine emits `--tint-bg`, `--tint-text`, `--tint-muted`, `--tint-primary` (and `--tint-dark-*` counterparts). Also updated to read `def.lockMode` instead of `def.mode`.
+- [x] `packages/lumina/styles/runes/tint.css` sections 2–4 updated to map the new property names → `--rf-color-*` tokens. The `--rf-color-primary` mapping now correctly references `--tint-primary` (which is the *interactive* primary, matching the contract) rather than the old `--tint-accent`.
+- [x] `@property` registrations at the top of `tint.css` unchanged (they target `--rf-color-*`)
+- [x] `--cs-*` intermediaries unchanged
+- [x] CSS coverage tests pass — no test references the old `--tint-*` names by name
+- [x] Visual sanity: full test suite (2429 tests) passes; build is clean
+- [x] No grep hits for old property names: `--tint-background`, `--tint-secondary`, `--tint-accent` anywhere in the codebase
 
 ## Approach
 

@@ -157,11 +157,11 @@
 
 [data-tint] {
 	color: var(--rf-color-text);
-	--rf-color-bg: var(--tint-background);
+	--rf-color-bg: var(--tint-bg);
 	--rf-color-surface: var(--tint-surface);
-	--rf-color-text: var(--tint-primary);
-	--rf-color-muted: var(--tint-secondary);
-	--rf-color-primary: var(--tint-accent);
+	--rf-color-text: var(--tint-text);
+	--rf-color-muted: var(--tint-muted);
+	--rf-color-primary: var(--tint-primary);
 	--rf-color-border: var(--tint-border);
 }
 
@@ -173,11 +173,11 @@
  * (which carries the dark theme value). */
 
 :is([data-theme="dark"], [data-color-scheme="dark"]) [data-tint] {
-	--rf-color-bg: var(--tint-dark-background, var(--tint-background));
+	--rf-color-bg: var(--tint-dark-bg, var(--tint-bg));
 	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface));
-	--rf-color-text: var(--tint-dark-primary, var(--tint-primary));
-	--rf-color-muted: var(--tint-dark-secondary, var(--tint-secondary));
-	--rf-color-primary: var(--tint-dark-accent, var(--tint-accent));
+	--rf-color-text: var(--tint-dark-text, var(--tint-text));
+	--rf-color-muted: var(--tint-dark-muted, var(--tint-muted));
+	--rf-color-primary: var(--tint-dark-primary, var(--tint-primary));
 	--rf-color-border: var(--tint-dark-border, var(--tint-border));
 }
 
@@ -187,19 +187,19 @@
  * tint tokens use the colour-scheme value, not the page-level value. */
 
 [data-color-scheme="dark"][data-tint] {
-	--rf-color-bg: var(--tint-dark-background, var(--tint-background, var(--cs-bg)));
+	--rf-color-bg: var(--tint-dark-bg, var(--tint-bg, var(--cs-bg)));
 	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface, var(--cs-surface)));
-	--rf-color-text: var(--tint-dark-primary, var(--tint-primary, var(--cs-text)));
-	--rf-color-muted: var(--tint-dark-secondary, var(--tint-secondary, var(--cs-muted)));
-	--rf-color-primary: var(--tint-dark-accent, var(--tint-accent, var(--cs-accent)));
+	--rf-color-text: var(--tint-dark-text, var(--tint-text, var(--cs-text)));
+	--rf-color-muted: var(--tint-dark-muted, var(--tint-muted, var(--cs-muted)));
+	--rf-color-primary: var(--tint-dark-primary, var(--tint-primary, var(--cs-accent)));
 	--rf-color-border: var(--tint-dark-border, var(--tint-border, var(--cs-border)));
 }
 
 [data-color-scheme="light"][data-tint] {
-	--rf-color-bg: var(--tint-background, var(--cs-bg));
+	--rf-color-bg: var(--tint-bg, var(--cs-bg));
 	--rf-color-surface: var(--tint-surface, var(--cs-surface));
-	--rf-color-text: var(--tint-primary, var(--cs-text));
-	--rf-color-muted: var(--tint-secondary, var(--cs-muted));
-	--rf-color-primary: var(--tint-accent, var(--cs-accent));
+	--rf-color-text: var(--tint-text, var(--cs-text));
+	--rf-color-muted: var(--tint-muted, var(--cs-muted));
+	--rf-color-primary: var(--tint-primary, var(--cs-accent));
 	--rf-color-border: var(--tint-border, var(--cs-border));
 }

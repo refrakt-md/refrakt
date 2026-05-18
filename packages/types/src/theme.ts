@@ -60,7 +60,10 @@ export interface SiteConfig {
 	icons?: Record<string, string>;
 	/** Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.) */
 	plugins?: string[];
-	/** Project-level tint presets — merged after theme tints (last wins) */
+	/** Project-level tint presets — merged after theme tints (last wins).
+	 *  Field shape matches `TintDefinition` from `@refrakt-md/transform` per
+	 *  SPEC-053; `Record<string, unknown>` is used here to avoid a cross-package
+	 *  type dependency in `@refrakt-md/types`. */
 	tints?: Record<string, Record<string, unknown>>;
 	/** Project-level background presets — merged after theme backgrounds (last wins) */
 	backgrounds?: Record<string, Record<string, unknown>>;
@@ -141,8 +144,6 @@ export interface RefraktConfig {
 	};
 	/** @deprecated Shorthand for `sites.default.icons` */
 	icons?: Record<string, string>;
-	/** @deprecated Shorthand for `sites.default.tints` */
-	tints?: Record<string, Record<string, unknown>>;
 	/** @deprecated Shorthand for `sites.default.backgrounds` */
 	backgrounds?: Record<string, Record<string, unknown>>;
 	/** @deprecated Shorthand for `sites.default.sandbox` */
