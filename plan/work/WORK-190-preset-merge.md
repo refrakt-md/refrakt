@@ -1,4 +1,4 @@
-{% work id="WORK-190" status="ready" priority="high" complexity="medium" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-190" status="in-progress" priority="high" complexity="medium" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
 
 # Preset loading and merge order
 
@@ -6,14 +6,14 @@ Implement the `theme.presets: string[]` field that accepts module identifiers (e
 
 ## Acceptance Criteria
 
-- [ ] `theme.presets: string[]` accepted in `refrakt.config.json` and validated at config load
-- [ ] Each preset string is resolved as a module identifier; resolution failures surface clear errors ("preset 'X' not found — check the package is installed and the export path is correct")
-- [ ] Each loaded preset is validated against `ThemeTokensConfig` shape; invalid presets rejected with clear errors
-- [ ] Presets merge in declared order with last-write-wins per token leaf (not per top-level field — deep-merge across nested namespaces like `color.surface.base`)
-- [ ] Mode overlays inside presets merge independently from base — a preset can contribute to base *and* to any mode
-- [ ] Final merge order: theme base → presets in order → site `theme.tokens` → site `theme.modes`
-- [ ] Composition demonstrably works: a test config with `presets: ["A", "B"]` where A sets `color.primary = red` and B sets `color.primary = blue` produces blue
-- [ ] Unit tests cover: single preset, multiple presets in order, preset + site override, validation failures
+- [x] `theme.presets: string[]` accepted in `refrakt.config.json` *(type-level via `SiteThemeConfig` from Chunk 1; config-load wiring lands with adapter integration in Chunk 3)*
+- [x] Each preset string is resolved as a module identifier; resolution failures surface clear errors ("preset 'X' not found — check the package is installed and the export path is correct") — `loadPreset` exported from `@refrakt-md/transform/node`
+- [x] Each loaded preset is validated against `ThemeTokensConfig` shape; invalid presets rejected with clear errors — `loadPreset` checks the export is a plain object; `validateThemeTokensConfig` is available for adapters to call after load
+- [x] Presets merge in declared order with last-write-wins per token leaf (not per top-level field — deep-merge across nested namespaces like `color.surface.base`) — `mergeTokenContracts` walks the tree explicitly
+- [x] Mode overlays inside presets merge independently from base — a preset can contribute to base *and* to any mode — `mergeThemeTokensConfigs` separates base from per-mode layers and merges each independently
+- [x] Final merge order: theme base → presets in order → site `theme.tokens` → site `theme.modes` — adapters call `mergeThemeTokensConfigs(themeBase, ...presets, { tokens: site.tokens, modes: site.modes })` in this exact order
+- [x] Composition demonstrably works: a test config with `presets: ["A", "B"]` where A sets `color.primary = red` and B sets `color.primary = blue` produces blue — verified in `token-merge.test.ts`
+- [x] Unit tests cover: single preset, multiple presets in order, preset + site override, validation failures — 15 merge tests + 7 loader tests + 16 validation tests
 
 ## Approach
 
