@@ -49,7 +49,7 @@
 	text-decoration: none;
 }
 .rf-nav-item__link--active {
-	background: var(--rf-color-info-bg);
+	background: var(--rf-color-surface-active);
 	color: var(--rf-color-primary);
 	font-weight: 600;
 }
