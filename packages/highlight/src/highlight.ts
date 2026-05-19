@@ -106,7 +106,7 @@ export async function createHighlightTransform(
 		};
 	}
 
-	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme).node) as HighlightTransform;
+	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme, false).node) as HighlightTransform;
 	transform.css = css;
 	return transform;
 }
@@ -168,55 +168,79 @@ pre[data-language] {
 }
 
 /** Walk the serialized tree, highlighting elements with `data-language`.
- *  Returns the transformed node plus whether any highlighted descendant was
- *  produced, so callers can stamp `data-color-scheme` on rune wrappers that
- *  host code (diff, compare, codegroup, etc.) without those runes needing
- *  to know about the highlight pipeline. */
+ *  Returns the transformed node plus whether any highlighted (or
+ *  `<pre data-language>`) descendant was produced, so callers can stamp
+ *  `data-color-scheme` on the rune wrapper that hosts the code.
+ *
+ *  Stamping rules:
+ *  - A `<pre data-language>` (the codeblock wrapper) is stamped UNLESS it
+ *    sits inside a `data-code-host` ancestor — in which case the host owns
+ *    the stamp and the inner `<pre>` inherits via CSS cascade.
+ *  - An element with `data-code-host` (set by diff, compare, code-group)
+ *    is stamped when it hosts code below it. Generic content wrappers
+ *    that merely happen to contain a code rune (preview, hint, callout,
+ *    etc.) deliberately do NOT carry `data-code-host`, so their chrome
+ *    stays in the page's normal colour scheme.
+ *  - Stamping consumes the flag so outer non-host wrappers don't see a
+ *    spurious "hasHighlighted" signal and start flipping their own chrome.
+ */
 function walk(
 	node: RendererNode,
 	highlightFn: (code: string, lang: string) => string,
 	forcedScheme: 'light' | 'dark' | undefined,
+	hasCodeHostAncestor: boolean,
 ): { node: RendererNode; hasHighlighted: boolean } {
 	if (node === null || node === undefined) return { node, hasHighlighted: false };
 	if (typeof node === 'string' || typeof node === 'number') return { node, hasHighlighted: false };
 	if (!isTag(node)) return { node, hasHighlighted: false };
 
 	const lang = node.attributes?.['data-language'];
+	const isCodeHost = !!node.attributes?.['data-code-host'];
+	const isPreCodeblock = !!lang && node.name === 'pre';
 
 	if (lang && hasTextChildren(node)) {
 		return { node: highlightNode(node, lang, highlightFn), hasHighlighted: true };
 	}
 
+	const childHasCodeHost = hasCodeHostAncestor || isCodeHost;
 	let anyHighlighted = false;
 	const children = node.children.map(c => {
-		const result = walk(c, highlightFn, forcedScheme);
+		const result = walk(c, highlightFn, forcedScheme, childHasCodeHost);
 		if (result.hasHighlighted) anyHighlighted = true;
 		return result.node;
 	});
 
-	// Stamp `data-color-scheme` on `<pre data-language>` (the codeblock
-	// wrapper) and on any rune wrapper (`data-rune`) that hosts highlighted
-	// code below it. The attribute cascades through CSS custom properties
-	// (`--rf-color-code-bg`, `--rf-syntax-*`, surface, border) so the
-	// override flips the entire subtree, including wrappers that don't
-	// themselves carry `data-language` (diff's outer container, compare's
-	// panel chrome, etc.).
-	const isPreCodeblock = lang && node.name === 'pre';
-	const isRuneHost = !!node.attributes?.['data-rune'] && anyHighlighted;
-	if (forcedScheme && (isPreCodeblock || isRuneHost)) {
-		return {
-			node: {
-				...node,
-				attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
-				children,
-			},
-			hasHighlighted: true,
-		};
+	// `<pre data-language>` always counts as a code container, even if the
+	// inner highlight failed (unknown language). The override still flips
+	// the code surface for fallback rendering.
+	const isCodeContainer = isPreCodeblock || anyHighlighted;
+
+	if (forcedScheme) {
+		if (isCodeHost && isCodeContainer) {
+			return {
+				node: {
+					...node,
+					attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
+					children,
+				},
+				hasHighlighted: false,
+			};
+		}
+		if (isPreCodeblock && !hasCodeHostAncestor) {
+			return {
+				node: {
+					...node,
+					attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
+					children,
+				},
+				hasHighlighted: false,
+			};
+		}
 	}
 
 	return {
 		node: { ...node, children },
-		hasHighlighted: anyHighlighted,
+		hasHighlighted: isCodeContainer,
 	};
 }
 

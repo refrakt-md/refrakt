@@ -61,7 +61,7 @@ export const compare = createContentModelSchema({
 			? [new Tag('div', { 'data-name': 'header' }, [title])]
 			: [];
 
-		return createComponentRenderable({ rune: 'compare',
+		const renderable = createComponentRenderable({ rune: 'compare',
 			tag: 'div',
 			properties: {
 				layout: layoutMeta,
@@ -71,5 +71,9 @@ export const compare = createContentModelSchema({
 			},
 			children: [layoutMeta, ...header, panelsDiv],
 		});
+		// Opt in to the highlight transform's `theme.code.colorScheme` cascade —
+		// see comment in diff.ts.
+		renderable.attributes['data-code-host'] = true;
+		return renderable;
 	},
 });

@@ -180,7 +180,7 @@ export const diff = createContentModelSchema({
 			? [new Tag('div', { 'data-name': 'header' }, [title])]
 			: [];
 
-		return createComponentRenderable({ rune: 'diff',
+		const renderable = createComponentRenderable({ rune: 'diff',
 			tag: 'div',
 			properties: {
 				mode: modeMeta,
@@ -188,5 +188,10 @@ export const diff = createContentModelSchema({
 			},
 			children: [modeMeta, languageMeta, ...header, ...expanded],
 		});
+		// Opt in to the highlight transform's `theme.code.colorScheme` cascade:
+		// the override stamps `data-color-scheme` on `data-code-host` wrappers
+		// so the entire diff (chrome + code) flips together.
+		renderable.attributes['data-code-host'] = true;
+		return renderable;
 	},
 });

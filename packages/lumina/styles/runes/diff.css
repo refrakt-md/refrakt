@@ -77,4 +77,8 @@
 	flex: 1;
 	white-space: pre;
 	padding-right: 1rem;
+	/* Empty added/removed/equal lines have no text to lay out, so without an
+	 * explicit min-height the flex item collapses below the parent line's
+	 * 1.6em and the row reads visually shorter than its neighbours. */
+	min-height: 1.6em;
 }
