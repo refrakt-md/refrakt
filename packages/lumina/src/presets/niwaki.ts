@@ -22,33 +22,28 @@ import type { ThemeTokensConfig } from '@refrakt-md/types';
 const niwaki: ThemeTokensConfig = {
 	// Light-mode syntax — matsu / sakura / momiji / kuri / wakaba / ishi
 	syntax: {
-		keyword: '#2d5230',     // matsu — deep pine
-		function: '#b35070',    // sakura — cherry blossom
-		string: '#c4501c',      // momiji — autumn maple
-		// Template-literal expressions diverge to a brighter wakaba so
-		// the `${foo}` inside backticks reads distinctly from the
-		// surrounding momiji string.
-		'string-expression': '#8aa035',
-		number: '#9c721a',      // kuri — chestnut amber
-		type: '#6b8a35',        // wakaba — young leaf
+		keyword: '#eba073',     // wakaba light — bright young leaf
+		function: '#e8778f',    // sakura — redder cherry blossom
+		link: '#e87a39',        // matsu — pine
+		string: '#eba073',      // sakura light — softer pink
+		'string-expression': '#e8778f',
+		number: '#fdaf81',      // momiji light — warm orange
+		type: '#b4c97a',        // matsu — pine
 		comment: '#7d7062',     // ishi — warm stone (italic via rune CSS)
-		punctuation: '#8a7c6e', // muted ishi
-		variable: '#1c1a17',    // = neutral default's text (inherits as fallback)
+		punctuation: '#7d7062',
+		variable: '#f6f4ef',    // = neutral default's dark text
 	},
 
 	modes: {
 		dark: {
 			syntax: {
-				keyword: '#b4c97a',     // wakaba light — bright young leaf
+				keyword: '#eba073',     // wakaba light — bright young leaf
 				function: '#e8778f',    // sakura — redder cherry blossom
-				// token-link diverges to matsu so URLs stay visually
-				// distinct from the function/string pinks — avoids the
-				// cherry-on-cherry confusion `function`+`link` would
-				// otherwise share.
-				link: '#8ab589',        // matsu — pine
-				string: '#e89db0',      // sakura light — softer pink
+				link: '#e87a39',        // matsu — pine
+				string: '#eba073',      // sakura light — softer pink
+				'string-expression': '#e8778f',
 				number: '#fdaf81',      // momiji light — warm orange
-				type: '#8ab589',        // matsu — pine
+				type: '#b4c97a',        // matsu — pine
 				comment: '#7d7062',     // ishi — warm stone (italic via rune CSS)
 				punctuation: '#7d7062',
 				variable: '#f6f4ef',    // = neutral default's dark text

@@ -177,3 +177,68 @@ describe('highlight transform — dual themes', () => {
 		expect(hl.css).toContain(':root:not([data-theme="light"])');
 	});
 });
+
+describe('highlight transform — codeColorScheme', () => {
+	it('stamps data-color-scheme="dark" on <pre data-language>', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('pre', { 'data-language': 'javascript' }, [
+			tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('dark');
+	});
+
+	it('stamps data-color-scheme="light" on <pre data-language>', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'light',
+		});
+		const tree = tag('pre', { 'data-language': 'javascript' }, [
+			tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('light');
+	});
+
+	it('does not add the attribute when option is omitted or "auto"', async () => {
+		for (const opts of [{}, { codeColorScheme: 'auto' as const }]) {
+			const hl = await createHighlightTransform({ langs: ['javascript'], ...opts });
+			const tree = tag('pre', { 'data-language': 'javascript' }, [
+				tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+			]);
+
+			const result = hl(tree) as SerializedTag;
+			expect(result.attributes['data-color-scheme']).toBeUndefined();
+		}
+	});
+
+	it('does not stamp <pre> without data-language', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('pre', {}, [tag('code', {}, ['plain'])]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBeUndefined();
+	});
+
+	it('still highlights the inner <code>', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('pre', { 'data-language': 'javascript' }, [
+			tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		const code = result.children[0] as SerializedTag;
+		expect(code.attributes['data-codeblock']).toBe(true);
+	});
+});

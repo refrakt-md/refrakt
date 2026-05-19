@@ -1,4 +1,4 @@
-import { loadContent } from '@refrakt-md/content';
+import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
@@ -81,7 +81,7 @@ export async function getTheme() {
 export async function getHighlightTransform() {
 	if (_hl) return _hl;
 	const { createHighlightTransform } = await import('@refrakt-md/highlight');
-	_hl = await createHighlightTransform(site.highlight);
+	_hl = await createHighlightTransform(buildHighlightOptions(site));
 	return _hl;
 }
 

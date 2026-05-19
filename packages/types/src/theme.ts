@@ -32,6 +32,18 @@ export interface SiteThemeConfig {
 	/** Site-level per-mode overlays (e.g. `dark`). Layer on top of the theme's
 	 *  modes and any preset modes. */
 	modes?: Record<string, import('./token-contract.js').PartialTokenContract>;
+	/** Code-block-specific theme settings. */
+	code?: {
+		/** Force fenced code blocks to a specific colour scheme regardless of
+		 *  the surrounding page mode.
+		 *  - `'auto'` (default): code blocks follow the page's light/dark mode.
+		 *  - `'dark'` / `'light'`: stamp `data-color-scheme` on each `<pre>` so
+		 *    the cascade picks the matching scheme's values for syntax tokens,
+		 *    background, foreground, and border. Lets sites keep an
+		 *    always-dark code aesthetic on light pages (Stripe/Vercel-style)
+		 *    without hand-maintaining a parallel override stylesheet. */
+		colorScheme?: 'auto' | 'light' | 'dark';
+	};
 }
 
 /** Per-site configuration. A project may declare a single site (via `site`) or
