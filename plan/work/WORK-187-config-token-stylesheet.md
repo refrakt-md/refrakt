@@ -1,4 +1,4 @@
-{% work id="WORK-187" status="in-progress" priority="high" complexity="medium" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-187" status="done" priority="high" complexity="medium" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
 
 # Config-driven token stylesheet generation
 
@@ -35,5 +35,11 @@ Out of scope here: the actual token *values* for the neutral default (that's {% 
 - {% ref "SPEC-048" /%} — "Config is sugar over CSS, not a replacement" design principle
 - Existing `refrakt.config.json` validation (if any) — extend rather than parallel-implement
 - `packages/sveltekit` — Vite plugin where CSS injection order is currently controlled
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped across v0.14.0 Chunks 2 + 3 (commits ed12113a, f82bf685). `validateThemeTokensConfig`, `generateTokenStylesheet`, and `generateThemeStylesheet` live in `@refrakt-md/transform` and are wired through the SvelteKit plugin's `composeSiteTokensCss` (runs in `buildStart`), which serves the generated `:root { --rf-* }` declarations as the `virtual:refrakt/site-tokens.css` module loaded after Lumina's base CSS. Remaining unchecked criteria explicitly deferred to WORK-191 (adapter integration), which has also shipped.
 
 {% /work %}

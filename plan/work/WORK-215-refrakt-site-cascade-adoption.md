@@ -1,4 +1,4 @@
-{% work id="WORK-215" status="in-progress" priority="medium" complexity="small" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-215" status="done" priority="medium" complexity="small" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
 
 # Refrakt site adopts the tint cascade
 
@@ -35,5 +35,11 @@ Manual smoke test pass after deploying to dev server: click through every sectio
 
 - {% ref "SPEC-052" /%} — "Refrakt Site Adoption" section with the configuration table
 - Layout files: `site/content/_layout.md`, `site/content/docs/_layout.md`, `site/content/runes/_layout.md`, `site/content/plan/docs/_layout.md`
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: cascade frontmatter applied to `site/content/_layout.md` (`tint-mode: dark` + `tint-lock: true`), `site/content/docs/_layout.md`, `site/content/runes/_layout.md`, and `site/content/plan/docs/_layout.md` (all three with `tint-mode: auto` + `tint-lock: false`). `/plan/*` marketing routes correctly inherit the root's locked-dark default (no override). `site/src/hooks.server.ts` consumes the WORK-214 SSR helpers and splices `data-theme`/`data-tint-lock`/meta + the pre-paint script into the response via `transformPageChunk`. `ThemeToggle` from `@refrakt-md/svelte` mounted in `+layout.svelte`. Manual click-through + SSR snapshots remain post-merge spot checks per the work item's deferral note.
 
 {% /work %}

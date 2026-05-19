@@ -1,4 +1,4 @@
-{% work id="WORK-193" status="in-progress" priority="medium" complexity="small" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-193" status="done" priority="medium" complexity="small" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
 
 # Favicon and app icon set
 
@@ -31,5 +31,11 @@ Colours: the dark-mode default favicon uses white on the lumina dark navy (today
 
 - {% ref "SPEC-050" /%} — icon-scale previews, the "ship 16px as-is, revisit if blobby" decision
 - `site/static/` — current favicon assets to identify and replace
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: 18 prism PNGs committed at `packages/lumina/assets/logo/` (9 sizes — 16/24/32/48/64/96/180/192/512 — × 2 colour variants — `*-light.png` navy `#1d3557` on transparent, `*-dark.png` white on transparent), plus the canonical `prism.svg`. Reproducible via `packages/lumina/scripts/generate-favicons.mjs` (sharp-based, rewrites the SVG's embedded `prefers-color-scheme` rule to a fixed colour per variant). `site/src/app.html` references the right paths; old cube-mark PNGs were overwritten in place by WORK-194. `.ico`, `site.webmanifest`, and a separate dark-variant `<link>` remain explicitly deferred (the SVG favicon's embedded media query covers modern browsers).
 
 {% /work %}

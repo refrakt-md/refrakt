@@ -1,4 +1,4 @@
-{% work id="WORK-189" status="in-progress" priority="medium" complexity="small" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-189" status="done" priority="medium" complexity="small" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
 
 # theme.colorScheme initial state field
 
@@ -32,5 +32,11 @@ Locked-mode behaviour (no saved-preference override, no toggle UI) is establishe
 - {% ref "SPEC-048" /%} — "The site's initial mode is configurable, not hard-coded" design principle
 - {% ref "SPEC-052" /%} — per-page cascade that builds on this site-wide field
 - `@refrakt-md/svelte/ThemeShell` — component that owns `<html>` SSR
+
+## Resolution
+
+Completed: 2026-05-19
+
+Type-level portion shipped in v0.14.0 Chunk 1 (commit a7947bb0): `SiteThemeConfig.colorScheme: 'auto' | 'light' | 'dark'` is exported from `@refrakt-md/types/theme.ts` and accepted by the config validator. Per the work item's scope split, runtime SSR emission + pre-paint behaviour + locked-mode no-op were consolidated into WORK-214 (which has shipped) and the per-page extension into WORK-212/213/215 (all shipped). Documentation in a SPEC-048 reference page remains explicitly out of scope here.
 
 {% /work %}

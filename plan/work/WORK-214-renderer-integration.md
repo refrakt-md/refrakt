@@ -1,4 +1,4 @@
-{% work id="WORK-214" status="in-progress" priority="high" complexity="medium" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-214" status="done" priority="high" complexity="medium" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
 
 # Renderer integration + pre-paint script
 
@@ -49,5 +49,11 @@ For other adapters (Astro, Next, Eleventy, plain HTML) — the same `<html>` att
 
 - {% ref "SPEC-052" /%} — "SSR & Rendering" section
 - {% ref "WORK-211" /%} — toggle that pairs with this pre-paint script
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: `@refrakt-md/content` exports `htmlTintAttributes`, `colorSchemeMetaContent`, and `prePaintScript` from `tint-ssr.ts`. The pre-paint script is ~250 bytes (IIFE), reads `data-tint-lock` and no-ops on locked pages, otherwise applies `localStorage.rf-theme` with a `prefers-color-scheme` fallback. 17 unit tests in `tint-ssr.test.ts` cover the (tint, tintMode, locked) combination matrix. Adapter wiring + FOIT spot-check belong to WORK-215, which has also shipped.
 
 {% /work %}

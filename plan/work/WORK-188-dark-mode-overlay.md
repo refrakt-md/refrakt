@@ -1,4 +1,4 @@
-{% work id="WORK-188" status="in-progress" priority="high" complexity="medium" tags="dark-mode, tokens, config" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-188" status="done" priority="high" complexity="medium" tags="dark-mode, tokens, config" source="SPEC-048" milestone="v0.14.0" %}
 
 # Dark mode as PartialTokenContract overlay
 
@@ -50,5 +50,11 @@ Authors authoring custom themes specify only the deltas:
 
 - {% ref "SPEC-048" /%} — "Modes are partials over the base, not parallel contracts" design principle
 - `packages/lumina/tokens/dark.css` — file being migrated and eventually removed
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped in v0.14.0 Chunks 2 + 3. `ThemeTokensConfig.modes` accepts the partial overlay; `generateThemeStylesheet` emits both `[data-theme="dark"], [data-color-scheme="dark"]` and the `@media (prefers-color-scheme: dark)` block (verified by `token-stylesheet.test.ts`). Lumina's hand-authored `dark.css` continues to ship and is kept in lockstep with `luminaTokens.modes.dark` by a CSS-coverage test (`token-config-coverage.test.ts`) — the file-deletion criterion remains explicitly deferred per the work item's scope split, and the migration-note acceptance is owned by WORK-210.
 
 {% /work %}
