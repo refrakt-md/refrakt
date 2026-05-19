@@ -22,6 +22,9 @@
 							"primary-hover": "#ef91a3"
 						}
 					}
+				},
+				"code": {
+					"colorScheme": "dark"
 				}
 			},
 			"target": "svelte",

@@ -41,6 +41,22 @@ interface AssembledSiteContext {
 	icons: Record<string, Record<string, string>>;
 }
 
+/** Compose the options bag handed to `createHighlightTransform`. Merges the
+ *  site's `highlight.*` block with theme-level code settings (`theme.code.*`)
+ *  so a single object reaches the transform — keeps adapter call sites tidy
+ *  and lets the highlight package stay unaware of where each option comes
+ *  from. Exported so non-SvelteKit adapters (HTML build script, Astro setup,
+ *  custom hosts) can compose options the same way. */
+export function buildHighlightOptions(site: SiteConfig) {
+	const themeCode = typeof site.theme === 'object' && site.theme !== null
+		? site.theme.code
+		: undefined;
+	return {
+		...(site.highlight ?? {}),
+		...(themeCode?.colorScheme ? { codeColorScheme: themeCode.colorScheme } : {}),
+	};
+}
+
 /** Resolve a site's theme module + plugin merges into a single context object.
  *  Shared between the FS loader and the virtual loader so both produce
  *  byte-identical transforms from the same SiteConfig. */
@@ -144,7 +160,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 		async getHighlightTransform(): Promise<{ (tree: any): any; css: string }> {
 			if (_hl) return _hl;
 			const { createHighlightTransform } = await import('@refrakt-md/highlight');
-			_hl = await createHighlightTransform(site.highlight);
+			_hl = await createHighlightTransform(buildHighlightOptions(site));
 			return _hl;
 		},
 
@@ -233,7 +249,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 		async getHighlightTransform(): Promise<{ (tree: any): any; css: string }> {
 			if (_hl) return _hl;
 			const { createHighlightTransform } = await import('@refrakt-md/highlight');
-			_hl = await createHighlightTransform(site.highlight);
+			_hl = await createHighlightTransform(buildHighlightOptions(site));
 			return _hl;
 		},
 

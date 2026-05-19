@@ -22,6 +22,13 @@ export interface HighlightOptions {
 	 *  Default: CSS variables theme emitting `--rf-syntax-*` custom properties
 	 *  (see SPEC-048 — the contract surface that hides the highlighter from themes). */
 	theme?: string | { light: string; dark: string };
+	/** Force fenced code blocks to a fixed colour scheme regardless of the page's
+	 *  light/dark mode. When set to `'light'` or `'dark'`, every `<pre>` carrying
+	 *  a `data-language` attribute is stamped with `data-color-scheme=<value>`
+	 *  so the existing token cascade (`[data-color-scheme="dark"]` rules in
+	 *  Lumina and in the generated site-tokens.css) flips that subtree's
+	 *  syntax + code-surface variables. Default `'auto'` (no attribute added). */
+	codeColorScheme?: 'auto' | 'light' | 'dark';
 }
 
 /** A highlight transform function with an attached `.css` property containing
@@ -51,7 +58,10 @@ const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
 export async function createHighlightTransform(
 	options: HighlightOptions = {}
 ): Promise<HighlightTransform> {
-	const { langs = DEFAULT_LANGS, highlight: customHighlight, theme } = options;
+	const { langs = DEFAULT_LANGS, highlight: customHighlight, theme, codeColorScheme } = options;
+	const forcedScheme = codeColorScheme === 'light' || codeColorScheme === 'dark'
+		? codeColorScheme
+		: undefined;
 
 	let highlightFn: (code: string, lang: string) => string;
 	let css = '';
@@ -96,7 +106,7 @@ export async function createHighlightTransform(
 		};
 	}
 
-	const transform = ((tree: RendererNode) => walk(tree, highlightFn)) as HighlightTransform;
+	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme)) as HighlightTransform;
 	transform.css = css;
 	return transform;
 }
@@ -158,7 +168,11 @@ pre[data-language] {
 }
 
 /** Walk the serialized tree, highlighting elements with `data-language`. */
-function walk(node: RendererNode, highlightFn: (code: string, lang: string) => string): RendererNode {
+function walk(
+	node: RendererNode,
+	highlightFn: (code: string, lang: string) => string,
+	forcedScheme: 'light' | 'dark' | undefined,
+): RendererNode {
 	if (node === null || node === undefined) return node;
 	if (typeof node === 'string' || typeof node === 'number') return node;
 	if (!isTag(node)) return node;
@@ -169,9 +183,22 @@ function walk(node: RendererNode, highlightFn: (code: string, lang: string) => s
 		return highlightNode(node, lang, highlightFn);
 	}
 
+	// `<pre data-language>` is the codeblock wrapper. Stamp the forced colour
+	// scheme on it before recursing — `data-color-scheme` cascades through the
+	// pre's CSS custom properties (background, foreground, all syntax tokens),
+	// which is what the inline Shiki spans inside resolve `var(--rf-syntax-*)`
+	// against. The `<code>` child gets highlighted via the recursion below.
+	if (forcedScheme && lang && node.name === 'pre') {
+		return {
+			...node,
+			attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
+			children: node.children.map(c => walk(c, highlightFn, forcedScheme)),
+		};
+	}
+
 	return {
 		...node,
-		children: node.children.map(c => walk(c, highlightFn)),
+		children: node.children.map(c => walk(c, highlightFn, forcedScheme)),
 	};
 }
 

@@ -109,7 +109,7 @@ Syntax colours are mustard-keyword + frosted-blue (no relation to the niwaki spe
 - Keyword: #f2cc8f
 - Function: #70b4c0
 - String: #a8dadc
-- Number: #e8c07a
+- Constant: #e8c07a
 - Comment: #5a7a90
 {% /palette %}
 

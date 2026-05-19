@@ -40,27 +40,34 @@ export function tokenPathToCssVar(path: readonly string[]): string {
 /**
  * Map a contract `syntax.<role>` key to the matching Shiki alias names —
  * `--rf-syntax-token-*`. Shiki's `createCssVariablesTheme` hardcodes the
- * `token-` segment, and a couple of the contract names (`number`,
- * `variable`) map to differently-named Shiki tokens (`constant`,
- * `parameter`).
+ * `token-` segment, and one of the contract names (`variable`) maps to a
+ * differently-named Shiki token (`parameter`).
  *
- * `syntax.function` seeds both `token-function` and `token-link` —
- * link tokens default to function. `syntax.string` seeds both
- * `token-string` and `token-string-expression` — template-literal
- * expressions default to the surrounding string colour. Themes that
- * want either pair to diverge declare `syntax.link` or
- * `syntax.string-expression` explicitly (handled below the broad map).
+ * `syntax.function` seeds both `token-function` and `token-link` — link
+ * tokens default to function. `syntax.string` seeds both `token-string`
+ * and `token-string-expression` — template-literal expressions default
+ * to the surrounding string colour. Themes that want either pair to
+ * diverge declare `syntax.link` or `syntax.string-expression` explicitly
+ * (handled below the broad map).
  *
- * `syntax.type` is intentionally absent — Shiki has no matching token
- * (it groups type-like roles into `keyword` / `entity-name` depending on
- * grammar). Themes that want a distinct `type` colour use the contract
- * variable `--rf-syntax-type` from their own CSS.
+ * `syntax.constant` covers numeric literals plus boolean/null/Symbol —
+ * Shiki paints them all from one slot, so the contract surface mirrors
+ * Shiki's vocabulary rather than the language-specific intuition of
+ * "number". There used to be a separate `number` field that seeded
+ * `token-constant`; it was a phantom (the `--rf-syntax-number` contract
+ * variable had no Shiki reader) and was removed.
+ *
+ * There is intentionally no `type` mapping — Shiki's css-variables theme
+ * has no `token-type` slot (it paints type names as `entity-name` →
+ * `token-function`, and built-in types like `string` as `token-constant`).
+ * Themes that want a distinct type colour need a custom highlighter,
+ * not a contract token.
  */
 const SYNTAX_TO_SHIKI_ALIASES: Record<string, readonly string[]> = {
 	keyword: ['token-keyword'],
 	function: ['token-function', 'token-link'],
 	string: ['token-string', 'token-string-expression'],
-	number: ['token-constant'],
+	constant: ['token-constant'],
 	comment: ['token-comment'],
 	punctuation: ['token-punctuation'],
 	variable: ['token-parameter'],

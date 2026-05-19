@@ -1,4 +1,4 @@
-import { loadContent } from '@refrakt-md/content';
+import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
 import { renderFullPage } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
@@ -86,7 +86,7 @@ async function build() {
 	const transform = createTransform(finalConfig);
 
 	// Create highlight transform
-	const hl = await createHighlightTransform(site.highlight);
+	const hl = await createHighlightTransform(buildHighlightOptions(site));
 
 	// Build theme object for HTML adapter
 	const themeManifestModule = await import(themePackage + '/manifest', { with: { type: 'json' } });

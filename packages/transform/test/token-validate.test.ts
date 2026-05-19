@@ -117,7 +117,7 @@ describe('validateThemeTokensConfig', () => {
 			},
 			syntax: {
 				keyword: '#2a5c63', function: '#4a3b6e', string: '#8a3a3a',
-				number: '#876327', type: '#3a5c2a', comment: '#8a857d',
+				constant: '#876327', comment: '#8a857d',
 				punctuation: '#6b6661', variable: '#1c1a17',
 			},
 			modes: {

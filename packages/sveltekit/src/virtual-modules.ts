@@ -145,6 +145,11 @@ function generateContentModule(config: SiteConfig, buildCtx: BuildContext): stri
 
 	const siteName = buildCtx.siteName ? JSON.stringify(buildCtx.siteName) : 'undefined';
 
+	// `dev: false` keeps the loader's site cache enabled in both dev and build.
+	// In dev, the Vite plugin's HMR hook (see `setupContentHmr` in plugin.ts)
+	// is responsible for calling `invalidateSite()` whenever a watched `.md`
+	// file changes — so navigations reuse the cached site (fast) and content
+	// edits still surface on the next reload (correct).
 	return [
 		`import { createRefraktLoader } from '@refrakt-md/content';`,
 		``,
@@ -152,7 +157,7 @@ function generateContentModule(config: SiteConfig, buildCtx: BuildContext): stri
 		`\tconfigPath: ${configPath},`,
 		`\tsite: ${siteName},`,
 		`\tvariables: ${variablesExpr},`,
-		`\tdev: import.meta.env.DEV,`,
+		`\tdev: false,`,
 		`});`,
 		``,
 		`export const getSite = () => _loader.getSite();`,
