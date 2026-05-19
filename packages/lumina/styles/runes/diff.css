@@ -35,6 +35,12 @@
 	font-size: 0.8125rem;
 	line-height: 1.6;
 }
+/* Split panels are roughly half the width of the unified column, so the
+ * same font-size reads visually larger relative to its container. Tighten
+ * it down for side-by-side so the two panels stay comfortable to scan. */
+.rf-diff--split .rf-diff__code {
+	font-size: 0.75rem;
+}
 .rf-diff__line {
 	display: flex;
 	min-height: 1.6em;
