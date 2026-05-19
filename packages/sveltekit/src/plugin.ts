@@ -264,7 +264,26 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			const examplesDir = activeSite.sandbox?.examplesDir
 				? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
 				: undefined;
-			setupContentHmr(server, activeSite.contentDir, examplesDir);
+
+			// On .md changes, drop the cached Site so the next SSR pass rebuilds
+			// it. The virtual content module memoizes the loader's `getSite()`
+			// result (see `dev: false` in virtual-modules.ts); without this hook
+			// the cache would survive edits and serve stale content. Skipping
+			// the call when the module hasn't been loaded yet avoids paying for
+			// a fresh evaluation just to invalidate nothing.
+			const invalidate = async () => {
+				const resolvedId = '\0virtual:refrakt/content';
+				if (!server.moduleGraph.getModuleById(resolvedId)) return;
+				try {
+					const mod = await server.ssrLoadModule('virtual:refrakt/content');
+					(mod as { invalidateSite?: () => void }).invalidateSite?.();
+				} catch {
+					// Module failed to load (e.g. transient error during HMR);
+					// the next request will surface the real error.
+				}
+			};
+
+			setupContentHmr(server, activeSite.contentDir, examplesDir, invalidate);
 		},
 	};
 }
