@@ -166,6 +166,19 @@ export interface SyntaxTokens {
 	comment: string;
 	punctuation: string;
 	variable: string;
+
+	/** URL/link tokens — markdown links, autolinks, comment URLs. Optional;
+	 *  the generator defaults `--rf-syntax-token-link` to `function` when this
+	 *  isn't set, so themes that don't care about distinguishing link from
+	 *  function can omit it. Set explicitly when you want a distinct colour. */
+	link?: string;
+
+	/** Interpolated expressions inside template literals (the `${foo}` part
+	 *  of a backtick string). Optional; the generator defaults
+	 *  `--rf-syntax-token-string-expression` to `string` when this isn't set.
+	 *  Set explicitly when you want template-literal expressions to read
+	 *  distinctly from the surrounding string. */
+	'string-expression'?: string;
 }
 
 /** Recursive deep-partial. Every namespace optional; every leaf optional. */

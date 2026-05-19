@@ -64,6 +64,9 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 	syntax: {
 		keyword: 'leaf', function: 'leaf', string: 'leaf', number: 'leaf',
 		type: 'leaf', comment: 'leaf', punctuation: 'leaf', variable: 'leaf',
+		// Optional refinements — themes use these to break the function→link
+		// and string→string-expression auto-derive defaults.
+		link: 'leaf', 'string-expression': 'leaf',
 	},
 };
 

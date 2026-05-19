@@ -171,49 +171,27 @@ export const luminaTokens: ThemeTokensConfig = {
 				variable: '#f6f4ef',    // = dark color.text
 			},
 
-			// Dark-mode Shiki aliases + legacy inline-code-bg name. Literal hex so
-			// each mode controls its own Shiki rendering independently.
+			// Legacy alias — kept until the rename is fully rolled out. All the
+			// `rf-syntax-*` Shiki aliases (foreground/background/token-*) are
+			// auto-derived from the `syntax.*` and `color.{text,code.bg}` values
+			// above by the generator.
 			extra: {
 				'rf-color-inline-code-bg': '#2b2b29',
-				'rf-syntax-foreground': '#f6f4ef',
-				'rf-syntax-background': '#222220',
-				'rf-syntax-token-keyword': '#7eb6bc',
-				'rf-syntax-token-function': '#a89bc7',
-				'rf-syntax-token-string': '#c79a9a',
-				'rf-syntax-token-string-expression': '#c79a9a',
-				'rf-syntax-token-constant': '#d4b07e',
-				'rf-syntax-token-comment': '#6b6661',
-				'rf-syntax-token-parameter': '#f6f4ef',
-				'rf-syntax-token-punctuation': '#94908a',
-				'rf-syntax-token-link': '#a89bc7',
 			},
 		},
 	},
 
-	/** Lumina-specific tokens outside the universal contract.
+	/** Lumina-specific tokens outside the universal contract. `rf-color-
+	 *  inline-code-bg` is the legacy variable name for what the contract
+	 *  calls `color.code.inline-bg` (→ `--rf-color-code-inline-bg`).
+	 *  Aliased here so downstream CSS that reads the old name keeps
+	 *  working through v0.14.0; rename target is a future cleanup.
 	 *
-	 *  - `rf-color-inline-code-bg` is the legacy variable name for what the
-	 *    contract calls `color.code.inline-bg` (→ `--rf-color-code-inline-bg`).
-	 *    Aliased here so downstream CSS that reads the old name keeps working
-	 *    through v0.14.0; rename target is a future cleanup.
-	 *  - `rf-syntax-foreground`/`background` and `rf-syntax-token-*` are the
-	 *    custom property names Shiki's CSS-variables theme actually emits
-	 *    (`token-` is hardcoded inside Shiki's `createCssVariablesTheme`).
-	 *    Emitted as literal hex values so each mode controls its own Shiki
-	 *    rendering independently — dark mode supplies its own overrides via
-	 *    `modes.dark.extra`. */
+	 *  The Shiki aliases (`--rf-syntax-foreground`, `--rf-syntax-background`,
+	 *  and `--rf-syntax-token-*`) are auto-derived by the generator from
+	 *  `color.text`, `color.code.bg`, and `syntax.*` — no need to repeat
+	 *  them here. */
 	extra: {
 		'rf-color-inline-code-bg': '#e6e5e3',
-		'rf-syntax-foreground': '#1c1a17',
-		'rf-syntax-background': '#ebeae8',
-		'rf-syntax-token-keyword': '#2a5c63',
-		'rf-syntax-token-function': '#4a3b6e',
-		'rf-syntax-token-string': '#8a3a3a',
-		'rf-syntax-token-string-expression': '#8a3a3a',
-		'rf-syntax-token-constant': '#876327',
-		'rf-syntax-token-comment': '#8a857d',
-		'rf-syntax-token-parameter': '#1c1a17',
-		'rf-syntax-token-punctuation': '#6b6661',
-		'rf-syntax-token-link': '#4a3b6e',
 	},
 };

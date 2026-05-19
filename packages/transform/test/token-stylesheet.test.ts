@@ -151,4 +151,102 @@ describe('generateThemeStylesheet', () => {
 		const b = generateThemeStylesheet(config);
 		expect(a).toBe(b);
 	});
+
+	it('auto-derives Shiki aliases from syntax.* contract entries', () => {
+		const config: ThemeTokensConfig = {
+			syntax: {
+				keyword: '#aaa',
+				function: '#bbb',
+				string: '#ccc',
+				number: '#ddd',
+				comment: '#eee',
+				punctuation: '#fff',
+				variable: '#111',
+			},
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-token-keyword: #aaa;');
+		expect(css).toContain('--rf-syntax-token-function: #bbb;');
+		expect(css).toContain('--rf-syntax-token-link: #bbb;'); // defaults to function
+		expect(css).toContain('--rf-syntax-token-string: #ccc;');
+		expect(css).toContain('--rf-syntax-token-string-expression: #ccc;');
+		expect(css).toContain('--rf-syntax-token-constant: #ddd;'); // number → constant
+		expect(css).toContain('--rf-syntax-token-comment: #eee;');
+		expect(css).toContain('--rf-syntax-token-punctuation: #fff;');
+		expect(css).toContain('--rf-syntax-token-parameter: #111;'); // variable → parameter
+	});
+
+	it('auto-derives Shiki foreground/background from color.text and color.code.bg', () => {
+		const config: ThemeTokensConfig = {
+			color: {
+				text: '#1c1a17',
+				code: { bg: '#ebeae8', text: '#1c1a17' },
+			},
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-foreground: #1c1a17;');
+		expect(css).toContain('--rf-syntax-background: #ebeae8;');
+	});
+
+	it('auto-derives Shiki aliases per mode from modes.<name>.syntax.*', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { keyword: '#aaa' },
+			modes: {
+				dark: { syntax: { keyword: '#fff' } },
+			},
+		};
+		const css = generateThemeStylesheet(config);
+		// Base block has light value
+		expect(css).toMatch(/\[data-color-scheme="light"\][\s\S]*--rf-syntax-token-keyword: #aaa;/);
+		// Dark block has dark value
+		expect(css).toMatch(/\[data-theme="dark"\][\s\S]*--rf-syntax-token-keyword: #fff;/);
+	});
+
+	it('explicit extra entries override auto-derived Shiki aliases', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb' },
+			// Override token-link to a distinct colour instead of letting it
+			// auto-derive from function.
+			extra: { 'rf-syntax-token-link': '#999' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-token-function: #bbb;');
+		expect(css).toContain('--rf-syntax-token-link: #999;');
+		expect(css).not.toContain('--rf-syntax-token-link: #bbb;');
+	});
+
+	it('first-class syntax.link overrides the function→link broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb', link: '#999' },
+		};
+		const css = generateThemeStylesheet(config);
+		// Contract variable for link is emitted
+		expect(css).toContain('--rf-syntax-link: #999;');
+		// Token-function keeps function's colour
+		expect(css).toContain('--rf-syntax-token-function: #bbb;');
+		// Token-link picks up the refinement, not the function default
+		expect(css).toContain('--rf-syntax-token-link: #999;');
+		expect(css).not.toContain('--rf-syntax-token-link: #bbb;');
+	});
+
+	it('first-class syntax.string-expression overrides the string→string-expression broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { string: '#ccc', 'string-expression': '#abc' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-string-expression: #abc;');
+		expect(css).toContain('--rf-syntax-token-string: #ccc;');
+		expect(css).toContain('--rf-syntax-token-string-expression: #abc;');
+		expect(css).not.toContain('--rf-syntax-token-string-expression: #ccc;');
+	});
+
+	it('does not auto-derive when the layer has no syntax/color tokens', () => {
+		const config: ThemeTokensConfig = {
+			radius: { md: '8px' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).not.toContain('--rf-syntax-token-');
+		expect(css).not.toContain('--rf-syntax-foreground');
+		expect(css).not.toContain('--rf-syntax-background');
+	});
 });

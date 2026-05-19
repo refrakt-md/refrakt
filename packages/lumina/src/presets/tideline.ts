@@ -128,37 +128,22 @@ const tideline: ThemeTokensConfig = {
 				variable: '#b8d6e2',
 			},
 
-			// Dark-mode Shiki aliases + legacy inline-code-bg name.
+			// All `rf-syntax-*` Shiki aliases (token-*, foreground) auto-derive
+			// from `syntax.*` and `color.text` above. `rf-syntax-background`
+			// is set explicitly because tideline uses a deeper navy for the
+			// Shiki bg (#0c162a) than the outer `color.code.bg` (#152238).
 			extra: {
 				'rf-color-inline-code-bg': 'rgba(168, 218, 220, 0.08)',
-				'rf-syntax-foreground': '#f1faee',
 				'rf-syntax-background': '#0c162a',
-				'rf-syntax-token-keyword': '#f2cc8f',
-				'rf-syntax-token-function': '#a8dadc',
-				'rf-syntax-token-string': '#a8dadc',
-				'rf-syntax-token-string-expression': '#a8dadc',
-				'rf-syntax-token-constant': '#e8c07a',
-				'rf-syntax-token-comment': '#5a7a90',
-				'rf-syntax-token-parameter': '#b8d6e2',
-				'rf-syntax-token-punctuation': '#70b4c0',
-				'rf-syntax-token-link': '#a8dadc',
 			},
 		},
 	},
 
+	// Shiki aliases auto-derive from `syntax.*` and `color.{text,code.bg}`
+	// above. Only the legacy `rf-color-inline-code-bg` alias needs an
+	// explicit entry.
 	extra: {
 		'rf-color-inline-code-bg': '#f9ebcc',
-		'rf-syntax-foreground': '#f1faee',
-		'rf-syntax-background': '#1d3557',
-		'rf-syntax-token-keyword': '#f2cc8f',
-		'rf-syntax-token-function': '#70b4c0',
-		'rf-syntax-token-string': '#a8dadc',
-		'rf-syntax-token-string-expression': '#a8dadc',
-		'rf-syntax-token-constant': '#e8c07a',
-		'rf-syntax-token-comment': '#5a7a90',
-		'rf-syntax-token-parameter': '#b8d6e2',
-		'rf-syntax-token-punctuation': '#a8dadc',
-		'rf-syntax-token-link': '#70b4c0',
 	},
 };
 
