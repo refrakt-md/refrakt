@@ -1,4 +1,4 @@
-{% work id="WORK-205" status="in-progress" priority="high" complexity="small" tags="lumina, presets, niwaki, syntax-highlighting" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-205" status="done" priority="high" complexity="small" tags="lumina, presets, niwaki, syntax-highlighting" source="SPEC-051" milestone="v0.14.0" %}
 
 # Niwaki preset module
 
@@ -37,5 +37,11 @@ The composition test is the most important verification — confirms the scoped-
 
 - {% ref "SPEC-051" /%} — "The Niwaki Preset" section with the full palette table and rationale
 - "Cultural sensitivity" note in SPEC-051 — re-state in the README
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: `packages/lumina/src/presets/niwaki.ts` exports a syntax-only `ThemeTokensConfig`. The initial kuri/wakaba-rich palette landed in v0.14.0 Chunk 6 (commit 0ba6f5fe); follow-up passes refined it — PR #341 (`Niwaki: drop the redundant extra block, use first-class refinements`) moved Shiki refinements onto the contract surface, and PR #342 (`Code colorScheme + dev cache + syntax contract cleanup`) migrated the preset onto the simplified `constant`-as-direct-slot contract and refreshed the palette to the wakaba/sakura/matsu/momiji/ishi five-element mapping in both light and dark modes. Composition with tideline verified via the merge pipeline. README deferred to WORK-208.
 
 {% /work %}

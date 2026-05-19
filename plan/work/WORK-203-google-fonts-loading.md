@@ -1,4 +1,4 @@
-{% work id="WORK-203" status="in-progress" priority="medium" complexity="small" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-203" status="done" priority="medium" complexity="small" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
 
 # Configure Google Fonts loading
 
@@ -33,5 +33,11 @@ Privacy / GDPR note: Google Fonts CDN logs IP addresses. The lumina README shoul
 
 - {% ref "SPEC-051" /%} — typography decisions for neutral default and tideline
 - Open question in SPEC-051 about self-hosting — explicitly deferred per the author's "no font self hosting at this point" decision
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: `site/src/app.html` includes preconnect tags for `fonts.googleapis.com` and `fonts.gstatic.com`, plus a Google Fonts CSS link for Inter (300–700) and JetBrains Mono (400/500/700) with `&display=swap`. `luminaTokens.font.sans` / `font.mono` reference the matching family names + fallback stacks. Tideline's `font.*` overrides ship with WORK-204 (Plex Sans / Plex Mono) and niwaki doesn't touch `font.*` per WORK-205. Lighthouse FOIT verification + a self-hosting README note remain post-merge / out-of-scope per the work item's deferral notes.
 
 {% /work %}

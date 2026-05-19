@@ -1,4 +1,4 @@
-{% work id="WORK-204" status="in-progress" priority="high" complexity="medium" tags="lumina, presets, tideline" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-204" status="done" priority="high" complexity="medium" tags="lumina, presets, tideline" source="SPEC-051" milestone="v0.14.0" %}
 
 # Tideline preset module
 
@@ -33,5 +33,11 @@ The font change is documented prominently in the README — existing tideline us
 
 - {% ref "SPEC-051" /%} — "The Tideline Preset" section
 - `packages/lumina/src/config.ts` (post-{% ref "WORK-191" /%}, pre-{% ref "WORK-200" /%}) — source of truth for the values being captured
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped: `packages/lumina/src/presets/tideline.ts` exports a `ThemeTokensConfig` covering the previous cream-and-navy chrome (body + surface + status + syntax + code, plus the deeper `#0c162a` dark syntax background) and upgrades typography to IBM Plex Sans / Plex Mono. Wired through the package's exports map at `./presets/tideline`. Composition against Lumina's neutral base verified via `composeSiteTokensCss` (the SvelteKit plugin loads + merges the preset at `buildStart`). Tints are not redefined; they inherit cleanly from Lumina's theme config. README deferred to WORK-208 (preset docs pages, shipped).
 
 {% /work %}

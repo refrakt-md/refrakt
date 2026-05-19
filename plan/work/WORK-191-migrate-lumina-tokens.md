@@ -1,4 +1,4 @@
-{% work id="WORK-191" status="in-progress" priority="high" complexity="medium" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-191" status="done" priority="high" complexity="medium" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
 
 # Migrate existing Lumina tokens to the new contract
 
@@ -39,5 +39,11 @@ This is the work item that lets later items in the milestone proceed against a c
 
 - {% ref "SPEC-048" /%} — the contract this work materialises in Lumina
 - `packages/lumina/tokens/base.css`, `packages/lumina/tokens/dark.css` — files being migrated
+
+## Resolution
+
+Completed: 2026-05-19
+
+Shipped in v0.14.0 Chunk 3 (commit f82bf685). `luminaTokens` exported from `@refrakt-md/lumina/transform` carries every `--rf-*` declaration as a typed `ThemeTokensConfig` (60+ tokens plus the `modes.dark` overlay). Hand-authored `tokens/base.css` and `tokens/dark.css` continue to ship; kept in lockstep with the config source-of-truth by `packages/lumina/test/token-config-coverage.test.ts`, which fails CI on drift. CSS-deletion + pixel-diff visual regression are explicitly deferred per the work item's scope split and tracked as a follow-up alongside build-time CSS generation.
 
 {% /work %}

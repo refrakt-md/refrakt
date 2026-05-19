@@ -1,4 +1,4 @@
-{% work id="WORK-190" status="in-progress" priority="high" complexity="medium" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-190" status="done" priority="high" complexity="medium" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
 
 # Preset loading and merge order
 
@@ -36,5 +36,11 @@ Out of scope: the actual tideline and niwaki preset modules themselves (those ar
 - {% ref "SPEC-048" /%} — "Presets are plain data" design principle
 - {% ref "SPEC-051" /%} — flagship presets (tideline, niwaki) that consume this mechanism
 - {% ref "SPEC-053" /%} — `extends` field at the tint level; analogous to but separate from preset extension
+
+## Resolution
+
+Completed: 2026-05-19
+
+All 8 acceptance criteria checked. `loadPreset`/`loadPresets` exported from `@refrakt-md/transform` (preset-loader.ts) with clear error messages on resolution failure; `mergeTokenContracts`/`mergeThemeTokensConfigs` (token-merge.ts) walk the contract tree explicitly for deterministic deep-merge, separating base from per-mode layers. The final merge order (theme base → presets in declared order → site `theme.tokens` → site `theme.modes`) is implemented by `composeSiteTokensCss` in the SvelteKit plugin. Composition verified by 15 merge tests + 7 loader tests + the niwaki-on-tideline composition path used by the docs site.
 
 {% /work %}
