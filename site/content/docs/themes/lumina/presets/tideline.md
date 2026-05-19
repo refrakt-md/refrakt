@@ -54,7 +54,7 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 - Surface raised: #ffffff
 {% /palette %}
 
-{% palette title="Tideline — dark" showContrast=true showA11y=true %}
+{% palette title="Tideline — dark" tint-mode="dark" showContrast=true showA11y=true %}
 - Background: #152238
 - Text: #f1faee
 - Muted: #a8dadc
