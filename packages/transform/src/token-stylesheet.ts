@@ -37,6 +37,70 @@ export function tokenPathToCssVar(path: readonly string[]): string {
 	return `--rf-${segments.join('-')}`;
 }
 
+/**
+ * Map a contract `syntax.<role>` key to the matching Shiki alias names —
+ * `--rf-syntax-token-*`. Shiki's `createCssVariablesTheme` hardcodes the
+ * `token-` segment, and a couple of the contract names (`number`,
+ * `variable`) map to differently-named Shiki tokens (`constant`,
+ * `parameter`).
+ *
+ * `syntax.string` populates two Shiki tokens (`string` and
+ * `string-expression`); `syntax.function` additionally seeds `token-link`
+ * so URL/link tokens get a sensible default (themes can override `link`
+ * via `extra` if they want a distinct colour).
+ *
+ * `syntax.type` is intentionally absent — Shiki has no matching token
+ * (it groups type-like roles into `keyword` / `entity-name` depending on
+ * grammar). Themes that want a distinct `type` colour use the contract
+ * variable `--rf-syntax-type` from their own CSS.
+ */
+const SYNTAX_TO_SHIKI_ALIASES: Record<string, readonly string[]> = {
+	keyword: ['token-keyword'],
+	function: ['token-function', 'token-link'],
+	string: ['token-string', 'token-string-expression'],
+	number: ['token-constant'],
+	comment: ['token-comment'],
+	punctuation: ['token-punctuation'],
+	variable: ['token-parameter'],
+};
+
+/**
+ * Derive the Shiki-alias `extra` entries implied by a layer's
+ * `syntax.*` and code/text colour tokens. Returned map is keyed by the
+ * raw alias name (without the `--` prefix) so it can be merged with
+ * {@link ThemeTokensConfig.extra} directly. Explicit entries in the
+ * caller's `extra` always win — this helper only fills gaps.
+ */
+function deriveSyntaxAliases(
+	layer: { syntax?: Record<string, unknown>; color?: Record<string, unknown> },
+): Record<string, string> {
+	const aliases: Record<string, string> = {};
+
+	if (layer.syntax) {
+		for (const [role, value] of Object.entries(layer.syntax)) {
+			if (typeof value !== 'string') continue;
+			const targets = SYNTAX_TO_SHIKI_ALIASES[role];
+			if (!targets) continue;
+			for (const target of targets) {
+				aliases[`rf-syntax-${target}`] = value;
+			}
+		}
+	}
+
+	const color = layer.color as Record<string, unknown> | undefined;
+	if (color) {
+		if (typeof color.text === 'string') {
+			aliases['rf-syntax-foreground'] = color.text;
+		}
+		const code = color.code as Record<string, unknown> | undefined;
+		if (code && typeof code.bg === 'string') {
+			aliases['rf-syntax-background'] = code.bg;
+		}
+	}
+
+	return aliases;
+}
+
 export interface GenerateStylesheetOptions {
 	/** CSS selector to wrap the declarations in. Default: `:root`. */
 	selector?: string;
@@ -103,6 +167,12 @@ export function generateTokenStylesheet(
  * each {@link ThemeTokensModeOverlay}) attaches to the explicit selector
  * block — useful when a Shiki-style alias needs different values in
  * light vs dark.
+ *
+ * Each layer's `syntax.*` and code/text colour entries auto-derive the
+ * matching Shiki aliases (`--rf-syntax-token-*`, `--rf-syntax-foreground`,
+ * `--rf-syntax-background`) so themes don't have to declare them twice.
+ * Explicit `extra` entries override the derived values, so callers can
+ * still diverge a single token from its contract counterpart when needed.
  */
 export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	const { modes, extra, ...base } = config;
@@ -110,7 +180,7 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 
 	const baseBlock = generateTokenStylesheet(base as PartialTokenContract, {
 		selector: ':root, [data-color-scheme="light"]',
-		extra,
+		extra: { ...deriveSyntaxAliases(base), ...extra },
 	});
 	if (baseBlock) blocks.push(baseBlock);
 
@@ -120,9 +190,12 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 				extra?: Record<string, string>;
 			} & PartialTokenContract;
 
+			const derivedAliases = deriveSyntaxAliases(modeTokens);
+			const mergedExtra = { ...derivedAliases, ...modeExtra };
+
 			const explicit = generateTokenStylesheet(modeTokens, {
 				selector: `[data-theme="${name}"], [data-color-scheme="${name}"]`,
-				extra: modeExtra,
+				extra: mergedExtra,
 			});
 			if (explicit) blocks.push(explicit);
 
@@ -133,7 +206,7 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 				const opposite = name === 'dark' ? 'light' : 'dark';
 				const system = generateTokenStylesheet(modeTokens, {
 					selector: `@media (prefers-color-scheme: ${name}) {\n\t:root:not([data-theme="${opposite}"])`,
-					extra: modeExtra,
+					extra: mergedExtra,
 				});
 				if (system) {
 					// Close the @media wrapper we opened in the selector.
