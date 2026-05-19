@@ -109,14 +109,15 @@ export const luminaTokens: ThemeTokensConfig = {
 		lg: '0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)',
 	},
 
-	// The "quiet spectrum walk": teal → violet → rust → ochre → sage — cool,
-	// cool, warm, warm, cool/warm. Spectrum-adjacent without shouting.
+	// The "quiet spectrum walk": teal → violet → rust → ochre — cool, cool,
+	// warm, warm. Spectrum-adjacent without shouting. `constant` covers
+	// numeric literals + boolean/null/Symbol (Shiki paints them all from
+	// one slot).
 	syntax: {
 		keyword: '#2a5c63',     // deep teal
 		function: '#4a3b6e',    // slate violet
 		string: '#8a3a3a',      // warm rust
-		number: '#876327',      // antique ochre
-		type: '#3a5c2a',        // sage moss
+		constant: '#876327',    // antique ochre
 		comment: '#8a857d',     // warm muted (italic via rune CSS)
 		punctuation: '#6b6661', // tonal — same as color.muted
 		variable: '#1c1a17',    // tonal — same as color.text
@@ -164,8 +165,7 @@ export const luminaTokens: ThemeTokensConfig = {
 				keyword: '#7eb6bc',     // light teal
 				function: '#a89bc7',    // light slate violet
 				string: '#c79a9a',      // light rust
-				number: '#d4b07e',      // light antique ochre
-				type: '#94b385',        // light sage
+				constant: '#d4b07e',    // light antique ochre
 				comment: '#6b6661',     // warm muted (italic)
 				punctuation: '#94908a', // = dark color.muted
 				variable: '#f6f4ef',    // = dark color.text

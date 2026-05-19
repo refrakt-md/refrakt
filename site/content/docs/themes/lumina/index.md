@@ -46,7 +46,7 @@ Presets compose. Use both tideline and niwaki together for tideline chrome (Plex
 }
 ```
 
-Order matters — later presets override earlier ones for any token they both define. Since niwaki overrides only the seven syntax tokens, it composes cleanly with anything else.
+Order matters — later presets override earlier ones for any token they both define. Since niwaki overrides only the syntax tokens, it composes cleanly with anything else.
 
 ## Authoring custom presets
 

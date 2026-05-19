@@ -1,11 +1,11 @@
 ---
 title: Niwaki preset
-description: Japanese-garden syntax palette — pine, sakura, momiji, wakaba, kuri, ishi. Composes with any chrome.
+description: Japanese-garden syntax palette — wakaba, sakura, matsu, momiji, ishi. Composes with any chrome.
 ---
 
 # Niwaki
 
-Niwaki is a **syntax-only** preset — it overrides only the seven syntax tokens, leaving chrome, fonts, and status colours to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/docs/themes/lumina/neutral-default). Code blocks render in Japanese-garden colours; everything else stays neutral.
+Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colours to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/docs/themes/lumina/neutral-default). Code blocks render in Japanese-garden colours; everything else stays neutral.
 
 The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens — most often pines. The art of niwaki is patient, multi-decade shaping: pruning what's there to reveal structural form. That maps remarkably well to what a syntax preset does — it doesn't generate code, it shapes how code's existing structure becomes legible.
 
@@ -24,25 +24,24 @@ The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens 
 
 ## The palette
 
-Six elements from a Japanese garden mapped to syntax roles. Each colour does specific cognitive work — pine roots the structure (keywords), sakura calls attention (functions), momiji warms the prose (strings), wakaba freshens declarations (types), kuri grounds the constants (numbers), ishi recedes (comments).
+Five elements from a Japanese garden mapped to syntax roles. Each colour does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
 
 {% palette title="Niwaki — light" showContrast=true showA11y=true %}
-- Matsu / Pine (keyword): #2d5230
-- Sakura / Cherry (function): #b35070
-- Momiji / Maple (string): #c4501c
-- Kuri / Chestnut (number): #9c721a
-- Wakaba / Young leaf (type): #6b8a35
-- Ishi / Stone (comment): #7d7062
-- Muted ishi (punctuation): #8a7c6e
+- Wakaba / Young leaf (keyword): #5e7d2a
+- Sakura / Cherry (function): #b54a6b
+- Matsu / Pine (link, constant): #3d6b3d
+- Momiji / Maple (string): #a8521c
+- Momiji punchy (string-expression): #c54a14
+- Ishi / Stone (comment, punctuation): #8a857d
 {% /palette %}
 
 {% palette title="Niwaki — dark" tint-mode="dark" showContrast=true showA11y=true %}
-- Matsu (keyword): #8ab589
-- Sakura (function): #e89db0
-- Momiji (string): #e87a3a
-- Kuri (number): #d4a85a
-- Wakaba (type): #b4c97a
-- Ishi (comment): #7d7062
+- Wakaba (keyword): #b3d475
+- Sakura (function): #f591a6
+- Matsu (link, constant): #8ab589
+- Momiji (string): #eba073
+- Momiji punchy (string-expression): #fa9a61
+- Ishi (comment, punctuation): #7d7062
 {% /palette %}
 
 ## Composing with tideline
@@ -79,7 +78,7 @@ Niwaki demonstrates that *scoped* presets — overrides limited to one part of t
         "extends": "warm",
         "light": {
           "bg": "#f5efe6",
-          "primary": "#2d5230"
+          "primary": "#3d6b3d"
         },
         "dark": {
           "bg": "#1a221a",
@@ -99,4 +98,4 @@ The neutral default's chrome is already calm, deliberate, and pleasant to read a
 
 ## Cultural sensitivity
 
-Niwaki is named in Japanese and its colours reference matsu (pine), sakura (cherry blossom), momiji (autumn maple), wakaba (young leaf), kuri (chestnut/amber), and ishi (stone). The naming is a deliberate homage to the Japanese garden tradition; refrakt does not claim cultural ownership of the aesthetic.
+Niwaki is named in Japanese and its colours reference wakaba (young leaf), sakura (cherry blossom), matsu (pine), momiji (autumn maple), and ishi (stone). The naming is a deliberate homage to the Japanese garden tradition; refrakt does not claim cultural ownership of the aesthetic.

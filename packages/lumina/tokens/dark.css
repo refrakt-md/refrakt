@@ -40,8 +40,7 @@
 	--rf-syntax-keyword: #7eb6bc;
 	--rf-syntax-function: #a89bc7;
 	--rf-syntax-string: #c79a9a;
-	--rf-syntax-number: #d4b07e;
-	--rf-syntax-type: #94b385;
+	--rf-syntax-constant: #d4b07e;
 	--rf-syntax-comment: #6b6661;
 	--rf-syntax-punctuation: #94908a;
 	--rf-syntax-variable: #f6f4ef;
@@ -100,8 +99,7 @@
 		--rf-syntax-keyword: #7eb6bc;
 		--rf-syntax-function: #a89bc7;
 		--rf-syntax-string: #c79a9a;
-		--rf-syntax-number: #d4b07e;
-		--rf-syntax-type: #94b385;
+		--rf-syntax-constant: #d4b07e;
 		--rf-syntax-comment: #6b6661;
 		--rf-syntax-punctuation: #94908a;
 		--rf-syntax-variable: #f6f4ef;

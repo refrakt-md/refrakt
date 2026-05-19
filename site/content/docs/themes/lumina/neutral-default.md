@@ -83,14 +83,13 @@ Your refrakt site built successfully — 47 pages emitted in 2.1 seconds.
 
 ## Syntax palette — the quiet spectrum walk
 
-Five hues that walk teal → violet → rust → ochre → sage — cool, cool, warm, warm, cool/warm. Spectrum-adjacent without shouting. Used on every code surface unless a preset (like [niwaki](/docs/themes/lumina/presets/niwaki)) overrides.
+Four hues that walk teal → violet → rust → ochre — cool, cool, warm, warm. Spectrum-adjacent without shouting. `constant` covers numeric literals plus boolean/null/Symbol (Shiki paints them all from one slot). Used on every code surface unless a preset (like [niwaki](/docs/themes/lumina/presets/niwaki)) overrides.
 
 {% palette title="Syntax roles — light" showContrast=true %}
 - Keyword (teal): #2a5c63
 - Function (slate violet): #4a3b6e
 - String (rust): #8a3a3a
-- Number (ochre): #876327
-- Type (sage): #3a5c2a
+- Constant (ochre): #876327
 - Comment (warm muted): #8a857d
 - Punctuation: #6b6661
 {% /palette %}
@@ -99,8 +98,7 @@ Five hues that walk teal → violet → rust → ochre → sage — cool, cool, 
 - Keyword: #7eb6bc
 - Function: #a89bc7
 - String: #c79a9a
-- Number: #d4b07e
-- Type: #94b385
+- Constant: #d4b07e
 - Comment: #6b6661
 - Punctuation: #94908a
 {% /palette %}

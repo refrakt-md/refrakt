@@ -158,7 +158,7 @@ describe('generateThemeStylesheet', () => {
 				keyword: '#aaa',
 				function: '#bbb',
 				string: '#ccc',
-				number: '#ddd',
+				constant: '#ddd',
 				comment: '#eee',
 				punctuation: '#fff',
 				variable: '#111',
@@ -170,7 +170,7 @@ describe('generateThemeStylesheet', () => {
 		expect(css).toContain('--rf-syntax-token-link: #bbb;'); // defaults to function
 		expect(css).toContain('--rf-syntax-token-string: #ccc;');
 		expect(css).toContain('--rf-syntax-token-string-expression: #ccc;');
-		expect(css).toContain('--rf-syntax-token-constant: #ddd;'); // number → constant
+		expect(css).toContain('--rf-syntax-token-constant: #ddd;');
 		expect(css).toContain('--rf-syntax-token-comment: #eee;');
 		expect(css).toContain('--rf-syntax-token-punctuation: #fff;');
 		expect(css).toContain('--rf-syntax-token-parameter: #111;'); // variable → parameter
@@ -238,6 +238,15 @@ describe('generateThemeStylesheet', () => {
 		expect(css).toContain('--rf-syntax-token-string: #ccc;');
 		expect(css).toContain('--rf-syntax-token-string-expression: #abc;');
 		expect(css).not.toContain('--rf-syntax-token-string-expression: #ccc;');
+	});
+
+	it('syntax.constant emits both the contract var and the Shiki alias', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { constant: '#7a8' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-constant: #7a8;');
+		expect(css).toContain('--rf-syntax-token-constant: #7a8;');
 	});
 
 	it('does not auto-derive when the layer has no syntax/color tokens', () => {

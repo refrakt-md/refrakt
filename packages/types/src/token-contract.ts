@@ -156,13 +156,23 @@ export interface PrimaryScale {
 }
 
 /** Syntax-highlighting roles. Variables and ordinary identifiers fall through
- *  to body `text`; only the meaning-bearing roles get distinct colours. */
+ *  to body `text`; only the meaning-bearing roles get distinct colours.
+ *
+ *  Naming follows Shiki's `token-*` vocabulary rather than language-specific
+ *  intuition. Two roles that might surprise you:
+ *  - `constant` covers numeric literals AND boolean/null/Symbol-style
+ *    language constants — Shiki paints them all from one slot, so the
+ *    contract reflects that rather than pretending `number` is distinct.
+ *  - There is no `type` field. Shiki's css-variables theme has no
+ *    `token-type` slot — type names get painted as `token-function`
+ *    (entity-name) and built-in types like `string` as `token-constant`.
+ *    Themes that want a distinct type colour need a custom highlighter
+ *    or grammar-level CSS, not a contract token. */
 export interface SyntaxTokens {
 	keyword: string;
 	function: string;
 	string: string;
-	number: string;
-	type: string;
+	constant: string;
 	comment: string;
 	punctuation: string;
 	variable: string;
