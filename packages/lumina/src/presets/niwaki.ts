@@ -35,30 +35,31 @@ const niwaki: ThemeTokensConfig = {
 	modes: {
 		dark: {
 			syntax: {
-				keyword: '#8ab589',     // light matsu
-				function: '#e89db0',    // light sakura
-				string: '#e87a3a',      // light momiji
-				number: '#d4a85a',      // light kuri
-				type: '#b4c97a',        // light wakaba
-				comment: '#7d7062',     // ishi (italic) — same as light
+				keyword: '#b4c97a',     // wakaba light — bright young leaf
+				function: '#e8778f',    // sakura — redder cherry blossom
+				string: '#e89db0',      // sakura light — softer pink
+				number: '#fdaf81',      // momiji light — warm orange
+				type: '#8ab589',        // matsu — pine
+				comment: '#7d7062',     // ishi — warm stone (italic via rune CSS)
 				punctuation: '#7d7062',
 				variable: '#f6f4ef',    // = neutral default's dark text
 			},
 
-			// Dark-mode Shiki aliases — literal hex. token-string brightens past
-			// syntax.string for pop on dark bg; token-string-expression diverges
-			// to lime for template-literal contrast; token-constant aligns with
-			// type rather than number.
+			// Dark-mode Shiki aliases — mirror syntax.* above so the
+			// design-plugin palette swatches and Shiki-rendered code agree.
+			// token-link uses matsu so URLs stay visually distinct from the
+			// function/string pinks without re-introducing the cherry-on-cherry
+			// confusion `function`+`link` had in the original palette.
 			extra: {
-				'rf-syntax-token-keyword': '#8ab589',
-				'rf-syntax-token-function': '#e89db0',
-				'rf-syntax-token-string': '#ff965a',
-				'rf-syntax-token-string-expression': '#ceed7b',
-				'rf-syntax-token-constant': '#b4c97a',
+				'rf-syntax-token-keyword': '#b4c97a',
+				'rf-syntax-token-function': '#e8778f',
+				'rf-syntax-token-string': '#e89db0',
+				'rf-syntax-token-string-expression': '#e89db0',
+				'rf-syntax-token-constant': '#fdaf81',
 				'rf-syntax-token-comment': '#7d7062',
 				'rf-syntax-token-parameter': '#f6f4ef',
 				'rf-syntax-token-punctuation': '#7d7062',
-				'rf-syntax-token-link': '#e89db0',
+				'rf-syntax-token-link': '#8ab589',
 			},
 		},
 	},
