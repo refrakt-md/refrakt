@@ -64,6 +64,14 @@
 	font-weight: 500;
 }
 
+/* The pagination rune emits prev as `<marker> <label>` but next as
+   `<label> <marker>` (an artefact of the original row layout where the
+   arrow flanked the outer edge). With our vertical stack this puts the
+   next arrow at the bottom of its box. Force it to the top to match prev. */
+.rf-pagination__next [data-name="marker"] {
+	order: -1;
+}
+
 @media (max-width: 768px) {
 	.rf-pagination {
 		gap: 0.5rem;
