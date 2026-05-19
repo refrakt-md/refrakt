@@ -1,5 +1,48 @@
 # @refrakt-md/lumina
 
+## 0.14.0
+
+### Minor Changes
+
+- # v0.14.0 — Design tokens contract, navigation, and brand identity
+
+  Combines two milestones' worth of work — v0.13.0 (Navigation) and v0.14.0 (Design tokens contract + brand identity) — into a single release. v0.13.0 was developed in parallel with v0.14.0 and never shipped as an independent version, so its changes are folded in here.
+
+  ## Highlights
+
+  - **Typed design tokens contract.** `ThemeTokensConfig` is now the canonical authoring surface for theme values. Site authors can drop tokens directly into `refrakt.config.json` under `theme.tokens` / `theme.modes` and skip writing CSS for the common case. Validated at build time against the contract; presets and modes deep-merge in declared order.
+  - **Two opt-in Lumina presets.** `tideline` preserves the previous cream-and-navy chrome (now with IBM Plex Sans/Mono typography); `niwaki` is a syntax-only preset with a Japanese-garden palette. Both demonstrate that scoped presets (syntax-only, chrome-only, font-only) are first-class.
+  - **Per-page tint cascade.** Frontmatter `tint`, `tint-mode`, and `tint-lock` cascade through the layout tree; the refrakt site uses this to lock its marketing pages to dark while letting docs / runes / plan-docs honour the user's preference. New `ThemeToggle` component for unlocked subtrees; pre-paint script eliminates FOIT on locked routes.
+  - **`theme.code.colorScheme`** lets sites force fenced code blocks to a fixed light/dark scheme regardless of page mode (Stripe/Vercel-style always-dark code on light pages). Replaces the hand-mirrored `pre, pre[data-language]` override pattern that previously drifted from the active preset.
+  - **Faster SvelteKit dev server.** The virtual content module now caches the loaded Site across navigations and invalidates only on `.md` edits — pages load near-instantly after the first navigation instead of re-running the cross-page pipeline per click.
+  - **Nav primitives shipped.** Four contextual `nav` layouts (sidebar, header menubar, footer columns, section-landing cards), collapsible sidebar groups with URL-aware auto-open, and a new `pagination` rune for sequential reading flows.
+  - **Prism logo + favicon set.** Monochrome prism mark replaces the previous cube; 18-PNG favicon set generated from the canonical SVG via `packages/lumina/scripts/generate-favicons.mjs`.
+
+  ## Breaking changes
+
+  - **Syntax contract simplified.** `SyntaxTokens.number` and `SyntaxTokens.type` removed; `constant` promoted to a direct slot covering numeric literals plus boolean/null/Symbol (matches Shiki's `token-constant` vocabulary). Migrate `syntax.number` → `syntax.constant`; drop `syntax.type` (no Shiki path existed for it).
+  - **Shiki CSS variables renamed.** `--shiki-*` is now `--rf-syntax-*` (e.g. `--shiki-token-keyword` → `--rf-syntax-token-keyword`). Custom CSS reading the highlighter's variables directly needs to update; themes that consume only the contract surface are unaffected.
+  - **Lumina's default appearance changed.** The previous cream-and-navy palette moved into the `tideline` preset; the new neutral default is a quiet warm-neutral (#f6f4ef / #1c1a17) designed to disappear behind content. Sites that want the old appearance opt in with `"presets": ["@refrakt-md/lumina/presets/tideline"]`.
+  - **Tint shape aligned with token vocabulary.** `TintTokens` / `TintDefinition` field names and CSS custom property names (`--tint-*`) updated for consistency with the rest of the contract; lumina + plugin tint configs migrated.
+  - **Default typography changed.** Outfit → Inter (body) and JetBrains Mono (code). Sites that prefer the old typography pin `font.sans` / `font.mono` back via `theme.tokens.font`, or opt into the tideline preset (which uses IBM Plex Sans/Mono).
+  - **`RefraktConfig.packages[]` removed.** The deprecated top-level shorthand for `config.plugins[]` is gone (deprecation warning shipped in v0.12.0). Use `plugins[]` directly.
+
+  ## Migration
+
+  See `/docs/migration/v0.14.0` on the refrakt site for the full migration recipe, including:
+
+  - the tint-vocabulary rename mapping
+  - the Shiki → `--rf-syntax-*` variable rename
+  - the syntax-token contract change (`number`/`type` → `constant`)
+  - restoring the previous appearance via the tideline preset
+  - the per-page tint cascade frontmatter fields
+
+### Patch Changes
+
+- @refrakt-md/runes@0.14.0
+- @refrakt-md/transform@0.14.0
+- @refrakt-md/types@0.14.0
+
 ## 0.12.0
 
 ### Minor Changes

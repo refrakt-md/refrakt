@@ -6,7 +6,7 @@ import { config } from './config.js';
 export const learning: Plugin = {
   name: 'learning',
   displayName: 'Learning',
-  version: '0.12.0',
+  version: '0.14.0',
   runes: {
     'howto': {
       transform: howto,
