@@ -50,26 +50,27 @@
 	border-left-color: var(--rf-color-success);
 }
 .rf-diff__line[data-type="empty"]  { background: transparent; }
-.rf-diff__gutter,
-.rf-diff__gutter-num,
-.rf-diff__gutter-prefix {
+.rf-diff__gutter-num {
 	flex-shrink: 0;
 	padding: 0 0.5rem;
+	width: 2.5em;
+	min-height: 1.6em;
+	text-align: right;
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
 	user-select: none;
 	color: var(--rf-color-muted);
 }
-.rf-diff__gutter-num {
-	width: 2.5em;
-	text-align: right;
-	font-size: 0.75rem;
+/* Change-type colour drives the directional cue — no more +/- prefix.
+ * Remove lines colour the before-number; add lines colour the after-number.
+ * The opposite side renders empty (no number) which itself signals "nothing
+ * here on this side". */
+.rf-diff__line[data-type="remove"] .rf-diff__gutter-num[data-side="before"] {
+	color: var(--rf-color-danger);
 }
-.rf-diff__gutter-prefix {
-	width: 1.5em;
-	text-align: center;
-	font-weight: bold;
+.rf-diff__line[data-type="add"] .rf-diff__gutter-num[data-side="after"] {
+	color: var(--rf-color-success);
 }
-.rf-diff__line[data-type="remove"] .rf-diff__gutter-prefix { color: var(--rf-color-danger); }
-.rf-diff__line[data-type="add"] .rf-diff__gutter-prefix    { color: var(--rf-color-success); }
 .rf-diff .rf-codeblock {
 	margin: 0;
 }
@@ -77,8 +78,9 @@
 	flex: 1;
 	white-space: pre;
 	padding-right: 1rem;
-	/* Empty added/removed/equal lines have no text to lay out, so without an
-	 * explicit min-height the flex item collapses below the parent line's
-	 * 1.6em and the row reads visually shorter than its neighbours. */
+	/* Pin the row to 1.6em even when the text is empty — the highlighted
+	 * span for an empty input has no inline content to establish a line
+	 * box, so without this the flex item collapses below the parent's
+	 * min-height and rows visually drift in the split-mode grid. */
 	min-height: 1.6em;
 }

@@ -156,6 +156,87 @@ let y = 2;
 		expect(header).toBeUndefined();
 	});
 
+	it('should number each split panel with a single per-side gutter and no prefix column', () => {
+		const result = parse(`{% diff mode="split" %}
+\`\`\`javascript
+const x = 1;
+const y = 2;
+\`\`\`
+
+\`\`\`javascript
+const x = 1;
+const z = 3;
+\`\`\`
+{% /diff %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
+		const panels = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'panel');
+
+		// The +/- prefix column is gone — directional cue is encoded in the
+		// number's colour + the absence of a number on the opposite side.
+		const prefixSpans = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'gutter-prefix');
+		expect(prefixSpans.length).toBe(0);
+
+		// Left panel: numbers tagged data-side="before".
+		const beforeNums = findAllTags(panels[0], t => t.attributes['data-name'] === 'gutter-num');
+		expect(beforeNums.length).toBeGreaterThan(0);
+		expect(beforeNums.every(n => n.attributes['data-side'] === 'before')).toBe(true);
+
+		// Right panel: numbers tagged data-side="after".
+		const afterNums = findAllTags(panels[1], t => t.attributes['data-name'] === 'gutter-num');
+		expect(afterNums.length).toBeGreaterThan(0);
+		expect(afterNums.every(n => n.attributes['data-side'] === 'after')).toBe(true);
+	});
+
+	it('should leave the off-side number empty on add/remove rows in unified mode', () => {
+		const result = parse(`{% diff %}
+\`\`\`javascript
+const x = 1;
+const y = 2;
+\`\`\`
+
+\`\`\`javascript
+const x = 1;
+const z = 3;
+\`\`\`
+{% /diff %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
+
+		const removeLine = lines.find(l => l.attributes['data-type'] === 'remove');
+		expect(removeLine).toBeDefined();
+		const removeNums = findAllTags(removeLine!, t => t.attributes['data-name'] === 'gutter-num');
+		expect(removeNums.length).toBe(2);
+		// before-num populated, after-num empty
+		expect(removeNums.find(n => n.attributes['data-side'] === 'before')!.children[0]).not.toBe('');
+		expect(removeNums.find(n => n.attributes['data-side'] === 'after')!.children[0]).toBe('');
+
+		const addLine = lines.find(l => l.attributes['data-type'] === 'add');
+		expect(addLine).toBeDefined();
+		const addNums = findAllTags(addLine!, t => t.attributes['data-name'] === 'gutter-num');
+		// after-num populated, before-num empty
+		expect(addNums.find(n => n.attributes['data-side'] === 'after')!.children[0]).not.toBe('');
+		expect(addNums.find(n => n.attributes['data-side'] === 'before')!.children[0]).toBe('');
+	});
+
+	it('should not emit a gutter-prefix column in unified mode', () => {
+		const result = parse(`{% diff %}
+\`\`\`javascript
+const x = 1;
+\`\`\`
+
+\`\`\`javascript
+const x = 2;
+\`\`\`
+{% /diff %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const prefixSpans = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-prefix');
+		expect(prefixSpans.length).toBe(0);
+	});
+
 	it('should render an optional full-width header from the title attribute', () => {
 		const result = parse(`{% diff mode="split" title="src/app.ts" %}
 \`\`\`typescript

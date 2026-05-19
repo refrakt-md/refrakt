@@ -50,15 +50,18 @@ function computeLineDiff(before: string, after: string): DiffHunk[] {
 	return stack;
 }
 
-/** Align hunks into paired split lines (before/after) */
-function getSplitLines(hunks: DiffHunk[]): { before: (DiffHunk | null)[]; after: (DiffHunk | null)[] } {
-	const before: (DiffHunk | null)[] = [];
-	const after: (DiffHunk | null)[] = [];
+type SplitLine = { hunk: DiffHunk; num: number } | null;
+
+/** Align hunks into paired split lines (before/after) with line numbers. */
+function getSplitLines(hunks: DiffHunk[]): { before: SplitLine[]; after: SplitLine[] } {
+	const before: SplitLine[] = [];
+	const after: SplitLine[] = [];
+	let bNum = 1, aNum = 1;
 	let i = 0;
 	while (i < hunks.length) {
 		if (hunks[i].type === 'equal') {
-			before.push(hunks[i]);
-			after.push(hunks[i]);
+			before.push({ hunk: hunks[i], num: bNum++ });
+			after.push({ hunk: hunks[i], num: aNum++ });
 			i++;
 		} else {
 			const removes: DiffHunk[] = [];
@@ -73,8 +76,8 @@ function getSplitLines(hunks: DiffHunk[]): { before: (DiffHunk | null)[]; after:
 			}
 			const maxLen = Math.max(removes.length, adds.length);
 			for (let j = 0; j < maxLen; j++) {
-				before.push(j < removes.length ? removes[j] : null);
-				after.push(j < adds.length ? adds[j] : null);
+				before.push(j < removes.length ? { hunk: removes[j], num: bNum++ } : null);
+				after.push(j < adds.length ? { hunk: adds[j], num: aNum++ } : null);
 			}
 		}
 	}
@@ -100,15 +103,18 @@ function getUnifiedLines(hunks: DiffHunk[]): { hunk: DiffHunk; beforeNum: number
 	return lines;
 }
 
-/** Build unified diff renderable — pre with line spans, gutter numbers, and prefix */
+/** Build unified diff renderable — pre with line spans + before/after gutters.
+ *  The "missing" gutter number on the off-side (after-num for a remove line,
+ *  before-num for an add line) takes the place of the old `+`/`-` prefix as
+ *  the directional cue: combined with the change-tinted number colour and
+ *  the line's left-edge border, the absence/presence pattern says which way
+ *  the change goes without a dedicated prefix column. */
 function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
 	const lines = getUnifiedLines(hunks);
 	const lineNodes = lines.map(({ hunk, beforeNum, afterNum }) => {
-		const prefix = hunk.type === 'remove' ? '-' : hunk.type === 'add' ? '+' : ' ';
 		return new Tag('span', { 'data-name': 'line', 'data-type': hunk.type }, [
-			new Tag('span', { 'data-name': 'gutter-num' }, [beforeNum != null ? String(beforeNum) : ' ']),
-			new Tag('span', { 'data-name': 'gutter-num' }, [afterNum != null ? String(afterNum) : ' ']),
-			new Tag('span', { 'data-name': 'gutter-prefix' }, [prefix]),
+			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'before' }, [beforeNum != null ? String(beforeNum) : '']),
+			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'after' }, [afterNum != null ? String(afterNum) : '']),
 			new Tag('span', { 'data-name': 'line-content', ...(lang ? { 'data-language': lang } : {}) }, [hunk.text]),
 		]);
 	});
@@ -116,17 +122,20 @@ function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
 	return [new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, lineNodes)];
 }
 
-/** Build split diff renderable — side-by-side panels with before/after lines */
+/** Build split diff renderable — side-by-side panels with one numbered
+ *  gutter per panel. Placeholder rows (where the matching side has the
+ *  add/remove) render an empty gutter + empty content; the fixed gutter
+ *  width keeps the column rigid so rows align across panels. */
 function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 	const { before, after } = getSplitLines(hunks);
 
-	function buildPanelLines(lines: (DiffHunk | null)[]) {
+	function buildPanelLines(lines: SplitLine[], side: 'before' | 'after') {
 		return lines.map(line => {
-			const type = line ? line.type : 'empty';
+			const type = line ? line.hunk.type : 'empty';
 			return new Tag('span', { 'data-name': 'line', 'data-type': type }, [
-				new Tag('span', { 'data-name': 'gutter' }, [line ? '' : ' ']),
+				new Tag('span', { 'data-name': 'gutter-num', 'data-side': side }, [line ? String(line.num) : '']),
 				new Tag('span', { 'data-name': 'line-content', ...(line && lang ? { 'data-language': lang } : {}) }, [
-					line ? line.text : '\u00a0',
+					line ? line.hunk.text : '',
 				]),
 			]);
 		});
@@ -134,10 +143,10 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 
 	return [new Tag('div', { 'data-name': 'split-container' }, [
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before, 'before')),
 		]),
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after, 'after')),
 		]),
 	])];
 }
