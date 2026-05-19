@@ -142,3 +142,17 @@
 	margin: 0 0 1rem;
 	max-width: none;
 }
+
+/* Mobile: stack action buttons full-width so multi-button CTAs line up */
+@media (max-width: 640px) {
+	.rf-cta ul {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-cta li a,
+	.rf-cta nav a {
+		justify-content: center;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}
