@@ -1,9 +1,17 @@
-/* Pagination — prev/next links at the foot of sequential pages. */
+/* Pagination — prev/next links at the foot of sequential pages.
+ *
+ * Each box stacks the directional marker above the label so the two
+ * controls stay compact enough to sit side-by-side on mobile. Equal
+ * heights are guaranteed by the container's `align-items: stretch`, so
+ * if one label wraps to multiple lines the other box grows to match.
+ *
+ * Boxes are capped at ~50% width via `flex: 1 1 0` + `max-width`, with
+ * `margin-left: auto` on `__next` so it stays right-aligned even when
+ * `__prev` isn't rendered (first page in a sequence). */
 
 .rf-pagination {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	align-items: stretch;
 	gap: 1rem;
 	margin: 3rem 0 1.5rem;
 	padding-top: 1.5rem;
@@ -12,17 +20,30 @@
 
 .rf-pagination__prev,
 .rf-pagination__next {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.625rem 0.875rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+	padding: 0.75rem 1rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	color: var(--rf-color-text);
 	text-decoration: none;
 	font-size: 0.9rem;
 	transition: border-color 150ms ease, background-color 150ms ease;
-	max-width: 48%;
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: calc(50% - 0.5rem);
+}
+
+.rf-pagination__prev {
+	align-items: flex-start;
+	text-align: left;
+}
+
+.rf-pagination__next {
+	align-items: flex-end;
+	text-align: right;
+	margin-left: auto;
 }
 
 .rf-pagination__prev:hover,
@@ -32,46 +53,25 @@
 	text-decoration: none;
 }
 
-.rf-pagination__next {
-	margin-left: auto;
-	text-align: right;
-}
-
 .rf-pagination [data-name="marker"] {
 	color: var(--rf-color-muted);
 	font-weight: 400;
+	font-size: 1.1rem;
+	line-height: 1;
 }
 
 .rf-pagination [data-name="label"] {
 	font-weight: 500;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.rf-pagination [data-direction="prev"] [data-name="marker"] {
-	order: -1;
 }
 
 @media (max-width: 768px) {
 	.rf-pagination {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.75rem;
+		gap: 0.5rem;
 	}
 	.rf-pagination__prev,
 	.rf-pagination__next {
-		display: flex;
-		max-width: none;
-	}
-	/* In row layout the auto-margin pushes `next` to the right; in column
-	   layout it would instead consume cross-axis space and shrink the item
-	   to content width, undoing the column stretch. Reset it. */
-	.rf-pagination__next {
-		margin-left: 0;
-		justify-content: space-between;
-	}
-	.rf-pagination__prev {
-		justify-content: flex-start;
+		padding: 0.625rem 0.875rem;
+		max-width: calc(50% - 0.25rem);
+		font-size: 0.85rem;
 	}
 }
