@@ -134,12 +134,47 @@ let y = 2;
 		const panels = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'panel');
 		expect(panels.length).toBe(2);
 
-		const header = findTag(panels[0], t => t.attributes['data-name'] === 'header');
-		expect(header).toBeDefined();
-		expect(header!.children).toContain('Before');
+		// Per-panel Before/After headers were removed in favour of a single
+		// optional full-width header above the split container.
+		const perPanelHeaders = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'header');
+		expect(perPanelHeaders.length).toBe(0);
+	});
 
-		const headerAfter = findTag(panels[1], t => t.attributes['data-name'] === 'header-after');
-		expect(headerAfter).toBeDefined();
-		expect(headerAfter!.children).toContain('After');
+	it('should not render a header when title is omitted', () => {
+		const result = parse(`{% diff mode="split" %}
+\`\`\`javascript
+const x = 1;
+\`\`\`
+
+\`\`\`javascript
+let y = 2;
+\`\`\`
+{% /diff %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		expect(header).toBeUndefined();
+	});
+
+	it('should render an optional full-width header from the title attribute', () => {
+		const result = parse(`{% diff mode="split" title="src/app.ts" %}
+\`\`\`typescript
+const x = 1;
+\`\`\`
+
+\`\`\`typescript
+const x = 2;
+\`\`\`
+{% /diff %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		expect(header).toBeDefined();
+		expect(header!.children).toContain('src/app.ts');
+
+		// The header sits at the rune root, not inside a panel.
+		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
+		const headerInsidePanel = findTag(splitContainer!, t => t.attributes['data-name'] === 'header');
+		expect(headerInsidePanel).toBeUndefined();
 	});
 });

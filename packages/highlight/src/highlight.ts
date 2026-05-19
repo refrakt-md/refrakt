@@ -106,7 +106,7 @@ export async function createHighlightTransform(
 		};
 	}
 
-	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme)) as HighlightTransform;
+	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme).node) as HighlightTransform;
 	transform.css = css;
 	return transform;
 }
@@ -167,38 +167,56 @@ pre[data-language] {
 `;
 }
 
-/** Walk the serialized tree, highlighting elements with `data-language`. */
+/** Walk the serialized tree, highlighting elements with `data-language`.
+ *  Returns the transformed node plus whether any highlighted descendant was
+ *  produced, so callers can stamp `data-color-scheme` on rune wrappers that
+ *  host code (diff, compare, codegroup, etc.) without those runes needing
+ *  to know about the highlight pipeline. */
 function walk(
 	node: RendererNode,
 	highlightFn: (code: string, lang: string) => string,
 	forcedScheme: 'light' | 'dark' | undefined,
-): RendererNode {
-	if (node === null || node === undefined) return node;
-	if (typeof node === 'string' || typeof node === 'number') return node;
-	if (!isTag(node)) return node;
+): { node: RendererNode; hasHighlighted: boolean } {
+	if (node === null || node === undefined) return { node, hasHighlighted: false };
+	if (typeof node === 'string' || typeof node === 'number') return { node, hasHighlighted: false };
+	if (!isTag(node)) return { node, hasHighlighted: false };
 
 	const lang = node.attributes?.['data-language'];
 
 	if (lang && hasTextChildren(node)) {
-		return highlightNode(node, lang, highlightFn);
+		return { node: highlightNode(node, lang, highlightFn), hasHighlighted: true };
 	}
 
-	// `<pre data-language>` is the codeblock wrapper. Stamp the forced colour
-	// scheme on it before recursing — `data-color-scheme` cascades through the
-	// pre's CSS custom properties (background, foreground, all syntax tokens),
-	// which is what the inline Shiki spans inside resolve `var(--rf-syntax-*)`
-	// against. The `<code>` child gets highlighted via the recursion below.
-	if (forcedScheme && lang && node.name === 'pre') {
+	let anyHighlighted = false;
+	const children = node.children.map(c => {
+		const result = walk(c, highlightFn, forcedScheme);
+		if (result.hasHighlighted) anyHighlighted = true;
+		return result.node;
+	});
+
+	// Stamp `data-color-scheme` on `<pre data-language>` (the codeblock
+	// wrapper) and on any rune wrapper (`data-rune`) that hosts highlighted
+	// code below it. The attribute cascades through CSS custom properties
+	// (`--rf-color-code-bg`, `--rf-syntax-*`, surface, border) so the
+	// override flips the entire subtree, including wrappers that don't
+	// themselves carry `data-language` (diff's outer container, compare's
+	// panel chrome, etc.).
+	const isPreCodeblock = lang && node.name === 'pre';
+	const isRuneHost = !!node.attributes?.['data-rune'] && anyHighlighted;
+	if (forcedScheme && (isPreCodeblock || isRuneHost)) {
 		return {
-			...node,
-			attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
-			children: node.children.map(c => walk(c, highlightFn, forcedScheme)),
+			node: {
+				...node,
+				attributes: { ...node.attributes, 'data-color-scheme': forcedScheme },
+				children,
+			},
+			hasHighlighted: true,
 		};
 	}
 
 	return {
-		...node,
-		children: node.children.map(c => walk(c, highlightFn, forcedScheme)),
+		node: { ...node, children },
+		hasHighlighted: anyHighlighted,
 	};
 }
 

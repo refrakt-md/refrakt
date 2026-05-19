@@ -50,6 +50,39 @@ const after = true;
 		expect(panels.length).toBe(2);
 	});
 
+	it('should not render a header when title is omitted', () => {
+		const result = parse(`{% compare %}
+\`\`\`javascript
+const a = 1;
+\`\`\`
+
+\`\`\`javascript
+const b = 2;
+\`\`\`
+{% /compare %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
+		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		expect(header).toBeUndefined();
+	});
+
+	it('should render an optional full-width header from the title attribute', () => {
+		const result = parse(`{% compare title="Implementations" %}
+\`\`\`javascript
+const a = 1;
+\`\`\`
+
+\`\`\`typescript
+const a: number = 1;
+\`\`\`
+{% /compare %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
+		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		expect(header).toBeDefined();
+		expect(header!.children).toContain('Implementations');
+	});
+
 	it('should support three or more panels', () => {
 		const result = parse(`{% compare %}
 \`\`\`javascript

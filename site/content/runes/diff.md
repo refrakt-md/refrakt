@@ -9,11 +9,11 @@ Renders the difference between two code blocks. The first code block is the "bef
 
 ## Split diff
 
-Use `mode="split"` to show before and after side by side. Lines that match appear on both sides, removed lines are highlighted red on the left, and added lines are highlighted green on the right.
+Use `mode="split"` to show before and after side by side. Lines that match appear on both sides, removed lines carry a red edge on the left, and added lines carry a green edge on the right — the column they sit in disambiguates direction, so no per-column label is needed. Pass an optional `title` to render a filename or context line as a full-width header above the diff.
 
 {% preview source=true %}
 
-{% diff mode="split" language="javascript" %}
+{% diff mode="split" language="javascript" title="src/server.js" %}
 ```javascript
 import express from 'express';
 
@@ -86,6 +86,7 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 |-----------|------|---------|-------------|
 | `mode` | `string` | `unified` | Display mode: `unified`, `split`, or `inline` |
 | `language` | `string` | — | Language for syntax highlighting |
+| `title` | `string` | — | Optional title or filename rendered as a full-width header above the diff |
 
 ### Common attributes
 

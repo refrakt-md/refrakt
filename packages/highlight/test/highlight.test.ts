@@ -241,4 +241,58 @@ describe('highlight transform — codeColorScheme', () => {
 		const code = result.children[0] as SerializedTag;
 		expect(code.attributes['data-codeblock']).toBe(true);
 	});
+
+	it('stamps data-color-scheme on data-rune wrappers that host highlighted code', async () => {
+		// Mirrors the diff rune shape: the outer wrapper has data-rune but no
+		// data-language; the highlighted spans live deeper, where the
+		// `<pre data-name="code">` wraps `<span data-name="line-content"
+		// data-language="..." >` text. The override should reach the wrapper
+		// so the cascading code-bg / syntax-token variables flip.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'diff' }, [
+			tag('pre', { 'data-name': 'code' }, [
+				tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, ['const x = 1;']),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('dark');
+	});
+
+	it('does not stamp data-rune wrappers when no descendant is highlighted', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'callout' }, [
+			tag('p', {}, ['plain prose, no code']),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBeUndefined();
+	});
+
+	it('stamps data-color-scheme on compare wrappers around <pre data-language>', async () => {
+		// Compare's panels contain real `<pre data-language>` blocks, which
+		// already get stamped today. The wrapper should also be stamped so
+		// the surrounding chrome (panel borders, label backgrounds) flips
+		// with the override.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'light',
+		});
+		const tree = tag('div', { 'data-rune': 'compare' }, [
+			tag('pre', { 'data-language': 'javascript' }, [
+				tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('light');
+		const pre = result.children[0] as SerializedTag;
+		expect(pre.attributes['data-color-scheme']).toBe('light');
+	});
 });

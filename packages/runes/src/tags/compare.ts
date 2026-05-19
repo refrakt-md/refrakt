@@ -10,6 +10,7 @@ export const compare = createContentModelSchema({
 	attributes: {
 		layout: { type: String, required: false, matches: layoutType.slice(), description: 'Display panels side-by-side or stacked' },
 		labels: { type: String, required: false, description: 'Comma-separated custom labels for each panel' },
+		title: { type: String, required: false, description: 'Optional title displayed above the panels' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -24,6 +25,7 @@ export const compare = createContentModelSchema({
 
 		const layout = attrs.layout ?? 'side-by-side';
 		const labels = attrs.labels ?? '';
+		const title = attrs.title ?? '';
 
 		const layoutMeta = new Tag('meta', { content: layout });
 
@@ -55,6 +57,10 @@ export const compare = createContentModelSchema({
 
 		const panelsDiv = new Tag('div', { 'data-panels': true }, panels);
 
+		const header = title
+			? [new Tag('div', { 'data-name': 'header' }, [title])]
+			: [];
+
 		return createComponentRenderable({ rune: 'compare',
 			tag: 'div',
 			properties: {
@@ -63,7 +69,7 @@ export const compare = createContentModelSchema({
 			refs: {
 				panels: panelsDiv,
 			},
-			children: [layoutMeta, panelsDiv],
+			children: [layoutMeta, ...header, panelsDiv],
 		});
 	},
 });

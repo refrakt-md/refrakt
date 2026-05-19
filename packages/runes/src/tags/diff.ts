@@ -134,11 +134,9 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 
 	return [new Tag('div', { 'data-name': 'split-container' }, [
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('div', { 'data-name': 'header' }, ['Before']),
 			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before)),
 		]),
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('div', { 'data-name': 'header-after' }, ['After']),
 			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after)),
 		]),
 	])];
@@ -148,6 +146,7 @@ export const diff = createContentModelSchema({
 	attributes: {
 		mode: { type: String, required: false, matches: modeType.slice(), description: 'Diff display style: unified, split, or inline' },
 		language: { type: String, required: false, description: 'Programming language for syntax highlighting' },
+		title: { type: String, required: false, description: 'Optional title or filename displayed above the diff' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -158,6 +157,7 @@ export const diff = createContentModelSchema({
 	transform(resolved, attrs) {
 		const mode = attrs.mode ?? 'unified';
 		const language = attrs.language ?? '';
+		const title = attrs.title ?? '';
 
 		const modeMeta = new Tag('meta', { content: mode });
 		const languageMeta = new Tag('meta', { content: language });
@@ -176,13 +176,17 @@ export const diff = createContentModelSchema({
 			? buildSplitRenderable(hunks, lang)
 			: buildUnifiedRenderable(hunks, lang);
 
+		const header = title
+			? [new Tag('div', { 'data-name': 'header' }, [title])]
+			: [];
+
 		return createComponentRenderable({ rune: 'diff',
 			tag: 'div',
 			properties: {
 				mode: modeMeta,
 				language: languageMeta,
 			},
-			children: [modeMeta, languageMeta, ...expanded],
+			children: [modeMeta, languageMeta, ...header, ...expanded],
 		});
 	},
 });
