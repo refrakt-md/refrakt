@@ -25,7 +25,7 @@ The surface, text, and primary tokens for light mode.
 
 Dark mode inverts to warm-near-black, with text lifted to the same warm off-white the page surface uses in light.
 
-{% palette title="Dark mode" showContrast=true showA11y=true %}
+{% palette title="Dark mode" tint-mode="dark" showContrast=true showA11y=true %}
 - Background: #1c1a17
 - Text: #f6f4ef
 - Muted: #94908a
@@ -95,7 +95,7 @@ Five hues that walk teal → violet → rust → ochre → sage — cool, cool, 
 - Punctuation: #6b6661
 {% /palette %}
 
-{% palette title="Syntax roles — dark" showContrast=true %}
+{% palette title="Syntax roles — dark" tint-mode="dark" showContrast=true %}
 - Keyword: #7eb6bc
 - Function: #a89bc7
 - String: #c79a9a

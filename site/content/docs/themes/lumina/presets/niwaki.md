@@ -36,7 +36,7 @@ Six elements from a Japanese garden mapped to syntax roles. Each colour does spe
 - Muted ishi (punctuation): #8a7c6e
 {% /palette %}
 
-{% palette title="Niwaki — dark" showContrast=true showA11y=true %}
+{% palette title="Niwaki — dark" tint-mode="dark" showContrast=true showA11y=true %}
 - Matsu (keyword): #8ab589
 - Sakura (function): #e89db0
 - Momiji (string): #e87a3a
