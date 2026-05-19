@@ -241,4 +241,97 @@ describe('highlight transform — codeColorScheme', () => {
 		const code = result.children[0] as SerializedTag;
 		expect(code.attributes['data-codeblock']).toBe(true);
 	});
+
+	it('stamps data-color-scheme on data-code-host wrappers that host highlighted code', async () => {
+		// Mirrors the diff rune shape: the outer wrapper opts in via
+		// data-code-host; the highlighted spans live deeper, where the
+		// `<pre data-name="code">` wraps `<span data-name="line-content"
+		// data-language="..." >` text. The override should reach the wrapper
+		// so the cascading code-bg / syntax-token variables flip.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'diff', 'data-code-host': true }, [
+			tag('pre', { 'data-name': 'code' }, [
+				tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, ['const x = 1;']),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('dark');
+	});
+
+	it('does not stamp data-code-host wrappers when no descendant is highlighted', async () => {
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'diff', 'data-code-host': true }, [
+			tag('p', {}, ['plain prose, no code']),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBeUndefined();
+	});
+
+	it('does not stamp data-rune wrappers that lack data-code-host', async () => {
+		// Generic content wrappers (preview, hint, callout, etc.) that
+		// happen to contain a code-host rune below them must NOT have their
+		// own chrome flipped — only the code-host wrapper does.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'preview' }, [
+			tag('div', { 'data-rune': 'diff', 'data-code-host': true }, [
+				tag('pre', { 'data-name': 'code' }, [
+					tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, ['const x = 1;']),
+				]),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBeUndefined();
+		const diff = result.children[0] as SerializedTag;
+		expect(diff.attributes['data-color-scheme']).toBe('dark');
+	});
+
+	it('does not stamp plain wrappers around a <pre data-language>', async () => {
+		// Same principle as the preview > diff case: a preview wrapping a
+		// regular code block should leave its own toolbar untouched.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'dark',
+		});
+		const tree = tag('div', { 'data-rune': 'preview' }, [
+			tag('pre', { 'data-language': 'javascript' }, [
+				tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBeUndefined();
+		const pre = result.children[0] as SerializedTag;
+		expect(pre.attributes['data-color-scheme']).toBe('dark');
+	});
+
+	it('stamps the host wrapper instead of the inner <pre data-language> when both could match', async () => {
+		// Compare-style: outer code-host wrapper around `<pre data-language>`.
+		// Only the wrapper is stamped; the inner pre inherits via CSS cascade.
+		const hl = await createHighlightTransform({
+			langs: ['javascript'],
+			codeColorScheme: 'light',
+		});
+		const tree = tag('div', { 'data-rune': 'compare', 'data-code-host': true }, [
+			tag('pre', { 'data-language': 'javascript' }, [
+				tag('code', { 'data-language': 'javascript' }, ['const x = 1;']),
+			]),
+		]);
+
+		const result = hl(tree) as SerializedTag;
+		expect(result.attributes['data-color-scheme']).toBe('light');
+		const pre = result.children[0] as SerializedTag;
+		expect(pre.attributes['data-color-scheme']).toBeUndefined();
+	});
 });

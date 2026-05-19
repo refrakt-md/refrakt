@@ -2,31 +2,27 @@
 .rf-diff {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	overflow-x: auto;
+	overflow: hidden;
 	font-size: 0.875rem;
+	background: var(--rf-color-code-bg);
+}
+.rf-diff__header {
+	padding: 0.5rem 1rem;
+	font-family: var(--rf-font-sans);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface);
+	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-diff__split-container {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	min-width: 40rem;
+	overflow-x: auto;
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
-}
-.rf-diff__header,
-.rf-diff__header-after {
-	padding: 0.5rem 1rem;
-	font-family: var(--rf-font-sans);
-	font-size: 0.75rem;
-	font-weight: 600;
-	background: var(--rf-color-surface);
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-diff__header {
-	color: var(--rf-color-danger);
-}
-.rf-diff__header-after {
-	color: var(--rf-color-success);
 }
 .rf-diff__code {
 	margin: 0;
@@ -42,31 +38,39 @@
 .rf-diff__line {
 	display: flex;
 	min-height: 1.6em;
+	border-left: 3px solid transparent;
 }
 .rf-diff__line[data-type="equal"]  { background: transparent; }
-.rf-diff__line[data-type="remove"] { background: rgba(248, 81, 73, 0.15); }
-.rf-diff__line[data-type="add"]    { background: rgba(63, 185, 80, 0.15); }
-.rf-diff__line[data-type="empty"]  { background: rgba(128, 128, 128, 0.05); }
-.rf-diff__gutter,
-.rf-diff__gutter-num,
-.rf-diff__gutter-prefix {
+.rf-diff__line[data-type="remove"] {
+	background: color-mix(in srgb, var(--rf-color-danger) 18%, transparent);
+	border-left-color: var(--rf-color-danger);
+}
+.rf-diff__line[data-type="add"] {
+	background: color-mix(in srgb, var(--rf-color-success) 18%, transparent);
+	border-left-color: var(--rf-color-success);
+}
+.rf-diff__line[data-type="empty"]  { background: transparent; }
+.rf-diff__gutter-num {
 	flex-shrink: 0;
 	padding: 0 0.5rem;
+	width: 2.5em;
+	min-height: 1.6em;
+	text-align: right;
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
 	user-select: none;
 	color: var(--rf-color-muted);
 }
-.rf-diff__gutter-num {
-	width: 2.5em;
-	text-align: right;
-	font-size: 0.75rem;
+/* Change-type colour drives the directional cue — no more +/- prefix.
+ * Remove lines colour the before-number; add lines colour the after-number.
+ * The opposite side renders empty (no number) which itself signals "nothing
+ * here on this side". */
+.rf-diff__line[data-type="remove"] .rf-diff__gutter-num[data-side="before"] {
+	color: var(--rf-color-danger);
 }
-.rf-diff__gutter-prefix {
-	width: 1.5em;
-	text-align: center;
-	font-weight: bold;
+.rf-diff__line[data-type="add"] .rf-diff__gutter-num[data-side="after"] {
+	color: var(--rf-color-success);
 }
-.rf-diff__line[data-type="remove"] .rf-diff__gutter-prefix { color: var(--rf-color-danger); }
-.rf-diff__line[data-type="add"] .rf-diff__gutter-prefix    { color: var(--rf-color-success); }
 .rf-diff .rf-codeblock {
 	margin: 0;
 }
@@ -74,4 +78,9 @@
 	flex: 1;
 	white-space: pre;
 	padding-right: 1rem;
+	/* Pin the row to 1.6em even when the text is empty — the highlighted
+	 * span for an empty input has no inline content to establish a line
+	 * box, so without this the flex item collapses below the parent's
+	 * min-height and rows visually drift in the split-mode grid. */
+	min-height: 1.6em;
 }

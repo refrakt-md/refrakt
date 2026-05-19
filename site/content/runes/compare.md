@@ -53,6 +53,7 @@ const data = await fetch('/api').then(r => r.json());
 |-----------|------|---------|-------------|
 | `layout` | `string` | `side-by-side` | Display layout: `side-by-side` or `stacked` |
 | `labels` | `string` | — | Comma-separated custom labels for each panel |
+| `title` | `string` | — | Optional title rendered as a full-width header above the panels |
 
 ### Common attributes
 

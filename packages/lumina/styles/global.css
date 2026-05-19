@@ -15,6 +15,13 @@ html {
 	-webkit-text-size-adjust: 100%;
 	text-size-adjust: 100%;
 	transition: background-color 200ms ease, color 200ms ease;
+	/* Opt out of mobile Safari's "text inflation" — it auto-scales text
+	 * inside elements wider than the viewport (e.g. the diff's
+	 * `min-width: 40rem` split panels and any horizontally-scrolling
+	 * code block) and makes their fonts read several pixels larger
+	 * than designed. */
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
 }
 
 body {

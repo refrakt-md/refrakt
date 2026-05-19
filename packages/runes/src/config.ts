@@ -133,6 +133,11 @@ export const coreConfig: ThemeConfig = {
 			},
 			sections: { topbar: 'header', title: 'title' },
 			editHints: { panel: 'code', title: 'none' },
+			postTransform(node) {
+				// Opt in to the highlight transform's `theme.code.colorScheme`
+				// cascade so the topbar + tab chrome flip with the inner code.
+				return { ...node, attributes: { ...node.attributes, 'data-code-host': true } };
+			},
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
