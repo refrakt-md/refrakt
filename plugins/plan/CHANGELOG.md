@@ -1,5 +1,17 @@
 # @refrakt-md/plan
 
+## 0.14.0
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.14.0
+- @refrakt-md/content@0.14.0
+- @refrakt-md/highlight@0.14.0
+- @refrakt-md/html@0.14.0
+- @refrakt-md/runes@0.14.0
+- @refrakt-md/transform@0.14.0
+- @refrakt-md/types@0.14.0
+
 ## 0.12.0
 
 ### Minor Changes

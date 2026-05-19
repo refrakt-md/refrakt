@@ -6,7 +6,28 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.12.0
+## v0.14.0
+
+- **Typed design tokens contract.** `ThemeTokensConfig` is now the canonical authoring surface for theme values. Site authors can drop tokens directly into `refrakt.config.json` under `theme.tokens` / `theme.modes` and skip writing CSS for the common case. Validated at build time against the contract; presets and modes deep-merge in declared order.
+- **Two opt-in Lumina presets.** `tideline` preserves the previous cream-and-navy chrome (now with IBM Plex Sans/Mono typography); `niwaki` is a syntax-only preset with a Japanese-garden palette. Both demonstrate that scoped presets (syntax-only, chrome-only, font-only) are first-class.
+- **Per-page tint cascade.** Frontmatter `tint`, `tint-mode`, and `tint-lock` cascade through the layout tree; the refrakt site uses this to lock its marketing pages to dark while letting docs / runes / plan-docs honour the user's preference. New `ThemeToggle` component for unlocked subtrees; pre-paint script eliminates FOIT on locked routes.
+- **`theme.code.colorScheme`** lets sites force fenced code blocks to a fixed light/dark scheme regardless of page mode (Stripe/Vercel-style always-dark code on light pages). Replaces the hand-mirrored `pre, pre[data-language]` override pattern that previously drifted from the active preset.
+- **Faster SvelteKit dev server.** The virtual content module now caches the loaded Site across navigations and invalidates only on `.md` edits — pages load near-instantly after the first navigation instead of re-running the cross-page pipeline per click.
+- **Nav primitives shipped.** Four contextual `nav` layouts (sidebar, header menubar, footer columns, section-landing cards), collapsible sidebar groups with URL-aware auto-open, and a new `pagination` rune for sequential reading flows.
+- **Prism logo + favicon set.** Monochrome prism mark replaces the previous cube; 18-PNG favicon set generated from the canonical SVG via `packages/lumina/scripts/generate-favicons.mjs`.
+- **Syntax contract simplified.** `SyntaxTokens.number` and `SyntaxTokens.type` removed; `constant` promoted to a direct slot covering numeric literals plus boolean/null/Symbol (matches Shiki's `token-constant` vocabulary). Migrate `syntax.number` → `syntax.constant`; drop `syntax.type` (no Shiki path existed for it).
+- **Shiki CSS variables renamed.** `--shiki-*` is now `--rf-syntax-*` (e.g. `--shiki-token-keyword` → `--rf-syntax-token-keyword`). Custom CSS reading the highlighter's variables directly needs to update; themes that consume only the contract surface are unaffected.
+- **Lumina's default appearance changed.** The previous cream-and-navy palette moved into the `tideline` preset; the new neutral default is a quiet warm-neutral (#f6f4ef / #1c1a17) designed to disappear behind content. Sites that want the old appearance opt in with `"presets": ["@refrakt-md/lumina/presets/tideline"]`.
+- **Tint shape aligned with token vocabulary.** `TintTokens` / `TintDefinition` field names and CSS custom property names (`--tint-*`) updated for consistency with the rest of the contract; lumina + plugin tint configs migrated.
+- **Default typography changed.** Outfit → Inter (body) and JetBrains Mono (code). Sites that prefer the old typography pin `font.sans` / `font.mono` back via `theme.tokens.font`, or opt into the tideline preset (which uses IBM Plex Sans/Mono).
+- **`RefraktConfig.packages[]` removed.** The deprecated top-level shorthand for `config.plugins[]` is gone (deprecation warning shipped in v0.12.0). Use `plugins[]` directly.
+- the tint-vocabulary rename mapping
+- the Shiki → `--rf-syntax-*` variable rename
+- the syntax-token contract change (`number`/`type` → `constant`)
+- restoring the previous appearance via the tideline preset
+- the per-page tint cascade frontmatter fields
+
+## v0.12.0 - May 11, 2026
 
 - Rename "rune packages" to "plugins" and unify with CLI plugins. Plugins now contribute runes, layouts, theme config, pipeline hooks, behaviors, **and** CLI commands through a single npm package.
 - **Breaking changes:**
@@ -47,7 +68,7 @@ description: Release history for refrakt.md
 - **`target` field downgraded to documentation-only.** No adapter actually validates or consumes `site.target`, so `SiteConfig.target` is now optional and the SvelteKit validator no longer requires it on flat-shape configs. The schema marks `target` `deprecated: true` with a note that it's slated for removal in v1.0.
 - Auto-migrate the legacy `packages` config field to `plugins` and emit a one-time deprecation warning. The field was renamed in v0.12.0 when rune packages and CLI plugins were unified, but the parser was silently ignoring the legacy field rather than warning, which broke sites that still used `sites.X.packages`. The legacy field now auto-migrates with a console warning and will be removed in v1.0.
 
-## v0.11.3
+## v0.11.3 - May 4, 2026
 
 - Fix two bugs in the MCP server:
 - `serverInfo.version` was hardcoded as `0.10.1` and never tracked the package version. It now reads the version from `package.json` at startup so each release reports correctly.
@@ -58,18 +79,18 @@ description: Release history for refrakt.md
 - `@refrakt-md/mcp`: `buildPluginTool` forwards the server's `ctx` to the plugin's `mcpHandler`. The argv-shimming fallback path is unchanged (it still uses `process.cwd()`); plugins that need project-cwd awareness should provide an explicit `mcpHandler`.
 - `@refrakt-md/plan`: every `*McpHandler` accepts the new `ctx`, threads it into `resolvePlanDir`, and absolutizes the resolved `dir` against `ctx.cwd` so relative paths from any source (flag, env, config, default) consistently resolve against the project root.
 
-## v0.11.2
+## v0.11.2 - May 3, 2026
 
 - Fix MCP server failing to invoke the refrakt CLI for `inspect`, `contracts`, `reference`, `inspect_list`, and `plugins_list` tools.
 - The MCP server resolves the CLI bin via `require.resolve('@refrakt-md/cli/package.json')`, but the cli package's `exports` map didn't declare `./package.json`, so Node threw `ERR_PACKAGE_PATH_NOT_EXPORTED`. The MCP server's catch branch silently fell back to the bare string `'refrakt'`, which `execFileSync` then tried to resolve as a relative path against the user's cwd, producing a confusing `Cannot find module '<cwd>/refrakt'` error.
 - `@refrakt-md/cli` now exports `./package.json` so the existing resolution path works.
 - `@refrakt-md/mcp` adds a secondary fallback (resolve via the always-exported `lib/plugins.js` and walk up to the package root) and now throws a clear error instead of returning a bogus bin path. Both core tools and resource handlers go through the shared helper.
 
-## v0.11.1
+## v0.11.1 - May 3, 2026
 
 - Include `packages/mcp` in the root build chain so the published tarball contains `dist/`. Previously the package was added to the workspace but never built during `npm run release`, causing `npx -y @refrakt-md/mcp` to fail because `bin: ./dist/bin.js` was missing from the npm artifact (only `package.json` shipped).
 
-## v0.11.0
+## v0.11.0 - May 3, 2026
 
 - v0.11.0 — unified config + multi-site + MCP server.
 - **Unified `refrakt.config.json`**. New `$schema`, `plugins`, `plan`, `site` / `sites` sections collapsed into a canonical sites map by `normalizeRefraktConfig()` in `@refrakt-md/transform/node`. Flat / singular / plural shapes all valid; single-site fields mirror to the top level for backwards compat. JSON Schema published from `@refrakt-md/transform` and referenced from a repo-root symlink for in-repo `$schema` references.
@@ -82,11 +103,11 @@ description: Release history for refrakt.md
 - **Site docs**. New `site/content/docs/configuration/` (overview, plugins, plan, sites, migration, schema) and `site/content/docs/mcp/` (overview, installation, tools, resources, errors). `packages/authoring.md` extended with an "Adding CLI Commands and MCP Tools" section. `CLAUDE.md` gains an MCP section directing agents to prefer MCP tools over the CLI when both are available.
 - **Path resolution semantics**. Nested-shape paths (`contentDir`, `sandbox.examplesDir`, `theme`, `overrides`, `runes.local`) now resolve relative to the config file's directory when a `configDir` is provided to `normalizeRefraktConfig()`. Flat-shape paths remain cwd-relative for legacy projects. `DEFAULT_SITE_NAME` exported as `'main'` (was `'default'`) so flat / singular configs promote to `sites.main` and match the `create-refrakt` scaffolds.
 
-## v0.10.1
+## v0.10.1 - April 29, 2026
 
 - Add nav top-level links support. Items before the first heading in a `{% nav %}` rune now render as prominent top-level links above the grouped navigation, styled with `.rf-nav__top-level`. Explicit markdown links (`[Label](/path)`) in nav items pass through as-is rather than being treated as slugs for web component resolution.
 
-## v0.10.0
+## v0.10.0 - April 28, 2026
 
 - Version bump for coordinated release
 - Adopt `{ID}-{slug}.md` as the canonical filename for plan items. `refrakt plan create` now emits e.g. `WORK-058-my-task.md` instead of `my-task.md` for every auto-ID type (work, bug, spec, decision). Milestones still use their semver names (`v1.0.0.md`).
@@ -94,7 +115,7 @@ description: Release history for refrakt.md
 - `refrakt plan validate` now emits `filename-missing-id` / `filename-id-mismatch` warnings when a file's name doesn't match its frontmatter `id`.
 - `refrakt plan init` no longer scaffolds the root `index.md`, type-level `index.md` pages, or status filter pages. The plan site synthesises these dynamically.
 
-## v0.9.9
+## v0.9.9 - April 19, 2026
 
 - Expand `refrakt plan init` to fully wire the host project for agent use:
 - **AGENTS.md is now canonical** — full workflow content lives in `AGENTS.md` at the project root; tool-specific files (`CLAUDE.md`, `.cursorrules`, etc.) get one-line pointers to it.
@@ -104,15 +125,15 @@ description: Release history for refrakt.md
 - **Opt-out flags** — `--no-package-json`, `--no-hooks`, `--no-wrapper`, and `--minimal` (all three) for users who want bare scaffolding.
 - Also fixes the `esbuild` dependency leak in `@refrakt-md/plan`: the `bundleBehaviors` helper now lazy-imports `esbuild`, so non-build plan commands (`status`, `next`, `update`, etc.) no longer fail to load when esbuild isn't installed. `esbuild` is declared as an optional peer dependency.
 
-## v0.9.8
+## v0.9.8 - April 15, 2026
 
 - Add edge-safe `./render` entry point for rendering plan entity Markdoc source to a serialized RendererNode. Works on Cloudflare Workers — no Node.js dependencies. Consumers apply their own theme's identity transform and render to HTML.
 
-## v0.9.7
+## v0.9.7 - April 15, 2026
 
 - Plan package improvements: tool-agnostic `plan init` with `--agent` flag for multi-editor support, renamed plan directories to plural form (specs/, decisions/, milestones/), and refactored internals for edge runtime compatibility with new entry points (./diff, ./relationships, ./cards)
 
-## v0.9.6
+## v0.9.6 - April 14, 2026
 
 - Bug Fixes:
 - Fix ThemeShell build failure ({@const} inside {#if} block)
@@ -142,7 +163,7 @@ description: Release history for refrakt.md
 - Simplify codegroup chrome: skip tabs for single fence without labels
 - Move event register button from header to bottom of component
 
-## v0.9.5
+## v0.9.5 - April 10, 2026
 
 - Fix sidenote rune rendering empty due to minimal density hiding body
 - Fix juxtapose label rendering and restyle toggle buttons
@@ -154,7 +175,7 @@ description: Release history for refrakt.md
 - Improve SEO and AI discoverability
 - - Fix annotate rune: margin notes invisible, inline notes not inline
 
-## v0.9.4
+## v0.9.4 - April 9, 2026
 
 - Fix Vite dev server warnings: deprecated svelte:component, dynamic imports, void elements
 - Fix gallery responsive behavior: reset margin, columns, and gap at breakpoints
@@ -169,7 +190,7 @@ description: Release history for refrakt.md
 - Align mark.svg dark mode color with Lumina palette
 - Add SVG favicon using existing mark.svg logo
 
-## v0.9.3
+## v0.9.3 - April 9, 2026
 
 - Bug fixes, rune restyling, and new features since v0.9.2.
 - Add `createRefraktLoader` and `virtual:refrakt/content` to eliminate content loading boilerplate
@@ -200,11 +221,11 @@ description: Release history for refrakt.md
 - Audit and fix site documentation gaps
 - Redesign milestone progress indicator as two-row layout
 
-## v0.9.2
+## v0.9.2 - April 7, 2026
 
 - Add multi-framework adapter packages (Astro, Eleventy, Next.js, Nuxt, React, Vue) with ADR-008 framework-native component interfaces. Implement ADR-009 framework-agnostic theme architecture. Add vue, astro, and jinja to Shiki default languages.
 
-## v0.9.1
+## v0.9.1 - April 3, 2026
 
 - Named slots with ordering for structured element placement
 - Repeated element generation for multi-instance structures
@@ -221,7 +242,7 @@ description: Release history for refrakt.md
 - Auto-assign IDs and detect duplicates in plan CLI
 - Inspect and contracts updated for structure slots
 
-## v0.9.0
+## v0.9.0 - March 30, 2026
 
 - Metadata dimensions system: density, section anatomy, media slots, checklist, sequential items, and interactive state dimensions added to rune configs and identity transform engine
 - Universal dimension CSS in Lumina theme with generic metadata styling
@@ -247,15 +268,15 @@ description: Release history for refrakt.md
 - Fix theme CSS resolution to load full theme instead of tokens only
 - Many Lumina CSS refinements: recipe cover ratio, CTA alignment, hero centering, testimonial borders, blog post hover shadows
 
-## v0.8.5
+## v0.8.5 - March 20, 2026
 
 - Add blog rune for listing posts with filtering and sorting. Expose frontmatter and page data as content-level Markdoc variables. Redesign juxtapose rune with --- delimiter and overlay labels. Auto-discover runes in VS Code extension and editor. Fix map rune collapsed border and add spacing support. Fix juxtapose tint mode.
 
-## v0.8.4
+## v0.8.4 - March 19, 2026
 
 - Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.
 
-## v0.8.3
+## v0.8.3 - March 19, 2026
 
 - Add draggable popover and clickable prose blocks
 - Redesign prose editor with popover tabs and hover inline editing
@@ -271,15 +292,15 @@ description: Release history for refrakt.md
 - Sync language server and VS Code extension with current runes
 - Polish datatable rune and unify table wrapper class
 
-## v0.8.2
+## v0.8.2 - March 17, 2026
 
 - Bug fixes and editor improvements including CodeMirror code editing, mobile search fix, structure tab enhancements, and block editor UI refinements.
 
-## v0.8.1
+## v0.8.1 - March 16, 2026
 
 - Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
 
-## v0.8.0
+## v0.8.0 - March 10, 2026
 
 - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`
 - Cross-page pipeline: EntityRegistry, breadcrumb auto-resolution, aggregated data
@@ -295,7 +316,7 @@ description: Release history for refrakt.md
 - `style` attribute renamed to `variant` across all runes
 - `typeof`/`property` renamed to `data-rune`/`data-field` across the pipeline
 
-## v0.7.2
+## v0.7.2 - March 4, 2026
 
 - Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`, and `PackagePipelineHooks`. Includes nav auto mode, pipeline build output, design token context propagation, and editor preview/autocomplete support for community runes.
 - Fix duplicate BEM classes on runes nested inside `data-name` elements. Make `autoLabel` recursive in the identity transform engine so eyebrow, headline, and blurb children inside `<header>` wrappers receive BEM classes. Add `pageSectionAutoLabel` to all marketing and core page-section runes.
@@ -303,15 +324,15 @@ description: Release history for refrakt.md
 - Add `mockup` rune to `@refrakt-md/design` for wrapping content in device frames.
 - Fix multiple preview runtime issues: `structuredClone` errors, `DataCloneError` when sending `routeRules` via `postMessage`, and cache not invalidating on source changes. Remove `ComponentType` and `PropertyNodes` from the schema system.
 
-## v0.7.1
+## v0.7.1 - March 3, 2026
 
 - Fix production builds excluding CSS for runes from @refrakt-md/\* rune packages. The CSS tree-shaker now uses the assembled config (core + package runes) instead of only the core theme config when determining which rune CSS files to include.
 
-## v0.7.0
+## v0.7.0 - March 3, 2026
 
 - Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
 
-## v0.6.0
+## v0.6.0 - March 2, 2026
 
 - WYSIWYG block editor with stacked previews, Shadow DOM isolation, and rail navigation
 - Three-mode editor toggle: Visual, Code, and Preview with unified header bar
@@ -346,7 +367,7 @@ description: Release history for refrakt.md
 
 - Fix scaffolded dependency versions to derive from package version at runtime instead of hardcoding. Previously, the template hardcoded `^0.4.0` which with 0.x semver resolved to `<0.5.0`, causing newly scaffolded sites to install incompatible older packages. Also fixes invalid rune attribute usage in the kitchen sink template.
 
-## v0.5.0
+## v0.5.0 - February 23, 2026
 
 - **`refrakt scaffold --theme`** generates a complete custom theme with layout, CSS tokens, manifest, test infrastructure, and kitchen sink content
 - **`refrakt inspect`** command for theme developers — rune coverage audit, CSS audit, structure contracts
@@ -399,7 +420,7 @@ description: Release history for refrakt.md
 - Fix mobile nav hidden links and panel positioning
 - Fix TS2307 on Cloudflare with dynamic import
 
-## v0.4.0
+## v0.4.0 - February 16, 2026
 
 - `@refrakt-md/highlight` — Shiki-based syntax highlighting with Markdoc grammar support, CSS variables integration, and copy-to-clipboard
 - `@refrakt-md/transform` — Identity transform engine extracted into its own package (BEM classes, structural injection, meta consumption)
@@ -420,14 +441,14 @@ description: Release history for refrakt.md
 - Copy-to-clipboard for code blocks
 - Test coverage expanded from ~299 to 370 tests
 
-## v0.3.0
+## v0.3.0 - February 13, 2026
 
 - New runes and bug fixes
 - recipe — Ingredients, steps, chef's tips with prep/cook time metadata howto — Step-by-step instructions with tools/materials list event — Event info with date, location, registration URL cast (alias: team) — People directory with name/role parsing organization (alias: business) — Structured business information
 - datatable (alias: data-table) — Interactive table with sortable/searchable attributes api (alias: endpoint) — API endpoint documentation with method badges diff — Side-by-side or unified diff between two code blocks 0chart — Bar/line/pie/area charts from Markdown tables diagram — Mermaid.js diagram rendering
 - Other: sidenote (aliases: footnote, marginnote) — Margin notes, footnotes, and tooltips
 
-## v0.2.0
+## v0.2.0 - February 12, 2026
 
 - Added SEO layer
 {% /changelog %}
