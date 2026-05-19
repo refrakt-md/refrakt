@@ -44,10 +44,12 @@ export function tokenPathToCssVar(path: readonly string[]): string {
  * `variable`) map to differently-named Shiki tokens (`constant`,
  * `parameter`).
  *
- * `syntax.string` populates two Shiki tokens (`string` and
- * `string-expression`); `syntax.function` additionally seeds `token-link`
- * so URL/link tokens get a sensible default (themes can override `link`
- * via `extra` if they want a distinct colour).
+ * `syntax.function` seeds both `token-function` and `token-link` —
+ * link tokens default to function. `syntax.string` seeds both
+ * `token-string` and `token-string-expression` — template-literal
+ * expressions default to the surrounding string colour. Themes that
+ * want either pair to diverge declare `syntax.link` or
+ * `syntax.string-expression` explicitly (handled below the broad map).
  *
  * `syntax.type` is intentionally absent — Shiki has no matching token
  * (it groups type-like roles into `keyword` / `entity-name` depending on
@@ -64,6 +66,14 @@ const SYNTAX_TO_SHIKI_ALIASES: Record<string, readonly string[]> = {
 	variable: ['token-parameter'],
 };
 
+/** Refinements — contract fields that override one of the broad
+ *  derivations above. `link` overrides the function→link default;
+ *  `string-expression` overrides the string→string-expression default. */
+const SYNTAX_REFINEMENTS: Record<string, string> = {
+	link: 'token-link',
+	'string-expression': 'token-string-expression',
+};
+
 /**
  * Derive the Shiki-alias `extra` entries implied by a layer's
  * `syntax.*` and code/text colour tokens. Returned map is keyed by the
@@ -77,6 +87,8 @@ function deriveSyntaxAliases(
 	const aliases: Record<string, string> = {};
 
 	if (layer.syntax) {
+		// Broad mappings first — link defaults to function, string-expression
+		// defaults to string. Refinements then overwrite when present.
 		for (const [role, value] of Object.entries(layer.syntax)) {
 			if (typeof value !== 'string') continue;
 			const targets = SYNTAX_TO_SHIKI_ALIASES[role];
@@ -84,6 +96,12 @@ function deriveSyntaxAliases(
 			for (const target of targets) {
 				aliases[`rf-syntax-${target}`] = value;
 			}
+		}
+		for (const [role, value] of Object.entries(layer.syntax)) {
+			if (typeof value !== 'string') continue;
+			const refinement = SYNTAX_REFINEMENTS[role];
+			if (!refinement) continue;
+			aliases[`rf-syntax-${refinement}`] = value;
 		}
 	}
 

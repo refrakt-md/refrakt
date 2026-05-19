@@ -215,6 +215,31 @@ describe('generateThemeStylesheet', () => {
 		expect(css).not.toContain('--rf-syntax-token-link: #bbb;');
 	});
 
+	it('first-class syntax.link overrides the function→link broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb', link: '#999' },
+		};
+		const css = generateThemeStylesheet(config);
+		// Contract variable for link is emitted
+		expect(css).toContain('--rf-syntax-link: #999;');
+		// Token-function keeps function's colour
+		expect(css).toContain('--rf-syntax-token-function: #bbb;');
+		// Token-link picks up the refinement, not the function default
+		expect(css).toContain('--rf-syntax-token-link: #999;');
+		expect(css).not.toContain('--rf-syntax-token-link: #bbb;');
+	});
+
+	it('first-class syntax.string-expression overrides the string→string-expression broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { string: '#ccc', 'string-expression': '#abc' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-string-expression: #abc;');
+		expect(css).toContain('--rf-syntax-token-string: #ccc;');
+		expect(css).toContain('--rf-syntax-token-string-expression: #abc;');
+		expect(css).not.toContain('--rf-syntax-token-string-expression: #ccc;');
+	});
+
 	it('does not auto-derive when the layer has no syntax/color tokens', () => {
 		const config: ThemeTokensConfig = {
 			radius: { md: '8px' },
