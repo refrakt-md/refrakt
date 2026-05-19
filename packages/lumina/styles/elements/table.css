@@ -30,3 +30,7 @@
 .rf-table-wrapper tr:last-child td {
 	border-bottom: none;
 }
+.rf-table-wrapper th code,
+.rf-table-wrapper td code {
+	font-size: 1em;
+}
