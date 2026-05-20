@@ -9,6 +9,7 @@ tint-lock: false
 {% nav collapsible=true %}
 - [Documentation](/docs/getting-started)
 - [Runes](/runes/rune-catalog)
+- [Themes](/themes/themes-catalog)
 - [Planning](/plan)
 
 ## Guide
@@ -30,7 +31,7 @@ tint-lock: false
 - write
 - theme-tools
 
-## Themes
+## Theme authoring
 
 - overview
 - config-api
@@ -41,13 +42,6 @@ tint-lock: false
 - layouts
 - tooling
 - tint-cascade
-
-## Lumina
-
-- lumina
-- neutral-default
-- tideline
-- niwaki
 
 ## Adapters
 

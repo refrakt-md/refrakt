@@ -27,6 +27,11 @@
 					"colorScheme": "dark"
 				}
 			},
+			"tints": {
+				"nord": { "extends": "@refrakt-md/lumina/presets/nord" },
+				"tideline": { "extends": "@refrakt-md/lumina/presets/tideline" },
+				"niwaki": { "extends": "@refrakt-md/lumina/presets/niwaki" }
+			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",
 			"siteName": "refrakt.md",
@@ -46,6 +51,7 @@
 				{ "pattern": "plan/docs/**", "layout": "docs" },
 				{ "pattern": "docs/**", "layout": "docs" },
 				{ "pattern": "runes/**", "layout": "docs" },
+				{ "pattern": "themes/**", "layout": "docs" },
 				{ "pattern": "blog/*", "layout": "blog-article" },
 				{ "pattern": "**", "layout": "default" }
 			],

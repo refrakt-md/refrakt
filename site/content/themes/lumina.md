@@ -9,9 +9,9 @@ Lumina is refrakt's flagship theme. It ships with a quiet warm-neutral palette d
 
 | Surface | Renders | When to use |
 |---|---|---|
-| [Neutral default](/docs/themes/lumina/neutral-default) | Warm-neutral chrome, monochrome primary, quiet-spectrum syntax | Anything that wants the user's brand to lead — docs sites, blogs, marketing pages for the user's brand |
-| [Tideline](/docs/themes/lumina/presets/tideline) | Cream paper + maritime navy + IBM Plex Sans/Mono | Personal sites, brand-forward marketing where a touch of nostalgic paperliness fits |
-| [Niwaki](/docs/themes/lumina/presets/niwaki) | Japanese-garden syntax palette on whatever chrome sits beneath | Code-heavy docs that want a signature without overhauling chrome |
+| [Neutral default](/themes/neutral-default) | Warm-neutral chrome, monochrome primary, quiet-spectrum syntax | Anything that wants the user's brand to lead — docs sites, blogs, marketing pages for the user's brand |
+| [Tideline](/themes/tideline) | Cream paper + maritime navy + IBM Plex Sans/Mono | Personal sites, brand-forward marketing where a touch of nostalgic paperliness fits |
+| [Niwaki](/themes/niwaki) | Japanese-garden syntax palette on whatever chrome sits beneath | Code-heavy docs that want a signature without overhauling chrome |
 
 ## How presets work
 

@@ -1,4 +1,5 @@
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition } from './types.js';
+import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 export interface ThemeConfigOverrides {
 	prefix?: string;
@@ -42,11 +43,22 @@ export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverri
  * its own `light` / `dark` / `lockMode` layered on top per leaf. The
  * resolved map has no `extends` references — every tint is self-contained.
  *
- * Throws if a tint extends a name that doesn't exist in the map, or if
- * the extends chain contains a cycle.
+ * Per SPEC-056, `extends` may also reference a preset module path. When the
+ * caller supplies a `presetMap` and the extends value matches a key in it,
+ * the preset's chrome-accent tokens (color.bg / surface / text / muted /
+ * primary / border) are projected into {@link TintTokens} shape and used
+ * as the base. The preset's other scope-eligible namespaces (`syntax.*`,
+ * `color.code.*`) are intentionally NOT projected by this function — they
+ * land in static CSS via {@link generateScopedTintStylesheet} instead,
+ * because they don't fit the 6-token `TintTokens` shape.
+ *
+ * Throws if a tint extends a name that doesn't exist in either map, or if
+ * the extends chain contains a cycle. A preset path takes precedence over
+ * a tint name if both resolve.
  */
 export function resolveTintExtends(
 	tints: Record<string, TintDefinition>,
+	presetMap?: Record<string, ThemeTokensConfig>,
 ): Record<string, TintDefinition> {
 	const resolved: Record<string, TintDefinition> = {};
 
@@ -61,6 +73,20 @@ export function resolveTintExtends(
 		if (!tint.extends) {
 			const out: TintDefinition = { ...tint };
 			delete out.extends;
+			resolved[name] = out;
+			return out;
+		}
+
+		// Preset-path extends — SPEC-056. Preset paths take precedence over
+		// tint names if both resolve.
+		if (presetMap && presetMap[tint.extends]) {
+			const preset = presetMap[tint.extends];
+			const presetAccents = extractChromeAccents(preset);
+			const out: TintDefinition = {
+				lockMode: tint.lockMode ?? presetAccents.lockMode,
+				light: mergeTintTokens(presetAccents.light, tint.light),
+				dark: mergeTintTokens(presetAccents.dark, tint.dark),
+			};
 			resolved[name] = out;
 			return out;
 		}
@@ -88,6 +114,46 @@ export function resolveTintExtends(
 	}
 
 	return resolved;
+}
+
+/**
+ * Project a {@link ThemeTokensConfig} preset into the chrome-accent
+ * {@link TintTokens} shape — the 6 tokens tint already understands.
+ *
+ * Per SPEC-056's scope-eligibility filter, only `color.bg`, `color.surface`
+ * (the `.base` slot), `color.text`, `color.muted`, `color.primary`, and
+ * `color.border` map into the tint accent vocabulary. The preset's
+ * `modes.dark` overlay (if present) populates `dark`. Presets that don't
+ * set chrome accents return empty objects — most syntax-only presets
+ * (niwaki) and integrated palettes that don't claim chrome (Nord) end
+ * up here.
+ */
+function extractChromeAccents(preset: ThemeTokensConfig): {
+	light?: TintTokens;
+	dark?: TintTokens;
+	lockMode?: 'light' | 'dark';
+} {
+	const light = projectColorAccents(preset.color);
+	const darkOverlay = preset.modes?.dark?.color;
+	const dark = darkOverlay ? projectColorAccents(darkOverlay) : undefined;
+	return {
+		light: Object.keys(light ?? {}).length > 0 ? light : undefined,
+		dark: dark && Object.keys(dark).length > 0 ? dark : undefined,
+	};
+}
+
+function projectColorAccents(color: ThemeTokensConfig['color']): TintTokens | undefined {
+	if (!color) return undefined;
+	const out: TintTokens = {};
+	if (typeof color.bg === 'string') out.bg = color.bg;
+	if (color.surface && typeof (color.surface as { base?: string }).base === 'string') {
+		out.surface = (color.surface as { base: string }).base;
+	}
+	if (typeof color.text === 'string') out.text = color.text;
+	if (typeof color.muted === 'string') out.muted = color.muted;
+	if (typeof color.primary === 'string') out.primary = color.primary;
+	if (typeof color.border === 'string') out.border = color.border;
+	return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function mergeTintTokens(

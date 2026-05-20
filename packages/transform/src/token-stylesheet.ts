@@ -43,42 +43,56 @@ export function tokenPathToCssVar(path: readonly string[]): string {
  * `token-` segment, and one of the contract names (`variable`) maps to a
  * differently-named Shiki token (`parameter`).
  *
- * `syntax.function` seeds both `token-function` and `token-link` — link
- * tokens default to function. `syntax.string` seeds both `token-string`
- * and `token-string-expression` — template-literal expressions default
- * to the surrounding string colour. Themes that want either pair to
- * diverge declare `syntax.link` or `syntax.string-expression` explicitly
- * (handled below the broad map).
+ * Each required contract role seeds one or more Shiki aliases — the role's
+ * own alias plus aliases for any optional role that falls back to it per
+ * SPEC-056's fallback table. When a preset doesn't set an optional role
+ * (e.g. `type`), the broad mapping leaves `--rf-syntax-token-type` painted
+ * by `function`'s value, which is exactly the SPEC-056 fallback intent.
+ * When a preset *does* set the optional role, the refinement table below
+ * overrides the broad default.
  *
- * `syntax.constant` covers numeric literals plus boolean/null/Symbol —
- * Shiki paints them all from one slot, so the contract surface mirrors
- * Shiki's vocabulary rather than the language-specific intuition of
- * "number". There used to be a separate `number` field that seeded
- * `token-constant`; it was a phantom (the `--rf-syntax-number` contract
- * variable had no Shiki reader) and was removed.
+ * Fallback chains seeded here (matches SPEC-056 "Authoring Surface" →
+ * "Fallback resolution"):
+ * - `function` → `token-function`, `token-link`, `token-type`, `token-attribute`
+ * - `string` → `token-string`, `token-string-expression`, `token-regex`
+ * - `keyword` → `token-keyword`, `token-tag`
+ * - `constant` → `token-constant`, `token-number`
+ * - `punctuation` → `token-punctuation`, `token-operator`
+ * - `variable` → `token-parameter`, `token-property` (note: contract
+ *   `variable` is Shiki's `parameter`; `property` extends the same
+ *   identifier-family group)
+ * - `comment` → `token-comment` (no fallback children)
  *
- * There is intentionally no `type` mapping — Shiki's css-variables theme
- * has no `token-type` slot (it paints type names as `entity-name` →
- * `token-function`, and built-in types like `string` as `token-constant`).
- * Themes that want a distinct type colour need a custom highlighter,
- * not a contract token.
+ * `syntax.constant` covers numeric literals plus boolean/null/Symbol by
+ * default — Shiki's css-variables theme paints them from one slot. Palettes
+ * that intentionally split numbers out (Tokyo Night, One Dark) declare
+ * `syntax.number` as a refinement; otherwise `--rf-syntax-token-number`
+ * stays at the constant value.
  */
 const SYNTAX_TO_SHIKI_ALIASES: Record<string, readonly string[]> = {
-	keyword: ['token-keyword'],
-	function: ['token-function', 'token-link'],
-	string: ['token-string', 'token-string-expression'],
-	constant: ['token-constant'],
+	keyword: ['token-keyword', 'token-tag'],
+	function: ['token-function', 'token-link', 'token-type', 'token-attribute'],
+	string: ['token-string', 'token-string-expression', 'token-regex'],
+	constant: ['token-constant', 'token-number'],
 	comment: ['token-comment'],
-	punctuation: ['token-punctuation'],
-	variable: ['token-parameter'],
+	punctuation: ['token-punctuation', 'token-operator'],
+	variable: ['token-parameter', 'token-property'],
 };
 
-/** Refinements — contract fields that override one of the broad
- *  derivations above. `link` overrides the function→link default;
- *  `string-expression` overrides the string→string-expression default. */
+/** Refinements — optional contract fields that override one of the broad
+ *  derivations above. Setting `syntax.<role>` declares the explicit colour
+ *  for the matching `token-<role>` alias and wins over the broad default. */
 const SYNTAX_REFINEMENTS: Record<string, string> = {
 	link: 'token-link',
 	'string-expression': 'token-string-expression',
+	type: 'token-type',
+	property: 'token-property',
+	parameter: 'token-parameter',
+	tag: 'token-tag',
+	attribute: 'token-attribute',
+	operator: 'token-operator',
+	number: 'token-number',
+	regex: 'token-regex',
 };
 
 /**
@@ -242,6 +256,179 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	}
 
 	return blocks.join('\n');
+}
+
+/**
+ * SPEC-056 scope-eligibility filter: which `ThemeTokensConfig` slots can be
+ * projected from a preset module into a scoped tint class.
+ *
+ * - **Included**: `syntax.*` (all 16 roles), `color.code.*` (bg/text/inline-bg),
+ *   and chrome accent slots (`color.bg`, `color.surface.base`, `color.text`,
+ *   `color.muted`, `color.primary`, `color.border`). Together these cover the
+ *   visible colour identity of a Nord-style integrated palette without leaking
+ *   into structural identity.
+ *
+ * - **Excluded**: typography (`font.*`), structural (`radius.*`, `spacing.*`,
+ *   `inset.*`, `shadow.*`), status sentiments (`color.info`, `color.warning`,
+ *   `color.danger`, `color.success`), primary scale (`color.primary-scale`),
+ *   primary hover variants (`color.primary-hover`), surface variants beyond
+ *   `base` (`color.surface.hover/active/raised`), and theme-specific `extra`
+ *   keys. The spec's "tints scope mood; presets scope skeleton" commitment
+ *   lives in this filter.
+ *
+ * Why include chrome accents here rather than route them through the inline-
+ * style mechanism that hand-defined tints use? The inline path requires the
+ * runtime engine to know about the preset module (via a `presetMap` plumbed
+ * through `mergeThemeConfig` → `resolveTintExtends`). Today only the build-
+ * time generator has that knowledge, so we materialise chrome accents here
+ * to keep the scoped tint self-sufficient. If a future caller does plumb
+ * `presetMap` through merge time, the inline emission would override these
+ * (inline styles beat CSS selector specificity), so there's no conflict —
+ * just a redundancy that the cascade resolves correctly.
+ */
+const CHROME_ACCENT_KEYS = new Set(['bg', 'text', 'muted', 'primary', 'border']);
+
+/** Drop non-eligible top-level + nested keys from a config, leaving only the
+ *  scope-eligible namespaces (chrome accents + code surface + syntax).
+ *  Returns an empty object if the input has nothing to project.
+ *
+ *  When invoked from `generateScopedTintStylesheet`, dropped keys are
+ *  reported through `onDrop` for an optional dev warning. */
+function filterScopeEligible(
+	layer: ThemeTokensConfig,
+	onDrop?: (key: string) => void,
+): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	if (layer.syntax) out.syntax = layer.syntax;
+
+	if (layer.color) {
+		const colorOut: Record<string, unknown> = {};
+		// Chrome accents (top-level color.* leaves we care about).
+		for (const key of CHROME_ACCENT_KEYS) {
+			const v = (layer.color as Record<string, unknown>)[key];
+			if (typeof v === 'string') colorOut[key] = v;
+		}
+		// Chrome accent: color.surface.base only (not hover/active/raised).
+		const surface = (layer.color as { surface?: { base?: string } }).surface;
+		if (surface && typeof surface.base === 'string') {
+			colorOut.surface = { base: surface.base };
+		}
+		// Code surface: full color.code.* namespace.
+		if (layer.color.code) {
+			colorOut.code = layer.color.code;
+		}
+		if (Object.keys(colorOut).length > 0) out.color = colorOut;
+	}
+
+	if (onDrop) {
+		const ELIGIBLE_COLOR_KEYS = new Set([...CHROME_ACCENT_KEYS, 'surface', 'code']);
+		for (const topKey of Object.keys(layer)) {
+			if (topKey === 'syntax' || topKey === 'modes' || topKey === 'extra') continue;
+			if (topKey === 'color') {
+				for (const colorKey of Object.keys(layer.color ?? {})) {
+					if (ELIGIBLE_COLOR_KEYS.has(colorKey)) continue;
+					onDrop(`color.${colorKey}`);
+				}
+				continue;
+			}
+			onDrop(topKey);
+		}
+	}
+
+	return out;
+}
+
+/** Dedup set for dev warnings — one warning per (preset, key) pair per process. */
+const __DROP_WARNINGS_SEEN = new Set<string>();
+
+/**
+ * Generate a scoped tint stylesheet for tints whose `extends` references a
+ * preset module — SPEC-056's tint-as-preset-projection mechanism.
+ *
+ * For each tint name in `tints` whose `extends` is a key in `presetMap`,
+ * emits two CSS blocks:
+ *
+ *   1. `[data-tint="<name>"] { ... }` — the preset's scope-eligible
+ *      non-accent values (syntax + color.code) at light-mode.
+ *   2. `[data-tint="<name>"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="<name>"] { ... }`
+ *      — the preset's dark-mode overlay for the same scope-eligible
+ *      namespaces, when present.
+ *
+ * Tints whose extends is a tint name (existing SPEC-053 path) or that have
+ * no extends are skipped — they produce no static CSS, only the inline-style
+ * chrome-accent runtime emission via the engine.
+ *
+ * The chrome-accent portions of preset projections are NOT emitted here —
+ * those are handled by `resolveTintExtends` which puts them into the tint's
+ * `light`/`dark` `TintTokens` shape, where the engine picks them up at
+ * runtime and emits them as inline `style="--tint-* "` declarations.
+ *
+ * Non-eligible namespaces from the preset (font, radius, spacing, shadow,
+ * status, primary-scale) are silently dropped. The filter is enforced here,
+ * making it impossible for a preset to leak typography or structural
+ * overrides into a scoped tint regardless of what the preset author writes.
+ */
+export function generateScopedTintStylesheet(
+	tints: Record<string, TintDefinitionLike>,
+	presetMap: Record<string, ThemeTokensConfig>,
+): string {
+	const blocks: string[] = [];
+
+	const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+
+	for (const [name, tint] of Object.entries(tints)) {
+		const extendsValue = tint.extends;
+		if (!extendsValue) continue;
+		const preset = presetMap[extendsValue];
+		if (!preset) continue;
+
+		const reportDrop = isDev
+			? (key: string) => {
+				const seenKey = `${extendsValue}:${key}`;
+				if (__DROP_WARNINGS_SEEN.has(seenKey)) return;
+				__DROP_WARNINGS_SEEN.add(seenKey);
+				console.warn(
+					`[refrakt] Preset "${extendsValue}" sets non-scope-eligible token "${key}" — ` +
+					`dropped from projected tint "${name}" per SPEC-056. Move this to a chrome preset ` +
+					`if you want it applied globally.`,
+				);
+			}
+			: undefined;
+
+		const lightProjection = filterScopeEligible(preset, reportDrop);
+		const lightBlock = generateTokenStylesheet(
+			lightProjection as Parameters<typeof generateTokenStylesheet>[0],
+			{
+				selector: `[data-tint="${name}"]`,
+				extra: deriveSyntaxAliases(lightProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+			},
+		);
+		if (lightBlock) blocks.push(lightBlock);
+
+		const darkOverlay = preset.modes?.dark;
+		if (darkOverlay) {
+			// Dev warnings for `modes.dark` are only emitted when the dark
+			// overlay introduces *new* non-eligible keys not already reported
+			// from the base — dedup via the same seen-set.
+			const darkProjection = filterScopeEligible(darkOverlay as ThemeTokensConfig, reportDrop);
+			const darkBlock = generateTokenStylesheet(
+				darkProjection as Parameters<typeof generateTokenStylesheet>[0],
+				{
+					selector: `[data-tint="${name}"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="${name}"]`,
+					extra: deriveSyntaxAliases(darkProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+				},
+			);
+			if (darkBlock) blocks.push(darkBlock);
+		}
+	}
+
+	return blocks.join('\n');
+}
+
+/** Minimal shape required by {@link generateScopedTintStylesheet}. Avoids a
+ *  circular type import on `TintDefinition` from `./types.ts`. */
+interface TintDefinitionLike {
+	extends?: string;
 }
 
 function walkTokens(

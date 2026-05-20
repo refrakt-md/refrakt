@@ -158,17 +158,23 @@ export interface PrimaryScale {
 /** Syntax-highlighting roles. Variables and ordinary identifiers fall through
  *  to body `text`; only the meaning-bearing roles get distinct colours.
  *
+ *  The contract is **tiered** (SPEC-056): seven required core roles cover
+ *  everything a theme must define to render code at all, and nine optional
+ *  extended roles let preset authors faithfully carry palettes that
+ *  intentionally split distinctions the core collapses. Each optional role
+ *  falls back to a documented core role via a `var()` chain emitted by the
+ *  CSS generator — so a preset that doesn't set the optional role still
+ *  renders correctly, just with less fidelity than a preset that does.
+ *
  *  Naming follows Shiki's `token-*` vocabulary rather than language-specific
- *  intuition. Two roles that might surprise you:
- *  - `constant` covers numeric literals AND boolean/null/Symbol-style
- *    language constants — Shiki paints them all from one slot, so the
- *    contract reflects that rather than pretending `number` is distinct.
- *  - There is no `type` field. Shiki's css-variables theme has no
- *    `token-type` slot — type names get painted as `token-function`
- *    (entity-name) and built-in types like `string` as `token-constant`.
- *    Themes that want a distinct type colour need a custom highlighter
- *    or grammar-level CSS, not a contract token. */
+ *  intuition. One role that might surprise you: `constant` covers boolean/
+ *  null/Symbol-style language constants AND numeric literals by default —
+ *  Shiki paints them all from one slot. Palettes that distinguish numbers
+ *  (e.g. Tokyo Night, One Dark) can set the optional `number` role to split
+ *  them out. */
 export interface SyntaxTokens {
+	// ── Required core ────────────────────────────────────────────────────────
+
 	keyword: string;
 	function: string;
 	string: string;
@@ -177,18 +183,63 @@ export interface SyntaxTokens {
 	punctuation: string;
 	variable: string;
 
-	/** URL/link tokens — markdown links, autolinks, comment URLs. Optional;
-	 *  the generator defaults `--rf-syntax-token-link` to `function` when this
-	 *  isn't set, so themes that don't care about distinguishing link from
-	 *  function can omit it. Set explicitly when you want a distinct colour. */
+	// ── Optional, existing ───────────────────────────────────────────────────
+
+	/** URL/link tokens — markdown links, autolinks, comment URLs. Falls back
+	 *  to `function` when unset, so themes that don't care about distinguishing
+	 *  link from function can omit it. Set explicitly when you want a distinct
+	 *  colour. */
 	link?: string;
 
 	/** Interpolated expressions inside template literals (the `${foo}` part
-	 *  of a backtick string). Optional; the generator defaults
-	 *  `--rf-syntax-token-string-expression` to `string` when this isn't set.
-	 *  Set explicitly when you want template-literal expressions to read
-	 *  distinctly from the surrounding string. */
+	 *  of a backtick string). Falls back to `string` when unset. Set explicitly
+	 *  when you want template-literal expressions to read distinctly from the
+	 *  surrounding string. */
 	'string-expression'?: string;
+
+	// ── Optional, extended (SPEC-056) ────────────────────────────────────────
+
+	/** Type names, class names, interface names, generic parameters. Falls
+	 *  back to `function` when unset. Palettes that intentionally split type
+	 *  from function (Nord's Frost-7 vs Frost-8, Dracula's Cyan vs Green,
+	 *  Tokyo Night, One Dark, Catppuccin) set this; minimal palettes leave
+	 *  it unset and accept that types and functions share a colour. */
+	type?: string;
+
+	/** Object property access (`foo.bar`), object literal keys. Falls back
+	 *  to `variable` when unset. Some palettes paint properties as muted
+	 *  text; others give them a dedicated hue. */
+	property?: string;
+
+	/** Function/method parameters in declaration position. Falls back to
+	 *  `variable` when unset. Palettes that italicise or hue-shift
+	 *  parameters in declarations set this. */
+	parameter?: string;
+
+	/** JSX/HTML/XML element tag names. Falls back to `keyword` when unset —
+	 *  most palettes paint tags like keywords because both read as
+	 *  "control structure." Set explicitly when you want tags to read
+	 *  distinctly. */
+	tag?: string;
+
+	/** JSX/HTML/XML attribute names. Falls back to `function` when unset.
+	 *  Many palettes paint attributes the same as function names because
+	 *  they're both "named callables / addressable bindings." */
+	attribute?: string;
+
+	/** Arithmetic, comparison, logical operators (`+`, `===`, `&&`, etc.).
+	 *  Falls back to `punctuation` when unset. Most palettes don't split
+	 *  operators from punctuation; the ones that do (Tokyo Night, some
+	 *  Solarized variants) get a dedicated hue. */
+	operator?: string;
+
+	/** Numeric literals — split out when a palette colours numbers distinctly
+	 *  from booleans/null/Symbol-style constants. Falls back to `constant`
+	 *  when unset. */
+	number?: string;
+
+	/** Regular expression literals. Falls back to `string` when unset. */
+	regex?: string;
 }
 
 /** Recursive deep-partial. Every namespace optional; every leaf optional. */

@@ -35,6 +35,10 @@
       "types": "./dist/presets/niwaki.d.ts",
       "default": "./dist/presets/niwaki.js"
     },
+    "./presets/nord": {
+      "types": "./dist/presets/nord.d.ts",
+      "default": "./dist/presets/nord.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"

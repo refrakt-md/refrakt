@@ -258,4 +258,133 @@ describe('generateThemeStylesheet', () => {
 		expect(css).not.toContain('--rf-syntax-foreground');
 		expect(css).not.toContain('--rf-syntax-background');
 	});
+
+	// ── SPEC-056: extended optional syntax roles ───────────────────────────
+
+	it('seeds Shiki aliases for SPEC-056 extended roles from their fallback core roles', () => {
+		const config: ThemeTokensConfig = {
+			syntax: {
+				keyword: '#aaa',
+				function: '#bbb',
+				string: '#ccc',
+				constant: '#ddd',
+				comment: '#eee',
+				punctuation: '#fff',
+				variable: '#111',
+			},
+		};
+		const css = generateThemeStylesheet(config);
+		// function → type, attribute (in addition to function, link)
+		expect(css).toContain('--rf-syntax-token-type: #bbb;');
+		expect(css).toContain('--rf-syntax-token-attribute: #bbb;');
+		// string → regex (in addition to string, string-expression)
+		expect(css).toContain('--rf-syntax-token-regex: #ccc;');
+		// keyword → tag (in addition to keyword)
+		expect(css).toContain('--rf-syntax-token-tag: #aaa;');
+		// constant → number (in addition to constant)
+		expect(css).toContain('--rf-syntax-token-number: #ddd;');
+		// punctuation → operator (in addition to punctuation)
+		expect(css).toContain('--rf-syntax-token-operator: #fff;');
+		// variable → property (in addition to parameter)
+		expect(css).toContain('--rf-syntax-token-property: #111;');
+	});
+
+	it('first-class syntax.type overrides the function→type broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb', type: '#abc' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-type: #abc;');
+		expect(css).toContain('--rf-syntax-token-function: #bbb;');
+		expect(css).toContain('--rf-syntax-token-type: #abc;');
+		expect(css).not.toContain('--rf-syntax-token-type: #bbb;');
+	});
+
+	it('first-class syntax.property overrides the variable→property broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { variable: '#111', property: '#999' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-property: #999;');
+		expect(css).toContain('--rf-syntax-token-parameter: #111;');
+		expect(css).toContain('--rf-syntax-token-property: #999;');
+		expect(css).not.toContain('--rf-syntax-token-property: #111;');
+	});
+
+	it('first-class syntax.parameter overrides the variable→parameter broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { variable: '#111', parameter: '#777' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-parameter: #777;');
+		// variable still seeds property
+		expect(css).toContain('--rf-syntax-token-property: #111;');
+		// parameter refinement wins
+		expect(css).toContain('--rf-syntax-token-parameter: #777;');
+		expect(css).not.toContain('--rf-syntax-token-parameter: #111;');
+	});
+
+	it('first-class syntax.tag overrides the keyword→tag broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { keyword: '#aaa', tag: '#456' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-tag: #456;');
+		expect(css).toContain('--rf-syntax-token-keyword: #aaa;');
+		expect(css).toContain('--rf-syntax-token-tag: #456;');
+		expect(css).not.toContain('--rf-syntax-token-tag: #aaa;');
+	});
+
+	it('first-class syntax.attribute overrides the function→attribute broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb', attribute: '#321' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-attribute: #321;');
+		expect(css).toContain('--rf-syntax-token-attribute: #321;');
+		expect(css).not.toContain('--rf-syntax-token-attribute: #bbb;');
+	});
+
+	it('first-class syntax.operator overrides the punctuation→operator broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { punctuation: '#fff', operator: '#222' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-operator: #222;');
+		expect(css).toContain('--rf-syntax-token-operator: #222;');
+		expect(css).not.toContain('--rf-syntax-token-operator: #fff;');
+	});
+
+	it('first-class syntax.number overrides the constant→number broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { constant: '#ddd', number: '#864' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-number: #864;');
+		expect(css).toContain('--rf-syntax-token-constant: #ddd;');
+		expect(css).toContain('--rf-syntax-token-number: #864;');
+		expect(css).not.toContain('--rf-syntax-token-number: #ddd;');
+	});
+
+	it('first-class syntax.regex overrides the string→regex broad default', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { string: '#ccc', regex: '#789' },
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toContain('--rf-syntax-regex: #789;');
+		expect(css).toContain('--rf-syntax-token-regex: #789;');
+		expect(css).not.toContain('--rf-syntax-token-regex: #ccc;');
+	});
+
+	it('SPEC-056 extended roles work in per-mode overlays', () => {
+		const config: ThemeTokensConfig = {
+			syntax: { function: '#bbb', type: '#abc' },
+			modes: {
+				dark: { syntax: { function: '#fff', type: '#def' } },
+			},
+		};
+		const css = generateThemeStylesheet(config);
+		expect(css).toMatch(/\[data-color-scheme="light"\][\s\S]*--rf-syntax-token-type: #abc;/);
+		expect(css).toMatch(/\[data-theme="dark"\][\s\S]*--rf-syntax-token-type: #def;/);
+	});
 });
