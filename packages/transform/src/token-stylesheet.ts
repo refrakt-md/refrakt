@@ -43,42 +43,56 @@ export function tokenPathToCssVar(path: readonly string[]): string {
  * `token-` segment, and one of the contract names (`variable`) maps to a
  * differently-named Shiki token (`parameter`).
  *
- * `syntax.function` seeds both `token-function` and `token-link` — link
- * tokens default to function. `syntax.string` seeds both `token-string`
- * and `token-string-expression` — template-literal expressions default
- * to the surrounding string colour. Themes that want either pair to
- * diverge declare `syntax.link` or `syntax.string-expression` explicitly
- * (handled below the broad map).
+ * Each required contract role seeds one or more Shiki aliases — the role's
+ * own alias plus aliases for any optional role that falls back to it per
+ * SPEC-056's fallback table. When a preset doesn't set an optional role
+ * (e.g. `type`), the broad mapping leaves `--rf-syntax-token-type` painted
+ * by `function`'s value, which is exactly the SPEC-056 fallback intent.
+ * When a preset *does* set the optional role, the refinement table below
+ * overrides the broad default.
  *
- * `syntax.constant` covers numeric literals plus boolean/null/Symbol —
- * Shiki paints them all from one slot, so the contract surface mirrors
- * Shiki's vocabulary rather than the language-specific intuition of
- * "number". There used to be a separate `number` field that seeded
- * `token-constant`; it was a phantom (the `--rf-syntax-number` contract
- * variable had no Shiki reader) and was removed.
+ * Fallback chains seeded here (matches SPEC-056 "Authoring Surface" →
+ * "Fallback resolution"):
+ * - `function` → `token-function`, `token-link`, `token-type`, `token-attribute`
+ * - `string` → `token-string`, `token-string-expression`, `token-regex`
+ * - `keyword` → `token-keyword`, `token-tag`
+ * - `constant` → `token-constant`, `token-number`
+ * - `punctuation` → `token-punctuation`, `token-operator`
+ * - `variable` → `token-parameter`, `token-property` (note: contract
+ *   `variable` is Shiki's `parameter`; `property` extends the same
+ *   identifier-family group)
+ * - `comment` → `token-comment` (no fallback children)
  *
- * There is intentionally no `type` mapping — Shiki's css-variables theme
- * has no `token-type` slot (it paints type names as `entity-name` →
- * `token-function`, and built-in types like `string` as `token-constant`).
- * Themes that want a distinct type colour need a custom highlighter,
- * not a contract token.
+ * `syntax.constant` covers numeric literals plus boolean/null/Symbol by
+ * default — Shiki's css-variables theme paints them from one slot. Palettes
+ * that intentionally split numbers out (Tokyo Night, One Dark) declare
+ * `syntax.number` as a refinement; otherwise `--rf-syntax-token-number`
+ * stays at the constant value.
  */
 const SYNTAX_TO_SHIKI_ALIASES: Record<string, readonly string[]> = {
-	keyword: ['token-keyword'],
-	function: ['token-function', 'token-link'],
-	string: ['token-string', 'token-string-expression'],
-	constant: ['token-constant'],
+	keyword: ['token-keyword', 'token-tag'],
+	function: ['token-function', 'token-link', 'token-type', 'token-attribute'],
+	string: ['token-string', 'token-string-expression', 'token-regex'],
+	constant: ['token-constant', 'token-number'],
 	comment: ['token-comment'],
-	punctuation: ['token-punctuation'],
-	variable: ['token-parameter'],
+	punctuation: ['token-punctuation', 'token-operator'],
+	variable: ['token-parameter', 'token-property'],
 };
 
-/** Refinements — contract fields that override one of the broad
- *  derivations above. `link` overrides the function→link default;
- *  `string-expression` overrides the string→string-expression default. */
+/** Refinements — optional contract fields that override one of the broad
+ *  derivations above. Setting `syntax.<role>` declares the explicit colour
+ *  for the matching `token-<role>` alias and wins over the broad default. */
 const SYNTAX_REFINEMENTS: Record<string, string> = {
 	link: 'token-link',
 	'string-expression': 'token-string-expression',
+	type: 'token-type',
+	property: 'token-property',
+	parameter: 'token-parameter',
+	tag: 'token-tag',
+	attribute: 'token-attribute',
+	operator: 'token-operator',
+	number: 'token-number',
+	regex: 'token-regex',
 };
 
 /**
