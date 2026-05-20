@@ -48,6 +48,7 @@ tint-lock: false
 - neutral-default
 - tideline
 - niwaki
+- nord
 
 ## Adapters
 
