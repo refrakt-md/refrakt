@@ -69,6 +69,7 @@ function parseLayout(layoutPage: ContentPage, icons?: Record<string, Record<stri
   const ast = Markdoc.parse(content);
   const config = { tags, nodes, variables: {
     generatedIds: new Set<string>(), path: layoutPage.relativePath, __source: content,
+    __sourcePath: layoutPage.relativePath,
     ...(icons ? { __icons: icons } : {}),
   } };
   const rendered = Markdoc.transform(ast, config);

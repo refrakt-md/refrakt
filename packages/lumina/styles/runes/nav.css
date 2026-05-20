@@ -48,10 +48,18 @@
 	color: var(--rf-color-text);
 	text-decoration: none;
 }
-.rf-nav-item__link--active {
+/* SPEC-055: current page receives aria-current="page" at build time
+ * (replaces the legacy --active modifier set at runtime by rf-nav). */
+.rf-nav-item__link[aria-current="page"] {
 	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
 	color: var(--rf-color-primary);
 	font-weight: 600;
+}
+/* SPEC-055: ancestor-of-current-page link — subtler treatment than the
+ * exact-match aria-current state. Themes can collapse the two into a
+ * single style if they prefer. */
+.rf-nav-item__link[data-active="ancestor"] {
+	color: var(--rf-color-primary);
 }
 .rf-nav-item {
 	padding: 0.375rem 0.75rem;

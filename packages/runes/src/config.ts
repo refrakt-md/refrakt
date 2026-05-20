@@ -1062,6 +1062,132 @@ function buildAutoNav(
 	});
 }
 
+// ─── Nav slug resolution (SPEC-055) ───
+
+/** Strip trailing slash, normalize index suffixes, lowercase. Used for URL
+ *  comparison only — the canonical href written into the DOM keeps the
+ *  page's original casing from the registry. */
+function normaliseNavUrl(url: string): string {
+	let u = url.trim();
+	if (u.length > 1 && u.endsWith('/')) u = u.slice(0, -1);
+	if (u.endsWith('/index')) u = u.slice(0, -'/index'.length) || '/';
+	return u.toLowerCase();
+}
+
+/** Derive a nav's base URL directory from its source file path.
+ *
+ *  - `_layout.md`                       → `/`
+ *  - `docs/_layout.md`                  → `/docs/`
+ *  - `docs/themes/_layout.md`           → `/docs/themes/`
+ *  - `docs/getting-started.md`          → `/docs/`
+ *  - `docs/themes/configuration.md`     → `/docs/themes/`
+ */
+function deriveNavBaseDir(sourcePath: string): string {
+	const parts = sourcePath.split('/').filter(Boolean);
+	parts.pop(); // drop filename
+	if (parts.length === 0) return '/';
+	return '/' + parts.join('/') + '/';
+}
+
+function levenshtein(a: string, b: string): number {
+	if (a === b) return 0;
+	if (a.length === 0) return b.length;
+	if (b.length === 0) return a.length;
+	const prev = new Array(b.length + 1);
+	const curr = new Array(b.length + 1);
+	for (let j = 0; j <= b.length; j++) prev[j] = j;
+	for (let i = 1; i <= a.length; i++) {
+		curr[0] = i;
+		for (let j = 1; j <= b.length; j++) {
+			const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+			curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+		}
+		for (let j = 0; j <= b.length; j++) prev[j] = curr[j];
+	}
+	return prev[b.length];
+}
+
+interface PageRef {
+	url: string;
+	title: string;
+	parentUrl: string;
+	description?: string;
+	icon?: string;
+}
+
+/** Find up to 3 suggestion URLs for an unresolvable bare slug.
+ *  Priority: (1) same final-segment pages outside base, (2) Levenshtein ≤ 2
+ *  typo matches within base. */
+function findNavSlugSuggestions(
+	slug: string,
+	baseDir: string,
+	pagesByUrl: Map<string, PageRef>,
+): string[] {
+	const baseNorm = baseDir.endsWith('/') ? baseDir : baseDir + '/';
+	const slugLower = slug.toLowerCase();
+	const sameSlug: string[] = [];
+	const typoMatches: { url: string; distance: number }[] = [];
+
+	const expectedAtBase = (baseNorm + slug).replace(/\/+/g, '/').toLowerCase();
+	for (const page of pagesByUrl.values()) {
+		const url = page.url;
+		const urlLower = url.toLowerCase();
+		const tail = url.split('/').filter(Boolean).pop() ?? '';
+		const tailLower = tail.toLowerCase();
+		// Same-slug candidates: any page whose final segment equals the slug,
+		// except the (missing) expected URL at base — those would have resolved
+		// already, and a stale match would be misleading.
+		if (tailLower === slugLower && urlLower !== expectedAtBase) {
+			sameSlug.push(url);
+			continue;
+		}
+		// Typo candidates: pages under base with a near-match final segment.
+		if (urlLower.startsWith(baseNorm.toLowerCase())) {
+			const d = levenshtein(slugLower, tailLower);
+			if (d > 0 && d <= 2) typoMatches.push({ url, distance: d });
+		}
+	}
+
+	sameSlug.sort();
+	typoMatches.sort((a, b) => a.distance - b.distance || a.url.localeCompare(b.url));
+
+	const suggestions = [...sameSlug, ...typoMatches.map(t => t.url)];
+	return suggestions.slice(0, 3);
+}
+
+/** SPEC-055 nav-location-relative slug resolution.
+ *
+ *  Rules:
+ *  - Slugs starting with `/`             → absolute path, passthrough
+ *  - Slugs containing `/`                → multi-segment relative to baseDir
+ *  - Bare slug                           → must resolve uniquely at baseDir
+ *
+ *  Returns the resolved canonical URL (from the registry, preserving case) or
+ *  an error with attemptedUrl and suggestions. */
+function resolveNavSlug(
+	slug: string,
+	baseDir: string,
+	pagesByUrl: Map<string, PageRef>,
+): { ok: true; url: string } | { ok: false; reason: 'not-found'; attemptedUrl: string; suggestions: string[] } {
+	if (slug.startsWith('/')) {
+		return { ok: true, url: slug };
+	}
+
+	const base = baseDir.endsWith('/') ? baseDir : baseDir + '/';
+	const candidate = (base + slug).replace(/\/+/g, '/');
+	const candidateNorm = normaliseNavUrl(candidate);
+
+	// Look up by normalised URL — match against registry pages.
+	for (const page of pagesByUrl.values()) {
+		if (normaliseNavUrl(page.url) === candidateNorm) {
+			return { ok: true, url: page.url };
+		}
+	}
+
+	const suggestions = findNavSlugSuggestions(slug.includes('/') ? slug.split('/').pop()! : slug, base, pagesByUrl);
+	return { ok: false, reason: 'not-found', attemptedUrl: candidate, suggestions };
+}
+
 // ─── Collapsible nav auto-open ───
 
 function sharedPrefixLength(a: string, b: string): number {
@@ -1070,8 +1196,10 @@ function sharedPrefixLength(a: string, b: string): number {
 	return i;
 }
 
-/** Resolve a slug-only nav item to a page URL using the pagesByUrl registry.
- *  Mirrors the runtime resolution in @refrakt-md/behaviors RfNav. */
+/** @deprecated Legacy global-search slug resolver, retained for backwards
+ *  compatibility with auto-open / cards / pagination resolvers that haven't
+ *  been migrated to use pre-resolved hrefs yet. SPEC-055's
+ *  `resolveNavSlug` is the canonical resolver for new code. */
 function resolveSlugToUrl(
 	slug: string,
 	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
@@ -1390,6 +1518,200 @@ function resolveCardsNavs(
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
+}
+
+// ─── Build-time nav slug resolution + active state (SPEC-055) ───
+
+function isExternalUrl(url: string): boolean {
+	return /^[a-z]+:\/\//i.test(url) || url.startsWith('mailto:') || url.startsWith('//');
+}
+
+/** Format a nav resolution error for ctx.error. Includes the source file,
+ *  attempted URL, and closest-match suggestions. */
+function formatNavResolutionError(
+	slug: string,
+	sourcePath: string | undefined,
+	attemptedUrl: string,
+	suggestions: string[],
+): string {
+	const where = sourcePath ? ` in ${sourcePath}` : '';
+	const head = `Nav item \`${slug}\`${where} cannot be resolved (no page at \`${attemptedUrl}\`).`;
+	if (suggestions.length === 0) return head;
+	const lines = ['', 'Did you mean one of:', ...suggestions.map(s => `  - ${s}`), '', 'Use a multi-segment slug (e.g. `section/page`) or an explicit `[Label](/path)` link.'];
+	return head + '\n' + lines.join('\n');
+}
+
+/** Walk a nav subtree, resolve every NavItem's `data-slug` to a real `<a href>`
+ *  using SPEC-055 rules. Items with explicit `<a>` link children pass through
+ *  unchanged. Unresolvable slugs emit a ctx.error and leave the item as
+ *  fallback text so the build can continue and surface every error. */
+function resolveNavItemsInSubtree(
+	navTag: any,
+	pagesByUrl: Map<string, PageRef>,
+	ctx: PipelineContext,
+	pageUrl: string,
+): any {
+	const sourcePath = navTag.attributes?.['data-source-path'] as string | undefined;
+	const baseDir = deriveNavBaseDir(sourcePath ?? '');
+
+	const visit = (node: unknown): unknown => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				const next = node.map(visit);
+				return next.every((c, i) => c === (node as unknown[])[i]) ? node : next;
+			}
+			return node;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-rune'] === 'nav-item') {
+			// Skip items that already carry an explicit <a> link (passthrough).
+			const existingHref = findNavItemHref(t);
+			if (existingHref) return t;
+
+			const slug = readNavItemSlug(t);
+			if (!slug) return t;
+
+			const result = resolveNavSlug(slug, baseDir, pagesByUrl);
+			if (!result.ok) {
+				ctx.error(
+					formatNavResolutionError(slug, sourcePath, result.attemptedUrl, result.suggestions),
+					pageUrl,
+				);
+				return t;
+			}
+
+			const page = pagesByUrl.get(result.url);
+			const title = page?.title ?? slug;
+			// The engine's NavItem.postTransform adds the `rf-nav-item__link` class to
+			// any `<a>` child of a nav-item that has no slug span — so we deliberately
+			// omit the class here to avoid duplication.
+			const link = new Tag('a', { href: result.url }, [title]);
+
+			// Replace the slug span + fallback text with the resolved link.
+			const newChildren = (t.children ?? []).filter((c: unknown) => {
+				if (typeof c === 'string') return false; // drop slug fallback text
+				if (Tag.isTag(c as any)) {
+					const ct = c as any;
+					if (ct.name === 'span' && ct.attributes?.['data-field'] === 'slug') return false;
+				}
+				return true;
+			});
+			return { ...t, children: [link, ...newChildren] };
+		}
+		const newChildren = (t.children ?? []).map(visit);
+		if (newChildren.every((c: unknown, i: number) => c === t.children[i])) return t;
+		return { ...t, children: newChildren };
+	};
+
+	return visit(navTag);
+}
+
+/** Walk a renderable tree and resolve nav slugs in every `<rf-nav>` /
+ *  `<nav data-rune="nav">` encountered. */
+function resolveNavSlugs(
+	renderable: unknown,
+	pagesByUrl: Map<string, PageRef>,
+	ctx: PipelineContext,
+	pageUrl: string,
+): unknown {
+	if (!Tag.isTag(renderable as any)) {
+		if (Array.isArray(renderable)) {
+			const next = (renderable as unknown[]).map(c => resolveNavSlugs(c, pagesByUrl, ctx, pageUrl));
+			return next.every((c, i) => c === (renderable as unknown[])[i]) ? renderable : next;
+		}
+		return renderable;
+	}
+	const tag = renderable as any;
+	if (tag.attributes?.['data-rune'] === 'nav') {
+		return resolveNavItemsInSubtree(tag, pagesByUrl, ctx, pageUrl);
+	}
+	const newChildren = (tag.children ?? []).map((c: unknown) =>
+		resolveNavSlugs(c, pagesByUrl, ctx, pageUrl)
+	);
+	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
+	return { ...tag, children: newChildren };
+}
+
+/** Apply active-state attributes (`aria-current="page"`, `data-active="ancestor"`)
+ *  to each nav's items, per SPEC-055. At most one item per nav gets aria-current
+ *  (exact URL match); at most one of the remaining items gets data-active
+ *  (longest strict-prefix match). */
+function applyNavActiveState(renderable: unknown, pageUrl: string): unknown {
+	const pageNorm = normaliseNavUrl(pageUrl);
+
+	const markNav = (navTag: any): any => {
+		// Collect all nav-item <a> links inside this nav.
+		const links: { tag: any; href: string }[] = [];
+		const collect = (node: unknown): void => {
+			if (!Tag.isTag(node as any)) {
+				if (Array.isArray(node)) node.forEach(collect);
+				return;
+			}
+			const t = node as any;
+			if (t.name === 'a' && typeof t.attributes?.href === 'string') {
+				const href = String(t.attributes.href);
+				if (!isExternalUrl(href)) {
+					links.push({ tag: t, href });
+				}
+			}
+			(t.children ?? []).forEach(collect);
+		};
+		(navTag.children ?? []).forEach(collect);
+
+		// Pass 1: exact match → aria-current="page". At most one.
+		let currentLink: any = null;
+		for (const { tag, href } of links) {
+			if (normaliseNavUrl(href) === pageNorm) {
+				currentLink = tag;
+				break;
+			}
+		}
+
+		// Pass 2: longest strict prefix among the remaining links → data-active="ancestor".
+		let ancestorLink: any = null;
+		let ancestorHrefLen = 0;
+		for (const { tag, href } of links) {
+			if (tag === currentLink) continue;
+			const hrefNorm = normaliseNavUrl(href);
+			if (hrefNorm === '/' && pageNorm === '/') continue;
+			// Strict prefix: hrefNorm is a proper prefix of pageNorm followed by '/'.
+			const isPrefix =
+				hrefNorm !== pageNorm &&
+				(pageNorm.startsWith(hrefNorm + '/') || (hrefNorm === '/' && pageNorm.startsWith('/')));
+			if (isPrefix && hrefNorm.length > ancestorHrefLen) {
+				ancestorLink = tag;
+				ancestorHrefLen = hrefNorm.length;
+			}
+		}
+
+		// Mutate attributes in place — the link tags are nested within the navTag,
+		// so mutation propagates without rebuilding the whole tree.
+		if (currentLink) currentLink.attributes['aria-current'] = 'page';
+		if (ancestorLink) ancestorLink.attributes['data-active'] = 'ancestor';
+
+		return navTag;
+	};
+
+	const visit = (node: unknown): unknown => {
+		if (!Tag.isTag(node as any)) {
+			if (Array.isArray(node)) {
+				node.forEach(visit);
+			}
+			return node;
+		}
+		const t = node as any;
+		if (t.attributes?.['data-rune'] === 'nav') {
+			markNav(t);
+			// Don't recurse into a nav we just processed — nested navs are unusual
+			// but if present, would be marked by their own pass.
+			return t;
+		}
+		(t.children ?? []).forEach(visit);
+		return t;
+	};
+
+	visit(renderable);
+	return renderable;
 }
 
 // ─── Pagination auto resolution ───
@@ -1912,12 +2234,21 @@ export function resolveCoreSentinels(
 ): unknown {
 	let result = resolveAutoBreadcrumbs(renderable, pageUrl, coreData.breadcrumbPaths, coreData.pagesByUrl, ctx);
 	result = resolveAutoNavs(result, pageUrl, coreData.pagesByUrl, ctx);
+	// SPEC-055 — resolve bare-slug nav items to real <a href> links before any
+	// downstream resolver consumes the tree. Must run after auto-nav (which
+	// expands `{% nav auto %}` into item children) but before collapsible /
+	// cards (which both rely on resolved hrefs).
+	result = resolveNavSlugs(result, coreData.pagesByUrl, ctx, pageUrl);
 	result = resolveCollapsibleNavs(result, pageUrl, coreData.pagesByUrl);
 	result = resolveCardsNavs(result, pageUrl, coreData.pagesByUrl);
 	const searchRoot = navSearchScope && navSearchScope.length > 0
 		? [result, ...navSearchScope]
 		: result;
 	result = resolveAutoPagination(result, pageUrl, coreData.pagesByUrl, searchRoot);
+	// SPEC-055 — mark aria-current / data-active="ancestor" on resolved nav
+	// links per page. Runs after slug + auto-pagination resolution so the
+	// item href set is final.
+	result = applyNavActiveState(result, pageUrl);
 	result = resolveBlogPosts(result, coreData.allPosts, ctx, pageUrl);
 	result = resolveXrefs(result, pageUrl, coreData.registry, ctx);
 	return result;
@@ -2042,6 +2373,14 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			ctx,
 		);
 
+		// SPEC-055 build-time slug resolution (see note in resolveCoreSentinels).
+		renderable = resolveNavSlugs(
+			renderable,
+			coreData.pagesByUrl,
+			ctx,
+			page.url,
+		);
+
 		renderable = resolveCollapsibleNavs(
 			renderable,
 			page.url,
@@ -2060,6 +2399,9 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			coreData.pagesByUrl,
 			renderable,
 		);
+
+		// SPEC-055 build-time active state.
+		renderable = applyNavActiveState(renderable, page.url);
 
 		renderable = resolveBlogPosts(
 			renderable,

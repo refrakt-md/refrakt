@@ -72,6 +72,7 @@ function sandboxDirExists(p: string): boolean {
 function transformContent(
   content: string,
   path: string,
+  sourcePath: string,
   icons?: Record<string, Record<string, string>>,
   additionalTags?: Record<string, Schema>,
   contentVariables?: Record<string, unknown>,
@@ -81,7 +82,7 @@ function transformContent(
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
   const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
-    generatedIds: new Set<string>(), path, headings, __source: content,
+    generatedIds: new Set<string>(), path, headings, __source: content, __sourcePath: sourcePath,
     ...(icons ? { __icons: icons } : {}),
     ...contentVariables,
   } };
@@ -164,6 +165,7 @@ async function processContentTree(
     const { renderable, headings } = transformContent(
       content,
       route.url,
+      page.relativePath,
       opts.icons,
       opts.additionalTags,
       contentVariables,

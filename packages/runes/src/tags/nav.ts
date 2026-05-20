@@ -117,9 +117,11 @@ export const nav = createContentModelSchema({
   },
   transform(resolved, attrs, config) {
     const collapsible = Boolean(attrs.collapsible);
+    const sourcePath = (config as { variables?: { __sourcePath?: string } }).variables?.__sourcePath;
 
     const forwardLayout = (tag: Tag): Tag => {
       if (attrs.layout) tag.attributes.layout = attrs.layout;
+      if (sourcePath) tag.attributes['data-source-path'] = sourcePath;
       if (collapsible) {
         tag.attributes['data-collapsible'] = 'true';
         const existing = (tag.attributes.class as string | undefined) ?? '';
