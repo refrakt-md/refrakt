@@ -2,35 +2,37 @@
 
 # Nav mega variant
 
-Extend the `nav` rune with a `layout="mega"` value for richly-presented header dropdowns — multi-column groups, per-item descriptions, featured hero entries, a footer band for secondary links (changelog, release notes), and inline status badges. Reuses the existing `auto=true` frontmatter enrichment machinery from the cards layout and the top-level item band from the vertical layout.
+Extend the `nav` rune with a `layout="mega"` value for richly-presented header dropdowns — multi-column groups, per-item descriptions, optional intro slot (featured hero / eyebrow), optional per-panel footer slot (changelog link / image / nested strip nav), and inline status badges. Also adds a `layout="strip"` value for compact secondary navigation rows (useful as a standalone primitive and as the natural occupant of a mega panel's footer slot). Reuses the existing `auto=true` frontmatter enrichment machinery from the cards layout.
 
 ## Problem
 
 [SPEC-046](/plan/specs/SPEC-046) shipped `layout="menubar"` for header navigation: top-level items render flat, `## groups` become simple dropdowns containing a flat link list. That covers compact product navs (Refrakt's own site, small SaaS sites) but leaves the richer pattern unaddressed.
 
-**Sites with broader product surface need more dropdown structure.** Linear, Vercel, Stripe, and Notion all use mega-style header dropdowns: each top-level item opens a wide panel with multiple columns, each item shows a short description, one or two entries get featured treatment with larger type or imagery, and a secondary band at the bottom holds "what's new" / changelog / release links. A flat link list inside a dropdown doesn't scale — once a group has more than ~6 items or items need context, the menubar layout becomes hard to scan.
+**Sites with broader product surface need more dropdown structure.** Linear, Vercel, Stripe, and Notion all use mega-style header dropdowns: each top-level item opens a wide panel with multiple columns, each item shows a short description, one or two entries get featured treatment with larger type or imagery, and a per-panel footer slot holds "what's new" / changelog / release links specific to that panel. A flat link list inside a dropdown doesn't scale — once a group has more than ~6 items or items need context, the menubar layout becomes hard to scan.
 
 **Authors currently hand-roll this with raw markdown and per-site CSS.** No structure, no theme reuse, breaks the "one primitive, contextual rendering" principle. SPEC-046 explicitly listed mega-menus, per-item icons/badges, and embedded media as out of scope; this spec picks that thread up.
 
 **Item descriptions are useful beyond mega.** Once descriptions are resolved from frontmatter (or supplied inline), the cards layout already uses them, and the columns layout (footer) could benefit too. The resolution path should be a shared cross-layout enrichment, not a mega-only concern.
 
-**Status badges are a recurring nav need.** "New", "Beta", "Soon" pills on individual items show up in every mega-menu pattern online. Currently no primitive exists; authors would inline raw HTML.
+**Status badges are a recurring nav need.** Status pills on individual items show up in every mega-menu pattern online. Currently no primitive exists; authors would inline raw HTML.
+
+**Compact secondary nav rows are a recurring pattern too.** Vercel, Stripe docs, GitHub repo pages all have a persistent horizontal strip of links below the menubar. This is structurally the same as a flat menubar nav but visually smaller / secondary. Worth promoting to a first-class layout.
 
 -----
 
 ## Design Principles
 
-**Mega is `menubar` with enrichment, not a different content model.** Same `## group` / list-item content shape SPEC-046 established. The only structural addition is what an *item* can contain: an optional description paragraph and an optional badge marker. Everything else (columns via `---`, footer band via trailing items, featured via blockquote) is the engine reinterpreting existing markdown primitives in the nav context.
+**Mega is `menubar` with richer panel content, not a different content model.** Same `## group` / list-item content shape SPEC-046 established. Top-level items (before the first `##`) still render as flat menubar links. Each `##` heading becomes a panel trigger automatically — heading text *is* the trigger label. No separate trigger declaration, no slug-matching routing.
+
+**Per-panel slots are position-based, not type-based.** Within each `## group`, the content is split by `---` (hr) into segments. A segment containing only a list is a **column**. A segment containing anything else (paragraph, blockquote, image, nested rune) is a **content slot** whose role is determined by position: first content segment becomes the **intro**, last content segment becomes the **footer**. The theme styles intro / column / footer independently — a blockquote in the intro just gets styled as a featured hero by CSS, no special detection needed.
 
 **Descriptions resolve uniformly across layouts.** The resolution rule — explicit paragraph wins, frontmatter `description` falls back, nothing otherwise — applies to `mega`, `cards`, and `columns`. Themes decide whether to *render* the description (mega and cards: yes by default; columns: opt-in).
 
-**Markdown-native column breaks.** A horizontal rule (`---`) inside a group splits its items into visual columns. No `columns="N"` attribute, no per-item annotations — the author's source already encodes the break visually. CSS clamps the maximum column count for layout sanity.
+**Markdown-native column breaks.** A horizontal rule (`---`) inside a group splits content into segments. The classification (column vs content) follows from what's *in* the segment, not from a separate attribute. CSS clamps the maximum column count for layout sanity.
 
-**Footer band mirrors top-level band.** SPEC-046 ships the convention that items *before* the first `##` render in a `data-name="top-level"` container. Items *after* the last group render in a symmetric `data-name="footer"` container, styled by the theme as the secondary band. Same content shape, same machinery.
+**Badges are a new general-purpose inline rune.** `{% badge %}` belongs in a place broader than nav — it'll be reused in pricing tables, changelog entries, doc sidebars marking unstable APIs, etc. Defined as a core inline rune using the existing metadata-system dimensions ({% ref "SPEC-024" /%}).
 
-**Badges are a new general-purpose inline rune.** `{% badge %}` belongs in a place broader than nav — it'll be reused in pricing tables, changelog entries, doc sidebars marking new APIs, etc. Define it as a core inline rune now, use it in nav.
-
-**Featured items piggyback on blockquote.** A blockquote at the top of a group is structurally distinct in markdown and visually distinct in most themes already. Reinterpret it inside `{% nav %}` as the featured/hero card for that group. No new syntax.
+**`layout="strip"` is a first-class sibling layout.** Useful in two distinct places: (a) standalone, as a persistent secondary nav below the menubar (Vercel / Stripe docs pattern); (b) nested inside a mega panel's footer slot for per-panel secondary links. Same primitive in both contexts; the parent context decides positioning.
 
 -----
 
@@ -38,56 +40,116 @@ Extend the `nav` rune with a `layout="mega"` value for richly-presented header d
 
 ### Mega header dropdown — fully auto
 
-Most ergonomic case. Top-level items are flat dropdown triggers; their `## group` content opens as a wide panel.
+Most ergonomic case. Headings become panel triggers automatically; item descriptions / icons resolve from each linked page's frontmatter.
 
 ```markdoc
 {% nav layout="mega" auto=true %}
-- product
-- resources
+- [GitHub](https://github.com/refrakt-md/refrakt)
+- [Discord](https://discord.gg/refrakt)
 
-## Product
-- plan
-- build
-- insights
+## Docs
 
----
-
-- security
-- integrations
-
-## Resources
-- docs
-- guides
-- community
+- [Getting started](/docs/getting-started)
+- [Configuration](/docs/configuration/overview)
+- [Authoring](/docs/authoring/authoring-overview)
 
 ---
 
-- [Changelog](/changelog)
-- [What's new](/whats-new)
+- [Themes](/docs/themes/overview)
+- [Adapters](/docs/adapters/adapters-overview)
+
+## Runes
+
+- [Rune catalog](/runes/rune-catalog)
+- [Plugin authoring](/docs/plugins/authoring)
+
+---
+
+- [Marketing](/runes/marketing)
+- [Storytelling](/runes/storytelling)
 {% /nav %}
 ```
 
 Behaviour:
-- `product` and `resources` become the menubar triggers (top-level band, unchanged from SPEC-046).
-- Each `## group` becomes the panel content for the trigger of the same name (matched by slug).
-- Each item shows icon + title + description pulled from the linked page's frontmatter via the existing `auto=true` registry enrichment (already implemented for cards).
-- `---` inside a group splits items into two CSS columns.
-- Items after the last group (the two trailing `[Changelog]` / `[What's new]` links) render in the footer band at the bottom of the panel.
+- Top-level items (`GitHub`, `Discord`) render as flat menubar links — no panel, no dropdown. Same as today's `menubar` layout.
+- Each `## group` (`Docs`, `Runes`) becomes a panel trigger. Trigger text = heading text.
+- Each panel's items are split into columns by `---`.
+- Each item shows title + description (frontmatter `description`) + icon (frontmatter `icon`).
 
-Open question: with multiple top-level triggers, which group attaches to which trigger? Two options covered in Open Questions below.
+### Per-panel intro and footer slots
 
-### Mega header dropdown — manual descriptions and featured item
-
-When auto frontmatter is wrong (menu copy differs from page summary) or items don't correspond to pages.
+Position-based: a `---`-separated segment that contains anything other than a list is a **content slot**.
 
 ```markdoc
-{% nav layout="mega" %}
-- product
+{% nav layout="mega" auto=true %}
 
-## Product
+## Docs
 
 > [Refrakt for teams](/teams)
 > The collaborative authoring environment for documentation at scale.
+
+- [Getting started](/docs/getting-started)
+- [Configuration](/docs/configuration/overview)
+
+---
+
+- [Themes](/docs/themes/overview)
+- [Adapters](/docs/adapters/adapters-overview)
+
+---
+
+[See all changes →](/releases)
+
+## Runes
+For teams shipping documentation
+
+- [Rune catalog](/runes/rune-catalog)
+- [Plugin authoring](/docs/plugins/authoring)
+
+---
+
+- [Marketing](/runes/marketing)
+- [Storytelling](/runes/storytelling)
+
+---
+
+{% nav layout="strip" %}
+- [Browse all](/runes/rune-catalog)
+- [Authoring guide](/docs/plugins/authoring)
+{% /nav %}
+
+## Themes
+
+- [Themes catalog](/themes/themes-catalog)
+- [Lumina](/themes/lumina)
+- [Tideline](/themes/tideline)
+
+---
+
+![Themes preview](/themes/preview.png)
+
+Built-in dark mode, accessibility-tested, designed for documentation.
+{% /nav %}
+```
+
+Per-panel breakdown:
+
+| Panel  | Intro slot                | Columns                   | Footer slot                  |
+|--------|---------------------------|---------------------------|------------------------------|
+| Docs   | Blockquote (featured hero) | 2 columns of items        | Paragraph with "See all" link |
+| Runes  | Paragraph (eyebrow)        | 2 columns with badges     | Nested `{% nav layout="strip" %}` |
+| Themes | (none)                     | 1 column of items         | Image + paragraph             |
+
+The theme styles the intro/footer slots — a blockquote in the intro automatically gets featured-hero treatment via CSS; a nested strip nav in the footer gets compact-row treatment; an image gets sized to fit.
+
+### Per-item descriptions and badges
+
+When `auto=true` isn't enough (item copy differs from frontmatter, or items don't correspond to pages), descriptions can be authored inline as paragraphs and badges added via `{% badge %}`.
+
+```markdoc
+{% nav layout="mega" %}
+
+## Product
 
 - [Plan](/plan)
 
@@ -97,13 +159,13 @@ When auto frontmatter is wrong (menu copy differs from page summary) or items do
 
   Author content in plain markdown with rich rune semantics.
 
-- [Insights](/insights)
+- [Insights](/insights) {% badge sentiment="caution" %}Beta{% /badge %}
 
   Understand how readers move through your site.
 
 ---
 
-- [Security](/security) {% badge type="new" /%}
+- [Security](/security) {% badge sentiment="positive" %}New{% /badge %}
 
   SOC 2 Type II, SSO, and audit logs.
 
@@ -114,69 +176,34 @@ When auto frontmatter is wrong (menu copy differs from page summary) or items do
 ```
 
 Patterns:
-- **Blockquote at top of group** = featured hero. The first paragraph is the link (using markdown link inside the blockquote), the second is the description.
-- **Paragraph after each list item** = manual description override (takes precedence over any frontmatter fallback).
-- **`{% badge type="new" %}`** inline = status pill. Other values: `beta`, `soon`, `deprecated`, plus theme-defined.
-- `---` splits the group into two visual columns.
+- **Paragraph after a list item** = manual description override (takes precedence over any frontmatter fallback).
+- **`{% badge sentiment="…" %}…{% /badge %}`** inline = status pill, styled via the metadata system ({% ref "SPEC-024" /%}).
 
-### Mixed — auto with selective overrides
-
-The realistic everyday case: most items come from frontmatter, a couple need bespoke copy.
-
-```markdoc
-{% nav layout="mega" auto=true %}
-- product
-
-## Product
-- plan
-- build
-- insights {% badge type="beta" /%}
-
-- [Enterprise](/enterprise)
-
-  Custom pricing, dedicated support, on-prem deployment.
-
----
-
-- security
-- integrations
-- changelog
-{% /nav %}
-```
-
-Resolution rules:
+### Resolution rules
 
 | Item shape                                            | Title source              | Description source                  |
 |-------------------------------------------------------|---------------------------|-------------------------------------|
 | Plain slug (`plan`)                                   | Frontmatter `title`       | Frontmatter `description`           |
-| Explicit link, no paragraph (`[Enterprise](/x)`)      | Link text                 | Frontmatter `description` (if page) |
+| Explicit link, no paragraph (`[Plan](/plan)`)         | Link text                 | Frontmatter `description` (if page) |
 | Explicit link with paragraph                          | Link text                 | The paragraph                       |
 | Slug with paragraph                                   | Frontmatter `title`       | The paragraph (overrides frontmatter) |
-| Any item, badge appended (`item {% badge %}`)         | (unchanged)               | (unchanged) — badge attaches to title |
+| Any item, badge appended (`item {% badge %}…{% /badge %}`) | (unchanged)         | (unchanged) — badge attaches to title |
 
-### Eyebrow labels via group-level paragraph
+### `layout="strip"` — compact secondary nav
 
-A paragraph immediately under a group heading becomes the group's eyebrow / short description, rendered above the columns of items.
+A flat row of compact links — no groups, no panels, no top-level items. Useful as a persistent secondary nav below the menubar, or nested inside a mega panel's footer slot.
 
 ```markdoc
-{% nav layout="mega" auto=true %}
-- product
-
-## Product
-For teams shipping documentation
-
-- plan
-- build
-- insights
-
----
-
-- security
-- integrations
+{# Standalone — below the menubar #}
+{% nav layout="strip" %}
+- [Changelog](/releases)
+- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
+- [What's new](/blog)
+- [Status](https://status.refrakt.md)
 {% /nav %}
 ```
 
-Reuses the same "first paragraph under a heading" convention markdown already affords.
+The strip layout rejects `## groups` (warns if present) — it's flat by design. Behaviour is otherwise the standard nav (slug resolution, active state, frontmatter enrichment).
 
 -----
 
@@ -191,7 +218,7 @@ Nav: {
     layout: {
       source: 'attr',
       default: 'vertical',
-      // adds 'mega' as a value alongside vertical | menubar | columns | cards
+      // adds 'mega' and 'strip' as values alongside vertical | menubar | columns | cards
     },
     // ...existing
   },
@@ -201,25 +228,29 @@ Nav: {
 Produces additional selectors:
 
 - `.rf-nav--mega` (layout modifier) + `data-layout="mega"`
-- `.rf-nav__top-level` (existing, reused for menubar triggers)
-- `.rf-nav__footer` (new, mirror of top-level — items after the last group)
-- `.rf-nav-group__eyebrow` (new, paragraph immediately under group heading)
-- `.rf-nav-group__columns` (new container introduced when `---` is present in the group)
-- `.rf-nav-group__column` (new, one per `---`-delimited segment)
+- `.rf-nav--strip` (layout modifier) + `data-layout="strip"`
+- `.rf-nav-group__intro` (new, first content segment in a group)
+- `.rf-nav-group__columns` (new container introduced when at least one column exists)
+- `.rf-nav-group__column` (new, one per column-classified segment)
+- `.rf-nav-group__footer` (new, last content segment in a group)
 - `.rf-nav-item__description` (new, paragraph child or resolved frontmatter)
-- `.rf-nav-group__featured` (new, blockquote-as-hero treatment) + `data-featured="true"` on the item
+
+Per-group structure detection (during `headingsToList` / `buildGroups` in `packages/runes/src/tags/nav.ts`):
+
+1. Within each `## group`'s content, split children at each `<hr>` into segments.
+2. Classify each segment:
+   - Contains only `<ul>` / `<ol>` (with whitespace) → **column**
+   - Anything else (paragraph, blockquote, image, nested tag, etc.) → **content**
+3. The first content segment (if any) → `data-name="intro"` slot.
+4. The last content segment (if any) → `data-name="footer"` slot.
+5. All other segments (columns plus any middle content segments) render in source order under `data-name="columns"`.
+
+A panel with only column segments renders without intro / footer slots (clean simple panel). A panel with a single content segment and no columns → that segment becomes the intro (it appears at the top of an empty panel).
 
 `NavItem` postTransform extends to:
 1. Detect a paragraph sibling immediately following the item in the source list; consume it and attach as `description` property.
-2. Detect `{% badge %}` runes inside the item's link text; consume them and attach as `badge` property (meta tag).
+2. Detect `{% badge %}` runes inside the item's link text or trailing position; consume them and attach as `badge` property (meta tag).
 3. When `auto=true` and the item resolves to a registry page, attach `icon` + `description` from frontmatter as fallback properties (already implemented for cards; reuse).
-
-`NavGroup` postTransform extends to:
-1. Detect a paragraph immediately after the heading; consume it and attach as `eyebrow` property.
-2. Detect a leading blockquote; consume it and attach as `featured` property with link + description split.
-3. Split the items array at each `---` sentinel into a `columns` property (array of arrays).
-
-Trailing items (after the last `##` group) collect into a new `footerItems` property on the `Nav` block, rendered into a `data-name="footer"` container by `structure`.
 
 -----
 
@@ -256,7 +287,7 @@ The badge label is **children content**, not an attribute — free-form text, na
 <span class="rf-badge" data-meta-sentiment="positive" data-meta-rank="primary" data-meta-type="tag">Popular</span>
 ```
 
-The base `.rf-badge` provides the pill shape (inline-flex, small padding, rounded full, small font). All colour / weight / emphasis comes from the existing universal metadata CSS rules — no per-variant BEM classes (`.rf-badge--new` etc.) are needed or emitted.
+The base `.rf-badge` provides the pill shape (inline-flex, small padding, rounded full, small font). All colour / weight / emphasis comes from the existing universal metadata CSS rules — no per-variant BEM classes are emitted.
 
 ### Migration of the "dev lifecycle" cases
 
@@ -275,7 +306,7 @@ Authors pick the sentiment that matches their intent; the label text is up to th
 
 ## Description Resolution
 
-Implemented in the existing `auto=true` postProcess hook (`packages/runes/src/pipeline.ts` or wherever the cards-layout enrichment lives — extend, don't duplicate). Resolution rules at postProcess time:
+Implemented in the existing `auto=true` postProcess hook (`packages/runes/src/config.ts`, where `resolveCardsNavs` lives). Resolution rules at postProcess time:
 
 1. If the item has an inline description child (paragraph following the link in the source list), use it. Stop.
 2. If the item resolves to a registry page and that page's frontmatter has `description`, use it. Stop.
@@ -292,8 +323,8 @@ The cards layout already implements step 2 for the title and description. This s
 Out of scope for the rune itself; theme + behaviors concern. The contract the rune offers themes:
 
 - `.rf-nav--mega` plus `data-layout="mega"` on the nav.
-- All structural slots above (`__top-level`, `__footer`, `__columns`, `__column`, `__eyebrow`, `__featured`, `__description`) are present in the DOM whether mobile or desktop.
-- Lumina ships a reference mobile collapse: at narrow viewports, mega behaves like a vertical accordion — each top-level trigger toggles its panel open, columns stack, footer band stays at the bottom of each panel.
+- All structural slots above (`__top-level`, `__intro`, `__columns`, `__column`, `__footer`, `__description`) are present in the DOM whether mobile or desktop.
+- Lumina ships a reference mobile collapse: at narrow viewports, mega behaves like a vertical accordion — each top-level trigger toggles its panel open, columns stack to a single column, intro and footer slots stay in their relative positions.
 
 The existing `nav-menubar` behaviour (SPEC-046) extends to handle mega trigger open/close; no new behaviour module needed beyond a CSS-only column → stack reflow.
 
@@ -301,65 +332,62 @@ The existing `nav-menubar` behaviour (SPEC-046) extends to handle mega trigger o
 
 ## Acceptance Criteria
 
-- [ ] `nav` rune `layout` attribute accepts `mega` in addition to existing values
-- [ ] Identity transform emits `.rf-nav--mega` modifier and `data-layout="mega"`
-- [ ] Trailing items (after the last `## group`) render in a `data-name="footer"` container with class `.rf-nav__footer`
-- [ ] `---` (hr) inside a group's item list splits items into `.rf-nav-group__column` segments inside a `.rf-nav-group__columns` container
+- [ ] `nav` rune `layout` attribute accepts `mega` and `strip` in addition to existing values (`vertical`, `menubar`, `columns`, `cards`)
+- [ ] Identity transform emits `.rf-nav--mega` / `.rf-nav--strip` modifier classes and corresponding `data-layout` values
+- [ ] Mega layout: top-level items (before the first `##`) render as flat menubar links in the existing `data-name="top-level"` container — same as SPEC-046's menubar
+- [ ] Mega layout: each `## group`'s heading becomes a panel trigger automatically; trigger text is the heading text (no slug-matching routing)
+- [ ] Within a `## group`, `---`-separated segments are classified: segments containing only a list become **columns**; segments containing anything else become **content slots**
+- [ ] First content segment in a group renders into `data-name="intro"` (`.rf-nav-group__intro`)
+- [ ] Last content segment in a group renders into `data-name="footer"` (`.rf-nav-group__footer`)
+- [ ] All column segments render in source order inside `data-name="columns"` (`.rf-nav-group__columns`), each in its own `.rf-nav-group__column`
+- [ ] A group with only column segments emits no intro / footer slots — clean simple panel
+- [ ] A group with a single content segment and no columns places that segment in the intro slot
 - [ ] A paragraph immediately following a list item in the source becomes that item's `.rf-nav-item__description`
-- [ ] A paragraph immediately following a group heading becomes that group's `.rf-nav-group__eyebrow`
-- [ ] A blockquote at the top of a group becomes the group's `.rf-nav-group__featured` entry with `data-featured="true"` on the resulting item
 - [ ] When `auto=true`, items without an explicit description inherit `description` from the linked page's frontmatter (extends existing cards-layout enrichment)
 - [ ] When `auto=true`, items without an explicit icon inherit `icon` from the linked page's frontmatter (reuses cards-layout enrichment)
 - [ ] New `{% badge %}` core inline rune takes its label as children content and accepts attributes `sentiment` (`positive` | `negative` | `caution` | `neutral`, default `neutral`), `rank` (`primary` | `secondary`, optional), and `type` (`status` | `category` | `quantity` | `temporal` | `tag` | `id`, default `tag`) — all three mirroring the metadata-system dimensions from {% ref "SPEC-024" /%}
 - [ ] Badge identity transform emits `<span class="rf-badge" data-meta-sentiment="…" data-meta-rank="…" data-meta-type="…">…</span>` — no per-variant BEM modifiers; visual styling inherits from the existing universal metadata CSS
 - [ ] A `{% badge %}` inside a nav item link is recognised by the engine and attached as a `badge` property on the item (rendered adjacent to the title)
-- [ ] Existing `menubar`, `vertical`, `columns`, `cards` layouts render identically to today — no behaviour change for callers not on the `mega` layout
+- [ ] `layout="strip"` renders as a flat row of items; rejects `## groups` (warns if present); supports the standard nav features (slug resolution, active state, frontmatter enrichment)
+- [ ] Existing `menubar`, `vertical`, `columns`, `cards` layouts render identically to today — no behaviour change for callers not on the `mega` / `strip` layouts
 - [ ] Description resolution rule applies uniformly to any `auto=true` nav regardless of layout (data attached; theme decides rendering)
-- [ ] Lumina ships CSS for `.rf-nav--mega` including: column grid (clamped to max 3 cols), eyebrow typography, featured item treatment, footer band, mobile stacked fallback
-- [ ] Lumina ships CSS for `.rf-badge` covering all built-in types
+- [ ] Lumina ships CSS for `.rf-nav--mega` including: column grid (clamped to max 3 cols), intro slot styling (blockquote → featured hero, paragraph → eyebrow), footer slot styling, mobile stacked fallback
+- [ ] Lumina ships CSS for `.rf-nav--strip` (compact horizontal row, smaller text, muted base styling)
+- [ ] Lumina ships CSS for `.rf-badge` covering all sentiment / rank combinations (inherits from existing metadata-system rules)
 - [ ] `@refrakt-md/behaviors` `nav-menubar` behaviour handles mega trigger open/close (extends existing behaviour; no new module)
 - [ ] `npx refrakt inspect nav --layout=mega` shows expected HTML output with all new slots populated for a representative input
-- [ ] `npx refrakt inspect badge --type=new` shows expected HTML output
-- [ ] CSS coverage tests updated for `.rf-nav--mega`, `.rf-nav__footer`, `.rf-nav-group__*`, `.rf-nav-item__description`, and `.rf-badge--*` selectors
-- [ ] Authoring docs (`site/content/docs/authoring/`) updated with a Mega menu authoring guide covering all four sketch patterns above
-- [ ] Rune reference page for `nav` updated with `layout="mega"` section
+- [ ] `npx refrakt inspect nav --layout=strip` shows expected HTML output
+- [ ] `npx refrakt inspect badge` shows expected HTML output for various sentiment / rank / type combinations
+- [ ] CSS coverage tests updated for `.rf-nav--mega`, `.rf-nav--strip`, `.rf-nav-group__intro`, `.rf-nav-group__columns`, `.rf-nav-group__column`, `.rf-nav-group__footer`, `.rf-nav-item__description`, and `.rf-badge`
+- [ ] Authoring docs (`site/content/docs/authoring/`) updated with a Mega menu authoring guide covering the position-based slot rule, all sketch patterns, and the strip layout
+- [ ] Rune reference page for `nav` updated with `layout="mega"` and `layout="strip"` sections
 - [ ] New rune reference page for `badge`
-- [ ] At least one site page demonstrates the mega layout (likely `site/content/_layout.md` header region, behind a feature flag or as the new default once docs are ready)
+- [ ] At least one site page demonstrates the mega layout (likely `site/content/_layout.md` header region)
 
 -----
 
 ## Out of Scope
 
-- **Embedded media in mega panels** (images, video thumbnails as featured entries). Achievable later by allowing arbitrary block content inside the featured slot, but the blockquote-as-link convention covered here is the v1.
-- **Nested groups** (mega panels with sub-groups inside a column). Single-level groups with column breaks cover the realistic patterns; deeper nesting is YAGNI.
-- **Aggregated/auto-populated footer band** (e.g. last 3 changelog entries). The footer band is hand-authored items in v1. A future enhancement could let `{% nav-recent collection="changelog" limit="3" %}` populate it, but that's a separate primitive.
-- **Per-trigger panel routing logic.** This spec assumes each `## group` matches a top-level trigger by slug (see Open Questions). More flexible routing (explicit `for="trigger-slug"` attribute on groups) is deferred.
-- **A `colophon` rune for copyright / social rows.** Already deferred from SPEC-046; remains deferred.
+- **Embedded media in mega panels beyond `![image]`**. Plain Markdown images work in intro / footer slots (covered above). Video, animated demos, embedded iframes, etc. — deferred until a real use case appears.
+- **Nested groups** (mega panels with sub-groups inside a column). Single-level groups with column splits cover the realistic patterns; deeper nesting is YAGNI.
+- **Aggregated/auto-populated panel footers** (e.g. last 3 changelog entries auto-pulled into a panel's footer slot). Footer content is hand-authored in v1. A future `{% nav-recent collection="…" %}` primitive could populate it.
+- **A separate `colophon` rune for copyright / social rows.** Already deferred from SPEC-046; remains deferred.
 - **Replacing the marketing plugin's `bento` or `feature` runes.** Different use cases — mega is for navigation; bento/feature are for landing-page content.
 - **Animating panel transitions.** CSS-only fade or theme-defined; no schema involvement.
+- **Strip layout with groups**. `layout="strip"` is flat by design — if you need grouped strip content, use `layout="columns"` (footer columns) or a vertical nav. Strip rejects (warns on) `## groups`.
 
 -----
 
 ## Open Questions
 
-**How do multiple top-level triggers map to multiple `## groups`?** Three plausible models:
-
-1. **Slug match** (proposed): trigger `- product` matches `## Product` by case-insensitive slug. Tersest, but coupling.
-2. **Positional**: first trigger → first group, second → second. Brittle if the author rearranges.
-3. **Explicit**: `## Product {% for="product" %}` or similar attribute. Most flexible, most verbose.
-
-Recommend (1) for v1 with (3) as an escape hatch if collisions appear.
-
-**Should single-trigger mega be allowed?** The simplest case is one trigger + one group + one big panel. Either it's allowed (no routing problem) or every mega requires multiple triggers (forced structure). Recommend allowing single-trigger — useful for "Solutions" megas with one trigger and rich content.
-
 **Are descriptions a property or a child?** Modeled above as a property attached during postProcess (meta tag → property). Alternative: keep the description paragraph as a child of `nav-item`, let the engine wrap it with a class. Property is cleaner for the auto-enrichment path; child is closer to source. Lean property.
-
-**Badge label source.** Resolved — label is children content (free-form text), no built-in labels map, no hard-coded English in core. Authors write `{% badge sentiment="positive" %}New{% /badge %}`, naturally localised.
 
 **Description paragraph delimiter.** Markdown parsers vary on whether a paragraph under a list item belongs to the item (indented continuation) or breaks out. Need to confirm Markdoc's behaviour and possibly require a specific indent. Worth a spike before committing.
 
-**Featured item — blockquote vs first list item with a modifier.** Blockquote is structurally distinct but has other markdown uses (callouts). Alternative: first list item with an explicit `{% featured %}` marker. Blockquote feels more natural inside nav context; revisit if collisions appear in real authoring.
+**Middle content segments**. The position-based rule classifies first content segment as intro and last as footer. What about middle content segments (a group with intro + column + paragraph + column + footer)? Recommend: render them in source order as part of the columns container — they're unusual but not errors, and the theme can style "non-column children of `__columns`" however it wants. Worth a real authoring example before locking in.
 
 **Should `mega` imply `auto=true`?** Nearly every realistic mega menu uses page-resolved descriptions. Defaulting `auto=true` when `layout="mega"` reduces ceremony but adds magic. Recommend leaving them independent — explicit is better.
+
+**Should `strip` items default to a smaller font / muted treatment, or rely entirely on `.rf-nav--strip` CSS?** Recommend rely on CSS — keeps the data layer identical to other layouts.
 
 {% /spec %}

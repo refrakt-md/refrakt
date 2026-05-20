@@ -1,38 +1,40 @@
 {% work id="WORK-237" status="ready" priority="medium" complexity="trivial" tags="nav, mega-menu, docs, site" source="SPEC-054" milestone="v0.14.3" %}
 
-# Mega authoring docs + site demo
+# Mega + strip authoring docs + site demo
 
-The editorial pass after the mega layout engine and CSS land. Write authoring documentation covering the four sketch patterns from {% ref "SPEC-054" /%} (full-auto, manual descriptions + featured, mixed, eyebrow labels), update the `nav` rune reference page with a `layout="mega"` section, and convert at least one site nav to mega so readers can see it working in production.
+The editorial pass after the mega + strip engine and CSS land. Write authoring documentation covering the position-based slot rule (intro / columns / footer), the patterns from {% ref "SPEC-054" /%}, and the strip layout. Update the `nav` rune reference page with `layout="mega"` and `layout="strip"` sections. Convert at least one site nav to mega so readers can see it working in production.
 
 ## Acceptance Criteria
 
-- [ ] New authoring page (or expanded existing page) at `site/content/docs/authoring/` titled "Mega menu navigation" or similar
-- [ ] The page covers all four authoring patterns from {% ref "SPEC-054" /%}: fully-auto with `auto=true`, manual descriptions + featured blockquote, mixed auto with selective overrides, eyebrow labels via paragraph-under-heading
-- [ ] Each pattern includes both the source markdown and a rendered example (or a screenshot if rendering inline is impractical)
+- [ ] New authoring page at `site/content/docs/authoring/mega-menu.md` (or similar) titled "Mega menu navigation"
+- [ ] The page opens with the position-based slot rule (`---`-separated segments → columns / content slots → intro / footer) and a simple worked example
+- [ ] Covers each authoring pattern from {% ref "SPEC-054" /%}: fully-auto with `auto=true`, per-panel intro slots (blockquote → featured hero, paragraph → eyebrow), per-panel footer slots (paragraph with link, image, nested `{% nav layout="strip" %}`), inline descriptions and badges, mixed auto with selective overrides
+- [ ] Each pattern includes both the source markdown and a rendered preview (via `{% preview source=true %}` or a screenshot if rendering inline is impractical)
 - [ ] Resolution rules table from {% ref "SPEC-054" /%} reproduced in the docs so authors know what each item shape produces
-- [ ] Trigger-to-group slug matching documented, with the recommended convention and a note about the build error on mismatch
-- [ ] Footer band, column splits (`---`), eyebrow paragraphs, and featured blockquotes each documented with a minimal example
-- [ ] `nav` rune reference page (`site/content/runes/nav.md` or equivalent) gains a `layout="mega"` section listing the new attribute value and pointing at the authoring page for full usage
-- [ ] At least one site nav converted to `layout="mega"` — probable target: `site/content/_layout.md` header region with the docs / runes / themes / blog top-level triggers expanded into mega panels
+- [ ] Strip layout documented in its own short section — standalone usage (persistent secondary nav below the menubar) and nested usage (inside a mega panel's footer slot)
+- [ ] `nav` rune reference page (`site/content/runes/nav.md`) gains a `layout="mega"` section and a `layout="strip"` section, each pointing at the authoring page for full usage
+- [ ] At least one site nav converted to `layout="mega"` — probable target: `site/content/_layout.md` header region with the docs / runes / themes top-level groups expanded into mega panels
 - [ ] The converted site nav demonstrates frontmatter-derived descriptions (via `auto=true`) on real pages — i.e. at least a few of the linked pages have `description` frontmatter that shows up in the panel
-- [ ] At least one item in the demo nav carries a `{% badge %}` (from WORK-234) showing the integration
-- [ ] At least one group in the demo nav uses a `---` column split if the group has enough items to warrant it
-- [ ] At least one group includes an eyebrow paragraph and / or a featured blockquote
+- [ ] At least one item in the demo nav carries a `{% badge %}` (from {% ref "WORK-234" /%}) showing the integration
+- [ ] At least one panel in the demo nav uses a `---` column split if the panel has enough items to warrant it
+- [ ] At least one panel demonstrates the intro slot (blockquote or paragraph)
+- [ ] At least one panel demonstrates the footer slot (paragraph link, image, or nested strip nav)
+- [ ] The demo nav optionally includes a `{% nav layout="strip" %}` sibling below the mega for cross-cutting secondary links (changelog, status, roadmap)
 - [ ] Build passes; mega menu renders correctly on desktop and mobile (manual verification on the deployed preview)
-- [ ] Mobile collapse behavior verified — narrow viewport shows the stacked-accordion fallback from WORK-236
+- [ ] Mobile collapse behaviour verified — narrow viewport shows the stacked-accordion fallback from WORK-236; strip wraps cleanly
 - [ ] Cross-link from the authoring page to {% ref "SPEC-054" /%} for readers who want full design context
 
 ## Approach
 
-**Lands last in the milestone.** All engine + CSS + behavior work must be merged first (WORK-234, WORK-235, WORK-236). This work item is purely editorial: write copy, choose examples, convert one nav, verify it looks right.
+**Lands last in the milestone.** All engine + CSS + behavior work must be merged first ({% ref "WORK-234" /%}, {% ref "WORK-235" /%}, {% ref "WORK-236" /%}). This work item is purely editorial: write copy, choose examples, convert one nav, verify it looks right.
 
-**Authoring docs structure.** Open with the simplest pattern (full-auto, one trigger, one group), then progressively show: column splits, descriptions, featured items, eyebrow labels, footer band. Each section is short — one paragraph of explanation, one source block, one rendered or screenshotted example.
+**Authoring docs structure.** Open with the position-based slot rule (one-paragraph explanation + tiny example), then progressively show: simple full-auto panel, intro with featured blockquote, intro with eyebrow paragraph, column splits, footer with paragraph/image/nested-strip, per-item descriptions and badges. Each section is short — one paragraph of explanation, one source block, one rendered preview.
 
 **Resolution rules table.** Reproduce verbatim from the spec so authors don't have to cross-reference. Add a small note "see {% ref "SPEC-054" /%} for full rule derivation."
 
 **Site demo target — likely candidates:**
 
-1. **Header nav at `site/content/_layout.md`** — convert from `layout="menubar"` to `layout="mega"`. Most visible to readers; biggest impact. Requires the linked pages to have decent `description` frontmatter — audit first.
+1. **Header nav at `site/content/_layout.md`** — convert from `layout="menubar"` to `layout="mega"` with a sibling `{% nav layout="strip" %}` for changelog/roadmap/status links. Most visible to readers; biggest impact. Requires the linked pages to have decent `description` frontmatter — audit first.
 2. **A docs section landing page** — smaller scope, less visible, but a good fit if the header nav isn't ready for mega.
 3. **A purpose-built example** — a sample mega panel on the rune reference page itself. Lower stakes, lets us iterate.
 
@@ -46,13 +48,13 @@ Recommend option 1. The frontmatter audit is a small chore but it's the right sh
 
 - {% ref "WORK-234" /%} — badge demo on at least one item
 - {% ref "WORK-235" /%} — frontmatter enrichment in the demo nav
-- {% ref "WORK-236" /%} — mega layout itself
+- {% ref "WORK-236" /%} — mega + strip layouts themselves
 
 ## References
 
-- {% ref "SPEC-054" /%} — Authoring Surface section, four sketch patterns, resolution rules table
+- {% ref "SPEC-054" /%} — Authoring Surface section, position-based slot rule, resolution rules table, strip layout description
 - `site/content/_layout.md` — Likely conversion target
 - `site/content/docs/authoring/` — Existing authoring docs location
-- `site/content/runes/nav.md` (or equivalent) — Rune reference page
+- `site/content/runes/nav.md` — Rune reference page
 
 {% /work %}
