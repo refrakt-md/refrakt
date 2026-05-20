@@ -259,50 +259,74 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 }
 
 /**
- * SPEC-056 scope-eligibility filter: which `ThemeTokensConfig` namespaces
- * can be projected from a preset module into a scoped tint class.
+ * SPEC-056 scope-eligibility filter: which `ThemeTokensConfig` slots can be
+ * projected from a preset module into a scoped tint class.
  *
- * - **Included**: `syntax.*` (all 16 roles), `color.code.*` (bg/text/inline-bg).
- *   These are the *non-chrome-accent* tokens — the chrome accents (bg /
- *   surface / text / muted / primary / border) take a different path through
- *   `resolveTintExtends` → `TintTokens` and the inline-style runtime mechanism.
+ * - **Included**: `syntax.*` (all 16 roles), `color.code.*` (bg/text/inline-bg),
+ *   and chrome accent slots (`color.bg`, `color.surface.base`, `color.text`,
+ *   `color.muted`, `color.primary`, `color.border`). Together these cover the
+ *   visible colour identity of a Nord-style integrated palette without leaking
+ *   into structural identity.
  *
  * - **Excluded**: typography (`font.*`), structural (`radius.*`, `spacing.*`,
  *   `inset.*`, `shadow.*`), status sentiments (`color.info`, `color.warning`,
  *   `color.danger`, `color.success`), primary scale (`color.primary-scale`),
- *   chrome accents (which take the inline-style path), and theme-specific
- *   `extra` keys. The spec's "tints scope mood; presets scope skeleton"
- *   commitment lives in this filter.
+ *   primary hover variants (`color.primary-hover`), surface variants beyond
+ *   `base` (`color.surface.hover/active/raised`), and theme-specific `extra`
+ *   keys. The spec's "tints scope mood; presets scope skeleton" commitment
+ *   lives in this filter.
+ *
+ * Why include chrome accents here rather than route them through the inline-
+ * style mechanism that hand-defined tints use? The inline path requires the
+ * runtime engine to know about the preset module (via a `presetMap` plumbed
+ * through `mergeThemeConfig` → `resolveTintExtends`). Today only the build-
+ * time generator has that knowledge, so we materialise chrome accents here
+ * to keep the scoped tint self-sufficient. If a future caller does plumb
+ * `presetMap` through merge time, the inline emission would override these
+ * (inline styles beat CSS selector specificity), so there's no conflict —
+ * just a redundancy that the cascade resolves correctly.
  */
-const SCOPE_ELIGIBLE_NON_ACCENT_NAMESPACES: ReadonlySet<string> = new Set([
-	'syntax',
-	'color.code',
-]);
+const CHROME_ACCENT_KEYS = new Set(['bg', 'text', 'muted', 'primary', 'border']);
 
 /** Drop non-eligible top-level + nested keys from a config, leaving only the
- *  scope-eligible non-accent namespaces. Returns an empty object if the
- *  input has nothing to project.
+ *  scope-eligible namespaces (chrome accents + code surface + syntax).
+ *  Returns an empty object if the input has nothing to project.
  *
  *  When invoked from `generateScopedTintStylesheet`, dropped keys are
  *  reported through `onDrop` for an optional dev warning. */
-function filterScopeEligibleNonAccent(
+function filterScopeEligible(
 	layer: ThemeTokensConfig,
 	onDrop?: (key: string) => void,
 ): Record<string, unknown> {
 	const out: Record<string, unknown> = {};
 	if (layer.syntax) out.syntax = layer.syntax;
-	if (layer.color?.code) out.color = { code: layer.color.code };
+
+	if (layer.color) {
+		const colorOut: Record<string, unknown> = {};
+		// Chrome accents (top-level color.* leaves we care about).
+		for (const key of CHROME_ACCENT_KEYS) {
+			const v = (layer.color as Record<string, unknown>)[key];
+			if (typeof v === 'string') colorOut[key] = v;
+		}
+		// Chrome accent: color.surface.base only (not hover/active/raised).
+		const surface = (layer.color as { surface?: { base?: string } }).surface;
+		if (surface && typeof surface.base === 'string') {
+			colorOut.surface = { base: surface.base };
+		}
+		// Code surface: full color.code.* namespace.
+		if (layer.color.code) {
+			colorOut.code = layer.color.code;
+		}
+		if (Object.keys(colorOut).length > 0) out.color = colorOut;
+	}
 
 	if (onDrop) {
-		// Chrome accents take the inline-style path via resolveTintExtends and
-		// are NOT considered dropped here, so we don't report them.
-		const CHROME_ACCENT_KEYS = new Set(['bg', 'surface', 'text', 'muted', 'primary', 'border']);
+		const ELIGIBLE_COLOR_KEYS = new Set([...CHROME_ACCENT_KEYS, 'surface', 'code']);
 		for (const topKey of Object.keys(layer)) {
 			if (topKey === 'syntax' || topKey === 'modes' || topKey === 'extra') continue;
 			if (topKey === 'color') {
 				for (const colorKey of Object.keys(layer.color ?? {})) {
-					if (colorKey === 'code') continue;
-					if (CHROME_ACCENT_KEYS.has(colorKey)) continue;
+					if (ELIGIBLE_COLOR_KEYS.has(colorKey)) continue;
 					onDrop(`color.${colorKey}`);
 				}
 				continue;
@@ -371,7 +395,7 @@ export function generateScopedTintStylesheet(
 			}
 			: undefined;
 
-		const lightProjection = filterScopeEligibleNonAccent(preset, reportDrop);
+		const lightProjection = filterScopeEligible(preset, reportDrop);
 		const lightBlock = generateTokenStylesheet(
 			lightProjection as Parameters<typeof generateTokenStylesheet>[0],
 			{
@@ -386,7 +410,7 @@ export function generateScopedTintStylesheet(
 			// Dev warnings for `modes.dark` are only emitted when the dark
 			// overlay introduces *new* non-eligible keys not already reported
 			// from the base — dedup via the same seen-set.
-			const darkProjection = filterScopeEligibleNonAccent(darkOverlay as ThemeTokensConfig, reportDrop);
+			const darkProjection = filterScopeEligible(darkOverlay as ThemeTokensConfig, reportDrop);
 			const darkBlock = generateTokenStylesheet(
 				darkProjection as Parameters<typeof generateTokenStylesheet>[0],
 				{

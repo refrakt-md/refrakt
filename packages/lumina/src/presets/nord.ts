@@ -1,16 +1,24 @@
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 /**
- * Nord — an *integrated* palette preset (canvas + foreground).
+ * Nord — an *integrated* palette preset (canvas + chrome + foreground).
  *
  * Where niwaki took the scoped "foreground only" position deliberately,
  * Nord takes the integrated position because that's how Nord was designed:
- * its 16 hues were tuned against Polar Night `nord0` specifically, and
- * rendering Nord's foreground on a warm or neutral canvas misrepresents
- * the palette's intent. Nord therefore sets `color.code.*` alongside
- * `syntax.*` so opting in produces code blocks on Nord's canonical
- * canvas. Chrome (body bg, surfaces, buttons, borders) stays in whatever
- * theme is active — the override is bounded to the code surface.
+ * its 16 hues were tuned together against the Polar Night / Snow Storm
+ * canvas families. Rendering Nord's foreground on a warm or neutral
+ * canvas misrepresents the palette's intent.
+ *
+ * Nord therefore claims chrome (`color.bg`, `color.surface.base`,
+ * `color.text`, `color.muted`, `color.border`, `color.primary`) and
+ * code-surface (`color.code.*`) tokens alongside `syntax.*`. When Nord
+ * is the active preset, the whole page renders in Polar Night / Snow
+ * Storm. When Nord is used as a scoped tint (via
+ * `theme.tints[].extends`), every Nord-tinted subtree renders against
+ * Nord's canvas without affecting surrounding content. The scope-
+ * eligibility filter in `generateScopedTintStylesheet` enforces the
+ * boundary — typography, spacing, radius, shadow, and status sentiments
+ * stay with whatever chrome is active, even when Nord is tinting.
  *
  * Composes:
  *   - `presets: ["nord"]` → Nord syntax on Nord canvas, neutral chrome elsewhere
@@ -40,10 +48,22 @@ const nord: ThemeTokensConfig = {
 	// while keeping the same Frost + Aurora accents at slightly darker
 	// values for contrast on the lighter background.
 	color: {
+		bg: '#eceff4',           // Snow Storm nord6 — canonical light canvas
+		text: '#2e3440',         // Polar Night nord0 — text on light canvas
+		muted: '#4c566a',        // Polar Night nord3
+		border: '#d8dee9',       // Snow Storm nord4 — between bg and elevated
+		primary: '#5e81ac',      // Frost nord10 — Nord's interactive accent
+		'primary-hover': '#81a1c1', // Frost nord9 — lighter on hover
+		surface: {
+			base: '#e5e9f0',     // Snow Storm nord5 — slightly elevated card surface
+			hover: '#d8dee9',    // Snow Storm nord4
+			active: '#d8dee9',
+			raised: '#eceff4',
+		},
 		code: {
-			bg: '#eceff4',         // Snow Storm nord6 — Nord's light canvas
-			text: '#2e3440',       // Polar Night nord0 — Nord's text on light
-			'inline-bg': '#e5e9f0', // Snow Storm nord5
+			bg: '#eceff4',         // Snow Storm nord6 — same as page canvas
+			text: '#2e3440',       // Polar Night nord0
+			'inline-bg': '#e5e9f0', // Snow Storm nord5 — slight elevation for inline code
 		},
 	},
 	syntax: {
@@ -71,8 +91,20 @@ const nord: ThemeTokensConfig = {
 	modes: {
 		dark: {
 			color: {
+				bg: '#2e3440',           // Polar Night nord0 — canonical dark canvas
+				text: '#d8dee9',         // Snow Storm nord4
+				muted: '#616e88',        // between Polar Night nord3 and Snow Storm nord4
+				border: '#3b4252',       // Polar Night nord1 — subtle separator
+				primary: '#88c0d0',      // Frost nord8 — brighter on dark
+				'primary-hover': '#8fbcbb', // Frost nord7
+				surface: {
+					base: '#3b4252',     // Polar Night nord1 — elevated card on dark
+					hover: '#434c5e',    // Polar Night nord2
+					active: '#4c566a',   // Polar Night nord3
+					raised: '#434c5e',
+				},
 				code: {
-					bg: '#2e3440',         // Polar Night nord0 — Nord's canonical dark canvas
+					bg: '#2e3440',         // Polar Night nord0 — canonical dark canvas
 					text: '#d8dee9',       // Snow Storm nord4
 					'inline-bg': '#3b4252', // Polar Night nord1 — slightly elevated
 				},

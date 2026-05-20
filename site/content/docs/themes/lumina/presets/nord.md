@@ -5,7 +5,7 @@ description: Nord — Arctic, north-bluish colour palette with integrated canvas
 
 # Nord
 
-Nord is an **integrated** palette preset — unlike [niwaki](/docs/themes/lumina/presets/niwaki), which leaves the code surface to its surrounding chrome, Nord ships both its syntax foreground *and* its canonical code-surface background. The hues were tuned against Polar Night `nord0` (#2e3440) specifically; rendering them on an arbitrary warm or neutral canvas misrepresents the palette's intent. So Nord claims the code surface; chrome (body bg, surfaces, buttons, borders) stays in whatever theme is active.
+Nord is an **integrated** palette preset — unlike [niwaki](/docs/themes/lumina/presets/niwaki), which leaves chrome and code surface to whichever theme sits beneath, Nord ships its chrome, code surface, *and* syntax foreground together. The 16 hues were tuned against the Polar Night / Snow Storm canvas families specifically; rendering Nord's foreground on a warm or neutral canvas misrepresents the palette's intent. So Nord claims chrome and canvas as part of the package. Typography, spacing, status sentiments, and radius stay with whatever theme is active — Nord's scope is colour identity, not structural identity.
 
 The palette is structured as four named groups: **Polar Night** (the dark canvas family), **Snow Storm** (light text / light canvas), **Frost** (cool blue accents — types, functions, keywords), and **Aurora** (warm accents — red, orange, yellow, green, purple). Read [the Nord palette spec](https://www.nordtheme.com/docs/colors-and-palettes) for the design philosophy.
 
@@ -56,9 +56,9 @@ This page is rendered on a site whose active preset is **niwaki**, not Nord. The
 
 ## Live preview
 
-Here's a TypeScript snippet rendered through Nord's full integrated look — syntax colours and code-surface canvas both. The hint container below sets `tint="nord"`, so its subtree (the code block inside) inherits Nord's syntax tokens *and* Nord's code background while the rest of the page stays in niwaki.
+Here's a TypeScript snippet rendered through Nord's full integrated look — chrome, syntax colours, and code-surface canvas. The `codegroup` below sets `tint="nord"`, so its subtree inherits Nord's chrome, syntax tokens, and code background while the rest of the page stays in niwaki.
 
-{% hint type="note" tint="nord" %}
+{% codegroup tint="nord" %}
 ```ts
 // A small user-service shape — exercises the SPEC-056 role splits
 interface User {
@@ -76,7 +76,7 @@ async function findUser(id: number): Promise<User | null> {
 
 const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Button>;
 ```
-{% /hint %}
+{% /codegroup %}
 
 Notice the role splits Nord makes that earlier 9-role syntax presets couldn't carry: **types** (`User`) read in Frost mint, distinct from **functions** (`findUser`, `db.users.findOne`) in Frost cyan; **JSX tags** (`Button`) take a different Frost hue than **keywords**; **JSX attributes** (`onClick`, `variant`) get their own Frost shade; **numbers** (`42`) sit in Aurora orange; **regex** (`/^\d+$/`) reads in Aurora yellow. These are SPEC-056's optional extended roles doing real work.
 

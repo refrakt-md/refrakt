@@ -65,6 +65,37 @@ describe('generateScopedTintStylesheet — SPEC-056 preset projection', () => {
 		expect(css).toContain('--rf-color-code-bg: #2e3440;');
 	});
 
+	it('projects chrome accents (bg, surface.base, text, muted, primary, border) when the preset sets them', () => {
+		const presetMap: Record<string, ThemeTokensConfig> = {
+			'@example/integrated': {
+				color: {
+					bg: '#eceff4',
+					text: '#2e3440',
+					muted: '#4c566a',
+					border: '#d8dee9',
+					primary: '#5e81ac',
+					surface: { base: '#e5e9f0', hover: '#d8dee9', active: '#d8dee9', raised: '#eceff4' },
+				},
+			},
+		};
+		const tints: Record<string, TintDefinition> = {
+			n: { extends: '@example/integrated' },
+		};
+		const css = generateScopedTintStylesheet(tints, presetMap);
+		expect(css).toContain('--rf-color-bg: #eceff4;');
+		expect(css).toContain('--rf-color-text: #2e3440;');
+		expect(css).toContain('--rf-color-muted: #4c566a;');
+		expect(css).toContain('--rf-color-border: #d8dee9;');
+		expect(css).toContain('--rf-color-primary: #5e81ac;');
+		expect(css).toContain('--rf-color-surface: #e5e9f0;');
+		// Surface variants (hover/active/raised) are NOT projected — they're
+		// chrome-extended, not chrome-accent. The scope-eligibility table
+		// permits only `surface.base`.
+		expect(css).not.toContain('--rf-color-surface-hover');
+		expect(css).not.toContain('--rf-color-surface-active');
+		expect(css).not.toContain('--rf-color-surface-raised');
+	});
+
 	it('drops non-scope-eligible namespaces (typography, spacing, radius, status)', () => {
 		const presetMap: Record<string, ThemeTokensConfig> = {
 			'@example/loud-preset': {

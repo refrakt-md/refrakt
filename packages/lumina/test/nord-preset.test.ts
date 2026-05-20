@@ -32,17 +32,23 @@ function blockBody(css: string, selectorPattern: RegExp): string {
 
 describe('Nord preset module — SPEC-056 validation case', () => {
 	describe('structural shape', () => {
-		it('overrides only syntax and color.code namespaces — no chrome, fonts, status, structural', () => {
-			// Nord is an *integrated* palette — sets syntax + code surface but
-			// not chrome (bg/surface/primary/border), typography, status, radius,
-			// spacing, or shadow. Those remain the chrome theme's responsibility.
+		it('claims chrome accents + code-surface + syntax — but stays out of typography / structural', () => {
+			// Nord is an *integrated* palette — claims chrome (bg/surface/text/
+			// muted/border/primary), code surface, and syntax. It stays out of
+			// typography, status sentiments, radius, spacing, and shadow — those
+			// remain the chrome theme's responsibility (and are filtered out of
+			// scoped tint projections regardless).
 			const topLevel = Object.keys(nord);
 			expect(topLevel.sort()).toEqual(['color', 'modes', 'syntax'].sort());
-			expect(Object.keys(nord.color!)).toEqual(['code']);
 			expect(nord.font).toBeUndefined();
 			expect(nord.radius).toBeUndefined();
 			expect(nord.spacing).toBeUndefined();
 			expect(nord.shadow).toBeUndefined();
+			// No status sentiment overrides
+			expect(nord.color?.info).toBeUndefined();
+			expect(nord.color?.warning).toBeUndefined();
+			expect(nord.color?.danger).toBeUndefined();
+			expect(nord.color?.success).toBeUndefined();
 		});
 
 		it('sets at least one extended syntax role distinctly from its core fallback', () => {
@@ -94,26 +100,51 @@ describe('Nord preset module — SPEC-056 validation case', () => {
 			expect(darkDecls.get('--rf-color-code-text')).toBe('#d8dee9');
 		});
 
-		it('emits no chrome / typography / structural tokens', () => {
-			// Code-surface IS chrome-territory; everything else is not.
+		it('emits chrome accents + code-surface + syntax; nothing structural or status', () => {
+			// Nord claims chrome (bg/surface/text/muted/border/primary),
+			// code surface, and syntax. It does NOT claim typography
+			// (font.*), structural (radius/spacing/shadow), or status
+			// sentiments (color.info/warning/danger/success).
+			const FORBIDDEN_PREFIXES = [
+				'--rf-font-',
+				'--rf-radius-',
+				'--rf-spacing-',
+				'--rf-inset-',
+				'--rf-shadow-',
+				'--rf-color-info',
+				'--rf-color-warning',
+				'--rf-color-danger',
+				'--rf-color-success',
+				'--rf-color-primary-50',
+				'--rf-color-primary-100',
+				'--rf-color-primary-200',
+				'--rf-color-primary-300',
+				'--rf-color-primary-400',
+				'--rf-color-primary-500',
+				'--rf-color-primary-600',
+				'--rf-color-primary-700',
+				'--rf-color-primary-800',
+				'--rf-color-primary-900',
+				'--rf-color-primary-950',
+			];
 			for (const name of baseDecls.keys()) {
-				// Allowlist of namespaces Nord is permitted to write to.
-				const allowed = (
-					name.startsWith('--rf-syntax-') ||
-					name.startsWith('--rf-color-code-')
-				);
-				expect(allowed, `Nord must not emit ${name} — it's outside the syntax + code-surface scope`).toBe(true);
+				for (const prefix of FORBIDDEN_PREFIXES) {
+					expect(
+						name.startsWith(prefix),
+						`Nord must not emit ${name} — outside the chrome accent + code-surface + syntax scope`,
+					).toBe(false);
+				}
 			}
 		});
 	});
 
 	describe('composition with chrome presets', () => {
-		it('composes with tideline — tideline chrome + Nord code surface', () => {
+		it('composes with tideline — tideline typography + Nord chrome', () => {
 			const merged = mergeThemeTokensConfigs(tideline, nord);
-			// tideline's chrome wins where Nord doesn't set (font, body bg, etc.)
+			// tideline's typography wins (Nord doesn't claim font.*)
 			expect(merged.font?.sans).toBe(tideline.font?.sans);
-			expect(merged.color?.bg).toBe(tideline.color?.bg);
-			// Nord wins where it sets — code surface + syntax tokens
+			// Nord wins on chrome (it ships after tideline and claims color.*)
+			expect(merged.color?.bg).toBe(nord.color?.bg);
 			expect(merged.color?.code?.bg).toBe(nord.color?.code?.bg);
 			expect(merged.syntax?.type).toBe(nord.syntax?.type);
 			expect(merged.syntax?.tag).toBe(nord.syntax?.tag);
@@ -121,20 +152,25 @@ describe('Nord preset module — SPEC-056 validation case', () => {
 
 		it('composes with niwaki — niwaki syntax wins over Nord when ordered ["nord", "niwaki"]', () => {
 			// Order matters: niwaki ships after Nord, so niwaki's syntax overrides win.
-			// But niwaki doesn't set color.code.*, so Nord's canvas survives the merge.
+			// But niwaki doesn't set color.code.* or chrome, so Nord's canvas survives.
 			const merged = mergeThemeTokensConfigs(nord, niwaki);
 			expect(merged.syntax?.keyword).toBe(niwaki.syntax?.keyword);
 			expect(merged.syntax?.function).toBe(niwaki.syntax?.function);
-			// Nord's code canvas survives — niwaki doesn't touch it
+			// Nord's canvas survives — niwaki doesn't touch chrome / code surface
 			expect(merged.color?.code?.bg).toBe(nord.color?.code?.bg);
+			expect(merged.color?.bg).toBe(nord.color?.bg);
 		});
 
-		it('lumina + nord — Nord overlays Lumina exactly on syntax + code surface', () => {
+		it('lumina + nord — Nord overlays Lumina on chrome + code-surface + syntax', () => {
 			const merged = mergeThemeTokensConfigs(luminaTokens, nord);
-			// Lumina's chrome stays
-			expect(merged.color?.text).toBe(luminaTokens.color?.text);
-			expect(merged.color?.surface?.base).toBe(luminaTokens.color?.surface?.base);
-			// Nord overrides code surface and syntax
+			// Lumina's typography + structural tokens stay
+			expect(merged.font?.sans).toBe(luminaTokens.font?.sans);
+			expect(merged.radius?.md).toBe(luminaTokens.radius?.md);
+			// Status sentiments stay (Nord doesn't claim them)
+			expect(merged.color?.info).toEqual(luminaTokens.color?.info);
+			// Nord wins on chrome accents, code surface, and syntax
+			expect(merged.color?.bg).toBe(nord.color?.bg);
+			expect(merged.color?.surface?.base).toBe(nord.color?.surface?.base);
 			expect(merged.color?.code?.bg).toBe(nord.color?.code?.bg);
 			expect(merged.syntax?.type).toBe(nord.syntax?.type);
 		});
