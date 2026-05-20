@@ -29,6 +29,7 @@ tint-lock: false
 
 - niwaki
 - nord
+- dracula
 
 {% /nav %}
 {% /region %}
