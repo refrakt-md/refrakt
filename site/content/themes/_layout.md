@@ -25,10 +25,19 @@ tint-lock: false
 
 - tideline
 
-## Syntax presets
+## refrakt's syntax presets
 
 - niwaki
+
+## Imported syntax presets
+
 - nord
+- dracula
+- solarized
+- catppuccin
+- tokyo-night
+- one-dark
+- gruvbox
 
 {% /nav %}
 {% /region %}
