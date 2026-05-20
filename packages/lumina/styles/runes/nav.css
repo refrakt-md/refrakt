@@ -90,13 +90,9 @@
 	transition: transform 200ms ease;
 	margin-right: 0.25rem;
 }
-.rf-nav--collapsible {
-	interpolate-size: allow-keywords;
-}
 .rf-nav--collapsible .rf-nav-group > ul,
 .rf-nav--collapsible .rf-nav-group > ol {
 	overflow: hidden;
-	height: auto;
 	transition: height 200ms ease;
 }
 .rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
