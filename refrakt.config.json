@@ -35,7 +35,8 @@
 				"solarized": { "extends": "@refrakt-md/lumina/presets/solarized" },
 				"catppuccin": { "extends": "@refrakt-md/lumina/presets/catppuccin" },
 				"tokyo-night": { "extends": "@refrakt-md/lumina/presets/tokyo-night" },
-				"one-dark": { "extends": "@refrakt-md/lumina/presets/one-dark" }
+				"one-dark": { "extends": "@refrakt-md/lumina/presets/one-dark" },
+				"gruvbox": { "extends": "@refrakt-md/lumina/presets/gruvbox" }
 			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",

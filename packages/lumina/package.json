@@ -59,6 +59,10 @@
       "types": "./dist/presets/one-dark.d.ts",
       "default": "./dist/presets/one-dark.js"
     },
+    "./presets/gruvbox": {
+      "types": "./dist/presets/gruvbox.d.ts",
+      "default": "./dist/presets/gruvbox.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"

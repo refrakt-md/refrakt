@@ -34,6 +34,7 @@ tint-lock: false
 - catppuccin
 - tokyo-night
 - one-dark
+- gruvbox
 
 {% /nav %}
 {% /region %}
