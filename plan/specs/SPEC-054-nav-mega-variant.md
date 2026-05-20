@@ -225,25 +225,51 @@ Trailing items (after the last `##` group) collect into a new `footerItems` prop
 
 ## Badge rune (new)
 
-Defined in `packages/runes/src/tags/badge.ts`. Inline rune.
+Defined in `packages/runes/src/tags/badge.ts`. Inline rune. Belongs in core, not the nav schema — use cases extend well beyond nav (commerce: "Popular" / "Sale" / "Pro only"; content: "Featured" / "Sponsored" / "Members only"; status: "Active" / "Archived"; identity: "Verified" / "Staff"; recency: "Updated"; difficulty: "Beginner" / "Advanced"; arbitrary categorical tagging).
+
+The badge label is **children content**, not an attribute — free-form text, naturally localised, no hard-coded English in core. Visual variant comes from the universal metadata dimensions defined by {% ref "SPEC-024" /%} and {% ref "SPEC-025" /%} (`data-meta-sentiment`, `data-meta-rank`, `data-meta-type`), which means themes already style every sentiment/rank combination via the rules in `packages/lumina/styles/dimensions/metadata.css` — the badge rune gets cross-theme coverage for free.
+
+### Authoring surface
 
 ```markdoc
-{% badge type="new" /%}
-{% badge type="beta" /%}
-{% badge type="soon" /%}
-{% badge type="deprecated" /%}
-{% badge type="custom" label="Free" /%}
+{% badge %}Frontend{% /badge %}
+{% badge sentiment="positive" %}New{% /badge %}
+{% badge sentiment="caution" %}Beta{% /badge %}
+{% badge sentiment="negative" %}Deprecated{% /badge %}
+{% badge sentiment="positive" rank="primary" %}Popular{% /badge %}
+{% badge type="status" sentiment="positive" %}Active{% /badge %}
 ```
 
-Identity transform output:
+### Attributes
+
+| Attribute    | Values                                                              | Default | Maps to                  |
+|--------------|---------------------------------------------------------------------|---------|--------------------------|
+| `sentiment`  | `positive` \| `negative` \| `caution` \| `neutral`                  | `neutral` | `data-meta-sentiment`  |
+| `rank`       | `primary` \| `secondary`                                            | (none)  | `data-meta-rank`         |
+| `type`       | `status` \| `category` \| `quantity` \| `temporal` \| `tag` \| `id` | `tag`   | `data-meta-type`         |
+
+(All three attribute value sets match the existing metadata-system dimensions exactly — no new enums introduced.)
+
+### Identity transform output
 
 ```html
-<span class="rf-badge rf-badge--new" data-type="new">New</span>
+<span class="rf-badge" data-meta-sentiment="positive" data-meta-rank="primary" data-meta-type="tag">Popular</span>
 ```
 
-Default labels per type are theme-resolvable via CSS pseudo-content or via the rune's `label` attribute. Sits inline anywhere markdown allows inline content — nav items, table cells, headings, prose.
+The base `.rf-badge` provides the pill shape (inline-flex, small padding, rounded full, small font). All colour / weight / emphasis comes from the existing universal metadata CSS rules — no per-variant BEM classes (`.rf-badge--new` etc.) are needed or emitted.
 
-Belongs in core, not the nav schema, because the use cases extend beyond nav (changelog entries marking added APIs, pricing rows marking popular tiers, doc sidebars marking unstable features).
+### Migration of the "dev lifecycle" cases
+
+The previously-proposed `type="new" | "beta" | "soon" | "deprecated"` values become docs recipes rather than built-in types:
+
+```markdoc
+New feature:        {% badge sentiment="positive" %}New{% /badge %}
+Pre-release:        {% badge sentiment="caution" %}Beta{% /badge %}
+Coming soon:        {% badge sentiment="neutral" %}Soon{% /badge %}
+Deprecated API:     {% badge sentiment="negative" %}Deprecated{% /badge %}
+```
+
+Authors pick the sentiment that matches their intent; the label text is up to them (and naturally localised).
 
 -----
 
@@ -284,7 +310,8 @@ The existing `nav-menubar` behaviour (SPEC-046) extends to handle mega trigger o
 - [ ] A blockquote at the top of a group becomes the group's `.rf-nav-group__featured` entry with `data-featured="true"` on the resulting item
 - [ ] When `auto=true`, items without an explicit description inherit `description` from the linked page's frontmatter (extends existing cards-layout enrichment)
 - [ ] When `auto=true`, items without an explicit icon inherit `icon` from the linked page's frontmatter (reuses cards-layout enrichment)
-- [ ] New `{% badge %}` core inline rune accepts `type` (`new` | `beta` | `soon` | `deprecated` | `custom`) and optional `label`; emits `.rf-badge .rf-badge--{type}` with `data-type` attribute
+- [ ] New `{% badge %}` core inline rune takes its label as children content and accepts attributes `sentiment` (`positive` | `negative` | `caution` | `neutral`, default `neutral`), `rank` (`primary` | `secondary`, optional), and `type` (`status` | `category` | `quantity` | `temporal` | `tag` | `id`, default `tag`) — all three mirroring the metadata-system dimensions from {% ref "SPEC-024" /%}
+- [ ] Badge identity transform emits `<span class="rf-badge" data-meta-sentiment="…" data-meta-rank="…" data-meta-type="…">…</span>` — no per-variant BEM modifiers; visual styling inherits from the existing universal metadata CSS
 - [ ] A `{% badge %}` inside a nav item link is recognised by the engine and attached as a `badge` property on the item (rendered adjacent to the title)
 - [ ] Existing `menubar`, `vertical`, `columns`, `cards` layouts render identically to today — no behaviour change for callers not on the `mega` layout
 - [ ] Description resolution rule applies uniformly to any `auto=true` nav regardless of layout (data attached; theme decides rendering)
@@ -327,12 +354,7 @@ Recommend (1) for v1 with (3) as an escape hatch if collisions appear.
 
 **Are descriptions a property or a child?** Modeled above as a property attached during postProcess (meta tag → property). Alternative: keep the description paragraph as a child of `nav-item`, let the engine wrap it with a class. Property is cleaner for the auto-enrichment path; child is closer to source. Lean property.
 
-**Badge label source.** Three options for `{% badge type="new" %}`:
-1. Theme CSS pseudo-content (`::before { content: "New" }`) — themeable, but accessibility-hostile (screen readers may not see it).
-2. Engine-injected text node based on a `defaultLabels` map in the badge config — accessible, but the map lives in code.
-3. Required `label` attribute always — explicit, but verbose for the common case.
-
-Recommend (2) with `label` as override. The map ships with English defaults; themes/locales can override the map.
+**Badge label source.** Resolved — label is children content (free-form text), no built-in labels map, no hard-coded English in core. Authors write `{% badge sentiment="positive" %}New{% /badge %}`, naturally localised.
 
 **Description paragraph delimiter.** Markdown parsers vary on whether a paragraph under a list item belongs to the item (indented continuation) or breaks out. Need to confirm Markdoc's behaviour and possibly require a specific indent. Worth a spike before committing.
 
