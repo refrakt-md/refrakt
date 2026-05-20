@@ -30,6 +30,7 @@ tint-lock: false
 - niwaki
 - nord
 - dracula
+- solarized
 
 {% /nav %}
 {% /region %}

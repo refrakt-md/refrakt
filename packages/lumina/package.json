@@ -43,6 +43,10 @@
       "types": "./dist/presets/dracula.d.ts",
       "default": "./dist/presets/dracula.js"
     },
+    "./presets/solarized": {
+      "types": "./dist/presets/solarized.d.ts",
+      "default": "./dist/presets/solarized.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"
