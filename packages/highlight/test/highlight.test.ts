@@ -335,3 +335,124 @@ describe('highlight transform — codeColorScheme', () => {
 		expect(pre.attributes['data-color-scheme']).toBeUndefined();
 	});
 });
+
+describe('highlight transform — SPEC-056 extended syntax roles', () => {
+	it('routes TypeScript type names to --rf-syntax-token-type', async () => {
+		const hl = await createHighlightTransform({ langs: ['typescript'] });
+		// Use an interface declaration — interface names are the canonical
+		// "type" scope across most languages.
+		const tree = tag('code', { 'data-language': 'typescript' }, [
+			'interface User { id: number; }',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		// The interface name "User" should now reference --rf-syntax-token-type
+		expect(html).toContain('--rf-syntax-token-type');
+	});
+
+	it('routes JSX tag names to --rf-syntax-token-tag', async () => {
+		const hl = await createHighlightTransform({ langs: ['tsx'] });
+		const tree = tag('code', { 'data-language': 'tsx' }, [
+			'const el = <Button onClick={() => {}}>click</Button>;',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-tag');
+	});
+
+	it('routes JSX attribute names to --rf-syntax-token-attribute', async () => {
+		const hl = await createHighlightTransform({ langs: ['tsx'] });
+		const tree = tag('code', { 'data-language': 'tsx' }, [
+			'const el = <div className="x" id="y" />;',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-attribute');
+	});
+
+	it('routes numeric literals to --rf-syntax-token-number', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const tree = tag('code', { 'data-language': 'javascript' }, [
+			'const x = 42; const y = 3.14;',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-number');
+	});
+
+	it('routes operators to --rf-syntax-token-operator', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const tree = tag('code', { 'data-language': 'javascript' }, [
+			'const x = a + b * c; const y = a === b && c !== d;',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-operator');
+	});
+
+	it('routes regex literals to --rf-syntax-token-regex', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const tree = tag('code', { 'data-language': 'javascript' }, [
+			'const re = /^hello/i;',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-regex');
+	});
+
+	it('routes function parameters to --rf-syntax-token-parameter (broader scope coverage)', async () => {
+		const hl = await createHighlightTransform({ langs: ['typescript'] });
+		const tree = tag('code', { 'data-language': 'typescript' }, [
+			'function add(a: number, b: number) { return a + b; }',
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).toContain('--rf-syntax-token-parameter');
+	});
+
+	it('emits ten distinct --rf-syntax-token-* variables across a TypeScript snippet exercising the full role set', async () => {
+		const hl = await createHighlightTransform({ langs: ['tsx'] });
+		const tree = tag('code', { 'data-language': 'tsx' }, [
+			[
+				'// Greet a user',
+				'interface User { id: number; name: string; }',
+				'function greet(user: User): string {',
+				'  const re = /^Hi/;',
+				'  return `Hello, ${user.name}!`;',
+				'}',
+				'const el = <Button onClick={() => greet({ id: 1, name: "Ada" })}>Go</Button>;',
+			].join('\n'),
+		]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+
+		// Roles exercised by this snippet:
+		// - comment ("// Greet a user")
+		// - keyword ("interface", "function", "const", "return")
+		// - type ("User" in interface name + annotation)
+		// - function ("greet" in call + declaration)
+		// - parameter ("user", "id", "name")
+		// - string ("Ada", "Hello, ")
+		// - string-expression (template literal interpolation)
+		// - number ("1")
+		// - regex (/^Hi/)
+		// - tag ("Button")
+		// - attribute ("onClick")
+		// - punctuation (braces, semicolons)
+		const expectedVars = [
+			'--rf-syntax-token-comment',
+			'--rf-syntax-token-keyword',
+			'--rf-syntax-token-type',
+			'--rf-syntax-token-function',
+			'--rf-syntax-token-parameter',
+			'--rf-syntax-token-string',
+			'--rf-syntax-token-number',
+			'--rf-syntax-token-regex',
+			'--rf-syntax-token-tag',
+			'--rf-syntax-token-attribute',
+		];
+		for (const v of expectedVars) {
+			expect(html, `expected ${v} to appear in highlighted output`).toContain(v);
+		}
+	});
+});
