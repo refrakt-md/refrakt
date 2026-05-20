@@ -258,6 +258,155 @@ export function generateThemeStylesheet(config: ThemeTokensConfig): string {
 	return blocks.join('\n');
 }
 
+/**
+ * SPEC-056 scope-eligibility filter: which `ThemeTokensConfig` namespaces
+ * can be projected from a preset module into a scoped tint class.
+ *
+ * - **Included**: `syntax.*` (all 16 roles), `color.code.*` (bg/text/inline-bg).
+ *   These are the *non-chrome-accent* tokens — the chrome accents (bg /
+ *   surface / text / muted / primary / border) take a different path through
+ *   `resolveTintExtends` → `TintTokens` and the inline-style runtime mechanism.
+ *
+ * - **Excluded**: typography (`font.*`), structural (`radius.*`, `spacing.*`,
+ *   `inset.*`, `shadow.*`), status sentiments (`color.info`, `color.warning`,
+ *   `color.danger`, `color.success`), primary scale (`color.primary-scale`),
+ *   chrome accents (which take the inline-style path), and theme-specific
+ *   `extra` keys. The spec's "tints scope mood; presets scope skeleton"
+ *   commitment lives in this filter.
+ */
+const SCOPE_ELIGIBLE_NON_ACCENT_NAMESPACES: ReadonlySet<string> = new Set([
+	'syntax',
+	'color.code',
+]);
+
+/** Drop non-eligible top-level + nested keys from a config, leaving only the
+ *  scope-eligible non-accent namespaces. Returns an empty object if the
+ *  input has nothing to project.
+ *
+ *  When invoked from `generateScopedTintStylesheet`, dropped keys are
+ *  reported through `onDrop` for an optional dev warning. */
+function filterScopeEligibleNonAccent(
+	layer: ThemeTokensConfig,
+	onDrop?: (key: string) => void,
+): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	if (layer.syntax) out.syntax = layer.syntax;
+	if (layer.color?.code) out.color = { code: layer.color.code };
+
+	if (onDrop) {
+		// Chrome accents take the inline-style path via resolveTintExtends and
+		// are NOT considered dropped here, so we don't report them.
+		const CHROME_ACCENT_KEYS = new Set(['bg', 'surface', 'text', 'muted', 'primary', 'border']);
+		for (const topKey of Object.keys(layer)) {
+			if (topKey === 'syntax' || topKey === 'modes' || topKey === 'extra') continue;
+			if (topKey === 'color') {
+				for (const colorKey of Object.keys(layer.color ?? {})) {
+					if (colorKey === 'code') continue;
+					if (CHROME_ACCENT_KEYS.has(colorKey)) continue;
+					onDrop(`color.${colorKey}`);
+				}
+				continue;
+			}
+			onDrop(topKey);
+		}
+	}
+
+	return out;
+}
+
+/** Dedup set for dev warnings — one warning per (preset, key) pair per process. */
+const __DROP_WARNINGS_SEEN = new Set<string>();
+
+/**
+ * Generate a scoped tint stylesheet for tints whose `extends` references a
+ * preset module — SPEC-056's tint-as-preset-projection mechanism.
+ *
+ * For each tint name in `tints` whose `extends` is a key in `presetMap`,
+ * emits two CSS blocks:
+ *
+ *   1. `[data-tint="<name>"] { ... }` — the preset's scope-eligible
+ *      non-accent values (syntax + color.code) at light-mode.
+ *   2. `[data-tint="<name>"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="<name>"] { ... }`
+ *      — the preset's dark-mode overlay for the same scope-eligible
+ *      namespaces, when present.
+ *
+ * Tints whose extends is a tint name (existing SPEC-053 path) or that have
+ * no extends are skipped — they produce no static CSS, only the inline-style
+ * chrome-accent runtime emission via the engine.
+ *
+ * The chrome-accent portions of preset projections are NOT emitted here —
+ * those are handled by `resolveTintExtends` which puts them into the tint's
+ * `light`/`dark` `TintTokens` shape, where the engine picks them up at
+ * runtime and emits them as inline `style="--tint-* "` declarations.
+ *
+ * Non-eligible namespaces from the preset (font, radius, spacing, shadow,
+ * status, primary-scale) are silently dropped. The filter is enforced here,
+ * making it impossible for a preset to leak typography or structural
+ * overrides into a scoped tint regardless of what the preset author writes.
+ */
+export function generateScopedTintStylesheet(
+	tints: Record<string, TintDefinitionLike>,
+	presetMap: Record<string, ThemeTokensConfig>,
+): string {
+	const blocks: string[] = [];
+
+	const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+
+	for (const [name, tint] of Object.entries(tints)) {
+		const extendsValue = tint.extends;
+		if (!extendsValue) continue;
+		const preset = presetMap[extendsValue];
+		if (!preset) continue;
+
+		const reportDrop = isDev
+			? (key: string) => {
+				const seenKey = `${extendsValue}:${key}`;
+				if (__DROP_WARNINGS_SEEN.has(seenKey)) return;
+				__DROP_WARNINGS_SEEN.add(seenKey);
+				console.warn(
+					`[refrakt] Preset "${extendsValue}" sets non-scope-eligible token "${key}" — ` +
+					`dropped from projected tint "${name}" per SPEC-056. Move this to a chrome preset ` +
+					`if you want it applied globally.`,
+				);
+			}
+			: undefined;
+
+		const lightProjection = filterScopeEligibleNonAccent(preset, reportDrop);
+		const lightBlock = generateTokenStylesheet(
+			lightProjection as Parameters<typeof generateTokenStylesheet>[0],
+			{
+				selector: `[data-tint="${name}"]`,
+				extra: deriveSyntaxAliases(lightProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+			},
+		);
+		if (lightBlock) blocks.push(lightBlock);
+
+		const darkOverlay = preset.modes?.dark;
+		if (darkOverlay) {
+			// Dev warnings for `modes.dark` are only emitted when the dark
+			// overlay introduces *new* non-eligible keys not already reported
+			// from the base — dedup via the same seen-set.
+			const darkProjection = filterScopeEligibleNonAccent(darkOverlay as ThemeTokensConfig, reportDrop);
+			const darkBlock = generateTokenStylesheet(
+				darkProjection as Parameters<typeof generateTokenStylesheet>[0],
+				{
+					selector: `[data-tint="${name}"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="${name}"]`,
+					extra: deriveSyntaxAliases(darkProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+				},
+			);
+			if (darkBlock) blocks.push(darkBlock);
+		}
+	}
+
+	return blocks.join('\n');
+}
+
+/** Minimal shape required by {@link generateScopedTintStylesheet}. Avoids a
+ *  circular type import on `TintDefinition` from `./types.ts`. */
+interface TintDefinitionLike {
+	extends?: string;
+}
+
 function walkTokens(
 	node: Record<string, unknown>,
 	path: string[],

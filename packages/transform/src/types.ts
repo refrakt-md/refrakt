@@ -246,10 +246,26 @@ export interface TintDefinition {
 	light?: TintTokens;
 	/** Dark-mode token values. */
 	dark?: TintTokens;
-	/** Extend another named tint, layering this tint's overrides on top. The
-	 *  base tint is fully expanded first (recursively, if it also `extends`),
-	 *  then `light` / `dark` / `lockMode` from this tint override per leaf.
-	 *  Circular chains are rejected at merge time. */
+	/** Extend another named tint **or a preset module path**, layering this
+	 *  tint's overrides on top.
+	 *
+	 *  Two resolution modes (SPEC-056):
+	 *
+	 *  - **Tint name** (existing SPEC-053 behaviour) — the base tint is fully
+	 *    expanded first (recursively, if it also `extends`), then `light` /
+	 *    `dark` / `lockMode` from this tint override per leaf.
+	 *  - **Preset module path** (new) — the named preset's
+	 *    {@link ThemeTokensConfig} is projected to scope-eligible namespaces
+	 *    (chrome colour accents + `syntax.*` + `color.code.*`; typography,
+	 *    spacing, radius, shadow, and `color.status.*` are dropped). Chrome
+	 *    accents land in {@link TintTokens} via this tint's `light`/`dark`;
+	 *    the syntax + code-surface portions are emitted as a static
+	 *    `[data-tint="<name>"]` CSS block via
+	 *    `generateScopedTintStylesheet`.
+	 *
+	 *  Circular chains are rejected at merge time. A preset path always wins
+	 *  the resolution branch if it matches a registered preset, even if a
+	 *  tint with the same name exists. */
 	extends?: string;
 }
 

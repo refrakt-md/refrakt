@@ -44,6 +44,7 @@ export { mergeTokenContracts, mergeThemeTokensConfigs } from './token-merge.js';
 export {
 	generateTokenStylesheet,
 	generateThemeStylesheet,
+	generateScopedTintStylesheet,
 	tokenPathToCssVar,
 } from './token-stylesheet.js';
 export type { GenerateStylesheetOptions } from './token-stylesheet.js';
