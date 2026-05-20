@@ -31,6 +31,7 @@ tint-lock: false
 - nord
 - dracula
 - solarized
+- catppuccin
 
 {% /nav %}
 {% /region %}

@@ -47,6 +47,10 @@
       "types": "./dist/presets/solarized.d.ts",
       "default": "./dist/presets/solarized.js"
     },
+    "./presets/catppuccin": {
+      "types": "./dist/presets/catppuccin.d.ts",
+      "default": "./dist/presets/catppuccin.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"
