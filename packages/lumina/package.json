@@ -55,6 +55,10 @@
       "types": "./dist/presets/tokyo-night.d.ts",
       "default": "./dist/presets/tokyo-night.js"
     },
+    "./presets/one-dark": {
+      "types": "./dist/presets/one-dark.d.ts",
+      "default": "./dist/presets/one-dark.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"

@@ -34,7 +34,8 @@
 				"dracula": { "extends": "@refrakt-md/lumina/presets/dracula" },
 				"solarized": { "extends": "@refrakt-md/lumina/presets/solarized" },
 				"catppuccin": { "extends": "@refrakt-md/lumina/presets/catppuccin" },
-				"tokyo-night": { "extends": "@refrakt-md/lumina/presets/tokyo-night" }
+				"tokyo-night": { "extends": "@refrakt-md/lumina/presets/tokyo-night" },
+				"one-dark": { "extends": "@refrakt-md/lumina/presets/one-dark" }
 			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",

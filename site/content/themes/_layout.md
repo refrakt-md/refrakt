@@ -33,6 +33,7 @@ tint-lock: false
 - solarized
 - catppuccin
 - tokyo-night
+- one-dark
 
 {% /nav %}
 {% /region %}
