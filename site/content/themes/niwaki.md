@@ -26,7 +26,7 @@ The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens 
 
 Five elements from a Japanese garden mapped to syntax roles. Each colour does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
 
-{% palette title="Niwaki — light" showContrast=true showA11y=true %}
+{% palette title="Niwaki — light" tint="niwaki" showContrast=true showA11y=true %}
 - Wakaba / Young leaf (keyword): #5e7d2a
 - Sakura / Cherry (function): #b54a6b
 - Matsu / Pine (link, constant): #3d6b3d
@@ -35,7 +35,7 @@ Five elements from a Japanese garden mapped to syntax roles. Each colour does sp
 - Ishi / Stone (comment, punctuation): #8a857d
 {% /palette %}
 
-{% palette title="Niwaki — dark" tint-mode="dark" showContrast=true showA11y=true %}
+{% palette title="Niwaki — dark" tint="niwaki" tint-mode="dark" showContrast=true showA11y=true %}
 - Wakaba (keyword): #b3d475
 - Sakura (function): #f591a6
 - Matsu (link, constant): #8ab589
@@ -43,6 +43,32 @@ Five elements from a Japanese garden mapped to syntax roles. Each colour does sp
 - Momiji punchy (string-expression): #fa9a61
 - Ishi (comment, punctuation): #7d7062
 {% /palette %}
+
+## Live preview
+
+Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through niwaki. Niwaki is foreground-only — chrome, fonts, and code-surface canvas all inherit from whatever theme sits beneath. On this page that's the refrakt site's active niwaki preset, so the snippet looks exactly like every other code block on the site (which is the point: niwaki *is* the site's syntax).
+
+{% codegroup tint="niwaki" %}
+```ts
+// A small user-service shape — exercises the SPEC-056 role splits
+interface User {
+  id: number;
+  name: string;
+  preferences: Record<string, unknown>;
+}
+
+async function findUser(id: number): Promise<User | null> {
+  const re = /^\d+$/;
+  if (!re.test(String(id))) return null;
+  const user = await db.users.findOne({ where: { id } });
+  return user ?? null;
+}
+
+const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Button>;
+```
+{% /codegroup %}
+
+Niwaki, like tideline, was authored at the 9-role tier and doesn't set SPEC-056's extended roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
 
 ## Composing with tideline
 

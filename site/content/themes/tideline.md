@@ -9,6 +9,8 @@ Tideline is the warm-branded preset — cream-and-maritime-navy across body, sur
 
 For users upgrading from pre-v0.14.0 Lumina, tideline restores the original cream-and-navy look with one deliberate upgrade: typography moves from Outfit to **IBM Plex Sans** (body) and **IBM Plex Mono** (code) per the SPEC-051 v1.0 cleanup.
 
+This page is rendered on a site whose active preset is **niwaki**. The Tideline look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tideline"` — the surrounding prose stays in niwaki.
+
 ## Opt in
 
 ```jsonc
@@ -42,7 +44,7 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 
 ## Palette
 
-{% palette title="Tideline — light" showContrast=true showA11y=true %}
+{% palette title="Tideline — light" tint="tideline" showContrast=true showA11y=true %}
 - Background: #faf5eb
 - Text: #1d3557
 - Muted: #5a7a90
@@ -54,7 +56,7 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 - Surface raised: #ffffff
 {% /palette %}
 
-{% palette title="Tideline — dark" tint-mode="dark" showContrast=true showA11y=true %}
+{% palette title="Tideline — dark" tint="tideline" tint-mode="dark" showContrast=true showA11y=true %}
 - Background: #152238
 - Text: #f1faee
 - Muted: #a8dadc
@@ -65,13 +67,13 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 
 ### Primary scale (cerulean → frosted blue)
 
-{% palette title="Primary scale" %}
+{% palette title="Primary scale" tint="tideline" %}
 - Primary: #f0f6f9, #dcebf0, #b8d6e2, #a8dadc, #70b4c0, #457b9d, #376585, #1d3557, #182c4a, #12213a, #0c162a
 {% /palette %}
 
 ### Status
 
-{% palette title="Status — light" showContrast=true %}
+{% palette title="Status — light" tint="tideline" showContrast=true %}
 ## Info
 - Base: #457b9d
 - Background: #edf4f8
@@ -105,13 +107,50 @@ Tideline keeps the distinctive "code on navy" treatment: code blocks render on a
 
 Syntax colours are mustard-keyword + frosted-blue (no relation to the niwaki spectrum):
 
-{% palette title="Syntax — light" %}
+{% palette title="Syntax — light" tint="tideline" %}
 - Keyword: #f2cc8f
 - Function: #70b4c0
 - String: #a8dadc
 - Constant: #e8c07a
 - Comment: #5a7a90
+- Variable: #b8d6e2
 {% /palette %}
+
+{% palette title="Syntax — dark" tint="tideline" tint-mode="dark" %}
+- Keyword: #f2cc8f
+- Function: #a8dadc
+- String: #a8dadc
+- Constant: #e8c07a
+- Comment: #5a7a90
+- Punctuation: #70b4c0
+- Variable: #b8d6e2
+{% /palette %}
+
+## Live preview
+
+Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through Tideline's full integrated look — chrome, syntax colours, and the canonical navy code canvas.
+
+{% codegroup tint="tideline" %}
+```ts
+// A small user-service shape — exercises the SPEC-056 role splits
+interface User {
+  id: number;
+  name: string;
+  preferences: Record<string, unknown>;
+}
+
+async function findUser(id: number): Promise<User | null> {
+  const re = /^\d+$/;
+  if (!re.test(String(id))) return null;
+  const user = await db.users.findOne({ where: { id } });
+  return user ?? null;
+}
+
+const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Button>;
+```
+{% /codegroup %}
+
+Tideline's syntax palette was authored at the 9-role tier and doesn't set SPEC-056's extended roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
 
 ## Typography
 
