@@ -32,6 +32,7 @@ tint-lock: false
 - dracula
 - solarized
 - catppuccin
+- tokyo-night
 
 {% /nav %}
 {% /region %}

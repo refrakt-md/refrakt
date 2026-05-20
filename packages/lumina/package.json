@@ -51,6 +51,10 @@
       "types": "./dist/presets/catppuccin.d.ts",
       "default": "./dist/presets/catppuccin.js"
     },
+    "./presets/tokyo-night": {
+      "types": "./dist/presets/tokyo-night.d.ts",
+      "default": "./dist/presets/tokyo-night.js"
+    },
     "./styles/runes/*.css": "./styles/runes/*.css",
     "./assets/logo/prism.svg": "./assets/logo/prism.svg",
     "./assets/*": "./assets/*"
