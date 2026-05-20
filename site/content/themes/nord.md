@@ -5,7 +5,7 @@ description: Nord — Arctic, north-bluish colour palette with integrated canvas
 
 # Nord
 
-Nord is an **integrated** palette preset — unlike [niwaki](/docs/themes/lumina/presets/niwaki), which leaves chrome and code surface to whichever theme sits beneath, Nord ships its chrome, code surface, *and* syntax foreground together. The 16 hues were tuned against the Polar Night / Snow Storm canvas families specifically; rendering Nord's foreground on a warm or neutral canvas misrepresents the palette's intent. So Nord claims chrome and canvas as part of the package. Typography, spacing, status sentiments, and radius stay with whatever theme is active — Nord's scope is colour identity, not structural identity.
+Nord is an **integrated** palette preset — unlike [niwaki](/themes/niwaki), which leaves chrome and code surface to whichever theme sits beneath, Nord ships its chrome, code surface, *and* syntax foreground together. The 16 hues were tuned against the Polar Night / Snow Storm canvas families specifically; rendering Nord's foreground on a warm or neutral canvas misrepresents the palette's intent. So Nord claims chrome and canvas as part of the package. Typography, spacing, status sentiments, and radius stay with whatever theme is active — Nord's scope is colour identity, not structural identity.
 
 The palette is structured as four named groups: **Polar Night** (the dark canvas family), **Snow Storm** (light text / light canvas), **Frost** (cool blue accents — types, functions, keywords), and **Aurora** (warm accents — red, orange, yellow, green, purple). Read [the Nord palette spec](https://www.nordtheme.com/docs/colors-and-palettes) for the design philosophy.
 

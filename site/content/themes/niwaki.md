@@ -5,7 +5,7 @@ description: Japanese-garden syntax palette — wakaba, sakura, matsu, momiji, i
 
 # Niwaki
 
-Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colours to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/docs/themes/lumina/neutral-default). Code blocks render in Japanese-garden colours; everything else stays neutral.
+Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colours to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/themes/neutral-default). Code blocks render in Japanese-garden colours; everything else stays neutral.
 
 The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens — most often pines. The art of niwaki is patient, multi-decade shaping: pruning what's there to reveal structural form. That maps remarkably well to what a syntax preset does — it doesn't generate code, it shapes how code's existing structure becomes legible.
 

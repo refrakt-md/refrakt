@@ -1,7 +1,6 @@
 ---
-# Plan-system documentation is a reading surface like /docs and /runes.
-# /plan/* (without /docs) is marketing for the plan system and inherits
-# the root layout's locked-dark default.
+# Themes catalog is a reading + browsing surface — same auto/unlocked
+# treatment as docs and runes so users can pick their preferred mode.
 tint-mode: auto
 tint-lock: false
 ---
@@ -13,16 +12,23 @@ tint-lock: false
 - [Themes](/themes/themes-catalog)
 - [Planning](/plan)
 
-## Getting Started
+## Themes
 
-- plan-overview
-- plan-workflow
+- themes-catalog
 
-## Reference
+## Lumina
 
-- plan-entities
-- plan-cli
-- plan-hub
+- lumina
+- neutral-default
+
+## Theme presets
+
+- tideline
+
+## Syntax presets
+
+- niwaki
+- nord
 
 {% /nav %}
 {% /region %}

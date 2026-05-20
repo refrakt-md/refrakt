@@ -124,4 +124,4 @@ Plex Sans is humanist, slightly warm — pairs more naturally with the cream-pap
 
 ## Composing with niwaki
 
-`presets: ["tideline", "niwaki"]` gives tideline chrome (Plex + cream + navy) with niwaki-coloured code blocks instead of tideline's frosted-blue syntax. Useful when you like the warm-paper feel for the page but want the Japanese-garden code identity. See [Niwaki](/docs/themes/lumina/presets/niwaki) for the composition example.
+`presets: ["tideline", "niwaki"]` gives tideline chrome (Plex + cream + navy) with niwaki-coloured code blocks instead of tideline's frosted-blue syntax. Useful when you like the warm-paper feel for the page but want the Japanese-garden code identity. See [Niwaki](/themes/niwaki) for the composition example.

@@ -5,7 +5,7 @@ description: Lumina's quiet warm-neutral palette — body colours, syntax palett
 
 # Neutral default
 
-Lumina ships with a quiet warm-neutral palette designed to disappear behind your content. The brand identity lives in the prism mark and the typographic chrome; the colour palette stays out of the way. This is what every new `npm create refrakt` project sees out of the box, and what the docs site you're reading uses as its chrome (with the [niwaki](/docs/themes/lumina/presets/niwaki) preset layered on for syntax).
+Lumina ships with a quiet warm-neutral palette designed to disappear behind your content. The brand identity lives in the prism mark and the typographic chrome; the colour palette stays out of the way. This is what every new `npm create refrakt` project sees out of the box, and what the docs site you're reading uses as its chrome (with the [niwaki](/themes/niwaki) preset layered on for syntax).
 
 The palette walks a deliberately narrow chroma band — warm neutrals from `#f6f4ef` (light bg) to `#1c1a17` (text), with status colours muted enough to read as functional rather than decorative.
 
@@ -83,7 +83,7 @@ Your refrakt site built successfully — 47 pages emitted in 2.1 seconds.
 
 ## Syntax palette — the quiet spectrum walk
 
-Four hues that walk teal → violet → rust → ochre — cool, cool, warm, warm. Spectrum-adjacent without shouting. `constant` covers numeric literals plus boolean/null/Symbol (Shiki paints them all from one slot). Used on every code surface unless a preset (like [niwaki](/docs/themes/lumina/presets/niwaki)) overrides.
+Four hues that walk teal → violet → rust → ochre — cool, cool, warm, warm. Spectrum-adjacent without shouting. `constant` covers numeric literals plus boolean/null/Symbol (Shiki paints them all from one slot). Used on every code surface unless a preset (like [niwaki](/themes/niwaki)) overrides.
 
 {% palette title="Syntax roles — light" showContrast=true %}
 - Keyword (teal): #2a5c63
@@ -131,4 +131,4 @@ The neutral default is the unconditional starting point — there's no config sn
 }
 ```
 
-To swap to a different colour identity entirely, layer in a preset. See [Tideline](/docs/themes/lumina/presets/tideline) for the cream-and-navy preset that restores Lumina's pre-v0.14.0 appearance, or [Niwaki](/docs/themes/lumina/presets/niwaki) for Japanese-garden syntax colours.
+To swap to a different colour identity entirely, layer in a preset. See [Tideline](/themes/tideline) for the cream-and-navy preset that restores Lumina's pre-v0.14.0 appearance, or [Niwaki](/themes/niwaki) for Japanese-garden syntax colours.

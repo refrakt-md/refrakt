@@ -49,6 +49,7 @@
 				{ "pattern": "plan/docs/**", "layout": "docs" },
 				{ "pattern": "docs/**", "layout": "docs" },
 				{ "pattern": "runes/**", "layout": "docs" },
+				{ "pattern": "themes/**", "layout": "docs" },
 				{ "pattern": "blog/*", "layout": "blog-article" },
 				{ "pattern": "**", "layout": "default" }
 			],

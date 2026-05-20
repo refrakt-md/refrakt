@@ -8,6 +8,7 @@ tint-lock: false
 {% nav collapsible=true %}
 - [Documentation](/docs/getting-started)
 - [Runes](/runes/rune-catalog)
+- [Themes](/themes/themes-catalog)
 - [Planning](/plan)
 
 ## Rune Catalog

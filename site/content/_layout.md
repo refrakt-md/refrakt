@@ -13,6 +13,7 @@ tint-lock: true
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
 - [Runes](/runes/rune-catalog)
+- [Themes](/themes/themes-catalog)
 - [Blog](/blog)
 - [{% icon name="github" /%}](https://github.com/refrakt-md/refrakt)
 
@@ -31,6 +32,7 @@ tint-lock: true
 ## Documentation
 - [Docs](/docs/getting-started)
 - [Runes](/runes/rune-catalog)
+- [Themes](/themes/themes-catalog)
 - [Plan Docs](/plan/docs/plan-overview)
 
 ## Resources
