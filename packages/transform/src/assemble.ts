@@ -1,4 +1,5 @@
 import type { ThemeConfig, RuneConfig } from './types.js';
+import type { ThemeTokensConfig } from '@refrakt-md/types';
 import type { RuneProvenance } from './provenance.js';
 import { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 import type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
@@ -25,6 +26,12 @@ export interface AssembleInput {
 
 	/** Source provenance from mergePlugins (pass-through, enriched with core entries) */
 	provenance?: Record<string, RuneProvenance>;
+
+	/** Map of preset module specifier → loaded ThemeTokensConfig, for SPEC-056
+	 *  preset-path tint resolution. Tints whose `extends` value matches a key
+	 *  here have their chrome accents projected into TintTokens shape so the
+	 *  engine emits inline `--tint-*` styles at runtime. */
+	presetMap?: Record<string, ThemeTokensConfig>;
 }
 
 /** Result of theme config assembly */
@@ -57,6 +64,7 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		pluginBackgrounds,
 		extensions,
 		provenance: inputProvenance = {},
+		presetMap,
 	} = input;
 
 	let config = coreConfig;
@@ -70,11 +78,11 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		if (hasPluginRunes) pluginOverrides.runes = pluginRunes;
 		if (hasPluginIcons) pluginOverrides.icons = pluginIcons;
 		if (hasPluginBgs) pluginOverrides.backgrounds = pluginBackgrounds as Record<string, any>;
-		config = mergeThemeConfig(config, pluginOverrides);
+		config = mergeThemeConfig(config, pluginOverrides, presetMap);
 	}
 
 	if (themeOverrides) {
-		config = mergeThemeConfig(config, themeOverrides);
+		config = mergeThemeConfig(config, themeOverrides, presetMap);
 	}
 
 	if (extensions && Object.keys(extensions).length > 0) {

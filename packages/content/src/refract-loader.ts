@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Plugin, SiteConfig } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
-import { normalizeRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
+import type { ThemeTokensConfig } from '@refrakt-md/types';
 import {
 	createSiteLoader,
 	createVirtualSiteLoader,
@@ -57,10 +58,33 @@ export function buildHighlightOptions(site: SiteConfig) {
 	};
 }
 
+/** Collect preset module specifiers referenced by a site's tints (SPEC-056
+ *  preset-path extends). Mirrors the discovery the SvelteKit plugin does in
+ *  `composeSiteTokensCss` so the runtime transform sees the same projection
+ *  the static stylesheet does. */
+function collectTintPresetSpecs(site: SiteConfig): string[] {
+	const tints = site.tints as Record<string, { extends?: string }> | undefined;
+	if (!tints) return [];
+	const specs: string[] = [];
+	for (const tint of Object.values(tints)) {
+		const ext = tint.extends;
+		if (typeof ext !== 'string') continue;
+		// Only treat module-path / file-path values as preset specs; bare names
+		// are tint-name extends and stay on the existing resolveTintExtends path.
+		if (ext.startsWith('@') || ext.startsWith('./') || ext.startsWith('../') || ext.startsWith('/')) {
+			if (!specs.includes(ext)) specs.push(ext);
+		}
+	}
+	return specs;
+}
+
 /** Resolve a site's theme module + plugin merges into a single context object.
  *  Shared between the FS loader and the virtual loader so both produce
  *  byte-identical transforms from the same SiteConfig. */
-async function assembleSiteContext(site: SiteConfig): Promise<AssembledSiteContext> {
+async function assembleSiteContext(
+	site: SiteConfig,
+	opts: { configDir?: string } = {},
+): Promise<AssembledSiteContext> {
 	const themePackage = getThemePackage(site.theme);
 	const themeModule = await import(/* @vite-ignore */ themePackage + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
@@ -71,11 +95,48 @@ async function assembleSiteContext(site: SiteConfig): Promise<AssembledSiteConte
 	};
 
 	const { assembleThemeConfig, createTransform } = await import('@refrakt-md/transform');
+
+	// Load any presets referenced by `site.tints[*].extends` so the engine can
+	// project their chrome accents into TintTokens at runtime — that's what
+	// makes inline `--tint-*` styles available to `tint.css`'s `tint-mode`
+	// override selectors. The SvelteKit plugin already loads these for the
+	// scoped-tint stylesheet; we replicate the discovery here so the FS /
+	// virtual loaders are self-sufficient.
+	const tintPresetSpecs = collectTintPresetSpecs(site);
+	const presetMap: Record<string, ThemeTokensConfig> = {};
+	if (tintPresetSpecs.length > 0) {
+		const tintPresetConfigs = await loadPresets(tintPresetSpecs, { from: opts.configDir });
+		tintPresetSpecs.forEach((spec, i) => {
+			presetMap[spec] = tintPresetConfigs[i];
+		});
+	}
+
+	const siteOverrides: { tints?: any; backgrounds?: any } = {};
+	if (site.tints) siteOverrides.tints = site.tints;
+	if (site.backgrounds) siteOverrides.backgrounds = site.backgrounds;
+	const hasSiteOverrides = Object.keys(siteOverrides).length > 0;
+
 	const pluginNames = site.plugins ?? [];
 
 	if (pluginNames.length === 0) {
+		// No plugins, but we still need to route site-level tint/background
+		// overrides + presetMap through assembleThemeConfig so tints with
+		// preset-path extends get resolved.
+		if (!hasSiteOverrides && Object.keys(presetMap).length === 0) {
+			return {
+				transform: createTransform(themeConfig),
+				communityTags: undefined,
+				communityPackages: undefined,
+				icons,
+			};
+		}
+		const { config: assembledConfig } = assembleThemeConfig({
+			coreConfig: themeConfig,
+			themeOverrides: siteOverrides,
+			presetMap,
+		});
 		return {
-			transform: createTransform(themeConfig),
+			transform: createTransform(assembledConfig),
 			communityTags: undefined,
 			communityPackages: undefined,
 			icons,
@@ -91,19 +152,14 @@ async function assembleSiteContext(site: SiteConfig): Promise<AssembledSiteConte
 
 	const { config: assembledConfig } = assembleThemeConfig({
 		coreConfig: themeConfig,
+		themeOverrides: hasSiteOverrides ? siteOverrides : undefined,
 		pluginRunes: merged.themeRunes,
 		pluginIcons: merged.themeIcons,
 		pluginBackgrounds: merged.themeBackgrounds,
 		extensions: merged.extensions as any,
 		provenance: merged.provenance,
+		presetMap,
 	});
-
-	if (site.tints) {
-		assembledConfig.tints = { ...assembledConfig.tints, ...site.tints } as any;
-	}
-	if (site.backgrounds) {
-		assembledConfig.backgrounds = { ...assembledConfig.backgrounds, ...site.backgrounds } as any;
-	}
 
 	return {
 		transform: createTransform(assembledConfig),
@@ -115,10 +171,11 @@ async function assembleSiteContext(site: SiteConfig): Promise<AssembledSiteConte
 
 export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoader {
 	const configPath = resolve(options?.configPath ?? './refrakt.config.json');
+	const configDir = dirname(configPath);
 	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
 	// Pass the config file's directory so nested-shape paths absolutize
 	// file-relative (matches the SvelteKit plugin's behavior).
-	const normalized = normalizeRefraktConfig(rawConfig, { configDir: dirname(configPath) });
+	const normalized = normalizeRefraktConfig(rawConfig, { configDir });
 	const { site }: { site: SiteConfig } = resolveSite(normalized, options?.site);
 	const contentDir = resolve(site.contentDir);
 
@@ -130,7 +187,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 	async function init(): Promise<void> {
 		if (_initPromise) return _initPromise;
 		_initPromise = (async () => {
-			const ctx = await assembleSiteContext(site);
+			const ctx = await assembleSiteContext(site, { configDir });
 			_transform = ctx.transform;
 
 			_loader = createSiteLoader({

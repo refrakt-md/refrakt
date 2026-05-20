@@ -13,7 +13,7 @@ The palette walks a deliberately narrow chroma band — warm neutrals from `#f6f
 
 The surface, text, and primary tokens for light mode.
 
-{% palette title="Light mode" showContrast=true showA11y=true %}
+{% palette title="Light mode" tint-mode="light" showContrast=true showA11y=true %}
 - Background: #f6f4ef
 - Text: #1c1a17
 - Muted: #6b6661
@@ -41,7 +41,7 @@ Dark mode inverts to warm-near-black, with text lifted to the same warm off-whit
 
 Four sentiments at a single saturation/lightness band so no sentiment is more aggressive than another. Light values; dark mode lifts each toward the surface.
 
-{% palette title="Status — light" showContrast=true %}
+{% palette title="Status — light" tint-mode="light" showContrast=true %}
 ## Info
 - Base: #34547a
 - Background: #e8edf4
@@ -85,7 +85,7 @@ Your refrakt site built successfully — 47 pages emitted in 2.1 seconds.
 
 Four hues that walk teal → violet → rust → ochre — cool, cool, warm, warm. Spectrum-adjacent without shouting. `constant` covers numeric literals plus boolean/null/Symbol (Shiki paints them all from one slot). Used on every code surface unless a preset (like [niwaki](/themes/niwaki)) overrides.
 
-{% palette title="Syntax roles — light" showContrast=true %}
+{% palette title="Syntax roles — light" tint-mode="light" showContrast=true %}
 - Keyword (teal): #2a5c63
 - Function (slate violet): #4a3b6e
 - String (rust): #8a3a3a

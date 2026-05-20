@@ -142,4 +142,74 @@ describe('assembleThemeConfig', () => {
 
 		expect(result.config).toEqual(coreConfig);
 	});
+
+	it('projects preset-extending tint chrome accents via presetMap', () => {
+		// SPEC-056: when site-level tints reference a preset module path,
+		// `assembleThemeConfig` must thread the presetMap into
+		// resolveTintExtends so the engine sees `light`/`dark` TintTokens on
+		// the resolved tint — that's what enables inline `--tint-*` styles
+		// (required by `tint-mode` overrides in `tint.css`).
+		const presetMap = {
+			'@example/preset-warm': {
+				color: {
+					bg: '#fef3c7',
+					text: '#1c1a17',
+					primary: '#9c5a18',
+					muted: '#9b9692',
+					border: '#e0d4b5',
+				},
+				modes: {
+					dark: {
+						color: {
+							bg: '#2a2018',
+							text: '#f6f4ef',
+							primary: '#d4a85a',
+						},
+					},
+				},
+			},
+		};
+
+		const result = assembleThemeConfig({
+			coreConfig,
+			themeOverrides: {
+				tints: {
+					warm: { extends: '@example/preset-warm' },
+				},
+			},
+			presetMap,
+		});
+
+		const warm = result.config.tints?.warm;
+		expect(warm?.extends).toBeUndefined();
+		expect(warm?.light).toEqual({
+			bg: '#fef3c7',
+			text: '#1c1a17',
+			primary: '#9c5a18',
+			muted: '#9b9692',
+			border: '#e0d4b5',
+		});
+		expect(warm?.dark).toEqual({
+			bg: '#2a2018',
+			text: '#f6f4ef',
+			primary: '#d4a85a',
+		});
+	});
+
+	it('throws on preset-extending tint when presetMap is missing', () => {
+		// Defensive: without presetMap, resolveTintExtends falls through to
+		// tint-name lookup and a preset-path extends never matches a tint.
+		// The thrown error is what alerts callers (loaders, SvelteKit plugin)
+		// that they need to plumb a presetMap through.
+		expect(() =>
+			assembleThemeConfig({
+				coreConfig,
+				themeOverrides: {
+					tints: {
+						warm: { extends: '@example/preset-warm' },
+					},
+				},
+			}),
+		).toThrow(/extends unknown tint/);
+	});
 });

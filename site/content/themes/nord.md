@@ -28,7 +28,7 @@ The palette swatches below sit on Nord's canonical canvas (Polar Night nord0 in 
 
 This page is rendered on a site whose active preset is **niwaki**, not Nord. The Nord look you see in the swatches and the live code example below is scoped to those subtrees via the `tint="nord"` universal attribute — the surrounding prose stays in niwaki. That's the SPEC-056 scoped-tint projection working end-to-end.
 
-{% palette title="Nord — light" tint="nord" showContrast=true showA11y=true %}
+{% palette title="Nord — light" tint="nord" tint-mode="light" showContrast=true showA11y=true %}
 - Polar Night nord0 / Text (variable): #2e3440
 - Polar Night nord3 / Comment: #4c566a
 - Snow Storm nord6 / Canvas (code-bg): #eceff4

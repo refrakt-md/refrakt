@@ -26,7 +26,7 @@ The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens 
 
 Five elements from a Japanese garden mapped to syntax roles. Each colour does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
 
-{% palette title="Niwaki — light" tint="niwaki" showContrast=true showA11y=true %}
+{% palette title="Niwaki — light" tint="niwaki" tint-mode="light" showContrast=true showA11y=true %}
 - Wakaba / Young leaf (keyword): #5e7d2a
 - Sakura / Cherry (function): #b54a6b
 - Matsu / Pine (link, constant): #3d6b3d

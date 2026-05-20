@@ -44,7 +44,7 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 
 ## Palette
 
-{% palette title="Tideline — light" tint="tideline" showContrast=true showA11y=true %}
+{% palette title="Tideline — light" tint="tideline" tint-mode="light" showContrast=true showA11y=true %}
 - Background: #faf5eb
 - Text: #1d3557
 - Muted: #5a7a90
@@ -73,7 +73,7 @@ If you specifically depended on the Outfit font, pin it back via `theme.tokens.f
 
 ### Status
 
-{% palette title="Status — light" tint="tideline" showContrast=true %}
+{% palette title="Status — light" tint="tideline" tint-mode="light" showContrast=true %}
 ## Info
 - Base: #457b9d
 - Background: #edf4f8
@@ -107,7 +107,7 @@ Tideline keeps the distinctive "code on navy" treatment: code blocks render on a
 
 Syntax colours are mustard-keyword + frosted-blue (no relation to the niwaki spectrum):
 
-{% palette title="Syntax — light" tint="tideline" %}
+{% palette title="Syntax — light" tint="tideline" tint-mode="light" %}
 - Keyword: #f2cc8f
 - Function: #70b4c0
 - String: #a8dadc

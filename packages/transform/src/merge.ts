@@ -13,8 +13,22 @@ export interface ThemeConfigOverrides {
 /** Deep-merge a base theme config with theme-specific overrides.
  *  Icons are merged by group, rune entries are shallow-merged per rune.
  *  Tints are merged shallow per name, then have `extends` chains resolved
- *  so each tint in the final config is fully expanded. */
-export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverrides): ThemeConfig {
+ *  so each tint in the final config is fully expanded.
+ *
+ *  `presetMap` is forwarded to {@link resolveTintExtends} so that tints
+ *  whose `extends` points at a preset module path (SPEC-056) get their
+ *  chrome accents projected into {@link TintTokens} shape — the engine
+ *  picks those up and emits inline `--tint-*` styles, which is what the
+ *  `tint-mode` override mechanism in `tint.css` relies on. Without a
+ *  `presetMap` the preset branch in `resolveTintExtends` is skipped, and
+ *  preset-projected tints fall back to the chrome-accent CSS emitted by
+ *  `generateScopedTintStylesheet` alone — sufficient for the page-mode
+ *  case, insufficient for forced `tint-mode`. */
+export function mergeThemeConfig(
+	base: ThemeConfig,
+	overrides: ThemeConfigOverrides,
+	presetMap?: Record<string, ThemeTokensConfig>,
+): ThemeConfig {
 	const mergedRunes = { ...base.runes };
 	if (overrides.runes) {
 		for (const [key, value] of Object.entries(overrides.runes)) {
@@ -24,7 +38,7 @@ export function mergeThemeConfig(base: ThemeConfig, overrides: ThemeConfigOverri
 
 	const mergedTints = { ...base.tints, ...overrides.tints };
 	const resolvedTints = mergedTints
-		? resolveTintExtends(mergedTints)
+		? resolveTintExtends(mergedTints, presetMap)
 		: mergedTints;
 
 	return {
