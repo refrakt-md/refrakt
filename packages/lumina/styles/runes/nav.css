@@ -90,18 +90,18 @@
 	transition: transform 200ms ease;
 	margin-right: 0.25rem;
 }
-.rf-nav--collapsible .rf-nav-group {
-	display: grid;
-	grid-template-rows: auto 1fr;
-	transition: grid-template-rows 200ms ease;
+.rf-nav--collapsible {
+	interpolate-size: allow-keywords;
 }
 .rf-nav--collapsible .rf-nav-group > ul,
 .rf-nav--collapsible .rf-nav-group > ol {
 	overflow: hidden;
-	min-height: 0;
+	height: auto;
+	transition: height 200ms ease;
 }
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] {
-	grid-template-rows: auto 0fr;
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ol {
+	height: 0;
 }
 .rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h2::after,
 .rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h3::after {
@@ -109,7 +109,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.rf-nav--collapsible .rf-nav-group,
+	.rf-nav--collapsible .rf-nav-group > ul,
+	.rf-nav--collapsible .rf-nav-group > ol,
 	.rf-nav--collapsible .rf-nav-group h2::after,
 	.rf-nav--collapsible .rf-nav-group h3::after {
 		transition: none;
