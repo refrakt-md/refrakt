@@ -1,4 +1,4 @@
-{% spec id="SPEC-054" status="draft" tags="nav, layout, theme, runes, mega-menu" source="SPEC-046" %}
+{% spec id="SPEC-054" status="accepted" tags="nav, layout, theme, runes, mega-menu" source="SPEC-046" %}
 
 # Nav mega variant
 
