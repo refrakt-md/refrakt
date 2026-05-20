@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const media: Plugin = {
   name: 'media',
   displayName: 'Media',
-  version: '0.14.1',
+  version: '0.14.2',
   runes: {
     'playlist': {
       transform: playlist,
