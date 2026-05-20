@@ -27,6 +27,9 @@
 					"colorScheme": "dark"
 				}
 			},
+			"tints": {
+				"nord": { "extends": "@refrakt-md/lumina/presets/nord" }
+			},
 			"target": "svelte",
 			"baseUrl": "https://refrakt.md",
 			"siteName": "refrakt.md",
