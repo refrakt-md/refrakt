@@ -43,7 +43,7 @@ export interface HighlightOptions {
 export type HighlightTransform = ((tree: RendererNode) => RendererNode) & { css: string };
 
 const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
-	'javascript', 'typescript', 'html', 'css', 'json', 'shell',
+	'javascript', 'typescript', 'html', 'css', 'json', 'jsonc', 'shell',
 	'python', 'ruby', 'go', 'rust', 'java', 'c', 'cpp',
 	'markdown', 'yaml', 'toml', 'sql', 'graphql', 'svelte',
 	'jsx', 'tsx', 'diff', 'xml', 'vue', 'astro', 'jinja',
