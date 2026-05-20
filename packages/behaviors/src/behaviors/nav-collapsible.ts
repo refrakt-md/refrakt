@@ -47,9 +47,27 @@ export function navCollapsibleBehavior(el: HTMLElement): CleanupFn {
 		panel.setAttribute('aria-labelledby', triggerId);
 
 		const toggle = () => {
-			const open = group.getAttribute('data-collapsed') === 'false';
-			group.setAttribute('data-collapsed', open ? 'true' : 'false');
-			heading.setAttribute('aria-expanded', open ? 'false' : 'true');
+			const wasOpen = group.getAttribute('data-collapsed') === 'false';
+			const startH = panel.getBoundingClientRect().height;
+			const endH = wasOpen ? 0 : panel.scrollHeight;
+
+			panel.style.height = startH + 'px';
+			void panel.offsetHeight;
+			group.setAttribute('data-collapsed', wasOpen ? 'true' : 'false');
+			heading.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
+			panel.style.height = endH + 'px';
+
+			const settle = () => {
+				panel.style.height = '';
+				panel.removeEventListener('transitionend', onEnd);
+				clearTimeout(fallback);
+			};
+			const onEnd = (e: TransitionEvent) => {
+				if (e.target !== panel || e.propertyName !== 'height') return;
+				settle();
+			};
+			panel.addEventListener('transitionend', onEnd);
+			const fallback = setTimeout(settle, 260);
 		};
 
 		const onClick = (e: MouseEvent) => {
