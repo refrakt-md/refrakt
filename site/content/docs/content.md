@@ -188,4 +188,4 @@ Pages with `order` are sorted numerically. Pages without `order` fall back to al
 
 ## Partials
 
-Reusable content blocks can be defined in a `_partials/` directory and included in any page. See [Partials](/docs/authoring/partials) for details.
+Reusable content blocks can be defined in a `_partials/` directory and included in any page. See [Partials](/extend/rune-authoring/partials) for details.

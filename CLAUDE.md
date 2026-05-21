@@ -181,9 +181,9 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 ### Rune Authoring Guide
 
-Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (8 pages: authoring-overview, content-models, nav-slug-resolution, output-contract, page-sections, partials, patterns, rich-menubar-panels). Refer to these when writing or modifying runes — they cover declarative content models (`createContentModelSchema`, sequence/delimited/sections/custom patterns), the output contract (`createComponentRenderable`, properties vs refs, meta tags, editHints), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming, content boundaries).
+Comprehensive rune authoring documentation lives at `site/content/extend/rune-authoring/` (8 pages: authoring-overview, content-models, nav-slug-resolution, output-contract, page-sections, partials, patterns, rich-menubar-panels). Refer to these when writing or modifying runes — they cover declarative content models (`createContentModelSchema`, sequence/delimited/sections/custom patterns), the output contract (`createComponentRenderable`, properties vs refs, meta tags, editHints), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming, content boundaries).
 
-New runes almost always belong in a plugin under `plugins/`, not in `packages/runes/src/tags/`. Plugin authoring docs: `site/content/docs/plugins/authoring.md`.
+New runes almost always belong in a plugin under `plugins/`, not in `packages/runes/src/tags/`. Plugin authoring docs: `site/content/extend/plugin-authoring/authoring.md`.
 
 ### Engine Config Pattern
 
@@ -203,7 +203,7 @@ Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `R
 
 ### Theme Development
 
-Theme developer documentation lives at `site/content/docs/themes/` (9 pages: overview, config-api, creating-a-theme, css, dimensions, layouts, components, tint-cascade, tooling). Refer to these when working on themes.
+Theme developer documentation lives at `site/content/extend/theme-authoring/` (9 pages: overview, config-api, creating-a-theme, css, dimensions, layouts, components, tint-cascade, tooling). Refer to these when working on themes.
 
 **Key files for theme work:**
 - `packages/runes/src/config.ts` — core rune configs (exported as `coreConfig`/`baseConfig`) + `corePipelineHooks`
@@ -235,7 +235,7 @@ Theme developer documentation lives at `site/content/docs/themes/` (9 pages: ove
 **When adding a rune to a plugin:**
 - The `theme.runes` field of the `Plugin` carries the `RuneConfig` for that plugin's runes
 - CSS lives inside the plugin under `plugins/{plugin}/styles/`
-- See `site/content/docs/plugins/authoring.md` for full guide
+- See `site/content/extend/plugin-authoring/authoring.md` for full guide
 
 ### Content Authoring
 

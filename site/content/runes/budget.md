@@ -95,7 +95,7 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 
 ## Section header
 
-Budget supports an optional eyebrow, headline, and blurb above the categories. Place a short paragraph or heading before the first category heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Budget supports an optional eyebrow, headline, and blurb above the categories. Place a short paragraph or heading before the first category heading to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Attributes
 

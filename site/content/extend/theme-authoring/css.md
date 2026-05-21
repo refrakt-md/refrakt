@@ -163,7 +163,7 @@ Ten dimensions cover metadata badges, structural anatomy, density, media treatme
 
 Lumina's dimension CSS lives in `styles/dimensions/` (8 files, ~54 rules total). These handle the generic baseline for all runes — per-rune CSS files only need to cover rune-specific styling that dimensions don't handle.
 
-See [Universal Theming Dimensions](/docs/themes/dimensions) for the full system, all ten dimensions, and complete CSS patterns.
+See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the full system, all ten dimensions, and complete CSS patterns.
 
 ## Context-aware styling
 

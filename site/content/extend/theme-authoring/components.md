@@ -76,7 +76,7 @@ Currently available layout behaviors:
 - **`mobile-menu`** — handles mobile panel toggling via `[data-mobile-menu-toggle]` (and the legacy `[data-mobile-menu-open]`), `[data-mobile-menu-close]`, and `[data-mobile-nav-toggle]` data attributes. The toggle trigger doubles as the close trigger — its `aria-expanded` is kept in sync with panel state so CSS can swap an open icon (dots) for a close icon (X). Panels are shown/hidden via a `[data-open]` attribute. Also handles escape key dismissal and body scroll lock.
 - **`search`** — layout-level search functionality for site-wide content search.
 
-See the [layouts reference](/docs/themes/layouts) for details on how layout behaviors connect to `LayoutConfig`.
+See the [layouts reference](/extend/theme-authoring/layouts) for details on how layout behaviors connect to `LayoutConfig`.
 
 ### Path 3: postTransform hooks
 

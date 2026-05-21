@@ -10,7 +10,7 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 This guide covers how to write runes — the schema code that interprets content, the engine configuration that produces styled output, and the catalog entry that exposes the rune to authors.
 
 {% hint type="note" %}
-New runes almost always belong in a **plugin** (`plugins/{your-package}/`), not in the core rune library. The core library is for universal, domain-neutral runes that every project might use. Domain-specific runes (marketing, storytelling, API docs, etc.) belong in plugins. See the [community package rune checklist](#community-package-rune) below, and [Building a Custom Plugin](/docs/plugins/authoring) for the full guide.
+New runes almost always belong in a **plugin** (`plugins/{your-package}/`), not in the core rune library. The core library is for universal, domain-neutral runes that every project might use. Domain-specific runes (marketing, storytelling, API docs, etc.) belong in plugins. See the [community package rune checklist](#community-package-rune) below, and [Building a Custom Plugin](/extend/plugin-authoring/authoring) for the full guide.
 {% /hint %}
 
 ## The pipeline
@@ -149,7 +149,7 @@ The `typeName` (e.g. `'Hint'`) connects the rune to its config key in `packages/
 
 `packages/runes/test/hint.test.ts`
 
-Tests verify that the schema transform produces the expected output structure. See the [Patterns](/docs/authoring/patterns) page for testing guidelines.
+Tests verify that the schema transform produces the expected output structure. See the [Patterns](/extend/rune-authoring/patterns) page for testing guidelines.
 
 ## Rune checklist
 
@@ -184,4 +184,4 @@ For domain-specific runes (marketing, storytelling, API docs, games, etc.) that 
 | `plugins/{package}/test/{name}.test.ts` | Tests — output structure verification |
 | `site/content/runes/{name}.md` | User docs — usage guide with preview examples |
 
-Plugin runes use `Plugin.runes` (a `Record<string, PluginRune>` from `@refrakt-md/types`) rather than `defineRune`, but the per-rune fields (`description`, `aliases`, `snippet`, `category`, `seoType`, …) are the same. Engine config (BEM blocks, structure, icons) lives in `Plugin.theme.runes` instead of `packages/runes/src/config.ts`. See [Building a Custom Plugin](/docs/plugins/authoring) for the full authoring guide.
+Plugin runes use `Plugin.runes` (a `Record<string, PluginRune>` from `@refrakt-md/types`) rather than `defineRune`, but the per-rune fields (`description`, `aliases`, `snippet`, `category`, `seoType`, …) are the same. Engine config (BEM blocks, structure, icons) lives in `Plugin.theme.runes` instead of `packages/runes/src/config.ts`. See [Building a Custom Plugin](/extend/plugin-authoring/authoring) for the full authoring guide.

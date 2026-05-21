@@ -66,7 +66,7 @@ Public beta with full documentation.
 
 ## Section header
 
-Timeline supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Timeline supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Common attributes
 

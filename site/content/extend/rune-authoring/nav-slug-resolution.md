@@ -15,10 +15,10 @@ A nav item's source determines how it's resolved. The four supported shapes:
 
 | Source shape                          | Example                                            | Resolution                                                                       |
 |---------------------------------------|----------------------------------------------------|----------------------------------------------------------------------------------|
-| Explicit link                         | `[Configuration](/docs/themes/configuration)`      | Use the link `href` as-is. No resolution attempted.                              |
-| Absolute path                         | `/docs/themes/configuration`                       | Treat as absolute URL. No resolution attempted.                                  |
-| Multi-segment slug                    | `themes/configuration`                             | Join with the nav's base directory and verify the page exists.                   |
-| Bare slug                             | `configuration`                                    | Look up exactly one page at `{base}/{slug}`. Build fails on ambiguity or miss.   |
+| Explicit link                         | `[Configuration](/docs/configuration/overview)`    | Use the link `href` as-is. No resolution attempted.                              |
+| Absolute path                         | `/docs/configuration/overview`                     | Treat as absolute URL. No resolution attempted.                                  |
+| Multi-segment slug                    | `configuration/overview`                           | Join with the nav's base directory and verify the page exists.                   |
+| Bare slug                             | `overview`                                         | Look up exactly one page at `{base}/{slug}`. Build fails on ambiguity or miss.   |
 
 The explicit-link form always works and bypasses every rule below — reach for it when nothing else fits.
 
@@ -28,21 +28,21 @@ Bare and multi-segment slugs both resolve **relative to the nav's source file**.
 
 - `site/content/_layout.md` → base `/`
 - `site/content/docs/_layout.md` → base `/docs/`
-- `site/content/docs/themes/_layout.md` → base `/docs/themes/`
+- `site/content/extend/_layout.md` → base `/extend/`
 - `site/content/docs/getting-started.md` → base `/docs/`
 
-A `{% nav %}` at `site/content/docs/_layout.md` writing `- getting-started` resolves to `/docs/getting-started`. Writing `- themes/configuration` resolves to `/docs/themes/configuration`. Writing `- /blog/some-post` passes the URL through unchanged.
+A `{% nav %}` at `site/content/docs/_layout.md` writing `- getting-started` resolves to `/docs/getting-started`. Writing `- configuration/overview` resolves to `/docs/configuration/overview`. Writing `- /blog/some-post` passes the URL through unchanged.
 
 ## Disambiguating same-named pages
 
-When the same final URL segment exists in multiple sections (`configuration` under `/docs/themes/`, `/docs/plugins/`, and `/docs/mcp/`), a bare `- configuration` from a higher-level nav is ambiguous and the build fails. Use a multi-segment slug to pick:
+When the same final URL segment exists in multiple sections (`overview` under `/docs/configuration/`, `/docs/mcp/`, and `/extend/theme-authoring/`), a bare `- overview` from a higher-level nav is ambiguous and the build fails. Use a multi-segment slug to pick:
 
 ```markdoc
 {% nav %}
-## Configuration
-- themes/configuration
-- plugins/configuration
-- mcp/configuration
+## Overview pages
+- configuration/overview
+- mcp/overview
+- theme-authoring/overview
 {% /nav %}
 ```
 
@@ -53,13 +53,13 @@ Each multi-segment slug resolves unambiguously relative to the nav's base.
 When a slug can't be resolved, the build fails with a structured error that names the source file, the slug, the URL it tried to resolve to, and up to three closest-match suggestions:
 
 ```text
-Nav item `configuration` in site/content/docs/_layout.md cannot be resolved
-(no page at `/docs/configuration`).
+Nav item `overview` in site/content/_layout.md cannot be resolved
+(no page at `/overview`).
 
 Did you mean one of:
-  - /docs/themes/configuration
-  - /docs/plugins/configuration
-  - /docs/mcp/configuration
+  - /docs/configuration/overview
+  - /docs/mcp/overview
+  - /extend/theme-authoring/overview
 
 Use a multi-segment slug (e.g. `section/page`) or an explicit
 `[Label](/path)` link.
@@ -79,7 +79,7 @@ Each rendered page evaluates every nav against its current URL and applies up to
 | `aria-current="page"`    | The item's resolved `href` equals the current URL                                  | 1                |
 | `data-active="ancestor"` | The item's resolved `href` is the **longest strict prefix** of the current URL    | 1                |
 
-Both rules are independent. `aria-current` and `data-active` can land on different items of the same nav — for example, when the reader is on `/docs/themes/configuration/sites`, an item linking to `/docs/themes/configuration` would get `data-active="ancestor"` while the (deeper, unlinked) current page produces no `aria-current` anywhere in the nav.
+Both rules are independent. `aria-current` and `data-active` can land on different items of the same nav — for example, when the reader is on `/extend/rune-authoring/output-contract`, an item linking to `/extend/rune-authoring/` would get `data-active="ancestor"` while the (deeper, unlinked) current page produces no `aria-current` anywhere in the nav.
 
 URL comparison normalises trailing slashes and `index` suffixes, and is case-insensitive. External links (`https://`, `mailto:`) never receive either attribute.
 

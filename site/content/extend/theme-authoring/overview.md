@@ -72,7 +72,7 @@ Key concepts:
 
 The layout transform is framework-agnostic — the same configs work with any renderer. Three built-in layout configs cover common site patterns: `defaultLayout`, `docsLayout`, and `blogArticleLayout`.
 
-See [Layouts](/docs/themes/layouts) for the full reference.
+See [Layouts](/extend/theme-authoring/layouts) for the full reference.
 
 ## Package architecture
 
@@ -196,9 +196,9 @@ Your CSS targets these selectors:
 
 ## Next steps
 
-- [Theme Config API](/docs/themes/config-api) — Complete reference for `ThemeConfig` and `RuneConfig`
-- [Universal Theming Dimensions](/docs/themes/dimensions) — Ten semantic dimensions for generic cross-rune styling
-- [CSS Architecture](/docs/themes/css) — BEM conventions, design tokens, variant styling patterns
-- [Creating a Theme](/docs/themes/creating-a-theme) — Step-by-step guide to building a custom theme
-- [Interactive Components](/docs/themes/components) — How interactivity works without framework components
-- [Layouts](/docs/themes/layouts) — Declarative page layout system with `LayoutConfig`
+- [Theme Config API](/extend/theme-authoring/config-api) — Complete reference for `ThemeConfig` and `RuneConfig`
+- [Universal Theming Dimensions](/extend/theme-authoring/dimensions) — Ten semantic dimensions for generic cross-rune styling
+- [CSS Architecture](/extend/theme-authoring/css) — BEM conventions, design tokens, variant styling patterns
+- [Creating a Theme](/extend/theme-authoring/creating-a-theme) — Step-by-step guide to building a custom theme
+- [Interactive Components](/extend/theme-authoring/components) — How interactivity works without framework components
+- [Layouts](/extend/theme-authoring/layouts) — Declarative page layout system with `LayoutConfig`

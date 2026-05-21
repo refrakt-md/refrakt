@@ -90,7 +90,7 @@ export const myPackage: Plugin = {
 
 ## Writing the Rune Schema
 
-Rune schemas are standard Markdoc `Schema` objects built using `createContentModelSchema` from `@refrakt-md/runes`. See the [Authoring Guide](/docs/authoring/authoring-overview) and [Content Models](/docs/authoring/content-models) for full documentation.
+Rune schemas are standard Markdoc `Schema` objects built using `createContentModelSchema` from `@refrakt-md/runes`. See the [Authoring Guide](/extend/rune-authoring/authoring-overview) and [Content Models](/extend/rune-authoring/content-models) for full documentation.
 
 ```typescript
 // src/game-item.ts
@@ -221,7 +221,7 @@ transform(resolved, attrs, config) {
 
 Treat `trusted` as the default when the variable is absent. In `untrusted` mode with `allowJs: false`, run the shared `sanitizeSandboxContent` helper — it strips `<script>`, on-handlers, `javascript:` URLs, and `<iframe>`/`<object>`/`<embed>`. When `allowJs` is true the host has accepted residual risk and your rune should still propagate `securityMode`/`sandboxOrigin` so the client element can drop `allow-same-origin`, inject meta-CSP, or load from a separate origin.
 
-The policy flows through the same `config.variables` slot as `__sandboxReadFile`/`__sandboxExamplesDir` — there is no new core hook. See `site/content/docs/security/` for the full threat model and tier breakdown.
+The policy flows through the same `config.variables` slot as `__sandboxReadFile`/`__sandboxExamplesDir` — there is no new core hook. See `site/content/extend/security/` for the full threat model and tier breakdown.
 
 ## Theme Config
 
@@ -256,7 +256,7 @@ theme: {
 },
 ```
 
-The theme config uses the same `RuneConfig` format documented in the [Theme Config API](/docs/themes/config-api).
+The theme config uses the same `RuneConfig` format documented in the [Theme Config API](/extend/theme-authoring/config-api).
 
 ## Referencing Your Package
 

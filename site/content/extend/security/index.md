@@ -126,4 +126,4 @@ One nuance worth flagging: `untrusted` mode loses `allow-same-origin`, which mea
 
 ## Plugin authors
 
-Plugins that surface raw author content to the client should read `config.variables.__securityPolicy` from their schema transform and route content through the shared `sanitizeSandboxContent` helper. See [Plugin Authoring → Honouring the security policy](/docs/plugins/authoring) for the contract.
+Plugins that surface raw author content to the client should read `config.variables.__securityPolicy` from their schema transform and route content through the shared `sanitizeSandboxContent` helper. See [Plugin Authoring → Honouring the security policy](/extend/plugin-authoring/authoring) for the contract.

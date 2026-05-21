@@ -83,7 +83,7 @@ Use `{% tier %}` tags when you need full control over attributes like `featured`
 
 ## Section header
 
-Pricing supports an optional eyebrow, headline, and blurb above the section above pricing tiers. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Pricing supports an optional eyebrow, headline, and blurb above the section above pricing tiers. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Common attributes
 

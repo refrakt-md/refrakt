@@ -12,7 +12,7 @@ Layered on top of Lumina are **presets** — named `ThemeTokensConfig` modules t
 - **Theme presets** override chrome (typography, body bg, surfaces). They reshape the entire visual identity of a site. Layer one on Lumina via `theme.presets` in `refrakt.config.json`.
 - **Syntax presets** override syntax highlighting (and optionally code-surface canvas + chrome accents). They reshape how code reads, optionally with their own canvas. Two flavours: **scoped** presets like niwaki touch only the foreground; **integrated** presets like Nord ship chrome + canvas + foreground together. Layer alongside or instead of a chrome preset.
 
-Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint cascade](/docs/themes/tint-cascade) for the scoping mechanics and [Theme authoring](/docs/themes/overview) if you're building your own.
+Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint cascade](/extend/theme-authoring/tint-cascade) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
 
 ## Lumina
 
@@ -45,4 +45,4 @@ All seven imports are **integrated** palettes — they claim chrome + canvas + f
 
 ## Build your own
 
-A theme is just a `ThemeTokensConfig` object exported from a module. See [Theme authoring](/docs/themes/overview) for the contract surface, [Creating a theme](/docs/themes/creating-a-theme) for a walkthrough, and [Tint cascade](/docs/themes/tint-cascade) for how scoped tints compose.
+A theme is just a `ThemeTokensConfig` object exported from a module. See [Theme authoring](/extend/theme-authoring/overview) for the contract surface, [Creating a theme](/extend/theme-authoring/creating-a-theme) for a walkthrough, and [Tint cascade](/extend/theme-authoring/tint-cascade) for how scoped tints compose.

@@ -29,7 +29,7 @@ A flat dropdown still works exactly as it did. No `---`, no extra content, no ne
 
 ## Product
 - [Configuration](/docs/configuration/overview)
-- [Themes](/docs/themes/overview)
+- [Themes](/extend/theme-authoring/overview)
 
 ## Resources
 - [Blog](/blog)
@@ -42,7 +42,7 @@ A flat dropdown still works exactly as it did. No `---`, no extra content, no ne
 
 ## Product
 - [Configuration](/docs/configuration/overview)
-- [Themes](/docs/themes/overview)
+- [Themes](/extend/theme-authoring/overview)
 
 ## Resources
 - [Blog](/blog)
@@ -62,13 +62,13 @@ To make a panel wider and split into multiple columns, drop a `{% nav layout="co
 {% nav layout="columns" %}
 - [Getting started](/docs/getting-started)
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
 ---
 
-- [Themes](/docs/themes/overview)
+- [Themes](/extend/theme-authoring/overview)
 - [Adapters](/docs/adapters/adapters-overview)
-- [Plugins](/docs/plugins)
+- [Plugins](/docs/configuration/plugins)
 {% /nav %}
 {% /nav %}
 ```
@@ -81,13 +81,13 @@ To make a panel wider and split into multiple columns, drop a `{% nav layout="co
 {% nav layout="columns" %}
 - [Getting started](/docs/getting-started)
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
 ---
 
-- [Themes](/docs/themes/overview)
+- [Themes](/extend/theme-authoring/overview)
 - [Adapters](/docs/adapters/adapters-overview)
-- [Plugins](/docs/plugins)
+- [Plugins](/docs/configuration/plugins)
 {% /nav %}
 {% /nav %}
 
@@ -106,7 +106,7 @@ For teams shipping documentation
 
 {% nav layout="columns" %}
 - [Rune catalog](/runes/rune-catalog)
-- [Plugin authoring](/docs/plugins/authoring)
+- [Plugin authoring](/extend/plugin-authoring/authoring)
 {% /nav %}
 {% /nav %}
 ```
@@ -119,7 +119,7 @@ For teams shipping documentation
 
 {% nav layout="columns" %}
 - [Rune catalog](/runes/rune-catalog)
-- [Plugin authoring](/docs/plugins/authoring)
+- [Plugin authoring](/extend/plugin-authoring/authoring)
 {% /nav %}
 {% /nav %}
 
@@ -135,7 +135,7 @@ Content at the end of a `## group` (after all lists) becomes the panel's footer 
 
 {% nav layout="columns" %}
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 {% /nav %}
 
 [See all docs →](/docs/getting-started)
@@ -149,7 +149,7 @@ Content at the end of a `## group` (after all lists) becomes the panel's footer 
 
 {% nav layout="columns" %}
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 {% /nav %}
 
 [See all docs →](/docs/getting-started)
@@ -170,11 +170,11 @@ Inline a paragraph (indented as a continuation) under any list item to give that
 
   Set up sites, plugins, and themes.
 
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
   Write content with Markdoc + runes.
 
-- [Plugins](/docs/plugins)
+- [Plugins](/docs/configuration/plugins)
 
   Extend refrakt with custom runes.
 {% /nav %}
@@ -191,11 +191,11 @@ Inline a paragraph (indented as a continuation) under any list item to give that
 
   Set up sites, plugins, and themes.
 
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
   Write content with Markdoc + runes.
 
-- [Plugins](/docs/plugins)
+- [Plugins](/docs/configuration/plugins)
 
   Extend refrakt with custom runes.
 {% /nav %}
@@ -240,7 +240,7 @@ The columns layout grows a `---` rule: between `##` sections at the nav's top le
 
 ## Product
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
 ## Tools
 - [CLI overview](/docs/cli/cli-overview)
@@ -268,7 +268,7 @@ The columns layout grows a `---` rule: between `##` sections at the nav's top le
 
 ## Product
 - [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
+- [Authoring](/extend/rune-authoring/authoring-overview)
 
 ## Tools
 - [CLI overview](/docs/cli/cli-overview)
@@ -362,6 +362,6 @@ For navs with `auto=true`, every item gets enriched from its linked page's front
 
 ## See also
 
-- [Nav slug resolution](/docs/authoring/nav-slug-resolution) — how slugs become URLs at build time, multi-segment slugs, error format, active state
+- [Nav slug resolution](/extend/rune-authoring/nav-slug-resolution) — how slugs become URLs at build time, multi-segment slugs, error format, active state
 - The `nav` rune reference for the full attribute table
 - The `badge` rune reference for sentiment / rank / type combinations

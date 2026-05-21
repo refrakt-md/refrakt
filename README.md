@@ -79,10 +79,10 @@ Full documentation is available at **[refrakt.md](https://refrakt.md)**.
 
 - [Getting Started](https://refrakt.md/docs/getting-started) — Scaffold a project and write your first page
 - [Rune Catalog](https://refrakt.md/docs/runes) — Browse all 100+ runes with examples
-- [Theme Development](https://refrakt.md/docs/themes) — Create custom themes with design tokens and CSS
+- [Theme Development](https://refrakt.md/extend/theme-authoring/overview) — Create custom themes with design tokens and CSS
 - [CLI Tools](https://refrakt.md/docs/cli) — Inspect runes, generate content with AI, audit CSS coverage
 - [Adapters](https://refrakt.md/docs/adapters) — SvelteKit, Astro, Next.js, Nuxt, Eleventy, and plain HTML
-- [Plugins](https://refrakt.md/docs/plugins) — Install, create, and extend plugins
+- [Plugins](https://refrakt.md/docs/configuration/plugins) — Install, create, and extend plugins
 
 ## Contributing
 

@@ -67,7 +67,7 @@ This guide walks through building a custom theme package from the ground up, usi
 
 - Familiarity with CSS and BEM naming
 - Basic knowledge of Node.js and npm
-- Understanding of the [theme overview](/docs/themes/overview) and [theme config API](/docs/themes/config-api)
+- Understanding of the [theme overview](/extend/theme-authoring/overview) and [theme config API](/extend/theme-authoring/config-api)
 
 {% steps %}
 
@@ -317,7 +317,7 @@ Before writing per-rune CSS, create the dimension layer — generic rules that h
 - `checklist.css` — checkbox items via `[data-checked]`
 - `sequence.css` — ordered list styles via `[data-sequence]`
 
-This layer handles ~70% of visual styling generically. See [Universal Theming Dimensions](/docs/themes/dimensions) for the complete CSS patterns you can adapt.
+This layer handles ~70% of visual styling generically. See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the complete CSS patterns you can adapt.
 
 #### Working through per-rune CSS
 
@@ -492,7 +492,7 @@ export const myDocsLayout: LayoutConfig = {
 };
 ```
 
-Layout CSS goes in `styles/layouts/`. The built-in layouts use classes like `.rf-mobile-panel`, `.rf-docs-header`, `.rf-docs-sidebar`, etc. See the [layouts reference](/docs/themes/layouts) for all generated classes and data attributes.
+Layout CSS goes in `styles/layouts/`. The built-in layouts use classes like `.rf-mobile-panel`, `.rf-docs-header`, `.rf-docs-sidebar`, etc. See the [layouts reference](/extend/theme-authoring/layouts) for all generated classes and data attributes.
 
 ### Build and test
 

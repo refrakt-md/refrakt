@@ -208,7 +208,7 @@ Breadcrumb: { block: 'breadcrumb', defaultDensity: 'minimal' }
 
 Resolution order: author attribute > rendering context > config default > `'full'`. The engine automatically applies `compact` inside Grid/Bento/Gallery and `minimal` inside backlog/decision-log contexts.
 
-See [Dimensions](/docs/themes/dimensions#density) for the full CSS patterns and density interactions.
+See [Dimensions](/extend/theme-authoring/dimensions#density) for the full CSS patterns and density interactions.
 
 ### sections
 
@@ -223,7 +223,7 @@ Budget: {
 
 Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`, `'footer'`, `'media'`.
 
-See [Dimensions](/docs/themes/dimensions#sections) for role descriptions and CSS.
+See [Dimensions](/extend/theme-authoring/dimensions#sections) for role descriptions and CSS.
 
 ### mediaSlots
 
@@ -235,7 +235,7 @@ Figure: { block: 'figure', mediaSlots: { media: 'cover' } }
 
 Available types: `'portrait'`, `'cover'`, `'thumbnail'`, `'hero'`, `'icon'`.
 
-See [Dimensions](/docs/themes/dimensions#media-slots) for treatment descriptions and CSS.
+See [Dimensions](/extend/theme-authoring/dimensions#media-slots) for treatment descriptions and CSS.
 
 ### checklist
 
@@ -245,7 +245,7 @@ When `true`, the engine scans `<li>` text for checkbox markers (`[x]`, `[ ]`, `[
 Work: { block: 'work', checklist: true }
 ```
 
-See [Dimensions](/docs/themes/dimensions#checklist) for marker values and CSS.
+See [Dimensions](/extend/theme-authoring/dimensions#checklist) for marker values and CSS.
 
 ### sequence
 
@@ -271,7 +271,7 @@ Timeline: {
 }
 ```
 
-See [Dimensions](/docs/themes/dimensions#sequence) for CSS patterns.
+See [Dimensions](/extend/theme-authoring/dimensions#sequence) for CSS patterns.
 
 ### parent
 
@@ -603,7 +603,7 @@ When `difficulty="easy"`, the engine emits:
 </span>
 ```
 
-See [Universal Theming Dimensions](/docs/themes/dimensions) for the full CSS system.
+See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the full CSS system.
 
 ## mergeThemeConfig
 
@@ -722,4 +722,4 @@ Recipe: {
 }
 ```
 
-The `metaType`, `metaRank`, and `sentimentMap` fields enable generic badge styling — no rune-specific CSS needed for these badges. The `sections` map and `defaultDensity` enable generic layout and density-responsive behavior. See [Dimensions](/docs/themes/dimensions) for the full system.
+The `metaType`, `metaRank`, and `sentimentMap` fields enable generic badge styling — no rune-specific CSS needed for these badges. The `sections` map and `defaultDensity` enable generic layout and density-responsive behavior. See [Dimensions](/extend/theme-authoring/dimensions) for the full system.

@@ -300,4 +300,4 @@ export const theme: SvelteTheme = {
 };
 ```
 
-See [Creating a Theme](/docs/themes/creating-a-theme) for the full guide.
+See [Creating a Theme](/extend/theme-authoring/creating-a-theme) for the full guide.

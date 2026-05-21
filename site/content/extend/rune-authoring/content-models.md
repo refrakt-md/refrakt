@@ -392,4 +392,4 @@ Content models are automatically introspectable — the `schemaContentModels` We
 
 The `template` field on `ContentFieldDefinition` provides the Markdoc snippet inserted when the user clicks add. The `description` field provides a tooltip in the editor UI.
 
-See [`editHints`](/docs/authoring/output-contract#edithints) for how `data-name` values connect to inline editing popovers.
+See [`editHints`](/extend/rune-authoring/output-contract#edithints) for how `data-name` values connect to inline editing popovers.

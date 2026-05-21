@@ -290,11 +290,11 @@ Only elements with a `data-name` attribute can be editable. The `data-name` come
 
 The editor resolves hints at click time from the engine config — no extra attributes appear in the rendered HTML.
 
-**Structure tab:** When a rune has a [declarative content model](/docs/authoring/content-models), the editor's structure tab shows the model's fields as a tree. Filled fields show content previews, empty optional fields show an add button, and empty required fields are highlighted. The content model's `template` and `description` field values are surfaced in this UI.
+**Structure tab:** When a rune has a [declarative content model](/extend/rune-authoring/content-models), the editor's structure tab shows the model's fields as a tree. Filled fields show content previews, empty optional fields show an add button, and empty required fields are highlighted. The content model's `template` and `description` field values are surfaced in this UI.
 
 ### Universal theming dimensions
 
-These fields enable generic cross-rune styling via data attributes. See [Universal Theming Dimensions](/docs/themes/dimensions) for the complete system and CSS patterns.
+These fields enable generic cross-rune styling via data attributes. See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the complete system and CSS patterns.
 
 ```typescript
 Recipe: {
