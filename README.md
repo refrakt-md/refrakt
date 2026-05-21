@@ -37,7 +37,7 @@ npm create refrakt my-site -- --target html
 | Package | Description |
 |---------|-------------|
 | `@refrakt-md/types` | Shared TypeScript interfaces |
-| `@refrakt-md/runes` | ~37 core rune schemas, SEO extraction, config |
+| `@refrakt-md/runes` | ~47 core rune schemas, SEO extraction, config |
 | `@refrakt-md/transform` | Identity transform engine (BEM classes, structure injection) |
 | `@refrakt-md/lumina` | Lumina theme (design tokens, CSS) |
 | `@refrakt-md/behaviors` | Progressive enhancement JS (tabs, accordion, datatable, form) |
@@ -65,7 +65,7 @@ Nine official plugins add domain-specific runes, layouts, and CLI commands — i
 |--------|-------|
 | `@refrakt-md/marketing` | hero, cta, feature, pricing, testimonial, bento, steps, comparison |
 | `@refrakt-md/docs` | api, symbol, changelog |
-| `@refrakt-md/design` | swatch, palette, typography, spacing, preview, mockup |
+| `@refrakt-md/design` | swatch, palette, typography, spacing, preview, mockup, design-context |
 | `@refrakt-md/learning` | howto, recipe |
 | `@refrakt-md/storytelling` | character, realm, faction, lore, plot, bond, storyboard |
 | `@refrakt-md/business` | cast, organization, timeline |

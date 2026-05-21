@@ -41,6 +41,7 @@ Use the `separator` attribute to change the divider between items.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `separator` | `string` | `'/'` | Character displayed between breadcrumb items |
+| `auto` | `boolean` | `false` | When `true`, the breadcrumb is generated automatically from the page hierarchy by the cross-page pipeline. Provide no children. |
 
 ### Common attributes
 

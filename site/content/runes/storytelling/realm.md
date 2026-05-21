@@ -4,7 +4,7 @@ description: Location profiles for worldbuilding with geography and notable feat
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Realm

@@ -58,7 +58,8 @@ transform(resolved, attrs, config) {
     Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
   );
 
-  return createComponentRenderable(schema.MyRune, {
+  return createComponentRenderable({
+    rune: 'my-rune',
     tag: 'section',
     property: 'contentSection',
     refs: {
@@ -93,7 +94,8 @@ export const accordionItem = createContentModelSchema({
     fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
   },
   transform(resolved, attrs, config) {
-    return createComponentRenderable(schema.AccordionItem, {
+    return createComponentRenderable({
+      rune: 'accordion-item',
       tag: 'details',
       // ...
     });
@@ -115,10 +117,10 @@ export const accordion = createContentModelSchema({
 ```
 
 Don't inline item logic in the parent's `transform()`. Separate item schemas:
-- Get their own `typeof` marker for engine config
+- Get their own `data-rune` marker (and matching `typeName` config entry)
 - Can have their own attributes and groups
 - Are reusable as explicit child tags: `{% accordion-item name="..." %}`
-- Can be registered independently in the schema registry
+- Can be registered independently in the rune catalog via `defineRune`
 
 ---
 
@@ -185,9 +187,10 @@ transform() {
 
 ```typescript
 // Semantic output, visual structure in engine config
-transform() {
-  const hintType = new Tag('meta', { content: this.type });
-  return createComponentRenderable(schema.Hint, {
+transform(resolved, attrs, config) {
+  const hintType = new Tag('meta', { content: attrs.type });
+  return createComponentRenderable({
+    rune: 'hint',
     tag: 'section',
     properties: { hintType },
     refs: { body: children.tag('div') },
@@ -326,7 +329,7 @@ it('should produce the expected structure', () => {
 Be careful.
 {% /hint %}`);
 
-  const hint = findTag(result as any, t => t.attributes.typeof === 'Hint');
+  const hint = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
   expect(hint).toBeDefined();
   expect(hint!.name).toBe('section');
 });
@@ -344,8 +347,8 @@ Content.
 Content.
 {% /steps %}`);
 
-  const steps = findTag(result as any, t => t.attributes.typeof === 'Steps');
-  const items = findAllTags(steps!, t => t.attributes.typeof === 'Step');
+  const steps = findTag(result as any, t => t.attributes['data-rune'] === 'steps');
+  const items = findAllTags(steps!, t => t.attributes['data-rune'] === 'step');
   expect(items.length).toBe(2);
 });
 ```
@@ -360,7 +363,7 @@ Content.
 {% /accordion-item %}
 {% /accordion %}`);
 
-  const items = findAllTags(acc!, t => t.attributes.typeof === 'AccordionItem');
+  const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
   expect(items.length).toBe(1);
 });
 ```

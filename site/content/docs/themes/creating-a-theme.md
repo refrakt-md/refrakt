@@ -411,7 +411,7 @@ Your theme needs adapter-specific exports so it can be used with a particular ad
 
 #### SvelteKit
 
-Create `svelte/index.ts` to re-export adapter utilities from theme-base:
+Create `svelte/index.ts` to re-export adapter utilities from `@refrakt-md/svelte`:
 
 ```typescript
 export { elements } from '@refrakt-md/svelte';

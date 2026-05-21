@@ -54,7 +54,7 @@ npx vitest run packages/runes/test/diff.test.ts
 cd site && npm run dev
 ```
 
-Build order: types → create-refrakt + transform + behaviors → runes → lumina + highlight + sveltekit → content + ai → editor → cli. Getting this wrong causes missing type errors.
+Build order (see the `build` script in the root `package.json` for the canonical sequence): types + transform + behaviors → runes → 8 plugins (marketing, docs, storytelling, places, business, design, learning, media) → lumina + highlight + sveltekit + html + astro + nuxt + next + react + vue → content + ai → eleventy + plan plugin → create-refrakt + editor → cli → mcp. Getting this wrong causes missing type errors.
 
 ### CSS Coverage Tests
 
@@ -138,28 +138,28 @@ Plugins opt in via `PluginPipelineHooks` on their `Plugin` export. Core hooks (`
 
 Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside `{% nav %}` becomes a group title; a list inside `{% recipe %}` becomes ingredients. Same primitives, different meaning based on context.
 
-**Core runes** (~26 author-facing) live in `packages/runes/src/tags/`. Each has: a schema file, a type definition (`packages/types/src/schema/`), an engine config entry (`packages/runes/src/config.ts`), and optionally a Svelte component override registered via `@refrakt-md/svelte`.
+**Core runes** (~47 catalog entries) live in `packages/runes/src/tags/`. Each has: a schema file (`createContentModelSchema`), an engine config entry in `packages/runes/src/config.ts` (keyed by PascalCase `typeName`), a catalog entry in `packages/runes/src/index.ts` (`defineRune`), and optionally a Svelte component override registered via `@refrakt-md/svelte`. There is no separate type-definition file — rune identity is declared inline via the `rune` field on `createComponentRenderable` (kebab-case) and matched against the kebab-cased config key.
 
-**Plugin runes** (~65 more across 8 plugins) live in `plugins/{marketing,docs,design,learning,storytelling,business,places,media}/`. Each plugin exports a `Plugin` object (defined in `packages/types/src/package.ts`) containing rune schemas, theme config, and optional pipeline hooks. A plugin may also contribute layouts and CLI commands (via a `cli-plugin` entry point). Users configure plugins in `refrakt.config.json` → `plugins[]`. The `loadPlugin()` and `mergePlugins()` utilities in `packages/runes/src/plugins.ts` handle loading and name-collision resolution.
+**Plugin runes** (~67 more across 9 plugins) live in `plugins/{marketing,docs,design,learning,storytelling,business,places,media,plan}/`. Each plugin exports a `Plugin` object (defined in `packages/types/src/package.ts`) containing rune schemas (`Plugin.runes`, a `Record<string, PluginRune>`), theme config (`Plugin.theme.runes`, keyed by PascalCase `typeName`), and optional pipeline hooks. A plugin may also contribute layouts and CLI commands (via a `cli-plugin` entry point). Users configure plugins in `refrakt.config.json` → `plugins[]`. The `loadPlugin()` and `mergePlugins()` utilities in `packages/runes/src/plugins.ts` handle loading and name-collision resolution.
 
 ### Two-Layer Theme System
 
 **Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/runes/src/config.ts`. Most runes (~75%) need only this layer.
 
-**Layer 2 — Svelte Components** (`packages/svelte/src/elements/`): Element overrides for HTML elements (Table, Pre) plus a component registry for custom rune renderers. Registered in `packages/svelte/src/registry.ts`. The Renderer looks up `typeof` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
+**Layer 2 — Svelte Components** (`packages/svelte/src/elements/`): Element overrides for HTML elements (Table, Pre) plus a component registry for custom rune renderers. Registered in `packages/svelte/src/registry.ts`. The Renderer looks up `data-rune` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
 
 ### Package Relationships
 
 - `types` — foundational, no deps on other packages; includes `Plugin`, `PluginPipelineHooks`, `EntityRegistry` and related pipeline types
 - `transform` — depends on types; identity transform engine + config interfaces + merge utilities + layout configs
-- `runes` — depends on types + transform; ~37 core rune schemas + SEO extraction + `coreConfig`/`baseConfig` + `corePipelineHooks` + `loadPlugin`/`mergePlugins` utilities
+- `runes` — depends on types + transform; ~47 core rune schemas + SEO extraction + `coreConfig`/`baseConfig` + `corePipelineHooks` + `loadPlugin`/`mergePlugins` utilities
 - `lumina` — depends on runes + transform; design tokens, CSS, icon overrides
 - `behaviors` — no deps; progressive enhancement JS for interactive runes
 - `content` — depends on runes + types; content loading, routing, layout cascade + `runPipeline()` orchestrator + `EntityRegistryImpl`
 - `svelte` — depends on types + behaviors; Renderer + ThemeShell + element overrides + component registry
 - `sveltekit` — depends on types; Vite plugin with virtual modules + content HMR; loads plugins from config, passes to `loadContent()`
 - `ai` + `cli` — content generation + inspect tooling
-- `plugins/{marketing,docs,design,learning,storytelling,business,places,media}/` — 8 official plugins implementing `Plugin`
+- `plugins/{marketing,docs,design,learning,storytelling,business,places,media,plan}/` — 9 official plugins implementing `Plugin`
 
 ## Conventions
 
@@ -173,15 +173,15 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 ### Rune Schema Patterns
 
-- `createContentModelSchema({ contentModel, transform })` — declarative alternative to Model class for new runes; define a `contentModel` (sequence/delimited/sections/custom), receive resolved fields in `transform(resolved, attrs, config)`
-- `createComponentRenderable(schema.TypeName, { tag, properties, children })` — wraps output with `typeof` marker
-- `properties` values are meta Tags — `createComponentRenderable` sets `property` attribute on them
-- `refs` values are Tags that get `data-name` attribute set on them
+- `createContentModelSchema({ attributes, contentModel, transform })` — defines a rune with declarative attributes and content model (sequence/delimited/sections/custom). Receives resolved fields in `transform(resolved, attrs, config)`
+- `createComponentRenderable({ rune, tag, property, properties, refs, children })` — wraps output with a `data-rune` marker. The `rune` field is the kebab-case rune name and matches the kebab-cased key in `coreConfig`/`Plugin.theme.runes`
+- `properties` values are meta Tags — `createComponentRenderable` sets `data-field` (kebab-cased) on them; the engine reads these for modifier values and consumes the tags
+- `refs` values are Tags that get `data-name` attribute set on them — the engine adds `rf-{block}__{key}` BEM element classes
 - Rune schemas should produce structurally complete renderables, not raw data blobs that components re-parse
 
 ### Rune Authoring Guide
 
-Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (6 pages: overview, model-api, content-models, output-contract, patterns, page-sections). Refer to these when writing or modifying runes — they cover the Model lifecycle, decorators (`@attribute`, `@group`, `@id`), declarative content models (`createContentModelSchema`, sequence/delimited/sections/custom patterns), the output contract (`createComponentRenderable`, properties vs refs, meta tags, editHints), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming, content boundaries).
+Comprehensive rune authoring documentation lives at `site/content/docs/authoring/` (8 pages: authoring-overview, content-models, nav-slug-resolution, output-contract, page-sections, partials, patterns, rich-menubar-panels). Refer to these when writing or modifying runes — they cover declarative content models (`createContentModelSchema`, sequence/delimited/sections/custom patterns), the output contract (`createComponentRenderable`, properties vs refs, meta tags, editHints), and canonical patterns (headingLevel auto-detect, header+body group split, child item runes, modifier naming, content boundaries).
 
 New runes almost always belong in a plugin under `plugins/`, not in `packages/runes/src/tags/`. Plugin authoring docs: `site/content/docs/plugins/authoring.md`.
 
@@ -190,7 +190,7 @@ New runes almost always belong in a plugin under `plugins/`, not in `packages/ru
 Non-interactive runes are configured declaratively in `packages/runes/src/config.ts`:
 - `block`: BEM block name
 - `modifiers`: `{ name: { source: 'meta', default?: string } }` — reads meta tag, adds modifier class + data attribute
-- `contextModifiers`: `{ 'ParentType': 'suffix' }` — adds BEM modifier when nested inside a parent rune
+- `contextModifiers`: `{ 'parent-rune': 'suffix' }` — adds BEM modifier when nested inside a parent rune (key matches the parent's kebab-case `data-rune`)
 - `staticModifiers`: `['name']` — always-applied BEM modifier classes
 - `structure`: injects structural elements (headers, icons, meta displays) via `StructureEntry`
 - `contentWrapper`: wraps content children in a container element
@@ -203,7 +203,7 @@ Full interface definitions: `packages/transform/src/types.ts` (`ThemeConfig`, `R
 
 ### Theme Development
 
-Theme developer documentation lives at `site/content/docs/themes/` (6 pages: overview, configuration, css, creating-a-theme, components, tooling). Refer to these when working on themes.
+Theme developer documentation lives at `site/content/docs/themes/` (9 pages: overview, config-api, creating-a-theme, css, dimensions, layouts, components, tint-cascade, tooling). Refer to these when working on themes.
 
 **Key files for theme work:**
 - `packages/runes/src/config.ts` — core rune configs (exported as `coreConfig`/`baseConfig`) + `corePipelineHooks`
@@ -368,7 +368,7 @@ All `@refrakt-md/*` packages and `create-refrakt` are versioned together (Change
 
 ```
 packages/types/       — Shared TypeScript interfaces (including Plugin, pipeline types)
-packages/runes/       — ~37 core rune schemas + SEO extraction + coreConfig + corePipelineHooks + plugin loading utilities
+packages/runes/       — ~47 core rune schemas + SEO extraction + coreConfig + corePipelineHooks + plugin loading utilities
 packages/transform/   — Identity transform engine + types + merge utilities + layout configs
 packages/lumina/      — Lumina theme (tokens, CSS, icon overrides)
 packages/behaviors/   — Progressive enhancement JS (tabs, accordion, datatable, form)
@@ -378,14 +378,14 @@ packages/sveltekit/   — Vite plugin + virtual modules + HMR; loads plugins fro
 packages/ai/          — AI prompt building + providers
 packages/cli/         — refrakt CLI (write + inspect + contracts)
 packages/create-refrakt/ — Project scaffolding
-plugins/marketing/    — @refrakt-md/marketing (hero, cta, bento, feature, steps, pricing, testimonial, comparison, storyboard)
+plugins/marketing/    — @refrakt-md/marketing (hero, cta, bento, feature, definition, steps, pricing, testimonial, comparison)
 plugins/docs/         — @refrakt-md/docs (api, symbol, changelog)
 plugins/design/       — @refrakt-md/design (swatch, palette, typography, spacing, preview, mockup, design-context)
 plugins/learning/     — @refrakt-md/learning (howto, recipe)
 plugins/storytelling/ — @refrakt-md/storytelling (character, realm, faction, lore, plot, bond, storyboard)
 plugins/business/     — @refrakt-md/business (cast, organization, timeline)
 plugins/places/       — @refrakt-md/places (event, map, itinerary)
-plugins/media/        — @refrakt-md/media (music-playlist, music-recording)
+plugins/media/        — @refrakt-md/media (playlist, track, audio)
 plugins/plan/         — @refrakt-md/plan (spec, work, bug, decision, milestone)
 plan/                 — Project planning content (specs, work items, decisions)
 site/                 — Documentation site (SvelteKit)

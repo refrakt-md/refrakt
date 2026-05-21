@@ -292,7 +292,8 @@ transform(resolved, attrs, config) {
   const typeMeta = new Tag('meta', { content: attrs.type });
 
   // 3. Return structured output
-  return createComponentRenderable(schema.MyRune, {
+  return createComponentRenderable({
+    rune: 'my-rune',
     tag: 'section',
     property: 'contentSection',
     properties: { type: typeMeta },
@@ -365,7 +366,8 @@ export const recipe = createContentModelSchema({
     const prepTimeMeta = new Tag('meta', { content: attrs.prepTime });
     // ...
 
-    return createComponentRenderable(schema.Recipe, {
+    return createComponentRenderable({
+      rune: 'recipe',
       tag: 'article',
       property: 'contentSection',
       properties: { prepTime: prepTimeMeta, difficulty: difficultyMeta, ... },
@@ -376,7 +378,7 @@ export const recipe = createContentModelSchema({
 });
 ```
 
-See `runes/learning/src/tags/recipe.ts` for the full implementation.
+See `plugins/learning/src/tags/recipe.ts` for the full implementation.
 
 ---
 
@@ -390,4 +392,4 @@ Content models are automatically introspectable — the `schemaContentModels` We
 
 The `template` field on `ContentFieldDefinition` provides the Markdoc snippet inserted when the user clicks add. The `description` field provides a tooltip in the editor UI.
 
-See [Editor support](/docs/authoring/output-contract#editor-support) for how `editHints` connect data-name values to inline editing popovers.
+See [`editHints`](/docs/authoring/output-contract#edithints) for how `data-name` values connect to inline editing popovers.
