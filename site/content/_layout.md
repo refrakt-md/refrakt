@@ -18,31 +18,23 @@ tint-lock: true
 
   Install refrakt and build your first site.
 
-- [Authoring](/docs/authoring/authoring-overview)
-
-  Write content with Markdoc + runes.
-
 - [Configuration](/docs/configuration/overview)
 
   Sites, plugins, and themes in `refrakt.config.json`.
+
+- [Content](/docs/content)
+
+  Pages, layouts, regions, and frontmatter.
+
+---
 
 - [CLI](/docs/cli/cli-overview)
 
   `refrakt` commands for inspect, write, and build.
 
----
-
-- [Plugins](/docs/plugins)
-
-  Extend the rune set with custom packages.
-
 - [Adapters](/docs/adapters/adapters-overview)
 
   SvelteKit, Astro, Next, Nuxt, Eleventy, HTML.
-
-- [Theming](/docs/themes/overview)
-
-  Build a theme — tokens, CSS, components.
 
 - [MCP](/docs/mcp/overview)
 
@@ -82,9 +74,9 @@ tint-lock: true
 
   Specs, work, decisions, milestones.
 
-- [Plugin authoring](/docs/plugins/authoring)
+- [Business](/runes/business)
 
-  Build your own runes in a plugin package.
+  Cast, organization, timeline.
 {% /nav %}
 
 ## Themes
@@ -95,12 +87,40 @@ tint-lock: true
 - [Tideline](/themes/tideline)
 - [Code-editor presets](/themes/themes-catalog)
 
+## Extend
+
+{% nav layout="columns" %}
+- [Rune authoring](/extend/rune-authoring/authoring-overview)
+
+  Write custom runes — content models, output contract, patterns.
+
+- [Plugin authoring](/extend/plugin-authoring/authoring)
+
+  Package runes, theme, behaviors, and CLI as a plugin.
+
+- [Theme authoring](/extend/theme-authoring/overview)
+
+  Build a theme — tokens, CSS, identity-transform config.
+
+---
+
+- [Pipeline](/extend/plugin-authoring/pipeline)
+
+  Cross-page register, aggregate, and post-process hooks.
+
+- [Security](/extend/security)
+
+  Threat model and the `ResolvedSecurityPolicy` contract.
+
+- [Contributing](/extend/contributing)
+
+  Branches, the plan workflow, releases, and reporting issues.
+{% /nav %}
+
 ## Project
 - [Plan](/plan)
-- [Plan docs](/plan/docs/plan-overview)
 - [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
 - [Changelog](/releases)
-- [Blog](/blog)
 - [GitHub](https://github.com/refrakt-md/refrakt)
 {% /nav %}
 {% /region %}
@@ -109,9 +129,11 @@ tint-lock: true
 {% nav layout="columns" %}
 ## Learn
 - [Getting started](/docs/getting-started)
-- [Authoring](/docs/authoring/authoring-overview)
 - [Configuration](/docs/configuration/overview)
+- [Content](/docs/content)
 - [CLI](/docs/cli/cli-overview)
+- [Adapters](/docs/adapters/adapters-overview)
+- [MCP](/docs/mcp/overview)
 
 ---
 
@@ -119,15 +141,17 @@ tint-lock: true
 - [Rune catalog](/runes/rune-catalog)
 - [Themes catalog](/themes/themes-catalog)
 - [Lumina](/themes/lumina)
-- [MCP](/docs/mcp/overview)
+- [Plan runes](/runes/plan)
 
 ---
 
 ## Extend
-- [Plugins](/docs/plugins)
-- [Plugin authoring](/docs/plugins/authoring)
-- [Adapters](/docs/adapters/adapters-overview)
-- [Theming](/docs/themes/overview)
+- [Rune authoring](/extend/rune-authoring/authoring-overview)
+- [Plugin authoring](/extend/plugin-authoring/authoring)
+- [Theme authoring](/extend/theme-authoring/overview)
+- [Pipeline](/extend/plugin-authoring/pipeline)
+- [Security](/extend/security)
+- [Contributing](/extend/contributing)
 
 ---
 
