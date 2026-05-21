@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import type { LayoutPageData } from '@refrakt-md/transform';
+import type { LayoutPageData, SeoToHtmlOptions } from '@refrakt-md/transform';
 import { renderPage, extractSeoData, seoToHtml } from '@refrakt-md/transform';
 import type { Plugin } from '@refrakt-md/types';
 import type { EleventyTheme } from './types.js';
@@ -41,11 +41,16 @@ export function createDataFile(config: {
 	basePath?: string;
 	/** Plugins to include in the content pipeline */
 	plugins?: Plugin[];
+	/** Site-level SEO fields surfaced into every page's emitted meta tags.
+	 *  Source these from `SiteConfig` (`siteName`, `baseUrl`, `defaultImage`,
+	 *  `logo`) so the Eleventy output matches the SvelteKit reference. */
+	seo?: SeoToHtmlOptions;
 }): () => Promise<EleventyPageData[]> {
 	const {
 		theme,
 		contentDir = './content',
 		basePath = '/',
+		seo: seoOptions,
 	} = config;
 
 	return async function loadRefrakt(): Promise<EleventyPageData[]> {
@@ -104,7 +109,7 @@ export function createDataFile(config: {
 				frontmatter: page.frontmatter ?? {},
 				seo: page.seo,
 			});
-			const seoHtml = seoToHtml(seoData);
+			const seoHtml = seoToHtml(seoData, seoOptions);
 			const seo = { ...seoHtml, description: seoData.description };
 
 			const contextJson = JSON.stringify({

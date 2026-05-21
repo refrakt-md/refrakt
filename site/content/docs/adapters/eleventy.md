@@ -110,18 +110,27 @@ export default function (eleventyConfig) {
 
 The `createDataFile` function produces an Eleventy [global data file](https://www.11ty.dev/docs/data-global/) that loads all refrakt content, applies the identity and layout transforms, and returns an array of page objects with pre-rendered HTML.
 
-Create `_data/refrakt.js`:
+Create `_data/refrakt.js`. Read the site config so the four SEO-enrichment fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) flow into every page's pre-built meta tags:
 
 ```javascript
 import { createDataFile } from '@refrakt-md/eleventy';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
+import { resolve } from 'node:path';
+
+const config = loadRefraktConfig(resolve('refrakt.config.json'));
+const { site } = resolveSite(config);
 
 export default createDataFile({
-  theme,
-  contentDir: './content',
-  basePath: '/',
+  theme: { manifest, layouts },
+  contentDir: site.contentDir,
+  seo: {
+    siteName: site.siteName,
+    baseUrl: site.baseUrl,
+    defaultImage: site.defaultImage,
+    logo: site.logo,
+  },
 });
 ```
 
@@ -132,7 +141,8 @@ export default createDataFile({
 | `theme` | `EleventyTheme` | — | Theme definition (required) |
 | `contentDir` | `string` | `'./content'` | Path to the content directory |
 | `basePath` | `string` | `'/'` | Base URL path for all generated pages |
-| `packages` | `Plugin[]` | — | Plugins to include in the content pipeline |
+| `plugins` | `Plugin[]` | — | Plugins to include in the content pipeline |
+| `seo` | `SeoToHtmlOptions` | — | Site-level SEO fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) threaded into every page's emitted meta tags. Surfaces og:site_name, absolute canonical URLs, image fallback, and WebSite + Organization JSON-LD entries when supplied. |
 
 ### EleventyPageData
 
@@ -284,7 +294,7 @@ Reference the generated stylesheet in your base template *after* the theme barre
 <link rel="stylesheet" href="/css/site-tokens.css">
 ```
 
-Empty config (no overrides) still produces a (zero-byte) file, so the `<link>` never 404s. See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+Empty config (no overrides) still produces a (zero-byte) file, so the `<link>` never 404s. See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Behavior Initialization
 

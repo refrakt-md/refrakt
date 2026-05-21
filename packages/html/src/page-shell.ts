@@ -25,8 +25,14 @@ export interface PageShellOptions {
 	bodyExtra?: string;
 	/** HTML lang attribute (default: "en") */
 	lang?: string;
-	/** Base URL for OpenGraph canonical URLs */
+	/** Base URL for OpenGraph canonical URLs (e.g. "https://refrakt.md") */
 	baseUrl?: string;
+	/** Human-readable site name for og:site_name and JSON-LD entries */
+	siteName?: string;
+	/** Default og:image for pages without their own image (path relative to site root) */
+	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema */
+	logo?: string;
 	/** SEO metadata extracted from the page */
 	seo?: PageSeo;
 }
@@ -50,10 +56,26 @@ function renderOgTag(property: string, content: string): string {
  * - `<head>` containing title, meta description, OG tags, JSON-LD, stylesheets
  * - `<body>` containing the rendered page content
  * - Script tags for behaviors
+ *
+ * When site-level options (`siteName`, `baseUrl`, `defaultImage`, `logo`) are
+ * supplied, the output gains `og:site_name`, absolute canonical URLs, image
+ * fallback, and WebSite + Organization JSON-LD entries — matching the
+ * SvelteKit reference adapter's output.
  */
 export function renderFullPage(input: RenderPageInput, options: PageShellOptions = {}): string {
 	const { page } = input;
-	const { lang = 'en', stylesheets = [], scripts = [], headExtra = '', bodyExtra = '', seo } = options;
+	const {
+		lang = 'en',
+		stylesheets = [],
+		scripts = [],
+		headExtra = '',
+		bodyExtra = '',
+		baseUrl,
+		siteName,
+		defaultImage,
+		logo,
+		seo,
+	} = options;
 
 	const headParts: string[] = [];
 	headParts.push('<meta charset="utf-8">');
@@ -73,15 +95,23 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 		headParts.push(renderOgTag('og:description', description));
 	}
 
-	// OG image
-	if (seo?.og?.image) {
-		headParts.push(renderOgTag('og:image', seo.og.image));
+	// OG image — per-page wins; fall back to defaultImage (prefixed with
+	// baseUrl when defaultImage isn't already absolute).
+	const resolvedImage =
+		seo?.og?.image ?? (defaultImage ? (baseUrl ?? '') + defaultImage : undefined);
+	if (resolvedImage) {
+		headParts.push(renderOgTag('og:image', resolvedImage));
 		headParts.push(renderMetaTag('twitter:card', 'summary_large_image'));
+		headParts.push(renderMetaTag('twitter:image', resolvedImage));
+	} else {
+		headParts.push(renderMetaTag('twitter:card', 'summary'));
 	}
 
-	// OG URL
+	// OG URL + canonical link — absolutize against baseUrl when supplied.
 	if (seo?.og?.url) {
-		headParts.push(renderOgTag('og:url', seo.og.url));
+		const absoluteUrl = (baseUrl ?? '') + seo.og.url;
+		headParts.push(`<link rel="canonical" href="${escapeHtml(absoluteUrl)}">`);
+		headParts.push(renderOgTag('og:url', absoluteUrl));
 	}
 
 	// OG type
@@ -89,11 +119,40 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 		headParts.push(renderOgTag('og:type', seo.og.type));
 	}
 
+	// og:site_name
+	if (siteName) {
+		headParts.push(renderOgTag('og:site_name', siteName));
+	}
+
 	// JSON-LD
 	if (seo?.jsonLd) {
 		for (const schema of seo.jsonLd) {
 			headParts.push(`<script type="application/ld+json">${JSON.stringify(schema)}</script>`);
 		}
+	}
+
+	// WebSite + Organization JSON-LD when baseUrl is supplied — matches the
+	// seoToHtml helper's emission for the other adapters.
+	if (baseUrl) {
+		const name = siteName ?? '';
+		headParts.push(
+			`<script type="application/ld+json">${JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'WebSite',
+				name,
+				url: baseUrl,
+			})}</script>`,
+		);
+		const org: Record<string, string> = {
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name,
+			url: baseUrl,
+		};
+		if (logo) {
+			org.logo = baseUrl + logo;
+		}
+		headParts.push(`<script type="application/ld+json">${JSON.stringify(org)}</script>`);
 	}
 
 	// Stylesheets

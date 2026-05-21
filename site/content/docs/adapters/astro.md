@@ -102,7 +102,7 @@ The above produces:
 - `[data-color-scheme="dark"] { --rf-color-text: #f5f5f5; ... }` (mode overlay)
 - `[data-tint="nord-scoped"] { --rf-syntax-keyword: ...; ... }` (scoped tint projection)
 
-See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## AstroTheme Interface
 
@@ -416,20 +416,46 @@ npm install @refrakt-md/highlight
 
 ## SEO
 
-The `buildSeoHead()` helper transforms page SEO data into HTML meta tag strings:
+The `buildSeoHead()` helper transforms page SEO data into HTML meta tag strings. Pass per-page input (title, frontmatter, seo) plus the four site-level fields read from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) and the helper emits a complete OG + JSON-LD bundle:
 
 ```typescript
 import { buildSeoHead } from '@refrakt-md/astro';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
 
 const head = buildSeoHead({
   title: page.title,
   frontmatter: page.frontmatter,
   seo: page.seo,
+  // Site-level fields surface og:site_name, absolute canonical URLs,
+  // image fallback, and WebSite + Organization JSON-LD entries.
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
 });
 
-// head.title — page title string
-// head.metaTags — OG, description, twitter card meta tags
-// head.jsonLd — JSON-LD structured data script tags
+// head.title    — page title string
+// head.metaTags — OG, description, twitter, og:site_name meta tags
+// head.jsonLd   — page JSON-LD + WebSite + Organization script tags
+```
+
+When the site-level fields are omitted the output stays minimal — only per-page meta tags are emitted, matching the pre-v0.14.4 behaviour. The four fields live at the top level of `SiteConfig`:
+
+```json
+{
+  "sites": {
+    "main": {
+      "contentDir": "./content",
+      "theme": "@refrakt-md/lumina",
+      "siteName": "Refrakt",
+      "baseUrl": "https://refrakt.md",
+      "defaultImage": "/og-image.png",
+      "logo": "/favicon-192.png"
+    }
+  }
+}
 ```
 
 ## Behavior Initialization

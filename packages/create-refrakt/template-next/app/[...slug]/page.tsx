@@ -1,25 +1,35 @@
 import { loadContent } from '@refrakt-md/content';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { getThemePackage } from '@refrakt-md/types';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
-import { RefraktContent, buildMetadata, buildUrlFromParams, hasInteractiveRunes } from '@refrakt-md/next';
+import { RefraktContent, buildMetadata, buildJsonLd, buildUrlFromParams, hasInteractiveRunes } from '@refrakt-md/next';
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { RendererNode } from '@refrakt-md/types';
-import type { RefraktConfig } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
-import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 
-const config: RefraktConfig = JSON.parse(readFileSync(path.resolve('refrakt.config.json'), 'utf-8'));
-const contentDir = path.resolve(config.contentDir);
+const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const { site } = resolveSite(config);
+const contentDir = path.resolve(site.contentDir);
+
+// Site-level SEO fields surfaced into buildMetadata + buildJsonLd.
+const seoSite = {
+	siteName: site.siteName,
+	baseUrl: site.baseUrl,
+	defaultImage: site.defaultImage,
+	logo: site.logo,
+};
 
 async function getTransformAndTags() {
-	const themeModule = await import(config.theme + '/transform');
+	const themePackage = getThemePackage(site.theme);
+	const themeModule = await import(themePackage + '/transform');
 	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 
-	const pluginNames = config.plugins ?? [];
+	const pluginNames = site.plugins ?? [];
 	if (pluginNames.length === 0) {
 		return { transform: createTransform(themeConfig), communityTags: undefined };
 	}
@@ -28,7 +38,7 @@ async function getTransformAndTags() {
 		pluginNames.map((name: string) => loadPlugin(name))
 	);
 	const coreRuneNames = new Set(Object.keys(coreRunes));
-	const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
+	const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
 	const communityTags: Record<string, Schema> | undefined =
 		Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
@@ -73,6 +83,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 		title: (page.frontmatter.title as string) ?? '',
 		frontmatter: page.frontmatter,
 		seo: page.seo,
+		...seoSite,
 	});
 }
 

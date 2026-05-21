@@ -14,6 +14,14 @@ const contentDir = path.resolve(site.contentDir);
 
 const routeRules = site.routeRules ?? [{ pattern: '**', layout: 'default' }];
 
+/** Site-level SEO fields surfaced for `buildSeoHead`. Read from refrakt.config.json. */
+export const seoSiteFields = {
+	siteName: site.siteName,
+	baseUrl: site.baseUrl,
+	defaultImage: site.defaultImage,
+	logo: site.logo,
+};
+
 let _transform: ((tree: any) => any) | null = null;
 let _hl: { (tree: any): any; css: string } | null = null;
 let _theme: { manifest: any; layouts: any } | null = null;

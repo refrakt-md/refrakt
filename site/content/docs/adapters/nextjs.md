@@ -192,10 +192,19 @@ This avoids loading `@refrakt-md/behaviors` on pages that have no interactive ru
 
 ## Metadata Helper
 
-The `buildMetadata()` function transforms refrakt SEO data into a Next.js Metadata object for the App Router:
+The `buildMetadata()` function transforms refrakt SEO data into a Next.js Metadata object for the App Router. Thread the four site-level fields from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) to enrich the output:
 
 ```typescript
 import { buildMetadata, buildJsonLd } from '@refrakt-md/next';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
+const seoSite = {
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
+};
 
 export async function generateMetadata({ params }) {
   const page = await loadPage(params.slug);
@@ -203,35 +212,42 @@ export async function generateMetadata({ params }) {
     title: page.title,
     frontmatter: page.frontmatter,
     seo: page.seo,
+    ...seoSite,
   });
 }
 ```
 
-It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. The generated metadata object includes:
+It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. When site-level fields are supplied, the generated metadata also sets `metadataBase` (so Next.js absolutizes relative URLs natively), `openGraph.siteName`, and an image fallback:
 
 | Field | Source |
 |-------|--------|
+| `metadataBase` | `new URL(baseUrl)` |
 | `title` | `seo.og.title` or `title` |
 | `description` | `seo.og.description` or `frontmatter.description` |
 | `openGraph.title` | `seo.og.title` or `title` |
 | `openGraph.description` | `seo.og.description` or `frontmatter.description` |
-| `openGraph.images` | `seo.og.image` (when present) |
+| `openGraph.siteName` | `siteName` |
+| `openGraph.images` | `seo.og.image` or `defaultImage` fallback |
 | `openGraph.url` | `seo.og.url` |
 | `openGraph.type` | `seo.og.type` |
-| `twitter.card` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `twitter.card` | `summary_large_image` when an image resolves, `summary` otherwise |
 | `twitter.title` | `seo.og.title` or `title` |
 | `twitter.description` | `seo.og.description` or `frontmatter.description` |
-| `twitter.images` | `seo.og.image` (when present) |
+| `twitter.images` | `seo.og.image` or `defaultImage` fallback |
 
 ## JSON-LD Structured Data
 
-Use `buildJsonLd()` to extract JSON-LD schemas from page SEO data. Render them in the root layout or per-page:
+Use `buildJsonLd()` to extract JSON-LD schemas from page SEO data. Pass the same site-level fields to append synthetic WebSite + Organization entries:
 
 ```typescript
 import { buildJsonLd } from '@refrakt-md/next';
-import Script from 'next/script';
 
-const jsonLd = buildJsonLd(page.seo);
+const jsonLd = buildJsonLd({
+  title: page.title,
+  frontmatter: page.frontmatter,
+  seo: page.seo,
+  ...seoSite, // siteName + baseUrl + logo from refrakt.config.json
+});
 
 {jsonLd.map((schema, i) => (
   <script
@@ -241,6 +257,8 @@ const jsonLd = buildJsonLd(page.seo);
   />
 ))}
 ```
+
+When `baseUrl + siteName` are supplied, `buildJsonLd` appends synthetic WebSite + Organization entries to the page-level JSON-LD array, matching the SvelteKit reference adapter's output.
 
 ## CSS Injection
 
@@ -312,7 +330,7 @@ export default { /* ... */ };
 
 Then add `<link rel="stylesheet" href="/site-tokens.css">` to your layout after the theme CSS import.
 
-See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Custom Elements
 

@@ -160,6 +160,10 @@ async function build() {
 					(hl.css ? `<style>${hl.css}</style>` : '') +
 					(siteTokensCss ? `<style>${siteTokensCss}</style>` : ''),
 				seo: page.seo,
+				baseUrl: site.baseUrl,
+				siteName: site.siteName,
+				defaultImage: site.defaultImage,
+				logo: site.logo,
 			},
 		);
 

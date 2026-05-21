@@ -256,15 +256,22 @@ watch(() => props.html, () => {
 
 ## SEO with buildRefraktHead
 
-The `buildRefraktHead` composable produces an object compatible with Nuxt's `useHead()`. It extracts title, description, Open Graph tags, and JSON-LD schemas from the page's SEO data:
+The `buildRefraktHead` composable produces an object compatible with Nuxt's `useHead()`. It extracts title, description, Open Graph tags, and JSON-LD schemas from the page's SEO data, and threads site-level fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) into og:site_name, absolute canonical URLs, image fallback, and synthetic WebSite + Organization JSON-LD entries:
 
 ```typescript
 import { buildRefraktHead } from '@refrakt-md/nuxt';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
 
 const head = buildRefraktHead({
   title: page.title,
   frontmatter: page.frontmatter,
   seo: page.seo,
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
 });
 
 useHead(head);
@@ -278,14 +285,16 @@ useHead(head);
 | `<meta name="description">` | `seo.og.description` or `frontmatter.description` |
 | `<meta property="og:title">` | `seo.og.title` or `title` |
 | `<meta property="og:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta property="og:image">` | `seo.og.image` |
-| `<meta property="og:url">` | `seo.og.url` |
+| `<meta property="og:image">` | `seo.og.image` or `baseUrl + defaultImage` fallback |
+| `<meta property="og:url">` | `baseUrl + seo.og.url` (absolutized) |
 | `<meta property="og:type">` | `seo.og.type` |
-| `<meta name="twitter:card">` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `<meta property="og:site_name">` | `siteName` (when supplied) |
+| `<link rel="canonical">` | `baseUrl + seo.og.url` (absolutized) |
+| `<meta name="twitter:card">` | `summary_large_image` when an image resolves, `summary` otherwise |
 | `<meta name="twitter:title">` | `seo.og.title` or `title` |
 | `<meta name="twitter:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta name="twitter:image">` | `seo.og.image` (when present) |
-| `<script type="application/ld+json">` | Each entry in `seo.jsonLd` |
+| `<meta name="twitter:image">` | `seo.og.image` or `defaultImage` fallback |
+| `<script type="application/ld+json">` | Each entry in `seo.jsonLd`, plus WebSite + Organization entries when `baseUrl` is supplied |
 
 ## useBehaviors Composable
 
@@ -385,7 +394,7 @@ Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare 
 }
 ```
 
-See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Vue Custom Elements
 
