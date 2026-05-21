@@ -1,16 +1,33 @@
-/* Badge rune — inline pill that flags a piece of content.
+/* Badge rune — standalone inline pill that visually stands out from prose.
  *
- * Visual styling (border, padding, dot for sentiment, type-specific
- * treatment) comes entirely from the universal metadata-system rules in
- * `dimensions/metadata.css`. The `.rf-badge` selector exists primarily
- * as a stable theming hook for badge-specific overrides — themes can
- * adjust badge density, font, or behaviour here without touching the
- * shared metadata rules that other runes rely on.
+ * Unlike the metadata badges that appear inside card chrome (plan items,
+ * recipe meta, work item headers), standalone {% badge %} runes are meant
+ * to pop. They reuse the universal `--meta-color` set by
+ * dimensions/metadata.css's sentiment rules, applied as a sentiment-tinted
+ * border, a low-opacity sentiment-tinted background, and sentiment-coloured
+ * text. The leading sentiment dot from metadata.css is dropped — the
+ * background tint already carries the sentiment cue.
  *
- * The data-meta-type / data-meta-rank / data-meta-sentiment attributes
- * emitted by the badge schema are styled by metadata.css.
+ * rank="primary" boosts emphasis with a heavier background tint and a
+ * bolder weight, useful for "Popular" / "Featured" labels that should
+ * dominate over their neighbours.
  */
 
 .rf-badge {
 	vertical-align: baseline;
+	border-color: var(--meta-color, var(--rf-color-border));
+	background: color-mix(in srgb, var(--meta-color, transparent) 12%, transparent);
+	color: var(--meta-color, var(--rf-color-text));
+	font-weight: 500;
+}
+
+.rf-badge[data-meta-rank="primary"] {
+	background: color-mix(in srgb, var(--meta-color, transparent) 22%, transparent);
+	font-weight: 600;
+}
+
+/* Drop the sentiment dot — the background tint carries the cue for
+ * standalone badges, and the dot competes visually with adjacent prose. */
+.rf-badge::before {
+	display: none;
 }
