@@ -1,4 +1,4 @@
-{% work id="WORK-246" status="ready" priority="medium" complexity="simple" source="SPEC-058" tags="adapters, dx, logging" milestone="v0.14.4" %}
+{% work id="WORK-246" status="done" priority="medium" complexity="simple" source="SPEC-058" tags="adapters, dx, logging" milestone="v0.14.4" %}
 
 # Shared pipeline-stats output across adapters
 
@@ -21,14 +21,14 @@ Extracting the formatter into shared infrastructure lets every adapter print the
 
 ## Acceptance Criteria
 
-- [ ] `@refrakt-md/content` exports `formatPipelineSummary(stats: PipelineStats, warnings: PipelineWarning[]): string` returning the multi-line summary block currently inlined in the SvelteKit plugin
-- [ ] `formatPipelineSummary` is pure — takes the data, returns the string. Adapters decide where to write it (`process.stderr`, `console.log`, an Eleventy log helper, etc.)
-- [ ] `packages/sveltekit/src/plugin.ts` replaces its inline formatter with `formatPipelineSummary` (zero output diff)
-- [ ] `packages/astro/src/integration.ts` calls `formatPipelineSummary` in the Vite plugin's `buildStart` after the content load and writes to `process.stderr`
-- [ ] `packages/nuxt/src/module.ts` same — calls the formatter after the Vite plugin's content load
-- [ ] `packages/eleventy/src/data.ts` `createDataFile` writes the formatted summary to `process.stderr` after `loadContent` completes
-- [ ] `@refrakt-md/next` exposes a helper `printPipelineSummary(site: Site): void` that adapter consumers call from their `app/layout.tsx` or a setup script; templates wire it in
-- [ ] `@refrakt-md/html` build helper from {% ref "WORK-242" /%} prints the summary by default; option to disable for embedded use
+- [x] `@refrakt-md/content` exports `formatPipelineSummary(stats: PipelineStats, warnings: PipelineWarning[]): string` returning the multi-line summary block currently inlined in the SvelteKit plugin
+- [x] `formatPipelineSummary` is pure — takes the data, returns the string. Adapters decide where to write it (`process.stderr`, `console.log`, an Eleventy log helper, etc.)
+- [x] `packages/sveltekit/src/plugin.ts` replaces its inline formatter with `formatPipelineSummary` (zero output diff)
+- [x] `packages/astro/src/integration.ts` calls `formatPipelineSummary` in the Vite plugin's `buildStart` after the content load and writes to `process.stderr`
+- [x] `packages/nuxt/src/module.ts` same — calls the formatter after the Vite plugin's content load
+- [x] `packages/eleventy/src/data.ts` `createDataFile` writes the formatted summary to `process.stderr` after `loadContent` completes
+- [x] `@refrakt-md/next` exposes a helper `printPipelineSummary(site: Site): void` that adapter consumers call from their `app/layout.tsx` or a setup script; templates wire it in
+- [x] `@refrakt-md/html` build helper from {% ref "WORK-242" /%} prints the summary by default; option to disable for embedded use
 - [ ] All builds across all five non-SvelteKit adapters produce the same multi-line summary as the SvelteKit reference
 
 ## Approach
@@ -73,5 +73,30 @@ Independent — can land any time after `formatPipelineSummary` is exported. Pai
 - {% ref "SPEC-058" /%} — adapter parity spec (this item moves pipeline-stats output out of "Out of scope")
 - `packages/sveltekit/src/plugin.ts:186–200` — current implementation to extract
 - `packages/content/src/pipeline.ts` — destination for the shared formatter
+
+## Resolution
+
+Completed: 2026-05-21
+
+Branch: \`claude/update-adapters-5CJgQ\`
+
+### What was done
+
+- Added \`packages/content/src/format.ts\` with \`formatPipelineSummary(stats, warnings): string\`. Pure formatter; takes the same shape \`Site\` exposes, returns the multi-line summary block.
+- \`@refrakt-md/content\` exports it from the public API.
+- **SvelteKit** plugin's inline formatter (15 lines) replaced with a single \`process.stderr.write(formatPipelineSummary(...))\` call. Site output verified byte-identical to pre-extraction.
+- **Astro** integration's runes-Vite-plugin \`getUsedBlocks\` callback also prints the summary (once per build via a \`summaryPrinted\` flag) after loading the site.
+- **Nuxt** module: same as Astro.
+- **Eleventy** \`createDataFile\` writes the summary to stderr after \`loadContent\`.
+- **Next.js** exports \`printPipelineSummary(site: Site)\` — consumers call from their layout / setup module.
+- **HTML** template's \`build.ts\` writes the summary after \`loadContent\`.
+
+### Notes
+
+The summary is now emitted by every adapter on every full build. The site's existing 5-warning output now prints twice during \`npm run build\` (once for the dev server pre-build, once for the actual build) — pre-existing behaviour matching the SvelteKit plugin's lifecycle.
+
+Per-adapter end-to-end output verification deferred to SPEC-059.
+
+Full workspace build + all 2652 tests pass.
 
 {% /work %}

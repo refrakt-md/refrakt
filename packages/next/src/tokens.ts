@@ -7,6 +7,7 @@ import {
 	buildUsedCssImports,
 } from '@refrakt-md/transform/node';
 import { getThemePackage } from '@refrakt-md/types';
+import type { Site } from '@refrakt-md/content';
 
 /**
  * Resolve the per-site config from `refrakt.config.json` and compose the
@@ -69,6 +70,23 @@ export async function getSiteTokensCss(
  * @param configPath Path to `refrakt.config.json`.
  * @param siteName   Which site to use from a multi-site config.
  */
+/**
+ * Print the cross-page pipeline's Phase 1/2/3/4 + warnings summary to stderr.
+ *
+ * Call once from `app/[...slug]/page.tsx` or a setup module so Next.js builds
+ * get the same visibility into the content pipeline that the SvelteKit
+ * reference adapter prints.
+ *
+ * Memoise the call site (e.g. via a module-scope flag) — Next will re-evaluate
+ * the page module per static-param entry, and you only want one summary.
+ */
+export function printPipelineSummary(site: Site): void {
+	// Resolved lazily so the import surface stays Server-Component-safe.
+	void import('@refrakt-md/content').then(({ formatPipelineSummary }) => {
+		process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
+	});
+}
+
 export async function getUsedCssImports(
 	configPath = './refrakt.config.json',
 	siteName?: string,

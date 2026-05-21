@@ -45,17 +45,28 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		nuxt.options.css.push(RUNES_VIRTUAL_ID, SITE_TOKENS_VIRTUAL_ID);
 
 		// Callback the runes Vite plugin invokes in `buildStart` to compute
-		// the tree-shaken rune set. Same shape as the Astro integration.
+		// the tree-shaken rune set + print the standard Phase 1/2/3/4 + warnings
+		// summary to stderr (matches SvelteKit reference output). Same shape
+		// as the Astro integration.
+		let summaryPrinted = false;
 		const getUsedBlocks = async () => {
 			try {
-				const { createRefraktLoader, analyzeRuneUsage } = await import(
-					'@refrakt-md/content'
-				);
+				const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } =
+					await import('@refrakt-md/content');
 				const themeModule = await import(themePackage + '/transform');
 				const themeConfig =
 					themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 				const loader = createRefraktLoader({ configPath, site: options.site });
 				const loadedSite = await loader.getSite();
+				if (!summaryPrinted) {
+					process.stderr.write(
+						formatPipelineSummary(
+							loadedSite.pipelineStats,
+							loadedSite.pipelineWarnings,
+						),
+					);
+					summaryPrinted = true;
+				}
 				const report = analyzeRuneUsage(loadedSite.pages);
 				const { usedBlocks } = await computeUsedCssBlocks(
 					report.allTypes,

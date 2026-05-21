@@ -1,4 +1,9 @@
-import { loadContent, buildHighlightOptions, analyzeRuneUsage } from '@refrakt-md/content';
+import {
+	loadContent,
+	buildHighlightOptions,
+	analyzeRuneUsage,
+	formatPipelineSummary,
+} from '@refrakt-md/content';
 import {
 	renderFullPage,
 	composeSiteTokensCss,
@@ -116,6 +121,13 @@ async function build() {
 
 	// Load content
 	const loadedSite = await loadContent(contentDir, '/', icons, communityTags);
+
+	// Print the standard Phase 1/2/3/4 + warnings summary so the HTML build
+	// gets the same visibility into the cross-page pipeline that the SvelteKit
+	// reference adapter prints.
+	process.stderr.write(
+		formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
+	);
 
 	mkdirSync(outDir, { recursive: true });
 

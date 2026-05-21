@@ -23,5 +23,9 @@ export { getSiteTokensCss } from './tokens.js';
 // generated code or a pre-build script).
 export { getUsedCssImports } from './tokens.js';
 
+// Pipeline-stats summary writer — matches the SvelteKit reference's build
+// output across the refrakt stack.
+export { printPipelineSummary } from './tokens.js';
+
 // Types
 export type { NextTheme } from './types.js';

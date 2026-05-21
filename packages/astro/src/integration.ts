@@ -49,18 +49,29 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				// Callback the runes Vite plugin invokes in its `buildStart` hook
 				// to compute the tree-shaken rune set. Loads content via
 				// `createRefraktLoader` (cached internally) and runs the shared
-				// `computeUsedCssBlocks` helper. Falls back to the theme barrel
-				// when analysis fails, mirroring the SvelteKit plugin behaviour.
+				// `computeUsedCssBlocks` helper. Also prints the standard Phase
+				// 1/2/3/4 + warnings summary to stderr (matches SvelteKit
+				// reference output). Falls back to the theme barrel when
+				// analysis fails.
+				let summaryPrinted = false;
 				const getUsedBlocks = async () => {
 					try {
-						const [{ createRefraktLoader, analyzeRuneUsage }] = await Promise.all([
-							import('@refrakt-md/content'),
-						]);
+						const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } =
+							await import('@refrakt-md/content');
 						const themeModule = await import(themePackage + '/transform');
 						const themeConfig =
 							themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 						const loader = createRefraktLoader({ configPath, site: options.site });
 						const loadedSite = await loader.getSite();
+						if (!summaryPrinted) {
+							process.stderr.write(
+								formatPipelineSummary(
+									loadedSite.pipelineStats,
+									loadedSite.pipelineWarnings,
+								),
+							);
+							summaryPrinted = true;
+						}
 						const report = analyzeRuneUsage(loadedSite.pages);
 						const { usedBlocks } = await computeUsedCssBlocks(
 							report.allTypes,
