@@ -237,7 +237,8 @@ html:has(.rf-docs-header) {
 /* ---- Mobile overrides ---- */
 @media (max-width: 768px) {
 	.rf-docs-header {
-		position: static;
+		position: sticky;
+		top: 0;
 	}
 	.rf-docs-header__inner p ~ p {
 		display: none;

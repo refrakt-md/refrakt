@@ -1,4 +1,4 @@
-/* Shared mobile UI — menu button, fullscreen panel, close */
+/* Shared mobile UI — menu button, panel docked below header, close */
 
 /* ---- Mobile menu button (hidden on desktop) ---- */
 .rf-mobile-menu-btn {
@@ -13,41 +13,43 @@
 .rf-mobile-menu-btn:hover {
 	color: var(--rf-color-text);
 }
+/* Dots/X toggle — the SVG has both icons stacked; we show one at a time
+   based on the button's aria-expanded state. */
+.rf-mobile-menu-btn__icon-close {
+	display: none;
+}
+.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-open {
+	display: none;
+}
+.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-close {
+	display: inline;
+}
 
-/* ---- Fullscreen mobile panel ---- */
+/* ---- Mobile panel — docks below the header ----
+   The header height is fixed by --rf-header-height (default 3.5rem to
+   match the rendered chrome height — 0.625rem padding + 2rem logo +
+   line-box rounding). Layouts with a taller header set the variable on
+   their layout root so the panel — a sibling of the header — inherits. */
 .rf-mobile-panel {
 	display: none;
 	position: fixed;
-	inset: 0;
-	z-index: 100;
+	top: var(--rf-header-height, 3.5rem);
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	max-width: 100vw;
+	z-index: 99;
 	background: var(--rf-color-bg, #fff);
+	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }
-.rf-mobile-panel__header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 1.125rem 1.5rem;
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-mobile-panel__title {
-	font-size: 0.85rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--rf-color-muted);
-}
-.rf-mobile-panel__close {
-	background: none;
-	border: none;
-	padding: 0.25rem;
-	cursor: pointer;
-	color: var(--rf-color-muted);
-	line-height: 0;
-}
-.rf-mobile-panel__close:hover {
-	color: var(--rf-color-text);
+/* The docs sidebar-nav panel keeps its fullscreen overlay — its trigger
+   (toolbar hamburger) isn't sticky, so docking below the header would
+   leave the hamburger covered by the panel with no way to close it. */
+.rf-mobile-panel.rf-mobile-panel--nav {
+	top: 0;
 }
 .rf-mobile-panel__nav {
 	padding: 1.5rem;
@@ -90,6 +92,9 @@
 .rf-mobile-panel .rf-nav--menubar .rf-nav-group h3 {
 	padding: 1.5rem 0 0.25rem;
 }
+/* Nested column collapse for the menubar drawer is handled in nav.css's
+   ≤768px block (it already resets grid-template-columns and the rich-panel
+   min-width rules). */
 .rf-mobile-panel__body {
 	padding: 1rem 1.5rem;
 }
@@ -103,7 +108,7 @@
 	.rf-mobile-menu-btn {
 		display: block;
 	}
-	/* The inline menubar collapses behind the hamburger on mobile — the
+	/* The inline menubar collapses behind the kebab on mobile — the
 	   .rf-mobile-panel duplicates the same nav and styles it as a flat
 	   vertical list (see nav.css's rf-nav--menubar mobile rules). */
 	.rf-header__inner > rf-nav,
@@ -111,8 +116,8 @@
 	.rf-blog-header__inner > rf-nav {
 		display: none;
 	}
-	/* Hide the duplicated brand line inside the mobile panel — the panel
-	   already has its own "Menu" title. */
+	/* Hide the duplicated brand line inside the mobile panel — the header
+	   above the panel already shows it. */
 	.rf-mobile-panel__nav > p:first-child {
 		display: none;
 	}
