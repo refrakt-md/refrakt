@@ -14,11 +14,35 @@ function getTextContent(node: RendererNode): string {
 }
 
 /**
- * Build a map of page slug → nav group title from nav region content.
- * Walks the serialized NavGroup/NavItem tree structure.
+ * Build a map of page URL → nav group title from nav region content.
+ * Walks the serialized NavGroup/NavItem tree, picking up the URL from the
+ * first `<a href>` inside each nav-item (post-slug-resolution shape) and
+ * falling back to a `<span data-field="slug">` for pre-resolution input.
  */
 function buildNavMap(content: RendererNode[]): Map<string, string> {
 	const map = new Map<string, string>();
+
+	function findFirstHref(node: SerializedTag): string | null {
+		for (const c of node.children) {
+			if (!isTag(c)) continue;
+			if (c.name === 'a' && typeof c.attributes['href'] === 'string') {
+				return c.attributes['href'];
+			}
+			const nested = findFirstHref(c);
+			if (nested) return nested;
+		}
+		return null;
+	}
+
+	function findSlugSpan(node: SerializedTag): SerializedTag | null {
+		for (const c of node.children) {
+			if (!isTag(c)) continue;
+			if (c.name === 'span' && c.attributes['data-field'] === 'slug') return c;
+			const nested = findSlugSpan(c);
+			if (nested) return nested;
+		}
+		return null;
+	}
 
 	function walk(nodes: RendererNode[], groupTitle: string) {
 		for (const node of nodes) {
@@ -27,15 +51,13 @@ function buildNavMap(content: RendererNode[]): Map<string, string> {
 				const heading = node.children.find(
 					(c): c is SerializedTag => isTag(c) && /^h[1-6]$/.test(c.name)
 				);
-				walk(node.children, heading ? getTextContent(heading) : '');
+				walk(node.children, heading ? getTextContent(heading) : groupTitle);
 			} else if (node.attributes['data-rune'] === 'nav-item') {
-				const slugSpan = node.children.find(
-					(c): c is SerializedTag =>
-						isTag(c) && c.name === 'span' && c.attributes['data-field'] === 'slug'
-				);
-				if (slugSpan && groupTitle) {
-					map.set(getTextContent(slugSpan), groupTitle);
-				}
+				if (!groupTitle) continue;
+				const href = findFirstHref(node);
+				if (href) map.set(href, groupTitle);
+				const slugSpan = findSlugSpan(node);
+				if (slugSpan) map.set(getTextContent(slugSpan), groupTitle);
 			} else if (node.children) {
 				walk(node.children, groupTitle);
 			}
@@ -95,17 +117,26 @@ export function buildBreadcrumb(
 	pageTitle: string,
 	prefix: string,
 ): SerializedTag | null {
+	if (!pageTitle) return null;
+
 	const navMap = buildNavMap(navContent);
 	const pageSlug = (currentUrl || '').split('/').filter(Boolean).pop() || '';
-	const category = navMap.get(pageSlug);
+	// Prefer URL match (post-slug-resolution), fall back to slug (pre-resolution).
+	const rawCategory = navMap.get(currentUrl) || navMap.get(pageSlug);
+	// Drop the category if it'd just repeat the page title (e.g. a flat group
+	// with a single item that shares the group's name).
+	const category = rawCategory && rawCategory !== pageTitle ? rawCategory : null;
 
-	if (!category) return null;
+	const children: SerializedTag[] = [];
+	if (category) {
+		children.push(
+			makeTag('span', { class: `${prefix}-docs-breadcrumb-category` }, [category]),
+			makeTag('span', { class: `${prefix}-docs-breadcrumb-sep` }, ['\u203A']),
+		);
+	}
+	children.push(makeTag('span', { class: `${prefix}-docs-breadcrumb-page` }, [pageTitle]));
 
-	return makeTag('div', { class: `${prefix}-docs-toolbar__breadcrumb` }, [
-		makeTag('span', { class: `${prefix}-docs-breadcrumb-category` }, [category]),
-		makeTag('span', { class: `${prefix}-docs-breadcrumb-sep` }, ['\u203A']),
-		makeTag('span', { class: `${prefix}-docs-breadcrumb-page` }, [pageTitle]),
-	]);
+	return makeTag('div', { class: `${prefix}-docs-toolbar__breadcrumb` }, children);
 }
 
 /**
