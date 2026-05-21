@@ -361,8 +361,14 @@
 
 @media (max-width: 600px) {
 	.rf-nav--columns {
-		grid-template-columns: 1fr;
-		gap: 1.25rem;
+		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
+		 * below their min-content width so long link labels don't push the
+		 * grid wider than the viewport and trigger horizontal scroll. */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.25rem 1.5rem;
+	}
+	.rf-nav--columns .rf-nav-item__link {
+		overflow-wrap: anywhere;
 	}
 }
 
@@ -600,7 +606,10 @@
 	.rf-nav--columns:has(> div[data-name="column"]) {
 		grid-auto-flow: row;
 		grid-auto-columns: unset;
-		grid-template-columns: 1fr;
+		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
+		 * below their min-content width so long link labels don't push the
+		 * grid wider than the viewport and trigger horizontal scroll. */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
