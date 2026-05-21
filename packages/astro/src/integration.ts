@@ -1,7 +1,12 @@
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
 import type { AstroIntegration } from 'astro';
 import { CORE_PACKAGES } from '@refrakt-md/transform';
-import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import {
+	loadRefraktConfig,
+	resolveSite,
+	createSiteTokensVitePlugin,
+	SITE_TOKENS_VIRTUAL_ID,
+} from '@refrakt-md/transform/node';
 import { getThemePackage } from '@refrakt-md/types';
 import type { RefraktAstroOptions } from './types.js';
 
@@ -9,8 +14,9 @@ import type { RefraktAstroOptions } from './types.js';
  * Astro integration for refrakt.
  *
  * Reads `refrakt.config.json`, resolves the requested site (or the lone site
- * for single-site projects), configures SSR noExternal, and sets up content
- * HMR in dev mode.
+ * for single-site projects), configures SSR noExternal, sets up content HMR
+ * in dev mode, and serves `virtual:refrakt/site-tokens.css` carrying any
+ * site-level token / preset / mode / tint overrides (SPEC-048 + SPEC-056).
  */
 export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 	const configPath = options.configPath ?? './refrakt.config.json';
@@ -30,6 +36,11 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 					...(site.plugins ?? []),
 				];
 
+				// Capture configDir for the site-tokens Vite plugin — paths in
+				// `refrakt.config.json` resolve relative to the config file's
+				// directory, not Astro's project root.
+				const configDir = dirname(resolve(configPath));
+
 				updateConfig({
 					vite: {
 						ssr: {
@@ -38,11 +49,22 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 								include: ['@markdoc/markdoc'],
 							},
 						},
+						// Astro 5 ships its own copy of Vite's types; the
+						// version-pinned Plugin from our peer dep isn't
+						// assignable to Astro's PluginOption. The plugin is
+						// duck-typed and runs identically at runtime — cast
+						// through `never` to satisfy both type universes.
+						plugins: [createSiteTokensVitePlugin(site, configDir) as never],
 					},
 				});
 
-				// Inject theme CSS so page templates don't hardcode a theme package
-				injectScript('page-ssr', `import '${themePackage}';`);
+				// Inject the theme CSS *and* the site-tokens overrides. Order
+				// matters: theme defaults first, site overrides second so the
+				// `--rf-*` cascade resolves to the override value last.
+				injectScript(
+					'page-ssr',
+					`import '${themePackage}';\nimport '${SITE_TOKENS_VIRTUAL_ID}';`,
+				);
 
 				// Watch content directory for changes in dev mode
 				const contentDir = resolve(config.root.pathname, site.contentDir);

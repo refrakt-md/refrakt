@@ -58,6 +58,7 @@ The integration:
 - Injects theme CSS automatically (from the configured `theme` field)
 - Configures SSR `noExternal` for refrakt packages (ensures they're bundled correctly)
 - Watches the content directory for changes in dev mode
+- Serves `virtual:refrakt/site-tokens.css` carrying any site-level token / preset / mode / tint overrides declared in `refrakt.config.json` (see [Site-level token overrides](#site-level-token-overrides) below)
 
 ### Options
 
@@ -66,6 +67,42 @@ refrakt({
   configPath: './refrakt.config.json', // default
 })
 ```
+
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up by the Astro adapter — no manual CSS authoring required. The integration computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`, imported after the theme package's base CSS so the `--rf-*` cascade resolves to your overrides last.
+
+```json
+{
+  "sites": {
+    "main": {
+      "theme": {
+        "package": "@refrakt-md/lumina",
+        "presets": ["@refrakt-md/lumina/presets/nord"],
+        "tokens": {
+          "color": { "text": "#1a1a1a" }
+        },
+        "modes": {
+          "dark": { "color": { "text": "#f5f5f5" } }
+        }
+      },
+      "tints": {
+        "nord-scoped": {
+          "extends": "@refrakt-md/lumina/presets/nord"
+        }
+      }
+    }
+  }
+}
+```
+
+The above produces:
+
+- `:root { --rf-color-text: #1a1a1a; ... }` (active preset + inline override)
+- `[data-color-scheme="dark"] { --rf-color-text: #f5f5f5; ... }` (mode overlay)
+- `[data-tint="nord-scoped"] { --rf-syntax-keyword: ...; ... }` (scoped tint projection)
+
+See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
 
 ## AstroTheme Interface
 
