@@ -41,26 +41,55 @@ const navItem = createContentModelSchema({
 			}) as RenderableTreeNode[],
 		);
 
-		const links = children.tag('a');
+		const directLinks = children.tag('a').toArray();
 		const slug = children.tag('span');
 		const nestedItems = children.tag('ul');
-		// SPEC-054 — paragraphs that appear under a list item (CommonMark
-		// indented continuation) become per-item descriptions.
-		const paragraphs = children.tag('p');
 		const badges = children.toArray().filter(
 			n => Markdoc.Tag.isTag(n) && (n as Tag).attributes?.['data-rune'] === 'badge',
 		) as Tag[];
 
-		// Explicit links (e.g., [Label](/path)) pass through as-is — slug resolution
-		// happens at postProcess time (SPEC-055). Per-item description and badge
-		// detection still runs.
-		const description = paragraphs.count() > 0
-			? new Markdoc.Tag('p', { 'data-name': 'description' }, paragraphs.toArray().flatMap(p => p.children))
+		// SPEC-054 — paragraphs that appear under a list item (CommonMark
+		// indented continuation) become per-item descriptions. In a CommonMark
+		// *loose* list, the link itself is wrapped in a paragraph too, so we
+		// separate link-wrapping paragraphs (extract their <a> child) from
+		// pure-description paragraphs.
+		const paragraphs = children.tag('p').toArray();
+		const linkParagraphs: Tag[] = [];
+		const descriptionParagraphs: Tag[] = [];
+		for (const p of paragraphs) {
+			const hasLink = p.children.some(
+				c => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a',
+			);
+			if (hasLink) linkParagraphs.push(p);
+			else descriptionParagraphs.push(p);
+		}
+		const linksFromParagraphs: Tag[] = linkParagraphs.flatMap(
+			p => p.children.filter(
+				(c): c is Tag => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a',
+			),
+		);
+		const allLinks: Tag[] = [...directLinks, ...linksFromParagraphs];
+
+		const descriptionText: RenderableTreeNode[] = descriptionParagraphs.flatMap(p => p.children);
+		const description = descriptionText.length > 0
+			? new Markdoc.Tag('span', {
+				'data-name': 'description',
+				class: 'rf-nav-item__description',
+			}, descriptionText)
 			: undefined;
 
-		if (links.count() > 0) {
+		// Explicit links (e.g., [Label](/path)) pass through — slug resolution
+		// happens at postProcess time (SPEC-055). The per-item description is
+		// appended *inside* the <a> so the whole item is one click target,
+		// matching the shape produced by auto=true frontmatter enrichment.
+		if (allLinks.length > 0) {
+			const enrichedLinks = description
+				? allLinks.map(a => ({
+					...a,
+					children: [...(a.children ?? []), description],
+				}))
+				: allLinks;
 			const extraChildren: RenderableTreeNode[] = [];
-			if (description) extraChildren.push(description);
 			if (badges.length > 0) {
 				for (const b of badges) b.attributes['data-name'] = 'badge';
 				extraChildren.push(...badges);
@@ -69,7 +98,7 @@ const navItem = createContentModelSchema({
 				rune: 'nav-item',
 				tag: 'li',
 				properties: description ? { description } : {},
-				children: [...links.toArray(), ...extraChildren],
+				children: [...enrichedLinks, ...extraChildren],
 			});
 		}
 
@@ -165,30 +194,63 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 }
 
 /** Classify a group's children into intro / footer / body slots per SPEC-054.
- *  First non-list content block → intro. Last non-list content block → footer.
- *  Lists + any middle non-list blocks render in source order as the body. */
+ *
+ *  Body content = lists and nested rune blocks (e.g. a `{% nav layout="columns" %}`
+ *  inside the group). They carry their own structure and always render in
+ *  the panel body. Slot material = prose (paragraphs, blockquotes, images,
+ *  etc.) that wraps the body.
+ *
+ *  Position rule: a slot candidate that appears before any body block is
+ *  intro; one that appears after all body blocks is footer. Middle slot
+ *  candidates fall back to body in source order. With no body at all, a
+ *  single slot becomes intro; two or more get split into intro+footer. */
 function partitionGroupChildren(children: RenderableTreeNode[]): {
 	intro?: RenderableTreeNode;
 	body: RenderableTreeNode[];
 	footer?: RenderableTreeNode;
 } {
-	// Find indices of non-list content blocks
-	const contentIdx: number[] = [];
+	const isBodyBlock = (c: RenderableTreeNode): boolean => {
+		if (!Markdoc.Tag.isTag(c)) return false;
+		if (c.name === 'ul' || c.name === 'ol') return true;
+		return Boolean(c.attributes?.['data-rune']);
+	};
+	const isSlotCandidate = (c: RenderableTreeNode): boolean => {
+		return Markdoc.Tag.isTag(c) && !isBodyBlock(c);
+	};
+
+	let firstBodyIdx = -1;
+	let lastBodyIdx = -1;
 	children.forEach((c, i) => {
-		if (Markdoc.Tag.isTag(c) && !isListNode(c)) contentIdx.push(i);
+		if (isBodyBlock(c)) {
+			if (firstBodyIdx === -1) firstBodyIdx = i;
+			lastBodyIdx = i;
+		}
 	});
 
 	let introIdx: number | undefined;
 	let footerIdx: number | undefined;
-	if (contentIdx.length > 0) {
-		introIdx = contentIdx[0];
-		// Footer is the last non-list block IF it differs from intro AND
-		// nothing prevents it from being the trailing block. We require at
-		// least one body child between intro and footer for an explicit
-		// footer slot — otherwise a single-content-block group reads as
-		// "intro only".
-		if (contentIdx.length >= 2) {
-			footerIdx = contentIdx[contentIdx.length - 1];
+
+	if (firstBodyIdx !== -1) {
+		// Intro: first slot candidate before the first body block.
+		for (let i = 0; i < firstBodyIdx; i++) {
+			if (isSlotCandidate(children[i])) { introIdx = i; break; }
+		}
+		// Footer: last slot candidate after the last body block.
+		for (let i = children.length - 1; i > lastBodyIdx; i--) {
+			if (isSlotCandidate(children[i])) { footerIdx = i; break; }
+		}
+	} else {
+		// No body. Preserve the prior simple-group behaviour: a lone slot
+		// becomes intro, two or more split into intro + footer.
+		const slots: number[] = [];
+		children.forEach((c, i) => {
+			if (isSlotCandidate(c)) slots.push(i);
+		});
+		if (slots.length === 1) {
+			introIdx = slots[0];
+		} else if (slots.length >= 2) {
+			introIdx = slots[0];
+			footerIdx = slots[slots.length - 1];
 		}
 	}
 

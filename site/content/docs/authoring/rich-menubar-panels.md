@@ -93,42 +93,6 @@ To make a panel wider and split into multiple columns, drop a `{% nav layout="co
 
 The outer menubar automatically widens its panel to fit the nested grid.
 
-## Intro slot — featured hero
-
-Drop a blockquote at the top of a `## group` to mark a featured hero card. The blockquote becomes the intro slot; the theme styles it distinctly (accent border, card background) and the rest of the panel renders below.
-
-```markdoc
-{% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
-
-## Docs
-
-> [Documentation home](/docs/getting-started)
-> Install refrakt and build your first site.
-
-{% nav layout="columns" %}
-- [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
-- [Plugins](/docs/plugins)
-{% /nav %}
-{% /nav %}
-```
-
-{% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
-
-## Docs
-
-> [Documentation home](/docs/getting-started)
-> Install refrakt and build your first site.
-
-{% nav layout="columns" %}
-- [Configuration](/docs/configuration/overview)
-- [Authoring](/docs/authoring/authoring-overview)
-- [Plugins](/docs/plugins)
-{% /nav %}
-{% /nav %}
-
 ## Intro slot — eyebrow paragraph
 
 A plain paragraph at the top of a `## group` renders as a small uppercase eyebrow label above the panel content.

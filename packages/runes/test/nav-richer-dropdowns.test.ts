@@ -219,6 +219,62 @@ describe('SPEC-054 nested rune content in menubar groups', () => {
 		const columnDivs = findAllTags(columnsInsideMenubar!, t => t.attributes['data-name'] === 'column');
 		expect(columnDivs).toHaveLength(2);
 	});
+
+	it('places a lone nested nav in body, not wrapped in an intro slot', () => {
+		const result = parse(`{% nav layout="menubar" %}
+## Docs
+
+{% nav layout="columns" %}
+- [Getting started](/docs/getting-started)
+
+---
+
+- [Themes](/docs/themes/overview)
+{% /nav %}
+{% /nav %}`);
+
+		// The nested nav alone should not be promoted to intro — it's body content.
+		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		expect(intro).toBeUndefined();
+
+		// The nested nav lives directly inside the panel.
+		const panel = findTag(result as any, t => t.attributes['data-name'] === 'panel');
+		expect(panel).toBeDefined();
+		const nestedNav = panel!.children.find(
+			(c: any) => c && typeof c === 'object' && c.attributes?.['data-rune'] === 'nav',
+		);
+		expect(nestedNav).toBeDefined();
+	});
+
+	it('with paragraph after a nested nav, the nav stays in body and only the paragraph becomes footer', () => {
+		const result = parse(`{% nav layout="menubar" %}
+## Docs
+
+{% nav layout="columns" %}
+- [Configuration](/docs/configuration/overview)
+{% /nav %}
+
+See all docs →
+`+ `{% /nav %}`);
+
+		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		expect(intro).toBeUndefined();
+
+		const footer = findTag(result as any, t => t.attributes['data-name'] === 'footer');
+		expect(footer).toBeDefined();
+		// The trailing paragraph is in the footer.
+		const footerParagraph = findTag(footer!, t => t.name === 'p');
+		expect(footerParagraph).toBeDefined();
+
+		// The nested nav stays in the panel body, not inside the footer slot.
+		const panel = findTag(result as any, t => t.attributes['data-name'] === 'panel');
+		const navInsideFooter = findAllTags(footer!, t => t.attributes['data-rune'] === 'nav');
+		expect(navInsideFooter).toHaveLength(0);
+		const navInPanelBody = panel!.children.find(
+			(c: any) => c && typeof c === 'object' && c.attributes?.['data-rune'] === 'nav',
+		);
+		expect(navInPanelBody).toBeDefined();
+	});
 });
 
 describe('SPEC-054 per-item descriptions', () => {
@@ -235,5 +291,34 @@ describe('SPEC-054 per-item descriptions', () => {
 
 		const descriptions = findAllTags(result as any, t => t.attributes['data-name'] === 'description');
 		expect(descriptions.length).toBeGreaterThanOrEqual(2);
+	});
+
+	it('puts the description inside the <a> so the whole item is one click target', () => {
+		const result = parse(`{% nav %}
+- [Configuration](/docs/configuration)
+
+  Set up sites, plugins, and themes.
+{% /nav %}`);
+
+		const description = findTag(result as any, t => t.attributes['data-name'] === 'description');
+		expect(description).toBeDefined();
+		// Description is a <span>, not a <p>, so it can live inline inside the link.
+		expect(description!.name).toBe('span');
+
+		// The description's text is the description, not the link label.
+		const collectText = (node: any): string => {
+			if (typeof node === 'string') return node;
+			if (!node || typeof node !== 'object') return '';
+			return (node.children ?? []).map(collectText).join(' ');
+		};
+		const descText = collectText(description);
+		expect(descText).toContain('Set up sites');
+		expect(descText).not.toContain('Configuration');
+
+		// Description is a child of the <a>, not a sibling.
+		const link = findTag(result as any, t => t.name === 'a');
+		expect(link).toBeDefined();
+		const descInsideLink = findTag(link!, t => t.attributes['data-name'] === 'description');
+		expect(descInsideLink).toBeDefined();
 	});
 });
