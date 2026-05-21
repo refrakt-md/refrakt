@@ -52,4 +52,4 @@ Order matters — later presets override earlier ones for any token they both de
 
 A preset is any module that exports a `ThemeTokensConfig` as default. Drop it next to your site or publish it as a package — the same `theme.presets` array accepts both package specifiers and relative paths.
 
-See [Theme Configuration](/docs/themes/config-api) for the full `ThemeTokensConfig` shape.
+See [Theme Configuration](/extend/theme-authoring/config-api) for the full `ThemeTokensConfig` shape.

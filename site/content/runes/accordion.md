@@ -49,7 +49,7 @@ Runes create interpretation contexts for Markdown content.
 
 ## Section header
 
-Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph or heading before your content heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph or heading before your content heading to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Attributes
 

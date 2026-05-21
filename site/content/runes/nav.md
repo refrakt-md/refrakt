@@ -29,7 +29,7 @@ Define groups with headings and page slugs as list items. Items before the first
 
 Each list item is a page slug (e.g., `getting-started`). Slugs resolve **at build time** against the nav's source file — a `{% nav %}` in `site/content/docs/_layout.md` resolves `- getting-started` to `/docs/getting-started`. The page's `title` frontmatter becomes the link text.
 
-For pages in subdirectories, write a multi-segment slug: `themes/configuration` resolves to `/docs/themes/configuration`. For external URLs or anything outside the nav's source directory, use an explicit Markdown link `[Label](/path)`. Full rules and the build error format are documented in [Nav slug resolution](/docs/authoring/nav-slug-resolution).
+For pages in subdirectories, write a multi-segment slug: `themes/configuration` resolves to `/extend/theme-authoring/configuration`. For external URLs or anything outside the nav's source directory, use an explicit Markdown link `[Label](/path)`. Full rules and the build error format are documented in [Nav slug resolution](/extend/rune-authoring/nav-slug-resolution).
 
 Each rendered page evaluates every nav against its current URL. The exact-match item gets `aria-current="page"`; the longest-strict-prefix item (if any) gets `data-active="ancestor"`. Themes style both — Lumina ships visually-distinct treatments by default.
 
@@ -134,7 +134,7 @@ Flat horizontal row of items — no groups, no panels. Use as a persistent secon
 
 Menubar `## groups` accept any block content — paragraphs, blockquotes, images, and nested `{% nav %}` runes — with a position-based intro / footer slot rule. The `columns` layout gains a `---`-between-sections column-flow rule plus a headingless mode for use inside menubar panels. Composed together they cover Linear / Vercel / Stripe-style mega menus without a separate `mega` layout.
 
-See [Rich menubar panels and column flow](/docs/authoring/rich-menubar-panels) for the full composition guide.
+See [Rich menubar panels and column flow](/extend/rune-authoring/rich-menubar-panels) for the full composition guide.
 
 ## Collapsible sidebars
 

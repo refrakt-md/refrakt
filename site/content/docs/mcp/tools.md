@@ -101,7 +101,7 @@ Excluded by name (long-running / file generation, no MCP fit): `plan.serve`, `pl
 
 Plugin commands declaring an `mcpHandler` are invoked directly with the structured input and return structured output — the cleanest path. Commands without one fall back to **argv-shimming**: the MCP server serializes the input object into argv strings and calls the legacy `handler`, capturing stdout. This works for legacy plugins but loses structured I/O.
 
-Run `refrakt plugins list --json` to see which commands have `mcpHandler` (the `hasMcpHandler` flag). Plugin authors should provide it for any new command. See [Plugin Authoring](/docs/plugins/authoring) for details.
+Run `refrakt plugins list --json` to see which commands have `mcpHandler` (the `hasMcpHandler` flag). Plugin authors should provide it for any new command. See [Plugin Authoring](/extend/plugin-authoring/authoring) for details.
 
 ### Input schemas
 

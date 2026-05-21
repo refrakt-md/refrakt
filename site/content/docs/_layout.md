@@ -31,18 +31,6 @@ tint-lock: false
 - cli/write
 - cli/theme-tools
 
-## Theme authoring
-
-- themes/overview
-- themes/config-api
-- themes/dimensions
-- themes/css
-- themes/creating-a-theme
-- themes/components
-- themes/layouts
-- themes/tooling
-- themes/tint-cascade
-
 ## Adapters
 
 - adapters/adapters-overview
@@ -52,24 +40,6 @@ tint-lock: false
 - adapters/nuxt
 - adapters/eleventy
 - adapters/html
-
-## Authoring
-
-- authoring/authoring-overview
-- authoring/content-models
-- authoring/output-contract
-- authoring/patterns
-- authoring/partials
-- authoring/page-sections
-- authoring/nav-slug-resolution
-- authoring/rich-menubar-panels
-
-## Packages
-
-- plugins
-- plugins/authoring
-- plugins/pipeline
-- plugins/extending-core
 
 ## MCP Server
 

@@ -69,7 +69,7 @@ Individual steps (list items or heading-delimited blocks) accept these layout at
 
 ## Section header
 
-Steps supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Steps supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Common attributes
 

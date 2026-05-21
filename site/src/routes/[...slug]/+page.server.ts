@@ -1,5 +1,5 @@
 import { serialize, serializeTree } from '@refrakt-md/svelte';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getSite, getTransform, getHighlightTransform } from '$lib/content';
 
@@ -19,6 +19,10 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	if (!page || page.route.draft) {
 		error(404, 'Page not found');
+	}
+
+	if (page.route.redirect) {
+		redirect(301, page.route.redirect);
 	}
 
 	const serialized = serializeTree(page.renderable);

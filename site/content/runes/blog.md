@@ -31,7 +31,7 @@ Use the `layout` attribute to switch between `list`, `grid`, and `compact` displ
 
 ## Section header
 
-Blog supports an optional headline and blurb above the post list. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Blog supports an optional headline and blurb above the post list. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 {% preview source=true %}
 

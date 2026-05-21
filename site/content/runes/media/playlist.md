@@ -100,7 +100,7 @@ Tracks can include nested lists for chapter markers or lyrics. Use `content="cha
 
 ## Section header
 
-Playlist supports an optional eyebrow, headline, and blurb above the playlist content. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Playlist supports an optional eyebrow, headline, and blurb above the playlist content. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
 ### Common attributes
 
