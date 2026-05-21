@@ -1,5 +1,15 @@
 # @refrakt-md/mcp
 
+## 0.14.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @refrakt-md/runes@0.14.3
+  - @refrakt-md/transform@0.14.3
+  - @refrakt-md/cli@0.14.3
+  - @refrakt-md/types@0.14.3
+
 ## 0.14.2
 
 ### Patch Changes
