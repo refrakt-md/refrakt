@@ -143,6 +143,8 @@ export default createDataFile({
 | `basePath` | `string` | `'/'` | Base URL path for all generated pages |
 | `plugins` | `Plugin[]` | — | Plugins to include in the content pipeline |
 | `seo` | `SeoToHtmlOptions` | — | Site-level SEO fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) threaded into every page's emitted meta tags. Surfaces og:site_name, absolute canonical URLs, image fallback, and WebSite + Organization JSON-LD entries when supplied. |
+| `security` | `SecurityPolicy` | `'trusted'` | Security policy for untrusted author content. Pass `'strict'` to sanitise scripts in author markdown for hosted-product use. |
+| `variables` | `Record<string, unknown>` | — | Markdoc variables available in content via `{% $name %}` syntax. Real JavaScript values, not source-text expressions. |
 
 ### EleventyPageData
 

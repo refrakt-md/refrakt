@@ -6,7 +6,7 @@ import {
 	computeUsedCssBlocks,
 	buildUsedCssImports,
 } from '@refrakt-md/transform/node';
-import { getThemePackage } from '@refrakt-md/types';
+import { getThemePackage, type SecurityPolicy } from '@refrakt-md/types';
 import type { Site } from '@refrakt-md/content';
 
 /**
@@ -115,4 +115,37 @@ export async function getUsedCssImports(
 		// matching the pre-tree-shake behaviour.
 		return [themePackage];
 	}
+}
+
+/**
+ * Convenience factory: build a `createRefraktLoader` instance pre-configured
+ * with the four optional Next.js-side fields (configPath, site, variables,
+ * security). Re-exports the loader for direct use in Server Components.
+ *
+ * ```ts
+ * // app/layout.tsx or a setup module
+ * import { createNextLoader } from '@refrakt-md/next';
+ *
+ * const loader = createNextLoader({
+ *   variables: { version: '1.0.0' },
+ *   security: 'strict',
+ * });
+ *
+ * export async function generateStaticParams() {
+ *   const site = await loader.getSite();
+ *   // ...
+ * }
+ * ```
+ *
+ * For consumers who already wire `createRefraktLoader` directly: use that
+ * import — this helper is purely a typed shorthand for the common case.
+ */
+export async function createNextLoader(options: {
+	configPath?: string;
+	site?: string;
+	variables?: Record<string, unknown>;
+	security?: SecurityPolicy;
+} = {}) {
+	const { createRefraktLoader } = await import('@refrakt-md/content');
+	return createRefraktLoader(options);
 }

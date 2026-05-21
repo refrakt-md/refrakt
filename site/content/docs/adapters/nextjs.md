@@ -62,7 +62,22 @@ The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the 
 
 ## Content Loading
 
-Load content using `createRefraktLoader` from `@refrakt-md/content` in a Server Component. It handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
+Load content using `createRefraktLoader` from `@refrakt-md/content` (or the convenience wrapper `createNextLoader` from `@refrakt-md/next`) in a Server Component. The loader handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
+
+```typescript
+// Either the shared loader directly:
+import { createRefraktLoader } from '@refrakt-md/content';
+const loader = createRefraktLoader({
+  variables: { version: '1.0.0' }, // Markdoc {% $version %} interpolation
+  security: 'strict',              // sanitise untrusted author content
+});
+
+// Or the typed Next.js shorthand:
+import { createNextLoader } from '@refrakt-md/next';
+const loader = await createNextLoader({ variables: { version: '1.0.0' } });
+```
+
+Both accept the same four optional fields: `configPath`, `site`, `variables`, `security`.
 
 {% codegroup labels="app/[[...slug]]/page.tsx" %}
 

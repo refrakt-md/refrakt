@@ -119,7 +119,10 @@ async function build() {
 		},
 	};
 
-	// Load content
+	// Load content. The HTML adapter's build script doesn't surface
+	// `security` / `variables` via a CLI flag — for hosted-product use, edit
+	// this file to pass them through to `loadContent` (matches the option
+	// shape `createRefraktLoader` accepts for the Vite-based adapters).
 	const loadedSite = await loadContent(contentDir, '/', icons, communityTags);
 
 	// Print the standard Phase 1/2/3/4 + warnings summary so the HTML build

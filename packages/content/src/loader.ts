@@ -12,6 +12,8 @@ export interface SiteLoaderOptions {
 	sandboxExamplesDir?: string;
 	/** Site-wide Markdoc variables available in content via {% $name %} syntax. */
 	variables?: Record<string, unknown>;
+	/** Security policy for untrusted author content. Default: `'trusted'`. */
+	securityPolicy?: SecurityPolicy;
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
 }
@@ -37,6 +39,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.plugins,
 				options.sandboxExamplesDir,
 				options.variables,
+				options.securityPolicy,
 			);
 			if (!options.dev) cached = promise;
 			return promise;

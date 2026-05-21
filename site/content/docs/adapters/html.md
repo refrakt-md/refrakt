@@ -94,6 +94,24 @@ const html = renderFullPage(
 
 When `siteName`, `baseUrl`, `defaultImage`, or `logo` are supplied, `renderFullPage` emits `og:site_name`, absolutizes `og:url` and adds a canonical `<link>`, falls back missing images to `defaultImage`, and appends WebSite + Organization JSON-LD entries — matching the SvelteKit reference adapter's output. Source these from your `refrakt.config.json` via `resolveSite()` and pass them per page.
 
+### Security and Markdoc variables
+
+The HTML adapter's build script loads content directly via `loadContent`, so `security` (untrusted-content sanitisation) and `variables` (Markdoc `{% $name %}` interpolation) are passed as positional arguments at the call site. The scaffolded `build.ts` shows the order; edit it to thread your own values:
+
+```typescript
+const loadedSite = await loadContent(
+  contentDir,
+  '/',
+  icons,
+  communityTags,
+  undefined,       // sandboxExamplesDir
+  { version: '1.0.0' }, // variables
+  'strict',        // securityPolicy
+);
+```
+
+For most static sites neither option is needed; they exist for hosted-product or per-build interpolation scenarios.
+
 ### `composeSiteTokensCss(site, configDir)`
 
 Composes the site-level token overrides CSS (`theme.tokens`, `theme.modes`, `theme.presets`, `site.tints`) into a single string. Re-exported from `@refrakt-md/transform/node` for convenience.

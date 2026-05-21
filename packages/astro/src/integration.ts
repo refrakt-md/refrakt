@@ -61,7 +61,12 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						const themeModule = await import(themePackage + '/transform');
 						const themeConfig =
 							themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
-						const loader = createRefraktLoader({ configPath, site: options.site });
+						const loader = createRefraktLoader({
+							configPath,
+							site: options.site,
+							variables: options.variables,
+							security: options.security,
+						});
 						const loadedSite = await loader.getSite();
 						if (!summaryPrinted) {
 							process.stderr.write(

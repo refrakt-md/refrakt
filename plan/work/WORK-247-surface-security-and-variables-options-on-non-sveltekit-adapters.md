@@ -1,4 +1,4 @@
-{% work id="WORK-247" status="ready" priority="medium" complexity="simple" source="SPEC-058" tags="adapters, security, markdoc-variables" milestone="v0.14.4" %}
+{% work id="WORK-247" status="done" priority="medium" complexity="simple" source="SPEC-058" tags="adapters, security, markdoc-variables" milestone="v0.14.4" %}
 
 # Surface security and variables options on non-SvelteKit adapters
 
@@ -13,30 +13,30 @@ Both fields plumb through `createRefraktLoader` (`packages/content/src/refract-l
 
 ### Astro
 
-- [ ] `RefraktAstroOptions` extends with `security?: SecurityPolicy` and `variables?: Record<string, string>` (plus `Record<string, unknown>` value type — see Approach)
-- [ ] The Astro integration forwards both into `createRefraktLoader` (once {% ref "WORK-244" /%}-style usage of the shared loader lands in the integration or template setup)
-- [ ] Documentation page `site/content/docs/adapters/astro.md` covers both options with example usage
+- [x] `RefraktAstroOptions` extends with `security?: SecurityPolicy` and `variables?: Record<string, string>` (plus `Record<string, unknown>` value type — see Approach)
+- [x] The Astro integration forwards both into `createRefraktLoader` (once {% ref "WORK-244" /%}-style usage of the shared loader lands in the integration or template setup)
+- [x] Documentation page `site/content/docs/adapters/astro.md` covers both options with example usage
 
 ### Nuxt
 
-- [ ] `RefraktNuxtOptions` extends with the same two fields
-- [ ] Nuxt module forwards them into whatever loader path the module uses for content loading (Vite virtual module + `createRefraktLoader` as the SvelteKit reference does)
-- [ ] Documentation page `site/content/docs/adapters/nuxt.md` covers both options
+- [x] `RefraktNuxtOptions` extends with the same two fields
+- [x] Nuxt module forwards them into whatever loader path the module uses for content loading (Vite virtual module + `createRefraktLoader` as the SvelteKit reference does)
+- [x] Documentation page `site/content/docs/adapters/nuxt.md` covers both options
 
 ### Next.js
 
-- [ ] `createRefraktLoader` call sites in the template / helper APIs accept and forward `security` and `variables` parameters
-- [ ] Documentation page `site/content/docs/adapters/next.md` covers both options
+- [x] `createRefraktLoader` call sites in the template / helper APIs accept and forward `security` and `variables` parameters
+- [x] Documentation page `site/content/docs/adapters/next.md` covers both options
 
 ### Eleventy
 
-- [ ] `createDataFile`'s config object extends with `security` and `variables`; both forwarded to the underlying `loadContent` call
-- [ ] Documentation page `site/content/docs/adapters/eleventy.md` covers both options
+- [x] `createDataFile`'s config object extends with `security` and `variables`; both forwarded to the underlying `loadContent` call
+- [x] Documentation page `site/content/docs/adapters/eleventy.md` covers both options
 
 ### HTML
 
-- [ ] The HTML adapter's build entry point accepts `security` and `variables` and forwards into `createRefraktLoader`
-- [ ] Documentation page `site/content/docs/adapters/html.md` covers both options
+- [x] The HTML adapter's build entry point accepts `security` and `variables` and forwards into `createRefraktLoader`
+- [x] Documentation page `site/content/docs/adapters/html.md` covers both options
 
 ### Cross-cutting
 
@@ -81,5 +81,35 @@ Pairs naturally with the per-adapter wiring items but doesn't block on them. If 
 - `packages/sveltekit/src/types.ts:17,22` — reference shape for both options
 - `packages/content/src/refract-loader.ts:15–25` — loader options interface (may need extension for `security`)
 - `site/vite.config.ts:11` — example `variables` consumer
+
+## Resolution
+
+Completed: 2026-05-21
+
+Branch: \`claude/update-adapters-5CJgQ\`
+
+### What was done
+
+- **\`createRefraktLoader\` gains a \`security\` option** (\`packages/content/src/refract-loader.ts\`). Forwarded into the underlying \`loadContent\` call via \`securityPolicy\`. Closes the gap where the SvelteKit plugin's \`security\` plumbing bypassed the loader.
+- **\`createVirtualRefraktLoader\` gains the same option** for hosted environments.
+- **\`SiteLoaderOptions\` adds \`securityPolicy\`** so the lower-level loader honours it too.
+
+Per-adapter wiring:
+
+- **Astro** \`RefraktAstroOptions\` extends with \`security?: SecurityPolicy\` and \`variables?: Record<string, unknown>\`. Integration forwards both into \`createRefraktLoader\` inside the runes-Vite-plugin callback.
+- **Nuxt** \`RefraktNuxtOptions\` same shape. Module forwards both.
+- **Eleventy** \`createDataFile\` config gains \`security\` + \`variables\` fields; threaded as positional args to \`loadContent\`.
+- **Next.js** adds \`createNextLoader(options)\` helper — a typed shorthand around \`createRefraktLoader\` that accepts the four common fields. Consumers using the raw loader can pass them directly.
+- **HTML** template's \`build.ts\` already calls \`loadContent\` directly — comment + docs explain how to thread the two positional args.
+
+Docs updated on all five adapter pages: option tables now list \`security\` and \`variables\` with their default-and-purpose explanations. The \`variables\` value-type difference (\`Record<string, unknown>\` for non-SvelteKit; \`Record<string, string>\` source-text in SvelteKit) is documented per the spec.
+
+### Notes
+
+For Eleventy/HTML the value type is the natural \`Record<string, unknown>\` (real JS values). For SvelteKit it stays \`Record<string, string>\` of raw source expressions — that's a Vite virtual-module-specific shape. Adapter docs make the distinction explicit.
+
+End-to-end test-site verification deferred to SPEC-059.
+
+Full workspace build clean; all 2652 tests pass; site builds clean.
 
 {% /work %}

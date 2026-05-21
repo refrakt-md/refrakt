@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   modules: [refrakt],
   refrakt: {
     configPath: './refrakt.config.json',
+    site: 'main',
+    security: 'strict',
+    variables: { version: '1.0.0' },
   },
 });
 ```
@@ -68,6 +71,9 @@ export default defineNuxtConfig({
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `configPath` | `string` | `"./refrakt.config.json"` | Path to the refrakt configuration file |
+| `site` | `string` | — | Which site to use from a multi-site config |
+| `security` | `SecurityPolicy` | `'trusted'` | Security policy for untrusted author content |
+| `variables` | `Record<string, unknown>` | — | Markdoc variables available in content via `{% $name %}` |
 
 ## NuxtTheme Interface
 

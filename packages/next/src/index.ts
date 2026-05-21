@@ -27,5 +27,9 @@ export { getUsedCssImports } from './tokens.js';
 // output across the refrakt stack.
 export { printPipelineSummary } from './tokens.js';
 
+// Pre-configured loader factory — typed shorthand around createRefraktLoader
+// for the common Next.js case (configPath + site + variables + security).
+export { createNextLoader } from './tokens.js';
+
 // Types
 export type { NextTheme } from './types.js';

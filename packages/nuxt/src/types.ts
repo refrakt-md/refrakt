@@ -1,4 +1,5 @@
 import type { AdapterTheme } from '@refrakt-md/transform';
+import type { SecurityPolicy } from '@refrakt-md/types';
 
 /**
  * Theme definition for the Nuxt adapter.
@@ -13,4 +14,8 @@ export interface RefraktNuxtOptions {
 	/** Which site to use from the config. Required when the config declares
 	 *  multiple `sites.*`; optional (and resolves to the lone site) otherwise. */
 	site?: string;
+	/** Security policy for untrusted author content. Defaults to `'trusted'`. */
+	security?: SecurityPolicy;
+	/** Markdoc variables available in content via `{% $name %}` syntax. */
+	variables?: Record<string, unknown>;
 }

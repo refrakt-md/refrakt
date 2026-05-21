@@ -65,8 +65,18 @@ The integration:
 ```javascript
 refrakt({
   configPath: './refrakt.config.json', // default
+  site: 'main',                        // optional; required for multi-site configs
+  security: 'strict',                  // optional; default 'trusted'
+  variables: { version: '1.0.0' },     // optional; available as `{% $version %}`
 })
 ```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `configPath` | `string` | Path to `refrakt.config.json`. Default: `'./refrakt.config.json'` |
+| `site` | `string` | Which site to use from a multi-site config |
+| `security` | `SecurityPolicy` | Security policy for untrusted author content. Default: `'trusted'` (no sanitisation). Pass `'strict'` for hosted-product use. |
+| `variables` | `Record<string, unknown>` | Markdoc variables available in content via `{% $name %}` syntax. Values are real JavaScript values consumed at runtime (different from the SvelteKit plugin's source-text-expression shape). |
 
 ## Site-level token overrides
 
