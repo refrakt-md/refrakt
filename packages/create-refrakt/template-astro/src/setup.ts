@@ -1,20 +1,21 @@
-import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
-import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
+import { createRefraktLoader } from '@refrakt-md/content';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import { getThemePackage } from '@refrakt-md/types';
-import type { Schema } from '@markdoc/markdoc';
 import { readFileSync } from 'node:fs';
-import * as path from 'node:path';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 
-const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const configPath = resolve('refrakt.config.json');
+const config = loadRefraktConfig(configPath);
 const { site } = resolveSite(config);
-const themePackage = getThemePackage(site.theme);
-const contentDir = path.resolve(site.contentDir);
 
-const routeRules = site.routeRules ?? [{ pattern: '**', layout: 'default' }];
+const loader = createRefraktLoader({ configPath });
 
-/** Site-level SEO fields surfaced for `buildSeoHead`. Read from refrakt.config.json. */
+export const getTransform = () => loader.getTransform();
+export const getHighlightTransform = () => loader.getHighlightTransform();
+export const getSite = () => loader.getSite();
+
+/** Site-level SEO fields surfaced for `buildSeoHead`. Read once from refrakt.config.json. */
 export const seoSiteFields = {
 	siteName: site.siteName,
 	baseUrl: site.baseUrl,
@@ -22,78 +23,35 @@ export const seoSiteFields = {
 	logo: site.logo,
 };
 
-let _transform: ((tree: any) => any) | null = null;
-let _hl: { (tree: any): any; css: string } | null = null;
+/**
+ * Build the AstroTheme `{ manifest, layouts }` shape for `renderPage`.
+ *
+ * Loads the theme package's manifest + layouts and bakes site-level fields
+ * (`routeRules`, `siteName`, `baseUrl`, `defaultImage`, `logo`) into the
+ * manifest so the SEO and route-resolution paths have what they need.
+ *
+ * Memoised — the theme is resolved once per process.
+ */
 let _theme: { manifest: any; layouts: any } | null = null;
-let _communityTags: Record<string, Schema> | undefined;
-let _packages: any[] | undefined;
+export async function getTheme() {
+	if (_theme) return _theme;
 
-async function init() {
-	if (_transform) return;
+	const themePackage = getThemePackage(site.theme);
+	const layouts = (await import(themePackage + '/layouts')).layouts;
 
-	const [themeModule, layoutsModule] = await Promise.all([
-		import(themePackage + '/transform'),
-		import(themePackage + '/layouts'),
-	]);
-
-	// Manifest is a JSON file — resolve its path and read directly
-	const { createRequire: cr } = await import('node:module');
-	const manifestPath = cr(import.meta.url).resolve(themePackage + '/manifest');
+	const manifestPath = createRequire(import.meta.url).resolve(themePackage + '/manifest');
 	const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
 	_theme = {
-		manifest: { ...manifest, routeRules },
-		layouts: layoutsModule.layouts,
+		manifest: {
+			...manifest,
+			routeRules: site.routeRules ?? [{ pattern: '**', layout: 'default' }],
+			...(site.siteName && { siteName: site.siteName }),
+			...(site.baseUrl && { baseUrl: site.baseUrl }),
+			...(site.defaultImage && { defaultImage: site.defaultImage }),
+			...(site.logo && { logo: site.logo }),
+		},
+		layouts,
 	};
-
-	const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
-
-	let transformConfig = themeConfig;
-
-	const pluginNames = site.plugins ?? config.plugins ?? [];
-	if (pluginNames.length > 0) {
-		const loaded = await Promise.all(
-			pluginNames.map((name: string) => loadPlugin(name))
-		);
-		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
-
-		_communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
-		_packages = loaded.map((l: any) => l.pkg);
-
-		const { config: assembledConfig } = assembleThemeConfig({
-			coreConfig: themeConfig,
-			pluginRunes: merged.themeRunes,
-			pluginIcons: merged.themeIcons,
-			pluginBackgrounds: merged.themeBackgrounds,
-			extensions: merged.extensions as any,
-			provenance: merged.provenance,
-		});
-
-		transformConfig = assembledConfig;
-	}
-
-	_transform = createTransform(transformConfig);
-}
-
-export async function getTransform() {
-	await init();
-	return _transform!;
-}
-
-export async function getTheme() {
-	await init();
-	return _theme!;
-}
-
-export async function getHighlightTransform() {
-	if (_hl) return _hl;
-	const { createHighlightTransform } = await import('@refrakt-md/highlight');
-	_hl = await createHighlightTransform(buildHighlightOptions(site));
-	return _hl;
-}
-
-export async function getSite() {
-	await init();
-	return loadContent(contentDir, '/', {}, _communityTags, _packages);
+	return _theme;
 }
