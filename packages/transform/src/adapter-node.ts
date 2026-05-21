@@ -39,6 +39,12 @@ export type { MinimalVitePlugin } from './site-tokens-vite.js';
 // blocks actually present in the page corpus.
 export { computeUsedCssBlocks, buildUsedCssImports } from './used-css.js';
 
+// Content HMR — watches the content directory + sandbox examples in dev mode
+// and triggers full-page reloads on `.md` / sandbox-source edits. Shared
+// between SvelteKit, Astro, and Nuxt.
+export { setupContentHmr } from './content-hmr.js';
+export type { MinimalViteDevServer } from './content-hmr.js';
+
 /**
  * Load and normalize a refrakt.config.json file.
  *

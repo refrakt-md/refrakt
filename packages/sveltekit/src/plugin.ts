@@ -10,9 +10,9 @@ import {
 	resolveSite,
 	composeSiteTokensCss,
 	computeUsedCssBlocks,
+	setupContentHmr,
 } from '@refrakt-md/transform/node';
 import { resolveVirtualId, loadVirtualModule, type BuildContext } from './virtual-modules.js';
-import { setupContentHmr } from './content-hmr.js';
 
 const CORE_NO_EXTERNAL = [
 	'@markdoc/markdoc',

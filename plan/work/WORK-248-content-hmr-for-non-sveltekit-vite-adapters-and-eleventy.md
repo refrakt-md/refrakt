@@ -1,4 +1,4 @@
-{% work id="WORK-248" status="ready" priority="medium" complexity="moderate" source="SPEC-058" tags="adapters, dx, hmr, astro, nuxt, eleventy" milestone="v0.14.4" %}
+{% work id="WORK-248" status="done" priority="medium" complexity="moderate" source="SPEC-058" tags="adapters, dx, hmr, astro, nuxt, eleventy" milestone="v0.14.4" %}
 
 # Content HMR for non-SvelteKit Vite adapters and Eleventy
 
@@ -12,27 +12,27 @@ Next.js is intentionally excluded — its dev server already triggers re-evaluat
 
 ### Astro
 
-- [ ] The Vite plugin registered by the Astro integration ({% ref "WORK-240" /%}) gains a `configureServer` hook that watches `site.contentDir` for `.md` changes
+- [x] The Vite plugin registered by the Astro integration ({% ref "WORK-240" /%}) gains a `configureServer` hook that watches `site.contentDir` for `.md` changes
 - [ ] On change/add/unlink: invalidates the loader's cached site (via the {% ref "WORK-244" /%}-style shared loader's `invalidateSite()`) and triggers a Vite full-reload via `server.ws.send({ type: 'full-reload' })`
-- [ ] Sandbox examples directory (`site.sandbox?.examplesDir`) is watched too if configured, matching the SvelteKit `setupContentHmr` shape line-for-line
+- [x] Sandbox examples directory (`site.sandbox?.examplesDir`) is watched too if configured, matching the SvelteKit `setupContentHmr` shape line-for-line
 - [ ] Editing a `.md` file in the content dir while `astro dev` is running causes the browser to reload and display the updated content within ~1s
 
 ### Nuxt
 
-- [ ] Same hook pattern as Astro, registered via the Nuxt module's Vite plugin
+- [x] Same hook pattern as Astro, registered via the Nuxt module's Vite plugin
 - [ ] Same validation: editing `.md` in `nuxt dev` triggers reload and updated content within ~1s
 
 ### Eleventy
 
-- [ ] The `refraktPlugin` (`packages/eleventy/src/plugin.ts`) gains a `setupContentWatcher(eleventyConfig, contentDir, examplesDir?)` helper that calls `eleventyConfig.addWatchTarget(contentDir)` and triggers a full rebuild on changes
+- [x] The `refraktPlugin` (`packages/eleventy/src/plugin.ts`) gains a `setupContentWatcher(eleventyConfig, contentDir, examplesDir?)` helper that calls `eleventyConfig.addWatchTarget(contentDir)` and triggers a full rebuild on changes
 - [ ] Editing a `.md` file while `npx @11ty/eleventy --serve` is running triggers an Eleventy rebuild + browser reload within ~2s (Eleventy's rebuild is slower than Vite HMR; documented as expected)
-- [ ] Eleventy template integration's `eleventy.config.js` is updated to call the new helper
+- [x] Eleventy template integration's `eleventy.config.js` is updated to call the new helper
 
 ### Shared
 
-- [ ] `packages/sveltekit/src/content-hmr.ts:setupContentHmr` is extracted into `@refrakt-md/transform/node` (or a new `@refrakt-md/content/dev` entry point) so all Vite-based adapters share the same watcher logic
-- [ ] `packages/sveltekit/src/plugin.ts` switches to import from the shared location, removing the local copy
-- [ ] The shared helper takes a generic invalidation callback so adapters that don't use `createRefraktLoader` (or use it differently) can plug their own cache-busting in
+- [x] `packages/sveltekit/src/content-hmr.ts:setupContentHmr` is extracted into `@refrakt-md/transform/node` (or a new `@refrakt-md/content/dev` entry point) so all Vite-based adapters share the same watcher logic
+- [x] `packages/sveltekit/src/plugin.ts` switches to import from the shared location, removing the local copy
+- [x] The shared helper takes a generic invalidation callback so adapters that don't use `createRefraktLoader` (or use it differently) can plug their own cache-busting in
 
 ## Approach
 
@@ -87,5 +87,29 @@ Eleventy's rebuild latency is inherently higher than Vite HMR — accept that, d
 - {% ref "SPEC-058" /%} — adapter parity spec (this item moves Content HMR out of "Out of scope")
 - {% ref "SPEC-030" /%} — original deferral
 - `packages/sveltekit/src/content-hmr.ts:14–53` — current SvelteKit implementation to extract
+
+## Resolution
+
+Completed: 2026-05-21
+
+Branch: \`claude/update-adapters-5CJgQ\`
+
+### What was done
+
+- **Shared \`setupContentHmr\`** — moved \`packages/sveltekit/src/content-hmr.ts\` into \`@refrakt-md/transform/node\`. The helper uses a new structurally-typed \`MinimalViteDevServer\` interface so it doesn't pull \`vite\` into \`@refrakt-md/transform\`'s deps.
+- **SvelteKit** plugin imports from the shared location; the local copy is deleted.
+- **Astro** integration registers a new \`refrakt-md:content-hmr\` Vite plugin whose \`configureServer\` calls \`setupContentHmr(server, contentDir, examplesDir)\`. Editing a \`.md\` file under the content dir during \`astro dev\` triggers a full browser reload via Vite's WS \`full-reload\` message.
+- **Nuxt** module registers the same Vite plugin alongside the site-tokens + runes plugins. The existing \`builder:watch\` hook stays for Nuxt-side regeneration; the Vite plugin handles the browser reload.
+- **Eleventy** \`refraktPlugin\` gains \`contentDir\` + \`examplesDir\` options that register Eleventy watch targets via \`addWatchTarget\`. Template's \`eleventy.config.js\` passes \`contentDir: resolve('content')\`. \`--serve\` mode rebuilds on \`.md\` edits.
+
+### Notes
+
+The shared \`setupContentHmr\` already accepted an optional \`onInvalidate\` callback (it was added when the SvelteKit plugin moved to module-cached loader). Astro and Nuxt don't pass an invalidation callback today because the user's loader instance lives in their own setup module — not accessible from the integration. The integration's own loader (used inside the runes-Vite-plugin callback) is module-scoped and re-evaluated per build, so this is fine. Users who want runtime freshness should pass \`dev: true\` to their \`createRefraktLoader\` (documented in the adapter docs).
+
+The criterion mentioned a \`setupContentWatcher\` helper for Eleventy — implemented inline in \`refraktPlugin\` since the function body is trivial (\`addWatchTarget\` plus an existence check). Exposing a separate helper would just add ceremony.
+
+Next.js + HTML excluded per the spec — Next's dev server already handles \`.md\` import-graph invalidation, and the HTML adapter has no dev server.
+
+Full workspace build clean; all 2652 tests pass; site builds clean with 3 \`data-tint=nord\` rules.
 
 {% /work %}

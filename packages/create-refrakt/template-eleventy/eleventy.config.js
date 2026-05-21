@@ -16,6 +16,9 @@ export default function (eleventyConfig) {
 		cssPrefix: '/css',
 		behaviorFile: 'node_modules/@refrakt-md/behaviors/dist/index.js',
 		jsPrefix: '/js',
+		// Watch content (and any sandbox examples) for --serve mode so edits
+		// trigger a rebuild + browser reload.
+		contentDir: resolve('content'),
 	});
 
 	eleventyConfig.addPassthroughCopy({

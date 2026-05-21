@@ -7,6 +7,7 @@ import {
 	createSiteTokensVitePlugin,
 	createRunesCssVitePlugin,
 	computeUsedCssBlocks,
+	setupContentHmr,
 	SITE_TOKENS_VIRTUAL_ID,
 	RUNES_VIRTUAL_ID,
 } from '@refrakt-md/transform/node';
@@ -86,14 +87,32 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 			}
 		};
 
-		// Register the Vite plugins serving virtual:refrakt/site-tokens.css and
-		// virtual:refrakt/runes.css. Shared factories from
-		// @refrakt-md/transform/node — same plugins the Astro integration uses.
+		// Resolve content + sandbox paths for the HMR watcher.
+		const contentDir = resolve(nuxt.options.rootDir, site.contentDir);
+		const examplesDir = site.sandbox?.examplesDir
+			? resolve(nuxt.options.rootDir, site.sandbox.examplesDir)
+			: undefined;
+
+		// Content-HMR Vite plugin — registers the watcher in `configureServer`
+		// so `.md` edits trigger a full browser reload during `nuxt dev`.
+		// Mirrors the SvelteKit reference behaviour.
+		const contentHmrPlugin = {
+			name: 'refrakt-md:content-hmr',
+			configureServer(server: any) {
+				setupContentHmr(server, contentDir, examplesDir);
+			},
+		};
+
+		// Register the Vite plugins serving virtual:refrakt/site-tokens.css,
+		// virtual:refrakt/runes.css, and the content-HMR watcher. Shared
+		// factories from @refrakt-md/transform/node — same plugins the Astro
+		// integration uses.
 		nuxt.options.vite = nuxt.options.vite ?? {};
 		nuxt.options.vite.plugins = nuxt.options.vite.plugins ?? [];
 		nuxt.options.vite.plugins.push(
 			createSiteTokensVitePlugin(site, configDir),
 			createRunesCssVitePlugin(getUsedBlocks),
+			contentHmrPlugin,
 		);
 
 		// Configure Vue to treat rf-* as custom elements (compose with existing)
@@ -101,8 +120,9 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		nuxt.options.vue.compilerOptions.isCustomElement = (tag: string) =>
 			tag.startsWith('rf-') || (prevIsCustomElement ? prevIsCustomElement(tag) : false);
 
-		// Watch content directory for HMR
-		const contentDir = resolve(nuxt.options.rootDir, site.contentDir);
+		// Also wire the Nuxt builder:watch hook to trigger app regeneration on
+		// `.md` changes — complements the Vite content-HMR watcher above
+		// (which handles the browser reload; this handles Nuxt's own pipeline).
 		nuxt.hook('builder:watch', async (_event: string, relativePath: string) => {
 			if (relativePath.endsWith('.md')) {
 				const absPath = resolve(nuxt.options.rootDir, relativePath);

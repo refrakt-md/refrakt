@@ -7,6 +7,7 @@ import {
 	createSiteTokensVitePlugin,
 	createRunesCssVitePlugin,
 	computeUsedCssBlocks,
+	setupContentHmr,
 	SITE_TOKENS_VIRTUAL_ID,
 	RUNES_VIRTUAL_ID,
 } from '@refrakt-md/transform/node';
@@ -94,6 +95,24 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 					}
 				};
 
+				// Resolve content + sandbox paths for the HMR watcher. The
+				// watcher is wired via the content-hmr Vite plugin below.
+				const contentDir = resolve(config.root.pathname, site.contentDir);
+				const examplesDir = site.sandbox?.examplesDir
+					? resolve(config.root.pathname, site.sandbox.examplesDir)
+					: undefined;
+
+				// Content-HMR Vite plugin — registers the watcher in
+				// `configureServer` so `.md` edits trigger a full browser reload
+				// during `astro dev`. Mirrors the SvelteKit reference behaviour.
+				const contentHmrPlugin = {
+					name: 'refrakt-md:content-hmr',
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					configureServer(server: any) {
+						setupContentHmr(server, contentDir, examplesDir);
+					},
+				};
+
 				updateConfig({
 					vite: {
 						ssr: {
@@ -110,6 +129,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						plugins: [
 							createSiteTokensVitePlugin(site, configDir) as never,
 							createRunesCssVitePlugin(getUsedBlocks) as never,
+							contentHmrPlugin as never,
 						],
 					},
 				});
@@ -123,8 +143,8 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 					`import '${RUNES_VIRTUAL_ID}';\nimport '${SITE_TOKENS_VIRTUAL_ID}';`,
 				);
 
-				// Watch content directory for changes in dev mode
-				const contentDir = resolve(config.root.pathname, site.contentDir);
+				// Tell Astro to restart the dev server if `refrakt.config.json`
+				// itself changes (content edits are handled by the HMR watcher above).
 				addWatchFile(contentDir);
 			},
 		},

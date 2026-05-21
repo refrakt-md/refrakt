@@ -25,4 +25,9 @@ export interface RefraktEleventyOptions {
 	behaviorFile?: string;
 	/** Path prefix for copied JS (default: '/js') */
 	jsPrefix?: string;
+	/** Content directory to register as an Eleventy watch target so
+	 *  `--serve` triggers a rebuild on `.md` edits. */
+	contentDir?: string;
+	/** Sandbox examples directory to register as an Eleventy watch target. */
+	examplesDir?: string;
 }
