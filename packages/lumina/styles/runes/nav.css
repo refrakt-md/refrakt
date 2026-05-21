@@ -338,6 +338,13 @@
 	background: transparent;
 	color: var(--rf-color-text);
 }
+/* Standalone columns (footer, section landing) use a text-only treatment
+ * for the active item — the generic `.rf-nav-item__link[aria-current="page"]`
+ * surface tint would compete with the column layout's quiet rhythm. The
+ * nested-in-menubar case re-enables the tint below at higher specificity. */
+.rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+	background: transparent;
+}
 
 @media (max-width: 600px) {
 	.rf-nav--columns {
@@ -489,6 +496,12 @@
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
 	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
 	color: var(--rf-color-text);
+}
+/* Re-enable the surface tint on the active item inside a menubar dropdown
+ * — the standalone-columns override above zeroes the background, but here
+ * the tint helps the current page stand out from peers in a tight panel. */
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
 }
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link .rf-nav-item__description {
 	font-weight: 400;
