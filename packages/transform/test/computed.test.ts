@@ -35,13 +35,64 @@ function makeNavTree() {
 // ─── buildBreadcrumb ──────────────────────────────────────────────────
 
 describe('buildBreadcrumb', () => {
-	it('returns null when nav content is empty', () => {
-		expect(buildBreadcrumb([], '/docs/intro', 'Intro', 'rf')).toBeNull();
+	it('returns null when page has no title', () => {
+		expect(buildBreadcrumb([], '/docs/intro', '', 'rf')).toBeNull();
 	});
 
-	it('returns null when current URL slug is not in nav tree', () => {
+	it('emits the page title alone when nav content is empty', () => {
+		const result = buildBreadcrumb([], '/docs/intro', 'Intro', 'rf');
+		expect(result).not.toBeNull();
+		const tag = asTag(result!);
+		expect(tag.children).toHaveLength(1);
+		const page = asTag(tag.children[0]);
+		expect(page.attributes.class).toBe('rf-docs-breadcrumb-page');
+		expect(page.children[0]).toBe('Intro');
+	});
+
+	it('emits the page title alone when the slug is not in the nav tree', () => {
 		const nav = makeNavTree();
-		expect(buildBreadcrumb(nav, '/docs/unknown-page', 'Unknown', 'rf')).toBeNull();
+		const result = buildBreadcrumb(nav, '/docs/unknown-page', 'Unknown', 'rf');
+		expect(result).not.toBeNull();
+		const tag = asTag(result!);
+		expect(tag.children).toHaveLength(1);
+	});
+
+	it('drops the category when it matches the page title', () => {
+		const nav = [
+			makeTag('section', { 'data-rune': 'nav-group' }, [
+				makeTag('h2', {}, ['Rune Catalog']),
+				makeTag('div', { 'data-rune': 'nav-item' }, [
+					makeTag('span', { 'data-field': 'slug' }, ['rune-catalog']),
+				]),
+			]),
+		];
+		const result = buildBreadcrumb(nav, '/runes/rune-catalog', 'Rune Catalog', 'rf');
+		expect(result).not.toBeNull();
+		const tag = asTag(result!);
+		expect(tag.children).toHaveLength(1);
+		const page = asTag(tag.children[0]);
+		expect(page.children[0]).toBe('Rune Catalog');
+	});
+
+	it('matches by full URL (post-slug-resolution shape)', () => {
+		// After the nav pipeline runs, items contain `<a href="/x/y">Title</a>`
+		// rather than a sibling slug span — the resolver should match either.
+		const nav = [
+			makeTag('section', { 'data-rune': 'nav-group' }, [
+				makeTag('h2', {}, ['Content']),
+				makeTag('li', { 'data-rune': 'nav-item' }, [
+					makeTag('a', { href: '/runes/hint' }, [
+						makeTag('span', { 'data-field': 'slug' }, ['Hint']),
+					]),
+				]),
+			]),
+		];
+		const result = buildBreadcrumb(nav, '/runes/hint', 'Hint', 'rf');
+		expect(result).not.toBeNull();
+		const tag = asTag(result!);
+		expect(tag.children).toHaveLength(3);
+		expect(asTag(tag.children[0]).children[0]).toBe('Content');
+		expect(asTag(tag.children[2]).children[0]).toBe('Hint');
 	});
 
 	it('produces breadcrumb with category and page title', () => {
