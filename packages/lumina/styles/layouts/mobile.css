@@ -59,15 +59,16 @@
 	display: none;
 }
 /* Panel items — top-level links and group items render uniformly. The
-   four-class selectors below carry specificity (0,4,0), beating the
-   menubar's mobile rules in nav.css ((0,3,0)) on equal source position
-   so the panel's typography always wins (nav.css is imported later than
-   mobile.css in index.css). */
+   selectors below need to beat nav.css's nested-columns mobile overrides
+   ((0,4,0)) on equal source position (nav.css is imported later than
+   mobile.css in index.css), so the columns-context selectors carry
+   (0,5,0) by including `.rf-nav-group__panel` in the chain. */
 .rf-mobile-panel__nav a,
 .rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
 	display: block;
-	padding: 0.5rem 0;
+	padding: 0;
 	font-size: 1.5rem;
 	font-weight: 700;
 	color: var(--rf-color-text);
@@ -77,7 +78,8 @@
 }
 .rf-mobile-panel__nav a:hover,
 .rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link:hover,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link:hover {
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link:hover,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
 	color: var(--rf-color-primary, var(--rf-color-text));
 	background: transparent;
 	text-decoration: none;

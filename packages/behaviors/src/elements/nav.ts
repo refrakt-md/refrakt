@@ -1,57 +1,19 @@
-import { RfContext } from './context.js';
 import { SafeHTMLElement } from './ssr-safe.js';
 
 /**
- * <rf-nav> — resolves page slugs to links with active state.
+ * <rf-nav> — interactive-behavior anchor for the nav rune.
  *
- * Reads page data from RfContext.pages and current URL from RfContext.currentUrl.
- * Finds NavItem children (via [data-rune="nav-item"]) and resolves their
- * data-slug attributes to page URLs.
+ * As of SPEC-055, slug → href resolution and active-state marking are both
+ * performed at build time during the cross-page pipeline's postProcess phase.
+ * The SSR HTML carries resolved `<a href>` values with `aria-current="page"` /
+ * `data-active="ancestor"` attributes already in place.
  *
- * Progressive enhancement: without JS, shows plain text from identity transform.
- * With JS, replaces text with <a> links and marks the active page.
+ * This element therefore has no runtime resolution responsibilities. It remains
+ * registered as a custom element so other behaviors (collapsible toggling,
+ * menubar dropdown open/close, mega panel open/close) can attach to it.
  */
 export class RfNav extends SafeHTMLElement {
 	connectedCallback() {
-		this.resolveNavItems();
+		// Reserved for interactive-behavior hooks. No work to do for SSR-resolved navs.
 	}
-
-	private resolveNavItems() {
-		const pages = RfContext.pages;
-		const currentUrl = RfContext.currentUrl;
-		if (!pages || pages.length === 0) return;
-
-		// Find all NavItem elements within this nav
-		const items = this.querySelectorAll<HTMLElement>('[data-rune="nav-item"]');
-		for (const item of items) {
-			const slug = item.dataset.slug;
-			if (!slug) continue;
-
-			const candidates = pages.filter(p => p.url.endsWith('/' + slug) || p.url === '/' + slug);
-			const page = candidates.length <= 1
-				? candidates[0]
-				: candidates.sort((a, b) =>
-					sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl)
-				)[0];
-			if (!page) continue;
-
-			// Replace content with a link
-			const link = document.createElement('a');
-			link.href = page.url;
-			link.className = 'rf-nav-item__link';
-			link.textContent = page.title;
-
-			if (currentUrl === page.url) {
-				link.classList.add('rf-nav-item__link--active');
-			}
-
-			item.replaceChildren(link);
-		}
-	}
-}
-
-function sharedPrefixLength(a: string, b: string): number {
-	let i = 0;
-	while (i < a.length && i < b.length && a[i] === b[i]) i++;
-	return i;
 }

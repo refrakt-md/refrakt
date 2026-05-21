@@ -25,7 +25,13 @@ export function navCollapsibleBehavior(el: HTMLElement): CleanupFn {
 		);
 		if (!heading) continue;
 
-		const panel = group.querySelector<HTMLElement>(':scope > ul, :scope > ol');
+		// SPEC-054 wraps each nav-group's body content (lists, nested navs,
+		// intro/footer slots) in a `<div data-name="panel">`. Animate that
+		// wrapper; for older trees that don't have it, fall back to the
+		// direct <ul>/<ol>.
+		const panel = group.querySelector<HTMLElement>(
+			':scope > [data-name="panel"], :scope > ul, :scope > ol',
+		);
 		if (!panel) continue;
 
 		const triggerId = heading.id || uniqueId('rf-nav-trigger');

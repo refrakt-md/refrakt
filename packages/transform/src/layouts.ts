@@ -229,49 +229,55 @@ export const docsLayout: LayoutConfig = {
 				},
 			],
 		},
-		sidebar: {
-			tag: 'aside',
-			class: 'rf-docs-sidebar',
-			source: 'region:nav',
-			conditional: true,
-		},
-		main: {
-			tag: 'main',
-			class: 'rf-docs-content',
-			conditionalModifier: { region: 'nav', modifier: 'has-nav' },
-			wrapper: {
-				tag: 'div',
-				class: 'rf-docs-content__inner',
-				conditionalModifier: { computed: 'toc', modifier: 'has-toc' },
-			},
+		body: {
+			tag: 'div',
+			class: 'rf-docs-body',
 			children: [
 				{
-					tag: 'div',
-					class: 'rf-docs-content__body',
-					attrs: { 'data-pagefind-body': '' },
+					tag: 'aside',
+					class: 'rf-docs-sidebar',
+					source: 'region:nav',
+					conditional: true,
+				},
+				{
+					tag: 'main',
+					class: 'rf-docs-content',
+					conditionalModifier: { region: 'nav', modifier: 'has-nav' },
+					wrapper: {
+						tag: 'div',
+						class: 'rf-docs-content__inner',
+						conditionalModifier: { computed: 'toc', modifier: 'has-toc' },
+					},
 					children: [
 						{
 							tag: 'div',
-							source: 'computed:version-switcher',
-							conditional: true,
+							class: 'rf-docs-content__body',
+							attrs: { 'data-pagefind-body': '' },
+							children: [
+								{
+									tag: 'div',
+									source: 'computed:version-switcher',
+									conditional: true,
+								},
+								{
+									tag: 'div',
+									source: 'content',
+								},
+								{
+									tag: 'div',
+									class: 'rf-docs-content__pagination',
+									source: 'region:pagination',
+									conditional: true,
+								},
+							],
 						},
 						{
-							tag: 'div',
-							source: 'content',
-						},
-						{
-							tag: 'div',
-							class: 'rf-docs-content__pagination',
-							source: 'region:pagination',
+							tag: 'aside',
+							class: 'rf-docs-toc',
+							source: 'computed:toc',
 							conditional: true,
 						},
 					],
-				},
-				{
-					tag: 'aside',
-					class: 'rf-docs-toc',
-					source: 'computed:toc',
-					conditional: true,
 				},
 			],
 		},

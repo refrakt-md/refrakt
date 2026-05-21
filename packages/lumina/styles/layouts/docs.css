@@ -75,13 +75,25 @@
 	vertical-align: -0.15em;
 }
 
-/* ---- Fixed sidebar ---- */
+/* ---- Body wrapper: sidebar + content row ----
+ * The `body` slot in docsLayout groups sidebar + main so `position: sticky`
+ * on the sidebar has a containing block that ends *before* the footer.
+ * When the user scrolls past the wrapper's bottom (i.e. when the footer
+ * comes into view) sticky releases and the sidebar scrolls away with the
+ * page rather than overlaying the footer. */
+.rf-docs-body {
+	display: flex;
+	align-items: flex-start;
+}
+
+/* ---- Sticky sidebar ---- */
 .rf-docs-sidebar {
-	position: fixed;
-	left: 0;
+	position: sticky;
 	top: 3.125rem;
-	bottom: 0;
+	align-self: flex-start;
+	flex-shrink: 0;
 	width: 240px;
+	height: calc(100vh - 3.125rem);
 	overflow-y: auto;
 	padding: 1.5rem;
 	border-right: 1px solid var(--rf-color-border);
@@ -94,12 +106,11 @@
 
 /* ---- Content area ---- */
 .rf-docs-content {
+	flex: 1;
+	min-width: 0;
 	padding-top: 4.75rem;
 	padding-bottom: 4rem;
 	container-type: inline-size;
-}
-.rf-docs-content--has-nav {
-	margin-left: 240px;
 }
 .rf-docs-content__inner {
 	max-width: 60rem;
@@ -242,9 +253,6 @@ html:has(.rf-docs-header) {
 	}
 	.rf-docs-content {
 		padding-top: 2rem;
-	}
-	.rf-docs-content--has-nav {
-		margin-left: 0;
 	}
 	.rf-docs-content__inner {
 		--rf-content-padding: 1.5rem;

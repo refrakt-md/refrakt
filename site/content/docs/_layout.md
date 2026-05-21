@@ -15,67 +15,69 @@ tint-lock: false
 ## Guide
 
 - getting-started
-- overview
-- plugins
-- plan
-- sites
-- migration
-- schema
+- configuration/overview
+- configuration/plugins
+- configuration/plan
+- configuration/sites
+- configuration/migration
+- configuration/schema
 - content
 
 ## CLI
 
-- cli-overview
-- inspect
-- reference
-- write
-- theme-tools
+- cli/cli-overview
+- cli/inspect
+- cli/reference
+- cli/write
+- cli/theme-tools
 
 ## Theme authoring
 
-- overview
-- config-api
-- dimensions
-- css
-- creating-a-theme
-- components
-- layouts
-- tooling
-- tint-cascade
+- themes/overview
+- themes/config-api
+- themes/dimensions
+- themes/css
+- themes/creating-a-theme
+- themes/components
+- themes/layouts
+- themes/tooling
+- themes/tint-cascade
 
 ## Adapters
 
-- adapters-overview
-- sveltekit
-- astro
-- nextjs
-- nuxt
-- eleventy
-- html
+- adapters/adapters-overview
+- adapters/sveltekit
+- adapters/astro
+- adapters/nextjs
+- adapters/nuxt
+- adapters/eleventy
+- adapters/html
 
 ## Authoring
 
-- authoring-overview
-- content-models
-- output-contract
-- patterns
-- partials
-- page-sections
+- authoring/authoring-overview
+- authoring/content-models
+- authoring/output-contract
+- authoring/patterns
+- authoring/partials
+- authoring/page-sections
+- authoring/nav-slug-resolution
+- authoring/rich-menubar-panels
 
 ## Packages
 
-- packages
-- authoring
-- pipeline
-- extending-core
+- plugins
+- plugins/authoring
+- plugins/pipeline
+- plugins/extending-core
 
 ## MCP Server
 
-- overview
-- installation
-- tools
-- resources
-- errors
+- mcp/overview
+- mcp/installation
+- mcp/tools
+- mcp/resources
+- mcp/errors
 
 {% /nav %}
 {% /region %}

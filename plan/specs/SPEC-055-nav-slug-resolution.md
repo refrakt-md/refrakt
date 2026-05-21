@@ -1,4 +1,4 @@
-{% spec id="SPEC-055" status="draft" tags="nav, routing, slug-resolution, active-state" source="SPEC-046" %}
+{% spec id="SPEC-055" status="accepted" tags="nav, routing, slug-resolution, active-state" source="SPEC-046" %}
 
 # Nav slug resolution and active state
 

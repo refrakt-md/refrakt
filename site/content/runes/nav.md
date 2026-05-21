@@ -17,17 +17,21 @@ Define groups with headings and page slugs as list items. Items before the first
 - [Documentation](/docs/getting-started)
 
 ## Getting Started
-- getting-started
-- overview
+- [Getting started](/docs/getting-started)
+- [Configuration](/docs/configuration/overview)
 
 ## Reference
-- cli-overview
-- inspect
+- [CLI overview](/docs/cli/cli-overview)
+- [Inspect](/docs/cli/inspect)
 {% /nav %}
 
 {% /preview %}
 
-Each list item is a page slug (e.g., `getting-started`). The runtime nav component matches it against page URLs — if a page exists at `/docs/getting-started`, the slug resolves and the page's `title` frontmatter is used as the link text. Use explicit Markdown links `[Label](/path)` for absolute links or external URLs.
+Each list item is a page slug (e.g., `getting-started`). Slugs resolve **at build time** against the nav's source file — a `{% nav %}` in `site/content/docs/_layout.md` resolves `- getting-started` to `/docs/getting-started`. The page's `title` frontmatter becomes the link text.
+
+For pages in subdirectories, write a multi-segment slug: `themes/configuration` resolves to `/docs/themes/configuration`. For external URLs or anything outside the nav's source directory, use an explicit Markdown link `[Label](/path)`. Full rules and the build error format are documented in [Nav slug resolution](/docs/authoring/nav-slug-resolution).
+
+Each rendered page evaluates every nav against its current URL. The exact-match item gets `aria-current="page"`; the longest-strict-prefix item (if any) gets `data-active="ancestor"`. Themes style both — Lumina ships visually-distinct treatments by default.
 
 ## Layouts
 
@@ -41,12 +45,12 @@ The default — vertical sidebar with groups stacked top to bottom. This is the 
 
 {% nav %}
 ## Getting Started
-- getting-started
-- install
+- [Getting started](/docs/getting-started)
+- [Configuration](/docs/configuration/overview)
 
 ## Authoring
-- runes
-- layouts
+- [Runes](/runes/rune-catalog)
+- [Themes](/themes/themes-catalog)
 {% /nav %}
 
 {% /preview %}
@@ -113,6 +117,24 @@ Combine with `auto` to list the current page's children without naming each one:
 ```
 
 External-URL items render as title-only cards with no enrichment.
+
+### Strip (compact secondary nav)
+
+Flat horizontal row of items — no groups, no panels. Use as a persistent secondary nav below the menubar, or nested inside a menubar panel footer slot for per-panel secondary links. Strip is flat by design and warns on `##` headings.
+
+```markdoc
+{% nav layout="strip" %}
+- [Changelog](/releases)
+- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
+- [Status](https://status.refrakt.md)
+{% /nav %}
+```
+
+## Rich menubar panels and column flow
+
+Menubar `## groups` accept any block content — paragraphs, blockquotes, images, and nested `{% nav %}` runes — with a position-based intro / footer slot rule. The `columns` layout gains a `---`-between-sections column-flow rule plus a headingless mode for use inside menubar panels. Composed together they cover Linear / Vercel / Stripe-style mega menus without a separate `mega` layout.
+
+See [Rich menubar panels and column flow](/docs/authoring/rich-menubar-panels) for the full composition guide.
 
 ## Collapsible sidebars
 

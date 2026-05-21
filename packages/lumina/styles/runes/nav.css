@@ -48,10 +48,18 @@
 	color: var(--rf-color-text);
 	text-decoration: none;
 }
-.rf-nav-item__link--active {
+/* SPEC-055: current page receives aria-current="page" at build time
+ * (replaces the legacy --active modifier set at runtime by rf-nav). */
+.rf-nav-item__link[aria-current="page"] {
 	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
 	color: var(--rf-color-primary);
 	font-weight: 600;
+}
+/* SPEC-055: ancestor-of-current-page link — subtler treatment than the
+ * exact-match aria-current state. Themes can collapse the two into a
+ * single style if they prefer. */
+.rf-nav-item__link[data-active="ancestor"] {
+	color: var(--rf-color-primary);
 }
 .rf-nav-item {
 	padding: 0.375rem 0.75rem;
@@ -90,11 +98,16 @@
 	transition: transform 200ms ease;
 	margin-right: 0.25rem;
 }
+/* SPEC-054 wraps the group body in `<div data-name="panel">`. Animate that
+ * wrapper; keep the direct ul/ol selectors as a fallback for older trees
+ * that haven't picked up the panel structure. */
+.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
 .rf-nav--collapsible .rf-nav-group > ul,
 .rf-nav--collapsible .rf-nav-group > ol {
 	overflow: hidden;
 	transition: height 200ms ease;
 }
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > .rf-nav-group__panel,
 .rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
 .rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ol {
 	height: 0;
@@ -105,6 +118,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
 	.rf-nav--collapsible .rf-nav-group > ul,
 	.rf-nav--collapsible .rf-nav-group > ol,
 	.rf-nav--collapsible .rf-nav-group h2::after,
@@ -134,6 +148,7 @@
 }
 .rf-nav--menubar > .rf-nav__top-level li {
 	padding: 0;
+	margin: 0;
 }
 .rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
 	display: inline-block;
@@ -159,6 +174,7 @@
 	padding: 0.375rem 0.75rem;
 	font-size: 0.9rem;
 	font-weight: 500;
+	line-height: inherit;
 	text-transform: none;
 	letter-spacing: normal;
 	color: var(--rf-color-muted);
@@ -174,13 +190,17 @@
 	background: var(--rf-color-surface);
 	color: var(--rf-color-text);
 }
-.rf-nav--menubar .rf-nav-group ul {
+/* The dropdown panel is the <div data-name="panel"> wrapper added by the
+ * nav schema's buildGroupTag. Positioning + visibility live on this
+ * wrapper so the rule works equally well for simple <ul> dropdowns and
+ * rich panels containing nested navs / intro / footer slots. */
+.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
 	display: block;
 	position: absolute;
 	top: 100%;
 	right: 0;
 	left: auto;
-	min-width: 12rem;
+	min-width: 14rem;
 	padding: 0.5rem;
 	background: var(--rf-color-bg);
 	border: 1px solid var(--rf-color-border);
@@ -193,13 +213,32 @@
 	transform: translateY(-4px);
 	transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
 }
-.rf-nav--menubar .rf-nav-group:hover > ul,
-.rf-nav--menubar .rf-nav-group:focus-within > ul,
-.rf-nav--menubar .rf-nav-group[data-open="true"] > ul {
+.rf-nav--menubar .rf-nav-group:hover > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group:focus-within > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group[data-open="true"] > .rf-nav-group__panel {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
 	transform: translateY(0);
+}
+/* Inside the panel, lists render naturally (no extra positioning). */
+.rf-nav--menubar .rf-nav-group__panel ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-nav--menubar .rf-nav-group__panel li {
+	padding: 0;
+}
+/* Flat dropdown items: force the link to fill the panel's content width so
+ * the hover hit-area is the whole row rather than just the text. Scoped to
+ * `> ul > li > a` so it only catches flat panels — nested columns navs
+ * (which sit inside `.rf-nav--columns`) keep their own item styling. */
+.rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem 0.75rem;
 }
 .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
 	font-size: 0.85rem;
@@ -265,7 +304,7 @@
 		background: transparent;
 		color: var(--rf-color-muted);
 	}
-	.rf-nav--menubar .rf-nav-group ul {
+	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
 		position: static;
 		display: block;
 		min-width: 0;
@@ -311,6 +350,13 @@
 .rf-nav--columns .rf-nav-item__link:hover {
 	background: transparent;
 	color: var(--rf-color-text);
+}
+/* Standalone columns (footer, section landing) use a text-only treatment
+ * for the active item — the generic `.rf-nav-item__link[aria-current="page"]`
+ * surface tint would compete with the column layout's quiet rhythm. The
+ * nested-in-menubar case re-enables the tint below at higher specificity. */
+.rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+	background: transparent;
 }
 
 @media (max-width: 600px) {
@@ -399,5 +445,242 @@
 	.rf-nav--cards > .rf-nav__top-level > ul,
 	.rf-nav--cards .rf-nav-group > ul {
 		grid-template-columns: 1fr;
+	}
+}
+
+/* ─── Per-item description (SPEC-054, any layout) ─────────────────────── */
+
+.rf-nav-item__description {
+	display: block;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	line-height: 1.4;
+	margin-top: 0.125rem;
+}
+
+/* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
+
+/* Rich menubar panels: when the panel contains intro / nested nav / footer
+ * blocks, it auto-sizes to fit content rather than the narrow flat dropdown
+ * default. */
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav) {
+	min-width: 20rem;
+	max-width: 36rem;
+}
+
+/* When the panel contains a nested columns nav with explicit column wrappers,
+ * widen the cap so each column has room for a one-line description rather
+ * than wrapping to three or four. */
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
+	min-width: 36rem;
+	max-width: 56rem;
+}
+
+/* Nested columns nav inside a menubar panel: render as a distinct surface
+ * card so the column grid reads as a grouped block rather than bleeding
+ * into the panel's chrome. Resets the standalone columns padding (which
+ * assumes a footer-like context) and tightens the gap for the tighter
+ * dropdown box. */
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
+	padding: 0.75rem;
+	gap: 1rem;
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-sm);
+}
+
+/* Items inside a nested menubar columns nav: render the whole link as one
+ * generously padded click target with the title on top in regular text
+ * colour and the description stacked below in muted colour. The description
+ * `<span>` lives inside the `<a>` (see navItem transform), so styling on
+ * the link covers both lines. */
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item {
+	padding: 0;
+}
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+	display: block;
+	padding: 0.75rem;
+	color: var(--rf-color-text);
+	font-weight: 500;
+	border-radius: var(--rf-radius-sm);
+}
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
+	background: var(--rf-color-surface-hover);
+	color: var(--rf-color-text);
+}
+/* Re-enable a neutral surface tint on the active item inside a menubar
+ * dropdown — the standalone-columns override above zeroes the background,
+ * but here it helps the current page stand out from peers in a tight
+ * panel. Uses the purpose-built interactive-surface tokens so the contrast
+ * direction stays correct in dark mode. */
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+	background: var(--rf-color-surface-active);
+}
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link .rf-nav-item__description {
+	font-weight: 400;
+	color: var(--rf-color-muted);
+}
+
+/* Intro / footer slots inside a menubar panel get airy padding so the
+ * eyebrow / "see all" links breathe inside the dropdown frame. */
+.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__intro {
+	margin: 0 0 0.75rem;
+	padding: 0.5rem 0.75rem 0;
+}
+.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__footer {
+	margin: 0.75rem 0 0;
+	padding: 0 0.75rem 0.5rem;
+}
+
+.rf-nav-group__intro {
+	margin: 0 0 0.75rem;
+}
+
+/* Eyebrow intro: a plain paragraph in the intro slot renders as a small
+ * muted lead-in above the panel content. */
+.rf-nav-group__intro p:only-child {
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--rf-color-muted);
+}
+
+.rf-nav-group__footer {
+	margin: 0.75rem 0 0;
+}
+.rf-nav-group__footer p {
+	margin: 0;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+}
+.rf-nav-group__footer a {
+	color: var(--rf-color-primary);
+	font-weight: 500;
+}
+
+/* ─── Multi-section columns (SPEC-054 columns flow rule) ──────────────── */
+
+/* When the columns layout has <hr> separators, groups are bucketed into
+ * .rf-nav-group__column wrappers (or .rf-nav__column at the nav level for
+ * headingless mode). Each column stacks one or more sections vertically. */
+.rf-nav--columns .rf-nav-group__column,
+.rf-nav--columns .rf-nav__column,
+.rf-nav--columns > div[data-name="column"] {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+/* Multi-section columns mode: when the author has placed explicit `---`
+ * dividers, the structure already declares the column count. Use
+ * grid-auto-flow:column so each `data-name="column"` wrapper becomes its own
+ * track — this expands the container to fit the tracks rather than
+ * collapsing to one column when the container is narrow (e.g. nested inside
+ * a menubar panel at its min-width). */
+.rf-nav--columns:has(> div[data-name="column"]) {
+	display: grid;
+	grid-template-columns: unset;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(14rem, 1fr);
+}
+
+/* Stepped collapse: at four columns × 14rem min + gaps the grid needs ~62rem
+ * of width, so below ~900px the explicit-column flow would overflow. Step
+ * down to a 2×N grid before going single-column at the narrowest breakpoint. */
+@media (max-width: 900px) {
+	.rf-nav--columns:has(> div[data-name="column"]) {
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 600px) {
+	.rf-nav--columns:has(> div[data-name="column"]) {
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ─── Strip layout (SPEC-054 compact secondary nav) ───────────────────── */
+
+.rf-nav--strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	padding: 0.5rem 0;
+	font-size: 0.8125rem;
+}
+.rf-nav--strip ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-nav--strip li {
+	padding: 0;
+}
+.rf-nav--strip .rf-nav-item__link {
+	display: inline-block;
+	padding: 0.25rem 0;
+	color: var(--rf-color-muted);
+	font-size: 0.8125rem;
+	border-radius: 0;
+	background: transparent;
+}
+.rf-nav--strip .rf-nav-item__link:hover {
+	color: var(--rf-color-text);
+	background: transparent;
+}
+.rf-nav--strip .rf-nav-item__link[aria-current="page"] {
+	color: var(--rf-color-primary);
+	background: transparent;
+}
+
+/* When a strip nav is nested inside a menubar panel footer slot, render
+ * compact-but-still-tap-friendly. */
+.rf-nav-group__footer .rf-nav--strip {
+	padding: 0;
+	font-size: 0.75rem;
+}
+
+/* ─── Mobile menubar: nested columns collapse ─────────────────────────── */
+
+/* Placed at the end of the file so the source order beats the desktop
+ * nested-columns rules at equal specificity. On a collapsed menubar
+ * drawer (≤ 768px), drop the columns nav's surface card chrome and
+ * flatten to a single-column flow so each item visually matches a
+ * regular flat-dropdown item rather than a card-styled grid cell. */
+@media (max-width: 768px) {
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
+		padding: 0;
+		gap: 0;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: 1fr;
+	}
+	/* Tighter padding + bolder weight matches the visual rhythm of the
+	 * regular flat menubar group items above. Hover swaps to a text-colour
+	 * change rather than a surface tint so the drawer doesn't fill with
+	 * highlighted bands as the user scrolls. */
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+		padding: 0.25rem 0.75rem;
+		font-weight: 500;
+	}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
+		background: transparent;
+		color: var(--rf-color-primary);
+	}
+	/* Descriptions are space-eaters in a vertical drawer — hide them and let
+	 * the link title carry the line on its own. */
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__description {
+		display: none;
 	}
 }

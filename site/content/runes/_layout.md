@@ -29,6 +29,7 @@ tint-lock: false
 - embed
 - icon
 - xref
+- badge
 
 ## Layout
 
@@ -66,86 +67,86 @@ tint-lock: false
 ## Marketing
 
 - marketing
-- hero
-- cta
-- bento
-- feature
-- steps
-- pricing
-- testimonial
-- comparison
+- marketing/hero
+- marketing/cta
+- marketing/bento
+- marketing/feature
+- marketing/steps
+- marketing/pricing
+- marketing/testimonial
+- marketing/comparison
 
 ## Docs
 
 - docs
 - docs/cli
-- api
-- symbol
-- changelog
+- docs/api
+- docs/symbol
+- docs/changelog
 
 ## Storytelling
 
 - storytelling
-- character
-- realm
-- lore
-- faction
-- plot
-- bond
-- storyboard
+- storytelling/character
+- storytelling/realm
+- storytelling/lore
+- storytelling/faction
+- storytelling/plot
+- storytelling/bond
+- storytelling/storyboard
 
 ## Places
 
 - places
-- event
-- map
-- itinerary
+- places/event
+- places/map
+- places/itinerary
 
 ## Business
 
 - business
-- cast
-- organization
-- timeline
+- business/cast
+- business/organization
+- business/timeline
 
 ## Learning
 
 - learning
-- howto
-- recipe
+- learning/howto
+- learning/recipe
 
 ## Design
 
 - design
-- swatch
-- palette
-- typography
-- spacing
-- mockup
-- preview
-- design-context
+- design/swatch
+- design/palette
+- design/typography
+- design/spacing
+- design/mockup
+- design/preview
+- design/design-context
 
 ## Media
 
 - media
-- playlist
-- track
-- audio
+- media/playlist
+- media/track
+- media/audio
 
 ## Plan
 
 - plan
 - plan/cli
 - plan/workflow
-- spec
-- work
-- bug
-- decision
-- milestone
-- backlog
-- decision-log
-- plan-progress
-- plan-activity
+- plan/spec
+- plan/work
+- plan/bug
+- plan/decision
+- plan/milestone
+- plan/backlog
+- plan/decision-log
+- plan/plan-progress
+- plan/plan-activity
 
 {% /nav %}
 {% /region %}
