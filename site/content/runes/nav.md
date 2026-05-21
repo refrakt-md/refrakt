@@ -118,6 +118,24 @@ Combine with `auto` to list the current page's children without naming each one:
 
 External-URL items render as title-only cards with no enrichment.
 
+### Strip (compact secondary nav)
+
+Flat horizontal row of items — no groups, no panels. Use as a persistent secondary nav below the menubar, or nested inside a menubar panel footer slot for per-panel secondary links. Strip is flat by design and warns on `##` headings.
+
+```markdoc
+{% nav layout="strip" %}
+- [Changelog](/releases)
+- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
+- [Status](https://status.refrakt.md)
+{% /nav %}
+```
+
+## Rich menubar panels and column flow
+
+Menubar `## groups` accept any block content — paragraphs, blockquotes, images, and nested `{% nav %}` runes — with a position-based intro / footer slot rule. The `columns` layout gains a `---`-between-sections column-flow rule plus a headingless mode for use inside menubar panels. Composed together they cover Linear / Vercel / Stripe-style mega menus without a separate `mega` layout.
+
+See [Rich menubar panels and column flow](/docs/authoring/rich-menubar-panels) for the full composition guide.
+
 ## Collapsible sidebars
 
 Add the `collapsible` modifier on a vertical nav to turn each group into a disclosure. The group containing the current page automatically expands on page load; all others start collapsed. Click a group title to toggle.

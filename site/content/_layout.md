@@ -35,6 +35,8 @@ tint-lock: true
 - [Themes](/themes/themes-catalog)
 - [Plan Docs](/plan/docs/plan-overview)
 
+---
+
 ## Resources
 - [Blog](/blog)
 - [Changelog](/releases)

@@ -62,6 +62,7 @@ tint-lock: false
 - authoring/partials
 - authoring/page-sections
 - authoring/nav-slug-resolution
+- authoring/rich-menubar-panels
 
 ## Packages
 

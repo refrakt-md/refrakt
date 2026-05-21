@@ -409,3 +409,143 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ─── Per-item description (SPEC-054, any layout) ─────────────────────── */
+
+.rf-nav-item__description {
+	display: block;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+	line-height: 1.4;
+	margin-top: 0.125rem;
+}
+
+/* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
+
+/* Rich menubar panels: when a group contains intro / nested nav / footer
+ * blocks, the panel auto-sizes to fit content rather than the narrow flat
+ * dropdown default. */
+.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__intro) > ul,
+.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__footer) > ul,
+.rf-nav--menubar .rf-nav-group:has(.rf-nav) > ul,
+.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__intro),
+.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__footer) {
+	min-width: 20rem;
+	max-width: 36rem;
+}
+
+.rf-nav-group__intro {
+	margin: 0 0 0.75rem;
+	padding: 0 0 0.75rem;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+
+/* Featured intro: a blockquote in the intro slot becomes a card-shaped hero. */
+.rf-nav-group__intro blockquote {
+	margin: 0;
+	padding: 0.875rem 1rem;
+	background: var(--rf-color-surface, color-mix(in srgb, var(--rf-color-primary) 6%, transparent));
+	border: 0;
+	border-left: 3px solid var(--rf-color-primary);
+	border-radius: var(--rf-radius-sm);
+	font-style: normal;
+}
+.rf-nav-group__intro blockquote a {
+	font-weight: 600;
+	color: var(--rf-color-text);
+	text-decoration: none;
+}
+.rf-nav-group__intro blockquote p {
+	margin: 0;
+	color: var(--rf-color-muted);
+	font-size: 0.8125rem;
+}
+
+/* Eyebrow intro: a plain paragraph in the intro slot renders as small uppercase. */
+.rf-nav-group__intro p:only-child {
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--rf-color-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.rf-nav-group__footer {
+	margin: 0.75rem 0 0;
+	padding: 0.75rem 0 0;
+	border-top: 1px solid var(--rf-color-border);
+}
+.rf-nav-group__footer p {
+	margin: 0;
+	font-size: 0.8125rem;
+	color: var(--rf-color-muted);
+}
+.rf-nav-group__footer a {
+	color: var(--rf-color-primary);
+	font-weight: 500;
+}
+
+/* ─── Multi-section columns (SPEC-054 columns flow rule) ──────────────── */
+
+/* When the columns layout has <hr> separators, groups are bucketed into
+ * .rf-nav-group__column wrappers (or .rf-nav__column at the nav level for
+ * headingless mode). Each column stacks one or more sections vertically. */
+.rf-nav--columns .rf-nav-group__column,
+.rf-nav--columns .rf-nav__column,
+.rf-nav--columns > div[data-name="column"] {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+/* Multi-section columns mode: replace the grid on .rf-nav--columns when
+ * column wrappers are present, since the wrappers already establish the
+ * column grid via flex. */
+.rf-nav--columns:has(> div[data-name="column"]) {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+/* ─── Strip layout (SPEC-054 compact secondary nav) ───────────────────── */
+
+.rf-nav--strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	padding: 0.5rem 0;
+	font-size: 0.8125rem;
+}
+.rf-nav--strip ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.rf-nav--strip li {
+	padding: 0;
+}
+.rf-nav--strip .rf-nav-item__link {
+	display: inline-block;
+	padding: 0.25rem 0;
+	color: var(--rf-color-muted);
+	font-size: 0.8125rem;
+	border-radius: 0;
+	background: transparent;
+}
+.rf-nav--strip .rf-nav-item__link:hover {
+	color: var(--rf-color-text);
+	background: transparent;
+}
+.rf-nav--strip .rf-nav-item__link[aria-current="page"] {
+	color: var(--rf-color-primary);
+	background: transparent;
+}
+
+/* When a strip nav is nested inside a menubar panel footer slot, render
+ * compact-but-still-tap-friendly. */
+.rf-nav-group__footer .rf-nav--strip {
+	padding: 0;
+	font-size: 0.75rem;
+}
