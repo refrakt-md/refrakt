@@ -200,7 +200,7 @@
 	top: 100%;
 	right: 0;
 	left: auto;
-	min-width: 12rem;
+	min-width: 14rem;
 	padding: 0.5rem;
 	background: var(--rf-color-bg);
 	border: 1px solid var(--rf-color-border);
@@ -226,6 +226,19 @@
 	list-style: none;
 	padding: 0;
 	margin: 0;
+}
+.rf-nav--menubar .rf-nav-group__panel li {
+	padding: 0;
+}
+/* Flat dropdown items: force the link to fill the panel's content width so
+ * the hover hit-area is the whole row rather than just the text. Scoped to
+ * `> ul > li > a` so it only catches flat panels — nested columns navs
+ * (which sit inside `.rf-nav--columns`) keep their own item styling. */
+.rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem 0.75rem;
 }
 .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
 	font-size: 0.85rem;
@@ -494,14 +507,16 @@
 	border-radius: var(--rf-radius-sm);
 }
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
-	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+	background: var(--rf-color-surface-hover);
 	color: var(--rf-color-text);
 }
-/* Re-enable the surface tint on the active item inside a menubar dropdown
- * — the standalone-columns override above zeroes the background, but here
- * the tint helps the current page stand out from peers in a tight panel. */
+/* Re-enable a neutral surface tint on the active item inside a menubar
+ * dropdown — the standalone-columns override above zeroes the background,
+ * but here it helps the current page stand out from peers in a tight
+ * panel. Uses the purpose-built interactive-surface tokens so the contrast
+ * direction stays correct in dark mode. */
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link[aria-current="page"] {
-	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+	background: var(--rf-color-surface-active);
 }
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link .rf-nav-item__description {
 	font-weight: 400;
