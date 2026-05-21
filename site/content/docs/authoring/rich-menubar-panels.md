@@ -15,11 +15,27 @@ The composition relies on three coordinated rules:
 
 Plus a new `layout="strip"` for compact secondary link rows, and a generalised `auto=true` description / icon enrichment that applies to every layout.
 
+{% hint type="note" %}
+**The examples below render live in this page.** Hover (or focus) over a menubar trigger to open its dropdown. The source for each example is shown above the rendered nav.
+{% /hint %}
+
 ## Simple menubar — unchanged
 
 A flat dropdown still works exactly as it did. No `---`, no extra content, no nested navs — just `## group` + list of items.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Product
+- [Configuration](/docs/configuration/overview)
+- [Themes](/docs/themes/overview)
+
+## Resources
+- [Blog](/blog)
+- [Changelog](/releases)
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -33,13 +49,29 @@ A flat dropdown still works exactly as it did. No `---`, no extra content, no ne
 - [Changelog](/releases)
 {% /nav %}
 
-{% /preview %}
-
 ## Adding a nested columns nav
 
 To make a panel wider and split into multiple columns, drop a `{% nav layout="columns" %}` inside the `## group`. Use the headingless mode — `---` between flat items splits them into columns.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Documentation
+
+{% nav layout="columns" %}
+- [Getting started](/docs/getting-started)
+- [Configuration](/docs/configuration/overview)
+- [Authoring](/docs/authoring/authoring-overview)
+
+---
+
+- [Themes](/docs/themes/overview)
+- [Adapters](/docs/adapters/adapters-overview)
+- [Plugins](/docs/plugins)
+{% /nav %}
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -59,15 +91,28 @@ To make a panel wider and split into multiple columns, drop a `{% nav layout="co
 {% /nav %}
 {% /nav %}
 
-{% /preview %}
-
 The outer menubar automatically widens its panel to fit the nested grid.
 
 ## Intro slot — featured hero
 
 Drop a blockquote at the top of a `## group` to mark a featured hero card. The blockquote becomes the intro slot; the theme styles it distinctly (accent border, card background) and the rest of the panel renders below.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Docs
+
+> [Documentation home](/docs/getting-started)
+> Install refrakt and build your first site.
+
+{% nav layout="columns" %}
+- [Configuration](/docs/configuration/overview)
+- [Authoring](/docs/authoring/authoring-overview)
+- [Plugins](/docs/plugins)
+{% /nav %}
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -84,13 +129,23 @@ Drop a blockquote at the top of a `## group` to mark a featured hero card. The b
 {% /nav %}
 {% /nav %}
 
-{% /preview %}
-
 ## Intro slot — eyebrow paragraph
 
 A plain paragraph at the top of a `## group` renders as a small uppercase eyebrow label above the panel content.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Runes
+For teams shipping documentation
+
+{% nav layout="columns" %}
+- [Rune catalog](/runes/rune-catalog)
+- [Plugin authoring](/docs/plugins/authoring)
+{% /nav %}
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -104,13 +159,24 @@ For teams shipping documentation
 {% /nav %}
 {% /nav %}
 
-{% /preview %}
-
 ## Footer slot — secondary link
 
 Content at the end of a `## group` (after all lists) becomes the panel's footer slot. Use a paragraph with a link for a "see all →" pattern, or nest a `{% nav layout="strip" %}` for multiple secondary links.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Docs
+
+{% nav layout="columns" %}
+- [Configuration](/docs/configuration/overview)
+- [Authoring](/docs/authoring/authoring-overview)
+{% /nav %}
+
+[See all docs →](/docs/getting-started)
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -125,13 +191,31 @@ Content at the end of a `## group` (after all lists) becomes the panel's footer 
 [See all docs →](/docs/getting-started)
 {% /nav %}
 
-{% /preview %}
-
 ## Per-item descriptions
 
 Inline a paragraph (indented as a continuation) under any list item to give that item a description. Works in every layout. When the parent nav has `auto=true`, the description falls back to the linked page's frontmatter `description` for any item without an explicit paragraph.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Product
+
+{% nav layout="columns" %}
+- [Configuration](/docs/configuration/overview)
+
+  Set up sites, plugins, and themes.
+
+- [Authoring](/docs/authoring/authoring-overview)
+
+  Write content with Markdoc + runes.
+
+- [Plugins](/docs/plugins)
+
+  Extend refrakt with custom runes.
+{% /nav %}
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -153,13 +237,23 @@ Inline a paragraph (indented as a continuation) under any list item to give that
 {% /nav %}
 {% /nav %}
 
-{% /preview %}
-
 ## Inline badges
 
 The `{% badge %}` rune is recognised inside or after a nav item's link text. The engine attaches it to the item so themes can render it adjacent to the title.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="menubar" %}
+- [Docs](/docs/getting-started)
+
+## Runes
+
+{% nav layout="columns" %}
+- [Marketing](/runes/marketing) {% badge sentiment="positive" %}Popular{% /badge %}
+- [Storytelling](/runes/storytelling)
+- [Plan](/runes/plan) {% badge sentiment="caution" %}Beta{% /badge %}
+{% /nav %}
+{% /nav %}
+```
 
 {% nav layout="menubar" %}
 - [Docs](/docs/getting-started)
@@ -173,13 +267,38 @@ The `{% badge %}` rune is recognised inside or after a nav item's link text. The
 {% /nav %}
 {% /nav %}
 
-{% /preview %}
-
 ## `layout="columns"` — multi-section column flow
 
 The columns layout grows a `---` rule: between `##` sections at the nav's top level, `<hr>` opens a new column. Each column stacks one or more sections.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="columns" %}
+
+## Product
+- [Configuration](/docs/configuration/overview)
+- [Authoring](/docs/authoring/authoring-overview)
+
+## Tools
+- [CLI overview](/docs/cli/cli-overview)
+- [Inspect](/docs/cli/inspect)
+
+---
+
+## Themes
+- [Themes catalog](/themes/themes-catalog)
+- [Lumina](/themes/lumina)
+
+## Adapters
+- [SvelteKit](/docs/adapters/sveltekit)
+- [Astro](/docs/adapters/astro)
+
+---
+
+## Resources
+- [Blog](/blog)
+- [Changelog](/releases)
+{% /nav %}
+```
 
 {% nav layout="columns" %}
 
@@ -208,23 +327,25 @@ The columns layout grows a `---` rule: between `##` sections at the nav's top le
 - [Changelog](/releases)
 {% /nav %}
 
-{% /preview %}
-
 Three columns: Product+Tools, Themes+Adapters, Resources. Backwards compatible — a columns nav with no `---` still gets one column per `##` section (the today's-behaviour case).
 
 ## `layout="strip"` — compact secondary nav
 
 A flat horizontal row of items — no groups, no panels, just compact links. Useful as a persistent secondary nav below the menubar (Vercel / Stripe docs pattern) or nested inside a panel footer slot.
 
-{% preview source=true %}
+```markdoc
+{% nav layout="strip" %}
+- [Changelog](/releases)
+- [Blog](/blog)
+- [Docs](/docs/getting-started)
+{% /nav %}
+```
 
 {% nav layout="strip" %}
 - [Changelog](/releases)
 - [Blog](/blog)
 - [Docs](/docs/getting-started)
 {% /nav %}
-
-{% /preview %}
 
 Strip is flat by design — it warns if `##` headings are present.
 

@@ -205,7 +205,12 @@ function partitionGroupChildren(children: RenderableTreeNode[]): {
 
 /** Build a NavGroup renderable from a parsed group, wrapping the intro and
  *  footer slots in `data-name`-stamped divs so the engine emits
- *  `.rf-nav-group__intro` / `.rf-nav-group__footer` classes. */
+ *  `.rf-nav-group__intro` / `.rf-nav-group__footer` classes. Everything
+ *  except the heading is further wrapped in a `<div data-name="panel">`
+ *  container so layouts that treat the panel as a single positioned box
+ *  (menubar dropdowns, mega panels) can target one selector regardless of
+ *  whether the panel contains a flat list, a nested nav, or rich slot
+ *  content. */
 function buildGroupTag(group: ParsedGroup): Tag<'section'> {
 	const { intro, body, footer } = partitionGroupChildren(group.children);
 
@@ -221,13 +226,18 @@ function buildGroupTag(group: ParsedGroup): Tag<'section'> {
 		}
 	}
 
-	const groupChildren: RenderableTreeNode[] = [group.heading];
+	const panelChildren: RenderableTreeNode[] = [];
 	if (intro) {
-		groupChildren.push(new Markdoc.Tag('div', { 'data-name': 'intro' }, [intro]));
+		panelChildren.push(new Markdoc.Tag('div', { 'data-name': 'intro' }, [intro]));
 	}
-	groupChildren.push(...body);
+	panelChildren.push(...body);
 	if (footer) {
-		groupChildren.push(new Markdoc.Tag('div', { 'data-name': 'footer' }, [footer]));
+		panelChildren.push(new Markdoc.Tag('div', { 'data-name': 'footer' }, [footer]));
+	}
+
+	const groupChildren: RenderableTreeNode[] = [group.heading];
+	if (panelChildren.length > 0) {
+		groupChildren.push(new Markdoc.Tag('div', { 'data-name': 'panel' }, panelChildren));
 	}
 
 	return createComponentRenderable({
@@ -434,15 +444,22 @@ export const nav = createContentModelSchema({
 			? new Markdoc.Tag('div', { 'data-name': 'top-level' }, [new Markdoc.Tag('ul', {}, topLevel)])
 			: null;
 
-		const allGroupItems = groupTags.flatMap(g =>
-			g.children
-				.filter((c): c is Tag => Markdoc.Tag.isTag(c) && isListNode(c))
-				.flatMap(list =>
-					list.children.filter(
-						(c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li',
-					),
-				),
-		);
+		const allGroupItems = groupTags.flatMap(g => {
+			// Lists now live inside the group's `<div data-name="panel">` wrapper
+			// (added by buildGroupTag). Walk the group's descendants once to
+			// collect every <li> regardless of nesting depth.
+			const items: Tag<'li'>[] = [];
+			const walk = (n: RenderableTreeNode): void => {
+				if (!Markdoc.Tag.isTag(n)) return;
+				if (n.name === 'li') {
+					items.push(n as Tag<'li'>);
+					return;
+				}
+				for (const c of n.children) walk(c);
+			};
+			for (const c of g.children) walk(c);
+			return items;
+		});
 
 		// Columns layout with `<hr>`s between sections: bucket groups into columns.
 		if (attrs.layout === 'columns' && hasColumnBreaks) {

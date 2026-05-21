@@ -182,7 +182,11 @@
 	background: var(--rf-color-surface);
 	color: var(--rf-color-text);
 }
-.rf-nav--menubar .rf-nav-group ul {
+/* The dropdown panel is the <div data-name="panel"> wrapper added by the
+ * nav schema's buildGroupTag. Positioning + visibility live on this
+ * wrapper so the rule works equally well for simple <ul> dropdowns and
+ * rich panels containing nested navs / intro / footer slots. */
+.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
 	display: block;
 	position: absolute;
 	top: 100%;
@@ -201,13 +205,19 @@
 	transform: translateY(-4px);
 	transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
 }
-.rf-nav--menubar .rf-nav-group:hover > ul,
-.rf-nav--menubar .rf-nav-group:focus-within > ul,
-.rf-nav--menubar .rf-nav-group[data-open="true"] > ul {
+.rf-nav--menubar .rf-nav-group:hover > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group:focus-within > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group[data-open="true"] > .rf-nav-group__panel {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
 	transform: translateY(0);
+}
+/* Inside the panel, lists render naturally (no extra positioning). */
+.rf-nav--menubar .rf-nav-group__panel ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
 	font-size: 0.85rem;
@@ -273,7 +283,7 @@
 		background: transparent;
 		color: var(--rf-color-muted);
 	}
-	.rf-nav--menubar .rf-nav-group ul {
+	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
 		position: static;
 		display: block;
 		min-width: 0;
@@ -422,14 +432,12 @@
 
 /* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
 
-/* Rich menubar panels: when a group contains intro / nested nav / footer
- * blocks, the panel auto-sizes to fit content rather than the narrow flat
- * dropdown default. */
-.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__intro) > ul,
-.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__footer) > ul,
-.rf-nav--menubar .rf-nav-group:has(.rf-nav) > ul,
-.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__intro),
-.rf-nav--menubar .rf-nav-group:has(.rf-nav-group__footer) {
+/* Rich menubar panels: when the panel contains intro / nested nav / footer
+ * blocks, it auto-sizes to fit content rather than the narrow flat dropdown
+ * default. */
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav) {
 	min-width: 20rem;
 	max-width: 36rem;
 }
