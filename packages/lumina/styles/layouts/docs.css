@@ -243,8 +243,16 @@ html:has(.rf-docs-header) {
 	.rf-docs-header__inner p ~ p {
 		display: none;
 	}
+	/* The toolbar is sticky directly below the header so the hamburger —
+	   which doubles as the open/close trigger for the sidebar-nav panel —
+	   stays reachable while the panel is open or the page is scrolled. */
+	/* z-index sits above the .rf-mobile-panel (99) so the hamburger
+	   stays clickable while the panel is open. */
 	.rf-docs-toolbar {
 		display: flex;
+		position: sticky;
+		top: 3.5rem;
+		z-index: 100;
 	}
 	.rf-mobile-panel--nav {
 		top: 6.25rem;

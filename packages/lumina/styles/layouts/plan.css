@@ -415,7 +415,7 @@
 		display: none;
 	}
 
-	.rf-mobile-panel--nav {
+	.rf-layout-plan .rf-mobile-panel--nav {
 		top: 3.0625rem;
 	}
 

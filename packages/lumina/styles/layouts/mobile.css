@@ -45,12 +45,9 @@
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
 }
-/* The docs sidebar-nav panel keeps its fullscreen overlay — its trigger
-   (toolbar hamburger) isn't sticky, so docking below the header would
-   leave the hamburger covered by the panel with no way to close it. */
-.rf-mobile-panel.rf-mobile-panel--nav {
-	top: 0;
-}
+/* Layout-specific panels (e.g. the docs sidebar-nav panel that sits
+   under the docs header *and* toolbar) override `top` in their own
+   layout CSS. */
 .rf-mobile-panel__nav {
 	padding: 1.5rem;
 }
