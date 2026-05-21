@@ -18,6 +18,11 @@ export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normali
 // and require.resolve to find packaged preset modules.
 export { loadPreset, loadPresets } from './preset-loader.js';
 
+// Site-level token-overrides CSS composer (SPEC-048 + SPEC-056) — Node-only
+// because it transitively uses `loadPresets`. Adapters call this to produce
+// the per-site CSS that layers on top of the theme package's barrel.
+export { composeSiteTokensCss } from './site-tokens.js';
+
 /**
  * Load and normalize a refrakt.config.json file.
  *
