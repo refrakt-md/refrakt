@@ -17,3 +17,8 @@ export { applyHtmlTransforms } from './tree-transforms.js';
 // string and inline it via `renderFullPage`'s `headExtra` option without
 // reaching across packages.
 export { composeSiteTokensCss } from '@refrakt-md/transform/node';
+
+// Tree-shaken per-rune CSS — consumers call `computeUsedCssBlocks` after
+// loading the site and pass the result through `buildUsedCssImports` to
+// produce a stylesheets array for `renderFullPage`'s `stylesheets` option.
+export { computeUsedCssBlocks, buildUsedCssImports } from '@refrakt-md/transform/node';

@@ -3,7 +3,10 @@ import {
 	composeSiteTokensCss,
 	loadRefraktConfig,
 	resolveSite,
+	computeUsedCssBlocks,
+	buildUsedCssImports,
 } from '@refrakt-md/transform/node';
+import { getThemePackage } from '@refrakt-md/types';
 
 /**
  * Resolve the per-site config from `refrakt.config.json` and compose the
@@ -41,4 +44,57 @@ export async function getSiteTokensCss(
 	const config = loadRefraktConfig(absConfigPath);
 	const { site } = resolveSite(config, siteName);
 	return composeSiteTokensCss(site, dirname(absConfigPath));
+}
+
+/**
+ * Compute the tree-shaken list of CSS module specifiers the site should
+ * import — `base.css` first, then one entry per used rune block. Designed
+ * for use in a Next.js pre-build script that generates `import` statements
+ * for `app/layout.tsx`, or in `next.config.mjs`'s webpack hook.
+ *
+ * Falls back to the theme package's barrel specifier (`@refrakt-md/lumina`)
+ * when rune-usage analysis fails — same graceful-degradation behaviour as
+ * the SvelteKit + Astro plugins.
+ *
+ * ```ts
+ * // scripts/generate-css-imports.mjs
+ * import { getUsedCssImports } from '@refrakt-md/next';
+ * import { writeFileSync } from 'node:fs';
+ *
+ * const imports = await getUsedCssImports();
+ * const code = imports.map(spec => `import '${spec}';`).join('\n');
+ * writeFileSync('./app/generated-css-imports.ts', code);
+ * ```
+ *
+ * @param configPath Path to `refrakt.config.json`.
+ * @param siteName   Which site to use from a multi-site config.
+ */
+export async function getUsedCssImports(
+	configPath = './refrakt.config.json',
+	siteName?: string,
+): Promise<string[]> {
+	const absConfigPath = resolve(configPath);
+	const config = loadRefraktConfig(absConfigPath);
+	const { site } = resolveSite(config, siteName);
+	const themePackage = getThemePackage(site.theme);
+
+	try {
+		const { createRefraktLoader, analyzeRuneUsage } = await import('@refrakt-md/content');
+		const themeModule = await import(themePackage + '/transform');
+		const themeConfig =
+			themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+		const loader = createRefraktLoader({ configPath: absConfigPath, site: siteName });
+		const loadedSite = await loader.getSite();
+		const report = analyzeRuneUsage(loadedSite.pages);
+		const { usedBlocks } = await computeUsedCssBlocks(
+			report.allTypes,
+			themeConfig,
+			themePackage,
+		);
+		return buildUsedCssImports(themePackage, usedBlocks);
+	} catch {
+		// Fall back to the theme package barrel — pulls in every rune's CSS,
+		// matching the pre-tree-shake behaviour.
+		return [themePackage];
+	}
 }

@@ -18,5 +18,10 @@ export { hasInteractiveRunes } from './behaviors.js';
 // call at module-scope in `app/layout.tsx` and inline via `<style />`.
 export { getSiteTokensCss } from './tokens.js';
 
+// Tree-shaken per-rune CSS imports. Async helper returns the ordered list of
+// module specifiers the consumer should import in `app/layout.tsx` (via
+// generated code or a pre-build script).
+export { getUsedCssImports } from './tokens.js';
+
 // Types
 export type { NextTheme } from './types.js';

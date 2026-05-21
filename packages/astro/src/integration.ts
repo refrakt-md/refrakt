@@ -5,7 +5,10 @@ import {
 	loadRefraktConfig,
 	resolveSite,
 	createSiteTokensVitePlugin,
+	createRunesCssVitePlugin,
+	computeUsedCssBlocks,
 	SITE_TOKENS_VIRTUAL_ID,
+	RUNES_VIRTUAL_ID,
 } from '@refrakt-md/transform/node';
 import { getThemePackage } from '@refrakt-md/types';
 import type { RefraktAstroOptions } from './types.js';
@@ -15,8 +18,10 @@ import type { RefraktAstroOptions } from './types.js';
  *
  * Reads `refrakt.config.json`, resolves the requested site (or the lone site
  * for single-site projects), configures SSR noExternal, sets up content HMR
- * in dev mode, and serves `virtual:refrakt/site-tokens.css` carrying any
- * site-level token / preset / mode / tint overrides (SPEC-048 + SPEC-056).
+ * in dev mode, serves `virtual:refrakt/site-tokens.css` carrying any
+ * site-level token / preset / mode / tint overrides (SPEC-048 + SPEC-056),
+ * and serves `virtual:refrakt/runes.css` carrying only the per-rune CSS
+ * blocks actually used by the content corpus (tree-shaken).
  */
 export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 	const configPath = options.configPath ?? './refrakt.config.json';
@@ -41,6 +46,38 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				// directory, not Astro's project root.
 				const configDir = dirname(resolve(configPath));
 
+				// Callback the runes Vite plugin invokes in its `buildStart` hook
+				// to compute the tree-shaken rune set. Loads content via
+				// `createRefraktLoader` (cached internally) and runs the shared
+				// `computeUsedCssBlocks` helper. Falls back to the theme barrel
+				// when analysis fails, mirroring the SvelteKit plugin behaviour.
+				const getUsedBlocks = async () => {
+					try {
+						const [{ createRefraktLoader, analyzeRuneUsage }] = await Promise.all([
+							import('@refrakt-md/content'),
+						]);
+						const themeModule = await import(themePackage + '/transform');
+						const themeConfig =
+							themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+						const loader = createRefraktLoader({ configPath, site: options.site });
+						const loadedSite = await loader.getSite();
+						const report = analyzeRuneUsage(loadedSite.pages);
+						const { usedBlocks } = await computeUsedCssBlocks(
+							report.allTypes,
+							themeConfig,
+							themePackage,
+						);
+						return { usedBlocks, themePackage, themeConfig };
+					} catch (err) {
+						// eslint-disable-next-line no-console
+						console.warn(
+							'[refrakt] CSS tree-shaking skipped:',
+							(err as Error).message,
+						);
+						return { themePackage, fallbackToBarrel: true as const };
+					}
+				};
+
 				updateConfig({
 					vite: {
 						ssr: {
@@ -51,19 +88,23 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						},
 						// Astro 5 ships its own copy of Vite's types; the
 						// version-pinned Plugin from our peer dep isn't
-						// assignable to Astro's PluginOption. The plugin is
-						// duck-typed and runs identically at runtime — cast
+						// assignable to Astro's PluginOption. The plugins are
+						// duck-typed and run identically at runtime — cast
 						// through `never` to satisfy both type universes.
-						plugins: [createSiteTokensVitePlugin(site, configDir) as never],
+						plugins: [
+							createSiteTokensVitePlugin(site, configDir) as never,
+							createRunesCssVitePlugin(getUsedBlocks) as never,
+						],
 					},
 				});
 
-				// Inject the theme CSS *and* the site-tokens overrides. Order
-				// matters: theme defaults first, site overrides second so the
-				// `--rf-*` cascade resolves to the override value last.
+				// Inject the runes CSS *and* the site-tokens overrides. Order
+				// matters: per-rune CSS first (which includes base.css), site
+				// overrides second so the `--rf-*` cascade resolves to the
+				// override value last.
 				injectScript(
 					'page-ssr',
-					`import '${themePackage}';\nimport '${SITE_TOKENS_VIRTUAL_ID}';`,
+					`import '${RUNES_VIRTUAL_ID}';\nimport '${SITE_TOKENS_VIRTUAL_ID}';`,
 				);
 
 				// Watch content directory for changes in dev mode

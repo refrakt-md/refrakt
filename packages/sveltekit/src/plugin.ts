@@ -1,6 +1,4 @@
-import { existsSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve, dirname } from 'node:path';
 import type { Plugin as VitePlugin, UserConfig } from 'vite';
 import type { Plugin, SiteConfig, PipelineWarning } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
@@ -11,6 +9,7 @@ import {
 	normalizeRefraktConfig,
 	resolveSite,
 	composeSiteTokensCss,
+	computeUsedCssBlocks,
 } from '@refrakt-md/transform/node';
 import { resolveVirtualId, loadVirtualModule, type BuildContext } from './virtual-modules.js';
 import { setupContentHmr } from './content-hmr.js';
@@ -199,32 +198,12 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
 				const effectiveConfig = assembledResult?.config ?? themeConfig;
 
-				usedCssBlocks = new Set<string>();
-
-				// Resolve the theme's root export (index.css) to find the package directory
-				const themeEntryUrl = import.meta.resolve(themePackage);
-				const themeDir = dirname(fileURLToPath(themeEntryUrl));
-				const stylesDir = join(themeDir, 'styles', 'runes');
-
-				// Build kebab → config key map (data-rune uses kebab-case, config keys are PascalCase)
-				const { toKebabCase } = await import('@refrakt-md/transform');
-				const runeKeyMap = new Map(
-					Object.keys(effectiveConfig.runes).map(k => [toKebabCase(k), k])
+				const { usedBlocks } = await computeUsedCssBlocks(
+					report.allTypes,
+					effectiveConfig,
+					themePackage,
 				);
-
-				for (const typeName of report.allTypes) {
-					const configKey = runeKeyMap.get(typeName);
-					const runeConfig = configKey ? effectiveConfig.runes[configKey] : undefined;
-					if (runeConfig && existsSync(join(stylesDir, `${runeConfig.block}.css`))) {
-						usedCssBlocks.add(runeConfig.block);
-					}
-				}
-
-				// Tint is a universal attribute (not a rune), so it never appears
-				// in data-rune analysis. Always include its CSS when present.
-				if (existsSync(join(stylesDir, 'tint.css'))) {
-					usedCssBlocks.add('tint');
-				}
+				usedCssBlocks = usedBlocks;
 			} catch (err) {
 				// Graceful fallback — if analysis fails, all CSS is included
 				usedCssBlocks = undefined;

@@ -5,7 +5,10 @@ import {
 	loadRefraktConfig,
 	resolveSite,
 	createSiteTokensVitePlugin,
+	createRunesCssVitePlugin,
+	computeUsedCssBlocks,
 	SITE_TOKENS_VIRTUAL_ID,
+	RUNES_VIRTUAL_ID,
 } from '@refrakt-md/transform/node';
 import { getThemePackage } from '@refrakt-md/types';
 import type { RefraktNuxtOptions } from './types.js';
@@ -35,18 +38,47 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		];
 		nuxt.options.build.transpile.push(...transpile);
 
-		// Inject theme CSS + site-tokens overrides. Order matters: theme defaults
-		// first, site overrides second so the `--rf-*` cascade resolves to the
-		// override value last.
+		// Inject tree-shaken runes CSS + site-tokens overrides. Order matters:
+		// per-rune CSS first (includes base.css), site-tokens CSS second so the
+		// `--rf-*` cascade resolves to the override value last.
 		nuxt.options.css = nuxt.options.css ?? [];
-		nuxt.options.css.push(themePackage, SITE_TOKENS_VIRTUAL_ID);
+		nuxt.options.css.push(RUNES_VIRTUAL_ID, SITE_TOKENS_VIRTUAL_ID);
 
-		// Register the Vite plugin that serves virtual:refrakt/site-tokens.css.
-		// Shared factory from @refrakt-md/transform/node; same plugin the Astro
-		// integration uses.
+		// Callback the runes Vite plugin invokes in `buildStart` to compute
+		// the tree-shaken rune set. Same shape as the Astro integration.
+		const getUsedBlocks = async () => {
+			try {
+				const { createRefraktLoader, analyzeRuneUsage } = await import(
+					'@refrakt-md/content'
+				);
+				const themeModule = await import(themePackage + '/transform');
+				const themeConfig =
+					themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+				const loader = createRefraktLoader({ configPath, site: options.site });
+				const loadedSite = await loader.getSite();
+				const report = analyzeRuneUsage(loadedSite.pages);
+				const { usedBlocks } = await computeUsedCssBlocks(
+					report.allTypes,
+					themeConfig,
+					themePackage,
+				);
+				return { usedBlocks, themePackage, themeConfig };
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.warn('[refrakt] CSS tree-shaking skipped:', (err as Error).message);
+				return { themePackage, fallbackToBarrel: true as const };
+			}
+		};
+
+		// Register the Vite plugins serving virtual:refrakt/site-tokens.css and
+		// virtual:refrakt/runes.css. Shared factories from
+		// @refrakt-md/transform/node — same plugins the Astro integration uses.
 		nuxt.options.vite = nuxt.options.vite ?? {};
 		nuxt.options.vite.plugins = nuxt.options.vite.plugins ?? [];
-		nuxt.options.vite.plugins.push(createSiteTokensVitePlugin(site, configDir));
+		nuxt.options.vite.plugins.push(
+			createSiteTokensVitePlugin(site, configDir),
+			createRunesCssVitePlugin(getUsedBlocks),
+		);
 
 		// Configure Vue to treat rf-* as custom elements (compose with existing)
 		const prevIsCustomElement = nuxt.options.vue.compilerOptions.isCustomElement;

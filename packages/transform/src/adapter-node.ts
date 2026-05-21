@@ -23,14 +23,21 @@ export { loadPreset, loadPresets } from './preset-loader.js';
 // the per-site CSS that layers on top of the theme package's barrel.
 export { composeSiteTokensCss } from './site-tokens.js';
 
-// Vite plugin wrapper for the site-tokens CSS composer — shared by the
-// Astro + Nuxt adapters so they emit byte-identical `virtual:refrakt/
-// site-tokens.css` modules. SvelteKit uses its own virtual-module path.
+// Vite plugin wrappers for the per-site CSS modules — shared by the Astro
+// and Nuxt adapters so they emit byte-identical `virtual:refrakt/site-tokens.css`
+// and `virtual:refrakt/runes.css` modules. SvelteKit uses its own virtual-module
+// path under `packages/sveltekit/src/virtual-modules.ts`.
 export {
 	createSiteTokensVitePlugin,
+	createRunesCssVitePlugin,
 	SITE_TOKENS_VIRTUAL_ID,
+	RUNES_VIRTUAL_ID,
 } from './site-tokens-vite.js';
 export type { MinimalVitePlugin } from './site-tokens-vite.js';
+
+// Tree-shaken per-rune CSS — used by every adapter to ship only the rune
+// blocks actually present in the page corpus.
+export { computeUsedCssBlocks, buildUsedCssImports } from './used-css.js';
 
 /**
  * Load and normalize a refrakt.config.json file.

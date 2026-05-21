@@ -1,5 +1,10 @@
-import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
-import { renderFullPage, composeSiteTokensCss } from '@refrakt-md/html';
+import { loadContent, buildHighlightOptions, analyzeRuneUsage } from '@refrakt-md/content';
+import {
+	renderFullPage,
+	composeSiteTokensCss,
+	computeUsedCssBlocks,
+	buildUsedCssImports,
+} from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
@@ -9,6 +14,7 @@ import { getThemePackage } from '@refrakt-md/types';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 
 // --- Configuration -------------------------------------------------------
@@ -109,12 +115,44 @@ async function build() {
 	};
 
 	// Load content
-	const site = await loadContent(contentDir, '/', icons, communityTags);
+	const loadedSite = await loadContent(contentDir, '/', icons, communityTags);
 
 	mkdirSync(outDir, { recursive: true });
 
+	// Tree-shake per-rune CSS: only ship blocks that actually appear in the
+	// page corpus. Falls back to the theme barrel if analysis fails.
+	const usageReport = analyzeRuneUsage(loadedSite.pages);
+	let stylesheets: string[];
+	let blocksToCopy: { src: string; dest: string }[] = [];
+	try {
+		const { usedBlocks, stylesDir } = await computeUsedCssBlocks(
+			usageReport.allTypes,
+			finalConfig,
+			themePackage,
+		);
+		const themeEntryUrl = import.meta.resolve(themePackage);
+		const themeDir = path.dirname(fileURLToPath(themeEntryUrl));
+		stylesheets = ['/base.css'];
+		blocksToCopy.push({
+			src: path.join(themeDir, 'base.css'),
+			dest: path.join(outDir, 'base.css'),
+		});
+		for (const block of [...usedBlocks].sort()) {
+			stylesheets.push(`/styles/runes/${block}.css`);
+			blocksToCopy.push({
+				src: path.join(stylesDir, `${block}.css`),
+				dest: path.join(outDir, 'styles', 'runes', `${block}.css`),
+			});
+		}
+	} catch (err) {
+		console.warn(
+			`Tree-shaking skipped (${(err as Error).message}); shipping full theme barrel.`,
+		);
+		stylesheets = ['/styles.css'];
+	}
+
 	// Collect page metadata for navigation
-	const pages = site.pages
+	const pages = loadedSite.pages
 		.filter(p => !p.route.draft)
 		.map(p => ({
 			url: p.route.url,
@@ -124,7 +162,7 @@ async function build() {
 
 	let count = 0;
 
-	for (const page of site.pages) {
+	for (const page of loadedSite.pages) {
 		if (page.route.draft) continue;
 
 		// Serialize → identity transform → highlight
@@ -153,7 +191,7 @@ async function build() {
 				},
 			},
 			{
-				stylesheets: ['/styles.css'],
+				stylesheets,
 				// Order matters: highlight CSS first, site-tokens CSS second so
 				// site-level `--rf-*` overrides resolve last in the cascade.
 				headExtra:
@@ -177,16 +215,27 @@ async function build() {
 		count++;
 	}
 
-	// Copy theme CSS to build directory
-	try {
-		const themePkg = themePackage;
-		const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
-		const cssPath = path.join(themeDir, 'index.css');
-		if (existsSync(cssPath)) {
-			cpSync(cssPath, path.join(outDir, 'styles.css'));
+	// Copy the per-rune CSS files (or the theme barrel as fallback)
+	if (blocksToCopy.length > 0) {
+		for (const { src, dest } of blocksToCopy) {
+			if (existsSync(src)) {
+				mkdirSync(path.dirname(dest), { recursive: true });
+				cpSync(src, dest);
+			}
 		}
-	} catch {
-		console.warn('Warning: Could not copy theme CSS. Add a styles.css to the build directory manually.');
+	} else {
+		try {
+			const themePkg = themePackage;
+			const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
+			const cssPath = path.join(themeDir, 'index.css');
+			if (existsSync(cssPath)) {
+				cpSync(cssPath, path.join(outDir, 'styles.css'));
+			}
+		} catch {
+			console.warn(
+				'Warning: Could not copy theme CSS. Add a styles.css to the build directory manually.',
+			);
+		}
 	}
 
 	console.log(`Built ${count} pages to ${outDir}/`);
