@@ -16,7 +16,7 @@ npm install @refrakt-md/media
 
 ```json
 {
-  "packages": ["@refrakt-md/media"]
+  "plugins": ["@refrakt-md/media"]
 }
 ```
 

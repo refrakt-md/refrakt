@@ -4,7 +4,7 @@ description: Audio player with optional waveform and chapter markers
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt-md/media**. Install with `npm install @refrakt-md/media` and add `"@refrakt-md/media"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/media**. Install with `npm install @refrakt-md/media` and add `"@refrakt-md/media"` to the `plugins` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Audio

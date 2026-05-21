@@ -16,7 +16,7 @@ npm install @refrakt-md/places
 
 ```json
 {
-  "packages": ["@refrakt-md/places"]
+  "plugins": ["@refrakt-md/places"]
 }
 ```
 

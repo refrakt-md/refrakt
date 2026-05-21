@@ -16,7 +16,7 @@ npm install @refrakt-md/storytelling
 
 ```json
 {
-  "packages": ["@refrakt-md/storytelling"]
+  "plugins": ["@refrakt-md/storytelling"]
 }
 ```
 

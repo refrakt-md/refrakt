@@ -16,7 +16,7 @@ npm install @refrakt-md/marketing
 
 ```json
 {
-  "packages": ["@refrakt-md/marketing"]
+  "plugins": ["@refrakt-md/marketing"]
 }
 ```
 

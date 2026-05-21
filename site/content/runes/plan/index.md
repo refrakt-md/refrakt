@@ -18,7 +18,7 @@ npm install @refrakt-md/plan
 
 ```json
 {
-  "packages": ["@refrakt-md/plan"]
+  "plugins": ["@refrakt-md/plan"]
 }
 ```
 

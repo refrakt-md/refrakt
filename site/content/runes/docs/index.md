@@ -16,7 +16,7 @@ npm install @refrakt-md/docs
 
 ```json
 {
-  "packages": ["@refrakt-md/docs"]
+  "plugins": ["@refrakt-md/docs"]
 }
 ```
 

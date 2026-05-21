@@ -16,7 +16,7 @@ npm install @refrakt-md/business
 
 ```json
 {
-  "packages": ["@refrakt-md/business"]
+  "plugins": ["@refrakt-md/business"]
 }
 ```
 

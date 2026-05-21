@@ -16,7 +16,7 @@ npm install @refrakt-md/learning
 
 ```json
 {
-  "packages": ["@refrakt-md/learning"]
+  "plugins": ["@refrakt-md/learning"]
 }
 ```
 

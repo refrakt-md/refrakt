@@ -4,7 +4,7 @@ description: Component showcase with theme toggle and responsive viewports
 ---
 
 {% hint type="note" %}
-This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `packages` array in your `refrakt.config.json`.
+This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `plugins` array in your `refrakt.config.json`.
 {% /hint %}
 
 # Preview
