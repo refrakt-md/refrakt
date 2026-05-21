@@ -58,6 +58,7 @@
 				{ "pattern": "docs/**", "layout": "docs" },
 				{ "pattern": "runes/**", "layout": "docs" },
 				{ "pattern": "themes/**", "layout": "docs" },
+				{ "pattern": "extend/**", "layout": "docs" },
 				{ "pattern": "blog/*", "layout": "blog-article" },
 				{ "pattern": "**", "layout": "default" }
 			],
