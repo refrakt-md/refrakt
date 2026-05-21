@@ -29,6 +29,7 @@ tint-lock: false
 - embed
 - icon
 - xref
+- badge
 
 ## Layout
 

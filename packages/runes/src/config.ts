@@ -1012,7 +1012,7 @@ function resolveAutoNavs(
 		);
 
 		if (hasSentinel) {
-			return buildAutoNav(pageUrl, pagesByUrl, ctx);
+			return buildAutoNav(pageUrl, pagesByUrl, ctx, tag);
 		}
 	}
 
@@ -1024,11 +1024,16 @@ function resolveAutoNavs(
 	return { ...tag, children: newChildren };
 }
 
-/** Build a resolved nav Tag from the direct children of the current page */
+/** Build a resolved nav Tag from the direct children of the current page.
+ *  Preserves contextual attributes from the original sentinel-bearing nav
+ *  (layout, data-auto, data-source-path) so downstream resolvers — including
+ *  the cards/auto enrichment pass — see the same configuration the author
+ *  declared. */
 function buildAutoNav(
 	pageUrl: string,
 	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>,
 	ctx: PipelineContext,
+	originalTag: any,
 ): unknown {
 	// Find direct children: pages whose parentUrl is this page's URL (excluding self)
 	const children = Array.from(pagesByUrl.values()).filter(
@@ -1052,14 +1057,25 @@ function buildAutoNav(
 
 	const itemsList = new Tag('ul', {}, listItems);
 
-	return createComponentRenderable({ rune: 'nav',
+	const newNav = createComponentRenderable({ rune: 'nav',
 		tag: 'nav',
 		properties: {
 			group: [],
 			item: listItems,
 		},
 		children: [itemsList],
-	});
+	}) as any;
+
+	// Preserve contextual attributes from the original nav so layout / auto /
+	// source-path survive sentinel replacement.
+	const carry = ['layout', 'data-layout', 'data-auto', 'data-source-path', 'data-collapsible', 'data-default-open'];
+	for (const k of carry) {
+		const v = originalTag?.attributes?.[k];
+		if (v !== undefined) {
+			newNav.attributes[k] = v;
+		}
+	}
+	return newNav;
 }
 
 // ─── Nav slug resolution (SPEC-055) ───
@@ -1464,6 +1480,39 @@ function getNavItemUrl(
 	return null;
 }
 
+/** Attach an icon (prepended) and a description (appended) inside a nav item's
+ *  existing `<a>` link, drawn from the page's frontmatter. Used for the
+ *  layout-agnostic `auto=true` enrichment (SPEC-054). Unlike the cards
+ *  full-replacement, this preserves any inline author content (badges,
+ *  custom link text) and just augments the link. Idempotent — re-runs do
+ *  nothing because the same data-name children would already be present. */
+function augmentNavItemFromFrontmatter(item: any, pageMeta: PageMetadata): any {
+	const newChildren = (item.children ?? []).map((c: unknown) => {
+		if (!Tag.isTag(c as any)) return c;
+		const t = c as any;
+		if (t.name !== 'a') return c;
+		// Skip if this <a> has already been enriched (idempotency).
+		const hasIcon = (t.children ?? []).some((x: any) =>
+			Tag.isTag(x) && x.attributes?.['data-name'] === 'icon');
+		const hasDescription = (t.children ?? []).some((x: any) =>
+			Tag.isTag(x) && x.attributes?.['data-name'] === 'description');
+
+		const newLinkChildren: any[] = [...(t.children ?? [])];
+		if (pageMeta.icon && !hasIcon) {
+			newLinkChildren.unshift(
+				new Tag('rf-icon', { name: pageMeta.icon, 'data-name': 'icon', class: 'rf-nav-item__icon' }, []),
+			);
+		}
+		if (pageMeta.description && !hasDescription) {
+			newLinkChildren.push(
+				new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [pageMeta.description]),
+			);
+		}
+		return { ...t, children: newLinkChildren };
+	});
+	return { ...item, children: newChildren };
+}
+
 function resolveCardsNavs(
 	renderable: unknown,
 	pageUrl: string,
@@ -1482,35 +1531,52 @@ function resolveCardsNavs(
 
 	const tag = renderable as any;
 
-	if (
-		tag.attributes?.['data-rune'] === 'nav' &&
-		(tag.attributes?.['data-layout'] === 'cards' || tag.attributes?.['layout'] === 'cards')
-	) {
-		const enrichItem = (node: unknown): unknown => {
-			if (!Tag.isTag(node as any)) {
-				if (Array.isArray(node)) return node.map(enrichItem);
-				return node;
-			}
-			const t = node as any;
-			if (t.attributes?.['data-rune'] === 'nav-item') {
-				const ref = getNavItemUrl(t, pagesByUrl, pageUrl);
-				if (!ref) return t;
-				if (ref.isExternal) {
-					// External link — title only, no enrichment
-					return enrichNavItemAsCard(t, null, ref.url);
+	if (tag.attributes?.['data-rune'] === 'nav') {
+		const layout = tag.attributes?.['data-layout'] ?? tag.attributes?.['layout'];
+		const isCards = layout === 'cards';
+		const isAuto = tag.attributes?.['data-auto'] === 'true';
+
+		// Cards layout: full replacement (icon + title + description inside the link).
+		// Any other layout with auto=true: augment existing links with frontmatter
+		// (icon prepended, description appended). Layouts without either: no enrichment.
+		if (isCards || isAuto) {
+			const enrichItem = (node: unknown): unknown => {
+				if (!Tag.isTag(node as any)) {
+					if (Array.isArray(node)) return node.map(enrichItem);
+					return node;
 				}
-				const page = pagesByUrl.get(ref.url);
-				const meta: PageMetadata | null = page
-					? { url: page.url, title: page.title, description: page.description, icon: page.icon }
-					: null;
-				return enrichNavItemAsCard(t, meta, ref.url);
-			}
-			const newChildren = (t.children ?? []).map(enrichItem);
-			if (newChildren.every((c: unknown, i: number) => c === t.children[i])) return t;
-			return { ...t, children: newChildren };
-		};
-		const newChildren = (tag.children ?? []).map(enrichItem);
-		return { ...tag, children: newChildren };
+				const t = node as any;
+				if (t.attributes?.['data-rune'] === 'nav-item') {
+					const ref = getNavItemUrl(t, pagesByUrl, pageUrl);
+					if (!ref) return t;
+					if (isCards) {
+						if (ref.isExternal) return enrichNavItemAsCard(t, null, ref.url);
+						const page = pagesByUrl.get(ref.url);
+						const meta: PageMetadata | null = page
+							? { url: page.url, title: page.title, description: page.description, icon: page.icon }
+							: null;
+						return enrichNavItemAsCard(t, meta, ref.url);
+					}
+					// Auto-augment for non-cards layouts. External links don't have
+					// frontmatter to enrich from — leave untouched.
+					if (ref.isExternal) return t;
+					const page = pagesByUrl.get(ref.url);
+					if (!page) return t;
+					const meta: PageMetadata = {
+						url: page.url,
+						title: page.title,
+						description: page.description,
+						icon: page.icon,
+					};
+					return augmentNavItemFromFrontmatter(t, meta);
+				}
+				const newChildren = (t.children ?? []).map(enrichItem);
+				if (newChildren.every((c: unknown, i: number) => c === t.children[i])) return t;
+				return { ...t, children: newChildren };
+			};
+			const newChildren = (tag.children ?? []).map(enrichItem);
+			return { ...tag, children: newChildren };
+		}
 	}
 
 	const newChildren = (tag.children ?? []).map((c: unknown) =>

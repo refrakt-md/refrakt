@@ -41,6 +41,7 @@ import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
+import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { defineRune, runeTagMap } from './rune.js';
@@ -511,6 +512,14 @@ export const runes = {
     aliases: ['ref'],
     schema: xref,
     description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
+  }),
+  badge: defineRune({
+    name: 'badge',
+    schema: badge,
+    description: 'Inline pill that flags a piece of content (status, category, recency, tag). Visual variant from the universal metadata-system dimensions (sentiment, rank, type).',
+    typeName: 'Badge',
+    category: 'Content',
+    snippet: ['{% badge sentiment="${1|positive,negative,caution,neutral|}" %}', '${2:Label}', '{% /badge %}'],
   }),
 };
 

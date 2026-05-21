@@ -1,4 +1,4 @@
-{% work id="WORK-234" status="ready" priority="medium" complexity="trivial" tags="runes, badge, inline, core, metadata" source="SPEC-054" milestone="v0.14.3" %}
+{% work id="WORK-234" status="done" priority="medium" complexity="trivial" tags="runes, badge, inline, core, metadata" source="SPEC-054" milestone="v0.14.3" %}
 
 # `{% badge %}` core inline rune
 
@@ -10,24 +10,24 @@ Independent of the rest of the mega work — can ship in parallel.
 
 ## Acceptance Criteria
 
-- [ ] New rune at `packages/runes/src/tags/badge.ts`
-- [ ] Rune takes its label as children content (inline text), not as an attribute
-- [ ] Accepts `sentiment` attribute with values `positive` | `negative` | `caution` | `neutral` (default `neutral`) — matches existing metadata-system sentiment enum exactly
-- [ ] Accepts `rank` attribute with values `primary` | `secondary` (no default; omitted attribute emits no `data-meta-rank`) — matches existing metadata-system rank enum
-- [ ] Accepts `type` attribute with values `status` | `category` | `quantity` | `temporal` | `tag` | `id` (default `tag`) — matches existing metadata-system metaType enum
-- [ ] No new attribute enums are introduced — all three attributes use the value sets already defined by SPEC-024 (`packages/transform/src/types.ts` `StructureEntry` interface)
-- [ ] Identity transform output: `<span class="rf-badge" data-meta-sentiment="…" data-meta-rank="…" data-meta-type="…">{children}</span>` — no per-variant BEM modifier classes (e.g. no `.rf-badge--positive`)
-- [ ] Engine config entry added to `packages/runes/src/config.ts` with block `'badge'` and modifiers that emit the three `data-meta-*` attributes (likely reusing the existing `metaType`, `metaRank`, `sentimentMap` config fields rather than rolling new modifier sources)
-- [ ] Inline placement works inside paragraphs, headings, table cells, list items, link text — anywhere markdown allows inline content
-- [ ] Children rendering preserves text exactly (no transformation, casing, etc.); accessible to screen readers
-- [ ] Lumina ships base `.rf-badge` CSS in a new `packages/lumina/styles/runes/badge.css`, imported from `packages/lumina/index.css` — pill shape only (inline-flex, small padding, rounded full, small font, uppercase letter-spacing optional)
-- [ ] Colour / weight / emphasis styling for each sentiment / rank combination inherits from the existing `packages/lumina/styles/dimensions/metadata.css` rules — verified by visual inspection that all four sentiments × both ranks render as expected
-- [ ] Sentiment defaults to `neutral` so `{% badge %}Frontend{% /badge %}` renders as a plain neutral pill without any required attribute
-- [ ] CSS coverage tests recognise `.rf-badge` (the base shape); per-variant coverage is already validated by SPEC-024 / SPEC-025 metadata CSS coverage tests
-- [ ] `npx refrakt inspect badge` produces expected HTML output for a representative call
-- [ ] `npx refrakt inspect badge --sentiment=positive --rank=primary` produces output with both data attributes present
-- [ ] New rune reference page at `site/content/runes/badge.md` covering all attribute combinations, the metadata-dimension inheritance, accessibility notes (label is real text, not pseudo-content), and a recipes section with the previously-proposed dev-lifecycle uses (`{% badge sentiment="positive" %}New{% /badge %}`, `{% badge sentiment="caution" %}Beta{% /badge %}`, etc.) as patterns rather than built-ins
-- [ ] At least one site page demonstrates badge usage in prose (e.g. a docs page marking an experimental feature with `{% badge sentiment="caution" %}Beta{% /badge %}`)
+- [x] New rune at `packages/runes/src/tags/badge.ts`
+- [x] Rune takes its label as children content (inline text), not as an attribute
+- [x] Accepts `sentiment` attribute with values `positive` | `negative` | `caution` | `neutral` (default `neutral`) — matches existing metadata-system sentiment enum exactly
+- [x] Accepts `rank` attribute with values `primary` | `secondary` (no default; omitted attribute emits no `data-meta-rank`) — matches existing metadata-system rank enum
+- [x] Accepts `type` attribute with values `status` | `category` | `quantity` | `temporal` | `tag` | `id` (default `tag`) — matches existing metadata-system metaType enum
+- [x] No new attribute enums are introduced — all three attributes use the value sets already defined by SPEC-024 (`packages/transform/src/types.ts` `StructureEntry` interface)
+- [x] Identity transform output: `<span class="rf-badge" data-meta-sentiment="…" data-meta-rank="…" data-meta-type="…">{children}</span>` — no per-variant BEM modifier classes (e.g. no `.rf-badge--positive`)
+- [x] Engine config entry added to `packages/runes/src/config.ts` with block `'badge'` and modifiers that emit the three `data-meta-*` attributes (likely reusing the existing `metaType`, `metaRank`, `sentimentMap` config fields rather than rolling new modifier sources)
+- [x] Inline placement works inside paragraphs, headings, table cells, list items, link text — anywhere markdown allows inline content
+- [x] Children rendering preserves text exactly (no transformation, casing, etc.); accessible to screen readers
+- [x] Lumina ships base `.rf-badge` CSS in a new `packages/lumina/styles/runes/badge.css`, imported from `packages/lumina/index.css` — pill shape only (inline-flex, small padding, rounded full, small font, uppercase letter-spacing optional)
+- [x] Colour / weight / emphasis styling for each sentiment / rank combination inherits from the existing `packages/lumina/styles/dimensions/metadata.css` rules — verified by visual inspection that all four sentiments × both ranks render as expected
+- [x] Sentiment defaults to `neutral` so `{% badge %}Frontend{% /badge %}` renders as a plain neutral pill without any required attribute
+- [x] CSS coverage tests recognise `.rf-badge` (the base shape); per-variant coverage is already validated by SPEC-024 / SPEC-025 metadata CSS coverage tests
+- [x] `npx refrakt inspect badge` produces expected HTML output for a representative call
+- [x] `npx refrakt inspect badge --sentiment=positive --rank=primary` produces output with both data attributes present
+- [x] New rune reference page at `site/content/runes/badge.md` covering all attribute combinations, the metadata-dimension inheritance, accessibility notes (label is real text, not pseudo-content), and a recipes section with the previously-proposed dev-lifecycle uses (`{% badge sentiment="positive" %}New{% /badge %}`, `{% badge sentiment="caution" %}Beta{% /badge %}`, etc.) as patterns rather than built-ins
+- [x] At least one site page demonstrates badge usage in prose (e.g. a docs page marking an experimental feature with `{% badge sentiment="caution" %}Beta{% /badge %}`)
 
 ## Approach
 
@@ -88,5 +88,42 @@ None — the metadata system ({% ref "SPEC-024" /%}, {% ref "SPEC-025" /%}) is a
 - `packages/transform/src/types.ts` — `StructureEntry` interface with `metaType` / `metaRank` / `sentimentMap` fields
 - `packages/lumina/styles/dimensions/metadata.css` — Universal metadata styling that the badge inherits
 - `packages/runes/src/tags/` — Existing rune implementations for reference
+
+## Resolution
+
+Branch: `claude/v0-14-3-nav-milestone-planning`
+
+### What was done
+
+- **Schema** — added `packages/runes/src/tags/badge.ts` as a small inline rune with `inline: true`, three attributes (sentiment / rank / type) matching SPEC-024's metadata-system enums exactly. The transform emits `<span class="rf-badge" data-rune="badge" data-meta-sentiment="…" data-meta-type="…" data-meta-rank="…?">{children}</span>` directly — no engine config entry needed because the schema produces a fully-formed tag and there are no nested structure slots to manage.
+- **Registration** — registered the rune via `defineRune` in `packages/runes/src/index.ts` alongside the other content runes; added a snippet for editor autocomplete.
+- **CSS** — added `packages/lumina/styles/runes/badge.css` as a minimal stable theming hook (just `vertical-align: baseline`). All visual styling — border, padding, dot via `::before` for sentiment, type-specific treatments — inherits from the existing `packages/lumina/styles/dimensions/metadata.css` rules; no per-variant BEM modifiers emitted.
+- **Tests** — `packages/runes/test/badge.test.ts` covers default neutral output, per-attribute sentiment / rank / type emission, attribute enumeration, default fallbacks, children-as-label preservation, inline placement in prose. 9 tests, all pass.
+- **Rune reference** — `site/content/runes/badge.md` with quickstart, sentiment / rank / type sections, recipes table for dev-lifecycle / commerce / status / category use cases, attribute reference, accessibility notes, composition with nav items.
+- **Site nav** — badge listed in `site/content/runes/_layout.md` Content group.
+- **Demo in prose** — added `{% badge sentiment="caution" %}trusted{% /badge %}` inline in `site/content/docs/security/index.md` lead paragraph to show real-world usage.
+
+### Files changed
+
+- `packages/runes/src/tags/badge.ts` — new schema
+- `packages/runes/src/index.ts` — import + registration
+- `packages/lumina/styles/runes/badge.css` — minimal theme hook
+- `packages/lumina/index.css` — CSS import
+- `packages/runes/test/badge.test.ts` — 9 tests
+- `site/content/runes/badge.md` — reference page
+- `site/content/runes/_layout.md` — nav entry
+- `site/content/docs/security/index.md` — inline demo
+
+### Verification
+
+- Tests: badge.test.ts 9/9 pass; full suite 2628/2628 pass.
+- CSS coverage: 176 coverage tests pass (badge inherits from metadata.css; no per-variant selectors required).
+- Site build: 0 errors, 171 pages (badge reference + 1 site demo).
+- HTML output verified in `site/build/runes/badge.html` and `site/build/docs/security.html` — all sentiment / rank / type combinations render with correct data attributes.
+
+### Notes
+
+- Skipped adding a `Badge` entry to the engine config (`baseConfig` in `packages/runes/src/config.ts`) — the badge schema emits a complete tag directly, and there are no nested structure slots, modifiers, or context-aware classes to manage. The engine's identity-transform recursion still processes badge children (so nested inline runes like `{% icon %}` would work inside a badge if needed).
+- Default `data-meta-sentiment="neutral"` and `data-meta-type="tag"` are always emitted so the metadata-system CSS rules apply consistently. `data-meta-rank` is omitted when not set (the metadata CSS treats absence and "secondary" as the default font size).
 
 {% /work %}

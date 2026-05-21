@@ -5,7 +5,7 @@ description: Configuring the transform pipeline to render untrusted author conte
 
 # Security Policy
 
-The transform pipeline is designed for self-hosted single-author projects: by default it assumes content is **trusted** and renders author HTML, CSS, and JavaScript as written. That's the right default for most documentation sites — but it's unsafe for any **hosted product** that renders content from one tenant in another tenant's session.
+The transform pipeline is designed for self-hosted single-author projects: by default it assumes content is {% badge sentiment="caution" %}trusted{% /badge %} and renders author HTML, CSS, and JavaScript as written. That's the right default for most documentation sites — but it's unsafe for any **hosted product** that renders content from one tenant in another tenant's session.
 
 The {% ref "Sandbox" %} rune in particular ships authored HTML/CSS/JS into an iframe with `sandbox="allow-scripts allow-same-origin"`. With `allow-same-origin` set on a `srcdoc` iframe the browser inherits the parent's origin, which means a malicious `<script>` inside the sandbox can read the parent page's cookies, `localStorage`, and DOM. Fine for a personal docs site you wrote yourself; not fine for a multi-tenant SaaS.
 

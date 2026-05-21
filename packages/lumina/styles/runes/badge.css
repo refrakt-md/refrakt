@@ -1,0 +1,16 @@
+/* Badge rune — inline pill that flags a piece of content.
+ *
+ * Visual styling (border, padding, dot for sentiment, type-specific
+ * treatment) comes entirely from the universal metadata-system rules in
+ * `dimensions/metadata.css`. The `.rf-badge` selector exists primarily
+ * as a stable theming hook for badge-specific overrides — themes can
+ * adjust badge density, font, or behaviour here without touching the
+ * shared metadata rules that other runes rely on.
+ *
+ * The data-meta-type / data-meta-rank / data-meta-sentiment attributes
+ * emitted by the badge schema are styled by metadata.css.
+ */
+
+.rf-badge {
+	vertical-align: baseline;
+}
