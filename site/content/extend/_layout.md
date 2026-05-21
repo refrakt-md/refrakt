@@ -13,7 +13,7 @@ tint-lock: false
 
 ## Overview
 
-- index
+- [Overview](/extend)
 
 ## Rune authoring
 
@@ -46,11 +46,11 @@ tint-lock: false
 
 ## Security
 
-- security/index
+- security
 
 ## Contributing
 
-- contributing/index
+- contributing
 
 {% /nav %}
 {% /region %}
