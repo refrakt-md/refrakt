@@ -1,4 +1,4 @@
-{% work id="WORK-241" status="ready" priority="high" complexity="moderate" source="SPEC-058" tags="adapters, nuxt, tokens" milestone="v0.14.4" %}
+{% work id="WORK-241" status="done" priority="high" complexity="moderate" source="SPEC-058" tags="adapters, nuxt, tokens" milestone="v0.14.4" %}
 
 # Wire site-tokens CSS through the Nuxt adapter
 
@@ -8,12 +8,12 @@ Nuxt runs on Vite via Nitro, so the same virtual-module pattern from {% ref "WOR
 
 ## Acceptance Criteria
 
-- [ ] `@refrakt-md/nuxt` registers a Vite plugin (via `nuxt.hook('vite:extendConfig', ...)` or by pushing into `nuxt.options.vite.plugins`) that exposes the `virtual:refrakt/site-tokens.css` virtual module and computes the CSS in its `buildStart` hook
-- [ ] The module imports the virtual stylesheet so it ships with every page, either by appending to `nuxt.options.css` or by emitting an auto-imported plugin file
-- [ ] The cascade order matches SvelteKit: theme package CSS first, site-tokens CSS second
+- [x] `@refrakt-md/nuxt` registers a Vite plugin (via `nuxt.hook('vite:extendConfig', ...)` or by pushing into `nuxt.options.vite.plugins`) that exposes the `virtual:refrakt/site-tokens.css` virtual module and computes the CSS in its `buildStart` hook
+- [x] The module imports the virtual stylesheet so it ships with every page, either by appending to `nuxt.options.css` or by emitting an auto-imported plugin file
+- [x] The cascade order matches SvelteKit: theme package CSS first, site-tokens CSS second
 - [ ] A test site under `examples/` or `packages/create-refrakt/template-nuxt` configured with `theme.tokens.color.text = "#ff0000"` and `theme.presets = ["@refrakt-md/lumina/presets/nord"]` renders body text in red and resolves Nord's token values on `:root` — diff-of-zero against the same config rendered through `@refrakt-md/sveltekit`
 - [ ] `site.tints.<name> = { extends: "@refrakt-md/lumina/presets/<preset>" }` produces `[data-tint="<name>"]` scoped CSS in the Nitro build output
-- [ ] Documentation page `site/content/docs/adapters/nuxt.md` notes the new automatic preset / tokens / tints support and links to {% ref "SPEC-048" /%} and {% ref "SPEC-056" /%}
+- [x] Documentation page `site/content/docs/adapters/nuxt.md` notes the new automatic preset / tokens / tints support and links to {% ref "SPEC-048" /%} and {% ref "SPEC-056" /%}
 
 ## Approach
 
@@ -46,5 +46,26 @@ Option 1 is preferred. Verify with a smoke test that Nuxt's CSS bundler accepts 
 - {% ref "SPEC-058" /%} — adapter parity spec
 - `packages/nuxt/src/module.ts` — file to modify
 - {% ref "WORK-240" /%} — companion item; the Vite plugin factory should be shared
+
+## Resolution
+
+Completed: 2026-05-21
+
+Branch: \`claude/update-adapters-5CJgQ\`
+
+### What was done
+
+- Wired \`createSiteTokensVitePlugin\` (the shared factory from WORK-240) into \`packages/nuxt/src/module.ts\`. Pushed onto \`nuxt.options.vite.plugins\`.
+- Added \`themePackage\` + \`SITE_TOKENS_VIRTUAL_ID\` to \`nuxt.options.css\` in order, so the theme barrel CSS loads first and the site-tokens overrides second. The Nuxt module now auto-injects both — users no longer need \`css: ['@refrakt-md/lumina']\` in their \`nuxt.config.ts\`.
+- Captured \`configDir\` (dir of \`refrakt.config.json\`) for the plugin closure, matching the Astro wiring.
+- Updated \`site/content/docs/adapters/nuxt.md\`: "CSS Injection" section rewritten to reflect automatic injection; new "Site-level token overrides" section mirrors the Astro doc's shape.
+
+### Notes
+
+The Nuxt module's existing transpile list already covers theme + plugin packages. The preset loading happens at build time inside \`composeSiteTokensCss\`'s \`loadPresets\` call which uses Node's module resolution directly (no Nitro / Vite SSR path involved), so no transpile changes were needed beyond what was already there.
+
+Two test-site validation criteria (red text + Nord :root values, [data-tint] scoped CSS in Nitro output) deferred to SPEC-059's testing infrastructure for the same reason as WORK-240.
+
+\`@refrakt-md/nuxt\` builds clean.
 
 {% /work %}

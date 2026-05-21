@@ -350,16 +350,42 @@ watch(() => route.fullPath, () => {
 
 ## CSS Injection
 
-The Nuxt module does not automatically inject theme CSS. Add the theme stylesheet to your `nuxt.config.ts`:
+The Nuxt module automatically injects the theme package's CSS alongside `virtual:refrakt/site-tokens.css` — the generated stylesheet that carries any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` overrides declared in `refrakt.config.json`. No manual `css` array entries required:
 
 ```typescript
 export default defineNuxtConfig({
   modules: [refrakt],
-  css: ['@refrakt-md/lumina'],
 });
 ```
 
-This imports the full Lumina CSS bundle (design tokens + rune styles). For custom themes, replace `@refrakt-md/lumina` with your theme's CSS entry point.
+The two stylesheets are pushed onto `nuxt.options.css` in order — theme defaults first, site overrides second — so the `--rf-*` cascade resolves to your overrides last. If you need additional global CSS, append to the `css` array; your entries layer on top of the refrakt-managed pair.
+
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up — no manual CSS authoring required. The module computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`:
+
+```json
+{
+  "sites": {
+    "main": {
+      "theme": {
+        "package": "@refrakt-md/lumina",
+        "presets": ["@refrakt-md/lumina/presets/nord"],
+        "tokens": {
+          "color": { "text": "#1a1a1a" }
+        }
+      },
+      "tints": {
+        "nord-scoped": {
+          "extends": "@refrakt-md/lumina/presets/nord"
+        }
+      }
+    }
+  }
+}
+```
+
+See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
 
 ## Vue Custom Elements
 
