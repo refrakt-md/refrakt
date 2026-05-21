@@ -62,7 +62,22 @@ The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the 
 
 ## Content Loading
 
-Load content using `createRefraktLoader` from `@refrakt-md/content` in a Server Component. It handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
+Load content using `createRefraktLoader` from `@refrakt-md/content` (or the convenience wrapper `createNextLoader` from `@refrakt-md/next`) in a Server Component. The loader handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
+
+```typescript
+// Either the shared loader directly:
+import { createRefraktLoader } from '@refrakt-md/content';
+const loader = createRefraktLoader({
+  variables: { version: '1.0.0' }, // Markdoc {% $version %} interpolation
+  security: 'strict',              // sanitise untrusted author content
+});
+
+// Or the typed Next.js shorthand:
+import { createNextLoader } from '@refrakt-md/next';
+const loader = await createNextLoader({ variables: { version: '1.0.0' } });
+```
+
+Both accept the same four optional fields: `configPath`, `site`, `variables`, `security`.
 
 {% codegroup labels="app/[[...slug]]/page.tsx" %}
 
@@ -192,10 +207,19 @@ This avoids loading `@refrakt-md/behaviors` on pages that have no interactive ru
 
 ## Metadata Helper
 
-The `buildMetadata()` function transforms refrakt SEO data into a Next.js Metadata object for the App Router:
+The `buildMetadata()` function transforms refrakt SEO data into a Next.js Metadata object for the App Router. Thread the four site-level fields from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) to enrich the output:
 
 ```typescript
 import { buildMetadata, buildJsonLd } from '@refrakt-md/next';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
+const seoSite = {
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
+};
 
 export async function generateMetadata({ params }) {
   const page = await loadPage(params.slug);
@@ -203,35 +227,42 @@ export async function generateMetadata({ params }) {
     title: page.title,
     frontmatter: page.frontmatter,
     seo: page.seo,
+    ...seoSite,
   });
 }
 ```
 
-It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. The generated metadata object includes:
+It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. When site-level fields are supplied, the generated metadata also sets `metadataBase` (so Next.js absolutizes relative URLs natively), `openGraph.siteName`, and an image fallback:
 
 | Field | Source |
 |-------|--------|
+| `metadataBase` | `new URL(baseUrl)` |
 | `title` | `seo.og.title` or `title` |
 | `description` | `seo.og.description` or `frontmatter.description` |
 | `openGraph.title` | `seo.og.title` or `title` |
 | `openGraph.description` | `seo.og.description` or `frontmatter.description` |
-| `openGraph.images` | `seo.og.image` (when present) |
+| `openGraph.siteName` | `siteName` |
+| `openGraph.images` | `seo.og.image` or `defaultImage` fallback |
 | `openGraph.url` | `seo.og.url` |
 | `openGraph.type` | `seo.og.type` |
-| `twitter.card` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `twitter.card` | `summary_large_image` when an image resolves, `summary` otherwise |
 | `twitter.title` | `seo.og.title` or `title` |
 | `twitter.description` | `seo.og.description` or `frontmatter.description` |
-| `twitter.images` | `seo.og.image` (when present) |
+| `twitter.images` | `seo.og.image` or `defaultImage` fallback |
 
 ## JSON-LD Structured Data
 
-Use `buildJsonLd()` to extract JSON-LD schemas from page SEO data. Render them in the root layout or per-page:
+Use `buildJsonLd()` to extract JSON-LD schemas from page SEO data. Pass the same site-level fields to append synthetic WebSite + Organization entries:
 
 ```typescript
 import { buildJsonLd } from '@refrakt-md/next';
-import Script from 'next/script';
 
-const jsonLd = buildJsonLd(page.seo);
+const jsonLd = buildJsonLd({
+  title: page.title,
+  frontmatter: page.frontmatter,
+  seo: page.seo,
+  ...seoSite, // siteName + baseUrl + logo from refrakt.config.json
+});
 
 {jsonLd.map((schema, i) => (
   <script
@@ -241,6 +272,8 @@ const jsonLd = buildJsonLd(page.seo);
   />
 ))}
 ```
+
+When `baseUrl + siteName` are supplied, `buildJsonLd` appends synthetic WebSite + Organization entries to the page-level JSON-LD array, matching the SvelteKit reference adapter's output.
 
 ## CSS Injection
 
@@ -264,6 +297,55 @@ export default function RootLayout({ children }) {
 {% /codegroup %}
 
 Next.js automatically processes CSS imports and includes them in the build output.
+
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is composed into a `:root { --rf-* }` stylesheet via the `getSiteTokensCss` helper. Inline it in your root layout as a `<style />` block — the cleanest path for Next.js's Server Component model:
+
+{% codegroup labels="app/layout.tsx" %}
+
+```typescript
+import '@refrakt-md/lumina';
+import { getSiteTokensCss } from '@refrakt-md/next';
+import type { ReactNode } from 'react';
+
+const siteTokensCssPromise = getSiteTokensCss();
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const siteTokensCss = await siteTokensCssPromise;
+  return (
+    <html lang="en">
+      <head>
+        {siteTokensCss && (
+          <style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />
+        )}
+      </head>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+{% /codegroup %}
+
+The promise is captured at module-scope so the CSS is composed once per server process, not once per request. The inline `<style>` block ships in `<head>` after the theme CSS so site-level `--rf-*` overrides resolve last in the cascade.
+
+**Alternative — linked stylesheet.** If you prefer a `<link>` over an inline `<style>`, write the result to `public/site-tokens.css` at build time via a `next.config.mjs` hook:
+
+```javascript
+// next.config.mjs
+import { getSiteTokensCss } from '@refrakt-md/next';
+import { writeFileSync } from 'node:fs';
+
+const css = await getSiteTokensCss();
+writeFileSync('./public/site-tokens.css', css);
+
+export default { /* ... */ };
+```
+
+Then add `<link rel="stylesheet" href="/site-tokens.css">` to your layout after the theme CSS import.
+
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Custom Elements
 

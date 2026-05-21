@@ -54,7 +54,7 @@ npx vitest run packages/runes/test/diff.test.ts
 cd site && npm run dev
 ```
 
-Build order (see the `build` script in the root `package.json` for the canonical sequence): types + transform + behaviors → runes → 8 plugins (marketing, docs, storytelling, places, business, design, learning, media) → lumina + highlight + sveltekit + html + astro + nuxt + next + react + vue → content + ai → eleventy + plan plugin → create-refrakt + editor → cli → mcp. Getting this wrong causes missing type errors.
+Build order (see the `build` script in the root `package.json` for the canonical sequence): types + transform + behaviors → runes → 8 plugins (marketing, docs, storytelling, places, business, design, learning, media) → lumina + highlight → content → sveltekit + html + astro + nuxt + next + react + vue → ai → eleventy + plan plugin → create-refrakt + editor → cli → mcp. Getting this wrong causes missing type errors.
 
 ### CSS Coverage Tests
 

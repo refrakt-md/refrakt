@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   modules: [refrakt],
   refrakt: {
     configPath: './refrakt.config.json',
+    site: 'main',
+    security: 'strict',
+    variables: { version: '1.0.0' },
   },
 });
 ```
@@ -68,6 +71,9 @@ export default defineNuxtConfig({
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `configPath` | `string` | `"./refrakt.config.json"` | Path to the refrakt configuration file |
+| `site` | `string` | — | Which site to use from a multi-site config |
+| `security` | `SecurityPolicy` | `'trusted'` | Security policy for untrusted author content |
+| `variables` | `Record<string, unknown>` | — | Markdoc variables available in content via `{% $name %}` |
 
 ## NuxtTheme Interface
 
@@ -256,15 +262,22 @@ watch(() => props.html, () => {
 
 ## SEO with buildRefraktHead
 
-The `buildRefraktHead` composable produces an object compatible with Nuxt's `useHead()`. It extracts title, description, Open Graph tags, and JSON-LD schemas from the page's SEO data:
+The `buildRefraktHead` composable produces an object compatible with Nuxt's `useHead()`. It extracts title, description, Open Graph tags, and JSON-LD schemas from the page's SEO data, and threads site-level fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) into og:site_name, absolute canonical URLs, image fallback, and synthetic WebSite + Organization JSON-LD entries:
 
 ```typescript
 import { buildRefraktHead } from '@refrakt-md/nuxt';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
 
 const head = buildRefraktHead({
   title: page.title,
   frontmatter: page.frontmatter,
   seo: page.seo,
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
 });
 
 useHead(head);
@@ -278,14 +291,16 @@ useHead(head);
 | `<meta name="description">` | `seo.og.description` or `frontmatter.description` |
 | `<meta property="og:title">` | `seo.og.title` or `title` |
 | `<meta property="og:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta property="og:image">` | `seo.og.image` |
-| `<meta property="og:url">` | `seo.og.url` |
+| `<meta property="og:image">` | `seo.og.image` or `baseUrl + defaultImage` fallback |
+| `<meta property="og:url">` | `baseUrl + seo.og.url` (absolutized) |
 | `<meta property="og:type">` | `seo.og.type` |
-| `<meta name="twitter:card">` | `summary_large_image` when `og:image` is present, `summary` otherwise |
+| `<meta property="og:site_name">` | `siteName` (when supplied) |
+| `<link rel="canonical">` | `baseUrl + seo.og.url` (absolutized) |
+| `<meta name="twitter:card">` | `summary_large_image` when an image resolves, `summary` otherwise |
 | `<meta name="twitter:title">` | `seo.og.title` or `title` |
 | `<meta name="twitter:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta name="twitter:image">` | `seo.og.image` (when present) |
-| `<script type="application/ld+json">` | Each entry in `seo.jsonLd` |
+| `<meta name="twitter:image">` | `seo.og.image` or `defaultImage` fallback |
+| `<script type="application/ld+json">` | Each entry in `seo.jsonLd`, plus WebSite + Organization entries when `baseUrl` is supplied |
 
 ## useBehaviors Composable
 
@@ -350,16 +365,42 @@ watch(() => route.fullPath, () => {
 
 ## CSS Injection
 
-The Nuxt module does not automatically inject theme CSS. Add the theme stylesheet to your `nuxt.config.ts`:
+The Nuxt module automatically injects the theme package's CSS alongside `virtual:refrakt/site-tokens.css` — the generated stylesheet that carries any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` overrides declared in `refrakt.config.json`. No manual `css` array entries required:
 
 ```typescript
 export default defineNuxtConfig({
   modules: [refrakt],
-  css: ['@refrakt-md/lumina'],
 });
 ```
 
-This imports the full Lumina CSS bundle (design tokens + rune styles). For custom themes, replace `@refrakt-md/lumina` with your theme's CSS entry point.
+The two stylesheets are pushed onto `nuxt.options.css` in order — theme defaults first, site overrides second — so the `--rf-*` cascade resolves to your overrides last. If you need additional global CSS, append to the `css` array; your entries layer on top of the refrakt-managed pair.
+
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up — no manual CSS authoring required. The module computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`:
+
+```json
+{
+  "sites": {
+    "main": {
+      "theme": {
+        "package": "@refrakt-md/lumina",
+        "presets": ["@refrakt-md/lumina/presets/nord"],
+        "tokens": {
+          "color": { "text": "#1a1a1a" }
+        }
+      },
+      "tints": {
+        "nord-scoped": {
+          "extends": "@refrakt-md/lumina/presets/nord"
+        }
+      }
+    }
+  }
+}
+```
+
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Vue Custom Elements
 

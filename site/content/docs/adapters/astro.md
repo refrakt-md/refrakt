@@ -58,14 +58,61 @@ The integration:
 - Injects theme CSS automatically (from the configured `theme` field)
 - Configures SSR `noExternal` for refrakt packages (ensures they're bundled correctly)
 - Watches the content directory for changes in dev mode
+- Serves `virtual:refrakt/site-tokens.css` carrying any site-level token / preset / mode / tint overrides declared in `refrakt.config.json` (see [Site-level token overrides](#site-level-token-overrides) below)
 
 ### Options
 
 ```javascript
 refrakt({
   configPath: './refrakt.config.json', // default
+  site: 'main',                        // optional; required for multi-site configs
+  security: 'strict',                  // optional; default 'trusted'
+  variables: { version: '1.0.0' },     // optional; available as `{% $version %}`
 })
 ```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `configPath` | `string` | Path to `refrakt.config.json`. Default: `'./refrakt.config.json'` |
+| `site` | `string` | Which site to use from a multi-site config |
+| `security` | `SecurityPolicy` | Security policy for untrusted author content. Default: `'trusted'` (no sanitisation). Pass `'strict'` for hosted-product use. |
+| `variables` | `Record<string, unknown>` | Markdoc variables available in content via `{% $name %}` syntax. Values are real JavaScript values consumed at runtime (different from the SvelteKit plugin's source-text-expression shape). |
+
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up by the Astro adapter — no manual CSS authoring required. The integration computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`, imported after the theme package's base CSS so the `--rf-*` cascade resolves to your overrides last.
+
+```json
+{
+  "sites": {
+    "main": {
+      "theme": {
+        "package": "@refrakt-md/lumina",
+        "presets": ["@refrakt-md/lumina/presets/nord"],
+        "tokens": {
+          "color": { "text": "#1a1a1a" }
+        },
+        "modes": {
+          "dark": { "color": { "text": "#f5f5f5" } }
+        }
+      },
+      "tints": {
+        "nord-scoped": {
+          "extends": "@refrakt-md/lumina/presets/nord"
+        }
+      }
+    }
+  }
+}
+```
+
+The above produces:
+
+- `:root { --rf-color-text: #1a1a1a; ... }` (active preset + inline override)
+- `[data-color-scheme="dark"] { --rf-color-text: #f5f5f5; ... }` (mode overlay)
+- `[data-tint="nord-scoped"] { --rf-syntax-keyword: ...; ... }` (scoped tint projection)
+
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## AstroTheme Interface
 
@@ -379,20 +426,46 @@ npm install @refrakt-md/highlight
 
 ## SEO
 
-The `buildSeoHead()` helper transforms page SEO data into HTML meta tag strings:
+The `buildSeoHead()` helper transforms page SEO data into HTML meta tag strings. Pass per-page input (title, frontmatter, seo) plus the four site-level fields read from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) and the helper emits a complete OG + JSON-LD bundle:
 
 ```typescript
 import { buildSeoHead } from '@refrakt-md/astro';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+
+const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
 
 const head = buildSeoHead({
   title: page.title,
   frontmatter: page.frontmatter,
   seo: page.seo,
+  // Site-level fields surface og:site_name, absolute canonical URLs,
+  // image fallback, and WebSite + Organization JSON-LD entries.
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
 });
 
-// head.title — page title string
-// head.metaTags — OG, description, twitter card meta tags
-// head.jsonLd — JSON-LD structured data script tags
+// head.title    — page title string
+// head.metaTags — OG, description, twitter, og:site_name meta tags
+// head.jsonLd   — page JSON-LD + WebSite + Organization script tags
+```
+
+When the site-level fields are omitted the output stays minimal — only per-page meta tags are emitted, matching the pre-v0.14.4 behaviour. The four fields live at the top level of `SiteConfig`:
+
+```json
+{
+  "sites": {
+    "main": {
+      "contentDir": "./content",
+      "theme": "@refrakt-md/lumina",
+      "siteName": "Refrakt",
+      "baseUrl": "https://refrakt.md",
+      "defaultImage": "/og-image.png",
+      "logo": "/favicon-192.png"
+    }
+  }
+}
 ```
 
 ## Behavior Initialization

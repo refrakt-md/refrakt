@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
-import type { LayoutPageData } from '@refrakt-md/transform';
+import type { LayoutPageData, SeoToHtmlOptions } from '@refrakt-md/transform';
 import { renderPage, extractSeoData, seoToHtml } from '@refrakt-md/transform';
-import type { Plugin } from '@refrakt-md/types';
+import type { Plugin, SecurityPolicy } from '@refrakt-md/types';
 import type { EleventyTheme } from './types.js';
 import { hasInteractiveRunes } from './behaviors.js';
 
@@ -41,15 +41,26 @@ export function createDataFile(config: {
 	basePath?: string;
 	/** Plugins to include in the content pipeline */
 	plugins?: Plugin[];
+	/** Site-level SEO fields surfaced into every page's emitted meta tags.
+	 *  Source these from `SiteConfig` (`siteName`, `baseUrl`, `defaultImage`,
+	 *  `logo`) so the Eleventy output matches the SvelteKit reference. */
+	seo?: SeoToHtmlOptions;
+	/** Security policy for untrusted author content. Defaults to `'trusted'`. */
+	security?: SecurityPolicy;
+	/** Markdoc variables available in content via `{% $name %}` syntax. */
+	variables?: Record<string, unknown>;
 }): () => Promise<EleventyPageData[]> {
 	const {
 		theme,
 		contentDir = './content',
 		basePath = '/',
+		seo: seoOptions,
+		security,
+		variables,
 	} = config;
 
 	return async function loadRefrakt(): Promise<EleventyPageData[]> {
-		const { loadContent } = await import('@refrakt-md/content');
+		const { loadContent, formatPipelineSummary } = await import('@refrakt-md/content');
 
 		const absContentDir = resolve(contentDir);
 		const site = await loadContent(
@@ -58,7 +69,15 @@ export function createDataFile(config: {
 			undefined, // icons
 			undefined, // additionalTags
 			config.plugins,
+			undefined, // sandboxExamplesDir
+			variables,
+			security,
 		);
+
+		// Print the standard Phase 1/2/3/4 + warnings summary so Eleventy
+		// builds get the same visibility into the cross-page pipeline that
+		// the SvelteKit reference adapter prints.
+		process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
 
 		// Build the pages list for LayoutPageData and RfContext
 		const pagesList = site.pages.map((p: any) => ({
@@ -104,7 +123,7 @@ export function createDataFile(config: {
 				frontmatter: page.frontmatter ?? {},
 				seo: page.seo,
 			});
-			const seoHtml = seoToHtml(seoData);
+			const seoHtml = seoToHtml(seoData, seoOptions);
 			const seo = { ...seoHtml, description: seoData.description };
 
 			const contextJson = JSON.stringify({

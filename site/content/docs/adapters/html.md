@@ -84,11 +84,59 @@ const html = renderFullPage(
 |--------|------|-------------|
 | `stylesheets` | `string[]` | CSS stylesheet URLs for `<link>` tags in `<head>` |
 | `scripts` | `string[]` | JavaScript URLs for `<script>` tags before `</body>` |
-| `headExtra` | `string` | Extra HTML to inject into `<head>` |
+| `headExtra` | `string` | Extra HTML to inject into `<head>` (use to inline highlight + site-tokens CSS) |
 | `lang` | `string` | HTML `lang` attribute (default: `"en"`) |
-| `baseUrl` | `string` | Base URL for Open Graph canonical URLs |
+| `baseUrl` | `string` | Base URL for canonical URLs and absolute OG URLs |
+| `siteName` | `string` | Human-readable site name for og:site_name and JSON-LD entries |
+| `defaultImage` | `string` | Default og:image for pages without their own image |
+| `logo` | `string` | Site logo for Organization JSON-LD schema |
 | `seo` | `PageSeo` | SEO metadata (JSON-LD schemas and Open Graph tags) |
 
+When `siteName`, `baseUrl`, `defaultImage`, or `logo` are supplied, `renderFullPage` emits `og:site_name`, absolutizes `og:url` and adds a canonical `<link>`, falls back missing images to `defaultImage`, and appends WebSite + Organization JSON-LD entries — matching the SvelteKit reference adapter's output. Source these from your `refrakt.config.json` via `resolveSite()` and pass them per page.
+
+### Security and Markdoc variables
+
+The HTML adapter's build script loads content directly via `loadContent`, so `security` (untrusted-content sanitisation) and `variables` (Markdoc `{% $name %}` interpolation) are passed as positional arguments at the call site. The scaffolded `build.ts` shows the order; edit it to thread your own values:
+
+```typescript
+const loadedSite = await loadContent(
+  contentDir,
+  '/',
+  icons,
+  communityTags,
+  undefined,       // sandboxExamplesDir
+  { version: '1.0.0' }, // variables
+  'strict',        // securityPolicy
+);
+```
+
+For most static sites neither option is needed; they exist for hosted-product or per-build interpolation scenarios.
+
+### `composeSiteTokensCss(site, configDir)`
+
+Composes the site-level token overrides CSS (`theme.tokens`, `theme.modes`, `theme.presets`, `site.tints`) into a single string. Re-exported from `@refrakt-md/transform/node` for convenience.
+
+```typescript
+import { composeSiteTokensCss, renderFullPage } from '@refrakt-md/html';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { dirname, resolve } from 'node:path';
+
+const configPath = resolve('refrakt.config.json');
+const config = loadRefraktConfig(configPath);
+const { site } = resolveSite(config);
+
+const siteTokensCss = await composeSiteTokensCss(site, dirname(configPath));
+
+const html = renderFullPage({ theme, page }, {
+  stylesheets: ['/styles.css'],
+  // Inline site-tokens CSS so site-level --rf-* overrides resolve last.
+  headExtra: siteTokensCss ? `<style>${siteTokensCss}</style>` : '',
+});
+```
+
+Empty string when the site uses the legacy string-theme form or declares no overrides — safe to interpolate either way.
+
+See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 
 ## Client-Side Behaviors
 

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { Plugin, SiteConfig } from '@refrakt-md/types';
+import type { Plugin, SiteConfig, SecurityPolicy } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
@@ -20,6 +20,11 @@ export interface RefraktLoaderOptions {
 	site?: string;
 	/** Markdoc variables available in content via {% $name %} syntax. */
 	variables?: Record<string, unknown>;
+	/** Security policy for untrusted author content. Defaults to `'trusted'`
+	 *  — no sanitisation. Set to `'strict'` (or a custom `SecurityPolicy` object)
+	 *  when authoring content comes from untrusted sources (hosted product,
+	 *  external editors, etc.). Forwarded to `loadContent`'s `securityPolicy`. */
+	security?: SecurityPolicy;
 	/** Skip caching — re-read on every load(). Default: false. */
 	dev?: boolean;
 }
@@ -197,6 +202,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				additionalTags: ctx.communityTags,
 				plugins: ctx.communityPackages,
 				variables: options?.variables,
+				securityPolicy: options?.security,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -242,6 +248,8 @@ export interface VirtualRefraktLoaderOptions {
 	reader?: VirtualReader;
 	/** Markdoc variables available in content via {% $name %} syntax. */
 	variables?: Record<string, unknown>;
+	/** Security policy for untrusted author content. Defaults to `'trusted'`. */
+	security?: SecurityPolicy;
 	/** URL base path for the Router. Default: `'/'`. */
 	basePath?: string;
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
@@ -265,7 +273,7 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, basePath, dev } = options;
+	const { site, tree, reader, variables, security, basePath, dev } = options;
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -285,6 +293,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				additionalTags: ctx.communityTags,
 				plugins: ctx.communityPackages,
 				variables,
+				securityPolicy: security,
 				reader,
 				dev: dev ?? false,
 			});

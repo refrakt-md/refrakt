@@ -1,5 +1,15 @@
-import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
-import { renderFullPage } from '@refrakt-md/html';
+import {
+	loadContent,
+	buildHighlightOptions,
+	analyzeRuneUsage,
+	formatPipelineSummary,
+} from '@refrakt-md/content';
+import {
+	renderFullPage,
+	composeSiteTokensCss,
+	computeUsedCssBlocks,
+	buildUsedCssImports,
+} from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
@@ -9,13 +19,16 @@ import { getThemePackage } from '@refrakt-md/types';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 
 // --- Configuration -------------------------------------------------------
 
-const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const configPath = path.resolve('refrakt.config.json');
+const config = loadRefraktConfig(configPath);
 const { site } = resolveSite(config);
 const contentDir = path.resolve(site.contentDir);
+const configDir = path.dirname(configPath);
 const outDir = 'build';
 
 // --- Helpers --------------------------------------------------------------
@@ -88,6 +101,10 @@ async function build() {
 	// Create highlight transform
 	const hl = await createHighlightTransform(buildHighlightOptions(site));
 
+	// Compose site-level token overrides CSS (SPEC-048 + SPEC-056).
+	// Empty string when the site has no overrides; safe to inline either way.
+	const siteTokensCss = await composeSiteTokensCss(site, configDir);
+
 	// Build theme object for HTML adapter
 	const themeManifestModule = await import(themePackage + '/manifest', { with: { type: 'json' } });
 	const manifest = themeManifestModule.default;
@@ -102,13 +119,55 @@ async function build() {
 		},
 	};
 
-	// Load content
-	const site = await loadContent(contentDir, '/', icons, communityTags);
+	// Load content. The HTML adapter's build script doesn't surface
+	// `security` / `variables` via a CLI flag — for hosted-product use, edit
+	// this file to pass them through to `loadContent` (matches the option
+	// shape `createRefraktLoader` accepts for the Vite-based adapters).
+	const loadedSite = await loadContent(contentDir, '/', icons, communityTags);
+
+	// Print the standard Phase 1/2/3/4 + warnings summary so the HTML build
+	// gets the same visibility into the cross-page pipeline that the SvelteKit
+	// reference adapter prints.
+	process.stderr.write(
+		formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
+	);
 
 	mkdirSync(outDir, { recursive: true });
 
+	// Tree-shake per-rune CSS: only ship blocks that actually appear in the
+	// page corpus. Falls back to the theme barrel if analysis fails.
+	const usageReport = analyzeRuneUsage(loadedSite.pages);
+	let stylesheets: string[];
+	let blocksToCopy: { src: string; dest: string }[] = [];
+	try {
+		const { usedBlocks, stylesDir } = await computeUsedCssBlocks(
+			usageReport.allTypes,
+			finalConfig,
+			themePackage,
+		);
+		const themeEntryUrl = import.meta.resolve(themePackage);
+		const themeDir = path.dirname(fileURLToPath(themeEntryUrl));
+		stylesheets = ['/base.css'];
+		blocksToCopy.push({
+			src: path.join(themeDir, 'base.css'),
+			dest: path.join(outDir, 'base.css'),
+		});
+		for (const block of [...usedBlocks].sort()) {
+			stylesheets.push(`/styles/runes/${block}.css`);
+			blocksToCopy.push({
+				src: path.join(stylesDir, `${block}.css`),
+				dest: path.join(outDir, 'styles', 'runes', `${block}.css`),
+			});
+		}
+	} catch (err) {
+		console.warn(
+			`Tree-shaking skipped (${(err as Error).message}); shipping full theme barrel.`,
+		);
+		stylesheets = ['/styles.css'];
+	}
+
 	// Collect page metadata for navigation
-	const pages = site.pages
+	const pages = loadedSite.pages
 		.filter(p => !p.route.draft)
 		.map(p => ({
 			url: p.route.url,
@@ -118,7 +177,7 @@ async function build() {
 
 	let count = 0;
 
-	for (const page of site.pages) {
+	for (const page of loadedSite.pages) {
 		if (page.route.draft) continue;
 
 		// Serialize → identity transform → highlight
@@ -147,9 +206,17 @@ async function build() {
 				},
 			},
 			{
-				stylesheets: ['/styles.css'],
-				headExtra: hl.css ? `<style>${hl.css}</style>` : '',
+				stylesheets,
+				// Order matters: highlight CSS first, site-tokens CSS second so
+				// site-level `--rf-*` overrides resolve last in the cascade.
+				headExtra:
+					(hl.css ? `<style>${hl.css}</style>` : '') +
+					(siteTokensCss ? `<style>${siteTokensCss}</style>` : ''),
 				seo: page.seo,
+				baseUrl: site.baseUrl,
+				siteName: site.siteName,
+				defaultImage: site.defaultImage,
+				logo: site.logo,
 			},
 		);
 
@@ -163,16 +230,27 @@ async function build() {
 		count++;
 	}
 
-	// Copy theme CSS to build directory
-	try {
-		const themePkg = themePackage;
-		const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
-		const cssPath = path.join(themeDir, 'index.css');
-		if (existsSync(cssPath)) {
-			cpSync(cssPath, path.join(outDir, 'styles.css'));
+	// Copy the per-rune CSS files (or the theme barrel as fallback)
+	if (blocksToCopy.length > 0) {
+		for (const { src, dest } of blocksToCopy) {
+			if (existsSync(src)) {
+				mkdirSync(path.dirname(dest), { recursive: true });
+				cpSync(src, dest);
+			}
 		}
-	} catch {
-		console.warn('Warning: Could not copy theme CSS. Add a styles.css to the build directory manually.');
+	} else {
+		try {
+			const themePkg = themePackage;
+			const themeDir = path.dirname(require.resolve(themePkg + '/package.json'));
+			const cssPath = path.join(themeDir, 'index.css');
+			if (existsSync(cssPath)) {
+				cpSync(cssPath, path.join(outDir, 'styles.css'));
+			}
+		} catch {
+			console.warn(
+				'Warning: Could not copy theme CSS. Add a styles.css to the build directory manually.',
+			);
+		}
 	}
 
 	console.log(`Built ${count} pages to ${outDir}/`);
