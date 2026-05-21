@@ -14,7 +14,8 @@ The function that produces the output Tag for a rune:
 ```typescript
 import { createComponentRenderable } from '../lib/index.js';
 
-return createComponentRenderable(schema.Hint, {
+return createComponentRenderable({
+  rune: 'hint',
   tag: 'section',
   property: 'contentSection',
   properties: {
@@ -29,25 +30,27 @@ return createComponentRenderable(schema.Hint, {
 
 ### Parameters
 
-**`type`** — The schema type from the registry (e.g., `schema.Hint`). Sets the `typeof` attribute on the root tag, which the engine uses to look up the rune config.
-
-**`result`** object:
+`createComponentRenderable` takes a single object containing the rune's identity and the transform result:
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `rune` | `string` | Rune name in kebab-case (e.g. `'hint'`, `'accordion-item'`). Becomes `data-rune` on the root, which the engine uses to look up the rune config. |
 | `tag` | `string` | HTML tag name for the root element (`'section'`, `'article'`, `'div'`, etc.) |
 | `children` | `RenderableTreeNodes` | Content children — the actual output |
-| `properties` | `Record<string, Tag \| RenderableNodeCursor>` | Metadata consumed by the engine |
-| `refs` | `Record<string, Tag \| RenderableNodeCursor>` | Named structural elements |
-| `property` | `string` (optional) | Semantic role marker (e.g., `'contentSection'`) |
+| `properties` | `Record<string, Tag \| RenderableNodeCursor>` | Metadata tags consumed by the engine (each gets `data-field="kebab-name"`) |
+| `refs` | `Record<string, Tag \| RenderableNodeCursor>` | Named structural elements (each gets `data-name="key"`) |
+| `schema` | `Record<string, Tag \| RenderableNodeCursor>` (optional) | Schema.org property mappings — sets RDFa `property` on referenced tags |
+| `property` | `string` (optional) | Semantic role for the root tag (e.g., `'contentSection'`) — becomes `data-field` |
+| `schemaOrgType` / `typeof` | `string` (optional) | Schema.org type (e.g. `'FAQPage'`) — only needed for structured-data runes |
 | `id` | `string` (optional) | HTML id attribute |
 | `class` | `string` (optional) | CSS class to add |
 
 ### What it does
 
-1. Sets `property="key"` on each **properties** entry — marks tags as metadata carriers
+1. Sets `data-field="kebab-name"` on each **properties** entry — marks tags as metadata carriers
 2. Sets `data-name="key"` on each **refs** entry — labels structural elements for BEM
-3. Creates the root tag with `typeof="ComponentName"` — engine lookup key
+3. Sets `property="key"` on each **schema** entry — RDFa mapping for Schema.org consumers
+4. Creates the root tag with `data-rune="kebab-name"` — engine lookup key (plus `typeof` when `schemaOrgType` is provided)
 
 ## Properties vs Refs
 
@@ -55,13 +58,13 @@ These serve fundamentally different purposes:
 
 | Aspect | Properties | Refs |
 |--------|-----------|------|
-| **Attribute set** | `property="key"` | `data-name="key"` |
+| **Attribute set** | `data-field="kebab-name"` | `data-name="key"` |
 | **Purpose** | Carry metadata for modifiers | Label structural elements |
 | **Engine reads** | Value from meta tag content | Element for BEM class |
 | **After transform** | Meta tag removed from output | Element stays, gets BEM class |
 | **Example** | `hintType` meta with content "warning" | `body` div wrapping content |
 
-**Properties** flow: rune emits `<meta property="hintType" content="warning">` -> engine reads it -> adds `rf-hint--warning` class + `data-hint-type="warning"` attribute -> removes the meta tag.
+**Properties** flow: rune emits `<meta data-field="hint-type" content="warning">` -> engine reads it -> adds `rf-hint--warning` class + `data-hint-type="warning"` attribute on the root -> removes the meta tag.
 
 **Refs** flow: rune emits `<div data-name="body">` -> engine reads it -> adds `rf-hint__body` class -> element stays in output.
 
@@ -83,11 +86,13 @@ Meta tags are the bridge between rune schemas and the engine. They carry configu
 
 ```typescript
 // In the rune's transform():
-const hintType = new Tag('meta', { content: this.type });
+const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
 
-return createComponentRenderable(schema.Hint, {
+return createComponentRenderable({
+  rune: 'hint',
+  tag: 'section',
   properties: {
-    hintType,    // gets property="hintType" added
+    hintType,    // gets data-field="hint-type" added
   },
   children: [hintType, children.next()],
   //         ^^^^^^^^ must be in children array too
@@ -95,65 +100,31 @@ return createComponentRenderable(schema.Hint, {
 ```
 
 The engine:
-1. Finds `<meta property="hintType" content="warning">`
+1. Finds `<meta data-field="hint-type" content="warning">`
 2. Reads the value `"warning"`
 3. Adds modifier class `rf-hint--warning`
 4. Stores `data-hint-type="warning"` on root
 5. Removes the meta tag from the output
 
-Meta tags must appear in both `properties` and `children`. The `properties` entry adds the `property` attribute; the `children` array ensures the tag is in the tree for the engine to find.
+Meta tags must appear in both `properties` and `children`. The `properties` entry adds the `data-field` attribute; the `children` array ensures the tag is in the tree for the engine to find.
 
-## The typeof marker
+## The data-rune marker
 
-The root tag gets `typeof="ComponentName"`:
+The root tag gets `data-rune="kebab-name"`:
 
 ```html
-<section typeof="Hint" property="contentSection">
+<section data-rune="hint" data-field="content-section">
 ```
 
-The identity transform engine uses this to look up the rune config by typeof name, applying BEM classes, modifiers, and structure. The Renderer then outputs the transformed tree as generic HTML.
+The identity transform engine uses `data-rune` to look up the rune config (keyed by the matching `typeName` in `packages/runes/src/config.ts`), then applies BEM classes, modifiers, and structure. The Renderer outputs the transformed tree as generic HTML.
 
-## Type definitions
-
-Type definitions in `packages/types/src/schema/` enforce the contract between the rune schema and the engine config.
-
-### Schema class
-
-Defines the modifier fields and their defaults:
-
-```typescript
-export class Hint {
-  hintType: 'check' | 'note' | 'warning' | 'caution' = 'note';
-}
-```
-
-### Component interface
-
-Maps fields to output element types:
-
-```typescript
-export interface HintComponent extends ComponentType<Hint> {
-  tag: 'section',
-  properties: {
-    hintType: 'meta',     // carried via meta tag
-  },
-  refs: {
-    body: 'div',          // structural div element
-  }
-}
-```
-
-The `properties` map tells you how each field is communicated:
-- `'meta'` — value in a `<meta>` tag (most common for modifiers)
-- `'span'`, `'h1'`, etc. — value in a visible element
-
-The `refs` map tells you what elements the rune produces and their tag names.
+Runes that contribute Schema.org structured data also emit a `typeof` attribute (e.g. `typeof="FAQPage"`) — set via `schemaOrgType` on `createComponentRenderable`. Most runes don't need it.
 
 ---
 
 ## Engine config
 
-The engine config in `packages/theme-base/src/config.ts` declaratively describes how to enhance each rune's output. Here's the full interface:
+The engine config in `packages/runes/src/config.ts` declaratively describes how to enhance each rune's output. Here's the full interface:
 
 ### `block`
 
@@ -173,12 +144,12 @@ Maps modifier names to their sources. The engine reads the value, adds a BEM mod
 modifiers: {
   hintType: { source: 'meta', default: 'note' },
 }
-// Input:  <meta property="hintType" content="warning">
+// Input:  <meta data-field="hint-type" content="warning">
 // Output: class="rf-hint rf-hint--warning" data-hint-type="warning"
 ```
 
 Sources:
-- `'meta'` — reads from a `<meta property="name">` child tag (most common)
+- `'meta'` — reads from a `<meta data-field="name">` child tag (most common)
 - `'attribute'` — reads from a root element attribute
 
 ### `structure`
@@ -355,8 +326,8 @@ Here's the full flow for a Hint with `type="warning"`:
 
 ```
 Rune transform():
-  <section typeof="Hint" property="contentSection">
-    <meta property="hintType" content="warning">
+  <section data-rune="hint" data-field="content-section">
+    <meta data-field="hint-type" content="warning">
     <div data-name="body">
       <p>Be careful about this.</p>
     </div>
@@ -369,11 +340,11 @@ Engine identity transform:
 
 ### Look up config
 
-Reads `typeof="Hint"` and finds the Hint config.
+Reads `data-rune="hint"` and finds the Hint config (matched by `typeName`).
 
 ### Read modifier
 
-Reads `<meta property="hintType" content="warning">`.
+Reads `<meta data-field="hint-type" content="warning">`.
 
 ### Add modifier class
 
@@ -407,7 +378,7 @@ Removes the consumed meta tag from the output.
 ```
 
 Final output:
-  <section class="rf-hint rf-hint--warning" data-hint-type="warning">
+  <section data-rune="hint" data-field="content-section" class="rf-hint rf-hint--warning" data-hint-type="warning">
     <div data-name="header" class="rf-hint__header">
       <span data-name="icon" class="rf-hint__icon"></span>
       <span data-name="title" class="rf-hint__title">warning</span>
