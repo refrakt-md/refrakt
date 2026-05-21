@@ -249,6 +249,43 @@ cssFiles: [
 ],
 ```
 
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` becomes a `:root { --rf-* }` stylesheet via the `writeSiteTokensCss` helper. Eleventy doesn't run on Vite, so there's no virtual module — you generate the file at config-load time and passthrough-copy it like any other static asset:
+
+```javascript
+import { refraktPlugin, writeSiteTokensCss } from '@refrakt-md/eleventy';
+import { resolve } from 'node:path';
+
+// Compose site-tokens CSS once at config-load time.
+await writeSiteTokensCss(
+  resolve('refrakt.config.json'),
+  resolve('src/_generated/site-tokens.css'),
+);
+
+export default function (eleventyConfig) {
+  eleventyConfig.addPlugin(refraktPlugin, {
+    cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
+    cssPrefix: '/css',
+  });
+
+  eleventyConfig.addPassthroughCopy({
+    'src/_generated/site-tokens.css': '/css/site-tokens.css',
+  });
+
+  return { /* ... */ };
+}
+```
+
+Reference the generated stylesheet in your base template *after* the theme barrel CSS so site-level `--rf-*` overrides resolve last:
+
+```html
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/css/site-tokens.css">
+```
+
+Empty config (no overrides) still produces a (zero-byte) file, so the `<link>` never 404s. See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+
 ## Behavior Initialization
 
 Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript from `@refrakt-md/behaviors`. Use the plugin's `behaviorFile` option to copy the behaviors bundle to your output:

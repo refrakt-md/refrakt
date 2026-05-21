@@ -1,4 +1,14 @@
-import { refraktPlugin } from '@refrakt-md/eleventy';
+import { refraktPlugin, writeSiteTokensCss } from '@refrakt-md/eleventy';
+import { resolve } from 'node:path';
+
+// Compose site-level token overrides (SPEC-048 presets + tokens + modes,
+// SPEC-056 scoped tint projections) once at config-load time and write the
+// CSS to a build-input directory. Eleventy's passthrough copy picks it up
+// and ships it as `/css/site-tokens.css`.
+await writeSiteTokensCss(
+	resolve('refrakt.config.json'),
+	resolve('src/_generated/site-tokens.css'),
+);
 
 export default function (eleventyConfig) {
 	eleventyConfig.addPlugin(refraktPlugin, {
@@ -11,6 +21,7 @@ export default function (eleventyConfig) {
 	eleventyConfig.addPassthroughCopy({
 		'node_modules/@refrakt-md/lumina/tokens': '/css/tokens',
 		'node_modules/@refrakt-md/lumina/styles': '/css/styles',
+		'src/_generated/site-tokens.css': '/css/site-tokens.css',
 	});
 
 	return {

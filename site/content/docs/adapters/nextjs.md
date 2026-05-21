@@ -265,6 +265,55 @@ export default function RootLayout({ children }) {
 
 Next.js automatically processes CSS imports and includes them in the build output.
 
+## Site-level token overrides
+
+Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is composed into a `:root { --rf-* }` stylesheet via the `getSiteTokensCss` helper. Inline it in your root layout as a `<style />` block — the cleanest path for Next.js's Server Component model:
+
+{% codegroup labels="app/layout.tsx" %}
+
+```typescript
+import '@refrakt-md/lumina';
+import { getSiteTokensCss } from '@refrakt-md/next';
+import type { ReactNode } from 'react';
+
+const siteTokensCssPromise = getSiteTokensCss();
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const siteTokensCss = await siteTokensCssPromise;
+  return (
+    <html lang="en">
+      <head>
+        {siteTokensCss && (
+          <style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />
+        )}
+      </head>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+{% /codegroup %}
+
+The promise is captured at module-scope so the CSS is composed once per server process, not once per request. The inline `<style>` block ships in `<head>` after the theme CSS so site-level `--rf-*` overrides resolve last in the cascade.
+
+**Alternative — linked stylesheet.** If you prefer a `<link>` over an inline `<style>`, write the result to `public/site-tokens.css` at build time via a `next.config.mjs` hook:
+
+```javascript
+// next.config.mjs
+import { getSiteTokensCss } from '@refrakt-md/next';
+import { writeFileSync } from 'node:fs';
+
+const css = await getSiteTokensCss();
+writeFileSync('./public/site-tokens.css', css);
+
+export default { /* ... */ };
+```
+
+Then add `<link rel="stylesheet" href="/site-tokens.css">` to your layout after the theme CSS import.
+
+See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
+
 ## Custom Elements
 
 The identity transform produces custom elements like `<rf-icon>`, `<rf-diagram>`, and `<rf-nav>`. These are web components registered by `@refrakt-md/behaviors` at runtime. React passes them through as unknown HTML elements — no special configuration needed.

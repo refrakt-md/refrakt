@@ -84,11 +84,36 @@ const html = renderFullPage(
 |--------|------|-------------|
 | `stylesheets` | `string[]` | CSS stylesheet URLs for `<link>` tags in `<head>` |
 | `scripts` | `string[]` | JavaScript URLs for `<script>` tags before `</body>` |
-| `headExtra` | `string` | Extra HTML to inject into `<head>` |
+| `headExtra` | `string` | Extra HTML to inject into `<head>` (use to inline highlight + site-tokens CSS) |
 | `lang` | `string` | HTML `lang` attribute (default: `"en"`) |
 | `baseUrl` | `string` | Base URL for Open Graph canonical URLs |
 | `seo` | `PageSeo` | SEO metadata (JSON-LD schemas and Open Graph tags) |
 
+### `composeSiteTokensCss(site, configDir)`
+
+Composes the site-level token overrides CSS (`theme.tokens`, `theme.modes`, `theme.presets`, `site.tints`) into a single string. Re-exported from `@refrakt-md/transform/node` for convenience.
+
+```typescript
+import { composeSiteTokensCss, renderFullPage } from '@refrakt-md/html';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { dirname, resolve } from 'node:path';
+
+const configPath = resolve('refrakt.config.json');
+const config = loadRefraktConfig(configPath);
+const { site } = resolveSite(config);
+
+const siteTokensCss = await composeSiteTokensCss(site, dirname(configPath));
+
+const html = renderFullPage({ theme, page }, {
+  stylesheets: ['/styles.css'],
+  // Inline site-tokens CSS so site-level --rf-* overrides resolve last.
+  headExtra: siteTokensCss ? `<style>${siteTokensCss}</style>` : '',
+});
+```
+
+Empty string when the site uses the legacy string-theme form or declares no overrides — safe to interpolate either way.
+
+See the [design tokens contract](/docs/themes/lumina/tokens) and the [scoped tint projection](/docs/themes/lumina/presets/nord) pages for the full token surface.
 
 ## Client-Side Behaviors
 

@@ -1,5 +1,5 @@
 import { loadContent, buildHighlightOptions } from '@refrakt-md/content';
-import { renderFullPage } from '@refrakt-md/html';
+import { renderFullPage, composeSiteTokensCss } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
@@ -13,9 +13,11 @@ import * as path from 'node:path';
 
 // --- Configuration -------------------------------------------------------
 
-const config = loadRefraktConfig(path.resolve('refrakt.config.json'));
+const configPath = path.resolve('refrakt.config.json');
+const config = loadRefraktConfig(configPath);
 const { site } = resolveSite(config);
 const contentDir = path.resolve(site.contentDir);
+const configDir = path.dirname(configPath);
 const outDir = 'build';
 
 // --- Helpers --------------------------------------------------------------
@@ -88,6 +90,10 @@ async function build() {
 	// Create highlight transform
 	const hl = await createHighlightTransform(buildHighlightOptions(site));
 
+	// Compose site-level token overrides CSS (SPEC-048 + SPEC-056).
+	// Empty string when the site has no overrides; safe to inline either way.
+	const siteTokensCss = await composeSiteTokensCss(site, configDir);
+
 	// Build theme object for HTML adapter
 	const themeManifestModule = await import(themePackage + '/manifest', { with: { type: 'json' } });
 	const manifest = themeManifestModule.default;
@@ -148,7 +154,11 @@ async function build() {
 			},
 			{
 				stylesheets: ['/styles.css'],
-				headExtra: hl.css ? `<style>${hl.css}</style>` : '',
+				// Order matters: highlight CSS first, site-tokens CSS second so
+				// site-level `--rf-*` overrides resolve last in the cascade.
+				headExtra:
+					(hl.css ? `<style>${hl.css}</style>` : '') +
+					(siteTokensCss ? `<style>${siteTokensCss}</style>` : ''),
 				seo: page.seo,
 			},
 		);

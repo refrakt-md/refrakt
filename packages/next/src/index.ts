@@ -14,5 +14,9 @@ export type { PageParams } from './loader.js';
 // Behaviors (server-side detection only)
 export { hasInteractiveRunes } from './behaviors.js';
 
+// Site-level token-overrides CSS (SPEC-048 + SPEC-056). Async helper consumers
+// call at module-scope in `app/layout.tsx` and inline via `<style />`.
+export { getSiteTokensCss } from './tokens.js';
+
 // Types
 export type { NextTheme } from './types.js';
