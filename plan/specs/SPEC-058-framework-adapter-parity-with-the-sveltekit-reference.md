@@ -2,13 +2,13 @@
 
 # Framework adapter parity with the SvelteKit reference
 
-`@refrakt-md/sveltekit` is the adapter the refrakt documentation site itself ships on, so it's the only adapter that gets exercised end-to-end on every release. Over the v0.14.x patch line the SvelteKit plugin grew two capabilities — site-level token-overrides CSS ({% ref "SPEC-048" /%} + {% ref "SPEC-056" /%}) and SEO meta enrichment from site-level config (`siteName`, `baseUrl`, `defaultImage`, `logo`) — that were never threaded through Astro, Nuxt, Next.js, Eleventy, or the pure-HTML renderer. The result is silent: those adapters happily read `refrakt.config.json`, ignore the new fields, and produce pages that look right but are missing the overrides + meta tags the same config produces under SvelteKit.
+`@refrakt-md/sveltekit` is the adapter the refrakt documentation site itself ships on, so it's the only adapter that gets exercised end-to-end on every release. Over the v0.14.x patch line the SvelteKit plugin grew a number of capabilities — site-level token-overrides CSS ({% ref "SPEC-048" /%} + {% ref "SPEC-056" /%}), SEO meta enrichment from site-level config (`siteName`, `baseUrl`, `defaultImage`, `logo`), CSS tree-shaking by used-rune analysis, build-time pipeline-stats output, `SecurityPolicy` plumbing, Markdoc `variables`, and content HMR — that were never threaded through Astro, Nuxt, Next.js, Eleventy, or the pure-HTML renderer. The result is silent: those adapters happily read `refrakt.config.json`, ignore the new fields, and produce pages that work but miss the overrides + meta tags + optimizations + dev-loop the same config produces under SvelteKit.
 
 This spec closes the gap. It is *application* work — no new design, no new contracts. Every capability it brings to the other adapters already exists, working, in `@refrakt-md/sveltekit`. The job is extraction, sharing, and per-adapter wiring along the path each adapter natively uses.
 
 ## Problem
 
-Two concrete capabilities sit only in the SvelteKit plugin:
+Six concrete capabilities sit only in the SvelteKit plugin:
 
 ### 1. Site-level token overrides CSS
 
@@ -45,15 +45,25 @@ The other adapters' SEO surfaces miss this:
 
 A site that configures `siteName: "Refrakt"`, `baseUrl: "https://refrakt.md"`, `defaultImage: "/og.png"`, `logo: "/favicon.png"` in `refrakt.config.json` gets correct meta tags + JSON-LD on the SvelteKit site and incomplete meta on every other adapter.
 
-## Out of scope
+### 3. CSS tree-shaking only runs under SvelteKit
 
-Capabilities the SvelteKit plugin has that are *intentionally* not in this spec — either by SPEC-030's deferral, or because they bind too tightly to Vite's plugin lifecycle:
+The SvelteKit plugin runs `analyzeRuneUsage(site.pages)` in `buildStart` (`packages/sveltekit/src/plugin.ts:202–234`) and emits one `@import` per used rune block — a site using ~20 of ~115 runes ships ~20 stylesheet files instead of the full barrel, often hundreds of KB of CSS post-gzip. The other adapters ship the theme package's full CSS barrel unconditionally. {% ref "SPEC-030" /%} deferred this as a "Phase 2" optimization; this spec brings it forward.
 
-- **CSS tree-shaking by used-rune analysis** — SPEC-030 deferred this for non-SvelteKit adapters ("Out of scope: ... CSS tree-shaking optimizations"). The other adapters ship the full theme CSS barrel.
-- **Pipeline-stats build summary** — SvelteKit's `buildStart` prints a Phase 1/2/3/4 + warnings table. Non-Vite adapters have no equivalent natural hook; existing console output from `loadContent` is sufficient.
-- **`security` option (SecurityPolicy)** — currently only consumed by `loadContent` in the SvelteKit virtual content module. Other adapters can adopt it later as a follow-up; not in this milestone.
-- **`variables` (Markdoc `$name` variables)** — same shape: only wired through SvelteKit's virtual content module. Adopt later if a non-SvelteKit consumer asks.
-- **Content HMR** — SPEC-030 deferred for non-Vite adapters.
+### 4. Pipeline-stats build summary
+
+The SvelteKit plugin prints a Phase 1/2/3/4 + warnings summary at the end of every content load (`packages/sveltekit/src/plugin.ts:186–200`). Other adapters either go silent on build or inherit the host framework's default output, even though every adapter's `Site` object already carries the same `pipelineStats` + `pipelineWarnings` data. The formatter just isn't shared.
+
+### 5. `security` (`SecurityPolicy`) is SvelteKit-only
+
+`RefractPluginOptions.security` (`packages/sveltekit/src/types.ts:22`) passes through to `loadContent` so the content pipeline can sanitise untrusted author content. The other adapter option types don't expose the field, even though their underlying `loadContent` calls (direct or through `createRefraktLoader`) would accept it.
+
+### 6. `variables` (Markdoc `$name` variables) is SvelteKit-only
+
+`RefractPluginOptions.variables` (`packages/sveltekit/src/types.ts:17`) is resolved into the SvelteKit virtual content module so authors can use `{% $name %}` in `.md` content. The refrakt docs site uses this for `__REFRAKT_VERSION__`. Other adapters have no surface for the same feature.
+
+### 7. Content HMR is SvelteKit-only
+
+`packages/sveltekit/src/content-hmr.ts` watches the content directory + sandbox examples and triggers full-page reloads with cache invalidation on `.md` edits. Astro + Nuxt run on Vite and could use the same hook; Eleventy has its own watcher API; Next.js's dev server already re-evaluates the data file on imported-file changes (no custom hook needed). {% ref "SPEC-030" /%} deferred this for non-Vite frameworks; this spec brings it forward where it's tractable.
 
 ## Solution
 
@@ -98,7 +108,36 @@ Every adapter that calls `seoToHtml` (Astro, Eleventy) or builds head metadata m
 
 The source of the four fields is the per-site config (`SiteConfig.siteName`, `SiteConfig.baseUrl`, `SiteConfig.defaultImage`, `SiteConfig.logo`). Adapter integration code that already resolves the site (Astro integration, Nuxt module, Eleventy data file, Next loader) reads them once and forwards into every per-page SEO call.
 
-### 4. Cleanup: `template-astro/src/setup.ts` uses `createRefraktLoader`
+### 4. Bring CSS tree-shaking to every adapter
+
+Extract the SvelteKit plugin's `analyzeRuneUsage`-driven CSS filtering (`packages/sveltekit/src/plugin.ts:202–234`) into a shared helper:
+
+```ts
+export async function computeUsedCssBlocks(
+  site: SiteConfig,
+  pages: TransformedPage[],
+  assembledConfig: ThemeConfig,
+  themePackage: string,
+): Promise<{ usedBlocks: Set<string>; stylesDir: string }>;
+```
+
+Vite-based adapters (Astro, Nuxt) consume it via a sibling virtual module to `virtual:refrakt/site-tokens.css` — `virtual:refrakt/runes.css` — that emits one `@import` per used block. Non-Vite adapters (Eleventy, Next.js, HTML) expose the used-block list through their data-file / helper APIs so the consumer's template can iterate.
+
+### 5. Share the pipeline-stats formatter
+
+Move the multi-line Phase 1/2/3/4 + warnings summary formatter out of `packages/sveltekit/src/plugin.ts:186–200` into `@refrakt-md/content` as `formatPipelineSummary(stats, warnings): string`. Pure formatter; adapters decide where to write the result. Every adapter then prints the same summary with one call.
+
+### 6. Plumb `security` + `variables` through every adapter's options
+
+`createRefraktLoader` already accepts `variables`; extend it to also accept `security` and forward into the underlying `loadContent` call (the SvelteKit plugin currently bypasses the loader for this field — close that gap as part of the same change). Each non-SvelteKit adapter then surfaces both fields in its public options type and forwards them into its loader call.
+
+For non-Vite adapters the `variables` value type is `Record<string, unknown>` (real JS values consumed at runtime) rather than the SvelteKit plugin's `Record<string, string>` of source-text expressions (which only makes sense for the Vite virtual-module embedding path). Document the two shapes.
+
+### 7. Content HMR for adapters that can support it
+
+Extract `packages/sveltekit/src/content-hmr.ts:setupContentHmr` into a shared location (`@refrakt-md/transform/node` or `@refrakt-md/content/dev`). Astro + Nuxt register it via their Vite plugin's `configureServer` hook. Eleventy uses its own `addWatchTarget` API to register the content directory for `--serve` mode rebuilds. Next.js needs no custom hook — its dev server already invalidates the loader's import graph when a watched file changes; document that and move on. HTML adapter has no dev server, so HMR doesn't apply.
+
+### 8. Cleanup: `template-astro/src/setup.ts` uses `createRefraktLoader`
 
 `packages/create-refrakt/template-astro/src/setup.ts` re-implements ~50 lines of the loader assembly (`loadRefraktConfig` → `resolveSite` → `loadPlugin` → `mergePlugins` → `assembleThemeConfig` → `createTransform`). `@refrakt-md/content`'s `createRefraktLoader` already does this and more — it loads tint presets ({% ref "SPEC-056" /%}), passes `themeOverrides` (`site.tints`, `site.backgrounds`), and exposes `getHighlightTransform` + `invalidateSite` for free. Replacing setup.ts with a thin wrapper around `createRefraktLoader` deletes ~40 lines from the template and fixes its current missing-presets bug.
 
@@ -114,8 +153,13 @@ A site generated from each non-SvelteKit template, configured with the same `ref
 4. `<meta property="og:image" content="https://test.example/og.png">` on a page without its own image
 5. WebSite + Organization JSON-LD `<script>` entries in `<head>`
 6. Canonical `<link>` and `og:url` with absolute `https://test.example/...` URLs
+7. Only used-rune CSS files present in the built bundle (e.g., for a site using `hint` + `recipe` only: `hint.css`, `recipe.css`, `base.css`, `site-tokens.css`, `tint.css` — no `palette.css`, no `bento.css`)
+8. Multi-line Phase 1/2/3/4 + warnings summary printed to stderr at the end of the build
+9. A `.md` file edit during dev mode (`astro dev`, `nuxt dev`, `@11ty/eleventy --serve`) triggers a browser reload showing the updated content
+10. Configured `variables: { version: '1.0.0' }` interpolates `{% $version %}` in content to `1.0.0` in the rendered output
+11. Configured `security: { policy: 'strict' }` sanitises a `<script>` tag inside an author-provided markdown block
 
-The same site rendered via SvelteKit is the reference — diff-of-zero is the target.
+The same site rendered via SvelteKit is the reference — diff-of-zero is the target for criteria 1–8 and 10–11.
 
 ## References
 
