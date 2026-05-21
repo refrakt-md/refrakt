@@ -124,13 +124,15 @@ export const gameItem = createContentModelSchema({
         ...asNodes(resolved.properties),
         ...asNodes(resolved.lore),
       ], config) as RenderableTreeNode[],
-    ).wrap('div');
+    );
+    const bodyDiv = body.wrap('div');
 
-    return createComponentRenderable('GameItem' as any, {
+    return createComponentRenderable({
+      rune: 'game-item',
       tag: 'div',
       properties: { rarity: rarityMeta },
-      refs: { body: body.tag('div') },
-      children: [rarityMeta, body.next()],
+      refs: { body: bodyDiv.tag('div') },
+      children: [rarityMeta, bodyDiv.next()],
     });
   },
 });
@@ -228,22 +230,20 @@ The `theme` field contributes identity transform config and icons for your runes
 ```typescript
 theme: {
   runes: {
-    'GameItem': {                  // keyed by typeof name (PascalCase)
+    'GameItem': {                  // keyed by typeName (PascalCase); engine maps it to data-rune="game-item"
       block: 'game-item',
       modifiers: {
         rarity: { source: 'meta', default: 'common' },
       },
       structure: {
-        prepend: [
-          {
-            tag: 'header',
-            'data-name': 'header',
-            children: [
-              { tag: 'span', 'data-name': 'name' },
-              { tag: 'span', 'data-name': 'rarity', text: 'meta:rarity' },
-            ],
-          },
-        ],
+        header: {
+          tag: 'header',
+          before: true,
+          children: [
+            { tag: 'span', ref: 'name' },
+            { tag: 'span', ref: 'rarity', metaText: 'rarity' },
+          ],
+        },
       },
     },
   },
