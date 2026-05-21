@@ -25,7 +25,7 @@ interface ThemeConfig {
 | `prefix` | Prepended to all BEM class names. `'rf'` produces `.rf-hint`, `.rf-hint--note`, `.rf-hint__icon` |
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
 | `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
-| `runes` | Maps rune `typeof` values to their transform configuration |
+| `runes` | Maps each rune's `typeName` (PascalCase, e.g. `Hint`) to its transform configuration. The engine matches the kebab-cased key against the `data-rune` attribute on the tag |
 
 ## RuneConfig
 
@@ -55,7 +55,7 @@ modifiers: {
 
 | Property | Description |
 |----------|-------------|
-| `source` | `'meta'` reads from child `<meta property="name" content="value">` tags. `'attribute'` reads from the element's own attributes |
+| `source` | `'meta'` reads from child `<meta data-field="name" content="value">` tags. `'attribute'` reads from the element's own attributes |
 | `default` | Fallback value when no meta tag or attribute is found |
 
 For each modifier with a resolved value, the engine:
@@ -68,13 +68,13 @@ For each modifier with a resolved value, the engine:
 
 ```html
 <!-- Before transform -->
-<div typeof="Hint">
-  <meta property="hintType" content="warning">
+<div data-rune="hint">
+  <meta data-field="hint-type" content="warning">
   <p>Be careful!</p>
 </div>
 
 <!-- After transform -->
-<div class="rf-hint rf-hint--warning" typeof="Hint" data-hint-type="warning" data-rune="hint">
+<div class="rf-hint rf-hint--warning" data-rune="hint" data-hint-type="warning">
   <!-- meta tag consumed, structural elements injected -->
   <p>Be careful!</p>
 </div>
@@ -82,7 +82,7 @@ For each modifier with a resolved value, the engine:
 
 ### contextModifiers
 
-Adds a BEM modifier class when the rune is nested inside a specific parent rune. The key is the parent's `typeof` value; the value is the modifier suffix.
+Adds a BEM modifier class when the rune is nested inside a specific parent rune. The key is the parent's `typeName` (matched against `data-rune` after kebab-casing); the value is the modifier suffix.
 
 ```typescript
 // Hint config
@@ -405,7 +405,7 @@ The `ctx` object contains:
 | Property | Type | Description |
 |----------|------|-------------|
 | `modifiers` | `Record<string, string>` | All resolved modifier values |
-| `parentType` | `string \| undefined` | The parent rune's `typeof` value, if nested |
+| `parentType` | `string \| undefined` | The parent rune's `data-rune` value (kebab-case), if nested |
 
 {% hint type="warning" %}
 Use declarative config first. `postTransform` is for edge cases that truly can't be expressed with modifiers, structure, or styles. It makes the config harder to analyze statically — the [inspect and audit tools](/docs/cli/inspect) can't introspect programmatic transforms.

@@ -150,4 +150,6 @@ The following runes support the eyebrow / headline / blurb / image pattern:
 - [Itinerary](/runes/places/itinerary)
 
 **@refrakt-md/media**
-- Music Playlist
+- [Playlist](/runes/media/playlist)
+- [Audio](/runes/media/audio)
+- [Track](/runes/media/track)

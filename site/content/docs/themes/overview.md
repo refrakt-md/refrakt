@@ -27,10 +27,10 @@ refrakt.md uses a two-layer rendering system:
 
 The identity transform is a framework-agnostic function that walks the serialized content tree and enhances it declaratively:
 
-1. Reads the rune's `typeof` attribute
-2. Looks up the matching `RuneConfig`
+1. Reads the rune's `data-rune` attribute (kebab-case rune name)
+2. Looks up the matching `RuneConfig` (keys are PascalCase `typeName` values; the engine matches via kebab-case)
 3. Adds BEM classes (`.rf-hint`, `.rf-hint--warning`)
-4. Reads modifier values from meta tags and sets `data-*` attributes
+4. Reads modifier values from meta tags (`<meta data-field="...">`) and sets `data-*` attributes
 5. Emits universal dimension attributes (`data-density`, `data-section`, `data-meta-type`, `data-media`, etc.) from the rune config
 6. Injects structural elements (headers, icons, badges) defined in the config
 7. Wraps content children if `contentWrapper` is configured
@@ -161,10 +161,10 @@ All the structural configuration — which BEM block each rune maps to, how modi
 
 ## The identity transform in detail
 
-When the identity transform encounters a tag with `typeof="Hint"`, it:
+When the identity transform encounters a tag with `data-rune="hint"`, it:
 
-1. **Finds the config**: Looks up `runes['Hint']` in the theme config
-2. **Reads modifiers**: Scans child meta tags for modifier values (e.g., `hintType`), falls back to defaults
+1. **Finds the config**: Looks up `runes['Hint']` in the theme config (matched by kebab-casing the config key)
+2. **Reads modifiers**: Scans child `<meta data-field="hint-type">` tags for modifier values, falls back to defaults
 3. **Builds BEM classes**: `.rf-hint` (block) + `.rf-hint--note` (modifier value)
 4. **Sets data attributes**: `data-hint-type="note"` for CSS attribute selectors
 5. **Checks context**: If nested inside `Hero`, adds `.rf-hint--in-hero`
@@ -175,7 +175,7 @@ When the identity transform encounters a tag with `typeof="Hint"`, it:
 The output for a note hint:
 
 ```html
-<div class="rf-hint rf-hint--note" typeof="Hint" data-hint-type="note" data-rune="hint">
+<div class="rf-hint rf-hint--note" data-rune="hint" data-hint-type="note">
   <div data-name="header" class="rf-hint__header">
     <span data-name="icon" class="rf-hint__icon"></span>
     <span data-name="title" class="rf-hint__title">note</span>
