@@ -1,4 +1,4 @@
-{% work id="WORK-238" status="ready" priority="medium" complexity="moderate" tags="docs, ia, navigation, site" milestone="v0.14.3" %}
+{% work id="WORK-238" status="in-progress" priority="medium" complexity="moderate" tags="docs, ia, navigation, site" milestone="v0.14.3" %}
 
 # Docs IA split: separate author handbook from developer ("extend") handbook
 
