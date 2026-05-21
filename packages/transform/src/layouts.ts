@@ -6,6 +6,11 @@ const MENU_DOTS_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" fill="cur
 
 const CLOSE_X_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>';
 
+// Combined dots/x icon. The two groups are toggled by CSS based on the
+// button's aria-expanded state, so the same trigger opens and closes the
+// mobile panel.
+const MENU_TOGGLE_SVG = '<svg width="20" height="20" viewBox="0 0 20 20"><g class="rf-mobile-menu-btn__icon-open" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></g><g class="rf-mobile-menu-btn__icon-close" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></g></svg>';
+
 const HAMBURGER_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>';
 
 const SEARCH_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
@@ -18,9 +23,10 @@ const menuButton: LayoutStructureEntry = {
 	attrs: {
 		class: 'rf-mobile-menu-btn',
 		'aria-label': 'Open menu',
-		'data-mobile-menu-open': '',
+		'aria-expanded': 'false',
+		'data-mobile-menu-toggle': '',
 	},
-	svg: MENU_DOTS_SVG,
+	svg: MENU_TOGGLE_SVG,
 };
 
 const closeButton: LayoutStructureEntry = {
@@ -66,7 +72,6 @@ export const defaultLayout: LayoutConfig = {
 	behaviors: ['mobile-menu', 'search'],
 	chrome: {
 		menuButton,
-		closeButton,
 		searchButton,
 	},
 	slots: {
@@ -89,19 +94,6 @@ export const defaultLayout: LayoutConfig = {
 			conditionalRegion: 'header',
 			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
 			children: [
-				{
-					tag: 'div',
-					class: 'rf-mobile-panel__header',
-					children: [
-						{
-							tag: 'span',
-							ref: 'mobile-panel-title',
-							attrs: { class: 'rf-mobile-panel__title' },
-							children: ['Menu'],
-						} as LayoutStructureEntry,
-						'chrome:closeButton',
-					],
-				},
 				{
 					tag: 'nav',
 					class: 'rf-mobile-panel__nav',
@@ -151,7 +143,6 @@ export const docsLayout: LayoutConfig = {
 	},
 	chrome: {
 		menuButton,
-		closeButton,
 		searchButton,
 		hamburger: {
 			tag: 'button',
@@ -184,19 +175,6 @@ export const docsLayout: LayoutConfig = {
 			conditionalRegion: 'header',
 			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
 			children: [
-				{
-					tag: 'div',
-					class: 'rf-mobile-panel__header',
-					children: [
-						{
-							tag: 'span',
-							ref: 'mobile-panel-title',
-							attrs: { class: 'rf-mobile-panel__title' },
-							children: ['Menu'],
-						} as LayoutStructureEntry,
-						'chrome:closeButton',
-					],
-				},
 				{
 					tag: 'nav',
 					class: 'rf-mobile-panel__nav',
@@ -402,7 +380,6 @@ export const blogArticleLayout: LayoutConfig = {
 	behaviors: ['mobile-menu', 'search'],
 	chrome: {
 		menuButton,
-		closeButton,
 		searchButton,
 		articleHeader: {
 			tag: 'header',
@@ -467,19 +444,6 @@ export const blogArticleLayout: LayoutConfig = {
 			conditionalRegion: 'header',
 			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
 			children: [
-				{
-					tag: 'div',
-					class: 'rf-mobile-panel__header',
-					children: [
-						{
-							tag: 'span',
-							ref: 'mobile-panel-title',
-							attrs: { class: 'rf-mobile-panel__title' },
-							children: ['Menu'],
-						} as LayoutStructureEntry,
-						'chrome:closeButton',
-					],
-				},
 				{
 					tag: 'nav',
 					class: 'rf-mobile-panel__nav',

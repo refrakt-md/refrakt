@@ -683,4 +683,16 @@
 	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__description {
 		display: none;
 	}
+	/* Rich-panel min-widths (20rem / 36rem) above aren't viewport-gated and
+	 * would push the drawer wider than the mobile viewport. The drawer
+	 * renders the menubar as a flat vertical list, so no min-width is
+	 * needed — clamp to fit. Placed after the rich-panel rules so source
+	 * order wins the cascade at equal specificity. */
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
+		min-width: 0;
+		max-width: 100%;
+	}
 }

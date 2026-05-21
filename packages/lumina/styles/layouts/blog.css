@@ -1,7 +1,17 @@
 /* Blog layout */
 
+/* The blog header chrome is taller (1.125rem padding + 2rem logo), so
+   tell the mobile panel where the header ends. The variable lives on the
+   layout root so the panel — a sibling of the header — inherits it. */
+.rf-layout-blog-article {
+	--rf-header-height: 4.25rem;
+}
 /* ---- Header ---- */
 .rf-blog-header {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	background: var(--rf-color-bg);
 	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-blog-header__inner {

@@ -228,7 +228,7 @@ chrome: {
   menuButton: {
     tag: 'button',
     ref: 'mobile-menu-btn',
-    attrs: { class: 'rf-mobile-menu-btn', 'aria-label': 'Open menu', 'data-mobile-menu-open': '' },
+    attrs: { class: 'rf-mobile-menu-btn', 'aria-label': 'Open menu', 'aria-expanded': 'false', 'data-mobile-menu-toggle': '' },
     svg: '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">...</svg>',
   },
 },
@@ -258,9 +258,10 @@ The mobile menu behavior handles panel toggling for responsive layouts. It uses 
 
 | Data attribute | Purpose |
 |----------------|---------|
-| `data-mobile-menu-open` | Opens the header menu panel (the first `.rf-mobile-panel` that isn't `--nav`) |
-| `data-mobile-menu-close` | Closes all open panels |
-| `data-mobile-nav-toggle` | Toggles the nav panel (`.rf-mobile-panel--nav`) |
+| `data-mobile-menu-toggle` | Toggles the header menu panel (the first `.rf-mobile-panel` that isn't `--nav`). The behavior keeps `aria-expanded` in sync with panel state. |
+| `data-mobile-menu-open` | Legacy alias of `data-mobile-menu-toggle` — kept for themes that wired it explicitly. |
+| `data-mobile-menu-close` | Closes all open panels (still wired for themes that include an explicit close button). |
+| `data-mobile-nav-toggle` | Toggles the nav panel (`.rf-mobile-panel--nav`). |
 
 Panels are toggled via the `[data-open]` attribute. CSS uses this for visibility:
 
@@ -295,8 +296,7 @@ export const docsLayout: LayoutConfig = {
   },
 
   chrome: {
-    menuButton: { /* ... menu dots SVG button */ },
-    closeButton: { /* ... close X SVG button */ },
+    menuButton: { /* ... combined dots/X SVG toggle button */ },
     hamburger: { /* ... hamburger SVG button for nav toggle */ },
   },
 
@@ -314,15 +314,13 @@ export const docsLayout: LayoutConfig = {
       }],
     },
 
-    // Mobile menu panel — cloned header content for mobile
+    // Mobile menu panel — cloned header content, docks below the header
     mobilePanel: {
       tag: 'div',
       class: 'rf-mobile-panel',
       conditionalRegion: 'header',
       attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
       children: [
-        { tag: 'div', class: 'rf-mobile-panel__header',
-          children: [/* title + close button */] },
         { tag: 'nav', class: 'rf-mobile-panel__nav',
           source: 'clone:region:header' },
       ],
