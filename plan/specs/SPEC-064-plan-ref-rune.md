@@ -141,7 +141,19 @@ If the plan directory doesn't exist (project hasn't initialized plan content), t
 
 ### Cycle detection
 
-A plan-ref pointing to a plan file that itself contains a plan-ref → potential cycle. Maintain a per-render path stack of `[id1, id2, ...]`; if the current ID appears in the stack, fail with a build error showing the cycle (`SPEC-023 → WORK-051 → SPEC-023`).
+A `plan-ref` pointing to a plan file that itself contains a `plan-ref` to a third file (and so on, eventually back to a previously-embedded ID) → potential infinite expansion. Maintain a per-render path stack of `[id1, id2, ...]`; if the current ID appears in the stack, fail with a build error showing the cycle (`SPEC-023 → WORK-051 → SPEC-023`).
+
+**Note on `{% ref %}` inside embedded content**: refs are *links*, not *expansions*. SPEC-023's body can contain `{% ref "ADR-007" /%}` and ADR-007's body can contain `{% ref "SPEC-023" /%}` without any cycle concern — both render as anchors during the postProcess xref pass, neither inlines content. Cycle detection applies only to `plan-ref` recursion.
+
+### Ref resolution inside embedded content
+
+Refs (`{% xref %}` / `{% ref %}`) appearing inside an embedded plan entity participate in the host page's regular xref postProcess pass — they're part of the host page's renderable tree after the embed substitutes content in. Resolution behavior:
+
+- If the host site publishes plan content (e.g. via {% ref "SPEC-014" /%}'s plan-html-adapter, or plan files inside `site/content/`), plan entities are registered in the `EntityRegistry` → refs resolve to local URLs naturally.
+- If the host site has a configured xref pattern matching the ID (see {% ref "SPEC-065" /%}), refs resolve via the pattern's URL template. This is the path users take when their plan content lives externally — refrakt trace, self-hosted CLI, third-party plan hosts.
+- Otherwise refs render as `rf-xref--unresolved` spans (default xref behavior; styled-but-inert cross-references).
+
+`plan-ref` itself does not register the embedded entity into the registry. The host page's resolver chain is the sole authority — plan-ref's job is to render content; cross-references in that content go through the standard resolver.
 
 ### Error formats
 
@@ -209,7 +221,8 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 - [ ] `level="full"` renders header + body
 - [ ] `level="summary"` renders header only, applies `--level-summary` modifier
 - [ ] Unknown ID fails the build with closest-match suggestions (Levenshtein ≤ 2)
-- [ ] Cycle detection: a plan-ref pointing to a file that re-references it (transitively) fails the build with the cycle shown
+- [ ] Cycle detection: a plan-ref pointing to a file that transitively re-embeds a previously-embedded ID fails the build with the cycle shown
+- [ ] `{% ref %}` cross-references inside embedded content go through the standard host-page xref resolver ({% ref "SPEC-065" /%}); plan-ref does not pre-register the embedded entity into the host registry
 - [ ] Plan-ref works in any host context (blog post, layout, drawer body, etc.) — not coupled to plan-section pages
 - [ ] Composes with drawer (the motivating use case) — `{% drawer %}{% plan-ref %}{% /drawer %}` works end-to-end
 - [ ] Plan-rune schemas are available when rendering embedded plan content (provided implicitly by the plan plugin being installed)
@@ -237,7 +250,7 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 
 **Plan-ref in plan content itself: should a spec be allowed to plan-ref another spec?** Recommend yes, with cycle detection. Cross-referencing inside the plan corpus is exactly the kind of thing this rune is good at, and the existing `{% ref %}` rune already does a lightweight version of it.
 
-**What does the canonical link look like for entities that aren't published to the site?** Some projects use the plan corpus for internal planning without publishing it. Recommend: the rune always generates the link assuming the site publishes plan content at the conventional paths. If the project doesn't publish plan, the link 404s — that's a site-config concern, not a rune concern.
+**What does the canonical link in the plan-ref header look like for entities that aren't published to the site?** Some projects use the plan corpus for internal planning without publishing it. The header link is generated via the same xref resolution chain as inline refs (registry → patterns → unresolved per {% ref "SPEC-065" /%}). If the user has a trace (or other external host) pattern configured, the header link points there. If not, and plan isn't published locally, the link falls back to the unresolved state — still informative (the ID is visible) but not clickable.
 
 **Cross-entity references in `source=` attributes** — should plan-ref also surface the `source` chain (e.g. "this spec sources from SPEC-001 → ADR-005")? Tempting but creeping scope. Keep v1 just to header + body; future enhancement can add source-chain rendering as an opt-in.
 
@@ -252,6 +265,7 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 - {% ref "SPEC-021" /%} — plan runes (parent context: spec/work/bug/decision/milestone rune definitions)
 - {% ref "SPEC-060" /%} — drawer rune (primary composition target)
 - {% ref "SPEC-063" /%} — configurable partial roots (resolution mechanism)
+- {% ref "SPEC-065" /%} — configurable xref resolution (governs how refs inside embedded content resolve when plan content isn't locally published)
 - {% ref "SPEC-022" /%} — plan CLI (filename conventions this rune's indexer parses)
 - `plugins/plan/` — the plugin this rune ships in
 
