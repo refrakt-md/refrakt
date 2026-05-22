@@ -1,10 +1,12 @@
 {% spec id="SPEC-061" status="draft" tags="pipeline, content, transform, variables" %}
 
-# Content variable surface — completing `$page` and rationalizing the namespaces
+# Content variable surface — completing `$page`, `$file`, and rationalizing the namespaces
 
-Audit and complete the author-facing Markdoc variable surface exposed by refrakt's content pipeline. The pipeline today exposes `$frontmatter.*`, a partial `$page.*`, and `$file.*` — but the `$page.*` namespace is undersized (no `dir`, `slug`, `title`, and the existing `filePath` key is misnamed against the natural mental model). Extend `$page.*` to support URL-aware patterns like `{% code-file path=$page.path /%}` and document the whole public surface clearly. Settle the convention that double-underscore-prefixed variables are pipeline internals, not author-facing.
+Audit and complete the author-facing Markdoc variable surface exposed by refrakt's content pipeline. The pipeline today exposes `$frontmatter.*`, a partial `$page.*`, and a partial `$file.*` — but `$page.*` is undersized (no `dir`, `slug`, `title`, and the existing `filePath` key is misnamed), and `$file.*` lacks a project-root file path that consumers like the code-file rune need for disk-relative resolution. Extend both namespaces, document the whole public surface clearly, and settle the convention that double-underscore-prefixed variables are pipeline internals.
 
-The headline motivation is the view-source pattern from {% ref "SPEC-062" /%} (which needs `$page.path`), but the rationalization benefits every rune that wants page or file context.
+The page-vs-file split matters: `$page.*` describes the page as a *content artifact* (its place in the content tree, its URL, its slug); `$file.*` describes the source file as a *disk artifact* (where it lives on disk, when it was committed). The two have different roots of reference — `$page.path` is relative to the content directory, `$file.path` is relative to the project root — and consumers reach for whichever frame matches their concern.
+
+The headline motivation is the view-source pattern from {% ref "SPEC-062" /%} (which needs `$file.path` for code-file's project-root-sandboxed resolution), but the rationalization benefits every rune that wants page or file context.
 
 ## Problem
 
@@ -12,7 +14,9 @@ The variable surface today is partial and inconsistent.
 
 **The `$page.*` namespace is undersized.** It exposes `url`, `filePath`, and `draft` (`packages/content/src/site.ts:154`). It's missing the keys URL-aware runes actually want: the directory portion, the URL slug, and the page title. Authors have to do string manipulation in Markdoc expressions to derive them — when they're derivable trivially at the pipeline level.
 
-**`$page.filePath` is misnamed.** Every other path-like field in refrakt uses `path` (resolver inputs, file-walker outputs, plan filenames). `filePath` reads as "the path to some file" rather than "this page's path." Renaming aligns with the broader convention and reads more naturally in `{% code-file path=$page.path /%}`.
+**`$page.filePath` is misnamed.** Every other path-like field in refrakt uses `path` (resolver inputs, file-walker outputs, plan filenames). `filePath` reads as "the path to some file" rather than "this page's path." Renaming aligns with the broader convention and reads more naturally in attribute interpolation.
+
+**`$file.*` lacks a project-root path.** It exposes `created` and `modified` — both about the file as a disk artifact — but not the file's actual disk location. Consumers like the code-file rune ({% ref "SPEC-062" /%}) resolve paths from project root for sandbox enforcement, and need a variable that returns a path in that frame of reference. `$page.path` is content-root-relative (correct for the content artifact framing), so it can't be used directly for code-file's view-source pattern. The two paths exist because there are two valid frames; both need to be exposed.
 
 **The public surface isn't documented.** `$frontmatter.*` and `$file.*` are reachable from any page but only mentioned in scattered docs (`site/content/extend/plugin-authoring/authoring.md`, plan rune docs). New users discovering the variable system have no central reference.
 
@@ -26,7 +30,9 @@ The variable surface today is partial and inconsistent.
 
 **Variables describe what already exists.** Each variable mirrors data the pipeline already computes per page. No computed-on-demand fields, no side effects. Read-only views into pipeline state.
 
-**One namespace per data source.** `$frontmatter` is raw frontmatter; `$page` is page-level metadata (URL, path, derived bits); `$file` is file-system / version-control metadata (timestamps). Don't blur the boundaries — a frontmatter key bleeding into `$page` via auto-lift would create a debugging nightmare.
+**One namespace per data source.** `$frontmatter` is raw frontmatter; `$page` is the page as a content artifact (URL, content-relative path, derived bits); `$file` is the source file as a disk artifact (project-relative path, version-control timestamps). Don't blur the boundaries — a frontmatter key bleeding into `$page` via auto-lift would create a debugging nightmare, and a single unified path variable would force every consumer to think about which frame they need.
+
+**Two paths, two frames.** `$page.path` is relative to the content directory because the page lives inside the content tree. `$file.path` is relative to the project root because the file lives on disk. Consumers that care about content position (URL-aware logic, layout cascades, nav scope) reach for `$page.path`; consumers that care about disk location (sandboxed file reads, build-tooling integrations) reach for `$file.path`.
 
 **Per-page injection.** Each page's transform receives a config with that page's variables populated. Layouts and partials rendered as part of that page see the host page's variables, not their own source file's.
 
@@ -68,7 +74,7 @@ Page-level metadata. Currently:
 
 ### `$file.*`
 
-File-system and version-control metadata.
+File-system and version-control metadata. Describes the source file as a disk artifact.
 
 | Key | Type | Meaning |
 |-----|------|---------|
@@ -78,6 +84,8 @@ File-system and version-control metadata.
 Both can be `undefined` for files that aren't in git and whose filesystem stat is unavailable (rare).
 
 Plan runes (`spec`, `work`, `bug`, `decision`, `milestone`) consume `$file.created` and `$file.modified` as automatic defaults for their `created` and `modified` attributes — see `site/content/runes/plan/index.md` for the existing documentation.
+
+`$file.path` (new — see Changes below) joins this namespace, giving consumers a project-root-relative path for the same disk artifact.
 
 -----
 
@@ -132,6 +140,35 @@ Why a derived title when `$frontmatter.title` already exists: pages often don't 
 
 **Scope inside partials and layouts:** partials and layout files rendered as part of a host page see the host page's `$page.title`, not their own. (Same scoping rule as the rest of `$page.*`.)
 
+### 6. Add `$file.path`
+
+Project-root-relative path to the source file. POSIX-normalized (forward slashes regardless of host OS). The disk-frame counterpart to `$page.path`.
+
+```
+$page.path = "docs/themes/configuration.md"        # relative to content root
+$file.path = "site/content/docs/themes/configuration.md"  # relative to project root
+```
+
+Sourced from the file walker, which already tracks the absolute file path for each page during content load. Computing project-root-relative form is `path.relative(projectRoot, absoluteFilePath)` then POSIX normalization.
+
+**Why a separate path instead of normalizing `$page.path` to project-root?** Two reasons:
+
+1. **The two frames have different natural consumers.** URL-aware logic (nav scope, layout cascade, conditional content) cares about position in the content tree; sandboxed file consumers (code-file rune, future build-time include patterns) care about disk location. Forcing one frame on both consumer groups means every consumer needs string manipulation to get into the frame they want.
+
+2. **Markdoc doesn't support string interpolation in attribute values.** Patterns like `path="site/content/$page.path"` don't work — Markdoc resolves variables in attribute *values* but doesn't splice them into surrounding literals. Without a `concat()` helper (which is its own design choice and not currently registered), the only ergonomic path is to provide the variable in the right frame already.
+
+**Use cases:**
+
+```markdoc
+{# Code-file from {% ref "SPEC-062" /%} — view-source pattern #}
+{% code-file path=$file.path lang="md" /%}
+
+{# Hypothetical future: "edit this page" link to GitHub #}
+{% github-edit-link path=$file.path /%}
+```
+
+**Scope inside partials and layouts:** like `$page.*`, partials and layouts see the *host page's* `$file.path`, not their own source file's. The transform context is the host page's; partials and layouts inherit it.
+
 -----
 
 ## Internal Variable Surface (Out-of-Scope Reference)
@@ -174,12 +211,15 @@ const contentVariables: Record<string, unknown> = {
     draft: route.draft,
   },
   file: {
+    path: posixRelative(projectRoot, page.filePath),  // new — project-root-relative, POSIX
     created: fileTimestamps.created,
     modified: fileTimestamps.modified,
   },
   // ...internal variables unchanged
 };
 ```
+
+The `projectRoot` value is the directory containing `refrakt.config.json` — already known to the content loader (it resolved the config). Threading it into `processContentTree` is a small plumbing change.
 
 ### First-H1 extraction
 
@@ -209,12 +249,16 @@ Layouts and partials are already rendered with the host page's `config.variables
 - [ ] `$page.url`, `$page.draft` continue to work (no regression)
 - [ ] `$frontmatter.*` access continues to work for all frontmatter keys (no regression)
 - [ ] `$file.created`, `$file.modified` continue to work (no regression)
+- [ ] `$file.path` resolves to the source file's project-root-relative path, POSIX-normalized
+- [ ] `$file.path` and `$page.path` are distinct (different frames of reference); both are documented with examples
+- [ ] Project root (config file directory) is threaded into `processContentTree` for `$file.path` computation
 - [ ] Variables work in attribute interpolation (`path=$page.path`)
 - [ ] Variables work in text interpolation (`{% $page.title %}`)
 - [ ] Variables work in conditional tags (`{% if equals($page.dir, "docs") %}`)
 - [ ] Partials included into a page see the host page's `$page.*`, not their own file's
 - [ ] Layouts cascaded into a page see the host page's `$page.*`, not the layout file's
 - [ ] New authoring docs page documents the full public variable surface (`$frontmatter.*`, `$page.*`, `$file.*`) with examples for each variable
+- [ ] Authoring docs explicitly explain the page-vs-file frame distinction (content-relative vs project-relative paths)
 - [ ] Authoring docs note the `__` prefix convention as the public/internal boundary
 - [ ] Test fixture covers each new `$page.*` variable in a `.md` page that interpolates them
 

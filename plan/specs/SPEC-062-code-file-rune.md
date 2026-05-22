@@ -2,9 +2,9 @@
 
 # Code-file rune
 
-A rune that renders the contents of a file (path relative to the project root) as a syntax-highlighted code block. Solves the recurring documentation problem of keeping inline code examples in sync with actual source files, and incidentally enables the view-source-of-current-page pattern via `{% code-file path=$page.path /%}`.
+A rune that renders the contents of a file (path relative to the project root) as a syntax-highlighted code block. Solves the recurring documentation problem of keeping inline code examples in sync with actual source files, and incidentally enables the view-source-of-current-page pattern via `{% code-file path=$file.path /%}`.
 
-Lives in `@refrakt-md/docs` — code-embed-from-disk is a docs concern. Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, and depends on `$page.path` from {% ref "SPEC-061" /%} for the self-referential case.
+Lives in `@refrakt-md/docs` — code-embed-from-disk is a docs concern. Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, and depends on `$file.path` from {% ref "SPEC-061" /%} for the self-referential case. (Note: `$file.path` is the project-root-relative path, which matches code-file's project-root sandbox. `$page.path` exists too but is content-root-relative and the wrong frame for code-file's resolver.)
 
 ## Problem
 
@@ -46,7 +46,7 @@ The same primitive incidentally solves the view-source case (`path=$page.path`),
 {% code-file path="examples/button.svelte" lines="10-25" /%}
 
 {# View source of the current page #}
-{% code-file path=$page.path lang="md" title="This page" /%}
+{% code-file path=$file.path lang="md" title="This page" /%}
 
 {# Override inferred language #}
 {% code-file path="config/refrakt.json" lang="jsonc" /%}
@@ -199,7 +199,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 - [ ] `title=` renders as a caption in `.rf-code-file__title`
 - [ ] `data-source-path` is set on the wrapper to the resolved path (relative to project root)
 - [ ] `data-lines` is set when `lines=` is used
-- [ ] `{% code-file path=$page.path /%}` works once {% ref "SPEC-061" /%} lands
+- [ ] `{% code-file path=$file.path /%}` works once {% ref "SPEC-061" /%} lands (project-root frame matches the sandbox)
 - [ ] CSS in lumina covers `.rf-code-file*` selectors
 - [ ] Authoring docs cover the rune, sandbox rules, line range syntax, language inference table
 
@@ -236,7 +236,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 ## References
 
 - {% ref "SPEC-060" /%} — drawer rune (primary composition target for view-source)
-- {% ref "SPEC-061" /%} — pipeline page variables (provides `$page.path`)
+- {% ref "SPEC-061" /%} — content variable surface (provides `$file.path` for the view-source pattern)
 - {% ref "SPEC-063" /%} — configurable partial roots (potential resolver share)
 - `packages/lumina/styles/runes/code-block.css` — existing code-block CSS to compose with
 - Niwaki syntax highlighting documentation — the highlighting layer this rune feeds into
