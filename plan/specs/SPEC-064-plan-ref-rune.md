@@ -2,7 +2,9 @@
 
 # Plan-ref rune
 
-A rune in `@refrakt-md/plan` that takes a plan ID (e.g. `SPEC-023`, `WORK-051`, `ADR-007`) and renders the referenced plan entity as inline content with plan-aware affordances — status badge, ID label, link to the canonical page. The first concrete consumer of {% ref "SPEC-063" /%}'s namespaced partial roots: the plan plugin auto-registers a `plan:` partial root pointing at the configured plan directory, and `plan-ref` resolves IDs to filenames within it.
+A rune in `@refrakt-md/plan` that takes a plan ID (e.g. `SPEC-023`, `WORK-051`, `ADR-007`) and embeds the referenced plan entity into the host page. Architecturally, plan-ref is a **transclusion mechanism** — it resolves the ID to a plan file, hands that file's `{% spec %}` / `{% work %}` / etc. block to the host's transform pipeline, and lets the existing plan rune render itself exactly as it would on the canonical plan site. plan-ref adds only a thin wrapper and a canonical-link affordance; the substantive presentation (status badge, ID, title, structure) comes from the embedded rune itself, eliminating any second presentation layer that could drift from canonical.
+
+The first concrete consumer of {% ref "SPEC-063" /%}'s namespaced partial roots: the plan plugin auto-registers a `plan:` partial root pointing at the configured plan directory, and plan-ref resolves IDs to filenames within it.
 
 The headline composition: `{% plan-ref %}` inside `{% drawer %}` ({% ref "SPEC-060" /%}) for in-context spec previews. But the rune works on its own anywhere — a blog post discussing an architecture decision can embed the ADR inline.
 
@@ -52,9 +54,6 @@ View spec
 {% plan-ref id="SPEC-023" /%}
 {% /drawer %}
 
-{# Summary mode — just the header, no body #}
-{% plan-ref id="WORK-051" level="summary" /%}
-
 {# Multiple types work the same way #}
 {% plan-ref id="ADR-007" /%}
 {% plan-ref id="BUG-012" /%}
@@ -65,39 +64,44 @@ View spec
 | Attribute | Type | Default | Meaning |
 |-----------|------|---------|---------|
 | `id` | string | required | Plan ID — `SPEC-023`, `WORK-051`, `ADR-007`, `BUG-012`, or a milestone name (`v1.0.0`). |
-| `level` | `"full"` \| `"summary"` | `"full"` | What to render — full body with header, or header only (status + ID + link). |
 
 -----
 
 ## Output Contract
 
+The embedded entity renders **exactly as it would on the canonical plan site**: plan-ref hands the file's content to the host page's transform pipeline, the existing plan rune (`{% spec %}`, `{% work %}`, etc.) produces its normal output, and plan-ref wraps that output in a thin container plus a canonical-link affordance. No duplicate header construction; the plan rune is the single source of truth for status badge, title, ID display, and structure.
+
 ```html
-<section class="rf-plan-ref" data-rune="plan-ref" data-plan-id="SPEC-023" data-plan-type="spec">
-  <header class="rf-plan-ref__header">
-    <span class="rf-plan-ref__badge" data-status="accepted">accepted</span>
-    <span class="rf-plan-ref__id">SPEC-023</span>
-    <a class="rf-plan-ref__link" href="/plan/specs/SPEC-023">View canonical page</a>
-  </header>
-  <div class="rf-plan-ref__body">
-    <!-- rendered plan entity body content -->
-  </div>
+<section class="rf-plan-ref"
+         data-rune="plan-ref"
+         data-plan-id="SPEC-023"
+         data-plan-type="spec"
+         data-canonical-href="https://plan.example.com/specs/SPEC-023">
+
+  <!-- The full rendered output of {% spec id="SPEC-023" status="accepted" %}...{% /spec %} -->
+  <!-- (or {% work %}, {% decision %}, etc. for other entity types) -->
+  <section class="rf-spec" data-status="accepted">
+    <header class="rf-spec__header">…</header>
+    <div class="rf-spec__body">…</div>
+  </section>
+
+  <a class="rf-plan-ref__canonical-link" href="https://plan.example.com/specs/SPEC-023">
+    View on plan site
+  </a>
 </section>
 ```
 
 BEM:
-- `.rf-plan-ref` — wrapper
-- `.rf-plan-ref__header` — status + ID + link row
-- `.rf-plan-ref__badge` — status pill (`data-status=` for variant styling)
-- `.rf-plan-ref__id` — plan ID text
-- `.rf-plan-ref__link` — canonical-page link
-- `.rf-plan-ref__body` — rendered body (omitted when `level="summary"`)
-- `.rf-plan-ref--level-summary` — modifier when body is omitted
+- `.rf-plan-ref` — wrapper, contains the embedded entity's full rendered output plus the canonical-link affordance
+- `.rf-plan-ref__canonical-link` — link to the entity's canonical page (resolution via {% ref "SPEC-065" /%})
 
-Data attributes:
+Data attributes (all on the wrapper):
 - `data-rune="plan-ref"`
 - `data-plan-id` — the referenced ID
 - `data-plan-type` — the entity type (`spec`, `work`, `bug`, `decision`, `milestone`)
-- `data-status` on the badge — for variant styling per status value
+- `data-canonical-href` — the resolved canonical URL, mirroring the `href` of the link element
+
+The inner element (`.rf-spec`, `.rf-work`, etc.) and everything below it is produced by the plan plugin's own rune transforms — not re-implemented here. Themes that want to style embedded entities differently from standalone entities target `.rf-plan-ref .rf-spec` (or equivalent) for embed-specific overrides.
 
 -----
 
@@ -121,9 +125,11 @@ The plan plugin builds an index at content-load time:
 1. Look up `"SPEC-023"` in the ID index. If missing, build error with closest-match suggestions.
 2. Construct the namespaced partial reference: `plan:{filepath}` (e.g. `plan:specs/SPEC-023-auth-system.md`).
 3. Resolve via the shared partial-roots machinery from {% ref "SPEC-063" /%} — reads the file, parses it as Markdoc, returns the AST.
-4. Extract the plan-rune body (everything inside `{% spec %}...{% /spec %}` or `{% work %}...{% /work %}` etc.), discarding the outer tag.
-5. Extract metadata from the outer tag's attributes (`status`, `tags`, `source`, etc.) for the header.
-6. Compute the canonical URL from the file path.
+4. Locate the top-level plan entity tag (`{% spec %}`, `{% work %}`, `{% bug %}`, `{% decision %}`, or `{% milestone %}`) within the parsed AST. Build error if no plan rune found at the top level, or if multiple plan runes exist in one file.
+5. Substitute the plan entity tag (with its attributes and children intact) into the host page's renderable tree at the plan-ref's position, wrapped in the `.rf-plan-ref` container.
+6. Resolve the canonical URL (via the host's xref resolver chain — see {% ref "SPEC-065" /%}) and set it on the wrapper's `data-canonical-href` and the `.rf-plan-ref__canonical-link` `href`.
+
+The host page's transform pipeline then renders the embedded plan rune normally — exactly as if the author had written it inline. The plan rune's existing schema and theme produce the header, status, title, and structure; plan-ref does not duplicate any of that work.
 
 ### Auto-registered `plan:` namespace
 
@@ -188,12 +194,11 @@ Referenced from: site/content/blog/auth.md:18
 
 ### Plan plugin
 
-- New rune schema in `plugins/plan/src/runes/plan-ref.ts`
+- New rune schema in `plugins/plan/src/tags/plan-ref.ts`
 - `Plugin.partialRoots` declaration with the auto-registered `plan` namespace
-- Pipeline `register` hook: build the ID-to-filename index from the loaded plan files
-- Pipeline `postProcess` hook (or transform-time resolution): replace `plan-ref` placeholders with rendered content
-- CSS in `plugins/plan/styles/plan-ref.css`
-- Status-badge styling per entity status (accepted, draft, in-progress, done, etc.) — palette aligns with the existing plan-runes status display
+- Pipeline `register` hook: build the ID-to-filename index from the plan directory contents
+- Resolution at transform time (or postProcess for canonical-URL resolution): locate the top-level plan rune within the referenced file's AST and substitute it into the host page's renderable tree, wrapped in the `.rf-plan-ref` container
+- CSS in `plugins/plan/styles/plan-ref.css` — minimal, since the embedded plan rune brings its own styling. The plan-ref CSS covers only the wrapper, the canonical-link affordance, and any "embedded entity" theme adjustments (e.g. slightly reduced visual prominence to signal the entity isn't this page's primary content)
 
 ### Cross-plugin coordination
 
@@ -205,7 +210,8 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 
 ## Acceptance Criteria
 
-- [ ] `{% plan-ref id="SPEC-023" /%}` renders the referenced spec's body content
+- [ ] `{% plan-ref id="SPEC-023" /%}` substitutes the referenced spec's full plan-rune output into the host page
+- [ ] The embedded entity renders identically to its standalone presentation on the plan site — no duplicate header construction in plan-ref itself
 - [ ] Plan plugin auto-registers a `plan:` partial root via `Plugin.partialRoots`
 - [ ] Registered path is the configured plan directory (default `plan/`, configurable per refrakt config)
 - [ ] If the plan directory doesn't exist, registration is silent (no build error at load time)
@@ -214,31 +220,32 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 - [ ] Filename convention `{ID}-{slug}.md` is parsed for IDs
 - [ ] Milestone semver filenames (`v1.0.0.md`) are indexed by their semver name
 - [ ] Duplicate IDs in the plan directory fail the index build with both filenames named
-- [ ] Status badge in output reflects the entity's `status` attribute
-- [ ] `data-status` on the badge enables per-status variant styling
-- [ ] Canonical link points to the entity's site URL (`/plan/specs/SPEC-023` etc.)
-- [ ] `data-plan-type` set on the wrapper reflects the entity type
-- [ ] `level="full"` renders header + body
-- [ ] `level="summary"` renders header only, applies `--level-summary` modifier
+- [ ] A referenced file with no top-level plan rune fails the build with a clear error
+- [ ] A referenced file with multiple top-level plan runes fails the build with a clear error
+- [ ] `data-plan-id`, `data-plan-type`, and `data-canonical-href` set on the `.rf-plan-ref` wrapper
+- [ ] `.rf-plan-ref__canonical-link` href resolves via the xref resolver chain ({% ref "SPEC-065" /%})
 - [ ] Unknown ID fails the build with closest-match suggestions (Levenshtein ≤ 2)
 - [ ] Cycle detection: a plan-ref pointing to a file that transitively re-embeds a previously-embedded ID fails the build with the cycle shown
 - [ ] `{% ref %}` cross-references inside embedded content go through the standard host-page xref resolver ({% ref "SPEC-065" /%}); plan-ref does not pre-register the embedded entity into the host registry
 - [ ] Plan-ref works in any host context (blog post, layout, drawer body, etc.) — not coupled to plan-section pages
 - [ ] Composes with drawer (the motivating use case) — `{% drawer %}{% plan-ref %}{% /drawer %}` works end-to-end
 - [ ] Plan-rune schemas are available when rendering embedded plan content (provided implicitly by the plan plugin being installed)
-- [ ] CSS covers `.rf-plan-ref*` selectors with status-badge styling for each status value
-- [ ] Authoring docs document the rune, the auto-registered `plan:` namespace, and the composition with drawer
+- [ ] CSS covers `.rf-plan-ref` wrapper and `.rf-plan-ref__canonical-link`; embedded plan-rune CSS handles the substantive content
+- [ ] Authoring docs document the rune, the auto-registered `plan:` namespace, the delegation-to-embedded-rune model, and the composition with drawer
 
 -----
 
 ## Out of Scope
 
-- **Cherry-picking sections of a plan entity** (e.g. "render only the Acceptance Criteria from SPEC-023"). Render full body or use `level="summary"`. Section-level extraction adds attribute surface for a use case that hasn't materialized.
+- **Derived sections** ("implemented by", "informs", "bugs against", relationship graphs, status rollups). These are the plan site's job — the static plan site (built via `refrakt plan build` / the plan-html-adapter) computes cross-corpus relationships and aggregates over the full registry to render derived views. plan-ref renders what the *author* wrote in a single entity file. The canonical-link affordance bridges the two: readers wanting the derived view click through to the plan site. Conflating these would force plan-ref to consume the full plan registry at embed time (which the host site may not have loaded) and would duplicate logic that already lives in the plan plugin's site adapter. **Clean rule: plan-ref shows what was written; the plan site shows what the corpus implies.**
+- **Constructing a separate header in plan-ref itself** — the embedded plan rune already renders its own status, ID, title, and structure. plan-ref delegates entirely to the embedded rune's output and adds only the wrapper plus the canonical-link affordance. A second header layer would be drift-prone and architecturally redundant.
+- **Density / level modes** (`level="summary"` etc.) — would require the plan runes themselves to support a summary rendering mode. That's a plan-rune feature, not a plan-ref feature, and not in this spec's scope. If demand surfaces later, add a density attribute to the plan runes; plan-ref can pass it through.
+- **Cherry-picking sections of a plan entity** (e.g. "render only the Acceptance Criteria from SPEC-023"). Render full entity or link to a section anchor. Section-level extraction adds attribute surface for a use case that hasn't materialized.
 - **Multi-entity refs** (`id="SPEC-023,SPEC-024"`). Use multiple `plan-ref` runes. Composable.
 - **Backlinks / "where is this referenced?"** — showing all the places a plan entity is referenced from. Different concern; could be a future site-graph rune. Not in scope here.
 - **Inline editing of referenced plan content** — the embedded view is read-only. Editing happens in the canonical plan file.
 - **Rendering plan-ref content without the plan plugin runes** — if plan-ref is available, plan rune schemas are too (plan-ref ships in the plan plugin). No way to use one without the other.
-- **Custom render templates per entity type** — header layout is the same regardless of type. Status semantics differ (a spec's `accepted` vs. a work item's `done`) but that's captured in the `data-status` attribute and styled per status, not per type.
+- **Custom render templates per entity type** — type-specific rendering is the plan runes' responsibility, not plan-ref's. plan-ref is type-agnostic.
 - **Search / discovery UI for finding the right ID** — that's tooling around plan content, not a concern of this rune.
 - **Caching: dedup rendering when the same ID is referenced multiple times on one page** — the file read is already memoized by the partial-roots resolver (per {% ref "SPEC-063" /%} caching). Re-parsing the same file twice in one page render is wasteful but not incorrect; defer optimization until profiling shows it matters.
 
@@ -246,7 +253,7 @@ The plan-ref rune produces a Markdoc AST as part of the host page's render. That
 
 ## Open Questions
 
-**Should `level="summary"` use a different visual treatment than `level="full"`, or just omit the body?** Recommend just omit — same header, no body, smaller overall footprint. Visual differentiation comes from the absence of the body, not a different header style.
+**Should the wrapper visually differentiate embedded entities from their standalone presentation?** Recommend yes, subtly — themes target `.rf-plan-ref .rf-spec` (etc.) and apply mild de-emphasis (lighter borders, reduced spacing, subtle "embedded" marker) so readers understand the entity isn't the host page's primary content. Default lumina styling provides this baseline; themes can adjust.
 
 **Plan-ref in plan content itself: should a spec be allowed to plan-ref another spec?** Recommend yes, with cycle detection. Cross-referencing inside the plan corpus is exactly the kind of thing this rune is good at, and the existing `{% ref %}` rune already does a lightweight version of it.
 
