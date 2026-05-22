@@ -38,6 +38,8 @@ The architecture mirrors xref exactly: `xref` resolves an ID to a **URL**; `expa
 
 **One source of truth for presentation.** expand wraps the substituted content but does not construct its own header. The embedded rune (plan rune, character rune, etc.) renders itself exactly as it would standalone, plus expand's thin wrapper. Status badges, titles, structure — all come from the embedded rune's own output. No second presentation layer to drift.
 
+**Neutral conventions for cross-cutting behavior.** TOC isolation and heading-ID namespacing are driven by a neutral `data-outline-scope` attribute that any rune can set — not by expand-specific markers. The TOC walker and heading-ID walker consume the attribute generically; expand is one of several potential producers (future asides, sidenotes, quotes, panels, drawers may all opt into the same convention). Keeps coupling out of cross-cutting machinery.
+
 -----
 
 ## Authoring Surface
@@ -89,6 +91,7 @@ View spec
          data-rune="expand"
          data-entity-id="SPEC-023"
          data-entity-type="spec"
+         data-outline-scope="SPEC-023"
          data-canonical-href="https://trace.refrakt.md/user/repo/specs/SPEC-023">
 
   <!-- The full rendered output of the embedded plan rune,
@@ -104,6 +107,7 @@ View spec
          data-rune="expand"
          data-entity-id="SPEC-023"
          data-entity-type="spec"
+         data-outline-scope="SPEC-023"
          data-canonical-href="https://trace.refrakt.md/user/repo/specs/SPEC-023">
 
   <section class="rf-spec" data-status="accepted">
@@ -128,6 +132,7 @@ Data attributes (all on the wrapper):
 - `data-rune="expand"`
 - `data-entity-id` — the resolved entity's ID
 - `data-entity-type` — the entity type (`spec`, `character`, etc.)
+- `data-outline-scope` — value set to the entity ID; marker for the neutral TOC-isolation + heading-ID-namespacing convention (see Heading Handling)
 - `data-canonical-href` — mirrors the canonical link's `href` for tooling
 - `data-source` — `"registry"` (entity was found in registry) — same convention as xref
 
@@ -161,9 +166,9 @@ For each `{% expand %}` placeholder found during postProcess:
    extractor couldn't locate the entity's content in the parsed AST. The
    file may have been edited out-of-sync with the registry.
    ```
-7. **Heading processing**: walk the extracted subtree. For each `heading` node, namespace its `id` attribute with the `expand-{entityId}--` prefix. If `level=N` was set on the expand rune, also shift the heading level by `N - 1` (clamping at H6 with a build warning, see Heading Handling below).
+7. **Heading processing**: applied by the generic heading-ID walker (not expand-specific) once the wrapper has `data-outline-scope` set. Each `heading` node's `id` is prefixed with `{scope-value}--` (e.g., `SPEC-023--`). If `level=N` was set on the expand rune, expand additionally shifts the heading level by `N - 1` (clamping at H6 with a build warning, see Heading Handling below).
 8. **Cycle check**: if the resolved `(type, id)` is already in the current resolution stack, fail with the cycle path.
-9. **Substitute**: replace the `expand` placeholder with the (heading-processed) extracted subtree, wrapped in `.rf-expand` markup. The `data-rune="expand"` attribute on the wrapper is the marker the TOC builder uses to skip embedded headings.
+9. **Substitute**: replace the `expand` placeholder with the (heading-processed) extracted subtree, wrapped in `.rf-expand` markup. `data-outline-scope` on the wrapper (set to the entity ID) is the neutral marker the TOC walker and the heading-ID walker both honor.
 10. **Canonical-link resolution**: resolve the entity's canonical URL via the standard xref resolver chain ({% ref "SPEC-065" /%}: registry `sourceUrl` → patterns → unresolved). Set `data-canonical-href` on the wrapper regardless of the `canonical` attribute value — themes and tooling can always reach the URL. When `canonical=true`, additionally render a `.rf-expand__canonical-link` `<a>` element with the resolved `href`. When `canonical=true` *and* the URL resolves unresolved (no registry hit, no pattern match), render the link with `rf-xref--unresolved` styling (or omit the visible link — see Open Questions).
 
 The substituted subtree is then re-processed by the host page's normal transform pipeline — embedded plan runes execute their own transforms, embedded refs resolve via the same xref chain, etc. expand doesn't pre-resolve any of that; it just provides the embedded AST as a peer of inline content.
@@ -178,32 +183,36 @@ Embedded entities are *quoted documents*, not subsections of the host. An embedd
 
 Embedded headings retain their natural levels. A spec's H1 stays H1, its H2s stay H2s. This is structurally correct — HTML5 sectioning content (`<section>`, `<article>`, `<dialog>`) scopes headings to their containing element, so an H1 inside `.rf-expand` (or inside a drawer's `<dialog>`) represents the heading of *that section*, not the document root. Screen readers and the modern outline algorithm handle this correctly.
 
-### 2. TOC builder filters expand contents
+### 2. TOC builder respects `data-outline-scope`
 
-The host page's TOC walker (used by `{% toc %}` and similar tooling) skips any `heading` node descended from a `data-rune="expand"` wrapper. The host's TOC reflects only the host's structure; the embed's headings never appear in it.
+The host page's TOC walker (used by `{% toc %}` and similar tooling) skips any `heading` node descended from an element with a `data-outline-scope` attribute. The host's TOC reflects only the host's structure; the embed's headings never appear in it.
 
-This is a TOC-builder concern, not an expand concern per se — the filter is applied at TOC walk time. expand just sets up the marker (`data-rune="expand"` on the wrapper); the TOC machinery does the skipping.
+`data-outline-scope` is a *neutral convention*, not an expand-specific marker. The attribute means "this subtree is a sub-outline boundary"; the TOC walker doesn't need to know about expand or any other rune. Other runes can adopt the same attribute and get the same behavior — a future `{% sidenote %}`, `{% aside %}`, or `{% quote %}` rune that contains its own headings can set `data-outline-scope` and be TOC-isolated automatically. Drawers (rendered as `<dialog>`) can set it too for explicit isolation, even though `<dialog>` is already a sectioning root semantically.
 
-### 3. Heading IDs are namespaced
+expand sets `data-outline-scope` on its wrapper, with the value set to the resolved entity's ID (e.g., `data-outline-scope="SPEC-023"`).
 
-Heading anchor IDs inside an expand wrapper are prefixed with `expand-{entityId}--`:
+### 3. Heading IDs are namespaced via the scope value
+
+Heading anchor IDs inside an element with `data-outline-scope` are prefixed with the scope value plus `--`:
 
 ```html
-<section class="rf-expand" data-entity-id="SPEC-023">
+<section class="rf-expand" data-outline-scope="SPEC-023" data-entity-id="SPEC-023">
   <section class="rf-spec">
-    <h1 id="expand-SPEC-023--auth-system">Auth system</h1>
-    <h2 id="expand-SPEC-023--acceptance-criteria">Acceptance criteria</h2>
+    <h1 id="SPEC-023--auth-system">Auth system</h1>
+    <h2 id="SPEC-023--acceptance-criteria">Acceptance criteria</h2>
     …
   </section>
 </section>
 ```
 
+The same generic mechanism: a heading-ID walker sees `data-outline-scope` on an ancestor element and prefixes the ID accordingly. expand doesn't own the namespacing logic — it just sets the scope attribute.
+
 Two consequences:
 
-- A host page with its own "Acceptance criteria" heading and an embedded spec with the same heading text don't collide on ID — host gets `#acceptance-criteria`, embed gets `#expand-SPEC-023--acceptance-criteria`.
-- Deep links into embedded content are possible: `/host-page#expand-SPEC-023--acceptance-criteria` points at the specific heading within the embed.
+- A host page with its own "Acceptance criteria" heading and an embedded spec with the same heading text don't collide on ID — host gets `#acceptance-criteria`, embed gets `#SPEC-023--acceptance-criteria`.
+- Deep links into embedded content are possible: `/host-page#SPEC-023--acceptance-criteria` points at the specific heading within the embed.
 
-ID normalization (kebab-case, ASCII slug, etc.) follows the standard heading-ID conventions for the suffix portion; the `expand-{entityId}--` prefix is added by expand during substitution.
+ID normalization (kebab-case, ASCII slug, etc.) follows the standard heading-ID conventions for the suffix portion; the prefix is the literal value of the nearest enclosing `data-outline-scope` attribute.
 
 ### Optional explicit demotion (`level=`)
 
@@ -315,9 +324,11 @@ New file `packages/runes/src/tags/expand.ts`, following xref's two-phase pattern
 - [ ] Source-file content is cached per build (multiple expands of entities from the same file = one parse)
 - [ ] Extractor returning null fails the build with "extractor returned no content"
 - [ ] Embedded heading levels are preserved by default (no demotion when `level=` is unset)
-- [ ] All headings inside `.rf-expand` get IDs prefixed with `expand-{entityId}--` (e.g., `expand-SPEC-023--acceptance-criteria`)
-- [ ] Heading IDs use the standard slugifier for the suffix portion; the prefix is added by expand during substitution
-- [ ] TOC builder (used by `{% toc %}` and similar tooling) skips headings descended from `data-rune="expand"` wrappers
+- [ ] expand wrapper carries `data-outline-scope="{entityId}"` (e.g., `data-outline-scope="SPEC-023"`)
+- [ ] The neutral `data-outline-scope` convention is consumed by two generic walkers, not by expand-specific code
+- [ ] Heading-ID walker prefixes IDs of headings inside any `data-outline-scope` subtree with `{scope-value}--` (e.g., `SPEC-023--acceptance-criteria`)
+- [ ] Heading IDs use the standard slugifier for the suffix portion
+- [ ] TOC walker (used by `{% toc %}` and similar tooling) skips headings descended from any element with `data-outline-scope` set, regardless of which rune set it
 - [ ] `level=N` attribute opts into explicit demotion: headings shift by `N - 1` while preserving relative hierarchy
 - [ ] Demoted headings clamped at H6 emit a build warning naming source location and affected heading text
 - [ ] Lumina ships a default heading treatment for `.rf-expand h1`/`h2`/etc. that visually distinguishes embedded headings without altering their semantic level
