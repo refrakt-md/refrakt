@@ -214,16 +214,28 @@ Two consequences:
 
 ID normalization (kebab-case, ASCII slug, etc.) follows the standard heading-ID conventions for the suffix portion; the prefix is the literal value of the nearest enclosing `data-outline-scope` attribute.
 
-### Optional explicit demotion (`level=`)
+### Optional explicit demotion (`level=`) — merges embed into host outline
 
-For the rare case where an embed is genuinely meant to act as a sub-section of the host — say, a layout file that embeds a shared "section template" entity that should be styled as a sub-section — the author can opt in with `level=N`. This demotes all headings in the embedded subtree by `N - 1`:
+For the rare case where an embed is genuinely meant to act as a sub-section of the host — say, a layout file that embeds a shared "section template" entity that should be styled as a sub-section — the author can opt in with `level=N`. This signals a different intent: the embed is no longer a quoted document; it's authored sub-content.
 
-| `level=` | H1 → | H2 → | H3 → |
-|----------|------|------|------|
-| unset (default) | H1 | H2 | H3 |
-| `1` | H1 | H2 | H3 |
-| `2` | H2 | H3 | H4 |
-| `3` | H3 | H4 | H5 |
+When `level=N` is set, **expand does not emit `data-outline-scope`**. Three consequences follow:
+
+1. **TOC walker includes the embedded headings.** They appear in the host's TOC as sub-section entries, which is what the author wants when treating the embed as part of their structure.
+2. **Heading IDs go through the normal slugifier** (no scope-value prefix). Authors accept the same ID-collision risk they'd have if they'd authored the content inline. A future heading-uniqueness linter would surface real collisions; that's a generic concern, not expand-specific.
+3. **Heading levels are shifted by `N - 1`** so the embed's top heading becomes `Hn`.
+
+The two modes — peer-document (default) and sub-section (`level=` set) — are deliberately a binary choice. The orthogonal case (demote visually but stay TOC-isolated) is better handled in CSS by targeting `.rf-expand h1`, `.rf-expand h2`, etc., than by expanding the attribute surface.
+
+Demotion table:
+
+| `level=` | data-outline-scope | TOC includes? | H1 → | H2 → | H3 → |
+|----------|-------------------|---------------|------|------|------|
+| unset (default) | set to entity ID | no (isolated) | H1 | H2 | H3 |
+| `1` | not emitted | yes (sub-section) | H1 | H2 | H3 |
+| `2` | not emitted | yes (sub-section) | H2 | H3 | H4 |
+| `3` | not emitted | yes (sub-section) | H3 | H4 | H5 |
+
+(Note: `level=1` is effectively "merge into host outline without level shift" — same TOC behavior as level=2/3, but no demotion of the headings themselves. Rare but valid.)
 
 When demotion is requested and would push headings past H6, clamp to H6 with a build warning:
 
@@ -324,11 +336,14 @@ New file `packages/runes/src/tags/expand.ts`, following xref's two-phase pattern
 - [ ] Source-file content is cached per build (multiple expands of entities from the same file = one parse)
 - [ ] Extractor returning null fails the build with "extractor returned no content"
 - [ ] Embedded heading levels are preserved by default (no demotion when `level=` is unset)
-- [ ] expand wrapper carries `data-outline-scope="{entityId}"` (e.g., `data-outline-scope="SPEC-023"`)
+- [ ] expand wrapper carries `data-outline-scope="{entityId}"` **only when `level=` is unset** (peer-document mode)
+- [ ] When `level=` is set, `data-outline-scope` is not emitted; the embed participates in the host outline as authored sub-content
 - [ ] The neutral `data-outline-scope` convention is consumed by two generic walkers, not by expand-specific code
 - [ ] Heading-ID walker prefixes IDs of headings inside any `data-outline-scope` subtree with `{scope-value}--` (e.g., `SPEC-023--acceptance-criteria`)
-- [ ] Heading IDs use the standard slugifier for the suffix portion
+- [ ] When `level=` is set, heading IDs go through the normal slugifier (no prefix); ID collisions with host headings become the author's responsibility (caught by future heading-uniqueness lint, not by expand)
+- [ ] Heading IDs use the standard slugifier for the suffix portion (peer mode) or the full ID (sub-section mode)
 - [ ] TOC walker (used by `{% toc %}` and similar tooling) skips headings descended from any element with `data-outline-scope` set, regardless of which rune set it
+- [ ] When `level=` is set, embedded headings appear in the host TOC at their demoted level
 - [ ] `level=N` attribute opts into explicit demotion: headings shift by `N - 1` while preserving relative hierarchy
 - [ ] Demoted headings clamped at H6 emit a build warning naming source location and affected heading text
 - [ ] Lumina ships a default heading treatment for `.rf-expand h1`/`h2`/etc. that visually distinguishes embedded headings without altering their semantic level
