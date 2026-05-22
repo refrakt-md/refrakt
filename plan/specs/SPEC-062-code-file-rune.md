@@ -208,7 +208,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 ## Out of Scope
 
 - **Remote file fetching** (HTTPS URLs, `github://`, etc.) — file system only. Remote fetching has its own concerns (caching, network failures, build determinism) that don't belong here.
-- **Watching the file for changes during dev** — relies on the standard content-pipeline HMR; if the host page rebuilds, the embedded file is re-read. Real-time file watching for embedded files is a future enhancement.
+- **HMR for referenced files during dev** — deferred to {% ref "SPEC-068" /%}. In v1 the host page does *not* auto-refresh when a referenced source file changes outside the content tree; the author triggers a rebuild by saving any file inside the content tree (or restarting the dev server). Production builds are unaffected — every referenced file is read once at build time and committed to the output. Real dependency-tracked watching is a follow-up spec, intentionally informed by real usage shapes from this rune before committing to a per-adapter contract.
 - **Multiple disjoint line ranges** (`lines="5-10,20-25"`) — YAGNI. One contiguous range is sufficient for the common case.
 - **Dedent** — trimming common leading whitespace. Useful when extracting from indented blocks (a method body inside a class). Defer; can be added as a `dedent` attribute later.
 - **Diff rendering** (showing two files side-by-side or as a diff) — different rune, different concern.
@@ -238,6 +238,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 - {% ref "SPEC-060" /%} — drawer rune (primary composition target for view-source)
 - {% ref "SPEC-061" /%} — content variable surface (provides `$file.path` for the view-source pattern)
 - {% ref "SPEC-063" /%} — configurable partial roots (potential resolver share)
+- {% ref "SPEC-068" /%} — adapter HMR contract for arbitrary file dependencies (deferred follow-up that closes the dev-experience gap)
 - `packages/lumina/styles/runes/code-block.css` — existing code-block CSS to compose with
 - Niwaki syntax highlighting documentation — the highlighting layer this rune feeds into
 

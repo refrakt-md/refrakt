@@ -209,7 +209,7 @@ export interface Plugin {
 
 **What about a `__` (dunder) convention for "private" plugin partials not meant for direct user reference?** Probably overkill. Plugins document their public namespace surface; private files just live elsewhere in the package without being registered.
 
-**How does this interact with partial caching / HMR?** Partial files in registered roots should trigger rebuilds of pages that include them. The content-pipeline HMR already watches the site's `_partials/`; extending the watcher to also cover registered roots is a sub-task here.
+**How does this interact with partial caching / HMR?** Deferred to {% ref "SPEC-068" /%}. In v1, partials in registered roots are not watched — editing one doesn't trigger a rebuild of pages that include it (the author saves any file inside the content tree, or restarts the dev server, to trigger re-resolution). Production builds are unaffected. Real dependency-tracked watching for registered partial roots is a follow-up spec shared with `code-file` from {% ref "SPEC-062" /%}, intentionally deferred so the contract can be informed by real usage from both consumers.
 
 **Should there be a `dependsOn` field for partials that themselves include other partials?** Markdoc handles transitive includes natively (a partial can `{% partial file="x" /%}` another partial). Make sure cross-namespace transitive includes work (a `plan:foo.md` partial that includes `shared:bar.md`).
 
@@ -219,6 +219,7 @@ export interface Plugin {
 
 - {% ref "SPEC-064" /%} — plan plugin unconditional entity registration (downstream consumer for the `plan:` namespace)
 - {% ref "SPEC-066" /%} — expand rune (the rune that consumes plan-registered entities for inline embedding)
+- {% ref "SPEC-068" /%} — adapter HMR contract for arbitrary file dependencies (deferred follow-up covering HMR for registered roots)
 - `packages/content/src/content-tree.ts:124` — current `_partials/` loading
 - `packages/content/src/site.ts:131` — current Markdoc partial registration
 - `packages/runes/src/plugins.ts` — `loadPlugin` / `mergePlugins` extension points
