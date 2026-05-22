@@ -4,7 +4,7 @@
 
 Extend Markdoc partial resolution to support multiple *named roots* configured in `refrakt.config.json` and registered by plugins. Backwards-compatible: unprefixed partial names continue to resolve from `_partials/` at each site's content root; prefixed names use a `namespace:filename` syntax that resolves from the named root.
 
-The motivating use cases are (a) sharing partials across sites in a multi-site monorepo, and (b) enabling plugins to ship content snippets reachable from user sites — the latter unblocks the `plan-ref` rune in {% ref "SPEC-064" /%}.
+The motivating use cases are (a) sharing partials across sites in a multi-site monorepo, and (b) enabling plugins to ship content snippets reachable from user sites — the latter is what unblocks the `expand` rune in {% ref "SPEC-066" /%} (via the plan plugin's registration work in {% ref "SPEC-064" /%}), since plan content lives outside the site content tree.
 
 ## Problem
 
@@ -14,7 +14,7 @@ Partials today resolve from a single `_partials/` directory at each site's conte
 
 **Plugin-shipped snippets.** A plugin (the plan plugin, design-system docs, etc.) may want to expose content files that user sites embed via partial-style transclusion. With no extension point for "additional partial roots," plugins can't participate in inclusion at all — they'd need a parallel rune.
 
-**Project-wide partials outside the site tree.** Things like legal boilerplate, shared examples, or — for the plan-ref case — the `plan/` directory itself. None of these live under a site's `_partials/`, but they're conceptually the same primitive: "a Markdown file you can pull into another."
+**Project-wide partials outside the site tree.** Things like legal boilerplate, shared examples, or — for the expand-rune case — the `plan/` directory itself. None of these live under a site's `_partials/`, but they're conceptually the same primitive: "a Markdown file you can pull into another."
 
 The right shape is one inclusion system with a broader resolution domain, not a parallel mechanism that competes with `{% partial %}`.
 
@@ -217,7 +217,8 @@ export interface Plugin {
 
 ## References
 
-- {% ref "SPEC-064" /%} — plan-ref rune (primary downstream consumer)
+- {% ref "SPEC-064" /%} — plan plugin unconditional entity registration (downstream consumer for the `plan:` namespace)
+- {% ref "SPEC-066" /%} — expand rune (the rune that consumes plan-registered entities for inline embedding)
 - `packages/content/src/content-tree.ts:124` — current `_partials/` loading
 - `packages/content/src/site.ts:131` — current Markdoc partial registration
 - `packages/runes/src/plugins.ts` — `loadPlugin` / `mergePlugins` extension points

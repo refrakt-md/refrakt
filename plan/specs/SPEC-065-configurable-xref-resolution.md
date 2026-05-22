@@ -4,7 +4,7 @@
 
 Extend the xref postProcess resolver with a configurable URL-template layer so refs to entities outside the local `EntityRegistry` can resolve to real links via project config. Backwards-compatible with the existing registry-based resolution; entirely declarative and third-party-neutral. Refrakt itself stays out of the business of knowing about specific external systems — users supply their own patterns.
 
-The motivating case is plan content hosted externally (refrakt trace, self-hosted plan publishers, hypothetical competitors), but the same mechanism cleanly handles GitHub issues, Linear tickets, RFCs, npm packages, Wikipedia entries, DOI citations, and anything else with a deterministic URL scheme. {% ref "SPEC-064" /%}'s plan-ref rune inherits this resolver behavior automatically — refs inside embedded plan content resolve via the same chain as refs anywhere else.
+The motivating case is plan content hosted externally (refrakt trace, self-hosted plan publishers, hypothetical competitors), but the same mechanism cleanly handles GitHub issues, Linear tickets, RFCs, npm packages, Wikipedia entries, DOI citations, and anything else with a deterministic URL scheme. The expand rune from {% ref "SPEC-066" /%} also consumes this chain for its canonical-link affordance — entities embedded inline get a "View canonical" link resolved by the same patterns that drive `{% ref %}`.
 
 ## Problem
 
@@ -293,7 +293,8 @@ After the existing registry exact-ID and name-match attempts (and before the unr
 
 ## References
 
-- {% ref "SPEC-064" /%} — plan-ref rune (motivating use case; inherits this resolver chain)
+- {% ref "SPEC-066" /%} — expand rune (consumes this chain for canonical-link affordance)
+- {% ref "SPEC-064" /%} — plan plugin unconditional registration (motivating use case for non-locally-published plan content)
 - `packages/runes/src/tags/xref.ts` — current xref rune implementation
 - `packages/runes/src/xref-resolve.ts` — current postProcess resolver this spec extends
 - `packages/types/src/registry.ts` — `EntityRegistry` interface (existing first-pass resolution source)
