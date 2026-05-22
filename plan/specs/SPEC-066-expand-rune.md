@@ -54,13 +54,18 @@ The architecture mirrors xref exactly: `xref` resolves an ID to a **URL**; `expa
 {# Type-hint disambiguation when the same string matches multiple types #}
 {% expand "Veshra" type="character" /%}
 
-{# Headline composition — in-context preview in a drawer #}
+{# Show a visible "View canonical" link — useful when the embed is a peek
+   and the canonical lives elsewhere (e.g. on trace) #}
+{% expand "SPEC-023" canonical=true /%}
+
+{# Headline composition — in-context preview in a drawer, with
+   canonical link to bridge back to the full view #}
 {% drawer title="SPEC-023" shortcut="s" %}
 View spec
 
 ---
 
-{% expand "SPEC-023" /%}
+{% expand "SPEC-023" canonical=true /%}
 {% /drawer %}
 ```
 
@@ -71,12 +76,14 @@ View spec
 | `primary` | string | yes | — | Entity ID or name to expand. Same shape as xref's primary. |
 | `level` | number | no | `2` | Top heading level for the embedded content. All headings in the embed are demoted by `level - 1`. |
 | `type` | string | no | — | Entity type hint for disambiguation. Constrains both registry lookup and (informally) extractor selection. |
+| `canonical` | boolean | no | `false` | When `true`, render a visible `.rf-expand__canonical-link` linking to the entity's canonical URL (resolved via the xref chain). When `false`, no visible affordance — but `data-canonical-href` on the wrapper is still populated for themes and tooling. |
 
 -----
 
 ## Output Contract
 
 ```html
+<!-- Default — canonical=false, no visible link, data attribute populated -->
 <section class="rf-expand"
          data-rune="expand"
          data-entity-id="SPEC-023"
@@ -85,6 +92,19 @@ View spec
 
   <!-- The full rendered output of the embedded plan rune,
        with heading levels demoted by (level - 1). -->
+  <section class="rf-spec" data-status="accepted">
+    <header class="rf-spec__header">…</header>
+    <div class="rf-spec__body">…</div>
+  </section>
+</section>
+
+<!-- With canonical=true — visible link appended after the embedded content -->
+<section class="rf-expand"
+         data-rune="expand"
+         data-entity-id="SPEC-023"
+         data-entity-type="spec"
+         data-canonical-href="https://trace.refrakt.md/user/repo/specs/SPEC-023">
+
   <section class="rf-spec" data-status="accepted">
     <header class="rf-spec__header">…</header>
     <div class="rf-spec__body">…</div>
@@ -100,7 +120,7 @@ View spec
 BEM:
 
 - `.rf-expand` — wrapper around the embedded entity
-- `.rf-expand__canonical-link` — affordance linking to the entity's canonical URL
+- `.rf-expand__canonical-link` — optional affordance linking to the entity's canonical URL (rendered only when `canonical=true`)
 
 Data attributes (all on the wrapper):
 
@@ -143,7 +163,7 @@ For each `{% expand %}` placeholder found during postProcess:
 7. **Heading demotion**: walk the extracted subtree and shift all `heading` nodes by `level - 1` (see below).
 8. **Cycle check**: if the resolved `(type, id)` is already in the current resolution stack, fail with the cycle path.
 9. **Substitute**: replace the `expand` placeholder with the (possibly-demoted) extracted subtree, wrapped in `.rf-expand` markup.
-10. **Canonical-link resolution**: resolve the entity's canonical URL via the standard xref resolver chain ({% ref "SPEC-065" /%}: registry `sourceUrl` → patterns → unresolved). Set `data-canonical-href` and the `__canonical-link` `href`. If unresolved, render the canonical-link with `rf-xref--unresolved` styling (or omit it — see Open Questions).
+10. **Canonical-link resolution**: resolve the entity's canonical URL via the standard xref resolver chain ({% ref "SPEC-065" /%}: registry `sourceUrl` → patterns → unresolved). Set `data-canonical-href` on the wrapper regardless of the `canonical` attribute value — themes and tooling can always reach the URL. When `canonical=true`, additionally render a `.rf-expand__canonical-link` `<a>` element with the resolved `href`. When `canonical=true` *and* the URL resolves unresolved (no registry hit, no pattern match), render the link with `rf-xref--unresolved` styling (or omit the visible link — see Open Questions).
 
 The substituted subtree is then re-processed by the host page's normal transform pipeline — embedded plan runes execute their own transforms, embedded refs resolve via the same xref chain, etc. expand doesn't pre-resolve any of that; it just provides the embedded AST as a peer of inline content.
 
@@ -267,7 +287,11 @@ New file `packages/runes/src/tags/expand.ts`, following xref's two-phase pattern
 - [ ] Cycle detection: `(type, id)` stack tracks open expansions; duplicate push fails with cycle path
 - [ ] Refs (`{% xref %}` / `{% ref %}`) inside embedded content do not participate in cycle detection
 - [ ] Output wrapper has `.rf-expand` class with `data-rune`, `data-entity-id`, `data-entity-type`, `data-canonical-href`, `data-source="registry"`
+- [ ] `data-canonical-href` on the wrapper is populated whenever the xref chain resolves, regardless of the `canonical` attribute value
+- [ ] `canonical=true` renders a visible `.rf-expand__canonical-link` `<a>` element
+- [ ] `canonical=false` (default) does not render a visible link element
 - [ ] `.rf-expand__canonical-link` href resolves via the xref chain ({% ref "SPEC-065" /%})
+- [ ] When `canonical=true` and the URL is unresolved, the link element renders with `rf-xref--unresolved` styling (preserving the affordance while signaling the resolution gap)
 - [ ] Refs and other runes within the substituted content resolve normally via the host page's pipeline
 - [ ] Composes with drawer ({% ref "SPEC-060" /%}) — `{% drawer %}{% expand %}{% /drawer %}` works end-to-end
 - [ ] Composes with `{% expand %}` on its own (no drawer) in any host context
@@ -301,7 +325,9 @@ New file `packages/runes/src/tags/expand.ts`, following xref's two-phase pattern
 
 Recommend **expand first, xref second**. Single resolution pass for refs, regardless of whether they live in original or substituted content.
 
-**What should the canonical-link affordance show when the URL is unresolved?** Options: (a) omit the link entirely; (b) render with `rf-xref--unresolved` styling (visible but not clickable); (c) show as plain text with the entity ID. Recommend (b) — preserves the affordance's existence (reader knows there's a canonical somewhere) while signaling the resolution gap.
+**What should the `canonical=true` link show when the URL is unresolved?** Options: (a) omit the link entirely (treat as `canonical=false`); (b) render with `rf-xref--unresolved` styling (visible but not clickable); (c) show as plain text with the entity ID. Current recommendation is (b) — preserves the affordance's existence (reader knows there's a canonical somewhere) while signaling the resolution gap. Authors who'd rather suppress entirely can leave `canonical=false` for that entity.
+
+**Should there be a project-level config to flip the `canonical` default?** A site that consistently wants canonical links visible might want to set it once rather than per-rune. Tempting but adds surface; first ship the per-instance attribute and revisit if real demand surfaces.
 
 **Should the wrapper include a "back to host" affordance** when the embed lives in a drawer or other framing context? Tempting but couples expand to context (drawer-aware vs not). Recommend no — let the framing context (drawer) provide its own close affordance.
 
