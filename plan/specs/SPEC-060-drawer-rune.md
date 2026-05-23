@@ -305,7 +305,7 @@ The drawer's CSS targets both `.rf-drawer` (in-flow state) and `dialog.rf-drawer
 - {% ref "SPEC-065" /%} — configurable xref resolution (the xref-as-trigger pattern; `data-target-type` extends SPEC-065's resolver)
 - {% ref "SPEC-066" /%} — expand rune (composes inside drawer bodies; the inline embed pattern)
 - {% ref "SPEC-061" /%} — page variables (`$file.path` for the view-source-of-current-page composition)
-- {% ref "SPEC-062" /%} — code-file rune (the view-source body in the canonical "page source drawer" example)
+- {% ref "SPEC-062" /%} — snippet rune (the view-source body in the canonical "page source drawer" example)
 - `packages/behaviors/` — pattern for progressive-enhancement runes (accordion, tabs)
 - `packages/runes/src/config.ts` — engine config schema (modifiers, structure injection)
 - `packages/lumina/styles/runes/` — reference CSS for existing runes

@@ -32,7 +32,7 @@ The architecture mirrors xref exactly: `xref` resolves an ID to a **URL**; `expa
 
 **Implicit embeddability.** If a registration includes `sourceFile` + `extract`, the entity is embeddable. If not, expand fails with a clear "type does not support embedding" error. No separate `embeddable: true` flag; the presence of extraction information *is* the signal.
 
-**Local files only.** expand reads from the file system, sandboxed to the project root (same security boundary as code-file from {% ref "SPEC-062" /%}). No remote source fetching at build time. Users embedding plan content hosted externally on a third-party service (trace, etc.) need the source files locally; xref handles the external-URL case for refs without requiring local source.
+**Local files only.** expand reads from the file system, sandboxed to the project root (same security boundary as snippet from {% ref "SPEC-062" /%}). No remote source fetching at build time. Users embedding plan content hosted externally on a third-party service (trace, etc.) need the source files locally; xref handles the external-URL case for refs without requiring local source.
 
 **Canonical-link via the xref resolver.** The `.rf-expand` wrapper includes a canonical-link affordance pointing at the entity's authoritative URL. That URL is resolved via the same chain as xref: registry `sourceUrl` → SPEC-065 patterns → unresolved. So an entity embedded inline with `expand` and linked elsewhere with `ref` produces a consistent canonical URL.
 
@@ -332,7 +332,7 @@ New file `packages/runes/src/tags/expand.ts`, following xref's two-phase pattern
 - [ ] Entities without `sourceFile` + `extract` produce a "does not support embedding" build error
 - [ ] Page entities (registered by core) cannot be expanded — produce the not-embeddable error
 - [ ] `type` attribute constrains registry lookup to the named type
-- [ ] `sourceFile` is read with the same sandbox rules as code-file ({% ref "SPEC-062" /%}); traversal escape rejected
+- [ ] `sourceFile` is read with the same sandbox rules as snippet ({% ref "SPEC-062" /%}); traversal escape rejected
 - [ ] Source-file content is cached per build (multiple expands of entities from the same file = one parse)
 - [ ] Extractor returning null fails the build with "extractor returned no content"
 - [ ] Embedded heading levels are preserved by default (no demotion when `level=` is unset)
@@ -398,7 +398,7 @@ Recommend **expand first, xref second**. Single resolution pass for refs, regard
 
 **Should `expand` set `data-source="pattern"` or any indicator** when the entity was found via name-match rather than exact ID match? Symmetric with xref's source attribute. Recommend yes for parity.
 
-**Performance: source-file caching across pages.** If one source file (`plan/specs/SPEC-023-foo.md`) is expanded on twenty different pages, we want to parse it once, not twenty times. Per-build cache keyed by `sourceFile` handles this — same as code-file's caching.
+**Performance: source-file caching across pages.** If one source file (`plan/specs/SPEC-023-foo.md`) is expanded on twenty different pages, we want to parse it once, not twenty times. Per-build cache keyed by `sourceFile` handles this — same as snippet's caching.
 
 **Build-time vs. content-load-time extraction.** Could the plugin's `extract` be called once at content-load (when entities are registered) rather than per-expansion? It would let the registration store the pre-extracted AST and skip per-call extraction. Tradeoff: eager memory cost vs. lazy compute cost. Recommend lazy (per-expand call, but cached) — keeps memory bounded for projects with many registered entities that aren't all embedded.
 
@@ -411,7 +411,7 @@ Recommend **expand first, xref second**. Single resolution pass for refs, regard
 - {% ref "SPEC-060" /%} — drawer rune (primary composition target)
 - {% ref "SPEC-064" /%} — plan plugin unconditional entity registration (companion spec — the registration work that makes plan entities embeddable)
 - {% ref "SPEC-065" /%} — configurable xref resolution (used for canonical-link affordance)
-- {% ref "SPEC-062" /%} — code-file rune (shared sandbox + source-caching machinery)
+- {% ref "SPEC-062" /%} — snippet rune (shared sandbox + source-caching machinery)
 - `packages/runes/src/tags/xref.ts` — symmetric existing rune; expand mirrors its two-phase structure
 - `packages/runes/src/xref-resolve.ts` — postProcess resolver pattern this spec follows
 

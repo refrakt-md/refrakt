@@ -36,13 +36,13 @@ A site-as-showcase introduction would close the gap between "I read the marketin
 
 **The recursive drawer moment.** The canonical demo: an xref to `SPEC-060` opens a drawer whose body is `{% expand "SPEC-060" /%}`. The drawer rendering its own spec. Sets the tone for everything that follows.
 
-**Site-wide `·` shortcut.** Every page has a `.` shortcut (configurable) that opens "how this page is built" — a drawer with `{% code-file path=$file.path lang="md" /%}`. Discovered once on the intro article, it works everywhere. The reader tries it on the next page they visit and it works there too. The "this is a system, not a demo" moment.
+**Site-wide `·` shortcut.** Every page has a `.` shortcut (configurable) that opens "how this page is built" — a drawer with `{% snippet path=$file.path lang="md" /%}`. Discovered once on the intro article, it works everywhere. The reader tries it on the next page they visit and it works there too. The "this is a system, not a demo" moment.
 
 **Plan in production.** A real work item embedded inline. Click the spec it sources from — drawer opens with the full spec. Click the PR link — out to GitHub. Below: the resulting page the work shipped. Plan, code, output as one continuous artifact.
 
 **Per-plugin glances.** Short pointers into each plugin's natural habitat ("if you write fiction, look at storytelling"; "if you build product pages, look at marketing"). Each link goes to a real page using the plugin in earnest.
 
-**"What you can't do anywhere else."** Concentrated wow: a single section using 6–8 runes composed together (nav + drawer + expand + code-file + xref + tabs + spec embed) to make one cohesive narrative. The "okay, this is genuinely different" moment.
+**"What you can't do anywhere else."** Concentrated wow: a single section using 6–8 runes composed together (nav + drawer + expand + snippet + xref + tabs + spec embed) to make one cohesive narrative. The "okay, this is genuinely different" moment.
 
 **Outro: the seams.** A small `[show seams]` toggle that outlines every rune on the page with a tag identifying it and links to its doc. Museum-mode for the curious. Some readers turn it on once and turn it off; others turn it on and never turn it off because now they see refrakt everywhere they look.
 
@@ -54,7 +54,7 @@ Blocked on:
 
 - {% ref "SPEC-060" /%} — drawer rune (the recursive-drawer moment, the `·` shortcut)
 - {% ref "SPEC-066" /%} — expand rune (embedded specs inside drawers)
-- {% ref "SPEC-062" /%} — code-file rune (view-source affordance per page)
+- {% ref "SPEC-062" /%} — snippet rune (view-source affordance per page)
 - {% ref "SPEC-061" /%} — page variables (`$file.path` for view-source)
 - {% ref "SPEC-065" /%} — configurable xref resolution (the `data-target-type` convention that wires xrefs to drawers)
 - {% ref "SPEC-064" /%} — plan plugin unconditional registration (plan content as registry entities so xrefs to specs work site-wide)
@@ -86,7 +86,7 @@ Once those land, this spec gets promoted to `draft` and the beats above get fles
 
 - {% ref "SPEC-060" /%} — drawer rune
 - {% ref "SPEC-066" /%} — expand rune
-- {% ref "SPEC-062" /%} — code-file rune
+- {% ref "SPEC-062" /%} — snippet rune
 - {% ref "SPEC-061" /%} — page variables
 - {% ref "SPEC-065" /%} — configurable xref resolution
 - {% ref "SPEC-064" /%} — plan plugin unconditional registration

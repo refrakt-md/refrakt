@@ -2,11 +2,11 @@
 
 # Content variable surface — completing `$page`, `$file`, and rationalizing the namespaces
 
-Audit and complete the author-facing Markdoc variable surface exposed by refrakt's content pipeline. The pipeline today exposes `$frontmatter.*`, a partial `$page.*`, and a partial `$file.*` — but `$page.*` is undersized (no `dir`, `slug`, `title`, and the existing `filePath` key is misnamed), and `$file.*` lacks a project-root file path that consumers like the code-file rune need for disk-relative resolution. Extend both namespaces, document the whole public surface clearly, and settle the convention that double-underscore-prefixed variables are pipeline internals.
+Audit and complete the author-facing Markdoc variable surface exposed by refrakt's content pipeline. The pipeline today exposes `$frontmatter.*`, a partial `$page.*`, and a partial `$file.*` — but `$page.*` is undersized (no `dir`, `slug`, `title`, and the existing `filePath` key is misnamed), and `$file.*` lacks a project-root file path that consumers like the snippet rune need for disk-relative resolution. Extend both namespaces, document the whole public surface clearly, and settle the convention that double-underscore-prefixed variables are pipeline internals.
 
 The page-vs-file split matters: `$page.*` describes the page as a *content artifact* (its place in the content tree, its URL, its slug); `$file.*` describes the source file as a *disk artifact* (where it lives on disk, when it was committed). The two have different roots of reference — `$page.path` is relative to the content directory, `$file.path` is relative to the project root — and consumers reach for whichever frame matches their concern.
 
-The headline motivation is the view-source pattern from {% ref "SPEC-062" /%} (which needs `$file.path` for code-file's project-root-sandboxed resolution), but the rationalization benefits every rune that wants page or file context.
+The headline motivation is the view-source pattern from {% ref "SPEC-062" /%} (which needs `$file.path` for snippet's project-root-sandboxed resolution), but the rationalization benefits every rune that wants page or file context.
 
 ## Problem
 
@@ -16,7 +16,7 @@ The variable surface today is partial and inconsistent.
 
 **`$page.filePath` is misnamed.** Every other path-like field in refrakt uses `path` (resolver inputs, file-walker outputs, plan filenames). `filePath` reads as "the path to some file" rather than "this page's path." Renaming aligns with the broader convention and reads more naturally in attribute interpolation.
 
-**`$file.*` lacks a project-root path.** It exposes `created` and `modified` — both about the file as a disk artifact — but not the file's actual disk location. Consumers like the code-file rune ({% ref "SPEC-062" /%}) resolve paths from project root for sandbox enforcement, and need a variable that returns a path in that frame of reference. `$page.path` is content-root-relative (correct for the content artifact framing), so it can't be used directly for code-file's view-source pattern. The two paths exist because there are two valid frames; both need to be exposed.
+**`$file.*` lacks a project-root path.** It exposes `created` and `modified` — both about the file as a disk artifact — but not the file's actual disk location. Consumers like the snippet rune ({% ref "SPEC-062" /%}) resolve paths from project root for sandbox enforcement, and need a variable that returns a path in that frame of reference. `$page.path` is content-root-relative (correct for the content artifact framing), so it can't be used directly for snippet's view-source pattern. The two paths exist because there are two valid frames; both need to be exposed.
 
 **The public surface isn't documented.** `$frontmatter.*` and `$file.*` are reachable from any page but only mentioned in scattered docs (`site/content/extend/plugin-authoring/authoring.md`, plan rune docs). New users discovering the variable system have no central reference.
 
@@ -153,7 +153,7 @@ Sourced from the file walker, which already tracks the absolute file path for ea
 
 **Why a separate path instead of normalizing `$page.path` to project-root?** Two reasons:
 
-1. **The two frames have different natural consumers.** URL-aware logic (nav scope, layout cascade, conditional content) cares about position in the content tree; sandboxed file consumers (code-file rune, future build-time include patterns) care about disk location. Forcing one frame on both consumer groups means every consumer needs string manipulation to get into the frame they want.
+1. **The two frames have different natural consumers.** URL-aware logic (nav scope, layout cascade, conditional content) cares about position in the content tree; sandboxed file consumers (snippet rune, future build-time include patterns) care about disk location. Forcing one frame on both consumer groups means every consumer needs string manipulation to get into the frame they want.
 
 2. **Markdoc doesn't support string interpolation in attribute values.** Patterns like `path="site/content/$page.path"` don't work — Markdoc resolves variables in attribute *values* but doesn't splice them into surrounding literals. Without a `concat()` helper (which is its own design choice and not currently registered), the only ergonomic path is to provide the variable in the right frame already.
 
@@ -161,7 +161,7 @@ Sourced from the file walker, which already tracks the absolute file path for ea
 
 ```markdoc
 {# Code-file from {% ref "SPEC-062" /%} — view-source pattern #}
-{% code-file path=$file.path lang="md" /%}
+{% snippet path=$file.path lang="md" /%}
 
 {# Hypothetical future: "edit this page" link to GitHub #}
 {% github-edit-link path=$file.path /%}
@@ -295,7 +295,7 @@ Layouts and partials are already rendered with the host page's `config.variables
 ## References
 
 - {% ref "SPEC-055" /%} — nav slug resolution (URL conventions, slug semantics)
-- {% ref "SPEC-062" /%} — code-file rune (primary consumer of `$page.path`)
+- {% ref "SPEC-062" /%} — snippet rune (primary consumer of `$page.path`)
 - `packages/content/src/site.ts:84–164` — current variable population
 - `packages/content/src/timestamps.ts` — `$file.*` source
 - `site/content/extend/plugin-authoring/authoring.md:181–182` — existing `$file.*` documentation

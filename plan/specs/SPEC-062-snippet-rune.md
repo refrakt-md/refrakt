@@ -1,10 +1,10 @@
 {% spec id="SPEC-062" status="draft" tags="runes, docs, code, transform" %}
 
-# Code-file rune
+# Snippet rune
 
-A rune that renders the contents of a file (path relative to the project root) as a syntax-highlighted code block. Solves the recurring documentation problem of keeping inline code examples in sync with actual source files, and incidentally enables the view-source-of-current-page pattern via `{% code-file path=$file.path /%}`.
+A rune that renders the contents of a file (path relative to the project root) as a syntax-highlighted code block. Solves the recurring documentation problem of keeping inline code examples in sync with actual source files, and incidentally enables the view-source-of-current-page pattern via `{% snippet path=$file.path /%}`.
 
-Lives in `@refrakt-md/docs` — code-embed-from-disk is a docs concern. Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, and depends on `$file.path` from {% ref "SPEC-061" /%} for the self-referential case. (Note: `$file.path` is the project-root-relative path, which matches code-file's project-root sandbox. `$page.path` exists too but is content-root-relative and the wrong frame for code-file's resolver.)
+Lives in `@refrakt-md/docs` — code-embed-from-disk is a docs concern. Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, and depends on `$file.path` from {% ref "SPEC-061" /%} for the self-referential case. (Note: `$file.path` is the project-root-relative path, which matches snippet's project-root sandbox. `$page.path` exists too but is content-root-relative and the wrong frame for snippet's resolver.)
 
 ## Problem
 
@@ -16,7 +16,7 @@ Documentation embeds code examples by copy-paste. The original source file lives
 
 Workarounds (build scripts that splice files into Markdown, custom shortcodes, manual sync rituals) are ad-hoc and project-specific. No primitive in the rune system covers "render this file's contents as a code block, syntax-highlighted, kept in sync at build time."
 
-The same primitive incidentally solves the view-source case (`path=$page.path`), the "show me my refrakt.config.json" case, and any other "embed this file" need.
+The same primitive incidentally solves the view-source case (`path=$file.path`), the "show me my refrakt.config.json" case, and any other "embed this file" need.
 
 -----
 
@@ -28,7 +28,7 @@ The same primitive incidentally solves the view-source case (`path=$page.path`),
 
 **Build-time resolution.** File reads happen during parse/transform. No runtime fetches, no `fs` calls in the browser. The output is a fully-rendered code block by the time it reaches the renderer.
 
-**Compose with existing code rendering.** Refrakt already has a code-block rendering path with syntax highlighting (Niwaki). The code-file rune produces the same output shape — it's the *source* (file contents vs. inline body) that differs, not the output.
+**Compose with existing code rendering.** Refrakt already has a code-block rendering path with syntax highlighting (Niwaki). The snippet rune produces the same output shape — it's the *source* (file contents vs. inline body) that differs, not the output.
 
 **Line ranges as first-class.** Real example files have boilerplate (imports, type declarations, surrounding context) before the interesting bit. Without `lines=`, the rune is useful 80% of the time; with it, useful always.
 
@@ -40,16 +40,16 @@ The same primitive incidentally solves the view-source case (`path=$page.path`),
 
 ```markdoc
 {# Embed a whole file #}
-{% code-file path="examples/button.svelte" /%}
+{% snippet path="examples/button.svelte" /%}
 
 {# Embed a line range #}
-{% code-file path="examples/button.svelte" lines="10-25" /%}
+{% snippet path="examples/button.svelte" lines="10-25" /%}
 
 {# View source of the current page #}
-{% code-file path=$file.path lang="md" title="This page" /%}
+{% snippet path=$file.path lang="md" title="This page" /%}
 
 {# Override inferred language #}
-{% code-file path="config/refrakt.json" lang="jsonc" /%}
+{% snippet path="config/refrakt.json" lang="jsonc" /%}
 ```
 
 ### Attributes
@@ -66,20 +66,20 @@ The same primitive incidentally solves the view-source case (`path=$page.path`),
 ## Output Contract
 
 ```html
-<figure class="rf-code-file" data-rune="code-file" data-source-path="examples/button.svelte">
-  <figcaption class="rf-code-file__title">examples/button.svelte</figcaption>
+<figure class="rf-snippet" data-rune="snippet" data-source-path="examples/button.svelte">
+  <figcaption class="rf-snippet__title">examples/button.svelte</figcaption>
   <!-- existing code-block rendering output -->
   <pre class="rf-code-block" data-lang="svelte"><code>...</code></pre>
 </figure>
 ```
 
 BEM:
-- `.rf-code-file` — outer wrapper
-- `.rf-code-file__title` — caption (only present when `title=` set)
+- `.rf-snippet` — outer wrapper
+- `.rf-snippet__title` — caption (only present when `title=` set)
 - Inner `pre/code` produced by existing code-block rendering
 
 Data attributes:
-- `data-rune="code-file"`
+- `data-rune="snippet"`
 - `data-source-path` — the resolved path (useful for tooling, "edit this file" buttons, etc.)
 - `data-lines` — the line range, if `lines=` set
 
@@ -106,7 +106,7 @@ Data attributes:
 ### Error format
 
 ```
-Error: code-file path "examples/missing.ts" cannot be resolved.
+Error: snippet path "examples/missing.ts" cannot be resolved.
 
 Resolved to: /project/examples/missing.ts
 Reason: file not found
@@ -144,7 +144,7 @@ Out of scope for v1 (see Out of Scope). Authors who need leading-whitespace trim
 
 ## Language Inference
 
-A file-extension → language map shared with refrakt's existing code-highlighting machinery:
+A file-extension → language map shared across the rune system:
 
 | Extension | Language |
 |-----------|----------|
@@ -162,24 +162,32 @@ A file-extension → language map shared with refrakt's existing code-highlighti
 | `.sh`, `.bash` | `bash` |
 | (others) | `text` (no highlighting) |
 
-The map should live in a shared module so the inspect tool, the contracts generator, and the rune all use the same table. `lang=` always overrides inference.
+The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/runes`. Consumers (the snippet rune in `plugins/docs/`, the inspect tool in `packages/cli/`, the contracts generator, future runes wanting extension inference) import from there.
+
+`@refrakt-md/runes` is the right home because:
+- It's already a dependency of every consumer (plugins, CLI, inspect tooling).
+- Plugins can import from runes; runes can't import from plugins (dependency direction is correct).
+- It's "rune-shaped knowledge" — sits alongside the existing rune-utility surface (catalog, SEO extraction, engine config) rather than mixed in with the lower-level transform engine.
+
+`lang=` always overrides inference.
 
 -----
 
 ## Engine Changes
 
-- New rune schema in `plugins/docs/src/runes/code-file.ts`
-- Plugin's `theme.runes` adds the `CodeFile` config entry
-- CSS in `plugins/docs/styles/code-file.css`
+- New rune schema in `plugins/docs/src/runes/snippet.ts`
+- Plugin's `theme.runes` adds the `Snippet` config entry
+- CSS in `plugins/docs/styles/snippet.css`
 - File-reading utility in `plugins/docs/src/lib/read-file.ts` — sandbox enforcement, line-range slicing
 - Project-root resolution helper, shared with future partial-roots resolution from {% ref "SPEC-063" /%}
-- The rune produces the same internal Markdoc node shape as a fenced code block (so existing rendering picks it up) plus the `code-file` wrapper
+- Extension → language map in `packages/runes/src/lang-map.ts`, exported from the package index
+- The rune produces the same internal Markdoc node shape as a fenced code block (so existing rendering picks it up) plus the `snippet` wrapper
 
 -----
 
 ## Acceptance Criteria
 
-- [ ] `{% code-file path="..." /%}` reads the file from project root and renders it as a syntax-highlighted code block
+- [ ] `{% snippet path="..." /%}` reads the file from project root and renders it as a syntax-highlighted code block
 - [ ] Paths are resolved relative to the directory containing `refrakt.config.json`
 - [ ] Absolute paths (`/etc/passwd`) are rejected with a build error
 - [ ] Traversal paths (`../../foo`) escaping project root are rejected with a build error
@@ -194,13 +202,13 @@ The map should live in a shared module so the inspect tool, the contracts genera
 - [ ] Out-of-range start (entirely past EOF) is a build error
 - [ ] Inverted range (`"25-10"`) is a build error
 - [ ] Malformed range string is a build error with the input echoed
-- [ ] Language is inferred from file extension via a shared extension→language map
+- [ ] Language is inferred from file extension via the shared `lang-map` module at `packages/runes/src/lang-map.ts`
 - [ ] `lang=` overrides inferred language
-- [ ] `title=` renders as a caption in `.rf-code-file__title`
+- [ ] `title=` renders as a caption in `.rf-snippet__title`
 - [ ] `data-source-path` is set on the wrapper to the resolved path (relative to project root)
 - [ ] `data-lines` is set when `lines=` is used
-- [ ] `{% code-file path=$file.path /%}` works once {% ref "SPEC-061" /%} lands (project-root frame matches the sandbox)
-- [ ] CSS in lumina covers `.rf-code-file*` selectors
+- [ ] `{% snippet path=$file.path /%}` works once {% ref "SPEC-061" /%} lands (project-root frame matches the sandbox)
+- [ ] CSS in the docs plugin covers `.rf-snippet*` selectors
 - [ ] Authoring docs cover the rune, sandbox rules, line range syntax, language inference table
 
 -----
@@ -219,7 +227,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 
 ## Open Questions
 
-**Should `path` accept partial-root namespacing once {% ref "SPEC-063" /%} lands?** E.g. `path="plan:SPEC-001-foo.md"` reads from the plan namespace. Recommend yes — share one resolver so file-finding is consistent across runes. Implementation: ship code-file with project-root resolution in v1, extend to honor namespaces when SPEC-063 lands.
+**Should `path` accept partial-root namespacing once {% ref "SPEC-063" /%} lands?** E.g. `path="plan:SPEC-001-foo.md"` reads from the plan namespace. Recommend yes — share one resolver so file-finding is consistent across runes. Implementation: ship snippet with project-root resolution in v1, extend to honor namespaces when SPEC-063 lands.
 
 **Should syntax highlighting happen at build or render time?** Build (matches the existing code-block path; identity transform produces highlighted HTML). Render-time highlighting would require shipping the highlighter to the client, which is wasteful for static content.
 
@@ -227,9 +235,9 @@ The map should live in a shared module so the inspect tool, the contracts genera
 
 **Should the rune emit a "view original" link to the file?** Tempting (helpful for readers who want context beyond the embedded range), but the URL scheme isn't generic — it depends on the project's hosting (GitHub, GitLab, self-hosted). Defer to a theme-level or site-config concern; the rune sets `data-source-path` so a downstream consumer can build that link.
 
-**Caching: should file reads be memoized within a single build?** Recommend yes (multiple `code-file` references to the same file are common — a getting-started page that shows the same `package.json` twice should read once). Cache key: resolved path; invalidated per build.
+**Caching: should file reads be memoized within a single build?** Recommend yes (multiple `snippet` references to the same file are common — a getting-started page that shows the same `package.json` twice should read once). Cache key: resolved path; invalidated per build.
 
-**Cross-references with the page-source / reflection idea.** With code-file shipped, the specific `page-source` rune dissolves into a one-line `{% code-file path=$page.path lang="md" /%}`. This spec confirms that direction — no separate `page-source` rune is shipped.
+**Cross-references with the page-source / reflection idea.** With snippet shipped, the specific `page-source` rune dissolves into a one-line `{% snippet path=$file.path lang="md" /%}`. This spec confirms that direction — no separate `page-source` rune is shipped.
 
 -----
 
@@ -240,6 +248,7 @@ The map should live in a shared module so the inspect tool, the contracts genera
 - {% ref "SPEC-063" /%} — configurable partial roots (potential resolver share)
 - {% ref "SPEC-068" /%} — adapter HMR contract for arbitrary file dependencies (deferred follow-up that closes the dev-experience gap)
 - `packages/lumina/styles/runes/code-block.css` — existing code-block CSS to compose with
+- `packages/runes/src/` — home of the shared `lang-map` module
 - Niwaki syntax highlighting documentation — the highlighting layer this rune feeds into
 
 {% /spec %}

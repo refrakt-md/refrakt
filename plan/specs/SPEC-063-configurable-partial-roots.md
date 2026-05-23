@@ -209,7 +209,7 @@ export interface Plugin {
 
 **What about a `__` (dunder) convention for "private" plugin partials not meant for direct user reference?** Probably overkill. Plugins document their public namespace surface; private files just live elsewhere in the package without being registered.
 
-**How does this interact with partial caching / HMR?** Deferred to {% ref "SPEC-068" /%}. In v1, partials in registered roots are not watched — editing one doesn't trigger a rebuild of pages that include it (the author saves any file inside the content tree, or restarts the dev server, to trigger re-resolution). Production builds are unaffected. Real dependency-tracked watching for registered partial roots is a follow-up spec shared with `code-file` from {% ref "SPEC-062" /%}, intentionally deferred so the contract can be informed by real usage from both consumers.
+**How does this interact with partial caching / HMR?** Deferred to {% ref "SPEC-068" /%}. In v1, partials in registered roots are not watched — editing one doesn't trigger a rebuild of pages that include it (the author saves any file inside the content tree, or restarts the dev server, to trigger re-resolution). Production builds are unaffected. Real dependency-tracked watching for registered partial roots is a follow-up spec shared with `snippet` from {% ref "SPEC-062" /%}, intentionally deferred so the contract can be informed by real usage from both consumers.
 
 **Should there be a `dependsOn` field for partials that themselves include other partials?** Markdoc handles transitive includes natively (a partial can `{% partial file="x" /%}` another partial). Make sure cross-namespace transitive includes work (a `plan:foo.md` partial that includes `shared:bar.md`).
 
