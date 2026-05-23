@@ -5,20 +5,21 @@
  *   tag, resolves + slices its source file, and replaces the tag with a
  *   Markdoc `fence` node. The fence carries `content` and `language` (so
  *   the existing code-block transform syntax-highlights it identically to
- *   a triple-backtick fence) plus `data-snippet-source` / `data-snippet-title`
- *   / `data-snippet-lines` attributes for downstream tooling and the wrap
- *   step.
+ *   a triple-backtick fence) plus `data-snippet-source` / `data-snippet-lines`
+ *   attributes for downstream tooling and the wrap step.
  *
  * - **PostProcess** walks the rendered renderable tree, finds every `<pre>`
  *   element carrying `data-snippet-source`, and — when not nested under a
  *   fence-consuming container (`data-rune="code-group"`, `data-rune="diff"`)
- *   — wraps it in `<figure class="rf-snippet">` with an optional
- *   `<figcaption>` populated from `data-snippet-title`.
+ *   — wraps it in `<figure class="rf-snippet">` so themes can style snippet
+ *   blocks distinctly from regular code blocks (and tooling can find
+ *   `data-source-path` on the figure).
  *
  * This separation is the SPEC-062 composition story: container runes see
  * snippet output as a regular fence (because preprocess made it one) and
- * consume it transparently; standalone snippets get the figure+caption
- * chrome via the wrap step.
+ * consume it transparently; standalone snippets get the figure chrome via
+ * the wrap step. Captions / titles are intentionally not provided — wrap
+ * a snippet in `{% codegroup title="..." %}` if you want a labelled chrome.
  */
 
 import Markdoc from '@markdoc/markdoc';
@@ -135,9 +136,6 @@ function resolveSnippetToFence(
 	const langAttr = tag.attributes.lang !== undefined
 		? resolveAttributeValue(tag.attributes.lang, ctx.variables)
 		: undefined;
-	const titleAttr = tag.attributes.title !== undefined
-		? resolveAttributeValue(tag.attributes.title, ctx.variables)
-		: undefined;
 
 	if (!pathAttr) {
 		const msg = 'snippet `path` attribute is required (and an unresolvable variable reference resolves to empty)';
@@ -176,7 +174,6 @@ function resolveSnippetToFence(
 		language,
 		'data-snippet-source': result.relativePath,
 	};
-	if (titleAttr) fenceAttrs['data-snippet-title'] = titleAttr;
 	if (lines) fenceAttrs['data-snippet-lines'] = lines;
 
 	// Construct a fence Ast.Node. Markdoc parses ``` blocks as
@@ -245,16 +242,7 @@ function walkAndWrap(node: unknown, insideFenceContainer: boolean): unknown {
 function wrapPreInFigure(preTag: InstanceType<typeof Tag>): InstanceType<typeof Tag> {
 	const attrs = preTag.attributes as Record<string, unknown>;
 	const source = String(attrs['data-snippet-source'] ?? '');
-	const title = attrs['data-snippet-title'] !== undefined ? String(attrs['data-snippet-title']) : undefined;
 	const linesAttr = attrs['data-snippet-lines'] !== undefined ? String(attrs['data-snippet-lines']) : undefined;
-
-	const figureChildren: unknown[] = [];
-	if (title) {
-		figureChildren.push(
-			new Tag('figcaption', { class: 'rf-snippet__title' }, [title]),
-		);
-	}
-	figureChildren.push(preTag);
 
 	const figureAttrs: Record<string, unknown> = {
 		class: 'rf-snippet',
@@ -263,5 +251,5 @@ function wrapPreInFigure(preTag: InstanceType<typeof Tag>): InstanceType<typeof 
 	};
 	if (linesAttr) figureAttrs['data-lines'] = linesAttr;
 
-	return new Tag('figure', figureAttrs, figureChildren as any[]);
+	return new Tag('figure', figureAttrs, [preTag] as any[]);
 }

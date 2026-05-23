@@ -44,15 +44,19 @@ Slice the file with the `lines` attribute. Four formats:
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
 
-## Title and caption
+## Captions and titles
 
-The optional `title` attribute renders as a `<figcaption>` above the code block. Useful when the file path alone doesn't tell the reader what they're looking at.
+Snippet itself has no `title` attribute — it's structurally a `fence` by the time the transform runs, and fences don't carry titles. For a labelled chrome, wrap the snippet in `{% codegroup %}`, which produces title-bar chrome around a single fence:
 
 ```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" title="FALLBACK_LANG constant" /%}
+{% codegroup title="FALLBACK_LANG constant" %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+{% /codegroup %}
 ```
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" title="FALLBACK_LANG constant" /%}
+{% codegroup title="FALLBACK_LANG constant" %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+{% /codegroup %}
 
 ## Language inference
 
@@ -77,10 +81,10 @@ The language is inferred from the file extension via a shared map:
 Override with `lang=` when the extension doesn't tell the full story (a `.config` file that's actually JSONC, for instance).
 
 ```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" title="Same file, force-rendered as JavaScript" /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" /%}
 ```
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" title="Same file, force-rendered as JavaScript" /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" /%}
 
 ## Composition
 
@@ -149,19 +153,20 @@ These rules make snippet safe to use on sites that accept untrusted author conte
 | `path` | String | Yes | Path to the source file, relative to the project root. |
 | `lines` | String | No | Line range. `"10-25"` / `"10-"` / `"-20"` / `"10"`. 1-indexed, inclusive. |
 | `lang` | String | No | Override the extension-inferred syntax-highlighting language. |
-| `title` | String | No | Caption rendered above the code block (standalone form only). |
+
+No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in `{% codegroup title="..." %}`.
 
 ## View source — recursively
 
 Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/extend/variables" /%}) to embed the page's own source.
 
 ```markdoc
-{% snippet path=$file.path lang="markdoc" title="The source of this page" /%}
+{% snippet path=$file.path lang="markdoc" /%}
 ```
 
 Renders as the snippet block below — at build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
 
-{% snippet path=$file.path lang="markdoc" title="The source of this page" /%}
+{% snippet path=$file.path lang="markdoc" /%}
 
 ## See also
 

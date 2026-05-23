@@ -47,6 +47,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [codegroup](/runes/codegroup) | Tabbed code block with language tabs |
 | [compare](/runes/compare) | Side-by-side code comparison panels |
 | [diff](/runes/diff) | Side-by-side or unified diff view between two code blocks |
+| [snippet](/runes/snippet) | Embed a project file as a syntax-highlighted code block, kept in sync at build time |
 | [datatable](/runes/datatable) | Interactive data table with sorting, filtering, and pagination |
 | [chart](/runes/chart) | Chart visualization from a Markdown table |
 | [diagram](/runes/diagram) | Mermaid diagram rendering from code blocks |

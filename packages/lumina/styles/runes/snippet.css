@@ -1,27 +1,18 @@
-/* Snippet — file embedded as a code block, with caption chrome.
+/* Snippet — file embedded as a code block.
  *
- * The standalone form is a <figure class="rf-snippet"> wrapping an optional
- * <figcaption> + a <pre class="rf-code-block">. Nested forms (snippet inside
- * codegroup or diff) skip the figure wrapper — the container's chrome owns
- * the layout there.
+ * The standalone form is a `<figure class="rf-snippet">` wrapping the
+ * existing `<pre class="rf-code-block">`. Nested forms (snippet inside
+ * codegroup or diff) skip the figure wrapper entirely — the container's
+ * chrome owns the layout there.
+ *
+ * The figure exists primarily so themes can style snippet-derived code
+ * blocks distinctly from regular fences, and so tooling can find
+ * `data-source-path` for "edit this file" affordances. Authors wanting a
+ * labelled caption should wrap the snippet in `{% codegroup title="..." %}`.
  *
  * SPEC-062.
  */
 
 .rf-snippet {
 	margin: var(--rf-space-md) 0;
-	display: flex;
-	flex-direction: column;
-	gap: var(--rf-space-xs);
 }
-
-.rf-snippet__title {
-	font-family: var(--rf-font-mono);
-	font-size: 0.85em;
-	color: var(--rf-color-text-muted);
-	padding-inline: var(--rf-space-sm);
-}
-
-/* The inner <pre class="rf-code-block"> uses the existing code-block
- * styling. Nothing to add at this level — the figure wrapper just supplies
- * caption + spacing. */

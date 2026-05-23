@@ -50,7 +50,7 @@ The same primitive incidentally solves the view-source case (`path=$file.path`),
 {% snippet path="examples/button.svelte" lines="10-25" /%}
 
 {# View source of the current page #}
-{% snippet path=$file.path lang="md" title="This page" /%}
+{% snippet path=$file.path lang="md" /%}
 
 {# Override inferred language #}
 {% snippet path="config/refrakt.json" lang="jsonc" /%}
@@ -63,7 +63,8 @@ The same primitive incidentally solves the view-source case (`path=$file.path`),
 | `path` | string | required | Path to file, relative to project root. Rejected if it escapes the root. |
 | `lines` | string | full file | Line range. Formats: `"10-25"`, `"10-"` (to EOF), `"-20"` (from start). 1-indexed, inclusive. |
 | `lang` | string | inferred from extension | Syntax-highlighting language hint. |
-| `title` | string | — | Optional caption above the code block (filename, description). |
+
+Snippet intentionally has **no `title` attribute**. Output is structurally a `fence` by transform time, and fences don't carry titles. Authors wanting a labelled chrome wrap the snippet in `{% codegroup title="..." %}` — codegroup's single-fence chrome path produces the title bar without rendering tabs.
 
 -----
 
@@ -78,15 +79,13 @@ When a snippet renders outside a container that consumes fences, a post-transfor
 ```html
 <figure class="rf-snippet" data-rune="snippet"
         data-source-path="examples/button.svelte">
-  <figcaption class="rf-snippet__title">examples/button.svelte</figcaption>
   <pre class="rf-code-block" data-lang="svelte"
        data-snippet-source="examples/button.svelte"><code>...</code></pre>
 </figure>
 ```
 
 BEM:
-- `.rf-snippet` — outer wrapper
-- `.rf-snippet__title` — caption (only present when `title=` set)
+- `.rf-snippet` — outer wrapper (visual differentiation + provenance attributes)
 - Inner `pre/code` produced by the existing code-block rendering
 
 Data attributes on the figure:
@@ -126,7 +125,6 @@ After Markdoc parses a page into an AST but **before** the schema-driven transfo
    - `content`: the (possibly sliced) file text.
    - `language`: the resolved language.
    - `attributes['data-snippet-source']`: the resolved path (relative to project root, POSIX-normalized).
-   - `attributes['data-snippet-title']`: the `title=` value when set.
    - `attributes['data-snippet-lines']`: the `lines=` value when set.
 
 By the time the transform runs, the AST contains no `{% snippet %}` tags — only fence nodes (some "regular," some "snippet-derived" distinguishable only by the `data-snippet-*` attributes).
@@ -141,7 +139,7 @@ The container's transform calls `Markdoc.transform(fence, config)` on each fence
 
 ### Standalone wrapping
 
-A small post-transform pass walks the renderable tree looking for `<pre>` elements carrying `data-snippet-source`. For each one whose nearest ancestor is **not** a fence-consuming container, it wraps the `<pre>` in a `<figure class="rf-snippet">` with an optional `<figcaption>` populated from `data-snippet-title`. The data attributes are mirrored onto the figure so tooling can find provenance at either level.
+A small post-transform pass walks the renderable tree looking for `<pre>` elements carrying `data-snippet-source`. For each one whose nearest ancestor is **not** a fence-consuming container, it wraps the `<pre>` in a `<figure class="rf-snippet">` for theme styling and tooling (`data-source-path` lives on the figure). No `<figcaption>` — snippet has no title; labelled chrome is delegated to `{% codegroup title="..." %}`.
 
 "Fence-consuming container" is detected by the wrap step via a small allowlist of known container outputs (`data-rune="code-group"`, `data-rune="diff"`). Future containers can opt in by setting `data-consumes-fence` on their output, or by being added to the allowlist when they ship.
 
@@ -346,7 +344,7 @@ The wrap step (postProcess) is a regular cross-page pipeline postProcess hook �
 - [ ] Malformed range string is a build error with the input echoed
 - [ ] Language is inferred from file extension via the shared `lang-map` module at `packages/runes/src/lang-map.ts`
 - [ ] `lang=` overrides inferred language
-- [ ] `title=` renders as a caption in `.rf-snippet__title` (standalone form only)
+- [ ] Snippet schema declares no `title` attribute; `title=` on a snippet tag is rejected by the schema (or silently ignored at parse time, depending on Markdoc strictness). Captioned chrome is delegated to `{% codegroup title="..." %}`.
 - [ ] `data-source-path` is set on the standalone figure wrapper to the resolved path (relative to project root)
 - [ ] `data-lines` is set on the standalone figure wrapper when `lines=` is used
 - [ ] `{% snippet path=$file.path /%}` works end-to-end via the `$file.path` variable (project-root frame matches the sandbox)
@@ -358,11 +356,11 @@ The wrap step (postProcess) is a regular cross-page pipeline postProcess hook �
 
 - [ ] `PluginPipelineHooks` gains a `preprocess` hook that runs per page on the parsed AST before the transform
 - [ ] The content pipeline calls registered `preprocess` hooks in plugin order between `Markdoc.parse` and `Markdoc.transform`
-- [ ] Core's `preprocess` hook (part of `corePipelineHooks`) replaces every `{% snippet %}` tag node in the AST with a `fence` node carrying the resolved file content, the resolved language, and `data-snippet-source` / `data-snippet-title` / `data-snippet-lines` attributes as appropriate
+- [ ] Core's `preprocess` hook (part of `corePipelineHooks`) replaces every `{% snippet %}` tag node in the AST with a `fence` node carrying the resolved file content, the resolved language, and `data-snippet-source` / `data-snippet-lines` attributes as appropriate
 - [ ] `{% snippet %}` inside `{% codegroup %}` renders as a tab containing the file's content, with the language inferred or set, and **no `<figure>` wrapper applied**
 - [ ] `{% snippet %}` inside `{% diff %}` (two snippets — before and after) renders as a diff with hunks computed from the two files' contents, and **no `<figure>` wrapper applied**
 - [ ] Mixed children — `{% snippet %}` and triple-backtick fences in the same `{% codegroup %}` or `{% diff %}` — work uniformly (containers don't distinguish them)
-- [ ] `{% snippet %}` at document level (not nested in a fence-consuming container) renders inside the `<figure class="rf-snippet">` wrapper with optional `<figcaption>` from `title=`
+- [ ] `{% snippet %}` at document level (not nested in a fence-consuming container) renders inside the `<figure class="rf-snippet">` wrapper (no figcaption — snippet has no title attribute)
 - [ ] The wrap step suppresses the figure wrapper when the `<pre data-snippet-source>` is descended from a known fence-consuming container output (`data-rune="code-group"`, `data-rune="diff"`)
 - [ ] The snippet rune schema's `transform` function is unreachable in normal operation (preprocess replaces the tag before transform runs); if it does execute, it throws a clear error pointing the user at core's preprocess hook registration
 - [ ] Tests cover all the composition cases above with real file fixtures

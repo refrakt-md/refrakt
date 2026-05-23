@@ -34,11 +34,6 @@ export const snippet = createContentModelSchema({
 			required: false,
 			description: 'Syntax-highlighting language hint. Overrides the extension-based inference.',
 		},
-		title: {
-			type: String,
-			required: false,
-			description: 'Optional caption above the code block (filename, description).',
-		},
 	},
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, _attrs) {

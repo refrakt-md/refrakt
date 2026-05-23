@@ -109,13 +109,12 @@ describe('snippet preprocess (SPEC-062)', () => {
 		expect(ast.children[0].attributes.language).toBe('toml');
 	});
 
-	it('attaches title + lines markers when set', () => {
+	it('attaches the lines marker when set', () => {
 		writeFileSync(join(tmpRoot, 'big.ts'), Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'));
-		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" title="snippet of big.ts" /%}\n');
+		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
-		expect(ast.children[0].attributes['data-snippet-title']).toBe('snippet of big.ts');
 		expect(ast.children[0].attributes['data-snippet-lines']).toBe('5-10');
 		// 5-10 inclusive = lines 5 through 10 = 6 lines.
 		expect(ast.children[0].attributes.content).toBe('line 5\nline 6\nline 7\nline 8\nline 9\nline 10');
@@ -352,7 +351,7 @@ describe('snippet standalone wrap (SPEC-062)', () => {
 
 	it('wraps a standalone snippet-derived <pre> in <figure class="rf-snippet">', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\n');
-		const { renderable } = pipeline('{% snippet path="foo.ts" title="example" /%}\n', { projectRoot: tmpRoot });
+		const { renderable } = pipeline('{% snippet path="foo.ts" /%}\n', { projectRoot: tmpRoot });
 
 		const ctx: PipelineContext = { info: () => {}, warn: () => {}, error: () => {} };
 		const page: TransformedPage = {
@@ -369,10 +368,12 @@ describe('snippet standalone wrap (SPEC-062)', () => {
 		expect((figure!.attributes as any)['data-rune']).toBe('snippet');
 		expect((figure!.attributes as any)['data-source-path']).toBe('foo.ts');
 
-		// Figcaption from title=.
+		// No figcaption — snippet doesn't have a `title` attribute. Authors
+		// who want a labelled chrome wrap the snippet in `{% codegroup
+		// title="..." %}` (codegroup's single-fence path produces chrome
+		// without tabs).
 		const caption = findTag(figure!, (t) => t.name === 'figcaption');
-		expect(caption).toBeDefined();
-		expect(caption!.children).toContain('example');
+		expect(caption).toBeUndefined();
 	});
 
 	it("doesn't wrap a snippet-derived <pre> inside a codegroup output", () => {
