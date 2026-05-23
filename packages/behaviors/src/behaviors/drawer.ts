@@ -323,9 +323,7 @@ function closeDrawer(dialog: HTMLDialogElement): void {
 		if (finished) return;
 		finished = true;
 		dialog.removeEventListener('animationend', onAnimationEnd);
-		if (fallbackTimer) {
-			(dialog.ownerDocument?.defaultView ?? globalThis).clearTimeout(fallbackTimer);
-		}
+		if (fallbackTimer !== undefined) clearTimeout(fallbackTimer);
 		try {
 			dialog.close();
 		} catch {
@@ -343,8 +341,7 @@ function closeDrawer(dialog: HTMLDialogElement): void {
 	};
 	dialog.addEventListener('animationend', onAnimationEnd);
 
-	const win = dialog.ownerDocument?.defaultView ?? globalThis;
-	const fallbackTimer = (win as Window).setTimeout(finish, CLOSE_ANIMATION_FALLBACK_MS);
+	const fallbackTimer = setTimeout(finish, CLOSE_ANIMATION_FALLBACK_MS);
 }
 
 /** Body-scroll lock — set when any drawer is open, lifted when the last
