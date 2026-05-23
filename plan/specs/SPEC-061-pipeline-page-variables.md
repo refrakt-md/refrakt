@@ -132,11 +132,24 @@ For index pages (`docs/themes/index.md` → `/docs/themes/`), `$page.slug` is th
 
 The page title, with a fallback strategy:
 
-1. `frontmatter.title` if set
-2. Otherwise, the first H1 heading's text content from the AST
+1. `frontmatter.title` if present and non-empty after trimming whitespace
+2. Otherwise, the first H1 heading's text content from the AST (depth-first walk, including descending into rune children — see below)
 3. Otherwise, `undefined`
 
 Why a derived title when `$frontmatter.title` already exists: pages often don't set `title` in frontmatter when the first H1 is the natural source of truth. Forcing every page to also declare frontmatter title would be duplication. `$page.title` is the right surface for "the page's title, however that's authored."
+
+Why trim-and-check-non-empty for the frontmatter case: editors (CMS-style, form-based authoring tools) often store an empty string when the author leaves the title blank rather than removing the key. The author's mental model is "I left it blank, so fall back to the H1." Treating empty-after-trim as unset matches that expectation.
+
+**Walk strategy for the H1 fallback:** depth-first traversal of the Markdoc AST, descending into both regular nodes and tag (rune) children. The first `heading` node with `level: 1` wins. This matches the author's mental model of "the page title is the H1 the reader sees" — including the common case where an H1 is wrapped in a layout rune:
+
+```markdoc
+{% hero %}
+# Authentication
+A guide to OAuth flows.
+{% /hero %}
+```
+
+Here `$page.title` is `"Authentication"`, not `undefined`. Only markdown `heading` nodes count — H1 elements that runes emit *structurally* (e.g., a hero rendering an H1 from its `title=` attribute) are not in the AST as heading nodes and don't participate in the walk. Authors who want their rune-attribute-driven title to also appear as `$page.title` should set `frontmatter.title` (which has precedence anyway).
 
 **Scope inside partials and layouts:** partials and layout files rendered as part of a host page see the host page's `$page.title`, not their own. (Same scoping rule as the rest of `$page.*`.)
 
@@ -223,11 +236,11 @@ The `projectRoot` value is the directory containing `refrakt.config.json` — al
 
 ### First-H1 extraction
 
-`firstH1(ast)` walks the Markdoc AST and returns the text content of the first `heading` node with `level: 1`, or `undefined`. Implementation lives alongside the existing `extractHeadings` helper since both walk the same tree.
+`firstH1(ast)` walks the Markdoc AST depth-first, descending into tag (rune) children, and returns the text content of the first `heading` node with `level: 1`, or `undefined`. Implementation lives alongside the existing `extractHeadings` helper since both walk the same tree.
 
 ### Path normalization
 
-`posixPath(p)` and `posixDirname(p)` convert backslashes to forward slashes for consistent cross-platform output. Use Node's `path.posix.*` where applicable.
+`posixPath(p)` and `posixDirname(p)` convert backslashes to forward slashes for consistent cross-platform output. Use Node's `path.posix.*` where applicable. `posixDirname` special-cases the `"."` return value from `path.posix.dirname` to `""` so callers don't have to handle the "no directory" case separately.
 
 ### Layout and partial scoping
 
@@ -241,10 +254,10 @@ Layouts and partials are already rendered with the host page's `config.variables
 - [ ] `$page.filePath` is removed (not aliased)
 - [ ] Changeset documents the rename as a breaking change
 - [ ] `$page.dir` resolves to the directory portion of `$page.path`; empty string for content-root pages
-- [ ] `$page.slug` resolves to the last URL segment of `$page.url`
-- [ ] `$page.slug` for index pages resolves to the directory name (not `"index"`)
-- [ ] `$page.title` resolves to `$frontmatter.title` when present
-- [ ] `$page.title` falls back to the first H1 in the AST when frontmatter title is unset
+- [ ] `$page.dir` is POSIX-normalized (forward slashes regardless of host OS) and has no trailing slash
+- [ ] `$page.title` resolves to `$frontmatter.title` when it is present and non-empty after trimming whitespace
+- [ ] `$page.title` falls back to the first H1 in the AST when `$frontmatter.title` is absent, empty, or whitespace-only
+- [ ] `$page.title`'s H1 walk is depth-first and descends into tag (rune) children; the first markdown `heading` node with `level: 1` wins
 - [ ] `$page.title` is `undefined` when neither source provides a title
 - [ ] `$page.url`, `$page.draft` continue to work (no regression)
 - [ ] `$frontmatter.*` access continues to work for all frontmatter keys (no regression)
@@ -283,8 +296,6 @@ Layouts and partials are already rendered with the host page's `config.variables
 **Should `$page.dir` be the path-dir (`"docs/themes"`) or the URL-dir (`"/docs/themes"`)?** Recommend path-dir (no leading slash, matches `$page.path` rather than `$page.url`). URL-dir is derivable; consistent naming with `$page.path` is more important than the slight extra typing.
 
 **For index pages, should `$page.path` be `"docs/themes/index.md"` or `"docs/themes/"`?** Recommend the literal file path (`"docs/themes/index.md"`). It's the file path; the URL form is what `$page.url` gives. Two different views of the page, both consistent within their own namespace.
-
-**Should `$page.title` walk into wrapper runes for the first H1, or only top-level?** Some pages start with a layout-injected hero where the H1 is the hero's title, not a top-level `# Heading`. Recommend walk into runes (depth-first first-match) — matches authors' mental model of "the visible page title."
 
 **What's the right authoring docs home for the variable surface page?** Probably `site/content/extend/variables.md` (alongside the rune-authoring and theme-authoring guides). Currently the variables are mentioned in scattered docs (plugin-authoring, plan rune docs); consolidating into one canonical page is the deliverable.
 

@@ -66,7 +66,7 @@ Filename convention from {% ref "SPEC-022" /%}:
 - Auto-ID files: `{ID}-{slug}.md` (e.g. `SPEC-023-auth-system.md`)
 - Milestone semver files: `v1.0.0.md`
 
-Files that don't match either convention are skipped with a debug-level warning (not an error — accommodates user-authored auxiliary content in the plan directory).
+Files that don't match either convention are still parsed; if a valid top-level plan rune is present (with a declared `id=` attribute), the entity is registered. The rune is the source of truth for the entity's identity; filename convention is a hint, not a filter. Only files that contain no parseable plan rune at all are skipped (with a debug-level warning, accommodating user-authored auxiliary content like READMEs in the plan directory).
 
 ### Extractor signature
 
@@ -147,7 +147,8 @@ When `plan.dir` changes during dev (file added/modified/removed), the content pi
 - [ ] When a plan file is both in `plan.dir` and part of a site's content tree, the site-load registration wins (with real `sourceUrl`); the unconditional scan skips to avoid duplicate registration
 - [ ] When `plan.dir` doesn't exist or is empty, the scan is a silent no-op (no error)
 - [ ] Duplicate IDs across different plan files fail content load with both file paths named
-- [ ] Files in `plan.dir` that don't match known subdirectories or filename conventions are skipped with a debug-level warning
+- [ ] Files in `plan.dir` whose filenames don't match the auto-ID or milestone-semver convention are still parsed; if a valid top-level plan rune (with `id=`) is present, the entity is registered (filename is a hint, not a filter)
+- [ ] Files in `plan.dir` that contain no parseable top-level plan rune are skipped with a debug-level warning
 - [ ] Existing register-hook tests for site-loaded plan content continue to pass
 - [ ] New tests cover: unconditional scan registers entities; duplicate detection across paths; missing-directory silence
 - [ ] `xref` for plan IDs in non-plan-publishing sites finds the entity in the registry; falls through to {% ref "SPEC-065" /%} patterns when `sourceUrl` is undefined
