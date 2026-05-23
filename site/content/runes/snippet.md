@@ -13,13 +13,15 @@ The snippet rune is implemented as an AST preprocessor: by the time the transfor
 
 ## Embed a file
 
-The minimum case — a `path` attribute relative to the project root. Below, a live snippet of refrakt's own language-map module (the one snippet itself uses for extension inference):
+The minimum case — a `path` attribute relative to the project root.
 
-{% preview source=true %}
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="1-40" /%}
+```
+
+Renders as a live embed of refrakt's own language-map module (the one snippet itself uses for extension inference):
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="1-40" /%}
-
-{% /preview %}
 
 The reader is looking at the actual file in this repository, sliced to its first 40 lines. The build re-reads the file every time it runs, so this stays in sync.
 
@@ -36,21 +38,21 @@ Slice the file with the `lines` attribute. Four formats:
 
 1-indexed (matches editor line numbers), inclusive on both ends. Out-of-range ends clamp to the file length with a build warning; out-of-range starts (entirely past EOF) are a build error.
 
-{% preview source=true %}
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
+```
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
-
-{% /preview %}
 
 ## Title and caption
 
 The optional `title` attribute renders as a `<figcaption>` above the code block. Useful when the file path alone doesn't tell the reader what they're looking at.
 
-{% preview source=true %}
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" title="FALLBACK_LANG constant" /%}
+```
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="42-50" title="FALLBACK_LANG constant" /%}
-
-{% /preview %}
 
 ## Language inference
 
@@ -74,11 +76,11 @@ The language is inferred from the file extension via a shared map:
 
 Override with `lang=` when the extension doesn't tell the full story (a `.config` file that's actually JSONC, for instance).
 
-{% preview source=true %}
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" title="Same file, force-rendered as JavaScript" /%}
+```
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" title="Same file, force-rendered as JavaScript" /%}
-
-{% /preview %}
 
 ## Composition
 
@@ -151,15 +153,15 @@ These rules make snippet safe to use on sites that accept untrusted author conte
 
 ## View source — recursively
 
-Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/extend/variables" /%}) to embed the page's own source. Here, the bottom of this very doc page renders its own Markdoc source:
+Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/extend/variables" /%}) to embed the page's own source.
 
-{% preview source=true %}
+```markdoc
+{% snippet path=$file.path lang="markdoc" title="The source of this page" /%}
+```
+
+Renders as the snippet block below — at build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
 
 {% snippet path=$file.path lang="markdoc" title="The source of this page" /%}
-
-{% /preview %}
-
-That snippet block, when this page builds, reads the file you're looking at and inlines its content into the page. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
 
 ## See also
 
