@@ -6,6 +6,7 @@ import { DocPage } from './documents/doc.js';
 import { error } from './tags/error.js';
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
+import { snippet } from './tags/snippet.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
@@ -347,6 +348,14 @@ export const runes = {
     typeName: 'Diff',
     category: 'Code & Data',
     snippet: ['{% diff %}', '```${1:js}', '${2:// Before}', '```', '', '```${3:js}', '${4:// After}', '```', '{% /diff %}'],
+  }),
+  snippet: defineRune({
+    name: 'snippet',
+    schema: snippet,
+    description: 'Embed a project file as a syntax-highlighted code block. Composes inside codegroup, diff, and any future fence-consuming rune via pre-resolve (SPEC-062).',
+    typeName: 'Snippet',
+    category: 'Code & Data',
+    snippet: ['{% snippet path="${1:src/lib/foo.ts}" /%}'],
   }),
   chart: defineRune({
     name: 'chart',
