@@ -175,6 +175,22 @@ interface ResolveContext {
 	ctx: PipelineContext;
 }
 
+/** Reduce an absolute href that points at the current page + fragment down
+ *  to the fragment alone. Handles both URL shapes seen in practice — page
+ *  URLs that end with a trailing slash and ones that don't. Returns the
+ *  original href when it doesn't target the current page. */
+function compactSamePageHref(href: string, pageUrl: string): string {
+	const hashIdx = href.indexOf('#');
+	if (hashIdx < 0) return href;
+	const hrefPath = href.slice(0, hashIdx);
+	const fragment = href.slice(hashIdx);
+	// Normalise trailing slashes for the comparison so `/x/` and `/x` are
+	// treated as the same page (different adapters normalise differently).
+	const stripTrail = (s: string) => s.endsWith('/') ? s.slice(0, -1) : s;
+	if (stripTrail(hrefPath) === stripTrail(pageUrl)) return fragment;
+	return href;
+}
+
 /** Resolve a single xref placeholder. Drives the SPEC-065 chain:
  *  entity lookup → URL resolution → unresolved fallback. */
 function resolvePlaceholder(
@@ -259,9 +275,18 @@ function resolvePlaceholder(
 		rc.ctx.info(`xref "${id}" on ${rc.pageUrl} — references itself`, rc.pageUrl);
 	}
 
+	// Same-page anchor compaction: when the entity's resolved href is the
+	// current page plus a fragment, drop the page URL portion so the link
+	// renders as a fragment-only anchor (`#drawer-x`) — matches the SPEC-060
+	// drawer-trigger contract and is how authors normally write same-page
+	// anchors. Behaves identically to the absolute form for the browser; the
+	// progressive-enhancement layer (drawer behaviors) reads the fragment
+	// directly without needing to compare against location.pathname.
+	const renderedHref = compactSamePageHref(resolved.href, rc.pageUrl);
+
 	const attributes: Record<string, unknown> = {
 		class: `rf-xref rf-xref--${resolved.type}`,
-		href: resolved.href,
+		href: renderedHref,
 		'data-xref-id': resolved.entityId ?? id,
 		'data-xref-source': resolved.source,
 	};

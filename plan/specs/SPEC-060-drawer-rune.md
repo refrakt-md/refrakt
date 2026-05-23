@@ -104,8 +104,9 @@ BEM selectors:
 - `.rf-drawer__title` — title heading (level via `headingLevel` or auto-detected)
 - `.rf-drawer__close` — close button (hidden by default; behaviors layer reveals when enhanced)
 - `.rf-drawer__body` — content container
-- `.rf-drawer--side-{right|left|top|bottom}` — slide direction modifier
-- `.rf-drawer--size-{sm|md|lg}` — size modifier
+- `.rf-drawer--{right|left|top|bottom}` — slide direction modifier (matches the `modifiers.side` shape used by every other rune in the catalog: the engine derives `--{value}` BEM modifiers from `source: 'meta'` modifiers, not `--{name}-{value}`)
+- `.rf-drawer--{sm|md|lg}` — size modifier
+- `[data-side]` / `[data-size]` are the canonical variant selectors — themes (including Lumina) prefer these because they avoid potential cross-namespace BEM collisions if the rune ever grows more modifiers; the BEM classes ride along for theme overrides that want class-style selectors
 
 Data attributes:
 - `data-rune="drawer"` on the container
@@ -239,8 +240,8 @@ The drawer's CSS targets both `.rf-drawer` (in-flow state) and `dialog.rf-drawer
 - [ ] `headingLevel` attribute controls the title's heading level
 - [ ] When `headingLevel` is omitted, the title's level is auto-detected from outline position (same convention as `nav`/`hint`)
 - [ ] `shortcut` attribute writes `data-shortcut` and registers a global keyboard listener when JS loads
-- [ ] `side` attribute applies `rf-drawer--side-{value}` modifier and `data-side`
-- [ ] `size` attribute applies `rf-drawer--size-{value}` modifier and `data-size`
+- [ ] `side` attribute applies `rf-drawer--{value}` modifier class and `data-side="{value}"` (matches engine modifier-from-meta convention)
+- [ ] `size` attribute applies `rf-drawer--{value}` modifier class and `data-size="{value}"`
 - [ ] Drawer element gets `id="drawer-{author-id}"` so fragment navigation lands at it
 - [ ] Drawer rune registers a page-scoped entity (`type: 'drawer'`, `scope: 'page'`) in the registry with `sourceUrl: "{page-url}#drawer-{id}"`
 - [ ] `{% ref "drawer-id" /%}` on the same page resolves to `<a href="#drawer-{id}" data-target-type="drawer">…</a>`

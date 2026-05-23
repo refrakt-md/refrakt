@@ -72,16 +72,35 @@ export class EntityRegistryImpl implements EntityRegistry {
 		return this.byTypeAndUrl.get(type)?.get(url) ?? [];
 	}
 
-	/** Find a specific entity by type and id. Page-scoped match from
-	 *  `pageUrl` (if any) wins over a site-scoped match of the same id. */
+	/** Find a specific entity by type and id. Lookup order:
+	 *  1. **Page-scoped match from `pageUrl`** — when `pageUrl` is provided,
+	 *     check for a page-scoped entry registered from that page. Fragments
+	 *     and trailing slashes are normalised so callers may pass the URL in
+	 *     any shape an adapter produces.
+	 *  2. **Site-scoped match** — the entry registered with the bare `id`.
+	 *  3. **Cross-page fallback** — when neither of the above hits, scan
+	 *     for any page-scoped entry with the same id from any page. This
+	 *     is the SPEC-060 cross-page drawer-trigger path: a drawer
+	 *     registered on page A is still findable when a xref on page B
+	 *     references its id. Returns the first match in registration
+	 *     order; cross-page id collisions are extraordinary enough that
+	 *     callers wanting strict resolution can pass `pageUrl` and check
+	 *     `sourceUrl` on the returned entry. */
 	getById(type: string, id: string, pageUrl?: string): EntityRegistration | undefined {
 		const typeMap = this.byTypeAndId.get(type);
 		if (!typeMap) return undefined;
 		if (pageUrl !== undefined) {
-			const pageHit = typeMap.get(pageScopedKey(pageUrl, id));
+			const normalized = normalizePageUrl(stripFragment(pageUrl));
+			const pageHit = typeMap.get(pageScopedKey(normalized, id));
 			if (pageHit) return pageHit;
 		}
-		return typeMap.get(id);
+		const siteHit = typeMap.get(id);
+		if (siteHit) return siteHit;
+		// Cross-page fallback for page-scoped entries with this id.
+		for (const entry of typeMap.values()) {
+			if (entry.id === id && entry.scope === 'page') return entry;
+		}
+		return undefined;
 	}
 
 	/** All registered entity type names */
@@ -92,20 +111,35 @@ export class EntityRegistryImpl implements EntityRegistry {
 
 /** Internal storage key for an entry. Site-scoped uses the bare id (so
  *  pre-WORK-256 callers keep working unchanged); page-scoped namespaces
- *  by sourceUrl so same-id-from-different-pages don't collide. A page-
- *  scoped entry without a usable sourceUrl falls back to the site-scoped
- *  key — that path is degenerate (it'll collide with site-scoped entries
- *  of the same id) and reflects a misconfiguration at the registration
- *  site rather than something the registry can recover from. */
+ *  by the normalised page part of sourceUrl (fragment stripped, trailing
+ *  slash trimmed) so the same id on the same page lands in one bucket
+ *  regardless of href shape. A page-scoped entry without a usable
+ *  sourceUrl falls back to the site-scoped key — that path is degenerate
+ *  (it'll collide with site-scoped entries of the same id) and reflects
+ *  a misconfiguration at the registration site rather than something the
+ *  registry can recover from. */
 function primaryKey(entry: EntityRegistration): string {
 	if (entry.scope === 'page' && entry.sourceUrl) {
-		return pageScopedKey(entry.sourceUrl, entry.id);
+		return pageScopedKey(normalizePageUrl(stripFragment(entry.sourceUrl)), entry.id);
 	}
 	return entry.id;
 }
 
-function pageScopedKey(sourceUrl: string, id: string): string {
-	return `${sourceUrl}::${id}`;
+function pageScopedKey(pageUrl: string, id: string): string {
+	return `${pageUrl}::${id}`;
+}
+
+function stripFragment(url: string): string {
+	const i = url.indexOf('#');
+	return i === -1 ? url : url.slice(0, i);
+}
+
+/** Normalise a page URL for keying purposes — strip a trailing slash so
+ *  adapters that emit `/x/` and ones that emit `/x` (or the resolver
+ *  passing either form) coalesce into one bucket. Root (`/`) is preserved. */
+function normalizePageUrl(url: string): string {
+	if (url.length > 1 && url.endsWith('/')) return url.slice(0, -1);
+	return url;
 }
 
 /** Two registrations refer to the same logical entry when their identity

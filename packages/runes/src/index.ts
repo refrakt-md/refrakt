@@ -13,6 +13,7 @@ import { nav } from './tags/nav.js';
 import { region } from './tags/region.js';
 import { layout } from './tags/layout.js';
 import { details } from './tags/details.js';
+import { drawer } from './tags/drawer.js';
 import { figure } from './tags/figure.js';
 import { gallery } from './tags/gallery.js';
 import { accordion, accordionItem } from './tags/accordion.js';
@@ -232,6 +233,14 @@ export const runes = {
     typeName: 'Details',
     category: 'Content',
     snippet: ['{% details summary="${1:Click to expand}" %}', '$0', '{% /details %}'],
+  }),
+  drawer: defineRune({
+    name: 'drawer',
+    schema: drawer,
+    description: 'Modal side panel addressed by id. Triggered by xrefs anywhere on the page; falls back to in-flow rendering without JS.',
+    typeName: 'Drawer',
+    category: 'Layout',
+    snippet: ['{% drawer id="${1:auth-explainer}" title="${2:Auth system}" %}', '$0', '{% /drawer %}'],
   }),
   figure: defineRune({
     name: 'figure',

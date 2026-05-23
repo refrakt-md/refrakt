@@ -425,6 +425,32 @@
 				}
 			}
 		},
+		"Drawer": {
+			"block": "drawer",
+			"root": ".rf-drawer",
+			"dataRune": "drawer",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"side": {
+					"source": "meta",
+					"default": "right",
+					"classPattern": ".rf-drawer--{value}",
+					"dataAttribute": "data-side"
+				},
+				"size": {
+					"source": "meta",
+					"default": "md",
+					"classPattern": ".rf-drawer--{value}",
+					"dataAttribute": "data-size"
+				},
+				"shortcut": {
+					"source": "meta",
+					"dataAttribute": "data-shortcut"
+				}
+			}
+		},
 		"Figure": {
 			"block": "figure",
 			"root": ".rf-figure",

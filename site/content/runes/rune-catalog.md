@@ -38,6 +38,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [accordion](/runes/accordion) | Collapsible accordion sections for FAQ-style content |
 | [juxtapose](/runes/juxtapose) | Interactive side-by-side comparison with slider, toggle, fade, and auto modes |
 | [details](/runes/details) | Collapsible disclosure blocks for supplementary content |
+| [drawer](/runes/drawer) | Addressable side panels triggered by xrefs — progressive enhancement turns the body into a `<dialog>` |
 | [sandbox](/runes/sandbox) | Isolated HTML/CSS/JS rendering in an iframe |
 
 ### Code & Data

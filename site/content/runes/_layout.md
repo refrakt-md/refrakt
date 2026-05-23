@@ -39,6 +39,7 @@ tint-lock: false
 - accordion
 - juxtapose
 - details
+- drawer
 - sandbox
 - showcase
 - bg

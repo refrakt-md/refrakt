@@ -90,9 +90,43 @@ describe('EntityRegistryImpl', () => {
 			expect(registry.getById('drawer', 'auth', '/page-a/')?.data.title).toBe('Page A auth drawer');
 			expect(registry.getById('drawer', 'auth', '/page-b/')?.data.title).toBe('Page B auth drawer');
 
-			// Looked up without a pageUrl, no site-scoped entry exists so the
-			// result is undefined.
-			expect(registry.getById('drawer', 'auth')).toBeUndefined();
+			// Looked up without a pageUrl, the cross-page fallback picks the
+			// first page-scoped match in registration order. Callers wanting
+			// strict resolution pass `pageUrl`.
+			expect(registry.getById('drawer', 'auth')?.data.title).toBe('Page A auth drawer');
+		});
+
+		it('cross-page lookup finds a page-scoped entry from any other page', () => {
+			const registry = new EntityRegistryImpl();
+			registry.register({
+				type: 'drawer',
+				id: 'auth',
+				scope: 'page',
+				sourceUrl: '/origin-page/',
+				data: { title: 'Origin' },
+			});
+
+			// From a different page, the page-scoped match is reached via the
+			// cross-page fallback.
+			const hit = registry.getById('drawer', 'auth', '/some-other-page/');
+			expect(hit).toBeDefined();
+			expect(hit!.data.title).toBe('Origin');
+		});
+
+		it('normalises trailing slashes when keying page-scoped entries', () => {
+			const registry = new EntityRegistryImpl();
+			registry.register({
+				type: 'drawer',
+				id: 'd',
+				scope: 'page',
+				sourceUrl: '/path/',
+				data: {},
+			});
+			// Either lookup shape (with or without trailing slash) returns
+			// the same entry — adapters that normalise URLs differently still
+			// resolve correctly.
+			expect(registry.getById('drawer', 'd', '/path/')).toBeDefined();
+			expect(registry.getById('drawer', 'd', '/path')).toBeDefined();
 		});
 
 		it('page-scoped match takes precedence over a site-scoped match of the same id', () => {

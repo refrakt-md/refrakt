@@ -11,6 +11,7 @@ import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
+import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -333,6 +334,17 @@ export const coreConfig: ThemeConfig = {
 					],
 				},
 			},
+		},
+		Drawer: {
+			block: 'drawer',
+			defaultDensity: 'compact',
+			modifiers: {
+				side: { source: 'meta', default: 'right' },
+				size: { source: 'meta', default: 'md' },
+				shortcut: { source: 'meta', noBemClass: true },
+			},
+			sections: { header: 'header', body: 'body' },
+			editHints: { title: 'inline', body: 'none', close: 'none' },
 		},
 		Figure: {
 			block: 'figure',
@@ -2394,6 +2406,10 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				});
 			}
 		}
+
+		// SPEC-060 — register every drawer rune as a page-scoped entity so
+		// `{% ref "drawer-id" /%}` resolves to the drawer's address.
+		registerDrawers(pages, registry, ctx);
 	},
 
 	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
@@ -2498,6 +2514,12 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			ctx,
 			page.url,
 		);
+
+		// SPEC-060 — rewrite `data-drawer-title-auto` placeholders to the
+		// appropriate `h{n}` based on outline depth. Runs before xref
+		// resolution so the rewritten title doesn't carry the sentinel
+		// attribute into the rendered HTML.
+		renderable = resolveAutoDrawerTitleLevels(renderable);
 
 		renderable = resolveXrefs(
 			renderable,

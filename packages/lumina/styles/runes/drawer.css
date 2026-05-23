@@ -1,0 +1,180 @@
+/* Drawer — addressable modal panel (SPEC-060).
+ *
+ * Two visual modes ride on the same `.rf-drawer` element:
+ *
+ * 1. **No-JS (in-flow)** — `.rf-drawer` not inside a `<dialog>`. Renders
+ *    as a styled callout block at its authored position, visually
+ *    distinct so the reader understands "set-aside material". Close
+ *    button stays `hidden` (the schema marks it that way; behaviors
+ *    reveals it post-enhancement).
+ * 2. **JS (panel)** — `dialog.rf-drawer[open]`. Anchored to the viewport
+ *    edge via `--rf-drawer-edge-*`. Size modifier sets width (right/left)
+ *    or height (top/bottom).
+ *
+ * `data-side` and `data-size` are the canonical variant attributes; the
+ * BEM `--side-{value}` / `--size-{value}` modifier classes ride along
+ * for theme overrides that prefer class selectors.
+ */
+
+.rf-drawer {
+	--rf-drawer-size-sm: 22rem;
+	--rf-drawer-size-md: 30rem;
+	--rf-drawer-size-lg: 42rem;
+	--rf-drawer-bg: var(--rf-color-surface);
+	--rf-drawer-fg: var(--rf-color-text);
+	--rf-drawer-border: var(--rf-color-border);
+	--rf-drawer-shadow: 0 18px 48px -12px rgb(0 0 0 / 0.35);
+}
+
+/* ─── No-JS / in-flow mode ─────────────────────────────────────── */
+
+section.rf-drawer {
+	margin: var(--rf-space-lg) 0;
+	padding: var(--rf-space-md) var(--rf-space-lg);
+	background: var(--rf-drawer-bg);
+	color: var(--rf-drawer-fg);
+	border: 1px solid var(--rf-drawer-border);
+	border-left: 4px solid var(--rf-color-accent);
+	border-radius: var(--rf-radius-md);
+}
+
+section.rf-drawer .rf-drawer__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--rf-space-sm);
+	margin-bottom: var(--rf-space-sm);
+}
+
+section.rf-drawer .rf-drawer__title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--rf-color-accent);
+	letter-spacing: 0.01em;
+}
+
+section.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
+section.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
+
+/* ─── JS / dialog mode ─────────────────────────────────────────── */
+
+dialog.rf-drawer {
+	box-sizing: border-box;
+	max-width: 100vw;
+	max-height: 100vh;
+	background: var(--rf-drawer-bg);
+	color: var(--rf-drawer-fg);
+	border: 1px solid var(--rf-drawer-border);
+	box-shadow: var(--rf-drawer-shadow);
+	padding: 0;
+	margin: 0;
+	overflow: auto;
+}
+
+dialog.rf-drawer::backdrop {
+	background: rgb(0 0 0 / 0.4);
+	backdrop-filter: blur(2px);
+}
+
+dialog.rf-drawer .rf-drawer__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--rf-space-sm);
+	padding: var(--rf-space-md) var(--rf-space-lg);
+	border-bottom: 1px solid var(--rf-drawer-border);
+	position: sticky;
+	top: 0;
+	background: var(--rf-drawer-bg);
+	z-index: 1;
+}
+
+dialog.rf-drawer .rf-drawer__title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+dialog.rf-drawer .rf-drawer__close {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	color: var(--rf-color-text-muted);
+	padding: var(--rf-space-xs) var(--rf-space-sm);
+	font-size: 1.25rem;
+	line-height: 1;
+	border-radius: var(--rf-radius-sm);
+}
+dialog.rf-drawer .rf-drawer__close:hover {
+	color: var(--rf-color-text);
+	background: var(--rf-color-surface-muted, transparent);
+}
+
+dialog.rf-drawer .rf-drawer__body {
+	padding: var(--rf-space-md) var(--rf-space-lg);
+}
+
+/* ─── Side modifiers (only meaningful in dialog mode) ─────────── */
+
+dialog.rf-drawer[data-side="right"] {
+	inset: 0 0 0 auto;
+	height: 100vh;
+	border-radius: 0;
+	border-right: 0;
+	border-top: 0;
+	border-bottom: 0;
+}
+dialog.rf-drawer[data-side="left"] {
+	inset: 0 auto 0 0;
+	height: 100vh;
+	border-radius: 0;
+	border-left: 0;
+	border-top: 0;
+	border-bottom: 0;
+}
+dialog.rf-drawer[data-side="top"] {
+	inset: 0 0 auto 0;
+	width: 100vw;
+	border-radius: 0;
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+}
+dialog.rf-drawer[data-side="bottom"] {
+	inset: auto 0 0 0;
+	width: 100vw;
+	border-radius: 0;
+	border-bottom: 0;
+	border-left: 0;
+	border-right: 0;
+}
+
+/* ─── Size modifiers (only meaningful in dialog mode) ─────────── */
+
+dialog.rf-drawer[data-side="right"][data-size="sm"],
+dialog.rf-drawer[data-side="left"][data-size="sm"] {
+	width: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="right"][data-size="md"],
+dialog.rf-drawer[data-side="left"][data-size="md"] {
+	width: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="right"][data-size="lg"],
+dialog.rf-drawer[data-side="left"][data-size="lg"] {
+	width: var(--rf-drawer-size-lg);
+}
+
+dialog.rf-drawer[data-side="top"][data-size="sm"],
+dialog.rf-drawer[data-side="bottom"][data-size="sm"] {
+	height: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="top"][data-size="md"],
+dialog.rf-drawer[data-side="bottom"][data-size="md"] {
+	height: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="top"][data-size="lg"],
+dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
+	height: var(--rf-drawer-size-lg);
+}

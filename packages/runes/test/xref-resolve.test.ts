@@ -410,6 +410,56 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 	});
 });
 
+describe('same-page href compaction', () => {
+	function setupWithDrawerEntity(pageUrl: string, drawerId: string, drawerSourceUrl: string) {
+		const registry = new EntityRegistryImpl();
+		registry.register({
+			type: 'drawer',
+			id: drawerId,
+			scope: 'page',
+			sourceUrl: drawerSourceUrl,
+			data: { title: 'A drawer' },
+		});
+		const aggregated: AggregatedData = {
+			'__core__': {
+				breadcrumbPaths: new Map(),
+				pagesByUrl: new Map(),
+				allPosts: [],
+				registry,
+				xrefPatterns: [],
+			},
+		};
+		const xref = xrefPlaceholder(drawerId, 'See it');
+		const wrapper = new Tag('div', {}, [xref]);
+		return { aggregated, page: makePage(pageUrl, 'P', wrapper) };
+	}
+
+	it('compacts an entity href to a fragment-only anchor when the entity is on the current page', () => {
+		const { aggregated, page } = setupWithDrawerEntity('/runes/drawer/', 'auth', '/runes/drawer/#drawer-auth');
+		const { ctx } = makeCtx();
+		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
+		const a = findTag(result.renderable as any, t => t.name === 'a');
+		expect(a).toBeDefined();
+		expect(a!.attributes.href).toBe('#drawer-auth');
+	});
+
+	it('tolerates trailing-slash mismatch between page URL and entity URL', () => {
+		const { aggregated, page } = setupWithDrawerEntity('/runes/drawer', 'auth', '/runes/drawer/#drawer-auth');
+		const { ctx } = makeCtx();
+		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
+		const a = findTag(result.renderable as any, t => t.name === 'a');
+		expect(a!.attributes.href).toBe('#drawer-auth');
+	});
+
+	it('leaves cross-page hrefs absolute', () => {
+		const { aggregated, page } = setupWithDrawerEntity('/some-other-page/', 'auth', '/runes/drawer/#drawer-auth');
+		const { ctx } = makeCtx();
+		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
+		const a = findTag(result.renderable as any, t => t.name === 'a');
+		expect(a!.attributes.href).toBe('/runes/drawer/#drawer-auth');
+	});
+});
+
 describe('EntityRegistration sourceUrl normalization', () => {
 	it('treats empty-string sourceUrl as undefined for registry lookups', () => {
 		const registry = new EntityRegistryImpl();
