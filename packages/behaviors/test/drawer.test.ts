@@ -259,6 +259,39 @@ describe('drawerBehavior', () => {
 		});
 	});
 
+	describe('body-scroll lock', () => {
+		it('adds .rf-drawer-open to <html> when the drawer opens', () => {
+			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
+			const trigger = createTrigger('auth');
+			drawerBehavior(section);
+			trigger.click();
+			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(true);
+		});
+
+		it('removes .rf-drawer-open when the last open drawer closes', () => {
+			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
+			const trigger = createTrigger('auth');
+			drawerBehavior(section);
+			trigger.click();
+			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
+			(dialog.querySelector('.rf-drawer__close') as HTMLButtonElement).click();
+			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(false);
+		});
+
+		it('keeps the lock while another drawer is still open', () => {
+			const a = createDrawerSection({ id: 'a', title: 'A' });
+			const b = createDrawerSection({ id: 'b', title: 'B' });
+			const triggerA = createTrigger('a');
+			const triggerB = createTrigger('b');
+			drawerBehavior(a);
+			drawerBehavior(b);
+			triggerA.click();
+			triggerB.click();
+			// triggerB closed A and opened B — lock still applies.
+			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(true);
+		});
+	});
+
 	describe('popstate (back button)', () => {
 		it('closes an open drawer when popstate fires with a non-matching hash', () => {
 			const section = createDrawerSection({ id: 'auth', title: 'Auth' });

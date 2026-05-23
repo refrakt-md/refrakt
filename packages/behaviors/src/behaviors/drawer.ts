@@ -58,6 +58,9 @@ function getRegistry(doc: Document): Map<string, DrawerRecord> {
 /** Clear all per-document drawer state. Intended for tests — production
  *  code should rely on the cleanup function returned by `drawerBehavior`. */
 export function __resetDrawerState(): void {
+	for (const doc of drawerRegistry.keys()) {
+		doc.documentElement.classList.remove('rf-drawer-open');
+	}
 	drawerRegistry.clear();
 }
 
@@ -202,6 +205,8 @@ export function drawerBehavior(el: HTMLElement): CleanupFn {
 		if (win.location.hash === fragment) {
 			win.history.replaceState(null, '', win.location.pathname + win.location.search);
 		}
+		// Lift the body-scroll lock once no other drawer is still open.
+		releaseBodyScrollLockIfIdle(doc);
 	};
 	dialog.addEventListener('close', onDialogClose);
 	cleanups.push(() => dialog.removeEventListener('close', onDialogClose));
@@ -225,6 +230,8 @@ export function drawerBehavior(el: HTMLElement): CleanupFn {
 	return () => {
 		for (const fn of cleanups) fn();
 		registry.delete(id);
+		// Lift the body-scroll lock if no drawer remains active.
+		releaseBodyScrollLockIfIdle(doc);
 		// Leave global listeners attached — they no-op when the registry is empty.
 	};
 }
@@ -273,6 +280,7 @@ function openDrawer(dialog: HTMLDialogElement): void {
 		}
 	}
 	dialog.setAttribute('data-state', 'open');
+	applyBodyScrollLock(doc);
 	if (dialog.id) {
 		const fragment = `#${dialog.id}`;
 		if (win.location.hash !== fragment) {
@@ -290,7 +298,28 @@ function closeDrawer(dialog: HTMLDialogElement): void {
 		}
 	}
 	dialog.setAttribute('data-state', 'closed');
-	// The `close` event listener on the dialog clears the hash.
+	// The `close` event listener on the dialog clears the hash and lifts
+	// the body-scroll lock (when no other drawer is open).
+}
+
+/** Body-scroll lock — set when any drawer is open, lifted when the last
+ *  open drawer closes. Implemented as a class on `<html>` so themes can
+ *  add additional rules (e.g. preserving scrollbar gutter) by extending
+ *  the selector. */
+function applyBodyScrollLock(doc: Document): void {
+	doc.documentElement.classList.add('rf-drawer-open');
+}
+
+function releaseBodyScrollLockIfIdle(doc: Document): void {
+	const registry = drawerRegistry.get(doc);
+	if (!registry) {
+		doc.documentElement.classList.remove('rf-drawer-open');
+		return;
+	}
+	for (const record of registry.values()) {
+		if (record.dialog.open) return;
+	}
+	doc.documentElement.classList.remove('rf-drawer-open');
 }
 
 function describeShortcut(s: ParsedShortcut): string {
