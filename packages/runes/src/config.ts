@@ -10,6 +10,7 @@ import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
+import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -2346,6 +2347,8 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const xrefPatterns = opts.xrefPatterns ?? [];
 
 	return {
+	preprocess: preprocessSnippets,
+
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {
 			const parentUrl = deriveParentUrl(page.url);
@@ -2504,8 +2507,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			ctx,
 		);
 
-		if (renderable === page.renderable) return page;
-		return { ...page, renderable };
+		// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
+		// into `<figure class="rf-snippet">` when not inside a fence-consuming
+		// container (codegroup, diff). The wrap is a no-op when the page
+		// has no snippet-derived fences.
+		const wrappedPage = wrapStandaloneSnippets(
+			renderable === page.renderable ? page : { ...page, renderable },
+			aggregated,
+			ctx,
+		);
+
+		return wrappedPage;
 	},
 	};
 }

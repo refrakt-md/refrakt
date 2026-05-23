@@ -202,6 +202,34 @@ async function processContentTree(
     }
   }
 
+  // Build hook sets here (rather than after the per-page loop, as before)
+  // so the preprocess phase can run during page processing — each hook set
+  // gets a chance to rewrite the parsed AST before the transform runs.
+  // The core hook set carries snippet's preprocess implementation (SPEC-062);
+  // plugins that register their own preprocess hooks plug in alongside.
+  const coreHooks = opts.xrefPatterns && opts.xrefPatterns.length > 0
+    ? createCorePipelineHooks({ xrefPatterns: opts.xrefPatterns })
+    : corePipelineHooks;
+  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
+  for (const pkg of opts.plugins ?? []) {
+    if (pkg.pipeline) {
+      hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
+    }
+  }
+
+  // Per-page preprocess context — file-system + project-root shared with the
+  // transform-time sandbox but exposed at preprocess time (variables aren't
+  // available yet). Warnings accumulate into a per-page array that callers
+  // funnel through the standard pipeline-warnings surface.
+  const preprocessWarnings: { severity: 'info' | 'warning' | 'error'; message: string; url?: string }[] = [];
+  const makePreprocessCtx = (pageUrl: string) => ({
+    info(message: string, url?: string) { preprocessWarnings.push({ severity: 'info', message, url: url ?? pageUrl }); },
+    warn(message: string, url?: string) { preprocessWarnings.push({ severity: 'warning', message, url: url ?? pageUrl }); },
+    error(message: string, url?: string) { preprocessWarnings.push({ severity: 'error', message, url: url ?? pageUrl }); },
+    projectRoot: opts.projectRoot,
+    sandbox: opts.sandbox,
+  });
+
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
     const route = router.resolve(page.relativePath, frontmatter);
@@ -212,7 +240,24 @@ async function processContentTree(
       gitTimestamps,
       frontmatter,
     );
-    const ast = Markdoc.parse(escapeFenceTags(content));
+    let ast = Markdoc.parse(escapeFenceTags(content));
+
+    // SPEC-062 preprocess phase — each plugin's preprocess hook runs before
+    // the transform, in plugin order (core first). Hooks may rewrite the AST
+    // (snippet pre-resolves itself into a fence node here); the returned AST
+    // (or the mutated one if void) feeds the transform.
+    const pageMeta = {
+      url: route.url,
+      relativePath: page.relativePath,
+      filePath: page.filePath,
+    };
+    const ppCtx = makePreprocessCtx(route.url);
+    for (const { hooks } of hookSets) {
+      if (!hooks.preprocess) continue;
+      const next = await hooks.preprocess(ast, pageMeta, ppCtx);
+      if (next) ast = next;
+    }
+
     const pagePath = posixPath(page.relativePath);
     const filePath = opts.projectRoot
       ? posixRelativeFromRoot(opts.projectRoot, page.filePath)
@@ -258,21 +303,18 @@ async function processContentTree(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
-  // Build hook sets: core always runs first, then plugins in config order.
-  // When `xrefPatterns` is configured, build a parameterized core-hooks set
-  // so the resolver sees the compiled patterns; otherwise use the no-args
-  // default const for back-compat.
-  const coreHooks = opts.xrefPatterns && opts.xrefPatterns.length > 0
-    ? createCorePipelineHooks({ xrefPatterns: opts.xrefPatterns })
-    : corePipelineHooks;
-  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
-  for (const pkg of opts.plugins ?? []) {
-    if (pkg.pipeline) {
-      hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
-    }
-  }
-
+  // `hookSets` were built before the per-page loop so the preprocess phase
+  // could run during page processing. They're reused here for register /
+  // aggregate / postProcess.
   const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
+
+  // Funnel any preprocess-phase diagnostics (file-not-found, sandbox rejections,
+  // line-range clamps) into the same warnings array the rest of the pipeline
+  // uses. Preprocess runs before `runPipeline`, so its warnings would otherwise
+  // be invisible to adapters that only print the pipeline summary.
+  for (const w of preprocessWarnings) {
+    warnings.push({ severity: w.severity, phase: 'register', pluginName: '__preprocess__', url: w.url, message: w.message });
+  }
 
   // Apply auto-resolutions to layout regions per page. Layouts are parsed once
   // and shared across pages, but the auto-open / auto-pagination sentinels need

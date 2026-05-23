@@ -60,7 +60,18 @@ export const fence: Schema = {
   transform(node, config) {
     const lang = node.attributes.language || 'shell';
 
-    const pre = new Tag('pre', { 'data-language': lang }, [
+    // Forward any data-* attributes from the fence node onto the rendered
+    // <pre>. The snippet preprocess (SPEC-062) attaches `data-snippet-source`
+    // / `data-snippet-title` / `data-snippet-lines` to fence nodes it
+    // synthesizes from `{% snippet %}` tags; the standalone wrap step
+    // queries against `data-snippet-source` to know which <pre>s to wrap
+    // in the snippet figure chrome.
+    const preAttrs: Record<string, unknown> = { 'data-language': lang };
+    for (const [key, value] of Object.entries(node.attributes)) {
+      if (key.startsWith('data-')) preAttrs[key] = value;
+    }
+
+    const pre = new Tag('pre', preAttrs, [
       new Tag('code', { 'data-language': lang }, [unescapeFenceContent(node.attributes.content)])
     ]);
     return new Tag('div', { class: 'rf-codeblock' }, [pre]);

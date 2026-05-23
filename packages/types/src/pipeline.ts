@@ -118,6 +118,38 @@ export interface PluginConfigureOptions {
 	registerFileRoot?: (namespace: string, absolutePath: string) => void;
 }
 
+/** Per-page context handed to {@link PluginPipelineHooks.preprocess}.
+ *  Extends {@link PipelineContext} with the file-system + project-root
+ *  information preprocess hooks need to do sandboxed file reads. Variables
+ *  from the transform `config.variables` aren't available yet (the
+ *  transform hasn't run), so file-reading preprocessors that need disk
+ *  access read here. */
+export interface PreprocessContext extends PipelineContext {
+	/** Absolute path to the project root (the directory containing
+	 *  `refrakt.config.json`). The snippet rune uses this as its sandbox
+	 *  anchor; any preprocessor that resolves files relative to the project
+	 *  root reads it here. */
+	projectRoot?: string;
+	/** Sandbox file-reading helpers — same shape as the transform-time
+	 *  `__sandboxReadFile` family. Preprocess runs before the transform
+	 *  config exists, so the helpers are exposed here instead. */
+	sandbox?: {
+		read: (path: string) => string | null;
+		list: (path: string) => string[];
+		exists: (path: string) => boolean;
+	};
+}
+
+/** Per-page metadata handed to {@link PluginPipelineHooks.preprocess}. */
+export interface PreprocessPage {
+	/** Resolved URL for this page. */
+	url: string;
+	/** Path relative to the content root. */
+	relativePath: string;
+	/** Absolute filesystem path to the source `.md` file. */
+	filePath: string;
+}
+
 /**
  * Build-time cross-page pipeline hooks a Plugin can provide.
  * All hooks are optional — plugins that don't need cross-page awareness
@@ -130,6 +162,23 @@ export interface PluginPipelineHooks {
 	 *  build-time configuration (e.g. plan reading `plan.dir`) wire it up
 	 *  here. Sync or async; the loader awaits the promise. */
 	configure?: (opts: PluginConfigureOptions) => void | Promise<void>;
+
+	/** Phase 0 — Preprocess.
+	 *  Runs per page on the parsed Markdoc AST before the schema-driven
+	 *  transform. Hooks may rewrite the AST (replace tags with other node
+	 *  types, inject nodes, resolve include-style references). The returned
+	 *  AST is the one passed to the transform. Return `undefined` (or `void`)
+	 *  to leave the AST unchanged.
+	 *
+	 *  Use sparingly — most concerns belong in transforms or postProcess
+	 *  hooks. Preprocess is for cases where the rune needs to be invisible
+	 *  to downstream transforms (e.g., snippet → fence so container runes
+	 *  don't need per-rune awareness). */
+	preprocess?: (
+		ast: import('@markdoc/markdoc').Node,
+		page: PreprocessPage,
+		ctx: PreprocessContext,
+	) => import('@markdoc/markdoc').Node | void | Promise<import('@markdoc/markdoc').Node | void>;
 
 	/**
 	 * Phase 2 — Register.

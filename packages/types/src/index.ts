@@ -88,6 +88,8 @@ export type {
 	PipelineWarning,
 	PluginPipelineHooks,
 	PluginConfigureOptions,
+	PreprocessContext,
+	PreprocessPage,
 } from './pipeline.js';
 
 // CLI plugin contract

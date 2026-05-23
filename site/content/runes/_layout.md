@@ -49,6 +49,7 @@ tint-lock: false
 - codegroup
 - compare
 - diff
+- snippet
 - datatable
 - chart
 - diagram
