@@ -84,38 +84,9 @@ dialog.rf-drawer {
 	overflow: auto;
 	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
 	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
-
-	/* Slide-in animation. `transition-behavior: allow-discrete` (and the
-	 * `display` / `overlay` properties in the transition list) lets the
-	 * dialog animate between its open and closed display states without
-	 * snapping. Browsers without the spec gracefully degrade — the dialog
-	 * just appears and disappears. */
-	transition:
-		transform var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease),
-		opacity var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease),
-		overlay var(--rf-drawer-anim-duration) allow-discrete,
-		display var(--rf-drawer-anim-duration) allow-discrete;
-	opacity: 0;
-}
-
-dialog.rf-drawer[open] {
-	opacity: 1;
-	transform: none;
 }
 
 dialog.rf-drawer::backdrop {
-	background: rgb(0 0 0 / 0.35);
-	backdrop-filter: blur(2px);
-	transition:
-		background var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease),
-		backdrop-filter var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease),
-		overlay var(--rf-drawer-anim-duration) allow-discrete,
-		display var(--rf-drawer-anim-duration) allow-discrete;
-	background: transparent;
-	backdrop-filter: blur(0);
-}
-
-dialog.rf-drawer[open]::backdrop {
 	background: rgb(0 0 0 / 0.35);
 	backdrop-filter: blur(2px);
 }
@@ -162,10 +133,12 @@ dialog.rf-drawer .rf-drawer__body {
 
 /* ─── Side modifiers ───────────────────────────────────────────────
  *
- * Each side anchors the dialog with `inset` and gets a starting
- * transform that slides it from off-screen. `@starting-style` blocks
- * apply only on the open transition's first frame, so the dialog
- * interpolates from the off-screen position to its anchored rest.
+ * Each side anchors the dialog with `inset`. The slide-in animation is
+ * a keyframes animation triggered by `[open]` — picked over
+ * `@starting-style` because keyframes have broader browser support
+ * (everywhere `<dialog>` works) and a clearer source-of-truth: the
+ * starting/ending frames are spelled out, no cascade-interaction
+ * footguns. The matching backdrop fade is a separate animation.
  */
 
 dialog.rf-drawer[data-side="right"] {
@@ -175,15 +148,10 @@ dialog.rf-drawer[data-side="right"] {
 		var(--rf-drawer-gutter)
 		auto;
 	height: auto;
-	transform: translateX(calc(100% + var(--rf-drawer-gutter)));
 }
-@starting-style {
-	dialog.rf-drawer[data-side="right"][open] {
-		transform: translateX(calc(100% + var(--rf-drawer-gutter)));
-		opacity: 0;
-	}
+dialog.rf-drawer[data-side="right"][open] {
+	animation: rf-drawer-slide-in-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
-
 dialog.rf-drawer[data-side="left"] {
 	inset:
 		var(--rf-drawer-gutter)
@@ -191,15 +159,10 @@ dialog.rf-drawer[data-side="left"] {
 		var(--rf-drawer-gutter)
 		var(--rf-drawer-gutter);
 	height: auto;
-	transform: translateX(calc(-100% - var(--rf-drawer-gutter)));
 }
-@starting-style {
-	dialog.rf-drawer[data-side="left"][open] {
-		transform: translateX(calc(-100% - var(--rf-drawer-gutter)));
-		opacity: 0;
-	}
+dialog.rf-drawer[data-side="left"][open] {
+	animation: rf-drawer-slide-in-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
-
 dialog.rf-drawer[data-side="top"] {
 	inset:
 		var(--rf-drawer-gutter)
@@ -207,15 +170,10 @@ dialog.rf-drawer[data-side="top"] {
 		auto
 		var(--rf-drawer-gutter);
 	width: auto;
-	transform: translateY(calc(-100% - var(--rf-drawer-gutter)));
 }
-@starting-style {
-	dialog.rf-drawer[data-side="top"][open] {
-		transform: translateY(calc(-100% - var(--rf-drawer-gutter)));
-		opacity: 0;
-	}
+dialog.rf-drawer[data-side="top"][open] {
+	animation: rf-drawer-slide-in-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
-
 dialog.rf-drawer[data-side="bottom"] {
 	inset:
 		auto
@@ -223,28 +181,43 @@ dialog.rf-drawer[data-side="bottom"] {
 		var(--rf-drawer-gutter)
 		var(--rf-drawer-gutter);
 	width: auto;
-	transform: translateY(calc(100% + var(--rf-drawer-gutter)));
 }
-@starting-style {
-	dialog.rf-drawer[data-side="bottom"][open] {
-		transform: translateY(calc(100% + var(--rf-drawer-gutter)));
-		opacity: 0;
-	}
+dialog.rf-drawer[data-side="bottom"][open] {
+	animation: rf-drawer-slide-in-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 
-dialog.rf-drawer[open] { transform: none; opacity: 1; }
+dialog.rf-drawer[open]::backdrop {
+	animation: rf-drawer-backdrop-in var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+
+@keyframes rf-drawer-slide-in-right {
+	from { transform: translateX(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-left {
+	from { transform: translateX(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-top {
+	from { transform: translateY(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-bottom {
+	from { transform: translateY(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes rf-drawer-backdrop-in {
+	from { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
+	to   { background: rgb(0 0 0 / 0.35); backdrop-filter: blur(2px); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-	dialog.rf-drawer,
-	dialog.rf-drawer[open],
-	dialog.rf-drawer::backdrop {
-		transition: none;
-	}
-	dialog.rf-drawer[data-side="right"],
-	dialog.rf-drawer[data-side="left"],
-	dialog.rf-drawer[data-side="top"],
-	dialog.rf-drawer[data-side="bottom"] {
-		transform: none;
+	dialog.rf-drawer[data-side="right"][open],
+	dialog.rf-drawer[data-side="left"][open],
+	dialog.rf-drawer[data-side="top"][open],
+	dialog.rf-drawer[data-side="bottom"][open],
+	dialog.rf-drawer[open]::backdrop {
+		animation: none;
 	}
 }
 

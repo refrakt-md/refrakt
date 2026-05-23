@@ -116,15 +116,19 @@ Explicit `headingLevel=` always wins.
 
 ## Composition
 
-Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer:
+Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer. The drawer below is live on this page; click {% ref "page-source" label="view this page's source" /%} (or press `.`) to open it.
 
 ```markdoc
 {% drawer id="page-source" title="View source" shortcut="." %}
 {% snippet path=$file.path lang="markdoc" /%}
 {% /drawer %}
 
-The page above mentions {% ref "page-source" label="its own source" /%}.
+Trigger with {% ref "page-source" label="view this page's source" /%}.
 ```
+
+{% drawer id="page-source" title="View source" shortcut="." %}
+{% snippet path=$file.path lang="markdoc" /%}
+{% /drawer %}
 
 Nested drawers and multiple simultaneous open drawers aren't supported in v1 — native `<dialog>` enforces single-modal, and stacked modals are an antipattern.
 
