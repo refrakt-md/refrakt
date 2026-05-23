@@ -179,7 +179,7 @@ The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/ru
 - Plugin's `theme.runes` adds the `Snippet` config entry
 - CSS in `plugins/docs/styles/snippet.css`
 - File-reading utility in `plugins/docs/src/lib/read-file.ts` — sandbox enforcement, line-range slicing
-- Project-root resolution helper, shared with future partial-roots resolution from {% ref "SPEC-063" /%}
+- Project-root resolution helper, shared with future file-roots resolution from {% ref "SPEC-063" /%}
 - Extension → language map in `packages/runes/src/lang-map.ts`, exported from the package index
 - The rune produces the same internal Markdoc node shape as a fenced code block (so existing rendering picks it up) plus the `snippet` wrapper
 
@@ -221,13 +221,13 @@ The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/ru
 - **Dedent** — trimming common leading whitespace. Useful when extracting from indented blocks (a method body inside a class). Defer; can be added as a `dedent` attribute later.
 - **Diff rendering** (showing two files side-by-side or as a diff) — different rune, different concern.
 - **Editable code blocks** (live-edit, playground-style) — way out of scope; that's a different primitive entirely.
-- **Path namespacing via partial roots** ({% ref "SPEC-063" /%}'s `namespace:filename` syntax) — initially v1 is project-root-only. Whether to share the resolver with partial roots is the most important Open Question below.
+- **Path namespacing via file roots** ({% ref "SPEC-063" /%}'s `namespace:filename` syntax) — initially v1 is project-root-only. Whether to share the resolver with file roots is the most important Open Question below.
 
 -----
 
 ## Open Questions
 
-**Should `path` accept partial-root namespacing once {% ref "SPEC-063" /%} lands?** E.g. `path="plan:SPEC-001-foo.md"` reads from the plan namespace. Recommend yes — share one resolver so file-finding is consistent across runes. Implementation: ship snippet with project-root resolution in v1, extend to honor namespaces when SPEC-063 lands.
+**Should `path` accept file-root namespacing once {% ref "SPEC-063" /%} lands?** E.g. `path="plan:SPEC-001-foo.md"` reads from the plan namespace. Recommend yes — share one resolver so file-finding is consistent across runes. Implementation: ship snippet with project-root resolution in v1, extend to honor namespaces when SPEC-063 lands.
 
 **Should syntax highlighting happen at build or render time?** Build (matches the existing code-block path; identity transform produces highlighted HTML). Render-time highlighting would require shipping the highlighter to the client, which is wasteful for static content.
 
@@ -245,7 +245,7 @@ The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/ru
 
 - {% ref "SPEC-060" /%} — drawer rune (primary composition target for view-source)
 - {% ref "SPEC-061" /%} — content variable surface (provides `$file.path` for the view-source pattern)
-- {% ref "SPEC-063" /%} — configurable partial roots (potential resolver share)
+- {% ref "SPEC-063" /%} — configurable file roots (potential resolver share)
 - {% ref "SPEC-068" /%} — adapter HMR contract for arbitrary file dependencies (deferred follow-up that closes the dev-experience gap)
 - `packages/lumina/styles/runes/code-block.css` — existing code-block CSS to compose with
 - `packages/runes/src/` — home of the shared `lang-map` module

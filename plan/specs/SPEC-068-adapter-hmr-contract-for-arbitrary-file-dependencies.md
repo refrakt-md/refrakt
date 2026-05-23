@@ -2,7 +2,7 @@
 
 # Adapter HMR contract for arbitrary file dependencies
 
-A deferred follow-up to {% ref "SPEC-062" /%} (snippet rune) and {% ref "SPEC-063" /%} (configurable partial roots). Both ship initially without HMR support for files outside the content tree — host pages don't auto-refresh when a referenced source file or namespaced partial changes during dev. This spec will define the dependency-tracking model and per-adapter integration that closes the gap.
+A deferred follow-up to {% ref "SPEC-062" /%} (snippet rune) and {% ref "SPEC-063" /%} (configurable file roots). Both ship initially without HMR support for files outside the content tree — host pages don't auto-refresh when a referenced source file or namespaced partial changes during dev. This spec will define the dependency-tracking model and per-adapter integration that closes the gap.
 
 This is a **placeholder** to capture the design direction so we don't relitigate it later. It will be promoted to `draft` once {% ref "SPEC-062" /%} and {% ref "SPEC-063" /%} have shipped and real usage informs the actual contract.
 
@@ -37,7 +37,7 @@ Workaround until this spec ships: save any file inside the content tree (or rest
 **Granularity decisions worth thinking through:**
 
 - File-level watch for `snippet` (specific paths referenced).
-- Directory-level watch for registered partial roots (so new partials get picked up).
+- Directory-level watch for registered file roots (so new partials get picked up).
 - Reference-counted cleanup: when the last reference to a watched file goes away, stop watching.
 
 **Performance ceilings (informational):**
@@ -74,7 +74,7 @@ Workaround until this spec ships: save any file inside the content tree (or rest
 This spec is informed by the real usage shapes that emerge from:
 
 - {% ref "SPEC-062" /%} — snippet rune (the canonical "read arbitrary project file" consumer)
-- {% ref "SPEC-063" /%} — configurable partial roots (the canonical "read partials from non-standard locations" consumer)
+- {% ref "SPEC-063" /%} — configurable file roots (the canonical "read partials from non-standard locations" consumer)
 
 Both should ship first, accrue some usage, then this spec gets promoted to `draft` with concrete adapter integration requirements drawn from real authoring patterns.
 
@@ -83,7 +83,7 @@ Both should ship first, accrue some usage, then this spec gets promoted to `draf
 ## References
 
 - {% ref "SPEC-062" /%} — snippet rune
-- {% ref "SPEC-063" /%} — configurable partial roots
+- {% ref "SPEC-063" /%} — configurable file roots
 - {% ref "SPEC-058" /%} — framework adapter parity (the context for per-adapter contracts)
 - `packages/content/src/` — existing content-pipeline HMR plumbing this would extend
 - Vite's HMR API documentation — reference model for the SvelteKit adapter path
