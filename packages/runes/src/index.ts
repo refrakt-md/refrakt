@@ -55,6 +55,7 @@ export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolv
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, firstH1, headingsToList } from './util.js';
+export { LANG_MAP, FALLBACK_LANG, inferLanguage } from './lang-map.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
