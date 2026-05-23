@@ -4,7 +4,9 @@
 
 A rune that renders the contents of a file (path relative to the project root) as a syntax-highlighted code block. Solves the recurring documentation problem of keeping inline code examples in sync with actual source files, and incidentally enables the view-source-of-current-page pattern via `{% snippet path=$file.path /%}`.
 
-Lives in `@refrakt-md/docs` — code-embed-from-disk is a docs concern. Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, depends on `$file.path` from {% ref "SPEC-061" /%} for the self-referential case, and — via a pre-resolve preprocessing step — composes transparently inside container runes that consume fenced code blocks (`{% codegroup %}`, `{% diff %}`, and any future fence-consuming rune). See **Composition** below. (Note: `$file.path` is the project-root-relative path, which matches snippet's project-root sandbox. `$page.path` exists too but is content-root-relative and the wrong frame for snippet's resolver.)
+**Core rune** (lives in `@refrakt-md/runes`). "Embed a file as a code block" is a universal primitive — useful in tutorials, marketing pages, blogs, world-building sites, anywhere an author wants build-time file embedding. Sits naturally next to `codegroup`, `compare`, `diff`, and `datatable` in the "Code & Data" category rather than in any plugin's specific surface.
+
+Composes with `{% drawer %}` from {% ref "SPEC-060" /%} for the side-panel view-source pattern, depends on `$file.path` from {% ref "SPEC-061" /%} for the self-referential case, and — via a pre-resolve preprocessing step — composes transparently inside container runes that consume fenced code blocks (`{% codegroup %}`, `{% diff %}`, and any future fence-consuming rune). See **Composition** below. (Note: `$file.path` is the project-root-relative path, which matches snippet's project-root sandbox. `$page.path` exists too but is content-root-relative and the wrong frame for snippet's resolver.)
 
 ## Problem
 
@@ -242,7 +244,7 @@ A file-extension → language map shared across the rune system:
 | `.sh`, `.bash` | `bash` |
 | (others) | `text` (no highlighting) |
 
-The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/runes`. Consumers (the snippet rune in `plugins/docs/`, the inspect tool in `packages/cli/`, the contracts generator, future runes wanting extension inference) import from there.
+The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/runes`. Consumers (the snippet rune itself, the inspect tool in `packages/cli/`, the contracts generator, future runes wanting extension inference) import from there.
 
 `@refrakt-md/runes` is the right home because:
 - It's already a dependency of every consumer (plugins, CLI, inspect tooling).
@@ -260,9 +262,20 @@ The map lives at `packages/runes/src/lang-map.ts`, exported from `@refrakt-md/ru
 The composition story requires a new per-page hook that operates on the parsed AST *before* the schema-driven transform runs. Adding it to `PluginPipelineHooks`:
 
 ```ts
+export interface PreprocessContext extends PipelineContext {
+  /** Absolute path to the project root (where `refrakt.config.json` lives).
+   *  Used by snippet's resolver as the sandbox anchor; available to any
+   *  preprocess hook that needs disk-relative resolution. */
+  projectRoot?: string;
+  /** Sandboxed filesystem helpers — same shape as the transform-time
+   *  `__sandboxReadFile` family, exposed here because preprocess runs
+   *  before the transform's config.variables exist. */
+  sandbox?: { read: (p: string) => string | null; list: (p: string) => string[]; exists: (p: string) => boolean };
+}
+
 export interface PluginPipelineHooks {
   /** Phase 0 — Preprocess.
-   *  Runs per page on the parsed Markdoc AST before the transform. Plugins
+   *  Runs per page on the parsed Markdoc AST before the transform. Hooks
    *  may rewrite the AST (replace tags with other node types, inject nodes,
    *  resolve include-style references). The returned AST is the one passed
    *  to the transform. Return `undefined` to leave the AST unchanged.
@@ -274,7 +287,7 @@ export interface PluginPipelineHooks {
   preprocess?: (
     ast: import('@markdoc/markdoc').Node,
     page: { url: string; relativePath: string; filePath: string },
-    ctx: PipelineContext,
+    ctx: PreprocessContext,
   ) => import('@markdoc/markdoc').Node | void;
 
   register?: ...;
@@ -283,21 +296,26 @@ export interface PluginPipelineHooks {
 }
 ```
 
-This is a small but meaningful pipeline extension. Snippet is the v1 consumer; future use cases (custom macros, content rewriters, build-time include resolvers) plug in the same way.
+This is a small but meaningful pipeline extension. Snippet is the v1 consumer (registered through `corePipelineHooks` since snippet is a core rune); future use cases (custom macros, content rewriters, build-time include resolvers) plug in the same way from plugins.
 
 The content pipeline runs preprocess hooks per page after parse, in the order they're registered (core first, then plugins). The output AST flows into the transform.
 
-### Docs plugin contributions
+### Core contributions
 
-- **Preprocess hook** (`plugins/docs/src/pipeline.ts:preprocess`): walks the AST, finds `{% snippet %}` tag nodes, resolves each one (read file, slice lines, infer language) and replaces it in-place with a `fence` node carrying the resolved content + `data-snippet-*` attributes. File reads + sandbox enforcement live in `plugins/docs/src/lib/read-file.ts`.
-- **PostProcess hook** (`plugins/docs/src/pipeline.ts:postProcess`): walks the rendered tree, finds `<pre>` elements carrying `data-snippet-source`, and — when the `<pre>` is not nested under a known fence-consuming container — wraps it in `<figure class="rf-snippet">` with the appropriate caption.
-- **Rune schema** in `plugins/docs/src/runes/snippet.ts`: a thin schema that declares the rune's attributes for tooling (validation, inspect output, snippet-rune docs) but whose `transform` is essentially unused — by the time transform runs, the preprocess hook has already replaced the tag. The schema's transform throws a clear error if it ever runs ("snippet was not pre-resolved; ensure docs plugin's preprocess hook is registered").
-- **CSS** in `plugins/docs/styles/snippet.css` covers `.rf-snippet*` selectors for the standalone form.
+- **Preprocess + postProcess hooks** join `corePipelineHooks` in `packages/runes/src/config.ts` (via the existing `createCorePipelineHooks` factory introduced in WORK-253). The preprocess hook walks the AST, finds `{% snippet %}` tag nodes, resolves each one (read file, slice lines, infer language), and replaces it in-place with a `fence` node carrying the resolved content + `data-snippet-*` attributes. The postProcess hook walks the rendered tree, finds `<pre>` elements carrying `data-snippet-source`, and — when not nested under a known fence-consuming container — wraps in `<figure class="rf-snippet">` with the appropriate caption.
+- **Rune schema** in `packages/runes/src/tags/snippet.ts`: a thin schema declaring the rune's attributes for tooling (validation, inspect output, snippet-rune docs). The `transform` function is unreachable in normal operation (preprocess replaces the tag before transform runs); if it does execute it throws a clear error pointing at core's preprocess hook registration. Schema is exported via `packages/runes/src/index.ts` so it joins the core `tags` map.
+- **Theme config entry** added to `coreConfig` in `packages/runes/src/config.ts` so `refrakt inspect snippet` works and the contracts generator picks it up.
+- **File-reading helper** in `packages/runes/src/lib/read-file.ts` — sandbox enforcement matching the Path Resolution section (absolute-path reject, traversal reject, symlink reject, existence check, line-range slicing). Designed for reuse by future file-reading runes.
+- **CSS** in `packages/lumina/styles/runes/snippet.css` covers `.rf-snippet*` selectors for the standalone form.
+
+### Per-build context for the preprocess hook
+
+Preprocess hooks need file-system access — they run before transform, so the `__sandboxReadFile`-style variables that runes use at transform time aren't available yet. Core's preprocess hook receives the per-page context augmented with `projectRoot` and the existing `SandboxHooks` (read/list/exists) so the snippet resolver can do sandboxed file reads. Plugin-defined preprocess hooks get the same context — generic, not snippet-specific.
 
 ### Shared utilities
 
-- **Extension → language map** in `packages/runes/src/lang-map.ts` (delivered in WORK-254), exported from `@refrakt-md/runes`. Used by the docs plugin's preprocess hook for language inference.
-- **Project-root resolution helper** in `plugins/docs/src/lib/read-file.ts` — sandbox enforcement matching the Path Resolution section. Shared with future file-reading runes; potentially promoted to `@refrakt-md/runes` if more consumers appear.
+- **Extension → language map** in `packages/runes/src/lang-map.ts` (delivered in WORK-254), exported from `@refrakt-md/runes`. Used by core's preprocess hook for language inference.
+- **Project-root resolution helper** lives in `packages/runes/src/lib/read-file.ts` alongside the file-reading utility. Future file-reading runes (built-time includes, generated-content embeds) reuse it.
 
 ### Pipeline integration
 
@@ -332,7 +350,7 @@ The wrap step (postProcess) is a regular cross-page pipeline postProcess hook �
 - [ ] `data-source-path` is set on the standalone figure wrapper to the resolved path (relative to project root)
 - [ ] `data-lines` is set on the standalone figure wrapper when `lines=` is used
 - [ ] `{% snippet path=$file.path /%}` works end-to-end via the `$file.path` variable (project-root frame matches the sandbox)
-- [ ] CSS in the docs plugin covers `.rf-snippet*` selectors
+- [ ] CSS in Lumina covers `.rf-snippet*` selectors
 - [ ] Authoring docs cover the rune, sandbox rules, line range syntax, language inference table, and composition behavior
 - [ ] A dogfooded rune-catalog page lives at `site/content/runes/snippet.md`, linked from the `_layout.md` sidebar nav. The page includes a live example that loads a real file from refrakt's content/source tree, a view-source-of-itself example (`path=$file.path`), and live composition examples inside `{% codegroup %}` and `{% diff %}` — so the reader sees the rune working end-to-end against real content, not stubs.
 
@@ -340,13 +358,13 @@ The wrap step (postProcess) is a regular cross-page pipeline postProcess hook �
 
 - [ ] `PluginPipelineHooks` gains a `preprocess` hook that runs per page on the parsed AST before the transform
 - [ ] The content pipeline calls registered `preprocess` hooks in plugin order between `Markdoc.parse` and `Markdoc.transform`
-- [ ] The docs plugin's `preprocess` hook replaces every `{% snippet %}` tag node in the AST with a `fence` node carrying the resolved file content, the resolved language, and `data-snippet-source` / `data-snippet-title` / `data-snippet-lines` attributes as appropriate
+- [ ] Core's `preprocess` hook (part of `corePipelineHooks`) replaces every `{% snippet %}` tag node in the AST with a `fence` node carrying the resolved file content, the resolved language, and `data-snippet-source` / `data-snippet-title` / `data-snippet-lines` attributes as appropriate
 - [ ] `{% snippet %}` inside `{% codegroup %}` renders as a tab containing the file's content, with the language inferred or set, and **no `<figure>` wrapper applied**
 - [ ] `{% snippet %}` inside `{% diff %}` (two snippets — before and after) renders as a diff with hunks computed from the two files' contents, and **no `<figure>` wrapper applied**
 - [ ] Mixed children — `{% snippet %}` and triple-backtick fences in the same `{% codegroup %}` or `{% diff %}` — work uniformly (containers don't distinguish them)
 - [ ] `{% snippet %}` at document level (not nested in a fence-consuming container) renders inside the `<figure class="rf-snippet">` wrapper with optional `<figcaption>` from `title=`
 - [ ] The wrap step suppresses the figure wrapper when the `<pre data-snippet-source>` is descended from a known fence-consuming container output (`data-rune="code-group"`, `data-rune="diff"`)
-- [ ] The snippet rune schema's `transform` function is unreachable in normal operation (preprocess replaces the tag before transform runs); if it does execute, it throws a clear error pointing the user at the docs plugin's preprocess hook
+- [ ] The snippet rune schema's `transform` function is unreachable in normal operation (preprocess replaces the tag before transform runs); if it does execute, it throws a clear error pointing the user at core's preprocess hook registration
 - [ ] Tests cover all the composition cases above with real file fixtures
 
 -----
