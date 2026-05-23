@@ -134,9 +134,17 @@ dialog.rf-drawer .rf-drawer__body {
 /* Collapse the vertical margins of first / last children inside the body
  * so the drawer's own padding is what spaces content from the chrome —
  * otherwise a `<figure>` or `<p>` with its own top/bottom margin stacks
- * on top of the body's padding and the content looks adrift. */
-dialog.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
-dialog.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
+ * on top of the body's padding and the content looks adrift. A snippet
+ * inside a drawer compiles to `body > .rf-codeblock > .rf-snippet > <pre>`,
+ * so the margin-zero walk reaches two levels deep to catch the figure. */
+dialog.rf-drawer .rf-drawer__body > :first-child,
+dialog.rf-drawer .rf-drawer__body > :first-child > :first-child {
+	margin-top: 0;
+}
+dialog.rf-drawer .rf-drawer__body > :last-child,
+dialog.rf-drawer .rf-drawer__body > :last-child > :last-child {
+	margin-bottom: 0;
+}
 
 /* ─── Side modifiers ───────────────────────────────────────────────
  *
@@ -156,7 +164,7 @@ dialog.rf-drawer[data-side="right"] {
 		auto;
 	height: auto;
 }
-dialog.rf-drawer[data-side="right"][open] {
+dialog.rf-drawer[data-side="right"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="right"][data-state="closing"] {
@@ -170,7 +178,7 @@ dialog.rf-drawer[data-side="left"] {
 		var(--rf-drawer-gutter);
 	height: auto;
 }
-dialog.rf-drawer[data-side="left"][open] {
+dialog.rf-drawer[data-side="left"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="left"][data-state="closing"] {
@@ -184,7 +192,7 @@ dialog.rf-drawer[data-side="top"] {
 		var(--rf-drawer-gutter);
 	width: auto;
 }
-dialog.rf-drawer[data-side="top"][open] {
+dialog.rf-drawer[data-side="top"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="top"][data-state="closing"] {
@@ -198,14 +206,14 @@ dialog.rf-drawer[data-side="bottom"] {
 		var(--rf-drawer-gutter);
 	width: auto;
 }
-dialog.rf-drawer[data-side="bottom"][open] {
+dialog.rf-drawer[data-side="bottom"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="bottom"][data-state="closing"] {
 	animation: rf-drawer-slide-out-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
 }
 
-dialog.rf-drawer[open]::backdrop {
+dialog.rf-drawer[open]:not([data-state="closing"])::backdrop {
 	animation: rf-drawer-backdrop-in var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-state="closing"]::backdrop {
