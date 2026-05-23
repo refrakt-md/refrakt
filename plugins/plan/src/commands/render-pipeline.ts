@@ -270,9 +270,14 @@ function createRegistry(): { registry: EntityRegistry; entries: EntityRegistrati
 			if (!byTypeAndId.get(entry.type)!.has(entry.id)) {
 				byTypeAndId.get(entry.type)!.set(entry.id, entry);
 			}
-			if (!byTypeAndUrl.has(entry.type)) byTypeAndUrl.set(entry.type, new Map());
-			if (!byTypeAndUrl.get(entry.type)!.has(entry.sourceUrl)) byTypeAndUrl.get(entry.type)!.set(entry.sourceUrl, []);
-			byTypeAndUrl.get(entry.type)!.get(entry.sourceUrl)!.push(entry);
+			// Skip URL indexing for entries without a sourceUrl (SPEC-064:
+			// plan content registered without a site URL is still in the
+			// primary index but doesn't participate in URL lookups).
+			if (entry.sourceUrl !== undefined) {
+				if (!byTypeAndUrl.has(entry.type)) byTypeAndUrl.set(entry.type, new Map());
+				if (!byTypeAndUrl.get(entry.type)!.has(entry.sourceUrl)) byTypeAndUrl.get(entry.type)!.set(entry.sourceUrl, []);
+				byTypeAndUrl.get(entry.type)!.get(entry.sourceUrl)!.push(entry);
+			}
 		},
 		getAll(type: string) {
 			return [...(byTypeAndId.get(type)?.values() ?? [])];
@@ -1226,9 +1231,13 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,
 	);
 
-	// 4b. Resolve xref placeholders into clickable links
+	// 4b. Resolve xref placeholders into clickable links. The CLI render
+	// pipeline doesn't currently consume refrakt.config.json#/xrefs, so
+	// patterns are empty here — refs that can't be resolved via the registry
+	// will render as `rf-xref--unresolved`. If CLI consumers want pattern
+	// fallback, a future enhancement can thread compiled patterns through.
 	const processedPages = postProcessedPages.map(p => {
-		const resolved = resolveXrefs(p.renderable, p.url, registry, ctx);
+		const resolved = resolveXrefs(p.renderable, p.url, registry, [], ctx);
 		if (resolved === p.renderable) return p;
 		return { ...p, renderable: resolved as typeof p.renderable };
 	});

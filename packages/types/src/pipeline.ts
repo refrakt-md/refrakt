@@ -45,6 +45,19 @@ export interface EntityRegistration {
 	 *  "no usable URL" and falls through to {@link XrefPattern} resolution.
 	 *  Empty strings passed at registration are normalized to `undefined`. */
 	sourceUrl?: string;
+	/** Project-root-relative path to the source `.md` file backing this entity.
+	 *  Populated by plugins that can extract content from disk (e.g. the plan
+	 *  plugin's unconditional-scan path). Consumed by content-embedding runes
+	 *  like {% expand %} (SPEC-066) that need to read and slice the source
+	 *  file at build time. Optional — entities registered from in-memory
+	 *  sources or pages without a stable file path may omit it. */
+	sourceFile?: string;
+	/** Function returning the entity's top-level AST node from a freshly-
+	 *  parsed source file, or `null` if the file's structure has been edited
+	 *  away from the expected shape. Consumed by {% expand %} (SPEC-066) to
+	 *  extract the entity's subtree for inline substitution. Optional and
+	 *  paired with `sourceFile` — entities without a backing file omit both. */
+	extract?: (parsedSource: import('@markdoc/markdoc').Node) => import('@markdoc/markdoc').Node | null;
 	/** Entity-specific payload */
 	data: Record<string, unknown>;
 }
@@ -85,12 +98,39 @@ export interface PipelineWarning {
 	message: string;
 }
 
+/** Per-build configuration handed to {@link PluginPipelineHooks.configure}.
+ *  Plugins that need access to the full `refrakt.config.json` (e.g. the plan
+ *  plugin needs `plan.dir` for its unconditional-scan path) read it here. */
+export interface PluginConfigureOptions {
+	/** The full, normalized refrakt config. Typed as `unknown` here to avoid
+	 *  a circular import between pipeline.ts and theme.ts; plugins cast to
+	 *  `RefraktConfig` from `@refrakt-md/types`. */
+	config: unknown;
+	/** Absolute path to the directory containing `refrakt.config.json`.
+	 *  Useful for resolving config-relative paths (`plan.dir`, etc.). */
+	configDir: string;
+	/** Dynamically register a file-root namespace. Use this when the plugin's
+	 *  contribution depends on user config (e.g., the plan plugin registers
+	 *  `plan:` pointing at the user's `plan.dir`, which isn't knowable
+	 *  statically from the plugin's package directory). Roots registered
+	 *  here merge with `Plugin.fileRoots` and user-config `fileRoots`; user
+	 *  config still wins any namespace collision. */
+	registerFileRoot?: (namespace: string, absolutePath: string) => void;
+}
+
 /**
  * Build-time cross-page pipeline hooks a Plugin can provide.
- * All three hooks are optional — plugins that don't need cross-page
- * awareness omit this field entirely.
+ * All hooks are optional — plugins that don't need cross-page awareness
+ * omit this field entirely.
  */
 export interface PluginPipelineHooks {
+	/** Phase −1 — Configure.
+	 *  Runs once per build before any other hook, receiving the user's
+	 *  `refrakt.config.json` and the config-file directory. Plugins that need
+	 *  build-time configuration (e.g. plan reading `plan.dir`) wire it up
+	 *  here. Sync or async; the loader awaits the promise. */
+	configure?: (opts: PluginConfigureOptions) => void | Promise<void>;
+
 	/**
 	 * Phase 2 — Register.
 	 * Scan all transformed pages and register named entities in the site-wide registry.

@@ -230,9 +230,30 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 			const ctx = await assembleSiteContext(site, { configDir });
 			_transform = ctx.transform;
 
+			// Run each plugin's `configure` lifecycle hook before any pipeline
+			// phases. Plugins that need build-time config (e.g. plan reading
+			// plan.dir for its unconditional-scan path) wire it up here. The
+			// `registerFileRoot` callback lets plugins dynamically register
+			// file-root namespaces whose paths depend on user config (the
+			// plan plugin uses this to expose the user's plan.dir as `plan:`).
+			const dynamicFileRoots: FileRoots = {};
+			const registerFileRoot = (namespace: string, absolutePath: string) => {
+				dynamicFileRoots[namespace] = absolutePath;
+			};
+			for (const pkg of ctx.communityPackages ?? []) {
+				if (pkg.pipeline?.configure) {
+					await pkg.pipeline.configure({
+						config: rawConfig,
+						configDir,
+						registerFileRoot,
+					});
+				}
+			}
+
+			const pluginRoots = { ...ctx.pluginFileRoots, ...dynamicFileRoots };
 			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
 				userFileRoots,
-				ctx.pluginFileRoots,
+				pluginRoots,
 			);
 			for (const warning of fileRootWarnings) {
 				process.stderr.write(`refrakt: ${warning}\n`);
@@ -346,9 +367,27 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 			const ctx = await assembleSiteContext(site);
 			_transform = ctx.transform;
 
+			// Plugin `configure` lifecycle — same as in createRefraktLoader.
+			// Virtual hosts pass the pre-resolved SiteConfig directly; plugins
+			// see the per-site config object rather than a full RefraktConfig.
+			const dynamicFileRoots: FileRoots = {};
+			const registerFileRoot = (namespace: string, absolutePath: string) => {
+				dynamicFileRoots[namespace] = absolutePath;
+			};
+			for (const pkg of ctx.communityPackages ?? []) {
+				if (pkg.pipeline?.configure) {
+					await pkg.pipeline.configure({
+						config: site,
+						configDir: projectRoot ?? '',
+						registerFileRoot,
+					});
+				}
+			}
+
+			const pluginRoots = { ...ctx.pluginFileRoots, ...dynamicFileRoots };
 			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
 				userFileRoots,
-				ctx.pluginFileRoots,
+				pluginRoots,
 			);
 			for (const warning of fileRootWarnings) {
 				process.stderr.write(`refrakt: ${warning}\n`);
