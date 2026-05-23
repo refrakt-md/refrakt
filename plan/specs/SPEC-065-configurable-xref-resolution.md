@@ -85,7 +85,7 @@ Critical constraint discovered in the design conversation: **refrakt must stay t
 | Field | Type | Required | Meaning |
 |-------|------|----------|---------|
 | `match` | string | yes | Regex pattern. Compiled at config load. Anchored implicitly to whole-string match (`^` and `$` auto-applied if absent). |
-| `template` | string | yes | URL template. Supports `{id}` (full matched ID) and `{name}` references to named groups in the regex. Values URL-encoded via `encodeURIComponent` before insertion. |
+| `template` | string | yes | URL template. Supports `{id}` (full matched ID) and `{name}` references to named groups in the regex. Values are encoded per URL segment before insertion — see Pattern resolution mechanics below. |
 | `type` | string | no | CSS modifier class assigned as `rf-xref--{type}`. Defaults to `"external"`. |
 | `label` | string | no | Template for the rendered link text. Same placeholder syntax as `template`. Defaults to `"{id}"`. |
 
@@ -113,19 +113,24 @@ The `label=` attribute on the rune itself still overrides any computed label:
 
 ### Resolution chain
 
-For each xref placeholder found in postProcess, the resolver attempts in order:
+Entity lookup and URL resolution are separable. For each xref placeholder found in postProcess:
 
-1. **Registry exact-ID match** — `registry.getById(typeHint?, id)` (existing behavior, optionally filtered by `type` attribute on the rune)
-2. **Registry name match** — case-insensitive match against entity `name`/`title` (existing behavior)
-3. **Pattern matching** — iterate `xrefs` in array order; first regex that matches the ID wins
-4. **Unresolved fallback** — render `rf-xref--unresolved` span with build warning (existing behavior)
+1. **Entity lookup** — `registry.getById(typeHint?, id)` (exact-ID, optionally type-filtered), then case-insensitive name/title match. If found, capture the entity's metadata (label, type, kind) for use in rendering.
+2. **URL resolution** — if the matched entity has a `sourceUrl` that is present and non-empty, use it directly (`data-xref-source="registry"`). Otherwise, iterate `xrefs` patterns in array order; the first regex that matches the ID provides the URL (`data-xref-source="pattern"`).
+3. **Unresolved fallback** — if neither the entity's `sourceUrl` nor any pattern produces a URL, render `rf-xref--unresolved` span with build warning.
+
+The split lets entity-lookup and URL-resolution succeed independently. The common case where this matters: SPEC-064's unconditional plan-content registration produces entities with `sourceUrl: undefined` (plan content that isn't published to the local site). Entity metadata (title, type) comes from the registry; URL comes from a configured pattern (e.g., trace, an external plan host). The rendered anchor gets the right label *and* a working href.
+
+It also closes the empty-`sourceUrl` footgun: a registry-found entity without a usable URL never produces `<a href="">` — the resolver falls through to patterns instead, and worst case to the unresolved fallback.
+
+**Normalization at registration time:** when an entity is registered with `sourceUrl: ""` (empty string), the registry normalizes to `sourceUrl: undefined`. Distinguishing explicit-empty from accidental-empty isn't useful; both behave the same.
 
 ### Pattern resolution mechanics
 
 When a pattern matches:
 
 1. Extract match groups from the regex result. `{id}` is the full matched string; named groups (`(?<name>...)`) are available as `{name}` in templates.
-2. Apply `encodeURIComponent` to each substituted value before inserting into `template` and `label` strings.
+2. Encode each substituted value **per URL segment**: split the value on `/`, apply `encodeURIComponent` to each segment, rejoin with `/`. Single-segment values are unaffected (the split is a no-op); multi-segment paths preserve their structure with each segment correctly encoded.
 3. Render the resolved anchor:
 
 ```html
@@ -137,7 +142,20 @@ When a pattern matches:
 </a>
 ```
 
-The `data-xref-source="pattern"` attribute distinguishes pattern-resolved refs from registry-resolved ones (existing registry-resolved refs get `data-xref-source="registry"` for symmetry — minor change to the existing resolver).
+The per-segment encoding handles the common case where a pattern captures a path-shaped value:
+
+```json
+{
+  "match": "^docs:(?<path>[a-z0-9/-]+)$",
+  "template": "https://example.com/docs/{path}"
+}
+```
+
+A ref to `docs:guide/intro` resolves to `https://example.com/docs/guide/intro` (slashes preserved, each segment encoded), not `https://example.com/docs/guide%2Fintro` (which most servers route to a different path entirely).
+
+If an author ever needs to encode a literal `/` within a single segment (a vanishingly rare case), that's a future open question — RFC 6570-style placeholder variants (`{+name}` for reserved expansion, etc.) could be added if real demand surfaces.
+
+The `data-xref-source` attribute reflects URL provenance: `"registry"` when the URL came from the entity's `sourceUrl`, `"pattern"` when it came from a pattern. Entity metadata may have come from the registry in either case.
 
 ### Self-reference detection
 
@@ -211,7 +229,7 @@ export function resolveXrefs(
 ): unknown
 ```
 
-After the existing registry exact-ID and name-match attempts (and before the unresolved fallback), iterate `patterns` and try each `match`. First hit wins.
+After the entity-lookup attempts (and before the unresolved fallback), if the matched entity has no usable `sourceUrl` (or no entity was found), iterate `patterns` and try each `match`. First hit wins.
 
 ### Plumbing
 
@@ -239,14 +257,17 @@ After the existing registry exact-ID and name-match attempts (and before the unr
 - [ ] Duplicate `match` patterns emit a build warning (don't fail)
 - [ ] Reserved type value `unresolved` fails config load
 - [ ] `match` patterns are anchored to whole-string by default (`^(?:...)$` auto-applied unless explicit anchors present)
-- [ ] Resolution chain: registry exact-ID → registry name → patterns (first match) → unresolved
+- [ ] Resolution chain: entity lookup (registry exact-ID → registry name) captures entity metadata; URL resolution uses entity `sourceUrl` if present and non-empty, else falls through to patterns (first match), else unresolved
+- [ ] Registry entities with `sourceUrl: undefined` or `sourceUrl: ""` never produce `<a href="">`; the resolver always falls through to patterns or to the unresolved state
+- [ ] At registration time, `sourceUrl: ""` is normalized to `sourceUrl: undefined`
 - [ ] Patterns evaluated in array order; first match wins for any ID
 - [ ] Named groups in regex are accessible as `{name}` in templates
-- [ ] All placeholder values are URL-encoded via `encodeURIComponent` before insertion
+- [ ] All placeholder values are encoded per URL segment: split on `/`, encode each segment via `encodeURIComponent`, rejoin with `/` (so path-shaped captures preserve their slashes)
+- [ ] Single-segment captures are encoded the same as full `encodeURIComponent` would produce
 - [ ] `type` field assigns `rf-xref--{type}` CSS modifier (default `external`)
 - [ ] `label` field templates the link text (default `{id}`)
 - [ ] `label=` attribute on the rune still overrides any computed label
-- [ ] Rendered anchor includes `data-xref-id="{matched-id}"` and `data-xref-source="pattern"` (or `"registry"` for registry-resolved)
+- [ ] Rendered anchor includes `data-xref-id="{matched-id}"` and `data-xref-source="registry"` (URL from entity) or `data-xref-source="pattern"` (URL from pattern)
 - [ ] Self-reference warning fires when resolved href equals current page URL
 - [ ] Existing refs unaffected when no `xrefs` config present (no regression)
 - [ ] Unresolved xrefs (no registry hit, no pattern match) still render as `rf-xref--unresolved`
@@ -282,8 +303,6 @@ After the existing registry exact-ID and name-match attempts (and before the unr
 **What about pattern matching against full URLs** (e.g., `{% ref "https://github.com/x/y/issues/5" /%}` resolving to GitHub-style rendering)? Recommend no — that's already a regular markdown link in disguise. Refs are for *IDs*, not URLs.
 
 **Should pattern-resolved refs have a `target="_blank"` baked into rendered HTML?** Strongly leaning toward no — target attributes are accessibility and UX choices that belong in themes, not the resolver. Themes can target `.rf-xref--external` or non-local types via JS / CSS-managed link behavior.
-
-**Should the resolver emit any warning when a registry-resolved ref's `entity.sourceUrl` is empty or invalid?** Today the resolver just renders an anchor with `href=""`, which is a footgun. Tangential but worth fixing alongside (or in a small follow-up).
 
 **Caching and incremental build correctness.** Patterns compile once per config load; recompilation only happens on full reload. For dev-mode HMR, if `refrakt.config.json` changes, the dev server triggers a full reload anyway — so no special invalidation logic needed in v1. Worth confirming in the implementation pass.
 
