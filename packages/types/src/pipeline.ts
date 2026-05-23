@@ -138,6 +138,13 @@ export interface PreprocessContext extends PipelineContext {
 		list: (path: string) => string[];
 		exists: (path: string) => boolean;
 	};
+	/** Markdoc variables that would otherwise be available to transforms
+	 *  via `config.variables`. Snippet's preprocess uses these to resolve
+	 *  attribute values that come in as Markdoc `Variable` nodes (e.g.
+	 *  `path=$file.path` parses as a variable reference, not a string).
+	 *  Variable nodes that aren't resolvable here render as empty strings,
+	 *  matching transform-time behaviour. */
+	variables?: Record<string, unknown>;
 }
 
 /** Per-page metadata handed to {@link PluginPipelineHooks.preprocess}. */

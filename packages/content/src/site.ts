@@ -222,12 +222,13 @@ async function processContentTree(
   // available yet). Warnings accumulate into a per-page array that callers
   // funnel through the standard pipeline-warnings surface.
   const preprocessWarnings: { severity: 'info' | 'warning' | 'error'; message: string; url?: string }[] = [];
-  const makePreprocessCtx = (pageUrl: string) => ({
+  const makePreprocessCtx = (pageUrl: string, variables?: Record<string, unknown>) => ({
     info(message: string, url?: string) { preprocessWarnings.push({ severity: 'info', message, url: url ?? pageUrl }); },
     warn(message: string, url?: string) { preprocessWarnings.push({ severity: 'warning', message, url: url ?? pageUrl }); },
     error(message: string, url?: string) { preprocessWarnings.push({ severity: 'error', message, url: url ?? pageUrl }); },
     projectRoot: opts.projectRoot,
     sandbox: opts.sandbox,
+    variables,
   });
 
   for (const page of tree.pages()) {
@@ -242,22 +243,9 @@ async function processContentTree(
     );
     let ast = Markdoc.parse(escapeFenceTags(content));
 
-    // SPEC-062 preprocess phase — each plugin's preprocess hook runs before
-    // the transform, in plugin order (core first). Hooks may rewrite the AST
-    // (snippet pre-resolves itself into a fence node here); the returned AST
-    // (or the mutated one if void) feeds the transform.
-    const pageMeta = {
-      url: route.url,
-      relativePath: page.relativePath,
-      filePath: page.filePath,
-    };
-    const ppCtx = makePreprocessCtx(route.url);
-    for (const { hooks } of hookSets) {
-      if (!hooks.preprocess) continue;
-      const next = await hooks.preprocess(ast, pageMeta, ppCtx);
-      if (next) ast = next;
-    }
-
+    // Compute the page-variable surface before preprocess so file-reading
+    // preprocessors (snippet) can resolve `path=$file.path` style attribute
+    // references against the same variables a transform-time evaluator would.
     const pagePath = posixPath(page.relativePath);
     const filePath = opts.projectRoot
       ? posixRelativeFromRoot(opts.projectRoot, page.filePath)
@@ -284,6 +272,24 @@ async function processContentTree(
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
     };
+
+    // SPEC-062 preprocess phase — runs after variables are computed (so
+    // hooks can resolve `path=$file.path`-style attribute references against
+    // them) and before the schema-driven transform. Snippet pre-resolves
+    // itself into a fence node here; the returned AST (or the mutated one
+    // if void) feeds the transform.
+    const pageMeta = {
+      url: route.url,
+      relativePath: page.relativePath,
+      filePath: page.filePath,
+    };
+    const ppCtx = makePreprocessCtx(route.url, contentVariables);
+    for (const { hooks } of hookSets) {
+      if (!hooks.preprocess) continue;
+      const next = await hooks.preprocess(ast, pageMeta, ppCtx);
+      if (next) ast = next;
+    }
+
     const { renderable, headings } = transformContent(
       ast,
       content,

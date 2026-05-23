@@ -29,6 +29,29 @@ import { inferLanguage } from './lang-map.js';
 
 const { Ast, Tag } = Markdoc;
 
+/** Resolve a Markdoc attribute value to a string. Handles literal strings
+ *  and Markdoc `Variable` AST nodes (e.g. `path=$file.path` parses as a
+ *  Variable, not a string). Unresolvable references (variable missing from
+ *  the context, or attribute is some other AST shape) return an empty
+ *  string — matching transform-time variable-evaluation behaviour. */
+function resolveAttributeValue(value: unknown, variables: Record<string, unknown> | undefined): string {
+	if (value === undefined || value === null) return '';
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+	if (typeof value === 'object' && '$$mdtype' in (value as Record<string, unknown>)) {
+		const node = value as { $$mdtype: string; path?: unknown };
+		if (node.$$mdtype === 'Variable' && Array.isArray(node.path)) {
+			let current: unknown = variables;
+			for (const segment of node.path as string[]) {
+				if (current === null || current === undefined) return '';
+				current = (current as Record<string, unknown>)[segment];
+			}
+			return current === null || current === undefined ? '' : String(current);
+		}
+	}
+	return '';
+}
+
 /** Containers whose output consumes their fence children — wrapping a
  *  snippet-derived `<pre>` inside them would be duplicate chrome. */
 const FENCE_CONSUMING_CONTAINERS = new Set(['code-group', 'diff']);
@@ -70,11 +93,13 @@ function walkAndReplaceSnippets(
 		const child = node.children[i];
 
 		if (child.type === 'tag' && child.tag === 'snippet') {
-			const fence = resolveSnippetToFence(child, page, ctx, projectRoot);
-			if (fence) {
-				node.children[i] = fence;
-				onReplaced(true);
-			}
+			// Always produce a fence — successful resolution returns the
+			// real fence; sandbox / missing-file / variable-resolution errors
+			// produce an error fence so the snippet tag never reaches the
+			// schema's transform (which throws). The build keeps going and
+			// the failure is visible on the rendered page.
+			node.children[i] = resolveSnippetToFence(child, page, ctx, projectRoot);
+			onReplaced(true);
 			// Don't recurse — replaced.
 			continue;
 		}
@@ -83,38 +108,68 @@ function walkAndReplaceSnippets(
 	}
 }
 
+/** Build a `fence` AST node that renders a clear error message in place of
+ *  the snippet. Used when resolution fails (sandbox, missing file, malformed
+ *  lines, unresolvable variable reference). The fence carries the original
+ *  attempted path in `data-snippet-source` so tooling can still detect
+ *  snippet provenance. */
+function makeErrorFence(pathAttr: string, message: string): Node {
+	return new Ast.Node('fence', {
+		content: `snippet error: ${message}\n`,
+		language: 'text',
+		'data-snippet-source': pathAttr || '(unresolved)',
+		'data-snippet-error': message,
+	});
+}
+
 function resolveSnippetToFence(
 	tag: Node,
 	page: PreprocessPage,
 	ctx: PreprocessContext,
 	projectRoot: string,
-): Node | null {
-	const pathAttr = String(tag.attributes.path ?? '');
-	const lines = tag.attributes.lines !== undefined ? String(tag.attributes.lines) : undefined;
-	const langAttr = tag.attributes.lang !== undefined ? String(tag.attributes.lang) : undefined;
-	const titleAttr = tag.attributes.title !== undefined ? String(tag.attributes.title) : undefined;
+): Node {
+	const pathAttr = resolveAttributeValue(tag.attributes.path, ctx.variables);
+	const lines = tag.attributes.lines !== undefined
+		? resolveAttributeValue(tag.attributes.lines, ctx.variables)
+		: undefined;
+	const langAttr = tag.attributes.lang !== undefined
+		? resolveAttributeValue(tag.attributes.lang, ctx.variables)
+		: undefined;
+	const titleAttr = tag.attributes.title !== undefined
+		? resolveAttributeValue(tag.attributes.title, ctx.variables)
+		: undefined;
+
+	if (!pathAttr) {
+		const msg = 'snippet `path` attribute is required (and an unresolvable variable reference resolves to empty)';
+		ctx.error(msg, page.url);
+		return makeErrorFence('', msg);
+	}
 
 	let result;
 	try {
 		result = readSnippetFile({
 			pathAttr,
 			projectRoot,
-			lines,
+			lines: lines || undefined,
 			referencingPage: page.relativePath,
 		});
 	} catch (err) {
 		if (err instanceof SnippetSandboxError) {
 			ctx.error(err.message, page.url);
-			return null;
+			return makeErrorFence(pathAttr, err.message);
 		}
-		throw err;
+		// Unexpected error type — still produce an error fence so the build
+		// doesn't crash on a single page.
+		const msg = (err as Error).message ?? String(err);
+		ctx.error(`snippet "${pathAttr}" failed unexpectedly: ${msg}`, page.url);
+		return makeErrorFence(pathAttr, msg);
 	}
 
 	for (const warning of result.warnings) {
 		ctx.warn(warning, page.url);
 	}
 
-	const language = langAttr ?? inferLanguage(result.relativePath);
+	const language = (langAttr && langAttr.length > 0) ? langAttr : inferLanguage(result.relativePath);
 
 	const fenceAttrs: Record<string, unknown> = {
 		content: result.content,

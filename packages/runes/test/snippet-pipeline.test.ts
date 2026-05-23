@@ -121,13 +121,15 @@ describe('snippet preprocess (SPEC-062)', () => {
 		expect(ast.children[0].attributes.content).toBe('line 5\nline 6\nline 7\nline 8\nline 9\nline 10');
 	});
 
-	it('rejects absolute paths with a build error (no replacement)', () => {
+	it('rejects absolute paths with a build error and replaces with an error fence', () => {
 		const ast = Markdoc.parse('{% snippet path="/etc/passwd" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
-		// Tag is NOT replaced — preprocess emits an error and leaves the tag alone.
-		expect(ast.children[0].type).toBe('tag');
+		// Tag IS replaced — with a fence carrying `data-snippet-error` so the
+		// schema's `transform` never fires (it would throw and crash the build).
+		expect(ast.children[0].type).toBe('fence');
+		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
 		expect(warnings.some(w => w.severity === 'error' && /absolute/.test(w.message))).toBe(true);
 	});
 
@@ -196,6 +198,46 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 		expect(warnings.some(w => w.severity === 'error' && /malformed/.test(w.message) && /not-a-range/.test(w.message))).toBe(true);
+	});
+
+	it('resolves Markdoc Variable AST nodes in the path attribute', () => {
+		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\n');
+		// `path=$file.path` parses as a Variable node, not a string. The
+		// preprocess must resolve it via ctx.variables.
+		const ast = Markdoc.parse('{% snippet path=$file.path /%}\n');
+		const warnings: Array<{ severity: string; message: string }> = [];
+		const ctx: PreprocessContext = {
+			info: (m) => warnings.push({ severity: 'info', message: m }),
+			warn: (m) => warnings.push({ severity: 'warning', message: m }),
+			error: (m) => warnings.push({ severity: 'error', message: m }),
+			projectRoot: tmpRoot,
+			variables: { file: { path: 'foo.ts' } },
+		};
+		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+
+		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(ast.children[0].type).toBe('fence');
+		expect(ast.children[0].attributes.content).toBe('const x = 1;\n');
+		expect(ast.children[0].attributes['data-snippet-source']).toBe('foo.ts');
+	});
+
+	it('produces an error fence (not a left-over snippet tag) when a Variable is unresolvable', () => {
+		const ast = Markdoc.parse('{% snippet path=$missing.path /%}\n');
+		const warnings: Array<{ severity: string; message: string }> = [];
+		const ctx: PreprocessContext = {
+			info: (m) => warnings.push({ severity: 'info', message: m }),
+			warn: (m) => warnings.push({ severity: 'warning', message: m }),
+			error: (m) => warnings.push({ severity: 'error', message: m }),
+			projectRoot: tmpRoot,
+			variables: { /* no `missing` */ },
+		};
+		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+
+		// Replaced with an error fence — critically, NOT left as a `tag` node
+		// (the schema's transform would throw if it reached the snippet tag).
+		expect(ast.children[0].type).toBe('fence');
+		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
+		expect(warnings.some(w => w.severity === 'error')).toBe(true);
 	});
 
 	it('supports line shorthand "N" for single-line', () => {
