@@ -87,6 +87,7 @@ export type {
 	PipelineContext,
 	PipelineWarning,
 	PluginPipelineHooks,
+	PluginConfigureOptions,
 } from './pipeline.js';
 
 // CLI plugin contract

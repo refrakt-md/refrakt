@@ -138,6 +138,12 @@ Custom properties cascade naturally without JavaScript.
 		'plan-entity-tabs': entityTabsBehavior,
 	},
 	pipeline: planPipelineHooks,
+	// File-root opt-in (SPEC-063) is wired dynamically via the plugin's
+	// `configure` hook (not as a static `Plugin.fileRoots` declaration).
+	// The plan plugin doesn't ship plan content — users have their own
+	// `plan.dir` configured in refrakt.config.json — so the namespace needs
+	// to point at the user's actual plan directory, not at a path relative
+	// to the plugin package. See `planPipelineHooks.configure` in pipeline.ts.
 };
 
 export default plan;
