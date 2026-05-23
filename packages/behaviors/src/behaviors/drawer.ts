@@ -199,6 +199,17 @@ export function drawerBehavior(el: HTMLElement): CleanupFn {
 	dialog.addEventListener('click', onBackdropClick);
 	cleanups.push(() => dialog.removeEventListener('click', onBackdropClick));
 
+	// ── Esc / native cancel — animate out instead of snapping shut ────
+	// `<dialog>` fires `cancel` when the user presses Esc. We preventDefault
+	// so the browser doesn't immediately call `close()` itself, then drive
+	// the close through our animated path.
+	const onCancel = (ev: Event) => {
+		ev.preventDefault();
+		closeDrawer(dialog);
+	};
+	dialog.addEventListener('cancel', onCancel);
+	cleanups.push(() => dialog.removeEventListener('cancel', onCancel));
+
 	// ── Hash maintenance on natural close ─────────────────────────────
 	const onDialogClose = () => {
 		dialog.setAttribute('data-state', 'closed');
@@ -289,17 +300,51 @@ function openDrawer(dialog: HTMLDialogElement): void {
 	}
 }
 
+/** Animation duration for the close transition. Mirrors
+ *  `--rf-drawer-anim-duration` (220ms) in CSS — kept in JS as a fallback
+ *  in case `animationend` doesn't fire (reduced motion, environments
+ *  without real animations like jsdom). Slightly longer than the CSS
+ *  value so the event has a chance to land first. */
+const CLOSE_ANIMATION_FALLBACK_MS = 280;
+
 function closeDrawer(dialog: HTMLDialogElement): void {
-	if (dialog.open) {
+	if (!dialog.open) return;
+	if (dialog.getAttribute('data-state') === 'closing') return;
+
+	// Flip into the closing state — CSS picks up the slide-out keyframe
+	// animation off `[data-state="closing"]`. We then wait for the
+	// animation to land before actually calling `dialog.close()`, so the
+	// browser keeps painting the dialog (with its modal backdrop and top-
+	// layer placement) during the slide.
+	dialog.setAttribute('data-state', 'closing');
+
+	let finished = false;
+	const finish = () => {
+		if (finished) return;
+		finished = true;
+		dialog.removeEventListener('animationend', onAnimationEnd);
+		if (fallbackTimer) {
+			(dialog.ownerDocument?.defaultView ?? globalThis).clearTimeout(fallbackTimer);
+		}
 		try {
 			dialog.close();
 		} catch {
 			dialog.removeAttribute('open');
 		}
-	}
-	dialog.setAttribute('data-state', 'closed');
-	// The `close` event listener on the dialog clears the hash and lifts
-	// the body-scroll lock (when no other drawer is open).
+		// `data-state` is reset to `closed` by the `close` event listener
+		// on the dialog itself — same path the native dialog close uses.
+	};
+	const onAnimationEnd = (ev: AnimationEvent) => {
+		// Filter to the drawer's own animations so a child animation
+		// finishing (e.g. an embedded reveal) doesn't trigger close early.
+		if (ev.target !== dialog) return;
+		if (ev.animationName && !ev.animationName.startsWith('rf-drawer-slide-out')) return;
+		finish();
+	};
+	dialog.addEventListener('animationend', onAnimationEnd);
+
+	const win = dialog.ownerDocument?.defaultView ?? globalThis;
+	const fallbackTimer = (win as Window).setTimeout(finish, CLOSE_ANIMATION_FALLBACK_MS);
 }
 
 /** Body-scroll lock — set when any drawer is open, lifted when the last

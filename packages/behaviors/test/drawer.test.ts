@@ -34,6 +34,17 @@ beforeEach(() => {
 	__resetDrawerState();
 });
 
+/** Drive the close animation to completion in jsdom — `<dialog>` close is
+ *  deferred until an `animationend` event lands (or the fallback timer
+ *  fires after ~280ms). The test patches the animation by firing
+ *  `animationend` directly so close completes synchronously. */
+function finishCloseAnimation(dialog: HTMLDialogElement): void {
+	const ev = new Event('animationend') as AnimationEvent;
+	Object.defineProperty(ev, 'animationName', { value: 'rf-drawer-slide-out-right' });
+	Object.defineProperty(ev, 'target', { value: dialog });
+	dialog.dispatchEvent(ev);
+}
+
 function createDrawerSection(opts: {
 	id: string;
 	title?: string;
@@ -148,7 +159,7 @@ describe('drawerBehavior', () => {
 	});
 
 	describe('close behavior', () => {
-		it('closes the dialog when the close button is clicked', () => {
+		it('enters closing state on close-button click before settling closed', () => {
 			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
 			const trigger = createTrigger('auth');
 			drawerBehavior(section);
@@ -156,6 +167,11 @@ describe('drawerBehavior', () => {
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
 			const close = dialog.querySelector('.rf-drawer__close') as HTMLButtonElement;
 			close.click();
+			// Immediately after click, the dialog is in the closing phase but
+			// still open — CSS is running its slide-out animation.
+			expect(dialog.open).toBe(true);
+			expect(dialog.getAttribute('data-state')).toBe('closing');
+			finishCloseAnimation(dialog);
 			expect(dialog.open).toBe(false);
 			expect(dialog.getAttribute('data-state')).toBe('closed');
 		});
@@ -167,6 +183,23 @@ describe('drawerBehavior', () => {
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
 			dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+			finishCloseAnimation(dialog);
+			expect(dialog.open).toBe(false);
+		});
+
+		it('intercepts the native cancel (Esc) event to animate the close', () => {
+			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
+			const trigger = createTrigger('auth');
+			drawerBehavior(section);
+			trigger.click();
+			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
+			const cancelEv = new Event('cancel', { cancelable: true });
+			dialog.dispatchEvent(cancelEv);
+			// preventDefault was called, so the native close path is suppressed
+			// and we're in the animated path.
+			expect(cancelEv.defaultPrevented).toBe(true);
+			expect(dialog.getAttribute('data-state')).toBe('closing');
+			finishCloseAnimation(dialog);
 			expect(dialog.open).toBe(false);
 		});
 	});
@@ -187,6 +220,7 @@ describe('drawerBehavior', () => {
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
 			(dialog.querySelector('.rf-drawer__close') as HTMLButtonElement).click();
+			finishCloseAnimation(dialog);
 			expect(window.location.hash).toBe('');
 		});
 
@@ -275,6 +309,7 @@ describe('drawerBehavior', () => {
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
 			(dialog.querySelector('.rf-drawer__close') as HTMLButtonElement).click();
+			finishCloseAnimation(dialog);
 			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(false);
 		});
 
@@ -302,6 +337,7 @@ describe('drawerBehavior', () => {
 			window.history.replaceState(null, '', '/');
 			window.dispatchEvent(new PopStateEvent('popstate'));
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
+			finishCloseAnimation(dialog);
 			expect(dialog.open).toBe(false);
 		});
 	});

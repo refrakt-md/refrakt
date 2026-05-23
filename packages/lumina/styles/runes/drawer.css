@@ -131,6 +131,13 @@ dialog.rf-drawer .rf-drawer__body {
 	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 }
 
+/* Collapse the vertical margins of first / last children inside the body
+ * so the drawer's own padding is what spaces content from the chrome —
+ * otherwise a `<figure>` or `<p>` with its own top/bottom margin stacks
+ * on top of the body's padding and the content looks adrift. */
+dialog.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
+dialog.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
+
 /* ─── Side modifiers ───────────────────────────────────────────────
  *
  * Each side anchors the dialog with `inset`. The slide-in animation is
@@ -152,6 +159,9 @@ dialog.rf-drawer[data-side="right"] {
 dialog.rf-drawer[data-side="right"][open] {
 	animation: rf-drawer-slide-in-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
+dialog.rf-drawer[data-side="right"][data-state="closing"] {
+	animation: rf-drawer-slide-out-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
 dialog.rf-drawer[data-side="left"] {
 	inset:
 		var(--rf-drawer-gutter)
@@ -162,6 +172,9 @@ dialog.rf-drawer[data-side="left"] {
 }
 dialog.rf-drawer[data-side="left"][open] {
 	animation: rf-drawer-slide-in-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-side="left"][data-state="closing"] {
+	animation: rf-drawer-slide-out-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
 }
 dialog.rf-drawer[data-side="top"] {
 	inset:
@@ -174,6 +187,9 @@ dialog.rf-drawer[data-side="top"] {
 dialog.rf-drawer[data-side="top"][open] {
 	animation: rf-drawer-slide-in-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
+dialog.rf-drawer[data-side="top"][data-state="closing"] {
+	animation: rf-drawer-slide-out-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
 dialog.rf-drawer[data-side="bottom"] {
 	inset:
 		auto
@@ -185,9 +201,15 @@ dialog.rf-drawer[data-side="bottom"] {
 dialog.rf-drawer[data-side="bottom"][open] {
 	animation: rf-drawer-slide-in-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
+dialog.rf-drawer[data-side="bottom"][data-state="closing"] {
+	animation: rf-drawer-slide-out-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
 
 dialog.rf-drawer[open]::backdrop {
 	animation: rf-drawer-backdrop-in var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-state="closing"]::backdrop {
+	animation: rf-drawer-backdrop-out var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
 }
 
 @keyframes rf-drawer-slide-in-right {
@@ -211,12 +233,35 @@ dialog.rf-drawer[open]::backdrop {
 	to   { background: rgb(0 0 0 / 0.35); backdrop-filter: blur(2px); }
 }
 
+@keyframes rf-drawer-slide-out-right {
+	from { transform: translateX(0); opacity: 1; }
+	to   { transform: translateX(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-left {
+	from { transform: translateX(0); opacity: 1; }
+	to   { transform: translateX(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-top {
+	from { transform: translateY(0); opacity: 1; }
+	to   { transform: translateY(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-bottom {
+	from { transform: translateY(0); opacity: 1; }
+	to   { transform: translateY(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-backdrop-out {
+	from { background: rgb(0 0 0 / 0.35); backdrop-filter: blur(2px); }
+	to   { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	dialog.rf-drawer[data-side="right"][open],
 	dialog.rf-drawer[data-side="left"][open],
 	dialog.rf-drawer[data-side="top"][open],
 	dialog.rf-drawer[data-side="bottom"][open],
-	dialog.rf-drawer[open]::backdrop {
+	dialog.rf-drawer[data-state="closing"],
+	dialog.rf-drawer[open]::backdrop,
+	dialog.rf-drawer[data-state="closing"]::backdrop {
 		animation: none;
 	}
 }
