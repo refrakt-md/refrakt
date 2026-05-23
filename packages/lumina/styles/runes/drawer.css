@@ -26,7 +26,7 @@
 	--rf-drawer-fg: var(--rf-color-text);
 	--rf-drawer-border: var(--rf-color-border);
 	--rf-drawer-shadow: 0 18px 48px -12px rgb(0 0 0 / 0.35);
-	--rf-drawer-gutter: var(--rf-space-sm);
+	--rf-drawer-gutter: var(--rf-spacing-sm);
 	--rf-drawer-radius: var(--rf-radius-md);
 	--rf-drawer-anim-duration: 220ms;
 	--rf-drawer-anim-ease: cubic-bezier(0.32, 0.72, 0, 1);
@@ -42,12 +42,12 @@ html.rf-drawer-open body {
 /* ─── No-JS / in-flow mode ─────────────────────────────────────── */
 
 section.rf-drawer {
-	margin: var(--rf-space-lg) 0;
-	padding: var(--rf-space-md) var(--rf-space-lg);
+	margin: var(--rf-spacing-lg) 0;
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 	background: var(--rf-drawer-bg);
 	color: var(--rf-drawer-fg);
 	border: 1px solid var(--rf-drawer-border);
-	border-left: 4px solid var(--rf-color-accent);
+	border-left: 4px solid var(--rf-color-primary);
 	border-radius: var(--rf-drawer-radius);
 }
 
@@ -55,15 +55,15 @@ section.rf-drawer .rf-drawer__header {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: var(--rf-space-sm);
-	margin-bottom: var(--rf-space-sm);
+	gap: var(--rf-spacing-sm);
+	margin-bottom: var(--rf-spacing-sm);
 }
 
 section.rf-drawer .rf-drawer__title {
 	margin: 0;
 	font-size: 1.05rem;
 	font-weight: 600;
-	color: var(--rf-color-accent);
+	color: var(--rf-color-primary);
 	letter-spacing: 0.01em;
 }
 
@@ -124,8 +124,8 @@ dialog.rf-drawer .rf-drawer__header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--rf-space-md);
-	padding: var(--rf-space-md) var(--rf-space-lg);
+	gap: var(--rf-spacing-md);
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 	border-bottom: 1px solid var(--rf-drawer-border);
 	position: sticky;
 	top: 0;
@@ -144,8 +144,8 @@ dialog.rf-drawer .rf-drawer__close {
 	background: transparent;
 	border: 0;
 	cursor: pointer;
-	color: var(--rf-color-text-muted);
-	padding: var(--rf-space-xs) var(--rf-space-sm);
+	color: var(--rf-color-muted);
+	padding: var(--rf-spacing-xs) var(--rf-spacing-sm);
 	font-size: 1.25rem;
 	line-height: 1;
 	border-radius: var(--rf-radius-sm);
@@ -153,11 +153,11 @@ dialog.rf-drawer .rf-drawer__close {
 }
 dialog.rf-drawer .rf-drawer__close:hover {
 	color: var(--rf-color-text);
-	background: var(--rf-color-surface-muted, transparent);
+	background: var(--rf-color-surface-hover);
 }
 
 dialog.rf-drawer .rf-drawer__body {
-	padding: var(--rf-space-md) var(--rf-space-lg);
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 }
 
 /* ─── Side modifiers ───────────────────────────────────────────────
