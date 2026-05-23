@@ -17,11 +17,13 @@ The minimum case — a single ID:
 {% expand "SPEC-066" /%}
 ```
 
-Renders the SPEC-066 entity's source content (its top-level `{% spec %}` rune) wrapped in `<section class="rf-expand">`. The wrapper carries `data-outline-scope="SPEC-066"` so the embed's headings stay out of the host page's TOC and their IDs get prefixed with `SPEC-066--` automatically.
+Renders the entity's source content (its top-level `{% spec %}` rune) wrapped in `<section class="rf-expand">`. The wrapper carries `data-outline-scope="SPEC-066"` so the embed's headings stay out of the host page's TOC and their IDs get prefixed with `SPEC-066--` automatically.
 
-{% expand "SPEC-066" /%}
+The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="view SPEC-066 inline" /%} (or press `s`) to open it.
 
-(The block above is live — its content is read from `plan/specs/SPEC-066-expand-rune.md` at build time.)
+{% drawer id="spec-066-preview" title="SPEC-066 — Expand rune" shortcut="s" size="lg" %}
+{% expand "SPEC-066" canonical=true label="View full spec source" /%}
+{% /drawer %}
 
 ## Compose with a drawer
 
