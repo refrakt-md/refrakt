@@ -60,16 +60,84 @@ Without a type hint, ambiguous references use the first match and emit a build w
 
 ## Resolution order
 
-1. **Exact ID match** — searches all entity types for an ID that equals the reference string
-2. **Name match** — if no ID matches, searches `name` and `title` fields (case-insensitive)
-3. **Type filter** — if `type` is provided, restricts the search to that entity type
-4. **Single match** — resolved as a link
-5. **Multiple matches** — build warning; first match used as link target
-6. **No match** — renders as plain text with a dashed underline; build warning emitted
+Resolution splits entity lookup from URL resolution so the two can succeed independently:
+
+1. **Entity lookup** — exact ID match across all types (or the type-hinted one); falls through to case-insensitive `name`/`title` match. The matched entity supplies metadata (label, type) for the rendered anchor — whether or not the URL ends up coming from a configured pattern.
+2. **URL resolution** — if the matched entity has a usable `sourceUrl`, that's the href (`data-xref-source="registry"`). Otherwise the resolver iterates the patterns configured in `refrakt.config.json#/xrefs`; first regex that matches the ID wins (`data-xref-source="pattern"`).
+3. **Unresolved** — if neither the entity's `sourceUrl` nor any pattern produces a URL, the ref renders as a styled `rf-xref--unresolved` span with a build warning.
+
+This means a registered entity *without* a canonical URL — like plan content scanned outside any site's content tree (SPEC-064) — still resolves correctly: the registry provides label and type; a configured pattern provides the URL.
+
+## Configurable URL patterns
+
+Configure external-system URL templates in `refrakt.config.json`:
+
+```jsonc
+{
+  "xrefs": [
+    {
+      "match": "^SPEC-\\d+$",
+      "template": "https://trace.refrakt.md/myuser/myrepo/specs/{id}",
+      "type": "spec",
+      "label": "{id}"
+    },
+    {
+      "match": "^GH-(?<num>\\d+)$",
+      "template": "https://github.com/myuser/myrepo/issues/{num}",
+      "type": "github-issue",
+      "label": "GitHub #{num}"
+    },
+    {
+      "match": "^RFC-(?<num>\\d+)$",
+      "template": "https://datatracker.ietf.org/doc/html/rfc{num}",
+      "type": "rfc",
+      "label": "RFC {num}"
+    },
+    {
+      "match": "^npm:(?<pkg>[a-z0-9-/@.]+)$",
+      "template": "https://www.npmjs.com/package/{pkg}",
+      "type": "npm",
+      "label": "{pkg}"
+    }
+  ]
+}
+```
+
+### Pattern fields
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `match` | yes | JavaScript regex matched against the ref ID. Anchored to whole-string match by default (`^` and `$` are auto-applied unless explicit anchors are present at both ends). Named groups (`(?<name>...)`) are addressable in `template` / `label` as `{name}`. |
+| `template` | yes | URL template. `{id}` is the full matched ID; `{name}` substitutes a named group. |
+| `type` | no | Maps to `rf-xref--{type}` CSS modifier. Default: `"external"`. The value `"unresolved"` is reserved. |
+| `label` | no | Link-text template using the same placeholder syntax. Default: `"{id}"`. Overridden by a per-ref `label=` attribute when set. |
+
+### URL encoding
+
+Each substituted value is encoded per URL segment: split on `/`, encode each segment via `encodeURIComponent`, rejoin with `/`. This preserves slash structure in path-shaped captures — a `(?<path>[a-z0-9/-]+)` group capturing `guide/intro` renders as `.../guide/intro`, not `.../guide%2Fintro`. Reserved characters within a single segment are still encoded normally.
+
+### Pattern recipes
+
+```jsonc
+// External plan host (refrakt trace)
+{ "match": "^SPEC-\\d+$", "template": "https://trace.refrakt.md/user/repo/specs/{id}" }
+
+// Issue tracker (GitHub)
+{ "match": "^GH-(?<num>\\d+)$", "template": "https://github.com/user/repo/issues/{num}" }
+
+// Standards / RFCs
+{ "match": "^RFC-(?<num>\\d+)$", "template": "https://datatracker.ietf.org/doc/html/rfc{num}" }
+
+// Package registry
+{ "match": "^npm:(?<pkg>[a-z0-9-/@.]+)$", "template": "https://www.npmjs.com/package/{pkg}" }
+
+// Wikipedia
+{ "match": "^wiki:(?<title>.+)$", "template": "https://en.wikipedia.org/wiki/{title}" }
+```
 
 ## Unresolved references
 
-When an entity cannot be found, the reference renders as plain text with a visual indicator (dashed underline, muted colour). The build continues — this allows referencing entities that don't exist yet.
+When neither the registry nor any pattern produces a URL, the reference renders as a styled `rf-xref--unresolved` span with a build warning. The build continues — this allows referencing entities that don't exist yet or that resolve only in a future build (after content is added).
 
 ## Entity types
 

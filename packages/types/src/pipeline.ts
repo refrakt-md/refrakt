@@ -38,8 +38,13 @@ export interface EntityRegistration {
 	type: string;
 	/** Unique identifier within this type (e.g. '/docs/guide/' or '/docs/guide/#intro') */
 	id: string;
-	/** URL of the page this entity was registered from */
-	sourceUrl: string;
+	/** URL of the page this entity was registered from, when one exists.
+	 *  May be `undefined` when the entity isn't reachable via a local page URL
+	 *  (e.g. SPEC-064 plan content registered from `plan.dir` outside any
+	 *  site's content tree). The xref resolver treats undefined / empty as
+	 *  "no usable URL" and falls through to {@link XrefPattern} resolution.
+	 *  Empty strings passed at registration are normalized to `undefined`. */
+	sourceUrl?: string;
 	/** Entity-specific payload */
 	data: Record<string, unknown>;
 }

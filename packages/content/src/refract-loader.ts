@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { Plugin, SiteConfig, SecurityPolicy } from '@refrakt-md/types';
+import type { Plugin, SiteConfig, SecurityPolicy, RefraktConfig, XrefPattern } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
+import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
 import {
 	createSiteLoader,
 	createVirtualSiteLoader,
@@ -45,6 +46,23 @@ interface AssembledSiteContext {
 	communityTags: Record<string, any> | undefined;
 	communityPackages: Plugin[] | undefined;
 	icons: Record<string, Record<string, string>>;
+}
+
+/** Compile xref patterns from a raw config, logging any diagnostics to
+ *  stderr so the build surface remains visible. Errors don't throw — they
+ *  produce a permissively-empty pattern set so the rest of the load
+ *  succeeds and the user can fix the config without losing the whole site. */
+function compileConfiguredXrefPatterns(
+	patterns: XrefPattern[] | undefined,
+): CompiledXrefPattern[] {
+	const result = compileXrefPatterns(patterns);
+	for (const warning of result.warnings) {
+		process.stderr.write(`refrakt: xref pattern warning — ${warning}\n`);
+	}
+	for (const error of result.errors) {
+		process.stderr.write(`refrakt: xref pattern error — ${error}\n`);
+	}
+	return result.patterns;
 }
 
 /** Compose the options bag handed to `createHighlightTransform`. Merges the
@@ -177,12 +195,17 @@ async function assembleSiteContext(
 export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoader {
 	const configPath = resolve(options?.configPath ?? './refrakt.config.json');
 	const configDir = dirname(configPath);
-	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8')) as RefraktConfig;
 	// Pass the config file's directory so nested-shape paths absolutize
 	// file-relative (matches the SvelteKit plugin's behavior).
 	const normalized = normalizeRefraktConfig(rawConfig, { configDir });
 	const { site }: { site: SiteConfig } = resolveSite(normalized, options?.site);
 	const contentDir = resolve(site.contentDir);
+	// Compile xref patterns once at loader construction. Diagnostics
+	// (invalid regex, unknown placeholders, etc.) are surfaced via
+	// stderr — adapters can intercept via their own pipeline-warnings
+	// formatter once SPEC-058 wiring is fully in place.
+	const xrefPatterns = compileConfiguredXrefPatterns(rawConfig.xrefs);
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -204,6 +227,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				variables: options?.variables,
 				securityPolicy: options?.security,
 				projectRoot: configDir,
+				xrefPatterns,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -258,6 +282,8 @@ export interface VirtualRefraktLoaderOptions {
 	 *  `$file.path`. When omitted, `$file.path` falls back to the page's
 	 *  content-root-relative path. */
 	projectRoot?: string;
+	/** Xref patterns to compile and use as URL-resolution fallback. */
+	xrefs?: XrefPattern[];
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
 	dev?: boolean;
 }
@@ -279,7 +305,8 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, security, basePath, projectRoot, dev } = options;
+	const { site, tree, reader, variables, security, basePath, projectRoot, xrefs, dev } = options;
+	const xrefPatterns = compileConfiguredXrefPatterns(xrefs);
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -302,6 +329,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				securityPolicy: security,
 				reader,
 				projectRoot,
+				xrefPatterns,
 				dev: dev ?? false,
 			});
 		})();

@@ -1,5 +1,6 @@
 import type { Schema } from '@markdoc/markdoc';
 import type { Plugin, SecurityPolicy } from '@refrakt-md/types';
+import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import { loadContent, loadContentFromTree, type Site, type VirtualReader } from './site.js';
 import type { ContentTree } from './content-tree.js';
 
@@ -19,6 +20,10 @@ export interface SiteLoaderOptions {
 	 *  When omitted, defaults to `dirPath`'s parent — adapters that resolve a
 	 *  config file should pass `dirname(configPath)` explicitly. */
 	projectRoot?: string;
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Adapters
+	 *  that read the config should compile via `compileXrefPatterns` and
+	 *  pass the result here. */
+	xrefPatterns?: CompiledXrefPattern[];
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
 }
@@ -46,6 +51,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.variables,
 				options.securityPolicy,
 				options.projectRoot,
+				options.xrefPatterns,
 			);
 			if (!options.dev) cached = promise;
 			return promise;
@@ -74,6 +80,8 @@ export interface VirtualSiteLoaderOptions {
 	/** Absolute path to the project root (where `refrakt.config.json` lives).
 	 *  Used to compute `$file.path` as a project-root-relative POSIX path. */
 	projectRoot?: string;
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. */
+	xrefPatterns?: CompiledXrefPattern[];
 	/** When true, every load() call re-runs the pipeline against the current
 	 *  tree (no caching). Use when the host swaps the tree's contents in place. */
 	dev?: boolean;
@@ -100,6 +108,7 @@ export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): Site
 				securityPolicy: options.securityPolicy,
 				reader: options.reader,
 				projectRoot: options.projectRoot,
+				xrefPatterns: options.xrefPatterns,
 			});
 			if (!options.dev) cached = promise;
 			return promise;

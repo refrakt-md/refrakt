@@ -2,7 +2,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
@@ -157,6 +158,10 @@ interface ProcessContentTreeOptions {
    *  project-root-relative POSIX path. When omitted, `$file.path` falls
    *  back to the page's content-root-relative path (`$page.path`). */
   projectRoot?: string;
+  /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Used by
+   *  the xref resolver as a URL-resolution fallback when registry entities
+   *  have no usable `sourceUrl`. */
+  xrefPatterns?: CompiledXrefPattern[];
 }
 
 async function processContentTree(
@@ -235,8 +240,14 @@ async function processContentTree(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
-  // Build hook sets: core always runs first, then plugins in config order
-  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: corePipelineHooks }];
+  // Build hook sets: core always runs first, then plugins in config order.
+  // When `xrefPatterns` is configured, build a parameterized core-hooks set
+  // so the resolver sees the compiled patterns; otherwise use the no-args
+  // default const for back-compat.
+  const coreHooks = opts.xrefPatterns && opts.xrefPatterns.length > 0
+    ? createCorePipelineHooks({ xrefPatterns: opts.xrefPatterns })
+    : corePipelineHooks;
+  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
   for (const pkg of opts.plugins ?? []) {
     if (pkg.pipeline) {
       hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
@@ -323,6 +334,7 @@ export async function loadContent(
   variables?: Record<string, unknown>,
   securityPolicy?: SecurityPolicy,
   projectRoot?: string,
+  xrefPatterns?: CompiledXrefPattern[],
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
@@ -349,6 +361,7 @@ export async function loadContent(
     },
     sandboxExamplesDir: resolvedExamplesDir,
     projectRoot: resolvedProjectRoot,
+    xrefPatterns,
   });
 }
 
@@ -384,6 +397,10 @@ export interface LoadContentFromTreeOptions {
    *  path. Hosted environments that have a meaningful project-root concept
    *  should pass it; pure in-memory hosts that don't can leave it undefined. */
   projectRoot?: string;
+  /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Hosted
+   *  environments that own their config resolution can compile patterns via
+   *  `compileXrefPatterns` and pass them here. */
+  xrefPatterns?: CompiledXrefPattern[];
 }
 
 /**
@@ -418,5 +435,6 @@ export async function loadContentFromTree(
     securityPolicy: options.securityPolicy,
     colorScheme: options.colorScheme,
     projectRoot: options.projectRoot,
+    xrefPatterns: options.xrefPatterns,
   });
 }

@@ -9,6 +9,7 @@ import { NAV_AUTO_SENTINEL, NAV_COLLAPSED_AUTO } from './tags/nav.js';
 import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
+import type { CompiledXrefPattern } from './xref-patterns.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -2291,6 +2292,11 @@ export function resolveCoreSentinels(
 		pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>;
 		allPosts: BlogPostData[];
 		registry: Readonly<EntityRegistry>;
+		/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Empty
+		 *  array when no patterns are configured (the resolver's
+		 *  "patterns step" then matches nothing and falls through to
+		 *  unresolved). */
+		xrefPatterns?: CompiledXrefPattern[];
 	},
 	ctx: PipelineContext,
 	/** Extra trees (e.g. layout regions + page content) to scan when looking
@@ -2316,17 +2322,30 @@ export function resolveCoreSentinels(
 	// item href set is final.
 	result = applyNavActiveState(result, pageUrl);
 	result = resolveBlogPosts(result, coreData.allPosts, ctx, pageUrl);
-	result = resolveXrefs(result, pageUrl, coreData.registry, ctx);
+	result = resolveXrefs(result, pageUrl, coreData.registry, coreData.xrefPatterns ?? [], ctx);
 	return result;
 }
 
+/** Options accepted by {@link createCorePipelineHooks}. */
+export interface CorePipelineHooksOptions {
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Threaded
+	 *  through `aggregate` into the postProcess `coreData` shape so the xref
+	 *  resolver can use them as a URL-resolution fallback. */
+	xrefPatterns?: CompiledXrefPattern[];
+}
+
 /**
- * Core cross-page pipeline hooks.
- * Run for every site, before any plugin hooks.
- * Registers page and heading entities, aggregates the page tree and breadcrumb paths,
- * and resolves blog post listings.
+ * Build core cross-page pipeline hooks parameterized by build-time options.
+ *
+ * Most callers (existing adapters, tests) use the {@link corePipelineHooks}
+ * default below — equivalent to `createCorePipelineHooks()` with no patterns
+ * configured. The content-loader bootstrap passes compiled
+ * {@link CompiledXrefPattern}s when `refrakt.config.json#/xrefs` is set.
  */
-export const corePipelineHooks: PluginPipelineHooks = {
+export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
+	const xrefPatterns = opts.xrefPatterns ?? [];
+
+	return {
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {
 			const parentUrl = deriveParentUrl(page.url);
@@ -2411,7 +2430,7 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			frontmatter: e.data as Record<string, unknown>,
 		}));
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry };
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
@@ -2420,6 +2439,7 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
 			allPosts: BlogPostData[];
 			registry: Readonly<EntityRegistry>;
+			xrefPatterns?: CompiledXrefPattern[];
 		} | undefined;
 
 		if (!coreData) return page;
@@ -2480,10 +2500,24 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			renderable,
 			page.url,
 			coreData.registry,
+			coreData.xrefPatterns ?? [],
 			ctx,
 		);
 
 		if (renderable === page.renderable) return page;
 		return { ...page, renderable };
 	},
-};
+	};
+}
+
+/**
+ * Core cross-page pipeline hooks (no xref patterns configured).
+ *
+ * Equivalent to `createCorePipelineHooks()`. The content loader bootstrap
+ * uses {@link createCorePipelineHooks} directly when
+ * `refrakt.config.json#/xrefs` is configured so the resolver can use the
+ * compiled patterns as a URL-resolution fallback. Run for every site,
+ * before any plugin hooks. Registers page and heading entities, aggregates
+ * the page tree and breadcrumb paths, and resolves blog post listings.
+ */
+export const corePipelineHooks: PluginPipelineHooks = createCorePipelineHooks();

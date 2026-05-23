@@ -4,6 +4,22 @@
 	/* Inherits normal link styling from the theme */
 }
 
+/* External — pattern-resolved refs and any other type that doesn't have a
+ * dedicated treatment. A subtle outbound indicator distinguishes these
+ * from local refs without being noisy. */
+.rf-xref--external {
+	/* Theme-inherited link colour; outbound indicator via a small inline
+	 * arrow that adapts to RTL via the logical-property side. */
+}
+.rf-xref--external::after {
+	content: '\2197'; /* ↗ */
+	display: inline-block;
+	margin-inline-start: 0.15em;
+	font-size: 0.85em;
+	vertical-align: 0.05em;
+	opacity: 0.6;
+}
+
 /* Unresolved reference */
 .rf-xref--unresolved {
 	text-decoration: underline dashed;

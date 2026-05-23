@@ -14,31 +14,41 @@ export class EntityRegistryImpl implements EntityRegistry {
 	private byTypeAndUrl = new Map<string, Map<string, EntityRegistration[]>>();
 
 	register(entry: EntityRegistration): void {
+		// Normalize empty-string sourceUrl to undefined — distinguishing
+		// "explicitly empty" from "missing" isn't useful, and the resolver
+		// treats both the same downstream.
+		const normalized: EntityRegistration =
+			entry.sourceUrl === '' ? { ...entry, sourceUrl: undefined } : entry;
+
 		// Primary index
-		let typeMap = this.byTypeAndId.get(entry.type);
+		let typeMap = this.byTypeAndId.get(normalized.type);
 		if (!typeMap) {
 			typeMap = new Map();
-			this.byTypeAndId.set(entry.type, typeMap);
+			this.byTypeAndId.set(normalized.type, typeMap);
 		}
-		typeMap.set(entry.id, entry);
+		typeMap.set(normalized.id, normalized);
 
-		// Secondary index
-		let urlMap = this.byTypeAndUrl.get(entry.type);
-		if (!urlMap) {
-			urlMap = new Map();
-			this.byTypeAndUrl.set(entry.type, urlMap);
-		}
-		const urlList = urlMap.get(entry.sourceUrl);
-		if (urlList) {
-			// Replace existing entry with same id, or append
-			const idx = urlList.findIndex(e => e.id === entry.id);
-			if (idx >= 0) {
-				urlList[idx] = entry;
-			} else {
-				urlList.push(entry);
+		// Secondary index — only meaningful when the entity has a sourceUrl.
+		// Entries without one (plan content not published to any site, etc.)
+		// are still in the primary index for getById; they just don't
+		// participate in URL-based lookups.
+		if (normalized.sourceUrl !== undefined) {
+			let urlMap = this.byTypeAndUrl.get(normalized.type);
+			if (!urlMap) {
+				urlMap = new Map();
+				this.byTypeAndUrl.set(normalized.type, urlMap);
 			}
-		} else {
-			urlMap.set(entry.sourceUrl, [entry]);
+			const urlList = urlMap.get(normalized.sourceUrl);
+			if (urlList) {
+				const idx = urlList.findIndex(e => e.id === normalized.id);
+				if (idx >= 0) {
+					urlList[idx] = normalized;
+				} else {
+					urlList.push(normalized);
+				}
+			} else {
+				urlMap.set(normalized.sourceUrl, [normalized]);
+			}
 		}
 	}
 
