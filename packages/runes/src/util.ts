@@ -88,6 +88,43 @@ export function extractHeadings(node: Node): HeadingInfo[] {
   return headings;
 }
 
+/**
+ * Find the text content of the first H1 heading in an AST.
+ *
+ * Walks depth-first, descending into both regular nodes and tag (rune)
+ * children. The first `heading` node with `level: 1` wins. Used by the
+ * content pipeline to derive `$page.title` when frontmatter doesn't set
+ * one — matches the author mental model of "the page's title is the H1
+ * the reader sees," including the common case where an H1 is wrapped in
+ * a layout rune (hero etc.).
+ */
+export function firstH1(node: Node): string | undefined {
+  let found: string | undefined;
+
+  function walk(n: Node): boolean {
+    if (n.type === 'heading' && n.attributes.level === 1) {
+      const textParts: string[] = [];
+      for (const child of n.walk()) {
+        if (child.type === 'text' && child.attributes.content) {
+          textParts.push(child.attributes.content);
+        }
+      }
+      // Text nodes already carry their own surrounding whitespace, so joining
+      // with `''` (rather than `' '`) avoids doubling spaces when a heading
+      // contains inline formatting like `# Hello **strong** world`.
+      found = textParts.join('');
+      return true;
+    }
+    for (const child of n.children) {
+      if (walk(child)) return true;
+    }
+    return false;
+  }
+
+  walk(node);
+  return found;
+}
+
 export function headingsToList(options?: HeadingsToListOptions) {
   const explicitLevel = options?.level;
   const include = options?.include;

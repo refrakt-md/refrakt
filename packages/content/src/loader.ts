@@ -14,6 +14,11 @@ export interface SiteLoaderOptions {
 	variables?: Record<string, unknown>;
 	/** Security policy for untrusted author content. Default: `'trusted'`. */
 	securityPolicy?: SecurityPolicy;
+	/** Absolute path to the project root (where `refrakt.config.json` lives).
+	 *  Used to compute `$file.path` as a project-root-relative POSIX path.
+	 *  When omitted, defaults to `dirPath`'s parent — adapters that resolve a
+	 *  config file should pass `dirname(configPath)` explicitly. */
+	projectRoot?: string;
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
 }
@@ -40,6 +45,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.sandboxExamplesDir,
 				options.variables,
 				options.securityPolicy,
+				options.projectRoot,
 			);
 			if (!options.dev) cached = promise;
 			return promise;
@@ -65,6 +71,9 @@ export interface VirtualSiteLoaderOptions {
 	/** Optional async reader for ad-hoc lookups. Forward-compatibility hook —
 	 *  see `LoadContentFromTreeOptions.reader` for details. */
 	reader?: VirtualReader;
+	/** Absolute path to the project root (where `refrakt.config.json` lives).
+	 *  Used to compute `$file.path` as a project-root-relative POSIX path. */
+	projectRoot?: string;
 	/** When true, every load() call re-runs the pipeline against the current
 	 *  tree (no caching). Use when the host swaps the tree's contents in place. */
 	dev?: boolean;
@@ -90,6 +99,7 @@ export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): Site
 				variables: options.variables,
 				securityPolicy: options.securityPolicy,
 				reader: options.reader,
+				projectRoot: options.projectRoot,
 			});
 			if (!options.dev) cached = promise;
 			return promise;

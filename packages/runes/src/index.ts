@@ -54,7 +54,7 @@ export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js'
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
-export { extractHeadings, headingsToList } from './util.js';
+export { extractHeadings, firstH1, headingsToList } from './util.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';

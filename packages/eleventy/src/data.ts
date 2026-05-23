@@ -72,6 +72,7 @@ export function createDataFile(config: {
 			undefined, // sandboxExamplesDir
 			variables,
 			security,
+			process.cwd(),
 		);
 
 		// Print the standard Phase 1/2/3/4 + warnings summary so Eleventy

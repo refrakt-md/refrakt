@@ -203,6 +203,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				plugins: ctx.communityPackages,
 				variables: options?.variables,
 				securityPolicy: options?.security,
+				projectRoot: configDir,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -252,6 +253,11 @@ export interface VirtualRefraktLoaderOptions {
 	security?: SecurityPolicy;
 	/** URL base path for the Router. Default: `'/'`. */
 	basePath?: string;
+	/** Absolute path to the project root (where `refrakt.config.json` lives, or
+	 *  the conceptual root in a virtual environment). Used to compute
+	 *  `$file.path`. When omitted, `$file.path` falls back to the page's
+	 *  content-root-relative path. */
+	projectRoot?: string;
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
 	dev?: boolean;
 }
@@ -273,7 +279,7 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, security, basePath, dev } = options;
+	const { site, tree, reader, variables, security, basePath, projectRoot, dev } = options;
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -295,6 +301,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				variables,
 				securityPolicy: security,
 				reader,
+				projectRoot,
 				dev: dev ?? false,
 			});
 		})();

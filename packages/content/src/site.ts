@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
@@ -70,6 +70,7 @@ function sandboxDirExists(p: string): boolean {
 }
 
 function transformContent(
+  ast: Node,
   content: string,
   path: string,
   sourcePath: string,
@@ -78,7 +79,6 @@ function transformContent(
   contentVariables?: Record<string, unknown>,
   partials?: Record<string, Node>,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
-  const ast = Markdoc.parse(escapeFenceTags(content));
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
   const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
@@ -90,6 +90,42 @@ function transformContent(
     config.partials = partials;
   }
   return { renderable: Markdoc.transform(ast, config as any), headings };
+}
+
+/** Convert a host-OS file path to POSIX form (forward slashes). */
+function posixPath(p: string): string {
+  return pathSep === '/' ? p : p.split(pathSep).join('/');
+}
+
+/** POSIX dirname with the `"."` (no-directory) sentinel mapped to `""` so
+ *  callers don't have to special-case content-root pages. */
+function posixDirname(p: string): string {
+  const dir = pathPosix.dirname(posixPath(p));
+  return dir === '.' ? '' : dir;
+}
+
+/** Project-root-relative path in POSIX form. */
+function posixRelativeFromRoot(projectRoot: string, absolutePath: string): string {
+  return posixPath(relative(projectRoot, absolutePath));
+}
+
+/** Last URL segment, stripping any trailing slash. Empty string for `/`. */
+function lastUrlSegment(url: string): string {
+  const trimmed = url.replace(/\/+$/, '');
+  const idx = trimmed.lastIndexOf('/');
+  return idx === -1 ? trimmed : trimmed.slice(idx + 1);
+}
+
+/** Derive the page title: trimmed non-empty frontmatter.title wins, else
+ *  the first H1 in the AST (depth-first, walking into tag children), else
+ *  undefined. */
+function derivePageTitle(frontmatter: Frontmatter, ast: Node): string | undefined {
+  const raw = frontmatter.title;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (trimmed.length > 0) return trimmed;
+  }
+  return firstH1(ast);
 }
 
 interface SandboxHooks {
@@ -116,6 +152,11 @@ interface ProcessContentTreeOptions {
   sandboxExamplesDir?: string;
   /** Site-wide colour-scheme default seeding the per-page tint cascade. */
   colorScheme?: 'auto' | 'light' | 'dark';
+  /** Absolute path to the project root (the directory containing
+   *  `refrakt.config.json`). Used to compute `$file.path` as a
+   *  project-root-relative POSIX path. When omitted, `$file.path` falls
+   *  back to the page's content-root-relative path (`$page.path`). */
+  projectRoot?: string;
 }
 
 async function processContentTree(
@@ -148,11 +189,24 @@ async function processContentTree(
       gitTimestamps,
       frontmatter,
     );
+    const ast = Markdoc.parse(escapeFenceTags(content));
+    const pagePath = posixPath(page.relativePath);
+    const filePath = opts.projectRoot
+      ? posixRelativeFromRoot(opts.projectRoot, page.filePath)
+      : pagePath;
     const contentVariables: Record<string, unknown> = {
       ...opts.variables,
       frontmatter,
-      page: { url: route.url, filePath: route.filePath, draft: route.draft },
+      page: {
+        url: route.url,
+        path: pagePath,
+        dir: posixDirname(page.relativePath),
+        slug: lastUrlSegment(route.url),
+        title: derivePageTitle(frontmatter, ast),
+        draft: route.draft,
+      },
       file: {
+        path: filePath,
         created: fileTimestamps.created,
         modified: fileTimestamps.modified,
       },
@@ -163,6 +217,7 @@ async function processContentTree(
       __securityPolicy: resolvedSecurity,
     };
     const { renderable, headings } = transformContent(
+      ast,
       content,
       route.url,
       page.relativePath,
@@ -267,11 +322,17 @@ export async function loadContent(
   sandboxExamplesDir?: string,
   variables?: Record<string, unknown>,
   securityPolicy?: SecurityPolicy,
+  projectRoot?: string,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
     ? resolve(sandboxExamplesDir)
     : resolve(dirPath, '..', 'examples');
+  // Default to the content directory's parent (the common
+  // `<project>/site/content/` → `<project>/site/` layout). Adapters that
+  // know the real project root (the directory containing
+  // `refrakt.config.json`) should pass it explicitly.
+  const resolvedProjectRoot = projectRoot ?? resolve(dirPath, '..');
 
   return processContentTree(tree, {
     basePath,
@@ -287,6 +348,7 @@ export async function loadContent(
       exists: sandboxDirExists,
     },
     sandboxExamplesDir: resolvedExamplesDir,
+    projectRoot: resolvedProjectRoot,
   });
 }
 
@@ -316,6 +378,12 @@ export interface LoadContentFromTreeOptions {
    *  hosts can wire it once and not need to thread it again when new internal
    *  consumers land. */
   reader?: VirtualReader;
+  /** Absolute path to the project root (where `refrakt.config.json` lives).
+   *  Used to compute `$file.path` as a project-root-relative POSIX path.
+   *  When omitted, `$file.path` falls back to the page's content-root-relative
+   *  path. Hosted environments that have a meaningful project-root concept
+   *  should pass it; pure in-memory hosts that don't can leave it undefined. */
+  projectRoot?: string;
 }
 
 /**
@@ -349,5 +417,6 @@ export async function loadContentFromTree(
     variables: options.variables,
     securityPolicy: options.securityPolicy,
     colorScheme: options.colorScheme,
+    projectRoot: options.projectRoot,
   });
 }

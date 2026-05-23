@@ -193,7 +193,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 	async function refreshPipelineCache(): Promise<void> {
 		try {
-			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.plugins, options.sandboxExamplesDir);
+			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.plugins, options.sandboxExamplesDir, undefined, undefined, process.cwd());
 			cachedAggregated = site.aggregated;
 			layoutResolver.setAggregated(site.aggregated, buildHookSets());
 		} catch {

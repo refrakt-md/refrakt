@@ -28,6 +28,10 @@ This handbook is for developers extending refrakt — writing custom runes, buil
 
   Cross-page register / aggregate / post-process hooks. Build site-wide indexes from page content.
 
+- [Content variables](/extend/variables)
+
+  The author-facing variable surface: `$frontmatter`, `$page`, `$file`, and the conventions that separate public variables from pipeline internals.
+
 - [Security](/extend/security)
 
   Threat model for runes that surface raw author HTML/CSS/JS, plus the `ResolvedSecurityPolicy` contract.
