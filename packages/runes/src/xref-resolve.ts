@@ -45,15 +45,18 @@ interface ResolvedXref {
 	entityId?: string;
 }
 
-/** Find an entity by exact ID across all types in the registry. */
+/** Find an entity by exact ID across all types in the registry. `pageUrl`
+ *  scopes the search so page-scoped entries from the resolving page take
+ *  precedence over site-scoped entries of the same id (SPEC-060). */
 function findEntityById(
 	registry: Readonly<EntityRegistry>,
 	id: string,
+	pageUrl: string,
 	typeHint?: string,
 ): EntityRegistration | undefined {
 	const types = typeHint ? [typeHint] : registry.getTypes();
 	for (const type of types) {
-		const entity = registry.getById(type, id);
+		const entity = registry.getById(type, id, pageUrl);
 		if (entity) return entity;
 	}
 	return undefined;
@@ -181,7 +184,7 @@ function resolvePlaceholder(
 	rc: ResolveContext,
 ): { tag: typeof Tag.prototype } {
 	// Step 1: entity lookup (capture metadata, may or may not yield a URL).
-	let entity = findEntityById(rc.registry, id, typeHint);
+	let entity = findEntityById(rc.registry, id, rc.pageUrl, typeHint);
 	if (!entity) {
 		const nameMatches = findEntitiesByName(rc.registry, id, typeHint);
 		if (nameMatches.length === 1) {

@@ -31,19 +31,36 @@ export interface TransformedPage {
 
 /**
  * A named entity registered during Phase 2 (Register).
- * The id field must be unique within its type.
+ * Identity within the registry is `(type, id)` for site-scoped entries
+ * (the default and back-compatible shape), or `(type, sourceUrl, id)` for
+ * page-scoped entries (where two pages may legitimately reuse the same id).
  */
 export interface EntityRegistration {
 	/** Entity category (e.g. 'page', 'heading', 'character', 'term') */
 	type: string;
-	/** Unique identifier within this type (e.g. '/docs/guide/' or '/docs/guide/#intro') */
+	/** Identifier. Unique within its type when `scope` is `'site'` (the default);
+	 *  unique within `(type, sourceUrl)` when `scope` is `'page'`. */
 	id: string;
+	/** Registration scope. `'site'` (default) means the entity is globally
+	 *  addressable across the build — two registrations with the same
+	 *  `(type, id)` collide and the last one wins. `'page'` means the entity
+	 *  is local to the page it was registered from (its {@link sourceUrl}):
+	 *  the registry namespaces the entry by URL internally so two pages can
+	 *  legitimately register the same `(type, id)` without collision. Page-
+	 *  scoped entries are still discoverable via {@link EntityRegistry.getAll}
+	 *  and {@link EntityRegistry.getByUrl}; {@link EntityRegistry.getById}
+	 *  needs the calling page's URL to match them, falling back to a site-
+	 *  scoped match if no page-scoped one exists. */
+	scope?: 'page' | 'site';
 	/** URL of the page this entity was registered from, when one exists.
 	 *  May be `undefined` when the entity isn't reachable via a local page URL
 	 *  (e.g. SPEC-064 plan content registered from `plan.dir` outside any
 	 *  site's content tree). The xref resolver treats undefined / empty as
 	 *  "no usable URL" and falls through to {@link XrefPattern} resolution.
-	 *  Empty strings passed at registration are normalized to `undefined`. */
+	 *  Empty strings passed at registration are normalized to `undefined`.
+	 *  Required in practice for `scope: 'page'` — page-scoped entries
+	 *  without a URL fall back to site-scoped keying (with a likely
+	 *  collision warning from the registry implementation). */
 	sourceUrl?: string;
 	/** Project-root-relative path to the source `.md` file backing this entity.
 	 *  Populated by plugins that can extract content from disk (e.g. the plan
@@ -65,12 +82,18 @@ export interface EntityRegistration {
 /** The site-wide entity registry built during Phase 2 (Register) */
 export interface EntityRegistry {
 	register(entry: EntityRegistration): void;
-	/** All entities of a given type, in registration order */
+	/** All entities of a given type, in registration order. Mixed scopes —
+	 *  page-scoped and site-scoped entries appear together. */
 	getAll(type: string): EntityRegistration[];
-	/** All entities of a given type registered from a specific page URL */
+	/** All entities of a given type registered from a specific page URL.
+	 *  Includes both page-scoped and site-scoped entries from that page. */
 	getByUrl(type: string, url: string): EntityRegistration[];
-	/** Find a specific entity by type and id */
-	getById(type: string, id: string): EntityRegistration | undefined;
+	/** Find a specific entity by type and id. When `pageUrl` is provided,
+	 *  page-scoped entries from that page take precedence over site-scoped
+	 *  matches of the same id; if no page-scoped match exists the search
+	 *  falls back to a site-scoped match. Without `pageUrl` only site-scoped
+	 *  entries are returned. */
+	getById(type: string, id: string, pageUrl?: string): EntityRegistration | undefined;
 	/** All registered entity type names */
 	getTypes(): string[];
 }
