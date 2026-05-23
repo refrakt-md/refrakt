@@ -26,6 +26,7 @@ export type {
   SiteConfig,
   SiteThemeConfig,
   PlanConfig,
+  XrefPattern,
   ThemeManifest,
   LayoutDefinition,
   RouteRule,
