@@ -144,6 +144,13 @@ export const coreConfig: ThemeConfig = {
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
+		/* Snippet doesn't have a normal schema transform — its preprocess
+		 * hook replaces the tag with a `fence` node, and the standalone
+		 * wrap step adds `<figure class="rf-snippet">` post-transform.
+		 * The engine never sees a `Snippet` tag, but we still need an
+		 * entry in the theme config so `computeUsedCssBlocks` includes
+		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
+		Snippet: { block: 'snippet' },
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',

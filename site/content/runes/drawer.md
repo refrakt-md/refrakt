@@ -119,14 +119,14 @@ Explicit `headingLevel=` always wins.
 Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer. The drawer below is live on this page; click {% ref "page-source" label="view this page's source" /%} (or press `.`) to open it.
 
 ```markdoc
-{% drawer id="page-source" title="View source" shortcut="." %}
+{% drawer id="page-source" title="View source" shortcut="." size="lg" %}
 {% snippet path=$file.path lang="markdoc" /%}
 {% /drawer %}
 
 Trigger with {% ref "page-source" label="view this page's source" /%}.
 ```
 
-{% drawer id="page-source" title="View source" shortcut="." %}
+{% drawer id="page-source" title="View source" shortcut="." size="lg" %}
 {% snippet path=$file.path lang="markdoc" /%}
 {% /drawer %}
 

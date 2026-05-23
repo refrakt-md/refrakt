@@ -184,6 +184,14 @@
 				"{content}"
 			]
 		},
+		"Snippet": {
+			"block": "snippet",
+			"root": ".rf-snippet",
+			"dataRune": "snippet",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Embed": {
 			"block": "embed",
 			"root": ".rf-embed",

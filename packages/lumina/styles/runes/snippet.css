@@ -14,5 +14,14 @@
  */
 
 .rf-snippet {
+	/* Override the UA `<figure>` defaults — browsers ship with
+	 * margin-inline: 40px and margin-block: 1em which makes the snippet
+	 * figure look indented inside any container. The longhand resets
+	 * cover both physical and logical margin properties because the
+	 * physical longhands set by `margin:` don't always cascade-override
+	 * the UA's logical longhands. */
 	margin: var(--rf-spacing-md) 0;
+	margin-inline-start: 0;
+	margin-inline-end: 0;
+	padding: 0;
 }

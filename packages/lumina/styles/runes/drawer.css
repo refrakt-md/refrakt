@@ -20,8 +20,8 @@
 
 .rf-drawer {
 	--rf-drawer-size-sm: 22rem;
-	--rf-drawer-size-md: 30rem;
-	--rf-drawer-size-lg: 42rem;
+	--rf-drawer-size-md: 36rem;
+	--rf-drawer-size-lg: 52rem;
 	--rf-drawer-bg: var(--rf-color-surface);
 	--rf-drawer-fg: var(--rf-color-text);
 	--rf-drawer-border: var(--rf-color-border);
