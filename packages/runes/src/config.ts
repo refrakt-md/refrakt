@@ -12,6 +12,7 @@ import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
+import { applyOutlineScopeWalkers } from './outline-scope.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -2545,6 +2546,13 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			aggregated,
 			ctx,
 		);
+
+		// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
+		// items inside any `data-outline-scope` subtree. Generic — any rune
+		// can set the attribute and get the behaviour. Runs last so it can
+		// see the final tree (including expand-substituted content once
+		// that lands in v0.15.0).
+		applyOutlineScopeWalkers(wrappedPage.renderable);
 
 		return wrappedPage;
 	},

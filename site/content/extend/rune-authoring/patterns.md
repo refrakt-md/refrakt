@@ -380,3 +380,28 @@ npx vitest run packages/runes/test/mystep.test.ts
 # Watch mode
 npm run test:watch
 ```
+
+## Neutral primitives for cross-cutting behaviour
+
+A few `data-*` attributes act as **neutral conventions** that any rune can opt into. They aren't tied to a specific rune; the cross-cutting machinery that consumes them just looks for the attribute and reacts. Adopt them when your rune wants the corresponding behaviour without re-implementing it.
+
+### `data-outline-scope` — sub-outline boundary
+
+Set `data-outline-scope="{value}"` on a rune's wrapper to mark the subtree as a **sub-outline boundary**. Two generic walkers honor the attribute:
+
+1. **Heading-ID walker** — heading IDs inside the subtree are prefixed with `{value}--` (e.g. `SPEC-023--acceptance-criteria`). The host page can collide on `id="acceptance-criteria"` without clashing.
+2. **TOC walker** — `{% toc %}` skips list entries that point at headings inside the scoped subtree, so the host's TOC stays focused on host-only structure.
+
+Both walkers run automatically in the core postProcess pass. Set the attribute once and you get both behaviours. `expand` is the first consumer (the embed is a quoted document, not part of the host outline); future runes like `aside`, `sidenote`, or `quote` can adopt the same convention with no walker changes needed.
+
+The walker rules:
+
+- Nearest enclosing `data-outline-scope` wins for nested scopes — `data-outline-scope="A"` containing `data-outline-scope="B"` containing `<h2 id="foo">` produces `id="B--foo"`.
+- Already-prefixed IDs are skipped (idempotent), so a re-run of the pass doesn't double-prefix.
+- A rune that doesn't set the attribute behaves exactly as today.
+
+### `data-target-type` — addressable-by-xref
+
+Set `data-target-type="{rune-name}"` on resolved xref anchors so the behaviours layer can identify "this link points at a drawer / popover / modal / future-thing" and intercept the click. The xref resolver propagates this from the registered entity's `type` automatically — runes that register entities don't need to set the attribute themselves; they just need to be registered in the `EntityRegistry`.
+
+Drawer ([`{% drawer %}`](/runes/drawer)) is the canonical consumer: its behaviours layer queries `a[data-target-type="drawer"]` and turns matching clicks into `dialog.showModal()` calls.
