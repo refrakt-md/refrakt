@@ -270,9 +270,15 @@ function createRegistry(): { registry: EntityRegistry; entries: EntityRegistrati
 			if (!byTypeAndId.get(entry.type)!.has(entry.id)) {
 				byTypeAndId.get(entry.type)!.set(entry.id, entry);
 			}
-			if (!byTypeAndUrl.has(entry.type)) byTypeAndUrl.set(entry.type, new Map());
-			if (!byTypeAndUrl.get(entry.type)!.has(entry.sourceUrl)) byTypeAndUrl.get(entry.type)!.set(entry.sourceUrl, []);
-			byTypeAndUrl.get(entry.type)!.get(entry.sourceUrl)!.push(entry);
+			// Skip URL indexing for entries without a sourceUrl. Plan content
+			// registered via SPEC-064's unconditional scan (file on disk, no
+			// site URL) lives in the primary index but doesn't participate in
+			// URL lookups. Matches EntityRegistryImpl in @refrakt-md/content.
+			if (entry.sourceUrl !== undefined) {
+				if (!byTypeAndUrl.has(entry.type)) byTypeAndUrl.set(entry.type, new Map());
+				if (!byTypeAndUrl.get(entry.type)!.has(entry.sourceUrl)) byTypeAndUrl.get(entry.type)!.set(entry.sourceUrl, []);
+				byTypeAndUrl.get(entry.type)!.get(entry.sourceUrl)!.push(entry);
+			}
 		},
 		getAll(type: string) {
 			return [...(byTypeAndId.get(type)?.values() ?? [])];
@@ -1226,9 +1232,13 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,
 	);
 
-	// 4b. Resolve xref placeholders into clickable links
+	// 4b. Resolve xref placeholders into clickable links. The plan CLI render
+	// path doesn't currently consume `refrakt.config.json#/xrefs`, so patterns
+	// are empty here — unresolved refs render as `rf-xref--unresolved`. If CLI
+	// consumers later want pattern fallback, a future change can thread the
+	// compiled patterns through.
 	const processedPages = postProcessedPages.map(p => {
-		const resolved = resolveXrefs(p.renderable, p.url, registry, ctx);
+		const resolved = resolveXrefs(p.renderable, p.url, registry, [], ctx);
 		if (resolved === p.renderable) return p;
 		return { ...p, renderable: resolved as typeof p.renderable };
 	});
