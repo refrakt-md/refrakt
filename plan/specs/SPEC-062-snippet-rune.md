@@ -334,6 +334,7 @@ The wrap step (postProcess) is a regular cross-page pipeline postProcess hook â€
 - [ ] `{% snippet path=$file.path /%}` works end-to-end via the `$file.path` variable (project-root frame matches the sandbox)
 - [ ] CSS in the docs plugin covers `.rf-snippet*` selectors
 - [ ] Authoring docs cover the rune, sandbox rules, line range syntax, language inference table, and composition behavior
+- [ ] A dogfooded rune-catalog page lives at `site/content/runes/snippet.md`, linked from the `_layout.md` sidebar nav. The page includes a live example that loads a real file from refrakt's content/source tree, a view-source-of-itself example (`path=$file.path`), and live composition examples inside `{% codegroup %}` and `{% diff %}` â€” so the reader sees the rune working end-to-end against real content, not stubs.
 
 ### Composition (pre-resolve)
 

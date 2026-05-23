@@ -51,6 +51,17 @@ Snippet is implemented as an **AST preprocessor** rather than a transform-time r
 - [ ] Tests cover composition cases with real file fixtures: snippet at document level, two snippets in codegroup, two snippets in diff, mixed snippet + fence in codegroup
 - [ ] Authoring docs cover the rune, sandbox rules, line range syntax, language inference table, and the composition cases
 
+### Site documentation (dogfooded)
+
+- [ ] New rune-catalog page at `site/content/runes/snippet.md` following the established rune-doc pattern (frontmatter `title` + `description`, intro paragraph, sectioned examples with `{% preview source=true %}` blocks)
+- [ ] Page is linked from `site/content/runes/_layout.md` in the "Code & Data" section of the sidebar nav (next to `codegroup`, `compare`, `diff`)
+- [ ] Page includes a **live example loading a real file from refrakt's own content/source tree** — at minimum, one `{% snippet %}` block that resolves an actual file in the repo (a small, stable example like a token CSS snippet or a docs-plugin source file). The reader sees the actual file content rendered through the rune.
+- [ ] Page includes a **view-source-of-itself example**: `{% snippet path=$file.path lang="md" title="This page's source" /%}` at the bottom of the doc, demonstrating the canonical view-source pattern recursively against the page itself.
+- [ ] Page includes **composition examples**: `{% codegroup %}` with two `{% snippet %}` children, and `{% diff %}` with two `{% snippet %}` children, both loading real files from the repo. Reader sees the composition work end-to-end.
+- [ ] Page documents the line-range syntax with a live example that slices a file (e.g., `lines="1-10"` on a meaningfully larger file).
+- [ ] Page documents the language-inference table and the `lang=` override with a live example.
+- [ ] Page documents the sandbox rules (project-root anchor, traversal rejection, symlink rejection) as a reference table; doesn't need to demonstrate failures live.
+
 ## Approach
 
 Per SPEC-062's Engine Changes section:
