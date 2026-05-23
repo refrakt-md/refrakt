@@ -19,7 +19,9 @@ npm create refrakt
 
 
 {% showcase width="content" shadow="hard" bleed="bottom" offset="10rem" %}
-{% snippet path=$file.path lines="5-24" lang="markdoc" /%}
+{% codegroup overflow="wrap" %}
+{% snippet path=$file.path lines="5-26" lang="markdoc" /%}
+{% /codegroup %}
 {% /showcase %}
 {% /hero %}
 
