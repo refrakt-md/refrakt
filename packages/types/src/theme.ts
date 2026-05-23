@@ -130,6 +130,17 @@ export interface RefraktConfig {
 	 *  has no usable `sourceUrl`). First match wins. See {@link XrefPattern}. */
 	xrefs?: XrefPattern[];
 
+	/** Named file roots — directories that file-reading runes can reach via
+	 *  a `namespace:filename` syntax. Markdoc partials extend `{% partial %}`
+	 *  to honor namespaced refs (`shared:footer.md`); the snippet rune
+	 *  ({% ref "SPEC-062" /%}) consumes the same resolver when its v2 lands.
+	 *
+	 *  Keys are namespace names; values are paths relative to the config
+	 *  file's directory (i.e. the project root). Paths must point to existing
+	 *  directories. The namespace `site` is reserved for future site-level
+	 *  resolution. See SPEC-063 for the full resolution model. */
+	fileRoots?: Record<string, string>;
+
 	/** Singular-site declaration. Mutually exclusive with `sites`. */
 	site?: SiteConfig;
 

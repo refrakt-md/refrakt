@@ -101,7 +101,7 @@ export {
 	UNIVERSAL_ATTRIBUTE_NAMES,
 } from './attribute-presets.js';
 export type { AttributePresetMetadata } from './attribute-presets.js';
-export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures } from './plugins.js';
+export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';

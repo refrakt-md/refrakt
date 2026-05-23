@@ -5,6 +5,7 @@ import { getThemePackage } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
+import { mergeFileRoots, resolveUserFileRoots, type FileRoots } from './file-roots.js';
 import {
 	createSiteLoader,
 	createVirtualSiteLoader,
@@ -46,6 +47,9 @@ interface AssembledSiteContext {
 	communityTags: Record<string, any> | undefined;
 	communityPackages: Plugin[] | undefined;
 	icons: Record<string, Record<string, string>>;
+	/** Plugin-contributed file roots (already absolute paths). Merged with
+	 *  user-config roots downstream. */
+	pluginFileRoots: FileRoots;
 }
 
 /** Compile xref patterns from a raw config, logging any diagnostics to
@@ -151,6 +155,7 @@ async function assembleSiteContext(
 				communityTags: undefined,
 				communityPackages: undefined,
 				icons,
+				pluginFileRoots: {},
 			};
 		}
 		const { config: assembledConfig } = assembleThemeConfig({
@@ -163,6 +168,7 @@ async function assembleSiteContext(
 			communityTags: undefined,
 			communityPackages: undefined,
 			icons,
+			pluginFileRoots: {},
 		};
 	}
 
@@ -189,6 +195,7 @@ async function assembleSiteContext(
 		communityTags: Object.keys(merged.tags).length > 0 ? merged.tags : undefined,
 		communityPackages: merged.plugins,
 		icons,
+		pluginFileRoots: merged.fileRoots,
 	};
 }
 
@@ -207,6 +214,11 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 	// formatter once SPEC-058 wiring is fully in place.
 	const xrefPatterns = compileConfiguredXrefPatterns(rawConfig.xrefs);
 
+	// Resolve user-config file roots against the config-file directory.
+	// Plugin-contributed roots are merged in at init time (after plugins
+	// load); user roots win any namespace collision (warning surfaced).
+	const userFileRoots = resolveUserFileRoots(rawConfig.fileRoots, configDir);
+
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
 	let _loader: SiteLoader | null = null;
@@ -218,6 +230,14 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 			const ctx = await assembleSiteContext(site, { configDir });
 			_transform = ctx.transform;
 
+			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
+				userFileRoots,
+				ctx.pluginFileRoots,
+			);
+			for (const warning of fileRootWarnings) {
+				process.stderr.write(`refrakt: ${warning}\n`);
+			}
+
 			_loader = createSiteLoader({
 				dirPath: contentDir,
 				basePath: '/',
@@ -228,6 +248,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				securityPolicy: options?.security,
 				projectRoot: configDir,
 				xrefPatterns,
+				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -284,6 +305,11 @@ export interface VirtualRefraktLoaderOptions {
 	projectRoot?: string;
 	/** Xref patterns to compile and use as URL-resolution fallback. */
 	xrefs?: XrefPattern[];
+	/** File roots — namespace → absolute directory path. Hosts that have a
+	 *  conceptual project root should resolve their fileRoots config against
+	 *  it before passing the result here (the virtual loader doesn't read a
+	 *  config file). Plugin-declared roots merge in automatically. */
+	fileRoots?: FileRoots;
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
 	dev?: boolean;
 }
@@ -305,8 +331,9 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, security, basePath, projectRoot, xrefs, dev } = options;
+	const { site, tree, reader, variables, security, basePath, projectRoot, xrefs, fileRoots: userFileRootsOption, dev } = options;
 	const xrefPatterns = compileConfiguredXrefPatterns(xrefs);
+	const userFileRoots = userFileRootsOption ?? {};
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -319,6 +346,14 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 			const ctx = await assembleSiteContext(site);
 			_transform = ctx.transform;
 
+			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
+				userFileRoots,
+				ctx.pluginFileRoots,
+			);
+			for (const warning of fileRootWarnings) {
+				process.stderr.write(`refrakt: ${warning}\n`);
+			}
+
 			_loader = createVirtualSiteLoader({
 				tree,
 				basePath: basePath ?? '/',
@@ -330,6 +365,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				reader,
 				projectRoot,
 				xrefPatterns,
+				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				dev: dev ?? false,
 			});
 		})();

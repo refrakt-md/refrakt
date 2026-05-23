@@ -16,6 +16,7 @@ import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js'
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
+import { readFileRoots, type FileRoots } from './file-roots.js';
 
 /** Async reader for ad-hoc lookups in virtual (non-FS) hosting environments.
  *  Returns the file content or `null` when the path is unknown. */
@@ -162,6 +163,10 @@ interface ProcessContentTreeOptions {
    *  the xref resolver as a URL-resolution fallback when registry entities
    *  have no usable `sourceUrl`. */
   xrefPatterns?: CompiledXrefPattern[];
+  /** Registered file roots — namespace → absolute directory path. Each
+   *  root is scanned at content-load time and its `.md` files become
+   *  available as Markdoc partials under `namespace:filename` keys. */
+  fileRoots?: FileRoots;
 }
 
 async function processContentTree(
@@ -174,12 +179,25 @@ async function processContentTree(
   const sandbox = opts.sandbox ?? nullSandboxHooks;
   const gitTimestamps = opts.gitTimestamps ?? new Map<string, FileTimestamps>();
 
-  // Pre-parse partials into Markdoc ASTs for the transform config
+  // Pre-parse partials into Markdoc ASTs for the transform config. Two
+  // sources contribute:
+  // - Site-local `_partials/` directory (already-scanned by ContentTree;
+  //   keys are unprefixed relative paths like `footer.md`).
+  // - Registered file roots (project-wide; keys are namespaced like
+  //   `shared:footer.md`). Plugins can also contribute roots via
+  //   `Plugin.fileRoots`; both arrive in `opts.fileRoots` already
+  //   merged by the loader bootstrap.
   const partialFiles = tree.partials();
+  const namespacedPartials = opts.fileRoots && Object.keys(opts.fileRoots).length > 0
+    ? await readFileRoots(opts.fileRoots)
+    : new Map<string, PartialFile>();
   let parsedPartials: Record<string, Node> | undefined;
-  if (partialFiles.size > 0) {
+  if (partialFiles.size > 0 || namespacedPartials.size > 0) {
     parsedPartials = {};
     for (const [name, partial] of partialFiles) {
+      parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+    }
+    for (const [name, partial] of namespacedPartials) {
       parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
     }
   }
@@ -335,6 +353,7 @@ export async function loadContent(
   securityPolicy?: SecurityPolicy,
   projectRoot?: string,
   xrefPatterns?: CompiledXrefPattern[],
+  fileRoots?: FileRoots,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
@@ -362,6 +381,7 @@ export async function loadContent(
     sandboxExamplesDir: resolvedExamplesDir,
     projectRoot: resolvedProjectRoot,
     xrefPatterns,
+    fileRoots,
   });
 }
 
@@ -401,6 +421,8 @@ export interface LoadContentFromTreeOptions {
    *  environments that own their config resolution can compile patterns via
    *  `compileXrefPatterns` and pass them here. */
   xrefPatterns?: CompiledXrefPattern[];
+  /** Registered file roots — namespace → absolute directory path. */
+  fileRoots?: FileRoots;
 }
 
 /**
@@ -436,5 +458,6 @@ export async function loadContentFromTree(
     colorScheme: options.colorScheme,
     projectRoot: options.projectRoot,
     xrefPatterns: options.xrefPatterns,
+    fileRoots: options.fileRoots,
   });
 }
