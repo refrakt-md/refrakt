@@ -166,4 +166,3 @@ That snippet block, when this page builds, reads the file you're looking at and 
 - [Codegroup](/runes/codegroup) — tabbed code blocks; consumes snippet children transparently.
 - [Diff](/runes/diff) — before/after code comparison; consumes snippet children transparently.
 - [Content variables](/extend/variables) — `$file.path` for the view-source-of-current-page pattern.
-- [Drawer](/runes/drawer) — wrap a snippet in a side panel for the "view source" affordance.
