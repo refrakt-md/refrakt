@@ -196,6 +196,31 @@ export function readSnippetFile(opts: ReadFileOptions): ReadFileResult {
 	};
 }
 
+/**
+ * Read a file's raw text content with the snippet sandbox applied.
+ * Used by expand (SPEC-066) when it needs the whole file (no line
+ * slicing) to parse as Markdoc. Lives here so the `node:fs` import
+ * stays inside this Node-only helper module — expand-pipeline.ts
+ * imports the function, not `fs` directly, which keeps the runes
+ * package tree-shakable for browser bundles.
+ */
+export function readWholeSandboxedFile(opts: {
+	relativePath: string;
+	projectRoot: string;
+}): string {
+	const absolutePath = resolveSnippetPath(opts.relativePath, opts.projectRoot);
+	if (!fs.existsSync(absolutePath)) {
+		throw new SnippetSandboxError(`source file "${opts.relativePath}" does not exist`);
+	}
+	const stat = fs.statSync(absolutePath);
+	if (!stat.isFile()) {
+		throw new SnippetSandboxError(
+			`source file "${opts.relativePath}" must be a regular file (got ${stat.isDirectory() ? 'directory' : 'other'})`,
+		);
+	}
+	return fs.readFileSync(absolutePath, 'utf-8');
+}
+
 /** All sandbox-rejection cases throw this — the preprocess hook can catch and
  *  format with source-line context for the user. */
 export class SnippetSandboxError extends Error {

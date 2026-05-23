@@ -22,12 +22,11 @@
  *   - resolution stack (`(type, id)` tuples) for cycle detection
  */
 
-import { readFileSync } from 'node:fs';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
 import { EXPAND_PLACEHOLDER_MARKER } from './tags/expand.js';
-import { resolveSnippetPath, SnippetSandboxError } from './lib/read-file.js';
+import { readWholeSandboxedFile, SnippetSandboxError } from './lib/read-file.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 
 const { Tag } = Markdoc;
@@ -312,7 +311,9 @@ function canonicalLinkDefault(entity: EntityRegistration): string {
 
 /** Parse a source file, caching per build. The path is resolved through
  *  the same sandbox as snippet so absolute paths and traversal escapes
- *  are rejected. */
+ *  are rejected. File-system access lives behind a helper in
+ *  `lib/read-file.ts` so the `node:fs` import stays out of this module
+ *  and Vite can tree-shake it from browser bundles. */
 function parseSourceFile(
 	sourceFile: string,
 	projectRoot: string,
@@ -320,8 +321,7 @@ function parseSourceFile(
 ): Node {
 	const cached = cache.get(sourceFile);
 	if (cached) return cached;
-	const absolute = resolveSnippetPath(sourceFile, projectRoot);
-	const raw = readFileSync(absolute, 'utf-8');
+	const raw = readWholeSandboxedFile({ relativePath: sourceFile, projectRoot });
 	const ast = Markdoc.parse(raw);
 	cache.set(sourceFile, ast);
 	return ast;
