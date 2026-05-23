@@ -13,6 +13,7 @@ import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
 import { applyOutlineScopeWalkers } from './outline-scope.js';
+import { resolveExpands } from './expand-pipeline.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -152,6 +153,11 @@ export const coreConfig: ThemeConfig = {
 		 * entry in the theme config so `computeUsedCssBlocks` includes
 		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
 		Snippet: { block: 'snippet' },
+		/* Expand emits a placeholder during transform; the postProcess hook
+		 * substitutes the entity content wrapped in `<section
+		 * class="rf-expand" data-rune="expand">`. Engine config provides the
+		 * block name for CSS tree-shaking. */
+		Expand: { block: 'expand' },
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
@@ -2353,6 +2359,16 @@ export interface CorePipelineHooksOptions {
 	 *  through `aggregate` into the postProcess `coreData` shape so the xref
 	 *  resolver can use them as a URL-resolution fallback. */
 	xrefPatterns?: CompiledXrefPattern[];
+	/** Merged Markdoc transform config (tags + nodes from core + every
+	 *  loaded plugin) plus the project root. Threaded through `aggregate`
+	 *  so the expand postProcess (SPEC-066) can re-transform embedded
+	 *  AST subtrees using the same rune schemas the host page used,
+	 *  and read source files with the same sandbox boundary as snippet. */
+	embedConfig?: {
+		tags: Record<string, unknown>;
+		nodes: Record<string, unknown>;
+		projectRoot?: string;
+	};
 }
 
 /**
@@ -2365,6 +2381,7 @@ export interface CorePipelineHooksOptions {
  */
 export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
 	const xrefPatterns = opts.xrefPatterns ?? [];
+	const embedConfig = opts.embedConfig;
 
 	return {
 	preprocess: preprocessSnippets,
@@ -2457,7 +2474,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			frontmatter: e.data as Record<string, unknown>,
 		}));
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns };
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns, embedConfig };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
@@ -2467,6 +2484,11 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			allPosts: BlogPostData[];
 			registry: Readonly<EntityRegistry>;
 			xrefPatterns?: CompiledXrefPattern[];
+			embedConfig?: {
+				tags: Record<string, unknown>;
+				nodes: Record<string, unknown>;
+				projectRoot?: string;
+			};
 		} | undefined;
 
 		if (!coreData) return page;
@@ -2528,6 +2550,18 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// resolution so the rewritten title doesn't carry the sentinel
 		// attribute into the rendered HTML.
 		renderable = resolveAutoDrawerTitleLevels(renderable);
+
+		// SPEC-066 expand resolution — substitutes embedded entity content
+		// before xref runs so refs inside substituted content are resolved
+		// by the same pass as host-page refs.
+		renderable = resolveExpands(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.xrefPatterns ?? [],
+			coreData.embedConfig,
+			ctx,
+		);
 
 		renderable = resolveXrefs(
 			renderable,

@@ -27,6 +27,7 @@ tint-lock: false
 - conversation
 - reveal
 - embed
+- expand
 - icon
 - xref
 - badge

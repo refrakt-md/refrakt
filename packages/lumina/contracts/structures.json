@@ -192,6 +192,14 @@
 				"{content}"
 			]
 		},
+		"Expand": {
+			"block": "expand",
+			"root": ".rf-expand",
+			"dataRune": "expand",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Embed": {
 			"block": "embed",
 			"root": ".rf-embed",

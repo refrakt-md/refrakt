@@ -43,6 +43,7 @@ import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
+import { expand } from './tags/expand.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -533,6 +534,14 @@ export const runes = {
     aliases: ['ref'],
     schema: xref,
     description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
+  }),
+  expand: defineRune({
+    name: 'expand',
+    schema: expand,
+    description: 'Substitute a registered entity\'s source content inline. Reads the entity\'s sourceFile via the plan plugin (or any plugin that registers extractable entities) and inlines it. Symmetric with `xref`: same lookup chain, different output (content rather than a link).',
+    typeName: 'Expand',
+    category: 'Content',
+    snippet: ['{% expand "${1:SPEC-001}" /%}'],
   }),
   badge: defineRune({
     name: 'badge',

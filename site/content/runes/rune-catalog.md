@@ -27,6 +27,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [conversation](/runes/conversation) | Chat and dialogue display with alternating speaker messages |
 | [reveal](/runes/reveal) | Progressive disclosure where content appears step by step |
 | [embed](/runes/embed) | Embed external content like videos, tweets, and code demos |
+| [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
 | [icon](/runes/icon) | Inline icons from the theme's icon registry |
 
 ### Layout

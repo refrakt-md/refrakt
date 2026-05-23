@@ -207,8 +207,22 @@ async function processContentTree(
   // gets a chance to rewrite the parsed AST before the transform runs.
   // The core hook set carries snippet's preprocess implementation (SPEC-062);
   // plugins that register their own preprocess hooks plug in alongside.
-  const coreHooks = opts.xrefPatterns && opts.xrefPatterns.length > 0
-    ? createCorePipelineHooks({ xrefPatterns: opts.xrefPatterns })
+  //
+  // The merged tags + nodes (core + every loaded plugin) are also threaded
+  // through to the core hooks as `embedConfig` — expand (SPEC-066) needs
+  // them to re-transform extracted entity subtrees using the same schemas
+  // the host page used.
+  const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+  const coreHooksOptions = {
+    xrefPatterns: opts.xrefPatterns,
+    embedConfig: {
+      tags: embedTags as Record<string, unknown>,
+      nodes: nodes as Record<string, unknown>,
+      projectRoot: opts.projectRoot,
+    },
+  };
+  const coreHooks = (opts.xrefPatterns && opts.xrefPatterns.length > 0) || opts.projectRoot
+    ? createCorePipelineHooks(coreHooksOptions)
     : corePipelineHooks;
   const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
   for (const pkg of opts.plugins ?? []) {
