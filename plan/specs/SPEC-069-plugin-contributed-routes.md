@@ -252,7 +252,17 @@ File-backed pages always win against contributed pages of the same URL (file-bac
 
 ### Static prerender enumeration
 
-The SvelteKit adapter's prerender step enumerates routes from the SitePage list. Contributed pages are in that list by the time prerender runs, so no adapter changes are needed *if* contributions happen before route enumeration. The Vite plugin's `usedCssBlocks` analysis (the CSS tree-shaker from SPEC-... — the one we built earlier) similarly sees all pages.
+Every refrakt adapter enumerates routes from the merged `SitePage[]` after the loader produces it — that's the existing shape adapters consume. Contributed pages are in that list by the time enumeration runs, so adapters work without changes:
+
+- **`@refrakt-md/sveltekit`** — Vite plugin's virtual-modules.ts walks the page list; `usedCssBlocks` analysis walks it; nothing adapter-specific needed.
+- **`@refrakt-md/html`** — static HTML adapter writes one file per page; the loop reads the same list.
+- **`@refrakt-md/astro`** — exposes pages through Astro's content collections API; consumes the same list.
+- **`@refrakt-md/next`** / **`@refrakt-md/nuxt`** / **`@refrakt-md/eleventy`** — each adapter has its own enumeration surface, all driven by the SitePage list.
+- **`@refrakt-md/react`** / **`@refrakt-md/vue`** — runtime adapters; route discovery happens at build time the same way.
+
+Adapter authors don't have to participate in the contribution mechanism — they consume the post-contribution page list. The one cross-cutting concern: any adapter that does its own per-page CSS / asset analysis (the `usedCssBlocks` tree-shaker is the precedent) sees contributed pages automatically because they flow through the same enumeration.
+
+If a specific adapter has an intermediate caching layer that fingerprints input files (Astro's content collections, Next's `getStaticPaths`, etc.), contributed pages need a stable identifier so the adapter can dedupe across builds. `SitePage.source = { type: 'contributed', plugin, ruleIndex }` plus the page's URL serves as that identifier — the same shape every adapter can hash.
 
 -----
 
@@ -308,6 +318,96 @@ Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the reg
 
 -----
 
+## Emergent Plugin Use Cases
+
+A non-exhaustive sketch of plugins this mechanism unlocks — grouped by category so the breadth is visible. Many of these don't need to be built by refrakt-core; the value of the mechanism is that *third parties can build them without forking the loader*. A few are likely worth shipping in `@refrakt-md/*` as reference implementations; most are community-shaped.
+
+### Headless CMS adapters
+
+The headline JAMstack story. Each is a thin layer over an existing client SDK:
+
+- **`@refrakt-md/sanity`** — pulls documents from Sanity, maps Portable Text → Markdoc, contributes a page per document. The big one — Sanity has the largest Markdoc-adjacent authoring community.
+- **`@refrakt-md/notion`** — Notion databases as routes. Maps Notion blocks → Markdoc. Massive popular use case for marketing sites, internal wikis, knowledge bases.
+- **`@refrakt-md/contentful`** — Contentful entries → pages. Enterprise headless CMS competitor to Sanity.
+- **`@refrakt-md/strapi`** — open-source headless CMS adapter. Self-hosted alternative for users avoiding SaaS.
+- **`@refrakt-md/payload`** — Payload CMS (TypeScript-first, growing rapidly in the Astro/Next.js community).
+- **`@refrakt-md/airtable`** — spreadsheet-shaped data; common for client-supplied content libraries, product catalogs, event listings.
+
+Pattern: plugin reads `process.env.{CMS}_*` for credentials, fetches at build time, contributes one page per document. Caching via plugin-local content-hash dedup.
+
+### Code / repo / project tooling
+
+Generated content from technical sources. Probably the easiest wins because the data is already structured and lives in the same repo as the build:
+
+- **`@refrakt-md/typedoc`** — reads TypeScript declaration files, contributes one page per symbol. Already-known story (TypeDoc itself, Docusaurus, Astro Starlight all do this); refrakt would let the output use *real refrakt runes* (`api`, `symbol` from `@refrakt-md/docs`) instead of bespoke component layouts.
+- **`@refrakt-md/openapi`** — reads `openapi.yaml`, contributes one page per endpoint using the `api` rune. Replaces tools like Redoc / Swagger UI with refrakt-themable output.
+- **`@refrakt-md/jsdoc`** — JSDoc-annotated JS / TS without `.d.ts` files.
+- **`@refrakt-md/changelog`** — reads CHANGELOG.md, contributes one page per release. Trivial but useful.
+- **`@refrakt-md/storybook`** — one page per story; embeds the story renders. Bridge for teams using Storybook for component docs.
+- **`@refrakt-md/coverage`** — coverage report pages from Istanbul / Vitest output. Niche but a real ask from teams who publish coverage history.
+
+These plugins all read filesystem-local data, so no network policy concerns; caching is keyed off file mtime.
+
+### Git / forge integration
+
+The repo itself as a data source:
+
+- **`@refrakt-md/github`** — uses GitHub's GraphQL API to contribute pages from issues, PRs, releases, contributor profiles, milestones. Pairs well with the plan-site template (a "what's recently merged" feed). The Trace-without-Trace tier for solo users.
+- **`@refrakt-md/gitlab`** — same shape for GitLab.
+- **`@refrakt-md/git-log`** — purely-local: walks `git log`, contributes a page per commit. Combined with `{% plan-activity %}`, gives a richer history view.
+
+### Refrakt-internal "missing pieces"
+
+Plugins that turn existing CLI output into pages:
+
+- **`@refrakt-md/contracts-explorer`** — reads `contracts/structures.json`, contributes one page per rune showing the structural contract (BEM selectors, data attrs, child order). Today `refrakt inspect <rune>` is a CLI-only affordance; this turns it into a browsable on-site reference.
+- **`@refrakt-md/plugins-list`** — reads `refrakt.config.json#/plugins`, contributes one page per installed plugin with its README, runes, theme overrides. Self-documenting site.
+- **`@refrakt-md/reference`** — the rune-reference output `refrakt reference` produces (markdoc / json) becomes per-rune pages.
+
+### Commerce / catalog
+
+Product catalog as routes:
+
+- **`@refrakt-md/shopify`** — pulls products via Storefront API, contributes one page per product. Storefront refrakt becomes a real option.
+- **`@refrakt-md/stripe-products`** — Stripe Catalog as pages. Common for SaaS pricing pages, license-tier landing pages.
+
+### Media / community
+
+Social / media platforms as content sources:
+
+- **`@refrakt-md/youtube`** — playlist as routes; one page per video. Uses the `{% playlist %}` / `{% track %}` runes from `@refrakt-md/media`.
+- **`@refrakt-md/podcast`** — RSS-feed episodes as pages. Bridges podcast-host metadata into a refrakt-themed site.
+- **`@refrakt-md/rss`** — generic RSS / Atom feed adapter.
+- **`@refrakt-md/mastodon`** — pinned threads / featured tags as pages. Niche but small surface.
+- **`@refrakt-md/discourse`** — forum threads as pages for community-knowledge-base sites.
+
+### Existing refrakt plugins gaining `contributePages`
+
+Some of refrakt's own plugins could opt in to publish their entities as pages, in addition to letting users configure `entityRoutes` themselves:
+
+- **`@refrakt-md/storytelling`** — character profile pages, realm pages, faction pages. Already registers entities; just needs to publish them.
+- **`@refrakt-md/places`** — event pages, map-marker pages, itinerary pages.
+- **`@refrakt-md/business`** — team member bios from `{% cast %}`, organization pages from `{% organization %}`.
+- **`@refrakt-md/design`** — design-token pages, palette explorers, typography specimens. (Currently the `swatch` / `palette` runes are used inside pages; this would let each token *be* a page.)
+- **`@refrakt-md/plan`** — covered above; the unconditional-scan path's entities become routes via `entityRoutes`.
+
+For these, the plugin doesn't *force* page generation; it ships an opt-in helper or sane-default `entityRoutes` snippet users can drop into their config.
+
+### Pattern summary
+
+| Category | Data source | Refresh trigger | Auth surface |
+|----------|-------------|-----------------|--------------|
+| Headless CMS | Network API | Webhook → rebuild | API key in env |
+| Code / project | Local files | File mtime → dev HMR | None |
+| Git / forge | Local + API | Push → rebuild | Token in env |
+| Refrakt-internal | Build artifacts | Build itself | None |
+| Commerce | Network API | Inventory webhook → rebuild | Storefront token |
+| Media / community | Network API/RSS | Cron rebuild | Usually none |
+
+Worth shipping in `@refrakt-md/*` directly: probably the `typedoc`, `openapi`, `changelog`, and `github` ones — they're high-value, the data shape is stable, and they exercise the mechanism across enough edge cases that they'd surface design issues early. Everything else is community-shaped — refrakt provides the hook and the templates; the ecosystem fills in.
+
+-----
+
 ## Engine Changes
 
 - **`@refrakt-md/types`** — new `ContributedPage` interface, `PluginContributePagesContext` interface, optional `contributePages` field on `Plugin`. `SiteConfig.entityRoutes` field with the rule shape above.
@@ -316,7 +416,7 @@ Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the reg
   - Two-pass loader: file pages first, register pass, contribution phase, transform contributed pages, register pass again, aggregate, postProcess.
   - URL-collision detection and warning surfacing.
   - `SitePage.source` discriminated union (`{ type: 'file', path: string } | { type: 'contributed', plugin: string, ruleIndex?: number }`).
-- **`@refrakt-md/sveltekit`** — virtual-modules.ts already enumerates pages from the loaded content; should pick up contributed pages automatically. The `usedCssBlocks` analysis runs against all pages, including contributed, so CSS tree-shaking continues to work.
+- **Adapters (`@refrakt-md/sveltekit`, `html`, `astro`, `next`, `nuxt`, `eleventy`, `react`, `vue`)** — no per-adapter changes required for the contribution mechanism itself. Each adapter enumerates routes from the merged `SitePage[]`, which by the time enumeration runs already includes contributed pages. Any adapter-specific caching layer (e.g. content-collection fingerprinting) keys off `SitePage.source` + `url` like it would for any other page.
 - **`@refrakt-md/plan`** — no changes required for the plugin itself; existing entity registration is sufficient. The plan-site template (see *Replacing `plan serve`*) ships a ready-to-go `entityRoutes` config.
 
 -----
