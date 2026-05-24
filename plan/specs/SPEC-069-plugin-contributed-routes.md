@@ -689,6 +689,15 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 
 **Where does the `sourceUrl` back-fill happen, exactly?** During the contribution phase, when the config-rules adapter produces a page for an entity, it must mutate the registered entity's `sourceUrl`. The registry is mutable at that point (still pre-aggregate). Need to confirm the back-fill is visible to the xref resolver's registry view in postProcess — it should be, since they share the registry instance, but worth an explicit test.
 
+**Should `embed()` be allowed to be async?** The contract is currently `embed?: () => Node | string` — synchronous. That holds for file-backed entities (the file is already read) and for external plugins that fetch *eagerly* in `configure` and have `embed()` return cached content. But it breaks for *lazy* fetching: the Notion walkthrough surfaced that a Notion page body is an expensive recursive+paginated network fetch, and a plugin might reasonably want to defer it to embed-time (only fetch bodies for entities actually expanded/routed) rather than pull every block tree up front. Lazy fetch means `embed()` returns a promise — which ripples into the expand resolver, today a synchronous postProcess pass.
+
+Three options:
+- **Keep `embed()` sync; plugins fetch eagerly in `configure`.** Simplest for core. Cost: a large workspace fetches all bodies even for entities that only appear as `{% backlog %}` cards. Acceptable when you're publishing the whole workspace anyway (the common static-site case); wasteful for "huge source, embed a few".
+- **Make `embed()` async-capable** (`() => … | Promise<…>`) and make the expand resolution (and the postProcess phase it lives in) async. Bigger change — postProcess is sync today and several hooks assume it. But it's the honest answer for lazy external content, and async postProcess may be worth it independently.
+- **Two-phase: a separate async "hydrate embeddable content" step** before postProcess, where plugins fetch bodies for the set of entities that will actually be embedded. Chicken-and-egg: "which entities will be embedded" isn't fully known until the pages are walked. Could approximate (hydrate everything referenced by an `entityRoutes` rule + scan pages for `{% expand %}` ids first), but the complexity may not pay for itself.
+
+Recommend **sync `embed()` for v1** (eager-fetch-in-`configure` covers the common publish-the-workspace case), with the async question explicitly deferred. If lazy external content becomes a real pain point — large workspaces where only a fraction is embedded — revisit making the embed path async, possibly alongside a broader "async postProcess" change. Flag in plugin authoring docs that `embed()` must return synchronously, so external plugins know to fetch in `configure`.
+
 -----
 
 ## References
