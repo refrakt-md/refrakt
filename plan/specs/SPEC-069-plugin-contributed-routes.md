@@ -479,6 +479,81 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 
 -----
 
+## Staleness & Refresh Strategy
+
+Build-time contribution means the site is exactly as fresh as the last build. For data sources that change slowly (changelog, release notes, plan content, design tokens), that's fine — content matches reality "as of last deploy" and nobody notices. For data sources that change minute-to-minute (live inventory, social-feed activity, ticket queues), build-time-only is the wrong fit. This isn't a refrakt limitation specifically; it's the shape of every static-first framework (Astro, Eleventy, Hugo all share it). Worth being explicit about how the mechanism interacts with the freshness problem so plugin authors and integrators know what they're committing to.
+
+### Three viable strategies, by data-source velocity
+
+**1. Slow-changing data — webhook-triggered rebuild.**
+
+The data source notifies the build platform when its content changes; the platform rebuilds. Standard JAMstack pattern, supported by every modern host (Netlify build hooks, Vercel deploy hooks, Cloudflare Pages, GitHub Actions `repository_dispatch`). Headless CMS plugins (`sanity`, `notion`, `contentful`) ship with webhook setup instructions; user wires the hook to their build trigger; content updates land in production within the rebuild window (typically <60s).
+
+Best fit:
+- Headless CMS adapters (CMS updates trigger rebuild)
+- GitHub plugin reading repo data (push triggers rebuild)
+- Plan content (file changes trigger rebuild via git push)
+- Code / project tooling (file changes trigger dev HMR; CI rebuilds on push)
+
+**2. Medium-velocity — scheduled rebuilds.**
+
+A cron job rebuilds the site every N minutes regardless of content changes. Suits data that updates frequently but doesn't need to be second-to-second fresh — release feeds, blog feeds, recently-merged PRs. Hosts offer first-class scheduled-build support; otherwise a small GitHub Action runs the rebuild.
+
+Best fit:
+- GitHub / GitLab "recent activity" pages
+- RSS / podcast / YouTube feed aggregators
+- Refrakt-internal contracts-explorer (rebuild on schema change is too rare; nightly rebuild keeps it in sync)
+
+The "freshness budget" surfaces as a user choice — 5-minute cron is more responsive than 1-hour cron but burns more CI minutes. Plugin docs should suggest a default.
+
+**3. High-velocity — don't use build-time, use a client-side widget.**
+
+Some data legitimately can't live in a static page. Live inventory, real-time chat, ticket-queue counts, "online now" indicators — these need a client request, not a build artifact. For these cases, the right pattern isn't "use refrakt's contribution mechanism"; it's "render the static page shell via refrakt, hydrate the dynamic part client-side from a public API". The contribution mechanism doesn't solve this, and shouldn't try to. Plugin authors writing adapters for high-velocity data should document this explicitly: "this plugin gives you build-time snapshots; for live data, use a client component that calls the API directly."
+
+Worst fit:
+- Live commerce inventory (price + stock count) — the *catalog* is fine to build statically; the *availability* is not
+- Real-time social feed (Twitter timeline, Mastodon "latest") — pin specific items at build time, fetch live ones client-side
+- Authenticated user data — out of scope by construction; refrakt has no per-user runtime
+
+### Implications for plugin authors
+
+The freshness contract is **plugin-owned**, not core-owned. Plugins document:
+
+- **Refresh trigger:** what causes the data to update on the live site (webhook, schedule, manual rebuild)
+- **Build-time snapshot age:** how stale the data can be before becoming wrong (minutes, hours, days)
+- **Hybrid guidance:** if part of the rendered page should be client-side-fresh, plugins should say so and ideally ship a companion runtime component
+
+A plugin built without thinking about this — one that pulls from a fast-moving API and never tells users when to rebuild — is a footgun. Refrakt's contribution to good-citizen plugin authoring is the docs template: any plugin landing under `@refrakt-md/*` should have a "Freshness" section in its README. Community plugins follow the convention or don't; can't enforce.
+
+### What this means for the headline use cases
+
+Mapping the categories from the previous section to the strategies above:
+
+| Category | Strategy | Notes |
+|----------|----------|-------|
+| Headless CMS (sanity, notion, contentful, …) | (1) webhook | Industry-standard; CMS UIs already speak deploy-hook |
+| Code / project tooling (typedoc, openapi, …) | (1) on push | Build is already part of CI; no extra wiring |
+| Git / forge (github, gitlab) | (1) + (2) | Webhook for push events; cron for issues/PRs |
+| Refrakt-internal (contracts-explorer, …) | (1) on rebuild | Implicit — built from build artifacts |
+| Commerce — catalog | (1) webhook | Stock keeps in sync via rebuild |
+| Commerce — live inventory | (3) client-side | Page is static; stock count fetched live |
+| Media / community feeds | (2) cron | 1-hour cadence is usually fine |
+| Refrakt own plugins (storytelling, places, etc.) | (1) on push | File-backed; same as plan content |
+
+The pattern-summary table earlier in this spec already has a "Refresh trigger" column; this section explains the substance behind it.
+
+### Why not solve staleness in refrakt core?
+
+Three reasons:
+
+- **Static is the contract.** The build-time / runtime split is a foundational refrakt invariant — adapters render statically, no per-request server, no edge runtime. Adding "but sometimes data is live" muddies the model and breaks adapters that don't support hybrid rendering (`@refrakt-md/html` literally writes files to disk; there's no runtime there).
+- **Plugins know their data better than we do.** Webhook setup, cache invalidation, hybrid-component patterns — all specific to the data source. Core would be wrong about the defaults more often than right.
+- **The infrastructure already exists.** Webhook rebuilds, scheduled CI, Edge Functions for hybrid hydration — these are mature, well-documented host features. Wrapping them in a refrakt-specific abstraction would invent surface for a solved problem.
+
+That said: the spec leaves room for refrakt to later add a **convenience tier** if real demand surfaces — a `refrakt.config.json` field for declaring "rebuild this site every N minutes" or "the following plugins emit content that should hybrid-hydrate", and a built-in client-side fetcher rune. None of that's in scope for this spec; called out so it's not foreclosed.
+
+-----
+
 ## Out of Scope
 
 - **Runtime data fetching.** All contribution happens at build time. Pages produced are static. Refrakt is not becoming a server-rendered framework.
