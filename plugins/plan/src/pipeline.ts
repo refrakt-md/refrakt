@@ -614,6 +614,15 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	const sortField = readField(tag, 'sort') || 'priority';
 	const groupField = readField(tag, 'group');
 	const show = readField(tag, 'show') || 'all';
+	const limitRaw = readField(tag, 'limit');
+	// Parse `limit` defensively — Markdoc surfaces the meta as a string.
+	// Treat 0 / negative / NaN the same as "unset" so a malformed
+	// authoring value doesn't silently render an empty backlog.
+	const limit = (() => {
+		if (!limitRaw) return undefined;
+		const n = Number(limitRaw);
+		return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+	})();
 
 	// Collect entities by type
 	// "all" defaults to work+bug for backward compatibility; other types must be explicit
@@ -630,6 +639,14 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 
 	// Sort
 	entities = sortEntities(entities, sortField);
+
+	// Limit applies post-sort, pre-group so the rendered set is "top N
+	// by sort order". When grouped, the limit caps the total entity count
+	// across all groups — callers wanting a per-group cap would need a
+	// separate attribute; keep it simple until that ask surfaces.
+	if (limit !== undefined && entities.length > limit) {
+		entities = entities.slice(0, limit);
+	}
 
 	// Build output
 	let children: any[];

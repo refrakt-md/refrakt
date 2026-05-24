@@ -113,6 +113,62 @@ Desc.
 		expect(groups.length).toBeGreaterThanOrEqual(2);
 	});
 
+	it('caps the rendered count when limit is set', () => {
+		const { registry } = makeRegistry();
+		const pages = [1, 2, 3, 4, 5, 6, 7].map(n =>
+			makePage(`/plan/w${n}`, `{% work id="W-${n}" status="ready" priority="high" %}
+# Item ${n}
+Desc.
+{% /work %}`),
+		);
+		planPipelineHooks.register!(pages, registry, ctx);
+		const aggregated = { plan: planPipelineHooks.aggregate!(registry, ctx) };
+
+		const backlogPage = makePage('/plan/dashboard', `{% backlog filter="status:ready" sort="id" limit=3 /%}`);
+		const processed = planPipelineHooks.postProcess!(backlogPage, aggregated, ctx);
+
+		const cards = findAllTags(processed.renderable as any, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(3);
+		// Limit applies post-sort, so the top 3 by id are the first three.
+		expect(cards.map(c => c.attributes['data-id'])).toEqual(['W-1', 'W-2', 'W-3']);
+	});
+
+	it('renders the full set when limit is unset', () => {
+		const { registry } = makeRegistry();
+		const pages = [1, 2, 3, 4, 5].map(n =>
+			makePage(`/plan/w${n}`, `{% work id="W-${n}" status="ready" priority="high" %}
+# Item ${n}
+Desc.
+{% /work %}`),
+		);
+		planPipelineHooks.register!(pages, registry, ctx);
+		const aggregated = { plan: planPipelineHooks.aggregate!(registry, ctx) };
+
+		const backlogPage = makePage('/plan/dashboard', `{% backlog filter="status:ready" /%}`);
+		const processed = planPipelineHooks.postProcess!(backlogPage, aggregated, ctx);
+
+		const cards = findAllTags(processed.renderable as any, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(5);
+	});
+
+	it('treats limit=0 / negative / NaN as unset (no silent empty render)', () => {
+		const { registry } = makeRegistry();
+		const pages = [1, 2, 3].map(n =>
+			makePage(`/plan/w${n}`, `{% work id="W-${n}" status="ready" priority="high" %}
+# Item ${n}
+Desc.
+{% /work %}`),
+		);
+		planPipelineHooks.register!(pages, registry, ctx);
+		const aggregated = { plan: planPipelineHooks.aggregate!(registry, ctx) };
+
+		const backlogPage = makePage('/plan/dashboard', `{% backlog filter="status:ready" limit=0 /%}`);
+		const processed = planPipelineHooks.postProcess!(backlogPage, aggregated, ctx);
+
+		const cards = findAllTags(processed.renderable as any, t => t.attributes.class === 'rf-backlog__card');
+		expect(cards).toHaveLength(3);
+	});
+
 	it('includes bugs when show=all', () => {
 		const { registry } = makeRegistry();
 		const pages = [
