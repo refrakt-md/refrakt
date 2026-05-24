@@ -2,13 +2,18 @@
 
 # Plugin-contributed routes & declarative entity routing
 
-A two-surface mechanism for publishing pages from data that doesn't live in the site's content tree. The common case — "registered entities (specs, work items, characters, products, …) become pages" — is expressed as **declarative route rules** in `refrakt.config.json`, mirroring how `xrefPatterns` and `fileRoots` already work. The escape-hatch case — "plugin pulls from a database, CMS, or other external source and synthesizes pages at build time" — is a **plugin hook** (`contributePages`) that returns page records directly.
+A mechanism for getting content into a refrakt site from sources that don't live in the content tree — local plan files, external CMSes, databases, issue trackers. It operates on **two orthogonal axes**:
 
-Both surfaces compile down to the same underlying primitive: a list of *virtual pages* the content loader treats indistinguishably from file-backed pages. Config rules are sugar over the hook; the hook is the real mechanism.
+- **Entity contribution** *(the fundamental axis)* — register entities from any source so they're referenceable (`{% ref %}`), embeddable (`{% expand %}`), and listable (`{% backlog %}` / `{% blog %}`) on pages the author already wrote. No routes required. An entity can carry its own embeddable content via an `embed()` function, so it works whether or not a file backs it.
+- **Page contribution** *(a layer on top)* — turn entities (or raw external data) into their own routes. Expressed declaratively as `entityRoutes` rules in `refrakt.config.json` (mirroring `xrefPatterns` / `fileRoots`), or programmatically via a `contributePages` plugin hook for data that isn't entity-shaped.
+
+The axes compose: display an external issue tracker's tickets inline with *entity contribution alone* (no routes); build a full plan site or CMS-backed blog with *entity + page contribution* (a route per item). Page contribution usually builds on entity contribution but doesn't have to — a raw `contributePages` returning marketing-page HTML never registers an entity.
+
+Both page surfaces compile down to the same primitive: a list of *virtual pages* the content loader treats indistinguishably from file-backed pages. Config rules are sugar over the hook; the hook is the real page-axis mechanism. The entity axis sits beneath both.
 
 ## Problem
 
-Today, every page on a refrakt site corresponds to a file in the site's content tree. The pipeline registers entities from rendered pages, runs aggregation, post-processes — all keyed off "what's in `content/`". This is fine for hand-authored sites, but it leaves several real use cases unaddressed:
+Today, every page on a refrakt site corresponds to a file in the site's content tree, and every registry entity is scanned out of a rendered page. The pipeline is keyed off "what's in `content/`". This is fine for hand-authored sites, but it leaves several real use cases unaddressed:
 
 **1. Registered entities that should also be pages, without file duplication.**
 
@@ -18,43 +23,84 @@ The plan plugin's unconditional scan (SPEC-064) registers entities from `plan/` 
 
 The plan CLI's `plan serve` / `plan build` give users a zero-config browseable site of their plan content. That's a parallel rendering path to the regular site one, with its own maintenance burden. If declarative route rules existed, a `create-refrakt --template=plan-site` scaffold could express the same site in ~40 lines of config, sharing one rendering path with every other refrakt site. Removing `plan serve`'s separate implementation requires *exactly* this primitive.
 
-**3. External data sources.**
+**3. External data — inline, with or without routes.**
 
-The JAMstack pattern of "build a static site from a CMS / DB / API at build time" is the headline workflow of competitors (Astro content collections, Eleventy data files, Next.js getStaticProps, Hugo data templates). Refrakt has no first-class story for it. With a `contributePages` plugin hook, the door opens to `@refrakt-md/sanity`, `@refrakt-md/notion`, `@refrakt-md/airtable`, `@refrakt-md/sql`, `@refrakt-md/github` — third-party-data adapters that drop in and produce pages.
+Two distinct shapes here, and conflating them was the original framing mistake this spec corrects:
+
+- **Inline, no route** — pull tickets from an issue tracker (Jira, Linear, GitHub Issues, Trace), convert each to a refrakt entity, and display it inline via `{% expand %}` / `{% backlog %}` on an existing page. The ticket's canonical home stays in the tracker; the site shows a build-time snapshot. *No new route is created.* This is pure entity contribution and needs no page machinery at all.
+- **Route per item** — the JAMstack pattern: build a static site where each CMS document / DB row gets its own page (Astro content collections, Eleventy data files, Next.js getStaticProps, Hugo data templates). This is entity contribution *plus* a page layer.
+
+**4. The current registry contract assumes a backing file.**
+
+SPEC-066's embeddability contract is `sourceFile` + `extract` — read the file, run the extractor. An entity sourced from an external API has no file; its content is an in-memory payload converted to a Markdoc subtree. Today `{% expand %}` on such an entity fails with "does not support embedding". The contract needs to generalize from "file + extractor" to "anything that can produce a subtree on demand".
 
 Today's options for any of these:
 
 - **Mirror data into the content tree as a build step.** Ugly: requires a pre-build script, leaves stale files when source changes, awkward git story.
 - **Fork the content loader.** Tied to internals; brittle across upgrades.
-- **Build a SvelteKit adapter for the data source.** Loses everything refrakt's pipeline does (xref resolution, rune transforms, themes, search indexing).
+- **Build an adapter-specific data layer.** Loses everything refrakt's pipeline does (xref resolution, rune transforms, themes, search indexing) and ties you to one adapter.
 
-What's missing is a clean extension point: *plugins / config can declare "here are some additional pages" and the content loader treats them like any other*.
+What's missing is two clean extension points: *plugins can register entities from any source* (entity axis), and *plugins / config can declare additional routes* (page axis).
 
 -----
 
 ## Design Principles
 
-**One mechanism, two surfaces.** The underlying primitive is "plugin contributes pages". Config rules are a built-in plugin (or a built-in adapter) that interprets `entityRoutes` as page contributions. Users never need to know which surface they're using; the config surface covers the common case, the hook is there when the data shape outgrows it. Don't ship two parallel systems.
+**Entity contribution is the fundamental axis; pages are a layer on top.** The unit of contribution is the entity, not the page. "Make it a page" is one optional thing you can do with an entity — most external-data use cases (inline issue display, dashboards) never need routes. Designing entity-first keeps the no-route case first-class instead of something that falls out by accident.
+
+**One page-mechanism, two surfaces.** On the page axis, the underlying primitive is "plugin contributes pages". Config rules (`entityRoutes`) are a built-in adapter that interprets the config as page contributions; the `contributePages` hook is the same mechanism for data that isn't entity-shaped. Don't ship two parallel page systems.
 
 **Symmetric with existing config patterns.** Route rules look and feel like `xrefPatterns` and `fileRoots`. Same `{name}` substitution syntax, same per-site scoping, same file (`refrakt.config.json`). Authors who learned xref patterns recognize the shape; no new mental model.
 
-**User owns the route shape.** One site can put plan at `/plan/specs/X/`, another at `/SPEC-X/`. The plugin doesn't bake in a URL convention. Same `@refrakt-md/plan` works for both — same as how the user, not the plugin, picks where their `plan/` lives via `plan.dir`.
+**User owns the route shape; plugin owns the entity.** One site can put plan at `/plan/specs/X/`, another at `/SPEC-X/`. The plugin registers the entity and (optionally) its external canonical URL; the user's config decides the on-site route. When a route rule creates a page for an entity, it back-fills the entity's on-site URL so refs resolve there (see *URL ownership* below).
 
 **Plugin-contributed pages go through the normal pipeline.** A virtual page contributed by a plugin is parsed, transformed, registered, aggregated, and post-processed exactly like a file-backed page. Embedded runes execute; xrefs inside the contributed content resolve via the host's xref pass; the page can be linked to by other refs; it appears in the sitemap, search index, and nav-auto graph. *No exceptions* — anything special about being virtual lives at the contribution boundary, not in the rest of the pipeline.
 
-**Build-time only.** Page contribution runs once per build, returns a fixed list. Pages aren't created lazily on request; the static-prerender enumeration sees the full set at build start. Rules out runtime data fetching by construction — keeps the deterministic-build property refrakt depends on.
+**Build-time only.** Contribution runs once per build, returns a fixed list. Pages aren't created lazily on request; the static-prerender enumeration sees the full set at build start. Rules out runtime data fetching by construction — keeps the deterministic-build property refrakt depends on.
 
-**Asynchronous by default.** The hook returns `Page[] | Promise<Page[]>`. External-data plugins need to fetch over the network; the build will await them. Sync return is allowed for the config-rules adapter (no IO) and other in-memory cases.
+**Asynchronous by default.** External-data plugins need to fetch over the network; both the entity-fetch (via the existing async `configure` hook) and the page hook (`contributePages`) support promises. Sync return is allowed for the config-rules adapter (no IO) and other in-memory cases.
 
 **No secrets system.** Plugins that need API keys read from `process.env` like any Node code. Refrakt doesn't invent a secrets layer or a credentials store. This is a deliberate non-feature; we expect users to use standard `.env` workflows (dotenv, host env vars, etc.).
 
-**Caching is plugin-owned, not core.** A `contributePages` hook that hits an HTTP API on every build is the plugin's problem to optimize. Plugins decide whether to cache responses, use ETags, key off content hashes, etc. Refrakt provides the hook timing; it doesn't try to be a build cache. This keeps the contract narrow.
+**Caching is plugin-owned, not core.** A hook that hits an HTTP API on every build is the plugin's problem to optimize. Plugins decide whether to cache responses, use ETags, key off content hashes, etc. Refrakt provides the hook timing; it doesn't try to be a build cache. This keeps the contract narrow.
 
 -----
 
 ## Authoring Surface
 
-### Declarative — `entityRoutes` in config
+### Entity axis — registering entities from any source
+
+The fundamental surface. A plugin fetches data (in the async `configure` hook, which already exists and runs once per build) and registers entities in its `register` hook. Entities sourced externally provide their embeddable content via an `embed()` function rather than a `sourceFile`:
+
+```ts
+// @refrakt-md/jira — display tracker tickets inline, no routes
+export const jiraPlugin: Plugin = {
+  name: '@refrakt-md/jira',
+  async configure(opts) {
+    // Fetch once per build; stash for the register hook.
+    this._issues = await fetchJiraIssues(process.env.JIRA_TOKEN!);
+  },
+  pipeline: {
+    register(_pages, registry) {
+      for (const issue of this._issues) {
+        registry.register({
+          type: 'spec',                       // masquerades as a plan type so {% backlog %} lists it
+          id: issue.key,                      // "PROJ-123"
+          canonicalUrl: issue.browseUrl,      // links {% ref %} out to Jira
+          data: { title: issue.summary, status: issue.status },
+          embed: () => jiraToMarkdoc(issue),  // file-less embeddable content
+        });
+      }
+    },
+  },
+};
+```
+
+On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapshot), `{% ref "PROJ-123" /%}` (links to the live Jira ticket via `canonicalUrl`), or `{% backlog show="spec" /%}` (lists it in a dashboard). **No route is created** — the ticket appears only where referenced.
+
+`embed()` is the generalization of SPEC-066's `sourceFile` + `extract`. The embeddability contract becomes: an entity is embeddable if it has *either* `embed()` *or* (`sourceFile` + `extract`). The plan plugin keeps using the file path; external plugins use `embed()`.
+
+### Page axis, declarative — `entityRoutes` in config
 
 ```json
 {
@@ -88,7 +134,7 @@ What's missing is a clean extension point: *plugins / config can declare "here a
 
 For each registered entity matching a rule's `match` clause, the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the templated `title`, and content from the templated `render` string. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
 
-### Programmatic — `Plugin.contributePages`
+### Page axis, programmatic — `Plugin.contributePages`
 
 ```ts
 import type { Plugin, PluginContributePagesContext, ContributedPage } from '@refrakt-md/types';
@@ -126,6 +172,29 @@ A plugin can both:
 These are independent. The plan plugin would register entities via its existing `register` hook (or unconditional scan), and the *user* would choose whether to publish them as pages by adding `entityRoutes` to their config. The plugin doesn't presume URLs.
 
 A plugin that has no entity shape (a generic HTTP-API adapter) can skip registration entirely and just contribute pages directly. Other pages can still `{% ref %}` those pages by their URL (`page` entity type registered by core).
+
+### URL ownership — `sourceUrl` vs `canonicalUrl`
+
+When an entity exists in the registry *and* a route rule creates a page for it, two URLs are in play and they're different concerns:
+
+- **`sourceUrl`** — where the entity lives *on this site*. Drives `{% ref %}`. Set in one of two ways:
+  - File-backed plan entities in the content tree: `sourceUrl = page.url` (current behavior).
+  - Entities published via `entityRoutes`: the route rule **back-fills** `sourceUrl` with the URL it generates. The plugin doesn't know the user's chosen prefix (`/blog/` vs `/posts/`), so it can't set this — the route rule owns it and writes it back onto the entity during the contribution phase, before the xref pass runs.
+  - Inline-only entities (no route): `sourceUrl` is undefined.
+- **`canonicalUrl`** — the *external* source-of-truth URL, if any. Set by the plugin at registration. Drives `{% expand canonical=true %}`'s "view canonical" link.
+
+The two are independent because real cases need both distinguished:
+
+| Case | `sourceUrl` | `canonicalUrl` | `{% ref %}` → | `expand canonical` → |
+|------|-------------|----------------|---------------|----------------------|
+| Plan spec, on-site route | `/specs/SPEC-1/` (back-filled) | — | on-site page | on-site page |
+| Sanity blog post, on-site route | `/blog/x/` (back-filled) | — | on-site page | on-site page |
+| Jira ticket, inline, no route | undefined | Jira issue URL | Jira (canonical) | Jira |
+| Jira ticket, *mirrored* with route | `/tickets/x/` (back-filled) | Jira issue URL | on-site mirror | Jira (the source of truth) |
+
+The last row is the case that forces the split: the reader can click the inline ref to read the on-site mirror, or follow "view canonical" to the live ticket. One field can't be both.
+
+Resolution precedence is unchanged from the xref chain (SPEC-065): `sourceUrl` (now possibly back-filled) → `data.url` → patterns → unresolved. The back-fill simply means an entity that had no `sourceUrl` gains one when a route is created for it, so refs prefer the on-site page over a pattern-derived external URL.
 
 -----
 
@@ -410,14 +479,27 @@ Worth shipping in `@refrakt-md/*` directly: probably the `typedoc`, `openapi`, `
 
 ## Engine Changes
 
-- **`@refrakt-md/types`** — new `ContributedPage` interface, `PluginContributePagesContext` interface, optional `contributePages` field on `Plugin`. `SiteConfig.entityRoutes` field with the rule shape above.
+- **`@refrakt-md/types`** —
+  - `EntityRegistration` gains optional `embed?: () => Node | string` (file-less embeddable content) and `canonicalUrl?: string` (external source-of-truth URL). `sourceUrl`'s documented meaning sharpens to "on-site URL" (back-fillable by route rules).
+  - New `ContributedPage` interface, `PluginContributePagesContext` interface, optional `contributePages` field on `Plugin`.
+  - `SiteConfig.entityRoutes` field with the rule shape above.
+- **`@refrakt-md/runes`** — amend the expand resolver (SPEC-066): embeddability is `embed()` *or* (`sourceFile` + `extract`); resolution calls `embed()` when present, else reads the file. `canonical=true` link prefers `canonicalUrl`, falls back to `sourceUrl`. This is the cross-spec dependency surfaced by the scenario walkthrough — SPEC-066's contract is widened here.
 - **`@refrakt-md/content`** —
-  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`.
+  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`, **back-filling each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
   - Two-pass loader: file pages first, register pass, contribution phase, transform contributed pages, register pass again, aggregate, postProcess.
   - URL-collision detection and warning surfacing.
   - `SitePage.source` discriminated union (`{ type: 'file', path: string } | { type: 'contributed', plugin: string, ruleIndex?: number }`).
 - **Adapters (`@refrakt-md/sveltekit`, `html`, `astro`, `next`, `nuxt`, `eleventy`, `react`, `vue`)** — no per-adapter changes required for the contribution mechanism itself. Each adapter enumerates routes from the merged `SitePage[]`, which by the time enumeration runs already includes contributed pages. Any adapter-specific caching layer (e.g. content-collection fingerprinting) keys off `SitePage.source` + `url` like it would for any other page.
 - **`@refrakt-md/plan`** — no changes required for the plugin itself; existing entity registration is sufficient. The plan-site template (see *Replacing `plan serve`*) ships a ready-to-go `entityRoutes` config.
+
+### Listing contributed content
+
+No new lister rune is required for the headline cases:
+
+- **Contributed pages** (Sanity blog with routes, etc.) are real pages in the corpus, so `{% blog folder="/blog" %}` — which lists pages by folder + frontmatter — enumerates them. The `entityRoutes.frontmatter` field supplies the `date` / `draft` / etc. values blog sorts and filters on.
+- **Plan-typed entities** (including external data registered as `spec` / `work` / `bug`) are listed by `{% backlog show=… %}`.
+
+The residual gap — listing entities of a type that is *neither* a page *nor* a plan type, *without* giving them routes (e.g. a `product` entity shown only in a dashboard) — is deferred. The workaround is "give them routes and use `{% blog %}`", or "register them as a plan type". A generic `{% collection %}` rune (backlog generalized to any registry type) would close it cleanly; tracked as future work, not a blocker for this spec.
 
 -----
 
@@ -457,6 +539,18 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 
 ## Acceptance Criteria
 
+### Entity axis
+
+- [ ] `EntityRegistration` gains optional `embed?: () => Node | string`; an entity with `embed` is treated as embeddable by `{% expand %}` without a `sourceFile`
+- [ ] expand resolution (SPEC-066) calls `embed()` when present, else falls back to `sourceFile` + `extract`; an entity with neither produces the existing "does not support embedding" error
+- [ ] `embed()` returning a markdoc string is parsed; returning a `Node` is used directly; both run through the host transform
+- [ ] `EntityRegistration` gains optional `canonicalUrl?: string`; `{% expand canonical=true %}` prefers `canonicalUrl`, falls back to `sourceUrl`
+- [ ] `{% ref %}` to an entity with `canonicalUrl` but no `sourceUrl` (inline-only, no route) links to `canonicalUrl`
+- [ ] An external-data plugin can fetch in the async `configure` hook and register entities (with `embed()` + `canonicalUrl`) in `register`, with no route created — entity is referenceable / embeddable / listable inline
+- [ ] `{% backlog %}` lists externally-registered entities of plan types (`spec`/`work`/`bug`/…) with no plugin-side listing code
+
+### Page axis
+
 - [ ] `Plugin.contributePages` interface defined; optional; sync or async return; takes a context with registry, projectRoot, site config, pipeline context
 - [ ] Content loader runs a contribution phase after file-page registration but before aggregation, collecting `ContributedPage[]` from every plugin's hook
 - [ ] Contributed pages flow through the normal parse + transform + register + aggregate + postProcess pipeline; downstream consumers cannot tell file from contributed
@@ -476,6 +570,8 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] `create-refrakt --template=plan-site` ships with a working `entityRoutes` config and content scaffold
 - [ ] `plan serve` and `plan build` marked deprecated in the same release the contribution mechanism ships
 - [ ] Two-pass register handling: contributed pages register their own entities (via core's register hook reading their rendered content), so a contributed page can be `{% ref %}`'d by other pages
+- [ ] When an `entityRoutes` rule creates a page for an entity, the entity's `sourceUrl` is back-filled with the generated route URL before the postProcess xref pass, so `{% ref %}` to that entity resolves to the on-site route (not a pattern fallback)
+- [ ] A back-filled `sourceUrl` does not overwrite an existing `canonicalUrl`; `{% expand canonical=true %}` still links to the external source of truth for mirrored entities
 
 -----
 
@@ -565,6 +661,7 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 - **Recursive contribution.** Contributed pages cannot themselves trigger another contribution phase. The graph is one level deep by design — keeps the build deterministic.
 - **Watch-mode HMR for external-data contributions.** Dev-server HMR for file pages keeps working; contributed pages refresh on full build. Watching external sources is a plugin's call to make (file-system watcher, polling, webhook listener — out of scope for core).
 - **Multi-site fan-out of one contribution.** Each site reads `entityRoutes` independently and runs its own plugin contribution phase. Cross-site dedup would be its own design.
+- **Generic `{% collection %}` entity-listing rune.** Listing arbitrary registry entity types (non-page, non-plan) without giving them routes is deferred to its own spec. The headline cases are covered: `{% blog %}` lists contributed pages by folder; `{% backlog %}` lists plan-typed entities. Punted, not forgotten.
 
 -----
 
@@ -586,7 +683,11 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 
 **`source.type === "contributed"` for SitePage — exposed to user code or internal-only?** Probably internal-only (the SitePage shape isn't part of the public author surface), but worth surfacing in dev-tools / diagnostics. Recommend: internal type with a public projection for the inspector.
 
-**How does the plan-site template handle entities that don't have `sourceFile` + `extract`?** The unconditional scan path sets those fields; the in-content registration path doesn't (and doesn't need to — there's a real file backing it). A `{% expand $entity.id /%}` on an entity without `extract` would error. For the template, this is fine — plan entities always have `extract` thanks to WORK-251. But the spec should call out that `expand` requires both fields, and entityRoutes rules using `$expand` should be paired with entity types that have them.
+**How does the plan-site template handle entities that don't have embeddable content?** An entity is embeddable via `embed()` *or* `sourceFile` + `extract`; one of the two must be present for `{% expand %}` to work. The plan plugin's scan sets `sourceFile` + `extract` (WORK-251); external plugins set `embed()`. An `entityRoutes` rule whose `render` uses `{% expand $entity.id /%}` must therefore target entity types that have one or the other — the build errors clearly if not. Worth documenting in the template's config comments.
+
+**Should a generic `{% collection %}` rune ship with this spec or later?** The headline cases are covered by existing runes (`{% blog %}` lists contributed pages by folder; `{% backlog %}` lists plan-typed entities). The residual gap — listing arbitrary entity types that have no routes — is real but niche. Recommend deferring `{% collection %}` to its own spec; revisit when a concrete non-plan, no-route listing need appears. Listed in Out of Scope so it's explicitly punted, not forgotten.
+
+**Where does the `sourceUrl` back-fill happen, exactly?** During the contribution phase, when the config-rules adapter produces a page for an entity, it must mutate the registered entity's `sourceUrl`. The registry is mutable at that point (still pre-aggregate). Need to confirm the back-fill is visible to the xref resolver's registry view in postProcess — it should be, since they share the registry instance, but worth an explicit test.
 
 -----
 
