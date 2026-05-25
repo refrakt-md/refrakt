@@ -20,6 +20,13 @@ export interface BuildResult {
 }
 
 export async function runBuild(options: BuildOptions): Promise<BuildResult> {
+	console.warn(
+		'[plan] `plan build` is deprecated and will be removed in a future release.\n' +
+		'       A plan site is now an ordinary refrakt site — generate one with\n' +
+		'       `create-refrakt --type plan`, or add an `entityRoutes` block to an\n' +
+		'       existing site config (SPEC-069/071). The authoring CLI (create, next,\n' +
+		'       update, validate, …) is unaffected.',
+	);
 	const { dir, specsDir, out, theme, baseUrl, css } = options;
 
 	const pipeline = await runPipeline({ dir, specsDir, theme, baseUrl });

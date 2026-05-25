@@ -22,6 +22,13 @@ export interface ServeResult {
 }
 
 export async function runServe(options: ServeOptions): Promise<ServeResult> {
+	console.warn(
+		'[plan] `plan serve` is deprecated and will be removed in a future release.\n' +
+		'       A plan site is now an ordinary refrakt site — scaffold one with\n' +
+		'       `create-refrakt --type plan` and run your adapter\'s dev server, or add\n' +
+		'       an `entityRoutes` block to an existing site config (SPEC-069/071). The\n' +
+		'       authoring CLI (create, next, update, validate, …) is unaffected.',
+	);
 	const { dir, specsDir, port, theme, open, css } = options;
 	const baseUrl = '/';
 
