@@ -269,7 +269,7 @@ Multiple rules can match the same entity — each produces a separate page (the 
 
 The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$item` — a read-only bound variable with **the same canonical field shape collection (SPEC-070) binds per row** (`$item.id`, `$item.type`, `$item.url` guaranteed; payload strictly under `$item.data.*`, no hoisting; `url` resolved via the xref chain, empty-string not undefined). The full definition lives in **SPEC-070's *The `$item` variable and card runes*** section; this spec binds it identically, so a `render-template` partial and a collection `item-template` are interchangeable. So `{% expand $item.id /%}` is the canonical pattern.
 
-Templates can also reference the entity's data fields directly: `# {% $item.data.title %}`. The full Markdoc variable model applies. The inline `render` and the `render-template` partial bind `$item` identically; the only difference is where the markdoc source lives.
+Templates can also reference the entity's data fields directly: `# {% $item.data.title %}`. The full Markdoc variable model applies, including the shared **formatter functions** (`currency`, `date`, `number`, `join`) defined in SPEC-070 — e.g. `{% date($item.data.published) %}` — so value formatting works identically here and in a collection cell. The inline `render` and the `render-template` partial bind `$item` identically; the only difference is where the markdoc source lives.
 
 -----
 
