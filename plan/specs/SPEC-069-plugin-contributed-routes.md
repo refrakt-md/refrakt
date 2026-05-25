@@ -133,7 +133,7 @@ On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapsho
 }
 ```
 
-For each registered entity matching a rule's `type` + optional `filter` (see *Selecting entities*), the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the templated `title`, and content from either an inline `render` string or a `render-template` partial. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
+For each registered entity matching a rule's `type` + optional `filter` (see *Selecting entities*), the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the optional templated `title` (which feeds the page's frontmatter `title` — see *Output Contract*), and content from either an inline `render` string or a `render-template` partial. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
 
 **Inline `render` vs `render-template` partial.** `render` is a markdoc string — fine for a one-liner like `{% expand $item.id /%}`. But anything richer (a hero + embed + related-items section) becomes multi-line markdoc crammed into a JSON string with escapes — miserable to author and review. For those, point `render-template` at a markdoc partial (resolved via the existing partial + file-roots machinery), authored as a real `.md` file with syntax highlighting and formatting, reusable across rules and sites. `render` and `render-template` are mutually exclusive (both set → build error). This is the same inline-vs-partial split SPEC-070's collection uses for its per-item template; the two specs share the "a template, transformed per entity with the same bound variable" mechanism — `$item` in both, so a partial authored for a route can be reused in a collection and vice versa.
 
@@ -223,6 +223,8 @@ A contributed page produces exactly the same `SitePage` / `TransformedPage` shap
 
 Downstream consumers (sitemap, search index, route enumeration, layout cascade) treat contributed and file pages identically.
 
+**`title` reuses the file-page title chain.** The rule's `title` is optional. When present, it populates the synthesized page's **frontmatter `title`** — it does *not* introduce a second, parallel title-resolution path. The existing precedence (frontmatter `title` → hero headline → first `H1`, see `extractSeo`) then runs unchanged. The practical consequence: when a rule omits `title`, the page title falls back to the rendered content's heading just like a file page — and since `render` is usually `{% expand $item.id /%}`, the expanded entity's own `H1` becomes the title for free. A rule that sets both a top-level `title` and a `title` inside its `frontmatter` object is redundant; the top-level field wins (it is the sugar that writes `frontmatter.title`).
+
 -----
 
 ## Rule Substitution
@@ -245,6 +247,8 @@ Downstream consumers (sitemap, search index, route enumeration, layout cascade) 
 ```
 
 URL substitution is per-segment-encoded (same as xref). Title and content substitutions are not URL-encoded (they're text).
+
+The templated `url` is a **site-root-relative** route: the loader applies the site's `basePath` to it, exactly as it does for a file's path-derived URL (`Router.filePathToUrl`) and a *relative* frontmatter `slug`. It deliberately does **not** behave like an *absolute* `slug` (the one case that bypasses `basePath`) — a rule author writing `"/specs/{id}/"` means "the specs section of my site", and the route must follow the site if it's deployed under a sub-path. So `url` is the path-axis analog of the file path, not of an absolute slug override.
 
 Missing fields render as empty strings, matching xref pattern behavior. A rule that depends on a field the entity doesn't have will produce an empty value at that placeholder; the build emits a warning but doesn't fail.
 
@@ -563,6 +567,8 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] `SiteConfig.entityRoutes` schema accepts `{ type, filter?, url, title?, render | render-template, frontmatter? }` records (`render` and `render-template` are mutually exclusive)
 - [ ] Built-in config-rules adapter ships as part of `@refrakt-md/content`, runs as a plugin in the contribution phase, turns `entityRoutes` into pages
 - [ ] Placeholder substitution: `{name}` interpolates from entity top-level fields + `data` fields; per-segment URL encoding for the `url` field; plain text for `title` / `render` / `frontmatter` values
+- [ ] The `url` is site-root-relative: the site's `basePath` is applied (like a path-derived URL / relative `slug`), not bypassed as an absolute `slug` would be
+- [ ] An optional `title` feeds the page's frontmatter `title` (one resolution path); when omitted, the title falls back to the rendered content's heading via the existing precedence (frontmatter → hero → `H1`)
 - [ ] `type` (required, comma-separated for multiple) + optional `filter` string select entities via the shared field-match parser (exact / prefix-glob; AND across fields, OR within)
 - [ ] Multiple rules matching the same entity each produce a separate page (loader errors on URL collision)
 - [ ] File-backed pages win against contributed pages at the same URL, with a build warning
