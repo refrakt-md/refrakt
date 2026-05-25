@@ -112,14 +112,14 @@ On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapsho
           "type": "spec",
           "url": "/specs/{id}/",
           "title": "{title}",
-          "render": "{% expand $entity.id canonical=true /%}"
+          "render": "{% expand $item.id canonical=true /%}"
         },
         {
           "type": "work",
           "filter": "status:ready status:in-progress",
           "url": "/work/{id}/",
           "title": "{id} — {title}",
-          "render": "{% expand $entity.id /%}"
+          "render": "{% expand $item.id /%}"
         },
         {
           "type": "decision",
@@ -135,7 +135,7 @@ On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapsho
 
 For each registered entity matching a rule's `type` + optional `filter` (see *Selecting entities*), the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the templated `title`, and content from either an inline `render` string or a `render-template` partial. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
 
-**Inline `render` vs `render-template` partial.** `render` is a markdoc string — fine for a one-liner like `{% expand $entity.id /%}`. But anything richer (a hero + embed + related-items section) becomes multi-line markdoc crammed into a JSON string with escapes — miserable to author and review. For those, point `render-template` at a markdoc partial (resolved via the existing partial + file-roots machinery), authored as a real `.md` file with syntax highlighting and formatting, reusable across rules and sites. `render` and `render-template` are mutually exclusive (both set → build error). This is the same inline-vs-partial split SPEC-070's collection uses for its per-item template; the two specs share the "a template, transformed per entity with a bound variable" mechanism (`$entity` here, `$item` there).
+**Inline `render` vs `render-template` partial.** `render` is a markdoc string — fine for a one-liner like `{% expand $item.id /%}`. But anything richer (a hero + embed + related-items section) becomes multi-line markdoc crammed into a JSON string with escapes — miserable to author and review. For those, point `render-template` at a markdoc partial (resolved via the existing partial + file-roots machinery), authored as a real `.md` file with syntax highlighting and formatting, reusable across rules and sites. `render` and `render-template` are mutually exclusive (both set → build error). This is the same inline-vs-partial split SPEC-070's collection uses for its per-item template; the two specs share the "a template, transformed per entity with the same bound variable" mechanism — `$item` in both, so a partial authored for a route can be reused in a collection and vice versa.
 
 ### Page axis, programmatic — `Plugin.contributePages`
 
@@ -236,7 +236,7 @@ Downstream consumers (sitemap, search index, route enumeration, layout cascade) 
   "type": "character",
   "url": "/cast/{id}/",
   "title": "{name}",
-  "render": "{% expand $entity.id canonical=true /%}",
+  "render": "{% expand $item.id canonical=true /%}",
   "frontmatter": {
     "category": "character",
     "realm": "{realm}"
@@ -261,9 +261,9 @@ Multiple rules can match the same entity — each produces a separate page (the 
 
 ### Variable surface inside `render`
 
-The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$entity` (a bound content variable, same surface as `$page.path` etc. — and the page-axis sibling of collection's per-item `$item`). So `{% expand $entity.id /%}` is the canonical pattern.
+The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$item` (a bound content variable, same surface as `$page.path` etc. — and **the same `$item` collection (SPEC-070) binds per row**, so the two features share one variable name and templates port between them). So `{% expand $item.id /%}` is the canonical pattern.
 
-Templates can also reference the entity's data fields directly: `# {% $entity.data.title %}`. The full Markdoc variable model applies. The inline `render` and the `render-template` partial bind `$entity` identically; the only difference is where the markdoc source lives.
+Templates can also reference the entity's data fields directly: `# {% $item.data.title %}`. The full Markdoc variable model applies. The inline `render` and the `render-template` partial bind `$item` identically; the only difference is where the markdoc source lives.
 
 -----
 
@@ -376,7 +376,7 @@ export interface Plugin {
 
 ### Built-in config-rules adapter
 
-Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the registry, applies each rule's `type` + `filter` selector (via the shared field-match parser), runs substitution, and renders the inline `render` or `render-template` partial per entity with `$entity` bound. Returns the contributed pages — same shape as third-party plugins from the loader's perspective; it just happens to live in the framework.
+Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the registry, applies each rule's `type` + `filter` selector (via the shared field-match parser), runs substitution, and renders the inline `render` or `render-template` partial per entity with `$item` bound. Returns the contributed pages — same shape as third-party plugins from the loader's perspective; it just happens to live in the framework.
 
 ### Plugin guidance
 
@@ -490,7 +490,7 @@ Worth shipping in `@refrakt-md/*` directly: probably the `typedoc`, `openapi`, `
 - **`@refrakt-md/runes`** — amend the expand resolver (SPEC-066): embeddability is `embed()` *or* (`sourceFile` + `extract`); resolution calls `embed()` when present, else reads the file. `canonical=true` link prefers `canonicalUrl`, falls back to `sourceUrl`. This is the cross-spec dependency surfaced by the scenario walkthrough — SPEC-066's contract is widened here.
 - **Shared field-match parser** — the `type` + `filter` selector grammar (exact / prefix-glob / future regex; AND across fields, OR within) is **one implementation** used by `entityRoutes` (this spec), `collection` (SPEC-070), and `backlog`. Lives wherever the registry-consuming runes share helpers (`@refrakt-md/runes`); the plan plugin's existing backlog filter parser folds into it. The string grammar is what lets the same selector work in a JSON config field (here) and a markdoc attribute (collection).
 - **`@refrakt-md/content`** —
-  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`: applies each rule's `type` + `filter`, renders the inline `render` string or the `render-template` partial per entity with `$entity` bound, and **back-fills each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
+  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`: applies each rule's `type` + `filter`, renders the inline `render` string or the `render-template` partial per entity with `$item` bound, and **back-fills each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
   - `render-template` resolution via the existing partial + file-roots machinery; `render` / `render-template` mutual-exclusion check.
   - Two-pass loader: file pages first, register pass, contribution phase, transform contributed pages, register pass again, aggregate, postProcess.
   - URL-collision detection and warning surfacing.
@@ -522,15 +522,15 @@ The residual gap — listing entities of a type that is *neither* a page *nor* a
       "plugins": ["@refrakt-md/plan"],
       "entityRoutes": [
         { "type": "spec", "url": "/specs/{id}/",
-          "title": "{title}", "render": "{% expand $entity.id /%}" },
+          "title": "{title}", "render": "{% expand $item.id /%}" },
         { "type": "work", "url": "/work/{id}/",
-          "title": "{id} — {title}", "render": "{% expand $entity.id /%}" },
+          "title": "{id} — {title}", "render": "{% expand $item.id /%}" },
         { "type": "bug", "url": "/bugs/{id}/",
-          "title": "{id} — {title}", "render": "{% expand $entity.id /%}" },
+          "title": "{id} — {title}", "render": "{% expand $item.id /%}" },
         { "type": "decision", "url": "/decisions/{id}/",
-          "title": "{title}", "render": "{% expand $entity.id /%}" },
+          "title": "{title}", "render": "{% expand $item.id /%}" },
         { "type": "milestone", "url": "/milestones/{name}/",
-          "title": "{name}", "render": "{% expand $entity.name /%}" }
+          "title": "{name}", "render": "{% expand $item.name /%}" }
       ]
     }
   }
@@ -569,7 +569,7 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] URL collisions between two contributed pages fail the build with attribution naming both sources
 - [ ] Contributed pages appear in the sitemap, search index, route enumeration, and nav-auto graph
 - [ ] `{% ref %}` to a URL produced by a contributed page resolves correctly (page entity is registered by core's existing register hook)
-- [ ] `$entity` variable available inside `render` strings and `render-template` partials; full entity data accessible (`$entity.id`, `$entity.data.title`, etc.)
+- [ ] `$item` variable available inside `render` strings and `render-template` partials; full entity data accessible (`$item.id`, `$item.data.title`, etc.)
 - [ ] Plugin error in `contributePages` is caught, surfaces as a build warning, build continues with that plugin's contributions skipped
 - [ ] Empty `contributePages` return (no contributions) is a no-op
 - [ ] Plugin authoring docs cover: when to use config rules vs the hook directly, caching guidance for external data, env-var convention, graceful failure for upstream issues
@@ -689,7 +689,7 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 
 **`source.type === "contributed"` for SitePage — exposed to user code or internal-only?** Probably internal-only (the SitePage shape isn't part of the public author surface), but worth surfacing in dev-tools / diagnostics. Recommend: internal type with a public projection for the inspector.
 
-**How does the plan-site template handle entities that don't have embeddable content?** An entity is embeddable via `embed()` *or* `sourceFile` + `extract`; one of the two must be present for `{% expand %}` to work. The plan plugin's scan sets `sourceFile` + `extract` (WORK-251); external plugins set `embed()`. An `entityRoutes` rule whose `render` uses `{% expand $entity.id /%}` must therefore target entity types that have one or the other — the build errors clearly if not. Worth documenting in the template's config comments.
+**How does the plan-site template handle entities that don't have embeddable content?** An entity is embeddable via `embed()` *or* `sourceFile` + `extract`; one of the two must be present for `{% expand %}` to work. The plan plugin's scan sets `sourceFile` + `extract` (WORK-251); external plugins set `embed()`. An `entityRoutes` rule whose `render` uses `{% expand $item.id /%}` must therefore target entity types that have one or the other — the build errors clearly if not. Worth documenting in the template's config comments.
 
 **Should a generic `{% collection %}` rune ship with this spec or later?** The headline cases are covered by existing runes (`{% blog %}` lists contributed pages by folder; `{% backlog %}` lists plan-typed entities). The residual gap — listing arbitrary entity types that have no routes — is real but niche. Recommend deferring `{% collection %}` to its own spec; revisit when a concrete non-plan, no-route listing need appears. Listed in Out of Scope so it's explicitly punted, not forgotten.
 
