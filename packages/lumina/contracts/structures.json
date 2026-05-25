@@ -200,6 +200,22 @@
 				"{content}"
 			]
 		},
+		"Collection": {
+			"block": "collection",
+			"root": ".rf-collection",
+			"dataRune": "collection",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"ArticleCard": {
+			"block": "article-card",
+			"root": ".rf-article-card",
+			"dataRune": "article-card",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Embed": {
 			"block": "embed",
 			"root": ".rf-embed",
