@@ -14,6 +14,7 @@ import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.j
 import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
 import { applyOutlineScopeWalkers } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
+import { resolveCollections } from './collection-resolve.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -158,6 +159,10 @@ export const coreConfig: ThemeConfig = {
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
 		 * block name for CSS tree-shaking. */
 		Expand: { block: 'expand' },
+		/* Collection emits a sentinel during transform; the postProcess hook
+		 * (`resolveCollections`) fills it with queried entities. Engine config
+		 * provides the block name for CSS tree-shaking. */
+		Collection: { block: 'collection' },
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
@@ -2559,6 +2564,16 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			page.url,
 			coreData.registry,
 			coreData.xrefPatterns ?? [],
+			coreData.embedConfig,
+			ctx,
+		);
+
+		// SPEC-070 collection resolution — runs after expand and before xref so
+		// item-template `{% ref %}`s are resolved by the same xref pass.
+		renderable = resolveCollections(
+			renderable,
+			page.url,
+			coreData.registry,
 			coreData.embedConfig,
 			ctx,
 		);

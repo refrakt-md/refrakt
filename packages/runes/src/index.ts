@@ -44,6 +44,7 @@ import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
+import { collection } from './tags/collection.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -58,6 +59,8 @@ export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolv
 export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityField } from './field-match.js';
 export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
+export { resolveCollections } from './collection-resolve.js';
+export { COLLECTION_SENTINEL } from './tags/collection.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, firstH1, headingsToList } from './util.js';
@@ -553,6 +556,14 @@ export const runes = {
     typeName: 'Badge',
     category: 'Content',
     snippet: ['{% badge sentiment="${1|positive,negative,caution,neutral|}" %}', '${2:Label}', '{% /badge %}'],
+  }),
+  collection: defineRune({
+    name: 'collection',
+    schema: collection,
+    description: 'Render a list, grid, or table of registry entities — the plural counterpart to ref/expand. Queries the registry by type with a field:value filter, sort, group, and limit; projects fields into a built-in layout or a per-item body template ($item bound).',
+    typeName: 'Collection',
+    category: 'Content',
+    snippet: ['{% collection type="${1:work}" filter="${2:status:ready}" sort="${3:priority}" /%}'],
   }),
 };
 
