@@ -104,6 +104,28 @@ Body content.
 			expect(hint).toBeDefined();
 		});
 
+		it('embeds via embed() without a source file (SPEC-069)', () => {
+			const embedNode = Markdoc.parse(`{% hint type="note" %}\n\nIn-memory body.\n\n{% /hint %}\n`).children[0];
+			const registry = new EntityRegistryImpl();
+			registry.register({
+				type: 'ticket',
+				id: 'JIRA-1',
+				sourceUrl: '',
+				data: { title: 'Live ticket' },
+				embed: () => embedNode,
+			});
+
+			const placeholder = parse(`{% expand "JIRA-1" /%}`);
+			const { ctx, messages } = makeCtx();
+			const resolved = resolveExpands(placeholder, '/page/', registry, [], embedConfig(), ctx);
+
+			expect(messages.filter((m) => m.severity === 'error')).toHaveLength(0);
+			const wrapper = findTag(resolved as any, (t) => t.attributes['data-rune'] === 'expand');
+			expect(wrapper!.attributes['data-entity-id']).toBe('JIRA-1');
+			const hint = findTag(wrapper!, (t) => t.attributes['data-rune'] === 'hint');
+			expect(hint).toBeDefined();
+		});
+
 		it('errors when the entity is not in the registry', () => {
 			const placeholder = parse(`{% expand "UNKNOWN" /%}`);
 			const registry = new EntityRegistryImpl();

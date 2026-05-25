@@ -75,6 +75,13 @@ export interface EntityRegistration {
 	 *  extract the entity's subtree for inline substitution. Optional and
 	 *  paired with `sourceFile` — entities without a backing file omit both. */
 	extract?: (parsedSource: import('@markdoc/markdoc').Node) => import('@markdoc/markdoc').Node | null;
+	/** Return the entity's embeddable content as a Markdoc AST node directly,
+	 *  without reading a source file (SPEC-069). The generalization of
+	 *  `sourceFile` + `extract`: an entity is embeddable via `embed()` *or*
+	 *  (`sourceFile` + `extract`). Plugins backed by in-memory / external data
+	 *  (no file on disk) provide `embed()`; file-backed plugins keep
+	 *  `sourceFile` + `extract`. Consumed by {% expand %}. */
+	embed?: () => import('@markdoc/markdoc').Node | null;
 	/** Entity-specific payload */
 	data: Record<string, unknown>;
 }
