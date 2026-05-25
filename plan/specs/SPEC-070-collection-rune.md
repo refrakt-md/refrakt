@@ -64,7 +64,7 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 | Attribute | Type | Default | Meaning |
 |-----------|------|---------|---------|
 | `type` | string | **required** | Entity type to list. Comma-separated for multiple types (`"spec,decision"`). |
-| `filter` | string | — | Space-separated `field:value` clauses. Supports exact, prefix/glob, and (future) regex matching — so "folder membership" is just a `url` prefix match, not a special axis (see *Filtering*). Same-field clauses OR; different fields AND. |
+| `filter` | string | — | Space-separated `field:value` clauses. Supports exact, glob, and regex matching — so "folder membership" is just a `url` prefix match, not a special axis (see *Field-match grammar*). Same-field clauses OR; different fields AND. |
 | `sort` | string | — | Entity `data` field to sort by. Unset preserves registration order. |
 | `group` | string | — | Group into sections by a `data` field. |
 | `limit` | number | — | Cap rendered count, applied post-sort, pre-group (same semantics as backlog's `limit`). |
@@ -162,15 +162,38 @@ postProcess (per entity): Markdoc.parse(stashed) → transform(ast, { …embedCo
 
 These are the *generic* presentations. For deliberate domain cards, use a body template that invokes a card rune (level 3) — the built-in `cards`/`grid` are intentionally plain so they don't masquerade as a designed gallery. An item is never rendered via full `{% expand %}` by default (too heavy for a list, many entities aren't embeddable).
 
-### Filtering — field matching, not a folder axis
+### Field-match grammar (canonical)
 
-The `filter` grammar matches entity fields, and "folder membership" falls out of it rather than being a special concept. A `page` entity already carries its URL (`sourceUrl` / `data.url`); a blog folder is just a URL prefix. So:
+This is the **single source of truth** for the `field:value` selector used by `collection`'s `filter`, `entityRoutes`' `filter` (SPEC-069), and `backlog`. One parser, one set of semantics; `plugins/plan/src/filter.ts` folds into it. SPEC-069 references this section rather than restating it.
 
-- **Exact:** `status:ready` — field equals value.
-- **Prefix / glob:** `url:/blog/*` — field starts with / matches a glob. This is how `{% blog folder="/blog" %}` reduces to a collection query: `filter="url:/blog/*"`.
-- **Regex (future):** `url:~^/blog/[^/]+/$` — full pattern match, if prefix/glob proves insufficient.
+**Syntax.**
+```
+filter   := clause (WS clause)*
+clause   := field ":" value          // split on the FIRST colon
+field    := [^:\s]+
+value    := bareword | '"' .* '"'     // double-quotes allow spaces
+```
+- Split each clause on its **first** colon, so values may contain colons (`time:12:30`, `url:/a:b`).
+- **Double-quoted values** carry spaces: `title:"Getting Started"`. Without quotes, whitespace separates clauses.
+- A token with **no colon**, or an **empty field**, is ignored with a **build warning** (diagnosable typo, not a silent drop).
+- Empty filter → matches everything.
 
-Same-field clauses OR (`status:ready status:review`); different fields AND. Membership in array fields (`tags`) tests inclusion. Keeping folder as "a `url` prefix match" rather than a dedicated axis means collection's query model stays one thing — *match fields* — and any entity with a URL (pages, contributed entities) participates uniformly. This is the generalization that lets a single query engine back both `backlog` (type + field match) and `blog` (url prefix match).
+**The operator is selected by the value's shape** (no separate operator field — this is what lets the same string work in a markdoc attribute *and* a JSON config value):
+- **Exact** (default): `status:ready` → field equals value.
+- **Glob**: a value containing `*` → `*` matches any run of characters, **anchored full-match** (`url:/blog/*` ⇒ `^/blog/.*$`). Covers prefix (`/blog/*`), suffix (`*/draft`), infix. `?` is not supported in v1.
+- **Regex**: a value wrapped in slashes → `id:/^SPEC-\d+$/`, optional trailing flags (`/.../i`). Not auto-anchored — the author controls `^`/`$`. (Build-time, author-authored config; ReDoS is a self-inflicted footgun, not an attack surface.)
+
+**Field resolution** — one helper across all consumers: look up **top-level first** (`id`, `type`, `sourceFile`), then **`data[field]`**. The alias **`url` resolves to `sourceUrl ?? data.url ?? ''`** (consistent with the xref chain). This is what makes `url:/blog/*` work — pages and contributed entities carry their URL, so folder membership is just a `url` prefix match, not a special axis.
+
+**Array fields** — if a resolved value is an array (or the registry's comma-joined string, e.g. `tags`), a clause matches if **any element** matches it (exact / glob / regex). No field is hard-coded; membership follows from the value being array-like.
+
+**Combination & matching.**
+- Same field repeated → **OR** (`status:ready status:review`).
+- Different fields → **AND**.
+- Matching is **case-sensitive** for all operators (predictable for URLs and IDs).
+- Unknown field → resolves to `''`, no warning (fields are open-ended via `data`).
+
+**Reserved, deferred to a fast-follow:** **negation** (`status:!done`) — useful but it breaks the clean "same-field = OR" rule (negated same-field clauses want AND), so v1 reserves the leading `!` syntax without implementing it; and **range/comparison operators** (`date:>2024-01-01`) — no current value starts with `>`, so adding them later is non-breaking. Keeping folder as "a `url` prefix match" rather than a dedicated axis means the query model stays one thing — *match fields* — and any entity with a URL participates uniformly, which is what lets a single engine back both `backlog` (type + field match) and `blog` (url prefix match).
 
 -----
 
@@ -255,7 +278,7 @@ Mechanically there's no new transform machinery either way: card runes are invok
 Like backlog, `collection` is a sentinel rune: the schema emits a placeholder with the attributes as meta tags; a postProcess pass resolves it against the registry.
 
 1. **Collect** — registry entities of the requested `type`(s).
-2. **Filter** — apply field-match clauses (exact / prefix-glob / future regex) against entity fields including `url`.
+2. **Filter** — apply field-match clauses (exact / glob / regex) against entity fields including `url` (see *Field-match grammar*).
 3. **Sort** — by `sort` field (string / number / date inferred from value).
 4. **Limit** — slice post-sort, pre-group.
 5. **Group** — partition by `group` field if set.
@@ -274,7 +297,7 @@ The resolver is shared, type-agnostic core code. It lives wherever the cross-pag
 Once `collection` exists, the existing listers are revealed to be **special cases of "query engine + a body template that invokes a card rune"**. They stay as convenience wrappers (back-compat + nice defaults), but the powerful form is `collection` with a template:
 
 - **`{% backlog %}`** (`@refrakt-md/plan`) ≈ `{% collection type="work,bug" %}{% work-card /%}{% /collection %}` with plan defaults. Reduces *almost* cleanly: the query (filter/sort/group/limit) and the per-item card (`work-card` rendering status/priority/severity badges) both fit the model. The residual that *doesn't* fully reduce is backlog's **aggregations** — milestone auto-backlog, checklist-progress roll-ups across items — which compute derived values, not just query+render. Those stay as wrapper-local logic. So backlog becomes "collection for the listing + a little bespoke aggregation glue", not a 100% preset. Honest about the 10%.
-- **`{% blog %}`** (core) ≈ `{% collection type="page" filter="url:/blog/*" sort="date-desc" %}{% article-card /%}{% /collection %}`. The "folder" concept dissolves into a `url` prefix match (see *Filtering*) — pages already carry their URL, so blog is just a collection query over `page` entities, with `article-card` as the card rune. The draft-exclusion and frontmatter-sort behaviors map onto field filters/sorts. Reduces more cleanly than backlog (no aggregations).
+- **`{% blog %}`** (core) ≈ `{% collection type="page" filter="url:/blog/*" sort="date-desc" %}{% article-card /%}{% /collection %}`. The "folder" concept dissolves into a `url` prefix match (see *Field-match grammar*) — pages already carry their URL, so blog is just a collection query over `page` entities, with `article-card` as the card rune. The draft-exclusion and frontmatter-sort behaviors map onto field filters/sorts. Reduces more cleanly than backlog (no aggregations).
 - **`{% datatable %}`** (core) — renders an *authored* markdown table with client-side interactivity. `collection layout="table"` renders a table from *registry data*. Different inputs (authored vs. queried); a future enhancement could let a collection table opt into datatable's client behaviors.
 - **`{% ref %}` / `{% expand %}`** — the singular *registry-resolving* members of the family; `collection` is the plural one. Card runes are a *different* axis — presentational components that take attributes, reusable standalone (`{% product-card title="Widget" /%}`) or fed by a collection template. The seam between the two axes is `$item` + attribute wiring.
 
@@ -293,14 +316,14 @@ Launching a new primitive shouldn't be gated on re-plumbing two existing ones.
 ## Engine Changes
 
 - New rune schema `packages/runes/src/tags/collection.ts` — sentinel emitter (placeholder + attribute meta tags), following the backlog pattern.
-- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with two render paths: built-in layout (project `fields`) or body template. Uses the **shared field-match parser** (exact / prefix-glob / future regex; AND across fields, OR within) — *the same parser* that `entityRoutes` (SPEC-069) and `backlog` use, not a duplicate. The string-grammar form is what lets one parser serve both a markdoc attribute (`filter=` here) and a JSON config field (`entityRoutes`' `filter`); backlog's existing parser folds into it, moving to a shared location if it currently lives inside the plan plugin. The body-template path reuses expand's `embedConfig` transform with `$item` bound per entity.
+- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with two render paths: built-in layout (project `fields`) or body template. Uses the **shared field-match parser** defined in *Field-match grammar* — *the same parser* that `entityRoutes` (SPEC-069) and `backlog` use, not a duplicate. The string-grammar form is what lets one parser serve both a markdoc attribute (`filter=` here) and a JSON config field (`entityRoutes`' `filter`); `plugins/plan/src/filter.ts` folds into it (gaining glob/regex, `url` resolution, and case-consistency), moving to a shared location in `@refrakt-md/runes`. The body-template path reuses expand's `embedConfig` transform with `$item` bound per entity.
 - **Body-template capture (inline)** — capture happens in a **pre-transform pass in the content loader**, *not* in the schema (prototype-confirmed: by schema-transform time Markdoc has already resolved the body's `$item` to `undefined`, so the source is unrecoverable there). The loader walks the parsed AST, and for each rune flagged `deferBody`, formats its children to a source string (`Markdoc.format` on pristine nodes), stashes it on an attribute, and **empties the body** so the page transform never resolves `$item`. The schema reads the stashed source and emits it in the sentinel; postProcess does `Markdoc.parse(stashed)` → transform per entity with `$item` bound. **Reparse is required** — reusing the captured AST resolves variables to `null`. Two small core additions: a `deferBody` catalog flag, and the loader capture pass (no `preprocess` plugin hook exists today). The `item-template` partial form needs none of this (source loaded from a file), so custom rendering degrades gracefully to partial-only if the inline pass is ever dropped.
 - **`item-template` partial loading** — resolve the partial via the existing partial + file-roots machinery; transform it per entity with `$item` bound. No capture step. This is the same inline-vs-partial split SPEC-069 uses for its page templates (inline `render` vs `render-template` partial); both specs share the "a markdoc template, transformed per entity with the same bound variable" mechanism — `$item` in both (a collection row here, a route's entity there), so a partial authored for one context drops into the other unchanged.
 - **`$item` bound variable** — bound into `config.variables` for the body-template path; the template reads it. Fields: `$item.id`, `$item.type`, `$item.data.*`, `$item.url` (resolved via xref chain). A *variable* like `$page` / `$file`, not a rune ABI — the only thing to pin is its field shape. `entityRoutes` (SPEC-069) binds the **same `$item`** with the same field shape, so the variable is one concept across both features.
 - **Card runes are plain presentational runes** — `product-card`, `article-card`, … take ordinary attributes (`title`, `price`, `href`), know nothing about `$item` or the registry, and are usable standalone (`{% product-card title="Widget" /%}`). The template wires entity fields into their attributes; an `item-template` partial holds the verbose mapping once. The first core card rune (`article-card`) ships alongside collection as the reference implementation. No `item=` attribute on collection, and no card contract for the rune to implement. (A collection-only card *may* opt to read `$item` directly for terseness, accepting coupling — not the default.)
 - `corePipelineHooks.postProcess` gains a collection-resolution step (after expand + xref so item links resolve through the same chain).
 - `Collection` engine config entry in `packages/runes/src/config.ts` (`block: 'collection'`, layout modifier from meta).
-- Filter grammar extension — exact + prefix/glob matching (regex deferred) so `url:/blog/*` expresses folder membership. Shared with backlog's filter parser.
+- Filter grammar — exact + glob + regex matching, quoted values, `url`-alias field resolution, case-sensitive, malformed-clause warnings (full definition in *Field-match grammar*). `url:/blog/*` expresses folder membership. Shared with backlog's filter parser, which folds in.
 - CSS `packages/lumina/styles/runes/collection.css` — the built-in layouts (list/cards/grid/table) + grouping + field projection. Card-rune CSS lives with each card rune.
 - `@refrakt-md/plan` — `{% backlog %}` refactor to delegate is a *separate, later* change (see *Sequencing*); not required for collection to ship.
 
@@ -344,7 +367,7 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 - [ ] Zero-config (type only) renders each entity's title as a link to its resolved URL (xref chain: `sourceUrl` → `data.url` → pattern → text fallback)
 - [ ] `type` accepts comma-separated multiple types
 - [ ] `filter` applies field-match clauses (AND across fields, OR within) against entity fields including `url`
-- [ ] `filter` supports exact (`status:ready`) and prefix/glob (`url:/blog/*`) matching; folder membership expresses as a `url` prefix match with no special folder axis
+- [ ] `filter` supports exact (`status:ready`), glob (`url:/blog/*`), and regex (`id:/^SPEC-\d+$/`) matching, quoted values for spaces, and `url`-alias resolution; matching is case-sensitive; malformed clauses warn; folder membership expresses as a `url` prefix match with no special folder axis
 - [ ] `sort` orders by a `data` field; string / number / date ordering inferred from the value
 - [ ] `limit` caps the rendered count post-sort, pre-group (degenerate values treated as unset, matching backlog's defensive parse)
 - [ ] `group` partitions into sections by a `data` field
