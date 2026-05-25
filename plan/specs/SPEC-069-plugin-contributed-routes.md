@@ -267,7 +267,7 @@ Multiple rules can match the same entity — each produces a separate page (the 
 
 ### Variable surface inside `render`
 
-The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$item` (a bound content variable, same surface as `$page.path` etc. — and **the same `$item` collection (SPEC-070) binds per row**, so the two features share one variable name and templates port between them). So `{% expand $item.id /%}` is the canonical pattern.
+The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$item` — a read-only bound variable with **the same canonical field shape collection (SPEC-070) binds per row** (`$item.id`, `$item.type`, `$item.url` guaranteed; payload strictly under `$item.data.*`, no hoisting; `url` resolved via the xref chain, empty-string not undefined). The full definition lives in **SPEC-070's *The `$item` variable and card runes*** section; this spec binds it identically, so a `render-template` partial and a collection `item-template` are interchangeable. So `{% expand $item.id /%}` is the canonical pattern.
 
 Templates can also reference the entity's data fields directly: `# {% $item.data.title %}`. The full Markdoc variable model applies. The inline `render` and the `render-template` partial bind `$item` identically; the only difference is where the markdoc source lives.
 
@@ -577,7 +577,7 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] URL collisions between two contributed pages fail the build with attribution naming both sources
 - [ ] Contributed pages appear in the sitemap, search index, route enumeration, and nav-auto graph
 - [ ] `{% ref %}` to a URL produced by a contributed page resolves correctly (page entity is registered by core's existing register hook)
-- [ ] `$item` variable available inside `render` strings and `render-template` partials; full entity data accessible (`$item.id`, `$item.data.title`, etc.)
+- [ ] `$item` variable available inside `render` strings and `render-template` partials, with the canonical shape from SPEC-070's *The `$item` variable and card runes* (`$item.id` / `$item.type` / `$item.url` guaranteed; payload under `$item.data.*`); identical binding to collection's `$item`
 - [ ] Plugin error in `contributePages` is caught, surfaces as a build warning, build continues with that plugin's contributions skipped
 - [ ] Empty `contributePages` return (no contributions) is a no-op
 - [ ] Plugin authoring docs cover: when to use config rules vs the hook directly, caching guidance for external data, env-var convention, graceful failure for upstream issues
