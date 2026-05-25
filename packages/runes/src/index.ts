@@ -55,6 +55,8 @@ export { RenderableNodeCursor } from './lib/renderable.js';
 export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels, sanitizeSandboxContent } from './lib/index.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
+export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityField } from './field-match.js';
+export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, firstH1, headingsToList } from './util.js';
