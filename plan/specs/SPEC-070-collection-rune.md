@@ -90,19 +90,48 @@ Each entity renders as its title (`data.title` / `data.name`) linking to its res
 
 Projects named `data` fields into a built-in layout (table columns, labeled card rows). This is the path for **generic data** — price tables, directories, comparison matrices, reference lists — where functional-but-plain is exactly right. It is *not* the answer for a rich domain gallery (see level 3); a product catalog rendered as generic projected cards reads as bland data, not a storefront.
 
-**3. `item=` delegation — domain presentation (first-class).**
+Levels 3 and 4 are two complementary forms of **custom per-item rendering** — neither is "the real one"; they're points on a spectrum. Use the body template for flexible inline composition; use a named rune for reuse and logic.
+
+**3. Body template — flexible inline composition (`$item` variables).**
+
+```markdoc
+{% collection type="product" sort="price" %}
+## {% $item.data.title %}
+![{% $item.data.title %}]({% $item.data.image %})
+**{% $item.data.price %}** {% if $item.data.onSale %}{% badge %}Sale{% /badge %}{% /if %}
+{% /collection %}
+```
+
+The rune **body is the per-item template**: real Markdoc with `$item` variable references and native `{% if %}`. collection runs the query, then renders the body once per entity with `$item` bound to that entity. "An item can be anything" — a heading, an image, a badge, a link, multiple runes, prose — composed inline from the entity's fields, with no rune to define. This is the declarative, no-extra-rune path; see *Per-item template mechanism* for how it works and *its one constraint* (no loops).
+
+**4. `item=` delegation — reusable / complex cards.**
 
 ```markdoc
 {% collection type="product" item="product-card" sort="price" limit=12 /%}
 ```
 
-collection does the query; a purpose-built **item-renderer rune** (`product-card`, `article-card`, `character-card`) renders each entity deliberately — image-forward layout, price prominence, badges, whatever the domain wants. This is how you get an actual catalog gallery, character roster, or release feed rather than projected fields. The item rune is reusable standalone (to feature one entity) and as collection's `item=` target. See *Item-renderer contract* for the input surface every such rune receives.
+collection does the query; a purpose-built **item-renderer rune** (`product-card`, `article-card`, `character-card`) renders each entity. Reach for this when the card is reused across pages, needs real logic (iterating a sub-array of variants/tags — which the body template can't do), carries interactivity/behaviors, or wants its own tests. The item rune is reusable standalone (to feature one entity) and as collection's `item=` target. See *Item-renderer contract* for the `$item` surface it receives.
 
-This decomposition is the core of the design: **collection is the query engine; domain runes are the per-item renderers; `item=` composes them.** It's the same split that lets `{% backlog %}` and `{% blog %}` become presets (see *Relationship to existing runes*).
+Both 3 and 4 run through the same parse+transform (`embedConfig`) path with `$item` bound; the difference is *where the per-item markup lives* — inline in the body (declarative, flexible, no loops) vs. in a named rune (encapsulated, reusable, full logic). This is the same config-vs-component duality as SPEC-069's `entityRoutes` vs `contributePages`.
 
-**4. Inline item template *(deferred escape hatch)*.**
+**The query engine / renderer split is the core of the design:** collection owns the query; the per-item markup comes from a built-in layout (generic), a body template (inline), or a named rune (reusable). It's the same split that lets `{% backlog %}` and `{% blog %}` become presets (see *Relationship to existing runes*).
 
-A rune body acting as a per-item template with `$item.*` access, for one-off per-item rendering without defining a named rune. Deferred — `item=` (a named, reusable renderer) covers the structured cases; an inline template is only for throwaway custom rendering. Add only if real demand appears.
+### Per-item template mechanism (level 3)
+
+The body-template form hinges on one fact about the pipeline and one novel step:
+
+**Variables resolve at transform time, not parse time.** `Markdoc.parse("{% $item.title %}")` produces an *unresolved* `Variable` AST node; it only becomes a value when `Markdoc.transform(ast, config)` looks it up in `config.variables`. A content-model rune receives its body as raw AST and *chooses when to transform it*. So collection simply **does not transform its body** in the schema — leaving the `$item` Variable nodes unresolved — then transforms it later, once per entity, with `$item` bound:
+
+```
+schema:      Markdoc.format(resolved.body)  →  markdoc source string  →  stash in the placeholder
+postProcess: per entity → Markdoc.parse(stashed) → transform(ast, { …embedConfig, variables: { item: entity } })
+```
+
+`Markdoc.format` round-trips the AST back to source (`{% $item.title %}` stays `{% $item.title %}`, *not* resolved), so a plain string crosses the serialization boundary and postProcess re-parses + transforms it per entity. Parse-once-cache + transform-per-item handles efficiency.
+
+**The one genuinely novel step — flag it as "prototype first".** "Capture a rune's *own* body un-transformed and defer it to postProcess" has no direct precedent in refrakt: expand pulls content from an *external file* (not its own body); backlog/blog have no body to preserve; existing content-model runes transform their body immediately. So the `format → stash → reparse` capture-and-carry is the load-bearing unknown. The risk is *not* "variables resolve too early" (they won't, if the schema doesn't transform) — it's the mechanical capture. **This should be prototyped before the body-template form is committed as load-bearing.** If capture proves awkward, the `item=` named-rune form (level 4) still delivers domain rendering, so the spec degrades gracefully to "named runes only" without it.
+
+**The one constraint — no loops.** Markdoc has conditionals (`{% if %}`) but no native loop. collection iterating *entities* is fine (collection does that). But iterating an *array field within one item* — each variant of a product, each tag as a separate element — can't be expressed in a body template. That's the line: flat composition → body template; per-item iteration/logic → `item=` named rune.
 
 ### Built-in layouts (the level-2 path)
 
@@ -202,7 +231,12 @@ Like backlog, `collection` is a sentinel rune: the schema emits a placeholder wi
 3. **Sort** — by `sort` field (string / number / date inferred from value).
 4. **Limit** — slice post-sort, pre-group.
 5. **Group** — partition by `group` field if set.
-6. **Render** — *either* the built-in `layout` (projecting `fields`), *or*, when `item=` is set, delegate each entity to the named item-renderer rune (transformed via the `embedConfig` path, `$item` bound). Each item's title/link resolves to the entity's URL via the standard xref chain (`sourceUrl` → `data.url` → patterns → text fallback).
+6. **Render** — one of three paths, all binding `$item` and transforming via the `embedConfig` path:
+   - built-in `layout` (project `fields`) — generic data;
+   - **body template** — the stashed body source re-parsed + transformed per entity with `$item` bound (see *Per-item template mechanism*);
+   - `item=` — the named item-renderer rune transformed per entity with `$item` bound.
+
+   A collection with a body uses the body-template path; with `item=` set, the named-rune path; with neither, the built-in layout. (`item=` and a body together is a conflict — error, naming both.) Each item's title/link resolves to the entity's URL via the standard xref chain (`sourceUrl` → `data.url` → patterns → text fallback).
 
 The resolver is shared, type-agnostic core code. It lives wherever the cross-page registry-consuming runes live (alongside the xref / expand resolvers in `@refrakt-md/runes`), so it sees the fully-populated registry — including externally-contributed entities (SPEC-069) and plan entities (SPEC-064) — uniformly.
 
@@ -232,7 +266,9 @@ Launching a new primitive shouldn't be gated on re-plumbing two existing ones.
 ## Engine Changes
 
 - New rune schema `packages/runes/src/tags/collection.ts` — sentinel emitter (placeholder + attribute meta tags), following the backlog pattern.
-- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with two render paths: built-in layout (project `fields`) or `item=` delegation. Shares the filter-parse + sort helpers with backlog rather than duplicating them; those helpers move to a shared location if they currently live inside the plan plugin. The `item=` path reuses expand's `embedConfig` transform to render each item-renderer rune with `$item` bound.
+- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with three render paths: built-in layout (project `fields`), body template, or `item=` delegation. Shares the filter-parse + sort helpers with backlog rather than duplicating them; those helpers move to a shared location if they currently live inside the plan plugin. The body-template and `item=` paths both reuse expand's `embedConfig` transform with `$item` bound per entity.
+- **Body-template capture** — the schema must hold its body *un-transformed* (don't call `Markdoc.transform` on it) and stash it as source (`Markdoc.format(resolved.body)` → string in the placeholder); postProcess re-parses + transforms it per entity with `$item` bound. This "capture a rune's own body and defer it" pattern is **novel** (no current refrakt rune does it) — prototype it first; it's the load-bearing unknown for the body-template form.
+- **`$item` variable contract** — bound into `config.variables` for the body-template and `item=` paths. Fields: `$item.id`, `$item.type`, `$item.data.*`, `$item.url` (resolved via xref chain). Same exposure idea as `entityRoutes`' `$entity`, bound at transform time.
 - **Item-renderer contract** — a documented convention (not new machinery): a rune that takes one entity via `$item` and renders a card. Schema + engine-config + CSS like any rune; usable standalone (`{% product-card "id" /%}`) or as collection's `item=`. The first core card rune (`article-card`) ships alongside collection as the reference implementation.
 - `corePipelineHooks.postProcess` gains a collection-resolution step (after expand + xref so item links resolve through the same chain).
 - `Collection` engine config entry in `packages/runes/src/config.ts` (`block: 'collection'`, layout modifier from meta).
@@ -284,9 +320,12 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 - [ ] `sort` orders by a `data` field; string / number / date ordering inferred from the value
 - [ ] `limit` caps the rendered count post-sort, pre-group (degenerate values treated as unset, matching backlog's defensive parse)
 - [ ] `group` partitions into sections by a `data` field
-- [ ] **`item=` delegates per-item rendering to the named rune**, transformed with `$item` bound via the expand `embedConfig` path
+- [ ] **Body template**: a collection with a body renders that body once per entity with `$item` bound (`$item.id`, `$item.type`, `$item.data.*`, `$item.url`); `{% $item.data.x %}` and `{% if $item.data.x %}` resolve per entity
+- [ ] Body-template capture holds the body un-transformed (variables not pre-resolved) and defers it to postProcess — verified by a prototype before this form is relied on
+- [ ] **`item=` delegates** per-item rendering to the named rune, transformed with `$item` bound via the `embedConfig` path
+- [ ] `item=` together with a body is a build error naming both
 - [ ] When `item=` is set, `layout` / `fields` are ignored and each item is the item-renderer's own output; the wrapper carries `data-item`
-- [ ] Item-renderer runes receive the entity via `$item` (`$item.id`, `$item.type`, `$item.data.*`, `$item.url`) and work standalone (`{% x-card "id" /%}`) as well as via `item=`
+- [ ] Item-renderer runes receive the entity via `$item` and work standalone (`{% x-card "id" /%}`) as well as via `item=`
 - [ ] Built-in `layout` (no `item=`) supports `list` (default), `cards`, `grid`, `table`
 - [ ] `fields` projects named `data` fields; required for `table`, optional for `cards`/`grid`, ignored by `list` and when `item=` is set
 - [ ] Output carries `data-rune="collection"`, `data-type`, `data-layout` (or `data-item`); items carry `data-entity-id`; projected fields carry `data-field`
@@ -302,7 +341,8 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 
 ## Out of Scope
 
-- **Inline item templates** (a per-item body template, vs. a named `item=` rune). `item=` (a reusable named renderer) is *in scope* and first-class; an *inline* throwaway template is deferred — add only if pointing at a named rune proves too heavyweight for one-off cases.
+- **Raw `{name}` string substitution for the body template.** The body template is in scope (level 3) but implemented via Markdoc `$item` *variables* (parse-once, bind-per-item, injection-safe), not by string-splicing field values into source before parsing. The string-substitution form is explicitly *not* how it works — it re-parses per item and risks injection when a field value contains markdoc syntax.
+- **Loops inside a body template.** Markdoc has `{% if %}` but no native loop, so iterating an array field within a single item (variants, per-tag elements) isn't expressible in a body template. That case uses the `item=` named rune. Not a gap to fix — the line between the two forms.
 - **Client-side interactivity** (sortable columns, live filtering). `collection` is build-time static. A future enhancement could bridge a `table`-layout collection into `{% datatable %}`'s client behaviors, but that's its own design.
 - **Pagination UI** (page 1 / 2 / 3 of a large collection). `limit` caps the set; rendering N pages of navigation is a separate concern. Large collections either cap or render fully.
 - **Cross-site collections** in a monorepo. Each site queries its own registry.
@@ -312,6 +352,8 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 -----
 
 ## Open Questions
+
+**Prototype the body-template capture before committing to it.** The body-template form (level 3) depends on "capture the rune's own body un-transformed, stash as source via `Markdoc.format`, re-parse + transform per entity with `$item` bound" — a pattern no current refrakt rune uses. Before speccing it as load-bearing, build a throwaway prototype that confirms: (a) the schema can hold its body without the outer transform pass resolving its variables; (b) `Markdoc.format(body)` round-trips `$item` references as source, not resolved values; (c) re-transforming the same parsed template N times with different `variables.item` produces N independent renderables (no shared node mutation). If any of those proves awkward, the `item=` named-rune form (level 4) still delivers domain rendering, so the spec degrades to "named runes only" without the body template — the build sequence should validate the prototype first and treat the body-template form as contingent on it.
 
 **Should `backlog` be refactored to delegate to the collection resolver in the same milestone, or later?** Refactoring shares the filter/sort/group/limit logic and removes duplication, but it's a behavior-preserving change to a shipped rune with its own tests. Recommend: ship `collection` standalone first (sharing the *helper* functions, not the whole resolver), refactor backlog to fully delegate in a follow-up once collection's resolver has proven out. Avoids coupling a new rune's launch to a refactor of an existing one.
 
