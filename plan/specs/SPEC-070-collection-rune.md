@@ -92,7 +92,7 @@ Each entity renders as its title (`data.title` / `data.name`) linking to its res
 {% collection type="product" layout="table" fields="name,price,stock" sort="price" /%}
 ```
 
-Projects named `data` fields into a built-in layout (table columns, labeled card rows). This is the path for **generic data** — price tables, directories, comparison matrices, reference lists — where functional-but-plain is exactly right. It is *not* the answer for a rich domain gallery (see the body template); a product catalog rendered as generic projected cards reads as bland data, not a storefront.
+Projects named `data` fields into a built-in layout (table columns, labeled card rows). This is the path for **generic data** — price tables, directories, comparison matrices, reference lists — where functional-but-plain is exactly right. `fields` is the dumb shorthand (raw values, humanized headers); for a table that needs labels, formatting, or combined columns, the body uses heading-delimited column templates (see *Built-in layouts*). It is *not* the answer for a rich domain gallery (see the body template); a product catalog rendered as generic projected cards reads as bland data, not a storefront.
 
 **3. Body template — custom rendering (`$item` bound; inline or partial).**
 
@@ -158,9 +158,32 @@ postProcess (per entity): Markdoc.parse(stashed) → transform(ast, { …embedCo
 | `list` | compact title (+ optional one-line description), each a link | title only |
 | `cards` | a card per entity, generic chrome | optional projected fields |
 | `grid` | card grid | optional projected fields |
-| `table` | one row per entity, columns from `fields` | required |
+| `table` | one row per entity; columns from `fields` (shorthand) or heading-delimited column templates | see below |
 
 These are the *generic* presentations. For deliberate domain cards, use a body template that invokes a card rune (level 3) — the built-in `cards`/`grid` are intentionally plain so they don't masquerade as a designed gallery. An item is never rendered via full `{% expand %}` by default (too heavy for a list, many entities aren't embeddable).
+
+**The body means different things per layout.** For box layouts (`list` / `cards` / `grid`) the body is the *per-item template* (level 3). For `table` the body is a set of *column definitions*. In both, an **empty body falls back to `fields`** — the dumb shorthand. So `fields` is the zero-body shortcut and a body buys control, in either family. (Consequence: a body authored for `cards` isn't portable to `table` by flipping the attribute — the two families interpret it differently. That's inherent to tables aligning columns rather than arranging boxes.)
+
+**`fields` — the dumb shorthand.** `fields="name,price,stock"` projects those `data` fields as columns (`table`) or labeled rows (`cards`/`grid`). Headers are the humanized field key (`unit_price` → "Unit Price"); values use default per-type stringification (string/number as-is, ISO date as-is, boolean → Yes/No, array → comma-join, missing → empty). No formatting, no combining — the moment you need either, use heading-delimited columns. (There is deliberately **no `key=Label` micro-syntax** on `fields`: custom labels are a reason to use the heading form, keeping `fields` dead-simple.)
+
+**Heading-delimited columns — the rich table path.** A `table` collection's body uses the `sections` content model (`sectionHeading: 'heading'`, as `changelog` does): each heading is a **column separator + header label**, and the markdoc under it is that column's **per-cell template** with `$item` bound. collection owns the `<table>` / `<thead>` and row alignment; the heading sequence defines the columns and their order.
+
+```markdoc
+{% collection type="product" layout="table" sort="price" %}
+## Product
+[{% $item.data.title %}]({% $item.url %})
+
+## Price
+{% currency($item.data.price, $item.data.currency) %}
+
+## Stock
+{% if $item.data.stock %}{% $item.data.stock %} in stock{% else %}Out{% /if %}
+{% /collection %}
+```
+
+This is how labels (heading text), formatting, and **combining** (price + currency in one column) are expressed — in markdoc, not a projection DSL. The cell bodies hold `$item` interpolations, so they use the same **`deferBody` pre-transform capture** as the per-item template (capture the body source pristine, split by heading in postProcess, transform each cell per entity). Column heading text is **static** (the label, rendered once); `$item` belongs in the cell body — `$item` in a heading isn't per-row and warns.
+
+**Formatter functions — the shared value layer.** Value formatting (currency, dates, numbers, joining arrays) is expressed as **markdoc functions** — `currency()`, `date()`, `number()`, `join()` — usable *anywhere* markdoc runs: heading-delimited cells, body templates, and `entityRoutes` `render` strings (SPEC-069). One formatting layer reused across all three surfaces, not per-attribute config. (These author-facing functions are largely net-new — a small registered `functions` set — but they're the principled home for "format a value" everywhere, and they keep `fields` and the templates free of formatting syntax.)
 
 ### Field-match grammar (canonical)
 
@@ -319,7 +342,9 @@ Launching a new primitive shouldn't be gated on re-plumbing two existing ones.
 ## Engine Changes
 
 - New rune schema `packages/runes/src/tags/collection.ts` — sentinel emitter (placeholder + attribute meta tags), following the backlog pattern.
-- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with two render paths: built-in layout (project `fields`) or body template. Uses the **shared field-match parser** defined in *Field-match grammar* — *the same parser* that `entityRoutes` (SPEC-069) and `backlog` use, not a duplicate. The string-grammar form is what lets one parser serve both a markdoc attribute (`filter=` here) and a JSON config field (`entityRoutes`' `filter`); `plugins/plan/src/filter.ts` folds into it (gaining glob/regex, `url` resolution, and case-consistency), moving to a shared location in `@refrakt-md/runes`. The body-template path reuses expand's `embedConfig` transform with `$item` bound per entity.
+- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with three render paths: `fields` shorthand projection, **heading-delimited column templates** (table layout), or per-item body template (box layouts). Uses the **shared field-match parser** defined in *Field-match grammar* — *the same parser* that `entityRoutes` (SPEC-069) and `backlog` use, not a duplicate. The string-grammar form is what lets one parser serve both a markdoc attribute (`filter=` here) and a JSON config field (`entityRoutes`' `filter`); `plugins/plan/src/filter.ts` folds into it (gaining glob/regex, `url` resolution, and case-consistency), moving to a shared location in `@refrakt-md/runes`. The template paths reuse expand's `embedConfig` transform with `$item` bound per entity.
+- **Per-layout body interpretation** — the body is read per `layout`: box layouts (`list`/`cards`/`grid`) → one per-item template; `table` → the `sections` content model (`sectionHeading: 'heading'`), each heading a column (label = heading text, cell = the section's markdoc template). Empty body in either family → the `fields` shorthand. Table-column cell bodies are captured via the same `deferBody` pass and transformed per entity per cell; column headings are static (warn if `$item` appears in a heading).
+- **Formatter functions** — a small registered markdoc `functions` set (`currency`, `date`, `number`, `join`) is the shared value-formatting layer, available in heading-delimited cells, body templates, and `entityRoutes` `render` strings (SPEC-069). Net-new author-facing surface; lives in `@refrakt-md/runes` so all three consumers share it. Keeps formatting out of `fields` and out of a bespoke projection DSL.
 - **Body-template capture (inline)** — capture happens in a **pre-transform pass in the content loader**, *not* in the schema (prototype-confirmed: by schema-transform time Markdoc has already resolved the body's `$item` to `undefined`, so the source is unrecoverable there). The loader walks the parsed AST, and for each rune flagged `deferBody`, formats its children to a source string (`Markdoc.format` on pristine nodes), stashes it on an attribute, and **empties the body** so the page transform never resolves `$item`. The schema reads the stashed source and emits it in the sentinel; postProcess does `Markdoc.parse(stashed)` → transform per entity with `$item` bound. **Reparse is required** — reusing the captured AST resolves variables to `null`. Two small core additions: a `deferBody` catalog flag, and the loader capture pass (no `preprocess` plugin hook exists today). The `item-template` partial form needs none of this (source loaded from a file), so custom rendering degrades gracefully to partial-only if the inline pass is ever dropped.
 - **`item-template` partial loading** — resolve the partial via the existing partial + file-roots machinery; transform it per entity with `$item` bound. No capture step. This is the same inline-vs-partial split SPEC-069 uses for its page templates (inline `render` vs `render-template` partial); both specs share the "a markdoc template, transformed per entity with the same bound variable" mechanism — `$item` in both (a collection row here, a route's entity there), so a partial authored for one context drops into the other unchanged.
 - **`$item` bound variable** — bound into `config.variables` for the body-template path; the template reads it. Read-only projection of the `EntityRegistration`; field shape pinned in *The `$item` variable and card runes* (`$item.id`, `$item.type`, `$item.url` guaranteed; payload strictly under `$item.data.*`, no hoisting). A *variable* like `$page` / `$file`, not a rune ABI. `entityRoutes` (SPEC-069) binds the **same `$item`** with the same shape, so the variable is one concept across both features.
@@ -380,8 +405,10 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 - [ ] **`item-template` partial**: a collection with `item-template="cards:x.md"` renders that partial per entity with `$item` bound (no capture step; partial loaded from file). An inline body together with `item-template` is a build error naming both
 - [ ] Card runes are plain presentational runes (ordinary attributes, no `$item`/registry knowledge); usable standalone with hand-authored attributes (`{% product-card title="Widget" /%}`) and fed by a collection template that maps `$item` fields to their attributes
 - [ ] `$item` is a read-only bound variable with the pinned shape: guaranteed `$item.id` / `$item.type` / `$item.url` (string; `url` = `sourceUrl ?? data.url ?? ''`, empty not undefined); payload strictly under `$item.data.*` (no hoisting); missing `data` fields render empty with no warning — not a contract any rune implements
-- [ ] Built-in `layout` (no body template) supports `list` (default), `cards`, `grid`, `table`
-- [ ] `fields` projects named `data` fields; required for `table`, optional for `cards`/`grid`, ignored by `list` and when a body template is present
+- [ ] Built-in `layout` supports `list` (default), `cards`, `grid`, `table`; the body is interpreted per layout (box layouts → per-item template; `table` → heading-delimited columns), and an empty body falls back to `fields`
+- [ ] `fields` is the dumb shorthand: projects named `data` fields with humanized headers and default per-type rendering; no `key=Label` syntax and no formatting (use heading-delimited columns for those)
+- [ ] A `table` collection with a heading-delimited body renders one column per heading (label = heading text, ordered by heading sequence), each cell the section's markdoc template transformed per entity with `$item` bound; `$item` in a column heading warns
+- [ ] Formatter functions (`currency`, `date`, `number`, `join`) are registered markdoc functions usable in heading-delimited cells, body templates, and `entityRoutes` `render` strings
 - [ ] Output carries `data-rune="collection"`, `data-type`, `data-layout`; items carry `data-entity-id`; projected fields carry `data-field`
 - [ ] Resolution runs in postProcess after expand + xref so item links resolve through the same chain
 - [ ] Works for plan entities, externally-contributed entities (SPEC-069), and any plugin-registered type — no type-specific code in the resolver
