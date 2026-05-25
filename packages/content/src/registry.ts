@@ -7,38 +7,56 @@ import type { EntityRegistration, EntityRegistry } from '@refrakt-md/types';
  * - byTypeAndId: primary index for getAll() and getById()
  * - byTypeAndUrl: secondary index for getByUrl()
  *
- * On collision (same type + id registered twice), the last registration wins.
+ * Page-scoped entries (SPEC-060, WORK-256) are keyed internally by
+ * `${sourceUrl}::${id}` in the primary index, so two pages can register
+ * the same `(type, id)` without colliding. Site-scoped entries (the
+ * default) keep using the bare `id` as their key, preserving the
+ * pre-WORK-256 collision semantics (last-write-wins on `(type, id)`).
+ *
+ * On collision within the same scope, the last registration wins.
  */
 export class EntityRegistryImpl implements EntityRegistry {
 	private byTypeAndId = new Map<string, Map<string, EntityRegistration>>();
 	private byTypeAndUrl = new Map<string, Map<string, EntityRegistration[]>>();
 
 	register(entry: EntityRegistration): void {
+		// Normalize empty-string sourceUrl to undefined — distinguishing
+		// "explicitly empty" from "missing" isn't useful, and the resolver
+		// treats both the same downstream.
+		const normalized: EntityRegistration =
+			entry.sourceUrl === '' ? { ...entry, sourceUrl: undefined } : entry;
+
+		const key = primaryKey(normalized);
+
 		// Primary index
-		let typeMap = this.byTypeAndId.get(entry.type);
+		let typeMap = this.byTypeAndId.get(normalized.type);
 		if (!typeMap) {
 			typeMap = new Map();
-			this.byTypeAndId.set(entry.type, typeMap);
+			this.byTypeAndId.set(normalized.type, typeMap);
 		}
-		typeMap.set(entry.id, entry);
+		typeMap.set(key, normalized);
 
-		// Secondary index
-		let urlMap = this.byTypeAndUrl.get(entry.type);
-		if (!urlMap) {
-			urlMap = new Map();
-			this.byTypeAndUrl.set(entry.type, urlMap);
-		}
-		const urlList = urlMap.get(entry.sourceUrl);
-		if (urlList) {
-			// Replace existing entry with same id, or append
-			const idx = urlList.findIndex(e => e.id === entry.id);
-			if (idx >= 0) {
-				urlList[idx] = entry;
-			} else {
-				urlList.push(entry);
+		// Secondary index — only meaningful when the entity has a sourceUrl.
+		// Entries without one (plan content not published to any site, etc.)
+		// are still in the primary index for getById; they just don't
+		// participate in URL-based lookups.
+		if (normalized.sourceUrl !== undefined) {
+			let urlMap = this.byTypeAndUrl.get(normalized.type);
+			if (!urlMap) {
+				urlMap = new Map();
+				this.byTypeAndUrl.set(normalized.type, urlMap);
 			}
-		} else {
-			urlMap.set(entry.sourceUrl, [entry]);
+			const urlList = urlMap.get(normalized.sourceUrl);
+			if (urlList) {
+				const idx = urlList.findIndex(e => sameIdentity(e, normalized));
+				if (idx >= 0) {
+					urlList[idx] = normalized;
+				} else {
+					urlList.push(normalized);
+				}
+			} else {
+				urlMap.set(normalized.sourceUrl, [normalized]);
+			}
 		}
 	}
 
@@ -54,13 +72,81 @@ export class EntityRegistryImpl implements EntityRegistry {
 		return this.byTypeAndUrl.get(type)?.get(url) ?? [];
 	}
 
-	/** Find a specific entity by type and id */
-	getById(type: string, id: string): EntityRegistration | undefined {
-		return this.byTypeAndId.get(type)?.get(id);
+	/** Find a specific entity by type and id. Lookup order:
+	 *  1. **Page-scoped match from `pageUrl`** — when `pageUrl` is provided,
+	 *     check for a page-scoped entry registered from that page. Fragments
+	 *     and trailing slashes are normalised so callers may pass the URL in
+	 *     any shape an adapter produces.
+	 *  2. **Site-scoped match** — the entry registered with the bare `id`.
+	 *  3. **Cross-page fallback** — when neither of the above hits, scan
+	 *     for any page-scoped entry with the same id from any page. This
+	 *     is the SPEC-060 cross-page drawer-trigger path: a drawer
+	 *     registered on page A is still findable when a xref on page B
+	 *     references its id. Returns the first match in registration
+	 *     order; cross-page id collisions are extraordinary enough that
+	 *     callers wanting strict resolution can pass `pageUrl` and check
+	 *     `sourceUrl` on the returned entry. */
+	getById(type: string, id: string, pageUrl?: string): EntityRegistration | undefined {
+		const typeMap = this.byTypeAndId.get(type);
+		if (!typeMap) return undefined;
+		if (pageUrl !== undefined) {
+			const normalized = normalizePageUrl(stripFragment(pageUrl));
+			const pageHit = typeMap.get(pageScopedKey(normalized, id));
+			if (pageHit) return pageHit;
+		}
+		const siteHit = typeMap.get(id);
+		if (siteHit) return siteHit;
+		// Cross-page fallback for page-scoped entries with this id.
+		for (const entry of typeMap.values()) {
+			if (entry.id === id && entry.scope === 'page') return entry;
+		}
+		return undefined;
 	}
 
 	/** All registered entity type names */
 	getTypes(): string[] {
 		return [...this.byTypeAndId.keys()];
 	}
+}
+
+/** Internal storage key for an entry. Site-scoped uses the bare id (so
+ *  pre-WORK-256 callers keep working unchanged); page-scoped namespaces
+ *  by the normalised page part of sourceUrl (fragment stripped, trailing
+ *  slash trimmed) so the same id on the same page lands in one bucket
+ *  regardless of href shape. A page-scoped entry without a usable
+ *  sourceUrl falls back to the site-scoped key — that path is degenerate
+ *  (it'll collide with site-scoped entries of the same id) and reflects
+ *  a misconfiguration at the registration site rather than something the
+ *  registry can recover from. */
+function primaryKey(entry: EntityRegistration): string {
+	if (entry.scope === 'page' && entry.sourceUrl) {
+		return pageScopedKey(normalizePageUrl(stripFragment(entry.sourceUrl)), entry.id);
+	}
+	return entry.id;
+}
+
+function pageScopedKey(pageUrl: string, id: string): string {
+	return `${pageUrl}::${id}`;
+}
+
+function stripFragment(url: string): string {
+	const i = url.indexOf('#');
+	return i === -1 ? url : url.slice(0, i);
+}
+
+/** Normalise a page URL for keying purposes — strip a trailing slash so
+ *  adapters that emit `/x/` and ones that emit `/x` (or the resolver
+ *  passing either form) coalesce into one bucket. Root (`/`) is preserved. */
+function normalizePageUrl(url: string): string {
+	if (url.length > 1 && url.endsWith('/')) return url.slice(0, -1);
+	return url;
+}
+
+/** Two registrations refer to the same logical entry when their identity
+ *  fields line up — used by the byTypeAndUrl secondary index to dedupe
+ *  re-registrations from the same page. Scope participates because the
+ *  same `(type, id)` can legitimately exist twice on a page when one is
+ *  site-scoped and the other page-scoped (rare, but well-defined). */
+function sameIdentity(a: EntityRegistration, b: EntityRegistration): boolean {
+	return a.id === b.id && (a.scope ?? 'site') === (b.scope ?? 'site');
 }

@@ -17,26 +17,9 @@ npm create refrakt
 
 ---
 
-
-{% showcase width="content" shadow="hard" bleed="bottom" offset="10rem" %}
 {% codegroup overflow="wrap" %}
-````markdoc
-{% hero align="left" spacing="tight" layout="split" collapse="lg" %}
-Version {% $version %} released [Check out what's new](/releases)
-
-# Write Markdown. Get structure.
-
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
-
-```shell
-npm create refrakt
-```
-
-- [Get Started](/docs/getting-started)
-{% /hero %}
-````
+{% snippet path=$file.path lines="5-23" lang="markdoc" /%}
 {% /codegroup %}
-{% /showcase %}
 {% /hero %}
 
 {% feature align="left" spacing="loose" %}

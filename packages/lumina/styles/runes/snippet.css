@@ -1,0 +1,27 @@
+/* Snippet — file embedded as a code block.
+ *
+ * The standalone form is a `<figure class="rf-snippet">` wrapping the
+ * existing `<pre class="rf-code-block">`. Nested forms (snippet inside
+ * codegroup or diff) skip the figure wrapper entirely — the container's
+ * chrome owns the layout there.
+ *
+ * The figure exists primarily so themes can style snippet-derived code
+ * blocks distinctly from regular fences, and so tooling can find
+ * `data-source-path` for "edit this file" affordances. Authors wanting a
+ * labelled caption should wrap the snippet in `{% codegroup title="..." %}`.
+ *
+ * SPEC-062.
+ */
+
+.rf-snippet {
+	/* Override the UA `<figure>` defaults — browsers ship with
+	 * margin-inline: 40px and margin-block: 1em which makes the snippet
+	 * figure look indented inside any container. The longhand resets
+	 * cover both physical and logical margin properties because the
+	 * physical longhands set by `margin:` don't always cascade-override
+	 * the UA's logical longhands. */
+	margin: var(--rf-spacing-md) 0;
+	margin-inline-start: 0;
+	margin-inline-end: 0;
+	padding: 0;
+}

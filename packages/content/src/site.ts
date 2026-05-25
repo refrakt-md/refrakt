@@ -1,8 +1,9 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, extractSeo, corePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
@@ -15,6 +16,7 @@ import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js'
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
+import { readFileRoots, type FileRoots } from './file-roots.js';
 
 /** Async reader for ad-hoc lookups in virtual (non-FS) hosting environments.
  *  Returns the file content or `null` when the path is unknown. */
@@ -70,6 +72,7 @@ function sandboxDirExists(p: string): boolean {
 }
 
 function transformContent(
+  ast: Node,
   content: string,
   path: string,
   sourcePath: string,
@@ -78,7 +81,6 @@ function transformContent(
   contentVariables?: Record<string, unknown>,
   partials?: Record<string, Node>,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
-  const ast = Markdoc.parse(escapeFenceTags(content));
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
   const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
@@ -90,6 +92,42 @@ function transformContent(
     config.partials = partials;
   }
   return { renderable: Markdoc.transform(ast, config as any), headings };
+}
+
+/** Convert a host-OS file path to POSIX form (forward slashes). */
+function posixPath(p: string): string {
+  return pathSep === '/' ? p : p.split(pathSep).join('/');
+}
+
+/** POSIX dirname with the `"."` (no-directory) sentinel mapped to `""` so
+ *  callers don't have to special-case content-root pages. */
+function posixDirname(p: string): string {
+  const dir = pathPosix.dirname(posixPath(p));
+  return dir === '.' ? '' : dir;
+}
+
+/** Project-root-relative path in POSIX form. */
+function posixRelativeFromRoot(projectRoot: string, absolutePath: string): string {
+  return posixPath(relative(projectRoot, absolutePath));
+}
+
+/** Last URL segment, stripping any trailing slash. Empty string for `/`. */
+function lastUrlSegment(url: string): string {
+  const trimmed = url.replace(/\/+$/, '');
+  const idx = trimmed.lastIndexOf('/');
+  return idx === -1 ? trimmed : trimmed.slice(idx + 1);
+}
+
+/** Derive the page title: trimmed non-empty frontmatter.title wins, else
+ *  the first H1 in the AST (depth-first, walking into tag children), else
+ *  undefined. */
+function derivePageTitle(frontmatter: Frontmatter, ast: Node): string | undefined {
+  const raw = frontmatter.title;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (trimmed.length > 0) return trimmed;
+  }
+  return firstH1(ast);
 }
 
 interface SandboxHooks {
@@ -116,6 +154,19 @@ interface ProcessContentTreeOptions {
   sandboxExamplesDir?: string;
   /** Site-wide colour-scheme default seeding the per-page tint cascade. */
   colorScheme?: 'auto' | 'light' | 'dark';
+  /** Absolute path to the project root (the directory containing
+   *  `refrakt.config.json`). Used to compute `$file.path` as a
+   *  project-root-relative POSIX path. When omitted, `$file.path` falls
+   *  back to the page's content-root-relative path (`$page.path`). */
+  projectRoot?: string;
+  /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Used by
+   *  the xref resolver as a URL-resolution fallback when registry entities
+   *  have no usable `sourceUrl`. */
+  xrefPatterns?: CompiledXrefPattern[];
+  /** Registered file roots — namespace → absolute directory path. Each
+   *  root is scanned at content-load time and its `.md` files become
+   *  available as Markdoc partials under `namespace:filename` keys. */
+  fileRoots?: FileRoots;
 }
 
 async function processContentTree(
@@ -128,15 +179,71 @@ async function processContentTree(
   const sandbox = opts.sandbox ?? nullSandboxHooks;
   const gitTimestamps = opts.gitTimestamps ?? new Map<string, FileTimestamps>();
 
-  // Pre-parse partials into Markdoc ASTs for the transform config
+  // Pre-parse partials into Markdoc ASTs for the transform config. Two
+  // sources contribute:
+  // - Site-local `_partials/` directory (already-scanned by ContentTree;
+  //   keys are unprefixed relative paths like `footer.md`).
+  // - Registered file roots (project-wide; keys are namespaced like
+  //   `shared:footer.md`). Plugins can also contribute roots via
+  //   `Plugin.fileRoots`; both arrive in `opts.fileRoots` already
+  //   merged by the loader bootstrap.
   const partialFiles = tree.partials();
+  const namespacedPartials = opts.fileRoots && Object.keys(opts.fileRoots).length > 0
+    ? await readFileRoots(opts.fileRoots)
+    : new Map<string, PartialFile>();
   let parsedPartials: Record<string, Node> | undefined;
-  if (partialFiles.size > 0) {
+  if (partialFiles.size > 0 || namespacedPartials.size > 0) {
     parsedPartials = {};
     for (const [name, partial] of partialFiles) {
       parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
     }
+    for (const [name, partial] of namespacedPartials) {
+      parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+    }
   }
+
+  // Build hook sets here (rather than after the per-page loop, as before)
+  // so the preprocess phase can run during page processing — each hook set
+  // gets a chance to rewrite the parsed AST before the transform runs.
+  // The core hook set carries snippet's preprocess implementation (SPEC-062);
+  // plugins that register their own preprocess hooks plug in alongside.
+  //
+  // The merged tags + nodes (core + every loaded plugin) are also threaded
+  // through to the core hooks as `embedConfig` — expand (SPEC-066) needs
+  // them to re-transform extracted entity subtrees using the same schemas
+  // the host page used.
+  const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+  const coreHooksOptions = {
+    xrefPatterns: opts.xrefPatterns,
+    embedConfig: {
+      tags: embedTags as Record<string, unknown>,
+      nodes: nodes as Record<string, unknown>,
+      projectRoot: opts.projectRoot,
+    },
+  };
+  const coreHooks = (opts.xrefPatterns && opts.xrefPatterns.length > 0) || opts.projectRoot
+    ? createCorePipelineHooks(coreHooksOptions)
+    : corePipelineHooks;
+  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
+  for (const pkg of opts.plugins ?? []) {
+    if (pkg.pipeline) {
+      hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
+    }
+  }
+
+  // Per-page preprocess context — file-system + project-root shared with the
+  // transform-time sandbox but exposed at preprocess time (variables aren't
+  // available yet). Warnings accumulate into a per-page array that callers
+  // funnel through the standard pipeline-warnings surface.
+  const preprocessWarnings: { severity: 'info' | 'warning' | 'error'; message: string; url?: string }[] = [];
+  const makePreprocessCtx = (pageUrl: string, variables?: Record<string, unknown>) => ({
+    info(message: string, url?: string) { preprocessWarnings.push({ severity: 'info', message, url: url ?? pageUrl }); },
+    warn(message: string, url?: string) { preprocessWarnings.push({ severity: 'warning', message, url: url ?? pageUrl }); },
+    error(message: string, url?: string) { preprocessWarnings.push({ severity: 'error', message, url: url ?? pageUrl }); },
+    projectRoot: opts.projectRoot,
+    sandbox: opts.sandbox,
+    variables,
+  });
 
   for (const page of tree.pages()) {
     const { frontmatter, content } = parseFrontmatter(page.raw);
@@ -148,11 +255,28 @@ async function processContentTree(
       gitTimestamps,
       frontmatter,
     );
+    let ast = Markdoc.parse(escapeFenceTags(content));
+
+    // Compute the page-variable surface before preprocess so file-reading
+    // preprocessors (snippet) can resolve `path=$file.path` style attribute
+    // references against the same variables a transform-time evaluator would.
+    const pagePath = posixPath(page.relativePath);
+    const filePath = opts.projectRoot
+      ? posixRelativeFromRoot(opts.projectRoot, page.filePath)
+      : pagePath;
     const contentVariables: Record<string, unknown> = {
       ...opts.variables,
       frontmatter,
-      page: { url: route.url, filePath: route.filePath, draft: route.draft },
+      page: {
+        url: route.url,
+        path: pagePath,
+        dir: posixDirname(page.relativePath),
+        slug: lastUrlSegment(route.url),
+        title: derivePageTitle(frontmatter, ast),
+        draft: route.draft,
+      },
       file: {
+        path: filePath,
         created: fileTimestamps.created,
         modified: fileTimestamps.modified,
       },
@@ -162,7 +286,26 @@ async function processContentTree(
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
     };
+
+    // SPEC-062 preprocess phase — runs after variables are computed (so
+    // hooks can resolve `path=$file.path`-style attribute references against
+    // them) and before the schema-driven transform. Snippet pre-resolves
+    // itself into a fence node here; the returned AST (or the mutated one
+    // if void) feeds the transform.
+    const pageMeta = {
+      url: route.url,
+      relativePath: page.relativePath,
+      filePath: page.filePath,
+    };
+    const ppCtx = makePreprocessCtx(route.url, contentVariables);
+    for (const { hooks } of hookSets) {
+      if (!hooks.preprocess) continue;
+      const next = await hooks.preprocess(ast, pageMeta, ppCtx);
+      if (next) ast = next;
+    }
+
     const { renderable, headings } = transformContent(
+      ast,
       content,
       route.url,
       page.relativePath,
@@ -180,15 +323,18 @@ async function processContentTree(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
-  // Build hook sets: core always runs first, then plugins in config order
-  const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: corePipelineHooks }];
-  for (const pkg of opts.plugins ?? []) {
-    if (pkg.pipeline) {
-      hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
-    }
-  }
-
+  // `hookSets` were built before the per-page loop so the preprocess phase
+  // could run during page processing. They're reused here for register /
+  // aggregate / postProcess.
   const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
+
+  // Funnel any preprocess-phase diagnostics (file-not-found, sandbox rejections,
+  // line-range clamps) into the same warnings array the rest of the pipeline
+  // uses. Preprocess runs before `runPipeline`, so its warnings would otherwise
+  // be invisible to adapters that only print the pipeline summary.
+  for (const w of preprocessWarnings) {
+    warnings.push({ severity: w.severity, phase: 'register', pluginName: '__preprocess__', url: w.url, message: w.message });
+  }
 
   // Apply auto-resolutions to layout regions per page. Layouts are parsed once
   // and shared across pages, but the auto-open / auto-pagination sentinels need
@@ -267,11 +413,19 @@ export async function loadContent(
   sandboxExamplesDir?: string,
   variables?: Record<string, unknown>,
   securityPolicy?: SecurityPolicy,
+  projectRoot?: string,
+  xrefPatterns?: CompiledXrefPattern[],
+  fileRoots?: FileRoots,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
     ? resolve(sandboxExamplesDir)
     : resolve(dirPath, '..', 'examples');
+  // Default to the content directory's parent (the common
+  // `<project>/site/content/` → `<project>/site/` layout). Adapters that
+  // know the real project root (the directory containing
+  // `refrakt.config.json`) should pass it explicitly.
+  const resolvedProjectRoot = projectRoot ?? resolve(dirPath, '..');
 
   return processContentTree(tree, {
     basePath,
@@ -287,6 +441,9 @@ export async function loadContent(
       exists: sandboxDirExists,
     },
     sandboxExamplesDir: resolvedExamplesDir,
+    projectRoot: resolvedProjectRoot,
+    xrefPatterns,
+    fileRoots,
   });
 }
 
@@ -316,6 +473,18 @@ export interface LoadContentFromTreeOptions {
    *  hosts can wire it once and not need to thread it again when new internal
    *  consumers land. */
   reader?: VirtualReader;
+  /** Absolute path to the project root (where `refrakt.config.json` lives).
+   *  Used to compute `$file.path` as a project-root-relative POSIX path.
+   *  When omitted, `$file.path` falls back to the page's content-root-relative
+   *  path. Hosted environments that have a meaningful project-root concept
+   *  should pass it; pure in-memory hosts that don't can leave it undefined. */
+  projectRoot?: string;
+  /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Hosted
+   *  environments that own their config resolution can compile patterns via
+   *  `compileXrefPatterns` and pass them here. */
+  xrefPatterns?: CompiledXrefPattern[];
+  /** Registered file roots — namespace → absolute directory path. */
+  fileRoots?: FileRoots;
 }
 
 /**
@@ -349,5 +518,8 @@ export async function loadContentFromTree(
     variables: options.variables,
     securityPolicy: options.securityPolicy,
     colorScheme: options.colorScheme,
+    projectRoot: options.projectRoot,
+    xrefPatterns: options.xrefPatterns,
+    fileRoots: options.fileRoots,
   });
 }

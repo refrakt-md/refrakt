@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { Plugin, SiteConfig, SecurityPolicy } from '@refrakt-md/types';
+import type { Plugin, SiteConfig, SecurityPolicy, RefraktConfig, XrefPattern } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
+import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
+import { mergeFileRoots, resolveUserFileRoots, type FileRoots } from './file-roots.js';
 import {
 	createSiteLoader,
 	createVirtualSiteLoader,
@@ -45,6 +47,26 @@ interface AssembledSiteContext {
 	communityTags: Record<string, any> | undefined;
 	communityPackages: Plugin[] | undefined;
 	icons: Record<string, Record<string, string>>;
+	/** Plugin-contributed file roots (already absolute paths). Merged with
+	 *  user-config roots downstream. */
+	pluginFileRoots: FileRoots;
+}
+
+/** Compile xref patterns from a raw config, logging any diagnostics to
+ *  stderr so the build surface remains visible. Errors don't throw — they
+ *  produce a permissively-empty pattern set so the rest of the load
+ *  succeeds and the user can fix the config without losing the whole site. */
+function compileConfiguredXrefPatterns(
+	patterns: XrefPattern[] | undefined,
+): CompiledXrefPattern[] {
+	const result = compileXrefPatterns(patterns);
+	for (const warning of result.warnings) {
+		process.stderr.write(`refrakt: xref pattern warning — ${warning}\n`);
+	}
+	for (const error of result.errors) {
+		process.stderr.write(`refrakt: xref pattern error — ${error}\n`);
+	}
+	return result.patterns;
 }
 
 /** Compose the options bag handed to `createHighlightTransform`. Merges the
@@ -133,6 +155,7 @@ async function assembleSiteContext(
 				communityTags: undefined,
 				communityPackages: undefined,
 				icons,
+				pluginFileRoots: {},
 			};
 		}
 		const { config: assembledConfig } = assembleThemeConfig({
@@ -145,6 +168,7 @@ async function assembleSiteContext(
 			communityTags: undefined,
 			communityPackages: undefined,
 			icons,
+			pluginFileRoots: {},
 		};
 	}
 
@@ -171,18 +195,29 @@ async function assembleSiteContext(
 		communityTags: Object.keys(merged.tags).length > 0 ? merged.tags : undefined,
 		communityPackages: merged.plugins,
 		icons,
+		pluginFileRoots: merged.fileRoots,
 	};
 }
 
 export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoader {
 	const configPath = resolve(options?.configPath ?? './refrakt.config.json');
 	const configDir = dirname(configPath);
-	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+	const rawConfig = JSON.parse(readFileSync(configPath, 'utf-8')) as RefraktConfig;
 	// Pass the config file's directory so nested-shape paths absolutize
 	// file-relative (matches the SvelteKit plugin's behavior).
 	const normalized = normalizeRefraktConfig(rawConfig, { configDir });
 	const { site }: { site: SiteConfig } = resolveSite(normalized, options?.site);
 	const contentDir = resolve(site.contentDir);
+	// Compile xref patterns once at loader construction. Diagnostics
+	// (invalid regex, unknown placeholders, etc.) are surfaced via
+	// stderr — adapters can intercept via their own pipeline-warnings
+	// formatter once SPEC-058 wiring is fully in place.
+	const xrefPatterns = compileConfiguredXrefPatterns(rawConfig.xrefs);
+
+	// Resolve user-config file roots against the config-file directory.
+	// Plugin-contributed roots are merged in at init time (after plugins
+	// load); user roots win any namespace collision (warning surfaced).
+	const userFileRoots = resolveUserFileRoots(rawConfig.fileRoots, configDir);
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -195,6 +230,35 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 			const ctx = await assembleSiteContext(site, { configDir });
 			_transform = ctx.transform;
 
+			// Run each plugin's `configure` lifecycle hook before any pipeline
+			// phases. Plugins that need build-time config (e.g. plan reading
+			// plan.dir for its unconditional-scan path) wire it up here. The
+			// `registerFileRoot` callback lets plugins dynamically register
+			// file-root namespaces whose paths depend on user config (the
+			// plan plugin uses this to expose the user's plan.dir as `plan:`).
+			const dynamicFileRoots: FileRoots = {};
+			const registerFileRoot = (namespace: string, absolutePath: string) => {
+				dynamicFileRoots[namespace] = absolutePath;
+			};
+			for (const pkg of ctx.communityPackages ?? []) {
+				if (pkg.pipeline?.configure) {
+					await pkg.pipeline.configure({
+						config: rawConfig,
+						configDir,
+						registerFileRoot,
+					});
+				}
+			}
+
+			const pluginRoots = { ...ctx.pluginFileRoots, ...dynamicFileRoots };
+			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
+				userFileRoots,
+				pluginRoots,
+			);
+			for (const warning of fileRootWarnings) {
+				process.stderr.write(`refrakt: ${warning}\n`);
+			}
+
 			_loader = createSiteLoader({
 				dirPath: contentDir,
 				basePath: '/',
@@ -203,6 +267,9 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				plugins: ctx.communityPackages,
 				variables: options?.variables,
 				securityPolicy: options?.security,
+				projectRoot: configDir,
+				xrefPatterns,
+				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -252,6 +319,18 @@ export interface VirtualRefraktLoaderOptions {
 	security?: SecurityPolicy;
 	/** URL base path for the Router. Default: `'/'`. */
 	basePath?: string;
+	/** Absolute path to the project root (where `refrakt.config.json` lives, or
+	 *  the conceptual root in a virtual environment). Used to compute
+	 *  `$file.path`. When omitted, `$file.path` falls back to the page's
+	 *  content-root-relative path. */
+	projectRoot?: string;
+	/** Xref patterns to compile and use as URL-resolution fallback. */
+	xrefs?: XrefPattern[];
+	/** File roots — namespace → absolute directory path. Hosts that have a
+	 *  conceptual project root should resolve their fileRoots config against
+	 *  it before passing the result here (the virtual loader doesn't read a
+	 *  config file). Plugin-declared roots merge in automatically. */
+	fileRoots?: FileRoots;
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
 	dev?: boolean;
 }
@@ -273,7 +352,9 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, security, basePath, dev } = options;
+	const { site, tree, reader, variables, security, basePath, projectRoot, xrefs, fileRoots: userFileRootsOption, dev } = options;
+	const xrefPatterns = compileConfiguredXrefPatterns(xrefs);
+	const userFileRoots = userFileRootsOption ?? {};
 
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
@@ -286,6 +367,32 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 			const ctx = await assembleSiteContext(site);
 			_transform = ctx.transform;
 
+			// Plugin `configure` lifecycle — same as in createRefraktLoader.
+			// Virtual hosts pass the pre-resolved SiteConfig directly; plugins
+			// see the per-site config object rather than a full RefraktConfig.
+			const dynamicFileRoots: FileRoots = {};
+			const registerFileRoot = (namespace: string, absolutePath: string) => {
+				dynamicFileRoots[namespace] = absolutePath;
+			};
+			for (const pkg of ctx.communityPackages ?? []) {
+				if (pkg.pipeline?.configure) {
+					await pkg.pipeline.configure({
+						config: site,
+						configDir: projectRoot ?? '',
+						registerFileRoot,
+					});
+				}
+			}
+
+			const pluginRoots = { ...ctx.pluginFileRoots, ...dynamicFileRoots };
+			const { roots: fileRoots, warnings: fileRootWarnings } = mergeFileRoots(
+				userFileRoots,
+				pluginRoots,
+			);
+			for (const warning of fileRootWarnings) {
+				process.stderr.write(`refrakt: ${warning}\n`);
+			}
+
 			_loader = createVirtualSiteLoader({
 				tree,
 				basePath: basePath ?? '/',
@@ -295,6 +402,9 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				variables,
 				securityPolicy: security,
 				reader,
+				projectRoot,
+				xrefPatterns,
+				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				dev: dev ?? false,
 			});
 		})();

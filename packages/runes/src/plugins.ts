@@ -13,6 +13,11 @@ export interface LoadedPlugin {
 	runes: Record<string, Rune>;
 	/** Fixture strings for the inspect command (keyed by rune name) */
 	fixtures: Record<string, string>;
+	/** Plugin-declared file roots, resolved to absolute directory paths.
+	 *  Keys are namespace names (the `<ns>` in `<ns>:filename` references);
+	 *  values are absolute paths on disk. Empty when the plugin doesn't
+	 *  declare any. */
+	fileRoots: Record<string, string>;
 }
 
 /** Result of merging multiple plugins */
@@ -35,6 +40,28 @@ export interface MergedPluginResult {
 	provenance: Record<string, RuneProvenance>;
 	/** Fixture strings from plugins for the inspect command */
 	fixtures: Record<string, string>;
+	/** Merged plugin file roots — namespace → absolute directory path.
+	 *  Plugin-vs-plugin collisions throw at merge time; user-config-vs-plugin
+	 *  collisions are handled by the caller (user config wins). */
+	fileRoots: Record<string, string>;
+}
+
+/** Reserved namespace names that cannot be used by user config or plugins. */
+const RESERVED_FILE_ROOT_NAMESPACES = new Set(['site']);
+
+/** Validate that a file-root namespace name is allowed. Throws on reserved
+ *  values or invalid syntax (empty name). Used both at plugin merge time
+ *  and at user-config-resolution time. */
+export function assertFileRootNamespaceAllowed(namespace: string, source: string): void {
+	if (namespace.length === 0) {
+		throw new Error(`File-root namespace from ${source} is empty — namespaces must be non-empty strings.`);
+	}
+	if (RESERVED_FILE_ROOT_NAMESPACES.has(namespace)) {
+		throw new Error(
+			`File-root namespace "${namespace}" from ${source} is reserved. ` +
+			`Pick a different namespace name.`
+		);
+	}
 }
 
 /**
@@ -81,7 +108,49 @@ export async function loadPlugin(npmPackageName: string): Promise<LoadedPlugin> 
 		}
 	}
 
-	return { pkg, npmName: npmPackageName, runes, fixtures };
+	const fileRoots = await resolvePluginFileRoots(pkg, npmPackageName);
+
+	return { pkg, npmName: npmPackageName, runes, fixtures, fileRoots };
+}
+
+/** Resolve a plugin's declared `fileRoots` to absolute on-disk paths.
+ *
+ *  Paths are interpreted relative to the plugin package's own directory
+ *  (the dir containing the plugin's `package.json`). Throws if the package
+ *  can't be located on disk (workspace-link cases where `require.resolve`
+ *  fails) — fileRoots that can't be reached is a misconfig worth surfacing,
+ *  not silently dropping like file fixtures. */
+async function resolvePluginFileRoots(
+	pkg: Plugin,
+	npmPackageName: string,
+): Promise<Record<string, string>> {
+	const declared = pkg.fileRoots;
+	if (!declared || Object.keys(declared).length === 0) return {};
+
+	const { createRequire } = await import('node:module');
+	const { dirname, resolve } = await import('node:path');
+
+	let pkgDir: string;
+	try {
+		const require = createRequire(import.meta.url);
+		pkgDir = dirname(require.resolve(`${npmPackageName}/package.json`));
+	} catch (err) {
+		throw new Error(
+			`Plugin "${npmPackageName}" declares fileRoots but its package directory could not be located: ${(err as Error).message}`,
+		);
+	}
+
+	const resolved: Record<string, string> = {};
+	for (const [namespace, relativePath] of Object.entries(declared)) {
+		assertFileRootNamespaceAllowed(namespace, `plugin "${npmPackageName}"`);
+		if (typeof relativePath !== 'string' || relativePath.length === 0) {
+			throw new Error(
+				`Plugin "${npmPackageName}" fileRoots entry "${namespace}" has an invalid path. Expected a non-empty string relative to the plugin package directory.`,
+			);
+		}
+		resolved[namespace] = resolve(pkgDir, relativePath);
+	}
+	return resolved;
 }
 
 /**
@@ -251,6 +320,25 @@ export function mergePlugins(
 		}
 	}
 
+	// Merge file roots across plugins. Plugin-vs-plugin collisions throw —
+	// plugins should pick distinct namespace names. User-config wins over
+	// plugin collisions, but that's handled outside this function.
+	const fileRoots: Record<string, string> = {};
+	const fileRootProvenance = new Map<string, string>();
+	for (const loadedPkg of loaded) {
+		for (const [namespace, absPath] of Object.entries(loadedPkg.fileRoots)) {
+			if (fileRoots[namespace]) {
+				const previous = fileRootProvenance.get(namespace);
+				throw new Error(
+					`Plugin file-root namespace "${namespace}" is registered by both "${previous}" and "${loadedPkg.npmName}". ` +
+					`Plugins must pick distinct namespace names; resolve by renaming one of them.`,
+				);
+			}
+			fileRoots[namespace] = absPath;
+			fileRootProvenance.set(namespace, loadedPkg.npmName);
+		}
+	}
+
 	return {
 		runes,
 		tags,
@@ -261,6 +349,7 @@ export function mergePlugins(
 		plugins: loaded.map(l => l.pkg),
 		provenance,
 		fixtures,
+		fileRoots,
 	};
 }
 
@@ -357,6 +446,7 @@ export async function loadLocalRunes(
 		npmName: '__local__',
 		runes,
 		fixtures: {},
+		fileRoots: {},
 	};
 }
 

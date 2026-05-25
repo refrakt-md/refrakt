@@ -6,12 +6,14 @@ import { DocPage } from './documents/doc.js';
 import { error } from './tags/error.js';
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
+import { snippet } from './tags/snippet.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
 import { region } from './tags/region.js';
 import { layout } from './tags/layout.js';
 import { details } from './tags/details.js';
+import { drawer } from './tags/drawer.js';
 import { figure } from './tags/figure.js';
 import { gallery } from './tags/gallery.js';
 import { accordion, accordionItem } from './tags/accordion.js';
@@ -41,6 +43,7 @@ import { showcase } from './tags/showcase.js';
 import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
+import { expand } from './tags/expand.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -54,7 +57,8 @@ export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js'
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
-export { extractHeadings, headingsToList } from './util.js';
+export { extractHeadings, firstH1, headingsToList } from './util.js';
+export { LANG_MAP, FALLBACK_LANG, inferLanguage } from './lang-map.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
@@ -101,9 +105,9 @@ export {
 	UNIVERSAL_ATTRIBUTE_NAMES,
 } from './attribute-presets.js';
 export type { AttributePresetMetadata } from './attribute-presets.js';
-export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures } from './plugins.js';
+export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
-export { coreConfig, baseConfig, corePipelineHooks, resolveCoreSentinels, type PageTreeNode } from './config.js';
+export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 export { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
@@ -111,6 +115,8 @@ export { TINT_TOKENS } from './tags/tint.js';
 export type { TintToken } from './tags/tint.js';
 export { XREF_RUNE_MARKER } from './tags/xref.js';
 export { resolveXrefs } from './xref-resolve.js';
+export { compileXrefPatterns } from './xref-patterns.js';
+export type { CompiledXrefPattern, CompiledXrefPatternsResult } from './xref-patterns.js';
 export { escapeFenceTags } from './fence-escape.js';
 
 // Component override prop interfaces (ADR-008)
@@ -229,6 +235,14 @@ export const runes = {
     category: 'Content',
     snippet: ['{% details summary="${1:Click to expand}" %}', '$0', '{% /details %}'],
   }),
+  drawer: defineRune({
+    name: 'drawer',
+    schema: drawer,
+    description: 'Modal side panel addressed by id. Triggered by xrefs anywhere on the page; falls back to in-flow rendering without JS.',
+    typeName: 'Drawer',
+    category: 'Layout',
+    snippet: ['{% drawer id="${1:auth-explainer}" title="${2:Auth system}" %}', '$0', '{% /drawer %}'],
+  }),
   figure: defineRune({
     name: 'figure',
     schema: figure,
@@ -344,6 +358,14 @@ export const runes = {
     typeName: 'Diff',
     category: 'Code & Data',
     snippet: ['{% diff %}', '```${1:js}', '${2:// Before}', '```', '', '```${3:js}', '${4:// After}', '```', '{% /diff %}'],
+  }),
+  snippet: defineRune({
+    name: 'snippet',
+    schema: snippet,
+    description: 'Embed a project file as a syntax-highlighted code block. Composes inside codegroup, diff, and any future fence-consuming rune via pre-resolve (SPEC-062).',
+    typeName: 'Snippet',
+    category: 'Code & Data',
+    snippet: ['{% snippet path="${1:src/lib/foo.ts}" /%}'],
   }),
   chart: defineRune({
     name: 'chart',
@@ -512,6 +534,14 @@ export const runes = {
     aliases: ['ref'],
     schema: xref,
     description: 'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
+  }),
+  expand: defineRune({
+    name: 'expand',
+    schema: expand,
+    description: 'Substitute a registered entity\'s source content inline. Reads the entity\'s sourceFile via the plan plugin (or any plugin that registers extractable entities) and inlines it. Symmetric with `xref`: same lookup chain, different output (content rather than a link).',
+    typeName: 'Expand',
+    category: 'Content',
+    snippet: ['{% expand "${1:SPEC-001}" /%}'],
   }),
   badge: defineRune({
     name: 'badge',

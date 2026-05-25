@@ -125,6 +125,22 @@ export interface RefraktConfig {
 	/** Plan-management configuration. */
 	plan?: PlanConfig;
 
+	/** Cross-reference URL templates. Patterns are tried in array order when an
+	 *  xref's ID isn't found in the registry (or when the registry-found entity
+	 *  has no usable `sourceUrl`). First match wins. See {@link XrefPattern}. */
+	xrefs?: XrefPattern[];
+
+	/** Named file roots — directories that file-reading runes can reach via
+	 *  a `namespace:filename` syntax. Markdoc partials extend `{% partial %}`
+	 *  to honor namespaced refs (`shared:footer.md`); the snippet rune
+	 *  ({% ref "SPEC-062" /%}) consumes the same resolver when its v2 lands.
+	 *
+	 *  Keys are namespace names; values are paths relative to the config
+	 *  file's directory (i.e. the project root). Paths must point to existing
+	 *  directories. The namespace `site` is reserved for future site-level
+	 *  resolution. See SPEC-063 for the full resolution model. */
+	fileRoots?: Record<string, string>;
+
 	/** Singular-site declaration. Mutually exclusive with `sites`. */
 	site?: SiteConfig;
 
@@ -176,6 +192,40 @@ export interface RefraktConfig {
 		aliases?: Record<string, string>;
 		local?: Record<string, string>;
 	};
+}
+
+/** A single cross-reference resolution pattern. Configures how unresolved xref
+ *  IDs (those without a matching registry entity) are turned into URLs.
+ *
+ *  Example: route GitHub-style refs to issue pages.
+ *  ```jsonc
+ *  {
+ *    "match": "^GH-(?<num>\\d+)$",
+ *    "template": "https://github.com/myuser/myrepo/issues/{num}",
+ *    "type": "github-issue",
+ *    "label": "GitHub #{num}"
+ *  }
+ *  ```
+ *
+ *  See SPEC-065 for the full resolution model. */
+export interface XrefPattern {
+	/** Regex pattern matched against the ID. Anchored to whole-string match by
+	 *  default — `^` and `$` are auto-applied unless explicit anchors are
+	 *  present at the start/end. Named groups (`(?<name>...)`) are extractable
+	 *  in `template` and `label` as `{name}`. */
+	match: string;
+	/** URL template. Supports `{id}` (the full matched ID) and `{name}` for
+	 *  named groups. Each substituted value is encoded per URL segment (split
+	 *  on `/`, encode each segment, rejoin) so path-shaped captures preserve
+	 *  slashes. */
+	template: string;
+	/** CSS modifier class — applied as `rf-xref--{type}`. Default: `"external"`.
+	 *  The value `"unresolved"` is reserved and rejected at config load. */
+	type?: string;
+	/** Template for the rendered link text. Same placeholder syntax as
+	 *  `template`. Default: `"{id}"`. The rune's `label=` attribute (if set)
+	 *  still overrides this. */
+	label?: string;
 }
 
 /** Theme manifest — the universal contract between content and rendering */

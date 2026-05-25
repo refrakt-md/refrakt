@@ -172,6 +172,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					sandboxExamplesDir,
 					undefined,
 					options.security,
+					resolvedRoot,
 				);
 
 				process.stderr.write(

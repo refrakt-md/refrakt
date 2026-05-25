@@ -217,9 +217,14 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 				}
 			}
 
-			addRelationship(from, { target: to, bondType, status, bidirectional, sourceUrl: bond.sourceUrl });
+			// `bond.sourceUrl` is optional on EntityRegistration (since the
+			// SPEC-064 / WORK-253 change to allow plan entities without a URL),
+			// but the storytelling register hook above always sets it from
+			// `page.url`, so bond entities reaching this loop always carry one.
+			const bondSourceUrl = bond.sourceUrl ?? '';
+			addRelationship(from, { target: to, bondType, status, bidirectional, sourceUrl: bondSourceUrl });
 			if (bidirectional) {
-				addRelationship(to, { target: from, bondType, status, bidirectional, sourceUrl: bond.sourceUrl });
+				addRelationship(to, { target: from, bondType, status, bidirectional, sourceUrl: bondSourceUrl });
 			}
 		}
 

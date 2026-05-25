@@ -9,6 +9,11 @@ import { NAV_AUTO_SENTINEL, NAV_COLLAPSED_AUTO } from './tags/nav.js';
 import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
+import type { CompiledXrefPattern } from './xref-patterns.js';
+import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
+import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
+import { applyOutlineScopeWalkers } from './outline-scope.js';
+import { resolveExpands } from './expand-pipeline.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -141,6 +146,18 @@ export const coreConfig: ThemeConfig = {
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
+		/* Snippet doesn't have a normal schema transform — its preprocess
+		 * hook replaces the tag with a `fence` node, and the standalone
+		 * wrap step adds `<figure class="rf-snippet">` post-transform.
+		 * The engine never sees a `Snippet` tag, but we still need an
+		 * entry in the theme config so `computeUsedCssBlocks` includes
+		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
+		Snippet: { block: 'snippet' },
+		/* Expand emits a placeholder during transform; the postProcess hook
+		 * substitutes the entity content wrapped in `<section
+		 * class="rf-expand" data-rune="expand">`. Engine config provides the
+		 * block name for CSS tree-shaking. */
+		Expand: { block: 'expand' },
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
@@ -331,6 +348,17 @@ export const coreConfig: ThemeConfig = {
 					],
 				},
 			},
+		},
+		Drawer: {
+			block: 'drawer',
+			defaultDensity: 'compact',
+			modifiers: {
+				side: { source: 'meta', default: 'right' },
+				size: { source: 'meta', default: 'md' },
+				shortcut: { source: 'meta', noBemClass: true },
+			},
+			sections: { header: 'header', body: 'body' },
+			editHints: { title: 'inline', body: 'none', close: 'none' },
 		},
 		Figure: {
 			block: 'figure',
@@ -2291,6 +2319,11 @@ export function resolveCoreSentinels(
 		pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>;
 		allPosts: BlogPostData[];
 		registry: Readonly<EntityRegistry>;
+		/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Empty
+		 *  array when no patterns are configured (the resolver's
+		 *  "patterns step" then matches nothing and falls through to
+		 *  unresolved). */
+		xrefPatterns?: CompiledXrefPattern[];
 	},
 	ctx: PipelineContext,
 	/** Extra trees (e.g. layout regions + page content) to scan when looking
@@ -2316,17 +2349,43 @@ export function resolveCoreSentinels(
 	// item href set is final.
 	result = applyNavActiveState(result, pageUrl);
 	result = resolveBlogPosts(result, coreData.allPosts, ctx, pageUrl);
-	result = resolveXrefs(result, pageUrl, coreData.registry, ctx);
+	result = resolveXrefs(result, pageUrl, coreData.registry, coreData.xrefPatterns ?? [], ctx);
 	return result;
 }
 
+/** Options accepted by {@link createCorePipelineHooks}. */
+export interface CorePipelineHooksOptions {
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Threaded
+	 *  through `aggregate` into the postProcess `coreData` shape so the xref
+	 *  resolver can use them as a URL-resolution fallback. */
+	xrefPatterns?: CompiledXrefPattern[];
+	/** Merged Markdoc transform config (tags + nodes from core + every
+	 *  loaded plugin) plus the project root. Threaded through `aggregate`
+	 *  so the expand postProcess (SPEC-066) can re-transform embedded
+	 *  AST subtrees using the same rune schemas the host page used,
+	 *  and read source files with the same sandbox boundary as snippet. */
+	embedConfig?: {
+		tags: Record<string, unknown>;
+		nodes: Record<string, unknown>;
+		projectRoot?: string;
+	};
+}
+
 /**
- * Core cross-page pipeline hooks.
- * Run for every site, before any plugin hooks.
- * Registers page and heading entities, aggregates the page tree and breadcrumb paths,
- * and resolves blog post listings.
+ * Build core cross-page pipeline hooks parameterized by build-time options.
+ *
+ * Most callers (existing adapters, tests) use the {@link corePipelineHooks}
+ * default below — equivalent to `createCorePipelineHooks()` with no patterns
+ * configured. The content-loader bootstrap passes compiled
+ * {@link CompiledXrefPattern}s when `refrakt.config.json#/xrefs` is set.
  */
-export const corePipelineHooks: PluginPipelineHooks = {
+export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
+	const xrefPatterns = opts.xrefPatterns ?? [];
+	const embedConfig = opts.embedConfig;
+
+	return {
+	preprocess: preprocessSnippets,
+
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {
 			const parentUrl = deriveParentUrl(page.url);
@@ -2372,6 +2431,10 @@ export const corePipelineHooks: PluginPipelineHooks = {
 				});
 			}
 		}
+
+		// SPEC-060 — register every drawer rune as a page-scoped entity so
+		// `{% ref "drawer-id" /%}` resolves to the drawer's address.
+		registerDrawers(pages, registry, ctx);
 	},
 
 	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
@@ -2411,7 +2474,7 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			frontmatter: e.data as Record<string, unknown>,
 		}));
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry };
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns, embedConfig };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
@@ -2420,6 +2483,12 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
 			allPosts: BlogPostData[];
 			registry: Readonly<EntityRegistry>;
+			xrefPatterns?: CompiledXrefPattern[];
+			embedConfig?: {
+				tags: Record<string, unknown>;
+				nodes: Record<string, unknown>;
+				projectRoot?: string;
+			};
 		} | undefined;
 
 		if (!coreData) return page;
@@ -2476,14 +2545,62 @@ export const corePipelineHooks: PluginPipelineHooks = {
 			page.url,
 		);
 
+		// SPEC-060 — rewrite `data-drawer-title-auto` placeholders to the
+		// appropriate `h{n}` based on outline depth. Runs before xref
+		// resolution so the rewritten title doesn't carry the sentinel
+		// attribute into the rendered HTML.
+		renderable = resolveAutoDrawerTitleLevels(renderable);
+
+		// SPEC-066 expand resolution — substitutes embedded entity content
+		// before xref runs so refs inside substituted content are resolved
+		// by the same pass as host-page refs.
+		renderable = resolveExpands(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.xrefPatterns ?? [],
+			coreData.embedConfig,
+			ctx,
+		);
+
 		renderable = resolveXrefs(
 			renderable,
 			page.url,
 			coreData.registry,
+			coreData.xrefPatterns ?? [],
 			ctx,
 		);
 
-		if (renderable === page.renderable) return page;
-		return { ...page, renderable };
+		// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
+		// into `<figure class="rf-snippet">` when not inside a fence-consuming
+		// container (codegroup, diff). The wrap is a no-op when the page
+		// has no snippet-derived fences.
+		const wrappedPage = wrapStandaloneSnippets(
+			renderable === page.renderable ? page : { ...page, renderable },
+			aggregated,
+			ctx,
+		);
+
+		// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
+		// items inside any `data-outline-scope` subtree. Generic — any rune
+		// can set the attribute and get the behaviour. Runs last so it can
+		// see the final tree (including expand-substituted content once
+		// that lands in v0.15.0).
+		applyOutlineScopeWalkers(wrappedPage.renderable);
+
+		return wrappedPage;
 	},
-};
+	};
+}
+
+/**
+ * Core cross-page pipeline hooks (no xref patterns configured).
+ *
+ * Equivalent to `createCorePipelineHooks()`. The content loader bootstrap
+ * uses {@link createCorePipelineHooks} directly when
+ * `refrakt.config.json#/xrefs` is configured so the resolver can use the
+ * compiled patterns as a URL-resolution fallback. Run for every site,
+ * before any plugin hooks. Registers page and heading entities, aggregates
+ * the page tree and breadcrumb paths, and resolves blog post listings.
+ */
+export const corePipelineHooks: PluginPipelineHooks = createCorePipelineHooks();

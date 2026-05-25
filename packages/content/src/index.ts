@@ -18,3 +18,11 @@ export { EntityRegistryImpl } from './registry.js';
 export { createRefraktLoader, createVirtualRefraktLoader, buildHighlightOptions, type RefraktLoader, type RefraktLoaderOptions, type VirtualRefraktLoaderOptions } from './refract-loader.js';
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';
 export { formatPipelineSummary } from './format.js';
+export {
+  readFileRoots,
+  resolveUserFileRoots,
+  mergeFileRoots,
+  validateNamespacedReference,
+  type FileRoots,
+  type MergedFileRoots,
+} from './file-roots.js';

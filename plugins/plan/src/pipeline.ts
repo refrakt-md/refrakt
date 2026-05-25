@@ -1,5 +1,7 @@
-import Markdoc from '@markdoc/markdoc';
+import Markdoc, { type Node } from '@markdoc/markdoc';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { BACKLOG_SENTINEL } from './tags/backlog.js';
 import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
 import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
@@ -16,6 +18,7 @@ import {
 } from './history.js';
 import { buildRelationships, type EntityRelationship } from './relationships.js';
 import { buildEntityCard, buildDecisionEntry } from './cards.js';
+import { parseFileContent } from './scanner-core.js';
 
 const { Tag } = Markdoc;
 
@@ -151,13 +154,27 @@ export function setScannerDependencies(deps: Map<string, string[]>): void {
 
 /**
  * Module-level store for the plan directory path.
- * Set by render-pipeline.ts before aggregate() runs.
+ * Set by render-pipeline.ts before aggregate() runs (CLI path) or by the
+ * `configure` pipeline hook when refrakt's content loader runs the plan
+ * plugin (build path). See {@link planPipelineHooks.configure}.
  */
 let _planDir: string | undefined;
+
+/** Project root — used to compute project-root-relative `sourceFile` paths
+ *  for plan entities registered via the unconditional scan. Set by
+ *  {@link planPipelineHooks.configure} when running through refract-loader. */
+let _projectRoot: string | undefined;
 
 /** Set the plan directory path for the pipeline's aggregate() hook to consume */
 export function setPlanDir(dir: string): void {
 	_planDir = dir;
+}
+
+/** Set the project root used for `sourceFile` path computation. Mirrors
+ *  {@link setPlanDir}; the configure hook sets both, CLI paths can set
+ *  whichever they need. */
+export function setProjectRoot(root: string): void {
+	_projectRoot = root;
 }
 
 export interface PlanAggregatedData {
@@ -204,7 +221,165 @@ const _idReferences = new Map<string, Array<{ id: string; type: string }>>();
  */
 const _sourceReferences = new Map<string, Array<{ id: string; type: string }>>();
 
+/** Map of plan rune type to canonical entity-type string. */
+const PLAN_RUNE_TYPE_BY_DIR: Record<string, string> = {
+	specs: 'spec',
+	work: 'work',
+	bug: 'bug',
+	bugs: 'bug',
+	decisions: 'decision',
+	milestones: 'milestone',
+};
+
+/** Convert host-OS file path to POSIX form (forward slashes). */
+function posixPath(p: string): string {
+	return path.sep === '/' ? p : p.split(path.sep).join('/');
+}
+
+/** Walk a directory recursively, calling `cb` for every regular file. */
+function walkFiles(dir: string, cb: (absPath: string) => void): void {
+	let entries: fs.Dirent[];
+	try {
+		entries = fs.readdirSync(dir, { withFileTypes: true });
+	} catch {
+		return;
+	}
+	for (const entry of entries) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory() && !entry.name.startsWith('.')) {
+			walkFiles(full, cb);
+		} else if (entry.isFile()) {
+			cb(full);
+		}
+	}
+}
+
+/** Scan `plan.dir` for `.md` files containing top-level plan runes and
+ *  register each one into the entity registry. Files that already correspond
+ *  to entities registered via the site-load path (matched by `sourceFile`)
+ *  are skipped — the site-load registration has a real `sourceUrl` and wins.
+ *
+ *  Files in `plan.dir` that contain no parseable top-level plan rune are
+ *  skipped silently (debug-level — they're usually READMEs or other auxiliary
+ *  content). Files whose filename doesn't match the auto-ID convention are
+ *  STILL registered if the rune body has a valid `id=` attribute — the rune
+ *  is the source of truth for entity identity; the filename is a hint. */
+function performUnconditionalScan(
+	planDir: string,
+	projectRoot: string | undefined,
+	registry: { register: (e: EntityRegistration) => void; getById: (type: string, id: string) => EntityRegistration | undefined },
+	ctx: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void },
+): void {
+	let absPlanDir: string;
+	try {
+		absPlanDir = path.resolve(planDir);
+		const stat = fs.statSync(absPlanDir);
+		if (!stat.isDirectory()) return; // silent no-op
+	} catch {
+		// Plan directory doesn't exist — silent no-op (matches SPEC-064:
+		// "Projects without a plan/ directory shouldn't see any errors").
+		return;
+	}
+
+	walkFiles(absPlanDir, (absPath) => {
+		if (!absPath.endsWith('.md')) return;
+
+		// Project-root-relative POSIX path for sourceFile + dedup messaging.
+		const sourceFile = projectRoot
+			? posixPath(path.relative(projectRoot, absPath))
+			: posixPath(path.relative(absPlanDir, absPath));
+
+		let raw: string;
+		try {
+			raw = fs.readFileSync(absPath, 'utf-8');
+		} catch (err) {
+			ctx.warn(`Plan scan: failed to read ${sourceFile}: ${(err as Error).message}`);
+			return;
+		}
+
+		// Use the same scanner-core parser that the CLI uses — single source
+		// of truth for what counts as a parseable plan entity.
+		const entity = parseFileContent(raw, sourceFile);
+		if (!entity) {
+			// File in plan.dir with no parseable top-level plan rune. README,
+			// notes, accidental file — skip without error. (Per SPEC-064.)
+			return;
+		}
+
+		const runeType = entity.type;
+		const id = runeType === 'milestone'
+			? (entity.attributes.name ?? '')
+			: (entity.attributes.id ?? '');
+		if (!id) {
+			ctx.warn(`Plan scan: ${sourceFile} has a ${runeType} rune missing ${runeType === 'milestone' ? 'name' : 'id'} attribute`);
+			return;
+		}
+
+		// Site-load registration wins if both paths produced the same entity.
+		const existing = registry.getById(runeType, id);
+		if (existing && existing.sourceUrl) {
+			// Already registered with a real URL — site-load path beat us.
+			return;
+		}
+		if (existing && existing.sourceFile === sourceFile) {
+			// Already registered via the unconditional scan (idempotency). Skip.
+			return;
+		}
+		if (existing && existing.sourceFile && existing.sourceFile !== sourceFile) {
+			// Duplicate ID across two different plan files — surface clearly.
+			ctx.error(`Plan scan: duplicate ${runeType} id "${id}" found in both "${existing.sourceFile}" and "${sourceFile}"`);
+			return;
+		}
+
+		// Build the data payload from rune attributes + title.
+		const data: Record<string, unknown> = { title: entity.title };
+		for (const [key, value] of Object.entries(entity.attributes)) {
+			data[key] = value;
+		}
+
+		// Closure-captured extractor — returns the top-level plan rune AST
+		// node from a re-parsed source file, or null if the file's structure
+		// has been edited away from the expected shape. Used by expand
+		// (SPEC-066) for inline embedding.
+		const extract = (parsedSource: Node): Node | null => {
+			for (const child of parsedSource.children) {
+				if (child.type === 'tag' && child.tag === runeType) {
+					const childId = runeType === 'milestone'
+						? String(child.attributes.name ?? '')
+						: String(child.attributes.id ?? '');
+					if (childId === id) return child;
+				}
+			}
+			return null;
+		};
+
+		registry.register({
+			type: runeType,
+			id,
+			sourceFile,
+			extract,
+			data,
+		});
+	});
+}
+
 export const planPipelineHooks: PluginPipelineHooks = {
+	async configure(opts) {
+		const config = opts.config as { plan?: { dir?: string } } | null | undefined;
+		const planDirRelative = config?.plan?.dir;
+		_projectRoot = opts.configDir;
+		if (planDirRelative) {
+			const absPlanDir = path.resolve(opts.configDir, planDirRelative);
+			_planDir = absPlanDir;
+			// Register `plan:` as a file-root namespace pointing at the user's
+			// actual plan directory. Partials (and snippet's v2) can then
+			// reference plan content as `{% partial file="plan:SPEC-001-foo.md" /%}`.
+			// User config `fileRoots.plan` still wins via mergeFileRoots if
+			// they want to point the namespace somewhere else.
+			opts.registerFileRoot?.('plan', absPlanDir);
+		}
+	},
+
 	register(pages, registry, ctx) {
 		_idReferences.clear();
 		_sourceReferences.clear();
@@ -263,6 +438,17 @@ export const planPipelineHooks: PluginPipelineHooks = {
 					data,
 				});
 			});
+		}
+
+		// Unconditional scan of plan.dir — registers every plan entity in the
+		// configured plan directory, regardless of whether it was published
+		// to the site's content tree. Site-load registrations (above) win
+		// any duplicate via the registry.getById check inside the scan;
+		// unconditional-scan registrations include sourceFile + extract so
+		// expand (SPEC-066) can substitute their content inline. Silent
+		// no-op when plan.dir isn't configured or doesn't exist.
+		if (_planDir) {
+			performUnconditionalScan(_planDir, _projectRoot, registry, ctx);
 		}
 	},
 
@@ -428,6 +614,15 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	const sortField = readField(tag, 'sort') || 'priority';
 	const groupField = readField(tag, 'group');
 	const show = readField(tag, 'show') || 'all';
+	const limitRaw = readField(tag, 'limit');
+	// Parse `limit` defensively — Markdoc surfaces the meta as a string.
+	// Treat 0 / negative / NaN the same as "unset" so a malformed
+	// authoring value doesn't silently render an empty backlog.
+	const limit = (() => {
+		if (!limitRaw) return undefined;
+		const n = Number(limitRaw);
+		return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+	})();
 
 	// Collect entities by type
 	// "all" defaults to work+bug for backward compatibility; other types must be explicit
@@ -444,6 +639,14 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 
 	// Sort
 	entities = sortEntities(entities, sortField);
+
+	// Limit applies post-sort, pre-group so the rendered set is "top N
+	// by sort order". When grouped, the limit caps the total entity count
+	// across all groups — callers wanting a per-group cap would need a
+	// separate attribute; keep it simple until that ask surfaces.
+	if (limit !== undefined && entities.length > limit) {
+		entities = entities.slice(0, limit);
+	}
 
 	// Build output
 	let children: any[];

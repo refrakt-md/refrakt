@@ -2,6 +2,7 @@ import type { BehaviorFn, InitOptions } from './types.js';
 import { isFrameworkManaged } from './utils.js';
 import { copyBehavior } from './behaviors/copy.js';
 import { accordionBehavior } from './behaviors/accordion.js';
+import { drawerBehavior } from './behaviors/drawer.js';
 import { tabsBehavior } from './behaviors/tabs.js';
 import { revealBehavior } from './behaviors/reveal.js';
 import { datatableBehavior } from './behaviors/datatable.js';
@@ -40,6 +41,7 @@ const behaviors: Record<string, BehaviorFn> = {
 	gallery: galleryBehavior,
 	juxtapose: juxtaposeBehavior,
 	nav: navBehavior,
+	drawer: drawerBehavior,
 };
 
 /**
@@ -158,6 +160,7 @@ export function getBehaviorNames(): Set<string> {
 
 export { copyBehavior } from './behaviors/copy.js';
 export { accordionBehavior } from './behaviors/accordion.js';
+export { drawerBehavior } from './behaviors/drawer.js';
 export { tabsBehavior } from './behaviors/tabs.js';
 export { revealBehavior } from './behaviors/reveal.js';
 export { datatableBehavior } from './behaviors/datatable.js';

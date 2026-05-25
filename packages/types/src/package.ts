@@ -75,4 +75,11 @@ export interface Plugin {
 	/** Build-time cross-page pipeline hooks.
 	 *  Optional — plugins that don't need cross-page awareness omit this entirely. */
 	pipeline?: import('./pipeline.js').PluginPipelineHooks;
+	/** File-root namespaces this plugin contributes, keyed by namespace.
+	 *  Values are paths relative to the plugin package's own directory.
+	 *  Once registered, references like `{% partial file="<ns>:foo.md" /%}`
+	 *  (and `{% snippet path="<ns>:bar.svelte" /%}` once SPEC-062's v2
+	 *  lands) resolve from the named root. See SPEC-063 for the full
+	 *  authoring + resolution model. */
+	fileRoots?: Record<string, string>;
 }

@@ -48,6 +48,75 @@ Organize partials into subdirectories for larger sites. Reference them with the 
 {% partial file="shared/disclaimer.md" /%}
 ```
 
+## Namespaced partials via file roots
+
+In addition to the site-local `_partials/` directory, refrakt supports **file roots** — named directories declared in `refrakt.config.json` (or by plugins) that any page can reach via a `namespace:filename` syntax.
+
+This is the right tool when:
+
+- A monorepo has multiple sites that share chrome (the same footer / disclaimer / CTA across `docs/`, `marketing/`, and `blog/`).
+- A plugin ships content fragments the user's pages need to embed.
+- Legal text, examples, or generated content lives outside any site's content tree.
+
+### User configuration
+
+Register file roots in `refrakt.config.json`. Keys are namespace names; values are paths relative to the config file's directory (the project root).
+
+```jsonc
+{
+  "sites": { "docs": { /* … */ }, "marketing": { /* … */ } },
+  "fileRoots": {
+    "shared": "_shared-partials",
+    "legal": "../legal-snippets"
+  }
+}
+```
+
+Reference them with the namespace prefix:
+
+```markdoc
+{% partial file="shared:footer.md" /%}
+{% partial file="legal:terms.md" /%}
+
+{# Subdirectories within a file root work too #}
+{% partial file="shared:hero/welcome.md" /%}
+```
+
+### Plugin-registered file roots
+
+Plugins can ship their own file roots via the `Plugin.fileRoots` field. Once the plugin is installed, its namespace is reachable from any page in the project — no user configuration needed.
+
+```ts
+import type { Plugin } from "@refrakt-md/types";
+
+export const plugin: Plugin = {
+  name: "@refrakt-md/plan",
+  // ... runes, theme, pipeline ...
+  fileRoots: {
+    plan: "../../plan",  // relative to the plugin package's own directory
+  },
+};
+```
+
+A user site that depends on the plan plugin can then write `{% partial file="plan:SPEC-066-expand-rune.md" /%}` and have the spec embedded directly.
+
+### Resolution rules
+
+| Input | Resolution |
+|-------|-----------|
+| `footer.md` (no colon) | Site-local `_partials/footer.md`. |
+| `shared:footer.md` | Look up `shared` in the merged file-roots map; resolve `footer.md` from that directory. |
+| `unknown:foo.md` | Build error: namespace not registered; the error lists the available namespaces. |
+| `shared:missing.md` | Build error: file not found in the named root. |
+| `shared:../escape.md` | Build error: path escapes the named root. |
+| `shared:/abs.md` | Build error: absolute paths not permitted in namespaced references. |
+
+### Collision rules
+
+- **User config wins** if both user config and a plugin register the same namespace. The plugin's contribution is silently dropped, with a dev-time warning naming the namespace.
+- **Plugin vs. plugin** collisions are a hard error at plugin load (plugins should pick distinct namespace names).
+- The namespace `site` is reserved for future site-level resolution and cannot be used.
+
 ## Passing variables
 
 Pass data into a partial using the `variables` attribute. Inside the partial, access variables with the `$` prefix.

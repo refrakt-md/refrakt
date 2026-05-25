@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { generateIdIfMissing, extractHeadings, headingsToList, walkTag } from '../src/util.js';
+import { generateIdIfMissing, extractHeadings, firstH1, headingsToList, walkTag } from '../src/util.js';
 
 describe('generateIdIfMissing', () => {
   it('should generate an id for tag nodes without one', () => {
@@ -82,6 +82,44 @@ describe('extractHeadings', () => {
     const headings = extractHeadings(ast);
 
     expect(headings).toEqual([]);
+  });
+});
+
+describe('firstH1', () => {
+  it('returns the text of the first H1', () => {
+    const ast = Markdoc.parse('# Title\n\nSome paragraph.');
+    expect(firstH1(ast)).toBe('Title');
+  });
+
+  it('returns the first H1 when multiple H1s exist', () => {
+    const ast = Markdoc.parse('# First\n\n# Second');
+    expect(firstH1(ast)).toBe('First');
+  });
+
+  it('descends into rune (tag) children to find an H1', () => {
+    const ast = Markdoc.parse('{% hero %}\n# Wrapped\n{% /hero %}');
+    expect(firstH1(ast)).toBe('Wrapped');
+  });
+
+  it('prefers the first H1 even when an H2 appears earlier in source order', () => {
+    // H2 first; firstH1 should still find the H1 (it scans for level=1).
+    const ast = Markdoc.parse('## Subtitle\n\n# Title\n\n## Another');
+    expect(firstH1(ast)).toBe('Title');
+  });
+
+  it('returns undefined when no H1 exists', () => {
+    const ast = Markdoc.parse('## Just a Subtitle');
+    expect(firstH1(ast)).toBeUndefined();
+  });
+
+  it('returns undefined for empty documents', () => {
+    const ast = Markdoc.parse('');
+    expect(firstH1(ast)).toBeUndefined();
+  });
+
+  it('concatenates multi-segment heading text (formatting marks)', () => {
+    const ast = Markdoc.parse('# Hello **strong** world');
+    expect(firstH1(ast)).toBe('Hello strong world');
   });
 });
 

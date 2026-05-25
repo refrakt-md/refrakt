@@ -20,7 +20,7 @@ function makeLoadedPlugin(pkg: Plugin, npmName: string): LoadedPlugin {
 			fixtures[name] = entry.fixture;
 		}
 	}
-	return { pkg, npmName, runes, fixtures };
+	return { pkg, npmName, runes, fixtures, fileRoots: {} };
 }
 
 const gameSystemPkg: Plugin = {
@@ -355,6 +355,46 @@ describe('mergePlugins', () => {
 
 		expect(result.extensions['character'].schema?.hp).toEqual({ type: 'number' });
 		expect(result.extensions['character'].schema?.ac).toEqual({ type: 'number' });
+	});
+
+	describe('fileRoots merging', () => {
+		// Each plugin needs a unique rune name to avoid the rune-collision
+		// check tripping before the fileRoots merge logic runs.
+		function makeLoadedWithRoots(name: string, runeName: string, roots: Record<string, string>): LoadedPlugin {
+			const pkg: Plugin = {
+				name,
+				version: '1.0.0',
+				runes: {
+					[runeName]: { transform: { attributes: {} } as any },
+				},
+			};
+			return {
+				pkg,
+				npmName: name,
+				runes: { [runeName]: defineRune({ name: runeName, schema: pkg.runes[runeName].transform as any, description: 'stub' }) },
+				fixtures: {},
+				fileRoots: roots,
+			};
+		}
+
+		it('merges plugin file roots into the result', () => {
+			const a = makeLoadedWithRoots('plugin-a', 'stub-a', { ns1: '/abs/a' });
+			const b = makeLoadedWithRoots('plugin-b', 'stub-b', { ns2: '/abs/b' });
+			const result = mergePlugins([a, b], new Set(), undefined);
+			expect(result.fileRoots).toEqual({ ns1: '/abs/a', ns2: '/abs/b' });
+		});
+
+		it('throws on plugin-vs-plugin namespace collision', () => {
+			const a = makeLoadedWithRoots('plugin-a', 'stub-a', { shared: '/abs/a' });
+			const b = makeLoadedWithRoots('plugin-b', 'stub-b', { shared: '/abs/b' });
+			expect(() => mergePlugins([a, b], new Set(), undefined)).toThrow(/registered by both/);
+		});
+
+		it('handles plugins that declare no file roots', () => {
+			const a = makeLoadedWithRoots('plugin-a', 'stub-a', {});
+			const result = mergePlugins([a], new Set(), undefined);
+			expect(result.fileRoots).toEqual({});
+		});
 	});
 });
 

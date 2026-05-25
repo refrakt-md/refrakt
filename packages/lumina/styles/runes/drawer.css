@@ -1,0 +1,316 @@
+/* Drawer — addressable modal panel (SPEC-060).
+ *
+ * Two visual modes ride on the same `.rf-drawer` element:
+ *
+ * 1. **No-JS (in-flow)** — `.rf-drawer` not inside a `<dialog>`. Renders
+ *    as a styled callout block at its authored position, visually
+ *    distinct so the reader understands "set-aside material". Close
+ *    button stays `hidden` (the schema marks it that way; behaviors
+ *    reveals it post-enhancement).
+ * 2. **JS (panel)** — `dialog.rf-drawer[open]`. Floats slightly off the
+ *    viewport edge (margin on all four sides) so it reads as a "card
+ *    that slid in" rather than a flush slab. Size modifier sets width
+ *    (right/left) or height (top/bottom). Slide-in animation uses
+ *    `@starting-style` to interpolate from off-screen on open.
+ *
+ * Body-scroll lock is applied as a class on `<html>` by the behavior
+ * (`html.rf-drawer-open` → `overflow: hidden`) so mobile Safari doesn't
+ * scroll the page underneath the open dialog.
+ */
+
+.rf-drawer {
+	--rf-drawer-size-sm: 22rem;
+	--rf-drawer-size-md: 36rem;
+	--rf-drawer-size-lg: 52rem;
+	--rf-drawer-bg: var(--rf-color-surface);
+	--rf-drawer-fg: var(--rf-color-text);
+	--rf-drawer-border: var(--rf-color-border);
+	--rf-drawer-shadow: 0 18px 48px -12px rgb(0 0 0 / 0.35);
+	--rf-drawer-gutter: var(--rf-spacing-sm);
+	--rf-drawer-radius: var(--rf-radius-md);
+	--rf-drawer-anim-duration: 220ms;
+	--rf-drawer-anim-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ─── Body-scroll lock while any drawer is open ────────────────── */
+
+html.rf-drawer-open,
+html.rf-drawer-open body {
+	overflow: hidden;
+}
+
+/* ─── No-JS / in-flow mode ─────────────────────────────────────── */
+
+section.rf-drawer {
+	margin: var(--rf-spacing-lg) 0;
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
+	background: var(--rf-drawer-bg);
+	color: var(--rf-drawer-fg);
+	border: 1px solid var(--rf-drawer-border);
+	border-left: 4px solid var(--rf-color-primary);
+	border-radius: var(--rf-drawer-radius);
+}
+
+section.rf-drawer .rf-drawer__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--rf-spacing-sm);
+	margin-bottom: var(--rf-spacing-sm);
+}
+
+section.rf-drawer .rf-drawer__title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--rf-color-primary);
+	letter-spacing: 0.01em;
+}
+
+section.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
+section.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
+
+/* ─── JS / dialog mode ─────────────────────────────────────────── */
+
+dialog.rf-drawer {
+	box-sizing: border-box;
+	background: var(--rf-drawer-bg);
+	color: var(--rf-drawer-fg);
+	border: 1px solid var(--rf-drawer-border);
+	border-radius: var(--rf-drawer-radius);
+	box-shadow: var(--rf-drawer-shadow);
+	padding: 0;
+	margin: 0;
+	overflow: auto;
+	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
+	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
+}
+
+dialog.rf-drawer::backdrop {
+	background: rgb(0 0 0 / 0.35);
+	backdrop-filter: blur(2px);
+}
+
+dialog.rf-drawer .rf-drawer__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--rf-spacing-md);
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
+	border-bottom: 1px solid var(--rf-drawer-border);
+	position: sticky;
+	top: 0;
+	background: var(--rf-drawer-bg);
+	z-index: 1;
+}dialog.rf-drawer .rf-drawer__title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+}
+
+dialog.rf-drawer .rf-drawer__close {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	color: var(--rf-color-muted);
+	padding: var(--rf-spacing-xs) var(--rf-spacing-sm);
+	font-size: 1.25rem;
+	line-height: 1;
+	border-radius: var(--rf-radius-sm);
+	flex-shrink: 0;
+}
+dialog.rf-drawer .rf-drawer__close:hover {
+	color: var(--rf-color-text);
+	background: var(--rf-color-surface-hover);
+}
+
+dialog.rf-drawer .rf-drawer__body {
+	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
+}
+
+/* Collapse the vertical margins of first / last children inside the body
+ * so the drawer's own padding is what spaces content from the chrome —
+ * otherwise a `<figure>` or `<p>` with its own top/bottom margin stacks
+ * on top of the body's padding and the content looks adrift. A snippet
+ * inside a drawer compiles to `body > .rf-codeblock > .rf-snippet > <pre>`,
+ * so the margin-zero walk reaches two levels deep to catch the figure. */
+dialog.rf-drawer .rf-drawer__body > :first-child,
+dialog.rf-drawer .rf-drawer__body > :first-child > :first-child {
+	margin-top: 0;
+}
+dialog.rf-drawer .rf-drawer__body > :last-child,
+dialog.rf-drawer .rf-drawer__body > :last-child > :last-child {
+	margin-bottom: 0;
+}
+
+/* ─── Side modifiers ───────────────────────────────────────────────
+ *
+ * Each side anchors the dialog with `inset`. The slide-in animation is
+ * a keyframes animation triggered by `[open]` — picked over
+ * `@starting-style` because keyframes have broader browser support
+ * (everywhere `<dialog>` works) and a clearer source-of-truth: the
+ * starting/ending frames are spelled out, no cascade-interaction
+ * footguns. The matching backdrop fade is a separate animation.
+ */
+
+dialog.rf-drawer[data-side="right"] {
+	inset:
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		auto;
+	height: auto;
+}
+dialog.rf-drawer[data-side="right"][open]:not([data-state="closing"]) {
+	animation: rf-drawer-slide-in-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-side="right"][data-state="closing"] {
+	animation: rf-drawer-slide-out-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
+dialog.rf-drawer[data-side="left"] {
+	inset:
+		var(--rf-drawer-gutter)
+		auto
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter);
+	height: auto;
+}
+dialog.rf-drawer[data-side="left"][open]:not([data-state="closing"]) {
+	animation: rf-drawer-slide-in-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-side="left"][data-state="closing"] {
+	animation: rf-drawer-slide-out-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
+dialog.rf-drawer[data-side="top"] {
+	inset:
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		auto
+		var(--rf-drawer-gutter);
+	width: auto;
+}
+dialog.rf-drawer[data-side="top"][open]:not([data-state="closing"]) {
+	animation: rf-drawer-slide-in-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-side="top"][data-state="closing"] {
+	animation: rf-drawer-slide-out-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
+dialog.rf-drawer[data-side="bottom"] {
+	inset:
+		auto
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter);
+	width: auto;
+}
+dialog.rf-drawer[data-side="bottom"][open]:not([data-state="closing"]) {
+	animation: rf-drawer-slide-in-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-side="bottom"][data-state="closing"] {
+	animation: rf-drawer-slide-out-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
+
+dialog.rf-drawer[open]:not([data-state="closing"])::backdrop {
+	animation: rf-drawer-backdrop-in var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
+}
+dialog.rf-drawer[data-state="closing"]::backdrop {
+	animation: rf-drawer-backdrop-out var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
+}
+
+@keyframes rf-drawer-slide-in-right {
+	from { transform: translateX(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-left {
+	from { transform: translateX(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-top {
+	from { transform: translateY(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes rf-drawer-slide-in-bottom {
+	from { transform: translateY(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+	to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes rf-drawer-backdrop-in {
+	from { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
+	to   { background: rgb(0 0 0 / 0.35); backdrop-filter: blur(2px); }
+}
+
+@keyframes rf-drawer-slide-out-right {
+	from { transform: translateX(0); opacity: 1; }
+	to   { transform: translateX(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-left {
+	from { transform: translateX(0); opacity: 1; }
+	to   { transform: translateX(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-top {
+	from { transform: translateY(0); opacity: 1; }
+	to   { transform: translateY(calc(-100% - var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-slide-out-bottom {
+	from { transform: translateY(0); opacity: 1; }
+	to   { transform: translateY(calc(100% + var(--rf-drawer-gutter))); opacity: 0; }
+}
+@keyframes rf-drawer-backdrop-out {
+	from { background: rgb(0 0 0 / 0.35); backdrop-filter: blur(2px); }
+	to   { background: rgb(0 0 0 / 0); backdrop-filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	dialog.rf-drawer[data-side="right"][open],
+	dialog.rf-drawer[data-side="left"][open],
+	dialog.rf-drawer[data-side="top"][open],
+	dialog.rf-drawer[data-side="bottom"][open],
+	dialog.rf-drawer[data-state="closing"],
+	dialog.rf-drawer[open]::backdrop,
+	dialog.rf-drawer[data-state="closing"]::backdrop {
+		animation: none;
+	}
+}
+
+/* ─── Mobile tightening ────────────────────────────────────────────
+ *
+ * On narrow viewports the drawer fills the screen (capped by
+ * `max-width: 100vw - 2*gutter`), so the desktop-comfortable
+ * 1.5rem / 2rem padding starts crowding the content. Halve it
+ * roughly to 0.75rem / 1rem so the body has more room without
+ * losing the chrome's breathing space.
+ */
+@media (max-width: 640px) {
+	dialog.rf-drawer .rf-drawer__header,
+	dialog.rf-drawer .rf-drawer__body {
+		padding: 0.75rem 1rem;
+	}
+}
+
+/* ─── Size modifiers (only meaningful in dialog mode) ─────────── */
+
+dialog.rf-drawer[data-side="right"][data-size="sm"],
+dialog.rf-drawer[data-side="left"][data-size="sm"] {
+	width: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="right"][data-size="md"],
+dialog.rf-drawer[data-side="left"][data-size="md"] {
+	width: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="right"][data-size="lg"],
+dialog.rf-drawer[data-side="left"][data-size="lg"] {
+	width: var(--rf-drawer-size-lg);
+}
+
+dialog.rf-drawer[data-side="top"][data-size="sm"],
+dialog.rf-drawer[data-side="bottom"][data-size="sm"] {
+	height: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="top"][data-size="md"],
+dialog.rf-drawer[data-side="bottom"][data-size="md"] {
+	height: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="top"][data-size="lg"],
+dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
+	height: var(--rf-drawer-size-lg);
+}

@@ -27,6 +27,7 @@ tint-lock: false
 - conversation
 - reveal
 - embed
+- expand
 - icon
 - xref
 - badge
@@ -39,6 +40,7 @@ tint-lock: false
 - accordion
 - juxtapose
 - details
+- drawer
 - sandbox
 - showcase
 - bg
@@ -49,6 +51,7 @@ tint-lock: false
 - codegroup
 - compare
 - diff
+- snippet
 - datatable
 - chart
 - diagram

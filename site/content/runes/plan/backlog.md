@@ -9,13 +9,15 @@ This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md
 
 # Backlog
 
-An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, and grouping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
+An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, grouping, and capping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
+
+The examples below pass `limit=5` so they stay scannable; in real dashboards omit the attribute (or set it higher) to render the full set.
 
 ## Ready items sorted by priority
 
 {% preview source=true %}
 
-{% backlog filter="status:ready" sort="priority" /%}
+{% backlog filter="status:ready" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -23,7 +25,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 {% preview source=true %}
 
-{% backlog filter="status:in-progress" sort="priority" /%}
+{% backlog filter="status:in-progress" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -31,7 +33,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 {% preview source=true %}
 
-{% backlog sort="priority" group="status" /%}
+{% backlog sort="priority" group="status" limit=10 /%}
 
 {% /preview %}
 
@@ -39,7 +41,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 {% preview source=true %}
 
-{% backlog show="bug" sort="severity" /%}
+{% backlog show="bug" sort="severity" limit=5 /%}
 
 {% /preview %}
 
@@ -47,7 +49,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 {% preview source=true %}
 
-{% backlog show="decision" sort="date" /%}
+{% backlog show="decision" sort="date" limit=5 /%}
 
 {% /preview %}
 
@@ -55,7 +57,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 {% preview source=true %}
 
-{% backlog show="spec" /%}
+{% backlog show="spec" limit=5 /%}
 
 {% /preview %}
 
@@ -65,7 +67,17 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% preview source=true %}
 
-{% backlog filter="status:ready priority:high priority:critical" sort="priority" /%}
+{% backlog filter="status:ready priority:high priority:critical" sort="priority" limit=5 /%}
+
+{% /preview %}
+
+## Top N (limit)
+
+`limit=N` caps the rendered set after sort and before group. Useful for "top N by priority" dashboards.
+
+{% preview source=true %}
+
+{% backlog filter="status:ready" sort="priority" limit=3 /%}
 
 {% /preview %}
 
@@ -77,6 +89,7 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 | `sort` | `string` | `priority` | Sort field: `priority`, `status`, `id`, `assignee`, `complexity`, `milestone`, `date` |
 | `group` | `string` | — | Group by field: `status`, `priority`, `assignee`, `milestone`, `type`, `tags` |
 | `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug`, `spec`, `decision`, `milestone`. Note: `all` includes work and bug only (for backward compatibility) — other types must be requested explicitly |
+| `limit` | `number` | — | Cap the number of entities rendered. Applied after sort, before group — "top N" semantics. Unset renders the full filtered set. |
 
 ### Output structure
 

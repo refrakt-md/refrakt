@@ -1,0 +1,74 @@
+/* Expand — inline-substitution of a registered entity (SPEC-066).
+ *
+ * The wrapper is intentionally minimal — the embedded rune (plan rune,
+ * character rune, etc.) renders itself standalone-style; expand just
+ * provides the wrapper + canonical-link affordance. Themes that want
+ * the embedded content visually distinguished from inline-authored
+ * content target `.rf-expand .rf-spec`, `.rf-expand h1`, etc.
+ *
+ * Two visual treatments:
+ *
+ * 1. **Default (`level=` unset, peer-document mode)** — the embed reads
+ *    like a quoted document. A subtle border + indent treatment marks
+ *    it as set-aside material. Heading scale is dialed down slightly
+ *    so an H1 inside the embed doesn't compete with the host's H1.
+ * 2. **Sub-section mode (`level=` set)** — the embed merges into the
+ *    host outline. The wrapper sheds the quoted treatment so it reads
+ *    as authored sub-content. Authors opt into this by setting
+ *    `level=`; CSS targets `.rf-expand:not([data-outline-scope])` to
+ *    pick the right treatment automatically.
+ */
+
+.rf-expand {
+	margin: var(--rf-spacing-md) 0;
+}
+
+/* Peer-document mode — subtle top + bottom rule, no background, no
+ * rounded corners. Reads as "set-aside material" without competing
+ * visually with the host content. Authors who want a stronger
+ * treatment can override `.rf-expand[data-outline-scope]` in their
+ * theme. */
+.rf-expand[data-outline-scope] {
+	padding: var(--rf-spacing-md) 0;
+	border-top: 1px solid var(--rf-color-border);
+	border-bottom: 1px solid var(--rf-color-border);
+}
+
+/* Tone down embedded headings so the host outline keeps visual primacy.
+ * The semantic levels are preserved (H1 stays H1 etc.); only the visual
+ * scale is adjusted in the peer-document treatment. Authors using
+ * `level=` for sub-section mode get the normal heading scale. */
+.rf-expand[data-outline-scope] :is(h1, h2, h3, h4, h5, h6):first-child {
+	margin-top: 0;
+}
+.rf-expand[data-outline-scope] h1 { font-size: 1.5rem; }
+.rf-expand[data-outline-scope] h2 { font-size: 1.25rem; }
+.rf-expand[data-outline-scope] h3 { font-size: 1.1rem; }
+
+.rf-expand > :first-child { margin-top: 0; }
+.rf-expand > :last-child { margin-bottom: 0; }
+
+.rf-expand__canonical-link {
+	display: inline-block;
+	margin-top: var(--rf-spacing-sm);
+	font-size: 0.875rem;
+	color: var(--rf-color-primary);
+	text-decoration: none;
+}
+.rf-expand__canonical-link:hover {
+	text-decoration: underline;
+}
+
+/* Error-state placeholder rendered when resolution fails. The build
+ * also surfaces the error through `ctx.error`; this is the user-facing
+ * affordance so the failure isn't silent. Keyed off `[data-expand-error]`
+ * which the resolver sets on the error wrapper. */
+.rf-expand[data-expand-error] {
+	padding: var(--rf-spacing-sm) var(--rf-spacing-md);
+	border-left: 3px solid var(--rf-color-danger);
+	background: var(--rf-color-danger-bg);
+	color: var(--rf-color-danger);
+	font-family: var(--rf-font-mono);
+	font-size: 0.875rem;
+	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
+}

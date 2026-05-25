@@ -184,6 +184,22 @@
 				"{content}"
 			]
 		},
+		"Snippet": {
+			"block": "snippet",
+			"root": ".rf-snippet",
+			"dataRune": "snippet",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Expand": {
+			"block": "expand",
+			"root": ".rf-expand",
+			"dataRune": "expand",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Embed": {
 			"block": "embed",
 			"root": ".rf-embed",
@@ -422,6 +438,32 @@
 					"selector": ".rf-hint__title",
 					"source": "structure",
 					"parent": "header"
+				}
+			}
+		},
+		"Drawer": {
+			"block": "drawer",
+			"root": ".rf-drawer",
+			"dataRune": "drawer",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"side": {
+					"source": "meta",
+					"default": "right",
+					"classPattern": ".rf-drawer--{value}",
+					"dataAttribute": "data-side"
+				},
+				"size": {
+					"source": "meta",
+					"default": "md",
+					"classPattern": ".rf-drawer--{value}",
+					"dataAttribute": "data-size"
+				},
+				"shortcut": {
+					"source": "meta",
+					"dataAttribute": "data-shortcut"
 				}
 			}
 		},

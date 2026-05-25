@@ -27,6 +27,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [conversation](/runes/conversation) | Chat and dialogue display with alternating speaker messages |
 | [reveal](/runes/reveal) | Progressive disclosure where content appears step by step |
 | [embed](/runes/embed) | Embed external content like videos, tweets, and code demos |
+| [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
 | [icon](/runes/icon) | Inline icons from the theme's icon registry |
 
 ### Layout
@@ -38,6 +39,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [accordion](/runes/accordion) | Collapsible accordion sections for FAQ-style content |
 | [juxtapose](/runes/juxtapose) | Interactive side-by-side comparison with slider, toggle, fade, and auto modes |
 | [details](/runes/details) | Collapsible disclosure blocks for supplementary content |
+| [drawer](/runes/drawer) | Addressable side panels triggered by xrefs — progressive enhancement turns the body into a `<dialog>` |
 | [sandbox](/runes/sandbox) | Isolated HTML/CSS/JS rendering in an iframe |
 
 ### Code & Data
@@ -47,6 +49,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [codegroup](/runes/codegroup) | Tabbed code block with language tabs |
 | [compare](/runes/compare) | Side-by-side code comparison panels |
 | [diff](/runes/diff) | Side-by-side or unified diff view between two code blocks |
+| [snippet](/runes/snippet) | Embed a project file as a syntax-highlighted code block, kept in sync at build time |
 | [datatable](/runes/datatable) | Interactive data table with sorting, filtering, and pagination |
 | [chart](/runes/chart) | Chart visualization from a Markdown table |
 | [diagram](/runes/diagram) | Mermaid diagram rendering from code blocks |

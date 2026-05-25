@@ -26,6 +26,7 @@ export type {
   SiteConfig,
   SiteThemeConfig,
   PlanConfig,
+  XrefPattern,
   ThemeManifest,
   LayoutDefinition,
   RouteRule,
@@ -86,6 +87,9 @@ export type {
 	PipelineContext,
 	PipelineWarning,
 	PluginPipelineHooks,
+	PluginConfigureOptions,
+	PreprocessContext,
+	PreprocessPage,
 } from './pipeline.js';
 
 // CLI plugin contract
