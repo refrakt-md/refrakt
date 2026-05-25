@@ -257,7 +257,9 @@ Missing fields render as empty strings, matching xref pattern behavior. A rule t
 Which entities a rule applies to is expressed exactly as collection (SPEC-070) expresses it — *the same grammar and the same parser*, so there's one way to "select registry entities" across the whole system:
 
 - **`type`** (required) — the entity type(s) the rule matches. Comma-separated for multiple: `"type": "spec,decision"`.
-- **`filter`** (optional) — additional field conditions as a `field:value` string. Exact (`status:ready`), prefix/glob (`url:/blog/*`), regex (future). Same-field clauses OR; different fields AND. Matches any field including `url`. Example: `"filter": "status:ready priority:high priority:critical"`.
+- **`filter`** (optional) — additional field conditions as a `field:value` string. Exact (`status:ready`), glob (`url:/blog/*`), regex (`id:/^SPEC-\d+$/`). Same-field clauses OR; different fields AND. Matches any field including `url`. Example: `"filter": "status:ready priority:high priority:critical"`.
+
+The full grammar — syntax, operator-by-value-shape, field resolution, quoting, case-sensitivity, reserved operators — is defined canonically in **SPEC-070's *Field-match grammar*** section; this spec uses it verbatim rather than restating it.
 
 This replaces the earlier structured `match: { type, tag, status }` object. The string `filter` form is what makes the grammar shareable between a JSON config field (here) and a markdoc attribute (collection's `filter=`) — a structured object can't be a markdoc attribute, but a string works in both. It also matches the xref-patterns precedent (string matching in JSON config) and is implemented by **one shared parser** across `entityRoutes`, `collection`, and `backlog`.
 
@@ -492,7 +494,7 @@ Worth shipping in `@refrakt-md/*` directly: probably the `typedoc`, `openapi`, `
   - New `ContributedPage` interface, `PluginContributePagesContext` interface, optional `contributePages` field on `Plugin`.
   - `SiteConfig.entityRoutes` field — each rule `{ type, filter?, url, title?, render? | render-template?, frontmatter? }`.
 - **`@refrakt-md/runes`** — amend the expand resolver (SPEC-066): embeddability is `embed()` *or* (`sourceFile` + `extract`); resolution calls `embed()` when present, else reads the file. `canonical=true` link prefers `canonicalUrl`, falls back to `sourceUrl`. This is the cross-spec dependency surfaced by the scenario walkthrough — SPEC-066's contract is widened here.
-- **Shared field-match parser** — the `type` + `filter` selector grammar (exact / prefix-glob / future regex; AND across fields, OR within) is **one implementation** used by `entityRoutes` (this spec), `collection` (SPEC-070), and `backlog`. Lives wherever the registry-consuming runes share helpers (`@refrakt-md/runes`); the plan plugin's existing backlog filter parser folds into it. The string grammar is what lets the same selector work in a JSON config field (here) and a markdoc attribute (collection).
+- **Shared field-match parser** — the `type` + `filter` selector grammar (defined canonically in SPEC-070's *Field-match grammar*: exact / glob / regex; AND across fields, OR within; case-sensitive; quoted values; `url`-alias field resolution) is **one implementation** used by `entityRoutes` (this spec), `collection` (SPEC-070), and `backlog`. Lives wherever the registry-consuming runes share helpers (`@refrakt-md/runes`); `plugins/plan/src/filter.ts` folds into it (gaining glob/regex, `url` resolution, case-consistency). The string grammar is what lets the same selector work in a JSON config field (here) and a markdoc attribute (collection).
 - **`@refrakt-md/content`** —
   - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`: applies each rule's `type` + `filter`, renders the inline `render` string or the `render-template` partial per entity with `$item` bound, and **back-fills each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
   - `render-template` resolution via the existing partial + file-roots machinery; `render` / `render-template` mutual-exclusion check.
@@ -569,7 +571,7 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] Placeholder substitution: `{name}` interpolates from entity top-level fields + `data` fields; per-segment URL encoding for the `url` field; plain text for `title` / `render` / `frontmatter` values
 - [ ] The `url` is site-root-relative: the site's `basePath` is applied (like a path-derived URL / relative `slug`), not bypassed as an absolute `slug` would be
 - [ ] An optional `title` feeds the page's frontmatter `title` (one resolution path); when omitted, the title falls back to the rendered content's heading via the existing precedence (frontmatter → hero → `H1`)
-- [ ] `type` (required, comma-separated for multiple) + optional `filter` string select entities via the shared field-match parser (exact / prefix-glob; AND across fields, OR within)
+- [ ] `type` (required, comma-separated for multiple) + optional `filter` string select entities via the shared field-match parser per SPEC-070's *Field-match grammar* (exact / glob / regex; AND across fields, OR within; case-sensitive)
 - [ ] Multiple rules matching the same entity each produce a separate page (loader errors on URL collision)
 - [ ] File-backed pages win against contributed pages at the same URL, with a build warning
 - [ ] URL collisions between two contributed pages fail the build with attribution naming both sources
