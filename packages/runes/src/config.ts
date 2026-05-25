@@ -2372,6 +2372,7 @@ export interface CorePipelineHooksOptions {
 	embedConfig?: {
 		tags: Record<string, unknown>;
 		nodes: Record<string, unknown>;
+		functions?: Record<string, unknown>;
 		projectRoot?: string;
 	};
 }
@@ -2492,6 +2493,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			embedConfig?: {
 				tags: Record<string, unknown>;
 				nodes: Record<string, unknown>;
+				functions?: Record<string, unknown>;
 				projectRoot?: string;
 			};
 		} | undefined;

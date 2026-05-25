@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies, functions } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
@@ -86,7 +86,7 @@ function transformContent(
   // Capture deferBody runes' bodies as source before transform, so their
   // per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
   captureDeferredBodies(ast, (name) => Boolean((mergedTags as Record<string, { deferBody?: boolean }>)[name]?.deferBody));
-  const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
+  const config: Record<string, unknown> = { tags: mergedTags, nodes, functions, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content, __sourcePath: sourcePath,
     ...(icons ? { __icons: icons } : {}),
     ...contentVariables,
@@ -221,12 +221,14 @@ async function processContentTree(
     embedConfig: {
       tags: embedTags as Record<string, unknown>,
       nodes: nodes as Record<string, unknown>,
+      functions: functions as Record<string, unknown>,
       projectRoot: opts.projectRoot,
     },
   };
-  const coreHooks = (opts.xrefPatterns && opts.xrefPatterns.length > 0) || opts.projectRoot
-    ? createCorePipelineHooks(coreHooksOptions)
-    : corePipelineHooks;
+  // Always thread embedConfig: collection (SPEC-070) and expand (SPEC-066) need
+  // the merged tags/nodes/functions to transform per-entity templates, even
+  // when a site sets no xref patterns or project root.
+  const coreHooks = createCorePipelineHooks(coreHooksOptions);
   const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
   for (const pkg of opts.plugins ?? []) {
     if (pkg.pipeline) {

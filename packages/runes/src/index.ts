@@ -61,6 +61,7 @@ export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './fiel
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
 export { resolveCollections } from './collection-resolve.js';
 export { COLLECTION_SENTINEL } from './tags/collection.js';
+export { functions, currency, date, number, join } from './functions.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, firstH1, headingsToList } from './util.js';
