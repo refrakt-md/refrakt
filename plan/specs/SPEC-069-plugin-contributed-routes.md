@@ -674,6 +674,7 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 - **Watch-mode HMR for external-data contributions.** Dev-server HMR for file pages keeps working; contributed pages refresh on full build. Watching external sources is a plugin's call to make (file-system watcher, polling, webhook listener — out of scope for core).
 - **Multi-site fan-out of one contribution.** Each site reads `entityRoutes` independently and runs its own plugin contribution phase. Cross-site dedup would be its own design.
 - **Generic `{% collection %}` entity-listing rune.** Listing arbitrary registry entity types (non-page, non-plan) without giving them routes is deferred to its own spec. The headline cases are covered: `{% blog %}` lists contributed pages by folder; `{% backlog %}` lists plan-typed entities. Punted, not forgotten.
+- **A declarative `groupBy`-a-field rule kind** (one page per distinct value of a field — tag/category/author archives). This is a *second cardinality primitive* on top of "one page per entity", and it's unnecessary: promote the group key to a registered entity (a plugin registers each distinct tag as a `tag` entity) and the existing 1:1 rule + a `collection` in the body covers it. See the resolved open question on multi-entity pages for the full reasoning.
 
 -----
 
@@ -682,6 +683,17 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 **Where exactly does the contribution phase fit in the multi-site loader?** A monorepo with several sites in `refrakt.config.json` runs the pipeline per site today. Contributions are per-site (each site picks its own `entityRoutes`). But plugins that fetch from external sources would be called once per site if naively integrated — wasted work. Recommend: per-site is the safe default; plugins that want to dedupe across sites cache internally. Revisit if real performance issues surface.
 
 **Should a rule match multiple entity types?** Resolved: yes, via comma-separated `type` (`"type": "spec,decision"`) — it costs nothing in the shared parser (split on comma) and reads naturally. Anything finer-grained (per-type field filters in one rule) is handled by writing separate rules.
+
+**Can a generated page be derived from *multiple* entities, not just one?** Note: this is distinct from the question above (which still emits one page *per* matched entity). Here the question is whether one page's content can aggregate several entities. Resolved: keep declarative `entityRoutes` at **one primary entity per page**. The model holds up because routing and content are separate axes — the route is 1:1, but the page *body* can already pull in any number of related entities via `collection` / `expand` / `ref`. The candidate cases decompose:
+
+| Use case | Covered by | Multi-entity *route* needed? |
+|----------|-----------|------------------------------|
+| Index / listing (all specs) | `collection` rune (SPEC-070) on an authored/contributed page | No |
+| Grouping / archive (one page per milestone, listing its work) | 1:1 route on the group entity + `{% collection filter="milestone:{id}" %}` in the body (inline `render` is `{id}`-substituted *before* markdoc parse, so the id reaches the embedded filter as a literal) | No |
+| Archive keyed on a non-entity field (one page per tag string) | Promote the group key to a registered entity (`tag`), then it's the grouping case | No |
+| Relationship / comparison (`/compare/{a}-vs-{b}/`, a two-character bond) | `contributePages` programmatic hook — combinatorial and almost always hand-authored | Declarative: no; programmatic: yes |
+
+The escape hatch is the clincher: `contributePages` places **no cardinality constraint** — a plugin can join any number of entities and emit a page with hand-built content. So declarative `entityRoutes` staying 1:1 doesn't *prevent* multi-entity pages; it keeps the declarative sugar simple while the rare combinatorial/merge cases drop to the programmatic surface. A declarative `groupBy`-a-field rule kind was considered and rejected (see Out of Scope) — "promote the key to an entity" covers it without a second cardinality primitive.
 
 **How does the contribution-phase ordering interact with `Plugin.configure`?** `configure` runs first (one-time setup, file-root registration, etc.). Contributions read the configured state. So contributions implicitly happen after configure; document explicitly.
 
