@@ -384,6 +384,9 @@ Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the reg
 - **Cache external fetches** in the plugin. The hook runs once per build; if your build runs ten times a day, that's ten API calls per page. Use ETag headers, content-hash caches, or whatever your data source supports.
 - **Fail gracefully** when the upstream is down. A network blip shouldn't halt the entire build — log a warning, contribute fewer pages, and let the build continue. (For external data, "no pages contributed this build" is usually better than "build failed".)
 - **Document required environment variables** in your plugin's README. Refrakt doesn't validate secrets — the convention is `process.env.YOUR_PLUGIN_NAME_*`.
+- **To target a domain rune, emit its authored syntax — don't dump generic markdown.** Refrakt has two kinds of rune, fed two different ways:
+  - *Registry listers* (`{% backlog %}`, `{% collection %}`) query the registry directly — feed them by registering entities; the rune finds them.
+  - *Content-model runes* (`{% changelog %}`, `{% recipe %}`, `{% api %}`, `{% character %}`, etc.) consume authored Markdoc — feed them by emitting their syntax in your `content` / `embed()` string. E.g. a GitHub-releases plugin produces `{% changelog %}{% changelog-release version="…" date="…" %}…{% /changelog-release %}{% /changelog %}` rather than a bare list of headings, and the rune transforms it normally. No rune modification is needed; the serializer just targets the rune's content model. (Prefer a rune's explicit child-tag form over its heading-derived form when your body content may contain its own headings — it avoids heading-level collisions.)
 
 -----
 
