@@ -152,6 +152,13 @@ export interface ContentModelSchemaOptions {
 
   /** Whether this tag is self-closing (no children). */
   selfClosing?: boolean;
+
+  /**
+   * Mark this rune as deferring its body to postProcess (per-entity template).
+   * The content loader captures the pristine body as source on `__deferred-body`
+   * and empties it before transform; the rune reads it via `readDeferredBody`.
+   */
+  deferBody?: boolean;
 }
 
 /**
@@ -175,6 +182,12 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
   // Add universal attributes
   Object.assign(attributes, universalAttributes);
+
+  // deferBody: declare the stash attribute so the loader-captured body source
+  // is readable in the transform (see deferred-body.ts).
+  if (options.deferBody) {
+    attributes['__deferred-body'] = { type: String, required: false } as SchemaAttribute;
+  }
 
   // Register deprecated attribute names
   const deprecations = options.deprecations;
@@ -258,6 +271,11 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       }
       return errors;
     };
+  }
+
+  // Mark deferBody so the content loader captures the body pre-transform.
+  if (options.deferBody) {
+    (schema as Schema & { deferBody?: boolean }).deferBody = true;
   }
 
   // Register content model for introspection by editor / language server

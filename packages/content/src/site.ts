@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
 import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
@@ -83,6 +83,9 @@ function transformContent(
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
+  // Capture deferBody runes' bodies as source before transform, so their
+  // per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
+  captureDeferredBodies(ast, (name) => Boolean((mergedTags as Record<string, { deferBody?: boolean }>)[name]?.deferBody));
   const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content, __sourcePath: sourcePath,
     ...(icons ? { __icons: icons } : {}),
