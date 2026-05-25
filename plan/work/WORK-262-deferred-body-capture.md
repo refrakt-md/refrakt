@@ -1,4 +1,4 @@
-{% work id="WORK-262" status="ready" priority="high" complexity="moderate" source="SPEC-070" tags="runes, transform, collection, content" milestone="v0.16.0" %}
+{% work id="WORK-262" status="done" priority="high" complexity="moderate" source="SPEC-070" tags="runes, transform, collection, content" milestone="v0.16.0" %}
 
 # Deferred-body capture for per-entity templates
 
@@ -17,5 +17,21 @@ None — foundation. Pairs with WORK-263 (collection) which is the first consume
 ## References
 
 - {% ref "SPEC-070" /%} — Per-item template mechanism (prototype findings)
+
+## Resolution
+
+Completed: 2026-05-25
+
+Branch: `claude/v0.16.0`
+
+### What was done
+- Added `packages/runes/src/deferred-body.ts`: `captureDeferredBodies(ast, isDeferBody)` (pre-transform walk → `Markdoc.format` pristine children → stash on `__deferred-body` → empty body), `readDeferredBody(attrs)`, `transformDeferredTemplate(source, config, variables)` (fresh parse + transform per entity), and the `DEFERRED_BODY_ATTR` constant.
+- `createContentModelSchema` gained a `deferBody` option: declares the `__deferred-body` String attribute and marks the produced schema `deferBody: true`.
+- Content loader (`packages/content/src/site.ts` `transformContent`) runs the capture pass before `Markdoc.transform`, keyed off `mergedTags[name].deferBody`.
+- Tests: `packages/runes/test/deferred-body.test.ts` (4) — confirms capture+empty, that the page transform leaves `$item` unresolved, and independent per-entity output. Full runes suite (604) green.
+
+### Notes
+- The stash attribute must NOT be `render:false` — that strips it from `transformAttributes`, so the consuming rune couldn't read it. Important for WORK-263.
+- Reparse-per-entity is mandatory (reusing the captured AST resolves variables to null), matching the SPEC-070 prototype.
 
 {% /work %}

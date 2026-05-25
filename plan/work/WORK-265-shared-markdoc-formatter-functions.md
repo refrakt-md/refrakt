@@ -1,4 +1,4 @@
-{% work id="WORK-265" status="ready" priority="medium" complexity="simple" source="SPEC-070" tags="runes, markdoc, formatting" milestone="v0.16.0" %}
+{% work id="WORK-265" status="done" priority="medium" complexity="simple" source="SPEC-070" tags="runes, markdoc, formatting" milestone="v0.16.0" %}
 
 # Shared markdoc formatter functions
 
@@ -17,5 +17,20 @@ None — independent; consumed by WORK-263, WORK-264, WORK-268.
 
 - {% ref "SPEC-070" /%}
 - {% ref "SPEC-069" /%} — same functions usable in entityRoutes render strings
+
+## Resolution
+
+Completed: 2026-05-25
+
+Branch: `claude/v0.16.0`
+
+### What was done
+- `packages/runes/src/functions.ts`: `currency`, `date`, `number`, `join` markdoc `ConfigFunction`s (Intl-based; graceful fallback on bad input) + a `functions` map; exported from the runes index.
+- `packages/content/src/site.ts`: added `functions` to the page transform config and to `embedConfig`; now always threads `embedConfig` via `createCorePipelineHooks` so collection/expand per-entity templates transform even without xref patterns or a project root.
+- Extended the `embedConfig` type (CorePipelineHooksOptions + postProcess coreData) with `functions?`.
+- Tests: `packages/runes/test/functions.test.ts` (6) — formatting, graceful degradation, and markdoc interpolation.
+
+### Notes
+- Same functions are available in `entityRoutes` render strings (WORK-268) since those transform through the same embedConfig.
 
 {% /work %}

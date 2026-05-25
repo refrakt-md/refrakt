@@ -1,4 +1,4 @@
-{% work id="WORK-268" status="pending" priority="high" complexity="complex" source="SPEC-069" tags="content, routing, registry" milestone="v0.16.0" %}
+{% work id="WORK-268" status="done" priority="high" complexity="complex" source="SPEC-069" tags="content, routing, registry" milestone="v0.16.0" %}
 
 # entityRoutes config-rules adapter
 
@@ -20,5 +20,21 @@ The built-in adapter (in `@refrakt-md/content`) that turns `site.entityRoutes` i
 ## References
 
 - {% ref "SPEC-069" /%}
+
+## Resolution
+
+Completed: 2026-05-25
+
+Branch: `claude/v0.16.0`
+
+### What was done
+- `packages/types/src/theme.ts`: `EntityRoute` interface (`type`, `filter?`, `url`, `title?`, `render?`, `render-template?`, `frontmatter?`) + `SiteConfig.entityRoutes?`; exported `EntityRoute`. Added `ContributedPage.variables?` (per-contribution bound vars).
+- `packages/content/src/entity-routes.ts`: `createEntityRoutesHooks(resolvePartial)` → a `contributePages` hook. Per rule: comma-split `type`, optional `filter` via the shared grammar; `{name}` substitution (per-segment-encode for `url`, plain for title/frontmatter); inline `render` or resolved `render-template` partial as content; binds `$item = {id,type,url,data}` via `ContributedPage.variables`; back-fills each matched entity's `sourceUrl` with the generated route (registry holds live objects, pre-aggregate, so xref sees it). `render`+`render-template` together → error; unresolved template → error.
+- `packages/content/src/site.ts`: added the `__entity-routes__` hookset (resolves render-template partials via the partials map); `renderContributed` merges `cp.variables` into the page's transform variables so `$item` resolves in `render`.
+- Tests: `packages/content/test/entity-routes.test.ts` (7) — substitution + bound `$item`, filter, sourceUrl back-fill, frontmatter substitution, render-template, render/render-template mutual exclusion, no-op.
+
+### Notes
+- basePath is applied to `url` by `renderContributed` (loader), per SPEC-069; title falls back to frontmatter/H1 when the rule omits it.
+- `siteConfig` is threaded via `loadContentFromTree` options; adapters/loadContent must pass the per-site config (with `entityRoutes`) for routes to generate — wired for the dogfood in WORK-272.
 
 {% /work %}

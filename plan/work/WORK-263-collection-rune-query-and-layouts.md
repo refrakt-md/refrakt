@@ -1,4 +1,4 @@
-{% work id="WORK-263" status="pending" priority="high" complexity="complex" source="SPEC-070" tags="runes, registry, collection" milestone="v0.16.0" %}
+{% work id="WORK-263" status="done" priority="high" complexity="complex" source="SPEC-070" tags="runes, registry, collection" milestone="v0.16.0" %}
 
 # Collection rune: query engine and built-in layouts
 
@@ -20,5 +20,24 @@ The `collection` rune core — a sentinel-emitting schema plus a postProcess res
 ## References
 
 - {% ref "SPEC-070" /%}
+
+## Resolution
+
+Completed: 2026-05-25
+
+Branch: `claude/v0.16.0`
+
+### What was done
+- `packages/runes/src/tags/collection.ts`: sentinel-emitting schema (`deferBody: true`); attributes type/show/filter/sort/group/limit/fields/layout; emits `data-field` metas + `__collection-sentinel` + captured `collection-body` source + placeholder, wrapped `section[data-rune="collection"]`.
+- `packages/runes/src/collection-resolve.ts`: `resolveCollections` walks the serialized tree, reads the sentinel metas, queries `registry.getAll(type)` per comma-split type, filters via the shared field-match grammar, sorts (numeric/string, `-`/`-desc` descending), limits, groups; renders built-in `list`/`cards`/`grid`/`table` (with `fields` projection + humanized headers) or a per-entity body template via `transformDeferredTemplate` with `$item = { id, type, url, data }` (`url = sourceUrl ?? data.url`).
+- Config: added `Collection: { block: 'collection' }`; wired `resolveCollections` into `corePipelineHooks.postProcess` after `resolveExpands` and before `resolveXrefs` (so item-template refs resolve through the same xref pass).
+- Catalog: `collection` `defineRune` entry; exported `resolveCollections`/`COLLECTION_SENTINEL`.
+- CSS `packages/lumina/styles/runes/collection.css` (+ index import): block, items, card, title, field, group, table; grid/cards via `[data-layout]`.
+- Tests: `packages/runes/test/collection.test.ts` (5) — cards+fields, filter, table, grouping, body template with `$item`. Full runes suite 609 green; CSS coverage green.
+
+### Notes
+- Heading-delimited table columns are WORK-264 (this ships `fields` projection for tables; body templates are box-layout only so far).
+- `inspect` shows only the sentinel (collection resolves in postProcess like backlog), so resolver tests are the meaningful verification.
+- Contracts file regeneration deferred to a milestone-wide cleanup pass.
 
 {% /work %}
