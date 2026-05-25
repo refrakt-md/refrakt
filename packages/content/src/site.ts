@@ -356,7 +356,10 @@ async function processContentTree(
     if (cp.title != null && frontmatter.title === undefined) frontmatter.title = cp.title;
     const url = cp.url.startsWith('/') ? `${base}${cp.url}` : `${base}/${cp.url}`;
     const relativePath = cp.url.replace(/^\//, '');
-    const layoutPage = { relativePath } as never;
+    // `raw` is read by resolveTintCascade (re-parses frontmatter). Contributed
+    // pages carry parsed frontmatter already; an empty raw means their tint
+    // comes from the layout cascade (no per-page tint frontmatter).
+    const layoutPage = { relativePath, raw: '' } as never;
     const layout = resolveLayouts(layoutPage, tree.root, opts.icons);
     const ast = Markdoc.parse(escapeFenceTags(cp.content));
     const contentVariables: Record<string, unknown> = {
@@ -488,6 +491,7 @@ export async function loadContent(
   projectRoot?: string,
   xrefPatterns?: CompiledXrefPattern[],
   fileRoots?: FileRoots,
+  siteConfig?: unknown,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
@@ -516,6 +520,7 @@ export async function loadContent(
     projectRoot: resolvedProjectRoot,
     xrefPatterns,
     fileRoots,
+    siteConfig,
   });
 }
 
