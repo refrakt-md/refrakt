@@ -163,6 +163,9 @@ export const coreConfig: ThemeConfig = {
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
+		/* article-card — plain presentational card; named parts get
+		 * rf-article-card__{title,image,date,excerpt} from data-name. */
+		ArticleCard: { block: 'article-card' },
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',

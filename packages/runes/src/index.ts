@@ -45,6 +45,7 @@ import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
 import { collection } from './tags/collection.js';
+import { articleCard } from './tags/article-card.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -565,6 +566,14 @@ export const runes = {
     typeName: 'Collection',
     category: 'Content',
     snippet: ['{% collection type="${1:work}" filter="${2:status:ready}" sort="${3:priority}" /%}'],
+  }),
+  'article-card': defineRune({
+    name: 'article-card',
+    schema: articleCard,
+    description: 'A plain presentational article/blog card built from ordinary attributes (title, href, image, date, excerpt). Knows nothing about the registry; usable standalone or fed by a collection body template that maps entity fields into its attributes.',
+    typeName: 'ArticleCard',
+    category: 'Content',
+    snippet: ['{% article-card title="${1:Title}" href="${2:/posts/slug/}" date="${3:2024-01-15}" excerpt="${4:Summary}" /%}'],
   }),
 };
 
