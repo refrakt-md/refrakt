@@ -279,6 +279,9 @@ export interface ContributedPage {
 	frontmatter?: Record<string, unknown>;
 	/** Markdoc source for the page body. */
 	content: string;
+	/** Extra markdoc variables bound when transforming the page body (e.g. the
+	 *  entityRoutes adapter binds `{ item }` so `$item` resolves in `render`). */
+	variables?: Record<string, unknown>;
 	/** Attribution for diagnostics / collision messages. */
 	source?: { plugin?: string; ruleIndex?: number };
 }

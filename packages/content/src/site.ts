@@ -15,6 +15,7 @@ import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js';
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
+import { createEntityRoutesHooks } from './entity-routes.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 import { readFileRoots, type FileRoots } from './file-roots.js';
 
@@ -240,6 +241,16 @@ async function processContentTree(
       hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
     }
   }
+  // Built-in entityRoutes config-rules adapter (SPEC-069). Resolves render-template
+  // partials from the (lazily populated) partials map. No-op unless the site
+  // config declares `entityRoutes`.
+  hookSets.push({
+    pluginName: '__entity-routes__',
+    hooks: createEntityRoutesHooks((name) => {
+      const node = parsedPartials?.[name];
+      return node ? Markdoc.format(node) : undefined;
+    }),
+  });
 
   // Per-page preprocess context — file-system + project-root shared with the
   // transform-time sandbox but exposed at preprocess time (variables aren't
@@ -365,6 +376,8 @@ async function processContentTree(
       __sandboxDirExists: sandbox.exists,
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
+      // Per-contribution bound variables (e.g. entityRoutes binds `item`).
+      ...(cp.variables ?? {}),
     };
     const { renderable, headings } = transformContent(
       ast, cp.content, url, relativePath, opts.icons, opts.additionalTags, contentVariables, parsedPartials,

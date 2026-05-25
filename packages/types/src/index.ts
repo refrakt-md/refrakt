@@ -30,6 +30,7 @@ export type {
   ThemeManifest,
   LayoutDefinition,
   RouteRule,
+  EntityRoute,
   ComponentDefinition,
 } from './theme.js';
 export { getThemePackage } from './theme.js';
