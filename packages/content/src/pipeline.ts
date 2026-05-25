@@ -5,6 +5,7 @@ import type {
 	AggregatedData,
 	PipelineWarning,
 	PipelineContext,
+	ContributedPage,
 } from '@refrakt-md/types';
 import type { SitePage } from './site.js';
 import { EntityRegistryImpl } from './registry.js';
@@ -13,6 +14,17 @@ import { EntityRegistryImpl } from './registry.js';
 export interface HookSet {
 	pluginName: string;
 	hooks: PluginPipelineHooks;
+}
+
+/** Options for the contribution phase (SPEC-069). */
+export interface RunPipelineOptions {
+	/** Render a contributed page's source into a full SitePage (provided by the
+	 *  content loader, which owns the parse + transform machinery). */
+	renderContributed?: (cp: ContributedPage) => SitePage;
+	/** Absolute project root, passed to contributePages hooks. */
+	projectRoot?: string;
+	/** Per-site config slice, passed to contributePages hooks. */
+	siteConfig?: unknown;
 }
 
 /** Build-phase statistics from the pipeline run */
@@ -51,12 +63,15 @@ export interface PipelineResult {
 export async function runPipeline(
 	pages: SitePage[],
 	hookSets: HookSet[],
+	options: RunPipelineOptions = {},
 ): Promise<PipelineResult> {
 	const warnings: PipelineWarning[] = [];
 	const registry = new EntityRegistryImpl();
 
+	// Working page set — grows as plugins contribute pages (SPEC-069).
+	const allPages: SitePage[] = [...pages];
 	// Convert SitePage[] → TransformedPage[] (lightweight view, no deep copy)
-	const transformedPages: TransformedPage[] = pages.map(pageToTransformed);
+	const transformedPages: TransformedPage[] = allPages.map(pageToTransformed);
 
 	// ─── Phase 2: Register ───
 	for (const { pluginName, hooks } of hookSets) {
@@ -66,6 +81,63 @@ export async function runPipeline(
 			hooks.register(transformedPages, registry, ctx);
 		} catch (err) {
 			ctx.error((err as Error).message);
+		}
+	}
+
+	// ─── Phase 2.5: Contribute pages (SPEC-069) ───
+	// Plugins synthesize virtual pages (often from registered entities). They run
+	// after register so the registry is populated; contributed pages then flow
+	// through register (a second pass, for their own entities) → aggregate →
+	// postProcess like file pages. Contributed pages cannot trigger another
+	// contribution phase (the graph is one level deep, by design).
+	if (options.renderContributed) {
+		const fileUrls = new Set(allPages.map((p) => p.route.url));
+		const contributedUrls = new Map<string, string>();
+		const newPages: SitePage[] = [];
+		for (const { pluginName, hooks } of hookSets) {
+			if (!hooks.contributePages) continue;
+			const ctx = makeContext(warnings, 'contribute', pluginName);
+			try {
+				const contributed = await hooks.contributePages({
+					...ctx,
+					registry: registry as Readonly<EntityRegistry>,
+					projectRoot: options.projectRoot,
+					siteConfig: options.siteConfig,
+				});
+				contributed.forEach((cp, ruleIndex) => {
+					if (fileUrls.has(cp.url)) {
+						ctx.warn(`contributed page "${cp.url}" collides with a file-backed page; the file wins`, cp.url);
+						return;
+					}
+					const prior = contributedUrls.get(cp.url);
+					if (prior) {
+						ctx.error(`contributed page "${cp.url}" collides with one from "${prior}"`, cp.url);
+						return;
+					}
+					contributedUrls.set(cp.url, pluginName);
+					const sp = options.renderContributed!({ ...cp, source: { plugin: pluginName, ruleIndex } });
+					newPages.push(sp);
+				});
+			} catch (err) {
+				ctx.error((err as Error).message);
+			}
+		}
+		if (newPages.length > 0) {
+			const newTransformed = newPages.map(pageToTransformed);
+			allPages.push(...newPages);
+			transformedPages.push(...newTransformed);
+			// Second register pass: index entities the contributed pages themselves
+			// declare (so refs/expands elsewhere resolve them). They do not trigger
+			// another contribution round.
+			for (const { pluginName, hooks } of hookSets) {
+				if (!hooks.register) continue;
+				const ctx = makeContext(warnings, 'register', pluginName);
+				try {
+					hooks.register(newTransformed, registry, ctx);
+				} catch (err) {
+					ctx.error((err as Error).message);
+				}
+			}
 		}
 	}
 
@@ -97,10 +169,10 @@ export async function runPipeline(
 		});
 	}
 
-	// Merge post-processed renderables back into the original SitePage objects.
-	// Cast from unknown back to RenderableTreeNodes — postProcess hooks are responsible
-	// for returning the same AST node type they received.
-	const resultPages = pages.map((page, i) => ({
+	// Merge post-processed renderables back into the SitePage objects (file +
+	// contributed). Cast from unknown back to RenderableTreeNodes — postProcess
+	// hooks are responsible for returning the same AST node type they received.
+	const resultPages = allPages.map((page, i) => ({
 		...page,
 		renderable: working[i].renderable as typeof page.renderable,
 	}));
@@ -112,7 +184,7 @@ export async function runPipeline(
 	);
 
 	const stats: PipelineStats = {
-		pageCount: pages.length,
+		pageCount: allPages.length,
 		entityCount,
 		packageCount: hookSets.filter(
 			hs => hs.hooks.register || hs.hooks.aggregate || hs.hooks.postProcess

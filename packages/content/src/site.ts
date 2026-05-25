@@ -5,7 +5,7 @@ import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, firstH1, extractSeo, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies, functions } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
+import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy, ContributedPage } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
@@ -51,6 +51,8 @@ export interface SitePage {
    *  (SPEC-052). Adapters emit this as `data-theme` / `data-tint` /
    *  `data-tint-lock` attributes on `<html>` at SSR time. */
   tintCascade: ResolvedTintCascade;
+  /** Provenance — file-backed by default, or contributed by a plugin (SPEC-069). */
+  source?: { type: 'file' | 'contributed'; plugin?: string; ruleIndex?: number };
 }
 
 /** Synchronous file reader that returns null on failure. */
@@ -162,6 +164,9 @@ interface ProcessContentTreeOptions {
    *  project-root-relative POSIX path. When omitted, `$file.path` falls
    *  back to the page's content-root-relative path (`$page.path`). */
   projectRoot?: string;
+  /** Per-site config slice, passed to contributePages hooks (SPEC-069). The
+   *  built-in entityRoutes adapter reads `entityRoutes` from it. */
+  siteConfig?: unknown;
   /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Used by
    *  the xref resolver as a URL-resolution fallback when registry entities
    *  have no usable `sourceUrl`. */
@@ -328,10 +333,59 @@ async function processContentTree(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
+  // Mark file-backed pages with their provenance (SPEC-069).
+  for (const p of pages) p.source = { type: 'file' };
+
+  // Render a plugin-contributed page (SPEC-069) into a full SitePage, applying
+  // basePath, resolving the layout/tint cascade for its URL, and running the
+  // same transform (incl. deferBody capture) as a file page.
+  const base = (opts.basePath ?? '/').replace(/\/$/, '');
+  const renderContributed = (cp: ContributedPage): SitePage => {
+    const frontmatter = { ...(cp.frontmatter ?? {}) } as Frontmatter;
+    if (cp.title != null && frontmatter.title === undefined) frontmatter.title = cp.title;
+    const url = cp.url.startsWith('/') ? `${base}${cp.url}` : `${base}/${cp.url}`;
+    const relativePath = cp.url.replace(/^\//, '');
+    const layoutPage = { relativePath } as never;
+    const layout = resolveLayouts(layoutPage, tree.root, opts.icons);
+    const ast = Markdoc.parse(escapeFenceTags(cp.content));
+    const contentVariables: Record<string, unknown> = {
+      ...opts.variables,
+      frontmatter,
+      page: {
+        url,
+        path: relativePath,
+        dir: posixDirname(relativePath),
+        slug: lastUrlSegment(url),
+        title: cp.title ?? derivePageTitle(frontmatter, ast),
+        draft: frontmatter.draft === true,
+      },
+      file: { path: relativePath, created: undefined, modified: undefined },
+      __sandboxReadFile: sandbox.read,
+      __sandboxListDir: sandbox.list,
+      __sandboxDirExists: sandbox.exists,
+      __sandboxExamplesDir: opts.sandboxExamplesDir,
+      __securityPolicy: resolvedSecurity,
+    };
+    const { renderable, headings } = transformContent(
+      ast, cp.content, url, relativePath, opts.icons, opts.additionalTags, contentVariables, parsedPartials,
+    );
+    const seo = extractSeo(renderable, frontmatter, url);
+    const tintCascade = resolveTintCascade(layoutPage, tree.root, { colorScheme: opts.colorScheme });
+    return {
+      route: { url, filePath: `<contributed:${cp.source?.plugin ?? 'plugin'}>`, draft: frontmatter.draft === true },
+      frontmatter, content: cp.content, renderable, headings, layout, seo, tintCascade,
+      source: { type: 'contributed', plugin: cp.source?.plugin, ruleIndex: cp.source?.ruleIndex },
+    };
+  };
+
   // `hookSets` were built before the per-page loop so the preprocess phase
   // could run during page processing. They're reused here for register /
-  // aggregate / postProcess.
-  const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
+  // contribute / aggregate / postProcess.
+  const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets, {
+    renderContributed,
+    projectRoot: opts.projectRoot,
+    siteConfig: opts.siteConfig,
+  });
 
   // Funnel any preprocess-phase diagnostics (file-not-found, sandbox rejections,
   // line-range clamps) into the same warnings array the rest of the pipeline

@@ -114,7 +114,7 @@ export interface PipelineContext {
 /** A diagnostic emitted by a pipeline hook */
 export interface PipelineWarning {
 	severity: 'info' | 'warning' | 'error';
-	phase: 'register' | 'aggregate' | 'postProcess';
+	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess';
 	pluginName: string;
 	/** Page URL that triggered the warning, if applicable */
 	url?: string;
@@ -222,6 +222,18 @@ export interface PluginPipelineHooks {
 	) => void;
 
 	/**
+	 * Phase 2.5 — Contribute pages (SPEC-069).
+	 * Synthesize virtual pages (from registered entities or external data) that
+	 * flow through the rest of the pipeline exactly like file-backed pages.
+	 * Runs after register (so the registry is populated) and before aggregate.
+	 * Sync or async; the loader awaits the promise. Errors are caught and the
+	 * plugin's contributions are skipped with a build warning.
+	 */
+	contributePages?: (
+		ctx: ContributePagesContext,
+	) => ContributedPage[] | Promise<ContributedPage[]>;
+
+	/**
 	 * Phase 3 — Aggregate.
 	 * Build cross-page indexes, graphs, or collections from the full registry.
 	 * Called once after all register hooks have run.
@@ -243,4 +255,30 @@ export interface PluginPipelineHooks {
 		aggregated: AggregatedData,
 		ctx: PipelineContext,
 	) => TransformedPage;
+}
+
+/** Context handed to {@link PluginPipelineHooks.contributePages} (SPEC-069). */
+export interface ContributePagesContext extends PipelineContext {
+	/** The registry after Phase 2 — read entities to derive routes. */
+	registry: Readonly<EntityRegistry>;
+	/** Absolute path to the project root, for resolving config-relative paths. */
+	projectRoot?: string;
+	/** The per-site config slice (typed `unknown` to avoid a circular import;
+	 *  the built-in entityRoutes adapter casts to `SiteConfig`). */
+	siteConfig?: unknown;
+}
+
+/** A page synthesized by a plugin (SPEC-069). The framework parses + transforms
+ *  it and runs it through register / aggregate / postProcess like a file page. */
+export interface ContributedPage {
+	/** Site-root-relative route (basePath is applied by the loader). */
+	url: string;
+	/** Page title; falls back to the rendered content's heading when omitted. */
+	title?: string;
+	/** Frontmatter for the synthesized page. */
+	frontmatter?: Record<string, unknown>;
+	/** Markdoc source for the page body. */
+	content: string;
+	/** Attribution for diagnostics / collision messages. */
+	source?: { plugin?: string; ruleIndex?: number };
 }

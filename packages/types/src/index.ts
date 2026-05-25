@@ -90,6 +90,8 @@ export type {
 	PluginConfigureOptions,
 	PreprocessContext,
 	PreprocessPage,
+	ContributePagesContext,
+	ContributedPage,
 } from './pipeline.js';
 
 // CLI plugin contract
